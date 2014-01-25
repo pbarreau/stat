@@ -18,11 +18,13 @@ SOURCES += main.cpp\
     tirages.cpp \
     OuvrirBase.cpp \
     CreerTables.cpp \
-    RemplirBase.cpp
+    RemplirBase.cpp \
+    gererbase.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
-    tirages.h
+    tirages.h \
+    gererbase.h
 
 FORMS    += mainwindow.ui \
     choixjeux.ui

@@ -10,6 +10,7 @@
 #include "mainwindow.h"
 #include "tirages.h"
 
+#if 0
 bool MainWindow::RemplireLaBase(bool load)
 {
     QString fileName_2 ="";
@@ -113,3 +114,4 @@ bool MainWindow::RemplireLaBase(bool load)
     }
     return true;
 }
+#endif

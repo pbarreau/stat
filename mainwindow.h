@@ -22,15 +22,7 @@ public slots:
     void ouvrir_mainwindows(void);
 
 private:
-    bool CreerBaseDeDonnees(void);
-    bool OuvrirBase(QSqlDatabase *db);
-    bool RemplireLaBase(bool load=false);
-    bool CreerTables();
-
     Ui::MainWindow *ui;
-    QSqlDatabase MaBaseDesTirages;
-    NE_FDJ::E_typeJeux eChoixJeu;
-    tirages *un_tirage;
     bool closewindows;
 };
 

@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include "mainwindow.h"
 
+#if 0
 bool MainWindow::OuvrirBase(QSqlDatabase *db)
 {
     *db = QSqlDatabase::addDatabase("QSQLITE");
@@ -27,3 +28,4 @@ bool MainWindow::OuvrirBase(QSqlDatabase *db)
         return true;
     }
 }
+#endif
