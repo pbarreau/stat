@@ -65,7 +65,7 @@ bool MainWindow::RemplireLaBase(bool load)
     col_info.replace(",",", :");
     list2 = col_info.split(",");
 
-    col_info = "INSERT INTO tirages (" + tirages::col + ")VALUES (:" + col_info + ")";
+    col_info = "INSERT INTO tirages (id," + tirages::col + ")VALUES (:" + col_info + ")";
     query.prepare(col_info);
 
 
