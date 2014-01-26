@@ -2,12 +2,14 @@
 
 #include "tirages.h"
 
+// Variables static de la classe
 stTiragesDef tirages::conf;
 NE_FDJ::E_typeJeux tirages::choixJeu;
+int **tirages::couverture;
 
 tirages::tirages(NE_FDJ::E_typeJeux jeu)
 {
-    int zone;
+    int zone, j;
 
     choixJeu = jeu;
     switch(jeu)
@@ -26,6 +28,9 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.nomZone = new QString [conf.nb_zone];
         conf.nomZone[0]="b";
         conf.nomZone[1]="e";
+        conf.offsetFichier = new int [conf.nb_zone];
+        conf.offsetFichier[0]=4;
+        conf.offsetFichier[1]=9;
     }
         break;
 
@@ -43,6 +48,9 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.nomZone = new QString [conf.nb_zone];
         conf.nomZone[0]="b";
         conf.nomZone[1]="e";
+        conf.offsetFichier = new int [conf.nb_zone];
+        conf.offsetFichier[0]=4;
+        conf.offsetFichier[1]=9;
     }
         break;
 
@@ -50,10 +58,21 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         break;
     }
 
+    couverture = new int *[conf.nb_zone];
     value.valBoules = new int *[conf.nb_zone];
     for(zone = 0; zone < conf.nb_zone; zone++)
     {
         value.valBoules[zone] =  new int [conf.nbElmZone[zone]];
+        for(j=0;j<conf.nbElmZone[zone];j++)
+        {
+            value.valBoules[zone][j]=0;
+        }
+
+        couverture[zone]=new int[conf.limites[zone].max];
+        for(j=0;j<conf.limites[zone].max;j++)
+        {
+            couverture[zone][j]=0;
+        }
     }
 }
 
@@ -63,6 +82,7 @@ void tirages::getConfig(stTiragesDef *priv_conf)
     priv_conf->nbElmZone = conf.nbElmZone;
     priv_conf->limites = conf.limites;
     priv_conf->nomZone = conf.nomZone;
+    priv_conf->offsetFichier = conf.offsetFichier;
 }
 
 QString tirages::LabelColonnePourBase(stTiragesDef *ref)
@@ -82,6 +102,12 @@ QString tirages::LabelColonnePourBase(stTiragesDef *ref)
         {
             msg1 = msg1 + tab[zone]+QString::number(j+1) +",";
         }
+    }
+
+    // Creation des colonnes pour criteres
+    for(zone=0;zone<nbZn;zone++)
+    {
+        msg1 = msg1 + tab[zone] +"_pair," + tab[zone] +"_E1,";
     }
 
     if(msg1.length() != 0){
@@ -120,5 +146,30 @@ QString tirages::SelectSource(bool load)
 
     }
 
-     return     fileName_2;
+    return     fileName_2;
+}
+
+int tirages::NbPairs(int zone)
+{
+    int i;
+    int ret = 0;
+    for(i=0;i<(conf.nbElmZone[zone]);i++)
+    {
+        if((value.valBoules[zone][i]%2) == 0)
+            ret++;
+    }
+    return ret;
+}
+
+int tirages::NbDansE1(int zone)
+{
+    int i;
+    int ret = 0;
+    for(i=0;i<(conf.nbElmZone[zone]);i++)
+    {
+        if((value.valBoules[zone][i]) < (conf.limites[zone].max /2))
+            ret++;
+    }
+    return ret;
+
 }

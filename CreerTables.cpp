@@ -27,7 +27,7 @@ if(msg1.length() != 0){
     msg1.replace(",", " int,");
     msg1 = msg1 + " int";
 
-    msg1 =  "create table tirages (id integer primary key,jour TEXT, " +
+    msg1 =  "create table tirages (id integer primary key,jour TEXT," +
             msg1 + ")";
 
     if (db.isOpen())

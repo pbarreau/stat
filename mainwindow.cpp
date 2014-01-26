@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
 {
     GererBase DB_tirages;
     tirages tmp(leJeu);
-    stTiragesDef ref;
+    //stTiragesDef ref;
     QString ficSource;
 
     DB_tirages.CreerBaseEnMemoire(false);
@@ -28,6 +28,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     DB_tirages.CreerTableTirages(&tmp);
     ficSource = tmp.SelectSource(load);
     DB_tirages.LireLesTirages(ficSource,&tmp);
+
+    // Lecture de l'ancienne base des tirages
+    ficSource="euromillions.csv";
+    DB_tirages.LireLesTirages(ficSource,&tmp);
+
     ui->setupUi(this);
 
 

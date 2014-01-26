@@ -25,6 +25,7 @@ typedef struct _tirages_def
     QString *nomZone;
     int *nbElmZone;
     stBornes *limites;
+    int *offsetFichier;
 }stTiragesDef;
 
 typedef struct _un_tirage
@@ -37,6 +38,7 @@ class tirages
 {
 private:
     static stTiragesDef conf;
+    static int **couverture;
 
 public:
     static NE_FDJ::E_typeJeux choixJeu;
@@ -47,6 +49,8 @@ public:
     void getConfig(stTiragesDef *priv_conf);
     QString SelectSource(bool load);
     QString LabelColonnePourBase(stTiragesDef *ref);
+    int NbPairs(int zone); // Nombre de nombre pair dans la zone
+    int NbDansE1(int zone); // Nombre de nombre de la zone appartenant a E1;
 
 };
 
