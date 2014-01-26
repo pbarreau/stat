@@ -18,7 +18,8 @@ public:
     
 public:
     bool CreerBaseEnMemoire(bool action);
-    bool CreerTableTirages(tirages *pRef);
+    bool CreerTableTirages(tirages *pRref);
+    bool LireLesTirages(QString fileName_2, tirages *pRef);
     bool SupprimerBase();
     QSqlError lastError();
 

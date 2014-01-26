@@ -3,44 +3,42 @@
 #endif
 
 #include <QString>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#
 #include "gererbase.h"
 
 bool GererBase::CreerTableTirages(tirages *pRef)
 {
-    int zone, elem, j;
-    QString msg1, msg2;
-    stTiragesDef ref;
 
-    pRef->getConfig(&ref);
+QString msg1, msg2;
+stTiragesDef ref;
+bool ret = false;
 
-
-    int nbZn = ref.nb_zone ;
-    int *zn_conf=ref.nbElmZone;
-    QString *tab = ref.nomZone;
+pRef->getConfig(&ref);
 
 
-    // creation du message pour les colonnes
-    for(zone=0;zone<nbZn;zone++)
+msg1 = pRef->LabelColonnePourBase(&ref);
+
+
+if(msg1.length() != 0){
+    // Retirer le premier element
+    msg1.remove("jour, ");
+    msg1.replace(",", " int,");
+    msg1 = msg1 + " int";
+
+    msg1 =  "create table tirages (id integer primary key,jour TEXT, " +
+            msg1 + ")";
+
+    if (db.isOpen())
     {
-        elem = zn_conf[zone];
-        for(j=0;j<elem;j++)
-        {
-            msg1 = msg1 + tab[zone]+QString::number(j+1) +" int,";
-            msg2 = msg2 + tab[zone]+QString::number(j+1) +",";
-        }
-    }
-
-    if(msg1.length() != 0){
-        msg1.remove(msg1.size()-1,1);
-        msg2.remove(msg2.size()-1,1);
-        msg1 =  "create table tirages (id INTEGER PRIMARY KEY,jour TEXT, " +
-                msg1 + ")";
-        msg2 = "jour, " + msg2;
-        //tirages::col = msg2;
-        //query.exec(msg1);
+        QSqlQuery query;
+        ret = query.exec(msg1);
 
     }
-    return true;
+
+}
+return ret;
 }
 
 #if 0

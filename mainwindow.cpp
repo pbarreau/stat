@@ -20,10 +20,14 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
 {
     GererBase DB_tirages;
     tirages tmp(leJeu);
+    stTiragesDef ref;
+    QString ficSource;
 
     DB_tirages.CreerBaseEnMemoire(false);
+    //tmp.getConfig(&ref);
     DB_tirages.CreerTableTirages(&tmp);
-
+    ficSource = tmp.SelectSource(load);
+    DB_tirages.LireLesTirages(ficSource,&tmp);
     ui->setupUi(this);
 
 

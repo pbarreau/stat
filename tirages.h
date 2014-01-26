@@ -39,11 +39,14 @@ private:
     static stTiragesDef conf;
 
 public:
+    static NE_FDJ::E_typeJeux choixJeu;
     stUnTirage value;
 
 public:
     tirages(NE_FDJ::E_typeJeux jeu = NE_FDJ::fdj_euro);
     void getConfig(stTiragesDef *priv_conf);
+    QString SelectSource(bool load);
+    QString LabelColonnePourBase(stTiragesDef *ref);
 
 };
 
