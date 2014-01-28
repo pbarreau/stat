@@ -3,6 +3,8 @@
 #endif
 
 #include <QSqlDatabase>
+#include <QSqlRecord>
+
 #include <QSqlQuery>
 #include <QMessageBox>
 #include <QFile>
@@ -106,4 +108,136 @@ bool GererBase::LireLesTirages(QString fileName_2, tirages *pRef)
         query.exec();
     }
     return true;
+}
+
+#if 0
+void GererBase::RechercheCouverture(tirages *pRef)
+{
+    stTiragesDef ref;
+    pRef->getConfig(&ref);
+    int zone = 0;
+    int boule = 0;
+    int depart = 2;
+    int first = 0;
+    int memo[3][ref.limites[zone].max];
+    //0 compteur
+    for(boule=0;boule<ref.limites[zone].max;boule++)
+    {
+        memo[0][boule]=0;
+        memo[1][boule]=0;
+        memo[2][boule]=0;
+    }
+
+    QSqlQuery query(db);
+    QString msg = "select * from tirages";
+    query.exec(msg);
+
+    int val ;
+
+    query.last();
+    do
+    {
+        QSqlRecord rec  = query.record();
+        for(boule=depart;boule<(depart+ref.nbElmZone[zone]);boule++)
+        {
+            val = rec.value(boule).toInt();
+            pRef->value.valBoules[zone][boule-depart]=val;
+
+            if(!memo[0][val-1]){
+                // une boule trouvee
+                memo[0][val-1]++;
+                memo[1][first]=val;
+                first++;
+            }
+            if(start >= ref.limites[zone].max)
+            {
+                // une couverture trouvee
+                start = 0;
+                for(boule=0;boule<ref.limites[zone].max;boule++)
+                {
+                    memo[1][boule]=0;
+                }
+
+            }
+        }
+
+
+    }while(query.previous());
+
+}
+
+#endif
+
+void GererBase::RechercheCouverture(tirages *pRef)
+{
+    stTiragesDef ref;
+    pRef->getConfig(&ref);
+    int zone = 0;
+    int depart = 2;
+    int max_boule = ref.limites[zone].max;
+    int nb_boule =ref.nbElmZone[zone];
+    int boule;
+    int memo_boule= 0;
+    int max = 0;
+    int i;
+    int val;
+    int calcul;
+
+    QSqlQuery query(db);
+    QString msg = "select * from tirages";
+    query.exec(msg);
+
+    int nbSortie[5][50];
+
+    // mise a zero des compteurs
+    for(i=0;i<5;i++)
+    {
+        for(boule=0;boule<50;boule++)
+        {
+            nbSortie[i][boule]=0;
+        }
+    }
+
+    // Recuperer dernier tirage
+    query.first();
+    QSqlRecord rec  = query.record();
+    for(i=depart;i< nb_boule;i++)
+    {
+        val = rec.value(i).toInt();
+        pRef->value.valBoules[zone][i-depart]=val;
+
+        // Recherche du maximum pour cette boule
+        msg = "create view r_boul as select * from tirages where (b1=" +
+                QString::number(val) + " or b2=" + QString::number(val)
+                + " or b3=" + QString::number(val) + " or b4=" + QString::number(val) + " or b5=" + QString::number(val) + ")";
+        calcul = query.exec(msg);
+        msg = "select count (*) from r_boul";
+        calcul = query.exec(msg);
+        query.first();
+        QSqlRecord rec  = query.record();
+        calcul = rec.value(0).toInt();
+
+        for(boule = 1; boule<=max_boule;boule++)
+        {
+            msg = "select count (*) from r_boul where (b1=" + QString::number(boule) + " or b2=" + QString::number(boule)
+                    + " or b3=" + QString::number(boule) + " or b4=" + QString::number(boule) + " or b5=" + QString::number(boule) + ")";
+            calcul = query.exec(msg);
+            query.first();
+            QSqlRecord rec  = query.record();
+            calcul = rec.value(0).toInt();
+
+            nbSortie[i-depart][boule-1] = calcul;
+
+            if(calcul > max)
+            {
+                memo_boule = boule;
+                max = calcul;
+            }
+        }
+
+        // Recherche terminee finir avec cette vue
+        msg = "drop view r_boul";
+        query.exec(msg);
+    }
+    // resultat
 }

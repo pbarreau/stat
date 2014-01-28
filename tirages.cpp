@@ -173,3 +173,21 @@ int tirages::NbDansE1(int zone)
     return ret;
 
 }
+
+#if 0
+int toto()
+{
+    // calcul de l'ecart d'une boule
+    boule_connue = 0;
+    ecart_boule = 0;
+    nb_ecart = 0;
+
+
+    // boule connue
+    // non alors commencer a compter les ecarts
+    // Memoriser le nb d'ecart pour cette boule
+
+    // on trouve de nouveau la boule donc ecart correspond au tirage avant de voir la boule
+    // un ecart de plus
+}
+#endif

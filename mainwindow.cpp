@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     //stTiragesDef ref;
     QString ficSource;
 
-    DB_tirages.CreerBaseEnMemoire(false);
+    DB_tirages.CreerBaseEnMemoire(true);
     //tmp.getConfig(&ref);
     DB_tirages.CreerTableTirages(&tmp);
     ficSource = tmp.SelectSource(load);
@@ -33,9 +33,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     ficSource="euromillions.csv";
     DB_tirages.LireLesTirages(ficSource,&tmp);
 
+    // Recherche de couverture
+    DB_tirages.RechercheCouverture(&tmp);
+
     ui->setupUi(this);
-
-
+    DB_tirages.AfficherBase(this,ui->tbl_test);
 
 }
 
@@ -48,6 +50,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::ouvrir_mainwindows(void)
 {
+    closewindows = false;
+
     if(closewindows){
         this->~MainWindow();
     }

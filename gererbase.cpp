@@ -1,4 +1,7 @@
 #include <QFile>
+#include <QSqlTableModel>
+#include <QTableView>
+
 #include "gererbase.h"
 
 GererBase::GererBase(QObject *parent) :
@@ -63,4 +66,25 @@ bool GererBase::SupprimerBase()
     // Remove created database binary file
     return QFile::remove("mabase.sqlite");
 #endif
+}
+
+void GererBase::AfficherBase(QObject *parent, QTableView *cibleview)
+{
+    tbl_model = new QSqlTableModel(parent, db);
+    tbl_model->setTable("tirages");
+    tbl_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    tbl_model->select();
+
+    tbl_model->removeColumn(0); // don't show the ID
+#if 0
+    tbl_model->setHeaderData(0, Qt::Horizontal, tr("b1"));
+    tbl_model->setHeaderData(1, Qt::Horizontal, tr("b2"));
+    tbl_model->setHeaderData(2, Qt::Horizontal, tr("b3"));
+    tbl_model->setHeaderData(3, Qt::Horizontal, tr("b4"));
+    tbl_model->setHeaderData(4, Qt::Horizontal, tr("b5"));
+    tbl_model->setHeaderData(5, Qt::Horizontal, tr("e1"));
+    tbl_model->setHeaderData(6, Qt::Horizontal, tr("e2"));
+#endif
+    // Attach it to the view
+    cibleview->setModel(tbl_model);
 }

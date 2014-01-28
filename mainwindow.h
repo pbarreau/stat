@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QSqlDatabase>
+#include <QSqlTableModel>
 #include "tirages.h"
 
 
@@ -23,6 +24,7 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
+    //QSqlTableModel *tbl_model;
     bool closewindows;
 };
 

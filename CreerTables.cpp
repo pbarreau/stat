@@ -18,6 +18,12 @@ bool ret = false;
 pRef->getConfig(&ref);
 
 
+// Creation des tables pour la couverture, et le nb d'element touve
+//msg1 = "create table b_couv (id integer primary key, debut text, fin text, nbtirages int)
+
+// detail analyse couverture
+//msg1 = "create table b_couvdetail (id integer primary key, couvid int, boule int, ecart int, position int, total int)
+
 msg1 = pRef->LabelColonnePourBase(&ref);
 
 
