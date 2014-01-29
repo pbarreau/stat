@@ -24,7 +24,7 @@ public:
     bool LireLesTirages(QString fileName_2, tirages *pRef);
     bool SupprimerBase();
     QSqlError lastError();
-    void AfficherBase(QObject *parent, QTableView *cibleview);
+    void AfficherBase(QWidget *parent, QTableView *cibleview);
     void RechercheCouverture(tirages *pRef);
 
 

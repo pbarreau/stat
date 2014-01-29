@@ -1,3 +1,7 @@
+#ifndef QT_NO_DEBUG
+#include <QDebug>
+#endif
+
 #include <QFile>
 #include <QSqlTableModel>
 #include <QTableView>
@@ -68,14 +72,18 @@ bool GererBase::SupprimerBase()
 #endif
 }
 
-void GererBase::AfficherBase(QObject *parent, QTableView *cibleview)
+void GererBase::AfficherBase(QWidget *parent, QTableView *cibleview)
 {
+    int i;
     tbl_model = new QSqlTableModel(parent, db);
     tbl_model->setTable("tirages");
     tbl_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     tbl_model->select();
 
     tbl_model->removeColumn(0); // don't show the ID
+
+
+
 #if 0
     tbl_model->setHeaderData(0, Qt::Horizontal, tr("b1"));
     tbl_model->setHeaderData(1, Qt::Horizontal, tr("b2"));
@@ -87,4 +95,16 @@ void GererBase::AfficherBase(QObject *parent, QTableView *cibleview)
 #endif
     // Attach it to the view
     cibleview->setModel(tbl_model);
+    qDebug() << cibleview->columnWidth(3);
+    for (i=1;i<=7;i++){
+    cibleview->setColumnWidth(i,30);
+    }
+    for(i=8;i<=11;i++)
+    {
+      cibleview->hideColumn(i);
+    }
+
+    cibleview->setMinimumHeight(390);
+    parent->setMinimumWidth(400);
+    parent->setMinimumHeight(400);
 }

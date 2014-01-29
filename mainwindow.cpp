@@ -7,6 +7,8 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QTextStream>
+#include <QLineEdit>
+#include <QFormLayout>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -20,8 +22,30 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
 {
     GererBase DB_tirages;
     tirages tmp(leJeu);
-    //stTiragesDef ref;
-    QString ficSource;
+     QString ficSource;
+
+    ui->setupUi(this);
+
+    zoneCentrale = new QMdiArea;
+    zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    zoneCentrale->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    QWidget *AfficherBase = new QWidget;
+    QTableView *PourLaBase = new QTableView;
+
+
+    //QLineEdit *nom = new QLineEdit;
+    QFormLayout *layout = new QFormLayout;
+    layout->addWidget(PourLaBase);
+    AfficherBase->setLayout(layout);
+
+    QMdiSubWindow *sousFenetre1 = zoneCentrale->addSubWindow(AfficherBase);
+
+
+    AfficherBase->setWindowTitle("Base des tirages");
+    setCentralWidget(zoneCentrale);
+
+
 
     DB_tirages.CreerBaseEnMemoire(true);
     //tmp.getConfig(&ref);
@@ -34,10 +58,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     DB_tirages.LireLesTirages(ficSource,&tmp);
 
     // Recherche de couverture
-    DB_tirages.RechercheCouverture(&tmp);
+    //DB_tirages.RechercheCouverture(&tmp);
 
-    ui->setupUi(this);
-    DB_tirages.AfficherBase(this,ui->tbl_test);
+
+    //DB_tirages.AfficherBase(this,PourLaBase);
+    DB_tirages.AfficherBase(AfficherBase,PourLaBase);
 
 }
 
@@ -60,3 +85,16 @@ void MainWindow::ouvrir_mainwindows(void)
         this->show();
     }
 }
+
+#if 0
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    zoneCentrale->closeAllSubWindows();
+    if (zoneCentrale->currentSubWindow()) {
+        event->ignore();
+    } else {
+        //writeSettings();
+        event->accept();
+    }
+}
+#endif

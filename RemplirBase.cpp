@@ -8,6 +8,7 @@
 #include <QSqlQuery>
 #include <QMessageBox>
 #include <QFile>
+#include <QTextStream>
 
 #include "gererbase.h"
 #include "tirages.h"
