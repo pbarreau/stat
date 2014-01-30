@@ -10,7 +10,7 @@
 
 bool GererBase::CreerTableTirages(tirages *pRef)
 {
-
+QSqlQuery query;
 QString msg1, msg2;
 stTiragesDef ref;
 bool ret = false;
@@ -19,7 +19,8 @@ pRef->getConfig(&ref);
 
 
 // Creation des tables pour la couverture, et le nb d'element touve
-//msg1 = "create table b_couv (id integer primary key, debut text, fin text, nbtirages int)
+msg1 =  "create table tmp_couv (id INTEGER PRIMARY KEY, depart int, fin int, taille int)";
+query.exec(msg1);
 
 // detail analyse couverture
 //msg1 = "create table b_couvdetail (id integer primary key, couvid int, boule int, ecart int, position int, total int)
@@ -38,7 +39,7 @@ if(msg1.length() != 0){
 
     if (db.isOpen())
     {
-        QSqlQuery query;
+
         ret = query.exec(msg1);
 
     }
@@ -70,6 +71,9 @@ bool MainWindow::CreerTables()
     int max_zone = tirages::nb_zone;
     int *zn_conf = tirages::nb_elem_zone;
     int elem;
+
+    msg1 =  "create table tmp_couv (id INTEGER PRIMARY KEY, depart int, fin int)";
+    query.exec(msg1);
 
     // creation du message pour les colonnes
     for(i=0;i<max_zone;i++)

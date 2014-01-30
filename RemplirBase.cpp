@@ -167,7 +167,7 @@ void GererBase::RechercheCouverture(tirages *pRef)
 
 }
 
-#endif
+
 
 void GererBase::RechercheCouverture(tirages *pRef)
 {
@@ -241,6 +241,90 @@ void GererBase::RechercheCouverture(tirages *pRef)
         query.exec(msg);
     }
     // resultat
+}
+
+#endif
+
+void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)
+{
+    QSqlQuery query(db);
+    QSqlQuery selection(db);
+    QString msg, msg1;
+    double EcartMoyen = 0.0;
+    int SommeTotal;
+    int calcul;
+    int lgndeb, lgnfin;
+    int nbTotCouv = 0, EcartMax=0, EcartCourant = 0, EcartPrecedent=0;
+    // Effacer donnees de la table de couverture
+    msg =  "drop  table tmp_couv ";
+    query.exec(msg);
+    msg =  "create table tmp_couv (id INTEGER PRIMARY KEY, depart int, fin int, taille int)";
+    query.exec(msg);
+
+    // recuperation du nombre de tirage total
+    msg= "select count (*) from tirages";
+    calcul = query.exec(msg);
+    query.first();
+    SommeTotal = query.value(0).toInt();
+
+    msg = "insert into tmp_couv (id, depart, fin, taille) values (:id, :depart, :fin, :taille)";
+    query.prepare(msg);
+
+    msg1 = "select id from tirages where (b1=" +
+            QString::number(boule) + " or b2=" + QString::number(boule)
+            + " or b3=" + QString::number(boule) + " or b4=" + QString::number(boule) + " or b5=" + QString::number(boule) + ")";
+    calcul = selection.exec(msg1);
+
+
+    //ligne actuelle
+    lgndeb = SommeTotal;
+SommeTotal = 0; //calcul des intervals
+    selection.last();
+    do
+    {
+        QSqlRecord rec  = selection.record();
+        calcul = rec.value(0).toInt();
+
+        lgnfin = selection.value(0).toInt();
+        query.bindValue(":depart", lgndeb);
+        query.bindValue(":fin", lgnfin);
+        query.bindValue(":taille", lgndeb-lgnfin+1);
+        SommeTotal += (lgndeb-lgnfin+1);
+        // Mettre dans la base
+        query.exec();
+        lgndeb = lgnfin - 1;
+
+    }while(selection.previous());
+
+    // calcul des ecarts pour la boule
+    msg = "select count (*) from tmp_couv";
+    query.exec(msg);
+    query.first();
+    nbTotCouv = query.value(0).toInt();
+
+        // Moyenne
+    if(nbTotCouv>0)
+    EcartMoyen = SommeTotal/nbTotCouv;
+
+    // recherche l'ecart le plus grand
+    msg = "select max(taille) from tmp_couv";
+    query.exec(msg);
+    query.first();
+    EcartMax = query.value(0).toInt();
+
+    //recherche de l'ecart courant et suivant
+    msg = "select taille from tmp_couv";
+    query.exec(msg);
+    query.last();
+    EcartCourant = query.value(0).toInt();
+    query.previous();
+    EcartPrecedent = query.value(0).toInt();;
+
+
+    // Recherche terminee finir avec cette vue
+    //msg = "drop view r_couv";
+    //query.exec(msg);
+
 }
 
 void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *modele)//QStandardItemModel *modele)

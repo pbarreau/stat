@@ -90,7 +90,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     connect( PourLaBase, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( cellSelected( QModelIndex) ) );
 
-    DB_tirages->CreerBaseEnMemoire(true);
+    DB_tirages->CreerBaseEnMemoire(false);
     //tmp.getConfig(&ref);
     DB_tirages->CreerTableTirages(&tmp);
     ficSource = tmp.SelectSource(load);
@@ -153,5 +153,6 @@ void MainWindow::cellSelected(const QModelIndex & index)
 #endif
     val = index.data().toInt();
     tblVoisin->sortByColumn(0,Qt::AscendingOrder);
-    DB_tirages->RechercheVoisin(val,nbSortie,modele);
+    //DB_tirages->RechercheVoisin(val,nbSortie,modele);
+    DB_tirages->RechercheCouverture(val,modele);
 }

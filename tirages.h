@@ -76,7 +76,7 @@ public:
     bool SupprimerBase();
     QSqlError lastError();
     void AfficherBase(QWidget *parent, QTableView *cibleview);
-    void RechercheCouverture(tirages *pRef);
+    void RechercheCouverture(int boule, QStandardItemModel *modele);
     void RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *fen);
 
 private:
