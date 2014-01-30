@@ -4,9 +4,13 @@
 #include <QMainWindow>
 #include <QSqlDatabase>
 #include <QSqlTableModel>
+#include <QTableView>
 #include <QMdiArea>
-#include "tirages.h"
+#include <QLabel>
+#include <QStandardItemModel>
 
+#include "gererbase.h"
+#include "tirages.h"
 
 namespace Ui {
 class MainWindow;
@@ -28,7 +32,12 @@ public slots:
 private:
     Ui::MainWindow *ui;
     QMdiArea *zoneCentrale;
-    //QSqlTableModel *tbl_model;
+    QTableView *PourLaBase;
+    QLabel *nbSortie;
+    GererBase *DB_tirages;
+    QStandardItemModel *modele ;
+    QTableView *tblVoisin;
+
     bool closewindows;
 };
 

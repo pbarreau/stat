@@ -6,7 +6,7 @@
 #include <QSqlTableModel>
 #include <QTableView>
 
-#include "gererbase.h"
+#include "tirages.h"
 
 GererBase::GererBase(QObject *parent) :
     QObject(parent)

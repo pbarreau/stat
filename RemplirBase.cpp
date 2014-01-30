@@ -242,3 +242,42 @@ void GererBase::RechercheCouverture(tirages *pRef)
     }
     // resultat
 }
+
+void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *modele)//QStandardItemModel *modele)
+{
+    QSqlQuery query(db);
+    QString msg;
+    int calcul, voisin;
+
+    // Recherche du maximum pour cette boule
+    msg = "create view r_boul as select * from tirages where (b1=" +
+            QString::number(boule) + " or b2=" + QString::number(boule)
+            + " or b3=" + QString::number(boule) + " or b4=" + QString::number(boule) + " or b5=" + QString::number(boule) + ")";
+    calcul = query.exec(msg);
+    msg = "select count (*) from r_boul";
+    calcul = query.exec(msg);
+    query.first();
+    QSqlRecord rec  = query.record();
+    calcul = rec.value(0).toInt();
+
+    l_nb->setText(QString("Boule %1 : %2 fois ").arg( boule ).arg(calcul) );
+
+    for(voisin=1;voisin<=50;voisin++)
+    {
+        msg = "select count (*) from r_boul where (b1=" + QString::number(voisin) + " or b2=" + QString::number(voisin)
+                + " or b3=" + QString::number(voisin) + " or b4=" + QString::number(voisin) + " or b5=" + QString::number(voisin) + ")";
+        calcul = query.exec(msg);
+        query.first();
+        //QSqlRecord rec  = query.record();
+        calcul = query.value(0).toInt();
+
+        QStandardItem *item = new QStandardItem( QString::number(222));
+        item->setData(calcul,Qt::DisplayRole);
+        modele->setItem(voisin-1,1,item);
+    }
+
+    // Recherche terminee finir avec cette vue
+    msg = "drop view r_boul";
+    query.exec(msg);
+
+}

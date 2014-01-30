@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    GererBase DB_tirages;
+    DB_tirages = new GererBase;
     tirages tmp(leJeu);
     QString ficSource;
 
@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
 
     //#if 0
     QWidget *AfficherBase = new QWidget;
-    QTableView *PourLaBase = new QTableView;
+    PourLaBase = new QTableView;
     QFormLayout *layout = new QFormLayout;
     layout->addWidget(PourLaBase);
     AfficherBase->setLayout(layout);
@@ -51,25 +51,28 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     QMdiSubWindow *sousFenetre1 = zoneCentrale->addSubWindow(AfficherBase);
 
 
-    QStandardItemModel *modele = new QStandardItemModel(50,2);
+    modele = new QStandardItemModel(50,2);
     modele->setHeaderData(0,Qt::Horizontal,"Boules");
     modele->setHeaderData(1,Qt::Horizontal,"Voisin");
 
     for(i=1;i<=50;i++)
     {
-       QStandardItem *item = new QStandardItem( QString::number(222));
+        QStandardItem *item = new QStandardItem( QString::number(222));
         item->setData(i,Qt::DisplayRole);
         modele->setItem(i-1,0,item);
     }
 
     QWidget *qwVoisin = new QWidget;
-    QTableView *tblVoisin = new QTableView;
+    tblVoisin = new QTableView;
     tblVoisin->setModel(modele);
+
     tblVoisin->setSortingEnabled(true);
+    tblVoisin->sortByColumn(0,Qt::AscendingOrder);
+
     tblVoisin->setAlternatingRowColors(true);
     tblVoisin->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    //tblVoisin->sortByColumn(1);
-    QLabel *nbSortie = new QLabel;
+
+    nbSortie = new QLabel;
     QFormLayout *layVoisin = new QFormLayout;
     tblVoisin->setColumnWidth(0,60);
     tblVoisin->setColumnWidth(1,60);
@@ -87,22 +90,22 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     connect( PourLaBase, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( cellSelected( QModelIndex) ) );
 
-    DB_tirages.CreerBaseEnMemoire(true);
+    DB_tirages->CreerBaseEnMemoire(true);
     //tmp.getConfig(&ref);
-    DB_tirages.CreerTableTirages(&tmp);
+    DB_tirages->CreerTableTirages(&tmp);
     ficSource = tmp.SelectSource(load);
-    DB_tirages.LireLesTirages(ficSource,&tmp);
+    DB_tirages->LireLesTirages(ficSource,&tmp);
 
     // Lecture de l'ancienne base des tirages
     ficSource="euromillions.csv";
-    DB_tirages.LireLesTirages(ficSource,&tmp);
+    DB_tirages->LireLesTirages(ficSource,&tmp);
 
     // Recherche de couverture
     //DB_tirages.RechercheCouverture(&tmp);
 
 
     //DB_tirages.AfficherBase(this,PourLaBase);
-    DB_tirages.AfficherBase(AfficherBase,PourLaBase);
+    DB_tirages->AfficherBase(AfficherBase,PourLaBase);
 
 }
 
@@ -141,8 +144,14 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::cellSelected(const QModelIndex & index)
 {
+    int val;
+#if 0
     QMessageBox::information(this, "",
                              "Cell at row "+QString::number(index.row())+
                              " column "+QString::number(index.column())+
                              " was double clicked.");
+#endif
+    val = index.data().toInt();
+    tblVoisin->sortByColumn(0,Qt::AscendingOrder);
+    DB_tirages->RechercheVoisin(val,nbSortie,modele);
 }
