@@ -23,6 +23,7 @@ public:
 
 public slots:
     void ouvrir_mainwindows(void);
+    void cellSelected(const QModelIndex &index);
 
 private:
     Ui::MainWindow *ui;

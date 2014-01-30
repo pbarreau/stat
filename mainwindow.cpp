@@ -11,6 +11,8 @@
 #include <QFormLayout>
 #include <QLabel>
 #include <QStandardItemModel>
+#include <QTableWidget>
+#include <QModelIndex>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -32,6 +34,9 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     zoneCentrale->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
+    //QTableWidget *AfficherBase = new QTableWidget;
+
+//#if 0
     QWidget *AfficherBase = new QWidget;
     QTableView *PourLaBase = new QTableView;
     QFormLayout *layout = new QFormLayout;
@@ -41,8 +46,8 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     PourLaBase->setSelectionMode(QAbstractItemView::SingleSelection);
     PourLaBase->setStyleSheet("QTableView {selection-background-color: red;}");
     PourLaBase->setEditTriggers(QAbstractItemView::NoEditTriggers);
+//#endif
     QMdiSubWindow *sousFenetre1 = zoneCentrale->addSubWindow(AfficherBase);
-
 
     QStandardItemModel *modele = new QStandardItemModel(50,2);
     modele->setHeaderData(0,Qt::Horizontal,"Boules");
@@ -57,8 +62,10 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     QWidget *qwVoisin = new QWidget;
     QTableView *tblVoisin = new QTableView;
     tblVoisin->setModel(modele);
+    tblVoisin->setSortingEnabled(true);
+    tblVoisin->setAlternatingRowColors(true);
     tblVoisin->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tblVoisin->sortByColumn(1);
+    //tblVoisin->sortByColumn(1);
     QLabel *nbSortie = new QLabel;
     QFormLayout *layVoisin = new QFormLayout;
     tblVoisin->setColumnWidth(0,60);
@@ -74,8 +81,8 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     QMdiSubWindow *sousFenetre2 = zoneCentrale->addSubWindow(qwVoisin);
 
     setCentralWidget(zoneCentrale);
-
-
+    connect( PourLaBase, SIGNAL( clicked(QModelIndex)) ,
+             this, SLOT( cellSelected( QModelIndex) ) );
 
     DB_tirages.CreerBaseEnMemoire(true);
     //tmp.getConfig(&ref);
@@ -128,3 +135,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 #endif
+
+void MainWindow::cellSelected(const QModelIndex & index)
+{
+    QMessageBox::information(this, "",
+                            "Cell at row "+QString::number(index.row())+
+                             " column "+QString::number(index.column())+
+                             " was double clicked.");
+}
