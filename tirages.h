@@ -49,13 +49,15 @@ private:
 
 public:
     static NE_FDJ::E_typeJeux choixJeu;
+    static QString *lib_col;
     stUnTirage value;
 
 public:
     tirages(NE_FDJ::E_typeJeux jeu = NE_FDJ::fdj_euro);
     void getConfig(stTiragesDef *priv_conf);
     QString SelectSource(bool load);
-    QString LabelColonnePourBase(stTiragesDef *ref);
+    QString s_LibColBase(stTiragesDef *ref);
+    QString qs_zColBaseName(int zone);
     int NbPairs(int zone); // Nombre de nombre pair dans la zone
     int NbDansE1(int zone); // Nombre de nombre de la zone appartenant a E1;
 

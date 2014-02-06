@@ -4,6 +4,7 @@
 
 // Variables static de la classe
 stTiragesDef tirages::conf;
+QString *tirages::lib_col;
 NE_FDJ::E_typeJeux tirages::choixJeu;
 int **tirages::couverture;
 
@@ -58,10 +59,12 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         break;
     }
 
+    lib_col = new QString [conf.nb_zone];
     couverture = new int *[conf.nb_zone];
     value.valBoules = new int *[conf.nb_zone];
     for(zone = 0; zone < conf.nb_zone; zone++)
     {
+        lib_col[zone] = this->qs_zColBaseName(zone);
         value.valBoules[zone] =  new int [conf.nbElmZone[zone]];
         for(j=0;j<conf.nbElmZone[zone];j++)
         {
@@ -85,7 +88,25 @@ void tirages::getConfig(stTiragesDef *priv_conf)
     priv_conf->offsetFichier = conf.offsetFichier;
 }
 
-QString tirages::LabelColonnePourBase(stTiragesDef *ref)
+QString tirages::qs_zColBaseName(int zone)
+{
+  int elem = 0;
+  QString msg1 = "";
+
+  for(elem = 0; elem < (this->conf.nbElmZone[zone]);elem++)
+  {
+    msg1 = msg1 + this->conf.nomZone[zone] + QString::number(elem +1) +",";
+  }
+
+  // Suppression de la derniere virgule
+  if(msg1.length() != 0){
+      msg1.remove(msg1.size()-1,1);
+  }
+
+  return msg1;
+}
+
+QString tirages::s_LibColBase(stTiragesDef *ref)
 {
     int zone, elem, j;
     int nbZn = ref->nb_zone ;
@@ -191,3 +212,26 @@ int toto()
     // un ecart de plus
 }
 #endif
+
+// C : http://www.dcode.fr/generer-calculer-combinaisons
+double factorielle(double *x)
+{ double i;
+    double result=1;
+    if(*x >= 1)
+    {
+        for(i=*x;i>1;i--)
+        {
+            result = result*i;
+        }
+        return result;
+    }
+    else
+        if(*x == 0)
+            return 1;
+    return 0;
+}
+
+double compter_combinaisons(double x,double y)
+{ double z = x-y;
+    return factorielle(&x)/(factorielle(&y)*factorielle(&z));
+}

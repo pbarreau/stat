@@ -23,11 +23,16 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0,NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false);
     ~MainWindow();
-//void closeEvent(QCloseEvent *event);
+    //void closeEvent(QCloseEvent *event);
 
 public slots:
     void ouvrir_mainwindows(void);
     void cellSelected(const QModelIndex &index);
+
+private:
+    void voisins(void);
+    void mabase(void);
+    void couverture(void);
 
 private:
     Ui::MainWindow *ui;
@@ -37,7 +42,9 @@ private:
     GererBase *DB_tirages;
     QStandardItemModel *modele ;
     QTableView *tblVoisin;
-
+    QWidget *AfficherBase;
+    QStandardItemModel *modele2 ;
+    QTableView *tblCouverture;
     bool closewindows;
 };
 

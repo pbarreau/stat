@@ -30,6 +30,38 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
 
     ui->setupUi(this);
 
+
+    mabase();
+
+    DB_tirages->CreerBaseEnMemoire(true);
+    DB_tirages->CreerTableTirages(&tmp);
+
+    ficSource = tmp.SelectSource(load);
+    DB_tirages->LireLesTirages(ficSource,&tmp);
+    // Lecture de l'ancienne base des tirages
+    ficSource="euromillions.csv";
+    DB_tirages->LireLesTirages(ficSource,&tmp);
+
+    voisins();
+    //couverture();
+    //DB_tirages.AfficherBase(this,PourLaBase);
+    DB_tirages->AfficherBase(AfficherBase,PourLaBase);
+
+
+
+
+
+
+    setCentralWidget(zoneCentrale);
+    connect( PourLaBase, SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( cellSelected( QModelIndex) ) );
+
+
+
+}
+
+void MainWindow::mabase(void)
+{
     zoneCentrale = new QMdiArea;
     zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     zoneCentrale->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -38,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     //QTableWidget *AfficherBase = new QTableWidget;
 
     //#if 0
-    QWidget *AfficherBase = new QWidget;
+    AfficherBase = new QWidget;
     PourLaBase = new QTableView;
     QFormLayout *layout = new QFormLayout;
     layout->addWidget(PourLaBase);
@@ -50,7 +82,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     //#endif
     QMdiSubWindow *sousFenetre1 = zoneCentrale->addSubWindow(AfficherBase);
 
+}
 
+void MainWindow::voisins(void)
+{
+    int  i;
     modele = new QStandardItemModel(50,2);
     modele->setHeaderData(0,Qt::Horizontal,"Boules");
     modele->setHeaderData(1,Qt::Horizontal,"Voisin");
@@ -86,29 +122,51 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     qwVoisin->setWindowTitle("Voisins de selection");
     QMdiSubWindow *sousFenetre2 = zoneCentrale->addSubWindow(qwVoisin);
 
-    setCentralWidget(zoneCentrale);
-    connect( PourLaBase, SIGNAL( doubleClicked(QModelIndex)) ,
-             this, SLOT( cellSelected( QModelIndex) ) );
-
-    DB_tirages->CreerBaseEnMemoire(false);
-    //tmp.getConfig(&ref);
-    DB_tirages->CreerTableTirages(&tmp);
-    ficSource = tmp.SelectSource(load);
-    DB_tirages->LireLesTirages(ficSource,&tmp);
-
-    // Lecture de l'ancienne base des tirages
-    ficSource="euromillions.csv";
-    DB_tirages->LireLesTirages(ficSource,&tmp);
-
-    // Recherche de couverture
-    //DB_tirages.RechercheCouverture(&tmp);
-
-
-    //DB_tirages.AfficherBase(this,PourLaBase);
-    DB_tirages->AfficherBase(AfficherBase,PourLaBase);
-
 }
 
+void MainWindow::couverture(void)
+{
+    int  i;
+    modele2 = new QStandardItemModel(50,5);
+    modele2->setHeaderData(0,Qt::Horizontal,"Boules");
+    modele2->setHeaderData(1,Qt::Horizontal,"E en cours");
+    modele2->setHeaderData(2,Qt::Horizontal,"E precedent");
+    modele2->setHeaderData(3,Qt::Horizontal,"E Moy");
+    modele2->setHeaderData(4,Qt::Horizontal,"E Max");
+
+    for(i=1;i<=50;i++)
+    {
+        QStandardItem *item = new QStandardItem( QString::number(i));
+        item->setData(i,Qt::DisplayRole);
+        modele2->setItem(i-1,0,item);
+    }
+
+    QWidget *qwCouverture = new QWidget;
+    tblCouverture = new QTableView;
+    tblCouverture->setModel(modele2);
+
+    tblCouverture->setSortingEnabled(true);
+    tblCouverture->sortByColumn(0,Qt::AscendingOrder);
+
+    tblCouverture->setAlternatingRowColors(true);
+    tblCouverture->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    QFormLayout *layCouverture = new QFormLayout;
+    tblCouverture->setColumnWidth(0,60);
+    tblCouverture->setColumnWidth(1,60);
+    tblCouverture->setMaximumWidth(500);
+    tblCouverture->setMinimumHeight(367);
+    qwCouverture->setMinimumHeight(367);
+
+    layCouverture->addWidget(tblCouverture);
+    qwCouverture->setLayout(layCouverture);
+    qwCouverture->setWindowTitle("Couverture boules");
+    QMdiSubWindow *sousFenetre3 = zoneCentrale->addSubWindow(qwCouverture);
+
+    for(i=1;i<=50;i++){
+        DB_tirages->RechercheCouverture(i,modele2);
+    }
+}
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -153,6 +211,6 @@ void MainWindow::cellSelected(const QModelIndex & index)
 #endif
     val = index.data().toInt();
     tblVoisin->sortByColumn(0,Qt::AscendingOrder);
-    //DB_tirages->RechercheVoisin(val,nbSortie,modele);
-    DB_tirages->RechercheCouverture(val,modele);
+    DB_tirages->RechercheVoisin(val,nbSortie,modele);
+
 }

@@ -19,12 +19,15 @@ SOURCES += main.cpp\
     OuvrirBase.cpp \
     CreerTables.cpp \
     RemplirBase.cpp \
-    gererbase.cpp
+    gererbase.cpp \
+    selectionboules.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
     tirages.h \
-    gererbase.h
+    gererbase.h \
+    selectionboules.h
 
 FORMS    += mainwindow.ui \
-    choixjeux.ui
+    choixjeux.ui \
+    selectionboules.ui

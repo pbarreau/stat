@@ -25,7 +25,7 @@ query.exec(msg1);
 // detail analyse couverture
 //msg1 = "create table b_couvdetail (id integer primary key, couvid int, boule int, ecart int, position int, total int)
 
-msg1 = pRef->LabelColonnePourBase(&ref);
+msg1 = pRef->s_LibColBase(&ref);
 
 
 if(msg1.length() != 0){
