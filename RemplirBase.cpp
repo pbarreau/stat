@@ -138,144 +138,16 @@ QString NormaliseJour(QString input)
     return ladate;
 }
 
-#if 0
-void GererBase::RechercheCouverture(tirages *pRef)
-{
-    stTiragesDef ref;
-    pRef->getConfig(&ref);
-    int zone = 0;
-    int boule = 0;
-    int depart = 2;
-    int first = 0;
-    int memo[3][ref.limites[zone].max];
-    //0 compteur
-    for(boule=0;boule<ref.limites[zone].max;boule++)
-    {
-        memo[0][boule]=0;
-        memo[1][boule]=0;
-        memo[2][boule]=0;
-    }
-
-    QSqlQuery query(db);
-    QString msg = "select * from tirages";
-    query.exec(msg);
-
-    int val ;
-
-    query.last();
-    do
-    {
-        QSqlRecord rec  = query.record();
-        for(boule=depart;boule<(depart+ref.nbElmZone[zone]);boule++)
-        {
-            val = rec.value(boule).toInt();
-            pRef->value.valBoules[zone][boule-depart]=val;
-
-            if(!memo[0][val-1]){
-                // une boule trouvee
-                memo[0][val-1]++;
-                memo[1][first]=val;
-                first++;
-            }
-            if(start >= ref.limites[zone].max)
-            {
-                // une couverture trouvee
-                start = 0;
-                for(boule=0;boule<ref.limites[zone].max;boule++)
-                {
-                    memo[1][boule]=0;
-                }
-
-            }
-        }
-
-
-    }while(query.previous());
-
-}
-
-
-void GererBase::RechercheCouverture(tirages *pRef)
-{
-    stTiragesDef ref;
-    pRef->getConfig(&ref);
-    int zone = 0;
-    int depart = 2;
-    int max_boule = ref.limites[zone].max;
-    int nb_boule =ref.nbElmZone[zone];
-    int boule;
-    int memo_boule= 0;
-    int max = 0;
-    int i;
-    int val;
-    int calcul;
-
-    QSqlQuery query(db);
-    QString msg = "select * from tirages";
-    query.exec(msg);
-
-    int nbSortie[5][50];
-
-    // mise a zero des compteurs
-    for(i=0;i<5;i++)
-    {
-        for(boule=0;boule<50;boule++)
-        {
-            nbSortie[i][boule]=0;
-        }
-    }
-
-    // Recuperer dernier tirage
-    query.first();
-    QSqlRecord rec  = query.record();
-    for(i=depart;i< nb_boule;i++)
-    {
-        val = rec.value(i).toInt();
-        pRef->value.valBoules[zone][i-depart]=val;
-
-        // Recherche du maximum pour cette boule
-        msg = "create view r_boul as select * from tirages where (b1=" +
-                QString::number(val) + " or b2=" + QString::number(val)
-                + " or b3=" + QString::number(val) + " or b4=" + QString::number(val) + " or b5=" + QString::number(val) + ")";
-        calcul = query.exec(msg);
-        msg = "select count (*) from r_boul";
-        calcul = query.exec(msg);
-        query.first();
-        QSqlRecord rec  = query.record();
-        calcul = rec.value(0).toInt();
-
-        for(boule = 1; boule<=max_boule;boule++)
-        {
-            msg = "select count (*) from r_boul where (b1=" + QString::number(boule) + " or b2=" + QString::number(boule)
-                    + " or b3=" + QString::number(boule) + " or b4=" + QString::number(boule) + " or b5=" + QString::number(boule) + ")";
-            calcul = query.exec(msg);
-            query.first();
-            QSqlRecord rec  = query.record();
-            calcul = rec.value(0).toInt();
-
-            nbSortie[i-depart][boule-1] = calcul;
-
-            if(calcul > max)
-            {
-                memo_boule = boule;
-                max = calcul;
-            }
-        }
-
-        // Recherche terminee finir avec cette vue
-        msg = "drop view r_boul";
-        query.exec(msg);
-    }
-    // resultat
-}
-
-#endif
 
 void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)
 {
+#if 0
     db.open();
     QSqlQuery query(db);
     QSqlQuery selection(db);
+#endif
+    QSqlQuery query;
+    QSqlQuery selection;
     QString msg, msg1;
     double EcartMoyen = 0.0;
     int SommeTotal;
@@ -284,8 +156,9 @@ void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)
     int nbTotCouv = 0, EcartMax=0, EcartCourant = 0, EcartPrecedent=0;
 
     // Effacer donnees de la table de couverture
-    msg =  "drop  table tmp_couv ";
-    query.exec(msg);
+    //msg =  "drop  table tmp_couv ";
+    //query.exec(msg);
+
     msg =  "create table tmp_couv (id INTEGER PRIMARY KEY, depart int, fin int, taille int)";
     query.exec(msg);
 
@@ -298,28 +171,31 @@ void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)
     msg = "insert into tmp_couv (id, depart, fin, taille) values (:id, :depart, :fin, :taille)";
     query.prepare(msg);
 
-    msg1 = "select id from tirages where (b1=" +
-            QString::number(boule) + " or b2=" + QString::number(boule)
-            + " or b3=" + QString::number(boule) + " or b4=" + QString::number(boule) + " or b5=" + QString::number(boule) + ")";
+    msg1 = "select id from tirages where (b1=" + QString::number(boule) +
+            " or b2=" + QString::number(boule) +
+            " or b3=" + QString::number(boule) +
+            " or b4=" + QString::number(boule) +
+            " or b5=" + QString::number(boule) + ")";
     calcul = selection.exec(msg1);
 
 
     //ligne actuelle
     lgndeb = SommeTotal;
-    SommeTotal = 0; //calcul des intervals
+    SommeTotal = 0; //calcul des intervales
     selection.last();
     do
     {
         QSqlRecord rec  = selection.record();
         calcul = rec.value(0).toInt();
-
         lgnfin = selection.value(0).toInt();
+
         query.bindValue(":depart", lgndeb);
         query.bindValue(":fin", lgnfin);
-        query.bindValue(":taille", lgndeb-lgnfin+1);
-        SommeTotal += (lgndeb-lgnfin+1);
+        query.bindValue(":taille", lgndeb-lgnfin);
         // Mettre dans la base
         query.exec();
+
+        SommeTotal += (lgndeb-lgnfin);
         lgndeb = lgnfin-1;
 
     }while(selection.previous());
@@ -378,6 +254,9 @@ void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)
     // Recherche terminee finir avec cette vue
     //msg = "drop view r_couv";
     //query.exec(msg);
+    // Effacer donnees de la table de couverture
+    msg =  "drop  table tmp_couv ";
+    query.exec(msg);
 
 }
 
@@ -403,6 +282,7 @@ void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *mod
     // Recherche des voisins de la boule
     for(voisin=1;voisin<=50;voisin++)
     {
+        // Boule sortant avec
         msg = "select count (*) from r_boul where (b1=" + QString::number(voisin) + " or b2=" + QString::number(voisin)
                 + " or b3=" + QString::number(voisin) + " or b4=" + QString::number(voisin) + " or b5=" + QString::number(voisin) + ")";
         calcul = query.exec(msg);
