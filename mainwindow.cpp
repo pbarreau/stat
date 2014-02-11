@@ -91,10 +91,12 @@ void MainWindow::mabase(void)
 void MainWindow::voisins(void)
 {
     int  i;
-    modele = new QStandardItemModel(50,3);
+    modele = new QStandardItemModel(50,5);
     modele->setHeaderData(0,Qt::Horizontal,"Boules");
-    modele->setHeaderData(1,Qt::Horizontal,"Voisin");
+    modele->setHeaderData(1,Qt::Horizontal,"V:n-0");
     modele->setHeaderData(2,Qt::Horizontal,"Ecart");
+    modele->setHeaderData(3,Qt::Horizontal,"V:n-1");
+    modele->setHeaderData(4,Qt::Horizontal,"V:n-2");
 
     // Ecriture du numero de boule
     for(i=1;i<=50;i++)
@@ -119,7 +121,9 @@ void MainWindow::voisins(void)
     tblVoisin->setColumnWidth(0,60);
     tblVoisin->setColumnWidth(1,60);
     tblVoisin->setColumnWidth(2,60);
-    tblVoisin->setMaximumWidth(260);
+    tblVoisin->setColumnWidth(3,60);
+    tblVoisin->setColumnWidth(4,60);
+    //tblVoisin->setMaximumWidth(260);
     tblVoisin->setMinimumHeight(367);
     qwVoisin->setMinimumHeight(367);
     nbSortie->setText("Nb total de sorties:");

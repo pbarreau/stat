@@ -427,6 +427,39 @@ void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *mod
         item2->setData(calcul,Qt::DisplayRole);
         modele->setItem(voisin-1,2,item2);
 
+        // recherche des voisins a n-1
+        msg = "create view rn1 as select * from tirages inner join r_boul on tirages.id = r_boul.id + 1";
+        calcul = query.exec(msg);
+        msg = "select count (*) from rn1 where (b1=" + QString::number(voisin) + " or b2=" + QString::number(voisin)
+                + " or b3=" + QString::number(voisin) + " or b4=" + QString::number(voisin) + " or b5=" + QString::number(voisin) + ")";
+        calcul = query.exec(msg);
+        query.first();
+        //QSqlRecord rec  = query.record();
+        calcul = query.value(0).toInt();
+
+        QStandardItem *item3 = new QStandardItem( QString::number(222));
+        item3->setData(calcul,Qt::DisplayRole);
+        modele->setItem(voisin-1,3,item3);
+        msg = "drop view rn1";
+        query.exec(msg);
+
+
+        // recherche des voisins a n-2
+        msg = "create view rn1 as select * from tirages inner join r_boul on tirages.id = r_boul.id + 2";
+        calcul = query.exec(msg);
+        msg = "select count (*) from rn1 where (b1=" + QString::number(voisin) + " or b2=" + QString::number(voisin)
+                + " or b3=" + QString::number(voisin) + " or b4=" + QString::number(voisin) + " or b5=" + QString::number(voisin) + ")";
+        calcul = query.exec(msg);
+        query.first();
+        //QSqlRecord rec  = query.record();
+        calcul = query.value(0).toInt();
+
+        QStandardItem *item4 = new QStandardItem( QString::number(222));
+        item4->setData(calcul,Qt::DisplayRole);
+        modele->setItem(voisin-1,4,item4);
+        msg = "drop view rn1";
+        query.exec(msg);
+
     }
 
     // Recherche terminee finir avec cette vue
