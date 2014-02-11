@@ -148,7 +148,7 @@ QString tirages::SelectSource(bool load)
     {
     case NE_FDJ::fdj_euro:
         msg = "Fichier pour Euro million";
-        fileName_2 = "euromillions_2.csv";
+        fileName_2 = "euromillions_3.csv";
         break;
     case NE_FDJ::fdj_loto:
         msg="Fichier pour Loto";

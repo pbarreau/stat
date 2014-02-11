@@ -38,7 +38,10 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
 
     ficSource = tmp.SelectSource(load);
     DB_tirages->LireLesTirages(ficSource,&tmp);
-    // Lecture de l'ancienne base des tirages
+
+    // Lecture des anciennes base des tirages
+    ficSource = "euromillions_2.csv";
+    DB_tirages->LireLesTirages(ficSource,&tmp);
     ficSource="euromillions.csv";
     DB_tirages->LireLesTirages(ficSource,&tmp);
 
@@ -79,6 +82,7 @@ void MainWindow::mabase(void)
     PourLaBase->setSelectionMode(QAbstractItemView::SingleSelection);
     PourLaBase->setStyleSheet("QTableView {selection-background-color: red;}");
     PourLaBase->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    PourLaBase->setAlternatingRowColors(true);
     //#endif
     QMdiSubWindow *sousFenetre1 = zoneCentrale->addSubWindow(AfficherBase);
 
@@ -87,10 +91,12 @@ void MainWindow::mabase(void)
 void MainWindow::voisins(void)
 {
     int  i;
-    modele = new QStandardItemModel(50,2);
+    modele = new QStandardItemModel(50,3);
     modele->setHeaderData(0,Qt::Horizontal,"Boules");
     modele->setHeaderData(1,Qt::Horizontal,"Voisin");
+    modele->setHeaderData(2,Qt::Horizontal,"Ecart");
 
+    // Ecriture du numero de boule
     for(i=1;i<=50;i++)
     {
         QStandardItem *item = new QStandardItem( QString::number(222));
@@ -112,7 +118,8 @@ void MainWindow::voisins(void)
     QFormLayout *layVoisin = new QFormLayout;
     tblVoisin->setColumnWidth(0,60);
     tblVoisin->setColumnWidth(1,60);
-    tblVoisin->setMaximumWidth(180);
+    tblVoisin->setColumnWidth(2,60);
+    tblVoisin->setMaximumWidth(260);
     tblVoisin->setMinimumHeight(367);
     qwVoisin->setMinimumHeight(367);
     nbSortie->setText("Nb total de sorties:");

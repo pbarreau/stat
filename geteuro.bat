@@ -1,4 +1,3 @@
-del euromillions_2.zip
-del R2*.*
-wget https://media.fdj.fr/generated/game/euromillions/euromillions_2.zip --no-check-certificate
-unzip -o euromillions_2.zip
+del euromillions_3.zip
+wget https://media.fdj.fr/generated/game/euromillions/euromillions_3.zip --no-check-certificate
+unzip -o euromillions_3.zip
