@@ -312,9 +312,10 @@ void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)
     query.previous();
     EcartPrecedent = query.value(0).toInt();
 
-
+    QBrush macouleur(Qt::green);
     QStandardItem *item1 = new QStandardItem;
     item1->setData(EcartCourant,Qt::DisplayRole);
+    item1->setBackground(macouleur);
     modele->setItem(boule-1,1,item1);
 
     QStandardItem *item2 = new QStandardItem( QString::number(222));
