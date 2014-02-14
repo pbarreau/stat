@@ -20,6 +20,8 @@
 #include "tirages.h"
 #include "gererbase.h"
 
+QStandardItemModel *GererBase::modele2_0 ;
+
 MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   QMainWindow(parent),
   ui(new Ui::MainWindow)
@@ -76,10 +78,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   connect( PourLaBase, SIGNAL( doubleClicked(QModelIndex)) ,
            this, SLOT( cellSelected( QModelIndex) ) );
 
+#if 0
   QBrush macouleur(Qt::green);
   QStandardItem *item1 = modele2->item(1);
   item1->setBackground(macouleur);
-
+#endif
 
 }
 
@@ -163,7 +166,8 @@ void MainWindow::couverture(void)
   int  i;
   QWidget *qwCouverture = new QWidget;
   tblCouverture = new QTableView;
-  modele2 = new QStandardItemModel(50,5);
+  GererBase::modele2_0 = new QStandardItemModel(50,5);
+  modele2 = GererBase::modele2_0;
 
   modele2->setHeaderData(0,Qt::Horizontal,"B"); // Boules
   modele2->setHeaderData(1,Qt::Horizontal,"Ec"); // Ecart en cours

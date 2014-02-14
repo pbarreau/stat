@@ -19,8 +19,8 @@ pRef->getConfig(&ref);
 
 
 // Creation des tables pour la couverture, et le nb d'element touve
-//msg1 =  "create table tmp_couv (id INTEGER PRIMARY KEY, depart int, fin int, taille int)";
-//query.exec(msg1);
+msg1 =  "create table couverture (id INTEGER PRIMARY KEY, depart int, fin int, taille int)";
+query.exec(msg1);
 
 // detail analyse couverture
 //msg1 = "create table b_couvdetail (id integer primary key, couvid int, boule int, ecart int, position int, total int)
