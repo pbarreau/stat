@@ -38,13 +38,13 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     zoneCentrale->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
     // Creation sous fenetre pour mettre donnees de base
-    mabase();
+    fen_Tirages();
 
     // Creation sous fenetre des voisins
-    voisins();
+    fen_Voisins();
 
     // Creation sous fenetre des ecarts
-    couverture();
+    fen_Ecarts();
 
     // Preparer la base de données
     DB_tirages->CreerBaseEnMemoire(true);
@@ -64,11 +64,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     //// GARDER L'ORDRE D'APPEL DES FONCTIONS PB VERROU SUR LA BASE
     // Remplir Sous Fen les ecarts
     for(i=1;i<=50;i++){
-        DB_tirages->RechercheCouverture(i,modele2);
+        DB_tirages->RechercheCouverture(i,qsim_Ecarts);
     }
 
     // Remplir la sousfenetre base de données
-    DB_tirages->AfficherBase(AfficherBase,PourLaBase);
+    DB_tirages->AfficherBase(qw_Tirages,qtv_Tirages);
 
 
 
@@ -77,50 +77,50 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     setCentralWidget(zoneCentrale);
 
     // Double click dans sous fenetre base
-    connect( PourLaBase, SIGNAL( doubleClicked(QModelIndex)) ,
-             this, SLOT( cellSelected( QModelIndex) ) );
+    connect( qtv_Tirages, SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( TirageBouleRechercheVoisins( QModelIndex) ) );
 
     // Double cick dans sous fenetre ecart
-    connect( tblCouverture, SIGNAL( doubleClicked(QModelIndex)) ,
-             this, SLOT( ZoomSurVoisin( QModelIndex) ) );
+    connect( qtv_Ecarts, SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( EcartBouleRechercheVosins( QModelIndex) ) );
 
 }
 
-void MainWindow::mabase(void)
+void MainWindow::fen_Tirages(void)
 {
-    AfficherBase = new QWidget;
-    PourLaBase = new QTableView;
+    qw_Tirages = new QWidget;
+    qtv_Tirages = new QTableView;
     QFormLayout *layout = new QFormLayout;
 
-    layout->addWidget(PourLaBase);
-    AfficherBase->setLayout(layout);
-    AfficherBase->setWindowTitle("Base des tirages");
+    layout->addWidget(qtv_Tirages);
+    qw_Tirages->setLayout(layout);
+    qw_Tirages->setWindowTitle("Base des tirages");
 
     // Gestion du QTableView
-    PourLaBase->setSelectionMode(QAbstractItemView::SingleSelection);
-    PourLaBase->setStyleSheet("QTableView {selection-background-color: red;}");
-    PourLaBase->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    PourLaBase->setAlternatingRowColors(true);
+    qtv_Tirages->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_Tirages->setStyleSheet("QTableView {selection-background-color: red;}");
+    qtv_Tirages->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_Tirages->setAlternatingRowColors(true);
 
     // Ratacher cette sous fenetre
-    zoneCentrale->addSubWindow(AfficherBase);
+    zoneCentrale->addSubWindow(qw_Tirages);
     //QMdiSubWindow *sousFenetre1 = zoneCentrale->addSubWindow(AfficherBase);
 
 }
 
-void MainWindow::voisins(void)
+void MainWindow::fen_Voisins(void)
 {
     int  i;
-    QWidget *qwVoisin = new QWidget;
-    tblVoisin = new QTableView;
-    modele = new QStandardItemModel(50,5);
+    QWidget *qw_Voisins = new QWidget;
+    qtv_Voisins = new QTableView;
+    qsim_Voisins = new QStandardItemModel(50,5);
 
     // entete du modele
-    modele->setHeaderData(0,Qt::Horizontal,"B");
-    modele->setHeaderData(1,Qt::Horizontal,"V:r0");
-    modele->setHeaderData(2,Qt::Horizontal,"V:r1+r2");
-    modele->setHeaderData(3,Qt::Horizontal,"V:n-1");
-    modele->setHeaderData(4,Qt::Horizontal,"V:n-2");
+    qsim_Voisins->setHeaderData(0,Qt::Horizontal,"B");
+    qsim_Voisins->setHeaderData(1,Qt::Horizontal,"V:r0");
+    qsim_Voisins->setHeaderData(2,Qt::Horizontal,"V:r1+r2");
+    qsim_Voisins->setHeaderData(3,Qt::Horizontal,"V:tot");
+    qsim_Voisins->setHeaderData(4,Qt::Horizontal,"V:n-2");
 
 
     // Ecriture du numero de boule
@@ -128,82 +128,82 @@ void MainWindow::voisins(void)
     {
         QStandardItem *item = new QStandardItem( QString::number(222));
         item->setData(i,Qt::DisplayRole);
-        modele->setItem(i-1,0,item);
+        qsim_Voisins->setItem(i-1,0,item);
     }
 
-    tblVoisin->setModel(modele);
-    tblVoisin->setColumnWidth(0,60);
-    tblVoisin->setColumnWidth(1,60);
-    tblVoisin->setColumnWidth(2,60);
-    tblVoisin->setColumnWidth(3,60);
-    tblVoisin->setColumnWidth(4,60);
+    qtv_Voisins->setModel(qsim_Voisins);
+    qtv_Voisins->setColumnWidth(0,60);
+    qtv_Voisins->setColumnWidth(1,60);
+    qtv_Voisins->setColumnWidth(2,60);
+    qtv_Voisins->setColumnWidth(3,60);
+    qtv_Voisins->setColumnWidth(4,60);
     //tblVoisin->setMaximumWidth(260);
-    tblVoisin->setMinimumHeight(367);
-    tblVoisin->setSortingEnabled(true);
-    tblVoisin->sortByColumn(0,Qt::AscendingOrder);
-    tblVoisin->setAlternatingRowColors(true);
-    tblVoisin->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tblVoisin->hideColumn(3);
-    tblVoisin->hideColumn(4);
+    qtv_Voisins->setMinimumHeight(367);
+    qtv_Voisins->setSortingEnabled(true);
+    qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
+    qtv_Voisins->setAlternatingRowColors(true);
+    qtv_Voisins->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    //qtv_Voisins->hideColumn(3);
+    qtv_Voisins->hideColumn(4);
 
     nbSortie = new QLabel;
     nbSortie->setText("Nb total de sorties:");
 
     QFormLayout *layVoisin = new QFormLayout;
     layVoisin->addWidget(nbSortie);
-    layVoisin->addWidget(tblVoisin);
+    layVoisin->addWidget(qtv_Voisins);
 
-    qwVoisin->setMinimumHeight(367);
-    qwVoisin->setLayout(layVoisin);
-    qwVoisin->setWindowTitle("Voisins de selection");
+    qw_Voisins->setMinimumHeight(367);
+    qw_Voisins->setLayout(layVoisin);
+    qw_Voisins->setWindowTitle("Voisins de selection");
     //QMdiSubWindow *sousFenetre2 =
-    zoneCentrale->addSubWindow(qwVoisin);
+    zoneCentrale->addSubWindow(qw_Voisins);
 
 }
 
-void MainWindow::couverture(void)
+void MainWindow::fen_Ecarts(void)
 {
     int  i;
-    QWidget *qwCouverture = new QWidget;
-    tblCouverture = new QTableView;
-    modele2 = new QStandardItemModel(50,5);
+    QWidget *qw_Ecarts = new QWidget;
+    qtv_Ecarts = new QTableView;
+    qsim_Ecarts = new QStandardItemModel(50,5);
     //modele2 = GererBase::modele2_0;
 
-    modele2->setHeaderData(0,Qt::Horizontal,"B"); // Boules
-    modele2->setHeaderData(1,Qt::Horizontal,"Ec"); // Ecart en cours
-    modele2->setHeaderData(2,Qt::Horizontal,"Ep"); // ECart precedent
-    modele2->setHeaderData(3,Qt::Horizontal,"Em"); // Ecart Moyen
-    modele2->setHeaderData(4,Qt::Horizontal,"EM"); // Ecart Maxi
+    qsim_Ecarts->setHeaderData(0,Qt::Horizontal,"B"); // Boules
+    qsim_Ecarts->setHeaderData(1,Qt::Horizontal,"Ec"); // Ecart en cours
+    qsim_Ecarts->setHeaderData(2,Qt::Horizontal,"Ep"); // ECart precedent
+    qsim_Ecarts->setHeaderData(3,Qt::Horizontal,"Em"); // Ecart Moyen
+    qsim_Ecarts->setHeaderData(4,Qt::Horizontal,"EM"); // Ecart Maxi
 
     for(i=1;i<=50;i++)
     {
         QStandardItem *item = new QStandardItem( QString::number(i));
         item->setData(i,Qt::DisplayRole);
-        modele2->setItem(i-1,0,item);
+        qsim_Ecarts->setItem(i-1,0,item);
     }
 
-    tblCouverture->setModel(modele2);
-    tblCouverture->setColumnWidth(0,45);
-    tblCouverture->setColumnWidth(1,45);
-    tblCouverture->setColumnWidth(2,45);
-    tblCouverture->setColumnWidth(3,45);
-    tblCouverture->setColumnWidth(4,45);
-    tblCouverture->setSortingEnabled(true);
-    tblCouverture->sortByColumn(0,Qt::AscendingOrder);
-    tblCouverture->setAlternatingRowColors(true);
-    tblCouverture->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_Ecarts->setModel(qsim_Ecarts);
+    qtv_Ecarts->setColumnWidth(0,45);
+    qtv_Ecarts->setColumnWidth(1,45);
+    qtv_Ecarts->setColumnWidth(2,45);
+    qtv_Ecarts->setColumnWidth(3,45);
+    qtv_Ecarts->setColumnWidth(4,45);
+    qtv_Ecarts->setSortingEnabled(true);
+    qtv_Ecarts->sortByColumn(0,Qt::AscendingOrder);
+    qtv_Ecarts->setAlternatingRowColors(true);
+    qtv_Ecarts->setEditTriggers(QAbstractItemView::NoEditTriggers);
     //tblCouverture->setMaximumWidth(500);
-    tblCouverture->setMinimumHeight(367);
+    qtv_Ecarts->setMinimumHeight(367);
 
     QFormLayout *layCouverture = new QFormLayout;
-    layCouverture->addWidget(tblCouverture);
+    layCouverture->addWidget(qtv_Ecarts);
 
 
-    qwCouverture->setMinimumHeight(367);
-    qwCouverture->setLayout(layCouverture);
-    qwCouverture->setWindowTitle("Couverture boules");
+    qw_Ecarts->setMinimumHeight(367);
+    qw_Ecarts->setLayout(layCouverture);
+    qw_Ecarts->setWindowTitle("Couverture boules");
     //QMdiSubWindow *sousFenetre3 =
-    zoneCentrale->addSubWindow(qwCouverture);
+    zoneCentrale->addSubWindow(qw_Ecarts);
 
 }
 MainWindow::~MainWindow()
@@ -239,7 +239,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 #endif
 
-void MainWindow::cellSelected(const QModelIndex & index)
+void MainWindow::TirageBouleRechercheVoisins(const QModelIndex & index)
 {
     int val;
 #if 0
@@ -249,18 +249,18 @@ void MainWindow::cellSelected(const QModelIndex & index)
                              " was double clicked.");
 #endif
     val = index.data().toInt();
-    tblVoisin->sortByColumn(0,Qt::AscendingOrder);
-    DB_tirages->RechercheVoisin(val,nbSortie,modele);
+    qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
+    DB_tirages->RechercheVoisin(val,nbSortie,qsim_Voisins);
 
 }
 
-void MainWindow::ZoomSurVoisin(const QModelIndex & index)
+void MainWindow::EcartBouleRechercheVosins(const QModelIndex & index)
 {
     int val = 0;
 
     if(index.column()==0){
         val = index.data().toInt();
-        tblVoisin->sortByColumn(0,Qt::AscendingOrder);
-        DB_tirages->RechercheVoisin(val,nbSortie,modele);
+        qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
+        DB_tirages->RechercheVoisin(val,nbSortie,qsim_Voisins);
     }
 }

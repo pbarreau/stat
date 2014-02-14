@@ -343,6 +343,7 @@ void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *mod
     QString msg;
     int calcul = 0, voisin = 0;
     int rp1 = 0, rp2 = 0, rn1 = 0, rn2 = 0;
+    int resu = 0;
 
     // Recherche du maximum pour cette boule
     msg = "create view r_boul as select * from tirages where (b1=" +
@@ -366,10 +367,10 @@ void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *mod
         calcul = query.exec(msg);
         query.first();
         //QSqlRecord rec  = query.record();
-        calcul = query.value(0).toInt();
+        resu = query.value(0).toInt();
 
         QStandardItem *item = new QStandardItem( QString::number(222));
-        item->setData(calcul,Qt::DisplayRole);
+        item->setData(resu,Qt::DisplayRole);
         modele->setItem(voisin-1,1,item);
 
         rn1 = TotalRechercheVoisinADistanceDe(1,voisin);
@@ -382,56 +383,10 @@ void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *mod
         item2->setData(calcul,Qt::DisplayRole);
         modele->setItem(voisin-1,2,item2);
 
-#if 0
-        // Recherche de l'ecart de cette boule
-        msg = "select * from tirages where (b1=" + QString::number(voisin) +
-                " or b2=" + QString::number(voisin)+
-                " or b3=" + QString::number(voisin) +
-                " or b4=" + QString::number(voisin) +
-                " or b5=" + QString::number(voisin) + ") LIMIT 1";
-        calcul = query.exec(msg);
-        query.first();
-        calcul = query.value(0).toInt() -1 ;
-        QStandardItem *item2 = new QStandardItem( QString::number(222));
-        item2->setData(calcul,Qt::DisplayRole);
-        modele->setItem(voisin-1,2,item2);
-#endif
-#if 0
-        // Recherche boule sortant autour
-        // Rayon = 2
-        // recherche des voisins a n-1
-        msg = "create view rn1 as select * from tirages inner join r_boul on tirages.id = r_boul.id + 1";
-        calcul = query.exec(msg);
-        msg = "select count (*) from rn1 where (b1=" + QString::number(voisin) + " or b2=" + QString::number(voisin)
-                + " or b3=" + QString::number(voisin) + " or b4=" + QString::number(voisin) + " or b5=" + QString::number(voisin) + ")";
-        calcul = query.exec(msg);
-        query.first();
-        rn1 = query.value(0).toInt();
-        msg = "drop view rn1";
-        query.exec(msg);
-
-
+        calcul =calcul + resu;
         QStandardItem *item3 = new QStandardItem( QString::number(222));
-        item3->setData(rn1,Qt::DisplayRole);
+        item3->setData(calcul,Qt::DisplayRole);
         modele->setItem(voisin-1,3,item3);
-
-
-        // recherche des voisins a n-2
-        msg = "create view rn1 as select * from tirages inner join r_boul on tirages.id = r_boul.id + 2";
-        calcul = query.exec(msg);
-        msg = "select count (*) from rn1 where (b1=" + QString::number(voisin) + " or b2=" + QString::number(voisin)
-                + " or b3=" + QString::number(voisin) + " or b4=" + QString::number(voisin) + " or b5=" + QString::number(voisin) + ")";
-        calcul = query.exec(msg);
-        query.first();
-        //QSqlRecord rec  = query.record();
-        calcul = query.value(0).toInt();
-
-        QStandardItem *item4 = new QStandardItem( QString::number(222));
-        item4->setData(calcul,Qt::DisplayRole);
-        modele->setItem(voisin-1,4,item4);
-        msg = "drop view rn1";
-        query.exec(msg);
-#endif
     }
 
     // Recherche terminee finir avec cette vue
@@ -542,7 +497,6 @@ void GererBase::CouvertureBase(QStandardItemModel *dest)
                     else
                     {
                         lgndeb = lgnfin-1;
-                        //depart_couverture = true;
                     }
                     sauve.bindValue(":depart", lgndeb);
                 }

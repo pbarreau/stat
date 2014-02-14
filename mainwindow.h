@@ -28,25 +28,25 @@ public:
 
 public slots:
   void ouvrir_mainwindows(void);
-  void cellSelected(const QModelIndex &index);
-  void ZoomSurVoisin(const QModelIndex & index);
+  void TirageBouleRechercheVoisins(const QModelIndex &index);
+  void EcartBouleRechercheVosins(const QModelIndex & index);
 
 private:
-  void voisins(void);
-  void mabase(void);
-  void couverture(void);
+  void fen_Voisins(void);
+  void fen_Tirages(void);
+  void fen_Ecarts(void);
 
 private:
   Ui::MainWindow *ui;
   QMdiArea *zoneCentrale;
-  QTableView *PourLaBase;
+  QTableView *qtv_Tirages;
   QLabel *nbSortie;
   GererBase *DB_tirages;
-  QStandardItemModel *modele ;
-  QTableView *tblVoisin;
-  QWidget *AfficherBase;
-  QStandardItemModel *modele2 ;
-  QTableView *tblCouverture;
+  QStandardItemModel *qsim_Voisins ;
+  QTableView *qtv_Voisins;
+  QWidget *qw_Tirages;
+  QStandardItemModel *qsim_Ecarts ;
+  QTableView *qtv_Ecarts;
 
   bool closewindows;
 };
