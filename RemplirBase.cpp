@@ -207,7 +207,7 @@ void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)
     int nbTotCouv = 0, EcartMax=0, EcartCourant = 0, EcartPrecedent=0;
     int a_loop = 0;
 
-    CouvertureBase();
+    CouvertureBase(modele);
     // recuperation du nombre de tirage total
     msg= "select count (*) from tirages";
     status = query.exec(msg);
@@ -466,7 +466,7 @@ int GererBase::TotalRechercheVoisinADistanceDe(int dist, int voisin)
     return calcul;
 }
 
-void GererBase::CouvertureBase(void)
+void GererBase::CouvertureBase(QStandardItemModel *dest)
 {
     QSqlQuery query;
     QSqlQuery sauve;
@@ -549,13 +549,13 @@ void GererBase::CouvertureBase(void)
             }
         }while(query.previous());
         // On a parcouru toute la base
-        // indiquer les absent
+        // indiquer les absents
         for(i = 0; i< 50 ;i++)
         {
             if (!memo_boule[i])
             {
                 QBrush macouleur(Qt::green);
-                QStandardItem *item1 = modele2_0->item(i);
+                QStandardItem *item1 = dest->item(i);
                 item1->setBackground(macouleur);
             }
         }

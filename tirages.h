@@ -70,7 +70,7 @@ class GererBase : public QObject
 public:
      GererBase(QObject *parent = 0);
     ~GererBase();
-     static QStandardItemModel *modele2_0 ;
+     //static QStandardItemModel *modele2_0 ;
 
 public:
     bool CreerBaseEnMemoire(bool action);
@@ -82,7 +82,7 @@ public:
     void RechercheCouverture(int boule, QStandardItemModel *modele);
     void RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *fen);
     int TotalRechercheVoisinADistanceDe(int dist, int voisin);
-    void CouvertureBase(void);
+    void CouvertureBase(QStandardItemModel *dest);
 
 private:
     QSqlDatabase db;
