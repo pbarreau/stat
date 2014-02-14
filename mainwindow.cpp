@@ -75,14 +75,14 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
 
 
     setCentralWidget(zoneCentrale);
+
+    // Double click dans sous fenetre base
     connect( PourLaBase, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( cellSelected( QModelIndex) ) );
 
-#if 0
-    QBrush macouleur(Qt::green);
-    QStandardItem *item1 = modele2->item(1);
-    item1->setBackground(macouleur);
-#endif
+    // Double cick dans sous fenetre ecart
+    connect( tblCouverture, SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( ZoomSurVoisin( QModelIndex) ) );
 
 }
 
@@ -252,4 +252,15 @@ void MainWindow::cellSelected(const QModelIndex & index)
     tblVoisin->sortByColumn(0,Qt::AscendingOrder);
     DB_tirages->RechercheVoisin(val,nbSortie,modele);
 
+}
+
+void MainWindow::ZoomSurVoisin(const QModelIndex & index)
+{
+    int val = 0;
+
+    if(index.column()==0){
+        val = index.data().toInt();
+        tblVoisin->sortByColumn(0,Qt::AscendingOrder);
+        DB_tirages->RechercheVoisin(val,nbSortie,modele);
+    }
 }

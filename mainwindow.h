@@ -29,6 +29,7 @@ public:
 public slots:
   void ouvrir_mainwindows(void);
   void cellSelected(const QModelIndex &index);
+  void ZoomSurVoisin(const QModelIndex & index);
 
 private:
   void voisins(void);
