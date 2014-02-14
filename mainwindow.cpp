@@ -48,6 +48,8 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     DB_tirages->CreerBaseEnMemoire(true);
     DB_tirages->CreerTableTirages(&tmp);
 
+
+
     // Recuperation des données
     ficSource = tmp.SelectSource(load);
     DB_tirages->LireLesTirages(ficSource,&tmp);
@@ -57,14 +59,15 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     ficSource="euromillions.csv";
     DB_tirages->LireLesTirages(ficSource,&tmp);
 
-    // Remplir la sousfenetre base de données
-    DB_tirages->AfficherBase(AfficherBase,PourLaBase);
-
-
-    // Remplir les ecarts
+    //// GARDER L'ORDRE D'APPEL DES FONCTIONS PB VERROU SUR LA BASE
+    // Remplir Sous Fen les ecarts
     for(i=1;i<=50;i++){
         DB_tirages->RechercheCouverture(i,modele2);
     }
+
+    // Remplir la sousfenetre base de données
+    DB_tirages->AfficherBase(AfficherBase,PourLaBase);
+
 
 
 

@@ -82,7 +82,7 @@ void GererBase::AfficherBase(QWidget *parent, QTableView *cibleview)
 
   tbl_model = new QSqlTableModel(parent, db);
   tbl_model->setTable("tirages");
-  tbl_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+  //tbl_model->setEditStrategy(QSqlTableModel::OnFieldChange);
   tbl_model->select();
 
   tbl_model->removeColumn(0); // don't show the ID
