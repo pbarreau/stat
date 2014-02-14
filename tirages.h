@@ -80,6 +80,7 @@ public:
     void AfficherBase(QWidget *parent, QTableView *cibleview);
     void RechercheCouverture(int boule, QStandardItemModel *modele);
     void RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *fen);
+    int TotalRechercheVoisinADistanceDe(int dist, int voisin);
 
 private:
     QSqlDatabase db;

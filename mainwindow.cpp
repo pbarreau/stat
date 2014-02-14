@@ -109,11 +109,12 @@ void MainWindow::voisins(void)
     modele = new QStandardItemModel(50,5);
 
     // entete du modele
-    modele->setHeaderData(0,Qt::Horizontal,"Boules");
-    modele->setHeaderData(1,Qt::Horizontal,"V:n-0");
-    modele->setHeaderData(2,Qt::Horizontal,"Ecart");
+    modele->setHeaderData(0,Qt::Horizontal,"B");
+    modele->setHeaderData(1,Qt::Horizontal,"V:r0");
+    modele->setHeaderData(2,Qt::Horizontal,"V:r1+r2");
     modele->setHeaderData(3,Qt::Horizontal,"V:n-1");
     modele->setHeaderData(4,Qt::Horizontal,"V:n-2");
+
 
     // Ecriture du numero de boule
     for(i=1;i<=50;i++)
@@ -135,6 +136,8 @@ void MainWindow::voisins(void)
     tblVoisin->sortByColumn(0,Qt::AscendingOrder);
     tblVoisin->setAlternatingRowColors(true);
     tblVoisin->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tblVoisin->hideColumn(3);
+    tblVoisin->hideColumn(4);
 
     nbSortie = new QLabel;
     nbSortie->setText("Nb total de sorties:");
@@ -194,11 +197,6 @@ void MainWindow::couverture(void)
     //QMdiSubWindow *sousFenetre3 =
     zoneCentrale->addSubWindow(qwCouverture);
 
-#if 0
-    for(i=1;i<=50;i++){
-        DB_tirages->RechercheCouverture(i,modele2);
-    }
-#endif
 }
 MainWindow::~MainWindow()
 {

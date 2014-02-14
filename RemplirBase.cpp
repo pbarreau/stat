@@ -330,16 +330,6 @@ void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)
     item4->setData(EcartMax,Qt::DisplayRole);
     modele->setItem(boule-1,4,item4);
 
-#if 0
-    // Effacer donnees de la table de couverture
-    msg =  "drop  view if exists tmp_couv ";
-    status = query.exec(msg);
-    if(!status){
-        msg = query.lastError().text();
-        qDebug() << query.lastQuery();
-    }
-#endif
-
 
 }
 
@@ -348,7 +338,8 @@ void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *mod
 {
     QSqlQuery query(db);
     QString msg;
-    int calcul, voisin;
+    int calcul = 0, voisin = 0;
+    int rp1 = 0, rp2 = 0, rn1 = 0, rn2 = 0;
 
     // Recherche du maximum pour cette boule
     msg = "create view r_boul as select * from tirages where (b1=" +
@@ -378,6 +369,17 @@ void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *mod
         item->setData(calcul,Qt::DisplayRole);
         modele->setItem(voisin-1,1,item);
 
+        rn1 = TotalRechercheVoisinADistanceDe(1,voisin);
+        rp1 = TotalRechercheVoisinADistanceDe(-1,voisin);
+        rn2 = TotalRechercheVoisinADistanceDe(2,voisin);
+        rp2 = TotalRechercheVoisinADistanceDe(-2,voisin);
+
+        calcul = rp1 + rp2 + rn1 + rn2;
+        QStandardItem *item2 = new QStandardItem( QString::number(222));
+        item2->setData(calcul,Qt::DisplayRole);
+        modele->setItem(voisin-1,2,item2);
+
+#if 0
         // Recherche de l'ecart de cette boule
         msg = "select * from tirages where (b1=" + QString::number(voisin) +
                 " or b2=" + QString::number(voisin)+
@@ -390,7 +392,10 @@ void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *mod
         QStandardItem *item2 = new QStandardItem( QString::number(222));
         item2->setData(calcul,Qt::DisplayRole);
         modele->setItem(voisin-1,2,item2);
-
+#endif
+#if 0
+        // Recherche boule sortant autour
+        // Rayon = 2
         // recherche des voisins a n-1
         msg = "create view rn1 as select * from tirages inner join r_boul on tirages.id = r_boul.id + 1";
         calcul = query.exec(msg);
@@ -398,14 +403,14 @@ void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *mod
                 + " or b3=" + QString::number(voisin) + " or b4=" + QString::number(voisin) + " or b5=" + QString::number(voisin) + ")";
         calcul = query.exec(msg);
         query.first();
-        //QSqlRecord rec  = query.record();
-        calcul = query.value(0).toInt();
-
-        QStandardItem *item3 = new QStandardItem( QString::number(222));
-        item3->setData(calcul,Qt::DisplayRole);
-        modele->setItem(voisin-1,3,item3);
+        rn1 = query.value(0).toInt();
         msg = "drop view rn1";
         query.exec(msg);
+
+
+        QStandardItem *item3 = new QStandardItem( QString::number(222));
+        item3->setData(rn1,Qt::DisplayRole);
+        modele->setItem(voisin-1,3,item3);
 
 
         // recherche des voisins a n-2
@@ -423,11 +428,37 @@ void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *mod
         modele->setItem(voisin-1,4,item4);
         msg = "drop view rn1";
         query.exec(msg);
-
+#endif
     }
 
     // Recherche terminee finir avec cette vue
     msg = "drop view r_boul";
     query.exec(msg);
 
+}
+
+int GererBase::TotalRechercheVoisinADistanceDe(int dist, int voisin)
+{
+    QString msg = "";
+    QSqlQuery query(db);
+    int calcul = 0;
+    bool status;
+
+    // Selection des lignes voisines de celle de reference
+    msg = "create view rn1 as select * from tirages inner join r_boul on tirages.id = r_boul.id + %1";
+    msg = (msg).arg(dist);
+    status = query.exec(msg);
+
+    // Comptage des lignes ayant la boule comme voisine
+    msg = "select count (*) from rn1 where (b1=" + QString::number(voisin) + " or b2=" + QString::number(voisin)
+            + " or b3=" + QString::number(voisin) + " or b4=" + QString::number(voisin) + " or b5=" + QString::number(voisin) + ")";
+    status = query.exec(msg);
+    query.first();
+    calcul = query.value(0).toInt();
+
+    // On detruit la vue des resultats de cette boule
+    msg = "drop view rn1";
+    status = query.exec(msg);
+
+    return calcul;
 }
