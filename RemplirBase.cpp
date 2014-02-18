@@ -253,7 +253,7 @@ void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)
 
   // Moyenne
   if(a_loop>0)
-    EcartMoyen = nbTirages/a_loop;
+    EcartMoyen = double(nbTirages)/a_loop;
 
   // recherche l'ecart le plus grand
   msg = "select max(taille) from tmp_couv";
@@ -279,7 +279,7 @@ void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)
   item2->setData(EcartPrecedent,Qt::DisplayRole);
   modele->setItem(boule-1,2,item2);
 
-  QStandardItem *item3 = new QStandardItem( QString::number(EcartMoyen,'g',6));
+  QStandardItem *item3 = new QStandardItem( );//QString::number(EcartMoyen,'g',2)
   item3->setData(EcartMoyen,Qt::DisplayRole);
   modele->setItem(boule-1,3,item3);
 

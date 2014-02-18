@@ -75,7 +75,6 @@ class GererBase : public QObject
 public:
      GererBase(QObject *parent = 0);
     ~GererBase();
-     //static QStandardItemModel *modele2_0 ;
 
 public:
     bool CreerBaseEnMemoire(bool action);
