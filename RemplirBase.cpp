@@ -97,12 +97,12 @@ bool GererBase::LireLesTirages(QString fileName_2, tirages *pRef)
             // Calcul perso a mettre dans la base
             // Automatisation possible ?????
             nbPair = pRef->NbPairs(zone);
-            maclef = " :" + ref.nomZone[zone]+ "_pair";
+            maclef = " :" + ref.nomZone[zone]+ CL_PAIR;
             //val1 = list2.indexOf(maclef);
             query.bindValue(maclef.replace(QRegExp("\\s+"),""),nbPair);
 
             nbE1 = pRef->NbDansE1(zone);
-            maclef = " :" + ref.nomZone[zone]+ "_E1";
+            maclef = " :" + ref.nomZone[zone]+ CL_SGRP ;
             //val1 = list2.indexOf(maclef);
             query.bindValue(maclef.replace(QRegExp("\\s+"),""),nbE1);
 
@@ -138,55 +138,6 @@ QString NormaliseJour(QString input)
     return ladate;
 }
 
-#if 0
-void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)
-{
-    bool status = false;
-
-    QSqlQuery query;
-    QString msg = "";
-
-    CouvertureBase();
-    //QStringList A = db.tables(QSql::Tables);
-    //status = db.isOpen();
-
-    msg = "DROP table IF EXISTS tmp_couv;";
-    status = query.exec(msg);
-    if(!status){
-        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
-    }
-
-    msg = "create table tmp_couv (id INTEGER PRIMARY KEY, depart int, fin int, taille int);";
-    //status = query.prepare(msg);
-    status = query.exec(msg);
-    if(!status){
-        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
-    }
-    //status = query.isActive();
-    //query.finish();
-    //status = query.isActive();
-
-    //A = db.tables(QSql::Tables);
-
-
-    msg = "insert into tmp_couv values (null, 10, 20, 30);";
-    status = query.exec(msg);
-    if(!status){
-        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
-    }
-    status = query.isActive();
-    query.finish();
-    status = query.isActive();
-
-    msg = "DROP table IF EXISTS tmp_couv;";
-    //status = query.prepare(msg);
-    status = query.exec(msg);
-    if(!status){
-        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
-    }
-
-}
-#endif
 
 
 void GererBase::RechercheCouverture(int boule, QStandardItemModel *modele)

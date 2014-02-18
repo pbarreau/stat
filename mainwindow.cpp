@@ -13,6 +13,7 @@
 #include <QStandardItemModel>
 #include <QTableWidget>
 #include <QModelIndex>
+#include <QBrush>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -30,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     int i;
     tirages tmp(leJeu);
     QString ficSource;
-
+    QTableView *qtv_MesChoix = new QTableView;
     ui->setupUi(this);
 
     zoneCentrale = new QMdiArea;
@@ -45,6 +46,9 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
 
     // Creation sous fenetre des ecarts
     fen_Ecarts();
+
+    // Creation fenetre pour memoriser a selection
+    fen_MaSelection(qtv_MesChoix);
 
     // Preparer la base de données
     DB_tirages->CreerBaseEnMemoire(true);
@@ -80,9 +84,14 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     connect( qtv_Tirages, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( TirageBouleRechercheVoisins( QModelIndex) ) );
 
-    // Double cick dans sous fenetre ecart
+    // Double click dans sous fenetre ecart
     connect( qtv_Ecarts, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( EcartBouleRechercheVosins( QModelIndex) ) );
+
+    // Double click dans sous fenetre ecart
+    connect( qtv_MesChoix, SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( UneSelectionActivee( QModelIndex) ) );
+
 
 }
 
@@ -206,6 +215,57 @@ void MainWindow::fen_Ecarts(void)
     zoneCentrale->addSubWindow(qw_Ecarts);
 
 }
+
+void MainWindow::fen_MaSelection(QTableView *qtv_MaSelection)
+{
+    int  i=0,j=0, cell_val=0;
+    QWidget *qw_MaSelection = new QWidget;
+
+    qsim_MaSelection = new QStandardItemModel(5,10);
+#if 0
+    qsim_Ecarts->setHeaderData(0,Qt::Horizontal,"B"); // Boules
+    qsim_Ecarts->setHeaderData(1,Qt::Horizontal,"Ec"); // Ecart en cours
+    qsim_Ecarts->setHeaderData(2,Qt::Horizontal,"Ep"); // ECart precedent
+    qsim_Ecarts->setHeaderData(3,Qt::Horizontal,"Em"); // Ecart Moyen
+    qsim_Ecarts->setHeaderData(4,Qt::Horizontal,"EM"); // Ecart Maxi
+#endif
+
+    for(i=1;i<=5;i++)
+    {
+        for(j=1;j<=10;j++)
+        {
+            cell_val = j+(i-1)*10;
+            if(cell_val<=50){
+                QStandardItem *item = new QStandardItem( QString::number(i));
+                item->setData(cell_val,Qt::DisplayRole);
+                qsim_MaSelection->setItem(i-1,j-1,item);
+            }
+        }
+    }
+
+    qtv_MaSelection->setModel(qsim_MaSelection);
+    qtv_MaSelection->setAlternatingRowColors(true);
+    qtv_MaSelection->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_MaSelection->setMinimumHeight(190);
+    qtv_MaSelection->setMinimumWidth(320);
+    QFormLayout *layCouverture = new QFormLayout;
+    layCouverture->addWidget(qtv_MaSelection);
+
+    for(j=0;j<10;j++)
+    {
+        qtv_MaSelection->setColumnWidth(j,30);
+    }
+    qw_MaSelection->setMinimumHeight(183);
+
+    //qDebug () <<  "H=" + QString::number (qtv_MaSelection->minimumHeight());
+    //qDebug () << "W=" + QString::number(qtv_MaSelection->minimumWidth());
+
+    qw_MaSelection->setLayout(layCouverture);
+    qw_MaSelection->setWindowTitle("Ma Selection");
+    //QMdiSubWindow *sousFenetre3 =
+    zoneCentrale->addSubWindow(qw_MaSelection);
+
+}
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -248,9 +308,11 @@ void MainWindow::TirageBouleRechercheVoisins(const QModelIndex & index)
                              " column "+QString::number(index.column())+
                              " was double clicked.");
 #endif
-    val = index.data().toInt();
-    qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
-    DB_tirages->RechercheVoisin(val,nbSortie,qsim_Voisins);
+    if(index.column()>0 && index.column()<6){
+        val = index.data().toInt();
+        qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
+        DB_tirages->RechercheVoisin(val,nbSortie,qsim_Voisins);
+    }
 
 }
 
@@ -263,4 +325,30 @@ void MainWindow::EcartBouleRechercheVosins(const QModelIndex & index)
         qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
         DB_tirages->RechercheVoisin(val,nbSortie,qsim_Voisins);
     }
+}
+
+void MainWindow::UneSelectionActivee(const QModelIndex & index)
+{
+
+    QStandardItem *item1 = qsim_MaSelection->itemFromIndex(index);
+    qDebug()<< item1->background();
+
+    if(item1->background() == Qt::red){
+        if(index.row()%2==0){
+            QBrush macouleur(Qt::white);
+            item1->setBackground(macouleur);
+        }
+        else
+        {
+            QBrush macouleur (Qt::gray);
+            item1->setBackground(macouleur);
+        }
+    }
+    else
+    {
+        QBrush macouleur(Qt::red);
+        item1->setBackground(macouleur);
+    }
+
+
 }

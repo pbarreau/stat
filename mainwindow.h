@@ -30,11 +30,13 @@ public slots:
   void ouvrir_mainwindows(void);
   void TirageBouleRechercheVoisins(const QModelIndex &index);
   void EcartBouleRechercheVosins(const QModelIndex & index);
+  void UneSelectionActivee(const QModelIndex & index);
 
 private:
   void fen_Voisins(void);
   void fen_Tirages(void);
   void fen_Ecarts(void);
+  void fen_MaSelection(QTableView *qtv_MaSelection);
 
 private:
   Ui::MainWindow *ui;
@@ -47,6 +49,7 @@ private:
   QWidget *qw_Tirages;
   QStandardItemModel *qsim_Ecarts ;
   QTableView *qtv_Ecarts;
+  QStandardItemModel *qsim_MaSelection ;
 
   bool closewindows;
 };

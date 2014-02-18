@@ -92,7 +92,7 @@ void GererBase::AfficherBase(QWidget *parent, QTableView *cibleview)
   cibleview->setModel(tbl_model);
   //qDebug() << cibleview->columnWidth(3);
 
-  // Taille a montrer pour les boules selon zone
+  // Definir largeur colonne des boules selon zone
     for(i=0; i<def.nb_zone;i++)
     {
       if(i)
@@ -105,10 +105,17 @@ void GererBase::AfficherBase(QWidget *parent, QTableView *cibleview)
         }
     }
 
-    // Si il y a d'autre info les masquer
-    for(i=j;i<=(tbl_model->columnCount());i++)
+    // definir largeur pour colonne parité
+    for(i=j;i<j+def.nb_zone;i++)
     {
-      cibleview->hideColumn(i);
+      cibleview->setColumnWidth(i,30);
+    }
+
+    // Si il y a d'autre info les masquer
+    for(j=i;j<=(tbl_model->columnCount());j++)
+    {
+      //cibleview->hideColumn(j);
+        cibleview->setColumnWidth(j,30);
     }
 
   cibleview->setMinimumHeight(390);
