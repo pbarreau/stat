@@ -125,10 +125,16 @@ QString tirages::s_LibColBase(stTiragesDef *ref)
         }
     }
 
-    // Creation des colonnes pour criteres
+    // Colonnes pour parité
     for(zone=0;zone<nbZn;zone++)
     {
-        msg1 = msg1 + tab[zone] +"_pair," + tab[zone] +"_E1,";
+        msg1 = msg1 + tab[zone] + CL_PAIR + ",";
+    }
+
+    // Colonnes pour appartenance sous groupe
+    for(zone=0;zone<nbZn;zone++)
+    {
+        msg1 = msg1 + tab[zone] + CL_SGRP +",";
     }
 
     if(msg1.length() != 0){
@@ -195,23 +201,6 @@ int tirages::NbDansE1(int zone)
 
 }
 
-#if 0
-int toto()
-{
-    // calcul de l'ecart d'une boule
-    boule_connue = 0;
-    ecart_boule = 0;
-    nb_ecart = 0;
-
-
-    // boule connue
-    // non alors commencer a compter les ecarts
-    // Memoriser le nb d'ecart pour cette boule
-
-    // on trouve de nouveau la boule donc ecart correspond au tirage avant de voir la boule
-    // un ecart de plus
-}
-#endif
 
 // C : http://www.dcode.fr/generer-calculer-combinaisons
 double factorielle(double *x)

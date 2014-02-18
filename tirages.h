@@ -10,6 +10,11 @@
 #include <QLabel>
 #include <QStandardItemModel>
 
+#define C_EUR_NB_ZN 2   /// Constante jeu euro nb de zone 2
+#define C_LTO_NB_ZN 2
+#define CL_PAIR "p"     /// Constante Label pour parite
+#define CL_SGRP "g"     /// Constante pour sous groupe dans zone
+
 namespace NE_FDJ{
 typedef enum _les_jeux_a_tirages
 {
