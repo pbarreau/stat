@@ -88,10 +88,14 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   connect( qtv_Ecarts, SIGNAL( doubleClicked(QModelIndex)) ,
            this, SLOT( EcartBouleRechercheVosins( QModelIndex) ) );
 
-  // Double click dans sous fenetre ecart
+  // click dans fenetre voisin pour afficher boule
   connect( qtv_MesChoix, SIGNAL( doubleClicked(QModelIndex)) ,
            this, SLOT( UneSelectionActivee( QModelIndex) ) );
 
+
+  // Double click dans sous fenetre ma selection
+  connect( qtv_Voisins, SIGNAL( clicked(QModelIndex)) ,
+           this, SLOT( MontrerBouleDansBase( QModelIndex) ) );
 
 }
 
