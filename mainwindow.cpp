@@ -122,15 +122,15 @@ void MainWindow::fen_Voisins(void)
   int  i;
   QWidget *qw_Voisins = new QWidget;
   qtv_Voisins = new QTableView;
-  qsim_Voisins = new QStandardItemModel(50,5);
+  qsim_Voisins = new QStandardItemModel(50,6);
 
   // entete du modele
   qsim_Voisins->setHeaderData(0,Qt::Horizontal,"B");
   qsim_Voisins->setHeaderData(1,Qt::Horizontal,"V:r0");
-  qsim_Voisins->setHeaderData(2,Qt::Horizontal,"V:r1+r2");
-  qsim_Voisins->setHeaderData(3,Qt::Horizontal,"V:tot");
-  qsim_Voisins->setHeaderData(4,Qt::Horizontal,"V:n-2");
-
+  qsim_Voisins->setHeaderData(2,Qt::Horizontal,"V:p1");
+  qsim_Voisins->setHeaderData(3,Qt::Horizontal,"V:p2");
+  qsim_Voisins->setHeaderData(4,Qt::Horizontal,"V:n1");
+  qsim_Voisins->setHeaderData(5,Qt::Horizontal,"V:n2");
 
   // Ecriture du numero de boule
   for(i=1;i<=50;i++)
@@ -146,6 +146,7 @@ void MainWindow::fen_Voisins(void)
   qtv_Voisins->setColumnWidth(2,60);
   qtv_Voisins->setColumnWidth(3,60);
   qtv_Voisins->setColumnWidth(4,60);
+  qtv_Voisins->setColumnWidth(5,60);
   //tblVoisin->setMaximumWidth(260);
   qtv_Voisins->setMinimumHeight(367);
   qtv_Voisins->setSortingEnabled(true);
@@ -153,7 +154,7 @@ void MainWindow::fen_Voisins(void)
   qtv_Voisins->setAlternatingRowColors(true);
   qtv_Voisins->setEditTriggers(QAbstractItemView::NoEditTriggers);
   //qtv_Voisins->hideColumn(3);
-  qtv_Voisins->hideColumn(4);
+  //qtv_Voisins->hideColumn(4);
 
   nbSortie = new QLabel;
   nbSortie->setText("Nb total de sorties:");

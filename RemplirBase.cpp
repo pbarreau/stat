@@ -333,15 +333,25 @@ void GererBase::RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *mod
       rn2 = TotalRechercheVoisinADistanceDe(2,voisin);
       rp2 = TotalRechercheVoisinADistanceDe(-2,voisin);
 
-      calcul = rp1 + rp2 + rn1 + rn2;
+      //calcul = rp1 + rp2 + rn1 + rn2;
       QStandardItem *item2 = new QStandardItem( QString::number(222));
-      item2->setData(calcul,Qt::DisplayRole);
+      item2->setData(rp1,Qt::DisplayRole);
       modele->setItem(voisin-1,2,item2);
 
-      calcul =calcul + resu;
+      //calcul =calcul + resu;
       QStandardItem *item3 = new QStandardItem( QString::number(222));
-      item3->setData(calcul,Qt::DisplayRole);
+      item3->setData(rp2,Qt::DisplayRole);
       modele->setItem(voisin-1,3,item3);
+
+      QStandardItem *item4 = new QStandardItem( QString::number(222));
+      item4->setData(rn1,Qt::DisplayRole);
+      modele->setItem(voisin-1,4,item4);
+
+      QStandardItem *item5 = new QStandardItem( QString::number(222));
+      item5->setData(rn2,Qt::DisplayRole);
+      modele->setItem(voisin-1,5,item5);
+
+
     }
 
   // Recherche terminee finir avec cette vue
