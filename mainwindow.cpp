@@ -111,6 +111,7 @@ void MainWindow::fen_Tirages(void)
 
   // Gestion du QTableView
   qtv_Tirages->setSelectionMode(QAbstractItemView::SingleSelection);
+  qtv_Tirages->setSelectionBehavior(QAbstractItemView::SelectItems);
   qtv_Tirages->setStyleSheet("QTableView {selection-background-color: red;}");
   qtv_Tirages->setEditTriggers(QAbstractItemView::NoEditTriggers);
   qtv_Tirages->setAlternatingRowColors(true);
@@ -358,4 +359,20 @@ void MainWindow::UneSelectionActivee(const QModelIndex & index)
     }
 
 
+}
+
+void MainWindow::MontrerBouleDansBase(const QModelIndex & index)
+{
+  int val = 0;
+#if 0
+  QModelIndex item1 = qtv_Tirages->currentIndex();
+  item1 = item1.model()->index(0,3);
+  qtv_Tirages->setCurrentIndex(item1);
+#endif
+
+  val = qsim_Voisins->index(index.row(),0).data().toInt();
+#ifndef QT_NO_DEBUG
+  qDebug() << QString::number(index.row());
+#endif
+  DB_tirages->MontrerLaBoule(val,qtv_Tirages);
 }

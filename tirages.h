@@ -87,6 +87,7 @@ public:
     void RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *fen);
     int TotalRechercheVoisinADistanceDe(int dist, int voisin);
     void CouvertureBase(QStandardItemModel *dest);
+    void MontrerLaBoule(int boule, QTableView *fen);
 
 private:
     QSqlDatabase db;

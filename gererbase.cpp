@@ -4,6 +4,7 @@
 
 #include <QFile>
 #include <QSqlTableModel>
+#include <QSqlQuery>
 #include <QTableView>
 
 #include "tirages.h"
@@ -93,32 +94,66 @@ void GererBase::AfficherBase(QWidget *parent, QTableView *cibleview)
   //qDebug() << cibleview->columnWidth(3);
 
   // Definir largeur colonne des boules selon zone
-    for(i=0; i<def.nb_zone;i++)
+  for(i=0; i<def.nb_zone;i++)
     {
       if(i)
         {
-        depart = depart + def.nbElmZone[i-1];
+          depart = depart + def.nbElmZone[i-1];
         }
       for(j=depart+1;j<depart+def.nbElmZone[i]+1;j++)
         {
-         cibleview->setColumnWidth(j,30);
+          cibleview->setColumnWidth(j,30);
         }
     }
 
-    // definir largeur pour colonne parité
-    for(i=j;i<j+def.nb_zone;i++)
+  // definir largeur pour colonne parité
+  for(i=j;i<j+def.nb_zone;i++)
     {
       cibleview->setColumnWidth(i,30);
     }
 
-    // Si il y a d'autre info les masquer
-    for(j=i;j<=(tbl_model->columnCount());j++)
+  // Si il y a d'autre info les masquer
+  for(j=i;j<=(tbl_model->columnCount());j++)
     {
       //cibleview->hideColumn(j);
-        cibleview->setColumnWidth(j,30);
+      cibleview->setColumnWidth(j,30);
     }
 
   cibleview->setMinimumHeight(390);
   parent->setMinimumWidth(400);
   parent->setMinimumHeight(400);
+}
+
+void GererBase::MontrerLaBoule(int boule, QTableView *fen)
+{
+  QSqlQuery selection;
+  QString msg = "";
+  bool status = false;
+
+  // Recuperation des lignes ayant la boule
+  msg = "select * from tirages where (b1=" + QString::number(boule) +
+      " or b2=" + QString::number(boule) +
+      " or b3=" + QString::number(boule) +
+      " or b4=" + QString::number(boule) +
+      " or b5=" + QString::number(boule) + ") limit 1";
+  status = selection.exec(msg);
+  selection.first(); // derniere ligne ayant le numero
+  if(selection.isValid()){
+      int depart = 2;
+      int i;
+      // determination de la position
+      for (i=depart;i<depart+5;i++)
+        {
+          int une_boule =  selection.value(i).toInt();
+          if(une_boule == boule)
+            {
+              break;
+            }
+        }
+      QModelIndex item1 = fen->currentIndex();
+      if (item1.isValid()){
+          item1 = item1.model()->index(selection.value(0).toInt()-1,i-1);
+          fen->setCurrentIndex(item1);
+        }
+    }
 }
