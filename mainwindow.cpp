@@ -59,7 +59,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     tmp.getConfig(&configJeu);
 
     // Creation des tables pour ce type jeu
-    DB_tirages->CreerTableTirages(&configJeu);
+    DB_tirages->CreerTableTirages(&tmp);
 
     // Recuperation des données fdj
     ficSource = tmp.SelectSource(load);
