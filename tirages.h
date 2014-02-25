@@ -17,6 +17,7 @@
 
 #define CL_TCOUV    "cz"    /// Nom table couverture de zone
 #define CL_TOARR    "oaz"   /// Nom table ordre arrivee zone
+#define CL_CCOUV    "c"     /// Nom colonne couverture
 
 namespace NE_FDJ{
 typedef enum _les_jeux_a_tirages
@@ -81,7 +82,7 @@ public:
 
 public:
     bool CreerBaseEnMemoire(bool action);
-    bool CreerTableTirages(stTiragesDef *pRref);
+    bool CreerTableTirages(tirages *pRref);
     bool LireLesTirages(QString fileName_2, tirages *pRef);
     bool SupprimerBase();
     QSqlError lastError();
@@ -91,6 +92,7 @@ public:
     int TotalRechercheVoisinADistanceDe(int dist, int voisin);
     void CouvertureBase(QStandardItemModel *dest, stTiragesDef *pRef);
     void MontrerLaBoule(int boule, QTableView *fen);
+    bool CreerColonneOrdreArrivee(int id, stTiragesDef *pConf);
 
 private:
     QSqlDatabase db;

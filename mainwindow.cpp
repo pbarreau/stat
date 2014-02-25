@@ -53,7 +53,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     fen_MaSelection(qtv_MesChoix);
 
     // Preparer la base de données
-    DB_tirages->CreerBaseEnMemoire(true);
+    DB_tirages->CreerBaseEnMemoire(false);
 
     // Recuperation des contantes du type de jeu
     tmp.getConfig(&configJeu);
@@ -77,9 +77,12 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
         //Rien
     }
 
+    // Ordre arrivee des boules ?
+   DB_tirages->CouvertureBase(qsim_Ecarts,&configJeu);
+
     //// GARDER L'ORDRE D'APPEL DES FONCTIONS PB VERROU SUR LA BASE
     // Remplir Sous Fen les ecarts
-    for(i=1;i<=configJeu.nbElmZone[0];i++){
+    for(i=1;i<=configJeu.limites->max;i++){
         DB_tirages->DistributionSortieDeBoule(i,qsim_Ecarts,&configJeu);
     }
 

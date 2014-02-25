@@ -31,15 +31,23 @@ bool GererBase::CreerBaseEnMemoire(bool action)
     }
   else
     {
+      QString mabase ("mabase.sqlite");
+      QFile fichier(mabase);
+
+      if(fichier.exists())
+      {
+          fichier.remove();
+      }
 #ifdef Q_OS_LINUX
       // NOTE: We have to store database file into user home folder in Linux
       QString path(QDir::home().path());
-      path.append(QDir::separator()).append("mabase.sqlite");
+      path.append(QDir::separator()).append(mabase);
       path = QDir::toNativeSeparators(path);
       db.setDatabaseName(path);
 #else
+        // Tester si le fichier est present
       // NOTE: File exists in the application private folder
-      db.setDatabaseName("mabase.sqlite");
+      db.setDatabaseName(mabase);
 #endif
 
     }

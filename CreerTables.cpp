@@ -44,7 +44,7 @@ for(zone=0;(zone<ref.nb_zone) && (ret == true);zone++)
           " (id, boule) values (:id, :boule)";
       ret = query.prepare(msg1);
 
-      for(j=0;(j<ref.nbElmZone[zone])&& ret;j++)
+      for(j=0;(j<ref.limites->max)&& ret;j++)
         {
           query.bindValue(":boule", j+1);
           ret = query.exec();
