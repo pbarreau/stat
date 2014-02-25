@@ -10,10 +10,13 @@
 #include <QLabel>
 #include <QStandardItemModel>
 
-#define C_EUR_NB_ZN 2   /// Constante jeu euro nb de zone 2
+#define C_EUR_NB_ZN 2       /// Constante jeu euro nb de zone 2
 #define C_LTO_NB_ZN 2
-#define CL_PAIR "p"     /// Constante Label pour parite
-#define CL_SGRP "g"     /// Constante pour sous groupe dans zone
+#define CL_PAIR     "p"     /// Constante Label pour parite
+#define CL_SGRP     "g"     /// Constante Label pour sous groupe dans zone
+
+#define CL_TCOUV    "cz"    /// Nom table couverture de zone
+#define CL_TOARR    "oaz"   /// Nom table ordre arrivee zone
 
 namespace NE_FDJ{
 typedef enum _les_jeux_a_tirages
@@ -78,15 +81,15 @@ public:
 
 public:
     bool CreerBaseEnMemoire(bool action);
-    bool CreerTableTirages(tirages *pRref);
+    bool CreerTableTirages(stTiragesDef *pRref);
     bool LireLesTirages(QString fileName_2, tirages *pRef);
     bool SupprimerBase();
     QSqlError lastError();
     void AfficherBase(QWidget *parent, QTableView *cibleview);
-    void RechercheCouverture(int boule, QStandardItemModel *modele);
+    void DistributionSortieDeBoule(int boule, QStandardItemModel *modele, stTiragesDef *pRef);
     void RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *fen);
     int TotalRechercheVoisinADistanceDe(int dist, int voisin);
-    void CouvertureBase(QStandardItemModel *dest);
+    void CouvertureBase(QStandardItemModel *dest, stTiragesDef *pRef);
     void MontrerLaBoule(int boule, QTableView *fen);
 
 private:

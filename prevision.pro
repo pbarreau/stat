@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     CreerTables.cpp \
     RemplirBase.cpp \
     gererbase.cpp \
-    selectionboules.cpp
+    selectionboules.cpp \
+    ImportFdj.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
