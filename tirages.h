@@ -87,16 +87,19 @@ public:
     bool SupprimerBase();
     QSqlError lastError();
     void AfficherBase(QWidget *parent, QTableView *cibleview);
+    void AfficherResultatCouverture(QWidget *parent, QTableView *cibleview);
     void DistributionSortieDeBoule(int boule, QStandardItemModel *modele, stTiragesDef *pRef);
     void RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *fen);
     int TotalRechercheVoisinADistanceDe(int dist, int voisin);
     void CouvertureBase(QStandardItemModel *dest, stTiragesDef *pRef);
     void MontrerLaBoule(int boule, QTableView *fen);
+    void MontrerBouleCouverture(int boule, QTableView *fen);
     bool CreerColonneOrdreArrivee(int id, stTiragesDef *pConf);
 
 private:
     QSqlDatabase db;
     QSqlTableModel *tbl_model;
+    QSqlTableModel *tbl_couverture;
     bool lieu;
 };
 

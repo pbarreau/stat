@@ -132,6 +132,41 @@ void GererBase::AfficherBase(QWidget *parent, QTableView *cibleview)
   parent->setMinimumHeight(400);
 }
 
+
+void GererBase::AfficherResultatCouverture(QWidget *parent, QTableView *cibleview)
+{
+  int zn=0;
+  int j=0;
+  tirages tmp;
+  stTiragesDef ref;
+
+  tmp.getConfig(&ref);
+
+  QString msg(QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn]);
+
+  tbl_couverture = new QSqlTableModel(parent, db);
+  tbl_couverture->setTable(msg);
+  tbl_couverture->select();
+
+  tbl_couverture->removeColumn(0); // don't show the ID
+
+
+  // Attach it to the view
+  cibleview->setModel(tbl_couverture);
+
+
+  // Si il y a d'autre info les masquer
+  for(j=1;j<=(tbl_couverture->columnCount());j++)
+    {
+      //cibleview->hideColumn(j);
+      cibleview->setColumnWidth(j,30);
+    }
+
+  cibleview->setMinimumHeight(390);
+  parent->setMinimumWidth(400);
+  parent->setMinimumHeight(400);
+}
+
 void GererBase::MontrerLaBoule(int boule, QTableView *fen)
 {
   QSqlQuery selection;
@@ -145,6 +180,54 @@ void GererBase::MontrerLaBoule(int boule, QTableView *fen)
       " or b4=" + QString::number(boule) +
       " or b5=" + QString::number(boule) + ") limit 1";
   status = selection.exec(msg);
+  selection.first(); // derniere ligne ayant le numero
+  if(selection.isValid()){
+      int depart = 2;
+      int i;
+      // determination de la position
+      for (i=depart;i<depart+5;i++)
+        {
+          int une_boule =  selection.value(i).toInt();
+          if(une_boule == boule)
+            {
+              break;
+            }
+        }
+      QModelIndex item1 = fen->currentIndex();
+      if (item1.isValid()){
+          item1 = item1.model()->index(selection.value(0).toInt()-1,i-1);
+          fen->setCurrentIndex(item1);
+        }
+    }
+}
+
+void GererBase::MontrerBouleCouverture(int boule, QTableView *fen)
+{
+  QSqlQuery selection;
+  bool status = false;
+  int zn=0;
+  int j=0;
+  tirages tmp;
+  stTiragesDef ref;
+
+  tmp.getConfig(&ref);
+
+  QString msg(QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn]);
+
+  // Recuperation de la boule dans chaque colonne
+  for(j=2;j<=(tbl_couverture->columnCount());j++)
+    {
+      //cibleview->hideColumn(j);
+      fen->setColumnWidth(j,30);
+    }
+
+  msg = "select * from tirages where (b1=" + QString::number(boule) +
+      " or b2=" + QString::number(boule) +
+      " or b3=" + QString::number(boule) +
+      " or b4=" + QString::number(boule) +
+      " or b5=" + QString::number(boule) + ") limit 1";
+  status = selection.exec(msg);
+
   selection.first(); // derniere ligne ayant le numero
   if(selection.isValid()){
       int depart = 2;

@@ -43,6 +43,8 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     // Creation sous fenetre pour mettre donnees de base
     fen_Tirages();
 
+    fen_LstCouv();
+
     // Creation sous fenetre des voisins
     fen_Voisins();
 
@@ -53,7 +55,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     fen_MaSelection(qtv_MesChoix);
 
     // Preparer la base de données
-    DB_tirages->CreerBaseEnMemoire(false);
+    DB_tirages->CreerBaseEnMemoire(true);
 
     // Recuperation des contantes du type de jeu
     tmp.getConfig(&configJeu);
@@ -90,6 +92,8 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     DB_tirages->AfficherBase(qw_Tirages,qtv_Tirages);
 
 
+    // Remplir la sous fenetre resultat couverture
+    DB_tirages->AfficherResultatCouverture(qw_LstCouv,qtv_LstCouv);
 
 
 
@@ -137,6 +141,28 @@ void MainWindow::fen_Tirages(void)
 
 }
 
+void MainWindow::fen_LstCouv(void)
+{
+    qw_LstCouv = new QWidget;
+    qtv_LstCouv = new QTableView;
+    QFormLayout *layout = new QFormLayout;
+
+    layout->addWidget(qtv_LstCouv);
+    qw_LstCouv->setLayout(layout);
+    qw_LstCouv->setWindowTitle("Couvertures des tirages");
+
+
+    // Gestion du QTableView
+    //qtv_LstCouv->setSelectionMode(QAbstractItemView::SingleSelection);
+    //qtv_LstCouv->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_LstCouv->setStyleSheet("QTableView {selection-background-color: red;}");
+    qtv_LstCouv->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_LstCouv->setAlternatingRowColors(true);
+
+    // Ratacher cette sous fenetre
+    zoneCentrale->addSubWindow(qw_LstCouv);
+
+}
 void MainWindow::fen_Voisins(void)
 {
     int  i;
@@ -379,11 +405,6 @@ void MainWindow::UneSelectionActivee(const QModelIndex & index)
 void MainWindow::MontrerBouleDansBase(const QModelIndex & index)
 {
     int val = 0;
-#if 0
-    QModelIndex item1 = qtv_Tirages->currentIndex();
-    item1 = item1.model()->index(0,3);
-    qtv_Tirages->setCurrentIndex(item1);
-#endif
 
     val = qsim_Voisins->index(index.row(),0).data().toInt();
 #ifndef QT_NO_DEBUG
@@ -391,3 +412,4 @@ void MainWindow::MontrerBouleDansBase(const QModelIndex & index)
 #endif
     DB_tirages->MontrerLaBoule(val,qtv_Tirages);
 }
+

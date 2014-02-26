@@ -35,6 +35,7 @@ public slots:
 
 private:
     void fen_Voisins(void);
+    void fen_LstCouv(void);
     void fen_Tirages(void);
     void fen_Ecarts(void);
     void fen_MaSelection(QTableView *qtv_MaSelection);
@@ -42,14 +43,17 @@ private:
 private:
     Ui::MainWindow *ui;
     QMdiArea *zoneCentrale;
-    QTableView *qtv_Tirages;
-    QLabel *nbSortie;
     GererBase *DB_tirages;
-    QStandardItemModel *qsim_Voisins ;
+    QLabel *nbSortie;
+    QTableView *qtv_Tirages;
+    QTableView *qtv_LstCouv;
     QTableView *qtv_Voisins;
-    QWidget *qw_Tirages;
-    QStandardItemModel *qsim_Ecarts ;
     QTableView *qtv_Ecarts;
+    QWidget *qw_LstCouv;
+    QWidget *qw_Tirages;
+    //QWidget *qw_LstCouv;
+    QStandardItemModel *qsim_Voisins ;
+    QStandardItemModel *qsim_Ecarts ;
     QStandardItemModel *qsim_MaSelection ;
 
     bool closewindows;
