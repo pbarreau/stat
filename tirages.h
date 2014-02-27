@@ -9,6 +9,9 @@
 #include <QTableView>
 #include <QLabel>
 #include <QStandardItemModel>
+#include <QItemDelegate>
+#include <QPainter>
+
 
 #define C_EUR_NB_ZN 2       /// Constante jeu euro nb de zone 2
 #define C_LTO_NB_ZN 2
@@ -20,87 +23,108 @@
 #define CL_CCOUV    "c"     /// Nom colonne couverture
 
 namespace NE_FDJ{
-typedef enum _les_jeux_a_tirages
-{
-    fdj_none,   /// aucun type defini
-    fdj_loto,   /// jeu : loto
-    fdj_euro,   /// jeu : euromillion
-    fdj_fini    /// fin de la liste des jeux possibles
-}E_typeJeux;
+  typedef enum _les_jeux_a_tirages
+  {
+	fdj_none,   /// aucun type defini
+	fdj_loto,   /// jeu : loto
+	fdj_euro,   /// jeu : euromillion
+	fdj_fini    /// fin de la liste des jeux possibles
+  }E_typeJeux;
 }
 
 typedef struct _val_max_min
 {
-    int min;
-    int max;
+	int min;
+	int max;
 }stBornes;
 
 typedef struct _tirages_def
 {
-    unsigned char nb_zone;
-    QString *nomZone;
-    int *nbElmZone;
-    stBornes *limites;
-    int *offsetFichier;
+	unsigned char nb_zone;
+	QString *nomZone;
+	int *nbElmZone;
+	stBornes *limites;
+	int *offsetFichier;
 }stTiragesDef;
 
 typedef struct _un_tirage
 {
-    QString date;
-    int **valBoules;
+	QString date;
+	int **valBoules;
 }stUnTirage;
 
 class tirages
 {
-private:
-    static stTiragesDef conf;
-    static int **couverture;
+  private:
+	static stTiragesDef conf;
+	static int **couverture;
 
-public:
-    static NE_FDJ::E_typeJeux choixJeu;
-    static QString *lib_col;
-    stUnTirage value;
+  public:
+	static NE_FDJ::E_typeJeux choixJeu;
+	static QString *lib_col;
+	stUnTirage value;
 
-public:
-    tirages(NE_FDJ::E_typeJeux jeu = NE_FDJ::fdj_euro);
-    void getConfig(stTiragesDef *priv_conf);
-    QString SelectSource(bool load);
-    QString s_LibColBase(stTiragesDef *ref);
-    QString qs_zColBaseName(int zone);
-    int NbPairs(int zone); // Nombre de nombre pair dans la zone
-    int NbDansE1(int zone); // Nombre de nombre de la zone appartenant a E1;
+  public:
+	tirages(NE_FDJ::E_typeJeux jeu = NE_FDJ::fdj_euro);
+	void getConfig(stTiragesDef *priv_conf);
+	QString SelectSource(bool load);
+	QString s_LibColBase(stTiragesDef *ref);
+	QString qs_zColBaseName(int zone);
+	int NbPairs(int zone); // Nombre de nombre pair dans la zone
+	int NbDansE1(int zone); // Nombre de nombre de la zone appartenant a E1;
 
 };
 
+class DelegationDeCouleur : public QItemDelegate
+{
+	Q_OBJECT
+  public:
+	DelegationDeCouleur(QWidget *parent = 0) : QItemDelegate(parent) {}
+	//DelegationDeCouleur(const QModelIndex *index=0) : QItemDelegate(index) {}
+
+  public:
+  virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+  {
+  drawBackground(painter, option, index);
+  QItemDelegate::paint(painter, option, index);
+  }
+
+  protected:
+  virtual void drawBackground(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+  {
+  Q_UNUSED(index);
+  painter->fillRect(option.rect, QColor(qrand()%255, qrand()%255, qrand()%255));
+  }
+};
 
 class GererBase : public QObject
 {
-    Q_OBJECT
-public:
-     GererBase(QObject *parent = 0);
-    ~GererBase();
+	Q_OBJECT
+  public:
+	GererBase(QObject *parent = 0);
+	~GererBase();
 
-public:
-    bool CreerBaseEnMemoire(bool action);
-    bool CreerTableTirages(tirages *pRref);
-    bool LireLesTirages(QString fileName_2, tirages *pRef);
-    bool SupprimerBase();
-    QSqlError lastError();
-    void AfficherBase(QWidget *parent, QTableView *cibleview);
-    void AfficherResultatCouverture(QWidget *parent, QTableView *cibleview);
-    void DistributionSortieDeBoule(int boule, QStandardItemModel *modele, stTiragesDef *pRef);
-    void RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *fen);
-    int TotalRechercheVoisinADistanceDe(int dist, int voisin);
-    void CouvertureBase(QStandardItemModel *dest, stTiragesDef *pRef);
-    void MontrerLaBoule(int boule, QTableView *fen);
-    void MontrerBouleCouverture(int boule, QTableView *fen);
-    bool CreerColonneOrdreArrivee(int id, stTiragesDef *pConf);
+  public:
+	bool CreerBaseEnMemoire(bool action);
+	bool CreerTableTirages(tirages *pRref);
+	bool LireLesTirages(QString fileName_2, tirages *pRef);
+	bool SupprimerBase();
+	QSqlError lastError();
+	void AfficherBase(QWidget *parent, QTableView *cibleview);
+	void AfficherResultatCouverture(QWidget *parent, QTableView *cibleview);
+	void DistributionSortieDeBoule(int boule, QStandardItemModel *modele, stTiragesDef *pRef);
+	void RechercheVoisin(int boule, QLabel *l_nb, QStandardItemModel *fen);
+	int TotalRechercheVoisinADistanceDe(int dist, int voisin);
+	void CouvertureBase(QStandardItemModel *dest, stTiragesDef *pRef);
+	void MontrerLaBoule(int boule, QTableView *fen);
+	void MontrerBouleCouverture(int boule, QTableView *fen, QWidget *essai);
+	bool CreerColonneOrdreArrivee(int id, stTiragesDef *pConf);
 
-private:
-    QSqlDatabase db;
-    QSqlTableModel *tbl_model;
-    QSqlTableModel *tbl_couverture;
-    bool lieu;
+  private:
+	QSqlDatabase db;
+	QSqlTableModel *tbl_model;
+	QSqlTableModel *tbl_couverture;
+	bool lieu;
 };
 
 #endif // TIRAGES_H

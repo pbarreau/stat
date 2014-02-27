@@ -28,10 +28,11 @@ public:
 
 public slots:
     void ouvrir_mainwindows(void);
-    void TirageBouleRechercheVoisins(const QModelIndex &index);
-    void EcartBouleRechercheVosins(const QModelIndex & index);
-    void UneSelectionActivee(const QModelIndex & index);
-    void MontrerBouleDansBase(const QModelIndex & index);
+	void slot_ChercheVoisins(const QModelIndex &index);
+	void slot_qtvEcart(const QModelIndex & index);
+	void slot_UneSelectionActivee(const QModelIndex & index);
+	void slot_MontrerBouleDansBase(const QModelIndex & index);
+	void slot_CouvertureSelChanged(const QItemSelection &now, const QItemSelection &prev);
 
 private:
     void fen_Voisins(void);
