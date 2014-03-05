@@ -294,3 +294,72 @@ void GererBase::MontrerBouleCouverture(int boule, QTableView *fen, QWidget *essa
   }
 #endif
 }
+
+void GererBase::MontreMesPossibles(const QModelIndex & index,
+								   stTiragesDef * pConf,
+								   QStandardItemModel *fen)
+{
+  QString msg = "";
+  QSqlQuery selection;
+  bool status = true;
+  int zn = 0;
+  int i=0,j=0;
+  int *boules = new int[pConf->nbElmZone[zn]];
+
+  for(i=0;(i<pConf->nbElmZone[zn])&& status;i++)
+  {
+	boules[i]= index.model()->index(index.row(),i+1).data().toInt();
+	fen->setHeaderData(i,Qt::Horizontal,"b"+ QString::number(boules[i]));
+
+	msg = "select id from union_" + QString::number(boules[i]) + "; ";
+	status = selection.exec(msg);
+	status = selection.first();
+	if(selection.isValid())
+	{
+	  // Mettre les resultats dans la fenetre
+	  j=0;
+	  int value = 0;
+	  do{
+		value = selection.value(0).toInt();
+		QStandardItem *item = new QStandardItem( QString::number(222));
+		item->setData(value,Qt::DisplayRole);
+		fen->setItem(j,i,item);
+		j++;
+	  }while(selection.next());
+	}
+  }
+
+#if 0
+  msg = "select id from union_" + QString::number(boules[0]) + " " +
+		"intersect " +
+		"select id from union_" + QString::number(boules[1]) + " " +
+		"intersect " +
+		"select id from union_" + QString::number(boules[2]) + " " +
+		"intersect " +
+		"select id from union_" + QString::number(boules[3]) + " " +
+		"intersect " +
+		"select id from union_" + QString::number(boules[4]) + "; ";
+  status = selection.exec(msg);
+  status = selection.first();
+  if(selection.isValid())
+  {
+	// Mettre les resultats dans la fenetre
+	i=0;
+	int value = 0;
+	do{
+	  value = selection.value(0).toInt();
+	  QStandardItem *item = new QStandardItem( QString::number(222));
+	  item->setData(value,Qt::DisplayRole);
+	  fen->setItem(i,1,item);
+	  i++;
+	}while(selection.next());
+  }
+#endif
+}
+
+QVariant GererBase::data(const QModelIndex &index, int role = Qt::DisplayRole) const
+{
+  if (role == Qt::ToolTipRole)
+	return QVariant("tooltip !");
+
+}
