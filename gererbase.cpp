@@ -202,7 +202,7 @@ void GererBase::MontrerLaBoule(int boule, QTableView *fen)
   }
 }
 
-void GererBase::MontrerBouleCouverture(int boule, QTableView *fen, QWidget *essai )
+void GererBase::MontrerBouleCouverture(int boule, QTableView *fen )
 {
   QSqlQuery selection;
   bool status = true;
@@ -357,9 +357,19 @@ void GererBase::MontreMesPossibles(const QModelIndex & index,
 #endif
 }
 
+void GererBase::MLB_DansLaQtTabView(int boule, QTableView *fen)
+{
+  QModelIndex modelIndex =  fen->model()->index(boule-1,0, QModelIndex());
+
+  fen->sortByColumn(0,Qt::AscendingOrder);
+  fen->scrollTo(modelIndex, QAbstractItemView::PositionAtTop);
+}
+
+#if 0
 QVariant GererBase::data(const QModelIndex &index, int role = Qt::DisplayRole) const
 {
   if (role == Qt::ToolTipRole)
 	return QVariant("tooltip !");
 
 }
+#endif

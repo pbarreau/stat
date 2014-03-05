@@ -321,7 +321,6 @@ void MainWindow::fen_MaSelection(QTableView *qtv_MaSelection)
 
 void MainWindow::fen_MesPossibles(void)
 {
-  int  i;
   QWidget *qw_MesPossibles = new QWidget;
   qtv_MesPossibles = new QTableView;
   int zn = 0;
@@ -333,14 +332,6 @@ void MainWindow::fen_MesPossibles(void)
   qsim_MesPossibles->setHeaderData(3,Qt::Horizontal,"C4"); // Ecart Moyen
   qsim_MesPossibles->setHeaderData(4,Qt::Horizontal,"C5"); // Ecart Maxi
 
-#if 0
-  for(i=1;i<=configJeu.limites[zn].max;i++)
-  {
-	QStandardItem *item = new QStandardItem( QString::number(i));
-	item->setData(i,Qt::DisplayRole);
-	qsim_MesPossibles->setItem(i-1,0,item);
-  }
-#endif
   qtv_MesPossibles->setModel(qsim_MesPossibles);
   qtv_MesPossibles->setColumnWidth(0,45);
   qtv_MesPossibles->setColumnWidth(1,45);
@@ -427,7 +418,7 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
 	val = index.data().toInt();
 	qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
 	DB_tirages->RechercheVoisin(val,&configJeu,nbSortie,qsim_Voisins);
-	DB_tirages->MontrerBouleCouverture(val,qtv_LstCouv,qw_LstCouv);
+	DB_tirages->MontrerBouleCouverture(val,qtv_LstCouv);
   }
 
 }
@@ -478,21 +469,29 @@ void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
 void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
 {
   int val = 0;
+  int cellule = 0;
 
   // determination de la fenetre ayant recu le click
   if (index.internalPointer() == qsim_Voisins->index(index.row(),index.column()).internalPointer()){
 	val = qsim_Voisins->index(index.row(),0).data().toInt();
+	cellule = qsim_Voisins->index(index.row(),index.column()).data().toInt();
   }
   else
   {
 	val = qsim_MesPossibles->index(index.row(),index.column()).data().toInt();
+	cellule = val;
   }
 #ifndef QT_NO_DEBUG
   qDebug() << QString::number(index.row());
 #endif
-  DB_tirages->MontrerLaBoule(val,qtv_Tirages);
-  qtv_LstCouv->clearSelection();
-  DB_tirages->MontrerBouleCouverture(val,qtv_LstCouv,qw_LstCouv);
+  if(cellule){
+	qtv_Tirages->clearSelection();
+	DB_tirages->MontrerLaBoule(val,qtv_Tirages);
+	DB_tirages->MLB_DansLaQtTabView(val,qtv_Voisins);
+	DB_tirages->MLB_DansLaQtTabView(val,qtv_Ecarts);
+	qtv_LstCouv->clearSelection();
+	DB_tirages->MontrerBouleCouverture(val,qtv_LstCouv);
+  }
 }
 
 void MainWindow::slot_CouvertureSelChanged(const QItemSelection & now,const QItemSelection & prev)

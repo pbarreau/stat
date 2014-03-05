@@ -83,18 +83,18 @@ class DelegationDeCouleur : public QItemDelegate
 	//DelegationDeCouleur(const QModelIndex *index=0) : QItemDelegate(index) {}
 
   public:
-  virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
-  {
-  drawBackground(painter, option, index);
-  QItemDelegate::paint(painter, option, index);
-  }
+	virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+	{
+	  drawBackground(painter, option, index);
+	  QItemDelegate::paint(painter, option, index);
+	}
 
   protected:
-  virtual void drawBackground(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
-  {
-  Q_UNUSED(index);
-  painter->fillRect(option.rect, QColor(qrand()%255, qrand()%255, qrand()%255));
-  }
+	virtual void drawBackground(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+	{
+	  Q_UNUSED(index);
+	  painter->fillRect(option.rect, QColor(qrand()%255, qrand()%255, qrand()%255));
+	}
 };
 
 class GererBase : public QObject
@@ -118,9 +118,10 @@ class GererBase : public QObject
 	int TotalRechercheVoisinADistanceDe(int dist, int voisin);
 	void CouvertureBase(QStandardItemModel *dest, stTiragesDef *pRef);
 	void MontrerLaBoule(int boule, QTableView *fen);
-	void MontrerBouleCouverture(int boule, QTableView *fen, QWidget *essai);
+	void MontrerBouleCouverture(int boule, QTableView *fen);
 	void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QStandardItemModel *fen);
 	bool CreerColonneOrdreArrivee(int id, stTiragesDef *pConf);
+	void MLB_DansLaQtTabView(int boule, QTableView *fen);
 
   private:
 	QSqlDatabase db;
