@@ -137,8 +137,10 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
   item2->setData(EcartPrecedent,Qt::DisplayRole);
   modele->setItem(boule-1,2,item2);
 
-  QStandardItem *item3 = new QStandardItem( );//QString::number(EcartMoyen,'g',2)
-  item3->setData(EcartMoyen,Qt::DisplayRole);
+  QStandardItem *item3 = new QStandardItem( );
+  QString valEM = QString::number(EcartMoyen,'g',2);
+  //item3->setData(EcartMoyen,Qt::DisplayRole);
+  item3->setData(valEM.toDouble(),Qt::DisplayRole);
   modele->setItem(boule-1,3,item3);
 
 
