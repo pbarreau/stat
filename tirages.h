@@ -70,8 +70,8 @@ class tirages
 	QString SelectSource(bool load);
 	QString s_LibColBase(stTiragesDef *ref);
 	QString qs_zColBaseName(int zone);
-	int NbPairs(int zone); // Nombre de nombre pair dans la zone
-	int NbDansE1(int zone); // Nombre de nombre de la zone appartenant a E1;
+	int RechercheNbBoulesPairs(int zone); // Nombre de nombre pair dans la zone
+	int RechercheNbBoulesDansGrp1(int zone); // Nombre de nombre de la zone appartenant a E1;
 
 };
 
@@ -122,6 +122,7 @@ class GererBase : public QObject
 	void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QStandardItemModel *fen);
 	bool CreerColonneOrdreArrivee(int id, stTiragesDef *pConf);
 	void MLB_DansLaQtTabView(int boule, QTableView *fen);
+	void MLP_DansLaQtTabView(stTiragesDef *pConf, QString etude, QStandardItemModel *fen); // Montre la parite
 
   private:
 	QSqlDatabase db;

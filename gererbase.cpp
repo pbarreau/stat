@@ -365,6 +365,41 @@ void GererBase::MLB_DansLaQtTabView(int boule, QTableView *fen)
   fen->scrollTo(modelIndex, QAbstractItemView::PositionAtTop);
 }
 
+void GererBase::MLP_DansLaQtTabView(stTiragesDef *pConf, QString etude, QStandardItemModel *fen)
+{
+  QSqlQuery query;
+  int nb_zone = pConf->nb_zone;
+  int i =0;
+  bool status = true;
+
+  for (i=0; i< nb_zone;i++)
+  {
+	int nb_elem = pConf->nbElmZone[i];
+	int j =0;
+	for (j=0;(j<= nb_elem) && status;j++)
+	{
+	  QStandardItem *item1 = new QStandardItem( QString::number(222));
+	  item1->setData(j,Qt::DisplayRole);
+	  fen->setItem(j,0,item1);
+
+	  QString msg = "select count (*) from tirages where ("+
+					pConf->nomZone[i]+etude+"="+QString::number(j)+");";
+
+	  status = query.exec(msg);
+	  query.first();
+	  if(query.isValid())
+	  {
+		int value = query.value(0).toInt();
+		QStandardItem *item = new QStandardItem( QString::number(222));
+		item->setData(value,Qt::DisplayRole);
+		fen->setItem(j,i+1,item);
+
+	  }
+	  query.finish();
+	}
+  }
+ }
+
 #if 0
 QVariant GererBase::data(const QModelIndex &index, int role = Qt::DisplayRole) const
 {

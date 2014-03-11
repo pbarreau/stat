@@ -176,7 +176,7 @@ QString tirages::SelectSource(bool load)
   return     fileName_2;
 }
 
-int tirages::NbPairs(int zone)
+int tirages::RechercheNbBoulesPairs(int zone)
 {
   int i;
   int ret = 0;
@@ -188,7 +188,7 @@ int tirages::NbPairs(int zone)
   return ret;
 }
 
-int tirages::NbDansE1(int zone)
+int tirages::RechercheNbBoulesDansGrp1(int zone)
 {
   int i;
   int ret = 0;

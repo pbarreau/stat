@@ -14,6 +14,7 @@
 #include <QTableWidget>
 #include <QModelIndex>
 #include <QBrush>
+#include <QTabWidget>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -59,6 +60,9 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   // Creation fenetre resultat
   fen_MesPossibles();
 
+  // Creation fenetre pour parite
+  fen_Parites();
+
   // Preparer la base de données
   DB_tirages->CreerBaseEnMemoire(true);
 
@@ -99,6 +103,9 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   DB_tirages->AfficherResultatCouverture(qw_LstCouv,qtv_LstCouv);
 
 
+  // Remplir la sous fenetre de parite
+  DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_PAIR, qsim_Parites);
+  DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_SGRP, qsim_Ensemble_1);
 
   setCentralWidget(zoneCentrale);
 
@@ -356,6 +363,62 @@ void MainWindow::fen_MesPossibles(void)
   zoneCentrale->addSubWindow(qw_MesPossibles);
 
 }
+
+void MainWindow::fen_Parites(void)
+{
+  QWidget *qw_Parites = new QWidget;
+  QTabWidget *tabWidget = new QTabWidget;
+
+
+
+  int zn = 0;
+
+  qsim_Parites = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
+
+  qsim_Parites->setHeaderData(0,Qt::Horizontal,"Bpair");
+  qsim_Parites->setHeaderData(1,Qt::Horizontal,"Tot z1");
+  qsim_Parites->setHeaderData(2,Qt::Horizontal,"Tot z2");
+
+  qtv_Parites = new QTableView;
+  qtv_Parites->setModel(qsim_Parites);
+  qtv_Parites->setColumnWidth(0,45);
+  qtv_Parites->setColumnWidth(1,55);
+  qtv_Parites->setColumnWidth(2,55);
+  qtv_Parites->setSortingEnabled(false);
+  qtv_Parites->sortByColumn(0,Qt::AscendingOrder);
+  qtv_Parites->setAlternatingRowColors(true);
+  qtv_Parites->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_Parites->setMinimumHeight(220);
+
+  qsim_Ensemble_1 = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
+
+  qsim_Ensemble_1->setHeaderData(0,Qt::Horizontal,"N(E/2)");
+  qsim_Ensemble_1->setHeaderData(1,Qt::Horizontal,"Tot z1");
+  qsim_Ensemble_1->setHeaderData(2,Qt::Horizontal,"Tot z2");
+
+  QTableView *qtv_E1 = new QTableView;
+  qtv_E1->setModel(qsim_Ensemble_1);
+  qtv_E1->setColumnWidth(0,60);
+  qtv_E1->setColumnWidth(1,55);
+  qtv_E1->setColumnWidth(2,55);
+  qtv_E1->setSortingEnabled(false);
+  qtv_E1->sortByColumn(0,Qt::AscendingOrder);
+  qtv_E1->setAlternatingRowColors(true);
+  qtv_E1->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_E1->setMinimumHeight(220);
+
+  tabWidget->addTab(qtv_Parites,tr("Parite"));
+  tabWidget->addTab(qtv_E1,tr("Repartition"));
+
+
+  QFormLayout *mainLayout = new QFormLayout;
+  mainLayout->addWidget(tabWidget);
+  qw_Parites->setWindowTitle("Parites des tirages");
+  qw_Parites->setLayout(mainLayout);
+  zoneCentrale->addSubWindow(qw_Parites);
+
+}
+
 MainWindow::~MainWindow()
 {
   delete ui;

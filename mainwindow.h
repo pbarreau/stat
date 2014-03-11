@@ -40,6 +40,7 @@ class MainWindow : public QMainWindow
 	void fen_Tirages(void);
 	void fen_Ecarts(void);
 	void fen_MesPossibles(void);
+	void fen_Parites(void);
 	void fen_MaSelection(QTableView *qtv_MaSelection);
 
   private:
@@ -52,6 +53,7 @@ class MainWindow : public QMainWindow
 	QTableView *qtv_Voisins;
 	QTableView *qtv_Ecarts;
 	QTableView *qtv_MesPossibles;
+	QTableView *qtv_Parites;
 	QWidget *qw_LstCouv;
 	QWidget *qw_Tirages;
 	//QWidget *qw_LstCouv;
@@ -59,6 +61,8 @@ class MainWindow : public QMainWindow
 	QStandardItemModel *qsim_Ecarts ;
 	QStandardItemModel *qsim_MaSelection ;
 	QStandardItemModel *qsim_MesPossibles ;
+	QStandardItemModel *qsim_Parites ;
+	QStandardItemModel *qsim_Ensemble_1 ;
 	bool closewindows;
 };
 
