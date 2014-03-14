@@ -32,5 +32,6 @@ void ChoixJeux::prepare_base(void)
 
     load = ui->chk_autoLoad->checkState();
     calcul = new MainWindow((QWidget *) 0,eChoixJeu,load);
-    calcul->ouvrir_mainwindows();
+	calcul->show();
+	//calcul->ouvrir_mainwindows();
 }

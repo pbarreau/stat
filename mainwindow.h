@@ -16,6 +16,16 @@ namespace Ui {
   class MainWindow;
 }
 
+class MonToolTips:public QStandardItemModel
+{
+	Q_OBJECT
+
+  public:
+	MonToolTips(int rows, int columns,QObject * parent = 0);
+	void setData ( const QVariant & value, int role );
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+};
+
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -60,7 +70,10 @@ class MainWindow : public QMainWindow
 	QStandardItemModel *qsim_Voisins ;
 	QStandardItemModel *qsim_Ecarts ;
 	QStandardItemModel *qsim_MaSelection ;
+
+	//MonToolTips *qsim_MesPossibles ;
 	QStandardItemModel *qsim_MesPossibles ;
+
 	QStandardItemModel *qsim_Parites ;
 	QStandardItemModel *qsim_Ensemble_1 ;
 	bool closewindows;

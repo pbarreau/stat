@@ -331,6 +331,8 @@ void MainWindow::fen_MesPossibles(void)
   QWidget *qw_MesPossibles = new QWidget;
   qtv_MesPossibles = new QTableView;
   int zn = 0;
+
+  //qsim_MesPossibles = new MonToolTips(configJeu.limites[zn].max,5);
   qsim_MesPossibles = new QStandardItemModel(configJeu.limites[zn].max,5);
 
   qsim_MesPossibles->setHeaderData(0,Qt::Horizontal,"C1"); // Boules
@@ -543,6 +545,7 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
   {
 	val = qsim_MesPossibles->index(index.row(),index.column()).data().toInt();
 	cellule = val;
+	//qsim_MesPossibles->index(index.row(),index.column()).data(Qt::ToolTipRole);
   }
 #ifndef QT_NO_DEBUG
   qDebug() << QString::number(index.row());
@@ -557,6 +560,7 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
   }
 }
 
+
 void MainWindow::slot_CouvertureSelChanged(const QItemSelection & now,const QItemSelection & prev)
 {
   QModelIndexList items;
@@ -569,4 +573,19 @@ void MainWindow::slot_CouvertureSelChanged(const QItemSelection & now,const QIte
 	;
   }
 
+}
+
+void MonToolTips::setData ( const QVariant & value, int role )
+{
+}
+
+MonToolTips::MonToolTips(int rows, int columns, QObject *parent)
+  : QStandardItemModel(rows,columns,parent)
+{
+}
+
+QVariant MonToolTips::data(const QModelIndex &index, int role) const
+{
+  if (role == Qt::ToolTipRole) return "test";
+  //if(index.isValid()) return index.data().toString();
 }
