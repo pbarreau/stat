@@ -16,15 +16,20 @@ namespace Ui {
   class MainWindow;
 }
 
+#if 0
 class MonToolTips:public QStandardItemModel
 {
 	Q_OBJECT
 
   public:
 	MonToolTips(int rows, int columns,QObject * parent = 0);
-	void setData ( const QVariant & value, int role );
-	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    //void setData ( const QVariant & value, int role );
+    //QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+
+public slots:
+    //void customMenuRequested(QPoint pos);
 };
+#endif
 
 class MainWindow : public QMainWindow
 {
@@ -43,6 +48,7 @@ class MainWindow : public QMainWindow
 	void slot_UneSelectionActivee(const QModelIndex & index);
 	void slot_MontrerBouleDansBase(const QModelIndex & index);
 	void slot_CouvertureSelChanged(const QItemSelection &now, const QItemSelection &prev);
+    void customMenuRequested(QPoint pos);
 
   private:
 	void fen_Voisins(void);
@@ -71,8 +77,8 @@ class MainWindow : public QMainWindow
 	QStandardItemModel *qsim_Ecarts ;
 	QStandardItemModel *qsim_MaSelection ;
 
-	//MonToolTips *qsim_MesPossibles ;
-	QStandardItemModel *qsim_MesPossibles ;
+    //MonToolTips *qsim_MesPossibles ;
+    QStandardItemModel *qsim_MesPossibles ;
 
 	QStandardItemModel *qsim_Parites ;
 	QStandardItemModel *qsim_Ensemble_1 ;
