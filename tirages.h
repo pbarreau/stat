@@ -123,6 +123,7 @@ class GererBase : public QObject
 	bool CreerColonneOrdreArrivee(int id, stTiragesDef *pConf);
 	void MLB_DansLaQtTabView(int boule, QTableView *fen);
 	void MLP_DansLaQtTabView(stTiragesDef *pConf, QString etude, QStandardItemModel *fen); // Montre la parite
+	void PopulateCellMenu(int b_id, int v_id, QMenu *menu, QObject *receiver);
 
   private:
 	QSqlDatabase db;

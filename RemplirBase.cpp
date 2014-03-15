@@ -9,6 +9,8 @@
 #include <QMessageBox>
 #include <QFile>
 #include <QTextStream>
+#include <QMenu>
+#include <QAction>
 
 #include "gererbase.h"
 #include "tirages.h"
@@ -515,4 +517,43 @@ bool GererBase::CreerColonneOrdreArrivee(int id, stTiragesDef *pConf)
   }
 
   return status;
+}
+
+void GererBase::PopulateCellMenu(int b_id, int v_id,QMenu *menu,QObject * receiver)
+{
+  QString msg;
+  QSqlQuery query;
+  bool status = false;
+  int somme = 0;
+
+  // On recupere les valeurs des voisins
+  QString Lib[6]={"tot:","r0:","+1:","+2:","-1:","-2:"};
+  QString vVoisin[6];
+
+  msg = "select * from r" + QString::number(b_id) +
+		" where (id = "+QString::number(v_id) +");";
+  status = query.exec(msg);
+
+  if(status)
+  {
+	status = query.first();
+	if(query.isValid())
+	{
+	  QSqlRecord ligne = query.record();
+	  int nb_col = ligne.count();
+	  for(int i =1; i< nb_col;i++)
+	  {
+		int val = ligne.value(i).toInt();
+		somme+=val;
+		vVoisin[i]= Lib[i]+QString::number(val);
+	  }
+	  vVoisin[0]= Lib[0]+QString::number(somme);
+
+	  for(int i = 0; i<6;i++)
+	  {
+		menu->addAction(new QAction(vVoisin[i], receiver));
+	  }
+
+	}
+  }
 }

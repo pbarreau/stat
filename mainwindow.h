@@ -8,6 +8,7 @@
 #include <QMdiArea>
 #include <QLabel>
 #include <QStandardItemModel>
+#include <QActionGroup>
 
 #include "gererbase.h"
 #include "tirages.h"
@@ -49,6 +50,13 @@ class MainWindow : public QMainWindow
 	void slot_MontrerBouleDansBase(const QModelIndex & index);
 	void slot_CouvertureSelChanged(const QItemSelection &now, const QItemSelection &prev);
     void customMenuRequested(QPoint pos);
+	void tablev_customContextMenu(QPoint pos);
+	void ft1(void);
+	void ft2(void);
+	void ft3(void);
+	void ft4(void);
+	void ft5(void);
+	void ft6(void);
 
   private:
 	void fen_Voisins(void);
@@ -82,6 +90,10 @@ class MainWindow : public QMainWindow
 
 	QStandardItemModel *qsim_Parites ;
 	QStandardItemModel *qsim_Ensemble_1 ;
+
+	QMenu *menuTrieMesPossibles;
+	QAction * tabAction[6];
+	QActionGroup * MesTries;
 	bool closewindows;
 };
 
