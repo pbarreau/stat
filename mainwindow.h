@@ -96,6 +96,7 @@ class MainWindow : public QMainWindow
 	QMenu *menuTrieMesPossibles;
 	QAction * tabAction[6];
 	QActionGroup * MesTries;
+	int colonne_tri;
 	bool closewindows;
 };
 

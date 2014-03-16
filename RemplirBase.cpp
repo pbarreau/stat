@@ -161,7 +161,7 @@ void GererBase::AfficherMaxOccurenceBoule(int boule,QLabel *l_nb)
   // Recherche du maximum pour cette boule
   msg = "create view r_boul as select * from tirages where (b1=" +
 		QString::number(boule) + " or b2=" + QString::number(boule)
-		+ " or b3=" + QString::number(boule) + " or b4=" + QString::number(boule) + " or b5=" + QString::number(boule) + ")";
+		+ " or b3=" + QString::number(boule) + " or b4=" + QString::number(boule) + " or b5=" + QString::number(boule) + ");";
   status = query.exec(msg);
 
   if(status){
@@ -188,7 +188,7 @@ void GererBase::MontrerResultatRechercheVoisins(QStandardItemModel *modele,int b
   QString msg;
   bool status = true;
 
-  msg = "select * from r"+QString::number(b_id) + ";";
+  msg = "select * from r"+QString::number(b_id) + " ;";
   status = query.exec(msg);
 
   if(status)
@@ -197,6 +197,7 @@ void GererBase::MontrerResultatRechercheVoisins(QStandardItemModel *modele,int b
 	if(query.isValid())
 	{
 	  int position = 0;
+	  modele->sort(0);//
 	  do{
 		QSqlRecord ligne = query.record();
 		int r0 = ligne.value(1).toInt();
@@ -205,23 +206,32 @@ void GererBase::MontrerResultatRechercheVoisins(QStandardItemModel *modele,int b
 		int rn1 = ligne.value(4).toInt();
 		int rn2= ligne.value(5).toInt();
 
-		QStandardItem *item_1 = new QStandardItem( QString::number(222));
+		QStandardItem *item_0 = modele->item(position,0);
+		item_0->setData(position+1,Qt::DisplayRole);
+		modele->setItem(position,0,item_0);
+
+		//QStandardItem *item_1 = new QStandardItem( QString::number(222));
+		QStandardItem *item_1 = modele->item(position,1);
 		item_1->setData(r0,Qt::DisplayRole);
 		modele->setItem(position,1,item_1);
 
-		QStandardItem *item_2 = new QStandardItem( QString::number(222));
+		//QStandardItem *item_2 = new QStandardItem( QString::number(222));
+		QStandardItem *item_2 = modele->item(position,2);
 		item_2->setData(rp1,Qt::DisplayRole);
 		modele->setItem(position,2,item_2);
 
-		QStandardItem *item_3 = new QStandardItem( QString::number(222));
+		//QStandardItem *item_3 = new QStandardItem( QString::number(222));
+		QStandardItem *item_3 = modele->item(position,3);
 		item_3->setData(rp2,Qt::DisplayRole);
 		modele->setItem(position,3,item_3);
 
-		QStandardItem *item_4 = new QStandardItem( QString::number(222));
+		//QStandardItem *item_4 = new QStandardItem( QString::number(222));
+		QStandardItem *item_4 = modele->item(position,4);
 		item_4->setData(rn1,Qt::DisplayRole);
 		modele->setItem(position,4,item_4);
 
-		QStandardItem *item_5 = new QStandardItem( QString::number(222));
+		//QStandardItem *item_5 = new QStandardItem( QString::number(222));
+		QStandardItem *item_5 = modele->item(position,5);
 		item_5->setData(rn2,Qt::DisplayRole);
 		modele->setItem(position,5,item_5);
 

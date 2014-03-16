@@ -124,8 +124,6 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   // click dans fenetre voisin pour afficher boule
   connect( qtv_Voisins, SIGNAL( clicked(QModelIndex)) ,
 		   this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
-  connect( qtv_MesPossibles, SIGNAL( clicked(QModelIndex)) ,
-		   this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
 
   // Selection a change
   connect(qtv_LstCouv->selectionModel(), SIGNAL(selectionChanged (const QItemSelection&, const QItemSelection&)),
@@ -195,12 +193,17 @@ void MainWindow::fen_Voisins(void)
   qsim_Voisins->setHeaderData(4,Qt::Horizontal,"V:-1");
   qsim_Voisins->setHeaderData(5,Qt::Horizontal,"V:-2");
 
-  // Ecriture du numero de boule
+  // Ecriture du numero de boule et reservation item position
   for(i=1;i<=configJeu.limites[zn].max;i++)
   {
-	QStandardItem *item = new QStandardItem( QString::number(222));
+	QStandardItem *item = new QStandardItem();
 	item->setData(i,Qt::DisplayRole);
 	qsim_Voisins->setItem(i-1,0,item);
+	for (int j =1; j<6;j++)
+	{
+	  QStandardItem *item_2 = new QStandardItem();
+	  qsim_Voisins->setItem(i-1,j,item_2);
+	}
   }
 
   qtv_Voisins->setModel(qsim_Voisins);
@@ -399,6 +402,10 @@ void MainWindow::fen_MesPossibles(void)
   qw_MesPossibles->setMinimumHeight(367);
   qw_MesPossibles->setLayout(layCouverture);
   qw_MesPossibles->setWindowTitle("Mes possibles");
+
+  connect( qtv_MesPossibles, SIGNAL( clicked(QModelIndex)) ,
+		   this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
+
   //QMdiSubWindow *sousFenetre3 =
   zoneCentrale->addSubWindow(qw_MesPossibles);
 
@@ -584,6 +591,14 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
 	val = qsim_MesPossibles->index(index.row(),index.column()).data().toInt();
 	cellule = val;
 	//qsim_MesPossibles->index(index.row(),index.column()).data(Qt::ToolTipRole);
+
+	// determination du numero de boule grace a la colonne
+	int b_id = BouleIdFromColId(index.column());
+
+	// Affichage de la table des voisins
+	DB_tirages->RechercheVoisin(b_id,&configJeu,nbSortie,qsim_Voisins);
+	qsim_Voisins->sort(colonne_tri+1,Qt::AscendingOrder);
+	qsim_Voisins->sort(colonne_tri+1,Qt::DescendingOrder);
   }
 #ifndef QT_NO_DEBUG
   qDebug() << QString::number(index.row());
@@ -715,6 +730,7 @@ int MainWindow::BouleIdFromColId(int col_id)
 void MainWindow::ft_LancerTri(int tri_id)
 {
   int col_id = 0;
+colonne_tri = tri_id;
 
   for(col_id = 0; col_id < 5;col_id++)
   {
@@ -731,24 +747,29 @@ void MainWindow::ft_LancerTri(int tri_id)
 void MainWindow::ft2(void)
 {
   ft_LancerTri(0);
+  //qsim_Voisins->sort(1);
 }
 
 void MainWindow::ft3(void)
 {
   ft_LancerTri(1);
+  //qsim_Voisins->sort(2);
 }
 
 void MainWindow::ft4(void)
 {
   ft_LancerTri(2);
+  //qsim_Voisins->sort(3);
 }
 
 void MainWindow::ft5(void)
 {
   ft_LancerTri(3);
+  //qsim_Voisins->sort(4);
 }
 
 void MainWindow::ft6(void)
 {
   ft_LancerTri(4);
+  //qsim_Voisins->sort(5);
 }
