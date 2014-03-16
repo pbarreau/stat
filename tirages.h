@@ -124,11 +124,19 @@ class GererBase : public QObject
 	void MLB_DansLaQtTabView(int boule, QTableView *fen);
 	void MLP_DansLaQtTabView(stTiragesDef *pConf, QString etude, QStandardItemModel *fen); // Montre la parite
 	void PopulateCellMenu(int b_id, int v_id, QMenu *menu, QObject *receiver);
+	void EffectuerTrieMesPossibles(int tri_id, int col_id, int b_id, QStandardItemModel * vue);
+
+  private:
+	void AfficherMaxOccurenceBoule(int boule,QLabel *l_nb);
+	bool CreerTableVoisinsDeBoule(int b_id, int max_voisins);
+	void RechercherVoisinDeLaBoule(int b_id, int max_voisins);
+	void MontrerResultatRechercheVoisins(QStandardItemModel *modele,int b_id);
 
   private:
 	QSqlDatabase db;
 	QSqlTableModel *tbl_model;
 	QSqlTableModel *tbl_couverture;
+	int iAffichageVoisinEnCoursDeLaBoule;
 	bool lieu;
 };
 

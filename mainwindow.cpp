@@ -697,36 +697,58 @@ void MainWindow::ft1(void)
 
 }
 
-void MainWindow::ft2(void)
+int MainWindow::BouleIdFromColId(int col_id)
 {
-  // Trie a +1
-  QVariant  hdata =  qtv_MesPossibles->model()->headerData(0,Qt::Horizontal);
+  int b_id = 0;
+
+  QVariant  hdata =  qtv_MesPossibles->model()->headerData(col_id,Qt::Horizontal);
   QString msg = hdata.toString();
 
   if (!msg.contains("C")){
 	msg = msg.split("b").at(1);
-	int b_id = msg.toInt();
-	QStandardItem *tmp_itm = qsim_MesPossibles->item(0,0);
-	tmp_itm->setData(100,Qt::DisplayRole);
-	qsim_MesPossibles->setItem(0,0,tmp_itm);
-	//effectuer le trie p1
-	//EffectuerTrieMesPossibles(2,b_id,qtv_MesPossibles);
+	b_id = msg.toInt();
+  }
+
+  return b_id;
+}
+
+void MainWindow::ft_LancerTri(int tri_id)
+{
+  int col_id = 0;
+
+  for(col_id = 0; col_id < 5;col_id++)
+  {
+	int b_id = BouleIdFromColId(col_id);
+
+	if(b_id)
+	{
+	  DB_tirages->EffectuerTrieMesPossibles(tri_id,col_id,b_id,qsim_MesPossibles);
+	}
   }
 
 }
+
+void MainWindow::ft2(void)
+{
+  ft_LancerTri(0);
+}
+
 void MainWindow::ft3(void)
 {
-
+  ft_LancerTri(1);
 }
+
 void MainWindow::ft4(void)
 {
-
+  ft_LancerTri(2);
 }
+
 void MainWindow::ft5(void)
 {
-
+  ft_LancerTri(3);
 }
+
 void MainWindow::ft6(void)
 {
-
+  ft_LancerTri(4);
 }

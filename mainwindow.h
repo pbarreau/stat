@@ -24,11 +24,11 @@ class MonToolTips:public QStandardItemModel
 
   public:
 	MonToolTips(int rows, int columns,QObject * parent = 0);
-    //void setData ( const QVariant & value, int role );
-    //QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	//void setData ( const QVariant & value, int role );
+	//QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
-public slots:
-    //void customMenuRequested(QPoint pos);
+  public slots:
+	//void customMenuRequested(QPoint pos);
 };
 #endif
 
@@ -49,7 +49,7 @@ class MainWindow : public QMainWindow
 	void slot_UneSelectionActivee(const QModelIndex & index);
 	void slot_MontrerBouleDansBase(const QModelIndex & index);
 	void slot_CouvertureSelChanged(const QItemSelection &now, const QItemSelection &prev);
-    void customMenuRequested(QPoint pos);
+	void customMenuRequested(QPoint pos);
 	void tablev_customContextMenu(QPoint pos);
 	void ft1(void);
 	void ft2(void);
@@ -66,6 +66,8 @@ class MainWindow : public QMainWindow
 	void fen_MesPossibles(void);
 	void fen_Parites(void);
 	void fen_MaSelection(QTableView *qtv_MaSelection);
+	int BouleIdFromColId(int col_id);
+	void ft_LancerTri(int tri_id);
 
   private:
 	Ui::MainWindow *ui;
@@ -85,8 +87,8 @@ class MainWindow : public QMainWindow
 	QStandardItemModel *qsim_Ecarts ;
 	QStandardItemModel *qsim_MaSelection ;
 
-    //MonToolTips *qsim_MesPossibles ;
-    QStandardItemModel *qsim_MesPossibles ;
+	//MonToolTips *qsim_MesPossibles ;
+	QStandardItemModel *qsim_MesPossibles ;
 
 	QStandardItemModel *qsim_Parites ;
 	QStandardItemModel *qsim_Ensemble_1 ;

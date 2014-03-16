@@ -13,6 +13,7 @@
 GererBase::GererBase(QObject *parent) :
     QObject(parent)
 {
+  iAffichageVoisinEnCoursDeLaBoule = 0;
 }
 
 GererBase::~GererBase(void)

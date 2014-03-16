@@ -151,18 +151,12 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
   modele->setItem(boule-1,4,item4);
 }
 
-
-void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
-								QLabel *l_nb, QStandardItemModel *modele)
+void GererBase::AfficherMaxOccurenceBoule(int boule,QLabel *l_nb)
 {
   QSqlQuery query(db);
   QString msg;
+  int value = 0;
   bool status = false;
-  int calcul = 0, voisin = 0;
-  int rp1 = 0, rp2 = 0, rn1 = 0, rn2 = 0;
-  int resu = 0;
-  int zn = 0;
-  QString mvoisins[5]={"r0","rp1","rp2","rn1","rn2"};
 
   // Recherche du maximum pour cette boule
   msg = "create view r_boul as select * from tirages where (b1=" +
@@ -170,47 +164,199 @@ void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
 		+ " or b3=" + QString::number(boule) + " or b4=" + QString::number(boule) + " or b5=" + QString::number(boule) + ")";
   status = query.exec(msg);
 
-  msg = "select count (*) from r_boul";
-  calcul = query.exec(msg);
-  query.first();
-  QSqlRecord rec  = query.record();
-  calcul = rec.value(0).toInt();
+  if(status){
+	msg = "select count (*) from r_boul";
+	status = query.exec(msg);
 
-  l_nb->setText(QString("Boule %1 : %2 fois ").arg( boule ).arg(calcul) );
+	if(status){
+	  query.first();
+
+	  if(query.isValid()){
+
+		QSqlRecord rec  = query.record();
+		value = rec.value(0).toInt();
+
+		l_nb->setText(QString("Boule %1 : %2 fois ").arg( boule ).arg(value) );
+	  }
+	}
+  }
+}
+
+void GererBase::MontrerResultatRechercheVoisins(QStandardItemModel *modele,int b_id)
+{
+  QSqlQuery query;
+  QString msg;
+  bool status = true;
+
+  msg = "select * from r"+QString::number(b_id) + ";";
+  status = query.exec(msg);
+
+  if(status)
+  {
+	status = query.first();
+	if(query.isValid())
+	{
+	  int position = 0;
+	  do{
+		QSqlRecord ligne = query.record();
+		int r0 = ligne.value(1).toInt();
+		int rp1 = ligne.value(2).toInt();
+		int rp2 = ligne.value(3).toInt();
+		int rn1 = ligne.value(4).toInt();
+		int rn2= ligne.value(5).toInt();
+
+		QStandardItem *item_1 = new QStandardItem( QString::number(222));
+		item_1->setData(r0,Qt::DisplayRole);
+		modele->setItem(position,1,item_1);
+
+		QStandardItem *item_2 = new QStandardItem( QString::number(222));
+		item_2->setData(rp1,Qt::DisplayRole);
+		modele->setItem(position,2,item_2);
+
+		QStandardItem *item_3 = new QStandardItem( QString::number(222));
+		item_3->setData(rp2,Qt::DisplayRole);
+		modele->setItem(position,3,item_3);
+
+		QStandardItem *item_4 = new QStandardItem( QString::number(222));
+		item_4->setData(rn1,Qt::DisplayRole);
+		modele->setItem(position,4,item_4);
+
+		QStandardItem *item_5 = new QStandardItem( QString::number(222));
+		item_5->setData(rn2,Qt::DisplayRole);
+		modele->setItem(position,5,item_5);
+
+		position++;
+	  }while(query.next());
+	}
+
+  }
+
+}
+
+void GererBase::RechercherVoisinDeLaBoule(int b_id, int max_voisins)
+{
+  QSqlQuery query;
+  QString msg;
+  bool status = true;
+  int r0 =0, rn1=0,rn2=0,rp1=0,rp2=0;
+
+  // Recherche des voisins de la boule
+  for(int voisin=1;(voisin<=max_voisins) && status;voisin++)
+  {
+	if(voisin != b_id)
+	{
+	  // Boule sortant avec
+	  r0 = TotalRechercheVoisinADistanceDe(0,voisin);
+	}
+	else
+	{
+	  r0 = 0;
+	}
+
+	rn1 = TotalRechercheVoisinADistanceDe(1,voisin);
+	rp1 = TotalRechercheVoisinADistanceDe(-1,voisin);
+	rn2 = TotalRechercheVoisinADistanceDe(2,voisin);
+	rp2 = TotalRechercheVoisinADistanceDe(-2,voisin);
+
+	// mise a jour dans la base
+	msg = "update r"+QString::number(b_id) + " " +
+		  "set r0=" +QString::number(r0)+ ", " +
+		  "rp1=" +QString::number(rp1)+ ", " +
+		  "rp2=" +QString::number(rp2)+ ", " +
+		  "rn1=" +QString::number(rn1)+ ", " +
+		  "rn2=" +QString::number(rn2)+ " " +
+		  "where (id="+QString::number(voisin)+");";
+	status = query.exec(msg);
+  }
+}
+
+bool GererBase::CreerTableVoisinsDeBoule(int b_id, int max_voisins)
+{
+  QSqlQuery query;
+  QString msg;
+  bool status = false;
 
   // Creation d'une table si pas encore cree pour memoriser la recherche
-  msg =  "create table if not exists r"+QString::number(boule)+ " " +
+  msg =  "create table if not exists r"+QString::number(b_id)+ " " +
 		 "(id INTEGER PRIMARY KEY, r0 int, rp1 int, rp2 int, rn1 int, rn2 int);";
   status = query.exec(msg);
+
   if(status)
   {
 	// On essai de recuperer une valeur pour voir si les infos dans table
-	msg = "select count (*) from r" +QString::number(boule)+ "; ";
+	msg = "select count (*) from r" +QString::number(b_id)+ "; ";
 	status = query.exec(msg);
-	status = query.first();
-	calcul = query.value(0).toInt();
-	if(!calcul){
-	  // Table pas encore cree mettre a 0 les donnees
-	  for(voisin=1;(voisin<=pConf->limites[zn].max) && status;voisin++)
+
+	if(status)
+	{
+	  status = query.first();
+	  if(query.isValid())
 	  {
-		msg = "insert into r"+QString::number(boule)+
-			  " (id, r0, rp1, rp2, rn1, rn2) values (null, 0,0,0,0,0);";
-		status = query.exec(msg);
+		int calcul = query.value(0).toInt();
+		if(!calcul){
+		  // Table pas encore cree mettre a 0 les donnees
+		  for(int voisin=1;(voisin<=max_voisins) && status;voisin++)
+		  {
+			msg = "insert into r"+QString::number(b_id)+
+				  " (id, r0, rp1, rp2, rn1, rn2) values (null, 0,0,0,0,0);";
+			status = query.exec(msg);
+		  }
+		}
+		else
+		{
+		  // La table existe deja et a des infos des voisins
+		  status = false;
+		}
 	  }
 	}
   }
 
+  return status;
+}
+
+void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
+								QLabel *l_nb, QStandardItemModel *modele)
+{
+  QSqlQuery query(db);
+  QString msg;
+  bool status = false;
+  //int calcul = 0, voisin = 0;
+  //int rp1 = 0, rp2 = 0, rn1 = 0, rn2 = 0;
+  //int resu = 0;
+  int zn = 0;
+  QString mvoisins[5]={"r0","rp1","rp2","rn1","rn2"};
+
+  if (iAffichageVoisinEnCoursDeLaBoule != boule)
+  {
+	iAffichageVoisinEnCoursDeLaBoule = boule;
+	AfficherMaxOccurenceBoule(boule, l_nb);
+	int max_voisin = pConf->limites[zn].max;
+	status = CreerTableVoisinsDeBoule(boule, max_voisin);
+
+	if(status)
+	{
+	  RechercherVoisinDeLaBoule(boule, max_voisin);
+	}
+
+	  // Affichage des resultats dans la vue
+	MontrerResultatRechercheVoisins(modele, boule);
+  }
+
+#if 0
   // Recherche des voisins de la boule
   for(voisin=1;(voisin<=(pConf->limites[zn].max)) && status;voisin++)
   {
 	if(voisin != boule){
 	  // Boule sortant avec
+#if 0
 	  msg = "select count (*) from r_boul where (b1=" + QString::number(voisin) + " or b2=" + QString::number(voisin)
 			+ " or b3=" + QString::number(voisin) + " or b4=" + QString::number(voisin) + " or b5=" + QString::number(voisin) + ")";
 	  status = query.exec(msg);
 	  query.first();
 	  //QSqlRecord rec  = query.record();
 	  resu = query.value(0).toInt();
+#endif
+	  resu = TotalRechercheVoisinADistanceDe(0,voisin);
 	}
 	else
 	{
@@ -257,6 +403,8 @@ void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
 
 
   }
+#endif
+
   // creer les tables avec les meilleurs de facon ordonne
   for(int i=0;(i<(pConf->nbElmZone[zn])) && status;i++)
   {
@@ -554,6 +702,46 @@ void GererBase::PopulateCellMenu(int b_id, int v_id,QMenu *menu,QObject * receiv
 		menu->addAction(new QAction(vVoisin[i], receiver));
 	  }
 
+	}
+  }
+}
+
+void GererBase::EffectuerTrieMesPossibles(int tri_id, int col_id,int b_id,QStandardItemModel * vue)
+{
+  QString msg;
+  QSqlQuery query;
+  bool status = false;
+  QString tblColName[5]={"r0","rp1","rp2","rn1","rn2"};
+
+  //select r30.id,r0 from r30 inner join union_30 on union_30.id=r30.id order by r0 desc;
+
+  msg = "select r"+QString::number(b_id)+".id,"+tblColName[tri_id]+
+		" from r"+QString::number(b_id)+
+		" inner join union_"+QString::number(b_id)+
+		" on union_"+QString::number(b_id)+".id=r"+QString::number(b_id)+
+		".id order by "+ tblColName[tri_id]+" desc;";
+  status = query.exec(msg);
+
+  if(status)
+  {
+	status = query.first();
+	if(query.isValid())
+	{
+
+	  if (col_id >=0 || col_id <5)
+	  {
+
+		// Parcourir tout les resultats
+		int position = 0;
+		do{
+		  QSqlRecord ligne = query.record();
+		  int val = ligne.value(0).toInt();
+		  QStandardItem *tmp_itm = vue->item(position,col_id);
+		  tmp_itm->setData(val,Qt::DisplayRole);
+		  vue->setItem(position,col_id,tmp_itm);
+		  position++;
+		}while(query.next());
+	  }
 	}
   }
 }
