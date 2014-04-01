@@ -725,11 +725,20 @@ void GererBase::EffectuerTrieMesPossibles(int tri_id, int col_id,int b_id,QStand
 
   //select r30.id,r0 from r30 inner join union_30 on union_30.id=r30.id order by r0 desc;
 
+  if(tri_id == -1)
+  {
+   msg = "select * from union_" +QString::number(b_id)+
+           " order by T desc;";
+  }
+  else
+  {
   msg = "select r"+QString::number(b_id)+".id,"+tblColName[tri_id]+
 		" from r"+QString::number(b_id)+
 		" inner join union_"+QString::number(b_id)+
 		" on union_"+QString::number(b_id)+".id=r"+QString::number(b_id)+
 		".id order by "+ tblColName[tri_id]+" desc;";
+  }
+
   status = query.exec(msg);
 
   if(status)
