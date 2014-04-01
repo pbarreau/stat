@@ -42,6 +42,8 @@ typedef struct _tirages_def
 {
 	unsigned char nb_zone;
 	QString *nomZone;
+    unsigned char nb_tir_semaine;
+    QString *jour_tir;
 	int *nbElmZone;
 	stBornes *limites;
 	int *offsetFichier;

@@ -37,6 +37,32 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     // Recuperation des contantes du type de jeu
     tmp.getConfig(&configJeu);
 
+
+    // Preparer la base de données
+    DB_tirages->CreerBaseEnMemoire(true);
+
+
+    // Creation des tables pour ce type jeu
+    DB_tirages->CreerTableTirages(&tmp);
+
+    // Recuperation des données fdj
+    ficSource = tmp.SelectSource(load);
+    DB_tirages->LireLesTirages(ficSource,&tmp);
+
+    if(leJeu == NE_FDJ::fdj_euro){
+        // Lecture des anciennes base des tirages
+        ficSource = "euromillions_2.csv";
+        DB_tirages->LireLesTirages(ficSource,&tmp);
+        ficSource="euromillions.csv";
+        DB_tirages->LireLesTirages(ficSource,&tmp);
+    }
+    else
+    {
+        //Rien
+    }
+
+
+
     ui->setupUi(this);
 
     zoneCentrale = new QMdiArea;
@@ -62,29 +88,6 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
 
     // Creation fenetre pour parite
     fen_Parites();
-
-    // Preparer la base de données
-    DB_tirages->CreerBaseEnMemoire(true);
-
-
-    // Creation des tables pour ce type jeu
-    DB_tirages->CreerTableTirages(&tmp);
-
-    // Recuperation des données fdj
-    ficSource = tmp.SelectSource(load);
-    DB_tirages->LireLesTirages(ficSource,&tmp);
-
-    if(leJeu == NE_FDJ::fdj_euro){
-        // Lecture des anciennes base des tirages
-        ficSource = "euromillions_2.csv";
-        DB_tirages->LireLesTirages(ficSource,&tmp);
-        ficSource="euromillions.csv";
-        DB_tirages->LireLesTirages(ficSource,&tmp);
-    }
-    else
-    {
-        //Rien
-    }
 
     // Ordre arrivee des boules ?
     DB_tirages->CouvertureBase(qsim_Ecarts,&configJeu);
@@ -114,6 +117,10 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
     // click dans fenetre ma selection
     connect( qtv_MesChoix, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( slot_UneSelectionActivee( QModelIndex) ) );
+
+    // Selection a change
+    connect(qtv_LstCouv->selectionModel(), SIGNAL(selectionChanged (const QItemSelection&, const QItemSelection&)),
+            this, SLOT(slot_CouvertureSelChanged(QItemSelection,QItemSelection)));
 
 
 
@@ -168,9 +175,6 @@ void MainWindow::fen_LstCouv(void)
     // Ratacher cette sous fenetre
     zoneCentrale->addSubWindow(qw_LstCouv);
 
-    // Selection a change
-    connect(qtv_LstCouv->selectionModel(), SIGNAL(selectionChanged (const QItemSelection&, const QItemSelection&)),
-            this, SLOT(slot_CouvertureSelChanged(QItemSelection,QItemSelection)));
 
 
 }
@@ -421,8 +425,8 @@ void MainWindow::fen_MesPossibles(void)
 void MainWindow::fen_Parites(void)
 {
     QWidget *qw_Parites = new QWidget;
-    QTabWidget *tabWidget = new QTabWidget;
-
+    QTabWidget *tab_Niv1 = new QTabWidget;
+    QTabWidget *tab_Niv2 = new QTabWidget;
 
 
     int zn = 0;
@@ -434,6 +438,9 @@ void MainWindow::fen_Parites(void)
     qsim_Parites->setHeaderData(2,Qt::Horizontal,"Tot z2");
 
     qtv_Parites = new QTableView;
+    //tabqtv = new QTableView[2];
+    //((QTableView*) tabqtv[0])->setModel(qsim_Parites);
+
     qtv_Parites->setModel(qsim_Parites);
     qtv_Parites->setColumnWidth(0,45);
     qtv_Parites->setColumnWidth(1,55);
@@ -461,12 +468,15 @@ void MainWindow::fen_Parites(void)
     qtv_E1->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_E1->setMinimumHeight(220);
 
-    tabWidget->addTab(qtv_Parites,tr("Parite"));
-    tabWidget->addTab(qtv_E1,tr("Repartition"));
+    tab_Niv1->addTab(tab_Niv2,tr("Parite"));
+    tab_Niv2->addTab(qtv_Parites,tr("Boule"));
+    tab_Niv2->addTab(qtv_Parites,tr("Etoile"));
+
+    tab_Niv1->addTab(qtv_E1,tr("Repartition"));
 
 
     QFormLayout *mainLayout = new QFormLayout;
-    mainLayout->addWidget(tabWidget);
+    mainLayout->addWidget(tab_Niv1);
     qw_Parites->setWindowTitle("Parites des tirages");
     qw_Parites->setLayout(mainLayout);
     zoneCentrale->addSubWindow(qw_Parites);

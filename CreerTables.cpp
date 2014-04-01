@@ -61,11 +61,11 @@ msg1 = pRef->s_LibColBase(&ref);
 if((msg1.length() != 0) && ret)
 {
   // Retirer le premier element
-  msg1.remove("jour, ");
+  msg1.remove("date_tirage, ");
   msg1.replace(",", " int,");
   msg1 = msg1 + " int";
 
-  msg1 =  "create table tirages (id integer primary key,jour TEXT," +
+  msg1 =  "create table tirages (id integer primary key,date_tirage TEXT," +
       msg1 + ")";
 
   if (db.isOpen())

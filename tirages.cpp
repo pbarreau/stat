@@ -18,6 +18,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
 	case NE_FDJ::fdj_loto:
 	{
 	  conf.nb_zone = 2;
+      conf.nb_tir_semaine = 3;
 	  conf.nbElmZone = new int [conf.nb_zone];
 	  conf.nbElmZone[0]=5;
 	  conf.nbElmZone[1]=1;
@@ -26,6 +27,10 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
 	  conf.limites[0].max = 49;
 	  conf.limites[1].min = 1;
 	  conf.limites[1].max = 10;
+      conf.jour_tir=new QString[conf.nb_tir_semaine];
+      conf.jour_tir[0]="LUNDI";
+      conf.jour_tir[1]="MERCREDI";
+      conf.jour_tir[2]="SAMEDI";
 	  conf.nomZone = new QString [conf.nb_zone];
 	  conf.nomZone[0]="b";
 	  conf.nomZone[1]="e";
@@ -38,6 +43,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
 	case NE_FDJ::fdj_euro:
 	{
 	  conf.nb_zone = 2;
+      conf.nb_tir_semaine = 2;
 	  conf.nbElmZone = new int [conf.nb_zone];
 	  conf.nbElmZone[0]=5;
 	  conf.nbElmZone[1]=2;
@@ -46,6 +52,9 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
 	  conf.limites[0].max = 50;
 	  conf.limites[1].min = 1;
 	  conf.limites[1].max = 11;
+      conf.jour_tir=new QString[conf.nb_tir_semaine];
+      conf.jour_tir[0]="MARDI";
+      conf.jour_tir[1]="VENDREDI";
 	  conf.nomZone = new QString [conf.nb_zone];
 	  conf.nomZone[0]="b";
 	  conf.nomZone[1]="e";
@@ -137,9 +146,12 @@ QString tirages::s_LibColBase(stTiragesDef *ref)
 	msg1 = msg1 + tab[zone] + CL_SGRP +",";
   }
 
+  // jour de la semaine du tirage
+  msg1 = msg1 + "jour_tirage,";
+
   if(msg1.length() != 0){
 	msg1.remove(msg1.size()-1,1);
-	msg1 = "jour, " + msg1;
+    msg1 = "date_tirage, " + msg1;
   }
   return msg1;
 }
