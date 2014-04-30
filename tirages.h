@@ -122,6 +122,8 @@ class GererBase : public QObject
 	void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QStandardItemModel *fen);
 	bool CreerColonneOrdreArrivee(int id, stTiragesDef *pConf);
 	void MLB_DansLaQtTabView(int boule, QTableView *fen);
+	void MLB_DansMesPossibles(int boule, QTableView *fen);
+	int CouleurVersBid(QTableView *fen);
 	void MLP_DansLaQtTabView(stTiragesDef *pConf, QString etude, QStandardItemModel *fen); // Montre la parite
 	void PopulateCellMenu(int b_id, int v_id, QMenu *menu, QObject *receiver);
 	void EffectuerTrieMesPossibles(int tri_id, int col_id, int b_id, QStandardItemModel * vue);
