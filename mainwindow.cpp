@@ -115,6 +115,10 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   connect( qtv_MesChoix, SIGNAL( doubleClicked(QModelIndex)) ,
 		   this, SLOT( slot_UneSelectionActivee( QModelIndex) ) );
 
+    // Selection a change
+    connect(qtv_LstCouv->selectionModel(), SIGNAL(selectionChanged (const QItemSelection&, const QItemSelection&)),
+            this, SLOT(slot_CouvertureSelChanged(QItemSelection,QItemSelection)));
+
 
 
 }

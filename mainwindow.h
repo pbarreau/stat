@@ -79,7 +79,8 @@ class MainWindow : public QMainWindow
 	QTableView *qtv_Voisins;
 	QTableView *qtv_Ecarts;
 	QTableView *qtv_MesPossibles;
-	QTableView *qtv_Parites;
+    QTableView *qtv_Parites;
+    //void **tabqtv;
 	QWidget *qw_LstCouv;
 	QWidget *qw_Tirages;
 	//QWidget *qw_LstCouv;
@@ -90,7 +91,7 @@ class MainWindow : public QMainWindow
 	//MonToolTips *qsim_MesPossibles ;
 	QStandardItemModel *qsim_MesPossibles ;
 
-	QStandardItemModel *qsim_Parites ;
+    QStandardItemModel *qsim_Parites ;
 	QStandardItemModel *qsim_Ensemble_1 ;
 
 	QMenu *menuTrieMesPossibles;
