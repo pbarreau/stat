@@ -586,7 +586,30 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
 		item1->setBackground(macouleur);
 	  }
 	}
+
   }
+}
+
+void GererBase::CouvMontrerProbable(int i,
+									int col_m,
+									int col_v,
+									QStandardItemModel *dest)
+{
+
+  double rayon = 1.5;
+
+	QStandardItem *item1 = dest->item(i-1,col_m);
+	QStandardItem *item2 = dest->item(i-1,col_v);
+	double v_moyen = item1->data(Qt::DisplayRole).toDouble();
+	int v_court = item2->data(Qt::DisplayRole).toInt();
+
+
+	if((v_court>=v_moyen-rayon) && (v_court <= (v_moyen +rayon)))
+	{
+	  item2->setBackground(QBrush(Qt::magenta));
+	  item1->setBackground(QBrush(Qt::magenta));
+	}
+
 }
 
 QString req_msg(int zone, int boule, stTiragesDef *ref)

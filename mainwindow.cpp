@@ -93,6 +93,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   for(i=1;i<=configJeu.limites->max;i++){
 	// Remplir Sous Fen les ecarts
 	DB_tirages->DistributionSortieDeBoule(i,qsim_Ecarts,&configJeu);
+	// Montrer les valeurs probable
+	DB_tirages->CouvMontrerProbable(i,3,1,qsim_Ecarts);
+
+
+	// Calcul occurence de cette boule
 	DB_tirages->TotalApparitionBoule(i,qsim_Voisins);
   }
 
