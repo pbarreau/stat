@@ -90,9 +90,10 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   DB_tirages->CouvertureBase(qsim_Ecarts,&configJeu);
 
   //// GARDER L'ORDRE D'APPEL DES FONCTIONS PB VERROU SUR LA BASE
-  // Remplir Sous Fen les ecarts
   for(i=1;i<=configJeu.limites->max;i++){
+	// Remplir Sous Fen les ecarts
 	DB_tirages->DistributionSortieDeBoule(i,qsim_Ecarts,&configJeu);
+	DB_tirages->TotalApparitionBoule(i,qsim_Voisins);
   }
 
   // Remplir la sousfenetre base de données
@@ -115,9 +116,9 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   connect( qtv_MesChoix, SIGNAL( doubleClicked(QModelIndex)) ,
 		   this, SLOT( slot_UneSelectionActivee( QModelIndex) ) );
 
-    // Selection a change
-    connect(qtv_LstCouv->selectionModel(), SIGNAL(selectionChanged (const QItemSelection&, const QItemSelection&)),
-            this, SLOT(slot_CouvertureSelChanged(QItemSelection,QItemSelection)));
+  // Selection a change
+  connect(qtv_LstCouv->selectionModel(), SIGNAL(selectionChanged (const QItemSelection&, const QItemSelection&)),
+		  this, SLOT(slot_CouvertureSelChanged(QItemSelection,QItemSelection)));
 
 
 
@@ -189,7 +190,7 @@ void MainWindow::fen_Voisins(void)
   QWidget *qw_Voisins = new QWidget;
   qtv_Voisins = new QTableView;
   int zn = 0;
-  qsim_Voisins = new QStandardItemModel(configJeu.limites[zn].max,6);
+  qsim_Voisins = new QStandardItemModel(configJeu.limites[zn].max,7);
 
   // entete du modele
   qsim_Voisins->setHeaderData(0,Qt::Horizontal,"B");
@@ -198,6 +199,7 @@ void MainWindow::fen_Voisins(void)
   qsim_Voisins->setHeaderData(3,Qt::Horizontal,"V:+2");
   qsim_Voisins->setHeaderData(4,Qt::Horizontal,"V:-1");
   qsim_Voisins->setHeaderData(5,Qt::Horizontal,"V:-2");
+  qsim_Voisins->setHeaderData(6,Qt::Horizontal,"NbS");
 
   // Ecriture du numero de boule et reservation item position
   for(i=1;i<=configJeu.limites[zn].max;i++)
@@ -205,7 +207,7 @@ void MainWindow::fen_Voisins(void)
 	QStandardItem *item = new QStandardItem();
 	item->setData(i,Qt::DisplayRole);
 	qsim_Voisins->setItem(i-1,0,item);
-	for (int j =1; j<6;j++)
+	for (int j =1; j<7;j++)
 	{
 	  QStandardItem *item_2 = new QStandardItem();
 	  qsim_Voisins->setItem(i-1,j,item_2);
@@ -219,14 +221,14 @@ void MainWindow::fen_Voisins(void)
   qtv_Voisins->setColumnWidth(3,60);
   qtv_Voisins->setColumnWidth(4,60);
   qtv_Voisins->setColumnWidth(5,60);
+  qtv_Voisins->setColumnWidth(6,60);
+
   //tblVoisin->setMaximumWidth(260);
   qtv_Voisins->setMinimumHeight(390);
   qtv_Voisins->setSortingEnabled(true);
   qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
   qtv_Voisins->setAlternatingRowColors(true);
   qtv_Voisins->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  //qtv_Voisins->hideColumn(3);
-  //qtv_Voisins->hideColumn(4);
 
   nbSortie = new QLabel;
   nbSortie->setText("Nb total de sorties:");
@@ -236,8 +238,7 @@ void MainWindow::fen_Voisins(void)
   layVoisin->addWidget(qtv_Voisins);
 
   qw_Voisins->setMinimumHeight(435);
-  qw_Voisins->setMinimumWidth(450);
-  //qw_Voisins->setFixedSize(450,500);
+  qw_Voisins->setMinimumWidth(500);
 
   qw_Voisins->setLayout(layVoisin);
   qw_Voisins->setWindowTitle("Voisins de selection");

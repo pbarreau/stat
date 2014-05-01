@@ -42,8 +42,8 @@ typedef struct _tirages_def
 {
 	unsigned char nb_zone;
 	QString *nomZone;
-    unsigned char nb_tir_semaine;
-    QString *jour_tir;
+	unsigned char nb_tir_semaine;
+	QString *jour_tir;
 	int *nbElmZone;
 	stBornes *limites;
 	int *offsetFichier;
@@ -129,6 +129,7 @@ class GererBase : public QObject
 	void MLP_DansLaQtTabView(stTiragesDef *pConf, QString etude, QStandardItemModel *fen); // Montre la parite
 	void PopulateCellMenu(int b_id, int v_id, QMenu *menu, QObject *receiver);
 	void EffectuerTrieMesPossibles(int tri_id, int col_id, int b_id, QStandardItemModel * vue);
+	void TotalApparitionBoule(int boule, QStandardItemModel *modele);
 
   private:
 	void AfficherMaxOccurenceBoule(int boule,QLabel *l_nb);

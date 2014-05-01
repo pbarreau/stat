@@ -17,6 +17,40 @@
 
 QString req_msg(int zone, int boule, stTiragesDef *ref);
 
+void GererBase::TotalApparitionBoule(int boule, QStandardItemModel *modele)
+{
+  bool status = false;
+
+  QSqlQuery query;
+  QString msg;
+
+  // Recherche du maximum pour cette boule
+  msg = "select count (*) from tirages where (b1=" +
+		QString::number(boule) +
+		" or b2=" + QString::number(boule) +
+		" or b3=" + QString::number(boule) +
+		" or b4=" + QString::number(boule) +
+		" or b5=" + QString::number(boule) + ");";
+  status = query.exec(msg);
+
+  if(status){
+	query.first();
+
+	if(query.isValid())
+	{
+	  QSqlRecord rec  = query.record();
+	  int value = rec.value(0).toInt();
+
+	  // Mettre le resultat dans tableau voisins
+	  QStandardItem *item2 = modele->item(boule-1,6);
+	  item2->setData(value,Qt::DisplayRole);
+	  item2->setBackground(QBrush(Qt::cyan));
+	  modele->setItem(boule-1,6,item2);
+
+	}
+  }
+}
+
 void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,stTiragesDef *pRef)
 {
   bool status = false;
@@ -210,27 +244,22 @@ void GererBase::MontrerResultatRechercheVoisins(QStandardItemModel *modele,int b
 		item_0->setData(position+1,Qt::DisplayRole);
 		modele->setItem(position,0,item_0);
 
-		//QStandardItem *item_1 = new QStandardItem( QString::number(222));
 		QStandardItem *item_1 = modele->item(position,1);
 		item_1->setData(r0,Qt::DisplayRole);
 		modele->setItem(position,1,item_1);
 
-		//QStandardItem *item_2 = new QStandardItem( QString::number(222));
 		QStandardItem *item_2 = modele->item(position,2);
 		item_2->setData(rp1,Qt::DisplayRole);
 		modele->setItem(position,2,item_2);
 
-		//QStandardItem *item_3 = new QStandardItem( QString::number(222));
 		QStandardItem *item_3 = modele->item(position,3);
 		item_3->setData(rp2,Qt::DisplayRole);
 		modele->setItem(position,3,item_3);
 
-		//QStandardItem *item_4 = new QStandardItem( QString::number(222));
 		QStandardItem *item_4 = modele->item(position,4);
 		item_4->setData(rn1,Qt::DisplayRole);
 		modele->setItem(position,4,item_4);
 
-		//QStandardItem *item_5 = new QStandardItem( QString::number(222));
 		QStandardItem *item_5 = modele->item(position,5);
 		item_5->setData(rn2,Qt::DisplayRole);
 		modele->setItem(position,5,item_5);
@@ -348,72 +377,9 @@ void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
 	  RechercherVoisinDeLaBoule(boule, max_voisin);
 	}
 
-	  // Affichage des resultats dans la vue
+	// Affichage des resultats dans la vue
 	MontrerResultatRechercheVoisins(modele, boule);
   }
-
-#if 0
-  // Recherche des voisins de la boule
-  for(voisin=1;(voisin<=(pConf->limites[zn].max)) && status;voisin++)
-  {
-	if(voisin != boule){
-	  // Boule sortant avec
-#if 0
-	  msg = "select count (*) from r_boul where (b1=" + QString::number(voisin) + " or b2=" + QString::number(voisin)
-			+ " or b3=" + QString::number(voisin) + " or b4=" + QString::number(voisin) + " or b5=" + QString::number(voisin) + ")";
-	  status = query.exec(msg);
-	  query.first();
-	  //QSqlRecord rec  = query.record();
-	  resu = query.value(0).toInt();
-#endif
-	  resu = TotalRechercheVoisinADistanceDe(0,voisin);
-	}
-	else
-	{
-	  resu = 0;
-	}
-	QStandardItem *item = new QStandardItem( QString::number(222));
-	item->setData(resu,Qt::DisplayRole);
-	modele->setItem(voisin-1,1,item);
-
-	rn1 = TotalRechercheVoisinADistanceDe(1,voisin);
-	rp1 = TotalRechercheVoisinADistanceDe(-1,voisin);
-	rn2 = TotalRechercheVoisinADistanceDe(2,voisin);
-	rp2 = TotalRechercheVoisinADistanceDe(-2,voisin);
-
-	// mise a jour dans la base
-	if (calcul == 0){
-	  msg = "update r"+QString::number(boule) + " " +
-			"set r0=" +QString::number(resu)+ ", " +
-			"rp1=" +QString::number(rp1)+ ", " +
-			"rp2=" +QString::number(rp2)+ ", " +
-			"rn1=" +QString::number(rn1)+ ", " +
-			"rn2=" +QString::number(rn2)+ " " +
-			"where (id="+QString::number(voisin)+");";
-	  status = query.exec(msg);
-	}
-
-	//calcul = rp1 + rp2 + rn1 + rn2;
-	QStandardItem *item2 = new QStandardItem( QString::number(222));
-	item2->setData(rp1,Qt::DisplayRole);
-	modele->setItem(voisin-1,2,item2);
-
-	//calcul =calcul + resu;
-	QStandardItem *item3 = new QStandardItem( QString::number(222));
-	item3->setData(rp2,Qt::DisplayRole);
-	modele->setItem(voisin-1,3,item3);
-
-	QStandardItem *item4 = new QStandardItem( QString::number(222));
-	item4->setData(rn1,Qt::DisplayRole);
-	modele->setItem(voisin-1,4,item4);
-
-	QStandardItem *item5 = new QStandardItem( QString::number(222));
-	item5->setData(rn2,Qt::DisplayRole);
-	modele->setItem(voisin-1,5,item5);
-
-
-  }
-#endif
 
   // creer les tables avec les meilleurs de facon ordonne
   for(int i=0;(i<(pConf->nbElmZone[zn])) && status;i++)
@@ -727,16 +693,16 @@ void GererBase::EffectuerTrieMesPossibles(int tri_id, int col_id,int b_id,QStand
 
   if(tri_id == -1)
   {
-   msg = "select * from union_" +QString::number(b_id)+
-           " order by T desc;";
+	msg = "select * from union_" +QString::number(b_id)+
+		  " order by T desc;";
   }
   else
   {
-  msg = "select r"+QString::number(b_id)+".id,"+tblColName[tri_id]+
-		" from r"+QString::number(b_id)+
-		" inner join union_"+QString::number(b_id)+
-		" on union_"+QString::number(b_id)+".id=r"+QString::number(b_id)+
-		".id order by "+ tblColName[tri_id]+" desc;";
+	msg = "select r"+QString::number(b_id)+".id,"+tblColName[tri_id]+
+		  " from r"+QString::number(b_id)+
+		  " inner join union_"+QString::number(b_id)+
+		  " on union_"+QString::number(b_id)+".id=r"+QString::number(b_id)+
+		  ".id order by "+ tblColName[tri_id]+" desc;";
   }
 
   status = query.exec(msg);
