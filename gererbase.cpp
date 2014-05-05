@@ -460,6 +460,47 @@ void GererBase::MLB_DansLaQtTabView(int boule, QTableView *fen)
   fen->selectRow(ligne);
 }
 
+void GererBase::MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen)
+{
+  QSqlQuery query;
+  QString msg ="";
+  int nb_zone = pConf->nb_zone;
+  int i =0;
+  bool status = true;
+
+
+
+  for (i=0; i< nb_zone;i++)
+  {
+	//select     bd0, count (*) as tot from analyses group by bd0;";
+	int nb_elem = pConf->limites[i].max/10;
+	// Fentre pour boule existe et pas pour etoiles
+	for (int j=0;(j<= nb_elem) && status && (i == 0);j++)
+	{
+	  QString col_name = pConf->nomZone[i]+"d" + QString::number(j);
+
+	  msg = "select " +
+			col_name +
+			", count (*) as tot from analyses group by " +
+			col_name + ";";
+	  status = query.exec(msg);
+	  query.first();
+	  if(query.isValid())
+	  {
+		do
+		{
+		  int value = query.value(0).toInt();
+		  int nb = query.value(1).toInt();
+
+		  QStandardItem *item1 = fen->item(value,j+1);
+		  item1->setData(nb,Qt::DisplayRole);
+		}while(query.next());
+		query.finish();
+	  }
+	}
+  }
+}
+
 void GererBase::MLP_DansLaQtTabView(stTiragesDef *pConf, QString etude, QStandardItemModel *fen)
 {
   QSqlQuery query;

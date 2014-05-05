@@ -353,6 +353,75 @@ bool GererBase::CreerTableVoisinsDeBoule(int b_id, int max_voisins)
   return status;
 }
 
+void GererBase::RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *base)
+{
+  QSqlQuery query(db);
+  QString msg;
+  bool status = false;
+  QString *tab = ref->nomZone;
+  int zone = 0 ;
+
+  msg = "create view groupe as select * from tirages where (tirages." +
+		tab[zone] + CL_SGRP +
+		" = "+QString::number(nb)+");";
+  status = query.exec(msg);
+
+  if(status)
+  {
+	msg = "select count (*) from groupe where (b1 < 10 or)";
+  }
+
+}
+
+void GererBase::RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTableView *base)
+{
+#if 0
+  QSqlQuery query(db);
+  QString msg;
+  bool status = false;
+  QString *tab = ref->nomZone;
+  int lgndeb = 0;
+  int zone = 0 ;
+  static int prev = 0;
+
+  QAbstractItemModel *theModel = base->model();
+  //QStandardItemModel *dest= (QStandardItemModel*) theModel;
+  QModelIndex modelIndex = theModel->index(0,8,QModelIndex());
+  int parit_pos = ref->nbElmZone[0] + ref->nbElmZone[1] + 1;
+
+  msg = "select * from tirages where (tirages." +
+		tab[zone] + CL_PAIR +
+		" = "+QString::number(nb)+");";
+  status = query.exec(msg);
+
+  if(status)
+  {
+	status = query.first();
+	if(query.isValid())
+	{
+	  prev = nb;
+
+	  do
+	  {
+		lgndeb = query.value(0).toInt()-1;
+		modelIndex = base->model()->index(lgndeb,0,QModelIndex());
+
+		if(modelIndex.isValid())
+		{
+		  int val = modelIndex.data().toInt();
+		  if(val==nb)
+		  {
+			//QStandardItem *item1 = dest->item(lgndeb,parit_pos) ;
+			//item1->setBackground(QBrush(Qt::yellow));
+		  }
+		}
+
+	  }while(query.next());
+	}
+  }
+#endif
+}
+
 void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
 								QLabel *l_nb, QStandardItemModel *modele)
 {
@@ -598,17 +667,17 @@ void GererBase::CouvMontrerProbable(int i,
 
   double rayon = 1.5;
 
-	QStandardItem *item1 = dest->item(i-1,col_m);
-	QStandardItem *item2 = dest->item(i-1,col_v);
-	double v_moyen = item1->data(Qt::DisplayRole).toDouble();
-	int v_court = item2->data(Qt::DisplayRole).toInt();
+  QStandardItem *item1 = dest->item(i-1,col_m);
+  QStandardItem *item2 = dest->item(i-1,col_v);
+  double v_moyen = item1->data(Qt::DisplayRole).toDouble();
+  int v_court = item2->data(Qt::DisplayRole).toInt();
 
 
-	if((v_court>=v_moyen-rayon) && (v_court <= (v_moyen +rayon)))
-	{
-	  item2->setBackground(QBrush(Qt::magenta));
-	  item1->setBackground(QBrush(Qt::magenta));
-	}
+  if((v_court>=v_moyen-rayon) && (v_court <= (v_moyen +rayon)))
+  {
+	item2->setBackground(QBrush(Qt::magenta));
+	item1->setBackground(QBrush(Qt::magenta));
+  }
 
 }
 

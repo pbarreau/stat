@@ -112,6 +112,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   // Remplir la sous fenetre de parite
   DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_PAIR, qsim_Parites);
   DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_SGRP, qsim_Ensemble_1);
+  DB_tirages->MLP_UniteDizaine(&configJeu, qsim_ud);
 
   setCentralWidget(zoneCentrale);
 
@@ -482,14 +483,52 @@ void MainWindow::fen_Parites(void)
   qtv_E1->setEditTriggers(QAbstractItemView::NoEditTriggers);
   qtv_E1->setMinimumHeight(220);
 
+  int v = (configJeu.limites[zn].max /10) +1;
+  qsim_ud = new QStandardItemModel(v+1,v+1);
+  qsim_ud->setHeaderData(0,Qt::Horizontal,"Nb");
+  for(int j=0; j< v;j++)
+  {
+	QString name = configJeu.nomZone[zn] + "d" + QString::number(j);
+	qsim_ud->setHeaderData(j+1,Qt::Horizontal,name);
+  }
+
+  // Ecriture du numero de boule et reservation item position
+  for(int j=0; j<= v;j++)
+  {
+	QStandardItem *item = new QStandardItem();
+	item->setData(j,Qt::DisplayRole);
+	qsim_ud->setItem(j,0,item);
+	for (int k =1; k<=v;k++)
+	{
+	  QStandardItem *item_2 = new QStandardItem();
+	  qsim_ud->setItem(j,k,item_2);
+	}
+  }
+
+  QTableView *qtv_E2 = new QTableView;
+  qtv_E2->setModel(qsim_ud);
+  for(int j=0; j< v+1;j++)
+  {
+	qtv_E2->setColumnWidth(j,50);
+  }
+
+  qtv_E2->setAlternatingRowColors(true);;
+  qtv_E2->setSortingEnabled(false);
+  qtv_E2->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
   tabWidget->addTab(qtv_Parites,tr("Parite"));
   tabWidget->addTab(qtv_E1,tr("Repartition"));
+  tabWidget->addTab(qtv_E2,tr("Unites"));
 
 
   QFormLayout *mainLayout = new QFormLayout;
   mainLayout->addWidget(tabWidget);
   qw_Parites->setWindowTitle("Parites des tirages");
   qw_Parites->setLayout(mainLayout);
+
+  connect( qtv_Parites, SIGNAL( clicked(QModelIndex)) ,
+		   this, SLOT( slot_MontrerTirageDansBase( QModelIndex) ) );
+
   zoneCentrale->addSubWindow(qw_Parites);
 
 }
@@ -602,6 +641,20 @@ void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
   }
 
 
+}
+void MainWindow::slot_MontrerTirageDansBase(const QModelIndex & index)
+{
+  int val = 0;
+  int cellule = 0;
+
+  // determination de la fenetre ayant recu le click
+  if (index.internalPointer() == qsim_Parites->index(index.row(),index.column()).internalPointer()){
+	val = qsim_Parites->index(index.row(),0).data().toInt();
+	cellule = qsim_Parites->index(index.row(),index.column()).data().toInt();
+
+	// Recherche des tirages de la base ayant la contrainte
+	DB_tirages->RechercheBaseTiragesPariteNbBoule(val, &configJeu, qtv_Tirages);
+  }
 }
 
 void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)

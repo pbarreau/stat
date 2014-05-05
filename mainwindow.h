@@ -48,6 +48,7 @@ class MainWindow : public QMainWindow
 	void slot_qtvEcart(const QModelIndex & index);
 	void slot_UneSelectionActivee(const QModelIndex & index);
 	void slot_MontrerBouleDansBase(const QModelIndex & index);
+	void slot_MontrerTirageDansBase(const QModelIndex & index);
 	void slot_CouvertureSelChanged(const QItemSelection &now, const QItemSelection &prev);
 	void customMenuRequested(QPoint pos);
 	void tablev_customContextMenu(QPoint pos);
@@ -93,6 +94,7 @@ class MainWindow : public QMainWindow
 
     QStandardItemModel *qsim_Parites ;
 	QStandardItemModel *qsim_Ensemble_1 ;
+	QStandardItemModel *qsim_ud;
 
 	QMenu *menuTrieMesPossibles;
 	QAction * tabAction[6];

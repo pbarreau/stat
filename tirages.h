@@ -71,9 +71,11 @@ class tirages
 	void getConfig(stTiragesDef *priv_conf);
 	QString SelectSource(bool load);
 	QString s_LibColBase(stTiragesDef *ref);
+	QString s_LibColAnalyse(stTiragesDef *pRef);
 	QString qs_zColBaseName(int zone);
 	int RechercheNbBoulesPairs(int zone); // Nombre de nombre pair dans la zone
 	int RechercheNbBoulesDansGrp1(int zone); // Nombre de nombre de la zone appartenant a E1;
+	int RechercheNbBoulesLimite(int zone, int min, int max);
 
 };
 
@@ -130,10 +132,11 @@ class GererBase : public QObject
 	void PopulateCellMenu(int b_id, int v_id, QMenu *menu, QObject *receiver);
 	void EffectuerTrieMesPossibles(int tri_id, int col_id, int b_id, QStandardItemModel * vue);
 	void TotalApparitionBoule(int boule, QStandardItemModel *modele);
-	void CouvMontrerProbable(int i,
-							 int col_m,
-							 int col_v,
-							 QStandardItemModel *dest);
+	void CouvMontrerProbable(int i, int col_m,int col_v,QStandardItemModel *dest);
+	void RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTableView *base);
+	void RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *base);
+	void MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen);
+
   private:
 	void AfficherMaxOccurenceBoule(int boule,QLabel *l_nb);
 	bool CreerTableVoisinsDeBoule(int b_id, int max_voisins);
