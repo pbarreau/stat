@@ -43,6 +43,8 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   zoneCentrale->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
+
+
   // Creation sous fenetre pour mettre donnees de base
   fen_Tirages();
 
@@ -85,6 +87,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   {
 	//Rien
   }
+
+  // Recherche de combinaison A deplacer ?
+  DB_tirages->RechercheCombinaison(&configJeu,tabWidget);
+
+
 
   // Ordre arrivee des boules ?
   DB_tirages->CouvertureBase(qsim_Ecarts,&configJeu);
@@ -443,7 +450,8 @@ void MainWindow::fen_MesPossibles(void)
 void MainWindow::fen_Parites(void)
 {
   QWidget *qw_Parites = new QWidget;
-  QTabWidget *tabWidget = new QTabWidget;
+  //QTabWidget *tabWidget = new QTabWidget;
+  tabWidget = new QTabWidget;
 
 
 
@@ -451,9 +459,9 @@ void MainWindow::fen_Parites(void)
 
   qsim_Parites = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
 
-  qsim_Parites->setHeaderData(0,Qt::Horizontal,"Bpair");
-  qsim_Parites->setHeaderData(1,Qt::Horizontal,"Tot z1");
-  qsim_Parites->setHeaderData(2,Qt::Horizontal,"Tot z2");
+  qsim_Parites->setHeaderData(0,Qt::Horizontal,"Nb");
+  qsim_Parites->setHeaderData(1,Qt::Horizontal,"B");
+  qsim_Parites->setHeaderData(2,Qt::Horizontal,"E");
 
   qtv_Parites = new QTableView;
   qtv_Parites->setModel(qsim_Parites);
@@ -469,8 +477,8 @@ void MainWindow::fen_Parites(void)
   qsim_Ensemble_1 = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
 
   qsim_Ensemble_1->setHeaderData(0,Qt::Horizontal,"N(E/2)");
-  qsim_Ensemble_1->setHeaderData(1,Qt::Horizontal,"Tot z1");
-  qsim_Ensemble_1->setHeaderData(2,Qt::Horizontal,"Tot z2");
+  qsim_Ensemble_1->setHeaderData(1,Qt::Horizontal,"B");
+  qsim_Ensemble_1->setHeaderData(2,Qt::Horizontal,"E");
 
   QTableView *qtv_E1 = new QTableView;
   qtv_E1->setModel(qsim_Ensemble_1);
@@ -516,14 +524,14 @@ void MainWindow::fen_Parites(void)
   qtv_E2->setSortingEnabled(false);
   qtv_E2->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-  tabWidget->addTab(qtv_Parites,tr("Parite"));
-  tabWidget->addTab(qtv_E1,tr("Repartition"));
+  tabWidget->addTab(qtv_Parites,tr("Parites"));
+  tabWidget->addTab(qtv_E1,tr("< N/2"));
   tabWidget->addTab(qtv_E2,tr("Unites"));
 
 
   QFormLayout *mainLayout = new QFormLayout;
   mainLayout->addWidget(tabWidget);
-  qw_Parites->setWindowTitle("Parites des tirages");
+  qw_Parites->setWindowTitle("Etude des boules");
   qw_Parites->setLayout(mainLayout);
 
   connect( qtv_Parites, SIGNAL( clicked(QModelIndex)) ,

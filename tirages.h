@@ -136,8 +136,10 @@ class GererBase : public QObject
 	void RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTableView *base);
 	void RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *base);
 	void MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen);
+	void RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets);
 
   private:
+	void RangerValeurResultat(int val,QTabWidget *ong);
 	void AfficherMaxOccurenceBoule(int boule,QLabel *l_nb);
 	bool CreerTableVoisinsDeBoule(int b_id, int max_voisins);
 	void RechercherVoisinDeLaBoule(int b_id, int max_voisins);

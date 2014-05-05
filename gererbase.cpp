@@ -544,3 +544,190 @@ QVariant GererBase::data(const QModelIndex &index, int role = Qt::DisplayRole) c
 
 }
 #endif
+
+// http://forum.hardware.fr/hfr/Programmation/C-2/resolu-renvoyer-combinaison-sujet_23393_1.htm
+// http://www.dcode.fr/generer-calculer-combinaisons
+void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
+{
+  QStringList enp5[5];
+  QString msg = "";
+  QSqlQuery query;
+  bool status = false;
+
+  if(ref->limites[0].max == 49)
+  {
+	// Loto
+	// 1 element parmis 5 (pour avoir mes 5 boules)
+	enp5[0] << "1" << "2" << "3" << "4" <<"5";
+
+	// 2 elements parmis 5
+	enp5 [1] << "1,2" << "1,3" << "1,4" << "1,5"
+			 << "2,3" << "2,4" << "2,5"
+			 << "3,4" << "3,5"
+			 << "4,5";
+
+	// 3 elements parmis 5
+	enp5[2] << "1,2,3" << "1,2,4" << "1,2,5"
+			<< "1,3,4" <<  "1,3,5"
+			<< "1,4,5"
+			<< "2,3,4"
+			<< "2,3,5"
+			<< "2,4,5"
+			<< "3,4,5";
+
+	// 4 elements parmis 5
+	enp5[3] << "1,2,3,4"
+			<< "1,2,3,5"
+			<< "1,2,4,5"
+			<< "1,3,4,5"
+			<< "2,3,4,5";
+
+	// 5 elements parmis 5
+	enp5[4] << "1,2,3,4,5";
+  }
+  else
+  {
+	// Euro million
+	// 1 element parmis 5 (pour avoir mes 5 boules)
+	enp5[0] << "1" << "2" << "3" << "4" <<"5" << "6";
+
+	// 2 elements parmis 5
+	enp5 [1] << "1,2" << "1,3"	<< "1,4"  << "1,5" << "1,6"
+			 << "2,3" << "2,4" << "2,5" << "2,6"
+			 << "3,4" << "3,5" << "3,6"
+			 << "4,5" << "4,6"
+			 << "5,6";
+
+	// 3 elements parmis 5
+	enp5[2] << "1,2,3"	<< "1,2,4"	<< "1,2,5"
+			<< "1,2,6"	<< "1,3,4"	<< "1,3,5"
+			<< "1,3,6"	<< "1,4,5"	<< "1,4,6"
+			<< "1,5,6"	<< "2,3,4"	<< "2,3,5"
+			<< "2,3,6"	<< "2,4,5"	<< "2,4,6"
+			<< "2,5,6"	<< "3,4,5"	<< "3,4,6"
+			<< "3,5,6"	<< "4,5,6";
+
+	// 4 elements parmis 5
+	enp5[3] << "1,2,3,4"  << "1,2,3,5"	<< "1,2,3,6"
+			<< "1,2,4,5"  << "1,2,4,6"	<< "1,2,5,6"
+			<< "1,3,4,5"  << "1,3,4,6"	<< "1,3,5,6"
+			<< "1,4,5,6"  << "2,3,4,5"  << "2,3,4,6"
+			<< "2,3,5,6"  << "2,4,5,6"	<< "3,4,5,6";
+
+	// 5 elements parmis 5
+	enp5[4] << "1,2,3,4,5"	<< "1,2,3,4,6"	<< "1,2,3,5,6"
+			<< "1,2,4,5,6"	<< "1,3,4,5,6"	<< "2,3,4,5,6";
+  }
+
+  // Rajouter un onglet au resultat
+  QTabWidget *mesResu = new QTabWidget;
+  onglets->addTab(mesResu,tr("Comb5"));
+
+  // recherche des combinaison donnant 5 bons numeros
+  for(int nelm = 0; nelm < 5;nelm++)
+  {
+	int lign = enp5[nelm].size();
+	QStandardItemModel * qsim_r = new QStandardItemModel(lign,2);
+	QTableView *qtv_r = new QTableView;
+	qtv_r->setModel(qsim_r);
+	qtv_r->setSortingEnabled(false);
+	qtv_r->setAlternatingRowColors(true);
+	qtv_r->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+	qsim_r->setHeaderData(0,Qt::Horizontal,"Combinaison");
+	qsim_r->setHeaderData(1,Qt::Horizontal,"Total");
+	qtv_r->setColumnWidth(0,420);
+	qtv_r->setColumnWidth(1,45);
+	for(int loop=0;loop<2;loop++)
+	{
+	  for (int i = 0; i < lign; ++i)
+	  {
+		QStandardItem *item_2 = new QStandardItem();
+		qsim_r->setItem(i,loop,item_2);
+	  }
+	}
+
+	QString t_name = "R" + QString::number(nelm);
+	mesResu->addTab(qtv_r,tr(t_name.toLocal8Bit()));
+
+	for (int i = 0; i < lign; ++i)
+	{
+	  QString comb = enp5[nelm].at(i);
+	  QStringList nb = comb.split(",");
+
+	  int d[5] = {0};
+	  switch(nb.size())
+	  {
+		case 1:
+		  d[0]=5;
+		break;
+		case 2:
+		  d[0]=4;
+		  d[1]=1;
+		break;
+		case 3:
+		  d[0]=3;
+		  d[1]=1;
+		  d[2]=1;
+		case 4:
+		  d[0]=2;
+		  d[1]=1;
+		  d[2]=1;
+		  d[3]=1;
+		break;
+		case 5:
+		  d[0]=1;
+		  d[1]=1;
+		  d[2]=1;
+		  d[3]=1;
+		  d[4]=1;
+		break;
+		default:
+		  ;// Erreur
+		break;
+	  }
+
+	  QString colsel = "";
+	  for (int j = 0; j < nb.size(); ++j)
+	  {
+		QString sval = nb.at(j);
+		int ival = sval.toInt()-1;
+		colsel = colsel +
+				 "bd" + QString::number(ival)
+				 + "=" + QString::number(d[j]) + " and ";
+	  }
+	  // Retire derniere ,
+	  colsel.remove(colsel.length()-5,5);
+
+	  // Sql msg
+	  msg = "select count (*) from analyses where ("
+			+ colsel + ");";
+
+	  status = query.exec(msg);
+
+	  // MEttre les resultat qq part
+	  if(status)
+	  {
+		query.first();
+		if(query.isValid())
+		{
+		  QStandardItem *item_1 = qsim_r->item(i,0);
+		  QStandardItem *item_2 = qsim_r->item(i,1);
+		  int val=query.value(0).toInt();
+
+		  item_1->setData(colsel,Qt::DisplayRole);
+		  item_2->setData(val,Qt::DisplayRole);
+		  RangerValeurResultat(val, mesResu);
+		}
+	  }
+
+	}
+  }
+
+
+}
+
+void GererBase::RangerValeurResultat(int val, QTabWidget *ong)
+{
+  //qsim_Parites = new QStandardItemModel
+}

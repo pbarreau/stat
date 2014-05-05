@@ -250,7 +250,23 @@ int tirages::RechercheNbBoulesDansGrp1(int zone)
 
 }
 
-
+#if 0
+// pseudo code
+début denombrement_combinaisons( k , n )
+{
+  si (k = n) retourner 1;
+  si (k > n/2) k = n-k;
+  res = n-k+1;
+  pour i = 2 par 1
+   tant que i <= k
+	res = res * (n-k+i)/i;
+   fin tant que
+  fin pour
+  retourner res;
+ }
+  fin
+#endif
+// http://forum.hardware.fr/hfr/Programmation/C-2/resolu-renvoyer-combinaison-sujet_23393_1.htm
 // C : http://www.dcode.fr/generer-calculer-combinaisons
 double factorielle(double *x)
 { double i;

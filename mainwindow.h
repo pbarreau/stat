@@ -75,6 +75,7 @@ class MainWindow : public QMainWindow
 	QMdiArea *zoneCentrale;
 	GererBase *DB_tirages;
 	QLabel *nbSortie;
+	QTabWidget *tabWidget;
 	QTableView *qtv_Tirages;
 	QTableView *qtv_LstCouv;
 	QTableView *qtv_Voisins;
