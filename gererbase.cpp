@@ -630,13 +630,13 @@ void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
 	QStandardItemModel * qsim_r = new QStandardItemModel(lign,2);
 	QTableView *qtv_r = new QTableView;
 	qtv_r->setModel(qsim_r);
-	qtv_r->setSortingEnabled(false);
+	qtv_r->setSortingEnabled(true);
 	qtv_r->setAlternatingRowColors(true);
 	qtv_r->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 	qsim_r->setHeaderData(0,Qt::Horizontal,"Combinaison");
 	qsim_r->setHeaderData(1,Qt::Horizontal,"Total");
-	qtv_r->setColumnWidth(0,420);
+	qtv_r->setColumnWidth(0,300);
 	qtv_r->setColumnWidth(1,45);
 	for(int loop=0;loop<2;loop++)
 	{
@@ -714,6 +714,9 @@ void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
 		  QStandardItem *item_1 = qsim_r->item(i,0);
 		  QStandardItem *item_2 = qsim_r->item(i,1);
 		  int val=query.value(0).toInt();
+
+		  colsel.replace("bd","c");
+		  colsel.replace("and",",");
 
 		  item_1->setData(colsel,Qt::DisplayRole);
 		  item_2->setData(val,Qt::DisplayRole);
