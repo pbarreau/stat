@@ -567,122 +567,136 @@ void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
     for (int i = 0; i< 5; i++)
         combirec(i+1, tableau, "" , enp5[i]);
 
-
-    // Rajouter un onglet au resultat
-    QTabWidget *mesResu = new QTabWidget;
-    onglets->addTab(mesResu,tr("Comb5"));
-
-    // recherche des combinaison donnant 5 bons numeros
-    for(int nelm = 0; nelm < 5;nelm++)
+    for(int gagne=5; gagne >2; gagne --)
     {
-        int lign = enp5[nelm].size();
-        QStandardItemModel * qsim_r = new QStandardItemModel(lign,2);
-        QTableView *qtv_r = new QTableView;
-        qtv_r->setModel(qsim_r);
-        qtv_r->setSortingEnabled(true);
-        qtv_r->setAlternatingRowColors(true);
-        qtv_r->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        // Rajouter un onglet au resultat
+        QTabWidget *mesResu = new QTabWidget;
+        QString ong_name = "Comb" + QString::number(gagne);
+        onglets->addTab(mesResu,tr(ong_name.toLocal8Bit()));
 
-        qsim_r->setHeaderData(0,Qt::Horizontal,"Combinaison");
-        qsim_r->setHeaderData(1,Qt::Horizontal,"Total");
-        qtv_r->setColumnWidth(0,300);
-        qtv_r->setColumnWidth(1,45);
-        for(int loop=0;loop<2;loop++)
+        // recherche des combinaison donnant gagne bons numeros
+        for(int nelm = 0; nelm < gagne;nelm++)
         {
-            for (int i = 0; i < lign; ++i)
+            int lign = enp5[nelm].size();
+            QStandardItemModel * qsim_r = new QStandardItemModel(lign,2);
+            QTableView *qtv_r = new QTableView;
+            qtv_r->setModel(qsim_r);
+            qtv_r->setSortingEnabled(true);
+            qtv_r->setAlternatingRowColors(true);
+            qtv_r->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+            qsim_r->setHeaderData(0,Qt::Horizontal,"Combinaison");
+            qsim_r->setHeaderData(1,Qt::Horizontal,"Total");
+            qtv_r->setColumnWidth(0,300);
+            qtv_r->setColumnWidth(1,45);
+            for(int loop=0;loop<2;loop++)
             {
-                QStandardItem *item_2 = new QStandardItem();
-                qsim_r->setItem(i,loop,item_2);
-            }
-        }
-
-        QString t_name = "R" + QString::number(nelm);
-        mesResu->addTab(qtv_r,tr(t_name.toLocal8Bit()));
-
-        for (int i = 0; i < lign; ++i)
-        {
-            QString comb = enp5[nelm].at(i);
-            QStringList nb = comb.split(",");
-
-            int d[5] = {0};
-            switch(nb.size())
-            {
-            case 1:
-                d[0]=5;
-                break;
-            case 2:
-                d[0]=4;
-                d[1]=1;
-                break;
-            case 3:
-                d[0]=3;
-                d[1]=1;
-                d[2]=1;
-                break;
-            case 4:
-                d[0]=2;
-                d[1]=1;
-                d[2]=1;
-                d[3]=1;
-                break;
-            case 5:
-                d[0]=1;
-                d[1]=1;
-                d[2]=1;
-                d[3]=1;
-                d[4]=1;
-                break;
-            default:
-                ;// Erreur
-                break;
-            }
-
-            QString colsel = "";
-            for (int j = 0; j < nb.size(); ++j)
-            {
-                QString sval = nb.at(j);
-                int ival = sval.toInt()-1;
-                colsel = colsel +
-                        "bd" + QString::number(ival)
-                        + "=" + QString::number(d[j]) + " and ";
-            }
-            // Retire derniere ,
-            colsel.remove(colsel.length()-5,5);
-
-            // Sql msg
-            msg = "select count (*) from analyses where ("
-                    + colsel + ");";
-
-            status = query.exec(msg);
-
-            // MEttre les resultat qq part
-            if(status)
-            {
-                query.first();
-                if(query.isValid())
+                for (int i = 0; i < lign; ++i)
                 {
-                    QStandardItem *item_1 = qsim_r->item(i,0);
-                    QStandardItem *item_2 = qsim_r->item(i,1);
-                    int val=query.value(0).toInt();
-
-                    colsel.replace("bd","c");
-                    colsel.replace("and",",");
-
-                    item_1->setData(colsel,Qt::DisplayRole);
-                    item_2->setData(val,Qt::DisplayRole);
-                    RangerValeurResultat(val, mesResu);
+                    QStandardItem *item_2 = new QStandardItem();
+                    qsim_r->setItem(i,loop,item_2);
                 }
             }
 
+            QString t_name = "R" + QString::number(nelm);
+            mesResu->addTab(qtv_r,tr(t_name.toLocal8Bit()));
+
+            for (int i = 0; i < lign; ++i)
+            {
+                QString comb = enp5[nelm].at(i);
+                QStringList nb = comb.split(",");
+
+                int d[5] = {0};
+                switch(nb.size())
+                {
+                case 1:
+                    d[0]=gagne;
+                    break;
+                case 2:
+                    d[0]=gagne-1;
+                    d[1]=1;
+                    break;
+                case 3:
+                    d[0]=gagne-2;
+                    d[1]=1;
+                    d[2]=1;
+                    break;
+                case 4:
+                    d[0]=gagne-3;
+                    d[1]=1;
+                    d[2]=1;
+                    d[3]=1;
+                    break;
+                case 5:
+                    d[0]=gagne-4;
+                    d[1]=1;
+                    d[2]=1;
+                    d[3]=1;
+                    d[4]=1;
+                    break;
+                default:
+                    ;// Erreur
+                    break;
+                }
+
+                QString colsel = "";
+                for (int j = 0; j < nb.size(); ++j)
+                {
+                    QString sval = nb.at(j);
+                    int ival = sval.toInt()-1;
+                    colsel = colsel +
+                            "bd" + QString::number(ival)
+                            + "=" + QString::number(d[j]) + " and ";
+                }
+                // Retire derniere ,
+                colsel.remove(colsel.length()-5,5);
+
+                // Sql msg
+                msg = "select count (*) from analyses where ("
+                        + colsel + ");";
+
+                status = query.exec(msg);
+
+                // MEttre les resultat qq part
+                if(status)
+                {
+                    query.first();
+                    if(query.isValid())
+                    {
+                        int val=query.value(0).toInt();
+                        RangerValeurResultat(i,colsel,val,qsim_r);
+#if 0
+                        QStandardItem *item_1 = qsim_r->item(i,0);
+                        QStandardItem *item_2 = qsim_r->item(i,1);
+                        int val=query.value(0).toInt();
+
+                        colsel.replace("bd","c");
+                        colsel.replace("and",",");
+
+                        item_1->setData(colsel,Qt::DisplayRole);
+                        item_2->setData(val,Qt::DisplayRole);
+                        RangerValeurResultat(val, mesResu);
+#endif
+                    }
+                }
+
+            }
         }
     }
-
-
 }
 
-void GererBase::RangerValeurResultat(int val, QTabWidget *ong)
+
+
+void GererBase::RangerValeurResultat(int &lgn, QString &msg, int &val, QStandardItemModel *&qsim_ptr)
 {
-    //qsim_Parites = new QStandardItemModel
+    QStandardItem *item_1 = qsim_ptr->item(lgn,0);
+    QStandardItem *item_2 = qsim_ptr->item(lgn,1);
+
+    msg.replace("bd","c");
+    msg.replace("and",",");
+
+    item_1->setData(msg,Qt::DisplayRole);
+    item_2->setData(val,Qt::DisplayRole);
 }
 
 #if 0

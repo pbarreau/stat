@@ -140,7 +140,7 @@ class GererBase : public QObject
 
   private:
     void combirec(int k, QStringList &l, const QString &s, QStringList &ret);
-	void RangerValeurResultat(int val,QTabWidget *ong);
+    void RangerValeurResultat(int &lgn, QString &msg, int &val, QStandardItemModel *&qsim_ptr);
 	void AfficherMaxOccurenceBoule(int boule,QLabel *l_nb);
 	bool CreerTableVoisinsDeBoule(int b_id, int max_voisins);
 	void RechercherVoisinDeLaBoule(int b_id, int max_voisins);
