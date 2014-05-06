@@ -138,13 +138,17 @@ class GererBase : public QObject
 	void MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen);
 	void RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets);
 
+  public slots:
+	void slot_DetailsCombinaison( const QModelIndex & index) ;
+
   private:
-    void combirec(int k, QStringList &l, const QString &s, QStringList &ret);
-    void RangerValeurResultat(int &lgn, QString &msg, int &val, QStandardItemModel *&qsim_ptr);
+	void combirec(int k, QStringList &l, const QString &s, QStringList &ret);
+	void RangerValeurResultat(int &lgn, QString &msg, int &val, QStandardItemModel *&qsim_ptr);
 	void AfficherMaxOccurenceBoule(int boule,QLabel *l_nb);
 	bool CreerTableVoisinsDeBoule(int b_id, int max_voisins);
 	void RechercherVoisinDeLaBoule(int b_id, int max_voisins);
 	void MontrerResultatRechercheVoisins(QStandardItemModel *modele,int b_id);
+	void MontrerDetailCombinaison(QString msg, int tot);
 
   private:
 	QSqlDatabase db;
