@@ -139,6 +139,7 @@ class GererBase : public QObject
 	void RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets);
 
   private:
+    void combirec(int k, QStringList &l, const QString &s, QStringList &ret);
 	void RangerValeurResultat(int val,QTabWidget *ong);
 	void AfficherMaxOccurenceBoule(int boule,QLabel *l_nb);
 	bool CreerTableVoisinsDeBoule(int b_id, int max_voisins);
