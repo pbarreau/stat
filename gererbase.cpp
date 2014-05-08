@@ -298,10 +298,12 @@ void GererBase::MontrerBouleCouverture(int boule, QTableView *fen )
 
 void GererBase::MontreMesPossibles(const QModelIndex & index,
 								   stTiragesDef * pConf,
-								   QStandardItemModel *fen)
+								   QTableView *qfen)
 {
   QString msg = "";
+  QString msg_2 = "";
   QSqlQuery selection;
+  QStandardItemModel *fen = (QStandardItemModel *)qfen->model();
   bool status = true;
   int zn = 0;
   int i=0,j=0;
@@ -313,6 +315,19 @@ void GererBase::MontreMesPossibles(const QModelIndex & index,
 	fen->setHeaderData(i,Qt::Horizontal,"b"+ QString::number(boules[i]));
 
 	msg = "select id from union_" + QString::number(boules[i]) + "; ";
+	msg_2 = msg_2 + msg;
+
+#if DBG_REQUETE
+	//////////////////
+	QSqlQueryModel *model = new QSqlQueryModel;
+	QTableView *view = new QTableView;
+
+	model->setQuery(msg);
+	view->setModel(model);
+	view->setWindowTitle("b"+ QString::number(boules[i]));
+	view->show();
+	//////////////////
+#endif
 	status = selection.exec(msg);
 	status = selection.first();
 	if(selection.isValid())
@@ -321,6 +336,8 @@ void GererBase::MontreMesPossibles(const QModelIndex & index,
 	  j=0;
 	  int value = 0;
 	  do{
+		///////////////////
+		//////////////////
 		value = selection.value(0).toInt();
 		QStandardItem *item = new QStandardItem( QString::number(222));
 		item->setData(value,Qt::DisplayRole);
@@ -330,35 +347,23 @@ void GererBase::MontreMesPossibles(const QModelIndex & index,
 	}
   }
 
-#if 0
-  msg = "select id from union_" + QString::number(boules[0]) + " " +
-		"intersect " +
-		"select id from union_" + QString::number(boules[1]) + " " +
-		"intersect " +
-		"select id from union_" + QString::number(boules[2]) + " " +
-		"intersect " +
-		"select id from union_" + QString::number(boules[3]) + " " +
-		"intersect " +
-		"select id from union_" + QString::number(boules[4]) + "; ";
-  status = selection.exec(msg);
+  // Montrer les numeros commun
+  msg_2.remove(msg_2.length()-2,2);
+  msg_2.replace(";"," intersect ");
+  msg_2 = msg_2 + ";" ;
+  status = selection.exec(msg_2);
   status = selection.first();
   if(selection.isValid())
   {
-	// Mettre les resultats dans la fenetre
-	i=0;
-	int value = 0;
 	do{
-	  value = selection.value(0).toInt();
-	  QStandardItem *item = new QStandardItem( QString::number(222));
-	  item->setData(value,Qt::DisplayRole);
-	  fen->setItem(i,1,item);
-	  i++;
+	  int value = selection.value(0).toInt();
+	  MLB_DansMesPossibles(value, QBrush(Qt::cyan), qfen);
 	}while(selection.next());
   }
-#endif
 }
 
-void GererBase::MLB_DansMesPossibles(int boule, QTableView *fen)
+
+void GererBase::MLB_DansMesPossibles(int boule, QBrush couleur, QTableView *fen)
 {
   int ligne = 0;
   int val = 0;
@@ -382,14 +387,30 @@ void GererBase::MLB_DansMesPossibles(int boule, QTableView *fen)
 		if(val)
 		{
 		  QStandardItem *item1 = dest->item(ligne,col) ;
-		  if(val == boule){
-			// Mettre une couleur pour montrer la boule
-			item1->setBackground(QBrush(Qt::yellow));
+		  if(val == boule)
+		  {
+			if(item1->background() == QBrush(Qt::cyan))
+			{
+			  item1->setBackground(QBrush(Qt::magenta));
+			}
+			else
+			{
+			  // Mettre une couleur pour montrer la boule
+			  item1->setBackground(couleur);
+			}
 		  }
 		  else
 		  {
-			// si couleur presente effacer couleur
-			item1->setBackground(QBrush(Qt::white));
+			// si couleur presente restaurer couleur precedente
+			if(item1->background() == QBrush(Qt::magenta))
+			{
+			  item1->setBackground(QBrush(Qt::cyan));
+			}
+			else
+			{
+			  if(item1->background() != QBrush(Qt::cyan))
+				item1->setBackground(QBrush(Qt::white));
+			}
 		  }
 		}
 	  }
@@ -719,9 +740,15 @@ void GererBase::MontrerDetailCombinaison(QString msg, int tot)
 
 
   model->setQuery(qmsg);
-
-
   view->setModel(model);
+
+  view->hideColumn(0);
+  for(int j=2;j<12;j++)
+	view->setColumnWidth(j,30);
+
+  for(int j =12; j<=model->columnCount();j++)
+	view->hideColumn(j);
+
   view->show();
 
 }

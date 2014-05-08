@@ -123,10 +123,11 @@ class GererBase : public QObject
 	void CouvertureBase(QStandardItemModel *dest, stTiragesDef *pRef);
 	void MontrerLaBoule(int boule, QTableView *fen);
 	void MontrerBouleCouverture(int boule, QTableView *fen);
-	void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QStandardItemModel *fen);
+	//void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QStandardItemModel *fen);
+	void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QTableView *qfen);
 	bool CreerColonneOrdreArrivee(int id, stTiragesDef *pConf);
 	void MLB_DansLaQtTabView(int boule, QTableView *fen);
-	void MLB_DansMesPossibles(int boule, QTableView *fen);
+	void MLB_DansMesPossibles(int boule,QBrush couleur, QTableView *fen);
 	int CouleurVersBid(QTableView *fen);
 	void MLP_DansLaQtTabView(stTiragesDef *pConf, QString etude, QStandardItemModel *fen); // Montre la parite
 	void PopulateCellMenu(int b_id, int v_id, QMenu *menu, QObject *receiver);

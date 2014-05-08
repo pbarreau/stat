@@ -577,12 +577,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
 {
   int val;
-#if 0
-  QMessageBox::information(this, "",
-						   "Cell at row "+QString::number(index.row())+
-						   " column "+QString::number(index.column())+
-						   " was double clicked.");
-#endif
+
   if (index.column()==0)
   {
 	// Recherche de toute les boules
@@ -595,7 +590,8 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
 	}
 
 	// Affichage des resultats
-	DB_tirages->MontreMesPossibles(index,&configJeu,qsim_MesPossibles);
+	// DB_tirages->MontreMesPossibles(index,&configJeu,qsim_MesPossibles);
+	DB_tirages->MontreMesPossibles(index,&configJeu,qtv_MesPossibles);
   }
 
   if(index.column()>0 && index.column()<6){
@@ -703,7 +699,7 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
 	qtv_LstCouv->clearSelection();
 	DB_tirages->MontrerBouleCouverture(val,qtv_LstCouv);
 
-	DB_tirages->MLB_DansMesPossibles(val,qtv_MesPossibles);
+	DB_tirages->MLB_DansMesPossibles(val,QBrush(Qt::yellow),qtv_MesPossibles);
   }
 }
 
@@ -837,14 +833,14 @@ void MainWindow::ft_LancerTri(int tri_id)
 
 	  //if(boule){
 	  // Effacer les recherches de boules precedentes
-	  DB_tirages->MLB_DansMesPossibles(0,qtv_MesPossibles);
+	  DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::yellow),qtv_MesPossibles);
 	  //}
 
 	  // Montrer les nouveaux resultats
 	  DB_tirages->EffectuerTrieMesPossibles(tri_id,col_id,b_id,qsim_MesPossibles);
 
 	  // Remontrer la recherche eventuelle
-	  DB_tirages->MLB_DansMesPossibles(boule, qtv_MesPossibles);
+	  DB_tirages->MLB_DansMesPossibles(boule, QBrush(Qt::yellow),qtv_MesPossibles);
 	}
   }
 
