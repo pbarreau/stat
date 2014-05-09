@@ -5,6 +5,8 @@
 #include <QFile>
 #include <QSqlTableModel>
 #include <QSqlQuery>
+#include <QSqlRecord>
+
 #include <QTableView>
 #include <QTableWidget>
 
@@ -296,6 +298,55 @@ void GererBase::MontrerBouleCouverture(int boule, QTableView *fen )
 #endif
 }
 
+void GererBase::EffectuerTrieMesPossibles(int tri_id, int col_id,int b_id,QStandardItemModel * vue)
+{
+  QString msg;
+  QSqlQuery query;
+  bool status = false;
+  QString tblColName[5]={"r0","rp1","rp2","rn1","rn2"};
+
+  //select r30.id,r0 from r30 inner join union_30 on union_30.id=r30.id order by r0 desc;
+
+  if(tri_id == -1)
+  {
+	msg = "select * from union_" +QString::number(b_id)+
+		  " order by T desc;";
+  }
+  else
+  {
+	msg = "select r"+QString::number(b_id)+".id,"+tblColName[tri_id]+
+		  " from r"+QString::number(b_id)+
+		  " inner join union_"+QString::number(b_id)+
+		  " on union_"+QString::number(b_id)+".id=r"+QString::number(b_id)+
+		  ".id order by "+ tblColName[tri_id]+" desc;";
+  }
+
+  status = query.exec(msg);
+
+  if(status)
+  {
+	status = query.first();
+	if(query.isValid())
+	{
+
+	  if (col_id >=0 || col_id <5)
+	  {
+
+		// Parcourir tout les resultats
+		int position = 0;
+		do{
+		  QSqlRecord ligne = query.record();
+		  int val = ligne.value(0).toInt();
+		  QStandardItem *tmp_itm = vue->item(position,col_id);
+		  tmp_itm->setData(val,Qt::DisplayRole);
+		  vue->setItem(position,col_id,tmp_itm);
+		  position++;
+		}while(query.next());
+	  }
+	}
+  }
+}
+
 void GererBase::MontreMesPossibles(const QModelIndex & index,
 								   stTiragesDef * pConf,
 								   QTableView *qfen)
@@ -347,6 +398,9 @@ void GererBase::MontreMesPossibles(const QModelIndex & index,
 	}
   }
 
+  //MLB_MontreLesCommuns(msg_2, qfen);
+
+#if 0
   // Montrer les numeros commun
   msg_2.remove(msg_2.length()-2,2);
   msg_2.replace(";"," intersect ");
@@ -360,8 +414,48 @@ void GererBase::MontreMesPossibles(const QModelIndex & index,
 	  MLB_DansMesPossibles(value, QBrush(Qt::cyan), qfen);
 	}while(selection.next());
   }
+#endif
 }
 
+void GererBase::MLB_MontreLesCommuns(stTiragesDef * pConf,QTableView *qfen)
+{
+  QSqlQuery selection;
+  QString msg = "";
+  int zn = 0;
+  //QStandardItemModel *fen = (QStandardItemModel *)qfen->model();
+  bool status = true;
+
+
+
+  for(int i=0;(i<pConf->nbElmZone[zn])&& status;i++)
+  {
+	QVariant  hdata =  qfen->model()->headerData(i,Qt::Horizontal);
+	QString msg_1 = hdata.toString();
+
+	if (!msg_1.contains("C"))
+	{
+	  msg_1 = msg_1.split("b").at(1);
+	  int b_id = msg_1.toInt();
+
+	  ;
+	  msg = msg + "select id from union_" + QString::number(b_id) + "; ";
+	}
+  }
+
+  msg.remove(msg.length()-2,2);
+  msg.replace(";"," intersect ");
+  msg = msg + ";" ;
+  status = selection.exec(msg);
+  status = selection.first();
+  if(selection.isValid())
+  {
+	do{
+	  int value = selection.value(0).toInt();
+	  MLB_DansMesPossibles(value, QBrush(Qt::cyan), qfen);
+	}while(selection.next());
+  }
+
+}
 
 void GererBase::MLB_DansMesPossibles(int boule, QBrush couleur, QTableView *fen)
 {
@@ -387,6 +481,10 @@ void GererBase::MLB_DansMesPossibles(int boule, QBrush couleur, QTableView *fen)
 		if(val)
 		{
 		  QStandardItem *item1 = dest->item(ligne,col) ;
+		  if(boule ==0){
+			item1->setBackground(QBrush(Qt::white));
+		  }
+
 		  if(val == boule)
 		  {
 			if(item1->background() == QBrush(Qt::cyan))

@@ -353,6 +353,7 @@ bool GererBase::CreerTableVoisinsDeBoule(int b_id, int max_voisins)
   return status;
 }
 
+#if 0
 void GererBase::RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *base)
 {
   QSqlQuery query(db);
@@ -372,10 +373,12 @@ void GererBase::RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *b
   }
 
 }
+#endif
 
+#if 0
 void GererBase::RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTableView *base)
 {
-#if 0
+
   QSqlQuery query(db);
   QString msg;
   bool status = false;
@@ -419,8 +422,8 @@ void GererBase::RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTa
 	  }while(query.next());
 	}
   }
-#endif
 }
+#endif
 
 void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
 								QLabel *l_nb, QStandardItemModel *modele)
@@ -774,51 +777,3 @@ void GererBase::PopulateCellMenu(int b_id, int v_id,QMenu *menu,QObject * receiv
   }
 }
 
-void GererBase::EffectuerTrieMesPossibles(int tri_id, int col_id,int b_id,QStandardItemModel * vue)
-{
-  QString msg;
-  QSqlQuery query;
-  bool status = false;
-  QString tblColName[5]={"r0","rp1","rp2","rn1","rn2"};
-
-  //select r30.id,r0 from r30 inner join union_30 on union_30.id=r30.id order by r0 desc;
-
-  if(tri_id == -1)
-  {
-	msg = "select * from union_" +QString::number(b_id)+
-		  " order by T desc;";
-  }
-  else
-  {
-	msg = "select r"+QString::number(b_id)+".id,"+tblColName[tri_id]+
-		  " from r"+QString::number(b_id)+
-		  " inner join union_"+QString::number(b_id)+
-		  " on union_"+QString::number(b_id)+".id=r"+QString::number(b_id)+
-		  ".id order by "+ tblColName[tri_id]+" desc;";
-  }
-
-  status = query.exec(msg);
-
-  if(status)
-  {
-	status = query.first();
-	if(query.isValid())
-	{
-
-	  if (col_id >=0 || col_id <5)
-	  {
-
-		// Parcourir tout les resultats
-		int position = 0;
-		do{
-		  QSqlRecord ligne = query.record();
-		  int val = ligne.value(0).toInt();
-		  QStandardItem *tmp_itm = vue->item(position,col_id);
-		  tmp_itm->setData(val,Qt::DisplayRole);
-		  vue->setItem(position,col_id,tmp_itm);
-		  position++;
-		}while(query.next());
-	  }
-	}
-  }
-}

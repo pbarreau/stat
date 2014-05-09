@@ -590,8 +590,10 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
 	}
 
 	// Affichage des resultats
-	// DB_tirages->MontreMesPossibles(index,&configJeu,qsim_MesPossibles);
 	DB_tirages->MontreMesPossibles(index,&configJeu,qtv_MesPossibles);
+
+	// Mise en evidence numero commun
+	DB_tirages->MLB_MontreLesCommuns(&configJeu,qtv_MesPossibles);
   }
 
   if(index.column()>0 && index.column()<6){
@@ -657,7 +659,7 @@ void MainWindow::slot_MontrerTirageDansBase(const QModelIndex & index)
 	cellule = qsim_Parites->index(index.row(),index.column()).data().toInt();
 
 	// Recherche des tirages de la base ayant la contrainte
-	DB_tirages->RechercheBaseTiragesPariteNbBoule(val, &configJeu, qtv_Tirages);
+	//DB_tirages->RechercheBaseTiragesPariteNbBoule(val, &configJeu, qtv_Tirages);
   }
 }
 
@@ -691,7 +693,7 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
 
 
   if(cellule){
-	// Une Boule Trouve la montrer dans les autres fenetres
+	// Une Boule Trouvee la montrer dans les autres fenetres
 	qtv_Tirages->clearSelection();
 	DB_tirages->MontrerLaBoule(val,qtv_Tirages);
 	DB_tirages->MLB_DansLaQtTabView(val,qtv_Voisins);
@@ -831,18 +833,22 @@ void MainWindow::ft_LancerTri(int tri_id)
 	  // Memoriser la recherche precedente eventuelle
 	  int boule = DB_tirages->CouleurVersBid(qtv_MesPossibles);
 
-	  //if(boule){
 	  // Effacer les recherches de boules precedentes
 	  DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::yellow),qtv_MesPossibles);
-	  //}
 
 	  // Montrer les nouveaux resultats
 	  DB_tirages->EffectuerTrieMesPossibles(tri_id,col_id,b_id,qsim_MesPossibles);
 
+	  // Montrer les boules communes
 	  // Remontrer la recherche eventuelle
 	  DB_tirages->MLB_DansMesPossibles(boule, QBrush(Qt::yellow),qtv_MesPossibles);
 	}
   }
+
+  // Mise en evidence numero commun
+  DB_tirages->MLB_MontreLesCommuns(&configJeu,qtv_MesPossibles);
+
+
 
 }
 

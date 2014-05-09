@@ -125,6 +125,7 @@ class GererBase : public QObject
 	void MontrerBouleCouverture(int boule, QTableView *fen);
 	//void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QStandardItemModel *fen);
 	void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QTableView *qfen);
+	void MLB_MontreLesCommuns(stTiragesDef * pConf,QTableView *qfen);
 	bool CreerColonneOrdreArrivee(int id, stTiragesDef *pConf);
 	void MLB_DansLaQtTabView(int boule, QTableView *fen);
 	void MLB_DansMesPossibles(int boule,QBrush couleur, QTableView *fen);
@@ -134,8 +135,8 @@ class GererBase : public QObject
 	void EffectuerTrieMesPossibles(int tri_id, int col_id, int b_id, QStandardItemModel * vue);
 	void TotalApparitionBoule(int boule, QStandardItemModel *modele);
 	void CouvMontrerProbable(int i, int col_m,int col_v,QStandardItemModel *dest);
-	void RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTableView *base);
-	void RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *base);
+	//void RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTableView *base);
+	//void RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *base);
 	void MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen);
 	void RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets);
 
