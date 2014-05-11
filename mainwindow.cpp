@@ -650,16 +650,16 @@ void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
 }
 void MainWindow::slot_MontrerTirageDansBase(const QModelIndex & index)
 {
-  int val = 0;
-  int cellule = 0;
+  //int val = 0;
+  //int cellule = 0;
 
   // determination de la fenetre ayant recu le click
   if (index.internalPointer() == qsim_Parites->index(index.row(),index.column()).internalPointer()){
-	val = qsim_Parites->index(index.row(),0).data().toInt();
-	cellule = qsim_Parites->index(index.row(),index.column()).data().toInt();
+    int val = qsim_Parites->index(index.row(),0).data().toInt();
+    int cellule = qsim_Parites->index(index.row(),index.column()).data().toInt();
 
 	// Recherche des tirages de la base ayant la contrainte
-	//DB_tirages->RechercheBaseTiragesPariteNbBoule(val, &configJeu, qtv_Tirages);
+    //DB_tirages->RechercheBaseTiragesPariteNbBoule(val, &configJeu, qtv_Tirages);
   }
 }
 
