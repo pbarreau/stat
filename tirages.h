@@ -139,8 +139,10 @@ public:
   //void RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTableView *base);
   //void RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *base);
   void MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen);
-  void RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets, QMdiArea *znMain);
+  void RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets);
   bool TST_Requete(QString &sql_msg, int lgn, QString &col, QStandardItemModel *&qsim_ptr);
+  void TST_RechercheVoisin(QStringList &boules, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *modele);
+  int TST_TotalRechercheVoisinADistanceDe(int dist, int voisin);
 
 public slots:
   void slot_DetailsCombinaison(const QModelIndex & index) ;

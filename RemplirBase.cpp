@@ -425,6 +425,46 @@ void GererBase::RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTa
 }
 #endif
 
+void GererBase::TST_RechercheVoisin(QStringList &boules, stTiragesDef *pConf,
+                                    QLabel *l_nb, QStandardItemModel *modele)
+{
+  QSqlQuery query;
+  QString msg = "select count (*) from tirages where (";
+  bool status = false;
+  QString lstBoules =  boules.join(",");
+
+  if(boules.isEmpty())
+  {
+    l_nb->setText("Nb total de sorties:");
+    return;
+  }
+
+  for(int i=0; i< boules.size();i++)
+  {
+    msg = msg + "(" +
+          "b1="+ boules.at(i) + " or " +
+          "b2="+ boules.at(i) + " or " +
+          "b3="+ boules.at(i) + " or " +
+          "b4="+ boules.at(i) + " or " +
+          "b5="+ boules.at(i) + ") and ";
+  }
+
+  msg.remove(msg.length()-5,5);
+  msg = msg + ");";
+
+  status = query.exec(msg);
+
+  if(status)
+  {
+    status= query.first();
+    if(query.isValid())
+    {
+      int val = query.value(0).toInt();
+      l_nb->setText(QString("Boule %1 : %2 fois ").arg( lstBoules ).arg(val) );
+    }
+  }
+}
+
 void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
                                 QLabel *l_nb, QStandardItemModel *modele)
 {
@@ -441,6 +481,7 @@ void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
   {
     iAffichageVoisinEnCoursDeLaBoule = boule;
     AfficherMaxOccurenceBoule(boule, l_nb);
+
     int max_voisin = pConf->limites[zn].max;
     status = CreerTableVoisinsDeBoule(boule, max_voisin);
 
@@ -495,6 +536,19 @@ void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
 
 }
 
+int GererBase::TST_TotalRechercheVoisinADistanceDe(int dist, int voisin)
+{
+#if 0
+  select * from (
+  select * from tirages where (
+       (b1=30 or b2=30 or b3=30 or b4=30 or b5=30) and
+       (b1=42 or b2=42 or b3=42 or b4=42 or b5=42)
+       )
+  ) as r where
+  (b1=49 or b2 = 49 or b3= 49 or b4 =49 or b5 =49);
+#endif
+
+}
 int GererBase::TotalRechercheVoisinADistanceDe(int dist, int voisin)
 {
   QString msg = "";

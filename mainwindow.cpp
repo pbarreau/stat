@@ -90,7 +90,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
 
   // Recherche de combinaison A deplacer ?
   //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
-  TST_RechercheCombi(&configJeu,tabWidget,zoneCentrale);
+  TST_RechercheCombi(&configJeu,tabWidget);
 
 
   // Ordre arrivee des boules ?
@@ -129,11 +129,12 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   connect( qtv_MesChoix, SIGNAL( doubleClicked(QModelIndex)) ,
            this, SLOT( slot_UneSelectionActivee( QModelIndex) ) );
 
+#if 0
   // Selection a change
   connect(qtv_LstCouv->selectionModel(), SIGNAL(selectionChanged (const QItemSelection&, const QItemSelection&)),
           this, SLOT(slot_CouvertureSelChanged(QItemSelection,QItemSelection)));
 
-
+#endif
 
 }
 
@@ -191,10 +192,12 @@ void MainWindow::fen_LstCouv(void)
   // Ratacher cette sous fenetre
   zoneCentrale->addSubWindow(qw_LstCouv);
 
+#if 0
   // Selection a change
   connect(qtv_LstCouv->selectionModel(), SIGNAL(selectionChanged (const QItemSelection&, const QItemSelection&)),
           this, SLOT(slot_CouvertureSelChanged(QItemSelection,QItemSelection)));
 
+#endif
 
 }
 void MainWindow::fen_Voisins(void)
@@ -534,8 +537,10 @@ void MainWindow::fen_Parites(void)
   qw_Parites->setWindowTitle("Etude des boules");
   qw_Parites->setLayout(mainLayout);
 
+#if 0
   connect( qtv_Parites, SIGNAL( clicked(QModelIndex)) ,
            this, SLOT( slot_MontrerTirageDansBase( QModelIndex) ) );
+#endif
 
   zoneCentrale->addSubWindow(qw_Parites);
 
@@ -623,31 +628,42 @@ void MainWindow::slot_qtvEcart(const QModelIndex & index)
 
 void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
 {
+  static QStringList select;
 
   QStandardItem *item1 = qsim_MaSelection->itemFromIndex(index);
 #ifndef QT_NO_DEBUG
   qDebug()<< item1->background();
 #endif
 
-  if(item1->background() == Qt::red){
+  if(item1->background() == Qt::red)
+  {
+    // un element existe le supprimer
+    int pos = select.indexOf(item1->data(Qt::DisplayRole).toString());
+    select.removeAt(pos);
+
+    // Il y a deja une selection
     if(index.row()%2==0){
-      QBrush macouleur(Qt::white);
-      item1->setBackground(macouleur);
+      //QBrush macouleur(Qt::white);
+      item1->setBackground(QBrush(QColor::fromRgb(1, 1, 0, 0) , Qt::SolidPattern ));
     }
     else
     {
-      QBrush macouleur (Qt::gray);
-      item1->setBackground(macouleur);
+      //QBrush macouleur (Qt::gray);
+      item1->setBackground(QBrush(QColor::fromRgb(1, 0, 0, 0) , Qt::NoBrush ));
     }
   }
   else
   {
-    QBrush macouleur(Qt::red);
-    item1->setBackground(macouleur);
+    // Memoriser la selection
+    //QBrush macouleur(Qt::red);
+    select << item1->data(Qt::DisplayRole).toString();
+    item1->setBackground(QBrush(Qt::red));
   }
 
+  DB_tirages->TST_RechercheVoisin(select,&configJeu,nbSortie,qsim_Voisins);
 
 }
+#if 0
 void MainWindow::slot_MontrerTirageDansBase(const QModelIndex & index)
 {
   //int val = 0;
@@ -662,6 +678,7 @@ void MainWindow::slot_MontrerTirageDansBase(const QModelIndex & index)
     //DB_tirages->RechercheBaseTiragesPariteNbBoule(val, &configJeu, qtv_Tirages);
   }
 }
+#endif
 
 void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
 {
@@ -706,6 +723,7 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
 }
 
 
+#if 0
 void MainWindow::slot_CouvertureSelChanged(const QItemSelection & now,const QItemSelection & prev)
 {
   QModelIndexList items;
@@ -719,6 +737,7 @@ void MainWindow::slot_CouvertureSelChanged(const QItemSelection & now,const QIte
   }
 
 }
+#endif
 
 #if 0
 MonToolTips::MonToolTips(int rows, int columns, QObject *parent)
@@ -792,9 +811,8 @@ void MainWindow::customMenuRequested(QPoint pos){
 }
 #endif
 
-void MainWindow::tablev_customContextMenu(QPoint pos){
-  //int col_id = qtv_MesPossibles->columnAt(pos.x());
-
+void MainWindow::tablev_customContextMenu(QPoint pos)
+{
 
   menuTrieMesPossibles->popup(qtv_MesPossibles->viewport()->mapToGlobal(pos));
 }
@@ -907,7 +925,7 @@ void MainWindow::TST_CombiRec(int k, QStringList &l, const QString &s, QStringLi
 }
 // http://forum.hardware.fr/hfr/Programmation/C-2/resolu-renvoyer-combinaison-sujet_23393_1.htm
 // http://www.dcode.fr/generer-calculer-combinaisons
-void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets, QMdiArea *znMain)
+void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
 {
   QStringList enp5[5];
   QString msg = "";
@@ -1066,8 +1084,8 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
   msg.replace(",","and");
 
   st_msg = "Select * from tirages inner join (select * from analyses where("
-         + msg +
-         "))as s on tirages.id = s.id;";
+           + msg +
+           "))as s on tirages.id = s.id;";
 
 
 
@@ -1095,6 +1113,7 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
 
   qtv_rep->setModel(qsim_rep);;
   qtv_rep->setSortingEnabled(true);
+  qtv_rep->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
   qtv_rep->setColumnWidth(0,40);
   qtv_rep->setColumnWidth(1,40);

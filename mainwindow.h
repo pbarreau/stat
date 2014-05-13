@@ -48,8 +48,8 @@ public slots:
   void slot_qtvEcart(const QModelIndex & index);
   void slot_UneSelectionActivee(const QModelIndex & index);
   void slot_MontrerBouleDansBase(const QModelIndex & index);
-  void slot_MontrerTirageDansBase(const QModelIndex & index);
-  void slot_CouvertureSelChanged(const QItemSelection &now, const QItemSelection &prev);
+  //void slot_MontrerTirageDansBase(const QModelIndex & index);
+  //void slot_CouvertureSelChanged(const QItemSelection &now, const QItemSelection &prev);
   void customMenuRequested(QPoint pos);
   void tablev_customContextMenu(QPoint pos);
   void ft1(void);
@@ -70,7 +70,7 @@ private:
   void fen_MaSelection(QTableView *qtv_MaSelection);
   int BouleIdFromColId(int col_id);
   void ft_LancerTri(int tri_id);
-  void TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets, QMdiArea *znMain);
+  void TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets);
   void TST_CombiRec(int k, QStringList &l, const QString &s, QStringList &ret);
   void TST_MontrerDetailCombinaison(QString msg);
 

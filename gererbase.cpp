@@ -667,7 +667,7 @@ QVariant GererBase::data(const QModelIndex &index, int role = Qt::DisplayRole) c
 
 // http://forum.hardware.fr/hfr/Programmation/C-2/resolu-renvoyer-combinaison-sujet_23393_1.htm
 // http://www.dcode.fr/generer-calculer-combinaisons
-void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets, QMdiArea *znMain)
+void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
 {
   QStringList enp5[5];
   QString msg = "";
