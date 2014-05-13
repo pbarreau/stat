@@ -667,13 +667,15 @@ QVariant GererBase::data(const QModelIndex &index, int role = Qt::DisplayRole) c
 
 // http://forum.hardware.fr/hfr/Programmation/C-2/resolu-renvoyer-combinaison-sujet_23393_1.htm
 // http://www.dcode.fr/generer-calculer-combinaisons
-void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
+void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets, QMdiArea *znMain)
 {
   QStringList enp5[5];
   QString msg = "";
   QSqlQuery query;
   bool status = false;
   QStringList tableau;
+
+  //QTabWidget *onglets = ;
 
   if(ref->limites[0].max == 49)
   {
@@ -816,12 +818,12 @@ void GererBase::RangerValeurResultat(int &lgn, QString &msg, int &val, QStandard
 void GererBase::slot_DetailsCombinaison( const QModelIndex & index)
 {
   QString msg = index.model()->index(index.row(),0).data().toString();
-  int val = index.model()->index(index.row(),1).data().toInt();
+  //int val = index.model()->index(index.row(),1).data().toInt();
 
-  MontrerDetailCombinaison(msg,val);
+  MontrerDetailCombinaison(msg);
 }
 
-void GererBase::MontrerDetailCombinaison(QString msg, int tot)
+void GererBase::MontrerDetailCombinaison(QString msg)
 {
   QWidget *qw_fenResu = new QWidget;
   QTabWidget *tw_resu = new QTabWidget;
@@ -910,6 +912,8 @@ void GererBase::MontrerDetailCombinaison(QString msg, int tot)
   mainLayout->addWidget(tw_resu);
   qw_fenResu->setLayout(mainLayout);
   qw_fenResu->setWindowTitle(msg);
+
+  //app.addSubWindow(qw_fenResu);
   qw_fenResu->show();
 
 }
