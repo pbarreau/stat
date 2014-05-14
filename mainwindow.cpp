@@ -660,6 +660,7 @@ void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
     item1->setBackground(QBrush(Qt::red));
   }
 
+  qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
   DB_tirages->TST_RechercheVoisin(select,&configJeu,nbSortie,qsim_Voisins);
 
 }

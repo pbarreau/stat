@@ -142,7 +142,8 @@ public:
   void RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets);
   bool TST_Requete(QString &sql_msg, int lgn, QString &col, QStandardItemModel *&qsim_ptr);
   void TST_RechercheVoisin(QStringList &boules, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *modele);
-  int TST_TotalRechercheVoisinADistanceDe(int dist, int voisin);
+  int TST_TotalRechercheVoisinADistanceDe(int dist, int v_id, QStringList &boules);
+  QString TST_ConstruireWhereData(QStringList &boules);
 
 public slots:
   void slot_DetailsCombinaison(const QModelIndex & index) ;

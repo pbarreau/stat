@@ -432,24 +432,26 @@ void GererBase::TST_RechercheVoisin(QStringList &boules, stTiragesDef *pConf,
   QString msg = "select count (*) from tirages where (";
   bool status = false;
   QString lstBoules =  boules.join(",");
+  int zn = 0;
+  const int d[5]={0,-1,-2,1,2};
 
   if(boules.isEmpty())
   {
     l_nb->setText("Nb total de sorties:");
+
+    // Remettre a zero
+    for(int i = 0 ; i<pConf->limites[zn].max;i++)
+    {
+      for(int ref = 0; ref <5 ; ref ++)
+      {
+        QStandardItem *item1 = modele->item(i,ref+1);
+        item1->setData("",Qt::DisplayRole);
+      }
+    }
     return;
   }
 
-  for(int i=0; i< boules.size();i++)
-  {
-    msg = msg + "(" +
-          "b1="+ boules.at(i) + " or " +
-          "b2="+ boules.at(i) + " or " +
-          "b3="+ boules.at(i) + " or " +
-          "b4="+ boules.at(i) + " or " +
-          "b5="+ boules.at(i) + ") and ";
-  }
-
-  msg.remove(msg.length()-5,5);
+  msg = msg + TST_ConstruireWhereData(boules);
   msg = msg + ");";
 
   status = query.exec(msg);
@@ -463,6 +465,44 @@ void GererBase::TST_RechercheVoisin(QStringList &boules, stTiragesDef *pConf,
       l_nb->setText(QString("Boule %1 : %2 fois ").arg( lstBoules ).arg(val) );
     }
   }
+  query.finish();
+
+  // Trier les boules de la fenetre voisins
+  //modele->sortByColumn(0,Qt::AscendingOrder);
+
+
+  // Rechercher pour chaque boules les voisins
+  for(int i = 0 ; i<pConf->limites[zn].max;i++)
+  {
+    for(int ref = 0; ref <5 ; ref ++)
+    {
+      QStandardItem *item1 = modele->item(i,ref+1);
+      int val = TST_TotalRechercheVoisinADistanceDe(d[ref],i+1,boules);
+
+      // Mettre la valeur trouvee dans le tableau des voisins
+      item1->setData(val,Qt::DisplayRole);
+    }
+  }
+
+}
+
+QString GererBase::TST_ConstruireWhereData(QStringList &boules)
+{
+  QString msg= "" ;
+
+  for(int i=0; i< boules.size();i++)
+  {
+    msg = msg + "(" +
+          "b1="+ boules.at(i) + " or " +
+          "b2="+ boules.at(i) + " or " +
+          "b3="+ boules.at(i) + " or " +
+          "b4="+ boules.at(i) + " or " +
+          "b5="+ boules.at(i) + ") and ";
+  }
+
+  msg.remove(msg.length()-5,5);
+
+  return msg;
 }
 
 void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
@@ -536,19 +576,56 @@ void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
 
 }
 
-int GererBase::TST_TotalRechercheVoisinADistanceDe(int dist, int voisin)
+int GererBase::TST_TotalRechercheVoisinADistanceDe(int dist, int v_id,QStringList &boules)
 {
 #if 0
-  select * from (
-  select * from tirages where (
-       (b1=30 or b2=30 or b3=30 or b4=30 or b5=30) and
-       (b1=42 or b2=42 or b3=42 or b4=42 or b5=42)
-       )
-  ) as r where
-  (b1=49 or b2 = 49 or b3= 49 or b4 =49 or b5 =49);
+  select count (*) from (
+        select * from tirages inner join  (
+          select * from tirages where (
+            (b1=27 or b2=27 or b3=27 or b4=27 or b5=27)
+            )
+          ) as r1 on tirages.id = r1.id + 2) as r2  where (b1 = 1 or b2 = 1 or b3 = 1 or b4 = 1 or b5 = 1 );
 #endif
 
+  int ret_val = 0;
+
+  if(boules.contains(QString::number(v_id)) && !dist)
+    return ret_val;
+
+  {
+    QSqlQuery query;
+    bool status = false;
+    QString msg = "select * from tirages inner join  ( select * from tirages where (";
+
+    msg = msg + TST_ConstruireWhereData(boules);
+    msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
+    msg = (msg).arg(dist);
+    //status = query.exec(msg);
+
+    // Comptage des boules
+    //QSqlQuery sql_1;
+    QString msg_2 = "select count (*) from (" +msg+ " where (" +
+                    "b1 = " +QString::number(v_id) + " or " +
+                    "b2 = " +QString::number(v_id) + " or " +
+                    "b3 = " +QString::number(v_id) + " or " +
+                    "b4 = " +QString::number(v_id) + " or " +
+                    "b5 = " +QString::number(v_id) + " );" ;
+
+    status = query.exec(msg_2);
+    if(status)
+    {
+      query.first();
+      if(query.isValid())
+      {
+        ret_val = query.value(0).toInt();
+      }
+    }
+  }
+
+  return ret_val;
 }
+
+
 int GererBase::TotalRechercheVoisinADistanceDe(int dist, int voisin)
 {
   QString msg = "";
