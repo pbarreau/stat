@@ -73,6 +73,9 @@ private:
   void TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets);
   void TST_CombiRec(int k, QStringList &l, const QString &s, QStringList &ret);
   void TST_MontrerDetailCombinaison(QString msg);
+  void TST_Permute(QStringList *lst);
+  void TST_PrivPermute(QStringList  *a, int i, int n, QStringList *ret);
+
 
 private:
   Ui::MainWindow *ui;

@@ -43,6 +43,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   zoneCentrale->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
+  /////////////////////
+  QStringList TST_Lst;
+  TST_Lst << "A" << "B" << "C" << "D" << "E";
+  TST_Permute(&TST_Lst);
+  ////////////////////
 
 
   // Creation sous fenetre pour mettre donnees de base
@@ -1164,3 +1169,39 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
   qw_fenResu->show();
 
 }
+
+// http://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/
+// http://www.cut-the-knot.org/do_you_know/AllPerm.shtml
+// http://msdn.microsoft.com/fr-fr/magazine/cc163513.aspx
+// http://www.dcode.fr/generer-permutations
+void MainWindow::TST_Permute(QStringList  *lst)
+{
+  QStringList ret_val;
+
+  ret_val.clear();
+
+  TST_PrivPermute(lst,0,lst->size()-1, &ret_val);
+
+  QString tmp = ret_val.at(1);
+
+}
+
+void MainWindow::TST_PrivPermute(QStringList *a, int i, int n, QStringList  *ret)
+{
+  QString lgn;
+
+  if (i == n){
+    *ret<< a->join(",");//printf("%s\n", a);
+  }
+  else
+  {
+    for (int j = i; j <= n; j++)
+    {
+      a->swap(i,j);//swap((a+i), (a+j));
+      TST_PrivPermute(a, i+1, n, ret);
+      a->swap(i,j);//swap((a+i), (a+j)); //backtrack
+    }
+
+  }
+}
+
