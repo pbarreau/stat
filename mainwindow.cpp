@@ -43,13 +43,14 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   zoneCentrale->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
+#if 0
   /////////////////////
   QStringList TST_Lst;
-  TST_Lst << "A" << "B" << "C" ;
+  TST_Lst << "A" << "B" << "C" << "D" << "E";
   //TST_Lst << "A" << "B" << "C" << "D" << "E";
   TST_Permute(&TST_Lst);
   ////////////////////
-
+#endif
 
   // Creation sous fenetre pour mettre donnees de base
   fen_Tirages();
@@ -1038,8 +1039,10 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
           int ival = sval.toInt()-1;
           colsel = colsel +
                    "bd" + QString::number(ival)
-                   + "=" + QString::number(d[j]) + " and ";
+                   + "="+QString::number(d[j])+" and ";
+                   //+ "=%"+QString::number(j+1)+" and ";
         }
+        //colsel = colsel.arg(d[0]);
         // Retire derniere ,
         colsel.remove(colsel.length()-5,5);
 
@@ -1048,20 +1051,6 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
               + colsel + ");";
 
         status = DB_tirages->TST_Requete(msg,i,colsel,qsim_r);
-#if 0
-        status = query.exec(msg);
-
-        // MEttre les resultat qq part
-        if(status)
-        {
-          query.first();
-          if(query.isValid())
-          {
-            int val=query.value(0).toInt();
-            RangerValeurResultat(i,colsel,val,qsim_r);
-          }
-        }
-#endif
       }
     }
   }
@@ -1182,7 +1171,7 @@ void MainWindow::TST_Permute(QStringList  *lst)
   ret_val.clear();
 
   //TST_PrivPermute(lst,0,lst->size()-1, &ret_val);
-  TST_PrivPermute_2(lst,&ret_val);
+  TST_PrivPermute_2(lst,lst->size(),&ret_val);
 
   QString tmp = ret_val.at(1);
 
@@ -1211,18 +1200,18 @@ void MainWindow::TST_PrivPermute(QStringList *a, int i, int n, QStringList  *ret
 
 
 // http://www.cut-the-knot.org/do_you_know/AllPerm.shtml
-void MainWindow::TST_PrivPermute_2(QStringList  * n, QStringList  *ret)
+void MainWindow::TST_PrivPermute_2(QStringList  *item, int n, QStringList  *ret)
 {
-  if (n->size() == 1)
-    *ret<< n->join(",");
+  if (n == 1)
+    *ret<< item->join(",");
   else {
-    for (int i = 0; i < n->size(); i++)
+    for (int i = 0; i < n; i++)
     {
-      TST_PrivPermute_2(n, ret);
-      if (n->size() % 2 == 1)  // if n is odd
-        n->swap(0, n->size()-1);
+      TST_PrivPermute_2(item, n-1, ret);
+      if (n % 2 == 1)  // if n is odd
+        item->swap(0, n-1);
       else            // if n is even
-        n->swap(i, n->size()-1);
+        item->swap(i, n-1);
     }
   }
 }
