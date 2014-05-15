@@ -45,7 +45,8 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
 
   /////////////////////
   QStringList TST_Lst;
-  TST_Lst << "A" << "B" << "C" << "D" << "E";
+  TST_Lst << "A" << "B" << "C" ;
+  //TST_Lst << "A" << "B" << "C" << "D" << "E";
   TST_Permute(&TST_Lst);
   ////////////////////
 
@@ -1180,12 +1181,14 @@ void MainWindow::TST_Permute(QStringList  *lst)
 
   ret_val.clear();
 
-  TST_PrivPermute(lst,0,lst->size()-1, &ret_val);
+  //TST_PrivPermute(lst,0,lst->size()-1, &ret_val);
+  TST_PrivPermute_2(lst,&ret_val);
 
   QString tmp = ret_val.at(1);
 
 }
 
+#if 0
 void MainWindow::TST_PrivPermute(QStringList *a, int i, int n, QStringList  *ret)
 {
   QString lgn;
@@ -1204,4 +1207,22 @@ void MainWindow::TST_PrivPermute(QStringList *a, int i, int n, QStringList  *ret
 
   }
 }
+#endif
 
+
+// http://www.cut-the-knot.org/do_you_know/AllPerm.shtml
+void MainWindow::TST_PrivPermute_2(QStringList  * n, QStringList  *ret)
+{
+  if (n->size() == 1)
+    *ret<< n->join(",");
+  else {
+    for (int i = 0; i < n->size(); i++)
+    {
+      TST_PrivPermute_2(n, ret);
+      if (n->size() % 2 == 1)  // if n is odd
+        n->swap(0, n->size()-1);
+      else            // if n is even
+        n->swap(i, n->size()-1);
+    }
+  }
+}
