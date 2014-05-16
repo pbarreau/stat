@@ -935,93 +935,108 @@ void MainWindow::TST_CombiRec(int k, QStringList &l, const QString &s, QStringLi
 // http://www.dcode.fr/generer-calculer-combinaisons
 void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
 {
-  QStringList enp5[5];
+  QStringList sl_Lev1[5];
   QString msg = "";
   bool status = false;
-  QStringList tableau;
+  QStringList sl_Lev0;
 
   //QTabWidget *onglets = ;
 
   if(ref->limites[0].max == 49)
   {
-    tableau << "1" << "2" << "3" << "4" << "5";
+    sl_Lev0 << "1" << "2" << "3" << "4" << "5";
   }
   else
   {
-    tableau << "1" << "2" << "3" << "4" << "5" << "6";
+    sl_Lev0 << "1" << "2" << "3" << "4" << "5" << "6";
   }
 
+  // Recuperation des combinaison C(1,5), C(2,5), C(3,5), C(4,5), C(5,5)
   for (int i = 0; i< 5; i++)
-    TST_CombiRec(i+1, tableau, "" , enp5[i]);
+    TST_CombiRec(i+1, sl_Lev0, "" , sl_Lev1[i]);
 
-  for(int gagne=5; gagne >2; gagne --)
+  // Faire un onglet (Pere) par type de possibilite de ganger
+  for(int NbBg=5; NbBg >2; NbBg --) // Nb boule permettant de gagner
   {
-    // Rajouter un onglet au resultat
-    QTabWidget *mesResu = new QTabWidget;
-    QString ong_name = "Comb" + QString::number(gagne);
-    onglets->addTab(mesResu,tr(ong_name.toLocal8Bit()));
+    // Rajouter un onglet
+    QTabWidget *tw_rep = new QTabWidget;
+    QString st_OngName = "Comb" + QString::number(NbBg);
+    onglets->addTab(tw_rep,tr(st_OngName.toLocal8Bit()));
 
-    // recherche des combinaison donnant gagne bons numeros
-    for(int nelm = 0; nelm < gagne;nelm++)
+    // Faire un onglet (Fils)
+    for(int sousOnglet = 0; sousOnglet < NbBg;sousOnglet++)
     {
-      int lign = enp5[nelm].size();
-      QStandardItemModel * qsim_r = new QStandardItemModel(lign,2);
+      int nbItems = 0;
+      int nbI2tems = 0;
+      QStandardItemModel * qsim_r = NULL;
       QTableView *qtv_r = new QTableView;
-      qtv_r->setModel(qsim_r);
-      qtv_r->setSortingEnabled(true);
-      qtv_r->setAlternatingRowColors(true);
-      qtv_r->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+#if 0
+      if(sousOnglet == NbBg-1)
+      {
+        nbItems = 1;
+      }
+      else
+      {
+        nbItems = sl_Lev1[sousOnglet].size();
+      }
+#endif
+      nbItems = sl_Lev1[sousOnglet].size();
+      nbI2tems = sl_Lev1[sousOnglet].at(0).split(",").size();
+
+      qsim_r = new QStandardItemModel(nbItems*nbI2tems,2);;
 
       qsim_r->setHeaderData(0,Qt::Horizontal,"Combinaison");
       qsim_r->setHeaderData(1,Qt::Horizontal,"Total");
+      qtv_r->setModel(qsim_r);
+
+      qtv_r->setSortingEnabled(true);
+      qtv_r->setAlternatingRowColors(true);
+      qtv_r->setEditTriggers(QAbstractItemView::NoEditTriggers);
       qtv_r->setColumnWidth(0,260);
       qtv_r->setColumnWidth(1,50);
 
-      // click dans fenetre voisin pour afficher boule
+      QString st_SubOngName = "R"
+                              + QString::number(sousOnglet)
+                              +":"
+                              +QString::number(nbItems);
+      tw_rep->addTab(qtv_r,tr(st_SubOngName.toLocal8Bit()));
+
+      // Si zoom sur total demande
       connect( qtv_r, SIGNAL( doubleClicked (QModelIndex)) ,
                this, SLOT( slot_TST_DetailsCombinaison( QModelIndex) ) );
 
 
-      for(int loop=0;loop<2;loop++)
+
+      for (int i = 0; i < nbItems; ++i)
       {
-        for (int i = 0; i < lign; ++i)
-        {
-          QStandardItem *item_2 = new QStandardItem();
-          qsim_r->setItem(i,loop,item_2);
-        }
-      }
-
-      QString t_name = "R" + QString::number(nelm);
-      mesResu->addTab(qtv_r,tr(t_name.toLocal8Bit()));
-
-      for (int i = 0; i < lign; ++i)
-      {
-        QString comb = enp5[nelm].at(i);
-        QStringList nb = comb.split(",");
-
+        QString st_CombLine = sl_Lev1[sousOnglet].at(i);
+        QStringList sl_Lev2 = st_CombLine.split(",");
+        //int taille = nb.size();
         int d[5] = {0};
-        switch(nb.size())
+
+        switch(nbI2tems)
         {
           case 1:
-            d[0]=gagne;
+            d[0]=NbBg;
             break;
           case 2:
-            d[0]=gagne-1;
+            d[0]=NbBg-1;
             d[1]=1;
             break;
           case 3:
-            d[0]=gagne-2;
+            d[0]=NbBg-2;
             d[1]=1;
             d[2]=1;
             break;
           case 4:
-            d[0]=gagne-3;
+            d[0]=NbBg-3;
             d[1]=1;
             d[2]=1;
             d[3]=1;
             break;
           case 5:
-            d[0]=gagne-4;
+            d[0]=NbBg-4;
             d[1]=1;
             d[2]=1;
             d[3]=1;
@@ -1033,6 +1048,59 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
         }
 
         QString colsel = "";
+        if((nbI2tems >1) && (nbI2tems <5))
+        {
+          //qsim_r = new QStandardItemModel(lign*taille,2);
+          for (int j = 0; j < nbI2tems; ++j)
+          {
+            colsel="";
+            msg="";
+            for (int k = 0; k < nbI2tems; ++k)
+            {
+              int ival = sl_Lev2.at(k).toInt()-1;
+              colsel = colsel +
+                       "bd" + QString::number(ival)
+                       + "="+QString::number(d[(j+k)%nbI2tems])+" and ";
+            }
+
+            colsel.remove(colsel.length()-5,5);
+            msg = "select count (*) from analyses where ("
+                  + colsel + ");";
+
+            for(int loop=0;loop<2;loop++)
+            {
+              QStandardItem *item_2 = new QStandardItem();
+              qsim_r->setItem((i*nbI2tems)+j,loop,item_2);
+            }
+
+            status = DB_tirages->TST_Requete(msg,(i*nbI2tems)+j,colsel,qsim_r);
+          }
+        }
+        else
+        {
+          //qsim_r = new QStandardItemModel(nbItems,2);
+          for (int j = 0; j < nbI2tems; ++j)
+          {
+            int ival = sl_Lev2.at(j).toInt()-1;
+            colsel = colsel +
+                     "bd" + QString::number(ival)
+                     + "=%"+QString::number(j+1)+" and ";
+            colsel = colsel.arg(d[j]);
+          }
+
+          colsel.remove(colsel.length()-5,5);
+          msg = "select count (*) from analyses where ("
+                + colsel + ");";
+          for(int loop=0;loop<2;loop++)
+          {
+            QStandardItem *item_2 = new QStandardItem();
+            qsim_r->setItem(i,loop,item_2);
+          }
+
+          status = DB_tirages->TST_Requete(msg,i,colsel,qsim_r);
+        }
+
+#if 0
         for (int j = 0; j < nb.size(); ++j)
         {
           QString sval = nb.at(j);
@@ -1040,7 +1108,7 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
           colsel = colsel +
                    "bd" + QString::number(ival)
                    + "="+QString::number(d[j])+" and ";
-                   //+ "=%"+QString::number(j+1)+" and ";
+          //+ "=%"+QString::number(j+1)+" and ";
         }
         //colsel = colsel.arg(d[0]);
         // Retire derniere ,
@@ -1051,6 +1119,7 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
               + colsel + ");";
 
         status = DB_tirages->TST_Requete(msg,i,colsel,qsim_r);
+#endif
       }
     }
   }
@@ -1215,3 +1284,4 @@ void MainWindow::TST_PrivPermute_2(QStringList  *item, int n, QStringList  *ret)
     }
   }
 }
+
