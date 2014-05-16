@@ -1156,12 +1156,12 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
       // Un onglet est construit
       // Faire la synthese des boules trouvees
       qtv_r->sortByColumn(1,Qt::DescendingOrder);
-      TST_SyntheseDesCombinaisons(qtv_r,qtv_synthese);
+      TST_SyntheseDesCombinaisons(qtv_r,qsim_synthese);
     }
   }
 }
 
-void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QTableView * p_out)
+void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemModel * qsim_rep)
 {
   int ligne = 0;
   int val = 0;
@@ -1178,23 +1178,45 @@ void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QTableView * p_ou
       val = modelIndex.data().toInt();
       if(val)
       {
-        QStandardItem *item1 = dest->item(ligne,0) ;
-        QString msg = item1->data().toString();
+        //QStandardItem *item1 = dest->item(ligne,0) ;
+        modelIndex = p_in->model()->index(ligne,0, QModelIndex());
+        //QString msg = item1->data().toString();
+        QString msg = modelIndex.data().toString();
 
         msg.replace("c","bd");
         msg.replace(",","and");
 
         msg = "Select * from tirages inner join (select * from analyses where("
-                 + msg +
-                 "))as s on tirages.id = s.id union ";
+              + msg +
+              "))as s on tirages.id = s.id union ";
 
         SqlReq = SqlReq + msg;
       }
     }
     ligne++;
   }while(modelIndex.isValid());
-  SqlReq.remove(SqlReq.length()-6,6);
-  SqlReq = SqlReq + ";";
+
+  if(!SqlReq.isEmpty()){
+    SqlReq.remove(SqlReq.length()-6,6);
+    //SqlReq = SqlReq + ";";
+#ifndef QT_NO_DEBUG
+    qDebug()<< SqlReq;
+#endif
+
+    // Compter les occurences de chaque boule
+    for(int i =1; (i< 51) ;i++)
+    {
+      QStandardItem * item_1 = qsim_rep->item(i-1,0);
+      QStandardItem * item_2 = qsim_rep->item(i-1,1);
+
+      item_1->setData(i,Qt::DisplayRole);
+      qsim_rep->setItem(i-1,0,item_1);
+
+      int tot = TST_TotBidDansGroupememnt(i,SqlReq);
+      item_2->setData(tot,Qt::DisplayRole);
+      qsim_rep->setItem(i-1,1,item_2);
+    }
+  }
 }
 
 void MainWindow::slot_TST_DetailsCombinaison( const QModelIndex & index)
@@ -1215,7 +1237,6 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
   QFormLayout *mainLayout = new QFormLayout;
   bool status = true;
 
-  //tv_r1->setWindowTitle(msg);
 
   msg.replace("c","bd");
   msg.replace(",","and");
@@ -1257,6 +1278,20 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
 
   st_msg.remove(st_msg.length()-1,1);
   // Compter les occurences de chaque boule
+  for(int i =1; (i< 51) ;i++)
+  {
+    QStandardItem * item_1 = new QStandardItem;
+    QStandardItem * item_2 = new QStandardItem;
+
+    item_1->setData(i,Qt::DisplayRole);
+    qsim_rep->setItem(i-1,0,item_1);
+
+    int tot = TST_TotBidDansGroupememnt(i,st_msg);
+    item_2->setData(tot,Qt::DisplayRole);
+    qsim_rep->setItem(i-1,1,item_2);
+
+  }
+#if 0
   for(int i =1; (i< 51) && status ;i++)
   {
     QStandardItem * item_1 = new QStandardItem;
@@ -1286,7 +1321,7 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
       }
     }
   }
-
+#endif
   //qtv_rep->show();
 
   // ??
@@ -1299,6 +1334,31 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
   zoneCentrale->addSubWindow(qw_fenResu);
   qw_fenResu->show();
 
+}
+
+int MainWindow::TST_TotBidDansGroupememnt(int bId, QString &st_grp)
+{
+  int ret_val = 0;
+  bool status = false;
+  QSqlQuery sql_1;
+  QString msg_2 = "select count (*) from (" +st_grp+ " where (" +
+                  "b1 = " +QString::number(bId) + " or " +
+                  "b2 = " +QString::number(bId) + " or " +
+                  "b3 = " +QString::number(bId) + " or " +
+                  "b4 = " +QString::number(bId) + " or " +
+                  "b5 = " +QString::number(bId) + " ));" ;
+
+  status = sql_1.exec(msg_2);
+  if(status)
+  {
+    sql_1.first();
+    if(sql_1.isValid())
+    {
+      ret_val = sql_1.value(0).toInt();
+    }
+  }
+
+  return ret_val;
 }
 
 // http://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/
