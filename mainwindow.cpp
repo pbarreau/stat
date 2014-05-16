@@ -969,22 +969,35 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
       int nbItems = 0;
       int nbI2tems = 0;
       QStandardItemModel * qsim_r = NULL;
+      QStandardItemModel * qsim_synthese = new QStandardItemModel(50,2);
       QTableView *qtv_r = new QTableView;
+      QTableView *qtv_synthese = new QTableView;
+      QTabWidget *tw_lgnCombi = new QTabWidget;
 
-#if 0
-      if(sousOnglet == NbBg-1)
-      {
-        nbItems = 1;
-      }
-      else
-      {
-        nbItems = sl_Lev1[sousOnglet].size();
-      }
-#endif
+
       nbItems = sl_Lev1[sousOnglet].size();
       nbI2tems = sl_Lev1[sousOnglet].at(0).split(",").size();
 
-      qsim_r = new QStandardItemModel(nbItems*nbI2tems,2);;
+
+
+      if(sousOnglet == NbBg-1)
+      {
+        qsim_r = new QStandardItemModel(nbItems,2);;
+      }
+      else
+      {
+        qsim_r = new QStandardItemModel(nbItems*nbI2tems,2);
+      }
+
+
+      // Preparer le tableau des valeurs de synthese
+      for(int loop=0;loop < 50; loop++)
+      {
+        QStandardItem *item_1 = new QStandardItem();
+        QStandardItem *item_2 = new QStandardItem();
+        qsim_synthese->setItem(loop,0,item_1);
+        qsim_synthese->setItem(loop,1,item_2);
+      }
 
       qsim_r->setHeaderData(0,Qt::Horizontal,"Combinaison");
       qsim_r->setHeaderData(1,Qt::Horizontal,"Total");
@@ -996,11 +1009,26 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
       qtv_r->setColumnWidth(0,260);
       qtv_r->setColumnWidth(1,50);
 
+
+      qsim_synthese->setHeaderData(0,Qt::Horizontal,"B");
+      qsim_synthese->setHeaderData(1,Qt::Horizontal,"T");
+      qtv_synthese->setModel(qsim_synthese);
+
+      qtv_synthese->setSortingEnabled(true);
+      qtv_synthese->setAlternatingRowColors(true);
+      qtv_synthese->setEditTriggers(QAbstractItemView::NoEditTriggers);
+      qtv_synthese->setColumnWidth(0,50);
+      qtv_synthese->setColumnWidth(1,50);
+
       QString st_SubOngName = "R"
                               + QString::number(sousOnglet)
                               +":"
                               +QString::number(nbItems);
-      tw_rep->addTab(qtv_r,tr(st_SubOngName.toLocal8Bit()));
+
+      tw_rep->addTab(tw_lgnCombi,tr(st_SubOngName.toLocal8Bit()));
+
+      tw_lgnCombi->addTab(qtv_r,tr("Req"));
+      tw_lgnCombi->addTab(qtv_synthese,tr("Val"));
 
       // Si zoom sur total demande
       connect( qtv_r, SIGNAL( doubleClicked (QModelIndex)) ,
@@ -1050,35 +1078,60 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
         QString colsel = "";
         if((nbI2tems >1) && (nbI2tems <5))
         {
-          //qsim_r = new QStandardItemModel(lign*taille,2);
-          for (int j = 0; j < nbI2tems; ++j)
+          if(sousOnglet != NbBg-1)
           {
-            colsel="";
-            msg="";
-            for (int k = 0; k < nbI2tems; ++k)
+            for (int j = 0; j < nbI2tems; ++j)
             {
-              int ival = sl_Lev2.at(k).toInt()-1;
+              colsel="";
+              msg="";
+              for (int k = 0; k < nbI2tems; ++k)
+              {
+                int ival = sl_Lev2.at(k).toInt()-1;
+                colsel = colsel +
+                         "bd" + QString::number(ival)
+                         + "="+QString::number(d[(j+k)%nbI2tems])+" and ";
+              }
+
+              colsel.remove(colsel.length()-5,5);
+              msg = "select count (*) from analyses where ("
+                    + colsel + ");";
+
+              for(int loop=0;loop<2;loop++)
+              {
+                QStandardItem *item_2 = new QStandardItem();
+                qsim_r->setItem((i*nbI2tems)+j,loop,item_2);
+              }
+
+              status = DB_tirages->TST_Requete(msg,(i*nbI2tems)+j,colsel,qsim_r);
+            }
+          }
+          else
+          {
+            // Dernier onglet !!!
+            for (int j = 0; j < nbI2tems; ++j)
+            {
+              int ival = sl_Lev2.at(j).toInt()-1;
               colsel = colsel +
                        "bd" + QString::number(ival)
-                       + "="+QString::number(d[(j+k)%nbI2tems])+" and ";
+                       + "=%"+QString::number(j+1)+" and ";
+              colsel = colsel.arg(d[j]);
             }
 
             colsel.remove(colsel.length()-5,5);
             msg = "select count (*) from analyses where ("
                   + colsel + ");";
-
             for(int loop=0;loop<2;loop++)
             {
               QStandardItem *item_2 = new QStandardItem();
-              qsim_r->setItem((i*nbI2tems)+j,loop,item_2);
+              qsim_r->setItem(i,loop,item_2);
             }
 
-            status = DB_tirages->TST_Requete(msg,(i*nbI2tems)+j,colsel,qsim_r);
+            status = DB_tirages->TST_Requete(msg,i,colsel,qsim_r);
+
           }
         }
         else
         {
-          //qsim_r = new QStandardItemModel(nbItems,2);
           for (int j = 0; j < nbI2tems; ++j)
           {
             int ival = sl_Lev2.at(j).toInt()-1;
@@ -1099,30 +1152,49 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
 
           status = DB_tirages->TST_Requete(msg,i,colsel,qsim_r);
         }
-
-#if 0
-        for (int j = 0; j < nb.size(); ++j)
-        {
-          QString sval = nb.at(j);
-          int ival = sval.toInt()-1;
-          colsel = colsel +
-                   "bd" + QString::number(ival)
-                   + "="+QString::number(d[j])+" and ";
-          //+ "=%"+QString::number(j+1)+" and ";
-        }
-        //colsel = colsel.arg(d[0]);
-        // Retire derniere ,
-        colsel.remove(colsel.length()-5,5);
-
-        // Sql msg
-        msg = "select count (*) from analyses where ("
-              + colsel + ");";
-
-        status = DB_tirages->TST_Requete(msg,i,colsel,qsim_r);
-#endif
       }
+      // Un onglet est construit
+      // Faire la synthese des boules trouvees
+      qtv_r->sortByColumn(1,Qt::DescendingOrder);
+      TST_SyntheseDesCombinaisons(qtv_r,qtv_synthese);
     }
   }
+}
+
+void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QTableView * p_out)
+{
+  int ligne = 0;
+  int val = 0;
+  QModelIndex modelIndex;
+  QAbstractItemModel *theModel = p_in->model();
+  QStandardItemModel *dest= (QStandardItemModel*) theModel;
+  QString SqlReq = "";
+
+  do
+  {
+    modelIndex = p_in->model()->index(ligne,1, QModelIndex());
+
+    if(modelIndex.isValid()){
+      val = modelIndex.data().toInt();
+      if(val)
+      {
+        QStandardItem *item1 = dest->item(ligne,0) ;
+        QString msg = item1->data().toString();
+
+        msg.replace("c","bd");
+        msg.replace(",","and");
+
+        msg = "Select * from tirages inner join (select * from analyses where("
+                 + msg +
+                 "))as s on tirages.id = s.id union ";
+
+        SqlReq = SqlReq + msg;
+      }
+    }
+    ligne++;
+  }while(modelIndex.isValid());
+  SqlReq.remove(SqlReq.length()-6,6);
+  SqlReq = SqlReq + ";";
 }
 
 void MainWindow::slot_TST_DetailsCombinaison( const QModelIndex & index)
