@@ -94,11 +94,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   {
     //Rien
   }
-
+  ///---------------------
   // Recherche de combinaison A deplacer ?
   //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
   TST_RechercheCombi(&configJeu,tabWidget);
-
+  //return;
 
   // Ordre arrivee des boules ?
   DB_tirages->CouvertureBase(qsim_Ecarts,&configJeu);
@@ -135,7 +135,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   // click dans fenetre ma selection
   connect( qtv_MesChoix, SIGNAL( doubleClicked(QModelIndex)) ,
            this, SLOT( slot_UneSelectionActivee( QModelIndex) ) );
-
+  ///-----------------
 #if 0
   // Selection a change
   connect(qtv_LstCouv->selectionModel(), SIGNAL(selectionChanged (const QItemSelection&, const QItemSelection&)),
@@ -962,6 +962,18 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
     QTabWidget *tw_rep = new QTabWidget;
     QString st_OngName = "Comb" + QString::number(NbBg);
     onglets->addTab(tw_rep,tr(st_OngName.toLocal8Bit()));
+    QStandardItemModel * qsim_t = new QStandardItemModel(50,2);
+    QTableView *qtv_t = new QTableView;
+    int NbTotLgn = 0;
+
+    for(int loop=0;loop < 50; loop++)
+    {
+      QStandardItem *item_1 = new QStandardItem();
+      QStandardItem *item_2 = new QStandardItem();
+      item_1->setData(loop+1,Qt::DisplayRole);
+      qsim_t->setItem(loop,0,item_1);
+      qsim_t->setItem(loop,1,item_2);
+    }
 
     // Faire un onglet (Fils)
     for(int sousOnglet = 0; sousOnglet < NbBg;sousOnglet++)
@@ -1156,12 +1168,29 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
       // Un onglet est construit
       // Faire la synthese des boules trouvees
       qtv_r->sortByColumn(1,Qt::DescendingOrder);
-      TST_SyntheseDesCombinaisons(qtv_r,qsim_synthese);
+      qsim_t->sort(0,Qt::AscendingOrder);
+      TST_SyntheseDesCombinaisons(qtv_r,qsim_synthese, qsim_t, &NbTotLgn);
     }
+
+    // Onglet "Total" pour la combinaison en cours
+    qsim_t->setHeaderData(0,Qt::Horizontal,"B");
+    qsim_t->setHeaderData(1,Qt::Horizontal,"T");
+    qtv_t->setModel(qsim_t);
+
+    qtv_t->setSortingEnabled(true);
+    qtv_t->setAlternatingRowColors(true);
+    qtv_t->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_t->setColumnWidth(0,50);
+    qtv_t->setColumnWidth(1,50);
+
+    QString st_SubOngTotal = "Total:"
+                             +QString::number(NbTotLgn);
+
+    tw_rep->addTab(qtv_t,tr(st_SubOngTotal.toLocal8Bit()));
   }
 }
 
-void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemModel * qsim_rep)
+void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemModel * qsim_rep,QStandardItemModel * qsim_total, int *TotalLigne)
 {
   int ligne = 0;
   int val = 0;
@@ -1196,26 +1225,77 @@ void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemMode
     ligne++;
   }while(modelIndex.isValid());
 
-  if(!SqlReq.isEmpty()){
+  if(!SqlReq.isEmpty())
+  {
     SqlReq.remove(SqlReq.length()-6,6);
-    //SqlReq = SqlReq + ";";
-#ifndef QT_NO_DEBUG
-    qDebug()<< SqlReq;
-#endif
+
+    //#ifndef QT_NO_DEBUG
+    //qDebug()<< SqlReq;
+    //#endif
+
+    int static union_id = 0;
+    QString st_ut = "create table ru_" +QString::number(union_id)
+                    +" as SELECT * FROM ("
+                    +SqlReq + ");";
+
+    bool status = false;
+    QSqlQuery sql_1;
+    status = sql_1.exec(st_ut);
+
+    // Compter le nombre de ligne du tableau union
+    st_ut = "Select count (*) from  ru_" +QString::number(union_id) + ";";
+    status = false;
+    status = sql_1.exec(st_ut);
+    if(status)
+    {
+      sql_1.first();
+      if (sql_1.isValid())
+      {
+        (*TotalLigne) += sql_1.value(0).toInt();
+      }
+    }
+
 
     // Compter les occurences de chaque boule
     for(int i =1; (i< 51) ;i++)
     {
       QStandardItem * item_1 = qsim_rep->item(i-1,0);
       QStandardItem * item_2 = qsim_rep->item(i-1,1);
+      QStandardItem * item_total = qsim_total->item(i-1,1);
+      int total_glob = item_total->data(Qt::DisplayRole).toInt();
 
       item_1->setData(i,Qt::DisplayRole);
       qsim_rep->setItem(i-1,0,item_1);
+      // -------------------
+      QString msg_2 = "select count (*) from ru_" +QString::number(union_id)+ " where (" +
+                      "b1 = " +QString::number(i) + " or " +
+                      "b2 = " +QString::number(i) + " or " +
+                      "b3 = " +QString::number(i) + " or " +
+                      "b4 = " +QString::number(i) + " or " +
+                      "b5 = " +QString::number(i) + " );" ;
 
-      int tot = TST_TotBidDansGroupememnt(i,SqlReq);
+      status = sql_1.exec(msg_2);
+      int tot=0;
+      if(status)
+      {
+        sql_1.first();
+        if(sql_1.isValid())
+        {
+          tot = sql_1.value(0).toInt();
+        }
+      }
+
+      // ------------------
+      //int tot = TST_TotBidDansGroupememnt(i,SqlReq);
       item_2->setData(tot,Qt::DisplayRole);
       qsim_rep->setItem(i-1,1,item_2);
+
+      // Total pour cette combi
+      total_glob +=tot;
+      item_total->setData(total_glob,Qt::DisplayRole);
+      qsim_total->setItem(i-1,1,item_total);
     }
+    union_id++;
   }
 }
 
@@ -1286,6 +1366,9 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
     item_1->setData(i,Qt::DisplayRole);
     qsim_rep->setItem(i-1,0,item_1);
 
+    // -----------------
+
+    // -----------------
     int tot = TST_TotBidDansGroupememnt(i,st_msg);
     item_2->setData(tot,Qt::DisplayRole);
     qsim_rep->setItem(i-1,1,item_2);
