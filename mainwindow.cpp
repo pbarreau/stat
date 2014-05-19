@@ -1218,8 +1218,8 @@ void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemMode
   int ligne = 0;
   int val = 0;
   QModelIndex modelIndex;
-  QAbstractItemModel *theModel = p_in->model();
-  QStandardItemModel *dest= (QStandardItemModel*) theModel;
+  //QAbstractItemModel *theModel = p_in->model();
+  //QStandardItemModel *dest= (QStandardItemModel*) theModel;
   QString SqlReq = "";
 
   do
@@ -1701,7 +1701,7 @@ void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
     sql_1.first();
     if(sql_1.isValid())
     {
-      int lastcol = sql_1.record().count();
+      //int lastcol = sql_1.record().count();
 
 
       do{
@@ -1717,7 +1717,7 @@ void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
         }
 
         // creation d'une requete mise a jour des poids
-        double poids = sql_1.value(lastcol-1).toDouble();
+        //double poids = sql_1.value(lastcol-1).toDouble();
 #if 0
         update analyses set id_poids=14 where(id in
                                               (select id from analyses where (bd0=1 and bd1=1 and bd2=2 and bd3=1 and bd4=0 and bd5=0)
@@ -1774,50 +1774,19 @@ void MainWindow::TST_Graphe(QMdiArea *obj)
 {
 
   QWidget *qw_view = new QWidget;
-  QFormLayout *mainLayout = new QFormLayout;
 
-#if 0
-  //Set-up the scene
-  QGraphicsScene* Scene = new QGraphicsScene(0);
+  qw_view->setWindowTitle("Graphique");
+  qw_view->setMinimumHeight(390);
+  qw_view->setMinimumWidth(390);
 
-  //setScene(Scene);
-  Scene->setSceneRect( -100.0, -100.0, 200.0, 200.0 );
+  qgr_scene = new QGraphicsScene(QRectF(0, 0, 100, 100),qw_view);
+  qgr_scene->setBackgroundBrush(Qt::yellow);
 
-  QGraphicsEllipseItem *item = new QGraphicsEllipseItem( 0, Scene );
-  item->setRect( -50.0, -50.0, 100.0, 100.0 );
 
-  QGraphicsView view( Scene,0);
-
-  view.setRenderHints( QPainter::Antialiasing );
-  view.show();
+  qgr_view = new QGraphicsView( qgr_scene,qw_view);
+  qgr_view->setRenderHints( QPainter::Antialiasing );
+  qgr_view->show();
 
   obj->addSubWindow(qw_view);
-
-#endif
-
-  QGraphicsScene scene;
- scene.setSceneRect( -100.0, -100.0, 200.0, 200.0 );
-
- QGraphicsEllipseItem *item = new QGraphicsEllipseItem( 0, &scene );
- item->setRect( -50.0, -50.0, 100.0, 100.0 );
-
- QGraphicsView view( &scene );
-
-
- //mainLayout->addWidget(view);
- //mainLayout->addChildLayout(&view);
- //qw_view->setLayout(mainLayout);
-
- qw_view->setWindowTitle("Graphique");
- qw_view->setMinimumHeight(390);
- qw_view->setMinimumWidth(390);
-
- scene.setParent(qw_view);
-
- scene.setBackgroundBrush(Qt::yellow);
- obj->addSubWindow(qw_view);
-
- view.setRenderHints( QPainter::Antialiasing );
- view.show();
 
 }

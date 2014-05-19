@@ -10,6 +10,10 @@
 #include <QStandardItemModel>
 #include <QActionGroup>
 
+#include <QGraphicsEllipseItem>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+
 #include "gererbase.h"
 #include "tirages.h"
 
@@ -110,6 +114,9 @@ private:
   QStandardItemModel *qsim_Parites ;
   QStandardItemModel *qsim_Ensemble_1 ;
   QStandardItemModel *qsim_ud;
+
+  QGraphicsScene *qgr_scene;
+  QGraphicsView *qgr_view;
 
   QMenu *menuTrieMesPossibles;
   QAction * tabAction[6];
