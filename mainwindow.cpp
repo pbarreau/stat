@@ -15,6 +15,7 @@
 #include <QModelIndex>
 #include <QBrush>
 #include <QTabWidget>
+#include <math.h>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -73,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   fen_Parites();
 
   // Preparer la base de données
-  DB_tirages->CreerBaseEnMemoire(true);
+  DB_tirages->CreerBaseEnMemoire(false);
 
 
   // Creation des tables pour ce type jeu
@@ -98,7 +99,9 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   // Recherche de combinaison A deplacer ?
   //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
   TST_RechercheCombi(&configJeu,tabWidget);
-  //return;
+  //this->close();
+
+  return;
 
   // Ordre arrivee des boules ?
   DB_tirages->CouvertureBase(qsim_Ecarts,&configJeu);
@@ -953,7 +956,15 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
 
   // Recuperation des combinaison C(1,5), C(2,5), C(3,5), C(4,5), C(5,5)
   for (int i = 0; i< 5; i++)
+  {
     TST_CombiRec(i+1, sl_Lev0, "" , sl_Lev1[i]);
+
+    // Inscription de cette liste dans une table
+    TST_CombiVersTable(sl_Lev1[i]);
+  }
+
+  // Insertion de la ponderation de la liste des combis
+  TST_PonderationCombi(5);
 
   // Faire un onglet (Pere) par type de possibilite de ganger
   for(int NbBg=5; NbBg >2; NbBg --) // Nb boule permettant de gagner
@@ -1500,3 +1511,141 @@ void MainWindow::TST_PrivPermute_2(QStringList  *item, int n, QStringList  *ret)
   }
 }
 
+
+void MainWindow::TST_CombiVersTable (QStringList &combi)
+{
+  bool status = false;
+  QSqlQuery sql_1;
+  QString st_cols = "";
+  QString st_vals = "";
+  QString msg_1 = " CREATE table if not exists lstcombi (id INTEGER PRIMARY KEY, pos int, comb int,rot int, b1 int, b2 int ,b3 int ,b4 int, b5 int, b6 int, poids real);";
+  int coef[5][5] = {
+    {5,0,0,0,0},
+    {4,1,0,0,0},
+    {3,1,1,0,0},
+    {2,1,1,1,0},
+    {1,1,1,1,1}
+  };
+  static int loop = 0;
+
+  status = sql_1.exec(msg_1);
+  if(status)
+  {
+    // Parcourir chaque element du tableau
+    for (int i = 0; i< combi.size();i++)
+    {
+      QStringList item = combi.at(i).split(",");
+      int nbitems = item.size();
+
+      st_cols = "";
+      st_vals = "";
+      status = true;
+
+      // Rotation circulaire ?
+      if(nbitems> 1 && nbitems < 5)
+      {
+        for(int j=0;(j<nbitems)&& (status == true);j++)
+        {
+          st_cols ="";
+          st_vals ="";
+          for(int k =0; k< nbitems;k++)
+          {
+            st_cols = st_cols
+                      +"b"+item.at(k)
+                      +",";
+            st_vals = st_vals
+                      +QString::number(coef[loop][(j+k)%nbitems])
+                      +",";
+
+          }
+          st_cols.remove(st_cols.length()-1,1);
+          st_vals.remove(st_vals.length()-1,1);
+          msg_1 = "insert into lstcombi (id,pos,comb,rot,"
+                  + st_cols + ") Values (NULL,"
+                  + QString::number(loop)+","
+                  + QString::number(i)+","
+                  + QString::number(j) +","
+                  + st_vals + ");";
+          status = sql_1.exec(msg_1);
+        }
+
+      }
+      else
+      {
+        //static bool OneShot = true;
+
+        for(int j=0;j<nbitems;j++)
+        {
+          st_cols = st_cols + "b"+item.at(j)+",";
+          st_vals = st_vals +QString::number(coef[loop][j])+",";
+        }
+        st_cols.remove(st_cols.length()-1,1);
+        st_vals.remove(st_vals.length()-1,1);
+        msg_1 = "insert into lstcombi (id,pos,comb,rot,"
+                + st_cols + ") Values (NULL,"
+                + QString::number(loop)+","
+                + QString::number(i)+",0,"
+                + st_vals + ");";
+
+        //if(OneShot == true)
+        status = sql_1.exec(msg_1);
+
+        //if(loop == 4){
+        //  OneShot = false;
+        //}
+      }
+    }
+
+    // Localisation de la boucle du dessus
+    loop++;
+  }
+
+}
+
+void MainWindow::TST_PonderationCombi(int delta)
+{
+  bool status = false;
+  QSqlQuery sql_1;
+  QSqlQuery sql_2;
+  QString msg_1 = "select pos, count(pos)as T from lstcombi group by pos;";
+
+
+  status = sql_1.exec(msg_1);
+  if(status)
+  {
+    sql_1.first();
+    if(sql_1.isValid())
+    {
+      int depart = 1;
+      double palier = delta;
+      int loop = 0;
+      do
+      {
+        // Recuperer le nb de ligne
+        int nblgn = sql_1.value(1).toInt();
+        double val = palier;
+
+        for(int i = depart; (i<(depart+nblgn)) && (status == true);i++)
+        {
+          msg_1 = "update lstcombi set poids="
+                  +QString::number(val)+" where (id="
+                  +QString::number(i)
+                  +");";
+          status = sql_2.exec(msg_1);
+          val += 0.2;
+        }
+
+        // Prendre la valeur entiere immediatement superieur
+        val -=0.2;
+        val = ceil(val);
+
+        // Faire un saut
+        palier = val +1;
+        depart = depart+nblgn;
+
+        loop++;
+      }while(sql_1.next());
+    }
+
+  }
+}

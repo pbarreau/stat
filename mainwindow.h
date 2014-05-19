@@ -78,6 +78,8 @@ private:
   void TST_PrivPermute_2(QStringList *item, int n, QStringList  *ret);
   void TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemModel *p_out, QStandardItemModel *qsim_total, int *);
   int TST_TotBidDansGroupememnt(int bId, QString &st_grp);
+  void TST_CombiVersTable (QStringList &combi);
+  void TST_PonderationCombi(int delta);
 
 private:
   Ui::MainWindow *ui;
