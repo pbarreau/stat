@@ -4,6 +4,8 @@
 
 #include <QMessageBox>
 #include <QSqlQuery>
+#include <QSqlRecord>
+
 #include <QFile>
 #include <QFileDialog>
 #include <QTextStream>
@@ -25,7 +27,7 @@
 
 static stTiragesDef configJeu;
 
-MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
+MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd) :
   QMainWindow(parent),
   ui(new Ui::MainWindow)
 {
@@ -74,7 +76,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load) :
   fen_Parites();
 
   // Preparer la base de données
-  DB_tirages->CreerBaseEnMemoire(false);
+  DB_tirages->CreerBaseEnMemoire(dest_bdd);
 
 
   // Creation des tables pour ce type jeu
@@ -960,13 +962,19 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
     TST_CombiRec(i+1, sl_Lev0, "" , sl_Lev1[i]);
 
     // Inscription de cette liste dans une table
-    TST_CombiVersTable(sl_Lev1[i]);
+    TST_CombiVersTable(sl_Lev1[i],ref);
   }
 
   // Insertion de la ponderation de la liste des combis
   TST_PonderationCombi(5);
 
-  // Faire un onglet (Pere) par type de possibilite de ganger
+  // Affectation d'un poids a un tirage
+  TST_AffectePoidsATirage(ref);
+
+  // Ecriture du fichier resultat
+  TST_MettrePonderationSurTirages();
+
+  // Faire un onglet (Pere) par type de possibilite de gagner
   for(int NbBg=5; NbBg >2; NbBg --) // Nb boule permettant de gagner
   {
     // Rajouter un onglet
@@ -1326,7 +1334,7 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
   QTableView *tv_r1 = new QTableView;
   QString st_msg ="";
   QFormLayout *mainLayout = new QFormLayout;
-  bool status = true;
+  //bool status = true;
 
 
   msg.replace("c","bd");
@@ -1512,93 +1520,117 @@ void MainWindow::TST_PrivPermute_2(QStringList  *item, int n, QStringList  *ret)
 }
 
 
-void MainWindow::TST_CombiVersTable (QStringList &combi)
+void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
 {
   bool status = false;
+  static int loop = 0;
+  int zn = 0;
+  int nbBoules = floor(ref->limites[zn].max/10);
+
   QSqlQuery sql_1;
   QString st_cols = "";
   QString st_vals = "";
   QString msg_1 = " CREATE table if not exists lstcombi (id INTEGER PRIMARY KEY, pos int, comb int,rot int, b1 int, b2 int ,b3 int ,b4 int, b5 int, b6 int, poids real);";
-  int coef[5][5] = {
-    {5,0,0,0,0},
-    {4,1,0,0,0},
-    {3,1,1,0,0},
-    {2,1,1,1,0},
-    {1,1,1,1,1}
+
+
+  int coef[5][2][5] = {
+    {{5,0,0,0,0}},
+    {{4,1,0,0,0},{3,2,0,0,0}},
+    {{3,1,1,0,0},{2,2,1,0,0}},
+    {{2,1,1,1,0}},
+    {{1,1,1,1,1}}
   };
-  static int loop = 0;
 
-  status = sql_1.exec(msg_1);
-  if(status)
+#if 0
+  int e1[1][5] = {{5,0,0,0,0}};
+  int e2[2][5]= {{4,1,0,0,0},{3,2,0,0,0}};
+  int e3[2][5]= {{3,1,1,0,0},{2,2,1,0,0}};
+  int e4[1][5] = {{2,1,1,1,0}};
+  int e5[1][5] = {{1,1,1,1,1}};
+
+  {5,0,0,0,0},
+  {4,1,0,0,0},
+  {3,2,0,0,0},
+  {3,1,1,0,0},
+  {2,2,1,0,0},
+  {2,1,1,1,0},
+  {1,1,1,1,1}
+};
+#endif
+
+
+status = sql_1.exec(msg_1);
+if(status)
+{
+  // Parcourir chaque element du tableau
+  for (int i = 0; i< combi.size();i++)
   {
-    // Parcourir chaque element du tableau
-    for (int i = 0; i< combi.size();i++)
+    QStringList item = combi.at(i).split(",");
+    int nbitems = item.size();
+
+    st_cols = "";
+    st_vals = "";
+    status = true;
+
+    // Rotation circulaire ?
+    if(nbitems> 1 && nbitems <= nbBoules)
     {
-      QStringList item = combi.at(i).split(",");
-      int nbitems = item.size();
-
-      st_cols = "";
-      st_vals = "";
-      status = true;
-
-      // Rotation circulaire ?
-      if(nbitems> 1 && nbitems < 5)
+      for(int sub=0;sub<2;sub++)
       {
-        for(int j=0;(j<nbitems)&& (status == true);j++)
+        if(coef[loop][sub][0])
         {
-          st_cols ="";
-          st_vals ="";
-          for(int k =0; k< nbitems;k++)
+          for(int j=0;(j<nbitems)&& (status == true);j++)
           {
-            st_cols = st_cols
-                      +"b"+item.at(k)
-                      +",";
-            st_vals = st_vals
-                      +QString::number(coef[loop][(j+k)%nbitems])
-                      +",";
+            st_cols ="";
+            st_vals ="";
+            for(int k =0; k< nbitems;k++)
+            {
+              st_cols = st_cols
+                        +"b"+item.at(k)
+                        +",";
+              st_vals = st_vals
+                        +QString::number(coef[loop][sub][(j+k)%nbitems])
+                        +",";
 
+            }
+            st_cols.remove(st_cols.length()-1,1);
+            st_vals.remove(st_vals.length()-1,1);
+            msg_1 = "insert into lstcombi (id,pos,comb,rot,"
+                    + st_cols + ") Values (NULL,"
+                    + QString::number(loop)+","
+                    + QString::number(i)+","
+                    + QString::number(j) +","
+                    + st_vals + ");";
+            status = sql_1.exec(msg_1);
           }
-          st_cols.remove(st_cols.length()-1,1);
-          st_vals.remove(st_vals.length()-1,1);
-          msg_1 = "insert into lstcombi (id,pos,comb,rot,"
-                  + st_cols + ") Values (NULL,"
-                  + QString::number(loop)+","
-                  + QString::number(i)+","
-                  + QString::number(j) +","
-                  + st_vals + ");";
-          status = sql_1.exec(msg_1);
         }
-
-      }
-      else
-      {
-        //static bool OneShot = true;
-
-        for(int j=0;j<nbitems;j++)
-        {
-          st_cols = st_cols + "b"+item.at(j)+",";
-          st_vals = st_vals +QString::number(coef[loop][j])+",";
-        }
-        st_cols.remove(st_cols.length()-1,1);
-        st_vals.remove(st_vals.length()-1,1);
-        msg_1 = "insert into lstcombi (id,pos,comb,rot,"
-                + st_cols + ") Values (NULL,"
-                + QString::number(loop)+","
-                + QString::number(i)+",0,"
-                + st_vals + ");";
-
-        //if(OneShot == true)
-        status = sql_1.exec(msg_1);
-
-        //if(loop == 4){
-        //  OneShot = false;
-        //}
       }
     }
+    else
+    {
+      //static bool OneShot = true;
 
-    // Localisation de la boucle du dessus
-    loop++;
+      for(int j=0;j<nbitems;j++)
+      {
+        st_cols = st_cols + "b"+item.at(j)+",";
+        st_vals = st_vals +QString::number(coef[loop][0][j])+",";
+      }
+      st_cols.remove(st_cols.length()-1,1);
+      st_vals.remove(st_vals.length()-1,1);
+      msg_1 = "insert into lstcombi (id,pos,comb,rot,"
+              + st_cols + ") Values (NULL,"
+              + QString::number(loop)+","
+              + QString::number(i)+",0,"
+              + st_vals + ");";
+
+      status = sql_1.exec(msg_1);
+
+    }
   }
+
+  // Localisation de la boucle du dessus
+  loop++;
+}
 
 }
 
@@ -1647,5 +1679,88 @@ void MainWindow::TST_PonderationCombi(int delta)
       }while(sql_1.next());
     }
 
+  }
+}
+
+void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
+{
+  bool status = false;
+  QSqlQuery sql_1;
+  QSqlQuery sql_2;
+  QString msg_1 = "select * from lstcombi;";
+  int zn = 0;
+  int nbBoules = floor(ref->limites[zn].max/10);
+
+  status = sql_1.exec(msg_1);
+  if(status)
+  {
+    sql_1.first();
+    if(sql_1.isValid())
+    {
+      int lastcol = sql_1.record().count();
+
+
+      do{
+        int coef[6]={0};
+        QString msg_2 = "";
+        int id_poids = sql_1.value(0).toInt();
+
+        for(int i = 0; i<= nbBoules;i++)
+        {
+          coef[i] = sql_1.value(4+i).toInt();
+          msg_2 = msg_2 + "bd"+QString::number(i)
+                  +"="+QString::number(coef[i])+ " and ";
+        }
+
+        // creation d'une requete mise a jour des poids
+        double poids = sql_1.value(lastcol-1).toDouble();
+#if 0
+        update analyses set id_poids=14 where(id in
+                                              (select id from analyses where (bd0=1 and bd1=1 and bd2=2 and bd3=1 and bd4=0 and bd5=0)
+                                               ));
+#endif
+        msg_2.remove(msg_2.length()-5,5);
+        msg_2 = "Update analyses set id_poids="
+                +QString::number(id_poids)
+                +" where(id in (select id from analyses where("
+                +msg_2+")"
+                +"));";
+
+        status = sql_2.exec(msg_2);
+
+      }while(sql_1.next()&& status);
+    }
+  }
+
+}
+
+void MainWindow::TST_MettrePonderationSurTirages(void)
+{
+#if 0
+  select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;
+#endif
+  bool status = false;
+  QSqlQuery sql_1;
+  QString msg_1 = "select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
+
+  QFile fichier("ponder.txt");
+  fichier.open(QIODevice::WriteOnly | QIODevice::Text);
+  QTextStream flux(&fichier);
+
+  status = sql_1.exec(msg_1);
+  if(status)
+  {
+    sql_1.last();
+    if(sql_1.isValid())
+    {
+      do{
+        //int tirage = sql_1.value(0).toInt();
+        QString ponder = sql_1.value(1).toString();
+        // Ecriture dans fichier texte
+        flux << sql_1.value(0).toString() << ":" << ponder.replace(".",",")<< endl;
+
+      }while(sql_1.previous());
+      fichier.close();
+    }
   }
 }

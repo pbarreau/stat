@@ -37,7 +37,7 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget *parent = 0,NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false);
+  explicit MainWindow(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false, bool dest_bdd=false);
   ~MainWindow();
   //void closeEvent(QCloseEvent *event);
 
@@ -78,8 +78,10 @@ private:
   void TST_PrivPermute_2(QStringList *item, int n, QStringList  *ret);
   void TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemModel *p_out, QStandardItemModel *qsim_total, int *);
   int TST_TotBidDansGroupememnt(int bId, QString &st_grp);
-  void TST_CombiVersTable (QStringList &combi);
+  void TST_CombiVersTable (QStringList &combi, stTiragesDef *ref);
   void TST_PonderationCombi(int delta);
+  void TST_AffectePoidsATirage(stTiragesDef *ref);
+  void TST_MettrePonderationSurTirages(void);
 
 private:
   Ui::MainWindow *ui;

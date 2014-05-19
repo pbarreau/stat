@@ -59,7 +59,7 @@ bool GererBase::CreerTableTirages(tirages *pRef)
   {
 	msg1.replace(",", " int,");
 	msg1 = "create table analyses (id INTEGER PRIMARY KEY,"+
-		   msg1 + " int);";
+           msg1 + " int, id_poids int);";
 
 	ret = query.exec(msg1);
 	query.finish();

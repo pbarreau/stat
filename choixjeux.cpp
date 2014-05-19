@@ -21,6 +21,8 @@ ChoixJeux::~ChoixJeux()
 
 void ChoixJeux::prepare_base(void)
 {
+  bool baseEnRam = false;
+
     if(ui->rb_euro->isChecked())
     {
         eChoixJeu = NE_FDJ::fdj_euro;
@@ -30,8 +32,13 @@ void ChoixJeux::prepare_base(void)
         eChoixJeu = NE_FDJ::fdj_loto;
     }
 
+    if(!ui->rb_bdd->isChecked())
+    {
+      baseEnRam = true;
+    }
+
     load = ui->chk_autoLoad->checkState();
-    calcul = new MainWindow((QWidget *) 0,eChoixJeu,load);
+    calcul = new MainWindow((QWidget *) 0,eChoixJeu,load,baseEnRam);
 	calcul->show();
 	//calcul->ouvrir_mainwindows();
 }
