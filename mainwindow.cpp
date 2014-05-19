@@ -2,6 +2,10 @@
 #include <QDebug>
 #endif
 
+#include <QGraphicsEllipseItem>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QSqlRecord>
@@ -103,7 +107,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   TST_RechercheCombi(&configJeu,tabWidget);
   //this->close();
 
-  return;
+  //return;
 
   // Ordre arrivee des boules ?
   DB_tirages->CouvertureBase(qsim_Ecarts,&configJeu);
@@ -134,7 +138,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   DB_tirages->MLP_UniteDizaine(&configJeu, qsim_ud);
 
   setCentralWidget(zoneCentrale);
-
+  TST_Graphe(zoneCentrale);
 
 
   // click dans fenetre ma selection
@@ -1763,4 +1767,57 @@ void MainWindow::TST_MettrePonderationSurTirages(void)
       fichier.close();
     }
   }
+
+}
+
+void MainWindow::TST_Graphe(QMdiArea *obj)
+{
+
+  QWidget *qw_view = new QWidget;
+  QFormLayout *mainLayout = new QFormLayout;
+
+#if 0
+  //Set-up the scene
+  QGraphicsScene* Scene = new QGraphicsScene(0);
+
+  //setScene(Scene);
+  Scene->setSceneRect( -100.0, -100.0, 200.0, 200.0 );
+
+  QGraphicsEllipseItem *item = new QGraphicsEllipseItem( 0, Scene );
+  item->setRect( -50.0, -50.0, 100.0, 100.0 );
+
+  QGraphicsView view( Scene,0);
+
+  view.setRenderHints( QPainter::Antialiasing );
+  view.show();
+
+  obj->addSubWindow(qw_view);
+
+#endif
+
+  QGraphicsScene scene;
+ scene.setSceneRect( -100.0, -100.0, 200.0, 200.0 );
+
+ QGraphicsEllipseItem *item = new QGraphicsEllipseItem( 0, &scene );
+ item->setRect( -50.0, -50.0, 100.0, 100.0 );
+
+ QGraphicsView view( &scene );
+
+
+ //mainLayout->addWidget(view);
+ //mainLayout->addChildLayout(&view);
+ //qw_view->setLayout(mainLayout);
+
+ qw_view->setWindowTitle("Graphique");
+ qw_view->setMinimumHeight(390);
+ qw_view->setMinimumWidth(390);
+
+ scene.setParent(qw_view);
+
+ scene.setBackgroundBrush(Qt::yellow);
+ obj->addSubWindow(qw_view);
+
+ view.setRenderHints( QPainter::Antialiasing );
+ view.show();
+
 }

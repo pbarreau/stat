@@ -82,6 +82,7 @@ private:
   void TST_PonderationCombi(int delta);
   void TST_AffectePoidsATirage(stTiragesDef *ref);
   void TST_MettrePonderationSurTirages(void);
+  void TST_Graphe(QMdiArea *obj);
 
 private:
   Ui::MainWindow *ui;
