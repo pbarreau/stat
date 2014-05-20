@@ -24,10 +24,12 @@ GererBase::~GererBase(void)
 
 }
 
-bool GererBase::CreerBaseEnMemoire(bool action)
+bool GererBase::CreerBaseEnMemoire(bool action,NE_FDJ::E_typeJeux type)
 {
   // http://developer.nokia.com/community/wiki/Creating_an_SQLite_database_in_Qt
   db = QSqlDatabase::addDatabase("QSQLITE");
+
+  QString mabase = "";
 
   lieu = action;
   if(action == true){
@@ -36,7 +38,15 @@ bool GererBase::CreerBaseEnMemoire(bool action)
   }
   else
   {
-    QString mabase ("mabase.sqlite");
+    if(type == NE_FDJ::fdj_euro)
+    {
+      mabase = "db_euro.sqlite";
+    }
+    else
+    {
+      mabase = "db_loto.sqlite";
+    }
+
     QFile fichier(mabase);
 
     if(fichier.exists())

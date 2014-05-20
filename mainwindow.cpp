@@ -23,6 +23,7 @@
 #include <QTabWidget>
 #include <math.h>
 
+#include "MyGraphicsView.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "choixjeux.h"
@@ -80,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   fen_Parites();
 
   // Preparer la base de données
-  DB_tirages->CreerBaseEnMemoire(dest_bdd);
+  DB_tirages->CreerBaseEnMemoire(dest_bdd,leJeu);
 
 
   // Creation des tables pour ce type jeu
@@ -1772,6 +1773,53 @@ void MainWindow::TST_MettrePonderationSurTirages(void)
 
 void MainWindow::TST_Graphe(QMdiArea *obj)
 {
+  QWidget *qw_view = new QWidget;
+  myview = new MyGraphicsView(qw_view);
+
+#ifdef USE_WORKING
+  QSqlQuery sql_1;
+  bool status = false;
+  QString msg_1="select max(analyses.id), max(lstcombi.poids) from analyses , lstcombi;";
+
+  qw_view->setWindowTitle("Graphique");
+  qw_view->setMinimumWidth(390);
+
+  status = sql_1.exec(msg_1);
+  if(status)
+  {
+    sql_1.first();
+    if(sql_1.isValid())
+    {
+      int mx = sql_1.value(0).toInt() + 1;
+      int my = ceil(sql_1.value(1).toDouble()) + 1;
+
+      myview = new MyGraphicsView(qw_view);
+      myview->setRenderHints( QPainter::Antialiasing );
+      myview->setDragMode(QGraphicsView::ScrollHandDrag);
+      //myview.show();
+
+#if 0
+      qw_view->setMinimumHeight(my+10);
+
+      qgr_scene = new QGraphicsScene(QRectF(0, 0, mx, my+10),qw_view);
+      qgr_scene->setBackgroundBrush(Qt::yellow);
+
+
+      qgr_view = new QGraphicsView( qgr_scene,qw_view);
+      qgr_view->setRenderHints( QPainter::Antialiasing );
+      qgr_view->setDragMode(QGraphicsView::ScrollHandDrag);
+      qgr_view->show();
+#endif
+    }
+  }
+#endif
+
+  obj->addSubWindow(qw_view);
+}
+
+#if 0
+void MainWindow::TST_Graphe(QMdiArea *obj)
+{
 
   QWidget *qw_view = new QWidget;
 
@@ -1785,8 +1833,10 @@ void MainWindow::TST_Graphe(QMdiArea *obj)
 
   qgr_view = new QGraphicsView( qgr_scene,qw_view);
   qgr_view->setRenderHints( QPainter::Antialiasing );
+  qgr_view->setDragMode(QGraphicsView::ScrollHandDrag);
   qgr_view->show();
 
   obj->addSubWindow(qw_view);
 
 }
+#endif

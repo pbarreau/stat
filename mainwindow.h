@@ -14,6 +14,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
+#include "MyGraphicsView.h"
 #include "gererbase.h"
 #include "tirages.h"
 
@@ -117,6 +118,7 @@ private:
 
   QGraphicsScene *qgr_scene;
   QGraphicsView *qgr_view;
+  MyGraphicsView *myview;
 
   QMenu *menuTrieMesPossibles;
   QAction * tabAction[6];
