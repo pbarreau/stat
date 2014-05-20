@@ -22,14 +22,16 @@ SOURCES += main.cpp\
     gererbase.cpp \
     selectionboules.cpp \
     ImportFdj.cpp \
-    mygraphicsview.cpp
+    mygraphicsview.cpp \
+    pointtirage.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
     tirages.h \
     gererbase.h \
     selectionboules.h \
-    mygraphicsview.h
+    mygraphicsview.h \
+    pointtirage.h
 
 FORMS    += mainwindow.ui \
     choixjeux.ui \

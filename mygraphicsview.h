@@ -12,7 +12,7 @@ public:
   MyGraphicsView(QWidget* parent = NULL);
 
 public slots:
-  void slot_itemSelected(QGraphicsItem *item);
+  //void slot_itemSelected(QGraphicsItem *item);
 
 //public:
 
