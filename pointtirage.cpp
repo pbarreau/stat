@@ -13,9 +13,13 @@
 
 #include "pointtirage.h"
 
-PointTirage::PointTirage() :
+PointTirage::PointTirage(tirages *pref) :
   QGraphicsItem()
 {
+  tirRef = pref;
+  pref->getConfig(&tirDef);
+  //QString msg = tirRef->s_LibColAnalyse(&tirDef);
+  //msg = tirRef->qs_zColBaseName(0);
   //setFlag(ItemIsMovable);
   //setFlag(ItemSendsGeometryChanges);
   setFlags(ItemIsSelectable);
@@ -38,7 +42,10 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
   if(prev_x != lgntir )
   {
     // Recuperer le tools tips dans la base
-    msg = "select lstcombi.tip from analyses   inner join lstcombi on analyses.id_poids = lstcombi.id where (analyses.id ="
+    msg = tirRef->s_LibColAnalyse(&tirDef);
+    msg = "select "
+          + msg + " from analyses "
+          "where (analyses.id ="
           +QString::number(lgntir)+");";
 
     status = sql_1.exec(msg);
@@ -47,7 +54,17 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
       sql_1.first();
       if(sql_1.isValid())
       {
-        msg=sql_1.value(0).toString();
+        msg ="";
+        for(int i = 0; i<sql_1.record().count(); i++)
+        {
+          msg=msg +sql_1.value(i).toString()+",";
+          if(i==tirDef.nbElmZone[0])
+          {
+            msg = msg + "[";
+          }
+        }
+        msg.remove(msg.length()-1,1);
+        msg = msg + "]";
       }
     }
     else

@@ -139,7 +139,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   DB_tirages->MLP_UniteDizaine(&configJeu, qsim_ud);
 
   setCentralWidget(zoneCentrale);
-  TST_Graphe(zoneCentrale);
+  TST_Graphe(zoneCentrale,&tmp);
 
 
   // click dans fenetre ma selection
@@ -1755,10 +1755,10 @@ void MainWindow::TST_MettrePonderationSurTirages(void)
 
 }
 
-void MainWindow::TST_Graphe(QMdiArea *obj)
+void MainWindow::TST_Graphe(QMdiArea *obj, tirages *pref)
 {
   QWidget *qw_view = new QWidget;
-  myview = new MyGraphicsView(qw_view);
+  myview = new MyGraphicsView(qw_view, pref);
 
 #ifdef USE_WORKING
   QSqlQuery sql_1;

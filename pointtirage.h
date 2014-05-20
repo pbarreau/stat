@@ -3,15 +3,17 @@
 
 #include <QGraphicsItem>
 
-#define C_COEF_X  2
-#define C_COEF_Y  5
+#include "tirages.h"
+
+#define C_COEF_X  10
+#define C_COEF_Y  1
 
 class PointTirage : public QGraphicsItem
 {
   //Q_OBJECT
 public:
   //explicit PointTirage();
-  PointTirage();
+  PointTirage(tirages *pref=NULL);
   QRectF boundingRect() const;
   QPainterPath shape() const;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
@@ -26,6 +28,8 @@ protected:
 
 private:
   QPointF curPos;
+  tirages *tirRef;
+  stTiragesDef tirDef;
 };
 
 #endif // POINTTIRAGE_H
