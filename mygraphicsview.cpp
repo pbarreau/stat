@@ -34,6 +34,7 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
   setViewportUpdateMode(BoundingRectViewportUpdate);
   setRenderHint(QPainter::Antialiasing);
   setTransformationAnchor(AnchorUnderMouse);
+  //setDragMode(ScrollHandDrag);
   setWindowTitle(tr("Elastic Nodes"));
 
   //--------------
@@ -86,7 +87,7 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
         }
       }
       //Set-up the view
-      setSceneRect(0, 0, 2000, 500);
+      //setSceneRect(0, 0, 2000, 500);
 
     }
   }

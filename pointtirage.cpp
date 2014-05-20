@@ -13,7 +13,8 @@ PointTirage::PointTirage() :
   QGraphicsItem()
 {
   //setFlag(ItemIsMovable);
-  setFlag(ItemSendsGeometryChanges);
+  //setFlag(ItemSendsGeometryChanges);
+  setFlags(ItemIsSelectable);
   setCacheMode(DeviceCoordinateCache);
   setZValue(-1);
 }
@@ -21,6 +22,13 @@ PointTirage::PointTirage() :
 void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
   qDebug() << "Click m1:" << event;
+
+  if (event->button() == Qt::RightButton) {
+    QPointF test = event->buttonDownScenePos(Qt::RightButton);
+    qDebug() << test;
+    setSelected(true);
+  }
+
   update();
   QGraphicsItem::mousePressEvent(event);
 }
