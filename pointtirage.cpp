@@ -8,6 +8,9 @@
 #include <QStyleOption>
 #include <QToolTip>
 
+#include <QSqlQuery>
+#include <QSqlRecord>
+
 #include "pointtirage.h"
 
 PointTirage::PointTirage() :
@@ -22,15 +25,48 @@ PointTirage::PointTirage() :
 
 void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+  bool status = false;
+  QSqlQuery sql_1;
   QPointF pos_item = this->scenePos();
+
+  int lgntir = pos_item.x()/C_COEF_X;
+  static int prev_x = 0;
+
+  QString msg = "";
+  static QString msg_prev = "";
+
+  if(prev_x != lgntir )
+  {
+    // Recuperer le tools tips dans la base
+    msg = "select lstcombi.tip from analyses   inner join lstcombi on analyses.id_poids = lstcombi.id where (analyses.id ="
+          +QString::number(lgntir)+");";
+
+    status = sql_1.exec(msg);
+    if(status)
+    {
+      sql_1.first();
+      if(sql_1.isValid())
+      {
+        msg=sql_1.value(0).toString();
+      }
+    }
+    else
+    {
+      msg = "No data";
+    }
+
+    msg_prev = msg;
+  }
+  else
+  {
+    msg = msg_prev;
+  }
 
   qDebug() << "Click m1:" << pos_item;
   qDebug() << "Abs:" << pos_item.x()/C_COEF_X;
 
-  // Recuperer le tools tips dans la base
-
   QPoint test1 = event->buttonDownScreenPos(Qt::LeftButton);
-  QToolTip::showText(test1,"Hello!",0);
+  QToolTip::showText(test1,msg,0);
 
   update();
   QGraphicsItem::mousePressEvent(event);
@@ -59,7 +95,7 @@ QPainterPath PointTirage::shape() const
   return path;
 }
 
-void PointTirage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *item)
+void PointTirage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
   painter->setPen(Qt::NoPen);
   //painter->setBrush(Qt::darkGray);

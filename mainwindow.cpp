@@ -106,7 +106,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   // Recherche de combinaison A deplacer ?
   //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
   TST_RechercheCombi(&configJeu,tabWidget);
-  QApplication::quit();
+  //QApplication::quit();
 
   //return;
 

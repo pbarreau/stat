@@ -14,7 +14,7 @@ public:
   PointTirage();
   QRectF boundingRect() const;
   QPainterPath shape() const;
-  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *item);
+  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
 
 signals:
   

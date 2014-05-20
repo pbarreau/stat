@@ -71,7 +71,7 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
 
           do
           {
-            int x = sql_2.value(0).toInt()* C_COEF_X;
+             int x = sql_2.value(0).toInt()* C_COEF_X;
             double y = sql_2.value(1).toDouble()*C_COEF_Y;
             PointTirage *ptir = new PointTirage;
             ptir->setPos(x,y);
