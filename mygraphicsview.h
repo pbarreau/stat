@@ -4,6 +4,8 @@
 #include <QGraphicsView>
 #include <QGraphicsRectItem>
 
+#include <QGraphicsSceneMouseEvent>
+
 class MyGraphicsView: public QGraphicsView
 {
 public:
@@ -12,11 +14,18 @@ public:
 public slots:
   void slot_itemSelected(QGraphicsItem *item);
 
+//public:
+
 protected:
-    //Take over the interaction
-    virtual void wheelEvent(QWheelEvent* event);
-    virtual void mouseMoveEvent(QMouseEvent*);
-    void mousePressEvent(QMouseEvent *event);
+  //Take over the interaction
+  virtual void wheelEvent(QWheelEvent* event);
+  //virtual void mouseMoveEvent(QMouseEvent*);
+  void mousePressEvent(QMouseEvent *event);
+  //void mousePressEvent(QGraphicsSceneMouseEvent *event);
+  //virtual void hoverEnterEvent ( QGraphicsSceneHoverEvent * event );
+  //virtual void hoverLeaveEvent ( QGraphicsSceneHoverEvent * event );
+  //virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+
 };
 
 #endif // MYGRAPHICSVIEW_H

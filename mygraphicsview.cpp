@@ -15,6 +15,7 @@
 #include <QSqlQuery>
 
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsSceneHoverEvent>
 
 #include <math.h>
 
@@ -27,8 +28,8 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
   setScene(Scene);
   setBackgroundBrush(Qt::yellow);
 
-  connect(Scene, SIGNAL(itemSelected(QGraphicsItem*)),
-           this, SLOT(slot_itemSelected(QGraphicsItem*)));
+  //connect(Scene, SIGNAL(itemSelected(QGraphicsItem*)),
+    //       this, SLOT(slot_itemSelected(QGraphicsItem*)));
   //--------------
   //Populate the scene
   QSqlQuery sql_1;
@@ -77,7 +78,7 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
         }
       }
       //Set-up the view
-      setSceneRect(0, 0, 1000, 500);
+      setSceneRect(0, 0, 2000, 500);
 
     }
   }
@@ -143,6 +144,7 @@ void MyGraphicsView::wheelEvent(QWheelEvent* event) {
   // as wheel is normally used for moving scrollbars
 }
 
+#ifdef USE_CODE
 void MyGraphicsView::mouseMoveEvent(QMouseEvent* ev)
 {
 #if 0
@@ -177,3 +179,40 @@ void MyGraphicsView::slot_itemSelected(QGraphicsItem *item)
 {
   qDebug() << "Click item:" << item;
 }
+#endif
+
+void MyGraphicsView::mousePressEvent(QMouseEvent *event)
+{
+  qDebug() << "Click 3:" << event;
+  if(event->button() == Qt::RightButton)
+  {
+    //QPoint p1 = event->pos();
+    QPointF p2 = event->pos();
+    //qDebug() << "p1:" << p1;
+    qDebug() << "p2:" << p2;
+  }
+
+  //QGraphicsScene::mousePressEvent(event);
+  //QGraphicsScene  + QGraphicsSceneMouseEvent
+  // http://stackoverflow.com/questions/10082571/mousepressevent-in-view-and-items-in-qt
+}
+
+
+#if 0
+void MyGraphicsView::hoverEnterEvent ( QGraphicsSceneHoverEvent * event )
+{
+  QPointF ref = event->scenePos();
+  qDebug() << "Click 1:" << ref;
+}
+
+void MyGraphicsView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
+// do something
+
+  QPointF ref = event->scenePos();
+  qDebug() << "Click 2:" << ref;
+
+// call the parents's event
+//QGraphicsItem::mouseReleaseEvent(event);
+}
+
+#endif

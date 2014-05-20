@@ -21,13 +21,15 @@ SOURCES += main.cpp\
     RemplirBase.cpp \
     gererbase.cpp \
     selectionboules.cpp \
-    ImportFdj.cpp
+    ImportFdj.cpp \
+    mygraphicsview.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
     tirages.h \
     gererbase.h \
-    selectionboules.h
+    selectionboules.h \
+    mygraphicsview.h
 
 FORMS    += mainwindow.ui \
     choixjeux.ui \
