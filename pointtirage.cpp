@@ -64,8 +64,10 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
           }
         }
         msg.remove(msg.length()-1,1);
-        msg = msg + "]";
+        msg = msg + "]\r\nsuite";
+
       }
+
     }
     else
     {
