@@ -20,7 +20,7 @@ protected:
   //Take over the interaction
   virtual void wheelEvent(QWheelEvent* event);
   //virtual void mouseMoveEvent(QMouseEvent*);
-  void mousePressEvent(QMouseEvent *event);
+  //void mousePressEvent(QMouseEvent *event);
   //void mousePressEvent(QGraphicsSceneMouseEvent *event);
   //virtual void hoverEnterEvent ( QGraphicsSceneHoverEvent * event );
   //virtual void hoverLeaveEvent ( QGraphicsSceneHoverEvent * event );

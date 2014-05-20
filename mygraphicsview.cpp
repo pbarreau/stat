@@ -73,7 +73,7 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
             PointTirage *ptir = new PointTirage;
             ptir->setPos(x,y);
             Scene->addItem(ptir);
-            Scene->addRect(x, y, 1, 1);
+            //Scene->addRect(x, y, 1, 1);
             if(sx==0)
             {
               sx=x;
@@ -187,7 +187,7 @@ void MyGraphicsView::slot_itemSelected(QGraphicsItem *item)
 {
   qDebug() << "Click item:" << item;
 }
-#endif
+
 
 void MyGraphicsView::mousePressEvent(QMouseEvent *event)
 {
@@ -204,7 +204,7 @@ void MyGraphicsView::mousePressEvent(QMouseEvent *event)
   //QGraphicsScene  + QGraphicsSceneMouseEvent
   // http://stackoverflow.com/questions/10082571/mousepressevent-in-view-and-items-in-qt
 }
-
+#endif
 
 #if 0
 void MyGraphicsView::hoverEnterEvent ( QGraphicsSceneHoverEvent * event )
