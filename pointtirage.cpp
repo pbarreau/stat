@@ -6,6 +6,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QStyleOption>
+#include <QToolTip>
 
 #include "pointtirage.h"
 
@@ -21,13 +22,13 @@ PointTirage::PointTirage() :
 
 void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-  qDebug() << "Click m1:" << event;
+  QPointF pos_item = this->scenePos();
 
-  if (event->button() == Qt::RightButton) {
-    QPointF test = event->buttonDownScenePos(Qt::RightButton);
-    qDebug() << test;
-    setSelected(true);
-  }
+  qDebug() << "Click m1:" << pos_item;
+  qDebug() << "Abs:" << pos_item.x()/C_COEF_X;
+
+  QPoint test1 = event->buttonDownScreenPos(Qt::LeftButton);
+  QToolTip::showText(test1,"Hello!",0);
 
   update();
   QGraphicsItem::mousePressEvent(event);
@@ -56,7 +57,7 @@ QPainterPath PointTirage::shape() const
   return path;
 }
 
-void PointTirage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
+void PointTirage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *item)
 {
   painter->setPen(Qt::NoPen);
   //painter->setBrush(Qt::darkGray);
@@ -64,9 +65,10 @@ void PointTirage::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 
   QRadialGradient gradient(-3, -3, 10);
   if (option->state & QStyle::State_Sunken) {
+    //setToolTip("TOTO");
     gradient.setCenter(0, 0);
     gradient.setFocalPoint(3, 3);
-    gradient.setColorAt(1, QColor(Qt::yellow).light(120));
+    gradient.setColorAt(1, QColor(Qt::red).light(120));
     gradient.setColorAt(0, QColor(Qt::darkYellow).light(120));
   } else {
     gradient.setColorAt(0, Qt::yellow);

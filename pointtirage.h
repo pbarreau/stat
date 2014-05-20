@@ -3,6 +3,9 @@
 
 #include <QGraphicsItem>
 
+#define C_COEF_X  2
+#define C_COEF_Y  5
+
 class PointTirage : public QGraphicsItem
 {
   //Q_OBJECT
@@ -11,7 +14,7 @@ public:
   PointTirage();
   QRectF boundingRect() const;
   QPainterPath shape() const;
-  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *item);
 
 signals:
   

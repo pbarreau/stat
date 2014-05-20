@@ -31,11 +31,13 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
   setScene(Scene);
   setBackgroundBrush(Qt::yellow);
   setCacheMode(CacheBackground);
-  setViewportUpdateMode(BoundingRectViewportUpdate);
+  ///setViewportUpdateMode(BoundingRectViewportUpdate);
+  setViewportUpdateMode(FullViewportUpdate);
   setRenderHint(QPainter::Antialiasing);
   setTransformationAnchor(AnchorUnderMouse);
   //setDragMode(ScrollHandDrag);
   setWindowTitle(tr("Elastic Nodes"));
+
 
   //--------------
   //Populate the scene
@@ -69,8 +71,8 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
 
           do
           {
-            int x = sql_2.value(0).toInt()*2;
-            double y = sql_2.value(1).toDouble()*5;
+            int x = sql_2.value(0).toInt()* C_COEF_X;
+            double y = sql_2.value(1).toDouble()*C_COEF_Y;
             PointTirage *ptir = new PointTirage;
             ptir->setPos(x,y);
             Scene->addItem(ptir);
@@ -87,7 +89,7 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
         }
       }
       //Set-up the view
-      //setSceneRect(0, 0, 2000, 500);
+      setSceneRect(0, 0, 10000, 10000);
 
     }
   }
@@ -138,6 +140,7 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
 void MyGraphicsView::wheelEvent(QWheelEvent* event) {
 
   setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+  //this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
   // Scale the view / do the zoom
   double scaleFactor = 1.15;
@@ -149,6 +152,7 @@ void MyGraphicsView::wheelEvent(QWheelEvent* event) {
     scale(1.0 / scaleFactor, 1.0 / scaleFactor);
   }
 
+  //setSceneRect(0, 0, 2000, 500);
   // Don't call superclass handler here
   // as wheel is normally used for moving scrollbars
 }
