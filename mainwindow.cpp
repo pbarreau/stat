@@ -106,7 +106,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   // Recherche de combinaison A deplacer ?
   //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
   TST_RechercheCombi(&configJeu,tabWidget);
-  //this->close();
+  QApplication::quit();
 
   //return;
 
@@ -1535,7 +1535,7 @@ void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
   QSqlQuery sql_1;
   QString st_cols = "";
   QString st_vals = "";
-  QString msg_1 = " CREATE table if not exists lstcombi (id INTEGER PRIMARY KEY, pos int, comb int,rot int, b1 int, b2 int ,b3 int ,b4 int, b5 int, b6 int, poids real);";
+  QString msg_1 = " CREATE table if not exists lstcombi (id INTEGER PRIMARY KEY, pos int, comb int,rot int, b1 int, b2 int ,b3 int ,b4 int, b5 int, b6 int, poids real, tip text);";
 
 
   int coef[5][2][5] = {
@@ -1545,23 +1545,6 @@ void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
     {{2,1,1,1,0}},
     {{1,1,1,1,1}}
   };
-
-#if 0
-  int e1[1][5] = {{5,0,0,0,0}};
-  int e2[2][5]= {{4,1,0,0,0},{3,2,0,0,0}};
-  int e3[2][5]= {{3,1,1,0,0},{2,2,1,0,0}};
-  int e4[1][5] = {{2,1,1,1,0}};
-  int e5[1][5] = {{1,1,1,1,1}};
-
-  {5,0,0,0,0},
-  {4,1,0,0,0},
-  {3,2,0,0,0},
-  {3,1,1,0,0},
-  {2,2,1,0,0},
-  {2,1,1,1,0},
-  {1,1,1,1,1}
-};
-#endif
 
 
 status = sql_1.exec(msg_1);
@@ -1601,11 +1584,12 @@ if(status)
             st_cols.remove(st_cols.length()-1,1);
             st_vals.remove(st_vals.length()-1,1);
             msg_1 = "insert into lstcombi (id,pos,comb,rot,"
-                    + st_cols + ") Values (NULL,"
+                    + st_cols + ",tip) Values (NULL,"
                     + QString::number(loop)+","
                     + QString::number(i)+","
                     + QString::number(j) +","
-                    + st_vals + ");";
+                    + st_vals + ",\""
+                    + st_vals + "\");";
             status = sql_1.exec(msg_1);
           }
         }

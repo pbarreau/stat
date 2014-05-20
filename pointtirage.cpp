@@ -27,6 +27,8 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
   qDebug() << "Click m1:" << pos_item;
   qDebug() << "Abs:" << pos_item.x()/C_COEF_X;
 
+  // Recuperer le tools tips dans la base
+
   QPoint test1 = event->buttonDownScreenPos(Qt::LeftButton);
   QToolTip::showText(test1,"Hello!",0);
 
