@@ -5,9 +5,10 @@
 
 class PointTirage : public QGraphicsItem
 {
-  Q_OBJECT
+  //Q_OBJECT
 public:
-  explicit PointTirage(QWidget *parent = 0);
+  //explicit PointTirage();
+  PointTirage();
   
 signals:
   

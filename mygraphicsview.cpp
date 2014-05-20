@@ -1,4 +1,4 @@
-#include "MyGraphicsView.h"
+
 
 //Qt includes
 #include <QGraphicsView>
@@ -19,6 +19,9 @@
 
 #include <math.h>
 
+#include "MyGraphicsView.h"
+#include "pointtirage.h"
+
 MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
 {
   setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
@@ -27,16 +30,19 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
   QGraphicsScene* Scene = new QGraphicsScene(this);
   setScene(Scene);
   setBackgroundBrush(Qt::yellow);
+  setCacheMode(CacheBackground);
+  setViewportUpdateMode(BoundingRectViewportUpdate);
+  setRenderHint(QPainter::Antialiasing);
+  setTransformationAnchor(AnchorUnderMouse);
+  setWindowTitle(tr("Elastic Nodes"));
 
-  //connect(Scene, SIGNAL(itemSelected(QGraphicsItem*)),
-    //       this, SLOT(slot_itemSelected(QGraphicsItem*)));
   //--------------
   //Populate the scene
   QSqlQuery sql_1;
   bool status = false;
   QString msg_1="select max(analyses.id), max(lstcombi.poids) from analyses , lstcombi;";
 
-  parent->setWindowTitle("Graphique");
+  //parent->setWindowTitle("Graphique");
   parent->setMinimumWidth(390);
   parent->setMinimumHeight(390);
 
@@ -64,8 +70,10 @@ MyGraphicsView::MyGraphicsView(QWidget *parent): QGraphicsView(parent)
           {
             int x = sql_2.value(0).toInt()*2;
             double y = sql_2.value(1).toDouble()*5;
-            QGraphicsRectItem * rv = Scene->addRect(x, y, 1, 1);
-            rv->setFlags(QGraphicsItem::ItemIsSelectable);
+            PointTirage *ptir = new PointTirage;
+            ptir->setPos(x,y);
+            Scene->addItem(ptir);
+            Scene->addRect(x, y, 1, 1);
             if(sx==0)
             {
               sx=x;
@@ -163,15 +171,15 @@ void MyGraphicsView::mousePressEvent(QMouseEvent *event)
 
   QGraphicsItem *item = itemAt(event->pos());
 
-    if (item) {
-        qDebug() << "You clicked on item" << item;
-        //QPointF cord= item->mapFromItem();
-        //qDebug() << "item" << cord;
-    } else {
-        qDebug() << "You didn't click on an item.";
-    }
+  if (item) {
+    qDebug() << "You clicked on item" << item;
+    //QPointF cord= item->mapFromItem();
+    //qDebug() << "item" << cord;
+  } else {
+    qDebug() << "You didn't click on an item.";
+  }
 
-    //item->setToolTip("Un texte");
+  //item->setToolTip("Un texte");
 
 }
 
@@ -206,13 +214,13 @@ void MyGraphicsView::hoverEnterEvent ( QGraphicsSceneHoverEvent * event )
 }
 
 void MyGraphicsView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
-// do something
+  // do something
 
   QPointF ref = event->scenePos();
   qDebug() << "Click 2:" << ref;
 
-// call the parents's event
-//QGraphicsItem::mouseReleaseEvent(event);
+  // call the parents's event
+  //QGraphicsItem::mouseReleaseEvent(event);
 }
 
 #endif
