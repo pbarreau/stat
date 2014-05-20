@@ -18,6 +18,13 @@ PointTirage::PointTirage(tirages *pref) :
 {
   tirRef = pref;
   pref->getConfig(&tirDef);
+ #if 0
+  QString tir_msg = tirRef->qs_zColBaseName(0);
+  tir_msg = tir_msg + "," + tirRef->qs_zColBaseName(1);
+  tir_msg = "select " + tir_msg + " from tirages "
+            "where (tirages.id ="
+            +QString::number(1)+");";
+#endif
   //QString msg = tirRef->s_LibColAnalyse(&tirDef);
   //msg = tirRef->qs_zColBaseName(0);
   //setFlag(ItemIsMovable);
@@ -64,8 +71,40 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
           }
         }
         msg.remove(msg.length()-1,1);
-        msg = msg + "]\r\nsuite";
+        msg = msg + "]\r\n";
+        // ---------
+        // Recuperation du tirage
+        QString tir_msg = tirRef->qs_zColBaseName(0);
+        tir_msg = tir_msg + "," + tirRef->qs_zColBaseName(1);
+        tir_msg = "select " + tir_msg + " from tirages "
+                  "where (tirages.id ="
+                  +QString::number(lgntir)+");";
+        status = sql_1.exec(tir_msg);
+        if(status)
+        {
+          sql_1.first();
+          if(sql_1.isValid())
+          {
+            tir_msg ="";
+            for(int i = 0; i<sql_1.record().count(); i++)
+            {
+              tir_msg=tir_msg +sql_1.value(i).toString()+",";
+              if(i==tirDef.nbElmZone[0])
+              {
+                tir_msg = tir_msg + "[";
+              }
+            }
+            tir_msg.remove(tir_msg.length()-1,1);
+            tir_msg = tir_msg + "]";
 
+          }
+        }
+        else
+        {
+          tir_msg = "err tir !";
+        }
+        msg = msg + tir_msg;
+        // -------------
       }
 
     }
