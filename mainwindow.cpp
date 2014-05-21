@@ -45,6 +45,9 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   // Recuperation des contantes du type de jeu
   tmp.getConfig(&configJeu);
 
+  stTiragesDef ess;
+  ess = configJeu;
+
   ui->setupUi(this);
 
   zoneCentrale = new QMdiArea;
@@ -139,7 +142,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   DB_tirages->MLP_UniteDizaine(&configJeu, qsim_ud);
 
   setCentralWidget(zoneCentrale);
-  TST_Graphe(zoneCentrale,&tmp);
+  TST_Graphe(zoneCentrale,leJeu);
 
 
   // click dans fenetre ma selection
@@ -1547,79 +1550,79 @@ void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
   };
 
 
-status = sql_1.exec(msg_1);
-if(status)
-{
-  // Parcourir chaque element du tableau
-  for (int i = 0; i< combi.size();i++)
+  status = sql_1.exec(msg_1);
+  if(status)
   {
-    QStringList item = combi.at(i).split(",");
-    int nbitems = item.size();
-
-    st_cols = "";
-    st_vals = "";
-    status = true;
-
-    // Rotation circulaire ?
-    if(nbitems> 1 && nbitems <= nbBoules)
+    // Parcourir chaque element du tableau
+    for (int i = 0; i< combi.size();i++)
     {
-      for(int sub=0;sub<2;sub++)
-      {
-        if(coef[loop][sub][0])
-        {
-          for(int j=0;(j<nbitems)&& (status == true);j++)
-          {
-            st_cols ="";
-            st_vals ="";
-            for(int k =0; k< nbitems;k++)
-            {
-              st_cols = st_cols
-                        +"b"+item.at(k)
-                        +",";
-              st_vals = st_vals
-                        +QString::number(coef[loop][sub][(j+k)%nbitems])
-                        +",";
+      QStringList item = combi.at(i).split(",");
+      int nbitems = item.size();
 
+      st_cols = "";
+      st_vals = "";
+      status = true;
+
+      // Rotation circulaire ?
+      if(nbitems> 1 && nbitems <= nbBoules)
+      {
+        for(int sub=0;sub<2;sub++)
+        {
+          if(coef[loop][sub][0])
+          {
+            for(int j=0;(j<nbitems)&& (status == true);j++)
+            {
+              st_cols ="";
+              st_vals ="";
+              for(int k =0; k< nbitems;k++)
+              {
+                st_cols = st_cols
+                          +"b"+item.at(k)
+                          +",";
+                st_vals = st_vals
+                          +QString::number(coef[loop][sub][(j+k)%nbitems])
+                          +",";
+
+              }
+              st_cols.remove(st_cols.length()-1,1);
+              st_vals.remove(st_vals.length()-1,1);
+              msg_1 = "insert into lstcombi (id,pos,comb,rot,"
+                      + st_cols + ",tip) Values (NULL,"
+                      + QString::number(loop)+","
+                      + QString::number(i)+","
+                      + QString::number(j) +","
+                      + st_vals + ",\""
+                      + st_vals + "\");";
+              status = sql_1.exec(msg_1);
             }
-            st_cols.remove(st_cols.length()-1,1);
-            st_vals.remove(st_vals.length()-1,1);
-            msg_1 = "insert into lstcombi (id,pos,comb,rot,"
-                    + st_cols + ",tip) Values (NULL,"
-                    + QString::number(loop)+","
-                    + QString::number(i)+","
-                    + QString::number(j) +","
-                    + st_vals + ",\""
-                    + st_vals + "\");";
-            status = sql_1.exec(msg_1);
           }
         }
       }
-    }
-    else
-    {
-      //static bool OneShot = true;
-
-      for(int j=0;j<nbitems;j++)
+      else
       {
-        st_cols = st_cols + "b"+item.at(j)+",";
-        st_vals = st_vals +QString::number(coef[loop][0][j])+",";
+        //static bool OneShot = true;
+
+        for(int j=0;j<nbitems;j++)
+        {
+          st_cols = st_cols + "b"+item.at(j)+",";
+          st_vals = st_vals +QString::number(coef[loop][0][j])+",";
+        }
+        st_cols.remove(st_cols.length()-1,1);
+        st_vals.remove(st_vals.length()-1,1);
+        msg_1 = "insert into lstcombi (id,pos,comb,rot,"
+                + st_cols + ") Values (NULL,"
+                + QString::number(loop)+","
+                + QString::number(i)+",0,"
+                + st_vals + ");";
+
+        status = sql_1.exec(msg_1);
+
       }
-      st_cols.remove(st_cols.length()-1,1);
-      st_vals.remove(st_vals.length()-1,1);
-      msg_1 = "insert into lstcombi (id,pos,comb,rot,"
-              + st_cols + ") Values (NULL,"
-              + QString::number(loop)+","
-              + QString::number(i)+",0,"
-              + st_vals + ");";
-
-      status = sql_1.exec(msg_1);
-
     }
-  }
 
-  // Localisation de la boucle du dessus
-  loop++;
-}
+    // Localisation de la boucle du dessus
+    loop++;
+  }
 
 }
 
@@ -1755,10 +1758,15 @@ void MainWindow::TST_MettrePonderationSurTirages(void)
 
 }
 
-void MainWindow::TST_Graphe(QMdiArea *obj, tirages *pref)
+void MainWindow::TST_Graphe(QMdiArea *obj, NE_FDJ::E_typeJeux leJeu)
 {
   QWidget *qw_view = new QWidget;
-  myview = new MyGraphicsView(qw_view, pref);
+
+  //stTiragesDef pb_1;
+
+  //pref->getConfig(&pb_1);
+
+  myview = new MyGraphicsView(qw_view, leJeu);
 
 #ifdef USE_WORKING
   QSqlQuery sql_1;

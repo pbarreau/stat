@@ -13,12 +13,17 @@
 
 #include "pointtirage.h"
 
-PointTirage::PointTirage(tirages *pref) :
+PointTirage::PointTirage(NE_FDJ::E_typeJeux leJeu) :
   QGraphicsItem()
 {
-  tirRef = pref;
-  pref->getConfig(&tirDef);
- #if 0
+  tirRef = new tirages(leJeu);
+
+  stTiragesDef mesdef;
+  tirRef->getConfig(&mesdef);
+
+  tirDef = mesdef;
+
+#if 0
   QString tir_msg = tirRef->qs_zColBaseName(0);
   tir_msg = tir_msg + "," + tirRef->qs_zColBaseName(1);
   tir_msg = "select " + tir_msg + " from tirages "
@@ -65,18 +70,18 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
         for(int i = 0; i<sql_1.record().count(); i++)
         {
           msg=msg +sql_1.value(i).toString()+",";
-          if(i==tirDef.nbElmZone[0])
+          if(i==(tirDef.limites[0].max/10))
           {
             msg = msg + "[";
           }
         }
         msg.remove(msg.length()-1,1);
-        msg = msg + "]\r\n";
+        msg = msg + "]";
         // ---------
         // Recuperation du tirage
         QString tir_msg = tirRef->qs_zColBaseName(0);
         tir_msg = tir_msg + "," + tirRef->qs_zColBaseName(1);
-        tir_msg = "select " + tir_msg + " from tirages "
+        tir_msg = "select jour_tirage,date_tirage," + tir_msg + " from tirages "
                   "where (tirages.id ="
                   +QString::number(lgntir)+");";
         status = sql_1.exec(tir_msg);
@@ -89,7 +94,13 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
             for(int i = 0; i<sql_1.record().count(); i++)
             {
               tir_msg=tir_msg +sql_1.value(i).toString()+",";
-              if(i==tirDef.nbElmZone[0])
+              if(i==1)
+              {
+                tir_msg.simplified();
+                tir_msg.replace(","," ");
+                tir_msg = tir_msg + "\r\n";
+              }
+              if(i==tirDef.nbElmZone[0]-1+2)
               {
                 tir_msg = tir_msg + "[";
               }
@@ -103,7 +114,7 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
         {
           tir_msg = "err tir !";
         }
-        msg = msg + tir_msg;
+        msg = tir_msg +"\r\n" + msg;
         // -------------
       }
 

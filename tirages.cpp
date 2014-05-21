@@ -102,10 +102,19 @@ QString tirages::qs_zColBaseName(int zone)
     int elem = 0;
     QString msg1 = "";
 
+    int items = conf.nbElmZone[zone];
+
+    for(elem = 0; elem < items;elem++)
+    {
+        msg1 = msg1 + conf.nomZone[zone] + QString::number(elem +1) +",";
+    }
+
+#if 0
     for(elem = 0; elem < (this->conf.nbElmZone[zone]);elem++)
     {
         msg1 = msg1 + this->conf.nomZone[zone] + QString::number(elem +1) +",";
     }
+#endif
 
     // Suppression de la derniere virgule
     if(msg1.length() != 0){

@@ -19,10 +19,10 @@
 
 #include <math.h>
 
-#include "MyGraphicsView.h"
+#include "mygraphicsview.h"
 #include "pointtirage.h"
 
-MyGraphicsView::MyGraphicsView(QWidget *parent, tirages *pref): QGraphicsView(parent)
+MyGraphicsView::MyGraphicsView(QWidget *parent, NE_FDJ::E_typeJeux leJeu): QGraphicsView(parent)
 {
   setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
@@ -35,7 +35,7 @@ MyGraphicsView::MyGraphicsView(QWidget *parent, tirages *pref): QGraphicsView(pa
   setViewportUpdateMode(FullViewportUpdate);
   setRenderHint(QPainter::Antialiasing);
   setTransformationAnchor(AnchorUnderMouse);
-  //setDragMode(ScrollHandDrag);
+  setDragMode(ScrollHandDrag);
   setWindowTitle(tr("Elastic Nodes"));
 
 
@@ -73,7 +73,7 @@ MyGraphicsView::MyGraphicsView(QWidget *parent, tirages *pref): QGraphicsView(pa
           {
              int x = sql_2.value(0).toInt()* C_COEF_X;
             double y = sql_2.value(1).toDouble()*C_COEF_Y;
-            PointTirage *ptir = new PointTirage(pref);
+            PointTirage *ptir = new PointTirage(leJeu);
             ptir->setPos(x,y);
             Scene->addItem(ptir);
             //Scene->addRect(x, y, 1, 1);
@@ -89,14 +89,14 @@ MyGraphicsView::MyGraphicsView(QWidget *parent, tirages *pref): QGraphicsView(pa
         }
       }
       //Set-up the view
-      setSceneRect(0, 0, 10000, 10000);
+      setSceneRect(-300, -300, 100000, 100000);
 
     }
   }
 
 
   //Use ScrollHand Drag Mode to enable Panning
-  setDragMode(ScrollHandDrag);
+  //setDragMode(ScrollHandDrag);
   //--------------
 }
 #ifdef USE_WORKING

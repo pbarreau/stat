@@ -13,7 +13,7 @@ class PointTirage : public QGraphicsItem
   //Q_OBJECT
 public:
   //explicit PointTirage();
-  PointTirage(tirages *pref=NULL);
+  PointTirage(NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_euro);
   QRectF boundingRect() const;
   QPainterPath shape() const;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);

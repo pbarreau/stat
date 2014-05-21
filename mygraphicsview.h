@@ -10,7 +10,7 @@
 class MyGraphicsView: public QGraphicsView
 {
 public:
-  MyGraphicsView(QWidget* parent = NULL,tirages *pref=NULL);
+  MyGraphicsView(QWidget* parent = NULL,NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_euro);
 
 public slots:
 

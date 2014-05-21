@@ -87,7 +87,7 @@ private:
   void TST_PonderationCombi(int delta);
   void TST_AffectePoidsATirage(stTiragesDef *ref);
   void TST_MettrePonderationSurTirages(void);
-  void TST_Graphe(QMdiArea *obj, tirages *pref);
+  void TST_Graphe(QMdiArea *obj, NE_FDJ::E_typeJeux leJeu);
 
 private:
   Ui::MainWindow *ui;
