@@ -130,10 +130,10 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
   {
     msg = msg_prev;
   }
-
+#ifndef QT_NO_DEBUG
   qDebug() << "Click m1:" << pos_item;
   qDebug() << "Abs:" << pos_item.x()/C_COEF_X;
-
+#endif
   QPoint test1 = event->buttonDownScreenPos(Qt::LeftButton);
   QToolTip::showText(test1,msg,0);
 
@@ -143,7 +143,9 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void PointTirage::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+#ifndef QT_NO_DEBUG
   qDebug() << "Click m2:" << event->pos();
+#endif
   update();
   QGraphicsItem::mouseReleaseEvent(event);
 }

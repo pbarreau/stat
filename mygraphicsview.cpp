@@ -55,8 +55,8 @@ MyGraphicsView::MyGraphicsView(NE_FDJ::E_typeJeux leJeu, QGraphicsView *ptr_view
     sql_1.first();
     if(sql_1.isValid())
     {
-      int mx = sql_1.value(0).toInt() + 1;
-      int my = ceil(sql_1.value(1).toDouble()) + 1;
+      //int mx = sql_1.value(0).toInt() + 1;
+      //int my = ceil(sql_1.value(1).toDouble()) + 1;
 
       QSqlQuery sql_2;
       QString msg_2 = "select analyses.id, lstcombi.poids, lstcombi.pos from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
@@ -114,7 +114,7 @@ MyGraphicsView::MyGraphicsView(NE_FDJ::E_typeJeux leJeu, QGraphicsView *ptr_view
 
             // Courbe des combis
             QLineF L1(sx,mem_crenau,x,mem_crenau);
-            QGraphicsLineItem *L2 = new QGraphicsLineItem(x,crenau,x,crenau);
+            //QGraphicsLineItem *L2 = new QGraphicsLineItem(x,crenau,x,crenau);
 
             Scene->addLine(L1,QPen(cpen));
             Scene->addLine(x,crenau,x,crenau);
