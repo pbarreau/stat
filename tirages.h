@@ -41,13 +41,13 @@ typedef struct _val_max_min
 
 typedef struct _tirages_def
 {
-  unsigned char nb_zone;
-  QString *nomZone;
-  unsigned char nb_tir_semaine;
-  QString *jour_tir;
   int *nbElmZone;
-  stBornes *limites;
   int *offsetFichier;
+  QString *jour_tir;
+  QString *nomZone;
+  stBornes *limites;
+  unsigned char nb_tir_semaine;
+  unsigned char nb_zone;
 }stTiragesDef;
 
 typedef struct _un_tirage
@@ -68,7 +68,7 @@ public:
   stUnTirage value;
 
 public:
-  tirages(NE_FDJ::E_typeJeux jeu = NE_FDJ::fdj_euro);
+  tirages(NE_FDJ::E_typeJeux jeu = NE_FDJ::fdj_none);
   void getConfig(stTiragesDef *priv_conf);
   QString SelectSource(bool load);
   QString s_LibColBase(stTiragesDef *ref);
@@ -116,14 +116,14 @@ public:
   bool LireLesTirages(QString fileName_2, tirages *pRef);
   bool SupprimerBase();
   QSqlError lastError();
-  void AfficherBase(QWidget *parent, QTableView *cibleview);
-  void AfficherResultatCouverture(QWidget *parent, QTableView *cibleview);
+  void AfficherBase(stTiragesDef *pConf, QWidget *parent, QTableView *cibleview);
+  void AfficherResultatCouverture(stTiragesDef *pConf, QWidget *parent, QTableView *cibleview);
   void DistributionSortieDeBoule(int boule, QStandardItemModel *modele, stTiragesDef *pRef);
   void RechercheVoisin(int boule, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *fen);
   int TotalRechercheVoisinADistanceDe(int dist, int voisin);
   void CouvertureBase(QStandardItemModel *dest, stTiragesDef *pRef);
   void MontrerLaBoule(int boule, QTableView *fen);
-  void MontrerBouleCouverture(int boule, QTableView *fen);
+  void MontrerBouleCouverture(int boule, stTiragesDef *pConf,QTableView *fen);
   //void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QStandardItemModel *fen);
   void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QTableView *qfen);
   void MLB_MontreLesCommuns(stTiragesDef * pConf,QTableView *qfen);

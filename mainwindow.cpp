@@ -129,11 +129,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   }
 
   // Remplir la sousfenetre base de données
-  DB_tirages->AfficherBase(qw_Tirages,qtv_Tirages);
+  DB_tirages->AfficherBase(&configJeu,qw_Tirages,qtv_Tirages);
 
 
   // Remplir la sous fenetre resultat couverture
-  DB_tirages->AfficherResultatCouverture(qw_LstCouv,qtv_LstCouv);
+  DB_tirages->AfficherResultatCouverture(&configJeu,qw_LstCouv,qtv_LstCouv);
 
 
   // Remplir la sous fenetre de parite
@@ -626,7 +626,7 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
     val = index.data().toInt();
     qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
     DB_tirages->RechercheVoisin(val,&configJeu,nbSortie,qsim_Voisins);
-    DB_tirages->MontrerBouleCouverture(val,qtv_LstCouv);
+    DB_tirages->MontrerBouleCouverture(val,&configJeu,qtv_LstCouv);
   }
 
 }
@@ -737,7 +737,7 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
     DB_tirages->MLB_DansLaQtTabView(val,qtv_Voisins);
     DB_tirages->MLB_DansLaQtTabView(val,qtv_Ecarts);
     qtv_LstCouv->clearSelection();
-    DB_tirages->MontrerBouleCouverture(val,qtv_LstCouv);
+    DB_tirages->MontrerBouleCouverture(val,&configJeu,qtv_LstCouv);
 
     DB_tirages->MLB_DansMesPossibles(val,QBrush(Qt::yellow),qtv_MesPossibles);
   }

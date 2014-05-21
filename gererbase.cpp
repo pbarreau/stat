@@ -96,13 +96,13 @@ bool GererBase::SupprimerBase()
 #endif
 }
 
-void GererBase::AfficherBase(QWidget *parent, QTableView *cibleview)
+void GererBase::AfficherBase(stTiragesDef *pConf,QWidget *parent, QTableView *cibleview)
 {
   int i=0,j=0, depart = 0;
-  tirages tmp;
-  stTiragesDef def;
+  //tirages tmp(jeu);
+  stTiragesDef def=*pConf;;
 
-  tmp.getConfig(&def);
+  //tmp.getConfig(&def);
 
   tbl_model = new QSqlTableModel(parent, db);
   tbl_model->setTable("tirages");
@@ -148,14 +148,14 @@ void GererBase::AfficherBase(QWidget *parent, QTableView *cibleview)
 }
 
 
-void GererBase::AfficherResultatCouverture(QWidget *parent, QTableView *cibleview)
+void GererBase::AfficherResultatCouverture(stTiragesDef *pConf,QWidget *parent, QTableView *cibleview)
 {
   int zn=0;
   int j=0;
-  tirages tmp;
-  stTiragesDef ref;
+  //tirages tmp(jeu);
+  stTiragesDef ref=*pConf;
 
-  tmp.getConfig(&ref);
+  //tmp.getConfig(&ref);
 
   QString msg(QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn]);
 
@@ -216,16 +216,16 @@ void GererBase::MontrerLaBoule(int boule, QTableView *fen)
   }
 }
 
-void GererBase::MontrerBouleCouverture(int boule, QTableView *fen )
+void GererBase::MontrerBouleCouverture(int boule, stTiragesDef *pConf, QTableView *fen )
 {
   QSqlQuery selection;
   bool status = true;
   int zn=0;
   int j=0;
-  tirages tmp;
-  stTiragesDef ref;
+  //tirages tmp(jeu);
+  stTiragesDef ref=*pConf;
 
-  tmp.getConfig(&ref);
+  //tmp.getConfig(&ref);
 
   QString msg(QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn]);
   QBrush macouleur(Qt::green);
