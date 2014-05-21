@@ -23,7 +23,7 @@
 #include <QTabWidget>
 #include <math.h>
 
-#include "MyGraphicsView.h"
+#include "mygraphicsview.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "choixjeux.h"
@@ -974,7 +974,7 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
   }
 
   // Insertion de la ponderation de la liste des combis
-  TST_PonderationCombi(5);
+  TST_PonderationCombi(50);
 
   // Affectation d'un poids a un tirage
   TST_AffectePoidsATirage(ref);
@@ -1761,74 +1761,12 @@ void MainWindow::TST_MettrePonderationSurTirages(void)
 void MainWindow::TST_Graphe(QMdiArea *obj, NE_FDJ::E_typeJeux leJeu)
 {
   QWidget *qw_view = new QWidget;
+  UnConteneurDessin * une_vue = new UnConteneurDessin;
 
-  //stTiragesDef pb_1;
+  myview = new MyGraphicsView(leJeu,une_vue,qw_view);
 
-  //pref->getConfig(&pb_1);
-
-  myview = new MyGraphicsView(qw_view, leJeu);
-
-#ifdef USE_WORKING
-  QSqlQuery sql_1;
-  bool status = false;
-  QString msg_1="select max(analyses.id), max(lstcombi.poids) from analyses , lstcombi;";
-
-  qw_view->setWindowTitle("Graphique");
-  qw_view->setMinimumWidth(390);
-
-  status = sql_1.exec(msg_1);
-  if(status)
-  {
-    sql_1.first();
-    if(sql_1.isValid())
-    {
-      int mx = sql_1.value(0).toInt() + 1;
-      int my = ceil(sql_1.value(1).toDouble()) + 1;
-
-      myview = new MyGraphicsView(qw_view);
-      myview->setRenderHints( QPainter::Antialiasing );
-      myview->setDragMode(QGraphicsView::ScrollHandDrag);
-      //myview.show();
-
-#if 0
-      qw_view->setMinimumHeight(my+10);
-
-      qgr_scene = new QGraphicsScene(QRectF(0, 0, mx, my+10),qw_view);
-      qgr_scene->setBackgroundBrush(Qt::yellow);
-
-
-      qgr_view = new QGraphicsView( qgr_scene,qw_view);
-      qgr_view->setRenderHints( QPainter::Antialiasing );
-      qgr_view->setDragMode(QGraphicsView::ScrollHandDrag);
-      qgr_view->show();
-#endif
-    }
-  }
-#endif
+  une_vue->show();
 
   obj->addSubWindow(qw_view);
 }
 
-#if 0
-void MainWindow::TST_Graphe(QMdiArea *obj)
-{
-
-  QWidget *qw_view = new QWidget;
-
-  qw_view->setWindowTitle("Graphique");
-  qw_view->setMinimumHeight(390);
-  qw_view->setMinimumWidth(390);
-
-  qgr_scene = new QGraphicsScene(QRectF(0, 0, 100, 100),qw_view);
-  qgr_scene->setBackgroundBrush(Qt::yellow);
-
-
-  qgr_view = new QGraphicsView( qgr_scene,qw_view);
-  qgr_view->setRenderHints( QPainter::Antialiasing );
-  qgr_view->setDragMode(QGraphicsView::ScrollHandDrag);
-  qgr_view->show();
-
-  obj->addSubWindow(qw_view);
-
-}
-#endif

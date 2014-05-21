@@ -10,9 +10,20 @@
 class MyGraphicsView: public QGraphicsView
 {
 public:
-  MyGraphicsView(QWidget* parent = NULL,NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_euro);
+  MyGraphicsView(NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_euro,QGraphicsView *ptr_view=NULL, QWidget* parent = NULL);
 
 public slots:
+
+protected:
+  virtual void wheelEvent(QWheelEvent* event);
+
+};
+
+class UnConteneurDessin: public QGraphicsView
+{
+public:
+  UnConteneurDessin(QWidget* parent = NULL);
+
 
 protected:
   virtual void wheelEvent(QWheelEvent* event);

@@ -7,6 +7,7 @@
 
 #define C_COEF_X  10
 #define C_COEF_Y  1
+#define C_COEF_C  5
 
 class PointTirage : public QGraphicsItem
 {
