@@ -179,3 +179,22 @@ void UnConteneurDessin::wheelEvent(QWheelEvent* event) {
   // Don't call superclass handler here
   // as wheel is normally used for moving scrollbars
 }
+
+void UnConteneurDessin::mousePressEvent ( QMouseEvent * event )
+{
+  if(event->button() == Qt::RightButton)
+  {
+    qDebug()<< "Mouse press";
+    QGraphicsItem *lgn = NULL;
+    QPoint pos = event->pos();
+
+    lgn = this->itemAt(pos);
+    if(lgn)
+    {
+      //this->scene()->removeItem(lgn);
+    }
+  }
+
+  update();
+  QGraphicsView::mousePressEvent(event);
+}

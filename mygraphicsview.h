@@ -27,6 +27,8 @@ public:
 
 protected:
   virtual void wheelEvent(QWheelEvent* event);
+  //void mousePressEvent(QGraphicsSceneMouseEvent *event);
+  virtual void	mousePressEvent ( QMouseEvent * event );
 
 };
 
