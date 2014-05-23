@@ -113,12 +113,12 @@ MyGraphicsView::MyGraphicsView(NE_FDJ::E_typeJeux leJeu, QGraphicsView *ptr_view
             }
 
             // Courbe des combis
-            QLineF L1(sx,mem_crenau,x,mem_crenau);
+            //QLineF L1(sx,mem_crenau,x,mem_crenau);
             //QGraphicsLineItem *L2 = new QGraphicsLineItem(x,crenau,x,crenau);
 
-            Scene->addLine(L1,QPen(cpen));
-            Scene->addLine(x,crenau,x,crenau);
-            mem_crenau = crenau;
+            //Scene->addLine(L1,QPen(cpen));
+            //Scene->addLine(x,crenau,x,crenau);
+            //mem_crenau = crenau;
 
             // Courbe  des tirages
             Scene->addLine(x,y,sx,sy);

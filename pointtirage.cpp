@@ -12,6 +12,10 @@
 #include <QSqlRecord>
 
 #include "pointtirage.h"
+tirages *PointTirage::tirRef;
+stTiragesDef PointTirage::tirDef;
+QList<QGraphicsLineItem *> PointTirage::lst_lignes;
+
 
 PointTirage::PointTirage(NE_FDJ::E_typeJeux leJeu) :
   QGraphicsItem()
@@ -41,9 +45,61 @@ PointTirage::PointTirage(NE_FDJ::E_typeJeux leJeu) :
 
 void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+  if(event->button() == Qt::LeftButton)
+  {
+    TST_ToolTipsInfotirage(event);
+  }
+
+  if(event->button() == Qt::RightButton)
+  {
+    TST_TracerLigne(event);
+  }
+
+  if(event->button() == Qt::MiddleButton)
+  {
+    QGraphicsLineItem *lgn_tmp=NULL;
+    // Effacer les traits si present
+    while(!lst_lignes.isEmpty()) {
+      lgn_tmp = lst_lignes.at(0);
+      this->scene()->removeItem(lgn_tmp);
+      //delete (lst_lignes.at(0));
+      lst_lignes.removeAt(0);
+    }
+  }
+  update();
+  QGraphicsItem::mousePressEvent(event);
+
+}
+
+void PointTirage::TST_TracerLigne(QGraphicsSceneMouseEvent *event)
+{
+  QGraphicsLineItem *lgn_tmp=NULL;
+
+  QPointF pos_item = scenePos();
+  QPoint pos_item_screen = event->buttonDownScreenPos(Qt::RightButton);
+  int poids = pos_item.y()/C_COEF_Y;
+  int taille = this->scene()->sceneRect().width();
+  int coord = pos_item.y()*C_COEF_Y;
+
+  lgn_tmp = this->scene()->addLine(0,coord,taille,coord,QPen(Qt::red));
+  lst_lignes.append(lgn_tmp);
+
+#ifndef QT_NO_DEBUG
+  qDebug() << "Click :" << pos_item_screen;
+  qDebug() << "Abs:" << pos_item.x()/C_COEF_X;
+  qDebug() << "Ord_point:" << pos_item_screen.y()/C_COEF_Y;
+  qDebug() << "Ord:" << pos_item_screen.y()/C_COEF_Y;
+#endif
+  QToolTip::showText(pos_item_screen,"QString::number(poids",0);
+}
+
+void PointTirage::TST_ToolTipsInfotirage(QGraphicsSceneMouseEvent *event)
+{
   bool status = false;
   QSqlQuery sql_1;
   QPointF pos_item = this->scenePos();
+  QPoint pos_item_screen = event->buttonDownScreenPos(Qt::LeftButton);
+
 
   int lgntir = pos_item.x()/C_COEF_X;
   static int prev_x = 0;
@@ -67,6 +123,9 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
       if(sql_1.isValid())
       {
         msg ="";
+        QString tir_msg = "";
+        QString nbParite = "";
+
         for(int i = 0; i<sql_1.record().count(); i++)
         {
           msg=msg +sql_1.value(i).toString()+",";
@@ -76,12 +135,15 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
           }
         }
         msg.remove(msg.length()-1,1);
-        msg = msg + "]";
+        msg = "R:" +msg + "]";
         // ---------
         // Recuperation du tirage
-        QString tir_msg = tirRef->qs_zColBaseName(0);
+        tir_msg = tirRef->qs_zColBaseName(0);
         tir_msg = tir_msg + "," + tirRef->qs_zColBaseName(1);
-        tir_msg = "select jour_tirage,date_tirage," + tir_msg + " from tirages "
+        tir_msg = "select jour_tirage,date_tirage,"
+                  + tir_msg
+                  + ", bp, ep "
+                  + " from tirages "
                   "where (tirages.id ="
                   +QString::number(lgntir)+");";
         status = sql_1.exec(tir_msg);
@@ -91,30 +153,49 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
           if(sql_1.isValid())
           {
             tir_msg ="";
-            for(int i = 0; i<sql_1.record().count(); i++)
+            QString st_item ="";
+            int nb_item = sql_1.record().count();
+
+            for(int i = 0; i<nb_item; i++)
             {
-              tir_msg=tir_msg +sql_1.value(i).toString()+",";
-              if(i==1)
+              st_item = sql_1.value(i).toString();
+
+              if(i<nb_item -2)
               {
-                tir_msg.simplified();
-                tir_msg.replace(","," ");
-                tir_msg = tir_msg + "\r\n";
+                tir_msg=tir_msg +st_item+",";
+
+                if(i==1)
+                {
+                  tir_msg.simplified();
+                  tir_msg.replace(","," ");
+                  tir_msg = tir_msg + "\r\nT:";
+                }
+
+                if(i==tirDef.nbElmZone[0]-1+2)
+                {
+                  tir_msg = tir_msg + "[";
+                }
+
               }
-              if(i==tirDef.nbElmZone[0]-1+2)
+
+              else
               {
-                tir_msg = tir_msg + "[";
+                // Recuperation du nombre de boules pairs
+                nbParite = nbParite + st_item + ",[";
               }
             }
             tir_msg.remove(tir_msg.length()-1,1);
             tir_msg = tir_msg + "]";
 
+            nbParite.remove(nbParite.length()-2,2);
+            nbParite = "P:"+nbParite+"]\r\n";
           }
         }
         else
         {
           tir_msg = "err tir !";
         }
-        msg = tir_msg +"\r\n" + msg;
+        msg = tir_msg +"\r\n" + nbParite + msg;
         // -------------
       }
 
@@ -133,12 +214,10 @@ void PointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
 #ifndef QT_NO_DEBUG
   qDebug() << "Click m1:" << pos_item;
   qDebug() << "Abs:" << pos_item.x()/C_COEF_X;
+  qDebug() << "Ord:" << pos_item.y()/C_COEF_Y;
 #endif
-  QPoint test1 = event->buttonDownScreenPos(Qt::LeftButton);
-  QToolTip::showText(test1,msg,0);
+  QToolTip::showText(pos_item_screen,msg,0);
 
-  update();
-  QGraphicsItem::mousePressEvent(event);
 }
 
 void PointTirage::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)

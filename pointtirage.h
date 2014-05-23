@@ -2,6 +2,7 @@
 #define POINTTIRAGE_H
 
 #include <QGraphicsItem>
+#include <QList>
 
 #include "tirages.h"
 
@@ -23,14 +24,19 @@ signals:
   
 public slots:
 
+private:
+  void TST_TracerLigne(QGraphicsSceneMouseEvent *event);
+  void TST_ToolTipsInfotirage(QGraphicsSceneMouseEvent *event);
+
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event);
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 
 private:
-  QPointF curPos;
-  tirages *tirRef;
-  stTiragesDef tirDef;
+  //QPointF curPos;
+  static tirages *tirRef;
+  static stTiragesDef tirDef;
+  static QList<QGraphicsLineItem *> lst_lignes;
 };
 
 #endif // POINTTIRAGE_H
