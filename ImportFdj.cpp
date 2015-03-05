@@ -16,6 +16,9 @@
 
 QString NormaliseJour(QString input);
 
+// pour trier la fusion superloto + loto :
+// sort -o mysort.txt -t ";" -r -n -k3.9 -k3.4 -k3 nouveau_loto.csv
+// http://www.cyberciti.biz/faq/linux-unix-sort-date-data-using-sortcommand/
 bool GererBase::LireLesTirages(QString fileName_2, tirages *pRef)
 {
   QFile fichier(fileName_2);

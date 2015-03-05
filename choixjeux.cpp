@@ -1,44 +1,55 @@
 #include <QPushButton>
+
 #include "choixjeux.h"
 #include "ui_choixjeux.h"
+#include "mainwindow.h"
 
 ChoixJeux::ChoixJeux(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::ChoixJeux)
+  QDialog(parent,Qt::Dialog),
+  ui(new Ui::ChoixJeux)
 {
-    eChoixJeu = NE_FDJ::fdj_none;
+  //eChoixJeu = NE_FDJ::fdj_none;
 
-    ui->setupUi(this);
+  ui->setupUi(this);
+  EtudeJeu = (MainWindow *)parent;
 
-    connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(prepare_base()));
-    setWindowTitle(tr("Selection jeu"));
+  connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(slot_ConfigureJeu()));
+  setWindowTitle(tr("Selection jeu"));
 }
 
 ChoixJeux::~ChoixJeux()
 {
-    delete ui;
 }
 
-void ChoixJeux::prepare_base(void)
+void ChoixJeux::slot_ConfigureJeu(void)
 {
+  NE_FDJ::E_typeJeux leJeu = NE_FDJ::fdj_none;
   bool baseEnRam = false;
+  bool autoLoad = false;
 
-    if(ui->rb_euro->isChecked())
-    {
-        eChoixJeu = NE_FDJ::fdj_euro;
-    }
-    else
-    {
-        eChoixJeu = NE_FDJ::fdj_loto;
-    }
+  // Type de jeu a etudier
+  if(ui->rb_euro->isChecked())
+  {
+    leJeu = NE_FDJ::fdj_euro;
+  }
+  else
+  {
+    leJeu = NE_FDJ::fdj_loto;
+  }
 
-    if(!ui->rb_bdd->isChecked())
-    {
-      baseEnRam = true;
-    }
+  // Ecriture de la base sur disque ?
+  if(!ui->rb_bdd->isChecked())
+  {
+    baseEnRam = true;
+  }
 
-    load = ui->chk_autoLoad->checkState();
-    calcul = new MainWindow((QWidget *) 0,eChoixJeu,load,baseEnRam);
-	calcul->show();
-	//calcul->ouvrir_mainwindows();
-}
+  // Chargement automatique fichier des donnees ?
+  if(ui->chk_autoLoad->isChecked())
+  {
+    autoLoad = true;
+  }
+
+  // Lancer l'etude
+  EtudeJeu->EtudierJeu(leJeu,autoLoad,baseEnRam);
+
+ }

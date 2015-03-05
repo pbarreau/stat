@@ -16,7 +16,8 @@
 GererBase::GererBase(QObject *parent) :
   QObject(parent)
 {
-  iAffichageVoisinEnCoursDeLaBoule = 0;
+  iAffichageVoisinEnCoursDeLaBoule [0]= 0;
+  iAffichageVoisinEnCoursDeLaBoule [1]= 0;
 }
 
 GererBase::~GererBase(void)
@@ -216,7 +217,7 @@ void GererBase::MontrerLaBoule(int boule, QTableView *fen)
   }
 }
 
-void GererBase::MontrerBouleCouverture(int boule, stTiragesDef *pConf, QTableView *fen )
+void GererBase::MLB_DansCouverture(int boule, stTiragesDef *pConf, QTableView *fen )
 {
   QSqlQuery selection;
   bool status = true;
@@ -309,26 +310,29 @@ void GererBase::MontrerBouleCouverture(int boule, stTiragesDef *pConf, QTableVie
 #endif
 }
 
-void GererBase::EffectuerTrieMesPossibles(int tri_id, int col_id,int b_id,QStandardItemModel * vue)
+void GererBase::EffectuerTrieMesPossibles(int tri_id, int col_id,int b_id,stTiragesDef *pConf, QStandardItemModel * vue)
 {
   QString msg;
   QSqlQuery query;
   bool status = false;
   QString tblColName[5]={"r0","rp1","rp2","rn1","rn2"};
+  int zn = 0;
 
   //select r30.id,r0 from r30 inner join union_30 on union_30.id=r30.id order by r0 desc;
 
   if(tri_id == -1)
   {
-    msg = "select * from union_" +QString::number(b_id)+
+    msg = "select * from union_"+pConf->nomZone[zn]+QString::number(b_id)+
           " order by T desc;";
   }
   else
   {
-    msg = "select r"+QString::number(b_id)+".id,"+tblColName[tri_id]+
-          " from r"+QString::number(b_id)+
-          " inner join union_"+QString::number(b_id)+
-          " on union_"+QString::number(b_id)+".id=r"+QString::number(b_id)+
+    msg = "select r_"+pConf->nomZone[zn]+"_"+QString::number(b_id)+".id,"
+          +tblColName[tri_id]+
+          " from r_"+pConf->nomZone[zn]+"_"+QString::number(b_id)+
+          " inner join union_"+pConf->nomZone[zn]+QString::number(b_id)+
+          " on union_"+pConf->nomZone[zn]+QString::number(b_id)+".id="
+          "r_"+pConf->nomZone[zn]+"_"+QString::number(b_id)+
           ".id order by "+ tblColName[tri_id]+" desc;";
   }
 
@@ -376,7 +380,7 @@ void GererBase::MontreMesPossibles(const QModelIndex & index,
     boules[i]= index.model()->index(index.row(),i+1).data().toInt();
     fen->setHeaderData(i,Qt::Horizontal,"b"+ QString::number(boules[i]));
 
-    msg = "select id from union_" + QString::number(boules[i]) + "; ";
+    msg = "select id from union_" + pConf->nomZone[zn]+ QString::number(boules[i]) + "; ";
     msg_2 = msg_2 + msg;
 
 #if DBG_REQUETE
@@ -449,7 +453,7 @@ void GererBase::MLB_MontreLesCommuns(stTiragesDef * pConf,QTableView *qfen)
       int b_id = msg_1.toInt();
 
       ;
-      msg = msg + "select id from union_" + QString::number(b_id) + "; ";
+      msg = msg + "select id from union_" + pConf->nomZone[zn]+ QString::number(b_id) + "; ";
     }
   }
 
@@ -475,27 +479,35 @@ void GererBase::MLB_DansMesPossibles(int boule, QBrush couleur, QTableView *fen)
   QModelIndex modelIndex;
   QAbstractItemModel *theModel = fen->model();
   QStandardItemModel *dest= (QStandardItemModel*) theModel;
-  // Parcourir chacun des meilleurs voisin de la boule
-  // Pour trouver celle a rechercher
 
-  // Retirer les selections precedentes
-
+  // Pour chacune des boules
   for(int col=0; col<5;col++)
   {
     ligne=0;
     do
     {
+      // recuperer la valeur afichee
       modelIndex = fen->model()->index(ligne,col, QModelIndex());
 
       if(modelIndex.isValid()){
         val = modelIndex.data().toInt();
+
+        // on a bien une valeur
         if(val)
         {
           QStandardItem *item1 = dest->item(ligne,col) ;
           if(boule ==0){
-            item1->setBackground(QBrush(Qt::white));
+            // Remettre la bonne couleur de fond
+            if(ligne%2==0){
+              item1->setBackground(QBrush(QColor::fromRgb(1, 1, 0, 0) , Qt::SolidPattern ));
+            }
+            else
+            {
+               item1->setBackground(QBrush(QColor::fromRgb(1, 0, 0, 0) , Qt::NoBrush ));
+            }
           }
 
+          // la valeur de la cellule est la boule precedemment selectionne
           if(val == boule)
           {
             if(item1->background() == QBrush(Qt::cyan))
@@ -510,6 +522,7 @@ void GererBase::MLB_DansMesPossibles(int boule, QBrush couleur, QTableView *fen)
           }
           else
           {
+#if 0
             // si couleur presente restaurer couleur precedente
             if(item1->background() == QBrush(Qt::magenta))
             {
@@ -518,8 +531,16 @@ void GererBase::MLB_DansMesPossibles(int boule, QBrush couleur, QTableView *fen)
             else
             {
               if(item1->background() != QBrush(Qt::cyan))
-                item1->setBackground(QBrush(Qt::white));
-            }
+                if(ligne%2==0){
+                  item1->setBackground(QBrush(QColor::fromRgb(1, 1, 0, 0) , Qt::SolidPattern ));
+                }
+                else
+                {
+                  //QBrush macouleur (Qt::gray);
+                  item1->setBackground(QBrush(QColor::fromRgb(1, 0, 0, 0) , Qt::NoBrush ));
+                }
+           }
+#endif
           }
         }
       }
@@ -551,7 +572,11 @@ int GererBase::CouleurVersBid(QTableView *fen)
         {
           QStandardItem *item1 = dest->item(ligne,col) ;
 
-          if(item1->background() == QBrush(Qt::yellow)){
+          if(item1->background() == QBrush(Qt::yellow)
+             ||
+             item1->background() == QBrush(Qt::magenta)
+             )
+          {
             // on a touve une valeur
             return val;
           }
@@ -586,7 +611,8 @@ void GererBase::MLB_DansLaQtTabView(int boule, QTableView *fen)
   }
 
   //fen->sortByColumn(0,Qt::AscendingOrder);
-  fen->scrollTo(modelIndex, QAbstractItemView::PositionAtTop);
+  fen->scrollTo(modelIndex);
+  //fen->scrollTo(modelIndex, QAbstractItemView::PositionAtTop);
   fen->selectRow(ligne);
 }
 
@@ -849,8 +875,8 @@ void GererBase::MontrerDetailCombinaison(QString msg)
   msg.replace(",","and");
 
   st_msg = "Select * from tirages inner join (select * from analyses where("
-         + msg +
-         "))as s on tirages.id = s.id;";
+           + msg +
+           "))as s on tirages.id = s.id;";
 
 
 

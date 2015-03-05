@@ -5,6 +5,7 @@
 #include <QList>
 
 #include "tirages.h"
+#include "mygraphicsview.h"
 
 #define C_COEF_X  10
 #define C_COEF_Y  1
@@ -15,10 +16,14 @@ class PointTirage : public QGraphicsItem
   //Q_OBJECT
 public:
   //explicit PointTirage();
-  PointTirage(NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_euro);
+  PointTirage(NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_euro, eGType sceneType = eNoGraph);
   QRectF boundingRect() const;
   QPainterPath shape() const;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
+  QString TST_GetTirageFromPoint(int x_val);
+  QString TST_GetTiragePariteFromPoint(int x_val);
+  QString TST_GetTirageOrdreFromPoint(int x_val);
+  QString TST_GetTirageGroupeFromPoint(int x_val);
 
 signals:
   
@@ -37,6 +42,7 @@ private:
   static tirages *tirRef;
   static stTiragesDef tirDef;
   static QList<QGraphicsLineItem *> lst_lignes;
+  QString (PointTirage::*ptrFunc)(int val);
 };
 
 #endif // POINTTIRAGE_H

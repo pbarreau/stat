@@ -16,21 +16,18 @@
 #include "tirages.h"
 
 QString req_msg(int zone, int boule, stTiragesDef *ref);
+// 1,$s/ r"/ r_"\+pConf->nomZone[zone]\+"_"/g
 
-void GererBase::TotalApparitionBoule(int boule, QStandardItemModel *modele)
+void GererBase::TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, QStandardItemModel *modele)
 {
   bool status = false;
 
   QSqlQuery query;
-  QString msg;
+  QString msg="";
 
   // Recherche du maximum pour cette boule
-  msg = "select count (*) from tirages where (b1=" +
-        QString::number(boule) +
-        " or b2=" + QString::number(boule) +
-        " or b3=" + QString::number(boule) +
-        " or b4=" + QString::number(boule) +
-        " or b5=" + QString::number(boule) + ");";
+  msg= TST_ZoneRequete(pConf, zone,"or",boule);
+  msg = "select count (*)  from tirages where (" +msg+ ");";
   status = query.exec(msg);
 
   if(status){
@@ -71,7 +68,7 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
 
 
   // recuperation du nombre de tirage total
-  msg= "select count (*) from tirages";
+  msg= "select count (*)  from tirages";
   status = query.exec(msg);
   query.first();
   nbTirages = query.value(0).toInt();
@@ -142,7 +139,7 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
   nbTirages += (lgndeb-lgnfin);
 
   // calcul des ecarts pour la boule
-  msg = "select count (*) from tmp_couv";
+  msg = "select count (*)  from tmp_couv";
   status = query.exec(msg);
   query.first();
   nbTotCouv = query.value(0).toInt();
@@ -152,13 +149,13 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
     EcartMoyen = double(nbTirages)/a_loop;
 
   // recherche l'ecart le plus grand
-  msg = "select max(taille) from tmp_couv";
+  msg = "select max(taille)  from tmp_couv";
   status = query.exec(msg);
   query.first();
   EcartMax = query.value(0).toInt();
 
   //recherche de l'ecart courant et suivant
-  msg = "select taille from tmp_couv";
+  msg = "select taille  from tmp_couv";
   status = query.exec(msg);
   query.last();
   EcartCourant = query.value(0).toInt();
@@ -185,17 +182,65 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
   modele->setItem(boule-1,4,item4);
 }
 
-void GererBase::AfficherMaxOccurenceBoule(int boule,QLabel *l_nb)
+QString GererBase::TST_ZoneRequete(stTiragesDef *pConf, int zone,QString flag,int boule)
+{
+  QString ret_msg = "";
+
+  // b1=0 or b2=0 or ..
+  for(int i = 0; i<pConf->nbElmZone[zone];i++)
+  {
+    ret_msg = ret_msg
+              + pConf->nomZone[zone]+QString::number(i+1)
+              + "=" + QString::number(boule)
+              + " " + flag+ " ";
+  }
+  int len_flag = flag.length();
+  ret_msg.remove(ret_msg.length()-len_flag-1, len_flag+1);
+
+  return ret_msg;
+}
+
+void GererBase::AfficherMaxOccurenceBoule(int boule,int zn,stTiragesDef *pConf, QLabel *l_nb)
 {
   QSqlQuery query(db);
   QString msg;
   int value = 0;
   bool status = false;
 
+  msg= TST_ZoneRequete(pConf, zn,"or",boule);
+
+  msg = "select count (*)  from"
+        "("
+        "select *  from tirages where ("+ msg+ ")"
+        ");";
+#if 0
+  select count (*)  from (select *  from tirages where (b1=40 or b2=40 or b3=40 or b4=40 or b5=40 ));
+#endif
+  status = query.exec(msg);
+  if(status)
+  {
+    query.first();
+
+    if(query.isValid())
+    {
+
+      QSqlRecord rec  = query.record();
+      value = rec.value(0).toInt();
+
+      l_nb->setText(QString("Boule %1 : %2 fois ").arg( boule ).arg(value) );
+    }
+  }
+
+#if 0
   // Recherche du maximum pour cette boule
-  msg = "create view r_boul as select * from tirages where (b1=" +
+#if 0
+  msg = "create view r_boul as select *  from tirages where (b1=" +
         QString::number(boule) + " or b2=" + QString::number(boule)
         + " or b3=" + QString::number(boule) + " or b4=" + QString::number(boule) + " or b5=" + QString::number(boule) + ");";
+#endif
+  msg = "create view r_boul as select *  from tirages where ("
+        +msg+");";
+
   status = query.exec(msg);
 
   if(status){
@@ -214,15 +259,16 @@ void GererBase::AfficherMaxOccurenceBoule(int boule,QLabel *l_nb)
       }
     }
   }
+#endif
 }
 
-void GererBase::MontrerResultatRechercheVoisins(QStandardItemModel *modele,int b_id)
+void GererBase::MontrerResultatRechercheVoisins(QStandardItemModel *modele,int zone, stTiragesDef *pConf,int b_id)
 {
   QSqlQuery query;
   QString msg;
   bool status = true;
 
-  msg = "select * from r"+QString::number(b_id) + " ;";
+  msg = "select * from r_"+pConf->nomZone[zone]+"_"+QString::number(b_id) + " ;";
   status = query.exec(msg);
 
   if(status)
@@ -272,7 +318,7 @@ void GererBase::MontrerResultatRechercheVoisins(QStandardItemModel *modele,int b
 
 }
 
-void GererBase::RechercherVoisinDeLaBoule(int b_id, int max_voisins)
+void GererBase::RechercherVoisinDeLaBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins)
 {
   QSqlQuery query;
   QString msg;
@@ -285,20 +331,20 @@ void GererBase::RechercherVoisinDeLaBoule(int b_id, int max_voisins)
     if(voisin != b_id)
     {
       // Boule sortant avec
-      r0 = TotalRechercheVoisinADistanceDe(0,voisin);
+      r0 = TotalRechercheVoisinADistanceDe(0,b_id,zone,pConf, voisin);
     }
     else
     {
       r0 = 0;
     }
 
-    rn1 = TotalRechercheVoisinADistanceDe(1,voisin);
-    rp1 = TotalRechercheVoisinADistanceDe(-1,voisin);
-    rn2 = TotalRechercheVoisinADistanceDe(2,voisin);
-    rp2 = TotalRechercheVoisinADistanceDe(-2,voisin);
+    rn1 = TotalRechercheVoisinADistanceDe(1,b_id,zone,pConf,voisin);
+    rp1 = TotalRechercheVoisinADistanceDe(-1,b_id,zone,pConf,voisin);
+    rn2 = TotalRechercheVoisinADistanceDe(2,b_id,zone,pConf,voisin);
+    rp2 = TotalRechercheVoisinADistanceDe(-2,b_id,zone,pConf,voisin);
 
     // mise a jour dans la base
-    msg = "update r"+QString::number(b_id) + " " +
+    msg = "update r_"+pConf->nomZone[zone]+"_"+QString::number(b_id) + " " +
           "set r0=" +QString::number(r0)+ ", " +
           "rp1=" +QString::number(rp1)+ ", " +
           "rp2=" +QString::number(rp2)+ ", " +
@@ -309,21 +355,21 @@ void GererBase::RechercherVoisinDeLaBoule(int b_id, int max_voisins)
   }
 }
 
-bool GererBase::CreerTableVoisinsDeBoule(int b_id, int max_voisins)
+bool GererBase::CreerTableVoisinsDeBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins)
 {
   QSqlQuery query;
   QString msg;
   bool status = false;
 
   // Creation d'une table si pas encore cree pour memoriser la recherche
-  msg =  "create table if not exists r"+QString::number(b_id)+ " " +
+  msg =  "create table if not exists r_"+pConf->nomZone[zone]+"_"+QString::number(b_id)+ " " +
          "(id INTEGER PRIMARY KEY, r0 int, rp1 int, rp2 int, rn1 int, rn2 int);";
   status = query.exec(msg);
 
   if(status)
   {
     // On essai de recuperer une valeur pour voir si les infos dans table
-    msg = "select count (*) from r" +QString::number(b_id)+ "; ";
+    msg = "select count (*) from r_"+pConf->nomZone[zone]+"_" +QString::number(b_id)+ "; ";
     status = query.exec(msg);
 
     if(status)
@@ -336,7 +382,7 @@ bool GererBase::CreerTableVoisinsDeBoule(int b_id, int max_voisins)
           // Table pas encore cree mettre a 0 les donnees
           for(int voisin=1;(voisin<=max_voisins) && status;voisin++)
           {
-            msg = "insert into r"+QString::number(b_id)+
+            msg = "insert into r_"+pConf->nomZone[zone]+"_"+QString::number(b_id)+
                   " (id, r0, rp1, rp2, rn1, rn2) values (null, 0,0,0,0,0);";
             status = query.exec(msg);
           }
@@ -353,86 +399,15 @@ bool GererBase::CreerTableVoisinsDeBoule(int b_id, int max_voisins)
   return status;
 }
 
-#if 0
-void GererBase::RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *base)
-{
-  QSqlQuery query(db);
-  QString msg;
-  bool status = false;
-  QString *tab = ref->nomZone;
-  int zone = 0 ;
 
-  msg = "create view groupe as select * from tirages where (tirages." +
-        tab[zone] + CL_SGRP +
-        " = "+QString::number(nb)+");";
-  status = query.exec(msg);
-
-  if(status)
-  {
-    msg = "select count (*) from groupe where (b1 < 10 or)";
-  }
-
-}
-#endif
-
-#if 0
-void GererBase::RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTableView *base)
-{
-
-  QSqlQuery query(db);
-  QString msg;
-  bool status = false;
-  QString *tab = ref->nomZone;
-  int lgndeb = 0;
-  int zone = 0 ;
-  static int prev = 0;
-
-  QAbstractItemModel *theModel = base->model();
-  //QStandardItemModel *dest= (QStandardItemModel*) theModel;
-  QModelIndex modelIndex = theModel->index(0,8,QModelIndex());
-  int parit_pos = ref->nbElmZone[0] + ref->nbElmZone[1] + 1;
-
-  msg = "select * from tirages where (tirages." +
-        tab[zone] + CL_PAIR +
-        " = "+QString::number(nb)+");";
-  status = query.exec(msg);
-
-  if(status)
-  {
-    status = query.first();
-    if(query.isValid())
-    {
-      prev = nb;
-
-      do
-      {
-        lgndeb = query.value(0).toInt()-1;
-        modelIndex = base->model()->index(lgndeb,0,QModelIndex());
-
-        if(modelIndex.isValid())
-        {
-          int val = modelIndex.data().toInt();
-          if(val==nb)
-          {
-            //QStandardItem *item1 = dest->item(lgndeb,parit_pos) ;
-            //item1->setBackground(QBrush(Qt::yellow));
-          }
-        }
-
-      }while(query.next());
-    }
-  }
-}
-#endif
-
-void GererBase::TST_RechercheVoisin(QStringList &boules, stTiragesDef *pConf,
+void GererBase::TST_RechercheVoisin(QStringList &boules, int zn,stTiragesDef *pConf,
                                     QLabel *l_nb, QStandardItemModel *modele)
 {
   QSqlQuery query;
-  QString msg = "select count (*) from tirages where (";
+  QString msg = "select count (*)  from tirages where (";
   bool status = false;
   QString lstBoules =  boules.join(",");
-  int zn = 0;
+  //int zn = 0;
   const int d[5]={0,-1,-2,1,2};
 
   if(boules.isEmpty())
@@ -451,7 +426,9 @@ void GererBase::TST_RechercheVoisin(QStringList &boules, stTiragesDef *pConf,
     return;
   }
 
-  msg = msg + TST_ConstruireWhereData(boules);
+  QString w_msg = TST_ConstruireWhereData(zn,pConf,boules);
+
+  msg = msg + w_msg;
   msg = msg + ");";
 
   status = query.exec(msg);
@@ -477,7 +454,7 @@ void GererBase::TST_RechercheVoisin(QStringList &boules, stTiragesDef *pConf,
     for(int ref = 0; ref <5 ; ref ++)
     {
       QStandardItem *item1 = modele->item(i,ref+1);
-      int val = TST_TotalRechercheVoisinADistanceDe(d[ref],i+1,boules);
+      int val = TST_TotalRechercheVoisinADistanceDe(zn,pConf,d[ref],i+1,boules);
 
       // Mettre la valeur trouvee dans le tableau des voisins
       item1->setData(val,Qt::DisplayRole);
@@ -486,26 +463,25 @@ void GererBase::TST_RechercheVoisin(QStringList &boules, stTiragesDef *pConf,
 
 }
 
-QString GererBase::TST_ConstruireWhereData(QStringList &boules)
+QString GererBase::TST_ConstruireWhereData(int zn, stTiragesDef *pConf, QStringList &boules)
 {
   QString msg= "" ;
+  QString flag = " and ";
 
   for(int i=0; i< boules.size();i++)
   {
-    msg = msg + "(" +
-          "b1="+ boules.at(i) + " or " +
-          "b2="+ boules.at(i) + " or " +
-          "b3="+ boules.at(i) + " or " +
-          "b4="+ boules.at(i) + " or " +
-          "b5="+ boules.at(i) + ") and ";
+    int val_boule = boules.at(i).toInt();
+    QString msg1 = TST_ZoneRequete(pConf, zn,"or",val_boule);
+    msg = msg + "(" +msg1+ ")"
+          + flag;
   }
 
-  msg.remove(msg.length()-5,5);
+  msg.remove(msg.length()-flag.length(),flag.length());
 
   return msg;
 }
 
-void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
+void GererBase::RechercheVoisin(int boule, int zn, stTiragesDef *pConf,
                                 QLabel *l_nb, QStandardItemModel *modele)
 {
   QSqlQuery query(db);
@@ -514,77 +490,110 @@ void GererBase::RechercheVoisin(int boule, stTiragesDef *pConf,
   //int calcul = 0, voisin = 0;
   //int rp1 = 0, rp2 = 0, rn1 = 0, rn2 = 0;
   //int resu = 0;
-  int zn = 0;
+  //int zn = 0;
   QString mvoisins[5]={"r0","rp1","rp2","rn1","rn2"};
 
-  if (iAffichageVoisinEnCoursDeLaBoule != boule)
+  if (iAffichageVoisinEnCoursDeLaBoule[zn] != boule)
   {
-    iAffichageVoisinEnCoursDeLaBoule = boule;
-    AfficherMaxOccurenceBoule(boule, l_nb);
+    iAffichageVoisinEnCoursDeLaBoule[zn] = boule;
+    AfficherMaxOccurenceBoule(boule, zn, pConf, l_nb);
 
     int max_voisin = pConf->limites[zn].max;
-    status = CreerTableVoisinsDeBoule(boule, max_voisin);
+    status = CreerTableVoisinsDeBoule(boule, zn, pConf, max_voisin);
 
     if(status)
     {
-      RechercherVoisinDeLaBoule(boule, max_voisin);
+      RechercherVoisinDeLaBoule(boule, zn, pConf, max_voisin);
     }
 
     // Affichage des resultats dans la vue
-    MontrerResultatRechercheVoisins(modele, boule);
+    MontrerResultatRechercheVoisins(modele, zn, pConf, boule);
   }
 
   // creer les tables avec les meilleurs de facon ordonne
   for(int i=0;(i<(pConf->nbElmZone[zn])) && status;i++)
   {
     // voir si la table existe
-    msg = "select * from tb_"+QString::number(boule)+mvoisins[i]+";";
+    msg = "select * from tb_"
+          + pConf->nomZone[zn]
+          +"_"
+          + QString::number(boule)+mvoisins[i]+";";
     status = query.exec(msg);
 
     if(!query.isValid())
     {
       // La table n'existe pas encore
-      msg = "create table tb_" +QString::number(boule)+mvoisins[i]+
+      msg = "create table tb_"
+            + pConf->nomZone[zn]
+            +"_"
+            +QString::number(boule)+mvoisins[i]+
             " as select id,"+mvoisins[i]+" from " +
-            "r"+QString::number(boule)+ " order by " + mvoisins[i]+" desc limit 10;";
+            "r_"+pConf->nomZone[zn]+"_"+QString::number(boule)
+            + " order by " + mvoisins[i]+" desc limit 10;";
       status = query.exec(msg);
     }
   }
 
   // Selection les meilleurs resultats de chacun
-  msg = "select * from union_" + QString::number(boule)+";";
+  msg = "select * from union_" + pConf->nomZone[zn]+ QString::number(boule)+";";
   status = query.exec(msg);
 
   if(!query.isValid())
   {
+    QString flag = " union ";
+    msg="";
+    for(int i=0;i<pConf->nbElmZone[zn];i++)
+    {
+      msg = msg
+            + "select id from tb_"
+            + pConf->nomZone[zn]
+            + "_"
+            + QString::number(boule)+mvoisins[i]+ flag
+            ;
+    }
+    msg.remove(msg.length()-flag.length(),flag.length());
+
     // La table n'existe pas encore
-    msg = "create table union_" + QString::number(boule)+
-          " as select r"+ QString::number(boule)+".id,"+
-          "(r0+rp1+rp2+rn1+rn2) 'T' from r"+ QString::number(boule)+
-          " where id in ("+
-          "select id from tb_"+QString::number(boule)+mvoisins[0]+ " union " +
-          "select id from tb_"+QString::number(boule)+mvoisins[1]+ " union " +
-          "select id from tb_"+QString::number(boule)+mvoisins[2]+ " union " +
-          "select id from tb_"+QString::number(boule)+mvoisins[3]+ " union " +
-          "select id from tb_"+QString::number(boule)+mvoisins[4]+ " " +
-          ") order by T desc;";
+    msg = "create table union_" + pConf->nomZone[zn]+ QString::number(boule)+
+          " as select r_"+pConf->nomZone[zn]+"_"+ QString::number(boule)+".id,"+
+          "(r0+rp1+rp2+rn1+rn2) 'T' from r_"+pConf->nomZone[zn]+"_"+ QString::number(boule)+
+          " where id in ("+msg+") order by T desc;";
     status = query.exec(msg);
   }
-  // Recherche terminee finir avec cette vue
-  msg = "drop view r_boul";
-  query.exec(msg);
+
+#if 0
+
+  "select id from tb_"
+  + pConf->nomZone[zn]
+      +"_"
+      +QString::number(boule)+mvoisins[0]+ " union " +
+      "select id from tb_"+QString::number(boule)+mvoisins[1]+ " union " +
+      "select id from tb_"+QString::number(boule)+mvoisins[2]+ " union " +
+      "select id from tb_"+QString::number(boule)+mvoisins[3]+ " union " +
+      "select id from tb_"+QString::number(boule)+mvoisins[4]+ " " +
+
+    #endif
+      // Recherche terminee finir avec cette vue
+      //msg = "drop view r_boul";
+      //query.exec(msg);
 
 }
 
-int GererBase::TST_TotalRechercheVoisinADistanceDe(int dist, int v_id,QStringList &boules)
+int GererBase::TST_TotalRechercheVoisinADistanceDe(int zn,stTiragesDef *pConf,int dist, int v_id,QStringList &boules)
 {
 #if 0
-  select count (*) from (
-        select * from tirages inner join  (
-          select * from tirages where (
+  select * from
+      (
+        select * from tirages inner join
+        (
+          select *  from tirages where
+          (
             (b1=27 or b2=27 or b3=27 or b4=27 or b5=27)
             )
-          ) as r1 on tirages.id = r1.id + 2) as r2  where (b1 = 1 or b2 = 1 or b3 = 1 or b4 = 1 or b5 = 1 );
+          ) as r1
+        on tirages.id = r1.id + 2
+                        ) as r2
+      where (b1 = 1 or b2 = 1 or b3 = 1 or b4 = 1 or b5 = 1 );
 #endif
 
   int ret_val = 0;
@@ -592,49 +601,102 @@ int GererBase::TST_TotalRechercheVoisinADistanceDe(int dist, int v_id,QStringLis
   if(boules.contains(QString::number(v_id)) && !dist)
     return ret_val;
 
+
+  QSqlQuery query;
+  bool status = false;
+  QString msg = "select *  from tirages inner join  ( select *  from tirages where (";
+
+  QString w_msg = TST_ConstruireWhereData(zn,pConf,boules);
+  msg = msg + w_msg;
+  msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
+  msg = (msg).arg(dist);
+
+  QString msg_2 = TST_ZoneRequete(pConf, zn,"or",v_id);
+  msg_2= "select count (*)  from (" +msg+ " where (" +msg_2+ " );" ;
+  status = query.exec(msg_2);
+  if(status)
   {
-    QSqlQuery query;
-    bool status = false;
-    QString msg = "select * from tirages inner join  ( select * from tirages where (";
-
-    msg = msg + TST_ConstruireWhereData(boules);
-    msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
-    msg = (msg).arg(dist);
-    //status = query.exec(msg);
-
-    // Comptage des boules
-    //QSqlQuery sql_1;
-    QString msg_2 = "select count (*) from (" +msg+ " where (" +
-                    "b1 = " +QString::number(v_id) + " or " +
-                    "b2 = " +QString::number(v_id) + " or " +
-                    "b3 = " +QString::number(v_id) + " or " +
-                    "b4 = " +QString::number(v_id) + " or " +
-                    "b5 = " +QString::number(v_id) + " );" ;
-
-    status = query.exec(msg_2);
-    if(status)
+    query.first();
+    if(query.isValid())
     {
-      query.first();
-      if(query.isValid())
-      {
-        ret_val = query.value(0).toInt();
-      }
+      ret_val = query.value(0).toInt();
     }
   }
+
 
   return ret_val;
 }
 
 
-int GererBase::TotalRechercheVoisinADistanceDe(int dist, int voisin)
+void GererBase::TST_LBcDistBr(int zn,stTiragesDef *pConf,int dist, int br,int bc)
+{
+  // liste des tirages ayant la boule de reference Br
+  // dont les tirages a la distance Dist
+  // ont la boule B_Cherche
+#if 0
+  select * from
+      (
+        select * from tirages inner join
+        (
+          select *  from tirages where
+          (
+            (b1=27 or b2=27 or b3=27 or b4=27 or b5=27)
+            )
+          ) as r1
+        on tirages.id = r1.id + 2
+                        ) as r2
+      where (b1 = 1 or b2 = 1 or b3 = 1 or b4 = 1 or b5 = 1 );
+#endif
+
+  QSqlQuery query;
+  bool status = false;
+  QStringList boules;
+  QString msg = "select *  from tirages inner join  ( select *  from tirages where (";
+
+  boules << QString::number(bc);
+
+  QString w_msg = TST_ConstruireWhereData(zn,pConf,boules);
+  msg = msg + w_msg;
+  msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
+  msg = (msg).arg(dist);
+
+  QString msg_2 = TST_ZoneRequete(pConf, zn,"or",br);
+  msg_2= "select * from (" +msg+ " where (" +msg_2+ " );" ;
+  status = query.exec(msg_2);
+  if(status)
+  {
+    query.first();
+    if(query.isValid())
+    {
+      int ret_val = 0;
+      do
+      {
+       ret_val++;
+      }while(query.next());
+
+      ret_val ++;
+    }
+  }
+}
+
+
+int GererBase::TotalRechercheVoisinADistanceDe(int dist, int boule, int zn,stTiragesDef *pConf,int voisin)
 {
   QString msg = "";
+  QString msg2 = "";
   QSqlQuery query(db);
   int calcul = 0;
   bool status;
 
+#if 0
+  msg= TST_ZoneRequete(pConf, zn,"or",boule);
   // Selection des lignes voisines de celle de reference
-  msg = "create view rn1 as select * from tirages inner join r_boul on tirages.id = r_boul.id + %1";
+  msg = "create view rn1 as select * from tirages "
+        "inner join "
+        "("
+        "select *  from tirages where ("+ msg+ ")"
+        ")"
+        "as r_boul on tirages.id = r_boul.id + %1";
   msg = (msg).arg(dist);
   status = query.exec(msg);
 
@@ -648,7 +710,31 @@ int GererBase::TotalRechercheVoisinADistanceDe(int dist, int voisin)
   // On detruit la vue des resultats de cette boule
   msg = "drop view rn1";
   status = query.exec(msg);
+#endif
 
+  msg= TST_ZoneRequete(pConf, zn,"or",boule);
+  msg2 = TST_ZoneRequete(pConf, zn,"or",voisin);
+
+  msg = "select count (*) from "
+        "("
+        "select * from tirages "
+        "inner join "
+        "("
+        "select *  from tirages where ("+ msg+ ")"
+        ")as r_boul "
+        "on tirages.id = r_boul.id + %1)"
+        "as rn1 "
+        "where("+msg2+");";
+  msg = (msg).arg(dist);
+  status = query.exec(msg);
+  if(status)
+  {
+    query.first();
+    if(query.isValid())
+    {
+      calcul = query.value(0).toInt();
+    }
+  }
   return calcul;
 }
 
@@ -663,10 +749,11 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
   int memo_boule[50]= {0};
   int ordr_boule[50]= {0};
   int nb_boules = 0;
-  int i = 0, j= 0;
+  int i = 0;
   int id_couv=0;
   bool status;
   int zn = 0;
+  int memo_last_boule = 0;
 
   stTiragesDef ref = *pRef;
 
@@ -685,6 +772,7 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
           " (id, depart, fin, taille) values (:id, :depart, :fin, :taille)";
     status = sauve.prepare(msg);
 
+    int last_boule=0;
     do
     {
       QSqlRecord rec  = query.record();
@@ -699,31 +787,43 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
         depart_couverture = false;
       }
 
+      int boule = 0;
       // prendre toutes les boules de la zone pour le tirage concerne
       for(i = 0; (i<ref.nbElmZone[zn])&& (nb_boules<ref.limites->max);i++)
       {
-        int boule = rec.value(2+i).toInt();
+        boule = rec.value(2+i).toInt();
 
-        // Cette boule est elle connue
-        if(!memo_boule[boule-1])
+        if(boule == last_boule)
         {
-          // non alors memoriser l'ordre d'arrivee
-          ordr_boule[nb_boules]= boule;
-          msg = "update " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn] +
-                " set " + QString::fromLocal8Bit(CL_CCOUV) +
-                QString::number(id_couv) + "=" +QString::number(boule)+
-                " where (id="+QString::number(nb_boules+1)+");";
-          status = position.exec(msg);
-          nb_boules++;
+          last_boule = -1;
         }
+        else
+        {
 
-        // Un boule de plus comporte le numero "boule"
-        memo_boule[boule-1]++;
+          // Cette boule est elle connue
+          if(!memo_boule[boule-1])
+          {
+            // non alors memoriser l'ordre d'arrivee
+            ordr_boule[nb_boules]= boule;
+            msg = "update " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn] +
+                  " set " + QString::fromLocal8Bit(CL_CCOUV) +
+                  QString::number(id_couv) + "=" +QString::number(boule)+
+                  " where (id="+QString::number(nb_boules+1)+");";
+            status = position.exec(msg);
+            nb_boules++;
+          }
+
+          // Un boule de plus comporte le numero "boule"
+          memo_boule[boule-1]++;
+        }
       }
 
       // A ton atteind la converture ?
       if(nb_boules == ref.limites->max)
       {
+        last_boule = boule;
+        memo_last_boule = boule;
+
         // Oui
         // il faudra une nouvelle colonne pour l'ordre d'arrivee des boules
         depart_couverture = true;
@@ -738,11 +838,20 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
         sauve.bindValue(":taille", lgndeb-lgnfin+1);
         // Mettre dans la base
         status = sauve.exec();
+
 #ifndef QT_NO_DEBUG
         if(!status){
           qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
         }
 #endif
+
+
+        // Non, alors indiquer les voisines comme nouvelles
+        lgndeb = lgnfin;
+        // Avancer pour ensuite reculer
+        query.next();
+
+#if 0
         // Est ce la derniere boule du tirage qui a permis la couverture
         if( i != ref.nbElmZone[zn]-1)
         {
@@ -768,12 +877,15 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
               memo_boule[boule-1]++;
             }
           }
+
         }
         else
         {
           lgndeb = lgnfin-1;
         }
         //sauve.bindValue(":depart", lgndeb);
+
+#endif
       }
 
     }while(query.previous());
@@ -784,8 +896,23 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
     {
       if (!memo_boule[i])
       {
-        QBrush macouleur(Qt::green);
         QStandardItem *item1 = dest->item(i);
+        QBrush macouleur;
+        QColor unecouleur;
+
+        if(i!=memo_last_boule-1)
+        {
+          macouleur.setColor(Qt::green);
+          macouleur.setStyle(Qt::SolidPattern);
+        }
+        else
+        {
+          // http://stackoverflow.com/questions/8571059/how-to-generate-new-qcolors-that-are-different
+          // http://goffgrafix.com/pantone-rgb-800.php
+          unecouleur.setRgb(255,127,30);
+          macouleur.setColor(unecouleur);
+          macouleur.setStyle(Qt::SolidPattern);
+        }
         item1->setBackground(macouleur);
       }
     }
@@ -869,7 +996,7 @@ bool GererBase::CreerColonneOrdreArrivee(int id, stTiragesDef *pConf)
   return status;
 }
 
-void GererBase::PopulateCellMenu(int b_id, int v_id,QMenu *menu,QObject * receiver)
+void GererBase::PopulateCellMenu(int b_id, int v_id,int zone, stTiragesDef *pConf, QMenu *menu,QObject * receiver)
 {
   QString msg;
   QSqlQuery query;
@@ -880,7 +1007,7 @@ void GererBase::PopulateCellMenu(int b_id, int v_id,QMenu *menu,QObject * receiv
   QString Lib[6]={"tot:","r0:","+1:","+2:","-1:","-2:"};
   QString vVoisin[6];
 
-  msg = "select * from r" + QString::number(b_id) +
+  msg = "select * from r_"+pConf->nomZone[zone]+"_" + QString::number(b_id) +
         " where (id = "+QString::number(v_id) +");";
   status = query.exec(msg);
 

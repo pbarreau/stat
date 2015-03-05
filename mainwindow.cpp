@@ -2,6 +2,10 @@
 #include <QDebug>
 #endif
 
+#include <QtGui>
+#include <QFormLayout>
+
+#if 0
 #include <QGraphicsEllipseItem>
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -14,13 +18,14 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QLineEdit>
-#include <QFormLayout>
 #include <QLabel>
 #include <QStandardItemModel>
 #include <QTableWidget>
 #include <QModelIndex>
 #include <QBrush>
 #include <QTabWidget>
+#endif
+
 #include <math.h>
 
 #include "mygraphicsview.h"
@@ -32,21 +37,136 @@
 
 static stTiragesDef configJeu;
 
-MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd) :
-  QMainWindow(parent),
-  ui(new Ui::MainWindow)
+void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
   DB_tirages = new GererBase;
   int i;
   tirages tmp(leJeu);
   QString ficSource;
-  QTableView *qtv_MesChoix = new QTableView;
 
   // Recuperation des contantes du type de jeu
   tmp.getConfig(&configJeu);
 
-  stTiragesDef ess;
-  ess = configJeu;
+  // Creation sous fenetre pour mettre donnees de base
+  fen_Tirages();
+
+  /// --------- rem 1
+
+  fen_LstCouv();
+
+  // Creation sous fenetre des voisins
+  fen_Voisins();
+
+  // Creation sous fenetre des ecarts
+  fen_Ecarts();
+
+  // Creation fenetre pour memoriser a selection
+  fen_MaSelection();
+
+  // Creation fenetre resultat
+  fen_MesPossibles();
+
+  // Creation fenetre pour parite
+  fen_Parites();
+  /// --- Fim rem 1
+
+  // Preparer la base de données
+  DB_tirages->CreerBaseEnMemoire(dest_bdd,leJeu);
+
+
+  // Creation des tables pour ce type jeu
+  DB_tirages->CreerTableTirages(&tmp);
+
+  // Recuperation des données fdj
+  ficSource = tmp.SelectSource(load);
+  DB_tirages->LireLesTirages(ficSource,&tmp);
+
+  if(leJeu == NE_FDJ::fdj_euro){
+    // Lecture des anciennes base des tirages
+    ficSource = "euromillions_2.csv";
+    DB_tirages->LireLesTirages(ficSource,&tmp);
+    ficSource="euromillions.csv";
+    DB_tirages->LireLesTirages(ficSource,&tmp);
+  }
+  else
+  {
+    //Rien
+  }
+
+  /// ------- rem 2
+  ///---------------------
+  // Recherche de combinaison A deplacer ?
+  //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
+  TST_EtoileCombi(&configJeu,tabWidget);
+  TST_RechercheCombi(&configJeu,tabWidget);
+  //QApplication::quit();
+
+  //return;
+
+  // Ordre arrivee des boules ?
+  DB_tirages->CouvertureBase(qsim_Ecarts,&configJeu);
+
+
+
+  //// GARDER L'ORDRE D'APPEL DES FONCTIONS PB VERROU SUR LA BASE
+  // --
+  int zn = 0;
+  for(i=1;i<=configJeu.limites[zn].max;i++){
+    // Remplir Sous Fen les ecarts
+    DB_tirages->DistributionSortieDeBoule(i,qsim_Ecarts,&configJeu);
+    // Montrer les valeurs probable
+    DB_tirages->CouvMontrerProbable(i,3,1,qsim_Ecarts);
+
+
+    // Calcul occurence de cette boule
+    DB_tirages->TotalApparitionBoule(i,&configJeu, zn, qsimT_Voisins[zn]);
+  }
+
+  // --
+  zn=1;
+  for(i=1;i<=configJeu.limites[zn].max;i++)
+  {
+    // Calcul occurence de cette boule
+    DB_tirages->TotalApparitionBoule(i,&configJeu, zn, qsimT_Voisins[zn]);
+  }
+
+  // ----------------------------
+
+  /// fin rem 2
+  // Remplir la sousfenetre base de données
+  DB_tirages->AfficherBase(&configJeu,qw_Tirages,qtv_Tirages);
+  /// rem 3
+
+
+  // Remplir la sous fenetre resultat couverture
+  DB_tirages->AfficherResultatCouverture(&configJeu,qw_LstCouv,qtv_LstCouv);
+
+
+  // Remplir la sous fenetre de parite
+  DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_PAIR, qsim_Parites);
+  DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_SGRP, qsim_Ensemble_1);
+  DB_tirages->MLP_UniteDizaine(&configJeu, qsim_ud);
+
+  TST_Graphe(&configJeu);
+  /// ---- fin rem 3
+  //setCentralWidget(zoneCentrale);
+}
+
+#if 0
+void MainWindow::Prev_MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)// :
+//  QMainWindow(parent),
+//  ui(new Ui::MainWindow)
+{
+  DB_tirages = new GererBase;
+  int i;
+  tirages tmp(leJeu);
+  QString ficSource;
+
+  // Recuperation des contantes du type de jeu
+  tmp.getConfig(&configJeu);
+
+  //stTiragesDef ess;
+  //ess = configJeu;
 
   ui->setupUi(this);
 
@@ -75,7 +195,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   fen_Ecarts();
 
   // Creation fenetre pour memoriser a selection
-  fen_MaSelection(qtv_MesChoix);
+  fen_MaSelection();
 
   // Creation fenetre resultat
   fen_MesPossibles();
@@ -108,6 +228,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   ///---------------------
   // Recherche de combinaison A deplacer ?
   //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
+  TST_EtoileCombi(&configJeu,tabWidget);
   TST_RechercheCombi(&configJeu,tabWidget);
   //QApplication::quit();
 
@@ -116,8 +237,12 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   // Ordre arrivee des boules ?
   DB_tirages->CouvertureBase(qsim_Ecarts,&configJeu);
 
+
+
   //// GARDER L'ORDRE D'APPEL DES FONCTIONS PB VERROU SUR LA BASE
-  for(i=1;i<=configJeu.limites->max;i++){
+  // --
+  int zn = 0;
+  for(i=1;i<=configJeu.limites[zn].max;i++){
     // Remplir Sous Fen les ecarts
     DB_tirages->DistributionSortieDeBoule(i,qsim_Ecarts,&configJeu);
     // Montrer les valeurs probable
@@ -125,8 +250,19 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
 
 
     // Calcul occurence de cette boule
-    DB_tirages->TotalApparitionBoule(i,qsim_Voisins);
+    DB_tirages->TotalApparitionBoule(i,&configJeu, zn, qsimT_Voisins[zn]);
   }
+
+  // --
+  zn=1;
+  for(i=1;i<=configJeu.limites[zn].max;i++)
+  {
+    // Calcul occurence de cette boule
+    DB_tirages->TotalApparitionBoule(i,&configJeu, zn, qsimT_Voisins[zn]);
+  }
+
+  // ----------------------------
+
 
   // Remplir la sousfenetre base de données
   DB_tirages->AfficherBase(&configJeu,qw_Tirages,qtv_Tirages);
@@ -141,13 +277,11 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
   DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_SGRP, qsim_Ensemble_1);
   DB_tirages->MLP_UniteDizaine(&configJeu, qsim_ud);
 
+  TST_Graphe(&configJeu);
+
   setCentralWidget(zoneCentrale);
-  TST_Graphe(zoneCentrale,leJeu);
 
 
-  // click dans fenetre ma selection
-  connect( qtv_MesChoix, SIGNAL( doubleClicked(QModelIndex)) ,
-           this, SLOT( slot_UneSelectionActivee( QModelIndex) ) );
   ///-----------------
 #if 0
   // Selection a change
@@ -157,6 +291,7 @@ MainWindow::MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool
 #endif
 
 }
+#endif
 
 void MainWindow::fen_Tirages(void)
 {
@@ -180,7 +315,11 @@ void MainWindow::fen_Tirages(void)
   qw_Tirages->setMinimumHeight(450);
 
   // Ratacher cette sous fenetre
+  //QMdiSubWindow *subWindow1 = new QMdiSubWindow;
+  //subWindow1->setWidget(qw_Tirages);
+
   zoneCentrale->addSubWindow(qw_Tirages);
+  qw_Tirages->setVisible(true);
   //QMdiSubWindow *sousFenetre1 = zoneCentrale->addSubWindow(AfficherBase);
 
   // Double click dans sous fenetre base
@@ -211,6 +350,7 @@ void MainWindow::fen_LstCouv(void)
 
   // Ratacher cette sous fenetre
   zoneCentrale->addSubWindow(qw_LstCouv);
+  qw_LstCouv->setVisible(true);
 
 #if 0
   // Selection a change
@@ -222,70 +362,100 @@ void MainWindow::fen_LstCouv(void)
 }
 void MainWindow::fen_Voisins(void)
 {
-  int  i;
   QWidget *qw_Voisins = new QWidget;
-  qtv_Voisins = new QTableView;
-  int zn = 0;
-  qsim_Voisins = new QStandardItemModel(configJeu.limites[zn].max,7);
+  QTabWidget *tabWidget = new QTabWidget;
+  int nb_zn = configJeu.nb_zone;
 
-  // entete du modele
-  qsim_Voisins->setHeaderData(0,Qt::Horizontal,"B");
-  qsim_Voisins->setHeaderData(1,Qt::Horizontal,"V:r0");
-  qsim_Voisins->setHeaderData(2,Qt::Horizontal,"V:+1");
-  qsim_Voisins->setHeaderData(3,Qt::Horizontal,"V:+2");
-  qsim_Voisins->setHeaderData(4,Qt::Horizontal,"V:-1");
-  qsim_Voisins->setHeaderData(5,Qt::Horizontal,"V:-2");
-  qsim_Voisins->setHeaderData(6,Qt::Horizontal,"NbS");
+  qtvT_Voisins = new QTableView*[nb_zn];
+  qsimT_Voisins= new QStandardItemModel*[nb_zn];
+  qlT_nbSorties = new QLabel*[nb_zn];
+  QFormLayout **layT_Voisin = new QFormLayout*[nb_zn];
+  QWidget **tmpT_Widget = new QWidget*[nb_zn];
 
-  // Ecriture du numero de boule et reservation item position
-  for(i=1;i<=configJeu.limites[zn].max;i++)
+
+  for(int zn = 0;zn<nb_zn;zn++)
   {
-    QStandardItem *item = new QStandardItem();
-    item->setData(i,Qt::DisplayRole);
-    qsim_Voisins->setItem(i-1,0,item);
-    for (int j =1; j<7;j++)
+    QTableView *tmpTblView = new QTableView;
+    QStandardItemModel * tmpStdItem =  new QStandardItemModel(configJeu.limites[zn].max,7);
+    QLabel *tmpLabel = new QLabel;
+    QFormLayout *tmpLayout = new QFormLayout;
+    QWidget *tmpWidget = new QWidget;
+
+    qsimT_Voisins[zn]= tmpStdItem;
+    qtvT_Voisins[zn] = tmpTblView;
+    qlT_nbSorties[zn]= tmpLabel;
+    layT_Voisin[zn] = tmpLayout;
+    tmpT_Widget[zn] = tmpWidget;
+
+    // entete du modele
+    qsimT_Voisins[zn]->setHeaderData(0,Qt::Horizontal,"B");
+    qsimT_Voisins[zn]->setHeaderData(1,Qt::Horizontal,"V:r0");
+    qsimT_Voisins[zn]->setHeaderData(2,Qt::Horizontal,"V:+1");
+    qsimT_Voisins[zn]->setHeaderData(3,Qt::Horizontal,"V:+2");
+    qsimT_Voisins[zn]->setHeaderData(4,Qt::Horizontal,"V:-1");
+    qsimT_Voisins[zn]->setHeaderData(5,Qt::Horizontal,"V:-2");
+    qsimT_Voisins[zn]->setHeaderData(6,Qt::Horizontal,"NbS");
+
+    // Ecriture du numero de boule et reservation item position
+    for(int i=1;i<=configJeu.limites[zn].max;i++)
     {
-      QStandardItem *item_2 = new QStandardItem();
-      qsim_Voisins->setItem(i-1,j,item_2);
+      QStandardItem *item = new QStandardItem();
+      item->setData(i,Qt::DisplayRole);
+      qsimT_Voisins[zn]->setItem(i-1,0,item);
+      for (int j =1; j<7;j++)
+      {
+        QStandardItem *item_2 = new QStandardItem();
+        qsimT_Voisins[zn]->setItem(i-1,j,item_2);
+      }
     }
+
+    qtvT_Voisins[zn]->setModel(qsimT_Voisins[zn]);
+    qtvT_Voisins[zn]->setColumnWidth(0,60);
+    qtvT_Voisins[zn]->setColumnWidth(1,60);
+    qtvT_Voisins[zn]->setColumnWidth(2,60);
+    qtvT_Voisins[zn]->setColumnWidth(3,60);
+    qtvT_Voisins[zn]->setColumnWidth(4,60);
+    qtvT_Voisins[zn]->setColumnWidth(5,60);
+    qtvT_Voisins[zn]->setColumnWidth(6,60);
+
+    qtvT_Voisins[zn]->setMinimumHeight(390);
+    qtvT_Voisins[zn]->setSortingEnabled(true);
+    qtvT_Voisins[zn]->sortByColumn(0,Qt::AscendingOrder);
+    qtvT_Voisins[zn]->setAlternatingRowColors(true);
+    qtvT_Voisins[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtvT_Voisins[zn]->setSelectionBehavior(QAbstractItemView::SelectItems);
+    //qtvT_Voisins[zn]->setSelectionMode(QAbstractItemView::SingleSelection);
+    //qtvT_Voisins[zn]->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
+
+    qlT_nbSorties[zn]->setText("Nb total de sorties:");
+    layT_Voisin[zn]->addWidget(qlT_nbSorties[zn]);
+    layT_Voisin[zn]->addWidget(qtvT_Voisins[zn]);
+
+    tmpT_Widget[zn]->setLayout(layT_Voisin[zn]);
+    tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+
+    // click dans fenetre voisin pour afficher boule
+    connect( qtvT_Voisins[zn], SIGNAL( clicked(QModelIndex)) ,
+             this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
+
+    // double click dans fenetre voisin pour afficher details boule
+    connect( qtvT_Voisins[zn], SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( slot_RechercherLesTirages( QModelIndex) ) );
+
   }
 
-  qtv_Voisins->setModel(qsim_Voisins);
-  qtv_Voisins->setColumnWidth(0,60);
-  qtv_Voisins->setColumnWidth(1,60);
-  qtv_Voisins->setColumnWidth(2,60);
-  qtv_Voisins->setColumnWidth(3,60);
-  qtv_Voisins->setColumnWidth(4,60);
-  qtv_Voisins->setColumnWidth(5,60);
-  qtv_Voisins->setColumnWidth(6,60);
+  qw_Voisins->setMinimumHeight(500);
+  qw_Voisins->setMinimumWidth(540);
 
-  //tblVoisin->setMaximumWidth(260);
-  qtv_Voisins->setMinimumHeight(390);
-  qtv_Voisins->setSortingEnabled(true);
-  qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
-  qtv_Voisins->setAlternatingRowColors(true);
-  qtv_Voisins->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  QFormLayout *mainLayout = new QFormLayout;
+  mainLayout->addWidget(tabWidget);
 
-  nbSortie = new QLabel;
-  nbSortie->setText("Nb total de sorties:");
-
-  QFormLayout *layVoisin = new QFormLayout;
-  layVoisin->addWidget(nbSortie);
-  layVoisin->addWidget(qtv_Voisins);
-
-  qw_Voisins->setMinimumHeight(435);
-  qw_Voisins->setMinimumWidth(500);
-
-  qw_Voisins->setLayout(layVoisin);
+  qw_Voisins->setLayout(mainLayout);
   qw_Voisins->setWindowTitle("Voisins de selection");
+
   //QMdiSubWindow *sousFenetre2 =
   zoneCentrale->addSubWindow(qw_Voisins);
-
-  // click dans fenetre voisin pour afficher boule
-  connect( qtv_Voisins, SIGNAL( clicked(QModelIndex)) ,
-           this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
-
-
+  qw_Voisins->setVisible(true);
 }
 
 void MainWindow::fen_Ecarts(void)
@@ -333,7 +503,7 @@ void MainWindow::fen_Ecarts(void)
   qw_Ecarts->setWindowTitle("Couverture boules");
   //QMdiSubWindow *sousFenetre3 =
   zoneCentrale->addSubWindow(qw_Ecarts);
-
+  qw_Ecarts->setVisible(true);
   // Double click dans sous fenetre ecart
   connect( qtv_Ecarts, SIGNAL( doubleClicked(QModelIndex)) ,
            this, SLOT( slot_qtvEcart( QModelIndex) ) );
@@ -341,49 +511,75 @@ void MainWindow::fen_Ecarts(void)
 
 }
 
-void MainWindow::fen_MaSelection(QTableView *qtv_MaSelection)
+void MainWindow::fen_MaSelection(void)
 {
+  QTabWidget *tabWidget = new QTabWidget;
+  int nb_zn = configJeu.nb_zone;
+
+  qtvT_MaSelection = new QTableView*[nb_zn];
+  qsimT_MaSelection= new QStandardItemModel*[nb_zn];
+  QWidget **tmpT_Widget = new QWidget*[nb_zn];
+  QFormLayout **layT_MaSelection = new QFormLayout*[nb_zn];
+  int *nbcol = new int [nb_zn];
+
   int  i=0,j=0, cell_val=0;
   QWidget *qw_MaSelection = new QWidget;
-  int zn = 0;
-  int nbcol = (configJeu.limites[zn].max)%configJeu.nbElmZone[zn]?
-                (configJeu.limites[zn].max/configJeu.nbElmZone[zn])+1:
-                (configJeu.limites[zn].max/configJeu.nbElmZone[zn]);
-  qsim_MaSelection = new QStandardItemModel(configJeu.nbElmZone[zn],nbcol);
 
-  for(i=1;i<=configJeu.nbElmZone[zn];i++)/// Code a verifier en fonction bornes max
-  { // Dans le cas max > 50
-    for(j=1;j<=nbcol;j++)
-    {
-      cell_val = j+(i-1)*nbcol;
-      if(cell_val<=configJeu.limites[zn].max){
-        QStandardItem *item = new QStandardItem( QString::number(i));
-        item->setData(cell_val,Qt::DisplayRole);
-        qsim_MaSelection->setItem(i-1,j-1,item);
+  for(int zn = 0;zn<nb_zn;zn++)
+  {
+    nbcol[zn] = (configJeu.limites[zn].max)%configJeu.nbElmZone[zn]?
+                  (configJeu.limites[zn].max/configJeu.nbElmZone[zn])+1:
+                  (configJeu.limites[zn].max/configJeu.nbElmZone[zn]);
+
+    qsimT_MaSelection[zn]= new QStandardItemModel(configJeu.nbElmZone[zn],nbcol[zn]);
+    qtvT_MaSelection[zn] = new QTableView;
+    tmpT_Widget[zn] = new QWidget;
+
+    for(i=1;i<=configJeu.nbElmZone[zn];i++)/// Code a verifier en fonction bornes max
+    { // Dans le cas max > 50
+      for(j=1;j<=nbcol[zn];j++)
+      {
+        cell_val = j+(i-1)*nbcol[zn];
+        if(cell_val<=configJeu.limites[zn].max){
+          QStandardItem *item = new QStandardItem( QString::number(i));
+          item->setData(cell_val,Qt::DisplayRole);
+          qsimT_MaSelection[zn]->setItem(i-1,j-1,item);
+        }
       }
     }
+
+    qtvT_MaSelection[zn]->setModel(qsimT_MaSelection[zn]);
+    qtvT_MaSelection[zn]->setAlternatingRowColors(true);
+    qtvT_MaSelection[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtvT_MaSelection[zn]->setMinimumHeight(190);
+
+    layT_MaSelection[zn] = new QFormLayout;
+    layT_MaSelection[zn]->addWidget(qtvT_MaSelection[zn]);
+
+    for(j=0;j<10;j++)
+    {
+      qtvT_MaSelection[zn]->setColumnWidth(j,30);
+    }
+
+    tmpT_Widget[zn]->setLayout(layT_MaSelection[zn]);
+    tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+
+    // click dans fenetre ma selection
+    connect( qtvT_MaSelection[zn], SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( slot_UneSelectionActivee( QModelIndex) ) );
   }
 
-  qtv_MaSelection->setModel(qsim_MaSelection);
-  qtv_MaSelection->setAlternatingRowColors(true);
-  qtv_MaSelection->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  qtv_MaSelection->setMinimumHeight(190);
-  //qtv_MaSelection->setMinimumWidth(325);
-  QFormLayout *layCouverture = new QFormLayout;
-  layCouverture->addWidget(qtv_MaSelection);
+  QFormLayout *mainLayout = new QFormLayout;
+  mainLayout->addWidget(tabWidget);
 
-  for(j=0;j<10;j++)
-  {
-    qtv_MaSelection->setColumnWidth(j,30);
-  }
   //qw_MaSelection->setMinimumHeight(200);
-  qw_MaSelection->setFixedSize(350,210);
-
-
-  qw_MaSelection->setLayout(layCouverture);
+  qw_MaSelection->setFixedSize(390,260);
+  qw_MaSelection->setLayout(mainLayout);
   qw_MaSelection->setWindowTitle("Ma Selection");
+
   //QMdiSubWindow *sousFenetre3 =
   zoneCentrale->addSubWindow(qw_MaSelection);
+  qw_MaSelection->setVisible(true);
 
 }
 
@@ -467,7 +663,7 @@ void MainWindow::fen_MesPossibles(void)
 
   //QMdiSubWindow *sousFenetre3 =
   zoneCentrale->addSubWindow(qw_MesPossibles);
-
+  qw_MesPossibles->setVisible(true);
 }
 
 void MainWindow::fen_Parites(void)
@@ -563,12 +759,11 @@ void MainWindow::fen_Parites(void)
 #endif
 
   zoneCentrale->addSubWindow(qw_Parites);
-
+  qw_Parites->setVisible(true);
 }
 
 MainWindow::~MainWindow()
 {
-  delete ui;
 }
 
 
@@ -586,33 +781,48 @@ void MainWindow::ouvrir_mainwindows(void)
   }
 }
 
-#if 0
-void MainWindow::closeEvent(QCloseEvent *event)
-{
-  zoneCentrale->closeAllSubWindows();
-  if (zoneCentrale->currentSubWindow()) {
-    event->ignore();
-  } else {
-    //writeSettings();
-    event->accept();
-  }
-}
-#endif
+
 
 void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
 {
   int val;
+  int nb_zone = configJeu.nb_zone;
+  int zn=0;
+  QStringList select;
 
+  // Click sur la date seulement
+  // faire toute les boules et creer une mise a jour pour mes possibles
   if (index.column()==0)
   {
     // Recherche de toute les boules
-    int i;
+    int col_bpos = 0;
+    for(zn=0;zn<nb_zone;zn++)
+    {
+      for(int b_pos=0; b_pos<configJeu.nbElmZone[zn];b_pos++)
+      {
+        col_bpos += 1;
+        val=index.model()->index(index.row(),col_bpos).data().toInt();
+        DB_tirages->RechercheVoisin(val,zn,&configJeu,qlT_nbSorties[zn],qsimT_Voisins[zn]);
+      }
+      // Pour rentre la fenetre voisin vide
+      select.clear();
+      DB_tirages->TST_RechercheVoisin(select,zn,&configJeu,qlT_nbSorties[zn],qsimT_Voisins[zn]);
+    }
 
+#if 0
     for (i=1;i<6;i++)
     {
       val = index.model()->index(index.row(),i).data().toInt();
-      DB_tirages->RechercheVoisin(val,&configJeu,nbSortie,qsim_Voisins);
+      DB_tirages->RechercheVoisin(val,0,&configJeu,qlT_nbSorties[0],qsimT_Voisins[0]);
     }
+
+    // Recherche voisin des etoiles
+    for (i=6;i<6+configJeu.nbElmZone[1];i++)
+    {
+      val = index.model()->index(index.row(),i).data().toInt();
+      DB_tirages->RechercheVoisin(val,1,&configJeu,qlT_nbSorties[1],qsimT_Voisins[1]);
+    }
+#endif
 
     // Affichage des resultats
     DB_tirages->MontreMesPossibles(index,&configJeu,qtv_MesPossibles);
@@ -622,17 +832,25 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
   }
 
   if(index.column()>0 && index.column()<6){
+    zn=0;
     qtv_LstCouv->clearSelection();
     val = index.data().toInt();
-    qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
-    DB_tirages->RechercheVoisin(val,&configJeu,nbSortie,qsim_Voisins);
-    DB_tirages->MontrerBouleCouverture(val,&configJeu,qtv_LstCouv);
+
+    qtvT_Voisins[0]->sortByColumn(0,Qt::AscendingOrder);
+
+    select << index.data().toString();
+    DB_tirages->TST_RechercheVoisin(select,zn,&configJeu,qlT_nbSorties[zn],qsimT_Voisins[zn]);
+    //DB_tirages->RechercheVoisin(val,0,&configJeu,qlT_nbSorties[0],qsimT_Voisins[0]);
+
+    DB_tirages->MLB_DansCouverture(val,&configJeu,qtv_LstCouv);
+    //DB_tirages->MLB_DansMesPossibles(val,QBrush(Qt::yellow),qtv_MesPossibles);
   }
 
 }
 
 void MainWindow::slot_qtvEcart(const QModelIndex & index)
 {
+#if 0
   int val = 0;
 
   if(index.column()==0){
@@ -641,47 +859,65 @@ void MainWindow::slot_qtvEcart(const QModelIndex & index)
     qtv_Tirages->clearSelection();
 
     val = index.data().toInt();
-    qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
-    DB_tirages->RechercheVoisin(val,&configJeu,nbSortie,qsim_Voisins);
+    qtvT_Voisins[0]->sortByColumn(0,Qt::AscendingOrder);
+    DB_tirages->RechercheVoisin(val,0,&configJeu,qlT_nbSorties[0],qsimT_Voisins[0]);
   }
+#endif
 }
 
 void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
 {
-  static QStringList select;
+  //static QStringList *select = new QStringList *[configJeu.nb_zone];
+  static QStringList select[2];
+  int zn = -1;
 
-  QStandardItem *item1 = qsim_MaSelection->itemFromIndex(index);
+  // determination de la table dans l'onglet ayant recu le click
+  if (index.internalPointer() == qsimT_MaSelection[0]->index(index.row(),index.column()).internalPointer()){
+    zn = 0;
+  }
+  else
+  {
+    zn=1;
+  }
+
+
+
+  QStandardItem *item1 = qsimT_MaSelection[zn]->itemFromIndex(index);
 #ifndef QT_NO_DEBUG
   qDebug()<< item1->background();
 #endif
 
-  if(item1->background() == Qt::red)
+  if(zn != -1)
   {
-    // un element existe le supprimer
-    int pos = select.indexOf(item1->data(Qt::DisplayRole).toString());
-    select.removeAt(pos);
 
-    // Il y a deja une selection
-    if(index.row()%2==0){
-      //QBrush macouleur(Qt::white);
-      item1->setBackground(QBrush(QColor::fromRgb(1, 1, 0, 0) , Qt::SolidPattern ));
+    if(item1->background() == Qt::red)
+    {
+      // un element deja selectionne le supprimer
+      int pos = select[zn].indexOf(item1->data(Qt::DisplayRole).toString());
+      select[zn].removeAt(pos);
+
+      // Remettre la bonne couleur de fond
+      if(index.row()%2==0){
+        //QBrush macouleur(Qt::white);
+        item1->setBackground(QBrush(QColor::fromRgb(1, 1, 0, 0) , Qt::SolidPattern ));
+      }
+      else
+      {
+        //QBrush macouleur (Qt::gray);
+        item1->setBackground(QBrush(QColor::fromRgb(1, 0, 0, 0) , Qt::NoBrush ));
+      }
     }
     else
     {
-      //QBrush macouleur (Qt::gray);
-      item1->setBackground(QBrush(QColor::fromRgb(1, 0, 0, 0) , Qt::NoBrush ));
+      // Memoriser la selection
+      //QBrush macouleur(Qt::red);
+      select[zn] << item1->data(Qt::DisplayRole).toString();
+      item1->setBackground(QBrush(Qt::red));
     }
-  }
-  else
-  {
-    // Memoriser la selection
-    //QBrush macouleur(Qt::red);
-    select << item1->data(Qt::DisplayRole).toString();
-    item1->setBackground(QBrush(Qt::red));
-  }
 
-  qtv_Voisins->sortByColumn(0,Qt::AscendingOrder);
-  DB_tirages->TST_RechercheVoisin(select,&configJeu,nbSortie,qsim_Voisins);
+    qtvT_Voisins[zn]->sortByColumn(0,Qt::AscendingOrder);
+    DB_tirages->TST_RechercheVoisin(select[zn],zn,&configJeu,qlT_nbSorties[zn],qsimT_Voisins[zn]);
+  }
 
 }
 #if 0
@@ -700,6 +936,71 @@ void MainWindow::slot_MontrerTirageDansBase(const QModelIndex & index)
   }
 }
 #endif
+void MainWindow::slot_RechercherLesTirages(const QModelIndex & index)
+{
+  int val = 0;
+  int cellule = 0;
+  int col=0;
+  int zn = -1;
+  const int d[5]={0,1,2,-1,-2};
+
+  // determination de la table dans l'onglet ayant recu le click
+  if (index.internalPointer() == qsimT_Voisins[0]->index(index.row(),index.column()).internalPointer())
+  {
+    zn = 0;
+  }
+
+  if (index.internalPointer() == qsimT_Voisins[1]->index(index.row(),index.column()).internalPointer())
+  {
+    zn = 1;
+  }
+
+  if(zn != -1)
+  {
+    cellule = qsimT_Voisins[zn]->index(index.row(),index.column()).data().toInt();
+
+    if(cellule)
+    {
+      QStringList list;
+      val = qsimT_Voisins[zn]->index(index.row(),0).data().toInt();
+
+      col = index.column();
+      if(col>=6)
+      {
+        list << QString::number(val);
+        TST_MontreTirageAyantLaBoule(zn,&configJeu,list);
+      }
+      else
+      {
+        QRegExp reg_number ("(\\d+)");
+        QString  str_br = qlT_nbSorties[zn]->text();
+        int pos = 0;
+
+        while ((pos = reg_number.indexIn(str_br, pos)) != -1) {
+          list << reg_number.cap(1);
+          pos += reg_number.matchedLength();
+        }
+
+        // on retire le dernier chiffre de str_br
+        if(!list.isEmpty())
+        {
+          list.removeLast();
+        }
+
+        if(!list.isEmpty())
+        {
+          if(col>0 && col< 6)
+          {
+            //DB_tirages->TST_LBcDistBr(zn,&configJeu,d[col-1],br,val);
+            this->TST_LBcDistBr(zn,&configJeu,d[col-1],list,val);
+          }
+
+        }
+
+      }
+    }
+  }
+}
 
 void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
 {
@@ -707,23 +1008,37 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
   int cellule = 0;
 
   // determination de la fenetre ayant recu le click
-  if (index.internalPointer() == qsim_Voisins->index(index.row(),index.column()).internalPointer()){
-    val = qsim_Voisins->index(index.row(),0).data().toInt();
-    cellule = qsim_Voisins->index(index.row(),index.column()).data().toInt();
+  if (index.internalPointer() == qsimT_Voisins[0]->index(index.row(),index.column()).internalPointer()){
+    val = qsimT_Voisins[0]->index(index.row(),0).data().toInt();
+    cellule = val;
   }
   else
   {
-    val = qsim_MesPossibles->index(index.row(),index.column()).data().toInt();
-    cellule = val;
-    //qsim_MesPossibles->index(index.row(),index.column()).data(Qt::ToolTipRole);
+    // regarder si l'on deja selectionne une boule
+    val = DB_tirages->CouleurVersBid(qtv_MesPossibles);
+
+    // recuperer la boule de la cellule
+    cellule = qsim_MesPossibles->index(index.row(),index.column()).data().toInt();
+
+    // si different effacer l'ancienne selection
+
+    if(cellule != val)
+    {
+      // Effacer les recherches de boules precedentes
+      DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),qtv_MesPossibles);
+    }
 
     // determination du numero de boule grace a la colonne
     int b_id = BouleIdFromColId(index.column());
+    QStringList lst_boule;
+    lst_boule << QString::number(b_id);
 
     // Affichage de la table des voisins
-    DB_tirages->RechercheVoisin(b_id,&configJeu,nbSortie,qsim_Voisins);
-    qsim_Voisins->sort(colonne_tri+1,Qt::AscendingOrder);
-    qsim_Voisins->sort(colonne_tri+1,Qt::DescendingOrder);
+    //DB_tirages->RechercheVoisin(b_id,0,&configJeu,qlT_nbSorties[0],qsimT_Voisins[0]);
+    DB_tirages->TST_RechercheVoisin(lst_boule,0,&configJeu,qlT_nbSorties[0],qsimT_Voisins[0]);
+
+    qsimT_Voisins[0]->sort(colonne_tri+1,Qt::AscendingOrder);
+    qsimT_Voisins[0]->sort(colonne_tri+1,Qt::DescendingOrder);
   }
 #ifndef QT_NO_DEBUG
   qDebug() << QString::number(index.row());
@@ -733,13 +1048,22 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
   if(cellule){
     // Une Boule Trouvee la montrer dans les autres fenetres
     qtv_Tirages->clearSelection();
-    DB_tirages->MontrerLaBoule(val,qtv_Tirages);
-    DB_tirages->MLB_DansLaQtTabView(val,qtv_Voisins);
-    DB_tirages->MLB_DansLaQtTabView(val,qtv_Ecarts);
-    qtv_LstCouv->clearSelection();
-    DB_tirages->MontrerBouleCouverture(val,&configJeu,qtv_LstCouv);
+    qtv_Tirages->clearFocus();
 
-    DB_tirages->MLB_DansMesPossibles(val,QBrush(Qt::yellow),qtv_MesPossibles);
+    DB_tirages->MontrerLaBoule(cellule,qtv_Tirages);
+    DB_tirages->MLB_DansLaQtTabView(cellule,qtvT_Voisins[0]);
+    DB_tirages->MLB_DansLaQtTabView(cellule,qtv_Ecarts);
+    qtv_LstCouv->clearSelection();
+    DB_tirages->MLB_DansCouverture(cellule,&configJeu,qtv_LstCouv);
+
+    // Effacer les recherches de boules precedentes
+    DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),qtv_MesPossibles);
+    qtv_MesPossibles->clearSelection();
+    qtv_MesPossibles->clearFocus();
+
+    // Mise en evidence numero commun
+    DB_tirages->MLB_MontreLesCommuns(&configJeu,qtv_MesPossibles);
+    DB_tirages->MLB_DansMesPossibles(cellule,QBrush(Qt::yellow),qtv_MesPossibles);
   }
 }
 
@@ -797,7 +1121,7 @@ void MainWindow::customMenuRequested(QPoint pos)
   int b_id = msg.toInt();
   QMenu *menu=new QMenu(this);
 
-  DB_tirages->PopulateCellMenu(b_id, v_id, menu, this);
+  DB_tirages->PopulateCellMenu(b_id, v_id, 0, &configJeu, menu, this);
   menu->popup(qtv_MesPossibles->viewport()->mapToGlobal(pos));
 
 }
@@ -863,31 +1187,39 @@ void MainWindow::ft_LancerTri(int tri_id)
   int col_id = 0;
   colonne_tri = tri_id;
 
+  // retirer affichage de selection de boule
+  qtv_MesPossibles->clearSelection();
+  qtv_MesPossibles->clearFocus();
+
+  // Memoriser la recherche precedente eventuelle
+  int boule = DB_tirages->CouleurVersBid(qtv_MesPossibles);
+
+  if(boule)
+  {
+    // Effacer les recherches de boules precedentes
+    DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),qtv_MesPossibles);
+  }
+
+  // Effectuer l'affichage du trie concerne pour toute les boules du tirage
   for(col_id = 0; col_id < 5;col_id++)
   {
     int b_id = BouleIdFromColId(col_id);
 
     if(b_id)
     {
-      // Memoriser la recherche precedente eventuelle
-      int boule = DB_tirages->CouleurVersBid(qtv_MesPossibles);
-
-      // Effacer les recherches de boules precedentes
-      DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::yellow),qtv_MesPossibles);
-
       // Montrer les nouveaux resultats
-      DB_tirages->EffectuerTrieMesPossibles(tri_id,col_id,b_id,qsim_MesPossibles);
-
-      // Montrer les boules communes
-      // Remontrer la recherche eventuelle
-      DB_tirages->MLB_DansMesPossibles(boule, QBrush(Qt::yellow),qtv_MesPossibles);
+      DB_tirages->EffectuerTrieMesPossibles(tri_id,col_id,b_id,&configJeu,qsim_MesPossibles);
     }
   }
 
   // Mise en evidence numero commun
   DB_tirages->MLB_MontreLesCommuns(&configJeu,qtv_MesPossibles);
 
-
+  if(boule)
+  {
+    // Remontrer la recherche eventuelle
+    DB_tirages->MLB_DansMesPossibles(boule, QBrush(Qt::yellow),qtv_MesPossibles);
+  }
 
 }
 
@@ -944,6 +1276,86 @@ void MainWindow::TST_CombiRec(int k, QStringList &l, const QString &s, QStringLi
 
   TST_CombiRec(k, tmp, s,ret);
 }
+
+void MainWindow::TST_EtoileCombi(stTiragesDef *ref, QTabWidget *onglets)
+{
+  QStringList sl_etoiles;
+  QString msg = "";
+  //bool status = false;
+  QStringList sl_Lev0;
+
+  //QTabWidget *onglets = ;
+
+  for(int i = 1; i<= ref->limites[1].max;i++)
+    sl_Lev0 << QString::number(i);
+
+  // Recuperation des combinaisons C(2,11)
+  TST_CombiRec(ref->nbElmZone[1], sl_Lev0, "" , sl_etoiles);
+  TST_EtoilesVersTable(sl_etoiles,ref,150);
+
+}
+
+void MainWindow::TST_EtoilesVersTable (QStringList &combi,stTiragesDef *ref, double ponder)
+{
+  bool status = false;
+  int zn = 1;
+
+
+  QSqlQuery sql_1;
+  QString st_cols = "";
+  QString st_vals = "";
+  QString msg_1 = "";
+  int pon_step = ponder;
+
+  QString msg_2 = ref->pTir->qs_zColBaseName(zn);
+
+  msg_2.replace(",", " int,");
+
+  msg_1 = "CREATE table if not exists "
+          TB_COMBI "_"
+          + ref->nomZone[zn]
+          + "(id INTEGER PRIMARY KEY,";
+
+  msg_1 = msg_1 + msg_2 + " int,poids real);";
+
+  status = sql_1.exec(msg_1);
+  if(status)
+  {
+    // Parcourir chaque element du tableau
+    for (int i = 0; i< combi.size();i++)
+    {
+      QStringList item = combi.at(i).split(",");
+      int nbitems = item.size();
+      for(int j=0;(j<nbitems)&& (status == true);j++)
+      {
+        st_cols ="";
+        st_vals ="";
+        for(int k =0; k< nbitems;k++)
+        {
+          st_cols = st_cols
+                    +ref->nomZone[zn]+QString::number(k+1)
+                    +",";
+          st_vals = st_vals+item.at((j+k)%nbitems)
+                    +",";
+        }
+        st_cols.remove(st_cols.length()-1,1);
+        st_vals.remove(st_vals.length()-1,1);
+        msg_1 = "insert into "
+                TB_COMBI "_"
+                + ref->nomZone[zn]
+                + " (id,"+ st_cols + ",poids)"
+                "Values (NULL," + st_vals + "," + QString::number(pon_step)+");";
+        status = sql_1.exec(msg_1);
+        pon_step += 0.2;
+
+      }
+      // Prendre la valeur entiere immediatement superieur
+      pon_step -=0.2;
+      pon_step = ceil(pon_step)+3;
+    }
+  }
+}
+
 // http://forum.hardware.fr/hfr/Programmation/C-2/resolu-renvoyer-combinaison-sujet_23393_1.htm
 // http://www.dcode.fr/generer-calculer-combinaisons
 void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
@@ -1331,10 +1743,10 @@ void MainWindow::slot_TST_DetailsCombinaison( const QModelIndex & index)
   QString msg = index.model()->index(index.row(),0).data().toString();
   //int val = index.model()->index(index.row(),1).data().toInt();
 
-  TST_MontrerDetailCombinaison(msg);
+  TST_MontrerDetailCombinaison(msg, &configJeu);
 }
 
-void MainWindow::TST_MontrerDetailCombinaison(QString msg)
+void MainWindow::TST_MontrerDetailCombinaison(QString msg, stTiragesDef *pTDef)
 {
   QWidget *qw_fenResu = new QWidget;
   QTabWidget *tw_resu = new QTabWidget;
@@ -1342,7 +1754,6 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
   QTableView *tv_r1 = new QTableView;
   QString st_msg ="";
   QFormLayout *mainLayout = new QFormLayout;
-  //bool status = true;
 
 
   msg.replace("c","bd");
@@ -1370,7 +1781,9 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
 
   ////////////////////////////////////////////////////////////
   QTableView *qtv_rep = new QTableView;
-  QStandardItemModel *qsim_rep = new QStandardItemModel(50,2);
+  int zn = 0;
+  int nb_boules = pTDef->limites[zn].max;
+  QStandardItemModel *qsim_rep = new QStandardItemModel(nb_boules,2);
   //QTabWidget *tw_resu_2 = new QTabWidget;
 
   qsim_rep->setHeaderData(0,Qt::Horizontal,"B");
@@ -1385,7 +1798,7 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
 
   st_msg.remove(st_msg.length()-1,1);
   // Compter les occurences de chaque boule
-  for(int i =1; (i< 51) ;i++)
+  for(int i =1; (i< nb_boules+1) ;i++)
   {
     QStandardItem * item_1 = new QStandardItem;
     QStandardItem * item_2 = new QStandardItem;
@@ -1401,37 +1814,8 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
     qsim_rep->setItem(i-1,1,item_2);
 
   }
-#if 0
-  for(int i =1; (i< 51) && status ;i++)
-  {
-    QStandardItem * item_1 = new QStandardItem;
-    QStandardItem * item_2 = new QStandardItem;
 
-    item_1->setData(i,Qt::DisplayRole);
-    qsim_rep->setItem(i-1,0,item_1);
 
-    QSqlQuery sql_1;
-    QString msg_2 = "select count (*) from (" +st_msg+ " where (" +
-                    "b1 = " +QString::number(i) + " or " +
-                    "b2 = " +QString::number(i) + " or " +
-                    "b3 = " +QString::number(i) + " or " +
-                    "b4 = " +QString::number(i) + " or " +
-                    "b5 = " +QString::number(i) + " ));" ;
-
-    status = sql_1.exec(msg_2);
-    if(status)
-    {
-      sql_1.first();
-      if(sql_1.isValid())
-      {
-        int tot = sql_1.value(0).toInt();
-        item_2->setData(tot,Qt::DisplayRole);
-
-        qsim_rep->setItem(i-1,1,item_2);
-      }
-    }
-  }
-#endif
   //qtv_rep->show();
 
   // ??
@@ -1446,17 +1830,244 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg)
 
 }
 
+//////
+void MainWindow::TST_LBcDistBr(int zn,stTiragesDef *pConf,int dist, QStringList boules,int bc)
+{
+#if 0
+  select * from
+      (
+        select * from
+        (
+          select t1.*, t2.*  from tirages as t1
+          inner join
+          (
+            select *  from tirages
+            where
+            (
+              (b1=25 or b2=25 or b3=25 or b4=25 or b5=25 )
+              )
+            ) as t2 on t2.id = t1.id + 2
+                               ) as r1
+        where (b1=38 or b2=38 or b3=38 or b4=38 or b5=38  )
+        )as r2;
+#endif
+
+  QWidget *qw_fenResu = new QWidget;
+  QTabWidget *tw_resu = new QTabWidget;
+  QSqlQueryModel *sqm_r1 = new QSqlQueryModel;
+  QTableView *tv_r1 = new QTableView;
+  QString st_msg ="";
+  QFormLayout *mainLayout = new QFormLayout;
+  QString msg = "select * from (select * from (select t1.*, t2.*  from tirages as t1"
+                " inner join (select *  from tirages where (";
+  //QStringList boules;
+  //boules << QString::number(br);
+  QString w_msg = DB_tirages->TST_ConstruireWhereData(zn,pConf,boules);
+  msg = msg + w_msg;
+  msg = msg + ")) as t2 on t2.id = t1.id + %1 ) as r1 "
+        "where (";
+  msg = (msg).arg(dist);
+
+  QString msg_2 = DB_tirages->TST_ZoneRequete(pConf, zn,"or",bc);
+  msg_2= msg+ msg_2+ " ))as r2;" ;
+
+
+
+
+
+  sqm_r1->setQuery(msg_2);
+  tv_r1->setModel(sqm_r1);
+  //view->setSortingEnabled(true);
+
+  tv_r1->hideColumn(0);
+  for(int j=2;j<12;j++)
+    tv_r1->setColumnWidth(j,30);
+
+  for(int j =12; j<=sqm_r1->columnCount();j++)
+    tv_r1->hideColumn(j);
+
+
+  ////////////////////////////////////////////////////////////
+  QTableView *qtv_rep = new QTableView;
+  //int zn = 0;
+  int nb_boules = pConf->limites[zn].max;
+  QStandardItemModel *qsim_rep = new QStandardItemModel(nb_boules,2);
+  //QTabWidget *tw_resu_2 = new QTabWidget;
+
+  qsim_rep->setHeaderData(0,Qt::Horizontal,"B");
+  qsim_rep->setHeaderData(1,Qt::Horizontal,"T");
+
+  qtv_rep->setModel(qsim_rep);;
+  qtv_rep->setSortingEnabled(true);
+  qtv_rep->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+  qtv_rep->setColumnWidth(0,40);
+  qtv_rep->setColumnWidth(1,40);
+
+  msg_2.remove(msg_2.length()-1,1);
+  // Compter les occurences de chaque boule
+  for(int i =1; (i< nb_boules+1) ;i++)
+  {
+    QStandardItem * item_1 = new QStandardItem;
+    QStandardItem * item_2 = new QStandardItem;
+
+    item_1->setData(i,Qt::DisplayRole);
+    qsim_rep->setItem(i-1,0,item_1);
+
+    // -----------------
+
+    // -----------------
+    int tot = TST_TotBidDansGroupememnt(i,msg_2);
+    item_2->setData(tot,Qt::DisplayRole);
+    qsim_rep->setItem(i-1,1,item_2);
+
+  }
+
+
+  // ??
+  tw_resu->addTab(tv_r1,tr("Details"));
+  tw_resu->addTab(qtv_rep,tr("Synthese"));
+  mainLayout->addWidget(tw_resu);
+  qw_fenResu->setLayout(mainLayout);
+  msg = "Br:"+boules.join(",")+", Bc:" + QString::number(bc) + ", D:" + QString::number(dist);
+  qw_fenResu->setWindowTitle(msg);
+
+  // Double click dans sous fenetre ecart
+  connect( tv_r1, SIGNAL( doubleClicked(QModelIndex)) ,
+           this, SLOT( slot_MontreLeTirage( QModelIndex) ) );
+
+  zoneCentrale->addSubWindow(qw_fenResu);
+  qw_fenResu->show();
+
+}
+////////
+
+void MainWindow::TST_MontreTirageAyantLaBoule(int zn,stTiragesDef *pConf, QStringList boules)
+{
+#if 0
+  select *  from tirages
+      where
+      (
+        b1=25 or b2=25 or b3=25 or b4=25 or b5=25
+
+                                               )
+    #endif
+
+      QWidget *qw_fenResu = new QWidget;
+  QTabWidget *tw_resu = new QTabWidget;
+  QSqlQueryModel *sqm_r1 = new QSqlQueryModel;
+  QTableView *tv_r1 = new QTableView;
+  QString st_msg ="";
+  QFormLayout *mainLayout = new QFormLayout;
+  QString msg = "select *  from tirages where (";
+  //QStringList boules;
+  //boules << QString::number(br);
+  QString w_msg = DB_tirages->TST_ConstruireWhereData(zn,pConf,boules);
+  msg = msg + w_msg;
+  msg = msg + ");";
+
+
+
+
+
+  sqm_r1->setQuery(msg);
+  tv_r1->setModel(sqm_r1);
+  //view->setSortingEnabled(true);
+
+  tv_r1->hideColumn(0);
+  for(int j=2;j<12;j++)
+    tv_r1->setColumnWidth(j,30);
+
+  for(int j =12; j<=sqm_r1->columnCount();j++)
+    tv_r1->hideColumn(j);
+
+
+  ////////////////////////////////////////////////////////////
+  QTableView *qtv_rep = new QTableView;
+  //int zn = 0;
+  int nb_boules = pConf->limites[zn].max;
+  QStandardItemModel *qsim_rep = new QStandardItemModel(nb_boules,2);
+  //QTabWidget *tw_resu_2 = new QTabWidget;
+
+  qsim_rep->setHeaderData(0,Qt::Horizontal,"B");
+  qsim_rep->setHeaderData(1,Qt::Horizontal,"T");
+
+  qtv_rep->setModel(qsim_rep);;
+  qtv_rep->setSortingEnabled(true);
+  qtv_rep->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+  qtv_rep->setColumnWidth(0,40);
+  qtv_rep->setColumnWidth(1,40);
+
+  msg.remove(msg.length()-1,1);
+  // Compter les occurences de chaque boule
+  for(int i =1; (i< nb_boules+1) ;i++)
+  {
+    QStandardItem * item_1 = new QStandardItem;
+    QStandardItem * item_2 = new QStandardItem;
+
+    item_1->setData(i,Qt::DisplayRole);
+    qsim_rep->setItem(i-1,0,item_1);
+
+    // -----------------
+
+    // -----------------
+    int tot = TST_TotBidDansGroupememnt(i,msg);
+    item_2->setData(tot,Qt::DisplayRole);
+    qsim_rep->setItem(i-1,1,item_2);
+
+  }
+
+
+  // ??
+  tw_resu->addTab(tv_r1,tr("Details"));
+  tw_resu->addTab(qtv_rep,tr("Synthese"));
+  mainLayout->addWidget(tw_resu);
+  qw_fenResu->setLayout(mainLayout);
+  msg = "B:"+boules.join(",");
+  qw_fenResu->setWindowTitle(msg);
+
+  // Double click dans sous fenetre ecart
+  connect( tv_r1, SIGNAL( doubleClicked(QModelIndex)) ,
+           this, SLOT( slot_MontreLeTirage( QModelIndex) ) );
+
+  zoneCentrale->addSubWindow(qw_fenResu);
+  qw_fenResu->show();
+
+}
+
+void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
+{
+  // recuperer la ligne de la table
+  //int col = index.model()->columnCount();//myDataTableModel()->rowCount();
+  int val = index.model()->index(index.row(),0).data().toInt();
+  QAbstractItemModel *mon_model =qtv_Tirages->model();
+  QModelIndex item1 = mon_model->index(0,0, QModelIndex());
+
+  if (item1.isValid()){
+    item1 = item1.model()->index(val-1,0);
+    qtv_Tirages->setCurrentIndex(item1);
+    qtv_Tirages->scrollTo(item1);
+    qtv_Tirages->selectRow(val-1);
+
+    QItemSelectionModel *selectionModel (qtv_Tirages->selectionModel());
+    QItemSelection macellule(item1, item1);
+    selectionModel->select(macellule, QItemSelectionModel::Select);
+  }
+}
+
 int MainWindow::TST_TotBidDansGroupememnt(int bId, QString &st_grp)
 {
   int ret_val = 0;
   bool status = false;
   QSqlQuery sql_1;
-  QString msg_2 = "select count (*) from (" +st_grp+ " where (" +
+
+  QString msg_2 = "select count (*) from (" +st_grp+ ") where (" +
                   "b1 = " +QString::number(bId) + " or " +
                   "b2 = " +QString::number(bId) + " or " +
                   "b3 = " +QString::number(bId) + " or " +
                   "b4 = " +QString::number(bId) + " or " +
-                  "b5 = " +QString::number(bId) + " ));" ;
+                  "b5 = " +QString::number(bId) + " );" ;
 
   status = sql_1.exec(msg_2);
   if(status)
@@ -1758,15 +2369,98 @@ void MainWindow::TST_MettrePonderationSurTirages(void)
 
 }
 
-void MainWindow::TST_Graphe(QMdiArea *obj, NE_FDJ::E_typeJeux leJeu)
+void MainWindow::TST_Graphe(stTiragesDef *pConf)
 {
-  QWidget *qw_view = new QWidget;
-  UnConteneurDessin * une_vue = new UnConteneurDessin;
+  // Essai de mise en onglet des  graphiques
+  QTabWidget *tabWidget = new QTabWidget;
+  UnConteneurDessin *dessin;
 
-  myview = new MyGraphicsView(leJeu,une_vue,qw_view);
+  //tabWidget->set
+  dessin = TST_Graphe_1(pConf);
+  tabWidget->addTab(dessin,"Tirages");
 
-  une_vue->show();
+  dessin = TST_Graphe_2(pConf);
+  tabWidget->addTab(dessin,"Parites");
 
-  obj->addSubWindow(qw_view);
+  dessin = TST_Graphe_3(pConf);
+  tabWidget->addTab(dessin,"b<N/2");
+
+  zoneCentrale->addSubWindow(tabWidget);
+  tabWidget->setVisible(true);
 }
 
+UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
+{
+  //UnConteneurDessin *
+  une_vue[0] = new UnConteneurDessin;
+  QString msg_2="";
+  QString msg_3 = "";
+
+  myview[0] = new MyGraphicsView(eRepartition,une_vue[0], "Tirages",Qt::white);
+
+  msg_2="select analyses.id, lstcombi.poids, lstcombi.pos from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
+  myview[0]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::black);
+
+  // select tirages.id, comb_e.poids from tirages inner join comb_e on comb_e.e1=tirages.e1 and comb_e.e2 = tirages.e2
+  msg_2 = "select tirages.id, comb_e.poids from tirages inner join comb_e on ";
+
+  // Courbes des etoiles
+  int zn=1;
+  for(int i =0; i<pConf->nbElmZone[zn];i++)
+  {
+    msg_3 = msg_3 + TB_COMBI "_" + pConf->nomZone[zn] + "." + pConf->nomZone[zn] + QString::number(i+1)
+            +"=" TB_BASE "." + pConf->nomZone[zn] + QString::number(i+1) + " and ";
+  }
+  msg_3.remove(msg_3.length()-5,5);
+  msg_2 = msg_2 + msg_3 + ";";
+  myview[0]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::blue);
+
+  //zoneCentrale->addSubWindow(une_vue[0]);
+  //une_vue[0]->setVisible(true);
+  //une_vue[0]->show();
+  return (une_vue[0]);
+}
+
+UnConteneurDessin * MainWindow::TST_Graphe_2(stTiragesDef *pConf)
+{
+  //UnConteneurDessin *
+  une_vue[1] = new UnConteneurDessin;
+  QString msg_2="";
+  QString msg_3 = "";
+
+  myview[1] = new MyGraphicsView(eParite,une_vue[1], "Parites");
+  msg_2 = "select tirages.id, tirages.bp from tirages";
+  myview[1]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::black,10);
+
+
+  msg_2 = "select tirages.id, tirages.ep from tirages";
+  myview[1]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::blue,10,100);
+
+  //une_vue[1]->show();
+  //zoneCentrale->addSubWindow(une_vue[1]);
+  //une_vue[1]->setVisible(true);
+  return (une_vue[1]);
+
+
+}
+
+UnConteneurDessin * MainWindow::TST_Graphe_3(stTiragesDef *pConf)
+{
+  //UnConteneurDessin *
+  une_vue[2] = new UnConteneurDessin;
+  QString msg_2="";
+  QString msg_3 = "";
+
+  myview[2] = new MyGraphicsView(eGroupe,une_vue[2], "b<N/2", Qt::gray);
+  msg_2 = "select tirages.id, tirages.bg from tirages";
+  myview[2]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::black,10);
+
+
+  msg_2 = "select tirages.id, tirages.eg from tirages";
+  myview[2]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::blue,10,100);
+
+  //une_vue[2]->show();
+  //zoneCentrale->addSubWindow(une_vue[2]);
+  //une_vue[2]->setVisible(true);
+  return (une_vue[2]);
+}

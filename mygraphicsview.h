@@ -7,15 +7,29 @@
 #include <QGraphicsSceneMouseEvent>
 #include "tirages.h"
 
+typedef enum _graph
+{
+  eNoGraph,
+  eTirage,
+  eParite,
+  eRepartition,
+  eGroupe
+}eGType;
+
 class MyGraphicsView: public QGraphicsView
 {
 public:
-  MyGraphicsView(NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_euro,QGraphicsView *ptr_view=NULL, QWidget* parent = NULL);
+  MyGraphicsView(eGType gtype = eNoGraph, QGraphicsView *ptr_view=NULL, QString titre="Tbd", QColor coul_fond = Qt::yellow);
+  void DessineCourbeSql(QString msg_2, NE_FDJ::E_typeJeux leJeu, QColor cpen, int scale_y=1, int delta_y=0);
 
 public slots:
 
 protected:
   virtual void wheelEvent(QWheelEvent* event);
+
+private:
+  QGraphicsScene *Scene;
+  eGType scene_type;
 
 };
 

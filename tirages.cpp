@@ -5,14 +5,17 @@
 // Variables static de la classe
 stTiragesDef tirages::conf;
 QString *tirages::lib_col;
-NE_FDJ::E_typeJeux tirages::choixJeu;
+//NE_FDJ::E_typeJeux tirages::choixJeu;
+//NE_FDJ::E_typeJeux tirages.conf.choixJeu;
+//NE_FDJ::E_typeJeux tirages::conf::choixJeu;
 int **tirages::couverture;
 
 tirages::tirages(NE_FDJ::E_typeJeux jeu)
 {
   int zone, j;
 
-  choixJeu = jeu;
+  conf.choixJeu = jeu;
+  conf.pTir = this;
   switch(jeu)
   {
     case NE_FDJ::fdj_none:
@@ -109,7 +112,7 @@ void tirages::getConfig(stTiragesDef *priv_conf)
   QString *nomZone = NULL;
   stBornes *limites = NULL;
 
-
+  priv_conf->choixJeu = conf.choixJeu;
   priv_conf->nb_zone = conf.nb_zone;
   nbElmZone = new int [conf.nb_zone];
   limites = new stBornes [conf.nb_zone];
@@ -236,7 +239,7 @@ QString tirages::SelectSource(bool load)
   QString msg = "";
 
   // Choix du fichier contenant les tirages
-  switch(choixJeu)
+  switch(this->conf.choixJeu)
   {
     case NE_FDJ::fdj_euro:
       msg = "Fichier pour Euro million";

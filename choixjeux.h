@@ -20,13 +20,13 @@ public:
     bool fin_pgm;
 
 private slots:
-    void prepare_base(void);
+    void slot_ConfigureJeu(void);
 
 private:
     Ui::ChoixJeux *ui;
-    MainWindow *calcul;
-    NE_FDJ::E_typeJeux eChoixJeu;
-    bool load;
+    MainWindow  *EtudeJeu;
+    //NE_FDJ::E_typeJeux eChoixJeu;
+    //bool load;
 };
 
 #endif // CHOIXJEUX_H

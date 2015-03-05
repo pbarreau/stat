@@ -36,16 +36,34 @@ public slots:
   //void customMenuRequested(QPoint pos);
 };
 #endif
+#if 0
+class EtudierJeu
+{
+  Q_OBJECT
+public:
+  void EtudierJeu(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false, bool dest_bdd=false);
+};
+#endif
 
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false, bool dest_bdd=false);
+  MainWindow();
+  //explicit
+  void EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd);
+  void Prev_MainWindow(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false, bool dest_bdd=false);
   ~MainWindow();
-  //void closeEvent(QCloseEvent *event);
+  void closeEvent(QCloseEvent *event);
 
+private slots:
+  void pslot_newGame();
+  void pslot_open();
+  void pslot_close();
+  bool pslot_save();
+  bool pslot_saveAs();
+  void pslot_about();
 
 public slots:
   void ouvrir_mainwindows(void);
@@ -64,40 +82,66 @@ public slots:
   void ft5(void);
   void ft6(void);
   void slot_TST_DetailsCombinaison( const QModelIndex & index);
+  void slot_RechercherLesTirages(const QModelIndex & index);
+  void slot_MontreLeTirage(const QModelIndex & index);
 
 private:
+  void createActions();
+  void createMenus();
+  void createToolBars();
+  void createStatusBar();
+
   void fen_Voisins(void);
   void fen_LstCouv(void);
   void fen_Tirages(void);
   void fen_Ecarts(void);
   void fen_MesPossibles(void);
   void fen_Parites(void);
-  void fen_MaSelection(QTableView *qtv_MaSelection);
+  void fen_MaSelection(void);
   int BouleIdFromColId(int col_id);
   void ft_LancerTri(int tri_id);
   void TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets);
+  void TST_EtoileCombi(stTiragesDef *ref, QTabWidget *onglets);
   void TST_CombiRec(int k, QStringList &l, const QString &s, QStringList &ret);
-  void TST_MontrerDetailCombinaison(QString msg);
+  void TST_MontrerDetailCombinaison(QString msg, stTiragesDef *pTDef);
   void TST_Permute(QStringList *lst);
   void TST_PrivPermute(QStringList  *a, int i, int n, QStringList *ret);
   void TST_PrivPermute_2(QStringList *item, int n, QStringList  *ret);
   void TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemModel *p_out, QStandardItemModel *qsim_total, int *);
   int TST_TotBidDansGroupememnt(int bId, QString &st_grp);
   void TST_CombiVersTable (QStringList &combi, stTiragesDef *ref);
+  void TST_EtoilesVersTable (QStringList &combi, stTiragesDef *ref, double ponder);
   void TST_PonderationCombi(int delta);
   void TST_AffectePoidsATirage(stTiragesDef *ref);
   void TST_MettrePonderationSurTirages(void);
-  void TST_Graphe(QMdiArea *obj, NE_FDJ::E_typeJeux leJeu);
+  void TST_Graphe(stTiragesDef *pConf);
+  UnConteneurDessin *TST_Graphe_1(stTiragesDef *pConf);
+  UnConteneurDessin * TST_Graphe_2(stTiragesDef *pConf);
+  UnConteneurDessin * TST_Graphe_3(stTiragesDef *pConf);
+  void TST_LBcDistBr(int zn, stTiragesDef *pConf, int dist, QStringList boules, int bc);
+  void TST_MontreTirageAyantLaBoule(int zn,stTiragesDef *pConf, QStringList boules);
 
 private:
   Ui::MainWindow *ui;
   QMdiArea *zoneCentrale;
   GererBase *DB_tirages;
-  QLabel *nbSortie;
+
+  QMenu *fileMenu;
+  QMenu *helpMenu;
+  QToolBar *fileToolBar;
+  QAction *newAct;
+  QAction *openAct;
+  QAction *saveAct;
+  QAction *saveAsAct;
+  QAction *exitAct;
+  QAction *aboutAct;
+
+  QLabel **qlT_nbSorties;
   QTabWidget *tabWidget;
   QTableView *qtv_Tirages;
   QTableView *qtv_LstCouv;
-  QTableView *qtv_Voisins;
+  QTableView **qtvT_Voisins;
+  QTableView **qtvT_MaSelection;
   QTableView *qtv_Ecarts;
   QTableView *qtv_MesPossibles;
   QTableView *qtv_Parites;
@@ -105,9 +149,9 @@ private:
   QWidget *qw_LstCouv;
   QWidget *qw_Tirages;
   //QWidget *qw_LstCouv;
-  QStandardItemModel *qsim_Voisins ;
+  QStandardItemModel **qsimT_Voisins;
   QStandardItemModel *qsim_Ecarts ;
-  QStandardItemModel *qsim_MaSelection ;
+  QStandardItemModel **qsimT_MaSelection ;
 
   //MonToolTips *qsim_MesPossibles ;
   QStandardItemModel *qsim_MesPossibles ;
@@ -118,7 +162,8 @@ private:
 
   QGraphicsScene *qgr_scene;
   QGraphicsView *qgr_view;
-  MyGraphicsView *myview;
+  MyGraphicsView *myview[3];
+  UnConteneurDessin *une_vue[3];
 
   QMenu *menuTrieMesPossibles;
   QAction * tabAction[6];

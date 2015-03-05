@@ -22,6 +22,8 @@
 #define CL_TCOUV    "cz"    /// Nom table couverture de zone
 #define CL_TOARR    "oaz"   /// Nom table ordre arrivee zone
 #define CL_CCOUV    "c"     /// Nom colonne couverture
+#define TB_COMBI    "comb"
+#define TB_BASE     "tirages"
 
 namespace NE_FDJ{
   typedef enum _les_jeux_a_tirages
@@ -41,6 +43,8 @@ typedef struct _val_max_min
 
 typedef struct _tirages_def
 {
+  class tirages *pTir;
+  NE_FDJ::E_typeJeux choixJeu;
   int *nbElmZone;
   int *offsetFichier;
   QString *jour_tir;
@@ -63,7 +67,6 @@ private:
   static int **couverture;
 
 public:
-  static NE_FDJ::E_typeJeux choixJeu;
   static QString *lib_col;
   stUnTirage value;
 
@@ -119,11 +122,11 @@ public:
   void AfficherBase(stTiragesDef *pConf, QWidget *parent, QTableView *cibleview);
   void AfficherResultatCouverture(stTiragesDef *pConf, QWidget *parent, QTableView *cibleview);
   void DistributionSortieDeBoule(int boule, QStandardItemModel *modele, stTiragesDef *pRef);
-  void RechercheVoisin(int boule, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *fen);
-  int TotalRechercheVoisinADistanceDe(int dist, int voisin);
+  void RechercheVoisin(int boule, int zn, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *fen);
+  int TotalRechercheVoisinADistanceDe(int dist, int b_id, int zn, stTiragesDef *pConf, int voisin);
   void CouvertureBase(QStandardItemModel *dest, stTiragesDef *pRef);
   void MontrerLaBoule(int boule, QTableView *fen);
-  void MontrerBouleCouverture(int boule, stTiragesDef *pConf,QTableView *fen);
+  void MLB_DansCouverture(int boule, stTiragesDef *pConf,QTableView *fen);
   //void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QStandardItemModel *fen);
   void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QTableView *qfen);
   void MLB_MontreLesCommuns(stTiragesDef * pConf,QTableView *qfen);
@@ -132,18 +135,20 @@ public:
   void MLB_DansMesPossibles(int boule,QBrush couleur, QTableView *fen);
   int CouleurVersBid(QTableView *fen);
   void MLP_DansLaQtTabView(stTiragesDef *pConf, QString etude, QStandardItemModel *fen); // Montre la parite
-  void PopulateCellMenu(int b_id, int v_id, QMenu *menu, QObject *receiver);
-  void EffectuerTrieMesPossibles(int tri_id, int col_id, int b_id, QStandardItemModel * vue);
-  void TotalApparitionBoule(int boule, QStandardItemModel *modele);
+  void PopulateCellMenu(int b_id, int v_id, int zone, stTiragesDef *pConf, QMenu *menu, QObject *receiver);
+  void EffectuerTrieMesPossibles(int tri_id, int col_id, int b_id, stTiragesDef *pConf, QStandardItemModel * vue);
+  void TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, QStandardItemModel *modele);
   void CouvMontrerProbable(int i, int col_m,int col_v,QStandardItemModel *dest);
   //void RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTableView *base);
   //void RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *base);
   void MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen);
   void RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets);
   bool TST_Requete(QString &sql_msg, int lgn, QString &col, QStandardItemModel *&qsim_ptr);
-  void TST_RechercheVoisin(QStringList &boules, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *modele);
-  int TST_TotalRechercheVoisinADistanceDe(int dist, int v_id, QStringList &boules);
-  QString TST_ConstruireWhereData(QStringList &boules);
+  void TST_RechercheVoisin(QStringList &boules, int zn, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *modele);
+  int TST_TotalRechercheVoisinADistanceDe(int zn, stTiragesDef *pConf, int dist, int v_id, QStringList &boules);
+  QString TST_ConstruireWhereData(int zn, stTiragesDef *pConf,QStringList &boules);
+  QString TST_ZoneRequete(stTiragesDef *pConf, int zone,QString flag,int boule);
+  void TST_LBcDistBr(int zn,stTiragesDef *pConf,int dist, int br,int bc);
 
 public slots:
   void slot_DetailsCombinaison(const QModelIndex & index) ;
@@ -151,17 +156,17 @@ public slots:
 private:
   void combirec(int k, QStringList &l, const QString &s, QStringList &ret);
   void RangerValeurResultat(int &lgn, QString &msg, int &val, QStandardItemModel *&qsim_ptr);
-  void AfficherMaxOccurenceBoule(int boule,QLabel *l_nb);
-  bool CreerTableVoisinsDeBoule(int b_id, int max_voisins);
-  void RechercherVoisinDeLaBoule(int b_id, int max_voisins);
-  void MontrerResultatRechercheVoisins(QStandardItemModel *modele,int b_id);
+  void AfficherMaxOccurenceBoule(int boule, int zn, stTiragesDef *pConf, QLabel *l_nb);
+  bool CreerTableVoisinsDeBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins);
+  void RechercherVoisinDeLaBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins);
+  void MontrerResultatRechercheVoisins(QStandardItemModel *modele, int zone, stTiragesDef *pConf, int b_id);
   void MontrerDetailCombinaison(QString msg);
 
 private:
   QSqlDatabase db;
   QSqlTableModel *tbl_model;
   QSqlTableModel *tbl_couverture;
-  int iAffichageVoisinEnCoursDeLaBoule;
+  int iAffichageVoisinEnCoursDeLaBoule[2];
   bool lieu;
 };
 

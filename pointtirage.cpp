@@ -17,7 +17,7 @@ stTiragesDef PointTirage::tirDef;
 QList<QGraphicsLineItem *> PointTirage::lst_lignes;
 
 
-PointTirage::PointTirage(NE_FDJ::E_typeJeux leJeu) :
+PointTirage::PointTirage(NE_FDJ::E_typeJeux leJeu, eGType sceneType) :
   QGraphicsItem()
 {
   tirRef = new tirages(leJeu);
@@ -27,15 +27,22 @@ PointTirage::PointTirage(NE_FDJ::E_typeJeux leJeu) :
 
   tirDef = mesdef;
 
-#if 0
-  QString tir_msg = tirRef->qs_zColBaseName(0);
-  tir_msg = tir_msg + "," + tirRef->qs_zColBaseName(1);
-  tir_msg = "select " + tir_msg + " from tirages "
-            "where (tirages.id ="
-            +QString::number(1)+");";
-#endif
-  //QString msg = tirRef->s_LibColAnalyse(&tirDef);
-  //msg = tirRef->qs_zColBaseName(0);
+  switch(sceneType)
+  {
+    case eRepartition:
+      ptrFunc = &PointTirage::TST_GetTirageOrdreFromPoint;
+      break;
+    case eParite:
+      ptrFunc = &PointTirage::TST_GetTiragePariteFromPoint;
+      break;
+    case eGroupe:
+      ptrFunc = &PointTirage::TST_GetTirageGroupeFromPoint;
+      break;
+    default:
+      ptrFunc = NULL;
+      break;
+  }
+
   //setFlag(ItemIsMovable);
   //setFlag(ItemSendsGeometryChanges);
   setFlags(ItemIsSelectable);
@@ -77,7 +84,7 @@ void PointTirage::TST_TracerLigne(QGraphicsSceneMouseEvent *event)
 
   QPointF pos_item = scenePos();
   QPoint pos_item_screen = event->buttonDownScreenPos(Qt::RightButton);
-  int poids = pos_item.y()/C_COEF_Y;
+  //int poids = pos_item.y()/C_COEF_Y;
   int taille = this->scene()->sceneRect().width();
   int coord = pos_item.y()*C_COEF_Y;
 
@@ -93,132 +100,206 @@ void PointTirage::TST_TracerLigne(QGraphicsSceneMouseEvent *event)
   QToolTip::showText(pos_item_screen,"QString::number(poids",0);
 }
 
-void PointTirage::TST_ToolTipsInfotirage(QGraphicsSceneMouseEvent *event)
+QString PointTirage::TST_GetTirageFromPoint(int x_val)
 {
   bool status = false;
   QSqlQuery sql_1;
+  QString msg = "";
+  QString req = "";
+
+  req = tirRef->qs_zColBaseName(0);
+  req = req + "," + tirRef->qs_zColBaseName(1);
+  req = "select jour_tirage,date_tirage,"
+        + req
+        + " from tirages "
+        "where (tirages.id ="
+        +QString::number(x_val)+");";
+
+  status = sql_1.exec(req);
+  if(status)
+  {
+    sql_1.first();
+
+    req ="";
+    QString st_item ="";
+    int nb_item = sql_1.record().count();
+
+    for(int i = 0; i<nb_item; i++)
+    {
+      st_item = sql_1.value(i).toString();
+
+      req=req +st_item+",";
+
+      if(i==1)
+      {
+        req.simplified();
+        req.replace(","," ");
+        req = req + "\r\nT:";
+      }
+
+      if(i==tirDef.nbElmZone[0]+1)
+      {
+        req = req + "[";
+      }
+    }
+    req.remove(req.length()-1,1);
+    req = req + "]";
+    msg = req;
+
+  }
+  else
+  {
+    msg = "Erreur requete sur tirage !!";
+  }
+  return msg;
+}
+
+QString PointTirage::TST_GetTiragePariteFromPoint(int x_val)
+{
+  bool status = false;
+  QSqlQuery sql_1;
+  QString msg = "";
+
+  msg = "select bp,ep from tirages where (tirages.id ="
+        +QString::number(x_val)+");";
+
+  status = sql_1.exec(msg);
+  if(status)
+  {
+    sql_1.first();
+    msg = "P:" + sql_1.value(0).toString() +
+          "[" + sql_1.value(1).toString() + "]";
+  }
+  else
+  {
+    msg = "Erreur Req Parite";
+  }
+  return msg;
+}
+
+QString PointTirage::TST_GetTirageOrdreFromPoint(int x_val)
+{
+  bool status = false;
+  QSqlQuery sql_1;
+  QString msg = "";
+
+  msg = tirRef->s_LibColAnalyse(&tirDef);
+  msg = "select "
+        + msg + " from analyses "
+        "where (analyses.id ="
+        +QString::number(x_val)+");";
+
+  status = sql_1.exec(msg);
+  if(status)
+  {
+    sql_1.first();
+    if(sql_1.isValid())
+    {
+
+      msg ="";
+      int nb_item = sql_1.record().count();
+
+      for(int i = 0; i<nb_item; i++)
+      {
+        msg=msg +sql_1.value(i).toString()+",";
+        if(i==(tirDef.limites[0].max/10))
+        {
+          msg = msg + "[";
+        }
+      }
+      msg.remove(msg.length()-1,1);
+      msg = "R:" +msg + "]";
+    }
+    else
+    {
+      msg = "Req ordre elem 1 error !!";
+    }
+
+  }
+  else
+  {
+    msg = "Erreur requete sur ordre !!";
+  }
+
+  return msg;
+}
+
+QString PointTirage::TST_GetTirageGroupeFromPoint(int x_val)
+{
+  bool status = false;
+  QSqlQuery sql_1;
+  QString msg = "";
+
+  msg = "select bg,eg from tirages where (tirages.id ="
+        +QString::number(x_val)+");";
+
+  status = sql_1.exec(msg);
+  if(status)
+  {
+    sql_1.first();
+    msg = "G:" + sql_1.value(0).toString() +
+          "[" + sql_1.value(1).toString() + "]";
+  }
+  else
+  {
+    msg = "Erreur requete sur Groupe !!";
+  }
+
+  return msg;
+}
+
+void PointTirage::TST_ToolTipsInfotirage(QGraphicsSceneMouseEvent *event)
+{
   QPointF pos_item = this->scenePos();
   QPoint pos_item_screen = event->buttonDownScreenPos(Qt::LeftButton);
 
 
   int lgntir = pos_item.x()/C_COEF_X;
-  static int prev_x = 0;
+  static int prev_x = -1;
 
   QString msg = "";
   static QString msg_prev = "";
 
   if(prev_x != lgntir )
   {
-    // Recuperer le tools tips dans la base
-    msg = tirRef->s_LibColAnalyse(&tirDef);
-    msg = "select "
-          + msg + " from analyses "
-          "where (analyses.id ="
-          +QString::number(lgntir)+");";
+    pos_item_screen = event->screenPos();
+    QString st_CR = "\r\n";
+    QString st_resu_func = "";
 
-    status = sql_1.exec(msg);
-    if(status)
-    {
-      sql_1.first();
-      if(sql_1.isValid())
-      {
-        msg ="";
-        QString tir_msg = "";
-        QString nbParite = "";
+    // recup du tirage
+    QString st_tir = TST_GetTirageFromPoint(lgntir);
 
-        for(int i = 0; i<sql_1.record().count(); i++)
-        {
-          msg=msg +sql_1.value(i).toString()+",";
-          if(i==(tirDef.limites[0].max/10))
-          {
-            msg = msg + "[";
-          }
-        }
-        msg.remove(msg.length()-1,1);
-        msg = "R:" +msg + "]";
-        // ---------
-        // Recuperation du tirage
-        tir_msg = tirRef->qs_zColBaseName(0);
-        tir_msg = tir_msg + "," + tirRef->qs_zColBaseName(1);
-        tir_msg = "select jour_tirage,date_tirage,"
-                  + tir_msg
-                  + ", bp, ep "
-                  + " from tirages "
-                  "where (tirages.id ="
-                  +QString::number(lgntir)+");";
-        status = sql_1.exec(tir_msg);
-        if(status)
-        {
-          sql_1.first();
-          if(sql_1.isValid())
-          {
-            tir_msg ="";
-            QString st_item ="";
-            int nb_item = sql_1.record().count();
-
-            for(int i = 0; i<nb_item; i++)
-            {
-              st_item = sql_1.value(i).toString();
-
-              if(i<nb_item -2)
-              {
-                tir_msg=tir_msg +st_item+",";
-
-                if(i==1)
-                {
-                  tir_msg.simplified();
-                  tir_msg.replace(","," ");
-                  tir_msg = tir_msg + "\r\nT:";
-                }
-
-                if(i==tirDef.nbElmZone[0]-1+2)
-                {
-                  tir_msg = tir_msg + "[";
-                }
-
-              }
-
-              else
-              {
-                // Recuperation du nombre de boules pairs
-                nbParite = nbParite + st_item + ",[";
-              }
-            }
-            tir_msg.remove(tir_msg.length()-1,1);
-            tir_msg = tir_msg + "]";
-
-            nbParite.remove(nbParite.length()-2,2);
-            nbParite = "P:"+nbParite+"]\r\n";
-          }
-        }
-        else
-        {
-          tir_msg = "err tir !";
-        }
-        msg = tir_msg +"\r\n" + nbParite + msg;
-        // -------------
-      }
-
+    // Appeler la fonction adaptee a la fenetre graphique
+    if(ptrFunc !=NULL){
+      st_resu_func = (this->*ptrFunc)(lgntir);
     }
-    else
-    {
-      msg = "No data";
-    }
+    msg = st_tir + st_CR + st_resu_func;
 
+#if 0
+    // recup parite
+    QString st_tir_pa = TST_GetTiragePariteFromPoint(lgntir);
+
+    // recup repartition
+    QString st_tir_ordre = TST_GetTirageOrdreFromPoint(lgntir);
+
+    // recup groupe
+    QString st_tir_gp = TST_GetTirageGroupeFromPoint(lgntir);
+
+    msg = st_tir + st_CR +
+          st_tir_pa + st_CR +
+          st_tir_ordre + st_CR +
+          st_tir_gp;
+#endif
     msg_prev = msg;
   }
   else
   {
     msg = msg_prev;
   }
-#ifndef QT_NO_DEBUG
-  qDebug() << "Click m1:" << pos_item;
-  qDebug() << "Abs:" << pos_item.x()/C_COEF_X;
-  qDebug() << "Ord:" << pos_item.y()/C_COEF_Y;
-#endif
-  QToolTip::showText(pos_item_screen,msg,0);
 
+  QToolTip::showText(pos_item_screen,msg,0);
 }
+
 
 void PointTirage::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
