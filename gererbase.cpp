@@ -137,15 +137,18 @@ void GererBase::AfficherBase(stTiragesDef *pConf,QWidget *parent, QTableView *ci
   }
 
   // Si il y a d'autre info les masquer
-  for(j=i;j<=(tbl_model->columnCount());j++)
+  for(j=i;j<=(tbl_model->columnCount()-2);j++)
   {
     //cibleview->hideColumn(j);
     cibleview->setColumnWidth(j,30);
   }
 
-  cibleview->setMinimumHeight(390);
-  parent->setMinimumWidth(400);
-  parent->setMinimumHeight(400);
+  // Jour ?
+  cibleview->setColumnWidth(j,90);
+
+  cibleview->setMinimumHeight(450);
+  parent->setMinimumWidth(500);
+  parent->setMinimumHeight(500);
 }
 
 
@@ -178,9 +181,9 @@ void GererBase::AfficherResultatCouverture(stTiragesDef *pConf,QWidget *parent, 
     cibleview->setColumnWidth(j,30);
   }
 
-  cibleview->setMinimumHeight(390);
-  parent->setMinimumWidth(400);
-  parent->setMinimumHeight(400);
+  cibleview->setMinimumHeight(450);
+  parent->setMinimumWidth(500);
+  parent->setMinimumHeight(500);
 }
 
 void GererBase::MontrerLaBoule(int boule, QTableView *fen)
