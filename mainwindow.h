@@ -76,12 +76,18 @@ public slots:
     //void slot_CouvertureSelChanged(const QItemSelection &now, const QItemSelection &prev);
     void customMenuRequested(QPoint pos);
     void tablev_customContextMenu(QPoint pos);
-    void ft1(void);
-    void ft2(void);
-    void ft3(void);
-    void ft4(void);
-    void ft5(void);
-    void ft6(void);
+    void pop_selAbsents(QPoint pos);
+    void slot_ft1Possibles(void);
+    void slot_ft2Possibles(void);
+    void slot_ft3Possibles(void);
+    void slot_ft4Possibles(void);
+    void slot_ft5Possibles(void);
+    void slot_ft6Possibles(void);
+    void slot_ftAbs1(void);
+    void slot_ftAbs2(void);
+    void slot_ftAbs3(void);
+    void slot_ftAbs4(void);
+    void slot_ftAbs5(void);
     void slot_TST_DetailsCombinaison( const QModelIndex & index);
     void slot_RechercherLesTirages(const QModelIndex & index);
     void slot_MontreLeTirage(const QModelIndex & index);
@@ -99,8 +105,9 @@ private:
     void fen_MesPossibles(void);
     void fen_Parites(void);
     void fen_MaSelection(void);
-    int BouleIdFromColId(int col_id);
+    int BidFCId_MesPossibles(int col_id, QTableView *tbv_ptr);
     void ft_LancerTri(int tri_id);
+    void ft_TriDesAbsents(int tri_id);
     void TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets);
     void TST_EtoileCombi(stTiragesDef *ref, QTabWidget *onglets);
     void TST_CombiRec(int k, QStringList &l, const QString &s, QStringList &ret);
@@ -122,7 +129,10 @@ private:
     void TST_LBcDistBr(int zn, stTiragesDef *pConf, int dist, QStringList boules, int bc);
     void TST_MontreTirageAyantLaBoule(int zn,stTiragesDef *pConf, QStringList boules);
     QFormLayout * MonLayout_ChoixPossible(void);
+    QFormLayout * MonLayout_Absent(void);
     QFormLayout * MonLayout_Ecarts(void);
+    QFormLayout * MonLayout_VoisinsPresent(void);
+    QFormLayout * MonLayout_VoisinsAbsent(void);
 
 private:
     Ui::MainWindow *ui;
@@ -139,29 +149,34 @@ private:
     QAction *exitAct;
     QAction *aboutAct;
 
-    QLabel **qlT_nbSorties;
-    QTabWidget *tabWidget;
-    QTableView *Gtv_Tirages;
-    QTableView *Gtv_CouvTirages;
-    QTableView **qtvT_Voisins;
-    QTableView **qtvT_MaSelection;
-    QTableView *Gtv_Ecarts;
-    QTableView *Gtv_MesPossibles;
-    QTableView *qtv_Parites;
+    QLabel **G_lab_nbSorties;
+    QLabel **G_lab_nbAbsents;
+    QTabWidget *G_tbw_MontabWidget;
+    QTableView *G_tbv_Tirages;
+    QTableView *G_tbv_CouvTirages;
+    QTableView **G_tbv_Voisins;
+    QTableView **G_tbv_Absents;
+    QTableView **G_tbv_MaSelection;
+    QTableView *G_tbv_Ecarts;
+    QTableView *G_tbv_MesPossibles;
+    QTableView *G_tbv_LesAbsents;
+    QTableView *G_tbv_Parites;
     //void **tabqtv;
-    QWidget *Gw_CouvTirages;
-    QWidget *Gw_Tirages;
+    QWidget *G_w_CouvTirages;
+    QWidget *G_w_Tirages;
     //QWidget *qw_LstCouv;
-    QStandardItemModel **qsimT_Voisins;
-    QStandardItemModel *Gsim_Ecarts ;
-    QStandardItemModel **qsimT_MaSelection ;
+    QStandardItemModel **G_sim_Voisins;
+    QStandardItemModel **G_sim_Absents;
+    QStandardItemModel *G_sim_Ecarts ;
+    QStandardItemModel **G_sim_MaSelection ;
 
     //MonToolTips *qsim_MesPossibles ;
-    QStandardItemModel *Gsim_MesPossibles ;
+    QStandardItemModel *G_sim_MesPossibles ;
+    QStandardItemModel *G_sim_LesAbsents ;
 
-    QStandardItemModel *qsim_Parites ;
-    QStandardItemModel *qsim_Ensemble_1 ;
-    QStandardItemModel *qsim_ud;
+    QStandardItemModel *G_sim_Parites ;
+    QStandardItemModel *G_sim_Ensemble_1 ;
+    QStandardItemModel *G_sim_ud;
 
     QGraphicsScene *qgr_scene;
     QGraphicsView *qgr_view;
@@ -172,6 +187,12 @@ private:
     QAction * Gaci_MesPossibles[6];
     QActionGroup * Gacg_MesTries;
     int colonne_tri;
+
+    QMenu *G_men_TrieMesAbsents;
+    QAction * G_aci_MesAbsents[5];
+    QActionGroup * G_acg_MesAbsents;
+    int G_colTrieAbsent;
+
     bool closewindows;
 };
 

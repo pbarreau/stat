@@ -100,14 +100,14 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     ///---------------------
     // Recherche de combinaison A deplacer ?
     //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
-    TST_EtoileCombi(&configJeu,tabWidget);
-    TST_RechercheCombi(&configJeu,tabWidget);
+    TST_EtoileCombi(&configJeu,G_tbw_MontabWidget);
+    TST_RechercheCombi(&configJeu,G_tbw_MontabWidget);
     //QApplication::quit();
 
     //return;
 
     // Ordre arrivee des boules ?
-    DB_tirages->CouvertureBase(Gsim_Ecarts,&configJeu);
+    DB_tirages->CouvertureBase(G_sim_Ecarts,&configJeu);
 
 
 
@@ -116,13 +116,13 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     int zn = 0;
     for(i=1;i<=configJeu.limites[zn].max;i++){
         // Remplir Sous Fen les ecarts
-        DB_tirages->DistributionSortieDeBoule(i,Gsim_Ecarts,&configJeu);
+        DB_tirages->DistributionSortieDeBoule(i,G_sim_Ecarts,&configJeu);
         // Montrer les valeurs probable
-        DB_tirages->CouvMontrerProbable(i,3,1,Gsim_Ecarts);
+        DB_tirages->CouvMontrerProbable(i,3,1,G_sim_Ecarts);
 
 
         // Calcul occurence de cette boule
-        DB_tirages->TotalApparitionBoule(i,&configJeu, zn, qsimT_Voisins[zn]);
+        DB_tirages->TotalApparitionBoule(i,&configJeu, zn, G_sim_Voisins[zn]);
     }
 
     // --
@@ -130,25 +130,25 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     for(i=1;i<=configJeu.limites[zn].max;i++)
     {
         // Calcul occurence de cette boule
-        DB_tirages->TotalApparitionBoule(i,&configJeu, zn, qsimT_Voisins[zn]);
+        DB_tirages->TotalApparitionBoule(i,&configJeu, zn, G_sim_Voisins[zn]);
     }
 
     // ----------------------------
 
     /// fin rem 2
     // Remplir la sousfenetre base de données
-    DB_tirages->AfficherBase(&configJeu,Gw_Tirages,Gtv_Tirages);
+    DB_tirages->AfficherBase(&configJeu,G_w_Tirages,G_tbv_Tirages);
     /// rem 3
 
 
     // Remplir la sous fenetre resultat couverture
-    DB_tirages->AfficherResultatCouverture(&configJeu,Gw_CouvTirages,Gtv_CouvTirages);
+    DB_tirages->AfficherResultatCouverture(&configJeu,G_w_CouvTirages,G_tbv_CouvTirages);
 
 
     // Remplir la sous fenetre de parite
-    DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_PAIR, qsim_Parites);
-    DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_SGRP, qsim_Ensemble_1);
-    DB_tirages->MLP_UniteDizaine(&configJeu, qsim_ud);
+    DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_PAIR, G_sim_Parites);
+    DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_SGRP, G_sim_Ensemble_1);
+    DB_tirages->MLP_UniteDizaine(&configJeu, G_sim_ud);
 
     TST_Graphe(&configJeu);
     /// ---- fin rem 3
@@ -317,54 +317,54 @@ void MainWindow::fen_Tirages(void)
     // ------------------
 
     // Info pour Tirages
-    Gw_Tirages = new QWidget;
-    Gtv_Tirages = new QTableView;
+    G_w_Tirages = new QWidget;
+    G_tbv_Tirages = new QTableView;
     QFormLayout *lay_tirages = new QFormLayout;
 
     // Info pour couvertures Tirages
-    Gw_CouvTirages = new QWidget;
-    Gtv_CouvTirages = new QTableView;
+    G_w_CouvTirages = new QWidget;
+    G_tbv_CouvTirages = new QTableView;
     //QFormLayout *lay_couvTirages = new QFormLayout;
 
     // Gestion du QTableView des Tirages
-    Gtv_Tirages->setSelectionMode(QAbstractItemView::SingleSelection);
-    Gtv_Tirages->setSelectionBehavior(QAbstractItemView::SelectItems);
-    Gtv_Tirages->setStyleSheet("QTableView {selection-background-color: red;}");
-    Gtv_Tirages->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    Gtv_Tirages->setAlternatingRowColors(true);
+    G_tbv_Tirages->setSelectionMode(QAbstractItemView::SingleSelection);
+    G_tbv_Tirages->setSelectionBehavior(QAbstractItemView::SelectItems);
+    G_tbv_Tirages->setStyleSheet("QTableView {selection-background-color: red;}");
+    G_tbv_Tirages->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    G_tbv_Tirages->setAlternatingRowColors(true);
     //qtv_Tirages->setMinimumHeight(800);
     //Gtv_Tirages->setMinimumWidth(460);
     //Gtv_Tirages->setFixedSize(600,600);
 
-    lay_ForTop[0]->addWidget(Gtv_Tirages);
+    lay_ForTop[0]->addWidget(G_tbv_Tirages);
     wid_ForTop[0]->setLayout(lay_ForTop[0]);
 
 
     // Gestion du QTableView de Couvertures Tirages
-    Gtv_CouvTirages->setSelectionMode(QAbstractItemView::MultiSelection);
-    Gtv_CouvTirages->setSelectionBehavior(QAbstractItemView::SelectItems);
-    Gtv_CouvTirages->setStyleSheet("QTableView {selection-background-color: red;}");
-    Gtv_CouvTirages->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    Gtv_CouvTirages->setAlternatingRowColors(true);
+    G_tbv_CouvTirages->setSelectionMode(QAbstractItemView::MultiSelection);
+    G_tbv_CouvTirages->setSelectionBehavior(QAbstractItemView::SelectItems);
+    G_tbv_CouvTirages->setStyleSheet("QTableView {selection-background-color: red;}");
+    G_tbv_CouvTirages->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    G_tbv_CouvTirages->setAlternatingRowColors(true);
 
-    lay_ForTop[1]->addWidget(Gtv_CouvTirages);
+    lay_ForTop[1]->addWidget(G_tbv_CouvTirages);
     wid_ForTop[1]->setLayout(lay_ForTop[1]);
 
     //lay_couvTirages->addWidget(Gtv_CouvTirages);
     //Gw_CouvTirages->setLayout(lay_couvTirages);
 
     lay_tirages->addWidget(tab_Top);
-    Gw_Tirages->setLayout(lay_tirages);
-    Gw_Tirages->setWindowTitle("Tirages");
+    G_w_Tirages->setLayout(lay_tirages);
+    G_w_Tirages->setWindowTitle("Tirages");
     //Gw_Tirages->setMinimumHeight(420);
-    Gw_Tirages->setFixedSize(600,500);
+    G_w_Tirages->setFixedSize(600,500);
 
-    zoneCentrale->addSubWindow(Gw_Tirages);
-    Gw_Tirages->setVisible(true);
+    zoneCentrale->addSubWindow(G_w_Tirages);
+    G_w_Tirages->setVisible(true);
     //QMdiSubWindow *sousFenetre1 = zoneCentrale->addSubWindow(AfficherBase);
 
     // Double click dans sous fenetre base
-    connect( Gtv_Tirages, SIGNAL( doubleClicked(QModelIndex)) ,
+    connect( G_tbv_Tirages, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( slot_ChercheVoisins( QModelIndex) ) );
 
 
@@ -372,26 +372,26 @@ void MainWindow::fen_Tirages(void)
 
 void MainWindow::fen_LstCouv(void)
 {
-    Gw_CouvTirages = new QWidget;
-    Gtv_CouvTirages = new QTableView;
+    G_w_CouvTirages = new QWidget;
+    G_tbv_CouvTirages = new QTableView;
     QFormLayout *lay_couvTirages = new QFormLayout;
     //qtv_LstCouv->itemDelegate(new DelegationDeCouleur(qtv_LstCouv));
 
-    lay_couvTirages->addWidget(Gtv_CouvTirages);
-    Gw_CouvTirages->setLayout(lay_couvTirages);
-    Gw_CouvTirages->setWindowTitle("Couvertures des tirages");
+    lay_couvTirages->addWidget(G_tbv_CouvTirages);
+    G_w_CouvTirages->setLayout(lay_couvTirages);
+    G_w_CouvTirages->setWindowTitle("Couvertures des tirages");
 
 
     // Gestion du QTableView
-    Gtv_CouvTirages->setSelectionMode(QAbstractItemView::MultiSelection);
-    Gtv_CouvTirages->setSelectionBehavior(QAbstractItemView::SelectItems);
-    Gtv_CouvTirages->setStyleSheet("QTableView {selection-background-color: red;}");
-    Gtv_CouvTirages->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    Gtv_CouvTirages->setAlternatingRowColors(true);
+    G_tbv_CouvTirages->setSelectionMode(QAbstractItemView::MultiSelection);
+    G_tbv_CouvTirages->setSelectionBehavior(QAbstractItemView::SelectItems);
+    G_tbv_CouvTirages->setStyleSheet("QTableView {selection-background-color: red;}");
+    G_tbv_CouvTirages->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    G_tbv_CouvTirages->setAlternatingRowColors(true);
 
     // Ratacher cette sous fenetre
-    zoneCentrale->addSubWindow(Gw_CouvTirages);
-    Gw_CouvTirages->setVisible(true);
+    zoneCentrale->addSubWindow(G_w_CouvTirages);
+    G_w_CouvTirages->setVisible(true);
 
 #if 0
     // Selection a change
@@ -401,15 +401,234 @@ void MainWindow::fen_LstCouv(void)
 #endif
 
 }
+
+QFormLayout * MainWindow::MonLayout_VoisinsPresent()
+{
+    QFormLayout *lay_return = new QFormLayout;
+
+    int nb_zn = configJeu.nb_zone;
+    QTabWidget *tabWidget = new QTabWidget;
+
+    G_tbv_Voisins = new QTableView*[nb_zn];
+    G_sim_Voisins= new QStandardItemModel*[nb_zn];
+    G_lab_nbSorties = new QLabel*[nb_zn];
+    QFormLayout **layT_Voisin = new QFormLayout*[nb_zn];
+    QWidget **tmpT_Widget = new QWidget*[nb_zn];
+
+    for(int zn = 0;zn<nb_zn;zn++)
+    {
+        QTableView *tmpTblView = new QTableView;
+        QStandardItemModel * tmpStdItem =  new QStandardItemModel(configJeu.limites[zn].max,7);
+        QLabel *tmpLabel = new QLabel;
+        QFormLayout *tmpLayout = new QFormLayout;
+        QWidget *tmpWidget = new QWidget;
+
+        G_sim_Voisins[zn]= tmpStdItem;
+        G_tbv_Voisins[zn] = tmpTblView;
+        G_lab_nbSorties[zn]= tmpLabel;
+        layT_Voisin[zn] = tmpLayout;
+        tmpT_Widget[zn] = tmpWidget;
+
+        // entete du modele
+        G_sim_Voisins[zn]->setHeaderData(0,Qt::Horizontal,"B");
+        G_sim_Voisins[zn]->setHeaderData(1,Qt::Horizontal,"V:r0");
+        G_sim_Voisins[zn]->setHeaderData(2,Qt::Horizontal,"V:+1");
+        G_sim_Voisins[zn]->setHeaderData(3,Qt::Horizontal,"V:+2");
+        G_sim_Voisins[zn]->setHeaderData(4,Qt::Horizontal,"V:-1");
+        G_sim_Voisins[zn]->setHeaderData(5,Qt::Horizontal,"V:-2");
+        G_sim_Voisins[zn]->setHeaderData(6,Qt::Horizontal,"NbS");
+
+        // Ecriture du numero de boule et reservation item position
+        for(int i=1;i<=configJeu.limites[zn].max;i++)
+        {
+            QStandardItem *item = new QStandardItem();
+            item->setData(i,Qt::DisplayRole);
+            G_sim_Voisins[zn]->setItem(i-1,0,item);
+            for (int j =1; j<7;j++)
+            {
+                QStandardItem *item_2 = new QStandardItem();
+                G_sim_Voisins[zn]->setItem(i-1,j,item_2);
+            }
+        }
+
+        G_tbv_Voisins[zn]->setModel(G_sim_Voisins[zn]);
+        for(int i=0;i<=6;i++)
+        {
+            G_tbv_Voisins[zn]->setColumnWidth(i,50);
+        }
+
+        //qtvT_Voisins[zn]->setMinimumHeight(390);
+        //qtvT_Voisins[zn]->setMaximumWidth(400);
+
+        G_tbv_Voisins[zn]->setSortingEnabled(true);
+        G_tbv_Voisins[zn]->sortByColumn(0,Qt::AscendingOrder);
+        G_tbv_Voisins[zn]->setAlternatingRowColors(true);
+        G_tbv_Voisins[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        G_tbv_Voisins[zn]->setSelectionBehavior(QAbstractItemView::SelectItems);
+        //qtvT_Voisins[zn]->setSelectionMode(QAbstractItemView::SingleSelection);
+        //qtvT_Voisins[zn]->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
+        G_tbv_Voisins[zn]->setFixedSize(395,390);
+
+        G_lab_nbSorties[zn]->setText("Nb total de sorties:");
+        layT_Voisin[zn]->addWidget(G_lab_nbSorties[zn]);
+        layT_Voisin[zn]->addWidget(G_tbv_Voisins[zn]);
+
+        tmpT_Widget[zn]->setLayout(layT_Voisin[zn]);
+        //tmpT_Widget[zn]->setMaximumWidth(420);
+        tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+
+        // click dans fenetre voisin pour afficher boule
+        connect( G_tbv_Voisins[zn], SIGNAL( clicked(QModelIndex)) ,
+                 this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
+
+        // double click dans fenetre voisin pour afficher details boule
+        connect( G_tbv_Voisins[zn], SIGNAL( doubleClicked(QModelIndex)) ,
+                 this, SLOT( slot_RechercherLesTirages( QModelIndex) ) );
+
+    }
+
+    // Memo du design
+    lay_return->addWidget(tabWidget);
+
+    return(lay_return);
+}
+//----------
+QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
+{
+    QFormLayout *lay_return = new QFormLayout;
+
+    int nb_zn = configJeu.nb_zone;
+    QTabWidget *tab_conteneur = new QTabWidget;
+
+    G_tbv_Absents = new QTableView*[nb_zn];
+    G_sim_Absents= new QStandardItemModel*[nb_zn];
+    G_lab_nbAbsents = new QLabel*[nb_zn];
+    QFormLayout **layT_Absents = new QFormLayout*[nb_zn];
+    QWidget **tmpT_Widget = new QWidget*[nb_zn];
+
+    for(int zn = 0;zn<nb_zn;zn++)
+    {
+        QTableView *tmpTblView = new QTableView;
+        QStandardItemModel * tmpStdItem =  new QStandardItemModel(configJeu.limites[zn].max,7);
+        QLabel *tmpLabel = new QLabel;
+        QFormLayout *tmpLayout = new QFormLayout;
+        QWidget *tmpWidget = new QWidget;
+
+        G_sim_Absents[zn]= tmpStdItem;
+        G_tbv_Absents[zn] = tmpTblView;
+        G_lab_nbAbsents[zn]= tmpLabel;
+        layT_Absents[zn] = tmpLayout;
+        tmpT_Widget[zn] = tmpWidget;
+
+        // entete du modele
+        G_sim_Absents[zn]->setHeaderData(0,Qt::Horizontal,"B");
+        G_sim_Absents[zn]->setHeaderData(1,Qt::Horizontal,"V:r0");
+        G_sim_Absents[zn]->setHeaderData(2,Qt::Horizontal,"V:+1");
+        G_sim_Absents[zn]->setHeaderData(3,Qt::Horizontal,"V:+2");
+        G_sim_Absents[zn]->setHeaderData(4,Qt::Horizontal,"V:-1");
+        G_sim_Absents[zn]->setHeaderData(5,Qt::Horizontal,"V:-2");
+        G_sim_Absents[zn]->setHeaderData(6,Qt::Horizontal,"NbS");
+
+        // Ecriture du numero de boule et reservation item position
+        for(int i=1;i<=configJeu.limites[zn].max;i++)
+        {
+            QStandardItem *item = new QStandardItem();
+            item->setData(i,Qt::DisplayRole);
+            G_sim_Absents[zn]->setItem(i-1,0,item);
+            for (int j =1; j<7;j++)
+            {
+                QStandardItem *item_2 = new QStandardItem();
+                G_sim_Absents[zn]->setItem(i-1,j,item_2);
+            }
+        }
+
+        G_tbv_Absents[zn]->setModel(G_sim_Absents[zn]);
+        for(int i=0;i<=6;i++)
+        {
+            G_tbv_Absents[zn]->setColumnWidth(i,50);
+        }
+
+        //qtvT_Voisins[zn]->setMinimumHeight(390);
+        //qtvT_Voisins[zn]->setMaximumWidth(400);
+
+        G_tbv_Absents[zn]->setSortingEnabled(true);
+        G_tbv_Absents[zn]->sortByColumn(0,Qt::AscendingOrder);
+        G_tbv_Absents[zn]->setAlternatingRowColors(true);
+        G_tbv_Absents[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        G_tbv_Absents[zn]->setSelectionBehavior(QAbstractItemView::SelectItems);
+        //qtvT_Voisins[zn]->setSelectionMode(QAbstractItemView::SingleSelection);
+        //qtvT_Voisins[zn]->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
+        G_tbv_Absents[zn]->setFixedSize(395,390);
+
+        G_lab_nbAbsents[zn]->setText("Nb total de sorties:");
+        layT_Absents[zn]->addWidget(G_lab_nbAbsents[zn]);
+        layT_Absents[zn]->addWidget(G_tbv_Absents[zn]);
+
+        tmpT_Widget[zn]->setLayout(layT_Absents[zn]);
+        //tmpT_Widget[zn]->setMaximumWidth(420);
+        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+
+        // click dans fenetre voisin pour afficher boule
+        connect( G_tbv_Absents[zn], SIGNAL( clicked(QModelIndex)) ,
+                 this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
+
+        // double click dans fenetre voisin pour afficher details boule
+        connect( G_tbv_Absents[zn], SIGNAL( doubleClicked(QModelIndex)) ,
+                 this, SLOT( slot_RechercherLesTirages( QModelIndex) ) );
+
+    }
+
+    // Memo du design
+    lay_return->addWidget(tab_conteneur);
+
+    return(lay_return);
+}
+//--------
+void MainWindow::fen_Voisins(void)
+{
+    QWidget *qw_Voisins = new QWidget;
+
+    // Onglet pere
+    QTabWidget *tab_Top = new QTabWidget;
+    QWidget **wid_ForTop = new QWidget*[2];
+
+    QWidget *wTop_1 = new QWidget;
+    QWidget *wTop_2 = new QWidget;
+
+    wid_ForTop[0]= wTop_1;
+    wid_ForTop[1]= wTop_2;
+
+    tab_Top->addTab(wid_ForTop[0],tr("Presents"));
+    tab_Top->addTab(wid_ForTop[1],tr("Absents"));
+    // ------------------
+
+    QFormLayout * design_onglet_1 = MonLayout_VoisinsPresent();
+    QFormLayout * design_onglet_2 = MonLayout_VoisinsAbsent();
+
+    wid_ForTop[0]->setLayout(design_onglet_1);
+    wid_ForTop[1]->setLayout(design_onglet_2);
+
+    QFormLayout *mainLayout = new QFormLayout;
+    mainLayout->addWidget(tab_Top);
+
+    qw_Voisins->setMinimumWidth(480);
+    qw_Voisins->setLayout(mainLayout);
+    qw_Voisins->setWindowTitle("Voisins de selection");
+
+    zoneCentrale->addSubWindow(qw_Voisins);
+    qw_Voisins->setVisible(true);
+}
+
+#ifdef USE_OLD_CODE
 void MainWindow::fen_Voisins(void)
 {
     QWidget *qw_Voisins = new QWidget;
     QTabWidget *tabWidget = new QTabWidget;
     int nb_zn = configJeu.nb_zone;
 
-    qtvT_Voisins = new QTableView*[nb_zn];
-    qsimT_Voisins= new QStandardItemModel*[nb_zn];
-    qlT_nbSorties = new QLabel*[nb_zn];
+    G_tbv_Voisins = new QTableView*[nb_zn];
+    G_sim_Voisins= new QStandardItemModel*[nb_zn];
+    G_lab_nbSorties = new QLabel*[nb_zn];
     QFormLayout **layT_Voisin = new QFormLayout*[nb_zn];
     QWidget **tmpT_Widget = new QWidget*[nb_zn];
 
@@ -439,66 +658,66 @@ void MainWindow::fen_Voisins(void)
         QFormLayout *tmpLayout = new QFormLayout;
         QWidget *tmpWidget = new QWidget;
 
-        qsimT_Voisins[zn]= tmpStdItem;
-        qtvT_Voisins[zn] = tmpTblView;
-        qlT_nbSorties[zn]= tmpLabel;
+        G_sim_Voisins[zn]= tmpStdItem;
+        G_tbv_Voisins[zn] = tmpTblView;
+        G_lab_nbSorties[zn]= tmpLabel;
         layT_Voisin[zn] = tmpLayout;
         tmpT_Widget[zn] = tmpWidget;
 
         // entete du modele
-        qsimT_Voisins[zn]->setHeaderData(0,Qt::Horizontal,"B");
-        qsimT_Voisins[zn]->setHeaderData(1,Qt::Horizontal,"V:r0");
-        qsimT_Voisins[zn]->setHeaderData(2,Qt::Horizontal,"V:+1");
-        qsimT_Voisins[zn]->setHeaderData(3,Qt::Horizontal,"V:+2");
-        qsimT_Voisins[zn]->setHeaderData(4,Qt::Horizontal,"V:-1");
-        qsimT_Voisins[zn]->setHeaderData(5,Qt::Horizontal,"V:-2");
-        qsimT_Voisins[zn]->setHeaderData(6,Qt::Horizontal,"NbS");
+        G_sim_Voisins[zn]->setHeaderData(0,Qt::Horizontal,"B");
+        G_sim_Voisins[zn]->setHeaderData(1,Qt::Horizontal,"V:r0");
+        G_sim_Voisins[zn]->setHeaderData(2,Qt::Horizontal,"V:+1");
+        G_sim_Voisins[zn]->setHeaderData(3,Qt::Horizontal,"V:+2");
+        G_sim_Voisins[zn]->setHeaderData(4,Qt::Horizontal,"V:-1");
+        G_sim_Voisins[zn]->setHeaderData(5,Qt::Horizontal,"V:-2");
+        G_sim_Voisins[zn]->setHeaderData(6,Qt::Horizontal,"NbS");
 
         // Ecriture du numero de boule et reservation item position
         for(int i=1;i<=configJeu.limites[zn].max;i++)
         {
             QStandardItem *item = new QStandardItem();
             item->setData(i,Qt::DisplayRole);
-            qsimT_Voisins[zn]->setItem(i-1,0,item);
+            G_sim_Voisins[zn]->setItem(i-1,0,item);
             for (int j =1; j<7;j++)
             {
                 QStandardItem *item_2 = new QStandardItem();
-                qsimT_Voisins[zn]->setItem(i-1,j,item_2);
+                G_sim_Voisins[zn]->setItem(i-1,j,item_2);
             }
         }
 
-        qtvT_Voisins[zn]->setModel(qsimT_Voisins[zn]);
+        G_tbv_Voisins[zn]->setModel(G_sim_Voisins[zn]);
         for(int i=0;i<=6;i++)
         {
-            qtvT_Voisins[zn]->setColumnWidth(i,50);
+            G_tbv_Voisins[zn]->setColumnWidth(i,50);
         }
 
         //qtvT_Voisins[zn]->setMinimumHeight(390);
         //qtvT_Voisins[zn]->setMaximumWidth(400);
 
-        qtvT_Voisins[zn]->setSortingEnabled(true);
-        qtvT_Voisins[zn]->sortByColumn(0,Qt::AscendingOrder);
-        qtvT_Voisins[zn]->setAlternatingRowColors(true);
-        qtvT_Voisins[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        qtvT_Voisins[zn]->setSelectionBehavior(QAbstractItemView::SelectItems);
+        G_tbv_Voisins[zn]->setSortingEnabled(true);
+        G_tbv_Voisins[zn]->sortByColumn(0,Qt::AscendingOrder);
+        G_tbv_Voisins[zn]->setAlternatingRowColors(true);
+        G_tbv_Voisins[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        G_tbv_Voisins[zn]->setSelectionBehavior(QAbstractItemView::SelectItems);
         //qtvT_Voisins[zn]->setSelectionMode(QAbstractItemView::SingleSelection);
         //qtvT_Voisins[zn]->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
-        qtvT_Voisins[zn]->setFixedSize(395,390);
+        G_tbv_Voisins[zn]->setFixedSize(395,390);
 
-        qlT_nbSorties[zn]->setText("Nb total de sorties:");
-        layT_Voisin[zn]->addWidget(qlT_nbSorties[zn]);
-        layT_Voisin[zn]->addWidget(qtvT_Voisins[zn]);
+        G_lab_nbSorties[zn]->setText("Nb total de sorties:");
+        layT_Voisin[zn]->addWidget(G_lab_nbSorties[zn]);
+        layT_Voisin[zn]->addWidget(G_tbv_Voisins[zn]);
 
         tmpT_Widget[zn]->setLayout(layT_Voisin[zn]);
         //tmpT_Widget[zn]->setMaximumWidth(420);
         tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
-        connect( qtvT_Voisins[zn], SIGNAL( clicked(QModelIndex)) ,
+        connect( G_tbv_Voisins[zn], SIGNAL( clicked(QModelIndex)) ,
                  this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
 
         // double click dans fenetre voisin pour afficher details boule
-        connect( qtvT_Voisins[zn], SIGNAL( doubleClicked(QModelIndex)) ,
+        connect( G_tbv_Voisins[zn], SIGNAL( doubleClicked(QModelIndex)) ,
                  this, SLOT( slot_RechercherLesTirages( QModelIndex) ) );
 
     }
@@ -521,14 +740,15 @@ void MainWindow::fen_Voisins(void)
     zoneCentrale->addSubWindow(qw_Voisins);
     qw_Voisins->setVisible(true);
 }
+#endif
 
 void MainWindow::fen_MaSelection(void)
 {
     QTabWidget *tabWidget = new QTabWidget;
     int nb_zn = configJeu.nb_zone;
 
-    qtvT_MaSelection = new QTableView*[nb_zn];
-    qsimT_MaSelection= new QStandardItemModel*[nb_zn];
+    G_tbv_MaSelection = new QTableView*[nb_zn];
+    G_sim_MaSelection= new QStandardItemModel*[nb_zn];
     QWidget **tmpT_Widget = new QWidget*[nb_zn];
     QFormLayout **layT_MaSelection = new QFormLayout*[nb_zn];
     int *nbcol = new int [nb_zn];
@@ -542,8 +762,8 @@ void MainWindow::fen_MaSelection(void)
                     (configJeu.limites[zn].max/configJeu.nbElmZone[zn])+1:
                     (configJeu.limites[zn].max/configJeu.nbElmZone[zn]);
 
-        qsimT_MaSelection[zn]= new QStandardItemModel(configJeu.nbElmZone[zn],nbcol[zn]);
-        qtvT_MaSelection[zn] = new QTableView;
+        G_sim_MaSelection[zn]= new QStandardItemModel(configJeu.nbElmZone[zn],nbcol[zn]);
+        G_tbv_MaSelection[zn] = new QTableView;
         tmpT_Widget[zn] = new QWidget;
 
         for(i=1;i<=configJeu.nbElmZone[zn];i++)/// Code a verifier en fonction bornes max
@@ -554,29 +774,29 @@ void MainWindow::fen_MaSelection(void)
                 if(cell_val<=configJeu.limites[zn].max){
                     QStandardItem *item = new QStandardItem( QString::number(i));
                     item->setData(cell_val,Qt::DisplayRole);
-                    qsimT_MaSelection[zn]->setItem(i-1,j-1,item);
+                    G_sim_MaSelection[zn]->setItem(i-1,j-1,item);
                 }
             }
         }
 
-        qtvT_MaSelection[zn]->setModel(qsimT_MaSelection[zn]);
-        qtvT_MaSelection[zn]->setAlternatingRowColors(true);
-        qtvT_MaSelection[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        qtvT_MaSelection[zn]->setMinimumHeight(190);
+        G_tbv_MaSelection[zn]->setModel(G_sim_MaSelection[zn]);
+        G_tbv_MaSelection[zn]->setAlternatingRowColors(true);
+        G_tbv_MaSelection[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        G_tbv_MaSelection[zn]->setMinimumHeight(190);
 
         layT_MaSelection[zn] = new QFormLayout;
-        layT_MaSelection[zn]->addWidget(qtvT_MaSelection[zn]);
+        layT_MaSelection[zn]->addWidget(G_tbv_MaSelection[zn]);
 
         for(j=0;j<10;j++)
         {
-            qtvT_MaSelection[zn]->setColumnWidth(j,30);
+            G_tbv_MaSelection[zn]->setColumnWidth(j,30);
         }
 
         tmpT_Widget[zn]->setLayout(layT_MaSelection[zn]);
         tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
 
         // click dans fenetre ma selection
-        connect( qtvT_MaSelection[zn], SIGNAL( doubleClicked(QModelIndex)) ,
+        connect( G_tbv_MaSelection[zn], SIGNAL( doubleClicked(QModelIndex)) ,
                  this, SLOT( slot_UneSelectionActivee( QModelIndex) ) );
     }
 
@@ -598,27 +818,28 @@ void MainWindow::fen_MesPossibles(void)
     QWidget *w_DataFenetre = new QWidget;
     // Onglet pere
     QTabWidget *tab_Top = new QTabWidget;
-    QWidget **wid_ForTop = new QWidget*[2];
-    //QFormLayout **lay_ForTop = new QFormLayout*[2];
+    QWidget **wid_ForTop = new QWidget*[3];
 
     QWidget *wTop_1 = new QWidget;
     QWidget *wTop_2 = new QWidget;
-    //QFormLayout *lTop_1 = new QFormLayout;
-    //QFormLayout *lTop_2 = new QFormLayout;
+    QWidget *wTop_3 = new QWidget;
 
     wid_ForTop[0]= wTop_1;
     wid_ForTop[1]= wTop_2;
-    //lay_ForTop[0]= lTop_1;
-    //lay_ForTop[1]= lTop_2;
+    wid_ForTop[2]= wTop_3;
+
     tab_Top->addTab(wid_ForTop[0],tr("Possibles"));
-    tab_Top->addTab(wid_ForTop[1],tr("Ecarts"));
+    tab_Top->addTab(wid_ForTop[1],tr("Absents"));
+    tab_Top->addTab(wid_ForTop[2],tr("Ecarts"));
     // ------------------
 
     QFormLayout * design_onglet_1 = MonLayout_ChoixPossible();
-    QFormLayout * design_onglet_2 = MonLayout_Ecarts();
+    QFormLayout * design_onglet_2 = MonLayout_Absent();
+    QFormLayout * design_onglet_3 = MonLayout_Ecarts();
 
     wid_ForTop[0]->setLayout(design_onglet_1);
     wid_ForTop[1]->setLayout(design_onglet_2);
+    wid_ForTop[2]->setLayout(design_onglet_3);
 
     QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(tab_Top);
@@ -639,14 +860,14 @@ QFormLayout * MainWindow:: MonLayout_ChoixPossible(void)
     //QWidget *w_MesPossibles = new QWidget;
     QHeaderView *hdv_horizontal;
     QString Lib[6]={"tot","r0","+1","+2","-1","-2"};
-    Gtv_MesPossibles = new QTableView;
+    G_tbv_MesPossibles = new QTableView;
     int zn = 0;
 
-    Gtv_MesPossibles->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(Gtv_MesPossibles, SIGNAL(customContextMenuRequested(QPoint)),
+    G_tbv_MesPossibles->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(G_tbv_MesPossibles, SIGNAL(customContextMenuRequested(QPoint)),
             SLOT(customMenuRequested(QPoint)));
 
-    hdv_horizontal = Gtv_MesPossibles->horizontalHeader();
+    hdv_horizontal = G_tbv_MesPossibles->horizontalHeader();
     hdv_horizontal->setContextMenuPolicy(Qt::CustomContextMenu); //set contextmenu
     connect(hdv_horizontal, SIGNAL(customContextMenuRequested( const QPoint& )),
             this, SLOT(tablev_customContextMenu( const QPoint& )));
@@ -655,7 +876,7 @@ QFormLayout * MainWindow:: MonLayout_ChoixPossible(void)
     Gacg_MesTries = new QActionGroup (this);
 
     Gmen_TrieMesPossibles->setWindowFlags(Qt::Tool);
-    Gmen_TrieMesPossibles->setWindowTitle("Trie");
+    Gmen_TrieMesPossibles->setWindowTitle("Possibles");
 
     for(int i = 0; i< 6; i++){
         Gaci_MesPossibles[i]= new QAction(Lib[i],this);
@@ -663,12 +884,12 @@ QFormLayout * MainWindow:: MonLayout_ChoixPossible(void)
         Gaci_MesPossibles[i]->setData(i);
         Gacg_MesTries->addAction(Gaci_MesPossibles[i]);
     }
-    connect(Gaci_MesPossibles[0], SIGNAL(triggered()), this, SLOT(ft1()));
-    connect(Gaci_MesPossibles[1], SIGNAL(triggered()), this, SLOT(ft2()));
-    connect(Gaci_MesPossibles[2], SIGNAL(triggered()), this, SLOT(ft3()));
-    connect(Gaci_MesPossibles[3], SIGNAL(triggered()), this, SLOT(ft4()));
-    connect(Gaci_MesPossibles[4], SIGNAL(triggered()), this, SLOT(ft5()));
-    connect(Gaci_MesPossibles[5], SIGNAL(triggered()), this, SLOT(ft6()));
+    connect(Gaci_MesPossibles[0], SIGNAL(triggered()), this, SLOT(slot_ft1Possibles()));
+    connect(Gaci_MesPossibles[1], SIGNAL(triggered()), this, SLOT(slot_ft2Possibles()));
+    connect(Gaci_MesPossibles[2], SIGNAL(triggered()), this, SLOT(slot_ft3Possibles()));
+    connect(Gaci_MesPossibles[3], SIGNAL(triggered()), this, SLOT(slot_ft4Possibles()));
+    connect(Gaci_MesPossibles[4], SIGNAL(triggered()), this, SLOT(slot_ft5Possibles()));
+    connect(Gaci_MesPossibles[5], SIGNAL(triggered()), this, SLOT(slot_ft6Possibles()));
 
 
     Gaci_MesPossibles[0]->setChecked(true);
@@ -678,79 +899,178 @@ QFormLayout * MainWindow:: MonLayout_ChoixPossible(void)
 
 
     //qsim_MesPossibles = new MonToolTips(configJeu.limites[zn].max,5);
-    Gsim_MesPossibles = new QStandardItemModel(configJeu.limites[zn].max,5);
+    G_sim_MesPossibles = new QStandardItemModel(configJeu.limites[zn].max,5);
 
-    Gsim_MesPossibles->setHeaderData(0,Qt::Horizontal,"C1"); // Boules
-    Gsim_MesPossibles->setHeaderData(1,Qt::Horizontal,"C2"); // Ecart en cours
-    Gsim_MesPossibles->setHeaderData(2,Qt::Horizontal,"C3"); // ECart precedent
-    Gsim_MesPossibles->setHeaderData(3,Qt::Horizontal,"C4"); // Ecart Moyen
-    Gsim_MesPossibles->setHeaderData(4,Qt::Horizontal,"C5"); // Ecart Maxi
+    G_sim_MesPossibles->setHeaderData(0,Qt::Horizontal,"C1"); // Boules
+    G_sim_MesPossibles->setHeaderData(1,Qt::Horizontal,"C2"); // Ecart en cours
+    G_sim_MesPossibles->setHeaderData(2,Qt::Horizontal,"C3"); // ECart precedent
+    G_sim_MesPossibles->setHeaderData(3,Qt::Horizontal,"C4"); // Ecart Moyen
+    G_sim_MesPossibles->setHeaderData(4,Qt::Horizontal,"C5"); // Ecart Maxi
 
-    Gtv_MesPossibles->setModel(Gsim_MesPossibles);
-    Gtv_MesPossibles->setColumnWidth(0,45);
-    Gtv_MesPossibles->setColumnWidth(1,45);
-    Gtv_MesPossibles->setColumnWidth(2,45);
-    Gtv_MesPossibles->setColumnWidth(3,45);
-    Gtv_MesPossibles->setColumnWidth(4,45);
-    Gtv_MesPossibles->setSortingEnabled(false);
-    Gtv_MesPossibles->sortByColumn(0,Qt::AscendingOrder);
-    Gtv_MesPossibles->setAlternatingRowColors(true);
-    Gtv_MesPossibles->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    // Ecriture du numero de boule et reservation item position
+    for(int i=1;i<=configJeu.limites[zn].max;i++)
+    {
+        for (int j =0; j<5;j++)
+        {
+            QStandardItem *item_2 = new QStandardItem();
+            G_sim_MesPossibles->setItem(i-1,j,item_2);
+        }
+    }
+
+    G_tbv_MesPossibles->setModel(G_sim_MesPossibles);
+    G_tbv_MesPossibles->setColumnWidth(0,45);
+    G_tbv_MesPossibles->setColumnWidth(1,45);
+    G_tbv_MesPossibles->setColumnWidth(2,45);
+    G_tbv_MesPossibles->setColumnWidth(3,45);
+    G_tbv_MesPossibles->setColumnWidth(4,45);
+    G_tbv_MesPossibles->setSortingEnabled(false);
+    G_tbv_MesPossibles->sortByColumn(0,Qt::AscendingOrder);
+    G_tbv_MesPossibles->setAlternatingRowColors(true);
+    G_tbv_MesPossibles->setEditTriggers(QAbstractItemView::NoEditTriggers);
     //tblCouverture->setMaximumWidth(500);
-    Gtv_MesPossibles->setFixedSize(280,450);
+    G_tbv_MesPossibles->setFixedSize(280,450);
     //Gtv_MesPossibles->setMinimumHeight(420);
     //Gtv_MesPossibles->setMinimumWidth(280);
 
-    returnLayout->addWidget(Gtv_MesPossibles);
+    returnLayout->addWidget(G_tbv_MesPossibles);
 
 
-    connect( Gtv_MesPossibles, SIGNAL( clicked(QModelIndex)) ,
+    connect( G_tbv_MesPossibles, SIGNAL( clicked(QModelIndex)) ,
              this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
 
 
     return(returnLayout);
 }
 
+//-------
+QFormLayout * MainWindow:: MonLayout_Absent(void)
+{
+    QFormLayout *returnLayout = new QFormLayout;
+
+    //QWidget *w_MesPossibles = new QWidget;
+    QHeaderView *hdv_horizontal;
+    QString Lib[5]={"r0","+1","+2","-1","-2"};
+    G_tbv_LesAbsents = new QTableView;
+    int zn = 0;
+
+    G_tbv_LesAbsents->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(G_tbv_LesAbsents, SIGNAL(customContextMenuRequested(QPoint)),
+            SLOT(customMenuRequested(QPoint)));
+
+    hdv_horizontal = G_tbv_LesAbsents->horizontalHeader();
+    hdv_horizontal->setContextMenuPolicy(Qt::CustomContextMenu); //set contextmenu
+    connect(hdv_horizontal, SIGNAL(customContextMenuRequested( const QPoint& )),
+            this, SLOT(pop_selAbsents( const QPoint& )));
+
+    G_men_TrieMesAbsents=new QMenu(this);
+    G_acg_MesAbsents = new QActionGroup (this);
+
+    G_men_TrieMesAbsents->setWindowFlags(Qt::Tool);
+    G_men_TrieMesAbsents->setWindowTitle("Absents");
+
+    for(int i = 0; i< 5; i++){
+        G_aci_MesAbsents[i]= new QAction(Lib[i],this);
+        G_aci_MesAbsents[i]->setCheckable(true);
+        G_aci_MesAbsents[i]->setData(i);
+        G_acg_MesAbsents->addAction(G_aci_MesAbsents[i]);
+    }
+    connect(G_aci_MesAbsents[0], SIGNAL(triggered()), this, SLOT(slot_ftAbs1()));
+    connect(G_aci_MesAbsents[1], SIGNAL(triggered()), this, SLOT(slot_ftAbs2()));
+    connect(G_aci_MesAbsents[2], SIGNAL(triggered()), this, SLOT(slot_ftAbs3()));
+    connect(G_aci_MesAbsents[3], SIGNAL(triggered()), this, SLOT(slot_ftAbs4()));
+    connect(G_aci_MesAbsents[4], SIGNAL(triggered()), this, SLOT(slot_ftAbs5()));
+
+
+    G_aci_MesAbsents[0]->setChecked(true);
+    for(int i = 0; i< 5; i++){
+        G_men_TrieMesAbsents->addAction(G_aci_MesAbsents[i]);
+    }
+
+
+    //qsim_MesPossibles = new MonToolTips(configJeu.limites[zn].max,5);
+    G_sim_LesAbsents = new QStandardItemModel(configJeu.limites[zn].max,5);
+
+    G_sim_LesAbsents->setHeaderData(0,Qt::Horizontal,"C1"); // Boules
+    G_sim_LesAbsents->setHeaderData(1,Qt::Horizontal,"C2"); // Ecart en cours
+    G_sim_LesAbsents->setHeaderData(2,Qt::Horizontal,"C3"); // ECart precedent
+    G_sim_LesAbsents->setHeaderData(3,Qt::Horizontal,"C4"); // Ecart Moyen
+    G_sim_LesAbsents->setHeaderData(4,Qt::Horizontal,"C5"); // Ecart Maxi
+
+    // Ecriture du numero de boule et reservation item position
+    for(int i=1;i<=configJeu.limites[zn].max;i++)
+    {
+        for (int j =0; j<5;j++)
+        {
+            QStandardItem *item_2 = new QStandardItem();
+            G_sim_LesAbsents->setItem(i-1,j,item_2);
+        }
+    }
+
+    G_tbv_LesAbsents->setModel(G_sim_LesAbsents);
+    G_tbv_LesAbsents->setColumnWidth(0,45);
+    G_tbv_LesAbsents->setColumnWidth(1,45);
+    G_tbv_LesAbsents->setColumnWidth(2,45);
+    G_tbv_LesAbsents->setColumnWidth(3,45);
+    G_tbv_LesAbsents->setColumnWidth(4,45);
+    G_tbv_LesAbsents->setSortingEnabled(false);
+    G_tbv_LesAbsents->sortByColumn(0,Qt::AscendingOrder);
+    G_tbv_LesAbsents->setAlternatingRowColors(true);
+    G_tbv_LesAbsents->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    //tblCouverture->setMaximumWidth(500);
+    G_tbv_LesAbsents->setFixedSize(280,450);
+    //Gtv_MesPossibles->setMinimumHeight(420);
+    //Gtv_MesPossibles->setMinimumWidth(280);
+
+    returnLayout->addWidget(G_tbv_LesAbsents);
+
+
+    connect( G_tbv_LesAbsents, SIGNAL( clicked(QModelIndex)) ,
+             this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
+
+
+    return(returnLayout);
+}
+//-------
 QFormLayout * MainWindow:: MonLayout_Ecarts(void)
 {
     int  i;
     int zn = 0;
-    Gsim_Ecarts = new QStandardItemModel(configJeu.limites[zn].max,5);
-    Gtv_Ecarts = new QTableView;
+    G_sim_Ecarts = new QStandardItemModel(configJeu.limites[zn].max,5);
+    G_tbv_Ecarts = new QTableView;
     QFormLayout *returnLayout = new QFormLayout;
 
-    Gsim_Ecarts->setHeaderData(0,Qt::Horizontal,"B"); // Boules
-    Gsim_Ecarts->setHeaderData(1,Qt::Horizontal,"Ec"); // Ecart en cours
-    Gsim_Ecarts->setHeaderData(2,Qt::Horizontal,"Ep"); // ECart precedent
-    Gsim_Ecarts->setHeaderData(3,Qt::Horizontal,"Em"); // Ecart Moyen
-    Gsim_Ecarts->setHeaderData(4,Qt::Horizontal,"EM"); // Ecart Maxi
+    G_sim_Ecarts->setHeaderData(0,Qt::Horizontal,"B"); // Boules
+    G_sim_Ecarts->setHeaderData(1,Qt::Horizontal,"Ec"); // Ecart en cours
+    G_sim_Ecarts->setHeaderData(2,Qt::Horizontal,"Ep"); // ECart precedent
+    G_sim_Ecarts->setHeaderData(3,Qt::Horizontal,"Em"); // Ecart Moyen
+    G_sim_Ecarts->setHeaderData(4,Qt::Horizontal,"EM"); // Ecart Maxi
 
     for(i=1;i<=configJeu.limites[zn].max;i++)
     {
         QStandardItem *item = new QStandardItem( QString::number(i));
         item->setData(i,Qt::DisplayRole);
-        Gsim_Ecarts->setItem(i-1,0,item);
+        G_sim_Ecarts->setItem(i-1,0,item);
     }
-    Gtv_Ecarts->setModel(Gsim_Ecarts);
+    G_tbv_Ecarts->setModel(G_sim_Ecarts);
 
-    Gtv_Ecarts->setColumnWidth(0,45);
-    Gtv_Ecarts->setColumnWidth(1,45);
-    Gtv_Ecarts->setColumnWidth(2,45);
-    Gtv_Ecarts->setColumnWidth(3,45);
-    Gtv_Ecarts->setColumnWidth(4,45);
-    Gtv_Ecarts->setSortingEnabled(true);
-    Gtv_Ecarts->sortByColumn(0,Qt::AscendingOrder);
-    Gtv_Ecarts->setAlternatingRowColors(true);
-    Gtv_Ecarts->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    G_tbv_Ecarts->setColumnWidth(0,45);
+    G_tbv_Ecarts->setColumnWidth(1,45);
+    G_tbv_Ecarts->setColumnWidth(2,45);
+    G_tbv_Ecarts->setColumnWidth(3,45);
+    G_tbv_Ecarts->setColumnWidth(4,45);
+    G_tbv_Ecarts->setSortingEnabled(true);
+    G_tbv_Ecarts->sortByColumn(0,Qt::AscendingOrder);
+    G_tbv_Ecarts->setAlternatingRowColors(true);
+    G_tbv_Ecarts->setEditTriggers(QAbstractItemView::NoEditTriggers);
     //tblCouverture->setMaximumWidth(500);
     //Gtv_Ecarts->setMinimumHeight(420);
     //Gtv_Ecarts->setMinimumWidth(280);
-    Gtv_Ecarts->setFixedSize(280,450);
+    G_tbv_Ecarts->setFixedSize(280,450);
 
-    returnLayout->addWidget(Gtv_Ecarts);
+    returnLayout->addWidget(G_tbv_Ecarts);
 
     // Double click dans sous fenetre ecart
-    connect( Gtv_Ecarts, SIGNAL( doubleClicked(QModelIndex)) ,
+    connect( G_tbv_Ecarts, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( slot_qtvEcart( QModelIndex) ) );
 
     return(returnLayout);
@@ -898,37 +1218,37 @@ void MainWindow::fen_Parites(void)
 {
     QWidget *qw_Parites = new QWidget;
     //QTabWidget *tabWidget = new QTabWidget;
-    tabWidget = new QTabWidget;
+    G_tbw_MontabWidget = new QTabWidget;
 
 
 
     int zn = 0;
 
-    qsim_Parites = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
+    G_sim_Parites = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
 
-    qsim_Parites->setHeaderData(0,Qt::Horizontal,"Nb");
-    qsim_Parites->setHeaderData(1,Qt::Horizontal,"B");
-    qsim_Parites->setHeaderData(2,Qt::Horizontal,"E");
+    G_sim_Parites->setHeaderData(0,Qt::Horizontal,"Nb");
+    G_sim_Parites->setHeaderData(1,Qt::Horizontal,"B");
+    G_sim_Parites->setHeaderData(2,Qt::Horizontal,"E");
 
-    qtv_Parites = new QTableView;
-    qtv_Parites->setModel(qsim_Parites);
-    qtv_Parites->setColumnWidth(0,45);
-    qtv_Parites->setColumnWidth(1,55);
-    qtv_Parites->setColumnWidth(2,55);
-    qtv_Parites->setSortingEnabled(false);
-    qtv_Parites->sortByColumn(0,Qt::AscendingOrder);
-    qtv_Parites->setAlternatingRowColors(true);
-    qtv_Parites->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_Parites->setMinimumHeight(220);
+    G_tbv_Parites = new QTableView;
+    G_tbv_Parites->setModel(G_sim_Parites);
+    G_tbv_Parites->setColumnWidth(0,45);
+    G_tbv_Parites->setColumnWidth(1,55);
+    G_tbv_Parites->setColumnWidth(2,55);
+    G_tbv_Parites->setSortingEnabled(false);
+    G_tbv_Parites->sortByColumn(0,Qt::AscendingOrder);
+    G_tbv_Parites->setAlternatingRowColors(true);
+    G_tbv_Parites->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    G_tbv_Parites->setMinimumHeight(220);
 
-    qsim_Ensemble_1 = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
+    G_sim_Ensemble_1 = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
 
-    qsim_Ensemble_1->setHeaderData(0,Qt::Horizontal,"N(E/2)");
-    qsim_Ensemble_1->setHeaderData(1,Qt::Horizontal,"B");
-    qsim_Ensemble_1->setHeaderData(2,Qt::Horizontal,"E");
+    G_sim_Ensemble_1->setHeaderData(0,Qt::Horizontal,"N(E/2)");
+    G_sim_Ensemble_1->setHeaderData(1,Qt::Horizontal,"B");
+    G_sim_Ensemble_1->setHeaderData(2,Qt::Horizontal,"E");
 
     QTableView *qtv_E1 = new QTableView;
-    qtv_E1->setModel(qsim_Ensemble_1);
+    qtv_E1->setModel(G_sim_Ensemble_1);
     qtv_E1->setColumnWidth(0,60);
     qtv_E1->setColumnWidth(1,55);
     qtv_E1->setColumnWidth(2,55);
@@ -939,12 +1259,12 @@ void MainWindow::fen_Parites(void)
     qtv_E1->setMinimumHeight(220);
 
     int v = (configJeu.limites[zn].max /10) +1;
-    qsim_ud = new QStandardItemModel(v+1,v+1);
-    qsim_ud->setHeaderData(0,Qt::Horizontal,"Nb");
+    G_sim_ud = new QStandardItemModel(v+1,v+1);
+    G_sim_ud->setHeaderData(0,Qt::Horizontal,"Nb");
     for(int j=0; j< v;j++)
     {
         QString name = configJeu.nomZone[zn] + "d" + QString::number(j);
-        qsim_ud->setHeaderData(j+1,Qt::Horizontal,name);
+        G_sim_ud->setHeaderData(j+1,Qt::Horizontal,name);
     }
 
     // Ecriture du numero de boule et reservation item position
@@ -952,16 +1272,16 @@ void MainWindow::fen_Parites(void)
     {
         QStandardItem *item = new QStandardItem();
         item->setData(j,Qt::DisplayRole);
-        qsim_ud->setItem(j,0,item);
+        G_sim_ud->setItem(j,0,item);
         for (int k =1; k<=v;k++)
         {
             QStandardItem *item_2 = new QStandardItem();
-            qsim_ud->setItem(j,k,item_2);
+            G_sim_ud->setItem(j,k,item_2);
         }
     }
 
     QTableView *qtv_E2 = new QTableView;
-    qtv_E2->setModel(qsim_ud);
+    qtv_E2->setModel(G_sim_ud);
     for(int j=0; j< v+1;j++)
     {
         qtv_E2->setColumnWidth(j,50);
@@ -971,13 +1291,13 @@ void MainWindow::fen_Parites(void)
     qtv_E2->setSortingEnabled(false);
     qtv_E2->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    tabWidget->addTab(qtv_Parites,tr("Parites"));
-    tabWidget->addTab(qtv_E1,tr("< N/2"));
-    tabWidget->addTab(qtv_E2,tr("Unites"));
+    G_tbw_MontabWidget->addTab(G_tbv_Parites,tr("Parites"));
+    G_tbw_MontabWidget->addTab(qtv_E1,tr("< N/2"));
+    G_tbw_MontabWidget->addTab(qtv_E2,tr("Unites"));
 
 
     QFormLayout *mainLayout = new QFormLayout;
-    mainLayout->addWidget(tabWidget);
+    mainLayout->addWidget(G_tbw_MontabWidget);
     qw_Parites->setWindowTitle("Etude des boules");
     qw_Parites->setLayout(mainLayout);
 
@@ -1031,11 +1351,13 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
             {
                 col_bpos += 1;
                 val=index.model()->index(index.row(),col_bpos).data().toInt();
-                DB_tirages->RechercheVoisin(val,zn,&configJeu,qlT_nbSorties[zn],qsimT_Voisins[zn]);
+                DB_tirages->RechercheVoisin(val,zn,&configJeu,G_lab_nbSorties[zn],G_sim_Voisins[zn]);
+                DB_tirages->RechercheAbsent(val,zn,&configJeu,G_lab_nbAbsents[zn],G_sim_Absents[zn]);
             }
-            // Pour rentre la fenetre voisin vide
+            // Pour rendre la fenetre voisin vide
             select.clear();
-            DB_tirages->TST_RechercheVoisin(select,zn,&configJeu,qlT_nbSorties[zn],qsimT_Voisins[zn]);
+            DB_tirages->TST_RechercheVoisin(select,zn,&configJeu,G_lab_nbSorties[zn],G_sim_Voisins[zn]);
+            //TBD:DB_tirages->TST_RechercheAbsent(select,zn,&configJeu,G_lab_nbAbsents[zn],G_sim_Absents[zn]);
         }
 
 #if 0
@@ -1054,24 +1376,25 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
 #endif
 
         // Affichage des resultats
-        DB_tirages->MontreMesPossibles(index,&configJeu,Gtv_MesPossibles);
+        DB_tirages->MontreMesPossibles(index,&configJeu,G_tbv_MesPossibles);
+        DB_tirages->MontreMesAbsents(index,&configJeu,G_tbv_LesAbsents);
 
         // Mise en evidence numero commun
-        DB_tirages->MLB_MontreLesCommuns(&configJeu,Gtv_MesPossibles);
+        DB_tirages->MLB_MontreLesCommuns(&configJeu,G_tbv_MesPossibles);
     }
 
     if(index.column()>0 && index.column()<6){
         zn=0;
-        Gtv_CouvTirages->clearSelection();
+        G_tbv_CouvTirages->clearSelection();
         val = index.data().toInt();
 
-        qtvT_Voisins[0]->sortByColumn(0,Qt::AscendingOrder);
+        G_tbv_Voisins[0]->sortByColumn(0,Qt::AscendingOrder);
 
         select << index.data().toString();
-        DB_tirages->TST_RechercheVoisin(select,zn,&configJeu,qlT_nbSorties[zn],qsimT_Voisins[zn]);
+        DB_tirages->TST_RechercheVoisin(select,zn,&configJeu,G_lab_nbSorties[zn],G_sim_Voisins[zn]);
         //DB_tirages->RechercheVoisin(val,0,&configJeu,qlT_nbSorties[0],qsimT_Voisins[0]);
 
-        DB_tirages->MLB_DansCouverture(val,&configJeu,Gtv_CouvTirages);
+        DB_tirages->MLB_DansCouverture(val,&configJeu,G_tbv_CouvTirages);
         //DB_tirages->MLB_DansMesPossibles(val,QBrush(Qt::yellow),qtv_MesPossibles);
     }
 
@@ -1101,7 +1424,7 @@ void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
     int zn = -1;
 
     // determination de la table dans l'onglet ayant recu le click
-    if (index.internalPointer() == qsimT_MaSelection[0]->index(index.row(),index.column()).internalPointer()){
+    if (index.internalPointer() == G_sim_MaSelection[0]->index(index.row(),index.column()).internalPointer()){
         zn = 0;
     }
     else
@@ -1111,14 +1434,17 @@ void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
 
 
 
-    QStandardItem *item1 = qsimT_MaSelection[zn]->itemFromIndex(index);
+    QStandardItem *item1 = G_sim_MaSelection[zn]->itemFromIndex(index);
 #ifndef QT_NO_DEBUG
     qDebug()<< item1->background();
 #endif
 
     if(zn != -1)
     {
+        // Regarder si fenetre voisin a deja des infos ?
 
+
+        // Regarder si fenetre selection deja utilisee
         if(item1->background() == Qt::red)
         {
             // un element deja selectionne le supprimer
@@ -1144,8 +1470,8 @@ void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
             item1->setBackground(QBrush(Qt::red));
         }
 
-        qtvT_Voisins[zn]->sortByColumn(0,Qt::AscendingOrder);
-        DB_tirages->TST_RechercheVoisin(select[zn],zn,&configJeu,qlT_nbSorties[zn],qsimT_Voisins[zn]);
+        G_tbv_Voisins[zn]->sortByColumn(0,Qt::AscendingOrder);
+        DB_tirages->TST_RechercheVoisin(select[zn],zn,&configJeu,G_lab_nbSorties[zn],G_sim_Voisins[zn]);
     }
 
 }
@@ -1174,24 +1500,24 @@ void MainWindow::slot_RechercherLesTirages(const QModelIndex & index)
     const int d[5]={0,1,2,-1,-2};
 
     // determination de la table dans l'onglet ayant recu le click
-    if (index.internalPointer() == qsimT_Voisins[0]->index(index.row(),index.column()).internalPointer())
+    if (index.internalPointer() == G_sim_Voisins[0]->index(index.row(),index.column()).internalPointer())
     {
         zn = 0;
     }
 
-    if (index.internalPointer() == qsimT_Voisins[1]->index(index.row(),index.column()).internalPointer())
+    if (index.internalPointer() == G_sim_Voisins[1]->index(index.row(),index.column()).internalPointer())
     {
         zn = 1;
     }
 
     if(zn != -1)
     {
-        cellule = qsimT_Voisins[zn]->index(index.row(),index.column()).data().toInt();
+        cellule = G_sim_Voisins[zn]->index(index.row(),index.column()).data().toInt();
 
         if(cellule)
         {
             QStringList list;
-            val = qsimT_Voisins[zn]->index(index.row(),0).data().toInt();
+            val = G_sim_Voisins[zn]->index(index.row(),0).data().toInt();
 
             col = index.column();
             if(col>=6)
@@ -1202,7 +1528,7 @@ void MainWindow::slot_RechercherLesTirages(const QModelIndex & index)
             else
             {
                 QRegExp reg_number ("(\\d+)");
-                QString  str_br = qlT_nbSorties[zn]->text();
+                QString  str_br = G_lab_nbSorties[zn]->text();
                 int pos = 0;
 
                 while ((pos = reg_number.indexIn(str_br, pos)) != -1) {
@@ -1235,40 +1561,91 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
 {
     int val = 0;
     int cellule = 0;
+    int b_id =0;
+    int col_id = 0;
+    QStringList lst_boule;
+    boolean bNouvelleRecherche = false;
 
     // determination de la fenetre ayant recu le click
-    if (index.internalPointer() == qsimT_Voisins[0]->index(index.row(),index.column()).internalPointer()){
-        val = qsimT_Voisins[0]->index(index.row(),0).data().toInt();
+    if(index.internalPointer() == G_sim_Voisins[0]->index(index.row(),index.column()).internalPointer())
+    {
+
+        val = G_sim_Voisins[0]->index(index.row(),0).data().toInt();
+        cellule = val;//G_sim_Voisins[0]->index(index.row(),index.column()).data().toInt();;
+        bNouvelleRecherche = false;
+    }
+
+    if(index.internalPointer() == G_sim_MesPossibles->index(index.row(),index.column()).internalPointer())
+    {
+        val = DB_tirages->CouleurVersBid(G_tbv_MesPossibles);
+        cellule = G_sim_MesPossibles->index(index.row(),index.column()).data().toInt();
+        if(cellule != val)
+        {
+            // Effacer les recherches de boules precedentes
+            DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),G_tbv_MesPossibles);
+        }
+        b_id = BidFCId_MesPossibles(index.column(),G_tbv_MesPossibles);
+        col_id = colonne_tri;
+        bNouvelleRecherche = true;
+    }
+
+    if(index.internalPointer() == G_sim_LesAbsents->index(index.row(),index.column()).internalPointer())
+
+    {
+        cellule = G_sim_LesAbsents->index(index.row(),index.column()).data().toInt();
+        val = cellule;
+        b_id = BidFCId_MesPossibles(index.column(),G_tbv_LesAbsents);
+        col_id = G_colTrieAbsent;
+        bNouvelleRecherche = true;
+    }
+
+
+
+    // Affichage de la table des voisins
+    if(bNouvelleRecherche){
+        lst_boule << QString::number(b_id);
+        G_tbv_Voisins[0]->sortByColumn(0,Qt::AscendingOrder);
+        DB_tirages->TST_RechercheVoisin(lst_boule,0,&configJeu,G_lab_nbSorties[0],G_sim_Voisins[0]);
+
+        G_sim_Voisins[0]->sort(col_id+1,Qt::AscendingOrder);
+        G_sim_Voisins[0]->sort(col_id+1,Qt::DescendingOrder);
+    }
+
+#if 0
+    if (index.internalPointer() == G_sim_Voisins[0]->index(index.row(),index.column()).internalPointer()){
+        val = G_sim_Voisins[0]->index(index.row(),0).data().toInt();
         cellule = val;
     }
     else
     {
         // regarder si l'on deja selectionne une boule
-        val = DB_tirages->CouleurVersBid(Gtv_MesPossibles);
+        val = DB_tirages->CouleurVersBid(G_tbv_MesPossibles);
 
         // recuperer la boule de la cellule
-        cellule = Gsim_MesPossibles->index(index.row(),index.column()).data().toInt();
+        cellule = G_sim_MesPossibles->index(index.row(),index.column()).data().toInt();
 
         // si different effacer l'ancienne selection
 
         if(cellule != val)
         {
             // Effacer les recherches de boules precedentes
-            DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),Gtv_MesPossibles);
+            DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),G_tbv_MesPossibles);
         }
 
         // determination du numero de boule grace a la colonne
-        int b_id = BouleIdFromColId(index.column());
+        int b_id = BidFCId_MesPossibles(index.column(),G_tbv_MesPossibles);
         QStringList lst_boule;
         lst_boule << QString::number(b_id);
 
         // Affichage de la table des voisins
         //DB_tirages->RechercheVoisin(b_id,0,&configJeu,qlT_nbSorties[0],qsimT_Voisins[0]);
-        DB_tirages->TST_RechercheVoisin(lst_boule,0,&configJeu,qlT_nbSorties[0],qsimT_Voisins[0]);
+        DB_tirages->TST_RechercheVoisin(lst_boule,0,&configJeu,G_lab_nbSorties[0],G_sim_Voisins[0]);
 
-        qsimT_Voisins[0]->sort(colonne_tri+1,Qt::AscendingOrder);
-        qsimT_Voisins[0]->sort(colonne_tri+1,Qt::DescendingOrder);
+        G_sim_Voisins[0]->sort(colonne_tri+1,Qt::AscendingOrder);
+        G_sim_Voisins[0]->sort(colonne_tri+1,Qt::DescendingOrder);
     }
+#endif
+
 #ifndef QT_NO_DEBUG
     qDebug() << QString::number(index.row());
 #endif
@@ -1276,23 +1653,30 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
 
     if(cellule){
         // Une Boule Trouvee la montrer dans les autres fenetres
-        Gtv_Tirages->clearSelection();
-        Gtv_Tirages->clearFocus();
+        G_tbv_Tirages->clearSelection();
+        G_tbv_Tirages->clearFocus();
 
-        DB_tirages->MontrerLaBoule(cellule,Gtv_Tirages);
-        DB_tirages->MLB_DansLaQtTabView(cellule,qtvT_Voisins[0]);
-        DB_tirages->MLB_DansLaQtTabView(cellule,Gtv_Ecarts);
-        Gtv_CouvTirages->clearSelection();
-        DB_tirages->MLB_DansCouverture(cellule,&configJeu,Gtv_CouvTirages);
+        DB_tirages->MontrerLaBoule(cellule,G_tbv_Tirages);
+        DB_tirages->MLB_DansLaQtTabView(cellule,G_tbv_Voisins[0]);
+        DB_tirages->MLB_DansLaQtTabView(cellule,G_tbv_Ecarts);
+        G_tbv_CouvTirages->clearSelection();
+        DB_tirages->MLB_DansCouverture(cellule,&configJeu,G_tbv_CouvTirages);
 
         // Effacer les recherches de boules precedentes
-        DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),Gtv_MesPossibles);
-        Gtv_MesPossibles->clearSelection();
-        Gtv_MesPossibles->clearFocus();
+        DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),G_tbv_MesPossibles);
+        G_tbv_MesPossibles->clearSelection();
+        G_tbv_MesPossibles->clearFocus();
 
         // Mise en evidence numero commun
-        DB_tirages->MLB_MontreLesCommuns(&configJeu,Gtv_MesPossibles);
-        DB_tirages->MLB_DansMesPossibles(cellule,QBrush(Qt::yellow),Gtv_MesPossibles);
+        DB_tirages->MLB_MontreLesCommuns(&configJeu,G_tbv_MesPossibles);
+        DB_tirages->MLB_DansMesPossibles(cellule,QBrush(Qt::yellow),G_tbv_MesPossibles);
+
+        // Onglet les Absents: Efface selection, montre nouvelle
+        DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),G_tbv_LesAbsents);
+        G_tbv_MesPossibles->clearSelection();
+        G_tbv_MesPossibles->clearFocus();
+        DB_tirages->MLB_DansMesPossibles(cellule,QBrush(Qt::yellow),G_tbv_LesAbsents);
+
     }
 }
 
@@ -1342,8 +1726,8 @@ QVariant MonToolTips::data(const QModelIndex &index, int role) const
 
 void MainWindow::customMenuRequested(QPoint pos)
 {
-    QModelIndex index = Gtv_MesPossibles->indexAt(pos);
-    int v_id = Gsim_MesPossibles->index(index.row(),index.column()).data().toInt();
+    QModelIndex index = G_tbv_MesPossibles->indexAt(pos);
+    int v_id = G_sim_MesPossibles->index(index.row(),index.column()).data().toInt();
     QVariant  hdata =  index.model()->headerData(index.column(),Qt::Horizontal);
     QString msg = hdata.toString();
     msg = msg.split("b").at(1);
@@ -1351,7 +1735,7 @@ void MainWindow::customMenuRequested(QPoint pos)
     QMenu *menu=new QMenu(this);
 
     DB_tirages->PopulateCellMenu(b_id, v_id, 0, &configJeu, menu, this);
-    menu->popup(Gtv_MesPossibles->viewport()->mapToGlobal(pos));
+    menu->popup(G_tbv_MesPossibles->viewport()->mapToGlobal(pos));
 
 }
 
@@ -1385,22 +1769,51 @@ void MainWindow::customMenuRequested(QPoint pos){
 }
 #endif
 
+void MainWindow::pop_selAbsents(QPoint pos)
+{
+
+    G_men_TrieMesAbsents->popup(G_tbv_LesAbsents->viewport()->mapToGlobal(pos));
+}
+
 void MainWindow::tablev_customContextMenu(QPoint pos)
 {
 
-    Gmen_TrieMesPossibles->popup(Gtv_MesPossibles->viewport()->mapToGlobal(pos));
+    Gmen_TrieMesPossibles->popup(G_tbv_MesPossibles->viewport()->mapToGlobal(pos));
 }
 
-void MainWindow::ft1(void)
+void MainWindow::slot_ft1Possibles(void)
 {
     ft_LancerTri(-1);
 }
 
-int MainWindow::BouleIdFromColId(int col_id)
+void MainWindow::slot_ftAbs1(void)
+{
+    ft_TriDesAbsents(0);
+}
+
+void MainWindow::slot_ftAbs2(void)
+{
+    ft_TriDesAbsents(1);
+}
+void MainWindow::slot_ftAbs3(void)
+{
+    ft_TriDesAbsents(2);
+}
+void MainWindow::slot_ftAbs4(void)
+{
+    ft_TriDesAbsents(3);
+}
+void MainWindow::slot_ftAbs5(void)
+{
+    ft_TriDesAbsents(4);
+}
+
+// BoulesId from Col ID
+int MainWindow::BidFCId_MesPossibles(int col_id,QTableView * tbv_ptr)
 {
     int b_id = 0;
 
-    QVariant  hdata =  Gtv_MesPossibles->model()->headerData(col_id,Qt::Horizontal);
+    QVariant  hdata =  tbv_ptr->model()->headerData(col_id,Qt::Horizontal);
     QString msg = hdata.toString();
 
     if (!msg.contains("C")){
@@ -1410,6 +1823,48 @@ int MainWindow::BouleIdFromColId(int col_id)
 
     return b_id;
 }
+void MainWindow::ft_TriDesAbsents(int tri_id)
+{
+    int col_id = 0;
+    G_colTrieAbsent = tri_id;
+    static QStringList select[2];
+    int zn=0;
+
+    // retirer affichage de selection de boule
+    G_tbv_LesAbsents->clearSelection();
+    G_tbv_LesAbsents->clearFocus();
+
+    // Memoriser la recherche precedente eventuelle
+    int boule = DB_tirages->CouleurVersBid(G_tbv_LesAbsents);
+
+    if(boule)
+    {
+        // Effacer les recherches de boules precedentes
+        DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),G_tbv_LesAbsents);
+    }
+
+
+    // Effectuer l'affichage du trie concerne pour toute les boules du tirage
+    for(col_id = 0; col_id < 5;col_id++)
+    {
+        int b_id = BidFCId_MesPossibles(col_id,G_tbv_LesAbsents);
+
+        if(b_id)
+        {
+            // Montrer les nouveaux resultats
+            DB_tirages->EffectuerTrieMesAbsents(tri_id,col_id,b_id,&configJeu,G_sim_LesAbsents);
+        }
+    }
+
+    if(boule)
+    {
+        // Remontrer la recherche eventuelle
+        DB_tirages->MLB_DansMesPossibles(boule, QBrush(Qt::yellow),G_tbv_LesAbsents);
+    }
+
+    G_sim_Voisins[0]->sort(col_id+1,Qt::AscendingOrder);
+    G_sim_Voisins[0]->sort(col_id+1,Qt::DescendingOrder);
+}
 
 void MainWindow::ft_LancerTri(int tri_id)
 {
@@ -1417,66 +1872,66 @@ void MainWindow::ft_LancerTri(int tri_id)
     colonne_tri = tri_id;
 
     // retirer affichage de selection de boule
-    Gtv_MesPossibles->clearSelection();
-    Gtv_MesPossibles->clearFocus();
+    G_tbv_MesPossibles->clearSelection();
+    G_tbv_MesPossibles->clearFocus();
 
     // Memoriser la recherche precedente eventuelle
-    int boule = DB_tirages->CouleurVersBid(Gtv_MesPossibles);
+    int boule = DB_tirages->CouleurVersBid(G_tbv_MesPossibles);
 
     if(boule)
     {
         // Effacer les recherches de boules precedentes
-        DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),Gtv_MesPossibles);
+        DB_tirages->MLB_DansMesPossibles(0,QBrush(Qt::NoBrush),G_tbv_MesPossibles);
     }
 
     // Effectuer l'affichage du trie concerne pour toute les boules du tirage
     for(col_id = 0; col_id < 5;col_id++)
     {
-        int b_id = BouleIdFromColId(col_id);
+        int b_id = BidFCId_MesPossibles(col_id,G_tbv_MesPossibles);
 
         if(b_id)
         {
             // Montrer les nouveaux resultats
-            DB_tirages->EffectuerTrieMesPossibles(tri_id,col_id,b_id,&configJeu,Gsim_MesPossibles);
+            DB_tirages->EffectuerTrieMesPossibles(tri_id,col_id,b_id,&configJeu,G_sim_MesPossibles);
         }
     }
 
     // Mise en evidence numero commun
-    DB_tirages->MLB_MontreLesCommuns(&configJeu,Gtv_MesPossibles);
+    DB_tirages->MLB_MontreLesCommuns(&configJeu,G_tbv_MesPossibles);
 
     if(boule)
     {
         // Remontrer la recherche eventuelle
-        DB_tirages->MLB_DansMesPossibles(boule, QBrush(Qt::yellow),Gtv_MesPossibles);
+        DB_tirages->MLB_DansMesPossibles(boule, QBrush(Qt::yellow),G_tbv_MesPossibles);
     }
 
 }
 
-void MainWindow::ft2(void)
+void MainWindow::slot_ft2Possibles(void)
 {
     ft_LancerTri(0);
     //qsim_Voisins->sort(1);
 }
 
-void MainWindow::ft3(void)
+void MainWindow::slot_ft3Possibles(void)
 {
     ft_LancerTri(1);
     //qsim_Voisins->sort(2);
 }
 
-void MainWindow::ft4(void)
+void MainWindow::slot_ft4Possibles(void)
 {
     ft_LancerTri(2);
     //qsim_Voisins->sort(3);
 }
 
-void MainWindow::ft5(void)
+void MainWindow::slot_ft5Possibles(void)
 {
     ft_LancerTri(3);
     //qsim_Voisins->sort(4);
 }
 
-void MainWindow::ft6(void)
+void MainWindow::slot_ft6Possibles(void)
 {
     ft_LancerTri(4);
     //qsim_Voisins->sort(5);
@@ -2097,7 +2552,7 @@ void MainWindow::TST_LBcDistBr(int zn,stTiragesDef *pConf,int dist, QStringList 
                 "where (";
     msg = (msg).arg(dist);
 
-    QString msg_2 = DB_tirages->TST_ZoneRequete(pConf, zn,"or",bc);
+    QString msg_2 = DB_tirages->TST_ZoneRequete(pConf, zn,"or",bc,"=");
     msg_2= msg+ msg_2+ " ))as r2;" ;
 
 
@@ -2270,16 +2725,16 @@ void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
     // recuperer la ligne de la table
     //int col = index.model()->columnCount();//myDataTableModel()->rowCount();
     int val = index.model()->index(index.row(),0).data().toInt();
-    QAbstractItemModel *mon_model =Gtv_Tirages->model();
+    QAbstractItemModel *mon_model =G_tbv_Tirages->model();
     QModelIndex item1 = mon_model->index(0,0, QModelIndex());
 
     if (item1.isValid()){
         item1 = item1.model()->index(val-1,0);
-        Gtv_Tirages->setCurrentIndex(item1);
-        Gtv_Tirages->scrollTo(item1);
-        Gtv_Tirages->selectRow(val-1);
+        G_tbv_Tirages->setCurrentIndex(item1);
+        G_tbv_Tirages->scrollTo(item1);
+        G_tbv_Tirages->selectRow(val-1);
 
-        QItemSelectionModel *selectionModel (Gtv_Tirages->selectionModel());
+        QItemSelectionModel *selectionModel (G_tbv_Tirages->selectionModel());
         QItemSelection macellule(item1, item1);
         selectionModel->select(macellule, QItemSelectionModel::Select);
     }

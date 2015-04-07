@@ -123,12 +123,15 @@ public:
   void AfficherResultatCouverture(stTiragesDef *pConf, QWidget *parent, QTableView *cibleview);
   void DistributionSortieDeBoule(int boule, QStandardItemModel *modele, stTiragesDef *pRef);
   void RechercheVoisin(int boule, int zn, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *fen);
+  void RechercheAbsent(int boule, int zn, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *fen);
   int TotalRechercheVoisinADistanceDe(int dist, int b_id, int zn, stTiragesDef *pConf, int voisin);
+  bool RechercheAbsentADistanceDe(int dist, int b_id, int zn, stTiragesDef *pConf, int voisin);
   void CouvertureBase(QStandardItemModel *dest, stTiragesDef *pRef);
   void MontrerLaBoule(int boule, QTableView *fen);
   void MLB_DansCouverture(int boule, stTiragesDef *pConf,QTableView *fen);
   //void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QStandardItemModel *fen);
   void MontreMesPossibles(const QModelIndex & index, stTiragesDef *pConf, QTableView *qfen);
+  void MontreMesAbsents(const QModelIndex & index, stTiragesDef *pConf, QTableView *qfen);
   void MLB_MontreLesCommuns(stTiragesDef * pConf,QTableView *qfen);
   bool CreerColonneOrdreArrivee(int id, stTiragesDef *pConf);
   void MLB_DansLaQtTabView(int boule, QTableView *fen);
@@ -137,6 +140,7 @@ public:
   void MLP_DansLaQtTabView(stTiragesDef *pConf, QString etude, QStandardItemModel *fen); // Montre la parite
   void PopulateCellMenu(int b_id, int v_id, int zone, stTiragesDef *pConf, QMenu *menu, QObject *receiver);
   void EffectuerTrieMesPossibles(int tri_id, int col_id, int b_id, stTiragesDef *pConf, QStandardItemModel * vue);
+  void EffectuerTrieMesAbsents(int tri_id, int col_id, int b_id, stTiragesDef *pConf, QStandardItemModel * vue);
   void TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, QStandardItemModel *modele);
   void CouvMontrerProbable(int i, int col_m,int col_v,QStandardItemModel *dest);
   //void RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTableView *base);
@@ -147,7 +151,8 @@ public:
   void TST_RechercheVoisin(QStringList &boules, int zn, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *modele);
   int TST_TotalRechercheVoisinADistanceDe(int zn, stTiragesDef *pConf, int dist, int v_id, QStringList &boules);
   QString TST_ConstruireWhereData(int zn, stTiragesDef *pConf,QStringList &boules);
-  QString TST_ZoneRequete(stTiragesDef *pConf, int zone,QString flag,int boule);
+  QString TST_ZoneRequete(stTiragesDef *pConf, int zone, QString operateur, int boule, QString critere);
+  QString TST_GetIntervalCouverture(int etendue);
   void TST_LBcDistBr(int zn,stTiragesDef *pConf,int dist, int br,int bc);
 
 public slots:
@@ -158,9 +163,13 @@ private:
   void RangerValeurResultat(int &lgn, QString &msg, int &val, QStandardItemModel *&qsim_ptr);
   void AfficherMaxOccurenceBoule(int boule, int zn, stTiragesDef *pConf, QLabel *l_nb);
   bool CreerTableVoisinsDeBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins);
+  bool CreerTableAbsentDeBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins);
   void RechercherVoisinDeLaBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins);
+  void RechercherAbsentDeLaBoule(int b_id, int zone, stTiragesDef *pConf, int max_absents);
   void MontrerResultatRechercheVoisins(QStandardItemModel *modele, int zone, stTiragesDef *pConf, int b_id);
+  void MontrerResultatRechercheAbsent(QStandardItemModel *modele,int zone, stTiragesDef *pConf,int b_id);
   void MontrerDetailCombinaison(QString msg);
+  void CreerTablePonderationAbsentDeBoule(int b_id, int zone, stTiragesDef *pConf);
 
 private:
   QSqlDatabase db;
