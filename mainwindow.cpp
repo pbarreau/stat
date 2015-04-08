@@ -5,6 +5,9 @@
 #include <QtGui>
 #include <QFormLayout>
 
+//#include <QtPlugin>
+//Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
+
 #if 0
 #include <QGraphicsEllipseItem>
 #include <QGraphicsScene>
@@ -1862,8 +1865,8 @@ void MainWindow::ft_TriDesAbsents(int tri_id)
         DB_tirages->MLB_DansMesPossibles(boule, QBrush(Qt::yellow),G_tbv_LesAbsents);
     }
 
-    G_sim_Voisins[0]->sort(col_id+1,Qt::AscendingOrder);
-    G_sim_Voisins[0]->sort(col_id+1,Qt::DescendingOrder);
+    G_sim_Voisins[zn]->sort(tri_id+1,Qt::AscendingOrder);
+    G_sim_Voisins[zn]->sort(tri_id+1,Qt::DescendingOrder);
 }
 
 void MainWindow::ft_LancerTri(int tri_id)
@@ -1904,6 +1907,18 @@ void MainWindow::ft_LancerTri(int tri_id)
         // Remontrer la recherche eventuelle
         DB_tirages->MLB_DansMesPossibles(boule, QBrush(Qt::yellow),G_tbv_MesPossibles);
     }
+
+    // Tableau voisin actualise
+    if(tri_id >= 0){
+        col_id =  tri_id;
+    }
+    else
+    {
+        col_id = 5;
+    }
+
+    G_sim_Voisins[0]->sort(col_id+1,Qt::AscendingOrder);
+    G_sim_Voisins[0]->sort(col_id+1,Qt::DescendingOrder);
 
 }
 

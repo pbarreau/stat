@@ -199,7 +199,10 @@ void GererBase::MontrerLaBoule(int boule, QTableView *fen)
             " or b4=" + QString::number(boule) +
             " or b5=" + QString::number(boule) + ") limit 1";
     status = selection.exec(msg);
-    selection.first(); // derniere ligne ayant le numero
+
+    if (status)
+        selection.first(); // derniere ligne ayant le numero
+
     if(selection.isValid()){
         int depart = 2;
         int i;
@@ -321,7 +324,7 @@ void GererBase::EffectuerTrieMesAbsents(int tri_id, int col_id,int b_id,stTirage
     QString tblColName[5]={"r0","rp1","rp2","rn1","rn2"};
     int zn = 0;
     msg = "select b from tabs_" + pConf->nomZone[zn]+"_" +QString::number(b_id)
-            + tblColName[tri_id] + " order by nb desc; ";
+            + tblColName[tri_id] + " order by nb desc, b asc; ";
 
     status = query.exec(msg);
 
@@ -355,12 +358,17 @@ void GererBase::EffectuerTrieMesPossibles(int tri_id, int col_id,int b_id,stTira
     QString tblColName[5]={"r0","rp1","rp2","rn1","rn2"};
     int zn = 0;
 
-    //select r30.id,r0 from r30 inner join union_30 on union_30.id=r30.id order by r0 desc;
+#ifdef SQL_EXEMPLE
+    select * from union_b13 order by T desc, id asc;
+    select r_b_13.id,r0 from r_b_13
+            inner join union_b13 on union_b13.id=r_b_13.id
+            order by r_b_13.r0 desc,r_b_13.id asc;
+#endif
 
     if(tri_id == -1)
     {
         msg = "select * from union_"+pConf->nomZone[zn]+QString::number(b_id)+
-                " order by T desc;";
+                " order by T desc, id asc;";
     }
     else
     {
@@ -368,10 +376,16 @@ void GererBase::EffectuerTrieMesPossibles(int tri_id, int col_id,int b_id,stTira
                 +tblColName[tri_id]+
                 " from r_"+pConf->nomZone[zn]+"_"+QString::number(b_id)+
                 " inner join union_"+pConf->nomZone[zn]+QString::number(b_id)+
-                " on union_"+pConf->nomZone[zn]+QString::number(b_id)+".id="
-                                                                      "r_"+pConf->nomZone[zn]+"_"+QString::number(b_id)+
-                ".id order by "+ tblColName[tri_id]+" desc;";
+                " on union_"+pConf->nomZone[zn]+QString::number(b_id)+".id=" +
+                "r_"+pConf->nomZone[zn]+"_"+QString::number(b_id)+
+                ".id order by " +
+                "r_"+pConf->nomZone[zn]+"_"+QString::number(b_id)+ "."+ tblColName[tri_id]+" desc," +
+                "r_"+pConf->nomZone[zn]+"_"+QString::number(b_id)+ ".id asc;";
     }
+
+#ifndef QT_NO_DEBUG
+    qDebug () << msg;
+#endif
 
     status = query.exec(msg);
 
@@ -488,7 +502,7 @@ void GererBase::MontreMesAbsents(const QModelIndex & index,
         fen->setHeaderData(i,Qt::Horizontal,"b"+ QString::number(boules[i]));
 
         msg = "select b from tabs_" + pConf->nomZone[zn]+"_" +QString::number(boules[i])
-                + "r0 order by nb desc; ";
+                + "r0 order by nb desc, b asc; ";
         //msg_2 = msg_2 + msg;
 
         status = selection.exec(msg);
