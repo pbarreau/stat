@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     pointtirage.cpp \
     pslot.cpp \
     RemplirBase.cpp \
-    tirages.cpp
+    tirages.cpp \
+    labelclickable.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -34,7 +35,8 @@ HEADERS  += mainwindow.h \
     mygraphicsview.h \
     pointtirage.h \
     tirages.h \
-    types_jeux.h
+    types_jeux.h \
+    labelclickable.h
 
 FORMS    += mainwindow.ui \
     choixjeux.ui

@@ -90,6 +90,7 @@ public slots:
     void slot_ftAbs5(void);
     void slot_TST_DetailsCombinaison( const QModelIndex & index);
     void slot_RechercherLesTirages(const QModelIndex & index);
+    void slot_RepererLesTirages(const QString &myData);
     void slot_MontreLeTirage(const QModelIndex & index);
 
 private:
@@ -149,7 +150,7 @@ private:
     QAction *exitAct;
     QAction *aboutAct;
 
-    QLabel **G_lab_nbSorties;
+    LabelClickable **G_lab_nbSorties;
     QLabel **G_lab_nbAbsents;
     QTabWidget *G_tbw_MontabWidget;
     QTableView *G_tbv_Tirages;

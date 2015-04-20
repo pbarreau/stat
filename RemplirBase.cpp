@@ -14,6 +14,7 @@
 
 #include "gererbase.h"
 #include "tirages.h"
+#include "labelclickable.h"
 
 QString req_msg(int zone, int boule, stTiragesDef *ref);
 // 1,$s/ r"/ r_"\+pConf->nomZone[zone]\+"_"/g
@@ -202,7 +203,7 @@ QString GererBase::TST_ZoneRequete(stTiragesDef *pConf, int zone, QString operat
     return ret_msg;
 }
 
-void GererBase::AfficherMaxOccurenceBoule(int boule,int zn,stTiragesDef *pConf, QLabel *l_nb)
+void GererBase::AfficherMaxOccurenceBoule(int boule, int zn, stTiragesDef *pConf, LabelClickable *l_nb)
 {
     QSqlQuery query(db);
     QString msg;
@@ -640,7 +641,7 @@ bool GererBase::CreerTableVoisinsDeBoule(int b_id, int zone, stTiragesDef *pConf
 
 
 void GererBase::TST_RechercheVoisin(QStringList &boules, int zn,stTiragesDef *pConf,
-                                    QLabel *l_nb, QStandardItemModel *modele)
+                                    LabelClickable *l_nb, QStandardItemModel *modele)
 {
     QSqlQuery query;
     QString msg = "select count (*)  from tirages where (";
@@ -789,7 +790,7 @@ void GererBase::RechercheAbsent(int boule, int zn, stTiragesDef *pConf,
 }
 
 void GererBase::RechercheVoisin(int boule, int zn, stTiragesDef *pConf,
-                                QLabel *l_nb, QStandardItemModel *modele)
+                                LabelClickable *l_nb, QStandardItemModel *modele)
 {
     QSqlQuery query(db);
     QString msg;

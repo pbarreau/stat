@@ -14,6 +14,8 @@
 #include <QTabWidget>
 #include <QMdiArea>
 
+#include "labelclickable.h"
+
 #define C_EUR_NB_ZN 2       /// Constante jeu euro nb de zone 2
 #define C_LTO_NB_ZN 2
 #define CL_PAIR     "p"     /// Constante Label pour parite
@@ -122,7 +124,7 @@ public:
   void AfficherBase(stTiragesDef *pConf, QWidget *parent, QTableView *cibleview);
   void AfficherResultatCouverture(stTiragesDef *pConf, QWidget *parent, QTableView *cibleview);
   void DistributionSortieDeBoule(int boule, QStandardItemModel *modele, stTiragesDef *pRef);
-  void RechercheVoisin(int boule, int zn, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *fen);
+  void RechercheVoisin(int boule, int zn, stTiragesDef *pConf, LabelClickable *l_nb, QStandardItemModel *fen);
   void RechercheAbsent(int boule, int zn, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *fen);
   int TotalRechercheVoisinADistanceDe(int dist, int b_id, int zn, stTiragesDef *pConf, int voisin);
   bool RechercheAbsentADistanceDe(int dist, int b_id, int zn, stTiragesDef *pConf, int voisin);
@@ -148,7 +150,7 @@ public:
   void MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen);
   void RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets);
   bool TST_Requete(QString &sql_msg, int lgn, QString &col, QStandardItemModel *&qsim_ptr);
-  void TST_RechercheVoisin(QStringList &boules, int zn, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *modele);
+  void TST_RechercheVoisin(QStringList &boules, int zn, stTiragesDef *pConf, LabelClickable *l_nb, QStandardItemModel *modele);
   int TST_TotalRechercheVoisinADistanceDe(int zn, stTiragesDef *pConf, int dist, int v_id, QStringList &boules);
   QString TST_ConstruireWhereData(int zn, stTiragesDef *pConf,QStringList &boules);
   QString TST_ZoneRequete(stTiragesDef *pConf, int zone, QString operateur, int boule, QString critere);
@@ -161,7 +163,7 @@ public slots:
 private:
   void combirec(int k, QStringList &l, const QString &s, QStringList &ret);
   void RangerValeurResultat(int &lgn, QString &msg, int &val, QStandardItemModel *&qsim_ptr);
-  void AfficherMaxOccurenceBoule(int boule, int zn, stTiragesDef *pConf, QLabel *l_nb);
+  void AfficherMaxOccurenceBoule(int boule, int zn, stTiragesDef *pConf, LabelClickable *l_nb);
   bool CreerTableVoisinsDeBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins);
   bool CreerTableAbsentDeBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins);
   void RechercherVoisinDeLaBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins);

@@ -4,6 +4,7 @@
 
 #include <QtGui>
 #include <QFormLayout>
+#include "labelclickable.h"
 
 //#include <QtPlugin>
 //Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
@@ -414,7 +415,7 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
 
     G_tbv_Voisins = new QTableView*[nb_zn];
     G_sim_Voisins= new QStandardItemModel*[nb_zn];
-    G_lab_nbSorties = new QLabel*[nb_zn];
+    G_lab_nbSorties = new LabelClickable*[nb_zn];
     QFormLayout **layT_Voisin = new QFormLayout*[nb_zn];
     QWidget **tmpT_Widget = new QWidget*[nb_zn];
 
@@ -422,10 +423,11 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
     {
         QTableView *tmpTblView = new QTableView;
         QStandardItemModel * tmpStdItem =  new QStandardItemModel(configJeu.limites[zn].max,7);
-        QLabel *tmpLabel = new QLabel;
+        LabelClickable *tmpLabel = new LabelClickable;
         QFormLayout *tmpLayout = new QFormLayout;
         QWidget *tmpWidget = new QWidget;
 
+        tmpLabel->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
         G_sim_Voisins[zn]= tmpStdItem;
         G_tbv_Voisins[zn] = tmpTblView;
         G_lab_nbSorties[zn]= tmpLabel;
@@ -487,6 +489,11 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
         // double click dans fenetre voisin pour afficher details boule
         connect( G_tbv_Voisins[zn], SIGNAL( doubleClicked(QModelIndex)) ,
                  this, SLOT( slot_RechercherLesTirages( QModelIndex) ) );
+
+        // Double click sur libellé recherche boule
+        connect( G_lab_nbSorties[zn], SIGNAL( clicked(QString)) ,
+                 this, SLOT( slot_RepererLesTirages(QString) ) );
+
 
     }
 
@@ -1494,6 +1501,32 @@ void MainWindow::slot_MontrerTirageDansBase(const QModelIndex & index)
     }
 }
 #endif
+void MainWindow::slot_RepererLesTirages(const QString & myData)
+{
+    // qDebug()<< "link :" <<  myData;
+    QStringList list;
+    QRegExp reg_number ("(\\d+)");
+    //QString  str_br = G_lab_nbSorties[zn]->text();
+    int pos = 0;
+    int zn=0;
+
+    while ((pos = reg_number.indexIn(myData, pos)) != -1) {
+        list << reg_number.cap(1);
+        pos += reg_number.matchedLength();
+    }
+
+    // on retire le dernier chiffre de str_br
+    if(!list.isEmpty())
+    {
+        list.removeLast();
+    }
+
+    if(!list.isEmpty())
+    {
+        TST_MontreTirageAyantLaBoule(zn,&configJeu,list);
+    }
+}
+
 void MainWindow::slot_RechercherLesTirages(const QModelIndex & index)
 {
     int val = 0;
