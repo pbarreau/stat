@@ -22,6 +22,11 @@
 #include "mygraphicsview.h"
 #include "pointtirage.h"
 
+QGraphicsScene * MyGraphicsView::GetScene(void)
+{
+    return Scene;
+}
+
 MyGraphicsView::MyGraphicsView(eGType gtype, QGraphicsView *ptr_view, QString titre, QColor coul_fond)
 {
 

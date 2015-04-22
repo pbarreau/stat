@@ -18,6 +18,7 @@
 #include "MyGraphicsView.h"
 #include "gererbase.h"
 #include "tirages.h"
+#include "pointtirage.h"
 
 namespace Ui {
 class MainWindow;
@@ -183,6 +184,7 @@ private:
     QGraphicsView *qgr_view;
     MyGraphicsView *myview[3];
     UnConteneurDessin *une_vue[3];
+    PointTirage *ptir;
 
     QMenu *Gmen_TrieMesPossibles;
     QAction * Gaci_MesPossibles[6];

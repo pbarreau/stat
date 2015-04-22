@@ -100,6 +100,12 @@ void PointTirage::TST_TracerLigne(QGraphicsSceneMouseEvent *event)
   QToolTip::showText(pos_item_screen,"QString::number(poids",0);
 }
 
+// Montre un point a partir d'un tirage
+void PointTirage::TST_ShowPointFromTirage()
+{
+
+}
+
 QString PointTirage::TST_GetTirageFromPoint(int x_val)
 {
   bool status = false;

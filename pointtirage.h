@@ -24,6 +24,7 @@ public:
   QString TST_GetTiragePariteFromPoint(int x_val);
   QString TST_GetTirageOrdreFromPoint(int x_val);
   QString TST_GetTirageGroupeFromPoint(int x_val);
+  void TST_ShowPointFromTirage();
 
 signals:
   

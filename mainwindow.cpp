@@ -5,6 +5,7 @@
 #include <QtGui>
 #include <QFormLayout>
 #include "labelclickable.h"
+#include "pointtirage.h"
 
 //#include <QtPlugin>
 //Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
@@ -1691,6 +1692,15 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
         // Une Boule Trouvee la montrer dans les autres fenetres
         G_tbv_Tirages->clearSelection();
         G_tbv_Tirages->clearFocus();
+
+        /// Montrer dans les courbes
+        ptir = new PointTirage(configJeu.choixJeu,eTirage);
+        //QGraphicsItem *unPoint = new QGraphicsItem;
+        //unPoint->setPos(10);
+        ptir->setPos(10,69.8);
+        QGraphicsScene *pScene;
+        pScene = myview[0]->GetScene();
+        pScene->setFocusItem(ptir);
 
         DB_tirages->MontrerLaBoule(cellule,G_tbv_Tirages);
         DB_tirages->MLB_DansLaQtTabView(cellule,G_tbv_Voisins[0]);
