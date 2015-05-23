@@ -21,6 +21,14 @@ QString req_msg(int zone, int boule, stTiragesDef *ref);
 
 void GererBase::TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, QStandardItemModel *modele)
 {
+    QStringList lst_boule;
+    const int d[3]={-1,-2,0};
+    const int col[3]={6,7,8};
+    //const QColor fond[3]={QColor(255,156,86,167),Qt::green,Qt::cyan};
+    const QColor fond[3]={QColor(255,156,86,167),QColor(140,255,124,167),QColor(10,255,50,167)};
+
+
+#if 0
     bool status = false;
 
     QSqlQuery query;
@@ -40,12 +48,58 @@ void GererBase::TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, Q
             int value = rec.value(0).toInt();
 
             // Mettre le resultat dans tableau voisins
-            QStandardItem *item2 = modele->item(boule-1,6);
+            QStandardItem *item2 = modele->item(boule-1,8);
             item2->setData(value,Qt::DisplayRole);
             item2->setBackground(QBrush(Qt::cyan));
-            modele->setItem(boule-1,6,item2);
+            modele->setItem(boule-1,8,item2);
 
         }
+        query.finish();
+    }
+#endif
+
+    // Total a n+1 et n+2 et n
+    // Rechercher pour la boule les voisins identique
+    lst_boule<< QString::number(boule);
+    for(int ref = 0; ref <3 ; ref ++)
+    {
+        // Recuperer pointeur de cellule
+        QStandardItem *item1 = modele->item(boule-1,col[ref]);
+        int val = 0;
+        // Rechercher max pour la boule
+        if(d[ref]==0)
+        {
+            bool status = false;
+
+            QSqlQuery query;
+            QString msg="";
+
+            // Recherche du maximum pour cette boule
+            msg= TST_ZoneRequete(pConf, zone,"or",boule,"=");
+            msg = "select count (*)  from tirages where (" +msg+ ");";
+            status = query.exec(msg);
+
+            if(status){
+                query.first();
+
+                if(query.isValid())
+                {
+                    QSqlRecord rec  = query.record();
+                    val = rec.value(0).toInt();
+                }
+                query.finish();
+            }
+
+        }
+        else
+        {
+            val = TST_TotalRechercheVoisinADistanceDe(zone,pConf,d[ref],boule,lst_boule);
+        }
+
+        // Mettre la valeur trouvee dans le tableau des voisins
+        item1->setData(val,Qt::DisplayRole);
+        item1->setBackground(QBrush(fond[ref]));
+        modele->setItem(boule-1,col[ref],item1);
     }
 }
 
@@ -562,7 +616,7 @@ void GererBase::CreerTablePonderationAbsentDeBoule(int b_id, int zn, stTiragesDe
 
                             msg = (msg).arg(ecart[i]);
 #ifndef QT_NO_DEBUG
-    //qDebug()<< msg;
+                            //qDebug()<< msg;
 #endif
 
                             QSqlQuery query_2;
@@ -698,6 +752,18 @@ void GererBase::TST_RechercheVoisin(QStringList &boules, int zn,stTiragesDef *pC
 
             // Mettre la valeur trouvee dans le tableau des voisins
             item1->setData(val,Qt::DisplayRole);
+#if 0
+            if(ref == 1 || ref == 2)
+            {
+                QColor fond[2]={Qt::red,Qt::green};
+                // Mettre le resultat dans tableau voisins a la bonne place
+                QStandardItem *item2 = modele->item(i,ref+5);
+                item2->setData(val,Qt::DisplayRole);
+                item2->setBackground(QBrush(fond[ref-1]));
+                modele->setItem(i,ref+5,item2);
+
+            }
+#endif
         }
     }
 

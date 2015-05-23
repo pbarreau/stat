@@ -412,6 +412,7 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
     QFormLayout *lay_return = new QFormLayout;
 
     int nb_zn = configJeu.nb_zone;
+    int nb_colH = 9;
     QTabWidget *tabWidget = new QTabWidget;
 
     G_tbv_Voisins = new QTableView*[nb_zn];
@@ -423,7 +424,7 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
     for(int zn = 0;zn<nb_zn;zn++)
     {
         QTableView *tmpTblView = new QTableView;
-        QStandardItemModel * tmpStdItem =  new QStandardItemModel(configJeu.limites[zn].max,7);
+        QStandardItemModel * tmpStdItem =  new QStandardItemModel(configJeu.limites[zn].max,nb_colH);
         LabelClickable *tmpLabel = new LabelClickable;
         QFormLayout *tmpLayout = new QFormLayout;
         QWidget *tmpWidget = new QWidget;
@@ -442,7 +443,9 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
         G_sim_Voisins[zn]->setHeaderData(3,Qt::Horizontal,"V:+2");
         G_sim_Voisins[zn]->setHeaderData(4,Qt::Horizontal,"V:-1");
         G_sim_Voisins[zn]->setHeaderData(5,Qt::Horizontal,"V:-2");
-        G_sim_Voisins[zn]->setHeaderData(6,Qt::Horizontal,"NbS");
+        G_sim_Voisins[zn]->setHeaderData(6,Qt::Horizontal,"T:+1");
+        G_sim_Voisins[zn]->setHeaderData(7,Qt::Horizontal,"T:+2");
+        G_sim_Voisins[zn]->setHeaderData(8,Qt::Horizontal,"NbS");
 
         // Ecriture du numero de boule et reservation item position
         for(int i=1;i<=configJeu.limites[zn].max;i++)
@@ -450,7 +453,7 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
             QStandardItem *item = new QStandardItem();
             item->setData(i,Qt::DisplayRole);
             G_sim_Voisins[zn]->setItem(i-1,0,item);
-            for (int j =1; j<7;j++)
+            for (int j =1; j<nb_colH;j++)
             {
                 QStandardItem *item_2 = new QStandardItem();
                 G_sim_Voisins[zn]->setItem(i-1,j,item_2);
@@ -458,7 +461,7 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
         }
 
         G_tbv_Voisins[zn]->setModel(G_sim_Voisins[zn]);
-        for(int i=0;i<=6;i++)
+        for(int i=0;i<=nb_colH-1;i++)
         {
             G_tbv_Voisins[zn]->setColumnWidth(i,50);
         }
@@ -473,7 +476,7 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
         G_tbv_Voisins[zn]->setSelectionBehavior(QAbstractItemView::SelectItems);
         //qtvT_Voisins[zn]->setSelectionMode(QAbstractItemView::SingleSelection);
         //qtvT_Voisins[zn]->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
-        G_tbv_Voisins[zn]->setFixedSize(395,390);
+        G_tbv_Voisins[zn]->setFixedSize(500,390);
 
         G_lab_nbSorties[zn]->setText("Nb total de sorties:");
         layT_Voisin[zn]->addWidget(G_lab_nbSorties[zn]);
