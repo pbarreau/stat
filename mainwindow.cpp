@@ -1320,6 +1320,13 @@ void MainWindow::fen_Parites(void)
              this, SLOT( slot_MontrerTirageDansBase( QModelIndex) ) );
 #endif
 
+    // double click dans fenetre voisin pour afficher details boule
+    connect( G_tbv_Parites, SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( slot_F2_RechercherLesTirages( QModelIndex) ) );
+    connect( qtv_E1, SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( slot_F2_RechercherLesTirages( QModelIndex) ) );
+
+
     zoneCentrale->addSubWindow(qw_Parites);
     qw_Parites->setVisible(true);
 }
@@ -1527,8 +1534,33 @@ void MainWindow::slot_RepererLesTirages(const QString & myData)
 
     if(!list.isEmpty())
     {
-        TST_MontreTirageAyantLaBoule(zn,&configJeu,list);
+        TST_MontreTirageAyantCritere(NE_FDJ::critere_boule,zn,&configJeu,list);
     }
+}
+
+void MainWindow::slot_F2_RechercherLesTirages(const QModelIndex & index)
+{
+    int col=0;
+    int val = 0;
+    int zn=0;
+    QStringList list;
+
+    // determination de la table dans l'onglet ayant recu le click
+    if (index.internalPointer() == G_sim_Parites->index(index.row(),index.column()).internalPointer())
+    {
+        col = index.column();
+        val = G_sim_Parites->index(index.row(),0).data().toInt();
+        list << QString::number(val);
+        TST_MontreTirageAyantCritere(NE_FDJ::critere_parite,zn,&configJeu,list);
+    }
+
+    if (index.internalPointer() == G_sim_Ensemble_1->index(index.row(),index.column()).internalPointer())
+    {
+        val = G_sim_Ensemble_1->index(index.row(),0).data().toInt();
+        list << QString::number(val);
+        TST_MontreTirageAyantCritere(NE_FDJ::critere_enemble,zn,&configJeu,list);
+    }
+
 }
 
 void MainWindow::slot_RechercherLesTirages(const QModelIndex & index)
@@ -1538,6 +1570,7 @@ void MainWindow::slot_RechercherLesTirages(const QModelIndex & index)
     int col=0;
     int zn = -1;
     const int d[5]={0,1,2,-1,-2};
+    const int t[2]={1,2};
 
     // determination de la table dans l'onglet ayant recu le click
     if (index.internalPointer() == G_sim_Voisins[0]->index(index.row(),index.column()).internalPointer())
@@ -1560,12 +1593,14 @@ void MainWindow::slot_RechercherLesTirages(const QModelIndex & index)
             val = G_sim_Voisins[zn]->index(index.row(),0).data().toInt();
 
             col = index.column();
-            if(col>=6)
+
+            if(col==CL_IHM_TOT_0)
             {
                 list << QString::number(val);
-                TST_MontreTirageAyantLaBoule(zn,&configJeu,list);
+                TST_MontreTirageAyantCritere(NE_FDJ::critere_boule,zn,&configJeu,list);
             }
-            else
+
+            if(col >0 && col < CL_IHM_TOT_1)
             {
                 QRegExp reg_number ("(\\d+)");
                 QString  str_br = G_lab_nbSorties[zn]->text();
@@ -1584,14 +1619,17 @@ void MainWindow::slot_RechercherLesTirages(const QModelIndex & index)
 
                 if(!list.isEmpty())
                 {
-                    if(col>0 && col< 6)
-                    {
-                        //DB_tirages->TST_LBcDistBr(zn,&configJeu,d[col-1],br,val);
-                        this->TST_LBcDistBr(zn,&configJeu,d[col-1],list,val);
-                    }
+                    //DB_tirages->TST_LBcDistBr(zn,&configJeu,d[col-1],br,val);
+                    this->TST_LBcDistBr(zn,&configJeu,d[col-1],list,val);
 
                 }
 
+            }
+
+            if(col >= CL_IHM_TOT_1 && col <= CL_IHM_TOT_2)
+            {
+                list << QString::number(val);
+                this->TST_LBcDistBr(zn,&configJeu,t[col-CL_IHM_TOT_1],list,val);
             }
         }
     }
@@ -2687,7 +2725,7 @@ void MainWindow::TST_LBcDistBr(int zn,stTiragesDef *pConf,int dist, QStringList 
 }
 ////////
 
-void MainWindow::TST_MontreTirageAyantLaBoule(int zn,stTiragesDef *pConf, QStringList boules)
+void MainWindow::TST_MontreTirageAyantCritere(NE_FDJ::E_typeCritere lecritere,int zn,stTiragesDef *pConf, QStringList boules)
 {
 #if 0
     select *  from tirages
@@ -2707,7 +2745,26 @@ void MainWindow::TST_MontreTirageAyantLaBoule(int zn,stTiragesDef *pConf, QStrin
     QString msg = "select *  from tirages where (";
     //QStringList boules;
     //boules << QString::number(br);
-    QString w_msg = DB_tirages->TST_ConstruireWhereData(zn,pConf,boules);
+
+    QString w_msg = "";
+
+    switch(lecritere)
+    {
+    case NE_FDJ::critere_boule:
+        w_msg = DB_tirages->TST_ConstruireWhereData(zn,pConf,boules);
+        break;
+    case NE_FDJ::critere_parite:
+        w_msg = pConf->nomZone[zn]+CL_PAIR+"="+boules.at(0);
+        break;
+    case NE_FDJ::critere_enemble:
+        w_msg =pConf->nomZone[zn]+CL_SGRP+"="+boules.at(0);
+        //QString::number(j)
+        break;
+
+    default:
+        break;
+    }
+
     msg = msg + w_msg;
     msg = msg + ");";
 

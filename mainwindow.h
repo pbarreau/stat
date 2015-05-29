@@ -90,7 +90,9 @@ public slots:
     void slot_ftAbs4(void);
     void slot_ftAbs5(void);
     void slot_TST_DetailsCombinaison( const QModelIndex & index);
+    void slot_F2_RechercherLesTirages(const QModelIndex & index);
     void slot_RechercherLesTirages(const QModelIndex & index);
+
     void slot_RepererLesTirages(const QString &myData);
     void slot_MontreLeTirage(const QModelIndex & index);
 
@@ -129,7 +131,7 @@ private:
     UnConteneurDessin * TST_Graphe_2(stTiragesDef *pConf);
     UnConteneurDessin * TST_Graphe_3(stTiragesDef *pConf);
     void TST_LBcDistBr(int zn, stTiragesDef *pConf, int dist, QStringList boules, int bc);
-    void TST_MontreTirageAyantLaBoule(int zn,stTiragesDef *pConf, QStringList boules);
+    void TST_MontreTirageAyantCritere(NE_FDJ::E_typeCritere lecritere, int zn, stTiragesDef *pConf, QStringList boules);
     QFormLayout * MonLayout_ChoixPossible(void);
     QFormLayout * MonLayout_Absent(void);
     QFormLayout * MonLayout_Ecarts(void);

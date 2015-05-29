@@ -22,10 +22,10 @@ QString req_msg(int zone, int boule, stTiragesDef *ref);
 void GererBase::TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, QStandardItemModel *modele)
 {
     QStringList lst_boule;
-    const int d[3]={-1,-2,0};
+    const int d[3]={1,2,0};
     const int col[3]={6,7,8};
     //const QColor fond[3]={QColor(255,156,86,167),Qt::green,Qt::cyan};
-    const QColor fond[3]={QColor(255,156,86,167),QColor(140,255,124,167),QColor(10,255,50,167)};
+    const QColor fond[3]={QColor(255,156,86,167),QColor(140,255,124,167),QColor(10,255,250,167)};
 
 
 #if 0
