@@ -132,11 +132,13 @@ private:
     UnConteneurDessin * TST_Graphe_3(stTiragesDef *pConf);
     void TST_LBcDistBr(int zn, stTiragesDef *pConf, int dist, QStringList boules, int bc);
     void TST_MontreTirageAyantCritere(NE_FDJ::E_typeCritere lecritere, int zn, stTiragesDef *pConf, QStringList boules);
+    void TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef *pConf);
     QFormLayout * MonLayout_ChoixPossible(void);
     QFormLayout * MonLayout_Absent(void);
     QFormLayout * MonLayout_Ecarts(void);
     QFormLayout * MonLayout_VoisinsPresent(void);
     QFormLayout * MonLayout_VoisinsAbsent(void);
+    QFormLayout * MonLayout_Parite();
 
 private:
     Ui::MainWindow *ui;
@@ -155,6 +157,7 @@ private:
 
     LabelClickable **G_lab_nbSorties;
     QLabel **G_lab_nbAbsents;
+    QLabel **G_lab_PariteVoisin;
     QTabWidget *G_tbw_MontabWidget;
     QTableView *G_tbv_Tirages;
     QTableView *G_tbv_CouvTirages;
@@ -165,6 +168,7 @@ private:
     QTableView *G_tbv_MesPossibles;
     QTableView *G_tbv_LesAbsents;
     QTableView *G_tbv_Parites;
+    QTableView **G_tbv_PariteVoisin;
     //void **tabqtv;
     QWidget *G_w_CouvTirages;
     QWidget *G_w_Tirages;
@@ -182,6 +186,7 @@ private:
     QStandardItemModel *G_sim_Ensemble_1 ;
     QStandardItemModel *G_sim_ud;
 
+    QStandardItemModel **G_sim_PariteVoisin ;
     QGraphicsScene *qgr_scene;
     QGraphicsView *qgr_view;
     MyGraphicsView *myview[3];
