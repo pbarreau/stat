@@ -92,6 +92,7 @@ public slots:
     void slot_TST_DetailsCombinaison( const QModelIndex & index);
     void slot_F2_RechercherLesTirages(const QModelIndex & index);
     void slot_F3_RechercherLesTirages(const QModelIndex & index);
+    void slot_F4_RechercherLesTirages(const QModelIndex & index);
     void slot_RechercherLesTirages(const QModelIndex & index);
 
     void slot_RepererLesTirages(const QString &myData);
@@ -141,6 +142,7 @@ private:
     QFormLayout * MonLayout_VoisinsPresent(void);
     QFormLayout * MonLayout_VoisinsAbsent(void);
     QFormLayout * MonLayout_Parite();
+    QFormLayout * MonLayout_Nsur2();
 
 private:
     Ui::MainWindow *ui;
@@ -160,6 +162,7 @@ private:
     LabelClickable **G_lab_nbSorties;
     QLabel **G_lab_nbAbsents;
     QLabel **G_lab_PariteVoisin;
+    QLabel **G_lab_Nsur2;
     QTabWidget *G_tbw_MontabWidget;
     QTableView *G_tbv_Tirages;
     QTableView *G_tbv_CouvTirages;
@@ -171,6 +174,7 @@ private:
     QTableView *G_tbv_LesAbsents;
     QTableView *G_tbv_Parites;
     QTableView **G_tbv_PariteVoisin;
+    QTableView **G_tbv_Nsur2;
     //void **tabqtv;
     QWidget *G_w_CouvTirages;
     QWidget *G_w_Tirages;
@@ -189,6 +193,7 @@ private:
     QStandardItemModel *G_sim_ud;
 
     QStandardItemModel **G_sim_PariteVoisin ;
+    QStandardItemModel **G_sim_Nsur2 ;
     QGraphicsScene *qgr_scene;
     QGraphicsView *qgr_view;
     MyGraphicsView *myview[3];

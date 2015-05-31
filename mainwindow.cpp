@@ -157,7 +157,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Prevision des prochains tirage basee sur la parite du dernier tirage
     TST_PrevisionType(NE_FDJ::critere_parite,&configJeu);
     // idem en regardant la valeur de n/2
-    //DB_tirages->TST_PrevisionType(NE_FDJ::critere_enemble,&configJeu);
+    TST_PrevisionType(NE_FDJ::critere_enemble,&configJeu);
 
 
     TST_Graphe(&configJeu);
@@ -862,13 +862,13 @@ void MainWindow::fen_MesPossibles(void)
     QFormLayout * design_onglet_2 = MonLayout_Absent();
     QFormLayout * design_onglet_3 = MonLayout_Ecarts();
     QFormLayout * design_onglet_4 = MonLayout_Parite();
-    //QFormLayout * design_onglet_5 = MonLayout_Nsur2();
+    QFormLayout * design_onglet_5 = MonLayout_Nsur2();
 
     wid_ForTop[0]->setLayout(design_onglet_1);
     wid_ForTop[1]->setLayout(design_onglet_2);
     wid_ForTop[2]->setLayout(design_onglet_3);
     wid_ForTop[3]->setLayout(design_onglet_4);
-    //wid_ForTop[4]->setLayout(design_onglet_5);
+    wid_ForTop[4]->setLayout(design_onglet_5);
 
     QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(tab_Top);
@@ -1193,6 +1193,95 @@ QFormLayout * MainWindow::MonLayout_Parite()
     return(lay_return);
 }
 //--------
+QFormLayout * MainWindow::MonLayout_Nsur2()
+{
+    QFormLayout *lay_return = new QFormLayout;
+
+    int nb_zn = configJeu.nb_zone;
+    QTabWidget *tab_conteneur = new QTabWidget;
+
+    G_tbv_Nsur2 = new QTableView*[nb_zn];
+    G_sim_Nsur2= new QStandardItemModel*[nb_zn];
+    G_lab_Nsur2 = new QLabel*[nb_zn];
+    QFormLayout **layT_Tmp_1 = new QFormLayout*[nb_zn];
+    QWidget **tmpT_Widget = new QWidget*[nb_zn];
+
+    QTableView ** fn_refTbv = G_tbv_Nsur2;
+    QStandardItemModel ** fn_refSim = G_sim_Nsur2;
+    QLabel ** fn_refLab = G_lab_Nsur2;
+
+    for(int zn = 0;zn<nb_zn;zn++)
+    {
+        QTableView *tmpTblView = new QTableView;
+        QStandardItemModel * tmpStdItem =  new QStandardItemModel(6,3);
+        QLabel *tmpLabel = new QLabel;
+        QFormLayout *tmpLayout = new QFormLayout;
+        QWidget *tmpWidget = new QWidget;
+
+        fn_refSim[zn]= tmpStdItem;
+        fn_refTbv[zn] = tmpTblView;
+        fn_refLab[zn]= tmpLabel;
+        layT_Tmp_1[zn] = tmpLayout;
+        tmpT_Widget[zn] = tmpWidget;
+
+        // entete du modele
+        fn_refSim[zn]->setHeaderData(0,Qt::Horizontal,"BPair");
+        fn_refSim[zn]->setHeaderData(1,Qt::Horizontal,"V:+1");
+        fn_refSim[zn]->setHeaderData(2,Qt::Horizontal,"V:+2");
+
+        // Ecriture du numero de boule et reservation item position
+        for(int i=1;i<=configJeu.nbElmZone[zn]+1;i++)
+        {
+            QStandardItem *item = new QStandardItem();
+            item->setData(i-1,Qt::DisplayRole);
+            fn_refSim[zn]->setItem(i-1,0,item);
+
+            for (int j = 1; j<=2;j++)
+            {
+                QStandardItem *item_2 = new QStandardItem();
+                fn_refSim[zn]->setItem(i-1,j,item_2);
+            }
+        }
+
+        fn_refTbv[zn]->setModel(fn_refSim[zn]);
+        for(int i=0;i<=2;i++)
+        {
+            fn_refTbv[zn]->setColumnWidth(i,50);
+        }
+
+        fn_refTbv[zn]->setSortingEnabled(true);
+        fn_refTbv[zn]->sortByColumn(0,Qt::AscendingOrder);
+        fn_refTbv[zn]->setAlternatingRowColors(true);
+        fn_refTbv[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        fn_refTbv[zn]->setSelectionBehavior(QAbstractItemView::SelectItems);
+        //qtvT_Voisins[zn]->setSelectionMode(QAbstractItemView::SingleSelection);
+        //qtvT_Voisins[zn]->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
+        fn_refTbv[zn]->setFixedSize(270,390);
+
+        fn_refLab[zn]->setText("Nb total de sorties:");
+        layT_Tmp_1[zn]->addWidget(fn_refLab[zn]);
+        layT_Tmp_1[zn]->addWidget(fn_refTbv[zn]);
+
+        tmpT_Widget[zn]->setLayout(layT_Tmp_1[zn]);
+        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+
+        // click dans fenetre voisin pour afficher boule
+        //connect( fn_refTbv[zn], SIGNAL( clicked(QModelIndex)) ,
+        //         this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
+
+        // double click dans fenetre voisin pour afficher details boule
+        connect( fn_refTbv[zn], SIGNAL( doubleClicked(QModelIndex)) ,
+                 this, SLOT( slot_F4_RechercherLesTirages( QModelIndex) ) );
+
+    }
+
+    // Memo du design
+    lay_return->addWidget(tab_conteneur);
+
+    return(lay_return);
+}
+//--------
+
 #if 0
 void MainWindow::fen_Ecarts(void)
 {
@@ -1790,6 +1879,66 @@ void MainWindow::slot_F3_RechercherLesTirages(const QModelIndex & index)
 
             QString titre = "Tirages d:" + QString::number(dist) +
                     "Ref P:"+list.at(0) +
+                    "Cible :"+QString::number(rch);
+
+            TST_FenetreReponses(titre,zn,msg_2,list,&configJeu);
+        }
+
+    }
+}
+
+void MainWindow::slot_F4_RechercherLesTirages(const QModelIndex & index)
+{
+    int rch = 0;
+    int col=0;
+    int zn = -1;
+    const int d[2]={-1,-2};
+
+    // determination de la table dans l'onglet ayant recu le click
+    if (index.internalPointer() == G_sim_Nsur2[0]->index(index.row(),index.column()).internalPointer())
+    {
+        zn = 0;
+    }
+
+    if (index.internalPointer() == G_sim_Nsur2[1]->index(index.row(),index.column()).internalPointer())
+    {
+        zn = 1;
+    }
+
+    if(zn != -1)
+    {
+        // determination de colonne
+        col = index.column();
+        rch = G_sim_Nsur2[zn]->index(index.row(),0).data().toInt();
+
+        if(col >0 && col < 3)
+        {
+            int dist = d[col-1];
+            // Recup clef
+            QRegExp reg_number ("(\\d+)");
+            QString  str_br = G_lab_Nsur2[zn]->text();
+            QStringList list;
+            int pos = 0;
+
+            while ((pos = reg_number.indexIn(str_br, pos)) != -1) {
+                list << reg_number.cap(1);
+                pos += reg_number.matchedLength();
+            }
+
+            QString msg = "select *  from "   TB_BASE
+                    " inner join  ( select *  from "   TB_BASE
+                    " where ( "+ configJeu.nomZone[zn] +
+                     CL_SGRP + "=" + list.at(0) ;
+
+            msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
+            msg = (msg).arg(dist);
+
+            QString msg_2 = configJeu.nomZone[zn] +CL_SGRP
+                             + "=" + QString::number(rch) ;
+            msg_2= "select  *  from (" +msg+ " where (" +msg_2+ " );" ;
+
+            QString titre = "Tirages d:" + QString::number(dist) +
+                    "Ref Sg:"+list.at(0) +
                     "Cible :"+QString::number(rch);
 
             TST_FenetreReponses(titre,zn,msg_2,list,&configJeu);
@@ -3443,12 +3592,13 @@ UnConteneurDessin * MainWindow::TST_Graphe_3(stTiragesDef *pConf)
 void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef *pConf)
 {
     QStandardItemModel **modele;
+    QLabel **label;
     QSqlQuery query;
     bool status;
 
     int cri_val = 0;
 
-    QStringList lst_boule;
+    //QStringList lst_boule;
     const int d[2]={-1,-2};
     const int col[2]={1,2};
     //const QColor fond[3]={QColor(255,156,86,167),QColor(140,255,124,167),QColor(10,255,250,167)};
@@ -3468,6 +3618,7 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
         case NE_FDJ::critere_parite:
         {
             modele = G_sim_PariteVoisin;
+            label = G_lab_PariteVoisin;
             cri_col = pConf->nomZone[zone]+ CL_PAIR;
         }
             break;
@@ -3475,6 +3626,9 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
         case NE_FDJ::critere_enemble:
         default:
         {
+            cri_col = pConf->nomZone[zone]+ CL_SGRP;
+            modele = G_sim_Nsur2;
+            label = G_lab_Nsur2;
             cri_col = pConf->nomZone[zone]+ CL_SGRP;
         }
             break;
@@ -3489,7 +3643,7 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
             {
                 cri_val = query.value(0).toInt();
                 QString Repere = "Tirages ref " +cri_col+ "=" + QString::number(cri_val);
-                G_lab_PariteVoisin[zone]->setText(Repere);
+                label[zone]->setText(Repere);
                 // recherche des voisins pour ce critere
                 int v = sizeof(d)/sizeof(int);
                 for(int j=0;j<v;j++)
