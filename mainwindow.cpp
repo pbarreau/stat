@@ -1118,6 +1118,10 @@ QFormLayout * MainWindow::MonLayout_Parite()
     QFormLayout **layT_Tmp_1 = new QFormLayout*[nb_zn];
     QWidget **tmpT_Widget = new QWidget*[nb_zn];
 
+    QTableView ** fn_refTbv = G_tbv_PariteVoisin;
+    QStandardItemModel ** fn_refSim = G_sim_PariteVoisin;
+    QLabel ** fn_refLab = G_lab_PariteVoisin;
+
     for(int zn = 0;zn<nb_zn;zn++)
     {
         QTableView *tmpTblView = new QTableView;
@@ -3381,7 +3385,7 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
 
     QStringList lst_boule;
     const int d[2]={-1,-2};
-    //const int col[3]={1,2};
+    const int col[2]={1,2};
     //const QColor fond[3]={QColor(255,156,86,167),QColor(140,255,124,167),QColor(10,255,250,167)};
 
     // Recuperer le dernier tirage
@@ -3421,61 +3425,25 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
                 cri_val = query.value(0).toInt();
                 // recherche des voisins pour ce critere
                 int v = sizeof(d)/sizeof(int);
-                for(int j=0;j<2;j++)
+                for(int j=0;j<v;j++)
                 {
                     for(int cible= 0; cible < pConf->nbElmZone[zone]+1;cible ++)
                     {
+                        // Recuperer pointeur de cellule
+                        QStandardItem *item1 = modele[zone]->item(cible,col[j]);
+
                         int total= 0;
                         total = DB_tirages->TST_TotalRechercheADistance_F2(d[j],cri_col,cri_val,cible);
+
+                        // Mettre la valeur trouvee dans le tableau
+                        item1->setData(total,Qt::DisplayRole);
+                        modele[zone]->setItem(cible,col[j],item1);
+
                     }
                 }
             }
         }
     }
-#if 0
-    // Total a n+1 et n+2
-    // Rechercher pour le type les voisins
-    lst_boule<< QString::number(boule);
-    for(int ref = 0; ref <3 ; ref ++)
-    {
-        // Recuperer pointeur de cellule
-        QStandardItem *item1 = modele->item(boule-1,col[ref]);
-        int val = 0;
-        // Rechercher max pour la boule
-        if(d[ref]==0)
-        {
-            bool status = false;
 
-            QSqlQuery query;
-            QString msg="";
-
-            // Recherche du maximum pour cette boule
-            msg= TST_ZoneRequete(pConf, zone,"or",boule,"=");
-            msg = "select count (*)  from tirages where (" +msg+ ");";
-            status = query.exec(msg);
-
-            if(status){
-                query.first();
-
-                if(query.isValid())
-                {
-                    QSqlRecord rec  = query.record();
-                    val = rec.value(0).toInt();
-                }
-                query.finish();
-            }
-
-        }
-        else
-        {
-            val = TST_TotalRechercheVoisinADistanceDe(zone,pConf,d[ref],boule,lst_boule);
-        }
-
-        // Mettre la valeur trouvee dans le tableau des voisins
-        item1->setData(val,Qt::DisplayRole);
-        item1->setBackground(QBrush(fond[ref]));
-        modele->setItem(boule-1,col[ref],item1);
-    }
-#endif
 }
 //----------
