@@ -91,6 +91,7 @@ public slots:
     void slot_ftAbs5(void);
     void slot_TST_DetailsCombinaison( const QModelIndex & index);
     void slot_F2_RechercherLesTirages(const QModelIndex & index);
+    void slot_F3_RechercherLesTirages(const QModelIndex & index);
     void slot_RechercherLesTirages(const QModelIndex & index);
 
     void slot_RepererLesTirages(const QString &myData);

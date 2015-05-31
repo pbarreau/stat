@@ -1130,64 +1130,60 @@ QFormLayout * MainWindow::MonLayout_Parite()
         QFormLayout *tmpLayout = new QFormLayout;
         QWidget *tmpWidget = new QWidget;
 
-        G_sim_PariteVoisin[zn]= tmpStdItem;
-        G_tbv_PariteVoisin[zn] = tmpTblView;
-        G_lab_PariteVoisin[zn]= tmpLabel;
+        fn_refSim[zn]= tmpStdItem;
+        fn_refTbv[zn] = tmpTblView;
+        fn_refLab[zn]= tmpLabel;
         layT_Tmp_1[zn] = tmpLayout;
         tmpT_Widget[zn] = tmpWidget;
 
         // entete du modele
-        G_sim_PariteVoisin[zn]->setHeaderData(0,Qt::Horizontal,"BPair");
-        G_sim_PariteVoisin[zn]->setHeaderData(1,Qt::Horizontal,"V:+1");
-        G_sim_PariteVoisin[zn]->setHeaderData(2,Qt::Horizontal,"V:+2");
+        fn_refSim[zn]->setHeaderData(0,Qt::Horizontal,"BPair");
+        fn_refSim[zn]->setHeaderData(1,Qt::Horizontal,"V:+1");
+        fn_refSim[zn]->setHeaderData(2,Qt::Horizontal,"V:+2");
 
         // Ecriture du numero de boule et reservation item position
         for(int i=1;i<=configJeu.nbElmZone[zn]+1;i++)
         {
             QStandardItem *item = new QStandardItem();
             item->setData(i-1,Qt::DisplayRole);
-            G_sim_PariteVoisin[zn]->setItem(i-1,0,item);
+            fn_refSim[zn]->setItem(i-1,0,item);
 
             for (int j = 1; j<=2;j++)
             {
                 QStandardItem *item_2 = new QStandardItem();
-                G_sim_PariteVoisin[zn]->setItem(i-1,j,item_2);
+                fn_refSim[zn]->setItem(i-1,j,item_2);
             }
         }
 
-        G_tbv_PariteVoisin[zn]->setModel(G_sim_PariteVoisin[zn]);
+        fn_refTbv[zn]->setModel(fn_refSim[zn]);
         for(int i=0;i<=2;i++)
         {
-            G_tbv_PariteVoisin[zn]->setColumnWidth(i,50);
+            fn_refTbv[zn]->setColumnWidth(i,50);
         }
 
-        //qtvT_Voisins[zn]->setMinimumHeight(390);
-        //qtvT_Voisins[zn]->setMaximumWidth(400);
-
-        G_tbv_PariteVoisin[zn]->setSortingEnabled(true);
-        G_tbv_PariteVoisin[zn]->sortByColumn(0,Qt::AscendingOrder);
-        G_tbv_PariteVoisin[zn]->setAlternatingRowColors(true);
-        G_tbv_PariteVoisin[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        G_tbv_PariteVoisin[zn]->setSelectionBehavior(QAbstractItemView::SelectItems);
+        fn_refTbv[zn]->setSortingEnabled(true);
+        fn_refTbv[zn]->sortByColumn(0,Qt::AscendingOrder);
+        fn_refTbv[zn]->setAlternatingRowColors(true);
+        fn_refTbv[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        fn_refTbv[zn]->setSelectionBehavior(QAbstractItemView::SelectItems);
         //qtvT_Voisins[zn]->setSelectionMode(QAbstractItemView::SingleSelection);
         //qtvT_Voisins[zn]->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
-        G_tbv_PariteVoisin[zn]->setFixedSize(270,390);
+        fn_refTbv[zn]->setFixedSize(270,390);
 
-        G_lab_PariteVoisin[zn]->setText("Nb total de sorties:");
-        layT_Tmp_1[zn]->addWidget(G_lab_PariteVoisin[zn]);
-        layT_Tmp_1[zn]->addWidget(G_tbv_PariteVoisin[zn]);
+        fn_refLab[zn]->setText("Nb total de sorties:");
+        layT_Tmp_1[zn]->addWidget(fn_refLab[zn]);
+        layT_Tmp_1[zn]->addWidget(fn_refTbv[zn]);
 
         tmpT_Widget[zn]->setLayout(layT_Tmp_1[zn]);
-        //tmpT_Widget[zn]->setMaximumWidth(420);
         tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
-        connect( G_tbv_PariteVoisin[zn], SIGNAL( clicked(QModelIndex)) ,
-                 this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
+        //connect( fn_refTbv[zn], SIGNAL( clicked(QModelIndex)) ,
+        //         this, SLOT( slot_MontrerBouleDansBase( QModelIndex) ) );
 
         // double click dans fenetre voisin pour afficher details boule
-        connect( G_tbv_PariteVoisin[zn], SIGNAL( doubleClicked(QModelIndex)) ,
-                 this, SLOT( slot_RechercherLesTirages( QModelIndex) ) );
+        connect( fn_refTbv[zn], SIGNAL( doubleClicked(QModelIndex)) ,
+                 this, SLOT( slot_F2_RechercherLesTirages( QModelIndex) ) );
 
     }
 
@@ -1742,6 +1738,77 @@ void MainWindow::slot_RechercherLesTirages(const QModelIndex & index)
     }
 }
 
+void MainWindow::slot_F3_RechercherLesTirages(const QModelIndex & index)
+{
+    int val = 0;
+    int cellule = 0;
+    int col=0;
+    int zn = -1;
+    const int d[5]={0,1,2,-1,-2};
+    const int t[2]={1,2};
+
+    // determination de la table dans l'onglet ayant recu le click
+    if (index.internalPointer() == G_sim_PariteVoisin[0]->index(index.row(),index.column()).internalPointer())
+    {
+        zn = 0;
+    }
+
+    if (index.internalPointer() == G_sim_PariteVoisin[1]->index(index.row(),index.column()).internalPointer())
+    {
+        zn = 1;
+    }
+
+    if(zn != -1)
+    {
+        cellule = G_sim_PariteVoisin[zn]->index(index.row(),index.column()).data().toInt();
+
+        if(cellule)
+        {
+            QStringList list;
+            val = G_sim_PariteVoisin[zn]->index(index.row(),0).data().toInt();
+
+            col = index.column();
+
+            if(col==CL_IHM_TOT_0)
+            {
+                list << QString::number(val);
+                TST_MontreTirageAyantCritere(NE_FDJ::critere_boule,zn,&configJeu,list);
+            }
+
+            if(col >0 && col < CL_IHM_TOT_1)
+            {
+                QRegExp reg_number ("(\\d+)");
+                QString  str_br = G_lab_nbSorties[zn]->text();
+                int pos = 0;
+
+                while ((pos = reg_number.indexIn(str_br, pos)) != -1) {
+                    list << reg_number.cap(1);
+                    pos += reg_number.matchedLength();
+                }
+
+                // on retire le dernier chiffre de str_br
+                if(!list.isEmpty())
+                {
+                    list.removeLast();
+                }
+
+                if(!list.isEmpty())
+                {
+                    //DB_tirages->TST_LBcDistBr(zn,&configJeu,d[col-1],br,val);
+                    this->TST_LBcDistBr(zn,&configJeu,d[col-1],list,val);
+
+                }
+
+            }
+
+            if(col >= CL_IHM_TOT_1 && col <= CL_IHM_TOT_2)
+            {
+                list << QString::number(val);
+                this->TST_LBcDistBr(zn,&configJeu,t[col-CL_IHM_TOT_1],list,val);
+            }
+        }
+    }
+}
 void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
 {
     int val = 0;
