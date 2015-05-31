@@ -133,6 +133,7 @@ private:
     UnConteneurDessin * TST_Graphe_3(stTiragesDef *pConf);
     void TST_LBcDistBr(int zn, stTiragesDef *pConf, int dist, QStringList boules, int bc);
     void TST_MontreTirageAyantCritere(NE_FDJ::E_typeCritere lecritere, int zn, stTiragesDef *pConf, QStringList boules);
+    void TST_FenetreReponses(QString fen_titre, int zn, QString reg_msg, QStringList st_list, stTiragesDef *pConf);
     void TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef *pConf);
     QFormLayout * MonLayout_ChoixPossible(void);
     QFormLayout * MonLayout_Absent(void);
