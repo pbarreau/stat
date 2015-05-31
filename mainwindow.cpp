@@ -3314,7 +3314,7 @@ UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
     for(int i =0; i<pConf->nbElmZone[zn];i++)
     {
         msg_3 = msg_3 + TB_COMBI "_" + pConf->nomZone[zn] + "." + pConf->nomZone[zn] + QString::number(i+1)
-                +"=" TB_BASE "." + pConf->nomZone[zn] + QString::number(i+1) + " and ";
+                +"=" + TB_BASE + "." + pConf->nomZone[zn] + QString::number(i+1) + " and ";
     }
     msg_3.remove(msg_3.length()-5,5);
     msg_2 = msg_2 + msg_3 + ";";
@@ -3380,35 +3380,38 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
     int cri_val = 0;
 
     QStringList lst_boule;
-    const int d[2]={1,2};
-    const int col[3]={1,2};
-    const QColor fond[3]={QColor(255,156,86,167),QColor(140,255,124,167),QColor(10,255,250,167)};
+    const int d[2]={-1,-2};
+    //const int col[3]={1,2};
+    //const QColor fond[3]={QColor(255,156,86,167),QColor(140,255,124,167),QColor(10,255,250,167)};
 
     // Recuperer le dernier tirage
     QString msg = "";
+    QString cri_col = "";
 
     for(int zone=0;zone<pConf->nb_zone;zone++)
     {
         status = false;
         msg = "select ";
+        cri_col = "";
 
         switch (cri_type)
         {
         case NE_FDJ::critere_parite:
         {
             modele = G_sim_PariteVoisin;
-            msg = msg + pConf->nomZone[zone]+ CL_PAIR;
+            cri_col = pConf->nomZone[zone]+ CL_PAIR;
         }
             break;
 
         case NE_FDJ::critere_enemble:
         default:
         {
-            msg = msg + pConf->nomZone[zone]+ CL_SGRP;
+            cri_col = pConf->nomZone[zone]+ CL_SGRP;
         }
             break;
         }
-        msg = msg + " from " + TB_BASE + " limit 1;";
+
+        msg = msg + cri_col +" from " + TB_BASE + " limit 1;";
         status = query.exec(msg);
         if(status)
         {
@@ -3416,6 +3419,16 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
             if(query.isValid())
             {
                 cri_val = query.value(0).toInt();
+                // recherche des voisins pour ce critere
+                int v = sizeof(d)/sizeof(int);
+                for(int j=0;j<2;j++)
+                {
+                    for(int cible= 0; cible < pConf->nbElmZone[zone]+1;cible ++)
+                    {
+                        int total= 0;
+                        total = DB_tirages->TST_TotalRechercheADistance_F2(d[j],cri_col,cri_val,cible);
+                    }
+                }
             }
         }
     }

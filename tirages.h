@@ -167,7 +167,7 @@ public:
     QString TST_ZoneRequete(stTiragesDef *pConf, int zone, QString operateur, int boule, QString critere);
     QString TST_GetIntervalCouverture(int etendue);
     void TST_LBcDistBr(int zn,stTiragesDef *pConf,int dist, int br,int bc);
-   int TST_TotalRechercheADistance_F2(int zn,stTiragesDef *pConf,int dist, int bp_ref,int bp_look);
+   int TST_TotalRechercheADistance_F2(int dist, QString col, int bp_ref, int bp_look);
 
 public slots:
     void slot_DetailsCombinaison(const QModelIndex & index) ;

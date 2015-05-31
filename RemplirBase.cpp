@@ -1002,9 +1002,9 @@ int GererBase::TST_TotalRechercheVoisinADistanceDe(int zn,stTiragesDef *pConf,in
 }
 
 //----------
-int GererBase::TST_TotalRechercheADistance_F2(int zn,stTiragesDef *pConf,int dist, int bp_ref,int bp_look)
+//int GererBase::TST_TotalRechercheADistance_F2(int zn,stTiragesDef *pConf,int dist, int bp_ref,int bp_look)
+int GererBase::TST_TotalRechercheADistance_F2(int dist, QString col, int bp_ref,int bp_look)
 {
-    const int d[2]={-1,-2};
 
 #if 0
     select * from
@@ -1021,22 +1021,21 @@ int GererBase::TST_TotalRechercheADistance_F2(int zn,stTiragesDef *pConf,int dis
             where (bp=2);
 #endif
 
-    int ret_val = 0;
 #if 0
     if(boules.contains(QString::number(v_id)) && !dist)
         return ret_val;
-
-
+#endif
+    int ret_val = 0;
     QSqlQuery query;
     bool status = false;
-    QString msg = "select *  from tirages inner join  ( select *  from tirages where ( bp = 2 ";
+    QString msg = "select *  from "   TB_BASE
+            " inner join  ( select *  from "   TB_BASE
+            " where ( "+ col + "=" + QString::number(bp_ref) ;
 
-    QString w_msg = TST_ConstruireWhereData(zn,pConf,boules);
-    msg = msg + w_msg;
     msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
     msg = (msg).arg(dist);
 
-    QString msg_2 = TST_ZoneRequete(pConf, zn,"or",v_id,"=");
+    QString msg_2 = col + "=" + QString::number(bp_look) ;
     msg_2= "select count (*)  from (" +msg+ " where (" +msg_2+ " );" ;
     status = query.exec(msg_2);
     if(status)
@@ -1048,7 +1047,7 @@ int GererBase::TST_TotalRechercheADistance_F2(int zn,stTiragesDef *pConf,int dis
         }
     }
 
-#endif
+
     return ret_val;
 }
 //----------
