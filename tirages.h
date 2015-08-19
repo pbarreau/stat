@@ -160,7 +160,7 @@ public:
     //void RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *base);
     void MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen);
     void RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets);
-    bool TST_Requete(QString &sql_msg, int lgn, QString &col, QStandardItemModel *&qsim_ptr);
+    bool TST_Requete(int &totCln, QString &sql_msg, int lgn, QString &col, QStandardItemModel *&qsim_ptr);
     void TST_RechercheVoisin(QStringList &boules, int zn, stTiragesDef *pConf, LabelClickable *l_nb, QStandardItemModel *modele);
     int TST_TotalRechercheVoisinADistanceDe(int zn, stTiragesDef *pConf, int dist, int v_id, QStringList &boules);
     QString TST_ConstruireWhereData(int zn, stTiragesDef *pConf,QStringList &boules);
@@ -174,7 +174,7 @@ public slots:
 
 private:
     void combirec(int k, QStringList &l, const QString &s, QStringList &ret);
-    void RangerValeurResultat(int &lgn, QString &msg, int &val, QStandardItemModel *&qsim_ptr);
+    void RangerValeurResultat(int &totCol, int &lgn, QString &msg, int &val, QStandardItemModel *&qsim_ptr);
     void AfficherMaxOccurenceBoule(int boule, int zn, stTiragesDef *pConf, LabelClickable *l_nb);
     bool CreerTableVoisinsDeBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins);
     bool CreerTableAbsentDeBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins);

@@ -830,6 +830,7 @@ QVariant GererBase::data(const QModelIndex &index, int role = Qt::DisplayRole) c
 }
 #endif
 
+#if 0
 // http://forum.hardware.fr/hfr/Programmation/C-2/resolu-renvoyer-combinaison-sujet_23393_1.htm
 // http://www.dcode.fr/generer-calculer-combinaisons
 void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
@@ -839,16 +840,19 @@ void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
     QSqlQuery query;
     bool status = false;
     QStringList tableau;
+int totCol = 0;
 
     //QTabWidget *onglets = ;
 
     if(ref->limites[0].max == 49)
     {
         tableau << "1" << "2" << "3" << "4" << "5";
+        totCol = 5;
     }
     else
     {
         tableau << "1" << "2" << "3" << "4" << "5" << "6";
+        totCol = 6;
     }
 
     for (int i = 0; i< 5; i++)
@@ -865,7 +869,7 @@ void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
         for(int nelm = 0; nelm < gagne;nelm++)
         {
             int lign = enp5[nelm].size();
-            QStandardItemModel * qsim_r = new QStandardItemModel(lign,2);
+            QStandardItemModel * qsim_r = new QStandardItemModel(lign,3);
             QTableView *qtv_r = new QTableView;
             qtv_r->setModel(qsim_r);
             qtv_r->setSortingEnabled(true);
@@ -873,16 +877,19 @@ void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
             qtv_r->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
             qsim_r->setHeaderData(0,Qt::Horizontal,"Combinaison");
-            qsim_r->setHeaderData(1,Qt::Horizontal,"Total");
-            qtv_r->setColumnWidth(0,260);
-            qtv_r->setColumnWidth(1,50);
-
+            qsim_r->setHeaderData(1,Qt::Horizontal,"HideReq");
+            qsim_r->setHeaderData(2,Qt::Horizontal,"Total");
+            qtv_r->setColumnWidth(0,150);
+            qtv_r->setColumnWidth(2,50);
+            //qtv_r->hideColumn(1);
+/// A regarder pb sur colonne a trouver
+///
             // click dans fenetre voisin pour afficher boule
             connect( qtv_r, SIGNAL( doubleClicked (QModelIndex)) ,
                      this, SLOT( slot_DetailsCombinaison( QModelIndex) ) );
 
 
-            for(int loop=0;loop<2;loop++)
+            for(int loop=0;loop<3;loop++)
             {
                 for (int i = 0; i < lign; ++i)
                 {
@@ -957,7 +964,7 @@ void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
                     if(query.isValid())
                     {
                         int val=query.value(0).toInt();
-                        RangerValeurResultat(i,colsel,val,qsim_r);
+                        RangerValeurResultat(totCol,i,colsel,val,qsim_r);
                     }
                 }
 
@@ -965,19 +972,60 @@ void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
         }
     }
 }
+#endif
 
 
-
-void GererBase::RangerValeurResultat(int &lgn, QString &msg, int &val, QStandardItemModel *&qsim_ptr)
+void GererBase::RangerValeurResultat(int &totCol,int &lgn, QString &msg, int &val, QStandardItemModel *&qsim_ptr)
 {
     QStandardItem *item_1 = qsim_ptr->item(lgn,0);
     QStandardItem *item_2 = qsim_ptr->item(lgn,1);
+    QStandardItem *item_3 = qsim_ptr->item(lgn,2);
+
+    QRegExp regex("((\\d)=(\\d))+");
+    QString msg_cal = msg;
+
+    //http://apiexamples.com/cpp/QtCore/QRegExp.html
+    if (regex.indexIn(msg_cal) < 0) {
+        qDebug("Can't find a match.");
+        return;
+    }
 
     msg.replace("bd","c");
     msg.replace("and",",");
 
+
+    QStringList lst_comb;
+    int pos = 0;
+
+    // http://doc.qt.io/qt-4.8/qregexp.html
+    while ((pos = regex.indexIn(msg_cal, pos)) != -1) {
+        lst_comb << regex.cap(1);
+        pos += regex.matchedLength();
+    }
+
+    // Parcourrir les resultats
+    int valCol[6]={0,0,0,0,0,0};
+    for(int i=0; i<lst_comb.count();i++)
+    {
+        QString tmp = lst_comb.at(i);
+        QStringList conf = tmp.split("=");
+
+        valCol[conf.at(0).toInt()]=conf.at(1).toInt();
+
+    }
+
+    msg_cal = "";
+    for(int i=0; i<totCol;i++)
+    {
+        msg_cal= msg_cal + QString::number(valCol[i]) +"/";
+    }
+    QString numCombi = QString("%1").arg(lgn+1, 2, 10, QChar('0'));
+    msg_cal = numCombi + "->" + msg_cal;
+    msg_cal.remove(msg_cal.length()-1,1);
+
     item_1->setData(msg,Qt::DisplayRole);
-    item_2->setData(val,Qt::DisplayRole);
+    item_2->setData(msg_cal,Qt::DisplayRole);
+    item_3->setData(val,Qt::DisplayRole);
 }
 
 void GererBase::slot_DetailsCombinaison( const QModelIndex & index)

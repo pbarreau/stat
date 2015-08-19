@@ -2461,14 +2461,16 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
     QStringList sl_Lev0;
 
     //QTabWidget *onglets = ;
-
+int ShowCol = 0;
     if(ref->limites[0].max == 49)
     {
         sl_Lev0 << "1" << "2" << "3" << "4" << "5";
+        ShowCol = 5;
     }
     else
     {
         sl_Lev0 << "1" << "2" << "3" << "4" << "5" << "6";
+        ShowCol = 6;
     }
 
     // Recuperation des combinaison C(1,5), C(2,5), C(3,5), C(4,5), C(5,5)
@@ -2528,11 +2530,11 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
 
             if(sousOnglet == NbBg-1)
             {
-                qsim_r = new QStandardItemModel(nbItems,2);;
+                qsim_r = new QStandardItemModel(nbItems,3);
             }
             else
             {
-                qsim_r = new QStandardItemModel(nbItems*nbI2tems,2);
+                qsim_r = new QStandardItemModel(nbItems*nbI2tems,3);
             }
 
 
@@ -2545,15 +2547,18 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
                 qsim_synthese->setItem(loop,1,item_2);
             }
 
-            qsim_r->setHeaderData(0,Qt::Horizontal,"Combinaison");
-            qsim_r->setHeaderData(1,Qt::Horizontal,"Total");
+            qsim_r->setHeaderData(0,Qt::Horizontal,"ReqHide");
+            qsim_r->setHeaderData(1,Qt::Horizontal,"Combinaison");
+            qsim_r->setHeaderData(2,Qt::Horizontal,"Total");
             qtv_r->setModel(qsim_r);
 
             qtv_r->setSortingEnabled(true);
             qtv_r->setAlternatingRowColors(true);
             qtv_r->setEditTriggers(QAbstractItemView::NoEditTriggers);
-            qtv_r->setColumnWidth(0,260);
-            qtv_r->setColumnWidth(1,50);
+            qtv_r->setColumnWidth(0,180);
+            //qtv_r->setColumnWidth(1,60);
+            qtv_r->hideColumn(0);
+            qtv_r->setColumnWidth(2,50);
 
 
             qsim_synthese->setHeaderData(0,Qt::Horizontal,"B");
@@ -2642,13 +2647,13 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
                             msg = "select count (*) from analyses where ("
                                     + colsel + ");";
 
-                            for(int loop=0;loop<2;loop++)
+                            for(int loop=0;loop<3;loop++)
                             {
                                 QStandardItem *item_2 = new QStandardItem();
                                 qsim_r->setItem((i*nbI2tems)+j,loop,item_2);
                             }
 
-                            status = DB_tirages->TST_Requete(msg,(i*nbI2tems)+j,colsel,qsim_r);
+                            status = DB_tirages->TST_Requete(ShowCol,msg,(i*nbI2tems)+j,colsel,qsim_r);
                         }
                     }
                     else
@@ -2666,13 +2671,13 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
                         colsel.remove(colsel.length()-5,5);
                         msg = "select count (*) from analyses where ("
                                 + colsel + ");";
-                        for(int loop=0;loop<2;loop++)
+                        for(int loop=0;loop<3;loop++)
                         {
                             QStandardItem *item_2 = new QStandardItem();
                             qsim_r->setItem(i,loop,item_2);
                         }
 
-                        status = DB_tirages->TST_Requete(msg,i,colsel,qsim_r);
+                        status = DB_tirages->TST_Requete(ShowCol,msg,i,colsel,qsim_r);
 
                     }
                 }
@@ -2690,20 +2695,22 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
                     colsel.remove(colsel.length()-5,5);
                     msg = "select count (*) from analyses where ("
                             + colsel + ");";
-                    for(int loop=0;loop<2;loop++)
+                    for(int loop=0;loop<3;loop++)
                     {
                         QStandardItem *item_2 = new QStandardItem();
                         qsim_r->setItem(i,loop,item_2);
                     }
 
-                    status = DB_tirages->TST_Requete(msg,i,colsel,qsim_r);
+                    status = DB_tirages->TST_Requete(ShowCol,msg,i,colsel,qsim_r);
                 }
             }
             // Un onglet est construit
             // Faire la synthese des boules trouvees
-            qtv_r->sortByColumn(1,Qt::DescendingOrder);
-            qsim_t->sort(0,Qt::AscendingOrder);
+            qtv_r->sortByColumn(2,Qt::DescendingOrder);
+            //qsim_t->sort(0,Qt::AscendingOrder);
+            qsim_t->sort(1,Qt::DescendingOrder);
             TST_SyntheseDesCombinaisons(qtv_r,qsim_synthese, qsim_t, &NbTotLgn);
+            qtv_synthese->sortByColumn(1,Qt::DescendingOrder);
         }
 
         // Onglet "Total" pour la combinaison en cours
@@ -2716,7 +2723,7 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
         qtv_t->setEditTriggers(QAbstractItemView::NoEditTriggers);
         qtv_t->setColumnWidth(0,50);
         qtv_t->setColumnWidth(1,50);
-
+qtv_t->sortByColumn(1,Qt::DescendingOrder);
         QString st_SubOngTotal = "Total:"
                 +QString::number(NbTotLgn);
 
@@ -2735,7 +2742,7 @@ void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemMode
 
     do
     {
-        modelIndex = p_in->model()->index(ligne,1, QModelIndex());
+        modelIndex = p_in->model()->index(ligne,2, QModelIndex());
 
         if(modelIndex.isValid()){
             val = modelIndex.data().toInt();
@@ -2916,9 +2923,14 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg, stTiragesDef *pTDef)
     // ??
     tw_resu->addTab(tv_r1,tr("Details"));
     tw_resu->addTab(qtv_rep,tr("Synthese"));
+    qtv_rep->sortByColumn(1,Qt::DescendingOrder);
     mainLayout->addWidget(tw_resu);
     qw_fenResu->setLayout(mainLayout);
     qw_fenResu->setWindowTitle(msg);
+
+    // Double click dans sous fenetre ecart
+    connect( tv_r1, SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( slot_MontreLeTirage( QModelIndex) ) );
 
     zoneCentrale->addSubWindow(qw_fenResu);
     qw_fenResu->show();

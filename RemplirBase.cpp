@@ -1405,17 +1405,42 @@ void GererBase::CouvMontrerProbable(int i,
 {
 
     double rayon = 1.5;
+    const QColor fond[4]={QColor(255,156,86,190),
+                          QColor(140,255,124,190),
+                          QColor(70,160,220,190),
+                          QColor(255,40,180,190)
+                         };
 
-    QStandardItem *item1 = dest->item(i-1,col_m);
-    QStandardItem *item2 = dest->item(i-1,col_v);
-    double v_moyen = item1->data(Qt::DisplayRole).toDouble();
-    int v_court = item2->data(Qt::DisplayRole).toInt();
+    QStandardItem *cellule[4];
 
-
-    if((v_court>=v_moyen-rayon) && (v_court <= (v_moyen +rayon)))
+    for(int j =1; j<= 4 ;j++)
     {
-        item2->setBackground(QBrush(Qt::magenta));
-        item1->setBackground(QBrush(Qt::magenta));
+        cellule[j-1] = dest->item(i-1,j);
+    }
+    int Ec = cellule[0]->data(Qt::DisplayRole).toInt();
+    int Ep = cellule[1]->data(Qt::DisplayRole).toInt();
+    int Em = cellule[2]->data(Qt::DisplayRole).toInt();
+    double EM = cellule[3]->data(Qt::DisplayRole).toDouble();
+
+    int d1 = abs(Ep-Ec);
+    int d2 = abs(Em-Ec);
+    int d3 = abs(EM-Ec);
+    int d4 = abs(Em-Ep);
+    if(d1 <= rayon)
+    {
+        cellule[1]->setBackground(QBrush(fond[0]));
+    }
+    if(d2 <= rayon)
+    {
+        cellule[2]->setBackground(QBrush(fond[1]));
+    }
+    if(d3 <= rayon)
+    {
+        cellule[3]->setBackground(QBrush(fond[2]));
+    }
+    if(d4 <= rayon)
+    {
+        cellule[0]->setBackground(QBrush(fond[3]));
     }
 
 }
@@ -1514,10 +1539,11 @@ void GererBase::PopulateCellMenu(int b_id, int v_id,int zone, stTiragesDef *pCon
 }
 
 
-bool GererBase::TST_Requete(QString &sql_msg, int lgn, QString &col, QStandardItemModel *&qsim_ptr)
+bool GererBase::TST_Requete(int &totCln,QString &sql_msg, int lgn, QString &col, QStandardItemModel *&qsim_ptr)
 {
     QSqlQuery query;
     bool status = false;
+    //int totcolonne = 6;
 
     status = query.exec(sql_msg);
 
@@ -1527,7 +1553,7 @@ bool GererBase::TST_Requete(QString &sql_msg, int lgn, QString &col, QStandardIt
         if(query.isValid())
         {
             int val = query.value(0).toInt();
-            RangerValeurResultat(lgn,col,val,qsim_ptr);
+            RangerValeurResultat(totCln,lgn,col,val,qsim_ptr); // A debuger !!!!!
         }
         query.finish();
     }
