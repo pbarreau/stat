@@ -1868,13 +1868,13 @@ void MainWindow::slot_F3_RechercherLesTirages(const QModelIndex & index)
             QString msg = "select *  from "   TB_BASE
                     " inner join  ( select *  from "   TB_BASE
                     " where ( "+ configJeu.nomZone[zn] +
-                     CL_PAIR + "=" + list.at(0) ;
+                    CL_PAIR + "=" + list.at(0) ;
 
             msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
             msg = (msg).arg(dist);
 
             QString msg_2 = configJeu.nomZone[zn] +CL_PAIR
-                             + "=" + QString::number(rch) ;
+                    + "=" + QString::number(rch) ;
             msg_2= "select  *  from (" +msg+ " where (" +msg_2+ " );" ;
 
             QString titre = "Tirages d:" + QString::number(dist) +
@@ -1928,13 +1928,13 @@ void MainWindow::slot_F4_RechercherLesTirages(const QModelIndex & index)
             QString msg = "select *  from "   TB_BASE
                     " inner join  ( select *  from "   TB_BASE
                     " where ( "+ configJeu.nomZone[zn] +
-                     CL_SGRP + "=" + list.at(0) ;
+                    CL_SGRP + "=" + list.at(0) ;
 
             msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
             msg = (msg).arg(dist);
 
             QString msg_2 = configJeu.nomZone[zn] +CL_SGRP
-                             + "=" + QString::number(rch) ;
+                    + "=" + QString::number(rch) ;
             msg_2= "select  *  from (" +msg+ " where (" +msg_2+ " );" ;
 
             QString titre = "Tirages d:" + QString::number(dist) +
@@ -2348,6 +2348,7 @@ void MainWindow::slot_ft6Possibles(void)
     //qsim_Voisins->sort(5);
 }
 
+// Recherche des combinaison possible
 void MainWindow::TST_CombiRec(int k, QStringList &l, const QString &s, QStringList &ret)
 {
     QStringList tmp = l;
@@ -2370,6 +2371,80 @@ void MainWindow::TST_CombiRec(int k, QStringList &l, const QString &s, QStringLi
     }
 
     TST_CombiRec(k, tmp, s,ret);
+}
+
+// https://fr.wikipedia.org/wiki/Partition_d'un_entier
+// http://www.geeksforgeeks.org/generate-unique-partitions-of-an-integer/
+// https://monsiterdex.wordpress.com/2013/04/12/integer-partition-in-cc/
+// http://stackoverflow.com/questions/14162798/generating-all-distinct-partitions-of-a-number
+// http://caml.inria.fr/pub/old_caml_site/lettre_de_caml/lettre6.pdf
+// http://homeomath2.imingo.net/algorithme1.htm
+
+QStringList *MainWindow::TST_PartitionEntier(int n)
+{
+
+    QStringList *tmp = new(QStringList);
+    QString lgn ;
+
+    int p[n]; // An array to store a partition
+    int k = 0;  // Index of last element in a partition
+    p[k] = n;  // Initialize first partition as number itself
+
+    // This loop first prints current partition, then generates next
+    // partition. The loop stops when the current partition has all 1s
+    while (true)
+    {
+        // print current partition
+        lgn = TST_PartitionEntierAdd(p, k+1);
+        *tmp << lgn;
+
+        // Generate next partition
+
+        // Find the rightmost non-one value in p[]. Also, update the
+        // rem_val so that we know how much value can be accommodated
+        int rem_val = 0;
+        while (k >= 0 && p[k] == 1)
+        {
+            rem_val += p[k];
+            k--;
+        }
+
+        // if k < 0, all the values are 1 so there are no more partitions
+        if (k < 0)  return(tmp);
+
+        // Decrease the p[k] found above and adjust the rem_val
+        p[k]--;
+        rem_val++;
+
+
+        // If rem_val is more, then the sorted order is violeted.  Divide
+        // rem_val in differnt values of size p[k] and copy these values at
+        // different positions after p[k]
+        while (rem_val > p[k])
+        {
+            p[k+1] = p[k];
+            rem_val = rem_val - p[k];
+            k++;
+        }
+
+        // Copy rem_val to next position and increment position
+        p[k+1] = rem_val;
+        k++;
+    }
+    return tmp;
+}
+
+QString MainWindow::TST_PartitionEntierAdd(int p[], int n)
+{
+    QStringList tmp;
+    QString retval;
+
+    for (int i = 0; i < n; i++)
+        tmp << QString::number(p[i]) ;
+
+    retval = tmp.join(",");
+
+    return retval;
 }
 
 void MainWindow::TST_EtoileCombi(stTiragesDef *ref, QTabWidget *onglets)
@@ -2461,7 +2536,7 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
     QStringList sl_Lev0;
 
     //QTabWidget *onglets = ;
-int ShowCol = 0;
+    int ShowCol = 0;
     if(ref->limites[0].max == 49)
     {
         sl_Lev0 << "1" << "2" << "3" << "4" << "5";
@@ -2492,6 +2567,8 @@ int ShowCol = 0;
     TST_MettrePonderationSurTirages();
 
     // Faire un onglet (Pere) par type de possibilite de gagner
+    QTabWidget *tw_rep = TST_OngletN1(onglets,5,&sl_Lev1);
+#if 0
     for(int NbBg=5; NbBg >2; NbBg --) // Nb boule permettant de gagner
     {
         // Rajouter un onglet
@@ -2512,6 +2589,7 @@ int ShowCol = 0;
         }
 
         // Faire un onglet (Fils)
+        int decomposition = 0;
         for(int sousOnglet = 0; sousOnglet < NbBg;sousOnglet++)
         {
             int nbItems = 0;
@@ -2526,6 +2604,10 @@ int ShowCol = 0;
             nbItems = sl_Lev1[sousOnglet].size();
             nbI2tems = sl_Lev1[sousOnglet].at(0).split(",").size();
 
+            if((sousOnglet == 1) || (sousOnglet ==3))
+            {
+                decomposition = 1;
+            }
 
 
             if(sousOnglet == NbBg-1)
@@ -2600,13 +2682,27 @@ int ShowCol = 0;
                     d[0]=NbBg;
                     break;
                 case 2:
-                    d[0]=NbBg-1;
-                    d[1]=1;
+                    if(decomposition ==1){
+                        d[0]=NbBg-1;
+                        d[1]=1;
+                    }
+                    else{
+                        d[0]=NbBg-2;
+                        d[1]=2;
+                    }
                     break;
                 case 3:
-                    d[0]=NbBg-2;
-                    d[1]=1;
-                    d[2]=1;
+                    if(decomposition ==1){
+                        d[0]=NbBg-2;
+                        d[1]=1;
+                        d[2]=1;
+                    }
+                    else
+                    {
+                        d[0]=NbBg-3;
+                        d[1]=2;
+                        d[2]=1;
+                    }
                     break;
                 case 4:
                     d[0]=NbBg-3;
@@ -2704,7 +2800,10 @@ int ShowCol = 0;
                     status = DB_tirages->TST_Requete(ShowCol,msg,i,colsel,qsim_r);
                 }
             }
+
             // Un onglet est construit
+            decomposition++;
+
             // Faire la synthese des boules trouvees
             qtv_r->sortByColumn(2,Qt::DescendingOrder);
             //qsim_t->sort(0,Qt::AscendingOrder);
@@ -2723,12 +2822,64 @@ int ShowCol = 0;
         qtv_t->setEditTriggers(QAbstractItemView::NoEditTriggers);
         qtv_t->setColumnWidth(0,50);
         qtv_t->setColumnWidth(1,50);
-qtv_t->sortByColumn(1,Qt::DescendingOrder);
+        qtv_t->sortByColumn(1,Qt::DescendingOrder);
         QString st_SubOngTotal = "Total:"
                 +QString::number(NbTotLgn);
 
         tw_rep->addTab(qtv_t,tr(st_SubOngTotal.toLocal8Bit()));
     }
+#endif
+    // Fin onglet pere
+}
+
+QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst_comb)[5])
+{
+    QTabWidget *tmp = new QTabWidget;
+    QStringList *coef = NULL;
+
+    // Nom de l'onglet
+    QString st_OngName = "Comb" + QString::number(pos);
+    pere->addTab(tmp,tr(st_OngName.toLocal8Bit()));
+
+    // Decomposition possible du nombre
+    coef = TST_PartitionEntier(pos);
+    int taille = coef->size();
+
+    // Mise en place des coefficients pour les combinaisons
+    int Decompose[taille][5];
+    for(int i = 0; i< taille;i++)
+    {
+        int nbItems = ((coef->at(i)).split(",")).size();
+        int val = 0;
+        for(int j=0;j<5;j++)
+        {
+            if(j<nbItems)
+            {
+                val = ((coef->at(i)).split(",")).at(j).toInt();
+            }
+            else
+            {
+                val = 0;
+            }
+            Decompose[i][j]=val;
+        }
+    }
+
+    // Creation des onglets nommes
+    for(int i = 0; i< taille;i++)
+    {
+        int nbItems = ((coef->at(i)).split(",")).size();
+        //int tot_comb = ((*lst_comb)[nbItems-1]).at(0).split(",").size();
+        int tot_comb = ((*lst_comb)[nbItems-1]).size();
+
+        QString st_tmp = "R"
+                + QString::number(i)
+                +":"
+                +QString::number(tot_comb);
+    }
+
+    return tmp;
+
 }
 
 void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemModel * qsim_rep,QStandardItemModel * qsim_total, int *TotalLigne)
@@ -3101,7 +3252,7 @@ void MainWindow::TST_FenetreReponses(QString fen_titre, int zn, QString req_msg,
     }
     else
     {
-       fenetre_titre =  fen_titre;
+        fenetre_titre =  fen_titre;
     }
 
     sqm_r1->setQuery(msg);

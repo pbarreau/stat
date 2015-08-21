@@ -144,6 +144,10 @@ private:
     QFormLayout * MonLayout_Parite();
     QFormLayout * MonLayout_Nsur2();
 
+    QTabWidget *TST_OngletN1(QTabWidget *pere, int pos, QStringList (*lst_comb)[5]);
+    QStringList *TST_PartitionEntier(int n);
+    QString TST_PartitionEntierAdd(int p[], int n);
+
 private:
     Ui::MainWindow *ui;
     QMdiArea *zoneCentrale;
