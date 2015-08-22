@@ -1543,7 +1543,6 @@ bool GererBase::TST_Requete(int &totCln,QString &sql_msg, int lgn, QString &col,
 {
     QSqlQuery query;
     bool status = false;
-    //int totcolonne = 6;
 
     status = query.exec(sql_msg);
 

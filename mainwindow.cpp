@@ -2567,8 +2567,10 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
     TST_MettrePonderationSurTirages();
 
     // Faire un onglet (Pere) par type de possibilite de gagner
+#define NEW_ONGLET
+#ifdef NEW_ONGLET
     QTabWidget *tw_rep = TST_OngletN1(onglets,5,&sl_Lev1);
-#if 0
+#else
     for(int NbBg=5; NbBg >2; NbBg --) // Nb boule permettant de gagner
     {
         // Rajouter un onglet
@@ -2836,6 +2838,8 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
 {
     QTabWidget *tmp = new QTabWidget;
     QStringList *coef = NULL;
+    bool status = false;
+    int ShowCol = 5; // A debuger
 
     // Nom de l'onglet
     QString st_OngName = "Comb" + QString::number(pos);
@@ -2868,18 +2872,164 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
     // Creation des onglets nommes
     for(int i = 0; i< taille;i++)
     {
+        QTabWidget *tw_n2 = new QTabWidget; // Onglet pour une combinaison
+        QTableView *qtv_r1 = new QTableView;
+        QStandardItemModel * qsim_r1 = NULL;
+        QTableView *qtv_r2 = new QTableView;
+
         int nbItems = ((coef->at(i)).split(",")).size();
-        //int tot_comb = ((*lst_comb)[nbItems-1]).at(0).split(",").size();
         int tot_comb = ((*lst_comb)[nbItems-1]).size();
+        int nb_reponses = 0;
 
         QString st_tmp = "R"
                 + QString::number(i)
                 +":"
                 +QString::number(tot_comb);
+
+        tmp->addTab(tw_n2,tr(st_tmp.toLocal8Bit()));
+        tw_n2->addTab(qtv_r1,tr("Req"));
+        tw_n2->addTab(qtv_r2,tr("Val"));
+
+
+        // Preparation des emplacements de reponses
+        if(nbItems == ShowCol )
+        {
+            nb_reponses = 1;
+        }
+        else
+        {
+            nb_reponses = nbItems * tot_comb;
+        }
+        qsim_r1 = TST_SetTblViewCombi(nb_reponses, qtv_r1);
+
+        // Creation des requetes de recherche
+        for(int j = 0; j< tot_comb;j++)
+        {
+            QStringList tmp_lst = (((*lst_comb)[nbItems-1]).at(j)).split(",");
+
+            QString s_msg= "";
+            QString s_col = "";
+            int i_lgn = 0;
+
+            // Cas 1 elment comme combinaison possible
+
+            for(int k = 0; k< nbItems; k++)
+            {
+
+                int i_v1 = tmp_lst.at(k).toInt() -1 ;
+                //int i_v1 = (((*lst_comb)[nbItems-1]).at(j)).split(",").at(k).toInt() - 1;
+                //int i_v2 = ((coef->at(i)).split(",")).at(k).toInt();
+
+                s_col = s_col +
+                        "bd" + QString::number(i_v1)
+                        + "=%"+QString::number(k)+" and ";
+                s_col = s_col.arg(Decompose[i][k]);
+            }
+            s_col.remove(s_col.length()-5,5); // retire dernier and
+            s_msg = "select count (*) from analyses where ("
+                    + s_col + ");";
+
+            // La requete est cree. L'executer !!
+            i_lgn = (j*nbItems);
+            status = DB_tirages->TST_Requete(ShowCol,s_msg,i_lgn,s_col,qsim_r1);
+
+            if((nbItems >1) && (nbItems <5))
+            {
+                //rotation circulaire
+                for(int loop=1;loop < nbItems; loop ++)
+                {
+
+                    //QString s_msg= "";
+                    //QString s_col = "";
+                    s_msg= "";
+                    s_col= "";
+                    for(int k = 0; k< nbItems; k++)
+                    {
+                        //int i_v1 = ((*lst_comb)[nbItems-1]).at(j).toInt() - 1;
+                        //int i_v1 = (((*lst_comb)[nbItems-1]).at(j)).split(",").at(k).toInt() - 1;
+                        int i_v1 = tmp_lst.at(k).toInt() -1 ;
+                        //int i_v2 = ((coef->at(i)).split(",")).at((k+1)%nbItems).toInt();
+
+                        s_col = s_col +
+                                "bd" + QString::number(i_v1)
+                                + "=%"+QString::number(k)+" and ";
+                        s_col = s_col.arg(Decompose[i][(k+loop)%nbItems]);
+                    }
+                    s_col.remove(s_col.length()-5,5); // retire dernier and
+                    s_msg = "select count (*) from analyses where ("
+                            + s_col + ");";
+
+
+                    // La requete est cree. L'executer !!
+                    i_lgn = loop+(j*nbItems);
+                    status = DB_tirages->TST_Requete(ShowCol,s_msg,i_lgn,s_col,qsim_r1);
+
+                }
+
+            }
+            else
+            {
+                ; //rien
+            }
+
+        }
     }
 
     return tmp;
 
+}
+
+#if 0
+QString MainWindow::TST_ReqRechercheCombi(int lgn, int max, int **tab)
+{
+    QString s_msg= "";
+    QString s_col = "";
+
+    for(int k = 0; k< max; k++)
+    {
+        //int i_v1 = ((*lst_comb)[nbItems-1]).at(j).toInt() - 1;
+        int i_v1 = (((*lst_comb)[nbItems-1]).at(j)).split(",").at(k).toInt() - 1;
+        int i_v2 = ((coef->at(i)).split(",")).at(k).toInt();
+
+        s_col = s_col +
+                "bd" + QString::number(i_v1)
+                + "=%"+QString::number(k)+" and ";
+        s_col = s_col.arg(Decompose[i][k]);
+    }
+    s_col.remove(s_col.length()-5,5); // retire dernier and
+    s_msg = "select count (*) from analyses where ("
+            + s_col + ");";
+}
+#endif
+
+QStandardItemModel * MainWindow::TST_SetTblViewCombi(int nbLigne, QTableView *qtv_r)
+{
+    QStandardItemModel *qsim_r = new QStandardItemModel(nbLigne,3);
+
+    qsim_r->setHeaderData(0,Qt::Horizontal,"ReqHide");
+    qsim_r->setHeaderData(1,Qt::Horizontal,"Combinaison");
+    qsim_r->setHeaderData(2,Qt::Horizontal,"Total");
+    qtv_r->setModel(qsim_r);
+
+    qtv_r->setSortingEnabled(true);
+    qtv_r->setAlternatingRowColors(true);
+    qtv_r->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_r->setColumnWidth(0,180);
+    qtv_r->hideColumn(0);
+    qtv_r->setColumnWidth(2,50);
+
+    for(int i = 0; i<3; i++)
+    {
+        for(int j=0;j<nbLigne;j++)
+        {
+            QStandardItem *item_1 = new QStandardItem();
+            qsim_r->setItem(j,i,item_1);
+        }
+    }
+
+
+
+    return qsim_r;
 }
 
 void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemModel * qsim_rep,QStandardItemModel * qsim_total, int *TotalLigne)
