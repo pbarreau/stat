@@ -144,10 +144,11 @@ private:
     QFormLayout * MonLayout_Parite();
     QFormLayout * MonLayout_Nsur2();
 
-    QTabWidget *TST_OngletN1(QTabWidget *pere, int pos, QStringList (*lst_comb)[5]);
+    QTabWidget *TST_OngletN1(QTabWidget *pere, int pos, QStringList (*lst_comb)[5], stTiragesDef *ref);
     QStringList *TST_PartitionEntier(int n);
     QString TST_PartitionEntierAdd(int p[], int n);
     QStandardItemModel * TST_SetTblViewCombi(int nbLigne, QTableView *qtv_r);
+    QStandardItemModel * TST_SetTblViewVal(int nbLigne, QTableView *qtv_r);
 
 private:
     Ui::MainWindow *ui;

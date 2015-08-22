@@ -2536,7 +2536,8 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
     QStringList sl_Lev0;
 
     //QTabWidget *onglets = ;
-    int ShowCol = 0;
+    int ShowCol = ((ref->limites[0].max)/10)+1;
+
     if(ref->limites[0].max == 49)
     {
         sl_Lev0 << "1" << "2" << "3" << "4" << "5";
@@ -2569,7 +2570,11 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
     // Faire un onglet (Pere) par type de possibilite de gagner
 #define NEW_ONGLET
 #ifdef NEW_ONGLET
-    QTabWidget *tw_rep = TST_OngletN1(onglets,5,&sl_Lev1);
+    for(int i =5; i>2; i--)
+    {
+      TST_OngletN1(onglets,i,&sl_Lev1,ref);
+    }
+    //QTabWidget *tw_rep = TST_OngletN1(onglets,5,&sl_Lev1,ref);
 #else
     for(int NbBg=5; NbBg >2; NbBg --) // Nb boule permettant de gagner
     {
@@ -2834,12 +2839,17 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
     // Fin onglet pere
 }
 
-QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst_comb)[5])
+QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst_comb)[5],stTiragesDef *ref)
 {
     QTabWidget *tmp = new QTabWidget;
     QStringList *coef = NULL;
+
+    QTableView *qtv_r3 = new QTableView;
+    QStandardItemModel * qsim_r3 = TST_SetTblViewVal(50, qtv_r3);;
+
     bool status = false;
-    int ShowCol = 5; // A debuger
+    int ShowCol = ((ref->limites[0].max)/10)+1;
+    int NbTotLgn = 0; // Total de reponses trouvee
 
     // Nom de l'onglet
     QString st_OngName = "Comb" + QString::number(pos);
@@ -2873,9 +2883,13 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
     for(int i = 0; i< taille;i++)
     {
         QTabWidget *tw_n2 = new QTabWidget; // Onglet pour une combinaison
+
         QTableView *qtv_r1 = new QTableView;
         QStandardItemModel * qsim_r1 = NULL;
+
         QTableView *qtv_r2 = new QTableView;
+        QStandardItemModel * qsim_r2 = NULL;
+
 
         int nbItems = ((coef->at(i)).split(",")).size();
         int tot_comb = ((*lst_comb)[nbItems-1]).size();
@@ -2890,6 +2904,9 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
         tw_n2->addTab(qtv_r1,tr("Req"));
         tw_n2->addTab(qtv_r2,tr("Val"));
 
+        // Si zoom sur total demande
+        connect( qtv_r1, SIGNAL( doubleClicked (QModelIndex)) ,
+                 this, SLOT( slot_TST_DetailsCombinaison( QModelIndex) ) );
 
         // Preparation des emplacements de reponses
         if(nbItems == ShowCol )
@@ -2901,6 +2918,12 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
             nb_reponses = nbItems * tot_comb;
         }
         qsim_r1 = TST_SetTblViewCombi(nb_reponses, qtv_r1);
+
+        // Onglet val de cette combinaison
+        //nb_reponses = ref->limites[0].max;
+        nb_reponses = 50;
+        qsim_r2 = TST_SetTblViewVal(nb_reponses, qtv_r2);
+        //qsim_r3 = TST_SetTblViewVal(nb_reponses, qtv_r3);
 
         // Creation des requetes de recherche
         for(int j = 0; j< tot_comb;j++)
@@ -2933,7 +2956,7 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
             i_lgn = (j*nbItems);
             status = DB_tirages->TST_Requete(ShowCol,s_msg,i_lgn,s_col,qsim_r1);
 
-            if((nbItems >1) && (nbItems <5))
+            if((nbItems >1) && (nbItems <pos))
             {
                 //rotation circulaire
                 for(int loop=1;loop < nbItems; loop ++)
@@ -2963,44 +2986,34 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
                     // La requete est cree. L'executer !!
                     i_lgn = loop+(j*nbItems);
                     status = DB_tirages->TST_Requete(ShowCol,s_msg,i_lgn,s_col,qsim_r1);
-
                 }
-
-            }
-            else
-            {
-                ; //rien
             }
 
-        }
+
+        } // Fin requetes de recherche
+
+        // Recherche du nb de sorties des boules pour cette combinaison
+        qsim_r1->sort(0,Qt::AscendingOrder);
+        qsim_r2->sort(0,Qt::AscendingOrder);
+        qsim_r3->sort(0,Qt::AscendingOrder);
+        TST_SyntheseDesCombinaisons(qtv_r1,qsim_r2, qsim_r3, &NbTotLgn);
+
+
+        // Rajout du dernier Onglet
+        st_tmp = "Total:"
+                        +QString::number(NbTotLgn);
+        tmp->addTab(qtv_r3,tr(st_tmp.toLocal8Bit()));
+
+        // mettre les max en premier
+        qtv_r1->sortByColumn(2,Qt::DescendingOrder);
+        qtv_r2->sortByColumn(1,Qt::DescendingOrder);
+        qtv_r3->sortByColumn(1,Qt::DescendingOrder);
     }
 
     return tmp;
 
 }
 
-#if 0
-QString MainWindow::TST_ReqRechercheCombi(int lgn, int max, int **tab)
-{
-    QString s_msg= "";
-    QString s_col = "";
-
-    for(int k = 0; k< max; k++)
-    {
-        //int i_v1 = ((*lst_comb)[nbItems-1]).at(j).toInt() - 1;
-        int i_v1 = (((*lst_comb)[nbItems-1]).at(j)).split(",").at(k).toInt() - 1;
-        int i_v2 = ((coef->at(i)).split(",")).at(k).toInt();
-
-        s_col = s_col +
-                "bd" + QString::number(i_v1)
-                + "=%"+QString::number(k)+" and ";
-        s_col = s_col.arg(Decompose[i][k]);
-    }
-    s_col.remove(s_col.length()-5,5); // retire dernier and
-    s_msg = "select count (*) from analyses where ("
-            + s_col + ");";
-}
-#endif
 
 QStandardItemModel * MainWindow::TST_SetTblViewCombi(int nbLigne, QTableView *qtv_r)
 {
@@ -3029,6 +3042,34 @@ QStandardItemModel * MainWindow::TST_SetTblViewCombi(int nbLigne, QTableView *qt
 
 
 
+    return qsim_r;
+}
+
+QStandardItemModel * MainWindow::TST_SetTblViewVal(int nbLigne, QTableView *qtv_r)
+{
+    QStandardItemModel *qsim_r = new QStandardItemModel(nbLigne,2);
+
+    qsim_r->setHeaderData(0,Qt::Horizontal,"B");
+    qsim_r->setHeaderData(1,Qt::Horizontal,"T");
+    qtv_r->setModel(qsim_r);
+
+    qtv_r->setSortingEnabled(true);
+    qtv_r->setAlternatingRowColors(true);
+    qtv_r->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_r->setColumnWidth(0,50);
+    qtv_r->setColumnWidth(1,50);
+
+    for(int i = 0; i<2; i++)
+    {
+        for(int j=0;j<nbLigne;j++)
+        {
+            QStandardItem *item_1 = new QStandardItem();
+            if(i==0){
+               item_1->setData(j+1,Qt::DisplayRole);
+            }
+            qsim_r->setItem(j,i,item_1);
+        }
+    }
     return qsim_r;
 }
 
