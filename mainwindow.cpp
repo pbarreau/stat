@@ -2989,7 +2989,7 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
                 }
             }
 
-
+//tip
         } // Fin requetes de recherche
 
         // Recherche du nb de sorties des boules pour cette combinaison
@@ -3626,6 +3626,7 @@ void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
     QSqlQuery sql_1;
     QString st_cols = "";
     QString st_vals = "";
+    QString st_valtips = "";
     QString msg_1 = " CREATE table if not exists lstcombi (id INTEGER PRIMARY KEY, pos int, comb int,rot int, b1 int, b2 int ,b3 int ,b4 int, b5 int, b6 int, poids real, tip text);";
 
 
@@ -3650,6 +3651,8 @@ void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
             st_cols = "";
             st_vals = "";
             status = true;
+            int valtip[6]={0,0,0,0,0,0};
+            st_valtips = "";
 
             // Rotation circulaire ?
             if(nbitems> 1 && nbitems <= nbBoules)
@@ -3664,23 +3667,37 @@ void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
                             st_vals ="";
                             for(int k =0; k< nbitems;k++)
                             {
+                                int indice = item.at(k).toInt();
+                                int value = coef[loop][sub][(j+k)%nbitems];
+
                                 st_cols = st_cols
-                                        +"b"+item.at(k)
+                                        +"b"+QString::number(indice)
                                         +",";
                                 st_vals = st_vals
-                                        +QString::number(coef[loop][sub][(j+k)%nbitems])
+                                        + QString::number(value)
                                         +",";
+                                valtip[indice-1]= value;
 
                             }
                             st_cols.remove(st_cols.length()-1,1);
                             st_vals.remove(st_vals.length()-1,1);
+
+                            // Creation du texte unite/dizaine/v/t/c
+                            st_valtips="";
+                            for(int k=0; k<= nbBoules; k++)
+                            {
+                               st_valtips = st_valtips + QString::number(valtip[k])
+                                            + "/";
+                            }
+                            st_valtips.remove(st_valtips.length()-1,1);
+
                             msg_1 = "insert into lstcombi (id,pos,comb,rot,"
                                     + st_cols + ",tip) Values (NULL,"
                                     + QString::number(loop)+","
                                     + QString::number(i)+","
                                     + QString::number(j) +","
                                     + st_vals + ",\""
-                                    + st_vals + "\");";
+                                    + st_valtips + "\");";
                             status = sql_1.exec(msg_1);
                         }
                     }
@@ -3694,14 +3711,26 @@ void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
                 {
                     st_cols = st_cols + "b"+item.at(j)+",";
                     st_vals = st_vals +QString::number(coef[loop][0][j])+",";
+                    valtip[item.at(j).toInt()-1]= coef[loop][0][j];
                 }
                 st_cols.remove(st_cols.length()-1,1);
                 st_vals.remove(st_vals.length()-1,1);
+
+                // Creation du texte unite/dizaine/v/t/c
+                st_valtips="";
+                for(int k=0; k<= nbBoules; k++)
+                {
+                   st_valtips = st_valtips + QString::number(valtip[k])
+                                + "/";
+                }
+                st_valtips.remove(st_valtips.length()-1,1);
+
                 msg_1 = "insert into lstcombi (id,pos,comb,rot,"
-                        + st_cols + ") Values (NULL,"
+                        + st_cols + ",tip) Values (NULL,"
                         + QString::number(loop)+","
                         + QString::number(i)+",0,"
-                        + st_vals + ");";
+                        + st_vals + ",\""
+                        + st_valtips + "\");";
 
                 status = sql_1.exec(msg_1);
 
