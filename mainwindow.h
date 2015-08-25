@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QtGlobal>
+
 #include <QMainWindow>
 #include <QSqlDatabase>
 #include <QSqlTableModel>
@@ -47,6 +49,24 @@ public:
 };
 #endif
 
+class MaQtvDelegation : public QItemDelegate
+ {
+ Q_OBJECT
+
+public:
+ //MaQtvDelegation(QWidget *parent = 0, int ligne = 0, int col = 0);
+ MaQtvDelegation(QPersistentModelIndex &ref);
+
+ void paint(QPainter *painter, const QStyleOptionViewItem &option,
+                const QModelIndex &index) const;
+
+private:
+ QPersistentModelIndex derTirage;
+ //quintptr start;
+ int coln;
+ int lgn;
+ };
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -72,6 +92,7 @@ public slots:
     void slot_ChercheVoisins(const QModelIndex &index);
     void slot_qtvEcart(const QModelIndex & index);
     void slot_UneSelectionActivee(const QModelIndex & index);
+    void slot_UneCombiChoisie(const QModelIndex & index);
     void slot_MontrerBouleDansBase(const QModelIndex & index);
     //void slot_MontrerTirageDansBase(const QModelIndex & index);
     //void slot_CouvertureSelChanged(const QItemSelection &now, const QItemSelection &prev);
@@ -144,6 +165,9 @@ private:
     QFormLayout * MonLayout_Parite();
     QFormLayout * MonLayout_Nsur2();
 
+    void MonLayout_Selectioncombi(QTabWidget *tabN1);
+    void MonLayout_SelectionBoules(QTabWidget *tabN1, stTiragesDef &pConf);
+
     QTabWidget *TST_OngletN1(QTabWidget *pere, int pos, QStringList (*lst_comb)[5], stTiragesDef *ref);
     QStringList *TST_PartitionEntier(int n);
     QString TST_PartitionEntierAdd(int p[], int n);
@@ -177,6 +201,7 @@ private:
     QTableView **G_tbv_MaSelection;
     QTableView *G_tbv_Ecarts;
     QTableView *G_tbv_MesPossibles;
+    QTableView *G_tbv_Lstcombi;
     QTableView *G_tbv_LesAbsents;
     QTableView *G_tbv_Parites;
     QTableView **G_tbv_PariteVoisin;

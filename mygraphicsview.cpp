@@ -46,7 +46,8 @@ MyGraphicsView::MyGraphicsView(eGType gtype, QGraphicsView *ptr_view, QString ti
     ptr_view->setWindowTitle(tr(titre.toLocal8Bit()));
 }
 
-void MyGraphicsView::DessineCourbeSql(QString msg_2, NE_FDJ::E_typeJeux leJeu, QColor cpen, int scale_y, int delta_y)
+
+void MyGraphicsView::DessineCourbeSql(QString msg_2, NE_FDJ::E_typeJeux leJeu, QColor cpen, int sqlIdY, int scale_y, int delta_y)
 {
     QSqlQuery sql_2;
     bool status = false;
@@ -65,8 +66,9 @@ void MyGraphicsView::DessineCourbeSql(QString msg_2, NE_FDJ::E_typeJeux leJeu, Q
             do
             {
                 int x = sql_2.value(0).toInt()* C_COEF_X;
-                double y = sql_2.value(1).toDouble()*C_COEF_Y *scale_y;
-                y+=delta_y;
+                double y = this->height();
+                y = y - sql_2.value(sqlIdY).toDouble()*C_COEF_Y *scale_y;
+                y -=delta_y;
 
                 // Ajount d'une boule representant un tirage
                 PointTirage *ptir = new PointTirage(leJeu,scene_type);

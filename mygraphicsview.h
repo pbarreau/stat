@@ -20,8 +20,8 @@ class MyGraphicsView: public QGraphicsView
 {
 public:
     MyGraphicsView(eGType gtype = eNoGraph, QGraphicsView *ptr_view=NULL, QString titre="Tbd", QColor coul_fond = Qt::yellow);
-    void DessineCourbeSql(QString msg_2, NE_FDJ::E_typeJeux leJeu, QColor cpen, int scale_y=1, int delta_y=0);
-    QGraphicsScene * GetScene();
+    void DessineCourbeSql(QString msg_2, NE_FDJ::E_typeJeux leJeu, QColor cpen, int sqlIdY =1, int scale_y=1, int delta_y=0);
+     QGraphicsScene * GetScene();
 
 public slots:
 

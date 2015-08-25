@@ -65,9 +65,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Creation sous fenetre des ecarts
     //fen_Ecarts();
 
-    // Creation fenetre pour memoriser a selection
-    fen_MaSelection();
-
     // Creation fenetre resultat
     fen_MesPossibles();
 
@@ -107,9 +104,10 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
     TST_EtoileCombi(&configJeu,G_tbw_MontabWidget);
     TST_RechercheCombi(&configJeu,G_tbw_MontabWidget);
-    //QApplication::quit();
 
-    //return;
+    // Creation fenetre pour memoriser la selection
+    // Et affichage des combinaisons
+    fen_MaSelection();
 
     // Ordre arrivee des boules ?
     DB_tirages->CouvertureBase(G_sim_Ecarts,&configJeu);
@@ -410,6 +408,163 @@ void MainWindow::fen_LstCouv(void)
 
 #endif
 
+}
+
+///// --------test de delegate pour QtView
+//MaQtvDelegation::MaQtvDelegation(QWidget *parent, int ligne, int col): QItemDelegate(parent)
+MaQtvDelegation::MaQtvDelegation(QPersistentModelIndex &recherche)
+{
+    derTirage = recherche;
+    //start = recherche.internalPointer();
+    //coln =col;
+    //lgn= ligne;
+}
+
+void MaQtvDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                            const QModelIndex &index) const
+{
+
+    int col = index.column();
+    int ligne = index.row();
+
+    //if ((col == coln) and (ligne == lgn)){
+    if(index == derTirage){
+    //if(index.internalId() == derTirage.internalId()){
+        painter->fillRect(option.rect, (QBrush(QColor(200,170,100,140))));
+    }
+
+    QItemDelegate::paint(painter, option, index);
+
+}
+
+void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
+{
+    QSqlQueryModel *sqm_r1 = new QSqlQueryModel;
+    QTableView *tv_r1 = new QTableView;
+    QString st_msg ="";
+
+
+    //st_msg = "select id,tip from lstcombi;";
+    st_msg = "select id, tip, count(t1.id_poids)as tot "
+             "from ("
+             "SELECT lstcombi.id,lstcombi.tip,analyses.id_poids "
+             "FROM lstcombi "
+             "LEFT JOIN analyses ON lstcombi.id = analyses.id_poids"
+             ")as t1 "
+             "GROUP BY tip having ((t1.id=t1.id_poids) or (t1.id_poids is null)) "
+             "order by id  asc;";
+//             "order by tot  desc, tip desc;";
+
+    sqm_r1->setQuery(st_msg);
+    sqm_r1->setHeaderData(1,Qt::Horizontal,"Repartition");
+
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_r1);
+    tv_r1->setModel(m);
+    tv_r1->setColumnWidth(0,50);
+    tv_r1->setColumnWidth(1,80);
+    tv_r1->setColumnWidth(2,50);
+
+    tv_r1->hideColumn(0);
+    tv_r1->setSortingEnabled(true);
+    tv_r1->sortByColumn(0,Qt::AscendingOrder);
+    //tv_r1->setAlternatingRowColors(true);
+    tv_r1->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tv_r1->setSelectionBehavior(QAbstractItemView::SelectItems);
+
+    tabN1->addTab(tv_r1,"Combi");
+
+    // Mettre le dernier tirage en evidence
+    QSqlQuery selection;
+    bool status = false;
+
+    st_msg = "select analyses.id, analyses.id_poids from analyses limit 1;";
+    status = selection.exec(st_msg);
+    status = selection.first();
+    if(selection.isValid())
+    {
+        int value = selection.value(1).toInt();
+        //tv_r1->setItemDelegate(new MaQtvDelegation(NULL,value-1,1));
+
+        QAbstractItemModel *mon_model = tv_r1->model();
+        QStandardItemModel *dest= (QStandardItemModel*) mon_model;
+        QModelIndex mdi_item1 = mon_model->index(0,0);
+
+        if (mdi_item1.isValid()){
+            //mdi_item1 = mdi_item1.model()->index(value-1,1);
+            mdi_item1 = mon_model->index(value-1,1);
+            QPersistentModelIndex depart(mdi_item1);
+
+            tv_r1->selectionModel()->setCurrentIndex(mdi_item1, QItemSelectionModel::NoUpdate);
+            tv_r1->scrollTo(mdi_item1);
+            tv_r1->setItemDelegate(new MaQtvDelegation(depart));
+        }
+    }
+
+
+    // click dans fenetre
+    connect( tv_r1, SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( slot_UneCombiChoisie (QModelIndex) ) );
+
+
+}
+void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf)
+{
+    int nb_zn = pConf.nb_zone;
+
+    G_tbv_MaSelection = new QTableView*[nb_zn];
+    G_sim_MaSelection= new QStandardItemModel*[nb_zn];
+    QWidget **tmpT_Widget = new QWidget*[nb_zn];
+    QFormLayout **layT_MaSelection = new QFormLayout*[nb_zn];
+    int *nbcol = new int [nb_zn];
+
+    int  i=0,j=0, cell_val=0;
+
+    for(int zn = 0;zn<nb_zn;zn++)
+    {
+        nbcol[zn] = (pConf.limites[zn].max)%pConf.nbElmZone[zn]?
+                    (pConf.limites[zn].max/pConf.nbElmZone[zn])+1:
+                    (pConf.limites[zn].max/pConf.nbElmZone[zn]);
+
+        G_sim_MaSelection[zn]= new QStandardItemModel(pConf.nbElmZone[zn],nbcol[zn]);
+        G_tbv_MaSelection[zn] = new QTableView;
+        tmpT_Widget[zn] = new QWidget;
+
+        for(i=1;i<=pConf.nbElmZone[zn];i++)/// Code a verifier en fonction bornes max
+        { // Dans le cas max > 50
+            for(j=1;j<=nbcol[zn];j++)
+            {
+                cell_val = j+(i-1)*nbcol[zn];
+                if(cell_val<=pConf.limites[zn].max){
+                    QStandardItem *item = new QStandardItem( QString::number(i));
+                    item->setData(cell_val,Qt::DisplayRole);
+                    G_sim_MaSelection[zn]->setItem(i-1,j-1,item);
+                }
+            }
+        }
+
+        G_tbv_MaSelection[zn]->setModel(G_sim_MaSelection[zn]);
+        G_tbv_MaSelection[zn]->setAlternatingRowColors(true);
+        G_tbv_MaSelection[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        G_tbv_MaSelection[zn]->setMinimumHeight(190);
+
+        layT_MaSelection[zn] = new QFormLayout;
+        layT_MaSelection[zn]->addWidget(G_tbv_MaSelection[zn]);
+
+        for(j=0;j<10;j++)
+        {
+            G_tbv_MaSelection[zn]->setColumnWidth(j,30);
+        }
+
+        tmpT_Widget[zn]->setLayout(layT_MaSelection[zn]);
+        tabN1->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+
+        // click dans fenetre ma selection
+        connect( G_tbv_MaSelection[zn], SIGNAL( doubleClicked(QModelIndex)) ,
+                 this, SLOT( slot_UneSelectionActivee( QModelIndex) ) );
+    }
 }
 
 QFormLayout * MainWindow::MonLayout_VoisinsPresent()
@@ -764,64 +919,15 @@ void MainWindow::fen_Voisins(void)
 void MainWindow::fen_MaSelection(void)
 {
     QTabWidget *tabWidget = new QTabWidget;
-    int nb_zn = configJeu.nb_zone;
 
-    G_tbv_MaSelection = new QTableView*[nb_zn];
-    G_sim_MaSelection= new QStandardItemModel*[nb_zn];
-    QWidget **tmpT_Widget = new QWidget*[nb_zn];
-    QFormLayout **layT_MaSelection = new QFormLayout*[nb_zn];
-    int *nbcol = new int [nb_zn];
+    MonLayout_Selectioncombi(tabWidget);
+    MonLayout_SelectionBoules(tabWidget,configJeu);
 
-    int  i=0,j=0, cell_val=0;
-    QWidget *qw_MaSelection = new QWidget;
-
-    for(int zn = 0;zn<nb_zn;zn++)
-    {
-        nbcol[zn] = (configJeu.limites[zn].max)%configJeu.nbElmZone[zn]?
-                    (configJeu.limites[zn].max/configJeu.nbElmZone[zn])+1:
-                    (configJeu.limites[zn].max/configJeu.nbElmZone[zn]);
-
-        G_sim_MaSelection[zn]= new QStandardItemModel(configJeu.nbElmZone[zn],nbcol[zn]);
-        G_tbv_MaSelection[zn] = new QTableView;
-        tmpT_Widget[zn] = new QWidget;
-
-        for(i=1;i<=configJeu.nbElmZone[zn];i++)/// Code a verifier en fonction bornes max
-        { // Dans le cas max > 50
-            for(j=1;j<=nbcol[zn];j++)
-            {
-                cell_val = j+(i-1)*nbcol[zn];
-                if(cell_val<=configJeu.limites[zn].max){
-                    QStandardItem *item = new QStandardItem( QString::number(i));
-                    item->setData(cell_val,Qt::DisplayRole);
-                    G_sim_MaSelection[zn]->setItem(i-1,j-1,item);
-                }
-            }
-        }
-
-        G_tbv_MaSelection[zn]->setModel(G_sim_MaSelection[zn]);
-        G_tbv_MaSelection[zn]->setAlternatingRowColors(true);
-        G_tbv_MaSelection[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        G_tbv_MaSelection[zn]->setMinimumHeight(190);
-
-        layT_MaSelection[zn] = new QFormLayout;
-        layT_MaSelection[zn]->addWidget(G_tbv_MaSelection[zn]);
-
-        for(j=0;j<10;j++)
-        {
-            G_tbv_MaSelection[zn]->setColumnWidth(j,30);
-        }
-
-        tmpT_Widget[zn]->setLayout(layT_MaSelection[zn]);
-        tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
-
-        // click dans fenetre ma selection
-        connect( G_tbv_MaSelection[zn], SIGNAL( doubleClicked(QModelIndex)) ,
-                 this, SLOT( slot_UneSelectionActivee( QModelIndex) ) );
-    }
 
     QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(tabWidget);
 
+    QWidget *qw_MaSelection = new QWidget;
     //qw_MaSelection->setMinimumHeight(200);
     qw_MaSelection->setFixedSize(390,260);
     qw_MaSelection->setLayout(mainLayout);
@@ -830,6 +936,7 @@ void MainWindow::fen_MaSelection(void)
     //QMdiSubWindow *sousFenetre3 =
     zoneCentrale->addSubWindow(qw_MaSelection);
     qw_MaSelection->setVisible(true);
+    qw_MaSelection->show();
 
 }
 void MainWindow::fen_MesPossibles(void)
@@ -1628,6 +1735,17 @@ void MainWindow::slot_qtvEcart(const QModelIndex & index)
         DB_tirages->RechercheVoisin(val,0,&configJeu,qlT_nbSorties[0],qsimT_Voisins[0]);
     }
 #endif
+}
+
+void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
+{
+    int ligne = index.row();
+    int colon = index.column();
+
+    int clef = index.model()->index(ligne,0).data().toInt();
+    QString st_com = index.data().toString();
+
+
 }
 
 void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
@@ -2572,7 +2690,7 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
 #ifdef NEW_ONGLET
     for(int i =5; i>2; i--)
     {
-      TST_OngletN1(onglets,i,&sl_Lev1,ref);
+        TST_OngletN1(onglets,i,&sl_Lev1,ref);
     }
     //QTabWidget *tw_rep = TST_OngletN1(onglets,5,&sl_Lev1,ref);
 #else
@@ -2989,7 +3107,7 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
                 }
             }
 
-//tip
+            //tip
         } // Fin requetes de recherche
 
         // Recherche du nb de sorties des boules pour cette combinaison
@@ -3001,7 +3119,7 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
 
         // Rajout du dernier Onglet
         st_tmp = "Total:"
-                        +QString::number(NbTotLgn);
+                +QString::number(NbTotLgn);
         tmp->addTab(qtv_r3,tr(st_tmp.toLocal8Bit()));
 
         // mettre les max en premier
@@ -3065,7 +3183,7 @@ QStandardItemModel * MainWindow::TST_SetTblViewVal(int nbLigne, QTableView *qtv_
         {
             QStandardItem *item_1 = new QStandardItem();
             if(i==0){
-               item_1->setData(j+1,Qt::DisplayRole);
+                item_1->setData(j+1,Qt::DisplayRole);
             }
             qsim_r->setItem(j,i,item_1);
         }
@@ -3686,8 +3804,8 @@ void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
                             st_valtips="";
                             for(int k=0; k<= nbBoules; k++)
                             {
-                               st_valtips = st_valtips + QString::number(valtip[k])
-                                            + "/";
+                                st_valtips = st_valtips + QString::number(valtip[k])
+                                        + "/";
                             }
                             st_valtips.remove(st_valtips.length()-1,1);
 
@@ -3720,8 +3838,8 @@ void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
                 st_valtips="";
                 for(int k=0; k<= nbBoules; k++)
                 {
-                   st_valtips = st_valtips + QString::number(valtip[k])
-                                + "/";
+                    st_valtips = st_valtips + QString::number(valtip[k])
+                            + "/";
                 }
                 st_valtips.remove(st_valtips.length()-1,1);
 
@@ -3905,7 +4023,9 @@ UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
     myview[0] = new MyGraphicsView(eRepartition,une_vue[0], "Tirages",Qt::white);
 
     msg_2="select analyses.id, lstcombi.poids, lstcombi.pos from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
-    myview[0]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::black);
+    myview[0]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::red,2,20);
+    //myview[0]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::black,1,1,10);
+
 
     // select tirages.id, comb_e.poids from tirages inner join comb_e on comb_e.e1=tirages.e1 and comb_e.e2 = tirages.e2
     msg_2 = "select tirages.id, comb_e.poids from tirages inner join comb_e on ";
@@ -3934,13 +4054,13 @@ UnConteneurDessin * MainWindow::TST_Graphe_2(stTiragesDef *pConf)
     QString msg_2="";
     QString msg_3 = "";
 
-    myview[1] = new MyGraphicsView(eParite,une_vue[1], "Parites");
+    myview[1] = new MyGraphicsView(eParite,une_vue[1], "Parites",Qt::gray );//QColor(200,170,100,140));
     msg_2 = "select tirages.id, tirages.bp from tirages";
-    myview[1]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::black,10);
+    myview[1]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::red,1,20);
 
 
     msg_2 = "select tirages.id, tirages.ep from tirages";
-    myview[1]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::blue,10,100);
+    myview[1]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::blue,1,20,150);
 
     //une_vue[1]->show();
     //zoneCentrale->addSubWindow(une_vue[1]);
@@ -3957,13 +4077,13 @@ UnConteneurDessin * MainWindow::TST_Graphe_3(stTiragesDef *pConf)
     QString msg_2="";
     QString msg_3 = "";
 
-    myview[2] = new MyGraphicsView(eGroupe,une_vue[2], "b<N/2", Qt::gray);
+    myview[2] = new MyGraphicsView(eGroupe,une_vue[2], "b<N/2", Qt::lightGray );// QColor(230,200,130,170));
     msg_2 = "select tirages.id, tirages.bg from tirages";
-    myview[2]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::black,10);
+    myview[2]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::red,1,20);
 
 
     msg_2 = "select tirages.id, tirages.eg from tirages";
-    myview[2]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::blue,10,100);
+    myview[2]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::blue,1,20,150);
 
     //une_vue[2]->show();
     //zoneCentrale->addSubWindow(une_vue[2]);
