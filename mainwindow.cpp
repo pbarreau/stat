@@ -758,17 +758,24 @@ QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
     QFormLayout *lay_return = new QFormLayout;
 
     QString stColName[4]={"T+1","T+2","T-1","T-2"};
+
+    G_lab_CritereCombi = new QLabel;
     G_tab_1 = new QTableView;
 
+    G_lab_CritereCombi->setText("Critere:");
     G_tab_1Model = new QSqlTableModel;
     G_tab_1Model->setTable("DistriCombi");
     G_tab_1Model->select();
 
-    QSortFilterProxyModel *m=new QSortFilterProxyModel();
-    m->setDynamicSortFilter(true);
-    m->setSourceModel(G_tab_1Model);
+    //QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    //G_ProxModel=new QSortFilterProxyModel();
+    //G_ProxModel->setDynamicSortFilter(true);
+    //G_ProxModel->setSourceModel(G_tab_1Model);
+    G_tab_1->setSortingEnabled(true);
+    G_tab_1->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    G_tab_1->setSelectionBehavior(QAbstractItemView::SelectItems);
 
-    G_tab_1->setModel(m);
+    G_tab_1->setModel(G_tab_1Model);
     G_tab_1->hideColumn(0); // don't show the ID
     G_tab_1->hideColumn(1);
 
@@ -782,8 +789,13 @@ QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
     }
 
     // Taille du tableau dans onglet
-    G_tab_1->setFixedSize(350,400);
+    G_tab_1->setFixedSize(345,410);
 
+    // Double click dans sous fenetre ecart
+    connect( G_tab_1, SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( slot_F5_RechercherLesTirages( QModelIndex) ) );
+
+    lay_return->addWidget(G_lab_CritereCombi);
     lay_return->addWidget(G_tab_1);
     return(lay_return);
 }
@@ -1870,6 +1882,10 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
 
     if(colon == 1)
     {
+        QString msg = index.model()->index(ligne,1).data().toString();
+        msg = "Critere : " + msg;
+        G_lab_CritereCombi->setText(msg);
+        G_CombiKey = clef;
         TST_CombiVoisin(clef);
     }
 
@@ -2025,25 +2041,28 @@ void MainWindow::slot_RechercherLesTirages(const QModelIndex & index)
     {
         cellule = G_sim_Voisins[zn]->index(index.row(),index.column()).data().toInt();
 
+        // Valeur != 0
         if(cellule)
         {
             QStringList list;
+            // Boule a  rechercher
             val = G_sim_Voisins[zn]->index(index.row(),0).data().toInt();
 
             col = index.column();
 
-            if(col==CL_IHM_TOT_0)
+            if(col==CL_IHM_TOT_0) // Colonne Nb total sortie
             {
                 list << QString::number(val);
                 TST_MontreTirageAyantCritere(NE_FDJ::critere_boule,zn,&configJeu,list);
             }
 
-            if(col >0 && col < CL_IHM_TOT_1)
+            if(col >0 && col < CL_IHM_TOT_1) // colonne V:r0, V:+1, V+2, V:-1,V:-2
             {
                 QRegExp reg_number ("(\\d+)");
                 QString  str_br = G_lab_nbSorties[zn]->text();
                 int pos = 0;
 
+                // boule(s) de references dans tirages a trouver
                 while ((pos = reg_number.indexIn(str_br, pos)) != -1) {
                     list << reg_number.cap(1);
                     pos += reg_number.matchedLength();
@@ -2064,7 +2083,7 @@ void MainWindow::slot_RechercherLesTirages(const QModelIndex & index)
 
             }
 
-            if(col >= CL_IHM_TOT_1 && col <= CL_IHM_TOT_2)
+            if(col >= CL_IHM_TOT_1 && col <= CL_IHM_TOT_2) // Total ????
             {
                 list << QString::number(val);
                 this->TST_LBcDistBr(zn,&configJeu,t[col-CL_IHM_TOT_1],list,val);
@@ -2191,6 +2210,21 @@ void MainWindow::slot_F4_RechercherLesTirages(const QModelIndex & index)
         }
 
     }
+}
+void MainWindow::slot_F5_RechercherLesTirages(const QModelIndex & index)
+{
+    // determination de colonne
+    int col = index.column();
+    int lgn = index.model()->index(index.row(),0).data().toInt();
+
+    if (col > 1 && col < 6)
+    {
+        if (index.data().toInt())
+        {
+            VUE_ListeTiragesFromDistribution(G_CombiKey,col-2,lgn);
+        }
+    }
+
 }
 
 void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
@@ -3436,6 +3470,131 @@ void MainWindow::slot_TST_DetailsCombinaison( const QModelIndex & index)
     TST_MontrerDetailCombinaison(msg, &configJeu);
 }
 
+void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, int choix)
+{
+#if 0
+    select * from (select id, id_poids from analyses where analyses.id_poids = 107);
+
+    select  analyses.id, analyses.id_poids from
+            (select id, id_poids from analyses where analyses.id_poids = 107) as t1
+            left join analyses on t1.id = analyses.id+1;
+
+    select t2.id_poids,tirages.* from
+            (select  analyses.id, analyses.id_poids from
+             (select id, id_poids from analyses where analyses.id_poids = 107) as t1
+             left join analyses on t1.id = analyses.id+1) as t2
+            left join tirages on t2.id=tirages.id where(t2.id_poids = 57);
+#endif
+    QWidget *qw_fenResu = new QWidget;
+    QTabWidget *tw_resu = new QTabWidget;
+    QFormLayout *mainLayout = new QFormLayout;
+    bool status = false;
+
+    // ---
+    QTableView *tv_r1 = new QTableView;
+    QSqlQueryModel *sqm_r1 = new QSqlQueryModel;
+    QSqlQuery query;
+    QString st_msg ="";
+    QString st_titre="";
+
+    //t2.id_poids,
+    st_msg = "select tirages.* from "
+             "(select  analyses.id, analyses.id_poids from "
+             "(select id, id_poids from analyses where analyses.id_poids = "+QString::number(critere)+") as t1 "
+             "left join analyses on t1.id = analyses.id+"+QString::number(distance)+") as t2 "
+             "left join tirages on t2.id=tirages.id where(t2.id_poids = "+QString::number(choix)+");";
+
+    sqm_r1->setQuery(st_msg);
+    tv_r1->setModel(sqm_r1);
+    tw_resu->addTab(tv_r1,tr("Details"));
+
+    tv_r1->hideColumn(0);
+    //tv_r1->hideColumn(1);
+    for(int j=2;j<12;j++)
+        tv_r1->setColumnWidth(j,30);
+
+    for(int j =12; j<=sqm_r1->columnCount();j++)
+        tv_r1->hideColumn(j);
+
+    // Onglet Synthese
+    VUE_Ltfd_Synthese(tw_resu,st_msg);
+
+    // ---
+    mainLayout->addWidget(tw_resu);
+    qw_fenResu->setLayout(mainLayout);
+
+    st_msg= "select tip from lstcombi where (id=:valeur);";
+    query.prepare(st_msg);
+    query.bindValue(":valeur",critere);
+    status = query.exec();
+    if(status){
+        query.first();
+        if(query.isValid())
+        {
+            st_titre = query.value(0).toString();
+        }
+    }
+    st_titre = st_titre + " ,D" + QString::number(distance) + " ,";
+
+    query.bindValue(":valeur",choix);
+    status = query.exec();
+    if(status){
+        query.first();
+        if(query.isValid())
+        {
+            st_titre = st_titre + query.value(0).toString();
+        }
+    }
+
+    qw_fenResu->setWindowTitle(st_titre);
+
+    // Double click dans sous fenetre ecart
+    connect( tv_r1, SIGNAL( doubleClicked(QModelIndex)) ,
+             this, SLOT( slot_MontreLeTirage( QModelIndex) ) );
+
+    zoneCentrale->addSubWindow(qw_fenResu);
+    qw_fenResu->show();
+}
+void MainWindow::VUE_Ltfd_Synthese(QTabWidget *pere, QString &st_msg)
+{
+    int zn = 0;
+    int nb_boules = configJeu.limites[zn].max;
+
+    QTableView *qtv_rep = new QTableView;
+    QStandardItemModel *qsim_rep = new QStandardItemModel(nb_boules,2);
+
+    // suppression dernier ';' dans SQL
+    st_msg.remove(st_msg.length()-1,1);
+
+
+    qsim_rep->setHeaderData(0,Qt::Horizontal,"B");
+    qsim_rep->setHeaderData(1,Qt::Horizontal,"T");
+
+    qtv_rep->setModel(qsim_rep);;
+    qtv_rep->setSortingEnabled(true);
+    qtv_rep->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    qtv_rep->setColumnWidth(0,40);
+    qtv_rep->setColumnWidth(1,40);
+
+    // Compter les occurences de chaque boule
+    for(int i =1; (i< nb_boules+1) ;i++)
+    {
+        QStandardItem * item_1 = new QStandardItem;
+        QStandardItem * item_2 = new QStandardItem;
+
+        item_1->setData(i,Qt::DisplayRole);
+        qsim_rep->setItem(i-1,0,item_1);
+
+        int tot = TST_TotBidDansGroupememnt(i,st_msg);
+        item_2->setData(tot,Qt::DisplayRole);
+        qsim_rep->setItem(i-1,1,item_2);
+    }
+
+    pere->addTab(qtv_rep,tr("Synthese"));
+    qtv_rep->sortByColumn(1,Qt::DescendingOrder);
+}
+
 void MainWindow::TST_MontrerDetailCombinaison(QString msg, stTiragesDef *pTDef)
 {
     QWidget *qw_fenResu = new QWidget;
@@ -3459,6 +3618,8 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg, stTiragesDef *pTDef)
 
     sqm_r1->setQuery(st_msg);
     tv_r1->setModel(sqm_r1);
+    tw_resu->addTab(tv_r1,tr("Details"));
+
     //view->setSortingEnabled(true);
 
     tv_r1->hideColumn(0);
@@ -3509,7 +3670,6 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg, stTiragesDef *pTDef)
     //qtv_rep->show();
 
     // ??
-    tw_resu->addTab(tv_r1,tr("Details"));
     tw_resu->addTab(qtv_rep,tr("Synthese"));
     qtv_rep->sortByColumn(1,Qt::DescendingOrder);
     mainLayout->addWidget(tw_resu);

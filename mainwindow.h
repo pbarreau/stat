@@ -1,8 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGlobal>
-
+//#include <QtGlobal>
+#include <QSortFilterProxyModel>
 #include <QMainWindow>
 #include <QSqlDatabase>
 #include <QSqlTableModel>
@@ -115,6 +115,7 @@ public slots:
     void slot_F3_RechercherLesTirages(const QModelIndex & index);
     void slot_F4_RechercherLesTirages(const QModelIndex & index);
     void slot_RechercherLesTirages(const QModelIndex & index);
+    void slot_F5_RechercherLesTirages(const QModelIndex & index);
 
     void slot_RepererLesTirages(const QString &myData);
     void slot_MontreLeTirage(const QModelIndex & index);
@@ -139,6 +140,8 @@ private:
     void TST_EtoileCombi(stTiragesDef *ref, QTabWidget *onglets);
     void TST_CombiRec(int k, QStringList &l, const QString &s, QStringList &ret);
     void TST_MontrerDetailCombinaison(QString msg, stTiragesDef *pTDef);
+    void VUE_ListeTiragesFromDistribution(int critere, int distance, int choix);
+    void VUE_Ltfd_Synthese(QTabWidget *pere, QString &st_msg);
     void TST_Permute(QStringList *lst);
     void TST_PrivPermute(QStringList  *a, int i, int n, QStringList *ret);
     void TST_PrivPermute_2(QStringList *item, int n, QStringList  *ret);
@@ -192,6 +195,7 @@ private:
     QAction *aboutAct;
 
     LabelClickable **G_lab_nbSorties;
+    QLabel *G_lab_CritereCombi;
     QLabel **G_lab_nbAbsents;
     QLabel **G_lab_PariteVoisin;
     QLabel **G_lab_Nsur2;
@@ -223,6 +227,7 @@ private:
     QStandardItemModel *G_sim_MesPossibles ;
     QStandardItemModel *G_sim_LesAbsents ;
     QSqlTableModel *G_tab_1Model;
+    QSortFilterProxyModel *G_ProxModel;
     QStandardItemModel *G_sim_Parites ;
     QStandardItemModel *G_sim_Ensemble_1 ;
     QStandardItemModel *G_sim_ud;
@@ -244,6 +249,7 @@ private:
     QAction * G_aci_MesAbsents[5];
     QActionGroup * G_acg_MesAbsents;
     int G_colTrieAbsent;
+    int G_CombiKey;
 
     bool closewindows;
 };
