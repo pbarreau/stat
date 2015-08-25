@@ -8,6 +8,21 @@
 
 #include "gererbase.h"
 
+bool GererBase::CreerTableDistriCombi(void)
+{
+   bool ret = true;
+   QString st_sqlMsg = "";
+   QSqlQuery query;
+
+   st_sqlMsg =  "create table DistriCombi "
+                "(id INTEGER PRIMARY KEY,"
+                "id_com int, tip text, s1 int, s2 int, p1 int, p2 int);";
+
+           ret = query.exec(st_sqlMsg);
+           query.finish();
+   return ret;
+}
+
 bool GererBase::CreerTableTirages(tirages *pRef)
 {
   QSqlQuery query;

@@ -59,8 +59,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     //fen_LstCouv();
 
-    // Creation sous fenetre des voisins
-    fen_Voisins();
 
     // Creation sous fenetre des ecarts
     //fen_Ecarts();
@@ -78,6 +76,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     // Creation des tables pour ce type jeu
     DB_tirages->CreerTableTirages(&tmp);
+    DB_tirages->CreerTableDistriCombi();
 
     // Recuperation des données fdj
     ficSource = tmp.SelectSource(load);
@@ -108,6 +107,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Creation fenetre pour memoriser la selection
     // Et affichage des combinaisons
     fen_MaSelection();
+    // Creation sous fenetre des voisins
+    fen_Voisins();
 
     // Ordre arrivee des boules ?
     DB_tirages->CouvertureBase(G_sim_Ecarts,&configJeu);
@@ -666,7 +667,86 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
 
     return(lay_return);
 }
+//__________
+void MainWindow::TST_CombiVoisin(int key)
+{
+    QSqlQuery query;
+    QString msg = "";
+    bool status = false;
+
+    // Voir si il y a deja des indices
+    msg = "select count (*) from DistriCombi";
+    status = query.exec(msg);
+
+    if(status){
+        query.first();
+
+        if(query.isValid()){
+            int calcul = query.value(0).toInt();
+            //QSqlRecord reco  = query.record();
+            //int calcul = 0;//query.record().value(0).toInt();
+
+            if(!calcul){
+                msg = "insert into DistriCombi (id_com,tip,s1) "
+                      "select id, tip, count(t1.id_poids)as tot "
+                      "from (SELECT lstcombi.id,lstcombi.tip,t2.id_poids "
+                      "FROM lstcombi "
+                      "LEFT JOIN (select * from (select analyses.id "
+                      "from analyses where analyses.id_poids = " +QString::number(key) +") "
+                      "as t1 left join analyses on t1.id = analyses.id+1) as t2 "
+                      "ON lstcombi.id = t2.id_poids)as t1 "
+                      "GROUP BY tip having ((t1.id=t1.id_poids)or (t1.id_poids is null))  order by t1.id asc;";
+                status = query.exec(msg);
+                QSqlTableModel *model = new QSqlTableModel;
+                model->setTable("DistriCombi");
+                //model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+                model->select();
+                //model->select();
+                //model->setHeaderData(0, Qt::Horizontal, tr("Name"));
+                //model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
+
+                //QTableView *view = new QTableView;
+                G_tab_1->setModel(model);
+
+                //G_tab_1->reset();
+            }
+        }
+        else
+        {
+            ; //rien
+        }
+    }
+
+}
+
+
+//____________
 //----------
+QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
+{
+  QFormLayout *lay_return = new QFormLayout;
+  //QTableView *tab_1 = new QTableView;
+ G_tab_1 = new QTableView;
+
+  QSqlTableModel *model = new QSqlTableModel;
+  model->setTable("DistriCombi");
+  //model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+  model->select();
+  //model->select();
+  //model->setHeaderData(0, Qt::Horizontal, tr("Name"));
+  //model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
+
+  //QTableView *view = new QTableView;
+  G_tab_1->setModel(model);
+  //G_tab_1->hideColumn(0); // don't show the ID
+  //G_tab_1->show();
+
+  G_tab_1->setFixedSize(395,390);
+  lay_return->addWidget(G_tab_1);
+    return(lay_return);
+}
+
+#if 0
 QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
 {
     QFormLayout *lay_return = new QFormLayout;
@@ -757,7 +837,9 @@ QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
 
     return(lay_return);
 }
+#endif
 //--------
+
 void MainWindow::fen_Voisins(void)
 {
     QWidget *qw_Voisins = new QWidget;
@@ -772,8 +854,8 @@ void MainWindow::fen_Voisins(void)
     wid_ForTop[0]= wTop_1;
     wid_ForTop[1]= wTop_2;
 
-    tab_Top->addTab(wid_ForTop[0],tr("Presents"));
-    tab_Top->addTab(wid_ForTop[1],tr("Absents"));
+    tab_Top->addTab(wid_ForTop[0],tr("Boules"));
+    tab_Top->addTab(wid_ForTop[1],tr("Distribution"));
     // ------------------
 
     QFormLayout * design_onglet_1 = MonLayout_VoisinsPresent();
@@ -1743,7 +1825,11 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
     int colon = index.column();
 
     int clef = index.model()->index(ligne,0).data().toInt();
-    QString st_com = index.data().toString();
+
+    if(colon == 1)
+    {
+      TST_CombiVoisin(clef);
+    }
 
 
 }

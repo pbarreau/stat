@@ -157,6 +157,7 @@ private:
     void TST_MontreTirageAyantCritere(NE_FDJ::E_typeCritere lecritere, int zn, stTiragesDef *pConf, QStringList boules);
     void TST_FenetreReponses(QString fen_titre, int zn, QString reg_msg, QStringList st_list, stTiragesDef *pConf);
     void TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef *pConf);
+    void TST_CombiVoisin(int key);
     QFormLayout * MonLayout_ChoixPossible(void);
     QFormLayout * MonLayout_Absent(void);
     QFormLayout * MonLayout_Ecarts(void);
@@ -196,6 +197,7 @@ private:
     QTabWidget *G_tbw_MontabWidget;
     QTableView *G_tbv_Tirages;
     QTableView *G_tbv_CouvTirages;
+    QTableView *G_tab_1;
     QTableView **G_tbv_Voisins;
     QTableView **G_tbv_Absents;
     QTableView **G_tbv_MaSelection;
@@ -214,6 +216,7 @@ private:
     QStandardItemModel **G_sim_Absents;
     QStandardItemModel *G_sim_Ecarts ;
     QStandardItemModel **G_sim_MaSelection ;
+
 
     //MonToolTips *qsim_MesPossibles ;
     QStandardItemModel *G_sim_MesPossibles ;

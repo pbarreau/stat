@@ -129,6 +129,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
     bool CreerBaseEnMemoire(bool action, NE_FDJ::E_typeJeux type);
     bool CreerTableTirages(tirages *pRref);
+    bool CreerTableDistriCombi(void);
     bool LireLesTirages(QString fileName_2, tirages *pRef);
     bool SupprimerBase();
     QSqlError lastError();
