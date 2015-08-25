@@ -430,7 +430,7 @@ void MaQtvDelegation::paint(QPainter *painter, const QStyleOptionViewItem &optio
 
     //if ((col == coln) and (ligne == lgn)){
     if(index == derTirage){
-    //if(index.internalId() == derTirage.internalId()){
+        //if(index.internalId() == derTirage.internalId()){
         painter->fillRect(option.rect, (QBrush(QColor(200,170,100,140))));
     }
 
@@ -445,7 +445,6 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     QString st_msg ="";
 
 
-    //st_msg = "select id,tip from lstcombi;";
     st_msg = "select id, tip, count(t1.id_poids)as tot "
              "from ("
              "SELECT lstcombi.id,lstcombi.tip,analyses.id_poids "
@@ -454,7 +453,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
              ")as t1 "
              "GROUP BY tip having ((t1.id=t1.id_poids) or (t1.id_poids is null)) "
              "order by id  asc;";
-//             "order by tot  desc, tip desc;";
+    //             "order by tot  desc, tip desc;";
 
     sqm_r1->setQuery(st_msg);
     sqm_r1->setHeaderData(1,Qt::Horizontal,"Repartition");
@@ -683,32 +682,21 @@ void MainWindow::TST_CombiVoisin(int key)
 
         if(query.isValid()){
             int calcul = query.value(0).toInt();
-            //QSqlRecord reco  = query.record();
-            //int calcul = 0;//query.record().value(0).toInt();
 
-            if(!calcul){
-                msg = "insert into DistriCombi (id_com,tip,s1) "
-                      "select id, tip, count(t1.id_poids)as tot "
-                      "from (SELECT lstcombi.id,lstcombi.tip,t2.id_poids "
-                      "FROM lstcombi "
-                      "LEFT JOIN (select * from (select analyses.id "
-                      "from analyses where analyses.id_poids = " +QString::number(key) +") "
-                      "as t1 left join analyses on t1.id = analyses.id+1) as t2 "
-                      "ON lstcombi.id = t2.id_poids)as t1 "
-                      "GROUP BY tip having ((t1.id=t1.id_poids)or (t1.id_poids is null))  order by t1.id asc;";
+            if(calcul == 0){
+                msg = "insert into DistriCombi (id_com,tip) select id, tip  from lstcombi;";
                 status = query.exec(msg);
-                QSqlTableModel *model = new QSqlTableModel;
-                model->setTable("DistriCombi");
-                //model->setEditStrategy(QSqlTableModel::OnManualSubmit);
-                model->select();
-                //model->select();
-                //model->setHeaderData(0, Qt::Horizontal, tr("Name"));
-                //model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
-
-                //QTableView *view = new QTableView;
-                G_tab_1->setModel(model);
-
-                //G_tab_1->reset();
+                G_tab_1Model->select();
+                TST_CombiVoisin(key);
+            }
+            else
+            {
+               // On deja des infos remplir les colonnes de total
+                for(int i = 0; i<4;i++)
+                {
+                    TST_NbRepartionCombi(i,key);
+                }
+                G_tab_1Model->select();
             }
         }
         else
@@ -719,30 +707,84 @@ void MainWindow::TST_CombiVoisin(int key)
 
 }
 
+void MainWindow::TST_NbRepartionCombi(int ecart,int key)
+{
+    QSqlQuery query;
+    QSqlQuery sq_modif;
+    QString msg = "";
+    QString colNames[4]={"s1","s2","p1","p2"};
+    bool status = false;
+
+    msg =   "select id, count(id_poids) as T  from (SELECT lstcombi.id,t2.id_poids "
+            "FROM lstcombi "
+            "LEFT JOIN (select * "
+            "from (select analyses.id "
+            "from analyses where analyses.id_poids = "+QString::number(key)+") as t1 "
+            "left join analyses on t1.id = analyses.id+"+QString::number(ecart+1)+") as t2 "
+            "ON lstcombi.id = t2.id_poids)as t1 "
+            "GROUP BY id having ((t1.id=t1.id_poids)or (t1.id_poids is null)) "
+            "order by t1.id asc;";
+
+    status = query.exec(msg);
+    if(status){
+        query.first();
+        if(query.isValid())
+        {
+            msg =   "update DistriCombi "
+                    "set "+colNames[ecart]+"=:LeTotal "
+                    "where (id_com=:LaCombi);";
+            sq_modif.prepare(msg);
+            int ligne = 0;
+            int tot = 0;
+            do
+            {
+
+               ligne =  query.value(0).toInt();
+               tot =query.value(1).toInt();
+
+               sq_modif.bindValue(":LaCombi", ligne);
+               sq_modif.bindValue(":LeTotal", tot);
+               status = sq_modif.exec();
+
+            }while(query.next() && status);
+        }
+    }
+}
 
 //____________
 //----------
 QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
 {
-  QFormLayout *lay_return = new QFormLayout;
-  //QTableView *tab_1 = new QTableView;
- G_tab_1 = new QTableView;
+    QFormLayout *lay_return = new QFormLayout;
 
-  QSqlTableModel *model = new QSqlTableModel;
-  model->setTable("DistriCombi");
-  //model->setEditStrategy(QSqlTableModel::OnManualSubmit);
-  model->select();
-  //model->select();
-  //model->setHeaderData(0, Qt::Horizontal, tr("Name"));
-  //model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
+    QString stColName[4]={"T+1","T+2","T-1","T-2"};
+    G_tab_1 = new QTableView;
 
-  //QTableView *view = new QTableView;
-  G_tab_1->setModel(model);
-  //G_tab_1->hideColumn(0); // don't show the ID
-  //G_tab_1->show();
+    G_tab_1Model = new QSqlTableModel;
+    G_tab_1Model->setTable("DistriCombi");
+    G_tab_1Model->select();
 
-  G_tab_1->setFixedSize(395,390);
-  lay_return->addWidget(G_tab_1);
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(G_tab_1Model);
+
+    G_tab_1->setModel(m);
+    G_tab_1->hideColumn(0); // don't show the ID
+    G_tab_1->hideColumn(1);
+
+    // Taille/Nom des colonnes
+    G_tab_1->setColumnWidth(2,80);
+    G_tab_1Model->setHeaderData(2, Qt::Horizontal, tr("Repartition"));
+    for(int j=3;j<7;j++)
+    {
+        G_tab_1->setColumnWidth(j,50);
+        G_tab_1Model->setHeaderData(j, Qt::Horizontal, stColName[j-3]);
+    }
+
+    // Taille du tableau dans onglet
+    G_tab_1->setFixedSize(350,400);
+
+    lay_return->addWidget(G_tab_1);
     return(lay_return);
 }
 
@@ -1828,7 +1870,7 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
 
     if(colon == 1)
     {
-      TST_CombiVoisin(clef);
+        TST_CombiVoisin(clef);
     }
 
 

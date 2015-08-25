@@ -158,6 +158,7 @@ private:
     void TST_FenetreReponses(QString fen_titre, int zn, QString reg_msg, QStringList st_list, stTiragesDef *pConf);
     void TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef *pConf);
     void TST_CombiVoisin(int key);
+    void TST_NbRepartionCombi(int ecart, int key);
     QFormLayout * MonLayout_ChoixPossible(void);
     QFormLayout * MonLayout_Absent(void);
     QFormLayout * MonLayout_Ecarts(void);
@@ -221,7 +222,7 @@ private:
     //MonToolTips *qsim_MesPossibles ;
     QStandardItemModel *G_sim_MesPossibles ;
     QStandardItemModel *G_sim_LesAbsents ;
-
+    QSqlTableModel *G_tab_1Model;
     QStandardItemModel *G_sim_Parites ;
     QStandardItemModel *G_sim_Ensemble_1 ;
     QStandardItemModel *G_sim_ud;
