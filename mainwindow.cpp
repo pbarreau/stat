@@ -3,6 +3,7 @@
 #endif
 
 #include <QtGui>
+#include <QMdiSubWindow>
 #include <QFormLayout>
 #include "labelclickable.h"
 #include "pointtirage.h"
@@ -162,6 +163,18 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     TST_Graphe(&configJeu);
     /// ---- fin rem 3
     //setCentralWidget(zoneCentrale);
+
+    // Arranger les fenetres
+    QPoint position(0, 0);
+
+    foreach (QMdiSubWindow *window, zoneCentrale->subWindowList()) {
+        //QRect rect(0, 0, mdiArea->width(),
+         //          mdiArea->height() / mdiArea->subWindowList().count());
+        //window->setGeometry(rect);
+        window->move(position);
+       position.setX(position.x() + window->width());
+    }
+
 }
 
 #if 0
@@ -1809,7 +1822,7 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
                 col_bpos += 1;
                 val=index.model()->index(index.row(),col_bpos).data().toInt();
                 DB_tirages->RechercheVoisin(val,zn,&configJeu,G_lab_nbSorties[zn],G_sim_Voisins[zn]);
-                DB_tirages->RechercheAbsent(val,zn,&configJeu,G_lab_nbAbsents[zn],G_sim_Absents[zn]);
+                //DB_tirages->RechercheAbsent(val,zn,&configJeu,G_lab_nbAbsents[zn],G_sim_Absents[zn]);
             }
             // Pour rendre la fenetre voisin vide
             select.clear();
