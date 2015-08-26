@@ -1,5 +1,11 @@
 #include <QtGui>
 #include <QMessageBox>
+#include <QMdiSubWindow>
+#include <QMdiArea>
+
+#ifndef QT_NO_DEBUG
+#include <QDebug>
+#endif
 
 #include "mainwindow.h"
 #include "choixjeux.h"
@@ -13,7 +19,10 @@ void MainWindow::pslot_newGame()
 
 void MainWindow::pslot_open()
 {
-
+#ifndef QT_NO_DEBUG
+ qDebug () << zoneCentrale->activeSubWindow()->pos();
+ qDebug () << zoneCentrale->activeSubWindow()->size();;
+#endif
 }
 
 bool MainWindow::pslot_save()

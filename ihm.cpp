@@ -2,6 +2,8 @@
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
+#include <QMdiSubWindow>
+#include <QMdiArea>
 
 #include "mainwindow.h"
 

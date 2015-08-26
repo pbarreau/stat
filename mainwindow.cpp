@@ -163,7 +163,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     TST_Graphe(&configJeu);
     /// ---- fin rem 3
     //setCentralWidget(zoneCentrale);
-
+#if 0
     // Arranger les fenetres
     QPoint position(0, 0);
 
@@ -174,7 +174,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         window->move(position);
        position.setX(position.x() + window->width());
     }
-
+#endif
 }
 
 #if 0
@@ -943,7 +943,10 @@ void MainWindow::fen_Voisins(void)
     qw_Voisins->setLayout(mainLayout);
     qw_Voisins->setWindowTitle("Voisins de selection");
 
-    zoneCentrale->addSubWindow(qw_Voisins);
+    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_Voisins);
+    subWindow->resize(580,554);
+    subWindow->move(1089,0);
+    //zoneCentrale->addSubWindow(qw_Voisins);
     qw_Voisins->setVisible(true);
 }
 
@@ -1087,8 +1090,11 @@ void MainWindow::fen_MaSelection(void)
     qw_MaSelection->setLayout(mainLayout);
     qw_MaSelection->setWindowTitle("Ma Selection");
 
-    //QMdiSubWindow *sousFenetre3 =
-    zoneCentrale->addSubWindow(qw_MaSelection);
+
+    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_MaSelection);
+    subWindow->resize(405,329);
+    subWindow->move(1244,558);
+
     qw_MaSelection->setVisible(true);
     qw_MaSelection->show();
 
@@ -1139,7 +1145,11 @@ void MainWindow::fen_MesPossibles(void)
     w_DataFenetre->setLayout(mainLayout);
     w_DataFenetre->setWindowTitle("Boules");
 
-    zoneCentrale->addSubWindow(w_DataFenetre);
+    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_DataFenetre);
+    subWindow->resize(350,554);
+    subWindow->move(737,0);
+
+    //zoneCentrale->addSubWindow(w_DataFenetre);
     w_DataFenetre->setVisible(true);
 }
 
@@ -1780,7 +1790,10 @@ void MainWindow::fen_Parites(void)
              this, SLOT( slot_F2_RechercherLesTirages( QModelIndex) ) );
 
 
-    zoneCentrale->addSubWindow(qw_Parites);
+    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_Parites);
+    subWindow->resize(493,329);
+    subWindow->move(737,560);
+    //zoneCentrale->addSubWindow(qw_Parites);
     qw_Parites->setVisible(true);
 }
 
@@ -4331,8 +4344,12 @@ void MainWindow::TST_Graphe(stTiragesDef *pConf)
     dessin = TST_Graphe_3(pConf);
     tabWidget->addTab(dessin,"b<N/2");
 
-    zoneCentrale->addSubWindow(tabWidget);
     tabWidget->setVisible(true);
+
+     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(tabWidget);
+     subWindow->resize(727,347);
+     subWindow->move(0,558);
+     tabWidget->show();
 }
 
 UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
