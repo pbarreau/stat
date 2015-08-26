@@ -771,6 +771,10 @@ QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
 {
     QFormLayout *lay_return = new QFormLayout;
 
+    //G_tbv_Absents = new QTableView*[nb_zn];
+    G_sim_Absents= new QStandardItemModel*[2];
+    G_lab_nbAbsents = new QLabel*[2];
+
     QString stColName[4]={"T+1","T+2","T-1","T-2"};
 
     G_lab_CritereCombi = new QLabel;
@@ -1822,7 +1826,7 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
                 col_bpos += 1;
                 val=index.model()->index(index.row(),col_bpos).data().toInt();
                 DB_tirages->RechercheVoisin(val,zn,&configJeu,G_lab_nbSorties[zn],G_sim_Voisins[zn]);
-                //DB_tirages->RechercheAbsent(val,zn,&configJeu,G_lab_nbAbsents[zn],G_sim_Absents[zn]);
+                DB_tirages->RechercheAbsent(val,zn,&configJeu,G_lab_nbAbsents[zn],G_sim_Absents[zn]);
             }
             // Pour rendre la fenetre voisin vide
             select.clear();
