@@ -489,7 +489,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
         //tv_r1->setItemDelegate(new MaQtvDelegation(NULL,value-1,1));
 
         QAbstractItemModel *mon_model = tv_r1->model();
-        QStandardItemModel *dest= (QStandardItemModel*) mon_model;
+        //QStandardItemModel *dest= (QStandardItemModel*) mon_model;
         QModelIndex mdi_item1 = mon_model->index(0,0);
 
         if (mdi_item1.isValid()){
@@ -713,6 +713,7 @@ void MainWindow::TST_NbRepartionCombi(int ecart,int key)
     QSqlQuery sq_modif;
     QString msg = "";
     QString colNames[4]={"s1","s2","p1","p2"};
+    int d[4]={1,2,-1,-2};
     bool status = false;
 
     msg =   "select id, count(id_poids) as T  from (SELECT lstcombi.id,t2.id_poids "
@@ -720,7 +721,7 @@ void MainWindow::TST_NbRepartionCombi(int ecart,int key)
             "LEFT JOIN (select * "
             "from (select analyses.id "
             "from analyses where analyses.id_poids = "+QString::number(key)+") as t1 "
-            "left join analyses on t1.id = analyses.id+"+QString::number(ecart+1)+") as t2 "
+            "left join analyses on t1.id = analyses.id + "+QString::number(d[ecart])+") as t2 "
             "ON lstcombi.id = t2.id_poids)as t1 "
             "GROUP BY id having ((t1.id=t1.id_poids)or (t1.id_poids is null)) "
             "order by t1.id asc;";
@@ -791,7 +792,7 @@ QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
     // Taille du tableau dans onglet
     G_tab_1->setFixedSize(345,410);
 
-    // Double click dans sous fenetre ecart
+    // Double click dans sous fenetre
     connect( G_tab_1, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( slot_F5_RechercherLesTirages( QModelIndex) ) );
 
@@ -1889,6 +1890,11 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
         TST_CombiVoisin(clef);
     }
 
+    if(colon == 2)
+    {
+        VUE_ListeTiragesFromDistribution(clef,5,0);
+    }
+
 
 }
 
@@ -2217,11 +2223,11 @@ void MainWindow::slot_F5_RechercherLesTirages(const QModelIndex & index)
     int col = index.column();
     int lgn = index.model()->index(index.row(),0).data().toInt();
 
-    if (col > 1 && col < 6)
+    if (col > 2 && col < 7)
     {
         if (index.data().toInt())
         {
-            VUE_ListeTiragesFromDistribution(G_CombiKey,col-2,lgn);
+            VUE_ListeTiragesFromDistribution(G_CombiKey,col-3,lgn);
         }
     }
 
@@ -3489,6 +3495,7 @@ void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, in
     QTabWidget *tw_resu = new QTabWidget;
     QFormLayout *mainLayout = new QFormLayout;
     bool status = false;
+    int d[5]={1,2,-1,-2,0};
 
     // ---
     QTableView *tv_r1 = new QTableView;
@@ -3496,13 +3503,23 @@ void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, in
     QSqlQuery query;
     QString st_msg ="";
     QString st_titre="";
+    QString st_where = "";
+
+    if(choix != 0)
+    {
+     st_where =   "where(t2.id_poids = "+QString::number(choix)+")" ;
+    }
 
     //t2.id_poids,
+    // "+QString::number(d[distance])+"
     st_msg = "select tirages.* from "
              "(select  analyses.id, analyses.id_poids from "
              "(select id, id_poids from analyses where analyses.id_poids = "+QString::number(critere)+") as t1 "
-             "left join analyses on t1.id = analyses.id+"+QString::number(distance)+") as t2 "
-             "left join tirages on t2.id=tirages.id where(t2.id_poids = "+QString::number(choix)+");";
+             "left join analyses on t1.id = analyses.id + %1 ) as t2 "
+             "left join tirages on t2.id=tirages.id "+ st_where +";";
+
+    st_msg=st_msg.arg(d[distance]);
+    //qDebug()<< st_msg;
 
     sqm_r1->setQuery(st_msg);
     tv_r1->setModel(sqm_r1);
@@ -3534,7 +3551,7 @@ void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, in
             st_titre = query.value(0).toString();
         }
     }
-    st_titre = st_titre + " ,D" + QString::number(distance) + " ,";
+    st_titre = st_titre + " ,D" + QString::number(d[distance]) + " ,";
 
     query.bindValue(":valeur",choix);
     status = query.exec();
@@ -3928,7 +3945,7 @@ void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
     QModelIndex item1 = mon_model->index(0,0, QModelIndex());
 
     if (item1.isValid()){
-        item1 = item1.model()->index(val-1,0);
+        item1 = item1.model()->index(val-1,0,QModelIndex());
         G_tbv_Tirages->setCurrentIndex(item1);
         G_tbv_Tirages->scrollTo(item1);
         G_tbv_Tirages->selectRow(val-1);

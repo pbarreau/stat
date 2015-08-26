@@ -100,21 +100,38 @@ bool GererBase::SupprimerBase()
 void GererBase::AfficherBase(stTiragesDef *pConf,QWidget *parent, QTableView *cibleview)
 {
     int i=0,j=0, depart = 0;
+    int tot = 0;
     //tirages tmp(jeu);
     stTiragesDef def=*pConf;;
 
     //tmp.getConfig(&def);
 
-    tbl_model = new QSqlTableModel(parent, db);
+    tbl_model = new QSqlTableModel;
     tbl_model->setTable("tirages");
     //tbl_model->setEditStrategy(QSqlTableModel::OnFieldChange);
     tbl_model->select();
 
-    tbl_model->removeColumn(0); // don't show the ID
 
+    // Associer toutes les valeurs a la vue
+    while (tbl_model->canFetchMore())
+    {
+        tbl_model->fetchMore();
+    }
+    //tbl_model->select();
+    //tot = tbl_model->rowCount();
+    tbl_model->removeColumn(0); // don't show the ID
 
     // Attach it to the view
     cibleview->setModel(tbl_model);
+    cibleview->scrollToBottom();
+    cibleview->scrollToTop();
+
+    //QModelIndex mdi_item1 = tbl_model->index(tot,0);
+    //cibleview->selectionModel()->setCurrentIndex(mdi_item1, QItemSelectionModel::NoUpdate);
+    //cibleview->scrollTo(mdi_item1);
+    //int tot = cibleview->model()->rowCount();
+    //mdi_item1 = tbl_model->index(tbl_model->rowCount(),0);
+
     //qDebug() << cibleview->columnWidth(3);
 
     // Definir largeur colonne des boules selon zone
@@ -840,7 +857,7 @@ void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
     QSqlQuery query;
     bool status = false;
     QStringList tableau;
-int totCol = 0;
+    int totCol = 0;
 
     //QTabWidget *onglets = ;
 
@@ -882,8 +899,8 @@ int totCol = 0;
             qtv_r->setColumnWidth(0,150);
             qtv_r->setColumnWidth(2,50);
             //qtv_r->hideColumn(1);
-/// A regarder pb sur colonne a trouver
-///
+            /// A regarder pb sur colonne a trouver
+            ///
             // click dans fenetre voisin pour afficher boule
             connect( qtv_r, SIGNAL( doubleClicked (QModelIndex)) ,
                      this, SLOT( slot_DetailsCombinaison( QModelIndex) ) );
