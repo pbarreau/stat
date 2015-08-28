@@ -42,7 +42,68 @@
 #include "gererbase.h"
 
 static stTiragesDef configJeu;
+#if 0
+Requete pour compter le nombre total de sortie des boules:
+    select count (boule) from (select boule from oazb)as t1
+  left join tirages on (
+  t1.boule = tirages.b1 or
+  t1.boule = tirages.b2 or
+  t1.boule = tirages.b3 or
+  t1.boule = tirages.b4 or
+  t1.boule = tirages.b5
+  ) group by boule;
 
+// Requete pour compter le nb de fois boule k avec les 48 autres:
+select boule as B1, table_2.T as T1 from (select boule from oazb)as t2
+left join
+(
+        select boule as B, count (boule)as T from (select boule from oazb where(boule !=2))as t1
+        left join tirages on (
+            (
+                t1.boule = tirages.b1 or
+        t1.boule = tirages.b2 or
+        t1.boule = tirages.b3 or
+        t1.boule = tirages.b4 or
+        t1.boule = tirages.b5
+        )
+            and
+            (
+                tirages.b1=2 or
+        tirages.b2=2 or
+        tirages.b3=2 or
+        tirages.b4=2 or
+        tirages.b5=2
+        )
+            ) group by boule
+        ) as table_2 on (B1=table_2.B) group by B1;
+
+// Requete pour nb k avec les 48 autres a une distance D
+select t3.boule as B1, table_2.T as T1 from (select boule from oazb)as t3
+left join
+(
+        select boule as B, count (boule) as T from (select boule from oazb )as t1
+        left join
+        (
+            select * from (
+                select id as id1 from tirages
+                where (
+                    tirages.b1=1 or
+        tirages.b2=1 or
+        tirages.b3=1 or
+        tirages.b4=1 or
+        tirages.b5=1
+        )) as tabl4 left join tirages on tabl4.id1=tirages.id + 3
+        ) as t2 on (
+            (
+                t1.boule = t2.b1 or
+        t1.boule = t2.b2 or
+        t1.boule = t2.b3 or
+        t1.boule = t2.b4 or
+        t1.boule = t2.b5
+        )
+            ) group by boule
+        ) as table_2 on (B1=table_2.B) group by B1;
+#endif
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
     DB_tirages = new GererBase;
@@ -169,10 +230,10 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     foreach (QMdiSubWindow *window, zoneCentrale->subWindowList()) {
         //QRect rect(0, 0, mdiArea->width(),
-         //          mdiArea->height() / mdiArea->subWindowList().count());
+        //          mdiArea->height() / mdiArea->subWindowList().count());
         //window->setGeometry(rect);
         window->move(position);
-       position.setX(position.x() + window->width());
+        position.setX(position.x() + window->width());
     }
 #endif
 }
@@ -384,6 +445,10 @@ void MainWindow::fen_Tirages(void)
     zoneCentrale->addSubWindow(G_w_Tirages);
     G_w_Tirages->setVisible(true);
     //QMdiSubWindow *sousFenetre1 = zoneCentrale->addSubWindow(AfficherBase);
+
+    // Simple click dans sous fenetre base
+    connect( G_tbv_Tirages, SIGNAL( clicked(QModelIndex)) ,
+             this, SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
 
     // Double click dans sous fenetre base
     connect( G_tbv_Tirages, SIGNAL( doubleClicked(QModelIndex)) ,
@@ -704,7 +769,7 @@ void MainWindow::TST_CombiVoisin(int key)
             }
             else
             {
-               // On deja des infos remplir les colonnes de total
+                // On deja des infos remplir les colonnes de total
                 for(int i = 0; i<4;i++)
                 {
                     TST_NbRepartionCombi(i,key);
@@ -734,10 +799,10 @@ void MainWindow::TST_NbRepartionCombi(int ecart,int key)
             "LEFT JOIN (select * "
             "from (select analyses.id "
             "from analyses where analyses.id_poids = "+QString::number(key)+") as t1 "
-            "left join analyses on t1.id = analyses.id + "+QString::number(d[ecart])+") as t2 "
-            "ON lstcombi.id = t2.id_poids)as t1 "
-            "GROUP BY id having ((t1.id=t1.id_poids)or (t1.id_poids is null)) "
-            "order by t1.id asc;";
+                                                                            "left join analyses on t1.id = analyses.id + "+QString::number(d[ecart])+") as t2 "
+                                                                                                                                                     "ON lstcombi.id = t2.id_poids)as t1 "
+                                                                                                                                                     "GROUP BY id having ((t1.id=t1.id_poids)or (t1.id_poids is null)) "
+                                                                                                                                                     "order by t1.id asc;";
 
     status = query.exec(msg);
     if(status){
@@ -746,19 +811,19 @@ void MainWindow::TST_NbRepartionCombi(int ecart,int key)
         {
             msg =   "update DistriCombi "
                     "set "+colNames[ecart]+"=:LeTotal "
-                    "where (id_com=:LaCombi);";
+                                           "where (id_com=:LaCombi);";
             sq_modif.prepare(msg);
             int ligne = 0;
             int tot = 0;
             do
             {
 
-               ligne =  query.value(0).toInt();
-               tot =query.value(1).toInt();
+                ligne =  query.value(0).toInt();
+                tot =query.value(1).toInt();
 
-               sq_modif.bindValue(":LaCombi", ligne);
-               sq_modif.bindValue(":LeTotal", tot);
-               status = sq_modif.exec();
+                sq_modif.bindValue(":LaCombi", ligne);
+                sq_modif.bindValue(":LeTotal", tot);
+                status = sq_modif.exec();
 
             }while(query.next() && status);
         }
@@ -1832,12 +1897,14 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
     {
         // Recherche de toute les boules
         int col_bpos = 0;
+        VUE_MontreLeTirage(index.row()+1);
         for(zn=0;zn<nb_zone;zn++)
         {
             for(int b_pos=0; b_pos<configJeu.nbElmZone[zn];b_pos++)
             {
                 col_bpos += 1;
                 val=index.model()->index(index.row(),col_bpos).data().toInt();
+
                 DB_tirages->RechercheVoisin(val,zn,&configJeu,G_lab_nbSorties[zn],G_sim_Voisins[zn]);
                 DB_tirages->RechercheAbsent(val,zn,&configJeu,G_lab_nbAbsents[zn],G_sim_Absents[zn]);
             }
@@ -2366,10 +2433,10 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
         ptir = new PointTirage(configJeu.choixJeu,eTirage);
         //QGraphicsItem *unPoint = new QGraphicsItem;
         //unPoint->setPos(10);
-        ptir->setPos(10,69.8);
+        //ptir->setPos(10,69.8);
         QGraphicsScene *pScene;
-        pScene = myview[0]->GetScene();
-        pScene->setFocusItem(ptir);
+        //pScene = myview[0]->GetScene();
+        //pScene->setFocusItem(ptir);
 
         DB_tirages->MontrerLaBoule(cellule,G_tbv_Tirages);
         DB_tirages->MLB_DansLaQtTabView(cellule,G_tbv_Voisins[0]);
@@ -3537,7 +3604,7 @@ void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, in
 
     if(choix != 0)
     {
-     st_where =   "where(t2.id_poids = "+QString::number(choix)+")" ;
+        st_where =   "where(t2.id_poids = "+QString::number(choix)+")" ;
     }
 
     //t2.id_poids,
@@ -3545,8 +3612,8 @@ void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, in
     st_msg = "select tirages.* from "
              "(select  analyses.id, analyses.id_poids from "
              "(select id, id_poids from analyses where analyses.id_poids = "+QString::number(critere)+") as t1 "
-             "left join analyses on t1.id = analyses.id + %1 ) as t2 "
-             "left join tirages on t2.id=tirages.id "+ st_where +";";
+                                                                                                      "left join analyses on t1.id = analyses.id + %1 ) as t2 "
+                                                                                                      "left join tirages on t2.id=tirages.id "+ st_where +";";
 
     st_msg=st_msg.arg(d[distance]);
     //qDebug()<< st_msg;
@@ -3966,6 +4033,14 @@ void MainWindow::TST_FenetreReponses(QString fen_titre, int zn, QString req_msg,
 
 }
 
+void MainWindow::slot_MontreTirageDansGraph(const QModelIndex & index)
+{
+    if (index.column()==0)
+    {
+        VUE_MontreLeTirage(index.row()+1);
+    }
+}
+
 void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
 {
     // recuperer la ligne de la table
@@ -3976,6 +4051,12 @@ void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
 
     if (item1.isValid()){
         item1 = item1.model()->index(val-1,0,QModelIndex());
+
+        // Montrer la selection dans les graphiques
+        VUE_MontreLeTirage(val);
+
+
+        // Montrer la selection dans le tableau des tirages
         G_tbv_Tirages->setCurrentIndex(item1);
         G_tbv_Tirages->scrollTo(item1);
         G_tbv_Tirages->selectRow(val-1);
@@ -4346,10 +4427,10 @@ void MainWindow::TST_Graphe(stTiragesDef *pConf)
 
     tabWidget->setVisible(true);
 
-     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(tabWidget);
-     subWindow->resize(727,347);
-     subWindow->move(0,558);
-     tabWidget->show();
+    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(tabWidget);
+    subWindow->resize(727,347);
+    subWindow->move(0,558);
+    tabWidget->show();
 }
 
 UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
@@ -4510,3 +4591,58 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
 
 }
 //----------
+
+void MainWindow::VUE_MontreLeTirage(double x)
+{
+    QSqlQuery query;
+    QString st_msg[3] = "";
+    bool status = false;
+    int scale[3]={20,20,20};
+    int delta[3]={0,0,0};
+
+    st_msg[0] = "select pos from lstcombi inner  join "
+                "(select id_poids as clef from analyses where id = "
+            +QString::number(x)+
+            ") as t2 on t2.clef = lstcombi.id ;";
+
+    st_msg[1] = "select tirages.bp from tirages where tirages.id = "
+            +QString::number(x)+ ";";
+
+    st_msg[2] = "select tirages.bg from tirages where tirages.id = "
+            +QString::number(x)+ ";";
+
+    // Recuperer itemGraphique par rapport a x et y
+    for(int graph=0; graph< 3 ; graph ++)
+    {
+#ifndef QT_NO_DEBUG
+        qDebug() << st_msg[graph];
+#endif
+
+        status = query.exec(st_msg[graph]);
+        if(status)
+        {
+            query.first();
+            if(query.isValid())
+            {
+                double y = query.value(0).toInt();
+                int pos_x = x * C_COEF_X;
+                QGraphicsScene *lavue = une_vue[graph]->scene();
+                PointTirage *un_test = new PointTirage(NE_FDJ::fdj_loto,eTirage);
+
+
+                double pos_y = myview[graph]->height();
+                pos_y = pos_y - (y * C_COEF_Y * scale[graph]) - delta[graph];
+
+                un_test->setPos(pos_x,pos_y);
+
+                une_vue[graph]->centerOn(un_test);
+                une_vue[graph]->ensureVisible(un_test);
+                une_vue[graph]->fitInView(un_test,Qt::KeepAspectRatio);
+                lavue->setFocusItem(un_test);
+
+            }
+        }
+    }
+}
+
+

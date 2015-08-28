@@ -119,6 +119,8 @@ public slots:
 
     void slot_RepererLesTirages(const QString &myData);
     void slot_MontreLeTirage(const QModelIndex & index);
+    void slot_MontreTirageDansGraph(const QModelIndex & index);
+
 
 private:
     void createActions();
@@ -142,6 +144,7 @@ private:
     void TST_MontrerDetailCombinaison(QString msg, stTiragesDef *pTDef);
     void VUE_ListeTiragesFromDistribution(int critere, int distance, int choix);
     void VUE_Ltfd_Synthese(QTabWidget *pere, QString &st_msg);
+    void VUE_MontreLeTirage(double x);
     void TST_Permute(QStringList *lst);
     void TST_PrivPermute(QStringList  *a, int i, int n, QStringList *ret);
     void TST_PrivPermute_2(QStringList *item, int n, QStringList  *ret);
