@@ -85,13 +85,17 @@ void MyGraphicsView::DessineCourbeSql(QString msg_2, NE_FDJ::E_typeJeux leJeu, Q
 
                 if(sx==0)
                 {
-                    sx=x;
-                    sy=y;
+                    // 1er point
+                    //sx=x;
+                    //sy=y;
+                    ; // rien car deja place
                 }
-
+                else
+                {
                 // Courbe
                 QLineF L1(x,y,sx,sy);
                 Scene->addLine(L1,QPen(cpen));
+                }
                 sx=x;
                 sy=y;
             }while(sql_2.next());
