@@ -156,7 +156,7 @@ public:
     void EffectuerTrieMesPossibles(int tri_id, int col_id, int b_id, stTiragesDef *pConf, QStandardItemModel * vue);
     void EffectuerTrieMesAbsents(int tri_id, int col_id, int b_id, stTiragesDef *pConf, QStandardItemModel * vue);
     void TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, QStandardItemModel *modele);
-    void CouvMontrerProbable(int i, int col_m,int col_v,QStandardItemModel *dest);
+    void CouvMontrerProbable(int i, QStandardItemModel *dest);
     //void RechercheBaseTiragesPariteNbBoule(int nb, stTiragesDef *ref, QTableView *base);
     //void RepartitionUniteDizaine(int nb, stTiragesDef *ref, QTableView *base);
     void MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen);

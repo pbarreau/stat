@@ -77,32 +77,40 @@ left join
             ) group by boule
         ) as table_2 on (B1=table_2.B) group by B1;
 
-// Requete pour nb k avec les 48 autres a une distance D
-select t3.boule as B1, table_2.T as T1 from (select boule from oazb)as t3
+// Requete pour nb k avec les 48 autres a une distance D=0
+select t3.boule as B1, table_2.T as T1
+from (select oazb.boule from oazb)as t3
 left join
 (
-        select boule as B, count (boule) as T from (select boule from oazb )as t1
-        left join
-        (
-            select * from (
-                select id as id1 from tirages
-                where (
-                    tirages.b1=1 or
-        tirages.b2=1 or
-        tirages.b3=1 or
-        tirages.b4=1 or
-        tirages.b5=1
-        )) as tabl4 left join tirages on tabl4.id1=tirages.id + 3
-        ) as t2 on (
-            (
-                t1.boule = t2.b1 or
-        t1.boule = t2.b2 or
-        t1.boule = t2.b3 or
-        t1.boule = t2.b4 or
-        t1.boule = t2.b5
-        )
-            ) group by boule
-        ) as table_2 on (B1=table_2.B) group by B1;
+ select t1.boule as B, count (t1.boule) as T
+ from (select oazb.boule from oazb where(oazb.boule != 1))as t1
+ left join
+ (
+   select *
+   from
+   (select id as id1 from tirages
+   where
+   (
+   tirages.b1=1 or
+   tirages.b2=1 or
+   tirages.b3=1 or
+   tirages.b4=1 or
+   tirages.b5=1
+   )
+  ) as tabl4
+  left join tirages on tabl4.id1=tirages.id + 0
+) as t2
+on
+(
+ (
+   t1.boule = t2.b1 or
+   t1.boule = t2.b2 or
+   t1.boule = t2.b3 or
+   t1.boule = t2.b4 or
+   t1.boule = t2.b5
+ )
+) group by boule) as table_2
+on (B1=table_2.B) group by B1 order by B1 asc;
 #endif
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
@@ -144,7 +152,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     ficSource = tmp.SelectSource(load);
     if (DB_tirages->LireLesTirages(ficSource,&tmp) == false)
     {
-        this->close();
+        QApplication::quit();
+
     }
 
     if(leJeu == NE_FDJ::fdj_euro){
@@ -163,7 +172,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     ///---------------------
     // Recherche de combinaison A deplacer ?
     //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
-    TST_EtoileCombi(&configJeu,G_tbw_MontabWidget);
+    //TST_EtoileCombi(&configJeu,G_tbw_MontabWidget);
+    TST_EtoileCombi(&configJeu);
     TST_RechercheCombi(&configJeu,G_tbw_MontabWidget);
 
     // Creation fenetre pour memoriser la selection
@@ -184,7 +194,9 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         // Remplir Sous Fen les ecarts
         DB_tirages->DistributionSortieDeBoule(i,G_sim_Ecarts,&configJeu);
         // Montrer les valeurs probable
-        DB_tirages->CouvMontrerProbable(i,3,1,G_sim_Ecarts);
+        //DB_tirages->CouvMontrerProbable(i,3,1,G_sim_Ecarts);
+        DB_tirages->CouvMontrerProbable(i,G_sim_Ecarts);
+
 
 
         // Calcul occurence de cette boule
@@ -215,6 +227,10 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_PAIR, G_sim_Parites);
     DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_SGRP, G_sim_Ensemble_1);
     DB_tirages->MLP_UniteDizaine(&configJeu, G_sim_ud);
+
+    // Table a remplir
+    TST_PrevisionNew(&configJeu);
+
     // Prevision des prochains tirage basee sur la parite du dernier tirage
     TST_PrevisionType(NE_FDJ::critere_parite,&configJeu);
     // idem en regardant la valeur de n/2
@@ -224,6 +240,13 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     TST_Graphe(&configJeu);
     /// ---- fin rem 3
     //setCentralWidget(zoneCentrale);
+
+    // Reecriture de code
+    QStringList sl_Boules;
+    sl_Boules << QString::number(1);
+    //sl_Boules << QString::number(2);
+    //0 : sur la ligne, -1 avant la ligne ie prevision; +1 apres ie hier
+    NEW_ChercherTotalBoulesAUneDistance(sl_Boules,-1,&configJeu);
 #if 0
     // Arranger les fenetres
     QPoint position(0, 0);
@@ -1169,38 +1192,43 @@ void MainWindow::fen_MesPossibles(void)
     QWidget *w_DataFenetre = new QWidget;
     // Onglet pere
     QTabWidget *tab_Top = new QTabWidget;
-    QWidget **wid_ForTop = new QWidget*[5];
+    QWidget **wid_ForTop = new QWidget*[6];
 
     QWidget *wTop_1 = new QWidget;
     QWidget *wTop_2 = new QWidget;
     QWidget *wTop_3 = new QWidget;
     QWidget *wTop_4 = new QWidget;
     QWidget *wTop_5 = new QWidget;
+    QWidget *wTop_6 = new QWidget;
 
     wid_ForTop[0]= wTop_1;
     wid_ForTop[1]= wTop_2;
     wid_ForTop[2]= wTop_3;
     wid_ForTop[3]= wTop_4;
     wid_ForTop[4]= wTop_5;
+    wid_ForTop[5]= wTop_6;
 
-    tab_Top->addTab(wid_ForTop[0],tr("Possibles"));
-    tab_Top->addTab(wid_ForTop[1],tr("Absents"));
-    tab_Top->addTab(wid_ForTop[2],tr("Ecarts"));
-    tab_Top->addTab(wid_ForTop[3],tr("Parite"));
-    tab_Top->addTab(wid_ForTop[4],tr("<n/2"));
+    tab_Top->addTab(wid_ForTop[0],tr("Psb_1"));
+    tab_Top->addTab(wid_ForTop[1],tr("Psb_2"));
+    tab_Top->addTab(wid_ForTop[2],tr("Absents"));
+    tab_Top->addTab(wid_ForTop[3],tr("Ecarts"));
+    tab_Top->addTab(wid_ForTop[4],tr("Parite"));
+    tab_Top->addTab(wid_ForTop[5],tr("<n/2"));
     // ------------------
 
-    QFormLayout * design_onglet_1 = MonLayout_ChoixPossible();
-    QFormLayout * design_onglet_2 = MonLayout_Absent();
-    QFormLayout * design_onglet_3 = MonLayout_Ecarts();
-    QFormLayout * design_onglet_4 = MonLayout_Parite();
-    QFormLayout * design_onglet_5 = MonLayout_Nsur2();
+    QFormLayout * design_onglet_1 = MonLayout_PrevoirTirage();
+    QFormLayout * design_onglet_2 = MonLayout_ChoixPossible();
+    QFormLayout * design_onglet_3 = MonLayout_Absent();
+    QFormLayout * design_onglet_4 = MonLayout_Ecarts();
+    QFormLayout * design_onglet_5 = MonLayout_Parite();
+    QFormLayout * design_onglet_6 = MonLayout_Nsur2();
 
     wid_ForTop[0]->setLayout(design_onglet_1);
     wid_ForTop[1]->setLayout(design_onglet_2);
     wid_ForTop[2]->setLayout(design_onglet_3);
     wid_ForTop[3]->setLayout(design_onglet_4);
     wid_ForTop[4]->setLayout(design_onglet_5);
+    wid_ForTop[5]->setLayout(design_onglet_6);
 
     QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(tab_Top);
@@ -1216,6 +1244,27 @@ void MainWindow::fen_MesPossibles(void)
 
     //zoneCentrale->addSubWindow(w_DataFenetre);
     w_DataFenetre->setVisible(true);
+}
+
+QFormLayout * MainWindow:: MonLayout_PrevoirTirage(void)
+{
+    QFormLayout *returnLayout = new QFormLayout;
+
+    QTableView *qtv_tmp  = new QTableView;
+
+    // Gestion du QTableView
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    //qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setFixedHeight(450);
+
+    returnLayout->addWidget(qtv_tmp);
+
+    G_tbv_TabPrevision = qtv_tmp;
+
+    return(returnLayout);
 }
 
 QFormLayout * MainWindow:: MonLayout_ChoixPossible(void)
@@ -1433,10 +1482,6 @@ QFormLayout * MainWindow:: MonLayout_Ecarts(void)
     G_tbv_Ecarts->setFixedSize(280,450);
 
     returnLayout->addWidget(G_tbv_Ecarts);
-
-    // Double click dans sous fenetre ecart
-    connect( G_tbv_Ecarts, SIGNAL( doubleClicked(QModelIndex)) ,
-             this, SLOT( slot_qtvEcart( QModelIndex) ) );
 
     return(returnLayout);
 }
@@ -1954,22 +1999,6 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
 
 }
 
-void MainWindow::slot_qtvEcart(const QModelIndex & index)
-{
-#if 0
-    int val = 0;
-
-    if(index.column()==0){
-        // Effacer precedente selection
-        qtv_LstCouv->clearSelection();
-        qtv_Tirages->clearSelection();
-
-        val = index.data().toInt();
-        qtvT_Voisins[0]->sortByColumn(0,Qt::AscendingOrder);
-        DB_tirages->RechercheVoisin(val,0,&configJeu,qlT_nbSorties[0],qsimT_Voisins[0]);
-    }
-#endif
-}
 
 void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
 {
@@ -2097,7 +2126,7 @@ void MainWindow::slot_RepererLesTirages(const QString & myData)
 
 void MainWindow::slot_F2_RechercherLesTirages(const QModelIndex & index)
 {
-    int col=0;
+    //int col=0;
     int val = 0;
     int zn=0;
     QStringList list;
@@ -2105,7 +2134,7 @@ void MainWindow::slot_F2_RechercherLesTirages(const QModelIndex & index)
     // determination de la table dans l'onglet ayant recu le click
     if (index.internalPointer() == G_sim_Parites->index(index.row(),index.column()).internalPointer())
     {
-        col = index.column();
+        //col = index.column();
         val = G_sim_Parites->index(index.row(),0).data().toInt();
         list << QString::number(val);
         TST_MontreTirageAyantCritere(NE_FDJ::critere_parite,zn,&configJeu,list);
@@ -2434,7 +2463,7 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
         //QGraphicsItem *unPoint = new QGraphicsItem;
         //unPoint->setPos(10);
         //ptir->setPos(10,69.8);
-        QGraphicsScene *pScene;
+        //QGraphicsScene *pScene;
         //pScene = myview[0]->GetScene();
         //pScene->setFocusItem(ptir);
 
@@ -2830,7 +2859,8 @@ QString MainWindow::TST_PartitionEntierAdd(int p[], int n)
     return retval;
 }
 
-void MainWindow::TST_EtoileCombi(stTiragesDef *ref, QTabWidget *onglets)
+//void MainWindow::TST_EtoileCombi(stTiragesDef *ref, QTabWidget *onglets)
+void MainWindow::TST_EtoileCombi(stTiragesDef *ref)
 {
     QStringList sl_etoiles;
     QString msg = "";
@@ -2915,21 +2945,21 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
 {
     QStringList sl_Lev1[5];
     QString msg = "";
-    bool status = false;
+    //bool status = false;
     QStringList sl_Lev0;
 
     //QTabWidget *onglets = ;
-    int ShowCol = ((ref->limites[0].max)/10)+1;
+    //int ShowCol = ((ref->limites[0].max)/10)+1;
 
     if(ref->limites[0].max == 49)
     {
         sl_Lev0 << "1" << "2" << "3" << "4" << "5";
-        ShowCol = 5;
+        //ShowCol = 5;
     }
     else
     {
         sl_Lev0 << "1" << "2" << "3" << "4" << "5" << "6";
-        ShowCol = 6;
+        //ShowCol = 6;
     }
 
     // Recuperation des combinaison C(1,5), C(2,5), C(3,5), C(4,5), C(5,5)
@@ -3230,7 +3260,7 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
     QTableView *qtv_r3 = new QTableView;
     QStandardItemModel * qsim_r3 = TST_SetTblViewVal(50, qtv_r3);;
 
-    bool status = false;
+    //bool status = false;
     int ShowCol = ((ref->limites[0].max)/10)+1;
     int NbTotLgn = 0; // Total de reponses trouvee
 
@@ -3337,7 +3367,8 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
 
             // La requete est cree. L'executer !!
             i_lgn = (j*nbItems);
-            status = DB_tirages->TST_Requete(ShowCol,s_msg,i_lgn,s_col,qsim_r1);
+            //status =
+            DB_tirages->TST_Requete(ShowCol,s_msg,i_lgn,s_col,qsim_r1);
 
             if((nbItems >1) && (nbItems <pos))
             {
@@ -3368,7 +3399,8 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
 
                     // La requete est cree. L'executer !!
                     i_lgn = loop+(j*nbItems);
-                    status = DB_tirages->TST_Requete(ShowCol,s_msg,i_lgn,s_col,qsim_r1);
+                    //status =
+                    DB_tirages->TST_Requete(ShowCol,s_msg,i_lgn,s_col,qsim_r1);
                 }
             }
 
@@ -3611,9 +3643,11 @@ void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, in
     // "+QString::number(d[distance])+"
     st_msg = "select tirages.* from "
              "(select  analyses.id, analyses.id_poids from "
-             "(select id, id_poids from analyses where analyses.id_poids = "+QString::number(critere)+") as t1 "
-                                                                                                      "left join analyses on t1.id = analyses.id + %1 ) as t2 "
-                                                                                                      "left join tirages on t2.id=tirages.id "+ st_where +";";
+             "(select id, id_poids from analyses where analyses.id_poids = "
+            +QString::number(critere)
+            +") as t1 "
+             "left join analyses on t1.id = analyses.id + %1 ) as t2 "
+             "left join tirages on t2.id=tirages.id "+ st_where +";";
 
     st_msg=st_msg.arg(d[distance]);
     //qDebug()<< st_msg;
@@ -3956,7 +3990,7 @@ void MainWindow::TST_FenetreReponses(QString fen_titre, int zn, QString req_msg,
     QFormLayout *mainLayout = new QFormLayout;
     QString fenetre_titre = "";
     QString msg = req_msg;
-    bool status = false;
+    //bool status = false;
 
     if (fen_titre == ""){
         fenetre_titre = "B:"+st_list.join(",");
@@ -4509,6 +4543,210 @@ UnConteneurDessin * MainWindow::TST_Graphe_3(stTiragesDef *pConf)
     //zoneCentrale->addSubWindow(une_vue[2]);
     //une_vue[2]->setVisible(true);
     return (une_vue[2]);
+}
+
+void MainWindow::TST_PrevisionNew(stTiragesDef *pConf)
+{
+    QSqlQuery query;
+    QString msg1 = "";
+    bool ret = false;
+
+    int zone = 0;
+    int maxBoules = pConf->limites[zone].max;
+
+    msg1 =  "create table MaPrevision "
+            "(id INTEGER PRIMARY KEY, b1 int, b2 int, b3 int, b4 int, b5 int, e1 int, e2 int);";
+    ret = query.exec(msg1);
+
+    msg1 = "insert into MaPrevision (id) "
+           "select id from oaze where id <="+QString::number(maxBoules)+";";
+    ret = query.exec(msg1);
+
+    // Mettre la table a Zero
+    msg1 = "update MaPrevision "
+           "set b1=0,b2=0,b3=0,b4=0,b5=0,e1=0,e2=0 "
+           "where MaPrevision.id<="+QString::number(maxBoules)+";";
+    ret = query.exec(msg1);
+
+    // Ratacher la table a la Qview dans le bon onglet
+    QSqlTableModel *tblModel = new QSqlTableModel;
+    tblModel->setTable("MaPrevision");
+    tblModel->select();
+    // Associer toutes les valeurs a la vue
+    while (tblModel->canFetchMore())
+    {
+        tblModel->fetchMore();
+    }
+    //tblModel->removeColumn(tblModel->columnCount()-1); // e2
+    //tblModel->removeColumn(tblModel->columnCount()-2); // e1
+    tblModel->removeColumns(6,2);
+
+    // Attach it to the view
+    G_tbv_TabPrevision->setModel(tblModel);
+    G_tbv_TabPrevision->setSortingEnabled(true);
+    G_tbv_TabPrevision->sortByColumn(0,Qt::AscendingOrder);
+
+    for(int i=0;i<tblModel->columnCount();i++)
+        G_tbv_TabPrevision->setColumnWidth(i,30);
+
+    // selectionner les boules du dernier tirage
+    msg1 = "select t1.id from "
+           "(select id from oaze where id <= "
+            +QString::number(maxBoules)+
+            ") as t1 "
+            "inner join "
+            "(select tirages.* from tirages limit 1) as t2 "
+            "on "
+            "("
+            "t1.id = t2.b1 or "
+            "t1.id = t2.b2 or "
+            "t1.id = t2.b3 or "
+            "t1.id = t2.b4 or "
+            "t1.id = t2.b5 "
+            ");";
+    ret = query.exec(msg1);
+
+    if(ret)
+    {
+        query.first();
+        if(query.isValid())
+        {
+            int posBoule=0;
+            do{
+
+                posBoule++;
+                // Prendre chacune des boules
+                int uneBoule = query.value(0).toInt();
+                tblModel->setHeaderData(posBoule,Qt::Horizontal,"b"+QString::number(uneBoule));
+
+
+                // Chercher les 10 premiers tirages ayant cette boule
+                // Cela permettra de calculer des distances de references
+                QSqlQuery req_2;
+                bool ret2 = false;
+
+                msg1 = "select tirages.id from tirages "
+                       "where "
+                       "("
+                       "tirages.b1 = "
+                        +QString::number(uneBoule)+
+                        " or "
+                        "tirages.b2 = "
+                        +QString::number(uneBoule)+
+                        " or "
+                        "tirages.b3 = "
+                        +QString::number(uneBoule)+
+                        " or "
+                        "tirages.b4 = "
+                        +QString::number(uneBoule)+
+                        " or "
+                        "tirages.b5 = "
+                        +QString::number(uneBoule)
+                        +" "
+                         ") order by tirages.id limit 2;";
+
+                ret2 = req_2.exec(msg1);
+                if(ret2)
+                {
+                    req_2.first();
+                    if(req_2.isValid())
+                    {
+                        do{
+                            int val_id = req_2.value(0).toInt();
+
+                            // Pour chaque distance calculer les occurances
+                            // des boules manquantes
+                            ret2 = TST_MettreLesTotaux(posBoule,uneBoule,val_id);
+                        }while(req_2.next() && ret2);
+                    }
+                    req_2.finish();
+                }
+            }while(query.next() && ret);
+            // Mise a jour de la recherche
+            tblModel->select();
+        }
+    }
+}
+
+bool MainWindow::TST_MettreLesTotaux(int idBoule, int vBoule, int dBoule)
+{
+    bool status = false;
+    QSqlQuery query;
+    QString msg1 = "";
+
+    msg1 = "select MaPrevision.id,MaPrevision.b1, t2.T1, (MaPrevision.b1+ t2.T1) as Somme "
+           "From MaPrevision "
+           "inner join "
+           "("
+           "select t3.boule as B1, table_2.T as T1 "
+           "from (select boule from oazb)as t3 "
+           "left join "
+           "("
+           "select boule as B, count (boule) as T "
+           "from (select boule from oazb )as t1 "
+           "left join "
+           "("
+           "select * from "
+           "("
+           "select id as id1 from tirages "
+           "where ( "
+           "tirages.b1= "
+            +QString::number(vBoule)+
+            " or "
+            "tirages.b2= "
+            +QString::number(vBoule)+
+            " or "
+            "tirages.b3= "
+            +QString::number(vBoule)
+            +" or "
+             "tirages.b4= "
+            +QString::number(vBoule)
+            +" or "
+             "tirages.b5= "
+            +QString::number(vBoule)
+            +" "
+             ")) as tabl4 "
+             "left join tirages "
+             "on tabl4.id1=tirages.id + "
+            +QString::number(dBoule)
+            +") as t2 "
+             "on (( "
+             "t1.boule = t2.b1 or "
+             "t1.boule = t2.b2 or "
+             "t1.boule = t2.b3 or "
+             "t1.boule = t2.b4 or "
+             "t1.boule = t2.b5 "
+             ")) group by boule) as table_2 "
+             "on (B1=table_2.B) group by B1 "
+             ")as t2  on(t2.B1 = MaPrevision.id) order by Maprevision.id;";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << msg1;
+#endif
+
+    status = query.exec(msg1);
+
+    if(status)
+    {
+        query.first();
+        if(query.isValid())
+        {
+            do{
+                QSqlQuery req_2;
+                int id=query.value(0).toInt();
+                //int bt=query.value(1).toInt(); // val dans table de total
+                //int rt=query.value(2).toInt(); // Val de nouvelle recherche
+                int nt=query.value(3).toInt(); // val a mettre dans a table
+
+                msg1 = "update MaPrevision set b"+QString::number(idBoule)+"="
+                        +QString::number(nt)
+                        + " "
+                          "where MaPrevision.id="+QString::number(id)+";";
+                status = req_2.exec(msg1);
+            }while (query.next() && status);
+        }
+    }
+    return status;
 }
 
 //----------

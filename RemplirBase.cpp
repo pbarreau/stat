@@ -1398,10 +1398,13 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
     }
 }
 
+//void GererBase::CouvMontrerProbable(int i,
+//                                    int col_m,
+//                                    int col_v,
+//                                    QStandardItemModel *dest)
 void GererBase::CouvMontrerProbable(int i,
-                                    int col_m,
-                                    int col_v,
                                     QStandardItemModel *dest)
+
 {
 
     double rayon = 1.5;

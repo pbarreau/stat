@@ -90,7 +90,7 @@ private slots:
 public slots:
     void ouvrir_mainwindows(void);
     void slot_ChercheVoisins(const QModelIndex &index);
-    void slot_qtvEcart(const QModelIndex & index);
+    //void slot_qtvEcart(const QModelIndex & index);
     void slot_UneSelectionActivee(const QModelIndex & index);
     void slot_UneCombiChoisie(const QModelIndex & index);
     void slot_MontrerBouleDansBase(const QModelIndex & index);
@@ -128,6 +128,9 @@ private:
     void createToolBars();
     void createStatusBar();
 
+    void NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBoule, int distance, stTiragesDef *pConf);
+    QString NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules);
+
     void fen_Voisins(void);
     void fen_LstCouv(void);
     void fen_Tirages(void);
@@ -135,11 +138,12 @@ private:
     void fen_MesPossibles(void);
     void fen_Parites(void);
     void fen_MaSelection(void);
+
     int BidFCId_MesPossibles(int col_id, QTableView *tbv_ptr);
     void ft_LancerTri(int tri_id);
     void ft_TriDesAbsents(int tri_id);
     void TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets);
-    void TST_EtoileCombi(stTiragesDef *ref, QTabWidget *onglets);
+    void TST_EtoileCombi(stTiragesDef *ref);
     void TST_CombiRec(int k, QStringList &l, const QString &s, QStringList &ret);
     void TST_MontrerDetailCombinaison(QString msg, stTiragesDef *pTDef);
     void VUE_ListeTiragesFromDistribution(int critere, int distance, int choix);
@@ -163,8 +167,11 @@ private:
     void TST_MontreTirageAyantCritere(NE_FDJ::E_typeCritere lecritere, int zn, stTiragesDef *pConf, QStringList boules);
     void TST_FenetreReponses(QString fen_titre, int zn, QString reg_msg, QStringList st_list, stTiragesDef *pConf);
     void TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef *pConf);
+    void TST_PrevisionNew(stTiragesDef *pConf);
+    bool TST_MettreLesTotaux(int idBoule, int vBoule, int dBoule);
     void TST_CombiVoisin(int key);
     void TST_NbRepartionCombi(int ecart, int key);
+    QFormLayout * MonLayout_PrevoirTirage(void);
     QFormLayout * MonLayout_ChoixPossible(void);
     QFormLayout * MonLayout_Absent(void);
     QFormLayout * MonLayout_Ecarts(void);
@@ -211,6 +218,7 @@ private:
     QTableView **G_tbv_MaSelection;
     QTableView *G_tbv_Ecarts;
     QTableView *G_tbv_MesPossibles;
+    QTableView *G_tbv_TabPrevision;
     QTableView *G_tbv_Lstcombi;
     QTableView *G_tbv_LesAbsents;
     QTableView *G_tbv_Parites;

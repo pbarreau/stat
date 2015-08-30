@@ -26,7 +26,8 @@ SOURCES += main.cpp\
     pslot.cpp \
     RemplirBase.cpp \
     tirages.cpp \
-    labelclickable.cpp
+    labelclickable.cpp \
+    ReEcriture.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
