@@ -82,34 +82,34 @@ select t3.boule as B1, table_2.T as T1
 from (select oazb.boule from oazb)as t3
 left join
 (
- select t1.boule as B, count (t1.boule) as T
- from (select oazb.boule from oazb where(oazb.boule != 1))as t1
- left join
- (
-   select *
-   from
-   (select id as id1 from tirages
-   where
-   (
-   tirages.b1=1 or
-   tirages.b2=1 or
-   tirages.b3=1 or
-   tirages.b4=1 or
-   tirages.b5=1
-   )
-  ) as tabl4
-  left join tirages on tabl4.id1=tirages.id + 0
-) as t2
-on
-(
- (
-   t1.boule = t2.b1 or
-   t1.boule = t2.b2 or
-   t1.boule = t2.b3 or
-   t1.boule = t2.b4 or
-   t1.boule = t2.b5
- )
-) group by boule) as table_2
+        select t1.boule as B, count (t1.boule) as T
+        from (select oazb.boule from oazb where(oazb.boule != 1))as t1
+        left join
+        (
+            select *
+            from
+            (select id as id1 from tirages
+             where
+             (
+                 tirages.b1=1 or
+        tirages.b2=1 or
+        tirages.b3=1 or
+        tirages.b4=1 or
+        tirages.b5=1
+        )
+             ) as tabl4
+            left join tirages on tabl4.id1=tirages.id + 0
+        ) as t2
+        on
+        (
+            (
+                t1.boule = t2.b1 or
+        t1.boule = t2.b2 or
+        t1.boule = t2.b3 or
+        t1.boule = t2.b4 or
+        t1.boule = t2.b5
+        )
+            ) group by boule) as table_2
 on (B1=table_2.B) group by B1 order by B1 asc;
 #endif
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
@@ -121,6 +121,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     // Recuperation des contantes du type de jeu
     tmp.getConfig(&configJeu);
+
+    // Creation de La table de reference
 
     // Creation sous fenetre pour mettre donnees de base
     fen_Tirages();
@@ -145,8 +147,10 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
 
     // Creation des tables pour ce type jeu
-    DB_tirages->CreerTableTirages(&tmp);
+    DB_tirages->CreationTablesDeLaBDD(&tmp);
     DB_tirages->CreerTableDistriCombi();
+
+    //QApplication::quit();
 
     // Recuperation des données fdj
     ficSource = tmp.SelectSource(load);
@@ -247,6 +251,9 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     //sl_Boules << QString::number(2);
     //0 : sur la ligne, -1 avant la ligne ie prevision; +1 apres ie hier
     NEW_ChercherTotalBoulesAUneDistance(sl_Boules,-1,&configJeu);
+
+    NEW_ChoixPourTiragesSuivant(TB_WIN,4,&configJeu);
+
 #if 0
     // Arranger les fenetres
     QPoint position(0, 0);
@@ -767,6 +774,80 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
 
     return(lay_return);
 }
+
+
+QFormLayout * MainWindow::MonLayout_VoisinsPresent_v2()
+{
+    QFormLayout *lay_return = new QFormLayout;
+
+    QSqlQuery query;
+    QString msg1;
+    bool ret = false;
+    int maxBoules = 49;
+
+    // Creation de la table ou pas
+    msg1 =  "CREATE table if not exists VoisinSql "
+            "(id INTEGER PRIMARY KEY, r0 int, r1 int, rn1 int, tot int);";
+    ret = query.exec(msg1);
+
+    msg1="select count (id) from VoisinSql;";
+    ret = query.exec(msg1);
+    query.first();
+    if(query.isValid())
+    {
+        int nblgn= query.value(0).toInt();
+
+        if(!nblgn)
+        {
+            msg1 = "insert into VoisinSql (id) "
+                   "select id from oazb where id <="+QString::number(maxBoules)+";";
+            ret = query.exec(msg1);
+        }
+    }
+
+    // Mettre la table a Zero
+    msg1 = "update VoisinSql "
+           "set r0=-1,r1=-1,rn1=-1,tot=-1 "
+           "where VoisinSql.id<="+QString::number(maxBoules)+";";
+    ret = query.exec(msg1);
+
+    // Ratacher la table a la Qview dans le bon onglet
+    QSqlTableModel *tblModel = new QSqlTableModel;
+    tblModel->setTable("VoisinSql");
+    tblModel->select();
+    // Associer toutes les valeurs a la vue
+    while (tblModel->canFetchMore())
+    {
+        tblModel->fetchMore();
+    }
+
+    // Attach it to the view
+    QTableView *qtv_tmp  = new QTableView;
+    // Gestion du QTableView
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    //qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setFixedHeight(450);
+
+    qtv_tmp->setModel(tblModel);
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+
+    for(int i=0;i<tblModel->columnCount();i++)
+        qtv_tmp->setColumnWidth(i,30);
+
+
+
+    // Memo du design
+    lay_return->addWidget(qtv_tmp);
+    G_tbv_TabPrevision_v2 = qtv_tmp;
+    G_tblPrev_v2 = tblModel;
+
+    return(lay_return);
+}
+
 //__________
 void MainWindow::TST_CombiVoisin(int key)
 {
@@ -896,6 +977,7 @@ QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
 
     // Taille du tableau dans onglet
     G_tab_1->setFixedSize(345,410);
+    //G_tab_1->show();
 
     // Double click dans sous fenetre
     connect( G_tab_1, SIGNAL( doubleClicked(QModelIndex)) ,
@@ -1006,23 +1088,28 @@ void MainWindow::fen_Voisins(void)
 
     // Onglet pere
     QTabWidget *tab_Top = new QTabWidget;
-    QWidget **wid_ForTop = new QWidget*[2];
+    QWidget **wid_ForTop = new QWidget*[3];
 
     QWidget *wTop_1 = new QWidget;
     QWidget *wTop_2 = new QWidget;
+    QWidget *wTop_3 = new QWidget;
 
     wid_ForTop[0]= wTop_1;
     wid_ForTop[1]= wTop_2;
+    wid_ForTop[2]= wTop_3;
 
     tab_Top->addTab(wid_ForTop[0],tr("Boules"));
-    tab_Top->addTab(wid_ForTop[1],tr("Distribution"));
+    tab_Top->addTab(wid_ForTop[1],tr("Bv2"));
+    tab_Top->addTab(wid_ForTop[2],tr("Distribution"));
     // ------------------
 
     QFormLayout * design_onglet_1 = MonLayout_VoisinsPresent();
-    QFormLayout * design_onglet_2 = MonLayout_VoisinsAbsent();
+    QFormLayout * design_onglet_2 = MonLayout_VoisinsPresent_v2();
+    QFormLayout * design_onglet_3 = MonLayout_VoisinsAbsent();
 
     wid_ForTop[0]->setLayout(design_onglet_1);
     wid_ForTop[1]->setLayout(design_onglet_2);
+    wid_ForTop[2]->setLayout(design_onglet_3);
 
     QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(tab_Top);
@@ -2079,6 +2166,9 @@ void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
 
         G_tbv_Voisins[zn]->sortByColumn(0,Qt::AscendingOrder);
         DB_tirages->TST_RechercheVoisin(select[zn],zn,&configJeu,G_lab_nbSorties[zn],G_sim_Voisins[zn]);
+
+        // Nouvelle table
+        NEW_ChercherTotalBoules(select[0],&configJeu);
     }
 
 }

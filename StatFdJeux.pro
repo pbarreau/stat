@@ -27,7 +27,8 @@ SOURCES += main.cpp\
     RemplirBase.cpp \
     tirages.cpp \
     labelclickable.cpp \
-    ReEcriture.cpp
+    ReEcriture.cpp \
+    prevision.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \

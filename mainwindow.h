@@ -128,8 +128,12 @@ private:
     void createToolBars();
     void createStatusBar();
 
-    void NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBoule, int distance, stTiragesDef *pConf);
+    void NEW_ChercherTotalBoules(QStringList choix, stTiragesDef *pConf);
+    QString NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBoule, int distance, stTiragesDef *pConf);
     QString NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules);
+    void NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPrecedent,stTiragesDef *pConf);
+    bool NEW_SyntheseDeBoule(int uneBoule, int colId, int loop, QString nomTable, stTiragesDef *pConf);
+    bool NEW_AnalyserCeTirage(int idTirage,  QString stTblRef, int zone, stTiragesDef *pConf);
 
     void fen_Voisins(void);
     void fen_LstCouv(void);
@@ -176,6 +180,7 @@ private:
     QFormLayout * MonLayout_Absent(void);
     QFormLayout * MonLayout_Ecarts(void);
     QFormLayout * MonLayout_VoisinsPresent(void);
+    QFormLayout * MonLayout_VoisinsPresent_v2(void);
     QFormLayout * MonLayout_VoisinsAbsent(void);
     QFormLayout * MonLayout_Parite();
     QFormLayout * MonLayout_Nsur2();
@@ -219,6 +224,7 @@ private:
     QTableView *G_tbv_Ecarts;
     QTableView *G_tbv_MesPossibles;
     QTableView *G_tbv_TabPrevision;
+    QTableView *G_tbv_TabPrevision_v2;
     QTableView *G_tbv_Lstcombi;
     QTableView *G_tbv_LesAbsents;
     QTableView *G_tbv_Parites;
@@ -237,6 +243,7 @@ private:
     //MonToolTips *qsim_MesPossibles ;
     QStandardItemModel *G_sim_MesPossibles ;
     QStandardItemModel *G_sim_LesAbsents ;
+    QSqlTableModel *G_tblPrev_v2;
     QSqlTableModel *G_tab_1Model;
     QSortFilterProxyModel *G_ProxModel;
     QStandardItemModel *G_sim_Parites ;

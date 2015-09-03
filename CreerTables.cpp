@@ -23,7 +23,7 @@ bool GererBase::CreerTableDistriCombi(void)
    return ret;
 }
 
-bool GererBase::CreerTableTirages(tirages *pRef)
+bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
 {
   QSqlQuery query;
   QString msg1;
@@ -31,9 +31,14 @@ bool GererBase::CreerTableTirages(tirages *pRef)
   bool ret = true;
   int zone = 0;
   int j = 0;
+  int max_boules = 0;
 
   // Recuperation de la config jeu
   pRef->getConfig(&ref);
+
+
+  // Creation Table Reference Boules des Zones
+  ret = CTB_Table1(TB_BNRZ,pRef);
 
   // Creation table pour la couverture
   for(zone=0;(zone<ref.nb_zone && ret == true);zone++)
@@ -95,4 +100,69 @@ bool GererBase::CreerTableTirages(tirages *pRef)
   }
 
   return ret;
+}
+
+// CTB_T1 : Creation table de base :Table1
+bool GererBase:: CTB_Table1(QString nomTable, tirages *pRef)
+{
+    QSqlQuery query;
+    QString msg1;
+    stTiragesDef ref;
+    bool ret = true;
+    int zone = 0;
+    int j = 0;
+    int max_boules = 0;
+
+    // Recuperation de la config jeu
+    pRef->getConfig(&ref);
+
+    // Creation Table Reference Boules des Zones
+    msg1 =  "create table "+nomTable+" (id Integer primary key,";
+    for(zone=0;(zone<ref.nb_zone);zone++)
+    {
+        msg1 = msg1 + "z"+QString::number(zone+1)+" int";
+        if(zone+1 < ref.nb_zone)
+        {
+            msg1 = msg1 + ",";
+            max_boules = BMAX(ref.limites[zone].max,ref.limites[zone+1].max);
+        }
+    }
+    msg1 = msg1 + ");";
+    ret = query.exec(msg1);
+    query.finish();
+
+    // Creation des ids englobant
+    for(j=1;j<=max_boules && ret == true;j++)
+    {
+        msg1 = "insert into "+nomTable+" (id";
+
+        // Colonnes a mettre
+        for(zone=0;(zone<ref.nb_zone);zone++)
+        {
+            for(int bz = j; (bz<=j) && j <= ref.limites[zone].max;bz++ )
+            {
+                msg1 = msg1 + ", z"
+                        +QString::number(zone+1);
+            }
+
+        }
+
+        // Mise en place des valeurs
+        msg1 = msg1 + ") values (NULL";
+        for(zone=0;(zone<ref.nb_zone);zone++)
+        {
+            for(int bz = j; (bz<=j) && j <= ref.limites[zone].max;bz++ )
+            {
+                msg1 = msg1 + ","
+                        +QString::number(j);
+            }
+
+        }
+        msg1 = msg1 + ");";
+
+        ret = query.exec(msg1);
+        query.finish();
+    }
+
+    return ret;
 }

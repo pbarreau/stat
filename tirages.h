@@ -26,10 +26,14 @@
 #define CL_CCOUV    "c"     /// Nom colonne couverture
 #define TB_COMBI    "comb"
 #define TB_BASE     "tirages"
+#define TB_BNRZ     "Bnrz"   /// Table Boules Names Reference Zone
+#define TB_WIN      "BNEXT"  /// Choisir parmis ces boules pour tirages suivant du dernier en cours
 
 #define CL_IHM_TOT_0    8
 #define CL_IHM_TOT_2    7
 #define CL_IHM_TOT_1    6
+
+#define BMAX(a,b) (((a)>(b))?(a):(b))
 
 namespace NE_FDJ{
 typedef enum _les_jeux_a_tirages
@@ -128,7 +132,8 @@ public:
 public:
     QVariant data(const QModelIndex &index, int role) const;
     bool CreerBaseEnMemoire(bool action, NE_FDJ::E_typeJeux type);
-    bool CreerTableTirages(tirages *pRref);
+    bool CreationTablesDeLaBDD(tirages *pRref);
+    bool CTB_Table1(QString nomTable, tirages *pRef);
     bool CreerTableDistriCombi(void);
     bool LireLesTirages(QString fileName_2, tirages *pRef);
     bool SupprimerBase();
