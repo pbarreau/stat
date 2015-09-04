@@ -52,7 +52,7 @@ void MainWindow::NEW_ChercherTotalBoules(QStringList choix, stTiragesDef *pConf)
 
 }
 
-QString MainWindow::NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBoule, int distance, stTiragesDef *pConf)
+QString MainWindow::NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBoule, int distance, stTiragesDef *pConf,int trie)
 {
 #if 0 //exemple de requete executable sur la base
     select t3.boule as B1, table_2.T as T1
@@ -122,6 +122,8 @@ QString MainWindow::NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBou
     QString st_msg_1 = "";
     QString st_msg_2 = "";
     QString st_msg_3 = "";
+    QString st_msg_4 = "";
+
 
     bool status = false;
     QSqlQuery sql_req;
@@ -132,6 +134,11 @@ QString MainWindow::NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBou
     {
         st_msg_1 = NEW_ExceptionBoule(zn,pConf,selectionBoule);
         st_msg_1 = st_msg_1 + " and ";
+    }
+
+    if (trie)
+    {
+      st_msg_4 = " order  by T desc, tb1.boule asc";
     }
 
     st_msg_2 = DB_tirages->TST_ConstruireWhereData(zn,pConf,selectionBoule);
@@ -145,7 +152,7 @@ QString MainWindow::NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBou
             + st_msg_2 +
             ")"
             ") as tb5 "
-            "left join tirages as tb6  on (tb6.id = tb5.id + " +QString::number(distance)+ ") "
+            "left join tirages as tb6  on (tb5.id = tb6.id + " +QString::number(distance)+ ") "
                                                                                            ")as tb2 on "
                                                                                            "("
             + st_msg_1 +
@@ -156,7 +163,8 @@ QString MainWindow::NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBou
             "tb1.boule = tb2.b4 or "
             "tb1.boule = tb2.b5 "
             ")"
-            ") group by tb1.boule;";
+            ") group by tb1.boule "
+            + st_msg_4 + ";";
 
 #ifndef QT_NO_DEBUG
     qDebug() << st_msg_3;

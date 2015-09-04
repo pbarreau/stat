@@ -129,10 +129,11 @@ private:
     void createStatusBar();
 
     void NEW_ChercherTotalBoules(QStringList choix, stTiragesDef *pConf);
-    QString NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBoule, int distance, stTiragesDef *pConf);
+    QString NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBoule, int distance, stTiragesDef *pConf, int trie=0);
     QString NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules);
     void NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPrecedent,stTiragesDef *pConf);
-    bool NEW_SyntheseDeBoule(int uneBoule, int colId, int loop, QString nomTable, stTiragesDef *pConf);
+    QString NEW_ColHeaderName(int idTirage, int zone, stTiragesDef *pConf);
+    bool NEW_SyntheseDeBoule(int uneBoule, int colId, int loop, QString stTbRef, stTiragesDef *pConf);
     bool NEW_AnalyserCeTirage(int idTirage,  QString stTblRef, int zone, stTiragesDef *pConf);
 
     void fen_Voisins(void);
