@@ -5,6 +5,51 @@
 #include <QtGui>
 #include "mainwindow.h"
 
+#if 0
+-- comptage boule sur ligne v1
+select tbleft.blgn as B,count(tbleft.blgn) as T, MAX(tbleft.sortie) as Smax from
+(
+select id_6 as blgn, nb_6 as sortie  from BNEXT_b_D1 where id = 1
+union all
+select id_9 as blgn, nb_9 as sortie  from BNEXT_b_D1 where id = 1
+union all
+select id_17 as blgn, nb_17 as sortie   from BNEXT_b_D1 where id = 1
+union all
+select id_28 as blgn, nb_28 as sortie   from BNEXT_b_D1 where id = 1
+union all
+select id_29 as blgn, nb_29 as sortie   from BNEXT_b_D1 where id = 1
+) as tbleft
+left join
+(
+select id,z1 from Bnrz where id <= 49
+)as tbright
+on
+(
+tbright.z1 = tbleft.blgn
+) group by tbleft.blgn;
+
+
+-- comptage boule sur ligne v2
+select tbleft.z1 as B,count(tbright.blgn) as T, MAX (tbright.sortie) as Smax from (select z1 from Bnrz where id <= 49) as tbleft
+left join
+(
+select id_6 as blgn, nb_6 as sortie  from BNEXT_b_D1 where id = 1
+union all
+select id_9 as blgn, nb_9 as sortie  from BNEXT_b_D1 where id = 1
+union all
+select id_17 as blgn, nb_17 as sortie   from BNEXT_b_D1 where id = 1
+union all
+select id_28 as blgn, nb_28 as sortie   from BNEXT_b_D1 where id = 1
+union all
+select id_29 as blgn, nb_29 as sortie   from BNEXT_b_D1 where id = 1
+) as tbright
+on
+(
+tbleft.z1 = tbright.blgn
+) group by tbleft.z1;
+
+#endif
+
 void MainWindow::NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPrecedent,stTiragesDef *pConf)
 {
     bool ret = true;
