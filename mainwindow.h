@@ -135,6 +135,7 @@ private:
     QString NEW_ColHeaderName(int idTirage, int zone, stTiragesDef *pConf);
     bool NEW_SyntheseDeBoule(int uneBoule, int colId, int loop, QString stTbRef, stTiragesDef *pConf);
     bool NEW_AnalyserCeTirage(int idTirage,  QString stTblRef, int zone, stTiragesDef *pConf);
+    bool NEW_FaireBilan(int idTirage,  QString stTblRef, int zone, stTiragesDef *pConf, int nbRang = 1);
 
     void fen_Voisins(void);
     void fen_LstCouv(void);

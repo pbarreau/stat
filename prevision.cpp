@@ -7,17 +7,17 @@
 
 #if 0
 -- comptage boule sur ligne v1
-select tbleft.blgn as B,count(tbleft.blgn) as T, MAX(tbleft.sortie) as Smax from
+select tbleft.id as R, tbleft.blgn as B,count(tbleft.blgn) as T, MAX(tbleft.sortie) as Smax from
 (
-select b1k as blgn, b1r as sortie  from BNEXT_b_D1 where id = 1
+select id, b1k as blgn, b1r as sortie  from BNEXT_b_D1 where id = 1
 union all
-select b2k as blgn, b2r as sortie  from BNEXT_b_D1 where id = 1
+select id, b2k as blgn, b2r as sortie  from BNEXT_b_D1 where id = 1
 union all
-select b3k as blgn, b3r as sortie   from BNEXT_b_D1 where id = 1
+select id, b3k as blgn, b3r as sortie   from BNEXT_b_D1 where id = 1
 union all
-select b4k as blgn, b4r as sortie   from BNEXT_b_D1 where id = 1
+select id, b4k as blgn, b4r as sortie   from BNEXT_b_D1 where id = 1
 union all
-select b5k as blgn, b5r as sortie   from BNEXT_b_D1 where id = 1
+select id,b5k as blgn, b5r as sortie   from BNEXT_b_D1 where id = 1
 ) as tbleft
 left join
 (
@@ -48,18 +48,43 @@ on
 tbleft.z1 = tbright.blgn
 ) group by tbleft.z1;
 
+-- synthese
+select r as R, b as B, sum(t) as T, max (s) as Smax from tmpBilan group by b order by r asc, T desc, b desc ;
+
 #endif
 
 void MainWindow::NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPrecedent,stTiragesDef *pConf)
 {
-    bool ret = true;
+    bool status = true;
+    QString msg1 = "";
+    QSqlQuery query ;
     int zone = 0;
 
     // selectionner les derniers tirages
-    for (int loop = 1; (loop <= nbTirPrecedent) && ret == true; loop ++)
+    for (int loop = 1; (loop <= nbTirPrecedent) && status == true; loop ++)
     {
-        ret = NEW_AnalyserCeTirage(loop,tb_reponse,zone,pConf);
+        status = NEW_AnalyserCeTirage(loop,tb_reponse,zone,pConf);
+        if (status)
+        {
+            status = NEW_FaireBilan (loop,tb_reponse,zone,pConf,5);
+        }
     }
+    // On a fini tout les rangs
+    // Creer table synthese finale
+    msg1 =  "create table if not exists Bilan (id Integer primary key, r int, b int, t int, s int);";
+    status = query.exec(msg1);
+    query.finish();
+
+    // Populer la table
+    msg1 = "insert into Bilan (r, b, t, s) select R, B, T, Smax from "
+           "("
+           "select r as R, b as B, sum(t) as T, max (s) as Smax "
+           "from tmpBilan group by r,b order by r asc, T desc, b asc "
+            ")"
+           ";";
+    status = query.exec(msg1);
+    query.finish();
+
 
 }
 
@@ -70,6 +95,11 @@ bool MainWindow::NEW_AnalyserCeTirage(int idTirage,  QString stTblRef,int zone, 
     QString msg1 = "";
     QSqlQuery query ;
 
+#ifndef QT_NO_DEBUG
+    qDebug() << msg1;
+#endif
+    status = query.exec(msg1);
+    query.finish();
 
     // Creation de la table des analyses pour ce tirage
     QString nomTable = stTblRef
@@ -77,7 +107,7 @@ bool MainWindow::NEW_AnalyserCeTirage(int idTirage,  QString stTblRef,int zone, 
             + pConf->nomZone[zone]
             +"_D" + QString::number(idTirage);
 
-    msg1 =  "create table "+nomTable+" (id Integer primary key,";
+    msg1 =  "create table "+nomTable+" (id Integer primary key, d int,";
 
 #ifdef NUM_IN_COLNAME
     msg1 = msg1 + NEW_ColHeaderName(idTirage,zone,pConf);
@@ -159,8 +189,66 @@ bool MainWindow::NEW_AnalyserCeTirage(int idTirage,  QString stTblRef,int zone, 
                 status = NEW_SyntheseDeBoule(uneBoule, posBoule, idTirage,nomTable, pConf);
 
             }while(query.next() && status == true);
+
         }
     }
+    return status;
+}
+
+bool MainWindow::NEW_FaireBilan(int idTirage, QString stTblRef,int zone, stTiragesDef *pConf, int nbRang)
+{
+    bool status = false;
+    QString msg1 = "";
+    QSqlQuery query ;
+
+    // Creation table pour synthese des recherches
+    // d: distance, r: rang dans la distance,
+    // b: boule etudiee, t: nb de boule commune dans cette etude du rang
+    // s: nb max de fois ou la boule est sortie
+    msg1 =  "create table if not exists tmpBilan (id Integer primary key, d int, r int, b int, t int, s int);";
+    status = query.exec(msg1);
+    query.finish();
+
+    // Lecture table des analyses pour ce tirage
+    QString nomTable = stTblRef
+            + "_"
+            + pConf->nomZone[zone]
+            +"_D" + QString::number(idTirage);
+    for(int i = 1; (i<=nbRang) && status == true;i++)
+    {
+        msg1 = "insert into tmpBilan (d, r, b, t, s) select D, R, B, T,Smax from "
+                "("
+                "select tbleft.d as D, tbleft.id as R, tbleft.blgn as B,count(tbleft.blgn) as T, MAX(tbleft.sortie) as Smax from "
+                "("
+                "select d, id, b1k as blgn, b1r as sortie  from "+nomTable+" where id =" +QString::number(i)+ " "
+                "union all "
+                "select d, id, b2k as blgn, b2r as sortie  from "+nomTable+" where id =" +QString::number(i)+ " "
+                "union all "
+                "select d, id, b3k as blgn, b3r as sortie   from "+nomTable+" where id =" +QString::number(i)+ " "
+                "union all "
+                "select d, id, b4k as blgn, b4r as sortie   from "+nomTable+" where id =" +QString::number(i)+ " "
+                "union all "
+                "select d, id,b5k as blgn, b5r as sortie   from "+nomTable+" where id =" +QString::number(i)+ " "
+                ") as tbleft "
+                "left join "
+                "("
+                "select id,z1 from Bnrz where id <="
+                +QString::number(pConf->limites[zone].max)+" "
+                ")as tbright "
+                "on"
+                "("
+                "tbright.z1 = tbleft.blgn "
+                ") group by tbleft.blgn "
+                ");";
+#ifndef QT_NO_DEBUG
+    qDebug() << msg1;
+#endif
+
+        status = query.exec(msg1);
+        query.finish();
+
+    }
+
     return status;
 }
 
@@ -274,14 +362,11 @@ bool MainWindow::NEW_SyntheseDeBoule(int uneBoule, int colId, int loop, QString 
                         " where "+ nomTable+".id="+QString::number(boule)+";";
 #else
                 msg1 = "update "+ nomTable+
-                        " set b"+QString::number(colId)+"v=" + QString::number(uneBoule)
+                        " set d=" + QString::number(loop)
+                        + ", b"+QString::number(colId)+"v=" + QString::number(uneBoule)
                         + ", b"+QString::number(colId)+"k="  +QString::number(id)
                         + ", b"+QString::number(colId)+"r="  +QString::number(nb)+
                         " where "+ nomTable+".id="+QString::number(boule)+";";
-#endif
-
-#ifndef QT_NO_DEBUG
-                qDebug() << msg1;
 #endif
 
                 status = req_2.exec(msg1);
