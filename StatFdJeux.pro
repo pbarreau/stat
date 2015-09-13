@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     tirages.cpp \
     labelclickable.cpp \
     ReEcriture.cpp \
-    prevision.cpp
+    prevision.cpp \
+    refresultat.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -38,7 +39,8 @@ HEADERS  += mainwindow.h \
     pointtirage.h \
     tirages.h \
     types_jeux.h \
-    labelclickable.h
+    labelclickable.h \
+    refresultat.h
 
 FORMS    += mainwindow.ui \
     choixjeux.ui

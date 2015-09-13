@@ -21,6 +21,7 @@
 #include "gererbase.h"
 #include "tirages.h"
 #include "pointtirage.h"
+#include "refresultat.h"
 
 namespace Ui {
 class MainWindow;
@@ -131,6 +132,8 @@ private:
     void NEW_ChercherTotalBoules(QStringList choix, stTiragesDef *pConf);
     QString NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBoule, int distance, stTiragesDef *pConf, int trie=0);
     QString NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules);
+    void NEW_RepartionBoules(stTiragesDef *pConf);
+    QString GetSql(QString st_cri);
     void NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPrecedent,stTiragesDef *pConf);
     QString NEW_ColHeaderName(int idTirage, int zone, stTiragesDef *pConf);
     bool NEW_SyntheseDeBoule(int uneBoule, int colId, int loop, QString stTbRef, stTiragesDef *pConf);
@@ -144,6 +147,7 @@ private:
     void fen_MesPossibles(void);
     void fen_Parites(void);
     void fen_MaSelection(void);
+    void fen_NewSqlResults(stTiragesDef *pConf);
 
     int BidFCId_MesPossibles(int col_id, QTableView *tbv_ptr);
     void ft_LancerTri(int tri_id);
@@ -187,6 +191,9 @@ private:
     QFormLayout * MonLayout_Parite();
     QFormLayout * MonLayout_Nsur2();
 
+    QGridLayout *MonLayout_pFnNsr1(stTiragesDef *pConf);
+    QGridLayout * MonLayout_pFnNsr2(stTiragesDef *pConf);
+
     void MonLayout_Selectioncombi(QTabWidget *tabN1);
     void MonLayout_SelectionBoules(QTabWidget *tabN1, stTiragesDef &pConf);
 
@@ -200,6 +207,8 @@ private:
     Ui::MainWindow *ui;
     QMdiArea *zoneCentrale;
     GererBase *DB_tirages;
+    RefResultat *syntheses;
+    QTableView * qtv_s1;
 
     QMenu *fileMenu;
     QMenu *helpMenu;

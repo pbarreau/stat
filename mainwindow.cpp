@@ -7,6 +7,7 @@
 #include <QFormLayout>
 #include "labelclickable.h"
 #include "pointtirage.h"
+#include "refresultat.h"
 
 //#include <QtPlugin>
 //Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
@@ -253,6 +254,10 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     NEW_ChercherTotalBoulesAUneDistance(sl_Boules,-1,&configJeu);
 
     NEW_ChoixPourTiragesSuivant(TB_WIN,4,&configJeu);
+
+    NEW_RepartionBoules(&configJeu);
+    fen_NewSqlResults(&configJeu);
+
 
 #if 0
     // Arranger les fenetres
@@ -1888,6 +1893,63 @@ void MainWindow::fen_MesPossibles(void)
 }
 #endif
 
+QGridLayout * MainWindow::MonLayout_pFnNsr1(stTiragesDef *pConf)
+{
+ QGridLayout *lay_return = new QGridLayout;
+ int zone = 0;
+
+#if 0
+ RefResultat test(zone,pConf);
+ lay_return = test.GetDisposition();
+#endif
+ syntheses = new RefResultat(zone,pConf);
+ lay_return = syntheses->GetDisposition();
+
+ return(lay_return);
+}
+
+QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
+{
+ QGridLayout *lay_return = new QGridLayout;
+
+ return(lay_return);
+}
+
+void MainWindow::fen_NewSqlResults(stTiragesDef *pConf)
+{
+    QWidget *qw_nsr = new QWidget;
+    QTabWidget *tab_Top = new QTabWidget;
+    QWidget **wid_ForTop = new QWidget*[2];
+    QString stNames[2]={"Stat","Voisins"};
+    QGridLayout *design_onglet[2];
+
+    // Tableau de pointeur de fonction
+    QGridLayout *(MainWindow::*ptrFunc[2])(stTiragesDef *pConf)=
+    {&MainWindow::MonLayout_pFnNsr1,&MainWindow::MonLayout_pFnNsr2};
+
+
+    for(int i =0; i<2;i++)
+    {
+       wid_ForTop[i]=new QWidget;
+       tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
+
+       //
+       design_onglet[i] = (this->*ptrFunc[i])(pConf);
+       wid_ForTop[i]->setLayout(design_onglet[i]);
+    }
+
+
+    QFormLayout *mainLayout = new QFormLayout;
+    mainLayout->addWidget(tab_Top);
+    qw_nsr->setWindowTitle("Analyses des boules");
+    qw_nsr->setLayout(mainLayout);
+
+
+    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
+    //subWindow->resize(493,329);
+    //subWindow->move(737,560);
+    qw_nsr->setVisible(true);
+}
 void MainWindow::fen_Parites(void)
 {
     QWidget *qw_Parites = new QWidget;

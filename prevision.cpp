@@ -53,6 +53,171 @@ select r as R, b as B, sum(t) as T, max (s) as Smax from tmpBilan group by b ord
 
 #endif
 
+void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
+{
+    bool status = true;
+    QString msg1 = "";
+    QSqlQuery query ;
+    int zone = 0;
+
+    // Creer table synthese Horizontale
+    msg1 =  "create table if not exists repartition_bh "
+            "("
+            "id INTEGER PRIMARY KEY,"
+            "Nb int,"
+            "P int,G int,"
+            "F0 int,F1 int,F2 int,F3 int,"
+            "F4 int,F5 int,F6 int,F7 int,"
+            "F8 int,F9 int);";
+    status = query.exec(msg1);
+    query.finish();
+    msg1 =  "insert into repartition_bh  (id) select id from Bnrz  where Bnrz.id <= 6;";
+    status = query.exec(msg1);
+    query.finish();
+
+
+
+
+    QStringList cri_msg;
+    QStringList cri_lab;
+
+    cri_msg <<"z1%2=0"<<"z1<26";
+    cri_lab << "P" << "G";
+
+    for(int j=0;j<=9;j++)
+    {
+      cri_msg<< "z1 like '%" + QString::number(j) + "'";
+      cri_lab << "F"+ QString::number(j);
+    }
+
+    // Creer table synthese Verticale
+    msg1 =  "create table if not exists repartition_bv "
+            "("
+            "id INTEGER PRIMARY KEY, L TEXT,"
+            "N0 int,N1 int,N2 int, "
+            "N3 int,N4 int,N5 int );";
+    status = query.exec(msg1);
+    query.finish();
+    msg1 =  "insert into repartition_bv  (id) select id from Bnrz  where Bnrz.id <="
+            +QString::number(cri_lab.count())+";";
+    status = query.exec(msg1);
+    query.finish();
+
+
+    // Parite/Groupe
+    status = true;
+    for(int i=0; (i< cri_msg.count()) && (status == true);i++)
+    {
+        // Creer Requete pour compter items
+        msg1 = cri_msg[i];
+        msg1 = GetSql(msg1);
+
+#ifndef QT_NO_DEBUG
+    qDebug() << msg1;
+#endif
+
+        status = query.exec(msg1);
+
+        // Mise a jour de la tables des resultats
+        if(status)
+        {
+            query.first();
+            int key = 1;
+            do
+            {
+                QSqlQuery sq2;
+                int nb = query.value(0).toInt();
+                int tot = query.value(1).toInt();
+                msg1 = "update repartition_bh set Nb="
+                        +QString::number(nb)+ ", "
+                        + cri_lab[i]
+                        + "="+QString::number(tot) + " where id="
+                        +QString::number(key)+";";
+#ifndef QT_NO_DEBUG
+    qDebug() << msg1;
+#endif
+
+                status = sq2.exec(msg1);
+
+                if(status)
+                {
+
+                    // table verticale
+                    msg1 = "update repartition_bv set L='"
+                            + cri_lab[i] +
+                            "',N"
+                            +QString::number(key-1)+ "="
+                            +QString::number(tot) + " where id="
+                            +QString::number(i+1)+";";
+    #ifndef QT_NO_DEBUG
+        qDebug() << msg1;
+    #endif
+
+                    status = sq2.exec(msg1);
+
+                }
+                key++;
+            }while(query.next() && status);
+        }
+
+        query.finish();
+
+    }
+}
+
+QString MainWindow::GetSql(QString st_cri)
+{
+#if 0
+    --- Requete recherche parite sur base pour tirages
+    -- requete de groupement des paritees
+    select Nb, count(Nb) as Tp from
+    (
+    -- Req_1 : pour compter le nombre de boules pair par tirages
+    select tb1.id as Tid, count(tb2.B) as Nb from
+    (
+    select * from tirages
+    ) as tb1
+    left join
+    (
+    select id as B from Bnrz where (z1 not null  and (z1%2 = 0))
+    ) as tb2
+    on
+    (
+     tb2.B = tb1.b1 or
+     tb2.B = tb1.b2 or
+     tb2.B = tb1.b3 or
+     tb2.B = tb1.b4 or
+     tb2.B = tb1.b5
+    ) group by tb1.id order by Nb desc
+    -- fin req_1
+    )
+    group by Nb;
+#endif
+  QString st_return =
+          "select Nb, count(Nb) as Tp from "
+          "("
+          "select tb1.id as Tid, count(tb2.B) as Nb from "
+          "("
+          "select * from tirages "
+          ") as tb1 "
+          "left join "
+          "("
+          "select id as B from Bnrz where (z1 not null  and ("+st_cri+")) "
+          ") as tb2 "
+          "on "
+          "("
+          "tb2.B = tb1.b1 or "
+          "tb2.B = tb1.b2 or "
+          "tb2.B = tb1.b3 or "
+          "tb2.B = tb1.b4 or "
+          "tb2.B = tb1.b5 "
+          ") group by tb1.id order by Nb desc "
+          ")"
+          "group by Nb;";
+
+  return(st_return);
+}
+
 void MainWindow::NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPrecedent,stTiragesDef *pConf)
 {
     bool status = true;
