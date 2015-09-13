@@ -6,6 +6,8 @@
 #include "refresultat.h"
 #include "mainwindow.h"
 
+extern MainWindow w;
+
 QGridLayout *RefResultat::GetDisposition(void)
 {
     return disposition;
@@ -16,15 +18,19 @@ QTableView *RefResultat::GetTable(void)
     return(tbv_bloc1);
 }
 
-RefResultat::RefResultat(int zn, stTiragesDef *pConf)
+RefResultat::RefResultat(int zn, stTiragesDef *pConf, QMdiArea *visuel)
 {
     disposition = new QGridLayout;
-    DoBloc1(zn,pConf);
-    DoBloc2(zn,pConf);
-    DoBloc3(zn,pConf);
+    pEcran = visuel;
+    pMaConf = pConf;
+    curzn = zn;
+
+    DoBloc1();
+    DoBloc2();
+    DoBloc3();
 }
 
-void RefResultat::DoBloc1(int zn, stTiragesDef *pConf)
+void RefResultat::DoBloc1(void)
 {
 #if 0
     select tb1.boule as B, count(tb2.id) as T
@@ -43,8 +49,6 @@ void RefResultat::DoBloc1(int zn, stTiragesDef *pConf)
 #endif
 
 
-    int lgn = pConf->limites[zn].max;
-    //sim_bloc1 = new QStandardItemModel(lgn,2);
 
     sqm_bloc1 = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
@@ -99,7 +103,7 @@ void RefResultat::DoBloc1(int zn, stTiragesDef *pConf)
 
 }
 
-void RefResultat::DoBloc2(int zn, stTiragesDef *pConf)
+void RefResultat::DoBloc2(void)
 {
     QSqlTableModel *tblModel = new QSqlTableModel;
     tblModel->setTable("repartition_bh");
@@ -140,7 +144,7 @@ void RefResultat::DoBloc2(int zn, stTiragesDef *pConf)
     tbv_bloc2=qtv_tmp;
 }
 
-void RefResultat::DoBloc3(int zn, stTiragesDef *pConf)
+void RefResultat::DoBloc3(void)
 {
     QSqlTableModel *tblModel = new QSqlTableModel;
     tblModel->setTable("repartition_bv");
@@ -184,20 +188,177 @@ void RefResultat::DoBloc3(int zn, stTiragesDef *pConf)
 
 void RefResultat::slot_MontreLesTirages(const QModelIndex & index)
 {
-    int col = 0;
-    int rch = 0;
 
-
-//    if(index.internalPointer() == sqm_bloc1->index(index.row(),index.column()).internalPointer())
     if(index.internalPointer() == tbv_bloc1->model()->index(index.row(),index.column()).internalPointer())
     {
         // Lecture du tableau bloc1
-        col = index.column();
-        //rch = sqm_bloc1->index(index.row(),0).data().toInt();
-        rch = tbv_bloc1->model()->index(index.row(),0).data().toInt();
-        if(rch)
-            col++;
+        //col = index.column();
+        //rch = tbv_bloc1->model()->index(index.row(),0).data().toInt();
+        MontreRechercheTirages(NE_Analyses::bToutes,tbv_bloc1,index);
 
     }
 }
 
+void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,const QTableView *pTab,const QModelIndex & index)
+{
+    QWidget *qw_main = new QWidget;
+    QTabWidget *tab_Top = new QTabWidget;
+    QWidget **wid_ForTop = new QWidget*[2];
+    QString stNames[2]={"Tirages","Repartition"};
+    QGridLayout *design_onglet[2];
+
+    // Tableau de pointeur de fonction
+    QGridLayout *(RefResultat::*ptrFunc[2])(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index)=
+    {&RefResultat::MonLayout_pFnDetailsTirages,&RefResultat::MonLayout_pFnSyntheseDetails};
+
+
+    for(int i =0; i<2;i++)
+    {
+        wid_ForTop[i]=new QWidget;
+        tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
+
+        //
+        design_onglet[i] = (this->*ptrFunc[i])(typeAnalyse,pTab, index);
+        wid_ForTop[i]->setLayout(design_onglet[i]);
+    }
+
+
+    QFormLayout *mainLayout = new QFormLayout;
+    QString st_titre = "Details";
+    mainLayout->addWidget(tab_Top);
+    qw_main->setWindowTitle(st_titre);
+    qw_main->setLayout(mainLayout);
+
+
+    QMdiSubWindow *subWindow = pEcran->addSubWindow(qw_main);
+    //subWindow->resize(493,329);
+    //subWindow->move(737,560);
+    qw_main->setVisible(true);
+    qw_main->show();
+}
+
+#if 0
+QString RefResultat::CreationRechercheSql()
+{
+#if 0
+    select t2.id as Tid,
+            t2.jour_tirage as J,
+            substr(t2.date_tirage,-2,2)||'/'||substr(t2.date_tirage,6,2)||'/'||substr(t2.date_tirage,1,4) as D,
+            t3.tip as C,
+            t2.b1 as b1, t2.b2 as b2,t2.b3 as b3,t2.b4 as b4,t2.b5 as b5,
+            t2.e1 as e1,
+            t2.bp as P,
+            t2.bg as G
+            from tirages as t2,
+            lstcombi as t3,
+            analyses as t4
+            where
+            (
+                (t3.id = t4.id_poids and t4.id=t2.id)
+                and
+                (
+                    t2.b1 = 1 or
+            t2.b2 = 1 or
+            t2.b3 = 1 or
+            t2.b4 = 1 or
+            t2.b5 = 1
+            )
+                );
+#endif
+    QString st_msg = "";
+
+    return(st_msg);
+}
+#endif
+
+QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+    QString sql_msgRef = "";
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    QTableView *qtv_tmp = new QTableView;
+
+    int ligne = index.row()+1;
+    //int col = index.column();
+
+    switch(table)
+    {
+    case NE_Analyses::bToutes:
+    {
+        sql_msgRef = "select t2.id as Tid, "
+                     "t2.jour_tirage as J,"
+                     "substr(t2.date_tirage,-2,2)||'/'||substr(t2.date_tirage,6,2)||'/'||substr(t2.date_tirage,1,4) as D,"
+                     "t3.tip as C,"
+                     "t2.b1 as b1, t2.b2 as b2,t2.b3 as b3,t2.b4 as b4,t2.b5 as b5,"
+                     "t2.e1 as e1,"
+                     "t2.bp as P,"
+                     "t2.bg as G "
+                     "from tirages as t2,"
+                     "lstcombi as t3,"
+                     "analyses as t4 "
+                     "where"
+                     "("
+                     "(t3.id = t4.id_poids and t4.id=t2.id)"
+                     "and"
+                     "("
+                     "t2.b1 =" +QString::number(ligne)
+                + " or "
+                  "t2.b2 =" +QString::number(ligne)
+                + " or "
+                  " t2.b3 =" +QString::number(ligne)
+                + " or "
+                  " t2.b4 =" +QString::number(ligne)
+                + " or "
+                  " t2.b5 =" +QString::number(ligne)
+                + ")"
+                  ");";
+    }
+        break;
+    default:
+        ; // Rien
+    }
+
+    sqm_tmp->setQuery(sql_msgRef);
+
+    qtv_tmp->setSortingEnabled(false);
+    //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+
+
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    //QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    //m->setDynamicSortFilter(true);
+    //m->setSourceModel(sqm_tmp);
+    qtv_tmp->setModel(sqm_tmp);
+    qtv_tmp->hideColumn(0);
+
+    for(int j=0;j<=3;j++)
+        qtv_tmp->setColumnWidth(j,75);
+
+    for(int j=4;j<=sqm_tmp->columnCount();j++)
+        qtv_tmp->setColumnWidth(j,30);
+    qtv_tmp->setFixedSize(525,205);
+
+
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    // Double click dans fenetre de details
+    connect( qtv_tmp, SIGNAL( doubleClicked(QModelIndex)) ,
+             pEcran->parent(), SLOT(slot_MontreLeTirage( QModelIndex) ) );
+
+    lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+    return(lay_return);
+}
+QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table, const QTableView *ptab, const QModelIndex &index)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+    return(lay_return);
+}

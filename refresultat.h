@@ -10,11 +10,24 @@
 
 
 #include "tirages.h"
+namespace NE_Analyses{
+  typedef enum _les_tableaux
+  {
+    bToutes,   /// toutes les boubles
+    bFini    /// fin de la liste
+  }E_Syntese;
+}
+
 
 class RefResultat : public QObject
 {
     Q_OBJECT
+
 private:
+    stTiragesDef *pMaConf;
+    QMdiArea *pEcran;
+    int curzn;
+
     QTabWidget *onglet;
     QGridLayout *disposition;
     QStandardItemModel *sim_bloc1;
@@ -29,9 +42,12 @@ private:
     QSqlTableModel * sqtblm_bloc3;
 
 public:
-    RefResultat(int zn, stTiragesDef *pConf);
+    RefResultat(int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetTable(void);
+    void MontreRechercheTirages(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index);
+    QGridLayout * MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table, const QTableView *ptab, const QModelIndex &index);
+    QGridLayout * MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index);
     // penser au destructeur pour chaque pointeur
 
 public slots:
@@ -40,9 +56,9 @@ public slots:
 
 
 private:
-    void DoBloc1(int zn, stTiragesDef *pConf);
-    void DoBloc2(int zn, stTiragesDef *pConf);
-    void DoBloc3(int zn, stTiragesDef *pConf);
+    void DoBloc1(void);
+    void DoBloc2(void);
+    void DoBloc3(void);
 
 
 
