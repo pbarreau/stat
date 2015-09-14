@@ -59,6 +59,8 @@ private:
     void DoBloc1(void);
     void DoBloc2(void);
     void DoBloc3(void);
+QString DoSqlMsgRef_Tb1(int boule);
+QString SD_Tb1(int boule, QString sqlTblRef);
 
 
 
