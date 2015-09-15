@@ -7,6 +7,7 @@
 
 #include <QSortFilterProxyModel>
 #include <QHeaderView>
+#include <QLineEdit>
 
 #include "refresultat.h"
 #include "mainwindow.h"
@@ -211,20 +212,25 @@ void RefResultat::slot_MontreLesTirages(const QModelIndex & index)
 
     if(index.internalPointer() == tbv_bloc1->model()->index(index.row(),index.column()).internalPointer())
     {
+        QStringList stl_tmp;
+
+        int boule_id = index.row()+1;
+        stl_tmp << QString::number(boule_id);
         // Lecture du tableau bloc1
         //col = index.column();
         //rch = tbv_bloc1->model()->index(index.row(),0).data().toInt();
-        MontreRechercheTirages(NE_Analyses::bToutes,tbv_bloc1,index);
+        MontreRechercheTirages(NE_Analyses::bToutes,stl_tmp);
 
     }
 }
-void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,const QTableView *pTab,const QModelIndex & index)
+void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,QStringList & lst_boules)
 {
     QWidget *qw_main = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
     QTabWidget **wid_ForTop_1 = new QTabWidget*[4];
     QString stNames_1[4]={"0","1","-1","?"};
     int distance[4]={0,-1,1,-2};
+    bool spe[4]={false,false,false,true};
     //QGridLayout *design_onglet_1[4];
 
     for(int i =0; i<4;i++)
@@ -237,8 +243,16 @@ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,cons
         QGridLayout *design_onglet_2[2];
 
         // Tableau de pointeur de fonction
-        QGridLayout *(RefResultat::*ptrFunc[2])(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index, int dist)=
+        QGridLayout *(RefResultat::*ptrFunc[2])(NE_Analyses::E_Syntese table,QStringList & lst_boules, int dist, bool spe)=
         {&RefResultat::MonLayout_pFnDetailsTirages,&RefResultat::MonLayout_pFnSyntheseDetails};
+
+        // Verifier si on est sur l'onglet n° 4
+        if(i==3)
+        {
+            // Memoriser les layouts de l'onglet
+            G_design_onglet_2 =new QGridLayout*[2];
+
+        }
 
         for(int j =0; j<2;j++)
         {
@@ -246,16 +260,23 @@ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,cons
             wid_ForTop_1[i]->addTab(wid_ForTop_2[j],tr(stNames_2[j].toUtf8()));
 
             //
-            design_onglet_2[j] = (this->*ptrFunc[j])(typeAnalyse,pTab, index, distance[i]);
+            design_onglet_2[j] = (this->*ptrFunc[j])(typeAnalyse, lst_boules, distance[i],spe[i]);
             wid_ForTop_2[j]->setLayout(design_onglet_2[j]);
+
+            // Verifier si on est sur l'onglet n° 4
+            if(i==3)
+            {
+                // Memoriser les layouts de l'onglet
+                G_design_onglet_2 [j]= design_onglet_2[j];
+
+            }
 
         }
 
     }
 
-    int boule = index.row()+1;
     QFormLayout *mainLayout = new QFormLayout;
-    QString st_titre = "Details Boule : " + QString::number(boule);
+    QString st_titre = "Details Boule : " + lst_boules.at(0);
     mainLayout->addWidget(tab_Top);
     qw_main->setWindowTitle(st_titre);
     qw_main->setLayout(mainLayout);
@@ -440,7 +461,7 @@ QString RefResultat::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
                 (tb4.id_poids = tb5.id)
                 );
 
-            --Fin requete tb3
+    --Fin requete tb3
         #endif
             QString st_msg = "";
     QString st_cri1 = "";
@@ -480,22 +501,19 @@ QString RefResultat::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
     return(st_msg);
 }
 
-QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index, int distance)
+QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial)
 {
     QGridLayout *lay_return = new QGridLayout;
 
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
-    QStringList stl_tmp;
 
-    int ligne = index.row()+1;
 
     switch(table)
     {
     case NE_Analyses::bToutes:
     {
-        stl_tmp << QString::number(ligne);
         sql_msgRef = DoSqlMsgRef_Tb1(stl_tmp,distance);
     }
         break;
@@ -537,31 +555,74 @@ QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese ta
     connect( qtv_tmp, SIGNAL( doubleClicked(QModelIndex)) ,
              pEcran->parent(), SLOT(slot_MontreLeTirage( QModelIndex) ) );
 
-    lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+    int pos_x = 0;
+    int pos_y = 0;
+    if(ongSpecial)
+    {
+        // Dernier onglet
+        QFormLayout *distLayout = new QFormLayout;
+        dist = new QLineEdit(QString::number((distance*-1)));
+
+        distLayout->addRow("&Distance", dist);
+        lay_return->addLayout(distLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
+        bSelection = stl_tmp;
+        // Connection du line edit
+        connect(dist, SIGNAL(returnPressed()),
+                this, SLOT(slot_NouvelleDistance()));
+
+        pos_y++;
+    }
+
+    lay_return->addWidget(qtv_tmp,pos_y,pos_x,Qt::AlignLeft|Qt::AlignTop);
 
     return(lay_return);
 }
-QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table, const QTableView *ptab, const QModelIndex &index, int distance)
+
+void RefResultat::slot_NouvelleDistance(void)
+{
+    QString msg = "";
+    int new_distance = dist->text().toInt();
+
+    // pour Coherence par rapport a graphique et requete
+    new_distance *=-1;
+
+    // Effacer l'ancien layout et mettre le nouveau
+    QGridLayout * oldOne = G_design_onglet_2[0];
+    QGridLayout * monTest;
+
+
+    monTest = MonLayout_pFnDetailsTirages(
+                NE_Analyses::bToutes,
+                bSelection,
+                new_distance,true);
+
+    // nouveau dessin ok.
+    // Rechercher l'ancien pour suppression et reaffectation;
+    QWidget *onp = oldOne->parentWidget();
+    delete(oldOne);
+
+    onp->setLayout(monTest);
+    G_design_onglet_2[0]=monTest;
+}
+
+QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial)
 {
     QGridLayout *lay_return = new QGridLayout;
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
-    QStringList stl_tmp;
 
-    int ligne = index.row()+1;
 
     switch(table)
     {
     case NE_Analyses::bToutes:
     {
-        stl_tmp << QString::number(ligne);
 
         sql_msgRef = DoSqlMsgRef_Tb1(stl_tmp,distance);
         // Retirer le ; de la fin
         sql_msgRef.replace(";","");
 
-         sql_msgRef = SD_Tb1(stl_tmp,sql_msgRef,distance);
+        sql_msgRef = SD_Tb1(stl_tmp,sql_msgRef,distance);
 #ifndef QT_NO_DEBUG
         qDebug() << sql_msgRef;
 #endif
@@ -687,7 +748,7 @@ QString RefResultat::SD_Tb1(QStringList boules, QString sqlTblRef,int dst)
 #endif
     }
 
-     sql_msg =
+    sql_msg =
             "select tbleft.boule as B, count(tbright.Tid) as T, "
             "count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,"
             "count(CASE WHEN  J like 'mercredi%' then 1 end) as MER,"
@@ -709,7 +770,7 @@ QString RefResultat::SD_Tb1(QStringList boules, QString sqlTblRef,int dst)
             ") group by tbleft.boule;";
 
 #ifndef QT_NO_DEBUG
-        qDebug() << sql_msg;
+    qDebug() << sql_msg;
 #endif
 
     return sql_msg;

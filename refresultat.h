@@ -41,17 +41,22 @@ private:
     QTableView * tbv_bloc3;
     QSqlTableModel * sqtblm_bloc3;
 
+    QLineEdit *dist;
+    QGridLayout **G_design_onglet_2;
+    QStringList bSelection;
+
 public:
     RefResultat(int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetTable(void);
-    void MontreRechercheTirages(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index);
-    QGridLayout * MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table, const QTableView *ptab, const QModelIndex &index, int distance=0);
-    QGridLayout * MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index,int distance=0);
+    void MontreRechercheTirages(NE_Analyses::E_Syntese table, QStringList &lst_boules);
+    QGridLayout * MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance=0, bool ongSpecial=false);
+    QGridLayout * MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance=0, bool ongSpecial=false);
     // penser au destructeur pour chaque pointeur
 
 public slots:
     void slot_MontreLesTirages(const QModelIndex & index);
+    void slot_NouvelleDistance(void);
 
 
 
