@@ -27,6 +27,9 @@ namespace Ui {
 class MainWindow;
 }
 
+extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf);
+
+
 #if 0
 class MonToolTips:public QStandardItemModel
 {

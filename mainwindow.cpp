@@ -249,9 +249,13 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Reecriture de code
     QStringList sl_Boules;
     sl_Boules << QString::number(1);
-    //sl_Boules << QString::number(2);
+    sl_Boules << QString::number(2);
     //0 : sur la ligne, -1 avant la ligne ie prevision; +1 apres ie hier
     NEW_ChercherTotalBoulesAUneDistance(sl_Boules,-1,&configJeu);
+
+    int zn_test=0;
+    int dist = 1;
+    ComptageGenerique(zn_test,dist,sl_Boules,&configJeu);
 
     NEW_ChoixPourTiragesSuivant(TB_WIN,4,&configJeu);
 

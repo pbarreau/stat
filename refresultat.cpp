@@ -12,6 +12,14 @@
 #include "mainwindow.h"
 
 extern MainWindow w;
+//QString GEN_Where_1(int zn, stTiragesDef *pConf, QStringList &boules, QString op1, QString op2, QString alias)
+//;
+//QString GEN_Where_2(stTiragesDef *pConf, int zone, QString operateur, int boule, QString critere,QString alias)
+//;
+
+QString GEN_Where_3(int loop, QString tb1, bool inc1,
+                    QString op1, QStringList &tb2, bool inc2,
+                    QString op2);
 
 QGridLayout *RefResultat::GetDisposition(void)
 {
@@ -525,3 +533,263 @@ QString RefResultat::SD_Tb1(int boule, QString sqlTblRef)
 
     return sql_msg;
 }
+
+QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf)
+{
+#if 0
+    --debut requete tb3
+            select * from tirages as tb3
+            inner join
+            (
+                select *  from tirages as tb1
+                where
+                ( (
+                      tb1.b1=27 or
+            tb1.b2=27 or
+            tb1.b3=27 or
+            tb1.b4=27 or
+            tb1.b5=27
+            )
+                  )
+                ) as tb2
+            on tb3.id = tb2.id + -1
+            --Fin requete tb3
+            ;
+
+    --Comptage
+            select tb1.boule as B, count(tb2.id) as T,
+            count(CASE WHEN  jour_tirage like 'lundi%' then 1 end) as LUN, count(CASE WHEN  jour_tirage like 'mercredi%' then 1 end) as MER, count(CASE WHEN  jour_tirage like 'same%' then 1 end) as SAM
+            from
+            (
+                select id as boule from Bnrz where (z1 not null )
+                ) as tb1
+            left join
+            (
+                --debut requete tb3
+                select * from tirages as tb3
+                inner join
+                (
+                    select *  from tirages as tb1
+                    where
+                    ( (
+                          tb1.b1=27 or
+            tb1.b2=27 or
+            tb1.b3=27 or
+            tb1.b4=27 or
+            tb1.b5=27
+            )
+                      )
+                    ) as tb2
+                on tb3.id = tb2.id + 0
+            --Fin requete tb3
+            ) as tb2
+            on
+            (
+                (
+                    tb1.boule = tb2.b1 or
+            tb1.boule = tb2.b2 or
+            tb1.boule = tb2.b3 or
+            tb1.boule = tb2.b4 or
+            tb1.boule = tb2.b5
+            )
+                and
+                (
+                    tb1.boule != 27
+            )
+                ) group by tb1.boule;
+
+#endif
+
+    QString st_cr1 = "";
+    QString st_cr2 = "";
+    QString st_cr3 = "";
+    QString st_tmp = "";
+    QStringList stl_tmp;
+
+    //st_cr1 = GEN_Where_1(zn,pConf,boules,"or","=","tb1");
+    int loop = pConf->nbElmZone[zn];
+    st_cr1 =  GEN_Where_3(loop,"tb1.b",true,"=",boules,false,"or");
+#ifndef QT_NO_DEBUG
+    qDebug() << st_cr1;
+#endif
+
+    stl_tmp << "tb2.b";
+    st_cr2 =  GEN_Where_3(5,"tb1.boule",false,"=",stl_tmp,true,"or");
+#ifndef QT_NO_DEBUG
+    qDebug() << st_cr2;
+#endif
+
+    if(dst == 0)
+    {
+        st_cr3 =  GEN_Where_3(1,"tb1.boule",false,"!=",boules,false,"or");
+
+        st_cr3 = " and " + st_cr3 ;
+#ifndef QT_NO_DEBUG
+        qDebug() << st_cr3;
+#endif
+    }
+    // Creer critere 1 en fonction des boules
+    st_tmp =
+            "select tb1.boule as B, count(tb2.id) as T,"
+            "count(CASE WHEN  jour_tirage like 'lundi%' then 1 end) as LUN,"
+            "count(CASE WHEN  jour_tirage like 'mercredi%' then 1 end) as MER,"
+            "count(CASE WHEN  jour_tirage like 'same%' then 1 end) as SAM "
+            "from"
+            "("
+            "select id as boule from Bnrz where (z"
+            +QString::number(zn+1)
+            +" not null )"
+             ") as tb1 "
+             "left join"
+             "("
+             " "
+             "select * from tirages as tb3 "
+             "inner join "
+             "("
+             "select *  from tirages as tb1 "
+             "where"
+             "("
+            + st_cr1 +
+            ")"
+            ") as tb2 "
+            "on tb3.id = tb2.id + "
+            + QString::number(dst)
+            +" "
+             ") as tb2 "
+             "on"
+             "("
+            + st_cr2
+            + st_cr3 +
+            ") group by tb1.boule;";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << st_tmp;
+#endif
+
+    return st_tmp;
+}
+
+#if 0
+QString GEN_Where_2(stTiragesDef *pConf, int zone, QString operateur, int boule, QString critere,QString alias="def")
+{
+    QString ret_msg = "";
+
+    // Operateur : or | and
+    // critere : = | <>
+    // b1=0 or b2=0 or ..
+    for(int i = 0; i<pConf->nbElmZone[zone];i++)
+    {
+        ret_msg = ret_msg
+                + alias + "." + pConf->nomZone[zone]+QString::number(i+1)
+                + critere + QString::number(boule)
+                + " " + operateur+ " ";
+    }
+    int len_flag = operateur.length();
+    ret_msg.remove(ret_msg.length()-len_flag-1, len_flag+1);
+
+    return ret_msg;
+}
+#endif
+
+QString GEN_Where_3(int loop,
+                    QString tb1,
+                    bool inc1,
+                    QString op1,
+                    QStringList &tb2,
+                    bool inc2,
+                    QString op2
+                    )
+{
+    QString ret_msg = "";
+    QString ind_1 = "";
+    QString ind_2 = "";
+
+    QString flag = " and ";
+
+    for(int j=0; j< tb2.size();j++)
+    {
+        ret_msg = ret_msg + "(";
+        for(int i = 0; i<loop;i++)
+        {
+            // Mettre un nombre apres  1er table
+            if(inc1)
+            {
+                ind_1 = tb1+QString::number(i+1);
+            }
+            else
+            {
+                ind_1 = tb1;
+            }
+
+            // Mettre un nombre apres  2eme table
+            if(inc2)
+            {
+                ind_2 = tb2.at(j)+QString::number(i+1);
+            }
+            else
+            {
+                ind_2 = tb2.at(j);
+            }
+
+            // Construire message
+            ret_msg = ret_msg
+                    + ind_1
+                    + op1
+                    + ind_2
+                    + " " + op2 + " ";
+        }
+        // retirer le dernier operateur (op2)
+        ret_msg.remove(ret_msg.length()-op2.length()-1, op2.length()+1);
+
+        ret_msg =  ret_msg + ")";
+        ret_msg = ret_msg + flag;
+    }
+    // retirer le dernier operateur
+    ret_msg.remove(ret_msg.length()-flag.length(),flag.length());
+
+    ret_msg = "(" +ret_msg+")";
+    return ret_msg;
+}
+
+#if 0
+QString GEN_Where_1(int zn, stTiragesDef *pConf, QStringList &boules, QString op1, QString op2, QString alias)
+{
+    QString msg= "" ;
+    QString flag = " and ";
+
+    for(int i=0; i< boules.size();i++)
+    {
+        int val_boule = boules.at(i).toInt();
+        //QString msg1 = GEN_Where_2(pConf, zn,op1,val_boule,op2,alias);
+        //        QString msg1 = GEN_Where_2(pConf, zn,"or",val_boule,"=");
+        int loop = pConf->nbElmZone[zn];
+        QString msg1 = GEN_Where_3(loop, "tb1.b",true,"=",boules,false,"or");
+
+        msg = msg + "(" +msg1+ ")"
+                + flag;
+    }
+
+    msg.remove(msg.length()-flag.length(),flag.length());
+
+    return msg;
+}
+
+
+QString NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules)
+{
+    //QString col(QString::fromLocal8Bit(CL_TOARR) + pConf->nomZone[zn]);
+    QString msg= "" ;
+    QString flag = " and ";
+
+    for(int i=0; i< boules.size();i++)
+    {
+        int val_boule = boules.at(i).toInt();
+        msg = msg + "(tb1.boule !=" +QString::number(val_boule)+ ")"
+                + flag;
+    }
+
+    msg.remove(msg.length()-flag.length(),flag.length());
+
+    return msg;
+}
+#endif
