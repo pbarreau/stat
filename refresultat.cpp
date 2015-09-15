@@ -586,23 +586,30 @@ void RefResultat::slot_NouvelleDistance(void)
     // pour Coherence par rapport a graphique et requete
     new_distance *=-1;
 
-    // Effacer l'ancien layout et mettre le nouveau
-    QGridLayout * oldOne = G_design_onglet_2[0];
-    QGridLayout * monTest;
+    // Tableau de pointeur de fonction
+    QGridLayout *(RefResultat::*ptrFunc[2])(NE_Analyses::E_Syntese table,QStringList & lst_boules, int dist, bool spe)=
+    {&RefResultat::MonLayout_pFnDetailsTirages,&RefResultat::MonLayout_pFnSyntheseDetails};
+
+    for(int j =0; j<2;j++)
+    {
+        // Effacer l'ancien layout et mettre le nouveau
+        QGridLayout * oldOne = G_design_onglet_2[j];
+        QGridLayout * monTest;
 
 
-    monTest = MonLayout_pFnDetailsTirages(
-                NE_Analyses::bToutes,
-                bSelection,
-                new_distance,true);
+        monTest = (this->*ptrFunc[j])(
+                    NE_Analyses::bToutes,
+                    bSelection,
+                    new_distance,true);
 
-    // nouveau dessin ok.
-    // Rechercher l'ancien pour suppression et reaffectation;
-    QWidget *onp = oldOne->parentWidget();
-    delete(oldOne);
+        // nouveau dessin ok.
+        // Rechercher l'ancien pour suppression et reaffectation;
+        QWidget *onp = oldOne->parentWidget();
+        delete(oldOne);
 
-    onp->setLayout(monTest);
-    G_design_onglet_2[0]=monTest;
+        onp->setLayout(monTest);
+        G_design_onglet_2[j]=monTest;
+    }
 }
 
 QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial)
@@ -659,8 +666,9 @@ QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese t
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-
-    lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+    QLabel *titre_1 = new QLabel("Voisins");
+    lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
 
 
     return(lay_return);
