@@ -46,8 +46,8 @@ public:
     QGridLayout *GetDisposition(void);
     QTableView *GetTable(void);
     void MontreRechercheTirages(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index);
-    QGridLayout * MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table, const QTableView *ptab, const QModelIndex &index);
-    QGridLayout * MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index);
+    QGridLayout * MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table, const QTableView *ptab, const QModelIndex &index, int distance=0);
+    QGridLayout * MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index,int distance=0);
     // penser au destructeur pour chaque pointeur
 
 public slots:
@@ -59,8 +59,8 @@ private:
     void DoBloc1(void);
     void DoBloc2(void);
     void DoBloc3(void);
-QString DoSqlMsgRef_Tb1(int boule);
-QString SD_Tb1(int boule, QString sqlTblRef);
+QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
+QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);
 
 
 

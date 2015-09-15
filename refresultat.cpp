@@ -218,7 +218,57 @@ void RefResultat::slot_MontreLesTirages(const QModelIndex & index)
 
     }
 }
+void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,const QTableView *pTab,const QModelIndex & index)
+{
+    QWidget *qw_main = new QWidget;
+    QTabWidget *tab_Top = new QTabWidget;
+    QTabWidget **wid_ForTop_1 = new QTabWidget*[4];
+    QString stNames_1[4]={"0","1","-1","?"};
+    int distance[4]={0,-1,1,-2};
+    //QGridLayout *design_onglet_1[4];
 
+    for(int i =0; i<4;i++)
+    {
+        wid_ForTop_1[i]=new QTabWidget;
+        tab_Top->addTab(wid_ForTop_1[i],tr(stNames_1[i].toUtf8()));
+
+        QWidget **wid_ForTop_2 = new QWidget*[2];
+        QString stNames_2[2]={"Tirages","Repartition"};
+        QGridLayout *design_onglet_2[2];
+
+        // Tableau de pointeur de fonction
+        QGridLayout *(RefResultat::*ptrFunc[2])(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index, int dist)=
+        {&RefResultat::MonLayout_pFnDetailsTirages,&RefResultat::MonLayout_pFnSyntheseDetails};
+
+        for(int j =0; j<2;j++)
+        {
+            wid_ForTop_2[j]=new QWidget;
+            wid_ForTop_1[i]->addTab(wid_ForTop_2[j],tr(stNames_2[j].toUtf8()));
+
+            //
+            design_onglet_2[j] = (this->*ptrFunc[j])(typeAnalyse,pTab, index, distance[i]);
+            wid_ForTop_2[j]->setLayout(design_onglet_2[j]);
+
+        }
+
+    }
+
+    int boule = index.row()+1;
+    QFormLayout *mainLayout = new QFormLayout;
+    QString st_titre = "Details Boule : " + QString::number(boule);
+    mainLayout->addWidget(tab_Top);
+    qw_main->setWindowTitle(st_titre);
+    qw_main->setLayout(mainLayout);
+
+
+    QMdiSubWindow *subWindow = pEcran->addSubWindow(qw_main);
+    //subWindow->resize(493,329);
+    //subWindow->move(737,560);
+    qw_main->setVisible(true);
+    qw_main->show();
+}
+
+#if 0
 void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,const QTableView *pTab,const QModelIndex & index)
 {
     QWidget *qw_main = new QWidget;
@@ -244,7 +294,7 @@ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,cons
 
     int boule = index.row()+1;
     QFormLayout *mainLayout = new QFormLayout;
-    QString st_titre = "Details Boule:" + QString::number(boule);
+    QString st_titre = "Details Boule : " + QString::number(boule);
     mainLayout->addWidget(tab_Top);
     qw_main->setWindowTitle(st_titre);
     qw_main->setLayout(mainLayout);
@@ -257,82 +307,196 @@ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,cons
     qw_main->show();
 }
 
-QString RefResultat::DoSqlMsgRef_Tb1(int boule)
-{
-#if 0
-    select t2.id as Tid,
-            t2.jour_tirage as J,
-            substr(t2.date_tirage,-2,2)||'/'||substr(t2.date_tirage,6,2)||'/'||substr(t2.date_tirage,1,4) as D,
-            t3.tip as C,
-            t2.b1 as b1, t2.b2 as b2,t2.b3 as b3,t2.b4 as b4,t2.b5 as b5,
-            t2.e1 as e1,
-            t2.bp as P,
-            t2.bg as G
-            from tirages as t2,
-            lstcombi as t3,
-            analyses as t4
+#endif
+
+
+#if EXEMPLE_SQL
+--debut requete tb3
+select tb3.id as Tid, tb5.id as Pid,
+tb3.jour_tirage as J,
+substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+tb5.tip as C,
+tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+tb3.e1 as e1,
+tb3.bp as P,
+tb3.bg as G
+from tirages as tb3, analyses as tb4, lstcombi as tb5
+inner join
+(
+        select *  from tirages as tb1
+        where
+        (
+            (
+                tb1.b1=27 or
+        tb1.b2=27 or
+        tb1.b3=27 or
+        tb1.b4=27 or
+        tb1.b5=27
+        )
+            )
+        ) as tb2
+on (
+        (tb3.id = tb2.id + 0)
+        and
+        (tb4.id = tb3.id)
+        and
+        (tb4.id_poids = tb5.id)
+        )
+;
+--Fin requete tb3
+
+
+-- Requete comptage du resultat precedent
+select tbleft.boule as B, count(tbright.Tid) as T,
+count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM
+from
+(
+        select id as boule from Bnrz where (z1 not null )
+        ) as tbleft
+left join
+(
+        --debut requete tb3
+        select tb3.id as Tid,
+        tb3.jour_tirage as J,
+        substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+        tb5.tip as C,
+        tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+        tb3.e1 as e1,
+        tb3.bp as P,
+        tb3.bg as G
+        from tirages as tb3, analyses as tb4, lstcombi as tb5
+        inner join
+        (
+            select *  from tirages as tb1
             where
             (
-                (t3.id = t4.id_poids and t4.id=t2.id)
-                and
                 (
-                    t2.b1 = 1 or
-            t2.b2 = 1 or
-            t2.b3 = 1 or
-            t2.b4 = 1 or
-            t2.b5 = 1
+                    tb1.b1=27 or
+        tb1.b2=27 or
+        tb1.b3=27 or
+        tb1.b4=27 or
+        tb1.b5=27
+        )
+                )
+            ) as tb2
+        on (
+            (tb3.id = tb2.id + 0)
+            and
+            (tb4.id = tb3.id)
+            and
+            (tb4.id_poids = tb5.id)
             )
-                );
+        --Fin requete tb3
+        ) as tbright
+on
+(
+        (
+            tbleft.boule = tbright.b1 or
+        tbleft.boule = tbright.b2 or
+        tbleft.boule = tbright.b3 or
+        tbleft.boule = tbright.b4 or
+        tbleft.boule = tbright.b5
+        )
+        and
+        (
+            tbleft.boule != 27
+        )
+        ) group by tbleft.boule;
 #endif
-    QString st_msg = "";
 
-    st_msg = "select t2.id as Tid, "
-             "t2.jour_tirage as J,"
-             "substr(t2.date_tirage,-2,2)||'/'||substr(t2.date_tirage,6,2)||'/'||substr(t2.date_tirage,1,4) as D,"
-             "t3.tip as C,"
-             "t2.b1 as b1, t2.b2 as b2,t2.b3 as b3,t2.b4 as b4,t2.b5 as b5,"
-             "t2.e1 as e1,"
-             "t2.bp as P,"
-             "t2.bg as G "
-             "from tirages as t2,"
-             "lstcombi as t3,"
-             "analyses as t4 "
-             "where"
-             "("
-             "(t3.id = t4.id_poids and t4.id=t2.id)"
+
+QString RefResultat::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
+{
+#if 0
+    --debut requete tb3
+            select tb3.id as Tid, tb5.id as Pid,
+            tb3.jour_tirage as J,
+            substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+            tb5.tip as C,
+            tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+            tb3.e1 as e1,
+            tb3.bp as P,
+            tb3.bg as G
+            from tirages as tb3, analyses as tb4, lstcombi as tb5
+            inner join
+            (
+                select *  from tirages as tb1
+                where
+                (
+                    (
+                        tb1.b1=27 or
+            tb1.b2=27 or
+            tb1.b3=27 or
+            tb1.b4=27 or
+            tb1.b5=27
+            )
+                    )
+                ) as tb2
+            on (
+                (tb3.id = tb2.id + 0)
+                and
+                (tb4.id = tb3.id)
+                and
+                (tb4.id_poids = tb5.id)
+                );
+
+            --Fin requete tb3
+        #endif
+            QString st_msg = "";
+    QString st_cri1 = "";
+
+    int loop = pMaConf->nbElmZone[curzn];
+    st_cri1= GEN_Where_3(loop,"tb1.b",true,"=",boules,false,"or");
+
+    st_msg =
+            "select tb3.id as Tid, tb5.id as Pid,"
+            "tb3.jour_tirage as J,"
+            "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
+            "tb5.tip as C,"
+            "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
+            "tb3.e1 as e1,"
+            "tb3.bp as P,"
+            "tb3.bg as G "
+            "from tirages as tb3, analyses as tb4, lstcombi as tb5 "
+            "inner join"
+            "("
+            "select *  from tirages as tb1 "
+            "where"
+            "("
+            +st_cri1+
+            ")"
+            ") as tb2 "
+            "on ("
+            "(tb3.id = tb2.id + "
+            +QString::number(dst)
+            +") "
              "and"
-             "("
-             "t2.b1 =" +QString::number(boule)
-            + " or "
-              "t2.b2 =" +QString::number(boule)
-            + " or "
-              " t2.b3 =" +QString::number(boule)
-            + " or "
-              " t2.b4 =" +QString::number(boule)
-            + " or "
-              " t2.b5 =" +QString::number(boule)
-            + ")"
-              ");";
+             "(tb4.id = tb3.id)"
+             "and"
+             "(tb4.id_poids = tb5.id)"
+             ");"
+            ;
 
     return(st_msg);
 }
 
-QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index)
+QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index, int distance)
 {
     QGridLayout *lay_return = new QGridLayout;
 
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
+    QStringList stl_tmp;
 
     int ligne = index.row()+1;
-    //int col = index.column();
 
     switch(table)
     {
     case NE_Analyses::bToutes:
     {
-        sql_msgRef = DoSqlMsgRef_Tb1(ligne);
+        stl_tmp << QString::number(ligne);
+        sql_msgRef = DoSqlMsgRef_Tb1(stl_tmp,distance);
     }
         break;
     default:
@@ -355,11 +519,12 @@ QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese ta
     //m->setSourceModel(sqm_tmp);
     qtv_tmp->setModel(sqm_tmp);
     qtv_tmp->hideColumn(0);
+    qtv_tmp->hideColumn(1);
 
-    for(int j=0;j<=3;j++)
+    for(int j=0;j<=4;j++)
         qtv_tmp->setColumnWidth(j,75);
 
-    for(int j=4;j<=sqm_tmp->columnCount();j++)
+    for(int j=5;j<=sqm_tmp->columnCount();j++)
         qtv_tmp->setColumnWidth(j,30);
     qtv_tmp->setFixedSize(525,205);
 
@@ -376,12 +541,13 @@ QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese ta
 
     return(lay_return);
 }
-QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table, const QTableView *ptab, const QModelIndex &index)
+QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table, const QTableView *ptab, const QModelIndex &index, int distance)
 {
     QGridLayout *lay_return = new QGridLayout;
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
+    QStringList stl_tmp;
 
     int ligne = index.row()+1;
 
@@ -389,10 +555,13 @@ QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese t
     {
     case NE_Analyses::bToutes:
     {
-        sql_msgRef = DoSqlMsgRef_Tb1(ligne);
+        stl_tmp << QString::number(ligne);
+
+        sql_msgRef = DoSqlMsgRef_Tb1(stl_tmp,distance);
         // Retirer le ; de la fin
         sql_msgRef.replace(";","");
-        sql_msgRef = SD_Tb1(ligne,sql_msgRef);
+
+         sql_msgRef = SD_Tb1(stl_tmp,sql_msgRef,distance);
 #ifndef QT_NO_DEBUG
         qDebug() << sql_msgRef;
 #endif
@@ -437,102 +606,115 @@ QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese t
 }
 
 //Synthese detaille table 1
-QString RefResultat::SD_Tb1(int boule, QString sqlTblRef)
+QString RefResultat::SD_Tb1(QStringList boules, QString sqlTblRef,int dst)
 {
 #if 0
-    select tb1.boule as B, count(tb2.Tid) as T
+    -- Requete comptage du resultat precedent
+            select tbleft.boule as B, count(tbright.Tid) as T,
+            count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM
             from
             (
                 select id as boule from Bnrz where (z1 not null )
-                ) as tb1
+                ) as tbleft
             left join
             (
-                --- Table droite
-                select t2.id as Tid,
-                t2.jour_tirage as J,
-                substr(t2.date_tirage,-2,2)||'/'||substr(t2.date_tirage,6,2)||'/'||substr(t2.date_tirage,1,4) as D,
-                t3.tip as C,
-                t2.b1 as b1, t2.b2 as b2,t2.b3 as b3,t2.b4 as b4,t2.b5 as b5,
-                t2.e1 as e1,
-                t2.bp as P,
-                t2.bg as G
-                from tirages as t2,
-                lstcombi as t3,
-                analyses as t4
-                where
+                --debut requete tb3
+                select tb3.id as Tid,
+                tb3.jour_tirage as J,
+                substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+                tb5.tip as C,
+                tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+                tb3.e1 as e1,
+                tb3.bp as P,
+                tb3.bg as G
+                from tirages as tb3, analyses as tb4, lstcombi as tb5
+                inner join
                 (
-                    (t3.id = t4.id_poids and t4.id=t2.id)
-                    and
+                    select *  from tirages as tb1
+                    where
                     (
-                        t2.b1 = 1 or
-            t2.b2 = 1 or
-            t2.b3 = 1 or
-            t2.b4 = 1 or
-            t2.b5 = 1
-            ))
-                -- fin table droite
-
-                ) as tb2
+                        (
+                            tb1.b1=27 or
+            tb1.b2=27 or
+            tb1.b3=27 or
+            tb1.b4=27 or
+            tb1.b5=27
+            )
+                        )
+                    ) as tb2
+                on (
+                    (tb3.id = tb2.id + 0)
+                    and
+                    (tb4.id = tb3.id)
+                    and
+                    (tb4.id_poids = tb5.id)
+                    )
+                --Fin requete tb3
+                ) as tbright
             on
             (
-                (tb1.boule = tb2.b1 or tb1.boule = tb2.b2 or tb1.boule = tb2.b3 or tb1.boule = tb2.b4 or tb1.boule = tb2.b5)
-                and
-                (tb1.boule!=1)
-                ) group by tb1.boule;
-
-
-
-    --- Table droite
-            select t2.id as Tid,
-            t2.jour_tirage as J,
-            substr(t2.date_tirage,-2,2)||'/'||substr(t2.date_tirage,6,2)||'/'||substr(t2.date_tirage,1,4) as D,
-            t3.tip as C,
-            t2.b1 as b1, t2.b2 as b2,t2.b3 as b3,t2.b4 as b4,t2.b5 as b5,
-            t2.e1 as e1,
-            t2.bp as P,
-            t2.bg as G
-            from tirages as t2,
-            lstcombi as t3,
-            analyses as t4
-            where
-            (
-                (t3.id = t4.id_poids and t4.id=t2.id)
+                (
+                    tbleft.boule = tbright.b1 or
+            tbleft.boule = tbright.b2 or
+            tbleft.boule = tbright.b3 or
+            tbleft.boule = tbright.b4 or
+            tbleft.boule = tbright.b5
+            )
                 and
                 (
-                    t2.b1 = 1 or
-            t2.b2 = 1 or
-            t2.b3 = 1 or
-            t2.b4 = 1 or
-            t2.b5 = 1
-            ))
-            -- fin table droite
-            ;
+                    tbleft.boule != 27
+            )
+                ) group by tbleft.boule;
+#endif
+    QString sql_msg ="";
+    QString st_cr2 = "";
+    QString st_cr3 = "";
+    QStringList stl_tmp;
+
+    stl_tmp << "tbright.b";
+    st_cr2 =  GEN_Where_3(5,"tbleft.boule",false,"=",stl_tmp,true,"or");
+#ifndef QT_NO_DEBUG
+    qDebug() << st_cr2;
 #endif
 
-    QString sql_msg =
-            "select tb1.boule as B, count(tb2.Tid) as T, "
+    if(dst == 0)
+    {
+        st_cr3 =  GEN_Where_3(1,"tbleft.boule",false,"!=",boules,false,"or");
+
+        st_cr3 = " and " + st_cr3 ;
+#ifndef QT_NO_DEBUG
+        qDebug() << st_cr3;
+#endif
+    }
+
+     sql_msg =
+            "select tbleft.boule as B, count(tbright.Tid) as T, "
             "count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,"
             "count(CASE WHEN  J like 'mercredi%' then 1 end) as MER,"
             "count(CASE WHEN  J like 'same%' then 1 end) as SAM "
             "from"
             "("
             "select id as boule from Bnrz where (z1 not null)"
-            ") as tb1 "
+            ") as tbleft "
             "left join"
             "("
             +sqlTblRef+
-            ") as tb2 "
+            ") as tbright "
             "on"
             "("
-            "(tb1.boule = tb2.b1 or tb1.boule = tb2.b2 or tb1.boule = tb2.b3 or tb1.boule = tb2.b4 or tb1.boule = tb2.b5) "
-            " and "
-            "(tb1.boule!="
-            +QString::number(boule)
-            +")"
-             ") group by tb1.boule;";
+            "("
+            + st_cr2 +
+            ")"
+            + st_cr3 +
+            ") group by tbleft.boule;";
+
+#ifndef QT_NO_DEBUG
+        qDebug() << sql_msg;
+#endif
 
     return sql_msg;
 }
+
 
 QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf)
 {
@@ -606,13 +788,17 @@ QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pCo
     QString st_tmp = "";
     QStringList stl_tmp;
 
-    //st_cr1 = GEN_Where_1(zn,pConf,boules,"or","=","tb1");
+    //exemple dst = 1; loop=5; boules <<1 <<2;
+    // st_cr1 => ((tb1.b1=1 or tb1.b2=1 or tb1.b3=1 or tb1.b4=1 or tb1.b5=1 )
+    // and (tb1.b1=2 or tb1.b2=2 or tb1.b3=2 or tb1.b4=2 or tb1.b5=2 ))
     int loop = pConf->nbElmZone[zn];
     st_cr1 =  GEN_Where_3(loop,"tb1.b",true,"=",boules,false,"or");
 #ifndef QT_NO_DEBUG
     qDebug() << st_cr1;
 #endif
 
+    // st_cr2 => ((tb1.boule=tb2.b1 or tb1.boule=tb2.b2 or
+    // tb1.boule=tb2.b3 or tb1.boule=tb2.b4 or tb1.boule=tb2.b5 ))
     stl_tmp << "tb2.b";
     st_cr2 =  GEN_Where_3(5,"tb1.boule",false,"=",stl_tmp,true,"or");
 #ifndef QT_NO_DEBUG
