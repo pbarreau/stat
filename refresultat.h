@@ -7,6 +7,7 @@
 #include <QStandardItemModel>
 #include <QTableView>
 #include <QSqlTableModel>
+#include <QStyledItemDelegate>
 
 
 #include "tirages.h"
@@ -17,6 +18,25 @@ namespace NE_Analyses{
     bFini    /// fin de la liste
   }E_Syntese;
 }
+
+// Test qview dans qView
+class MonQtViewDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
+
+public:
+    MonQtViewDelegate(QObject *parent = 0);
+
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
+                          const QModelIndex &index) const Q_DECL_OVERRIDE;
+
+    void setEditorData(QWidget *editor, const QModelIndex &index) const Q_DECL_OVERRIDE;
+    void setModelData(QWidget *editor, QAbstractItemModel *model,
+                      const QModelIndex &index) const Q_DECL_OVERRIDE;
+
+    void updateEditorGeometry(QWidget *editor,
+        const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
+};
 
 
 class RefResultat : public QObject

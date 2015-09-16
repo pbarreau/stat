@@ -620,6 +620,7 @@ QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese t
     QTableView *qtv_tmp = new QTableView;
 
 
+
     switch(table)
     {
     case NE_Analyses::bToutes:
@@ -659,7 +660,7 @@ QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese t
 
     for(int j=0;j<=sqm_tmp->columnCount();j++)
         qtv_tmp->setColumnWidth(j,30);
-    qtv_tmp->setFixedSize(525,205);
+    qtv_tmp->setFixedSize(200,230);
 
 
     // Ne pas modifier largeur des colonnes
@@ -667,8 +668,33 @@ QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese t
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
     QLabel *titre_1 = new QLabel("Voisins");
-    lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
+    //lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
+    lay_return->addWidget(titre_1,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
+
+    //-------------------
+    QLabel *titre_2 = new QLabel("Etoiles");
+    QTableView *qtv_tmp_2 = new QTableView;
+    qtv_tmp_2->setFixedSize(330,230);
+
+    MonQtViewDelegate *la = new MonQtViewDelegate;
+    QStandardItemModel *model=new QStandardItemModel(4, 2);
+    qtv_tmp_2->setModel(model);
+    qtv_tmp_2->setItemDelegate(la);
+    for (int row = 0; row < 4; ++row) {
+        QModelIndex index = model->index(row, 0, QModelIndex());
+        model->setData(index, QVariant((row + 10)));
+        qtv_tmp_2->setRowHeight(row,205);
+    }
+    qtv_tmp_2->setColumnWidth(0,40);
+    qtv_tmp_2->setColumnWidth(1,250);
+    //qtv_tmp_2->resizeColumnsToContents();
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp_2->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp_2->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    lay_return->addWidget(titre_2,0,1,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp_2,1,1,Qt::AlignLeft|Qt::AlignTop);
+    //------------------
 
 
     return(lay_return);

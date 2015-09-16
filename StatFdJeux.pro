@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     labelclickable.cpp \
     ReEcriture.cpp \
     prevision.cpp \
-    refresultat.cpp
+    refresultat.cpp \
+    monQview.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
