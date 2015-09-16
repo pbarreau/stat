@@ -12,11 +12,11 @@
 
 #include "tirages.h"
 namespace NE_Analyses{
-  typedef enum _les_tableaux
-  {
+typedef enum _les_tableaux
+{
     bToutes,   /// toutes les boubles
     bFini    /// fin de la liste
-  }E_Syntese;
+}E_Syntese;
 }
 
 // Test qview dans qView
@@ -35,9 +35,21 @@ public:
                       const QModelIndex &index) const Q_DECL_OVERRIDE;
 
     void updateEditorGeometry(QWidget *editor,
-        const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
+                              const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
 };
 
+
+// Rendre une requete editable
+// http://doc.qt.io/qt-5/qtsql-querymodel-example.html
+class MaSqlRequeteEditable : public QSqlQueryModel
+{
+    Q_OBJECT
+
+public:
+    MaSqlRequeteEditable(QObject *parent = 0);
+
+    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
+};
 
 class RefResultat : public QObject
 {
@@ -84,13 +96,14 @@ private:
     void DoBloc1(void);
     void DoBloc2(void);
     void DoBloc3(void);
-QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
-QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);
+    void Synthese_1(QGridLayout *lay_return,NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial);
+    void Synthese_2(QGridLayout *lay_return,NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial);
 
+    QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
+    QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);
 
-
-
+    //QString SD_Tb2(QStringList boules, QString sqlTblRef, int dst);
 
 };
-
+QString SD_Tb2(void);
 #endif // REFRESULTAT_H

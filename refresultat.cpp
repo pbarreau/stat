@@ -615,6 +615,70 @@ void RefResultat::slot_NouvelleDistance(void)
 QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial)
 {
     QGridLayout *lay_return = new QGridLayout;
+
+    Synthese_1(lay_return,table,stl_tmp,distance,ongSpecial);
+    Synthese_2(lay_return,table,stl_tmp,distance,ongSpecial);
+
+
+    return(lay_return);
+}
+
+void RefResultat::Synthese_2(QGridLayout *lay_return,NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial)
+{
+    //-------------------
+    QLabel *titre_2 = new QLabel("Etoiles");
+    QTableView *qtv_tmp_2 = new QTableView;
+    qtv_tmp_2->setFixedSize(340,230);
+
+    MonQtViewDelegate *la = new MonQtViewDelegate;
+    //QStandardItemModel *model=new QStandardItemModel(4, 2);
+
+    QString sql_msgRef = "";
+    MaSqlRequeteEditable *model = new MaSqlRequeteEditable;
+
+    sql_msgRef = "select z1 as B, null as etoiles from Bnrz where z1 not null;";
+    model->setQuery(sql_msgRef);
+
+    qtv_tmp_2->setSortingEnabled(false);
+    //qtv_tmp_2->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp_2->setAlternatingRowColors(true);
+
+
+    qtv_tmp_2->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp_2->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp_2->setEditTriggers(QAbstractItemView::DoubleClicked);
+
+    qtv_tmp_2->setModel(model);
+    qtv_tmp_2->setItemDelegate(la);
+
+    // Pb Sqlite sur count
+    sql_msgRef = "select count(z1) as B from Bnrz where z1 not null;";
+    QSqlQuery qry_tmp;
+    int nblignes;
+    if(qry_tmp.exec(sql_msgRef))
+    {
+        qry_tmp.first();
+        nblignes = qry_tmp.value(0).toInt();
+    }
+
+    for (int row = 0; row < nblignes; ++row) {
+        //QModelIndex index = model->index(row, 0, QModelIndex());
+        //model->setData(index, QVariant((row + 10)));
+        qtv_tmp_2->setRowHeight(row,205);
+    }
+    qtv_tmp_2->setColumnWidth(0,40);
+    qtv_tmp_2->setColumnWidth(1,250);
+    //qtv_tmp_2->resizeColumnsToContents();
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp_2->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp_2->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    lay_return->addWidget(titre_2,0,1,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp_2,1,1,Qt::AlignLeft|Qt::AlignTop);
+    //------------------
+}
+
+void RefResultat::Synthese_1(QGridLayout *lay_return,NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial)
+{
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
@@ -671,33 +735,6 @@ QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese t
     //lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
     lay_return->addWidget(titre_1,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
-
-    //-------------------
-    QLabel *titre_2 = new QLabel("Etoiles");
-    QTableView *qtv_tmp_2 = new QTableView;
-    qtv_tmp_2->setFixedSize(330,230);
-
-    MonQtViewDelegate *la = new MonQtViewDelegate;
-    QStandardItemModel *model=new QStandardItemModel(4, 2);
-    qtv_tmp_2->setModel(model);
-    qtv_tmp_2->setItemDelegate(la);
-    for (int row = 0; row < 4; ++row) {
-        QModelIndex index = model->index(row, 0, QModelIndex());
-        model->setData(index, QVariant((row + 10)));
-        qtv_tmp_2->setRowHeight(row,205);
-    }
-    qtv_tmp_2->setColumnWidth(0,40);
-    qtv_tmp_2->setColumnWidth(1,250);
-    //qtv_tmp_2->resizeColumnsToContents();
-    // Ne pas modifier largeur des colonnes
-    qtv_tmp_2->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    qtv_tmp_2->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    lay_return->addWidget(titre_2,0,1,Qt::AlignLeft|Qt::AlignTop);
-    lay_return->addWidget(qtv_tmp_2,1,1,Qt::AlignLeft|Qt::AlignTop);
-    //------------------
-
-
-    return(lay_return);
 }
 
 //Synthese detaille table 1
@@ -810,6 +847,122 @@ QString RefResultat::SD_Tb1(QStringList boules, QString sqlTblRef,int dst)
     return sql_msg;
 }
 
+//QString RefResultat::SD_Tb2(QStringList boules, QString sqlTblRef,int dst)
+
+QString SD_Tb2(void)
+{
+#if 0
+
+    --etoiles
+            --debut requete tb3
+            select tb3.id as Tid,
+            tb3.jour_tirage as J,
+            substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+            tb5.tip as C,
+            tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+            tb3.e1 as e1,
+            tb3.bp as P,
+            tb3.bg as G
+            from tirages as tb3, analyses as tb4, lstcombi as tb5
+            inner join
+            (
+                select *  from tirages as tb1
+                ) as tb2
+            on (
+                (tb3.id = tb2.id + 0)
+                and
+                (tb4.id = tb3.id)
+                and
+                (tb4.id_poids = tb5.id)
+                )
+            --Fin requete tb3
+
+
+            -- Requete comptage du resultat precedent
+            select tbleft.boule as B, count(tbright.Tid) as T,
+            count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM
+            from
+            (
+                select id as boule from Bnrz where (z2 not null )
+                ) as tbleft
+            left join
+            (
+                --debut requete tb3
+                select tb3.id as Tid,
+                tb3.jour_tirage as J,
+                substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+                tb5.tip as C,
+                tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+                tb3.e1 as e1,
+                tb3.bp as P,
+                tb3.bg as G
+                from tirages as tb3, analyses as tb4, lstcombi as tb5
+                inner join
+                (
+                    select *  from tirages as tb1
+                    ) as tb2
+                on (
+                    (tb3.id = tb2.id + 0)
+                    and
+                    (tb4.id = tb3.id)
+                    and
+                    (tb4.id_poids = tb5.id)
+                    )
+                --Fin requete tb3
+                ) as tbright
+            on
+            (
+                (
+                    tbleft.boule = tbright.e1
+            )
+                ) group by tbleft.boule;
+
+#endif
+
+    QString st_msg = "";
+
+    st_msg =
+            "select tbleft.boule as B, count(tbright.Tid) as T,"
+            "count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,"
+            "count(CASE WHEN  J like 'mercredi%' then 1 end) as MER,"
+            "count(CASE WHEN  J like 'same%' then 1 end) as SAM "
+            "from"
+            "("
+            "select id as boule from Bnrz where (z2 not null )"
+            ") as tbleft "
+            "left join"
+            "("
+            "select tb3.id as Tid,"
+            "tb3.jour_tirage as J,"
+            "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
+            "tb5.tip as C,"
+            "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
+            "tb3.e1 as e1,"
+            "tb3.bp as P,"
+            "tb3.bg as G "
+            "from tirages as tb3, analyses as tb4, lstcombi as tb5 "
+            "inner join"
+            "("
+            "select *  from tirages as tb1 "
+            ") as tb2 "
+            "on ("
+            "(tb3.id = tb2.id + 0) "
+            "and"
+            "(tb4.id = tb3.id)"
+            "and"
+            "(tb4.id_poids = tb5.id)"
+            ")"
+            ") as tbright "
+            "on"
+            "("
+            "("
+            "tbleft.boule = tbright.e1 "
+            ")"
+            ") group by tbleft.boule;"
+            ;
+
+    return (st_msg);
+}
 
 QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf)
 {

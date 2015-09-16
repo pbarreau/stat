@@ -18,19 +18,10 @@ QWidget *MonQtViewDelegate::createEditor(QWidget *parent,
     if(index.column() == 1)
     {
         QTableView *editor = new QTableView(parent);
-        QStandardItemModel *model=new QStandardItemModel(10, 5);
-        editor->setModel(model);
-        for (int row = 0; row < 7; ++row) {
-                QModelIndex index = model->index(row, 0, QModelIndex());
-                model->setData(index, QVariant((row + 10)));
-        }
+        QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+        QString sql_msgRef = SD_Tb2();
 
-        for(int j=0;j<5;j++)
-            editor->setColumnWidth(j,40);
 
-        // Ne pas modifier largeur des colonnes
-        editor->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-        editor->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
         editor->setSortingEnabled(true);
         editor->sortByColumn(0,Qt::AscendingOrder);
@@ -42,7 +33,19 @@ QWidget *MonQtViewDelegate::createEditor(QWidget *parent,
         editor->setSelectionBehavior(QAbstractItemView::SelectItems);
         editor->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-        //editor->setFixedSize(250,205);
+        QSortFilterProxyModel *m=new QSortFilterProxyModel();
+        m->setDynamicSortFilter(true);
+
+        sqm_tmp->setQuery(sql_msgRef);
+        m->setSourceModel(sqm_tmp);
+        //editor->setModel(sqm_tmp);
+
+        editor->setModel(m);
+        for(int j=0;j<5;j++)
+             editor->setColumnWidth(j,40);
+        // Ne pas modifier largeur des colonnes
+        editor->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        editor->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
         return editor;
     }

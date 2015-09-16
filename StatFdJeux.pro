@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     ReEcriture.cpp \
     prevision.cpp \
     refresultat.cpp \
-    monQview.cpp
+    monQview.cpp \
+    monSqlEditable.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
