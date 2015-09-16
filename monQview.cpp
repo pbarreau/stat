@@ -4,24 +4,41 @@
 
 #include <QtGui>
 #include <QHeaderView>
+#include <QLineEdit>
+
 #include "refresultat.h"
 
-MonQtViewDelegate::MonQtViewDelegate(QObject *parent)
+MonQtViewDelegate::MonQtViewDelegate(QLineEdit *pDist, QStringList &lstChoix, QTabWidget *memo,QObject *parent)
     : QStyledItemDelegate(parent)
 {
+    pereOnglet = memo;
+    lesBoules = lstChoix;
+    distancePerso = pDist;
 }
 
 QWidget *MonQtViewDelegate::createEditor(QWidget *parent,
-    const QStyleOptionViewItem &/* option */,
-    const QModelIndex & index ) const
+                                         const QStyleOptionViewItem &/* option */,
+                                         const QModelIndex & index ) const
 {
     if(index.column() == 1)
     {
         QTableView *editor = new QTableView(parent);
         QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-        QString sql_msgRef = SD_Tb2();
 
+        int ref = pereOnglet->currentIndex();
+        int distance[4]={0,-1,1,-2};
+        QStringList lst_boules = lesBoules;
+        int ligne = index.row()+1;
 
+#ifndef QT_NO_DEBUG
+        qDebug() << ref;
+#endif
+
+        if(ref ==3)
+        {
+            distance[ref]= distancePerso->text().toInt()*-1;
+        }
+        QString sql_msgRef = SD_Tb2(lst_boules,ligne,distance[ref]);
 
         editor->setSortingEnabled(true);
         editor->sortByColumn(0,Qt::AscendingOrder);
@@ -42,7 +59,7 @@ QWidget *MonQtViewDelegate::createEditor(QWidget *parent,
 
         editor->setModel(m);
         for(int j=0;j<5;j++)
-             editor->setColumnWidth(j,40);
+            editor->setColumnWidth(j,40);
         // Ne pas modifier largeur des colonnes
         editor->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
         editor->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
@@ -52,19 +69,19 @@ QWidget *MonQtViewDelegate::createEditor(QWidget *parent,
 }
 
 void MonQtViewDelegate::setEditorData(QWidget *editor,
-                                    const QModelIndex &index) const
+                                      const QModelIndex &index) const
 {
 
 }
 
 void MonQtViewDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
-                                   const QModelIndex &index) const
+                                     const QModelIndex &index) const
 {
 
 }
 
 void MonQtViewDelegate::updateEditorGeometry(QWidget *editor,
-    const QStyleOptionViewItem &option, const QModelIndex &/* index */) const
+                                             const QStyleOptionViewItem &option, const QModelIndex &/* index */) const
 {
     editor->setGeometry(option.rect);
 }

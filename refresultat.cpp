@@ -233,6 +233,8 @@ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,QStr
     bool spe[4]={false,false,false,true};
     //QGridLayout *design_onglet_1[4];
 
+    onglets = tab_Top;
+
     for(int i =0; i<4;i++)
     {
         wid_ForTop_1[i]=new QTabWidget;
@@ -630,7 +632,7 @@ void RefResultat::Synthese_2(QGridLayout *lay_return,NE_Analyses::E_Syntese tabl
     QTableView *qtv_tmp_2 = new QTableView;
     qtv_tmp_2->setFixedSize(340,230);
 
-    MonQtViewDelegate *la = new MonQtViewDelegate;
+    MonQtViewDelegate *la = new MonQtViewDelegate(dist,stl_tmp, onglets);
     //QStandardItemModel *model=new QStandardItemModel(4, 2);
 
     QString sql_msgRef = "";
@@ -849,7 +851,7 @@ QString RefResultat::SD_Tb1(QStringList boules, QString sqlTblRef,int dst)
 
 //QString RefResultat::SD_Tb2(QStringList boules, QString sqlTblRef,int dst)
 
-QString SD_Tb2(void)
+QString SD_Tb2(QStringList boules, int lgn, int dst)
 {
 #if 0
 
@@ -920,7 +922,11 @@ QString SD_Tb2(void)
 #endif
 
     QString st_msg = "";
+    QStringList lst_tmp = boules;
 
+    lst_tmp << QString::number(lgn);
+
+    QString st_cri1 = GEN_Where_3(5,"tb1.b",true,"=",lst_tmp,false,"or");
     st_msg =
             "select tbleft.boule as B, count(tbright.Tid) as T,"
             "count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,"
@@ -944,9 +950,15 @@ QString SD_Tb2(void)
             "inner join"
             "("
             "select *  from tirages as tb1 "
+            "where"
+            "("
+            +st_cri1+
+            ")"
             ") as tb2 "
             "on ("
-            "(tb3.id = tb2.id + 0) "
+            "(tb3.id = tb2.id + "
+            + QString::number(dst)+
+            ") "
             "and"
             "(tb4.id = tb3.id)"
             "and"
@@ -960,6 +972,10 @@ QString SD_Tb2(void)
             ")"
             ") group by tbleft.boule;"
             ;
+
+#ifndef QT_NO_DEBUG
+    qDebug() << st_msg;
+#endif
 
     return (st_msg);
 }

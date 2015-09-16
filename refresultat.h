@@ -8,6 +8,7 @@
 #include <QTableView>
 #include <QSqlTableModel>
 #include <QStyledItemDelegate>
+#include <QTabWidget>
 
 
 #include "tirages.h"
@@ -23,9 +24,13 @@ typedef enum _les_tableaux
 class MonQtViewDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
+private:
+    QTabWidget *pereOnglet;
+    QStringList lesBoules;
+    QLineEdit * distancePerso;
 
 public:
-    MonQtViewDelegate(QObject *parent = 0);
+    MonQtViewDelegate(QLineEdit *pDist,QStringList &lstChoix, QTabWidget *memo =0, QObject *parent = 0);
 
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
                           const QModelIndex &index) const Q_DECL_OVERRIDE;
@@ -60,7 +65,7 @@ private:
     QMdiArea *pEcran;
     int curzn;
 
-    QTabWidget *onglet;
+    QTabWidget *onglets;
     QGridLayout *disposition;
     QStandardItemModel *sim_bloc1;
 
@@ -105,5 +110,5 @@ private:
     //QString SD_Tb2(QStringList boules, QString sqlTblRef, int dst);
 
 };
-QString SD_Tb2(void);
+QString SD_Tb2(QStringList boules, int lgn, int dst);
 #endif // REFRESULTAT_H
