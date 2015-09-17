@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     prevision.cpp \
     refresultat.cpp \
     monQview.cpp \
-    monSqlEditable.cpp
+    monSqlEditable.cpp \
+    filtrecombinaisons.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -42,7 +43,8 @@ HEADERS  += mainwindow.h \
     tirages.h \
     types_jeux.h \
     labelclickable.h \
-    refresultat.h
+    refresultat.h \
+    filtrecombinaisons.h
 
 FORMS    += mainwindow.ui \
     choixjeux.ui

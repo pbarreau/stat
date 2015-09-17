@@ -190,7 +190,7 @@ private:
     QFormLayout * MonLayout_Ecarts(void);
     QFormLayout * MonLayout_VoisinsPresent(void);
     QFormLayout * MonLayout_VoisinsPresent_v2(void);
-    QFormLayout * MonLayout_VoisinsAbsent(void);
+    QGridLayout *MonLayout_VoisinDistribution(void);
     QFormLayout * MonLayout_Parite();
     QFormLayout * MonLayout_Nsur2();
 

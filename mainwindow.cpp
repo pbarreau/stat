@@ -5,9 +5,12 @@
 #include <QtGui>
 #include <QMdiSubWindow>
 #include <QFormLayout>
+#include <QLineEdit>
+
 #include "labelclickable.h"
 #include "pointtirage.h"
 #include "refresultat.h"
+#include "filtrecombinaisons.h"
 
 //#include <QtPlugin>
 //Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
@@ -945,9 +948,9 @@ void MainWindow::TST_NbRepartionCombi(int ecart,int key)
 
 //____________
 //----------
-QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
+QGridLayout * MainWindow::MonLayout_VoisinDistribution()
 {
-    QFormLayout *lay_return = new QFormLayout;
+    QGridLayout *lay_return = new QGridLayout;
 
     //G_tbv_Absents = new QTableView*[nb_zn];
     G_sim_Absents= new QStandardItemModel*[2];
@@ -992,8 +995,15 @@ QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
     connect( G_tab_1, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( slot_F5_RechercherLesTirages( QModelIndex) ) );
 
-    lay_return->addWidget(G_lab_CritereCombi);
-    lay_return->addWidget(G_tab_1);
+    // Filtre
+    QFormLayout *FiltreLayout = new QFormLayout;
+    FiltreCombinaisons *filtre = new FiltreCombinaisons();
+
+    FiltreLayout->addRow("&Filre Repartition", filtre);
+
+    lay_return->addWidget(G_lab_CritereCombi,0,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addLayout(FiltreLayout,1,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(G_tab_1,2,0,Qt::AlignLeft|Qt::AlignTop);
     return(lay_return);
 }
 
@@ -1114,7 +1124,7 @@ void MainWindow::fen_Voisins(void)
 
     QFormLayout * design_onglet_1 = MonLayout_VoisinsPresent();
     QFormLayout * design_onglet_2 = MonLayout_VoisinsPresent_v2();
-    QFormLayout * design_onglet_3 = MonLayout_VoisinsAbsent();
+    QGridLayout * design_onglet_3 = MonLayout_VoisinDistribution();
 
     wid_ForTop[0]->setLayout(design_onglet_1);
     wid_ForTop[1]->setLayout(design_onglet_2);
