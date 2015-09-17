@@ -545,8 +545,8 @@ void MaQtvDelegation::paint(QPainter *painter, const QStyleOptionViewItem &optio
                             const QModelIndex &index) const
 {
 
-    int col = index.column();
-    int ligne = index.row();
+    //int col = index.column();
+    //int ligne = index.row();
 
     //if ((col == coln) and (ligne == lgn)){
     if(index == derTirage){
@@ -560,6 +560,11 @@ void MaQtvDelegation::paint(QPainter *painter, const QStyleOptionViewItem &optio
 
 void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 {
+    QGridLayout *lay_return = new QGridLayout;
+    QWidget *wTop_1 = new QWidget;
+    //QFormLayout * design_onglet_1 = MonLayout_VoisinsPresent();
+
+
     QSqlQueryModel *sqm_r1 = new QSqlQueryModel;
     QTableView *tv_r1 = new QTableView;
     QString st_msg ="";
@@ -578,11 +583,18 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     sqm_r1->setQuery(st_msg);
     sqm_r1->setHeaderData(1,Qt::Horizontal,"Repartition");
 
-
+#if 0
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_r1);
-    tv_r1->setModel(m);
+#endif
+    // Filtre
+    QFormLayout *FiltreLayout = new QFormLayout;
+    FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
+    fltComb_tmp->setFitreConfig(sqm_r1,tv_r1,1);
+    FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
+
+    //tv_r1->setModel(m);
     tv_r1->setColumnWidth(0,50);
     tv_r1->setColumnWidth(1,80);
     tv_r1->setColumnWidth(2,50);
@@ -590,11 +602,16 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     tv_r1->hideColumn(0);
     tv_r1->setSortingEnabled(true);
     tv_r1->sortByColumn(0,Qt::AscendingOrder);
-    //tv_r1->setAlternatingRowColors(true);
+    tv_r1->setAlternatingRowColors(true);
     tv_r1->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tv_r1->setSelectionBehavior(QAbstractItemView::SelectItems);
 
-    tabN1->addTab(tv_r1,"Combi");
+    //tabN1->addTab(tv_r1,"Combi");
+    lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(tv_r1,1,0,Qt::AlignLeft|Qt::AlignTop);
+    wTop_1->setLayout(lay_return);
+
+    tabN1->addTab(wTop_1,"Combi");;
 
     // Mettre le dernier tirage en evidence
     QSqlQuery selection;
@@ -952,58 +969,55 @@ QGridLayout * MainWindow::MonLayout_VoisinDistribution()
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    //G_tbv_Absents = new QTableView*[nb_zn];
+    //G_tbv_Absents = new QTableView*[2];
     G_sim_Absents= new QStandardItemModel*[2];
     G_lab_nbAbsents = new QLabel*[2];
 
     QString stColName[4]={"T+1","T+2","T-1","T-2"};
 
     G_lab_CritereCombi = new QLabel;
-    G_tab_1 = new QTableView;
+    QTableView *qtv_tmp  = new QTableView;
 
     G_lab_CritereCombi->setText("Critere:");
     G_tab_1Model = new QSqlTableModel;
     G_tab_1Model->setTable("DistriCombi");
     G_tab_1Model->select();
 
-    //QSortFilterProxyModel *m=new QSortFilterProxyModel();
-    //G_ProxModel=new QSortFilterProxyModel();
-    //G_ProxModel->setDynamicSortFilter(true);
-    //G_ProxModel->setSourceModel(G_tab_1Model);
-    G_tab_1->setSortingEnabled(true);
-    G_tab_1->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    G_tab_1->setSelectionBehavior(QAbstractItemView::SelectItems);
+    // Filtre
+    QFormLayout *FiltreLayout = new QFormLayout;
+    fltComb_1 = new FiltreCombinaisons();
+    fltComb_1->setFitreConfig(G_tab_1Model,qtv_tmp,2);
+    FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
 
-    G_tab_1->setModel(G_tab_1Model);
-    G_tab_1->hideColumn(0); // don't show the ID
-    G_tab_1->hideColumn(1);
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->hideColumn(0); // don't show the ID
+    qtv_tmp->hideColumn(1);
 
     // Taille/Nom des colonnes
-    G_tab_1->setColumnWidth(2,80);
+    qtv_tmp->setColumnWidth(2,80);
     G_tab_1Model->setHeaderData(2, Qt::Horizontal, tr("Repartition"));
     for(int j=3;j<7;j++)
     {
-        G_tab_1->setColumnWidth(j,50);
+        qtv_tmp->setColumnWidth(j,50);
         G_tab_1Model->setHeaderData(j, Qt::Horizontal, stColName[j-3]);
     }
 
     // Taille du tableau dans onglet
-    G_tab_1->setFixedSize(345,410);
+    qtv_tmp->setFixedSize(345,410);
     //G_tab_1->show();
 
     // Double click dans sous fenetre
-    connect( G_tab_1, SIGNAL( doubleClicked(QModelIndex)) ,
+    connect( qtv_tmp, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( slot_F5_RechercherLesTirages( QModelIndex) ) );
 
-    // Filtre
-    QFormLayout *FiltreLayout = new QFormLayout;
-    FiltreCombinaisons *filtre = new FiltreCombinaisons();
-
-    FiltreLayout->addRow("&Filre Repartition", filtre);
 
     lay_return->addWidget(G_lab_CritereCombi,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addLayout(FiltreLayout,1,0,Qt::AlignLeft|Qt::AlignTop);
-    lay_return->addWidget(G_tab_1,2,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,2,0,Qt::AlignLeft|Qt::AlignTop);
+
+    qtv_tmp = G_tbv_CombiSourceSelection;
     return(lay_return);
 }
 
@@ -1909,20 +1923,20 @@ void MainWindow::fen_MesPossibles(void)
 
 QGridLayout * MainWindow::MonLayout_pFnNsr1(stTiragesDef *pConf)
 {
- QGridLayout *lay_return = new QGridLayout;
- int zone = 0;
+    QGridLayout *lay_return = new QGridLayout;
+    int zone = 0;
 
- syntheses = new RefResultat(zone,pConf,zoneCentrale);
- lay_return = syntheses->GetDisposition();
+    syntheses = new RefResultat(zone,pConf,zoneCentrale);
+    lay_return = syntheses->GetDisposition();
 
- return(lay_return);
+    return(lay_return);
 }
 
 QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
 {
- QGridLayout *lay_return = new QGridLayout;
+    QGridLayout *lay_return = new QGridLayout;
 
- return(lay_return);
+    return(lay_return);
 }
 
 void MainWindow::fen_NewSqlResults(stTiragesDef *pConf)
@@ -1940,12 +1954,12 @@ void MainWindow::fen_NewSqlResults(stTiragesDef *pConf)
 
     for(int i =0; i<2;i++)
     {
-       wid_ForTop[i]=new QWidget;
-       tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
+        wid_ForTop[i]=new QWidget;
+        tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
 
-       //
-       design_onglet[i] = (this->*ptrFunc[i])(pConf);
-       wid_ForTop[i]->setLayout(design_onglet[i]);
+        //
+        design_onglet[i] = (this->*ptrFunc[i])(pConf);
+        wid_ForTop[i]->setLayout(design_onglet[i]);
     }
 
 
@@ -2068,7 +2082,7 @@ void MainWindow::fen_Parites(void)
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+    //delete ui;
 }
 
 

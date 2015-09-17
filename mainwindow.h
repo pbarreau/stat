@@ -22,6 +22,8 @@
 #include "tirages.h"
 #include "pointtirage.h"
 #include "refresultat.h"
+#include "filtrecombinaisons.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -207,7 +209,7 @@ private:
     QStandardItemModel * TST_SetTblViewVal(int nbLigne, QTableView *qtv_r);
 
 private:
-    Ui::MainWindow *ui;
+    //Ui::MainWindow *ui;
     QMdiArea *zoneCentrale;
     GererBase *DB_tirages;
     RefResultat *syntheses;
@@ -231,7 +233,13 @@ private:
     QTabWidget *G_tbw_MontabWidget;
     QTableView *G_tbv_Tirages;
     QTableView *G_tbv_CouvTirages;
-    QTableView *G_tab_1;
+
+    QTableView *G_tbv_CombiSourceSelection;
+    QTableView *G_tbv_ProxyCombiSourceSelection;
+    FiltreCombinaisons *fltComb_1;
+    QSqlTableModel *G_tab_1Model;
+
+
     QTableView **G_tbv_Voisins;
     QTableView **G_tbv_Absents;
     QTableView **G_tbv_MaSelection;
@@ -258,7 +266,6 @@ private:
     QStandardItemModel *G_sim_MesPossibles ;
     QStandardItemModel *G_sim_LesAbsents ;
     QSqlTableModel *G_tblPrev_v2;
-    QSqlTableModel *G_tab_1Model;
     QSortFilterProxyModel *G_ProxModel;
     QStandardItemModel *G_sim_Parites ;
     QStandardItemModel *G_sim_Ensemble_1 ;

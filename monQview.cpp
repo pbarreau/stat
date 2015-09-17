@@ -20,9 +20,10 @@ QWidget *MonQtViewDelegate::createEditor(QWidget *parent,
                                          const QStyleOptionViewItem &/* option */,
                                          const QModelIndex & index ) const
 {
+    QTableView *editor = new QTableView(parent);
     if(index.column() == 1)
     {
-        QTableView *editor = new QTableView(parent);
+
         QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
 
         int ref = pereOnglet->currentIndex();
@@ -63,9 +64,8 @@ QWidget *MonQtViewDelegate::createEditor(QWidget *parent,
         // Ne pas modifier largeur des colonnes
         editor->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
         editor->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-
-        return editor;
     }
+    return editor;
 }
 
 void MonQtViewDelegate::setEditorData(QWidget *editor,

@@ -8,7 +8,7 @@
 #include <QSortFilterProxyModel>
 #include <QHeaderView>
 #include <QLineEdit>
-
+#include <QComboBox>
 #include "refresultat.h"
 #include "mainwindow.h"
 
@@ -534,10 +534,39 @@ QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese ta
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
+
+    // Filtre
+    QHBoxLayout *tmp_hLay = new QHBoxLayout();
+
+    QComboBox *tmp_combo = new QComboBox;
+    tmp_combo->addItem(tr("J"));
+    tmp_combo->addItem(tr("D"));
+    tmp_combo->addItem(tr("C"));
+    tmp_combo->addItem(tr("E"));
+    tmp_combo->addItem(tr("P"));
+    tmp_combo->addItem(tr("G"));
+    QLabel *tmp_lab = new QLabel(tr("Filtre :"));
+    tmp_lab->setBuddy(tmp_combo);
+    pCritere = tmp_combo;
+    connect(pCritere, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(slot_FiltreSurNewCol(int)));
+    //pCritere = tmp_combo;
+    QFormLayout *FiltreLayout = new QFormLayout;
+    FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
+    pFiltre = fltComb_tmp;
+    pFiltre->setFitreConfig(sqm_tmp,qtv_tmp,2);
+
+
+    FiltreLayout->addRow("&Recherche", fltComb_tmp);
+
+    // Mettre combo + line dans hvbox
+    tmp_hLay->addWidget(tmp_combo);
+    tmp_hLay->addLayout(FiltreLayout);
+
     //QSortFilterProxyModel *m=new QSortFilterProxyModel();
     //m->setDynamicSortFilter(true);
     //m->setSourceModel(sqm_tmp);
-    qtv_tmp->setModel(sqm_tmp);
+    //qtv_tmp->setModel(sqm_tmp);
     qtv_tmp->hideColumn(0);
     qtv_tmp->hideColumn(1);
 
@@ -574,10 +603,18 @@ QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese ta
 
         pos_y++;
     }
-
-    lay_return->addWidget(qtv_tmp,pos_y,pos_x,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addLayout(tmp_hLay,pos_y,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,pos_y+1,0,Qt::AlignLeft|Qt::AlignTop);
 
     return(lay_return);
+}
+
+void RefResultat::slot_FiltreSurNewCol(int colNum)
+{
+    int colId[6]={2,3,4,10,11,12};
+    int ColReal = colId[colNum];
+
+    pFiltre->slot_setFKC(ColReal);
 }
 
 void RefResultat::slot_NouvelleDistance(void)
@@ -625,7 +662,7 @@ QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese t
     return(lay_return);
 }
 
-void RefResultat::Synthese_2(QGridLayout *lay_return,NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial)
+void RefResultat::Synthese_2(QGridLayout *lay_return,NE_Analyses::E_Syntese /* table*/, QStringList &stl_tmp, int distance, bool ongSpecial)
 {
     //-------------------
     QLabel *titre_2 = new QLabel("Etoiles");

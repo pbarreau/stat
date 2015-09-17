@@ -1,21 +1,44 @@
+#include <QtWidgets>
+#include <QSqlTableModel>
 #include "filtrecombinaisons.h"
+
 
 FiltreCombinaisons::FiltreCombinaisons(QWidget *parent) :
     QLineEdit(parent)
 {
-    //connect(this, SIGNAL(textChanged(QString)), this, SIGNAL(filterChanged()));
+    proxyModel = new QSortFilterProxyModel;
+    //proxyModel->setDynamicSortFilter(true);
+
+    syntax = QRegExp::PatternSyntax(QRegExp::Wildcard);
+    typeCase= Qt::CaseInsensitive;
+
+    connect(this, SIGNAL(textChanged(QString)), this, SLOT(slot_TraiterFiltre()));
 }
 
-static inline QRegExp::PatternSyntax patternSyntaxFromAction(const QAction *a)
+
+void FiltreCombinaisons::slot_TraiterFiltre()
 {
-    //return static_cast<QRegExp::PatternSyntax>(a->data().toInt());
+    QString st_text = this->text();
+    QRegExp regExp(st_text, typeCase, syntax);
+
+    proxyModel->setFilterRegExp(regExp);
 }
 
-QRegExp::PatternSyntax FiltreCombinaisons::patternSyntax() const
+//void FiltreCombinaisons::setFitreConfig(QSqlTableModel *model,QAbstractItemView *view)
+void FiltreCombinaisons::setFitreConfig(QAbstractItemModel *model,QAbstractItemView *view, int colId)
 {
-    //return patternSyntaxFromAction(m_patternGroup->checkedAction());
+    sourceModel = model;
+    proxyModel->setSourceModel(model);
+    proxyModel->setFilterKeyColumn(colId);
+
+    sourceView=view;
+    sourceView->setModel(proxyModel);
 }
 
-void FiltreCombinaisons::setPatternSyntax(QRegExp::PatternSyntax s)
+void FiltreCombinaisons::slot_setFKC(int colId)
 {
+    //proxyModel->setSourceModel(sourceModel);
+    proxyModel->setFilterKeyColumn(colId);
+    //sourceView->setModel(proxyModel);
+
 }

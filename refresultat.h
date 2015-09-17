@@ -9,6 +9,9 @@
 #include <QSqlTableModel>
 #include <QStyledItemDelegate>
 #include <QTabWidget>
+#include <QComboBox>
+
+#include "filtrecombinaisons.h"
 
 
 #include "tirages.h"
@@ -82,6 +85,9 @@ private:
     QGridLayout **G_design_onglet_2;
     QStringList bSelection;
 
+    QComboBox * pCritere;
+    FiltreCombinaisons *pFiltre;
+
 public:
     RefResultat(int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
@@ -94,6 +100,7 @@ public:
 public slots:
     void slot_MontreLesTirages(const QModelIndex & index);
     void slot_NouvelleDistance(void);
+    void slot_FiltreSurNewCol(int colNum);
 
 
 
@@ -102,7 +109,7 @@ private:
     void DoBloc2(void);
     void DoBloc3(void);
     void Synthese_1(QGridLayout *lay_return,NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial);
-    void Synthese_2(QGridLayout *lay_return,NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial);
+    void Synthese_2(QGridLayout *lay_return, NE_Analyses::E_Syntese, QStringList &stl_tmp, int distance, bool ongSpecial);
 
     QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
     QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);
