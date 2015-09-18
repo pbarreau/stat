@@ -59,11 +59,29 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
 };
 
+typedef struct _demande
+{
+    int boule;
+    int col;
+    int val;
+    QString st_col;
+    QStringList lst_boules;
+}stCurDemande;
+
+class DetailsResultatBloc_1 : public QObject
+{
+   Q_OBJECT
+private:
+    stCurDemande *pLaDemande;
+
+};
+
 class RefResultat : public QObject
 {
     Q_OBJECT
 
 private:
+    stCurDemande *pLaDemande;
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
     int curzn;
@@ -92,9 +110,9 @@ public:
     RefResultat(int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetTable(void);
-    void MontreRechercheTirages(NE_Analyses::E_Syntese table, QStringList &lst_boules);
-    QGridLayout * MonLayout_pFnDetailsTirages(int curId, QStringList &stl_tmp, int val);
-    QGridLayout * MonLayout_pFnSyntheseDetails(int curId, QStringList &stl_tmp, int);
+    void MontreRechercheTirages(stCurDemande *pLaDemande);
+    QGridLayout * MonLayout_pFnDetailsTirages(int curId, stCurDemande *pLaDemande, int val);
+    QGridLayout * MonLayout_pFnSyntheseDetails(int curId, stCurDemande *pLaDemande, int);
     // penser au destructeur pour chaque pointeur
 
 public slots:

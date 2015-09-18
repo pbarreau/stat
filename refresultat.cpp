@@ -98,7 +98,7 @@ void RefResultat::DoBloc1(void)
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(225,485);
+    qtv_tmp->setFixedSize(225,435);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -149,7 +149,7 @@ void RefResultat::DoBloc2(void)
     //qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setAlternatingRowColors(true);
-    qtv_tmp->setFixedSize(412,205);
+    qtv_tmp->setFixedSize(412,210);
 
     qtv_tmp->setModel(tblModel);
     qtv_tmp->setSortingEnabled(true);
@@ -189,7 +189,7 @@ void RefResultat::DoBloc3(void)
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setAlternatingRowColors(true);
-    qtv_tmp->setFixedSize(285,270);
+    qtv_tmp->setFixedSize(285,210);
 
     qtv_tmp->setModel(tblModel);
     qtv_tmp->setSortingEnabled(true);
@@ -212,22 +212,43 @@ void RefResultat::DoBloc3(void)
 
 void RefResultat::slot_MontreLesTirages(const QModelIndex & index)
 {
+    void *pSource = index.internalPointer();
+    quintptr pId = index.internalId();
 
-    if(index.internalPointer() == tbv_bloc1->model()->index(index.row(),index.column()).internalPointer())
+    int ligne = index.row();
+    int col = index.column();
+    int val = index.data().toInt();
+    const QAbstractItemModel * pModel = index.model();
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
+
+    //if(index.internalPointer() == tbv_bloc1->model()->index(index.row(),index.column()).internalPointer())
+    if (col>0)
     {
-        QStringList stl_tmp;
+        stCurDemande *etude = new stCurDemande;
 
-        int boule_id = index.row()+1;
+        QStringList stl_tmp;
+        int boule_id = ligne +1;
         stl_tmp << QString::number(boule_id);
-        // Lecture du tableau bloc1
-        //col = index.column();
-        //rch = tbv_bloc1->model()->index(index.row(),0).data().toInt();
-        MontreRechercheTirages(NE_Analyses::bToutes,stl_tmp);
+
+        etude->boule = boule_id;
+        etude->col = col;
+        etude->val = val;
+        etude->st_col = headName;
+        etude->lst_boules = stl_tmp;
+
+        pLaDemande = etude;
+        MontreRechercheTirages(etude);
 
     }
 }
-void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,QStringList & lst_boules)
+void RefResultat::MontreRechercheTirages(stCurDemande *pEtude)
 {
+    int bouleId = pEtude->boule;
+    QString colName = pEtude->st_col;
+    int curVal=pEtude->val;
+    //QStringList lst_boules = pEtude->lst_boules;
+
     QWidget *qw_main = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
     QTabWidget **wid_ForTop_1 = new QTabWidget*[4];
@@ -247,7 +268,7 @@ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,QStr
         QGridLayout *design_onglet_2[2];
 
         // Tableau de pointeur de fonction
-        QGridLayout *(RefResultat::*ptrFunc[2])(int curId,QStringList & lst_boules, int val)=
+        QGridLayout *(RefResultat::*ptrFunc[2])(int ,stCurDemande *, int )=
         {&RefResultat::MonLayout_pFnDetailsTirages,&RefResultat::MonLayout_pFnSyntheseDetails};
 
         // Verifier si on est sur l'onglet n° 4
@@ -264,7 +285,7 @@ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,QStr
             wid_ForTop_1[i]->addTab(wid_ForTop_2[j],tr(stNames_2[j].toUtf8()));
 
             //
-            design_onglet_2[j] = (this->*ptrFunc[j])(i, lst_boules, Ref_D_Onglet[i]);
+            design_onglet_2[j] = (this->*ptrFunc[j])(i, pEtude, Ref_D_Onglet[i]);
             wid_ForTop_2[j]->setLayout(design_onglet_2[j]);
 
             // Verifier si on est sur l'onglet n° 4
@@ -280,7 +301,12 @@ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,QStr
     }
 
     QFormLayout *mainLayout = new QFormLayout;
-    QString st_titre = "Details Boule : " + lst_boules.at(0);
+
+    QString st_titre =
+            "Analyse B:"+QString::number(bouleId)+
+            ",Col:"+colName +
+            ",(V="+QString::number(curVal)+").";
+
     mainLayout->addWidget(tab_Top);
     qw_main->setWindowTitle(st_titre);
     qw_main->setLayout(mainLayout);
@@ -505,9 +531,11 @@ QString RefResultat::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
     return(st_msg);
 }
 
-QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(int curId, QStringList &stl_tmp, int val)
+QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(int curId, stCurDemande *pEtude, int val)
 {
     QGridLayout *lay_return = new QGridLayout;
+
+    QStringList stl_tmp = pEtude->lst_boules;
 
     const int Ref_D_Onglet[4]={0,-1,1,-2};
     const bool Ref_A_Onglet[4]={false,false,false,true};
@@ -663,7 +691,7 @@ void RefResultat::slot_NouvelleDistance(void)
     new_distance *=-1;
 
     // Tableau de pointeur de fonction
-    QGridLayout *(RefResultat::*ptrFunc[2])(int curId,QStringList & lst_boules,  int distance)=
+    QGridLayout *(RefResultat::*ptrFunc[2])(int ,stCurDemande *,  int )=
     {&RefResultat::MonLayout_pFnDetailsTirages,&RefResultat::MonLayout_pFnSyntheseDetails};
 
     for(int j =0; j<2;j++)
@@ -672,8 +700,12 @@ void RefResultat::slot_NouvelleDistance(void)
         QGridLayout * oldOne = G_design_onglet_2[j];
         QGridLayout * monTest;
 
-
-        monTest = (this->*ptrFunc[j])(3,bSelection,new_distance);
+        // Pour Compilation OK seulement. Pas de sens logique.
+        // Mise en place de changement de code pour nouvel objet
+        stCurDemande * uneEtudeVide = new stCurDemande;
+        uneEtudeVide = pLaDemande;
+        delete pLaDemande;
+        monTest = (this->*ptrFunc[j])(3,uneEtudeVide,new_distance);
 
         // nouveau dessin ok.
         // Rechercher l'ancien pour suppression et reaffectation;
@@ -685,9 +717,11 @@ void RefResultat::slot_NouvelleDistance(void)
     }
 }
 
-QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(int curId, QStringList &stl_tmp, int /*val*/)
+QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(int curId, stCurDemande *pEtude, int /*val*/)
 {
     QGridLayout *lay_return = new QGridLayout;
+
+    QStringList stl_tmp = pEtude->lst_boules;
 
     const int Ref_D_Onglet[4]={0,-1,1,-2};
     const bool Ref_A_Onglet[4]={false,false,false,true};

@@ -280,146 +280,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 #endif
 }
 
-#if 0
-void MainWindow::Prev_MainWindow(QWidget *parent,NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)// :
-//  QMainWindow(parent),
-//  ui(new Ui::MainWindow)
-{
-    DB_tirages = new GererBase;
-    int i;
-    tirages tmp(leJeu);
-    QString ficSource;
-
-    // Recuperation des contantes du type de jeu
-    tmp.getConfig(&configJeu);
-
-    //stTiragesDef ess;
-    //ess = configJeu;
-
-    ui->setupUi(this);
-
-    zoneCentrale = new QMdiArea;
-    zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    zoneCentrale->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
-#if 0
-    /////////////////////
-    QStringList TST_Lst;
-    TST_Lst << "A" << "B" << "C" << "D" << "E";
-    //TST_Lst << "A" << "B" << "C" << "D" << "E";
-    TST_Permute(&TST_Lst);
-    ////////////////////
-#endif
-
-    // Creation sous fenetre pour mettre donnees de base
-    fen_Tirages();
-
-    fen_LstCouv();
-
-    // Creation sous fenetre des voisins
-    fen_Voisins();
-
-    // Creation sous fenetre des ecarts
-    fen_Ecarts();
-
-    // Creation fenetre pour memoriser a selection
-    fen_MaSelection();
-
-    // Creation fenetre resultat
-    fen_MesPossibles();
-
-    // Creation fenetre pour parite
-    fen_Parites();
-
-    // Preparer la base de données
-    DB_tirages->CreerBaseEnMemoire(dest_bdd,leJeu);
-
-
-    // Creation des tables pour ce type jeu
-    DB_tirages->CreerTableTirages(&tmp);
-
-    // Recuperation des données fdj
-    ficSource = tmp.SelectSource(load);
-    DB_tirages->LireLesTirages(ficSource,&tmp);
-
-    if(leJeu == NE_FDJ::fdj_euro){
-        // Lecture des anciennes base des tirages
-        ficSource = "euromillions_2.csv";
-        DB_tirages->LireLesTirages(ficSource,&tmp);
-        ficSource="euromillions.csv";
-        DB_tirages->LireLesTirages(ficSource,&tmp);
-    }
-    else
-    {
-        //Rien
-    }
-    ///---------------------
-    // Recherche de combinaison A deplacer ?
-    //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
-    TST_EtoileCombi(&configJeu,tabWidget);
-    TST_RechercheCombi(&configJeu,tabWidget);
-    //QApplication::quit();
-
-    //return;
-
-    // Ordre arrivee des boules ?
-    DB_tirages->CouvertureBase(qsim_Ecarts,&configJeu);
-
-
-
-    //// GARDER L'ORDRE D'APPEL DES FONCTIONS PB VERROU SUR LA BASE
-    // --
-    int zn = 0;
-    for(i=1;i<=configJeu.limites[zn].max;i++){
-        // Remplir Sous Fen les ecarts
-        DB_tirages->DistributionSortieDeBoule(i,qsim_Ecarts,&configJeu);
-        // Montrer les valeurs probable
-        DB_tirages->CouvMontrerProbable(i,3,1,qsim_Ecarts);
-
-
-        // Calcul occurence de cette boule
-        DB_tirages->TotalApparitionBoule(i,&configJeu, zn, qsimT_Voisins[zn]);
-    }
-
-    // --
-    zn=1;
-    for(i=1;i<=configJeu.limites[zn].max;i++)
-    {
-        // Calcul occurence de cette boule
-        DB_tirages->TotalApparitionBoule(i,&configJeu, zn, qsimT_Voisins[zn]);
-    }
-
-    // ----------------------------
-
-
-    // Remplir la sousfenetre base de données
-    DB_tirages->AfficherBase(&configJeu,qw_Tirages,qtv_Tirages);
-
-
-    // Remplir la sous fenetre resultat couverture
-    DB_tirages->AfficherResultatCouverture(&configJeu,qw_LstCouv,qtv_LstCouv);
-
-
-    // Remplir la sous fenetre de parite
-    DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_PAIR, qsim_Parites);
-    DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_SGRP, qsim_Ensemble_1);
-    DB_tirages->MLP_UniteDizaine(&configJeu, qsim_ud);
-
-    TST_Graphe(&configJeu);
-
-    setCentralWidget(zoneCentrale);
-
-
-    ///-----------------
-#if 0
-    // Selection a change
-    connect(qtv_LstCouv->selectionModel(), SIGNAL(selectionChanged (const QItemSelection&, const QItemSelection&)),
-            this, SLOT(slot_CouvertureSelChanged(QItemSelection,QItemSelection)));
-
-#endif
-
-}
-#endif
 
 void MainWindow::fen_Tirages(void)
 {
@@ -1929,6 +1789,7 @@ QGridLayout * MainWindow::MonLayout_pFnNsr1(stTiragesDef *pConf)
     syntheses = new RefResultat(zone,pConf,zoneCentrale);
     lay_return = syntheses->GetDisposition();
 
+
     return(lay_return);
 }
 
@@ -1967,6 +1828,7 @@ void MainWindow::fen_NewSqlResults(stTiragesDef *pConf)
     mainLayout->addWidget(tab_Top);
     qw_nsr->setWindowTitle("Analyses des boules");
     qw_nsr->setLayout(mainLayout);
+    qw_nsr->setFixedSize(700,500);
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
