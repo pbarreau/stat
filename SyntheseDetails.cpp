@@ -750,17 +750,25 @@ ensemble_1.N = 2
 
 
     int val = pLaDemande->boule;
-    QStringList cri_msg;
 
     int col=pLaDemande->col;
 
 
+    //---------------------
+    QStringList cri_msg;
+
     cri_msg <<"z1%2=0"<<"z1<26";
+
     for(int j=0;j<=9;j++)
     {
       cri_msg<< "z1 like '%" + QString::number(j) + "'";
     }
 
+    for(int j=0;j<6;j++)
+    {
+      cri_msg<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
+    }
+    //---------------------
 
     if(col>=2 && col <= 2+cri_msg.size())
     {

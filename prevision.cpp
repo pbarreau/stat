@@ -60,15 +60,28 @@ void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
     QSqlQuery query ;
     int zone = 0;
 
+    // Boule Finissant par xx
+    QString str_fxx = "";
+    //QString str_dxx = "";
+    for(int i=0; i<10;i++)
+    {
+       str_fxx = str_fxx + "F" +QString::number(i)+ " int,";
+    }
+    for(int i=0; i<6;i++)
+    {
+       str_fxx = str_fxx + "U" +QString::number(i)+ " int,";
+    }
+    //enlever la derniere ,
+    str_fxx.remove(str_fxx.length()-1,1);
+
     // Creer table synthese Horizontale
     msg1 =  "create table if not exists repartition_bh "
             "("
             "id INTEGER PRIMARY KEY,"
             "Nb int,"
             "P int,G int,"
-            "F0 int,F1 int,F2 int,F3 int,"
-            "F4 int,F5 int,F6 int,F7 int,"
-            "F8 int,F9 int);";
+            + str_fxx +
+            ");";
     status = query.exec(msg1);
     query.finish();
     msg1 =  "insert into repartition_bh  (id) select id from Bnrz  where Bnrz.id <= 6;";
@@ -88,6 +101,12 @@ void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
     {
       cri_msg<< "z1 like '%" + QString::number(j) + "'";
       cri_lab << "F"+ QString::number(j);
+    }
+
+    for(int j=0;j<6;j++)
+    {
+      cri_msg<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
+      cri_lab << "U"+ QString::number(j);
     }
 
     // Creer table synthese Verticale
