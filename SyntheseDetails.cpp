@@ -339,12 +339,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
         QGridLayout * oldOne = G_design_onglet_2[j];
         QGridLayout * monTest;
 
-        // Pour Compilation OK seulement. Pas de sens logique.
-        // Mise en place de changement de code pour nouvel objet
-        stCurDemande * uneEtudeVide = new stCurDemande;
-        uneEtudeVide = pLaDemande;
-        delete pLaDemande;
-        monTest = (this->*ptrFunc[j])(3,uneEtudeVide,new_distance);
+        monTest = (this->*ptrFunc[j])(3,pLaDemande,new_distance);
 
         // nouveau dessin ok.
         // Rechercher l'ancien pour suppression et reaffectation;
