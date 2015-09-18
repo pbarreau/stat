@@ -85,16 +85,16 @@ private:
     QGridLayout **G_design_onglet_2;
     QStringList bSelection;
 
-    QComboBox * pCritere;
-    FiltreCombinaisons *pFiltre;
+    QComboBox * pCritere[4];
+    FiltreCombinaisons *pFiltre[4];
 
 public:
     RefResultat(int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetTable(void);
     void MontreRechercheTirages(NE_Analyses::E_Syntese table, QStringList &lst_boules);
-    QGridLayout * MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance=0, bool ongSpecial=false);
-    QGridLayout * MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance=0, bool ongSpecial=false);
+    QGridLayout * MonLayout_pFnDetailsTirages(int curId, QStringList &stl_tmp, int val);
+    QGridLayout * MonLayout_pFnSyntheseDetails(int curId, QStringList &stl_tmp, int);
     // penser au destructeur pour chaque pointeur
 
 public slots:
@@ -108,8 +108,8 @@ private:
     void DoBloc1(void);
     void DoBloc2(void);
     void DoBloc3(void);
-    void Synthese_1(QGridLayout *lay_return,NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial);
-    void Synthese_2(QGridLayout *lay_return, NE_Analyses::E_Syntese, QStringList &stl_tmp, int distance, bool ongSpecial);
+    void Synthese_1(QGridLayout *lay_return,QStringList &stl_tmp, int distance, bool ongSpecial);
+    void Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
 
     QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
     QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);

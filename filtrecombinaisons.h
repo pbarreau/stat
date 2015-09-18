@@ -17,7 +17,7 @@ class FiltreCombinaisons : public QLineEdit
 
 public:
     explicit FiltreCombinaisons(QWidget *parent = 0);
-    void setFitreConfig(QAbstractItemModel *model, QAbstractItemView *view, int colId);
+    void setFiltreConfig(QAbstractItemModel *model, QAbstractItemView *view, int colId);
 
 
 public slots:

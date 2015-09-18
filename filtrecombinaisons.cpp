@@ -25,20 +25,20 @@ void FiltreCombinaisons::slot_TraiterFiltre()
 }
 
 //void FiltreCombinaisons::setFitreConfig(QSqlTableModel *model,QAbstractItemView *view)
-void FiltreCombinaisons::setFitreConfig(QAbstractItemModel *model,QAbstractItemView *view, int colId)
+void FiltreCombinaisons::setFiltreConfig(QAbstractItemModel *model,QAbstractItemView *view, int colId)
 {
+    //static int col = 1;
     sourceModel = model;
     proxyModel->setSourceModel(model);
     proxyModel->setFilterKeyColumn(colId);
-
+    //col++;
     sourceView=view;
     sourceView->setModel(proxyModel);
 }
 
 void FiltreCombinaisons::slot_setFKC(int colId)
 {
-    //proxyModel->setSourceModel(sourceModel);
+    int cur = proxyModel->filterKeyColumn();
     proxyModel->setFilterKeyColumn(colId);
-    //sourceView->setModel(proxyModel);
 
 }

@@ -591,7 +591,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;
     FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
-    fltComb_tmp->setFitreConfig(sqm_r1,tv_r1,1);
+    fltComb_tmp->setFiltreConfig(sqm_r1,tv_r1,1);
     FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
 
     //tv_r1->setModel(m);
@@ -986,7 +986,7 @@ QGridLayout * MainWindow::MonLayout_VoisinDistribution()
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;
     fltComb_1 = new FiltreCombinaisons();
-    fltComb_1->setFitreConfig(G_tab_1Model,qtv_tmp,2);
+    fltComb_1->setFiltreConfig(G_tab_1Model,qtv_tmp,2);
     FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
 
     qtv_tmp->setSortingEnabled(true);

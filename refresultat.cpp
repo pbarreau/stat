@@ -9,14 +9,17 @@
 #include <QHeaderView>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QTreeView>
+#include <QStandardItemModel>
+
 #include "refresultat.h"
+#include "filtrecombinaisons.h"
 #include "mainwindow.h"
 
 extern MainWindow w;
-//QString GEN_Where_1(int zn, stTiragesDef *pConf, QStringList &boules, QString op1, QString op2, QString alias)
-//;
-//QString GEN_Where_2(stTiragesDef *pConf, int zone, QString operateur, int boule, QString critere,QString alias)
-//;
+
+// TEST
+QComboBox *ComboPerso(int id);
 
 QString GEN_Where_3(int loop, QString tb1, bool inc1,
                     QString op1, QStringList &tb2, bool inc2,
@@ -229,8 +232,7 @@ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,QStr
     QTabWidget *tab_Top = new QTabWidget;
     QTabWidget **wid_ForTop_1 = new QTabWidget*[4];
     QString stNames_1[4]={"0","1","-1","?"};
-    int distance[4]={0,-1,1,-2};
-    bool spe[4]={false,false,false,true};
+    const int Ref_D_Onglet[4]={0,-1,1,-2};
     //QGridLayout *design_onglet_1[4];
 
     onglets = tab_Top;
@@ -245,7 +247,7 @@ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,QStr
         QGridLayout *design_onglet_2[2];
 
         // Tableau de pointeur de fonction
-        QGridLayout *(RefResultat::*ptrFunc[2])(NE_Analyses::E_Syntese table,QStringList & lst_boules, int dist, bool spe)=
+        QGridLayout *(RefResultat::*ptrFunc[2])(int curId,QStringList & lst_boules, int val)=
         {&RefResultat::MonLayout_pFnDetailsTirages,&RefResultat::MonLayout_pFnSyntheseDetails};
 
         // Verifier si on est sur l'onglet n° 4
@@ -262,7 +264,7 @@ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,QStr
             wid_ForTop_1[i]->addTab(wid_ForTop_2[j],tr(stNames_2[j].toUtf8()));
 
             //
-            design_onglet_2[j] = (this->*ptrFunc[j])(typeAnalyse, lst_boules, distance[i],spe[i]);
+            design_onglet_2[j] = (this->*ptrFunc[j])(i, lst_boules, Ref_D_Onglet[i]);
             wid_ForTop_2[j]->setLayout(design_onglet_2[j]);
 
             // Verifier si on est sur l'onglet n° 4
@@ -503,25 +505,28 @@ QString RefResultat::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
     return(st_msg);
 }
 
-QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial)
+QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(int curId, QStringList &stl_tmp, int val)
 {
     QGridLayout *lay_return = new QGridLayout;
+
+    const int Ref_D_Onglet[4]={0,-1,1,-2};
+    const bool Ref_A_Onglet[4]={false,false,false,true};
+
+    int distance = Ref_D_Onglet[curId];
+    bool ongSpecial = Ref_A_Onglet[curId];
 
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
 
 
-    switch(table)
+    if(curId==3)
     {
-    case NE_Analyses::bToutes:
-    {
-        sql_msgRef = DoSqlMsgRef_Tb1(stl_tmp,distance);
+        distance = val;
     }
-        break;
-    default:
-        ; // Rien
-    }
+
+    // Creer le code de la requete Sql
+    sql_msgRef = DoSqlMsgRef_Tb1(stl_tmp,distance);
 
     sqm_tmp->setQuery(sql_msgRef);
 
@@ -538,38 +543,31 @@ QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese ta
     // Filtre
     QHBoxLayout *tmp_hLay = new QHBoxLayout();
 
-    QComboBox *tmp_combo = new QComboBox;
-    tmp_combo->addItem(tr("J"));
-    tmp_combo->addItem(tr("D"));
-    tmp_combo->addItem(tr("C"));
-    tmp_combo->addItem(tr("E"));
-    tmp_combo->addItem(tr("P"));
-    tmp_combo->addItem(tr("G"));
+    QComboBox *tmp_combo = ComboPerso(curId);
+
     QLabel *tmp_lab = new QLabel(tr("Filtre :"));
     tmp_lab->setBuddy(tmp_combo);
-    pCritere = tmp_combo;
-    connect(pCritere, SIGNAL(currentIndexChanged(int)),
+
+    connect(tmp_combo, SIGNAL(currentIndexChanged(int)),
             this, SLOT(slot_FiltreSurNewCol(int)));
-    //pCritere = tmp_combo;
+
+
     QFormLayout *FiltreLayout = new QFormLayout;
-    FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
-    pFiltre = fltComb_tmp;
-    pFiltre->setFitreConfig(sqm_tmp,qtv_tmp,2);
+    FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons;
+    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,2);
 
 
     FiltreLayout->addRow("&Recherche", fltComb_tmp);
 
     // Mettre combo + line dans hvbox
+    tmp_hLay->addWidget(tmp_lab);
     tmp_hLay->addWidget(tmp_combo);
     tmp_hLay->addLayout(FiltreLayout);
 
-    //QSortFilterProxyModel *m=new QSortFilterProxyModel();
-    //m->setDynamicSortFilter(true);
-    //m->setSourceModel(sqm_tmp);
-    //qtv_tmp->setModel(sqm_tmp);
     qtv_tmp->hideColumn(0);
     qtv_tmp->hideColumn(1);
 
+    // Formattage de largeur de colonnes
     for(int j=0;j<=4;j++)
         qtv_tmp->setColumnWidth(j,75);
 
@@ -582,11 +580,11 @@ QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese ta
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    // Double click dans fenetre de details
+    // Double click dans fenetre pour details et localisation dans base Tirages
     connect( qtv_tmp, SIGNAL( doubleClicked(QModelIndex)) ,
              pEcran->parent(), SLOT(slot_MontreLeTirage( QModelIndex) ) );
 
-    int pos_x = 0;
+    //int pos_x = 0;
     int pos_y = 0;
     if(ongSpecial)
     {
@@ -606,7 +604,45 @@ QGridLayout * RefResultat::MonLayout_pFnDetailsTirages(NE_Analyses::E_Syntese ta
     lay_return->addLayout(tmp_hLay,pos_y,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp,pos_y+1,0,Qt::AlignLeft|Qt::AlignTop);
 
+    // Associer la combo de selection au filtre pour
+    // cette distance (ie cet onglet) et la Qtview associee
+    pCritere[curId] = tmp_combo;
+    pFiltre[curId] = fltComb_tmp;
+
     return(lay_return);
+}
+
+QComboBox *ComboPerso(int id)
+{
+    QComboBox * tmp_combo = new QComboBox;
+
+    QTreeView *sourceView = new QTreeView;
+    sourceView->setRootIsDecorated(false);
+    sourceView->setAlternatingRowColors(true);
+    tmp_combo->setView(sourceView);
+
+    //sourceView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded); //fine tuning of some options
+    sourceView->setSelectionMode(QAbstractItemView::SingleSelection);
+    sourceView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    sourceView->setAutoScroll(false);
+
+    QStandardItemModel *model = new QStandardItemModel(0, 2);
+    model->setHeaderData(0, Qt::Horizontal, QObject::tr("Filtre"));
+
+    QStringList ChoixCol;
+    ChoixCol<<"J"<<"D"<<"C"<<"E"<<"P"<<"G";
+    for(int i = ChoixCol.size()-1; i>=0;i--)
+    {
+        model->insertRow(0);
+        model->setData(model->index(0, 0), ChoixCol.at(i));
+        model->setData(model->index(0, 1), id);
+    }
+
+    sourceView->header()->hide();
+    sourceView->resizeColumnToContents(0);
+    tmp_combo->setModel(model);
+
+    return tmp_combo;
 }
 
 void RefResultat::slot_FiltreSurNewCol(int colNum)
@@ -614,7 +650,8 @@ void RefResultat::slot_FiltreSurNewCol(int colNum)
     int colId[6]={2,3,4,10,11,12};
     int ColReal = colId[colNum];
 
-    pFiltre->slot_setFKC(ColReal);
+    int val = onglets->currentIndex();
+    pFiltre[val]->slot_setFKC(ColReal);
 }
 
 void RefResultat::slot_NouvelleDistance(void)
@@ -626,7 +663,7 @@ void RefResultat::slot_NouvelleDistance(void)
     new_distance *=-1;
 
     // Tableau de pointeur de fonction
-    QGridLayout *(RefResultat::*ptrFunc[2])(NE_Analyses::E_Syntese table,QStringList & lst_boules, int dist, bool spe)=
+    QGridLayout *(RefResultat::*ptrFunc[2])(int curId,QStringList & lst_boules,  int distance)=
     {&RefResultat::MonLayout_pFnDetailsTirages,&RefResultat::MonLayout_pFnSyntheseDetails};
 
     for(int j =0; j<2;j++)
@@ -636,10 +673,7 @@ void RefResultat::slot_NouvelleDistance(void)
         QGridLayout * monTest;
 
 
-        monTest = (this->*ptrFunc[j])(
-                    NE_Analyses::bToutes,
-                    bSelection,
-                    new_distance,true);
+        monTest = (this->*ptrFunc[j])(3,bSelection,new_distance);
 
         // nouveau dessin ok.
         // Rechercher l'ancien pour suppression et reaffectation;
@@ -651,18 +685,24 @@ void RefResultat::slot_NouvelleDistance(void)
     }
 }
 
-QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial)
+QGridLayout * RefResultat::MonLayout_pFnSyntheseDetails(int curId, QStringList &stl_tmp, int /*val*/)
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    Synthese_1(lay_return,table,stl_tmp,distance,ongSpecial);
-    Synthese_2(lay_return,table,stl_tmp,distance,ongSpecial);
+    const int Ref_D_Onglet[4]={0,-1,1,-2};
+    const bool Ref_A_Onglet[4]={false,false,false,true};
+
+    int distance = Ref_D_Onglet[curId];
+    bool ongSpecial = Ref_A_Onglet[curId];
+
+    Synthese_1(lay_return,stl_tmp,distance,ongSpecial);
+    Synthese_2(lay_return,stl_tmp,distance,ongSpecial);
 
 
     return(lay_return);
 }
 
-void RefResultat::Synthese_2(QGridLayout *lay_return,NE_Analyses::E_Syntese /* table*/, QStringList &stl_tmp, int distance, bool ongSpecial)
+void RefResultat::Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial)
 {
     //-------------------
     QLabel *titre_2 = new QLabel("Etoiles");
@@ -716,7 +756,7 @@ void RefResultat::Synthese_2(QGridLayout *lay_return,NE_Analyses::E_Syntese /* t
     //------------------
 }
 
-void RefResultat::Synthese_1(QGridLayout *lay_return,NE_Analyses::E_Syntese table, QStringList &stl_tmp, int distance, bool ongSpecial)
+void RefResultat::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial)
 {
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
@@ -724,25 +764,16 @@ void RefResultat::Synthese_1(QGridLayout *lay_return,NE_Analyses::E_Syntese tabl
 
 
 
-    switch(table)
-    {
-    case NE_Analyses::bToutes:
-    {
 
-        sql_msgRef = DoSqlMsgRef_Tb1(stl_tmp,distance);
-        // Retirer le ; de la fin
-        sql_msgRef.replace(";","");
+    sql_msgRef = DoSqlMsgRef_Tb1(stl_tmp,distance);
+    // Retirer le ; de la fin
+    sql_msgRef.replace(";","");
 
-        sql_msgRef = SD_Tb1(stl_tmp,sql_msgRef,distance);
+    sql_msgRef = SD_Tb1(stl_tmp,sql_msgRef,distance);
 #ifndef QT_NO_DEBUG
-        qDebug() << sql_msgRef;
+    qDebug() << sql_msgRef;
 #endif
 
-    }
-        break;
-    default:
-        ; // Rien
-    }
 
     sqm_tmp->setQuery(sql_msgRef);
 
