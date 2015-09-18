@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     refresultat.cpp \
     monQview.cpp \
     monSqlEditable.cpp \
-    filtrecombinaisons.cpp
+    filtrecombinaisons.cpp \
+    SyntheseDetails.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -44,7 +45,10 @@ HEADERS  += mainwindow.h \
     types_jeux.h \
     labelclickable.h \
     refresultat.h \
-    filtrecombinaisons.h
+    filtrecombinaisons.h \
+    SyntheseDetails.h \
+    monQview.h \
+    monSqlEditable.h
 
 FORMS    += mainwindow.ui \
     choixjeux.ui

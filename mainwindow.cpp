@@ -1786,7 +1786,7 @@ QGridLayout * MainWindow::MonLayout_pFnNsr1(stTiragesDef *pConf)
     QGridLayout *lay_return = new QGridLayout;
     int zone = 0;
 
-    syntheses = new RefResultat(zone,pConf,zoneCentrale);
+    syntheses = new SyntheseGenerale(zone,pConf,zoneCentrale);
     lay_return = syntheses->GetDisposition();
 
 

@@ -15,6 +15,7 @@
 
 
 #include "tirages.h"
+
 namespace NE_Analyses{
 typedef enum _les_tableaux
 {
@@ -23,72 +24,20 @@ typedef enum _les_tableaux
 }E_Syntese;
 }
 
-// Test qview dans qView
-class MonQtViewDelegate : public QStyledItemDelegate
-{
-    Q_OBJECT
-private:
-    QTabWidget *pereOnglet;
-    QStringList lesBoules;
-    QLineEdit * distancePerso;
-
-public:
-    MonQtViewDelegate(QLineEdit *pDist,QStringList &lstChoix, QTabWidget *memo =0, QObject *parent = 0);
-
-    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
-                          const QModelIndex &index) const Q_DECL_OVERRIDE;
-
-    void setEditorData(QWidget *editor, const QModelIndex &index) const Q_DECL_OVERRIDE;
-    void setModelData(QWidget *editor, QAbstractItemModel *model,
-                      const QModelIndex &index) const Q_DECL_OVERRIDE;
-
-    void updateEditorGeometry(QWidget *editor,
-                              const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
-};
 
 
-// Rendre une requete editable
-// http://doc.qt.io/qt-5/qtsql-querymodel-example.html
-class MaSqlRequeteEditable : public QSqlQueryModel
-{
-    Q_OBJECT
-
-public:
-    MaSqlRequeteEditable(QObject *parent = 0);
-
-    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
-};
-
-typedef struct _demande
-{
-    int boule;
-    int col;
-    int val;
-    QString st_col;
-    QStringList lst_boules;
-}stCurDemande;
-
-class DetailsResultatBloc_1 : public QObject
-{
-   Q_OBJECT
-private:
-    stCurDemande *pLaDemande;
-
-};
-
-class RefResultat : public QObject
+class SyntheseGenerale : public QObject
 {
     Q_OBJECT
 
 private:
-    stCurDemande *pLaDemande;
+    //stCurDemande *pLaDemande;
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
     int curzn;
 
-    QTabWidget *onglets;
     QGridLayout *disposition;
-    QStandardItemModel *sim_bloc1;
+    //QStandardItemModel *sim_bloc1;
 
     QTableView * tbv_bloc1;
     QSqlQueryModel *sqm_bloc1;
@@ -99,26 +48,14 @@ private:
     QTableView * tbv_bloc3;
     QSqlTableModel * sqtblm_bloc3;
 
-    QLineEdit *dist;
-    QGridLayout **G_design_onglet_2;
-    QStringList bSelection;
-
-    QComboBox * pCritere[4];
-    FiltreCombinaisons *pFiltre[4];
 
 public:
-    RefResultat(int zn, stTiragesDef *pConf, QMdiArea *visuel);
+    SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
-    QTableView *GetTable(void);
-    void MontreRechercheTirages(stCurDemande *pLaDemande);
-    QGridLayout * MonLayout_pFnDetailsTirages(int curId, stCurDemande *pLaDemande, int val);
-    QGridLayout * MonLayout_pFnSyntheseDetails(int curId, stCurDemande *pLaDemande, int);
     // penser au destructeur pour chaque pointeur
 
 public slots:
     void slot_MontreLesTirages(const QModelIndex & index);
-    void slot_NouvelleDistance(void);
-    void slot_FiltreSurNewCol(int colNum);
 
 
 
@@ -126,14 +63,10 @@ private:
     void DoBloc1(void);
     void DoBloc2(void);
     void DoBloc3(void);
-    void Synthese_1(QGridLayout *lay_return,QStringList &stl_tmp, int distance, bool ongSpecial);
-    void Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
 
-    QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
     QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);
 
     //QString SD_Tb2(QStringList boules, QString sqlTblRef, int dst);
 
 };
-QString SD_Tb2(QStringList boules, int lgn, int dst);
 #endif // REFRESULTAT_H

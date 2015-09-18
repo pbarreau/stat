@@ -5,7 +5,7 @@
 #include <QtSql>
 #include <QtGui>
 
-#include "refresultat.h"
+#include "monSqlEditable.h"
 
 MaSqlRequeteEditable::MaSqlRequeteEditable(QObject *parent)
     : QSqlQueryModel(parent)

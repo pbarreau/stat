@@ -212,7 +212,7 @@ private:
     //Ui::MainWindow *ui;
     QMdiArea *zoneCentrale;
     GererBase *DB_tirages;
-    RefResultat *syntheses;
+    SyntheseGenerale *syntheses;
     QTableView * qtv_s1;
 
     QMenu *fileMenu;
