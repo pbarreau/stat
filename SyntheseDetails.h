@@ -17,6 +17,7 @@
 
 typedef struct _demande
 {
+    int origine;
     int boule;
     int col;
     int val;
@@ -58,6 +59,7 @@ public slots:
 
 private:
     QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
+    QString DoSqlMsgRef_Tb2(QStringList &boules, int dst);
     void Synthese_1(QGridLayout *lay_return,QStringList &stl_tmp, int distance, bool ongSpecial);
     void Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
 

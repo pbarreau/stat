@@ -223,8 +223,21 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsTirages(int curId, stCurDeman
         distance = val;
     }
 
+    // Fonction Pour La requete de base (obtenir les tirages)
+    QString (SyntheseDetails::*ptrFunc[2])(QStringList &, int)=
+    {&SyntheseDetails::DoSqlMsgRef_Tb1,&SyntheseDetails::DoSqlMsgRef_Tb2};
+
     // Creer le code de la requete Sql
-    sql_msgRef = DoSqlMsgRef_Tb1(stl_tmp,distance);
+    int origine = pLaDemande->origine;
+    if(origine > 1 && origine <=3)
+    {
+        origine --;
+    }
+    else
+    {
+        origine = 0;
+    }
+    sql_msgRef = (this->*ptrFunc[origine])(stl_tmp,distance);
 
     sqm_tmp->setQuery(sql_msgRef);
 
@@ -378,7 +391,6 @@ void SyntheseDetails::Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, 
     qtv_tmp_2->setFixedSize(340,230);
 
     MonQtViewDelegate *la = new MonQtViewDelegate(dist,stl_tmp, onglets);
-    //QStandardItemModel *model=new QStandardItemModel(4, 2);
 
     QString sql_msgRef = "";
     MaSqlRequeteEditable *model = new MaSqlRequeteEditable;
@@ -430,10 +442,21 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
 
+    // Fonction Pour La requete de base (obtenir les tirages)
+    QString (SyntheseDetails::*ptrFunc[2])(QStringList &, int)=
+    {&SyntheseDetails::DoSqlMsgRef_Tb1,&SyntheseDetails::DoSqlMsgRef_Tb2};
 
-
-
-    sql_msgRef = DoSqlMsgRef_Tb1(stl_tmp,distance);
+    // Creer le code de la requete Sql
+    int origine = pLaDemande->origine;
+    if(origine > 1 && origine <=3)
+    {
+        origine --;
+    }
+    else
+    {
+        origine = 0;
+    }
+    sql_msgRef = (this->*ptrFunc[origine])(stl_tmp,distance);
     // Retirer le ; de la fin
     sql_msgRef.replace(";","");
 
@@ -610,6 +633,8 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
             tb1.b4=27 or
             tb1.b5=27
             )
+                    and
+                    ( tb1.jour_tirage like '%LUN%')
                     )
                 ) as tb2
             on (
@@ -624,9 +649,17 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
         #endif
             QString st_msg = "";
     QString st_cri1 = "";
+    QString st_cri2 = "";
 
     int loop = 5;//pMaConf->nbElmZone[curzn];
     st_cri1= GEN_Where_3(loop,"tb1.b",true,"=",boules,false,"or");
+
+        if(pLaDemande->col>1)
+        {
+          st_cri2 =
+                  "and (tb1.jour_tirage like '%"
+                  +pLaDemande->st_col+"%')" ;
+        }
 
     st_msg =
             "select tb3.id as Tid, tb5.id as Pid,"
@@ -643,7 +676,8 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
             "select *  from tirages as tb1 "
             "where"
             "("
-            +st_cri1+
+            +st_cri1
+            +st_cri2+
             ")"
             ") as tb2 "
             "on ("
@@ -660,3 +694,133 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
     return(st_msg);
 }
 
+QString SyntheseDetails::DoSqlMsgRef_Tb2(QStringList &boules, int dst)
+{
+#if 0
+    select tb3.id as Tid, tb5.id as Pid,
+   tb3.jour_tirage as J,
+   substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+   tb5.tip as C,
+   tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+   tb3.e1 as e1,
+   tb3.bp as P,
+   tb3.bg as G
+   from tirages as tb3, analyses as tb4, lstcombi as tb5
+   inner join
+
+
+( -- Recherche des lignes des tirages
+select * from
+(
+-- 2 : comptage des boules paires par lignes
+select tb1.*, count(tb2.B) as N from tirages as tb1
+left join
+(
+select id as B from Bnrz where (z1 not null and z1%2=0)
+)as tb2
+on
+(
+tb1.b1 = tb2.B or
+tb1.b2 = tb2.B or
+tb1.b3 = tb2.B or
+tb1.b4 = tb2.B or
+tb1.b5 = tb2.B
+)
+group by tb1.id
+) as ensemble_1
+where
+(
+ensemble_1.N = 2
+)
+)as tb2
+       on (
+   (tb3.id = tb2.id +
+   0
+   )
+    and
+    (tb4.id = tb3.id)
+    and
+    (tb4.id_poids = tb5.id)
+    );
+
+#endif
+    QString st_msg = "";
+    QString st_cri1 = "";
+    QString st_cri2 = "";
+
+
+    int val = pLaDemande->boule;
+    QStringList cri_msg;
+
+    int col=pLaDemande->col;
+
+
+    cri_msg <<"z1%2=0"<<"z1<26";
+    for(int j=0;j<=9;j++)
+    {
+      cri_msg<< "z1 like '%" + QString::number(j) + "'";
+    }
+
+
+    if(col>=2 && col <= 2+cri_msg.size())
+    {
+        col=col-2;
+    }
+    else
+    {
+        col=0;
+    }
+    st_cri1= cri_msg.at(col);
+
+    st_msg =
+            "select tb3.id as Tid, tb5.id as Pid,"
+            "tb3.jour_tirage as J,"
+            "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
+            "tb5.tip as C,"
+            "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
+            "tb3.e1 as e1,"
+            "tb3.bp as P,"
+            "tb3.bg as G "
+            "from tirages as tb3, analyses as tb4, lstcombi as tb5 "
+            "inner join"
+            "("
+            "select *  from "
+            "("
+            "select tb1.*, count(tb2.B) as N from tirages as tb1 "
+            "left join"
+            "("
+            "select id as B from Bnrz where (z1 not null and ("
+            +st_cri1+"))"
+            ")as tb2 "
+            "on"
+            "("
+            "tb1.b1 = tb2.B or "
+            "tb1.b2 = tb2.B or "
+            "tb1.b3 = tb2.B or "
+            "tb1.b4 = tb2.B or "
+            "tb1.b5 = tb2.B"
+            ")"
+            "group by tb1.id"
+            ") as ensemble_1 "
+            "where"
+            "("
+            "ensemble_1.N ="
+            +QString::number(val)+
+            ")"
+            ") as tb2 "
+            "on ("
+            "(tb3.id = tb2.id + "
+            +QString::number(dst)
+            +") "
+             "and"
+             "(tb4.id = tb3.id)"
+             "and"
+             "(tb4.id_poids = tb5.id)"
+             ");"
+            ;
+#ifndef QT_NO_DEBUG
+    qDebug() << st_msg;
+#endif
+
+    return(st_msg);
+}

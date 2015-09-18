@@ -153,6 +153,11 @@ void SyntheseGenerale::DoBloc2(void)
 
     disposition->addWidget(qtv_tmp,0,1,Qt::AlignLeft|Qt::AlignTop);
     tbv_bloc2=qtv_tmp;
+
+    // double click dans fenetre  pour afficher details boule
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+
 }
 
 void SyntheseGenerale::DoBloc3(void)
@@ -209,15 +214,30 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     QVariant vCol = pModel->headerData(col,Qt::Horizontal);
     QString headName = vCol.toString();
 
-    //if(index.internalPointer() == tbv_bloc1->model()->index(index.row(),index.column()).internalPointer())
-    if (col>0)
+    int selTable = 0;
+    int boule_id = 0;
+
+    if(index.internalPointer() == tbv_bloc1->model()->index(index.row(),index.column()).internalPointer())
+    {
+     selTable = 1;
+     boule_id = ligne +1;
+    }
+
+    if(index.internalPointer() == tbv_bloc2->model()->index(index.row(),index.column()).internalPointer())
+    {
+     selTable = 2;
+     boule_id = index.model()->index(index.row(),1).data().toInt();
+    }
+
+
+    if (col>0 && val)
     {
         stCurDemande *etude = new stCurDemande;
 
         QStringList stl_tmp;
-        int boule_id = ligne +1;
         stl_tmp << QString::number(boule_id);
 
+        etude->origine = selTable;
         etude->boule = boule_id;
         etude->col = col;
         etude->val = val;
