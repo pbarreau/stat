@@ -136,7 +136,7 @@ void SyntheseGenerale::DoBloc2(void)
     //qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setAlternatingRowColors(true);
-    qtv_tmp->setFixedSize(412,210);
+    qtv_tmp->setFixedSize(410,222);
 
     qtv_tmp->setModel(tblModel);
     qtv_tmp->setSortingEnabled(true);
@@ -181,7 +181,7 @@ void SyntheseGenerale::DoBloc3(void)
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setAlternatingRowColors(true);
-    qtv_tmp->setFixedSize(285,210);
+    qtv_tmp->setFixedSize(285,208);
 
     qtv_tmp->setModel(tblModel);
     qtv_tmp->setSortingEnabled(true);

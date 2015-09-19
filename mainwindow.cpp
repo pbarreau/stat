@@ -346,6 +346,7 @@ void MainWindow::fen_Tirages(void)
 
     zoneCentrale->addSubWindow(G_w_Tirages);
     G_w_Tirages->setVisible(true);
+    G_w_Tirages->showMinimized();
     //QMdiSubWindow *sousFenetre1 = zoneCentrale->addSubWindow(AfficherBase);
 
     // Simple click dans sous fenetre base
@@ -1828,12 +1829,12 @@ void MainWindow::fen_NewSqlResults(stTiragesDef *pConf)
     mainLayout->addWidget(tab_Top);
     qw_nsr->setWindowTitle("Analyses des boules");
     qw_nsr->setLayout(mainLayout);
-    qw_nsr->setFixedSize(700,500);
+    //qw_nsr->setFixedSize(700,500);
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
-    //subWindow->resize(493,329);
-    //subWindow->move(737,560);
+    subWindow->resize(700,535);
+    subWindow->move(0,0);
     qw_nsr->setVisible(true);
 }
 void MainWindow::fen_Parites(void)
@@ -1936,8 +1937,9 @@ void MainWindow::fen_Parites(void)
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_Parites);
-    subWindow->resize(493,329);
+    subWindow->resize(493,330);
     subWindow->move(737,560);
+    subWindow->showMinimized();
     //zoneCentrale->addSubWindow(qw_Parites);
     qw_Parites->setVisible(true);
 }
@@ -4500,8 +4502,8 @@ void MainWindow::TST_Graphe(stTiragesDef *pConf)
     tabWidget->setVisible(true);
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(tabWidget);
-    subWindow->resize(727,347);
-    subWindow->move(0,558);
+    subWindow->resize(700,330);
+    subWindow->move(0,538);
     tabWidget->show();
 }
 
