@@ -6,6 +6,7 @@
 #include <QtGui>
 
 #include <QHeaderView>
+#include <QVBoxLayout>
 
 #include "refresultat.h"
 #include "SyntheseDetails.h"
@@ -29,9 +30,111 @@ SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel
     pMaConf = pConf;
     curzn = zn;
 
+    DoTirages();
     DoBloc1();
     DoBloc2();
     DoBloc3();
+}
+
+void SyntheseGenerale::DoTirages(void)
+{
+#if 0
+    --debut requete tb3
+             select tb3.id as Tid, tb5.id as Pid,
+             tb3.jour_tirage as J,
+             substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+             tb5.tip as C,
+             tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+             tb3.e1 as e1
+             from tirages as tb3, analyses as tb4, lstcombi as tb5
+             inner join
+             (
+                 select *  from tirages as tb1
+                 ) as tb2
+             on (
+                 (tb3.id = tb2.id + 0)
+                 and
+                 (tb4.id = tb3.id)
+                 and
+                 (tb4.id_poids = tb5.id)
+                 );
+
+     --Fin requete tb3
+#endif
+            sqm_LesTirages = new QSqlQueryModel;
+            QTableView *qtv_tmp = new QTableView;
+
+
+            QString st_sqlReq =
+            "select tb3.id as Tid, tb5.id as Pid,"
+            "tb3.jour_tirage as J,"
+            "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
+            "tb5.tip as C,"
+            "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
+            "tb3.e1 as e1 "
+            "from tirages as tb3, analyses as tb4, lstcombi as tb5 "
+            "inner join"
+            "("
+                "select *  from tirages as tb1"
+                ") as tb2 "
+            "on ("
+                "(tb3.id = tb2.id + 0)"
+                "and"
+                "(tb4.id = tb3.id)"
+                "and"
+                "(tb4.id_poids = tb5.id)"
+                ");";
+
+    sqm_LesTirages->setQuery(st_sqlReq);
+
+    //qtv_tmp->setSortingEnabled(true);
+    //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+
+
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setFixedSize(470,200);
+
+    //QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    //m->setDynamicSortFilter(true);
+    //m->setSourceModel(sqm_LesTirages);
+    //qtv_tmp->setModel(m);
+    qtv_tmp->setModel(sqm_LesTirages);
+
+    qtv_tmp->hideColumn(0);
+    qtv_tmp->hideColumn(1);
+    for(int j=0;j<4;j++)
+        qtv_tmp->setColumnWidth(j,70);
+
+    qtv_tmp->setColumnWidth(4,60);
+
+    for(int j=5;j<=sqm_LesTirages->columnCount();j++)
+        qtv_tmp->setColumnWidth(j,35);
+
+
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    QVBoxLayout *vb_tmp = new QVBoxLayout;
+    QLabel * lab_tmp = new QLabel;
+    lab_tmp->setText("Tirages");
+    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    disposition->addLayout(vb_tmp,0,0,2,2,Qt::AlignLeft|Qt::AlignTop);
+
+
+    tbv_LesTirages=qtv_tmp;
+
+#if 0
+    // double click dans fenetre  pour afficher details boule
+    connect( tbv_bloc1, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+#endif
+
+
 }
 
 void SyntheseGenerale::DoBloc1(void)
@@ -85,7 +188,7 @@ void SyntheseGenerale::DoBloc1(void)
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(225,435);
+    qtv_tmp->setFixedSize(225,200);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -102,7 +205,12 @@ void SyntheseGenerale::DoBloc1(void)
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    disposition->addWidget(qtv_tmp,0,0,2,1,Qt::AlignLeft|Qt::AlignTop);
+    QVBoxLayout *vb_tmp = new QVBoxLayout;
+    QLabel * lab_tmp = new QLabel;
+    lab_tmp->setText("Repartitions");
+    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    disposition->addLayout(vb_tmp,0,1,2,1,Qt::AlignLeft|Qt::AlignTop);
 
 
     tbv_bloc1=qtv_tmp;
@@ -136,7 +244,7 @@ void SyntheseGenerale::DoBloc2(void)
     //qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setAlternatingRowColors(true);
-    qtv_tmp->setFixedSize(410,222);
+    qtv_tmp->setFixedSize(470,222);
 
     qtv_tmp->setModel(tblModel);
     qtv_tmp->setSortingEnabled(true);
@@ -151,7 +259,12 @@ void SyntheseGenerale::DoBloc2(void)
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
 
-    disposition->addWidget(qtv_tmp,0,1,Qt::AlignLeft|Qt::AlignTop);
+    QVBoxLayout *vb_tmp = new QVBoxLayout;
+    QLabel * lab_tmp = new QLabel;
+    lab_tmp->setText("Groupement");
+    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    disposition->addLayout(vb_tmp,2,0,Qt::AlignLeft|Qt::AlignTop);
     tbv_bloc2=qtv_tmp;
 
     // double click dans fenetre  pour afficher details boule
@@ -181,7 +294,7 @@ void SyntheseGenerale::DoBloc3(void)
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setAlternatingRowColors(true);
-    qtv_tmp->setFixedSize(285,208);
+    qtv_tmp->setFixedSize(285,222);
 
     qtv_tmp->setModel(tblModel);
     qtv_tmp->setSortingEnabled(true);
@@ -198,7 +311,14 @@ void SyntheseGenerale::DoBloc3(void)
     //htop=qtv_tmp->verticalHeader();
     //htop->setUserData();
 
-    disposition->addWidget(qtv_tmp,1,1,Qt::AlignLeft|Qt::AlignTop);
+    QVBoxLayout *vb_tmp = new QVBoxLayout;
+    QLabel * lab_tmp = new QLabel;
+    lab_tmp->setText("Autre");
+    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    disposition->addLayout(vb_tmp,2,1,Qt::AlignLeft|Qt::AlignTop);
+
+    //disposition->addWidget(qtv_tmp,1,1,Qt::AlignLeft|Qt::AlignTop);
     tbv_bloc3=qtv_tmp;
 }
 

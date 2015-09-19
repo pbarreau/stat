@@ -129,7 +129,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Creation de La table de reference
 
     // Creation sous fenetre pour mettre donnees de base
-    fen_Tirages();
+    FEN_Old_Tirages();
 
     /// --------- rem 1
 
@@ -140,7 +140,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     //fen_Ecarts();
 
     // Creation fenetre resultat
-    fen_MesPossibles();
+    FEN_Ecarts();
 
     // Creation fenetre pour parite
     fen_Parites();
@@ -186,9 +186,9 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     // Creation fenetre pour memoriser la selection
     // Et affichage des combinaisons
-    fen_MaSelection();
+    FEN_ChoisirBoules();
     // Creation sous fenetre des voisins
-    fen_Voisins();
+    FEN_Voisins();
 
     // Ordre arrivee des boules ?
     DB_tirages->CouvertureBase(G_sim_Ecarts,&configJeu);
@@ -245,7 +245,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     TST_PrevisionType(NE_FDJ::critere_enemble,&configJeu);
 
 
-    TST_Graphe(&configJeu);
+    FEN_Graphe(&configJeu);
     /// ---- fin rem 3
     //setCentralWidget(zoneCentrale);
 
@@ -263,7 +263,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     NEW_ChoixPourTiragesSuivant(TB_WIN,4,&configJeu);
 
     NEW_RepartionBoules(&configJeu);
-    fen_NewSqlResults(&configJeu);
+    fen_NewTirages(&configJeu);
 
 
 #if 0
@@ -281,7 +281,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 }
 
 
-void MainWindow::fen_Tirages(void)
+void MainWindow::FEN_Old_Tirages(void)
 {
     // Onglet pere
     QTabWidget *tab_Top = new QTabWidget;
@@ -431,15 +431,26 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     QString st_msg ="";
 
 
-    st_msg = "select id, tip, count(t1.id_poids)as tot "
-             "from ("
-             "SELECT lstcombi.id,lstcombi.tip,analyses.id_poids "
+    st_msg = "select t1.id as id, t1.tip as Repartition, count(t1.id_poids)as T, "
+             "count (case when t1.J like 'lun%' then 1 end)as LUN, "
+             "count (case when t1.J like 'mer%' then 1 end)as MER , "
+             "count (case when t1.J like 'sam%' then 1 end)as SAM  "
+             " from ( "
+             "SELECT lstcombi.id,lstcombi.tip,analyses.id_poids,analyses.id as id2, (case when analyses.id is null then null else  "
+             "( "
+             " select tirages.jour_tirage from tirages where (tirages.id = analyses.id) "
+             ") "
+             "end) as J "
              "FROM lstcombi "
-             "LEFT JOIN analyses ON lstcombi.id = analyses.id_poids"
-             ")as t1 "
-             "GROUP BY tip having ((t1.id=t1.id_poids) or (t1.id_poids is null)) "
-             "order by id  asc;";
-    //             "order by tot  desc, tip desc;";
+             "LEFT JOIN analyses "
+             "ON  "
+             "( "
+             " (lstcombi.id = analyses.id_poids)  "
+             ") "
+             " )as t1 "
+             " GROUP BY tip having (((t1.id=t1.id_poids) or (t1.id_poids is null)))  "
+             " order by id asc; ";
+
 
     sqm_r1->setQuery(st_msg);
     sqm_r1->setHeaderData(1,Qt::Horizontal,"Repartition");
@@ -456,9 +467,10 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
 
     //tv_r1->setModel(m);
-    tv_r1->setColumnWidth(0,50);
-    tv_r1->setColumnWidth(1,80);
-    tv_r1->setColumnWidth(2,50);
+    tv_r1->setColumnWidth(1,60);
+    for(int j=2;j<=sqm_r1->columnCount();j++)
+        tv_r1->setColumnWidth(j,35);
+
 
     tv_r1->hideColumn(0);
     tv_r1->setSortingEnabled(true);
@@ -976,7 +988,7 @@ QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
 #endif
 //--------
 
-void MainWindow::fen_Voisins(void)
+void MainWindow::FEN_Voisins(void)
 {
     QWidget *qw_Voisins = new QWidget;
 
@@ -1013,8 +1025,8 @@ void MainWindow::fen_Voisins(void)
     qw_Voisins->setWindowTitle("Voisins de selection");
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_Voisins);
-    subWindow->resize(580,554);
-    subWindow->move(1089,0);
+    subWindow->resize(580,570);
+    subWindow->move(1180,0);
     //zoneCentrale->addSubWindow(qw_Voisins);
     qw_Voisins->setVisible(true);
 }
@@ -1142,7 +1154,7 @@ void MainWindow::fen_Voisins(void)
 }
 #endif
 
-void MainWindow::fen_MaSelection(void)
+void MainWindow::FEN_ChoisirBoules(void)
 {
     QTabWidget *tabWidget = new QTabWidget;
 
@@ -1161,14 +1173,14 @@ void MainWindow::fen_MaSelection(void)
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_MaSelection);
-    subWindow->resize(405,329);
-    subWindow->move(1244,558);
+    subWindow->resize(405,300);
+    subWindow->move(1200,580);
 
     qw_MaSelection->setVisible(true);
     qw_MaSelection->show();
 
 }
-void MainWindow::fen_MesPossibles(void)
+void MainWindow::FEN_Ecarts(void)
 {
     QWidget *w_DataFenetre = new QWidget;
     // Onglet pere
@@ -1220,8 +1232,8 @@ void MainWindow::fen_MesPossibles(void)
     w_DataFenetre->setWindowTitle("Boules");
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_DataFenetre);
-    subWindow->resize(350,554);
-    subWindow->move(737,0);
+    subWindow->resize(350,570);
+    subWindow->move(830,0);
 
     //zoneCentrale->addSubWindow(w_DataFenetre);
     w_DataFenetre->setVisible(true);
@@ -1801,7 +1813,7 @@ QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
     return(lay_return);
 }
 
-void MainWindow::fen_NewSqlResults(stTiragesDef *pConf)
+void MainWindow::fen_NewTirages(stTiragesDef *pConf)
 {
     QWidget *qw_nsr = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
@@ -1833,7 +1845,7 @@ void MainWindow::fen_NewSqlResults(stTiragesDef *pConf)
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
-    subWindow->resize(700,535);
+    subWindow->resize(830,570);
     subWindow->move(0,0);
     qw_nsr->setVisible(true);
 }
@@ -1937,8 +1949,8 @@ void MainWindow::fen_Parites(void)
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_Parites);
-    subWindow->resize(493,330);
-    subWindow->move(737,560);
+    subWindow->resize(493,280);
+    subWindow->move(350,580);
     subWindow->showMinimized();
     //zoneCentrale->addSubWindow(qw_Parites);
     qw_Parites->setVisible(true);
@@ -4483,7 +4495,7 @@ void MainWindow::TST_MettrePonderationSurTirages(void)
 
 }
 
-void MainWindow::TST_Graphe(stTiragesDef *pConf)
+void MainWindow::FEN_Graphe(stTiragesDef *pConf)
 {
     // Essai de mise en onglet des  graphiques
     QTabWidget *tabWidget = new QTabWidget;
@@ -4502,8 +4514,8 @@ void MainWindow::TST_Graphe(stTiragesDef *pConf)
     tabWidget->setVisible(true);
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(tabWidget);
-    subWindow->resize(700,330);
-    subWindow->move(0,538);
+    subWindow->resize(350,280);
+    subWindow->move(0,580);
     tabWidget->show();
 }
 

@@ -39,6 +39,9 @@ private:
     QGridLayout *disposition;
     //QStandardItemModel *sim_bloc1;
 
+    QTableView * tbv_LesTirages;
+    QSqlQueryModel *sqm_LesTirages;
+
     QTableView * tbv_bloc1;
     QSqlQueryModel *sqm_bloc1;
 
@@ -60,6 +63,7 @@ public slots:
 
 
 private:
+    void DoTirages(void);
     void DoBloc1(void);
     void DoBloc2(void);
     void DoBloc3(void);

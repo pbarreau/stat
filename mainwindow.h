@@ -145,14 +145,14 @@ private:
     bool NEW_AnalyserCeTirage(int idTirage,  QString stTblRef, int zone, stTiragesDef *pConf);
     bool NEW_FaireBilan(int idTirage,  QString stTblRef, int zone, stTiragesDef *pConf, int nbRang = 1);
 
-    void fen_Voisins(void);
+    void FEN_Voisins(void);
     void fen_LstCouv(void);
-    void fen_Tirages(void);
+    void FEN_Old_Tirages(void);
     void fen_Ecarts(void);
-    void fen_MesPossibles(void);
+    void FEN_Ecarts(void);
     void fen_Parites(void);
-    void fen_MaSelection(void);
-    void fen_NewSqlResults(stTiragesDef *pConf);
+    void FEN_ChoisirBoules(void);
+    void fen_NewTirages(stTiragesDef *pConf);
 
     int BidFCId_MesPossibles(int col_id, QTableView *tbv_ptr);
     void ft_LancerTri(int tri_id);
@@ -174,7 +174,7 @@ private:
     void TST_PonderationCombi(int delta);
     void TST_AffectePoidsATirage(stTiragesDef *ref);
     void TST_MettrePonderationSurTirages(void);
-    void TST_Graphe(stTiragesDef *pConf);
+    void FEN_Graphe(stTiragesDef *pConf);
     UnConteneurDessin *TST_Graphe_1(stTiragesDef *pConf);
     UnConteneurDessin * TST_Graphe_2(stTiragesDef *pConf);
     UnConteneurDessin * TST_Graphe_3(stTiragesDef *pConf);
