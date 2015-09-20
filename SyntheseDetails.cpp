@@ -402,7 +402,13 @@ void SyntheseDetails::Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, 
     qtv_tmp_2->setFixedSize(340,230);
 
     // Permet le traitement des requetes pour les etoiles
-    MonQtViewDelegate *la = new MonQtViewDelegate(dist,pLaDemande, onglets);
+    stObjDetail *config = new stObjDetail;
+    config->pObjet = this;
+    config->pDist = dist;
+    config->pOnglet =onglets;
+    config->pParamObj =pLaDemande;
+
+    MonQtViewDelegate *la = new MonQtViewDelegate(config);
 
     QString sql_msgRef = "";
     MaSqlRequeteEditable *model = new MaSqlRequeteEditable;
@@ -461,8 +467,8 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
             &SyntheseDetails::DoSqlMsgRef_Tb3};
 
     QString (SyntheseDetails::*ptrFuncN2[3])(QStringList &, QString &,int)=
-    {&SyntheseDetails::SD_Tb1,
-            &SyntheseDetails::SD_Tb1,
+    {&SyntheseDetails::SD_Tb1_1,
+            &SyntheseDetails::SD_Tb1_3,
             &SyntheseDetails::SD_Tb1_3};
 
     // Creer le code de la requete Sql
@@ -518,7 +524,7 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
 }
 
 //Synthese detaille table 1
-QString SyntheseDetails::SD_Tb1(QStringList &boules, QString &sqlTblRef,int dst)
+QString SyntheseDetails::SD_Tb1_1(QStringList &boules, QString &sqlTblRef,int dst)
 {
 #if 0
     -- Requete comptage du resultat precedent
@@ -600,7 +606,7 @@ QString SyntheseDetails::SD_Tb1(QStringList &boules, QString &sqlTblRef,int dst)
     }
 
     sql_msg =
-            "select tbleft.boule as B, count(tbright.Tid) as T, "
+            "select tbleft.boule as B, count(tbright.Tid1) as T, "
             "count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,"
             "count(CASE WHEN  J like 'mercredi%' then 1 end) as MER,"
             "count(CASE WHEN  J like 'same%' then 1 end) as SAM "
@@ -619,6 +625,21 @@ QString SyntheseDetails::SD_Tb1(QStringList &boules, QString &sqlTblRef,int dst)
             ")"
             + st_cr3 +
             ") group by tbleft.boule;";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << sql_msg;
+#endif
+
+    return sql_msg;
+}
+QString SyntheseDetails::SD_Tb1_2(QStringList &boules, QString &sqlTblRef,int dst)
+{
+    QString sql_msg ="";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << sqlTblRef;
+#endif
+
 
 #ifndef QT_NO_DEBUG
     qDebug() << sql_msg;
@@ -746,7 +767,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
     }
 
     st_msg =
-            "select tb3.id as Tid, tb5.id as Pid,"
+            "select tb3.id as Tid1, tb5.id as Pid,"
             "tb3.jour_tirage as J,"
             "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
             "tb5.tip as C,"
@@ -865,7 +886,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb2(QStringList &boules, int dst)
     st_cri1= cri_msg.at(col);
 
     st_msg =
-            "select tb3.id as Tid, tb5.id as Pid,"
+            "select tb3.id as Tid1, tb5.id as Pid,"
             "tb3.jour_tirage as J,"
             "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
             "tb5.tip as C,"

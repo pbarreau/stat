@@ -4,17 +4,28 @@
 #include <QStyledItemDelegate>
 #include "SyntheseDetails.h"
 
+typedef struct _pDefPere
+{
+   SyntheseDetails *pObjet;
+   stCurDemande *pParamObj;
+   QTabWidget *pOnglet;
+   QLineEdit * pDist;
+
+}stObjDetail;
+
 // Test qview dans qView
 class MonQtViewDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 private:
+    stObjDetail *pParent;
     QTabWidget *pereOnglet;
     stCurDemande *pLaConfig;
     QLineEdit * distancePerso;
 
 public:
-    MonQtViewDelegate(QLineEdit *pDist, stCurDemande *pConfig, QTabWidget *memo =0, QObject *parent = 0);
+
+    MonQtViewDelegate(stObjDetail *pDef, QObject *parent = 0);
 
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
                           const QModelIndex &index) const Q_DECL_OVERRIDE;
@@ -25,6 +36,10 @@ public:
 
     void updateEditorGeometry(QWidget *editor,
                               const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
+
+    QString SD_Tb2_1(QStringList &boules, int lgn, int dst) const;
+    QString SD_Tb2_2(QStringList &boules, int lgn, int dst)const;
+
 };
 
 

@@ -53,6 +53,8 @@ public:
     QGridLayout * MonLayout_pFnDetailsTirages(int curId, stCurDemande *pLaDemande, int val);
     QGridLayout * MonLayout_pFnSyntheseDetails(int curId, stCurDemande *pLaDemande, int);
     // penser au destructeur pour chaque pointeur
+    QString DoSqlMsgRef_Tb2(QStringList &boules, int dst);
+
 
 public slots:
     void slot_NouvelleDistance(void);
@@ -60,12 +62,12 @@ public slots:
 
 private:
     QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
-    QString DoSqlMsgRef_Tb2(QStringList &boules, int dst);
     QString DoSqlMsgRef_Tb3(QStringList &boules, int dst);
     void Synthese_1(QGridLayout *lay_return,QStringList &stl_tmp, int distance, bool ongSpecial);
     void Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
 
-    QString SD_Tb1(QStringList &boules, QString &sqlTblRef, int dst);
+    QString SD_Tb1_1(QStringList &boules, QString &sqlTblRef, int dst);
+    QString SD_Tb1_2(QStringList &boules, QString &sqlTblRef, int dst);
     QString SD_Tb1_3(QStringList &boules, QString &sqlTblRef, int dst);
 
 
