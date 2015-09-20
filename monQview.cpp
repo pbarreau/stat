@@ -11,13 +11,13 @@
 #include "monQview.h"
 #include "SyntheseDetails.h"
 
-QString SD_Tb2(QStringList boules, int lgn, int dst);
+QString SD_Tb2(QStringList &boules, int lgn, int dst);
 
-MonQtViewDelegate::MonQtViewDelegate(QLineEdit *pDist, QStringList &lstChoix, QTabWidget *memo,QObject *parent)
+MonQtViewDelegate::MonQtViewDelegate(QLineEdit *pDist, stCurDemande *pConfig, QTabWidget *memo,QObject *parent)
     : QStyledItemDelegate(parent)
 {
     pereOnglet = memo;
-    lesBoules = lstChoix;
+    pLaConfig = pConfig;
     distancePerso = pDist;
 }
 
@@ -33,18 +33,26 @@ QWidget *MonQtViewDelegate::createEditor(QWidget *parent,
 
         int ref = pereOnglet->currentIndex();
         int distance[4]={0,-1,1,-2};
-        QStringList lst_boules = lesBoules;
+        QStringList lst_boules = pLaConfig->lst_boules;
         int ligne = index.row()+1;
 
 #ifndef QT_NO_DEBUG
-        qDebug() << ref;
+        qDebug() << "Reference Onglet ->" + QString::number(ref);
 #endif
+
+        // selon le type de demande choisir une reference de requete
+        // Fonction Pour La requete de base (obtenir les tirages)
+        QString (*ptrFuncN2_2[3])(QStringList &, int,int)=
+        {&SD_Tb2,
+                &SD_Tb2,
+                &SD_Tb2};
+
 
         if(ref ==3)
         {
             distance[ref]= distancePerso->text().toInt()*-1;
         }
-        QString sql_msgRef = SD_Tb2(lst_boules,ligne,distance[ref]);
+        QString sql_msgRef = (*ptrFuncN2_2)(lst_boules,ligne,distance[ref]);
 
         editor->setSortingEnabled(true);
         editor->sortByColumn(0,Qt::AscendingOrder);
@@ -91,7 +99,7 @@ void MonQtViewDelegate::updateEditorGeometry(QWidget *editor,
     editor->setGeometry(option.rect);
 }
 
-QString SD_Tb2(QStringList boules, int lgn, int dst)
+QString SD_Tb2(QStringList &boules, int lgn, int dst)
 {
 #if 0
 

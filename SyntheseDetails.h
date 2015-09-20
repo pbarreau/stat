@@ -21,6 +21,7 @@ typedef struct _demande
     int boule;
     int col;
     int val;
+    QString st_titre;
     QString st_col;
     QStringList lst_boules;
 }stCurDemande;
@@ -60,10 +61,13 @@ public slots:
 private:
     QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
     QString DoSqlMsgRef_Tb2(QStringList &boules, int dst);
+    QString DoSqlMsgRef_Tb3(QStringList &boules, int dst);
     void Synthese_1(QGridLayout *lay_return,QStringList &stl_tmp, int distance, bool ongSpecial);
     void Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
 
-    QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);
+    QString SD_Tb1(QStringList &boules, QString &sqlTblRef, int dst);
+    QString SD_Tb1_3(QStringList &boules, QString &sqlTblRef, int dst);
+
 
 };
 

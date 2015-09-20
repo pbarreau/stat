@@ -40,32 +40,32 @@ void SyntheseGenerale::DoTirages(void)
 {
 #if 0
     --debut requete tb3
-             select tb3.id as Tid, tb5.id as Pid,
-             tb3.jour_tirage as J,
-             substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
-             tb5.tip as C,
-             tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
-             tb3.e1 as e1
-             from tirages as tb3, analyses as tb4, lstcombi as tb5
-             inner join
-             (
-                 select *  from tirages as tb1
-                 ) as tb2
-             on (
-                 (tb3.id = tb2.id + 0)
-                 and
-                 (tb4.id = tb3.id)
-                 and
-                 (tb4.id_poids = tb5.id)
-                 );
+            select tb3.id as Tid, tb5.id as Pid,
+            tb3.jour_tirage as J,
+            substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+            tb5.tip as C,
+            tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+            tb3.e1 as e1
+            from tirages as tb3, analyses as tb4, lstcombi as tb5
+            inner join
+            (
+                select *  from tirages as tb1
+                ) as tb2
+            on (
+                (tb3.id = tb2.id + 0)
+                and
+                (tb4.id = tb3.id)
+                and
+                (tb4.id_poids = tb5.id)
+                );
 
-     --Fin requete tb3
-#endif
+    --Fin requete tb3
+        #endif
             sqm_LesTirages = new QSqlQueryModel;
-            QTableView *qtv_tmp = new QTableView;
+    QTableView *qtv_tmp = new QTableView;
 
 
-            QString st_sqlReq =
+    QString st_sqlReq =
             "select tb3.id as Tid, tb5.id as Pid,"
             "tb3.jour_tirage as J,"
             "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
@@ -75,15 +75,15 @@ void SyntheseGenerale::DoTirages(void)
             "from tirages as tb3, analyses as tb4, lstcombi as tb5 "
             "inner join"
             "("
-                "select *  from tirages as tb1"
-                ") as tb2 "
+            "select *  from tirages as tb1"
+            ") as tb2 "
             "on ("
-                "(tb3.id = tb2.id + 0)"
-                "and"
-                "(tb4.id = tb3.id)"
-                "and"
-                "(tb4.id_poids = tb5.id)"
-                ");";
+            "(tb3.id = tb2.id + 0)"
+            "and"
+            "(tb4.id = tb3.id)"
+            "and"
+            "(tb4.id_poids = tb5.id)"
+            ");";
 
     sqm_LesTirages->setQuery(st_sqlReq);
 
@@ -336,18 +336,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
     int selTable = 0;
     int boule_id = 0;
-
-    if(index.internalPointer() == tbv_bloc1->model()->index(index.row(),index.column()).internalPointer())
-    {
-     selTable = 1;
-     boule_id = ligne +1;
-    }
-
-    if(index.internalPointer() == tbv_bloc2->model()->index(index.row(),index.column()).internalPointer())
-    {
-     selTable = 2;
-     boule_id = index.model()->index(index.row(),1).data().toInt();
-    }
+    QString st_titre= "";
 
 
     if (col>0 && val)
@@ -355,13 +344,42 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
         stCurDemande *etude = new stCurDemande;
 
         QStringList stl_tmp;
+        QString st_lesBoules = "";
+
+        if(index.internalPointer() == tbv_bloc1->model()->index(index.row(),index.column()).internalPointer())
+        {
+            selTable = 1;
+            boule_id = ligne +1;
+        }
+
+        if(index.internalPointer() == tbv_bloc2->model()->index(index.row(),index.column()).internalPointer())
+        {
+            selTable = 2;
+            boule_id = index.model()->index(index.row(),1).data().toInt();
+        }
+
         stl_tmp << QString::number(boule_id);
+
+        for(int j=0;j<stl_tmp.size();j++)
+        {
+            st_lesBoules= st_lesBoules + stl_tmp.at(j)+",";
+        }
+        st_lesBoules.remove(st_lesBoules.length()-1,1);
+
+
+        if(selTable == 1)
+            st_titre=st_lesBoules;
+
+        if(selTable == 2)
+            st_titre=st_lesBoules+
+                    " de type " + headName;
 
         etude->origine = selTable;
         etude->boule = boule_id;
         etude->col = col;
         etude->val = val;
         etude->st_col = headName;
+        etude->st_titre = st_titre;
         etude->lst_boules = stl_tmp;
 
         // Nouvelle de fenetre de detail de cette boule

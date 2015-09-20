@@ -2,6 +2,7 @@
 #define MONQVIEW_H
 
 #include <QStyledItemDelegate>
+#include "SyntheseDetails.h"
 
 // Test qview dans qView
 class MonQtViewDelegate : public QStyledItemDelegate
@@ -9,11 +10,11 @@ class MonQtViewDelegate : public QStyledItemDelegate
     Q_OBJECT
 private:
     QTabWidget *pereOnglet;
-    QStringList lesBoules;
+    stCurDemande *pLaConfig;
     QLineEdit * distancePerso;
 
 public:
-    MonQtViewDelegate(QLineEdit *pDist,QStringList &lstChoix, QTabWidget *memo =0, QObject *parent = 0);
+    MonQtViewDelegate(QLineEdit *pDist, stCurDemande *pConfig, QTabWidget *memo =0, QObject *parent = 0);
 
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
                           const QModelIndex &index) const Q_DECL_OVERRIDE;

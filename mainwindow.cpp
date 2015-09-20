@@ -11,6 +11,7 @@
 #include "pointtirage.h"
 #include "refresultat.h"
 #include "filtrecombinaisons.h"
+#include "SyntheseDetails.h"
 
 //#include <QtPlugin>
 //Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
@@ -421,13 +422,35 @@ void MaQtvDelegation::paint(QPainter *painter, const QStyleOptionViewItem &optio
 
 void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 {
+#if 0
+    select t1.id as id, t1.tip as Repartition, count(t1.id_poids)as T,
+    count (case when t1.J like 'lun%' then 1 end)as LUN,
+    count (case when t1.J like 'mer%' then 1 end)as MER ,
+    count (case when t1.J like 'sam%' then 1 end)as SAM
+     from (
+    SELECT lstcombi.id,lstcombi.tip,analyses.id_poids,analyses.id as id2, (case when analyses.id is null then null else
+    (
+     select tirages.jour_tirage from tirages where (tirages.id = analyses.id)
+    )
+    end) as J
+    FROM lstcombi
+    LEFT JOIN analyses
+    ON
+    (
+     (lstcombi.id = analyses.id_poids)
+    )
+     )as t1
+     GROUP BY tip having (((t1.id=t1.id_poids) or (t1.id_poids is null)))
+     order by id asc;
+#endif
+
     QGridLayout *lay_return = new QGridLayout;
     QWidget *wTop_1 = new QWidget;
     //QFormLayout * design_onglet_1 = MonLayout_VoisinsPresent();
 
 
     QSqlQueryModel *sqm_r1 = new QSqlQueryModel;
-    QTableView *tv_r1 = new QTableView;
+    QTableView *qtv_tmp = new QTableView;
     QString st_msg ="";
 
 
@@ -436,7 +459,8 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
              "count (case when t1.J like 'mer%' then 1 end)as MER , "
              "count (case when t1.J like 'sam%' then 1 end)as SAM  "
              " from ( "
-             "SELECT lstcombi.id,lstcombi.tip,analyses.id_poids,analyses.id as id2, (case when analyses.id is null then null else  "
+             "SELECT lstcombi.id,lstcombi.tip,analyses.id_poids,analyses.id as id2, "
+             "(case when analyses.id is null then null else  "
              "( "
              " select tirages.jour_tirage from tirages where (tirages.id = analyses.id) "
              ") "
@@ -463,25 +487,28 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;
     FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
-    fltComb_tmp->setFiltreConfig(sqm_r1,tv_r1,1);
+    fltComb_tmp->setFiltreConfig(sqm_r1,qtv_tmp,1);
     FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
 
     //tv_r1->setModel(m);
-    tv_r1->setColumnWidth(1,60);
+    qtv_tmp->setColumnWidth(1,65);
     for(int j=2;j<=sqm_r1->columnCount();j++)
-        tv_r1->setColumnWidth(j,35);
+        qtv_tmp->setColumnWidth(j,35);
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
 
-    tv_r1->hideColumn(0);
-    tv_r1->setSortingEnabled(true);
-    tv_r1->sortByColumn(0,Qt::AscendingOrder);
-    tv_r1->setAlternatingRowColors(true);
-    tv_r1->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tv_r1->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->hideColumn(0);
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
 
     //tabN1->addTab(tv_r1,"Combi");
     lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
-    lay_return->addWidget(tv_r1,1,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
     wTop_1->setLayout(lay_return);
 
     tabN1->addTab(wTop_1,"Combi");;
@@ -498,7 +525,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
         int value = selection.value(1).toInt();
         //tv_r1->setItemDelegate(new MaQtvDelegation(NULL,value-1,1));
 
-        QAbstractItemModel *mon_model = tv_r1->model();
+        QAbstractItemModel *mon_model = qtv_tmp->model();
         //QStandardItemModel *dest= (QStandardItemModel*) mon_model;
         QModelIndex mdi_item1 = mon_model->index(0,0);
 
@@ -507,15 +534,15 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
             mdi_item1 = mon_model->index(value-1,1);
             QPersistentModelIndex depart(mdi_item1);
 
-            tv_r1->selectionModel()->setCurrentIndex(mdi_item1, QItemSelectionModel::NoUpdate);
-            tv_r1->scrollTo(mdi_item1);
-            tv_r1->setItemDelegate(new MaQtvDelegation(depart));
+            qtv_tmp->selectionModel()->setCurrentIndex(mdi_item1, QItemSelectionModel::NoUpdate);
+            qtv_tmp->scrollTo(mdi_item1);
+            qtv_tmp->setItemDelegate(new MaQtvDelegation(depart));
         }
     }
 
 
     // click dans fenetre
-    connect( tv_r1, SIGNAL( doubleClicked(QModelIndex)) ,
+    connect( qtv_tmp, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( slot_UneCombiChoisie (QModelIndex) ) );
 
 
@@ -2056,18 +2083,45 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
 
     int clef = index.model()->index(ligne,0).data().toInt();
 
+    QString msg = index.model()->index(ligne,1).data().toString();
+
     if(colon == 1)
     {
-        QString msg = index.model()->index(ligne,1).data().toString();
         msg = "Critere : " + msg;
         G_lab_CritereCombi->setText(msg);
         G_CombiKey = clef;
         TST_CombiVoisin(clef);
     }
 
-    if(colon == 2)
+    if(colon == -1)
     {
         VUE_ListeTiragesFromDistribution(clef,5,0);
+    }
+
+    // Pour bloquer
+    if(colon >=2)
+    {
+        int val = index.data().toInt();
+        const QAbstractItemModel * pModel = index.model();
+        QVariant vCol = pModel->headerData(colon,Qt::Horizontal);
+        QString headName = vCol.toString();
+
+        stCurDemande *etude = new stCurDemande;
+
+        QStringList stl_tmp;
+        stl_tmp << QString::number(ligne+1);
+
+        etude->origine = 3;
+        etude->boule = ligne+1;
+        etude->col = colon;
+        etude->val = val;
+        etude->st_col = headName;
+        etude->st_titre = msg;
+        etude->lst_boules = stl_tmp;
+
+        // Nouvelle de fenetre de detail de cette boule
+        SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale);
+
     }
 
 
