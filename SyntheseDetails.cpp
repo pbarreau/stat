@@ -1081,6 +1081,7 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
     int boule_id = index.model()->index(index.row(),0).data().toInt();
     QString st_titre= "";
 
+    int origine = pLaDemande->origine;
 
     if (col>0 && val)
     {
