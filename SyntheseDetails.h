@@ -59,6 +59,7 @@ public:
 public slots:
     void slot_NouvelleDistance(void);
     void slot_FiltreSurNewCol(int colNum);
+    void slot_ZoomTirages(const QModelIndex & index);
 
 private:
     QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);

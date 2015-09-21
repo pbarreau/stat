@@ -521,6 +521,12 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
     //lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
     lay_return->addWidget(titre_1,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
+
+    // Connection du double click dans table voisins
+    // double click dans fenetre  pour afficher details boule
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_ZoomTirages( QModelIndex) ) );
+
 }
 
 //Synthese detaille table 1
@@ -1057,4 +1063,48 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
 #endif
 
     return(st_msg);
+}
+
+void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
+{
+    void *pSource = index.internalPointer();
+    quintptr pId = index.internalId();
+
+    int ligne = index.row();
+    int col = index.column();
+    int val = index.data().toInt();
+    const QAbstractItemModel * pModel = index.model();
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
+
+    int selTable = 1;
+    int boule_id = index.model()->index(index.row(),0).data().toInt();
+    QString st_titre= "";
+
+
+    if (col>0 && val)
+    {
+        stCurDemande *etude = new stCurDemande;
+
+        QStringList stl_tmp = pLaDemande->lst_boules;
+        QString st_lesBoules = "";
+        stl_tmp << QString::number(boule_id);
+
+        for(int j=0;j<stl_tmp.size();j++)
+        {
+            st_lesBoules= st_lesBoules + stl_tmp.at(j)+",";
+        }
+        st_lesBoules.remove(st_lesBoules.length()-1,1);
+        st_titre = st_lesBoules;
+        etude->origine = selTable;
+        etude->boule = boule_id;
+        etude->col = col;
+        etude->val = val;
+        etude->st_col = headName;
+        etude->st_titre = st_titre;
+        etude->lst_boules = stl_tmp;
+
+        // Nouvelle de fenetre de detail de cette boule
+        SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran);
+    }
 }
