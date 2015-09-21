@@ -158,7 +158,9 @@ void SyntheseGenerale::DoBloc1(void)
 
 
     sqm_bloc1 = new QSqlQueryModel;
-    QTableView *qtv_tmp = new QTableView;
+    QTableView *qtv_tmp ;
+    tbv_bloc1 = new QTableView;
+    qtv_tmp=tbv_bloc1;
 
     QString st_msg1 =
             "select tb1.boule as B, count(tb2.id) as T, "
@@ -213,7 +215,6 @@ void SyntheseGenerale::DoBloc1(void)
     disposition->addLayout(vb_tmp,0,1,2,1,Qt::AlignLeft|Qt::AlignTop);
 
 
-    tbv_bloc1=qtv_tmp;
 
     // double click dans fenetre  pour afficher details boule
     connect( tbv_bloc1, SIGNAL(doubleClicked(QModelIndex)) ,
@@ -229,6 +230,7 @@ void SyntheseGenerale::DoBloc2(void)
     tblModel->select();
     sqtblm_bloc2 = tblModel;
 
+
     // Associer toutes les valeurs a la vue
     while (tblModel->canFetchMore())
     {
@@ -236,7 +238,9 @@ void SyntheseGenerale::DoBloc2(void)
     }
 
     // Attach it to the view
-    QTableView *qtv_tmp  = new QTableView;
+    QTableView *qtv_tmp ;
+    tbv_bloc2 = new QTableView;
+    qtv_tmp=tbv_bloc2;
 
     // Gestion du QTableView
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -265,10 +269,10 @@ void SyntheseGenerale::DoBloc2(void)
     vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
     vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
     disposition->addLayout(vb_tmp,2,0,Qt::AlignLeft|Qt::AlignTop);
-    tbv_bloc2=qtv_tmp;
+
 
     // double click dans fenetre  pour afficher details boule
-    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+    connect( tbv_bloc2, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
 }
@@ -346,19 +350,24 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
         QStringList stl_tmp;
         QString st_lesBoules = "";
 
-        if(index.internalPointer() == tbv_bloc1->model()->index(index.row(),index.column()).internalPointer())
-        {
-            selTable = 1;
-            boule_id = ligne +1;
-        }
 
-        if(index.internalPointer() == tbv_bloc2->model()->index(index.row(),index.column()).internalPointer())
+        //if(index.internalPointer() == tbv_bloc2->model()->index(index.row(),index.column()).internalPointer())
+            if(index.internalPointer() == tbv_bloc2->model()->index(0,0).internalPointer())
         {
             selTable = 2;
             boule_id = index.model()->index(index.row(),1).data().toInt();
         }
 
-        stl_tmp << QString::number(boule_id);
+        //if(index.internalPointer() == tbv_bloc1->model()->index(index.row(),index.column()).internalPointer())
+            if(index.internalPointer() == tbv_bloc1->model()->index(0,0).internalPointer())
+
+        {
+            selTable = 1;
+            boule_id = ligne +1;
+            int tmp = index.model()->index(index.row(),1).data().toInt();
+            stl_tmp << QString::number(boule_id);
+
+        }
 
         for(int j=0;j<stl_tmp.size();j++)
         {

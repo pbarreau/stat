@@ -2109,7 +2109,7 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
         stCurDemande *etude = new stCurDemande;
 
         QStringList stl_tmp;
-        stl_tmp << QString::number(ligne+1);
+        //stl_tmp << QString::number(ligne+1);
 
         etude->origine = 3;
         etude->boule = ligne+1;
