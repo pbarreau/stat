@@ -491,7 +491,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
 
     //tv_r1->setModel(m);
-    qtv_tmp->setColumnWidth(1,65);
+    qtv_tmp->setColumnWidth(1,70);
     for(int j=2;j<=sqm_r1->columnCount();j++)
         qtv_tmp->setColumnWidth(j,35);
     // Ne pas modifier largeur des colonnes
@@ -894,9 +894,10 @@ QGridLayout * MainWindow::MonLayout_VoisinDistribution()
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->hideColumn(0); // don't show the ID
     qtv_tmp->hideColumn(1);
+    qtv_tmp->verticalHeader()->hide();
 
     // Taille/Nom des colonnes
-    qtv_tmp->setColumnWidth(2,80);
+    qtv_tmp->setColumnWidth(2,70);
     G_tab_1Model->setHeaderData(2, Qt::Horizontal, tr("Repartition"));
     for(int j=3;j<7;j++)
     {
@@ -2112,7 +2113,7 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
         //stl_tmp << QString::number(ligne+1);
 
         etude->origine = 3;
-        etude->boule = ligne+1;
+        etude->boule = index.model()->index(index.row(),0).data().toInt();;
         etude->col = colon;
         etude->val = val;
         etude->st_col = headName;

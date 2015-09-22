@@ -186,7 +186,14 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     QString st_perso ="";
     if(pEtude->st_titre != "")
     {
-        st_perso = pEtude->st_titre;
+        QStringList stl_tmp = pEtude->lst_boules;
+        st_perso = pEtude->st_titre + ":";
+        if(stl_tmp.size())
+        for(int j=0;j<stl_tmp.size();j++)
+        {
+            st_perso= st_perso + stl_tmp.at(j)+",";
+        }
+        st_perso.remove(st_perso.length()-1,1);
     }
     else
     {
@@ -507,6 +514,7 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_tmp);
     qtv_tmp->setModel(m);
+    qtv_tmp->verticalHeader()->hide();
 
     for(int j=0;j<=sqm_tmp->columnCount();j++)
         qtv_tmp->setColumnWidth(j,30);
@@ -1161,7 +1169,7 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
             st_lesBoules= st_lesBoules + stl_tmp.at(j)+",";
         }
         st_lesBoules.remove(st_lesBoules.length()-1,1);
-        st_titre = st_titre + st_lesBoules;
+        //st_titre = st_titre + st_lesBoules;
         etude->origine = selTable;
         etude->boule = boule_id;
         etude->col = col;

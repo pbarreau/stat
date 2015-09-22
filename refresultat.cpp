@@ -105,10 +105,10 @@ void SyntheseGenerale::DoTirages(void)
 
     qtv_tmp->hideColumn(0);
     qtv_tmp->hideColumn(1);
-    for(int j=0;j<4;j++)
+    for(int j=0;j<5;j++)
         qtv_tmp->setColumnWidth(j,70);
 
-    qtv_tmp->setColumnWidth(4,60);
+    //qtv_tmp->setColumnWidth(4,60);
 
     for(int j=5;j<=sqm_LesTirages->columnCount();j++)
         qtv_tmp->setColumnWidth(j,35);
@@ -196,7 +196,7 @@ void SyntheseGenerale::DoBloc1(void)
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_bloc1);
     qtv_tmp->setModel(m);
-
+    qtv_tmp->verticalHeader()->hide();
     for(int j=0;j<2;j++)
         qtv_tmp->setColumnWidth(j,30);
     for(int j=2;j<=sqm_bloc1->columnCount();j++)
@@ -254,6 +254,7 @@ void SyntheseGenerale::DoBloc2(void)
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->hideColumn(0);
     qtv_tmp->sortByColumn(1,Qt::AscendingOrder);
+    qtv_tmp->verticalHeader()->hide();
 
     for(int i=0;i<tblModel->columnCount();i++)
         qtv_tmp->setColumnWidth(i,30);
@@ -304,6 +305,7 @@ void SyntheseGenerale::DoBloc3(void)
     qtv_tmp->setSortingEnabled(true);
     //qtv_tmp->hideColumn(0);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->verticalHeader()->hide();
 
     for(int i=0;i<tblModel->columnCount();i++)
         qtv_tmp->setColumnWidth(i,30);
