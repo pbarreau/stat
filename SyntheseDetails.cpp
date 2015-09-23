@@ -401,7 +401,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnSyntheseDetails(int curId, stCurDema
     return(lay_return);
 }
 
-void SyntheseDetails::Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial)
+void SyntheseDetails::Synthese_2_first (QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial)
 {
     //-------------------
     QLabel *titre_2 = new QLabel("Etoiles");
@@ -525,7 +525,7 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    QLabel *titre_1 = new QLabel("Voisins");
+    QLabel *titre_1 = new QLabel("Boules");
     //lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
     lay_return->addWidget(titre_1,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
@@ -537,6 +537,84 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
 
 }
 
+//------
+void SyntheseDetails::Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial)
+{
+    QString sql_msgRef = "";
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    QTableView *qtv_tmp = new QTableView;
+
+    // Fonction Pour La requete de base (obtenir les tirages)
+    QString (SyntheseDetails::*ptrFuncN1[3])(QStringList &, int)=
+    {&SyntheseDetails::DoSqlMsgRef_Tb1,
+            &SyntheseDetails::DoSqlMsgRef_Tb2,
+            &SyntheseDetails::DoSqlMsgRef_Tb3};
+
+    QString (SyntheseDetails::*ptrFuncN2[3])(QStringList &, QString &,int)=
+    {&SyntheseDetails::SD_Tb2_1,
+            &SyntheseDetails::SD_Tb2_3,
+            &SyntheseDetails::SD_Tb2_3};
+
+    // Creer le code de la requete Sql
+    int origine = pLaDemande->origine;
+    if(origine > 1 && origine <=3)
+    {
+        origine --;
+    }
+    else
+    {
+        origine = 0;
+    }
+    sql_msgRef = (this->*ptrFuncN1[origine])(stl_tmp,distance);
+    // Retirer le ; de la fin
+    sql_msgRef.replace(";","");
+
+    sql_msgRef = (this->*ptrFuncN2[origine])(stl_tmp,sql_msgRef,distance);
+#ifndef QT_NO_DEBUG
+    qDebug() << sql_msgRef;
+#endif
+
+
+    sqm_tmp->setQuery(sql_msgRef);
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+
+
+    //qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
+    qtv_tmp->setModel(m);
+    qtv_tmp->verticalHeader()->hide();
+
+    for(int j=0;j<=sqm_tmp->columnCount();j++)
+        qtv_tmp->setColumnWidth(j,30);
+    qtv_tmp->setFixedSize(200,230);
+
+
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    QLabel *titre_1 = new QLabel("Etoiles");
+    //lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
+    lay_return->addWidget(titre_1,0,1,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,1,1,Qt::AlignLeft|Qt::AlignTop);
+
+    // Connection du double click dans table voisins
+    // double click dans fenetre  pour afficher details boule
+    //connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+    //         this, SLOT(slot_ZoomTirages( QModelIndex) ) );
+
+}
+
+//--------
 //Synthese detaille table 1
 QString SyntheseDetails::SD_Tb1_1(QStringList &boules, QString &sqlTblRef,int dst)
 {
@@ -602,6 +680,8 @@ QString SyntheseDetails::SD_Tb1_1(QStringList &boules, QString &sqlTblRef,int ds
     QString st_cr2 = "";
     QString st_cr3 = "";
     QStringList stl_tmp;
+    QString st_cr4 = "";
+    QStringList stl_etoile;
 
     stl_tmp << "tbright.b";
     st_cr2 =  GEN_Where_3(5,"tbleft.boule",false,"=",stl_tmp,true,"or");
@@ -617,6 +697,12 @@ QString SyntheseDetails::SD_Tb1_1(QStringList &boules, QString &sqlTblRef,int ds
 #ifndef QT_NO_DEBUG
         qDebug() << st_cr3;
 #endif
+    }
+
+    if(stl_etoile.size())
+    {
+    st_cr4 = GEN_Where_3(5,"tbleft.boule",false,"=",stl_etoile,true,"or");
+    st_cr4 = " and " + st_cr4;
     }
 
     sql_msg =
@@ -646,6 +732,58 @@ QString SyntheseDetails::SD_Tb1_1(QStringList &boules, QString &sqlTblRef,int ds
 
     return sql_msg;
 }
+
+//-------------
+QString SyntheseDetails::SD_Tb2_1(QStringList &boules, QString &sqlTblRef,int dst)
+{
+    QString sql_msg ="";
+    QString st_cr2 = "";
+    QString st_cr3 = "";
+    QStringList stl_tmp;
+    QString st_cr4 = "";
+    QStringList stl_etoile;
+
+    stl_tmp << "tbright.e";
+    st_cr2 =  GEN_Where_3(1,"tbleft.boule",false,"=",stl_tmp,true,"or");
+#ifndef QT_NO_DEBUG
+    qDebug() << st_cr2;
+#endif
+
+
+    if(stl_etoile.size())
+    {
+    st_cr4 = GEN_Where_3(5,"tbleft.boule",false,"=",stl_etoile,true,"or");
+    st_cr4 = " and " + st_cr4;
+    }
+
+    sql_msg =
+            "select tbleft.boule as E, count(tbright.Tid1) as T, "
+            "count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,"
+            "count(CASE WHEN  J like 'mercredi%' then 1 end) as MER,"
+            "count(CASE WHEN  J like 'same%' then 1 end) as SAM "
+            "from"
+            "("
+            "select id as boule from Bnrz where (z2 not null)"
+            ") as tbleft "
+            "left join"
+            "("
+            +sqlTblRef+
+            ") as tbright "
+            "on"
+            "("
+            "("
+            + st_cr2 +
+            ")"
+            + st_cr3 +
+            ") group by tbleft.boule;";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << sql_msg;
+#endif
+
+    return sql_msg;
+}
+
 QString SyntheseDetails::SD_Tb1_2(QStringList &boules, QString &sqlTblRef,int dst)
 {
     QString sql_msg ="";
@@ -662,6 +800,21 @@ QString SyntheseDetails::SD_Tb1_2(QStringList &boules, QString &sqlTblRef,int ds
     return sql_msg;
 }
 
+QString SyntheseDetails::SD_Tb2_2(QStringList &boules, QString &sqlTblRef,int dst)
+{
+    QString sql_msg ="";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << sqlTblRef;
+#endif
+
+
+#ifndef QT_NO_DEBUG
+    qDebug() << sql_msg;
+#endif
+
+    return sql_msg;
+}
 QString SyntheseDetails::SD_Tb1_3(QStringList &boules, QString &sqlTblRef,int dst)
 {
 #if 0
@@ -713,6 +866,61 @@ QString SyntheseDetails::SD_Tb1_3(QStringList &boules, QString &sqlTblRef,int ds
             "tbleft.boule = tbright.b3 or "
             "tbleft.boule = tbright.b4 or "
             "tbleft.boule = tbright.b5 "
+            ") "
+            ") group by tbleft.boule; "
+            ;
+
+#ifndef QT_NO_DEBUG
+    qDebug() << sql_msg;
+#endif
+
+    return sql_msg;
+}
+
+//-----
+QString SyntheseDetails::SD_Tb2_3(QStringList &boules, QString &sqlTblRef,int dst)
+{
+#if 0
+    -- Requete comptage du resultat precedent
+            select tbleft.boule as E, count(tbright.Tid1) as T,
+            count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM
+            from
+            (
+                select id as boule from Bnrz where (z2 not null )
+                ) as tbleft
+            left join
+            (
+                select tb3.id as Tid1, tb5.id as Pid1, tb3.jour_tirage as J, substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, tb5.tip as C, tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, tb3.e1 as e1 from tirages as tb3, analyses as tb4, lstcombi as tb5 inner join ( select tirages.*,  analyses.id_poids from tirages,analyses where ( tirages.id=analyses.id and analyses.id_poids = 115) ) as tb2 on ( (tb3.id = tb2.id + 0) and (tb4.id = tb3.id) and (tb4.id_poids = tb5.id) )
+                ) as tbright
+            on
+            (
+                (
+                    tbleft.boule = tbright.e1
+            )
+                ) group by tbleft.boule;
+#endif
+    QString sql_msg ="";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << sqlTblRef;
+#endif
+
+
+    sql_msg =
+            "select tbleft.boule as E, count(tbright.Tid1) as T, "
+            "count(CASE WHEN J like 'lundi%' then 1 end) as LUN, count(CASE WHEN J like 'mercredi%' then 1 end) as MER, count(CASE WHEN J like 'same%' then 1 end) as SAM "
+            "from "
+            "( "
+            "select id as boule from Bnrz where (z2 not null ) "
+            ") as tbleft "
+            "left join "
+            "( "
+            +sqlTblRef+
+            ") as tbright "
+            "on "
+            "( "
+            "( "
+            "tbleft.boule = tbright.e1 "
             ") "
             ") group by tbleft.boule; "
             ;
