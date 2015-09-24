@@ -424,24 +424,24 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 {
 #if 0
     select t1.id as id, t1.tip as Repartition, count(t1.id_poids)as T,
-    count (case when t1.J like 'lun%' then 1 end)as LUN,
-    count (case when t1.J like 'mer%' then 1 end)as MER ,
-    count (case when t1.J like 'sam%' then 1 end)as SAM
-     from (
-    SELECT lstcombi.id,lstcombi.tip,analyses.id_poids,analyses.id as id2, (case when analyses.id is null then null else
-    (
-     select tirages.jour_tirage from tirages where (tirages.id = analyses.id)
-    )
-    end) as J
-    FROM lstcombi
-    LEFT JOIN analyses
-    ON
-    (
-     (lstcombi.id = analyses.id_poids)
-    )
-     )as t1
-     GROUP BY tip having (((t1.id=t1.id_poids) or (t1.id_poids is null)))
-     order by id asc;
+            count (case when t1.J like 'lun%' then 1 end)as LUN,
+            count (case when t1.J like 'mer%' then 1 end)as MER ,
+            count (case when t1.J like 'sam%' then 1 end)as SAM
+            from (
+                SELECT lstcombi.id,lstcombi.tip,analyses.id_poids,analyses.id as id2, (case when analyses.id is null then null else
+                                                                                       (
+                                                                                           select tirages.jour_tirage from tirages where (tirages.id = analyses.id)
+                                                                                           )
+                                                                                       end) as J
+                FROM lstcombi
+                LEFT JOIN analyses
+                ON
+                (
+                    (lstcombi.id = analyses.id_poids)
+                    )
+                )as t1
+            GROUP BY tip having (((t1.id=t1.id_poids) or (t1.id_poids is null)))
+            order by id asc;
 #endif
 
     QGridLayout *lay_return = new QGridLayout;
@@ -831,11 +831,19 @@ void MainWindow::TST_NbRepartionCombi(int ecart,int key)
             "FROM lstcombi "
             "LEFT JOIN (select * "
             "from (select analyses.id "
-            "from analyses where analyses.id_poids = "+QString::number(key)+") as t1 "
-                                                                            "left join analyses on t1.id = analyses.id + "+QString::number(d[ecart])+") as t2 "
-                                                                                                                                                     "ON lstcombi.id = t2.id_poids)as t1 "
-                                                                                                                                                     "GROUP BY id having ((t1.id=t1.id_poids)or (t1.id_poids is null)) "
-                                                                                                                                                     "order by t1.id asc;";
+            "from analyses where analyses.id_poids = "
+            +QString::number(key)+
+            ") as t1 "
+            "left join analyses on t1.id = analyses.id + "
+            +QString::number(d[ecart])+
+            ") as t2 "
+            "ON lstcombi.id = t2.id_poids)as t1 "
+            "GROUP BY id having ((t1.id=t1.id_poids)or (t1.id_poids is null)) "
+            "order by t1.id asc;";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
 
     status = query.exec(msg);
     if(status){

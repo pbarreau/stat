@@ -135,7 +135,7 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     QWidget *qw_main = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
     QTabWidget **wid_ForTop_1 = new QTabWidget*[4];
-    QString stNames_1[4]={"0","1","-1","?"};
+    QString stNames_1[4]={"0","+1","-1","?"};
     const int Ref_D_Onglet[4]={0,-1,1,-2};
 
     onglets = tab_Top;
@@ -145,23 +145,27 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
         wid_ForTop_1[i]=new QTabWidget;
         tab_Top->addTab(wid_ForTop_1[i],tr(stNames_1[i].toUtf8()));
 
-        QWidget **wid_ForTop_2 = new QWidget*[2];
-        QString stNames_2[2]={"Tirages","Repartition"};
-        QGridLayout *design_onglet_2[2];
+        QWidget **wid_ForTop_2 = new QWidget*[3];
+        QString stNames_2[3]={"Tirages","Voisins","Repartition"};
+        QGridLayout *design_onglet_2[3];
 
         // Tableau de pointeur de fonction
-        QGridLayout *(SyntheseDetails::*ptrFunc[2])(int ,stCurDemande *, int )=
-        {&SyntheseDetails::MonLayout_pFnDetailsTirages,&SyntheseDetails::MonLayout_pFnSyntheseDetails};
+        QGridLayout *(SyntheseDetails::*ptrFunc[])(int ,stCurDemande *, int )=
+        {&SyntheseDetails::MonLayout_pFnDetailsMontrerTirages,
+                &SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese,
+                &SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition};
+
+
 
         // Verifier si on est sur l'onglet n° 4
         if(i==3)
         {
             // Memoriser les layouts de l'onglet
-            G_design_onglet_2 =new QGridLayout*[2];
+            G_design_onglet_2 =new QGridLayout*[3];
 
         }
 
-        for(int j =0; j<2;j++)
+        for(int j =0; j<3;j++)
         {
             wid_ForTop_2[j]=new QWidget;
             wid_ForTop_1[i]->addTab(wid_ForTop_2[j],tr(stNames_2[j].toUtf8()));
@@ -189,10 +193,10 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
         QStringList stl_tmp = pEtude->lst_boules;
         st_perso = pEtude->st_titre + ":";
         if(stl_tmp.size())
-        for(int j=0;j<stl_tmp.size();j++)
-        {
-            st_perso= st_perso + stl_tmp.at(j)+",";
-        }
+            for(int j=0;j<stl_tmp.size();j++)
+            {
+                st_perso= st_perso + stl_tmp.at(j)+",";
+            }
         st_perso.remove(st_perso.length()-1,1);
     }
     else
@@ -217,7 +221,7 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     qw_main->show();
 }
 // --------------------------
-QGridLayout * SyntheseDetails::MonLayout_pFnDetailsTirages(int curId, stCurDemande *pEtude, int val)
+QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int curId, stCurDemande *pEtude, int val)
 {
     QGridLayout *lay_return = new QGridLayout;
 
@@ -362,7 +366,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
 
     // Tableau de pointeur de fonction
     QGridLayout *(SyntheseDetails::*ptrFunc[2])(int ,stCurDemande *,  int )=
-    {&SyntheseDetails::MonLayout_pFnDetailsTirages,&SyntheseDetails::MonLayout_pFnSyntheseDetails};
+    {&SyntheseDetails::MonLayout_pFnDetailsMontrerTirages,&SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese};
 
     for(int j =0; j<2;j++)
     {
@@ -382,7 +386,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     }
 }
 
-QGridLayout * SyntheseDetails::MonLayout_pFnSyntheseDetails(int curId, stCurDemande *pEtude, int /*val*/)
+QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int curId, stCurDemande *pEtude, int /*val*/)
 {
     QGridLayout *lay_return = new QGridLayout;
 
@@ -397,6 +401,86 @@ QGridLayout * SyntheseDetails::MonLayout_pFnSyntheseDetails(int curId, stCurDema
     Synthese_1(lay_return,stl_tmp,distance,ongSpecial);
     Synthese_2(lay_return,stl_tmp,distance,ongSpecial);
 
+
+    return(lay_return);
+}
+
+QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int curId, stCurDemande *pEtude, int val)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+    QStringList stl_tmp = pEtude->lst_boules;
+
+    const int Ref_D_Onglet[4]={0,-1,1,-2};
+    const bool Ref_A_Onglet[4]={false,false,false,true};
+
+    int distance = Ref_D_Onglet[curId];
+    bool ongSpecial = Ref_A_Onglet[curId];
+
+
+    QString sql_msgRef = "";
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    QTableView *qtv_tmp = new QTableView;
+
+
+
+    // Fonction Pour La requete de base (obtenir les tirages)
+    QString (SyntheseDetails::*ptrFunc[3])(QStringList &, int)=
+    {&SyntheseDetails::DoSqlMsgRef_Tb4,
+            &SyntheseDetails::DoSqlMsgRef_Tb4,
+            &SyntheseDetails::DoSqlMsgRef_Tb4};
+
+    // Creer le code de la requete Sql
+    int origine = pLaDemande->origine;
+    if(origine > 1 && origine <=3)
+    {
+        origine --;
+    }
+    else
+    {
+        origine = 0;
+    }
+    sql_msgRef = (this->*ptrFunc[origine])(stl_tmp,distance);
+
+    sqm_tmp->setQuery(sql_msgRef);
+
+    // Filtre
+    QFormLayout *FiltreLayout = new QFormLayout;
+    FiltreCombinaisons *fltComb_1 = new FiltreCombinaisons();
+    fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,1);
+    FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->hideColumn(0); // don't show the ID
+    qtv_tmp->verticalHeader()->hide();
+
+    // Taille/Nom des colonnes
+    qtv_tmp->setColumnWidth(1,70);
+    for(int j=2;j<sqm_tmp->columnCount();j++)
+    {
+        qtv_tmp->setColumnWidth(j,40);
+    }
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    // Taille du tableau dans onglet
+    //qtv_tmp->setFixedSize(345,410);
+    //G_tab_1->show();
+
+    // Double click dans sous fenetre
+    //connect( qtv_tmp, SIGNAL( doubleClicked(QModelIndex)) ,
+    //         this, SLOT( slot_F5_RechercherLesTirages( QModelIndex) ) );
+
+
+    //lay_return->addWidget(lab_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+    int pos_y = 0;
+
+
+    lay_return->addLayout(FiltreLayout,pos_y,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,pos_y+1,0,Qt::AlignLeft|Qt::AlignTop);
 
     return(lay_return);
 }
@@ -701,8 +785,8 @@ QString SyntheseDetails::SD_Tb1_1(QStringList &boules, QString &sqlTblRef,int ds
 
     if(stl_etoile.size())
     {
-    st_cr4 = GEN_Where_3(5,"tbleft.boule",false,"=",stl_etoile,true,"or");
-    st_cr4 = " and " + st_cr4;
+        st_cr4 = GEN_Where_3(5,"tbleft.boule",false,"=",stl_etoile,true,"or");
+        st_cr4 = " and " + st_cr4;
     }
 
     sql_msg =
@@ -752,8 +836,8 @@ QString SyntheseDetails::SD_Tb2_1(QStringList &boules, QString &sqlTblRef,int ds
 
     if(stl_etoile.size())
     {
-    st_cr4 = GEN_Where_3(5,"tbleft.boule",false,"=",stl_etoile,true,"or");
-    st_cr4 = " and " + st_cr4;
+        st_cr4 = GEN_Where_3(5,"tbleft.boule",false,"=",stl_etoile,true,"or");
+        st_cr4 = " and " + st_cr4;
     }
 
     sql_msg =
@@ -933,7 +1017,103 @@ QString SyntheseDetails::SD_Tb2_3(QStringList &boules, QString &sqlTblRef,int ds
 }
 
 
+QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
+{
+#if 0
+    select tg.id as cid, tg.tip as Repartition,count(tr.new_pid) as T,
+            count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM
+            from lstcombi as tg
+            left join
+            (
+                -- debuftleft
+                select tg.id as previous_id,tr.id as new_id, tr.npid as new_pid, tg.*,tr.*from
+                (select tirages.*, lstcombi.id as previous_pid from tirages, analyses, lstcombi
+                 where
+                 (
+                     lstcombi.id = 125
+            and
+            tirages.id = analyses.id
+            and
+            analyses.id_poids = lstcombi.id
+            )
+                 ) as tg
+                left join
+                (
+                    select t1.*,t2.id as npid from tirages as t1, lstcombi as t2, analyses as t3
+                    where (t1.id=t3.id and t3.id_poids=t2.id)
+                    )as tr
+                on
+                (
+                    tg.id = tr.id+0
+            )
+                -- fin left
+                )as tr
+            on
+            (
+                tg.id = tr.new_pid
+            )group by tg.id order by tg.id asc
+        #endif
+            QString st_sqlR = "";
+    QString st_cri1 = "";
+    //QString st_cri2 = "";
+    int val = pLaDemande->boule;
 
+    if(boules.size())
+    {
+        st_cri1= GEN_Where_3(5,"tirages.b",true,"=",boules,false,"or");
+        st_cri1 = " and " + st_cri1;
+    }
+
+    st_sqlR =
+            "select tg.id as cid, tg.tip as Repartition,count(tr.new_pid) as T, "
+            "count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM "
+            "from lstcombi as tg "
+            "left join "
+            "( "
+            "/* debuftleft */"
+            "select tg.id as previous_id,tr.id as new_id, tr.npid as new_pid, tg.*,tr.*from "
+            "(select tirages.*, lstcombi.id as previous_pid from tirages, analyses, lstcombi "
+            "where "
+            "( "
+            "lstcombi.id = "
+            + QString::number(val) +
+            " "
+            "and "
+            "tirages.id = analyses.id "
+            "and "
+            "analyses.id_poids = lstcombi.id "
+            + st_cri1 +
+            ") "
+            ") as tg "
+            "left join "
+            "( "
+            "select t1.id as id,"
+            "t1.jour_tirage as J,"
+            "substr(t1.date_tirage,-2,2)||'/'||substr(t1.date_tirage,6,2)||'/'||substr(t1.date_tirage,1,4) as D,"
+            "t2.tip as C,"
+            "t1.b1 as b1, t1.b2 as b2,t1.b3 as b3,t1.b4 as b4,t1.b5 as b5,"
+            "t1.e1 as e1,"
+            "t2.id as npid from tirages as t1, lstcombi as t2, analyses as t3 "
+            "where (t1.id=t3.id and t3.id_poids=t2.id) "
+            ")as tr "
+            "on  "
+            "( "
+            "tr.id = tg.id + "
+            +QString::number(dst)+
+            ") "
+            "/* fin left */"
+            ")as tr "
+            "on "
+            "( "
+            "tg.id = tr.new_pid "
+            ")group by tg.id order by tg.id asc;";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << st_sqlR;
+#endif
+    return st_sqlR;
+
+}
 
 QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
 {

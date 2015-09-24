@@ -50,8 +50,10 @@ private:
 public:
     SyntheseDetails(stCurDemande *uneEtude,QMdiArea *visuel);
     void MontreRechercheTirages(stCurDemande *pLaDemande);
-    QGridLayout * MonLayout_pFnDetailsTirages(int curId, stCurDemande *pLaDemande, int val);
-    QGridLayout * MonLayout_pFnSyntheseDetails(int curId, stCurDemande *pLaDemande, int);
+    QGridLayout * MonLayout_pFnDetailsMontrerTirages(int curId, stCurDemande *pLaDemande, int val);
+    QGridLayout * MonLayout_pFnDetailsMontrerSynthese(int curId, stCurDemande *pLaDemande, int);
+    QGridLayout * MonLayout_pFnDetailsMontrerRepartition(int curId, stCurDemande *pLaDemande, int val);
+
     // penser au destructeur pour chaque pointeur
     QString DoSqlMsgRef_Tb2(QStringList &boules, int dst);
 
@@ -64,6 +66,8 @@ public slots:
 private:
     QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
     QString DoSqlMsgRef_Tb3(QStringList &boules, int dst);
+    QString DoSqlMsgRef_Tb4(QStringList &boules, int dst);
+
     void Synthese_1(QGridLayout *lay_return,QStringList &stl_tmp, int distance, bool ongSpecial);
     void Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
     void Synthese_2_first (QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
