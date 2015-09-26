@@ -12,6 +12,7 @@
 #include <QComboBox>
 
 #include "filtrecombinaisons.h"
+#include "SyntheseDetails.h"
 
 
 #include "tirages.h"
@@ -35,6 +36,8 @@ private:
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
     int curzn;
+    stCurDemande uneDemande;
+    QStringList lst_selection[3];
 
     QGridLayout *disposition;
     //QStandardItemModel *sim_bloc1;
@@ -63,7 +66,8 @@ public:
 
 public slots:
     void slot_MontreLesTirages(const QModelIndex & index);
-
+    void slot_SelectionneBoules(const QModelIndex & index);
+    void slot_ChangementEnCours(const QItemSelection &selected,const QItemSelection &deselected);
 
 
 private:
@@ -71,6 +75,7 @@ private:
     void DoComptageTotal(void);
     void DoBloc2(void);
     void DoBloc3(void);
+    void MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const QModelIndex & index);
 
     QGridLayout * MonLayout_SyntheseTotalBoules(stTiragesDef *pConf);
     QGridLayout * MonLayout_SyntheseTotalEtoiles(stTiragesDef *pConf);

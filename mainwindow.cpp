@@ -2121,12 +2121,12 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
         //stl_tmp << QString::number(ligne+1);
 
         etude->origine = 3;
-        etude->boule = index.model()->index(index.row(),0).data().toInt();;
-        etude->col = colon;
-        etude->val = val;
-        etude->st_col = headName;
+        etude->boule[3] = index.model()->index(index.row(),0).data().toInt();;
+        etude->col[3] = colon;
+        etude->val[3] = val;
+        etude->st_col[3] = headName;
         etude->st_titre = msg;
-        etude->lst_boules = stl_tmp;
+        etude->lst_boules[3] = stl_tmp;
 
         // Nouvelle de fenetre de detail de cette boule
         SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale);

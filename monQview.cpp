@@ -33,7 +33,7 @@ QWidget *MonQtViewDelegate::createEditor(QWidget *parent,
 
         int ref = pereOnglet->currentIndex();
         int distance[4]={0,-1,1,-2};
-        QStringList lst_boules = pLaConfig->lst_boules;
+        QStringList lst_boules = pLaConfig->lst_boules[0];
         int ligne = index.row()+1;
 
 #ifndef QT_NO_DEBUG

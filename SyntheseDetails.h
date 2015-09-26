@@ -18,12 +18,12 @@
 typedef struct _demande
 {
     int origine;
-    int boule;
-    int col;
-    int val;
+    int boule[3];
+    int col[3];
+    int val[3];
     QString st_titre;
-    QString st_col;
-    QStringList lst_boules;
+    QString st_col[3];
+    QStringList lst_boules[3];
 }stCurDemande;
 //-----------------------------
 
@@ -64,6 +64,7 @@ public slots:
     void slot_ZoomTirages(const QModelIndex & index);
 
 private:
+    QString DoSqlMsgRefGenerique(int dst);
     QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
     QString DoSqlMsgRef_Tb3(QStringList &boules, int dst);
     QString DoSqlMsgRef_Tb4(QStringList &boules, int dst);
