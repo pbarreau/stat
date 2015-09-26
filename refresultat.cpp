@@ -31,7 +31,7 @@ SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel
     curzn = zn;
 
     DoTirages();
-    DoBloc1();
+    DoComptageTotal();
     DoBloc2();
     DoBloc3();
 }
@@ -137,7 +137,136 @@ void SyntheseGenerale::DoTirages(void)
 
 }
 
-void SyntheseGenerale::DoBloc1(void)
+void SyntheseGenerale::DoComptageTotal(void)
+{
+
+    // Onglet pere
+    QTabWidget *tab_Top = new QTabWidget;
+    QWidget **wid_ForTop = new QWidget*[3];
+
+    QString stNames[]={"Boules","Etoiles","Repartition"};
+    QGridLayout *design_onglet[3];
+
+    // Tableau de pointeur de fonction
+    QGridLayout *(SyntheseGenerale::*ptrFunc[])(stTiragesDef *pConf)=
+    {
+            &SyntheseGenerale::MonLayout_SyntheseTotalBoules,
+            &SyntheseGenerale::MonLayout_SyntheseTotalEtoiles,
+            &SyntheseGenerale::MonLayout_SyntheseTotalRepartitions
+};
+
+    stTiragesDef *pConf = pMaConf;
+
+    for(int i =0; i<3;i++)
+    {
+        wid_ForTop[i]=new QWidget;
+        tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
+
+        //
+        design_onglet[i] = (this->*ptrFunc[i])(pConf);
+        wid_ForTop[i]->setLayout(design_onglet[i]);
+    }
+
+    QFormLayout *mainLayout = new QFormLayout;
+    mainLayout->addWidget(tab_Top);
+    disposition->addLayout(mainLayout,0,1,2,1,Qt::AlignLeft|Qt::AlignTop);
+
+
+}
+
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(stTiragesDef *pConf)
+{
+#if 0
+    select tb1.boule as B, count(tb2.id) as T
+            from
+            (
+                select id as boule from Bnrz where (z2 not null )
+                ) as tb1
+            left join
+            (
+                select * from tirages
+                ) as tb2
+            on
+            (
+                tb1.boule = tb2.e1
+            ) group by tb1.boule;
+#endif
+
+    QGridLayout *lay_return = new QGridLayout;
+
+    sqm_bloc1_2 = new QSqlQueryModel;
+    QTableView *qtv_tmp ;
+    tbv_bloc1_2 = new QTableView;
+    qtv_tmp=tbv_bloc1_2;
+
+    QString st_msg1 =
+            "select tb1.boule as B, count(tb2.id) as T, "
+            "count(CASE WHEN  jour_tirage like 'lundi%' then 1 end) as LUN,"
+            "count(CASE WHEN  jour_tirage like 'mercredi%' then 1 end) as MER,"
+            "count(CASE WHEN  jour_tirage like 'same%' then 1 end) as SAM "
+            "from  "
+            "("
+            "select id as boule from Bnrz where (z2 not null ) "
+            ") as tb1 "
+            "left join "
+            "("
+            "select * from tirages "
+            ") as tb2 "
+            "on "
+            "("
+            "tb1.boule = tb2.e1 "
+            ") group by tb1.boule;";
+
+    sqm_bloc1_2->setQuery(st_msg1);
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+
+
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setFixedSize(225,200);
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_bloc1_2);
+    qtv_tmp->setModel(m);
+    qtv_tmp->verticalHeader()->hide();
+    for(int j=0;j<2;j++)
+        qtv_tmp->setColumnWidth(j,30);
+    for(int j=2;j<=sqm_bloc1_2->columnCount();j++)
+        qtv_tmp->setColumnWidth(j,40);
+
+
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    QVBoxLayout *vb_tmp = new QVBoxLayout;
+    QLabel * lab_tmp = new QLabel;
+    lab_tmp->setText("Repartitions");
+    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+    lay_return->addLayout(vb_tmp,0,0);
+
+    // double click dans fenetre  pour afficher details boule
+    connect( tbv_bloc1_2, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+
+    return lay_return;
+
+}
+
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(stTiragesDef *pConf)
+{
+    QGridLayout *lay_return = new QGridLayout;
+    return lay_return;
+}
+
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(stTiragesDef *pConf)
 {
 #if 0
     select tb1.boule as B, count(tb2.id) as T
@@ -155,12 +284,12 @@ void SyntheseGenerale::DoBloc1(void)
             ) group by tb1.boule;
 #endif
 
+    QGridLayout *lay_return = new QGridLayout;
 
-
-    sqm_bloc1 = new QSqlQueryModel;
+    sqm_bloc1_1 = new QSqlQueryModel;
     QTableView *qtv_tmp ;
-    tbv_bloc1 = new QTableView;
-    qtv_tmp=tbv_bloc1;
+    tbv_bloc1_1 = new QTableView;
+    qtv_tmp=tbv_bloc1_1;
 
     QString st_msg1 =
             "select tb1.boule as B, count(tb2.id) as T, "
@@ -180,7 +309,7 @@ void SyntheseGenerale::DoBloc1(void)
             "tb1.boule = tb2.b1 or tb1.boule = tb2.b2 or tb1.boule = tb2.b3 or tb1.boule = tb2.b4 or tb1.boule = tb2.b5 "
             ") group by tb1.boule;";
 
-    sqm_bloc1->setQuery(st_msg1);
+    sqm_bloc1_1->setQuery(st_msg1);
 
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
@@ -194,12 +323,12 @@ void SyntheseGenerale::DoBloc1(void)
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
-    m->setSourceModel(sqm_bloc1);
+    m->setSourceModel(sqm_bloc1_1);
     qtv_tmp->setModel(m);
     qtv_tmp->verticalHeader()->hide();
     for(int j=0;j<2;j++)
         qtv_tmp->setColumnWidth(j,30);
-    for(int j=2;j<=sqm_bloc1->columnCount();j++)
+    for(int j=2;j<=sqm_bloc1_1->columnCount();j++)
         qtv_tmp->setColumnWidth(j,40);
 
 
@@ -212,14 +341,14 @@ void SyntheseGenerale::DoBloc1(void)
     lab_tmp->setText("Repartitions");
     vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
     vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-    disposition->addLayout(vb_tmp,0,1,2,1,Qt::AlignLeft|Qt::AlignTop);
 
-
+    lay_return->addLayout(vb_tmp,0,0);
 
     // double click dans fenetre  pour afficher details boule
-    connect( tbv_bloc1, SIGNAL(doubleClicked(QModelIndex)) ,
+    connect( tbv_bloc1_1, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
+    return lay_return;
 
 }
 
@@ -354,14 +483,14 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
 
         //if(index.internalPointer() == tbv_bloc2->model()->index(index.row(),index.column()).internalPointer())
-            if(index.internalPointer() == tbv_bloc2->model()->index(0,0).internalPointer())
+        if(index.internalPointer() == tbv_bloc2->model()->index(0,0).internalPointer())
         {
             selTable = 2;
             boule_id = index.model()->index(index.row(),1).data().toInt();
         }
 
         //if(index.internalPointer() == tbv_bloc1->model()->index(index.row(),index.column()).internalPointer())
-            if(index.internalPointer() == tbv_bloc1->model()->index(0,0).internalPointer())
+        if(index.internalPointer() == tbv_bloc1_1->model()->index(0,0).internalPointer())
 
         {
             selTable = 1;

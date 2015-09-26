@@ -42,8 +42,12 @@ private:
     QTableView * tbv_LesTirages;
     QSqlQueryModel *sqm_LesTirages;
 
-    QTableView * tbv_bloc1;
-    QSqlQueryModel *sqm_bloc1;
+    QTableView * tbv_bloc1_1;
+    QSqlQueryModel *sqm_bloc1_1;
+    QTableView * tbv_bloc1_2;
+    QSqlQueryModel *sqm_bloc1_2;
+    QTableView * tbv_bloc1_3;
+    QSqlQueryModel *sqm_bloc1_3;
 
     QTableView * tbv_bloc2;
     QSqlTableModel * sqtblm_bloc2;
@@ -64,9 +68,14 @@ public slots:
 
 private:
     void DoTirages(void);
-    void DoBloc1(void);
+    void DoComptageTotal(void);
     void DoBloc2(void);
     void DoBloc3(void);
+
+    QGridLayout * MonLayout_SyntheseTotalBoules(stTiragesDef *pConf);
+    QGridLayout * MonLayout_SyntheseTotalEtoiles(stTiragesDef *pConf);
+    QGridLayout * MonLayout_SyntheseTotalRepartitions(stTiragesDef *pConf);
+
 
     QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);
 
