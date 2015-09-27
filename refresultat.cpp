@@ -31,65 +31,90 @@ SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel
     pMaConf = pConf;
     curzn = zn;
 
+    st_baseDef = OrganiseChampsDesTirages();
+    st_JourTirageDef = CompteJourTirage();
     DoTirages();
     DoComptageTotal();
     DoBloc2();
     DoBloc3();
 }
 
-void SyntheseGenerale::DoTirages(void)
+QString SyntheseGenerale::OrganiseChampsDesTirages()
 {
 #if 0
-    --debut requete tb3
-            select tb3.id as Tid, tb5.id as Pid,
-            tb3.jour_tirage as J,
+    select tb3.id as id, tb5.id as pid, tb3.jour_tirage as J,
             substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
             tb5.tip as C,
-            tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+            tb3.b1 as b1,
+            tb3.b2 as b2,
+            tb3.b3 as b3,
+            tb3.b4 as b4,
+            tb3.b5 as b5,
             tb3.e1 as e1
-            from tirages as tb3, analyses as tb4, lstcombi as tb5
-            inner join
+            from tirages as tb3,
+            analyses as tb4,
+            lstcombi as tb5
+            where
             (
-                select *  from tirages as tb1
-                ) as tb2
-            on (
-                (tb3.id = tb2.id + 0)
-                and
-                (tb4.id = tb3.id)
-                and
-                (tb4.id_poids = tb5.id)
-                );
+                tb4.id = tb3.id
+            and
+            tb5.id = tb4.id_poids
+            );
+#endif
 
-    --Fin requete tb3
-        #endif
-            sqm_LesTirages = new QSqlQueryModel;
+    QString st_base = "";
+    QString st_tmp = "";
+    QString st_cr1 = "";
+    QStringList lst_tmp;
+    int loop = 0;
+
+    for(int i =0 ; i< pMaConf->nb_zone; i++)
+    {
+        lst_tmp <<   pMaConf->nomZone[i];
+        st_tmp = "tb3."+pMaConf->nomZone[i];
+        loop =  pMaConf->nbElmZone[i];
+        st_tmp =  GEN_Where_3(loop,st_tmp,true," as ",lst_tmp,true,",");
+        st_cr1 = st_cr1 + st_tmp + ",";
+        lst_tmp.clear();
+    }
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_cr1;
+#endif
+
+    st_cr1.remove(QRegExp("[()]"));
+    st_cr1.remove(st_cr1.length()-1,1);
+
+    st_base =
+            "select tb3.id as id, tb5.id as pid, tb3.jour_tirage as J, "
+            "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, "
+            "tb5.tip as C, "
+            + st_cr1 +
+            " from tirages as tb3,  "
+            "analyses as tb4,  "
+            "lstcombi as tb5 "
+            "where "
+            "( "
+            "tb4.id = tb3.id "
+            "and "
+            "tb5.id = tb4.id_poids "
+            "); ";
+
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_base;
+#endif
+
+    return st_base;
+}
+void SyntheseGenerale::DoTirages(void)
+{
+    sqm_LesTirages = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
 
 
-    QString st_sqlReq =
-            "select tb3.id as Tid, tb5.id as Pid,"
-            "tb3.jour_tirage as J,"
-            "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
-            "tb5.tip as C,"
-            "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
-            "tb3.e1 as e1 "
-            "from tirages as tb3, analyses as tb4, lstcombi as tb5 "
-            "inner join"
-            "("
-            "select *  from tirages as tb1"
-            ") as tb2 "
-            "on ("
-            "(tb3.id = tb2.id + 0)"
-            "and"
-            "(tb4.id = tb3.id)"
-            "and"
-            "(tb4.id_poids = tb5.id)"
-            ");";
+    QString st_sqlReq = st_baseDef;
 
     sqm_LesTirages->setQuery(st_sqlReq);
 
-    //qtv_tmp->setSortingEnabled(true);
-    //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
 
 
@@ -98,10 +123,6 @@ void SyntheseGenerale::DoTirages(void)
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setFixedSize(470,200);
 
-    //QSortFilterProxyModel *m=new QSortFilterProxyModel();
-    //m->setDynamicSortFilter(true);
-    //m->setSourceModel(sqm_LesTirages);
-    //qtv_tmp->setModel(m);
     qtv_tmp->setModel(sqm_LesTirages);
 
     qtv_tmp->hideColumn(0);
@@ -178,19 +199,6 @@ void SyntheseGenerale::DoComptageTotal(void)
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(stTiragesDef *pConf)
 {
 #if 0
-    select tb1.boule as B, count(tb2.id) as T
-            from
-            (
-                select id as boule from Bnrz where (z2 not null )
-                ) as tb1
-            left join
-            (
-                select * from tirages
-                ) as tb2
-            on
-            (
-                tb1.boule = tb2.e1
-            ) group by tb1.boule;
 #endif
 
     QGridLayout *lay_return = new QGridLayout;
@@ -200,23 +208,29 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(stTiragesDef *pCo
     tbv_bloc1_2 = new QTableView;
     qtv_tmp=tbv_bloc1_2;
 
+    QString st_baseUse = "";
+    st_baseUse = "(" +
+            st_baseDef.remove(";") +
+            ") as tb_ref ";
+
     QString st_msg1 =
             "select tb1.boule as B, count(tb2.id) as T, "
-            "count(CASE WHEN  jour_tirage like 'lundi%' then 1 end) as LUN,"
-            "count(CASE WHEN  jour_tirage like 'mercredi%' then 1 end) as MER,"
-            "count(CASE WHEN  jour_tirage like 'same%' then 1 end) as SAM "
-            "from  "
-            "("
-            "select id as boule from Bnrz where (z2 not null ) "
-            ") as tb1 "
-            "left join "
-            "("
-            "select * from tirages "
-            ") as tb2 "
-            "on "
-            "("
-            "tb1.boule = tb2.e1 "
-            ") group by tb1.boule;";
+            +st_JourTirageDef
+            + " "
+              "from  "
+              "("
+              "select id as boule from Bnrz where (z2 not null ) "
+              ") as tb1 "
+              "left join "
+              "("
+              "select * from "
+            +st_baseUse
+            +" "
+             ") as tb2 "
+             "on "
+             "("
+             "tb1.boule = tb2.e1 "
+             ") group by tb1.boule;";
 
     sqm_bloc1_2->setQuery(st_msg1);
 
@@ -225,7 +239,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(stTiragesDef *pCo
     qtv_tmp->setAlternatingRowColors(true);
 
 
-    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setFixedSize(225,200);
@@ -275,19 +289,6 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(stTiragesDef
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(stTiragesDef *pConf)
 {
 #if 0
-    select tb1.boule as B, count(tb2.id) as T
-            from
-            (
-                select id as boule from Bnrz where (z1 not null )
-                ) as tb1
-            left join
-            (
-                select * from tirages
-                ) as tb2
-            on
-            (
-                tb1.boule = tb2.b1 or tb1.boule = tb2.b2 or tb1.boule = tb2.b3 or tb1.boule = tb2.b4 or tb1.boule = tb2.b5
-            ) group by tb1.boule;
 #endif
 
     QGridLayout *lay_return = new QGridLayout;
@@ -297,23 +298,33 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(stTiragesDef *pCon
     tbv_bloc1_1 = new QTableView;
     qtv_tmp=tbv_bloc1_1;
 
+    QString st_baseUse = "";
+    st_baseUse = "(" +
+            st_baseDef.remove(";") +
+            ") as tb_ref ";
+
     QString st_msg1 =
             "select tb1.boule as B, count(tb2.id) as T, "
-            "count(CASE WHEN  jour_tirage like 'lundi%' then 1 end) as LUN,"
-            "count(CASE WHEN  jour_tirage like 'mercredi%' then 1 end) as MER,"
-            "count(CASE WHEN  jour_tirage like 'same%' then 1 end) as SAM "
-            "from  "
-            "("
-            "select id as boule from Bnrz where (z1 not null ) "
-            ") as tb1 "
-            "left join "
-            "("
-            "select * from tirages "
-            ") as tb2 "
-            "on "
-            "("
-            "tb1.boule = tb2.b1 or tb1.boule = tb2.b2 or tb1.boule = tb2.b3 or tb1.boule = tb2.b4 or tb1.boule = tb2.b5 "
-            ") group by tb1.boule;";
+            +st_JourTirageDef
+            + " "
+                               "from  "
+                               "("
+                               "select id as boule from Bnrz where (z1 not null ) "
+                               ") as tb1 "
+                               "left join "
+                               "("
+                               "select * from "
+            +st_baseUse
+            +" "
+             ") as tb2 "
+             "on "
+             "("
+             "tb1.boule = tb2.b1 or tb1.boule = tb2.b2 or tb1.boule = tb2.b3 or tb1.boule = tb2.b4 or tb1.boule = tb2.b5 "
+             ") group by tb1.boule;";
+
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_msg1;
+#endif
 
     sqm_bloc1_1->setQuery(st_msg1);
 
@@ -361,6 +372,31 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(stTiragesDef *pCon
 
     return lay_return;
 
+}
+
+QString SyntheseGenerale::CompteJourTirage()
+{
+    QString st_msg = "";
+
+    int nb_tir = pMaConf->nb_tir_semaine;
+
+    for(int i=0;i<nb_tir;i++)
+    {
+        st_msg = st_msg +
+                "count(CASE WHEN  J like '"
+                +pMaConf->jour_tir[i]+
+                "%' then 1 end) as "
+                +pMaConf->jour_tir[i].left(3)+
+                ",";
+    }
+
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_msg;
+#endif
+
+    st_msg.remove(st_msg.length()-1,1);
+
+    return st_msg;
 }
 
 void SyntheseGenerale::DoBloc2(void)
@@ -599,12 +635,12 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const
     int nb_element_max_zone = pMaConf->nbElmZone[zn];
     QString stNomZone = pMaConf->nomZone[zn];
 
-    static int col_depart [3]= {-1};
+    static int col_depart [3]= {-1,-1,-1};
     int cur_col = index.column();
     int nb_items = 0;
 
     int ligne = index.row();
-     int val = index.data().toInt();
+    int val = index.data().toInt();
     const QAbstractItemModel * pModel = index.model();
     QVariant vCol = pModel->headerData(cur_col,Qt::Horizontal);
     QString headName = vCol.toString();
@@ -619,7 +655,8 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const
         col_depart[zn] = -1;
         return;
     }
-    else
+
+    if (col_depart[zn] == -1)
     {
         col_depart[zn] =  cur_col;
         uneDemande.col[zn] = cur_col;

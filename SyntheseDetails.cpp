@@ -114,7 +114,7 @@ QString GEN_Where_3(int loop,
     // retirer le dernier operateur
     ret_msg.remove(ret_msg.length()-flag.length(),flag.length());
 
-    ret_msg = "(" +ret_msg+")";
+    //ret_msg = "(" +ret_msg+")";
     return ret_msg;
 }
 
@@ -131,7 +131,7 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
 {
     int bouleId = pEtude->boule[0];
     QString colName = pEtude->st_col[0];
-    int curVal=pEtude->val[0];
+    //int curVal=pEtude->val[0];
 
     QWidget *qw_main = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
@@ -172,7 +172,7 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
             wid_ForTop_1[i]->addTab(wid_ForTop_2[j],tr(stNames_2[j].toUtf8()));
 
             //
-            design_onglet_2[j] = (this->*ptrFunc[j])(i, pEtude, Ref_D_Onglet[i]);
+            design_onglet_2[j] = (this->*ptrFunc[j])(j, pEtude, Ref_D_Onglet[i]);
             wid_ForTop_2[j]->setLayout(design_onglet_2[j]);
 
             // Verifier si on est sur l'onglet n° 4
@@ -188,27 +188,47 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     }
 
     QFormLayout *mainLayout = new QFormLayout;
-    QString st_perso ="";
+    QString st_tmp = "";
+    QString st_titre = "";
+    int ordre[3]={2,0,1};
+    QString Nom[3]={"B:","E:","C:"};
+
+    for(int i=0;i<3;i++)
+    {
+        int clef = ordre[i];
+       if(pEtude->lst_boules[clef].size())
+       {
+         if(pEtude->st_col[clef] != "")
+         {
+           st_tmp =  st_tmp +
+                   Nom[clef] +"("
+                   + pEtude->st_col[clef] +
+                    ") ";
+         }
+         else
+         {
+            st_tmp =  st_tmp + Nom[clef];
+         }
+
+
+         for(int j=0; j<pEtude->lst_boules[clef].size();j++)
+             st_tmp = st_tmp + pEtude->lst_boules[clef].at(j) + ",";
+
+       }
+    }
+    st_tmp.remove(st_tmp.length()-1,1);
+
+
     if(pEtude->st_titre != "")
     {
-        QStringList stl_tmp = pEtude->lst_boules[0];
-        st_perso = pEtude->st_titre + ":";
-        if(stl_tmp.size())
-            for(int j=0;j<stl_tmp.size();j++)
-            {
-                st_perso= st_perso + stl_tmp.at(j)+",";
-            }
-        st_perso.remove(st_perso.length()-1,1);
+        st_titre = "Depart:("+pEtude->st_titre+")" ;
     }
     else
     {
-        st_perso = "B:" + QString::number(bouleId);
+      pEtude->st_titre = st_tmp;
     }
-    QString st_titre =
-            "Analyse des tirages ayant boule(s) "
-            +st_perso+
-            ",Col:"+colName +
-            ",(V="+QString::number(curVal)+").";
+
+    st_titre = st_titre + st_tmp ;
 
     mainLayout->addWidget(tab_Top);
     qw_main->setWindowTitle(st_titre);
@@ -251,16 +271,8 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int curId, stC
             &SyntheseDetails::DoSqlMsgRefGenerique};
 
     // Creer le code de la requete Sql
-    int origine = pLaDemande->origine;
-    if(origine > 1 && origine <=3)
-    {
-        origine --;
-    }
-    else
-    {
-        origine = 0;
-    }
-    sql_msgRef = (this->*ptrFunc[origine])(distance);
+
+    sql_msgRef = (this->*ptrFunc[0])(distance);
 
     sqm_tmp->setQuery(sql_msgRef);
 
@@ -551,22 +563,13 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int curId,
 
 
     // Fonction Pour La requete de base (obtenir les tirages)
-    QString (SyntheseDetails::*ptrFunc[3])(QStringList &, int)=
-    {&SyntheseDetails::DoSqlMsgRef_Tb4,
-            &SyntheseDetails::DoSqlMsgRef_Tb4,
-            &SyntheseDetails::DoSqlMsgRef_Tb4};
+    QString (SyntheseDetails::*ptrFunc[3])(int)=
+    {&SyntheseDetails::DoSqlMsgRefGenerique,
+            &SyntheseDetails::DoSqlMsgRefGenerique,
+            &SyntheseDetails::DoSqlMsgRefGenerique};
 
-    // Creer le code de la requete Sql
-    int origine = pLaDemande->origine;
-    if(origine > 1 && origine <=3)
-    {
-        origine --;
-    }
-    else
-    {
-        origine = 0;
-    }
-    sql_msgRef = (this->*ptrFunc[origine])(stl_tmp,distance);
+
+    sql_msgRef = (this->*ptrFunc[0])(distance);
 
     sqm_tmp->setQuery(sql_msgRef);
 
@@ -678,27 +681,19 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
     QTableView *qtv_tmp = new QTableView;
 
     // Fonction Pour La requete de base (obtenir les tirages)
-    QString (SyntheseDetails::*ptrFuncN1[3])(QStringList &, int)=
-    {&SyntheseDetails::DoSqlMsgRef_Tb1,
-            &SyntheseDetails::DoSqlMsgRef_Tb2,
-            &SyntheseDetails::DoSqlMsgRef_Tb3};
+    QString (SyntheseDetails::*ptrFuncN1[3])(int)=
+    {&SyntheseDetails::DoSqlMsgRefGenerique,
+            &SyntheseDetails::DoSqlMsgRefGenerique,
+            &SyntheseDetails::DoSqlMsgRefGenerique};
 
     QString (SyntheseDetails::*ptrFuncN2[3])(QStringList &, QString &,int)=
     {&SyntheseDetails::SD_Tb1_1,
             &SyntheseDetails::SD_Tb1_3,
             &SyntheseDetails::SD_Tb1_3};
 
-    // Creer le code de la requete Sql
-    int origine = pLaDemande->origine;
-    if(origine > 1 && origine <=3)
-    {
-        origine --;
-    }
-    else
-    {
-        origine = 0;
-    }
-    sql_msgRef = (this->*ptrFuncN1[origine])(stl_tmp,distance);
+
+    int origine = 0;
+    sql_msgRef = (this->*ptrFuncN1[0])(distance);
     // Retirer le ; de la fin
     sql_msgRef.replace(";","");
 
@@ -1274,7 +1269,7 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
         }
 
         // Jour demande ?
-        if(pLaDemande->col[i])
+        if(pLaDemande->col[i]>1)
             st_jour[i] =
                     QString::fromLocal8Bit("(tb1.jour_tirage like '%")
                     +pLaDemande->st_col[i]+

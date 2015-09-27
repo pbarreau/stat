@@ -38,6 +38,8 @@ private:
     int curzn;
     stCurDemande uneDemande;
     QStringList lst_selection[3];
+    QString st_baseDef;
+    QString st_JourTirageDef;
 
     QGridLayout *disposition;
     //QStandardItemModel *sim_bloc1;
@@ -71,6 +73,8 @@ public slots:
 
 
 private:
+    QString OrganiseChampsDesTirages();
+    QString CompteJourTirage();
     void DoTirages(void);
     void DoComptageTotal(void);
     void DoBloc2(void);
