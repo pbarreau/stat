@@ -31,12 +31,18 @@ SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel
     pMaConf = pConf;
     curzn = zn;
 
-    st_baseDef = OrganiseChampsDesTirages();
-    st_JourTirageDef = CompteJourTirage();
+    st_baseDef = new QString;
+    *st_baseDef = OrganiseChampsDesTirages();
+
+    st_JourTirageDef = new QString;
+    *st_JourTirageDef = CompteJourTirage();
+
+    uneDemande.st_baseDef = st_baseDef;
+    uneDemande.st_jourDef = st_JourTirageDef;
     DoTirages();
     DoComptageTotal();
     DoBloc2();
-    DoBloc3();
+    //DoBloc3();
 }
 
 QString SyntheseGenerale::OrganiseChampsDesTirages()
@@ -111,7 +117,7 @@ void SyntheseGenerale::DoTirages(void)
     QTableView *qtv_tmp = new QTableView;
 
 
-    QString st_sqlReq = st_baseDef;
+    QString st_sqlReq = *st_baseDef;
 
     sqm_LesTirages->setQuery(st_sqlReq);
 
@@ -170,7 +176,7 @@ void SyntheseGenerale::DoComptageTotal(void)
     QGridLayout *design_onglet[3];
 
     // Tableau de pointeur de fonction
-    QGridLayout *(SyntheseGenerale::*ptrFunc[])(stTiragesDef *pConf)=
+    QGridLayout *(SyntheseGenerale::*ptrFunc[])(int)=
     {
             &SyntheseGenerale::MonLayout_SyntheseTotalBoules,
             &SyntheseGenerale::MonLayout_SyntheseTotalEtoiles,
@@ -184,19 +190,19 @@ void SyntheseGenerale::DoComptageTotal(void)
         wid_ForTop[i]=new QWidget;
         tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
 
-        //
-        design_onglet[i] = (this->*ptrFunc[i])(pConf);
+        // Recherche a une distance de 0 sans critere de filtre
+        design_onglet[i] = (this->*ptrFunc[i])(0);
         wid_ForTop[i]->setLayout(design_onglet[i]);
     }
 
     QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(tab_Top);
-    disposition->addLayout(mainLayout,0,1,2,1,Qt::AlignLeft|Qt::AlignTop);
+    disposition->addLayout(mainLayout,0,1,3,1,Qt::AlignLeft|Qt::AlignTop);
 
 
 }
 
-QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(stTiragesDef *pConf)
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
 {
 #if 0
 #endif
@@ -209,28 +215,44 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(stTiragesDef *pCo
     qtv_tmp=tbv_bloc1_2;
 
     QString st_baseUse = "";
-    st_baseUse = "(" +
-            st_baseDef.remove(";") +
-            ") as tb_ref ";
-
+    st_baseUse = st_baseDef->remove(";");
+    QString st_cr1 = "";
+    QStringList lst_tmp;
+    lst_tmp << "tb2.e";
+    int loop = pMaConf->nbElmZone[1];
+    st_cr1 =  GEN_Where_3(loop,"tb1.boule",false,"=",lst_tmp,true,"or");
     QString st_msg1 =
             "select tb1.boule as B, count(tb2.id) as T, "
-            +st_JourTirageDef
-            + " "
-              "from  "
-              "("
-              "select id as boule from Bnrz where (z2 not null ) "
-              ") as tb1 "
-              "left join "
-              "("
-              "select * from "
-            +st_baseUse
-            +" "
-             ") as tb2 "
-             "on "
-             "("
-             "tb1.boule = tb2.e1 "
-             ") group by tb1.boule;";
+            + *st_JourTirageDef +
+            " "
+            "from  "
+            "("
+            "select id as boule from Bnrz where (z2 not null ) "
+            ") as tb1 "
+            "left join "
+            "("
+            "select tb2.* from "
+            "("
+            +st_baseUse+
+            " )as tb1"
+            ","
+            "("
+            +st_baseUse+
+            ")as tb2 "
+            "where"
+            "("
+            "tb2.id=tb1.id + "
+            +QString::number(dst) +
+            ")"
+            ") as tb2 "
+            "on "
+            "("
+            +st_cr1+
+            ") group by tb1.boule;";
+
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_msg1;
+#endif
 
     sqm_bloc1_2->setQuery(st_msg1);
 
@@ -242,7 +264,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(stTiragesDef *pCo
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(225,200);
+    qtv_tmp->setFixedSize(225,400);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -280,13 +302,112 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(stTiragesDef *pCo
 
 }
 
-QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(stTiragesDef *pConf)
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 {
+#if 0
+#endif
+
     QGridLayout *lay_return = new QGridLayout;
+
+    QTableView *qtv_tmp ;
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+
+    tbv_bloc1_3 = new QTableView;
+    sqm_bloc1_3 = new QSqlQueryModel;
+    qtv_tmp=tbv_bloc1_3;
+    sqm_tmp=sqm_bloc1_3;
+
+    QString st_baseUse = "";
+    st_baseUse = st_baseDef->remove(";");
+    QString st_cr1 = "";
+    QStringList lst_tmp;
+    lst_tmp << "tb2.e";
+    int loop = pMaConf->nbElmZone[1];
+    st_cr1 =  "tb1.id=tb2.pid";
+    QString st_msg1 =
+            "select tb1.id as Id, tb1.tip as Repartition, count(tb2.id) as T, "
+            + *st_JourTirageDef +
+            " "
+            "from  "
+            "("
+            "select id,tip from lstcombi"
+            ") as tb1 "
+            "left join "
+            "("
+            "select tb2.* from "
+            "("
+            +st_baseUse+
+            " )as tb1"
+            ","
+            "("
+            +st_baseUse+
+            ")as tb2 "
+            "where"
+            "("
+            "tb2.id=tb1.id+"
+            +QString::number(dst) +
+            ")"
+            ") as tb2 "
+            "on "
+            "("
+            +st_cr1+
+            ") group by tb1.id;";
+
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_msg1;
+#endif
+
+    sqm_tmp->setQuery(st_msg1);
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+
+
+    qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setFixedSize(290,400);
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
+    qtv_tmp->setModel(m);
+    qtv_tmp->verticalHeader()->hide();
+    qtv_tmp->setColumnWidth(0,30);
+    qtv_tmp->setColumnWidth(1,70);
+    for(int j=2;j<=sqm_tmp->columnCount();j++)
+        qtv_tmp->setColumnWidth(j,40);
+
+
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+
+    // Filtre
+    QFormLayout *FiltreLayout = new QFormLayout;
+    FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
+    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,1);
+    FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
+
+    lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
+
+#if 0
+    // simple click dans fenetre  pour selectionner boule
+    connect( tbv_bloc1_2, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_SelectionneBoules( QModelIndex) ) );
+
+
+    // double click dans fenetre  pour afficher details boule
+    connect( tbv_bloc1_2, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+#endif
     return lay_return;
 }
 
-QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(stTiragesDef *pConf)
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 {
 #if 0
 #endif
@@ -299,28 +420,39 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(stTiragesDef *pCon
     qtv_tmp=tbv_bloc1_1;
 
     QString st_baseUse = "";
-    st_baseUse = "(" +
-            st_baseDef.remove(";") +
-            ") as tb_ref ";
-
+    st_baseUse = st_baseDef->remove(";");
+    QString st_cr1 = "";
+    QStringList lst_tmp;
+    lst_tmp << "tb2.b";
+    st_cr1 =  GEN_Where_3(5,"tb1.boule",false,"=",lst_tmp,true,"or");
     QString st_msg1 =
             "select tb1.boule as B, count(tb2.id) as T, "
-            +st_JourTirageDef
-            + " "
-                               "from  "
-                               "("
-                               "select id as boule from Bnrz where (z1 not null ) "
-                               ") as tb1 "
-                               "left join "
-                               "("
-                               "select * from "
-            +st_baseUse
-            +" "
-             ") as tb2 "
-             "on "
-             "("
-             "tb1.boule = tb2.b1 or tb1.boule = tb2.b2 or tb1.boule = tb2.b3 or tb1.boule = tb2.b4 or tb1.boule = tb2.b5 "
-             ") group by tb1.boule;";
+            + *st_JourTirageDef +
+            " "
+            "from  "
+            "("
+            "select id as boule from Bnrz where (z1 not null ) "
+            ") as tb1 "
+            "left join "
+            "("
+            "select tb2.* from "
+            "("
+            +st_baseUse+
+            " )as tb1"
+            ","
+            "("
+            +st_baseUse+
+            ")as tb2 "
+            "where"
+            "("
+            "tb2.id=tb1.id + "
+            +QString::number(dst) +
+            ")"
+            ") as tb2 "
+            "on "
+            "("
+            +st_cr1+
+            ") group by tb1.boule;";
 
 #ifndef QT_NO_DEBUG
     qDebug()<< st_msg1;
@@ -336,7 +468,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(stTiragesDef *pCon
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(225,200);
+    qtv_tmp->setFixedSize(225,400);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -541,87 +673,7 @@ void SyntheseGenerale::slot_SelectionneBoules(const QModelIndex & index)
         MemoriserChoixUtilisateur(1, tbv_bloc1_2, index);
     }
 
-#if 0
-    static int col_depart= -1;
-    QItemSelectionModel *selection;
-    QItemSelection une_cellule_choisie(index,index);
-    QModelIndexList indexes ;
-    QModelIndex un_index;
-    int cur_col = index.column();
-    int nb_element_max_zone = 0;
-    int nb_items = 0;
 
-    // Voir si selection est bien en colonne
-    if(col_depart == -1)
-    {
-        col_depart = cur_col;
-    }
-
-    // Boules
-    if(pSource == tbv_bloc1_1->model()->index(0,0).internalPointer())
-    {
-        selection = tbv_bloc1_1->selectionModel();
-        indexes = selection->selectedIndexes();
-
-        // L'utilisateur a tout deselectionnee
-        if(indexes.size() == 0)
-        {
-            col_depart = -1;
-            return;
-        }
-
-        // La colonne numero de boule
-        if(cur_col == col_depart)
-        {
-
-            nb_element_max_zone =5;
-            nb_items = indexes.size();
-            if(nb_items <= nb_element_max_zone)
-            {
-                QStringList lst_tmp;
-                QString val;
-                foreach(un_index, indexes)
-                {
-#ifndef QT_NO_DEBUG
-                    qDebug() << "Boules -> Nb items:"<<nb_items
-                             <<"Col:" << un_index.column()
-                            <<", Ligne:" << un_index.row();
-#endif
-                    val = un_index.model()->index(un_index.row(),0).data().toString();
-                    //val_2 = un_index.data().toString();
-                    lst_tmp = lst_tmp << val;
-                }
-                lst_selection[0]=lst_tmp;
-            }
-            else
-            {
-                //un message d'information
-                QMessageBox::warning(0, tr("Boules"), tr("Attention, maximum deja selectionne !"),QMessageBox::Yes);
-            }
-
-        }
-        else
-        {
-            // deselectionner l'element
-            selection->select(une_cellule_choisie, QItemSelectionModel::Deselect);
-        }
-
-    }
-
-    // Etoiles
-    if(pSource == tbv_bloc1_2->model()->index(0,0).internalPointer())
-    {
-        selection = tbv_bloc1_2->selectionModel();
-        indexes = selection->selectedIndexes();
-
-        foreach(un_index, indexes) {
-#ifndef QT_NO_DEBUG
-            qDebug() << "Etoiles -> Col:" << un_index.column()<<", Ligne:" << un_index.row();
-#endif
-        }
-
-    }
-#endif
 }
 
 void SyntheseGenerale::MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const QModelIndex & index)
@@ -653,6 +705,7 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const
     if(indexes.size() == 0)
     {
         col_depart[zn] = -1;
+        uneDemande.lst_boules[zn].clear();
         return;
     }
 
@@ -660,9 +713,9 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const
     {
         col_depart[zn] =  cur_col;
         uneDemande.col[zn] = cur_col;
-        uneDemande.st_col[zn]=headName;
+        uneDemande.stc[zn]=headName;
         uneDemande.val[zn]=val;
-        uneDemande.boule[zn]=ligne;
+        uneDemande.lgn[zn]=ligne;
 
     }
 
@@ -704,9 +757,25 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const
 
 void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 {
+    void *pSource = index.internalPointer();
+
     // Le simple click a construit la liste des boules
     stCurDemande *etude = new stCurDemande;
 
+    // Boules
+    if(
+            (pSource == tbv_bloc1_1->model()->index(0,0).internalPointer())
+            ||
+            (pSource == tbv_bloc1_2->model()->index(0,0).internalPointer())
+            ||
+            (pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
+      )
+    {
+        uneDemande.origine = 1;
+    }
+
+
+    // Origine de la demande
 
     // recopie de la config courante
     *etude = uneDemande;

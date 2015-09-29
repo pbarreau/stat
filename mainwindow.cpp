@@ -1881,7 +1881,7 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
-    subWindow->resize(830,570);
+    subWindow->resize(845,570);
     subWindow->move(0,0);
     qw_nsr->setVisible(true);
 }
@@ -2121,10 +2121,10 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
         //stl_tmp << QString::number(ligne+1);
 
         etude->origine = 3;
-        etude->boule[3] = index.model()->index(index.row(),0).data().toInt();;
+        etude->lgn[3] = index.model()->index(index.row(),0).data().toInt();;
         etude->col[3] = colon;
         etude->val[3] = val;
-        etude->st_col[3] = headName;
+        etude->stc[3] = headName;
         etude->st_titre = msg;
         etude->lst_boules[3] = stl_tmp;
 

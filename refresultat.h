@@ -38,8 +38,8 @@ private:
     int curzn;
     stCurDemande uneDemande;
     QStringList lst_selection[3];
-    QString st_baseDef;
-    QString st_JourTirageDef;
+    QString *st_baseDef;
+    QString *st_JourTirageDef;
 
     QGridLayout *disposition;
     //QStandardItemModel *sim_bloc1;
@@ -81,9 +81,9 @@ private:
     void DoBloc3(void);
     void MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const QModelIndex & index);
 
-    QGridLayout * MonLayout_SyntheseTotalBoules(stTiragesDef *pConf);
-    QGridLayout * MonLayout_SyntheseTotalEtoiles(stTiragesDef *pConf);
-    QGridLayout * MonLayout_SyntheseTotalRepartitions(stTiragesDef *pConf);
+    QGridLayout * MonLayout_SyntheseTotalBoules(int dst);
+    QGridLayout * MonLayout_SyntheseTotalEtoiles(int dst);
+    QGridLayout * MonLayout_SyntheseTotalRepartitions(int dst);
 
 
     QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);

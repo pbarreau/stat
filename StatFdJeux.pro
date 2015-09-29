@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     monQview.cpp \
     monSqlEditable.cpp \
     filtrecombinaisons.cpp \
-    SyntheseDetails.cpp
+    SyntheseDetails.cpp \
+    newdetails.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \

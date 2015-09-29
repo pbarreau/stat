@@ -123,35 +123,44 @@ SyntheseDetails::SyntheseDetails(stCurDemande *uneEtude, QMdiArea *visuel)
 {
     pLaDemande = uneEtude;
     pEcran = visuel;
+    int d[]={0,-1,1,-2};
+    QString n[]={"0","+1","-1","?"};
+
+    for(int i = 0 ;i <4;i++)
+    {
+        dst[i]=d[i];
+        ong[i]=n[i];
+    }
+
     MontreRechercheTirages(uneEtude);
 }
 
 
 void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
 {
-    int bouleId = pEtude->boule[0];
-    QString colName = pEtude->st_col[0];
+    int bouleId = pEtude->lgn[0];
+    QString colName = pEtude->stc[0];
     //int curVal=pEtude->val[0];
 
     QWidget *qw_main = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
     QTabWidget **wid_ForTop_1 = new QTabWidget*[4];
-    QString stNames_1[4]={"0","+1","-1","?"};
-    const int Ref_D_Onglet[4]={0,-1,1,-2};
+    //QString ong[4]={"0","+1","-1","?"};
+    //const int dst[4]={0,-1,1,-2};
 
     onglets = tab_Top;
 
     for(int i =0; i<4;i++)
     {
         wid_ForTop_1[i]=new QTabWidget;
-        tab_Top->addTab(wid_ForTop_1[i],tr(stNames_1[i].toUtf8()));
+        tab_Top->addTab(wid_ForTop_1[i],tr(ong[i].toUtf8()));
 
         QWidget **wid_ForTop_2 = new QWidget*[3];
-        QString stNames_2[3]={"Tirages","Voisins","Repartition"};
+        QString stNames_2[3]={"Tirages","Voisins","Combinaison"};
         QGridLayout *design_onglet_2[3];
 
         // Tableau de pointeur de fonction
-        QGridLayout *(SyntheseDetails::*ptrFunc[])(int ,stCurDemande *, int )=
+        QGridLayout *(SyntheseDetails::*ptrFunc[])(int , int, int )=
         {&SyntheseDetails::MonLayout_pFnDetailsMontrerTirages,
                 &SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese,
                 &SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition};
@@ -172,7 +181,7 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
             wid_ForTop_1[i]->addTab(wid_ForTop_2[j],tr(stNames_2[j].toUtf8()));
 
             //
-            design_onglet_2[j] = (this->*ptrFunc[j])(j, pEtude, Ref_D_Onglet[i]);
+            design_onglet_2[j] = (this->*ptrFunc[j])(i, j, dst[i]);
             wid_ForTop_2[j]->setLayout(design_onglet_2[j]);
 
             // Verifier si on est sur l'onglet n° 4
@@ -196,25 +205,25 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     for(int i=0;i<3;i++)
     {
         int clef = ordre[i];
-       if(pEtude->lst_boules[clef].size())
-       {
-         if(pEtude->st_col[clef] != "")
-         {
-           st_tmp =  st_tmp +
-                   Nom[clef] +"("
-                   + pEtude->st_col[clef] +
-                    ") ";
-         }
-         else
-         {
-            st_tmp =  st_tmp + Nom[clef];
-         }
+        if(pEtude->lst_boules[clef].size())
+        {
+            if(pEtude->stc[clef] != "")
+            {
+                st_tmp =  st_tmp +
+                        Nom[clef] +"("
+                        + pEtude->stc[clef] +
+                        ") ";
+            }
+            else
+            {
+                st_tmp =  st_tmp + Nom[clef];
+            }
 
 
-         for(int j=0; j<pEtude->lst_boules[clef].size();j++)
-             st_tmp = st_tmp + pEtude->lst_boules[clef].at(j) + ",";
+            for(int j=0; j<pEtude->lst_boules[clef].size();j++)
+                st_tmp = st_tmp + pEtude->lst_boules[clef].at(j) + ",";
 
-       }
+        }
     }
     st_tmp.remove(st_tmp.length()-1,1);
 
@@ -225,7 +234,7 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     }
     else
     {
-      pEtude->st_titre = st_tmp;
+        pEtude->st_titre = st_tmp;
     }
 
     st_titre = st_titre + st_tmp ;
@@ -242,27 +251,25 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     qw_main->show();
 }
 
-QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int curId, stCurDemande *pEtude, int val)
+QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref, int elm, int dst)
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    QStringList stl_tmp = pEtude->lst_boules[curId];
+    //QStringList stl_tmp = pLaDemande->lst_boules[elm];
 
-    const int Ref_D_Onglet[4]={0,-1,1,-2};
-    const bool Ref_A_Onglet[4]={false,false,false,true};
 
-    int distance = Ref_D_Onglet[curId];
-    bool ongSpecial = Ref_A_Onglet[curId];
 
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
 
 
-    if(curId==3)
+#if 0
+    if(ref==3)
     {
-        distance = val;
+        distance = dst;
     }
+#endif
 
     // Fonction Pour La requete de base (obtenir les tirages)
     QString (SyntheseDetails::*ptrFunc[3])(int)=
@@ -272,7 +279,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int curId, stC
 
     // Creer le code de la requete Sql
 
-    sql_msgRef = (this->*ptrFunc[0])(distance);
+    sql_msgRef = (this->*ptrFunc[0])(dst);
 
     sqm_tmp->setQuery(sql_msgRef);
 
@@ -289,7 +296,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int curId, stC
     // Filtre
     QHBoxLayout *tmp_hLay = new QHBoxLayout();
 
-    QComboBox *tmp_combo = ComboPerso(curId);
+    QComboBox *tmp_combo = ComboPerso(ref);
 
     QLabel *tmp_lab = new QLabel(tr("Filtre :"));
     tmp_lab->setBuddy(tmp_combo);
@@ -332,15 +339,15 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int curId, stC
 
     //int pos_x = 0;
     int pos_y = 0;
-    if(ongSpecial)
+    if(ref==3)
     {
         // Dernier onglet
         QFormLayout *distLayout = new QFormLayout;
-        dist = new QLineEdit(QString::number((distance*-1)));
+        dist = new QLineEdit(QString::number((dst*-1)));
 
         distLayout->addRow("&Distance", dist);
         lay_return->addLayout(distLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
-        bSelection = stl_tmp;
+        //bSelection = stl_tmp;
         // Connection du line edit
         connect(dist, SIGNAL(returnPressed()),
                 this, SLOT(slot_NouvelleDistance()));
@@ -352,8 +359,8 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int curId, stC
 
     // Associer la combo de selection au filtre pour
     // cette distance (ie cet onglet) et la Qtview associee
-    pCritere[curId] = tmp_combo;
-    pFiltre[curId] = fltComb_tmp;
+    pCritere[ref] = tmp_combo;
+    pFiltre[ref] = fltComb_tmp;
 
     return(lay_return);
 }
@@ -503,16 +510,16 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     new_distance *=-1;
 
     // Tableau de pointeur de fonction
-    QGridLayout *(SyntheseDetails::*ptrFunc[2])(int ,stCurDemande *,  int )=
+    QGridLayout *(SyntheseDetails::*ptrFunc[2])(int ,int,  int )=
     {&SyntheseDetails::MonLayout_pFnDetailsMontrerTirages,&SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese};
 
-    for(int j =0; j<2;j++)
+    for(int j =0; j<3;j++)
     {
         // Effacer l'ancien layout et mettre le nouveau
         QGridLayout * oldOne = G_design_onglet_2[j];
         QGridLayout * monTest;
 
-        monTest = (this->*ptrFunc[j])(3,pLaDemande,new_distance);
+        monTest = (this->*ptrFunc[j])(3,j,new_distance);
 
         // nouveau dessin ok.
         // Rechercher l'ancien pour suppression et reaffectation;
@@ -524,17 +531,17 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     }
 }
 
-QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int curId, stCurDemande *pEtude, int /*val*/)
+QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int elm, int dst)
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    QStringList stl_tmp = pEtude->lst_boules[curId];
+    QStringList stl_tmp = pLaDemande->lst_boules[elm];
 
     const int Ref_D_Onglet[4]={0,-1,1,-2};
     const bool Ref_A_Onglet[4]={false,false,false,true};
 
-    int distance = Ref_D_Onglet[curId];
-    bool ongSpecial = Ref_A_Onglet[curId];
+    int distance = Ref_D_Onglet[ref];
+    bool ongSpecial = Ref_A_Onglet[ref];
 
     Synthese_1(lay_return,stl_tmp,distance,ongSpecial);
     Synthese_2(lay_return,stl_tmp,distance,ongSpecial);
@@ -543,17 +550,17 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int curId, st
     return(lay_return);
 }
 
-QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int curId, stCurDemande *pEtude, int val)
+QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, int elm, int dst)
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    QStringList stl_tmp = pEtude->lst_boules[curId];
+    QStringList stl_tmp = pLaDemande->lst_boules[elm];
 
     const int Ref_D_Onglet[4]={0,-1,1,-2};
     const bool Ref_A_Onglet[4]={false,false,false,true};
 
-    int distance = Ref_D_Onglet[curId];
-    bool ongSpecial = Ref_A_Onglet[curId];
+    int distance = Ref_D_Onglet[ref];
+    bool ongSpecial = Ref_A_Onglet[ref];
 
 
     QString sql_msgRef = "";
@@ -680,24 +687,70 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
 
-    // Fonction Pour La requete de base (obtenir les tirages)
-    QString (SyntheseDetails::*ptrFuncN1[3])(int)=
-    {&SyntheseDetails::DoSqlMsgRefGenerique,
-            &SyntheseDetails::DoSqlMsgRefGenerique,
-            &SyntheseDetails::DoSqlMsgRefGenerique};
+    int loop[]={5,1,0};
+    QString table[]={"tbleft.boule","tbleft.boule","tbleft.boule"};
+    QString table_2[]={"tbright.b","tbright.e","tbleft.pid"};
+    bool inc1[] ={false,false,false};
+    QString cond1[]={"=","=","="};
+    bool inc2[] ={true,true,true};
+    QString cond2[]={"or","or","or"};
 
-    QString (SyntheseDetails::*ptrFuncN2[3])(QStringList &, QString &,int)=
-    {&SyntheseDetails::SD_Tb1_1,
-            &SyntheseDetails::SD_Tb1_3,
-            &SyntheseDetails::SD_Tb1_3};
+    QString msg_req[3] = {""};
+    QString st_jour[3] = {""};
+
+    QString st_cri_all = "";
+
+    QString jonc = " and ";
+    QStringList boules;
 
 
-    int origine = 0;
-    sql_msgRef = (this->*ptrFuncN1[0])(distance);
+    sql_msgRef = DoSqlMsgRefGenerique(distance);
     // Retirer le ; de la fin
     sql_msgRef.replace(";","");
 
-    sql_msgRef = (this->*ptrFuncN2[origine])(stl_tmp,sql_msgRef,distance);
+    if(distance == 0)
+    {
+        for(int i = 0; i< 3; i++)
+        {
+            //boules=pLaDemande->lst_boules[i];
+            boules = boules << table_2[i];
+            msg_req[i] = "";
+
+            // creation du message en fonction d'origine
+            if(boules[i].size())
+                msg_req[i]= GEN_Where_3(loop[i],table[i],inc1[i],cond1[i],boules,inc2[i],cond2[i]);
+
+            if (msg_req[i] != "")
+            {
+                st_cri_all = st_cri_all + msg_req[i] + jonc;
+            }
+            boules.clear();
+
+         }
+
+    }
+
+#ifndef QT_NO_DEBUG
+    qDebug() << st_cri_all;
+#endif
+
+    sql_msgRef =
+            "select tbleft.boule as B, count(tbright.id) as T, "
+            +*(pLaDemande->st_jourDef)+ " "
+            "from "
+            "( "
+            "select id as boule from Bnrz where (z1 not null ) "
+            ") as tbleft "
+            "left join "
+            "( "
+            +sql_msgRef+
+            ") as tbright "
+            "on "
+            "( "
+            + st_cri_all +
+            ") group by tbleft.boule; "
+            ;
+
 #ifndef QT_NO_DEBUG
     qDebug() << sql_msgRef;
 #endif
@@ -749,32 +802,30 @@ void SyntheseDetails::Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
 
-    // Fonction Pour La requete de base (obtenir les tirages)
-    QString (SyntheseDetails::*ptrFuncN1[3])(QStringList &, int)=
-    {&SyntheseDetails::DoSqlMsgRef_Tb1,
-            &SyntheseDetails::DoSqlMsgRef_Tb2,
-            &SyntheseDetails::DoSqlMsgRef_Tb3};
 
-    QString (SyntheseDetails::*ptrFuncN2[3])(QStringList &, QString &,int)=
-    {&SyntheseDetails::SD_Tb2_1,
-            &SyntheseDetails::SD_Tb2_3,
-            &SyntheseDetails::SD_Tb2_3};
 
-    // Creer le code de la requete Sql
-    int origine = pLaDemande->origine;
-    if(origine > 1 && origine <=3)
-    {
-        origine --;
-    }
-    else
-    {
-        origine = 0;
-    }
-    sql_msgRef = (this->*ptrFuncN1[origine])(stl_tmp,distance);
+    sql_msgRef = DoSqlMsgRefGenerique(distance);
     // Retirer le ; de la fin
     sql_msgRef.replace(";","");
 
-    sql_msgRef = (this->*ptrFuncN2[origine])(stl_tmp,sql_msgRef,distance);
+    sql_msgRef =
+            "select tbleft.boule as B, count(tbright.Tid1) as T, "
+            +*(pLaDemande->st_jourDef)+
+            "from "
+            "( "
+            "select id as boule from Bnrz where (z2 not null ) "
+            ") as tbleft "
+            "left join "
+            "( "
+            +sql_msgRef+
+            ") as tbright "
+            "on "
+            "( "
+            "( "
+            "tbleft.boule = tbright.e1 "
+            ") "
+            ") group by tbleft.boule; "
+            ;
 #ifndef QT_NO_DEBUG
     qDebug() << sql_msgRef;
 #endif
@@ -1023,27 +1074,6 @@ QString SyntheseDetails::SD_Tb2_2(QStringList &boules, QString &sqlTblRef,int ds
 QString SyntheseDetails::SD_Tb1_3(QStringList &boules, QString &sqlTblRef,int dst)
 {
 #if 0
-    -- Requete comptage du resultat precedent
-            select tbleft.boule as B, count(tbright.Tid1) as T,
-            count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM
-            from
-            (
-                select id as boule from Bnrz where (z1 not null )
-                ) as tbleft
-            left join
-            (
-                select tb3.id as Tid1, tb5.id as Pid1, tb3.jour_tirage as J, substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, tb5.tip as C, tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, tb3.e1 as e1 from tirages as tb3, analyses as tb4, lstcombi as tb5 inner join ( select tirages.*,  analyses.id_poids from tirages,analyses where ( tirages.id=analyses.id and analyses.id_poids = 115) ) as tb2 on ( (tb3.id = tb2.id + 0) and (tb4.id = tb3.id) and (tb4.id_poids = tb5.id) )
-                ) as tbright
-            on
-            (
-                (
-                    tbleft.boule = tbright.b1 or
-            tbleft.boule = tbright.b2 or
-            tbleft.boule = tbright.b3 or
-            tbleft.boule = tbright.b4 or
-            tbleft.boule = tbright.b5
-            )
-                ) group by tbleft.boule;
 #endif
     QString sql_msg ="";
 
@@ -1054,7 +1084,7 @@ QString SyntheseDetails::SD_Tb1_3(QStringList &boules, QString &sqlTblRef,int ds
 
     sql_msg =
             "select tbleft.boule as B, count(tbright.Tid1) as T, "
-            "count(CASE WHEN J like 'lundi%' then 1 end) as LUN, count(CASE WHEN J like 'mercredi%' then 1 end) as MER, count(CASE WHEN J like 'same%' then 1 end) as SAM "
+            +*(pLaDemande->st_jourDef)+
             "from "
             "( "
             "select id as boule from Bnrz where (z1 not null ) "
@@ -1177,7 +1207,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
             QString st_sqlR = "";
     QString st_cri1 = "";
     //QString st_cri2 = "";
-    int val = pLaDemande->boule[0];
+    int val = pLaDemande->lgn[0];
 
     if(boules.size())
     {
@@ -1256,12 +1286,17 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
 
     QStringList boules;
 
+    QString st_baseUse = "";
+    st_baseUse = pLaDemande->st_baseDef->remove(";");
+
     for(int i = 0; i< 3; i++)
     {
         boules=pLaDemande->lst_boules[i];
+        msg_req[i] = "";
 
         // creation du message en fonction d'origine
-        msg_req[i]= GEN_Where_3(loop[i],table[i],inc1[i],cond1[i],boules,inc2[i],cond2[i]);
+        if(boules.size())
+            msg_req[i]= GEN_Where_3(loop[i],table[i],inc1[i],cond1[i],boules,inc2[i],cond2[i]);
 
         if (msg_req[i] != "")
         {
@@ -1272,7 +1307,7 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
         if(pLaDemande->col[i]>1)
             st_jour[i] =
                     QString::fromLocal8Bit("(tb1.jour_tirage like '%")
-                    +pLaDemande->st_col[i]+
+                    +pLaDemande->stc[i]+
                     "%')" ;
 
         if (st_jour[i] != "")
@@ -1282,40 +1317,32 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
     }
 
     // on retire le dernier and
+    if(st_cri_all != "")
+    {
     st_cri_all.remove(st_cri_all.size()-jonc.size(),jonc.size());
+    st_cri_all = " and " + st_cri_all;
+    }
 
 #ifndef QT_NO_DEBUG
     qDebug() << st_cri_all;
 #endif
 
-    st_sqlR =
-            "select tb3.id as Tid1, tb5.id as Pid,"
-            "tb3.jour_tirage as J,"
-            "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
-            "tb5.tip as C,"
-            "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
-            "tb3.e1 as e1,"
-            "tb3.bp as P,"
-            "tb3.bg as G "
-            "from tirages as tb3, analyses as tb4, lstcombi as tb5 "
-            "inner join"
+
+
+    st_sqlR = "select tb2.* from "
+              "("
+            +st_baseUse+
+            " )as tb1"
+            ","
             "("
-            "select *  from tirages as tb1 "
+            +st_baseUse+
+            ")as tb2 "
             "where"
             "("
+            "(tb2.id=tb1.id + "
+            +QString::number(dst) + ") "
             +st_cri_all+
-            ")"
-            ") as tb2 "
-            "on ("
-            "(tb3.id = tb2.id + "
-            +QString::number(dst)
-            +") "
-             "and"
-             "(tb4.id = tb3.id)"
-             "and"
-             "(tb4.id_poids = tb5.id)"
-             ");"
-            ;
+            ");";
 
 #ifndef QT_NO_DEBUG
     qDebug() << st_sqlR;
@@ -1374,7 +1401,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
     {
         st_cri2 =
                 "and (tb1.jour_tirage like '%"
-                +pLaDemande->st_col[0]+"%')" ;
+                +pLaDemande->stc[0]+"%')" ;
     }
 
     st_msg =
@@ -1468,7 +1495,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb2(QStringList &boules, int dst)
     QString st_cri1_1 = "";
 
 
-    int val = pLaDemande->boule[0];
+    int val = pLaDemande->lgn[0];
 
     int col=pLaDemande->col[0];
 
@@ -1651,7 +1678,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
 
 
 
-    int val = pLaDemande->boule[0];
+    int val = pLaDemande->lgn[0];
     int col=pLaDemande->col[0];
 
 
@@ -1691,7 +1718,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
         st_cri2= st_cri2 +" and "
                           "( "
                           "J like '%"
-                +pLaDemande->st_col[0]+
+                +pLaDemande->stc[0]+
                 "%' "
                 ") ";
 
@@ -1738,13 +1765,13 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
     switch (origine) {
     case 1:
     case 2:
-        boule_id = pLaDemande->boule[0];
+        boule_id = pLaDemande->lgn[0];
         col = pLaDemande->col[0];
         stl_tmp << QString::number(choixLaBoule);
         break;
 
     case 3:
-        boule_id =  pLaDemande->boule[0];
+        boule_id =  pLaDemande->lgn[0];
         stl_tmp << QString::number(choixLaBoule);
         break;
 
@@ -1769,10 +1796,10 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
         st_lesBoules.remove(st_lesBoules.length()-1,1);
         //st_titre = st_titre + st_lesBoules;
         etude->origine = selTable;
-        etude->boule[zn] = boule_id;
+        etude->lgn[zn] = boule_id;
         etude->col[zn] = col;
         etude->val[zn] = val;
-        etude->st_col[zn] = headName;
+        etude->stc[zn] = headName;
         etude->st_titre = st_titre;
         etude->lst_boules[zn] = stl_tmp;
 
