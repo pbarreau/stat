@@ -535,7 +535,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int 
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    QStringList stl_tmp = pLaDemande->lst_boules[elm];
+    QStringList stl_tmp;// = pLaDemande->lst_boules[elm];
 
     const int Ref_D_Onglet[4]={0,-1,1,-2};
     const bool Ref_A_Onglet[4]={false,false,false,true};
@@ -708,27 +708,38 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
     // Retirer le ; de la fin
     sql_msgRef.replace(";","");
 
-    if(distance == 0)
+    for(int i = 0; i< 3; i++)
     {
-        for(int i = 0; i< 3; i++)
+        //boules=pLaDemande->lst_boules[i];
+        boules = boules << table_2[i];
+        msg_req[i] = "";
+
+        // creation du message en fonction d'origine
+        if(pLaDemande->lst_boules[i].size())
         {
-            //boules=pLaDemande->lst_boules[i];
-            boules = boules << table_2[i];
-            msg_req[i] = "";
+            if(distance == 0 && i==0){
+                // Mettre une exception pour ne pas compter le cas
+                msg_req[i]= msg_req[i] +GEN_Where_3(1,"tbleft.boule",false,"!=",pLaDemande->lst_boules[i],false,"and");
+                msg_req[i]= msg_req[i] + " and ";
 
-            // creation du message en fonction d'origine
-            if(boules[i].size())
-                msg_req[i]= GEN_Where_3(loop[i],table[i],inc1[i],cond1[i],boules,inc2[i],cond2[i]);
-
-            if (msg_req[i] != "")
-            {
-                st_cri_all = st_cri_all + msg_req[i] + jonc;
             }
-            boules.clear();
+                 msg_req[i]= msg_req[i] +GEN_Where_3(loop[i],table[i],inc1[i],cond1[i],boules,inc2[i],cond2[i]);
+        }
 
-         }
+        if (msg_req[i] != "")
+        {
+            st_cri_all = st_cri_all + msg_req[i] + jonc;
+        }
+        boules.clear();
 
     }
+
+    // on retire le dernier and
+    if(st_cri_all != "")
+    {
+        st_cri_all.remove(st_cri_all.size()-jonc.size(),jonc.size());
+    }
+
 
 #ifndef QT_NO_DEBUG
     qDebug() << st_cri_all;
@@ -737,12 +748,12 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
     sql_msgRef =
             "select tbleft.boule as B, count(tbright.id) as T, "
             +*(pLaDemande->st_jourDef)+ " "
-            "from "
-            "( "
-            "select id as boule from Bnrz where (z1 not null ) "
-            ") as tbleft "
-            "left join "
-            "( "
+                                        "from "
+                                        "( "
+                                        "select id as boule from Bnrz where (z1 not null ) "
+                                        ") as tbleft "
+                                        "left join "
+                                        "( "
             +sql_msgRef+
             ") as tbright "
             "on "
@@ -802,15 +813,68 @@ void SyntheseDetails::Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
 
+    int loop[]={1,1,0};
+    QString table[]={"tbleft.boule","tbleft.boule","tbleft.boule"};
+    QString table_2[]={"tbright.e","tbright.e","tbleft.e"};
+    bool inc1[] ={false,false,false};
+    QString cond1[]={"=","=","="};
+    bool inc2[] ={true,true,true};
+    QString cond2[]={"or","or","or"};
+
+    QString msg_req[3] = {""};
+    QString st_jour[3] = {""};
+
+    QString st_cri_all = "";
+
+    QString jonc = " and ";
+    QStringList boules;
 
 
     sql_msgRef = DoSqlMsgRefGenerique(distance);
     // Retirer le ; de la fin
     sql_msgRef.replace(";","");
 
+    for(int i = 0; i< 3; i++)
+    {
+        //boules=pLaDemande->lst_boules[i];
+        boules = boules << table_2[i];
+        msg_req[i] = "";
+
+        // creation du message en fonction d'origine
+        if(pLaDemande->lst_boules[1].size())
+        {
+            if(distance == 0 && i==1){
+                // Mettre une exception pour ne pas compter le cas
+                msg_req[i]= msg_req[i] +GEN_Where_3(1,"tbleft.boule",false,"!=",pLaDemande->lst_boules[i],false,"and");
+                msg_req[i]= msg_req[i] + " and ";
+
+            }
+                 msg_req[i]= msg_req[i] +GEN_Where_3(loop[i],table[i],inc1[i],cond1[i],boules,inc2[i],cond2[i]);
+        }
+
+        if (msg_req[i] != "")
+        {
+            st_cri_all = st_cri_all + msg_req[i] + jonc;
+        }
+        boules.clear();
+
+    }
+
+    // on retire le dernier and
+    if(st_cri_all != "")
+    {
+        st_cri_all.remove(st_cri_all.size()-jonc.size(),jonc.size());
+    }
+
+
+#ifndef QT_NO_DEBUG
+    qDebug() << st_cri_all;
+#endif
+
+
     sql_msgRef =
-            "select tbleft.boule as B, count(tbright.Tid1) as T, "
-            +*(pLaDemande->st_jourDef)+
+            "select tbleft.boule as B, count(tbright.id) as T, "
+            +*(pLaDemande->st_jourDef)+ " "
             "from "
             "( "
             "select id as boule from Bnrz where (z2 not null ) "
@@ -822,7 +886,7 @@ void SyntheseDetails::Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, 
             "on "
             "( "
             "( "
-            "tbleft.boule = tbright.e1 "
+            + st_cri_all +
             ") "
             ") group by tbleft.boule; "
             ;
@@ -1319,8 +1383,8 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
     // on retire le dernier and
     if(st_cri_all != "")
     {
-    st_cri_all.remove(st_cri_all.size()-jonc.size(),jonc.size());
-    st_cri_all = " and " + st_cri_all;
+        st_cri_all.remove(st_cri_all.size()-jonc.size(),jonc.size());
+        st_cri_all = " and " + st_cri_all;
     }
 
 #ifndef QT_NO_DEBUG

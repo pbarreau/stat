@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QHeaderView>
 #include <QVBoxLayout>
+#include <QSortFilterProxyModel>
 
 #include "refresultat.h"
 #include "SyntheseDetails.h"

@@ -6,6 +6,7 @@
 #include <QMdiSubWindow>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QSortFilterProxyModel>
 
 #include "labelclickable.h"
 #include "pointtirage.h"

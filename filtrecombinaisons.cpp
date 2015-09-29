@@ -1,5 +1,6 @@
 #include <QtWidgets>
 #include <QSqlTableModel>
+#include <QSortFilterProxyModel>
 #include "filtrecombinaisons.h"
 
 
