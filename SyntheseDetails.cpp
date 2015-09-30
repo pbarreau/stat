@@ -540,9 +540,11 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, i
 
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    QTableView *qtv_tmp = new QTableView;
 
-    qtv_local[2]=qtv_tmp;
+    qtv_zoomZ3 = new QTableView;
+    QTableView *qtv_tmp;
+    qtv_local[2] = qtv_zoomZ3;
+    qtv_tmp = qtv_zoomZ3;
 
     sql_msgRef = DoSqlMsgRefGenerique(dst);
     // Retirer le ; de la fin
@@ -680,12 +682,14 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, int distance)
 {
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    QTableView *qtv_tmp = new QTableView;
 
     QString st_cri_all = "";
     QStringList boules;
 
-    qtv_local[0]=qtv_tmp;
+    qtv_zoomZ1 = new QTableView;
+    QTableView *qtv_tmp;
+    qtv_local[0] = qtv_zoomZ1;
+    qtv_tmp = qtv_zoomZ1;
 
     sql_msgRef = DoSqlMsgRefGenerique(distance);
     // Retirer le ; de la fin
@@ -781,9 +785,10 @@ void SyntheseDetails::Synthese_2(QGridLayout *lay_return,int distance)
 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
 
-    qtv_local[1] = new QTableView;
+    qtv_zoomZ2 = new QTableView;
     QTableView *qtv_tmp;
-    qtv_tmp = qtv_local[1];
+    qtv_local[1] = qtv_zoomZ2;
+    qtv_tmp = qtv_zoomZ2;
 
 
 
@@ -1273,8 +1278,8 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
 {
     QString st_sqlR = "";
 
-    int loop[]={5,1,0};
-    QString table[]={"tb1.b","tb1.e",""};
+    int loop[]={5,1,1};
+    QString table[]={"tb1.b","tb1.e","tb1.pid"};
     bool inc1[] ={true,true,false};
     QString cond1[]={"=","=","="};
     bool inc2[] ={false,false,false};
@@ -1292,6 +1297,7 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
     QString st_baseUse = "";
     st_baseUse = pLaDemande->st_baseDef->remove(";");
 
+    int col_day = 1;
     for(int i = 0; i< 3; i++)
     {
         boules=pLaDemande->lst_boules[i];
@@ -1307,9 +1313,12 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
         }
 
         // Jour demande ?
-        if(pLaDemande->col[i]>1)
+        if (i == 2)
+            col_day = 2;
+
+        if(pLaDemande->col[i]>col_day)
             st_jour[i] =
-                    QString::fromLocal8Bit("(tb1.jour_tirage like '%")
+                    QString::fromLocal8Bit("(tb1.J like '%")
                     +pLaDemande->stc[i]+
                     "%')" ;
 
@@ -1762,6 +1771,10 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
     void * pqtv_1 = qtv_local[0]->model()->index(0,0).internalPointer();
     void * pqtv_2 = qtv_local[1]->model()->index(0,0).internalPointer();
     void * pqtv_3 = qtv_local[2]->model()->index(0,0).internalPointer();
+
+    void * pqtv_4 = qtv_zoomZ1->model()->index(0,0).internalPointer();
+    void * pqtv_5 = qtv_zoomZ2->model()->index(0,0).internalPointer();
+    void * pqtv_6 = qtv_zoomZ3->model()->index(0,0).internalPointer();
 
     if( pSource == pqtv_1 )
     {

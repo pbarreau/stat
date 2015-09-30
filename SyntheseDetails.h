@@ -46,6 +46,9 @@ private:
     QGridLayout **G_design_onglet_2;
     QStringList bSelection;
     QTableView *qtv_local[3];
+    QTableView *qtv_zoomZ1;
+    QTableView *qtv_zoomZ2;
+    QTableView *qtv_zoomZ3;
 
     QComboBox * pCritere[4];
     FiltreCombinaisons *pFiltre[4];
