@@ -126,8 +126,11 @@ SyntheseDetails::SyntheseDetails(stCurDemande *uneEtude, QMdiArea *visuel)
     int d[]={0,-1,1,-2};
     QString n[]={"0","+1","-1","?"};
 
+    //qtv_local =  new QTableView * [4][3];
+
     for(int i = 0 ;i <4;i++)
     {
+        //dst[i]=d[i]+uneEtude->cur_dst;
         dst[i]=d[i];
         ong[i]=n[i];
     }
@@ -146,6 +149,7 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     QTabWidget *tab_Top = new QTabWidget;
     QTabWidget **wid_ForTop_1 = new QTabWidget*[4];
 
+    //onglets = tab_Top;
     onglets = tab_Top;
 
     for(int i =0; i<4;i++)
@@ -525,9 +529,8 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int 
 {
     QGridLayout *lay_return = new QGridLayout;
 
-
-    Synthese_1(lay_return,dst);
-    Synthese_2(lay_return,dst);
+    Synthese_1(lay_return,ref,dst);
+    Synthese_2(lay_return,ref,dst);
 
 
     return(lay_return);
@@ -541,10 +544,8 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, i
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
 
-    qtv_zoomZ3 = new QTableView;
-    QTableView *qtv_tmp;
-    qtv_local[2] = qtv_zoomZ3;
-    qtv_tmp = qtv_zoomZ3;
+    QTableView *qtv_tmp = new QTableView;
+    qtv_local[ref][2] = qtv_tmp;
 
     sql_msgRef = DoSqlMsgRefGenerique(dst);
     // Retirer le ; de la fin
@@ -599,16 +600,12 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, i
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    // Taille du tableau dans onglet
-    //qtv_tmp->setFixedSize(345,410);
-    //G_tab_1->show();
-
-    // Double click dans sous fenetre
-    //connect( qtv_tmp, SIGNAL( doubleClicked(QModelIndex)) ,
-    //         this, SLOT( slot_F5_RechercherLesTirages( QModelIndex) ) );
+    // Connection du double click dans table voisins
+    // double click dans fenetre  pour afficher details boule
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_ZoomTirages( QModelIndex) ) );
 
 
-    //lay_return->addWidget(lab_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
     int pos_y = 0;
 
 
@@ -678,7 +675,7 @@ void SyntheseDetails::Synthese_2_first (QGridLayout *lay_return, QStringList &st
     //------------------
 }
 
-void SyntheseDetails::Synthese_1(QGridLayout *lay_return, int distance)
+void SyntheseDetails::Synthese_1(QGridLayout *lay_return, int onglet, int distance)
 {
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
@@ -686,10 +683,8 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, int distance)
     QString st_cri_all = "";
     QStringList boules;
 
-    qtv_zoomZ1 = new QTableView;
-    QTableView *qtv_tmp;
-    qtv_local[0] = qtv_zoomZ1;
-    qtv_tmp = qtv_zoomZ1;
+    QTableView *qtv_tmp = new QTableView;
+    qtv_local[onglet][0] = qtv_tmp;
 
     sql_msgRef = DoSqlMsgRefGenerique(distance);
     // Retirer le ; de la fin
@@ -777,7 +772,7 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, int distance)
 }
 
 //------
-void SyntheseDetails::Synthese_2(QGridLayout *lay_return,int distance)
+void SyntheseDetails::Synthese_2(QGridLayout *lay_return, int onglet, int distance)
 {
     QString sql_msgRef = "";
     QString st_cri_all = "";
@@ -785,10 +780,8 @@ void SyntheseDetails::Synthese_2(QGridLayout *lay_return,int distance)
 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
 
-    qtv_zoomZ2 = new QTableView;
-    QTableView *qtv_tmp;
-    qtv_local[1] = qtv_zoomZ2;
-    qtv_tmp = qtv_zoomZ2;
+    QTableView *qtv_tmp = new QTableView;
+    qtv_local[onglet][1] = qtv_tmp;
 
 
 
@@ -1753,7 +1746,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
 void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
 {
     void *pSource = index.internalPointer();
-    //quintptr pId = index.internalId();
+    int onglet = onglets->currentIndex();
 
     int ligne = index.row();
     int col = index.column();
@@ -1765,16 +1758,19 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
     stCurDemande *etude = new stCurDemande;
     int zn = 0;
 
+
     // Prendre la config actuelle puis la modifier
     *etude = *pLaDemande;
+    //etude->cur_dst += dst[onglet];
+    // Nouvelle reference d'ensemble de depart ?
+    QString *newBaseRef = new QString;
+    *newBaseRef = DoSqlMsgRefGenerique (dst[onglet]);
+    etude->st_baseDef = newBaseRef;
 
-    void * pqtv_1 = qtv_local[0]->model()->index(0,0).internalPointer();
-    void * pqtv_2 = qtv_local[1]->model()->index(0,0).internalPointer();
-    void * pqtv_3 = qtv_local[2]->model()->index(0,0).internalPointer();
+    void * pqtv_1 = qtv_local[onglet][0]->model()->index(0,0).internalPointer();
+    void * pqtv_2 = qtv_local[onglet][1]->model()->index(0,0).internalPointer();
+    void * pqtv_3 = qtv_local[onglet][2]->model()->index(0,0).internalPointer();
 
-    void * pqtv_4 = qtv_zoomZ1->model()->index(0,0).internalPointer();
-    void * pqtv_5 = qtv_zoomZ2->model()->index(0,0).internalPointer();
-    void * pqtv_6 = qtv_zoomZ3->model()->index(0,0).internalPointer();
 
     if( pSource == pqtv_1 )
     {
@@ -1784,6 +1780,11 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
     if( pSource ==  pqtv_2)
     {
         zn = 1;
+    }
+
+    if( pSource ==  pqtv_3)
+    {
+        zn = 2;
     }
 
     etude->lgn[zn] = ligne;

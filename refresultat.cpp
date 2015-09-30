@@ -845,9 +845,9 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     }
 
 
-    // Origine de la demande
 
     // recopie de la config courante
+    uneDemande.cur_dst = 0;
     *etude = uneDemande;
 
     // Nouvelle de fenetre de detail de cette boule

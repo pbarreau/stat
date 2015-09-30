@@ -18,6 +18,7 @@
 typedef struct _demande
 {
     int origine;
+    int cur_dst;
     int lgn[3];
     int col[3];
     int val[3];
@@ -45,10 +46,7 @@ private:
     QLineEdit *dist;
     QGridLayout **G_design_onglet_2;
     QStringList bSelection;
-    QTableView *qtv_local[3];
-    QTableView *qtv_zoomZ1;
-    QTableView *qtv_zoomZ2;
-    QTableView *qtv_zoomZ3;
+    QTableView * qtv_local[4][3];
 
     QComboBox * pCritere[4];
     FiltreCombinaisons *pFiltre[4];
@@ -77,8 +75,8 @@ private:
     QString DoSqlMsgRef_Tb3(QStringList &boules, int dst);
     QString DoSqlMsgRef_Tb4(QStringList &boules, int dst);
 
-    void Synthese_1(QGridLayout *lay_return, int distance);
-    void Synthese_2(QGridLayout *lay_return, int distance);
+    void Synthese_1(QGridLayout *lay_return, int onglet, int distance);
+    void Synthese_2(QGridLayout *lay_return, int onglet, int distance);
     void Synthese_2_first (QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
 
 
