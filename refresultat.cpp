@@ -728,7 +728,7 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const
         if(nb_items <= nb_element_max_zone)
         {
             QStringList lst_tmp;
-            QString val;
+            QString boule;
             foreach(un_index, indexes)
             {
 #ifndef QT_NO_DEBUG
@@ -737,8 +737,8 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const
                         <<"Col:" << un_index.column()
                        <<", Ligne:" << un_index.row();
 #endif
-                val = un_index.model()->index(un_index.row(),0).data().toString();
-                lst_tmp = lst_tmp << val;
+                boule = un_index.model()->index(un_index.row(),0).data().toString();
+                lst_tmp = lst_tmp << boule;
             }
             uneDemande.lst_boules[zn]=lst_tmp;
         }

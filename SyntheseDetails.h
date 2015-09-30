@@ -45,6 +45,7 @@ private:
     QLineEdit *dist;
     QGridLayout **G_design_onglet_2;
     QStringList bSelection;
+    QTableView *qtv_local[3];
 
     QComboBox * pCritere[4];
     FiltreCombinaisons *pFiltre[4];
@@ -73,8 +74,8 @@ private:
     QString DoSqlMsgRef_Tb3(QStringList &boules, int dst);
     QString DoSqlMsgRef_Tb4(QStringList &boules, int dst);
 
-    void Synthese_1(QGridLayout *lay_return,QStringList &stl_tmp, int distance, bool ongSpecial);
-    void Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
+    void Synthese_1(QGridLayout *lay_return, int distance);
+    void Synthese_2(QGridLayout *lay_return, int distance);
     void Synthese_2_first (QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
 
 

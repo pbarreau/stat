@@ -145,8 +145,6 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     QWidget *qw_main = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
     QTabWidget **wid_ForTop_1 = new QTabWidget*[4];
-    //QString ong[4]={"0","+1","-1","?"};
-    //const int dst[4]={0,-1,1,-2};
 
     onglets = tab_Top;
 
@@ -255,21 +253,11 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref, int e
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    //QStringList stl_tmp = pLaDemande->lst_boules[elm];
-
-
 
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
 
-
-#if 0
-    if(ref==3)
-    {
-        distance = dst;
-    }
-#endif
 
     // Fonction Pour La requete de base (obtenir les tirages)
     QString (SyntheseDetails::*ptrFunc[3])(int)=
@@ -347,7 +335,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref, int e
 
         distLayout->addRow("&Distance", dist);
         lay_return->addLayout(distLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
-        //bSelection = stl_tmp;
+
         // Connection du line edit
         connect(dist, SIGNAL(returnPressed()),
                 this, SLOT(slot_NouvelleDistance()));
@@ -510,8 +498,10 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     new_distance *=-1;
 
     // Tableau de pointeur de fonction
-    QGridLayout *(SyntheseDetails::*ptrFunc[2])(int ,int,  int )=
-    {&SyntheseDetails::MonLayout_pFnDetailsMontrerTirages,&SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese};
+    QGridLayout *(SyntheseDetails::*ptrFunc[3])(int ,int,  int )=
+    {&SyntheseDetails::MonLayout_pFnDetailsMontrerTirages,
+            &SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese,
+            &SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition};
 
     for(int j =0; j<3;j++)
     {
@@ -535,16 +525,9 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int 
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    QStringList stl_tmp;// = pLaDemande->lst_boules[elm];
 
-    const int Ref_D_Onglet[4]={0,-1,1,-2};
-    const bool Ref_A_Onglet[4]={false,false,false,true};
-
-    int distance = Ref_D_Onglet[ref];
-    bool ongSpecial = Ref_A_Onglet[ref];
-
-    Synthese_1(lay_return,stl_tmp,distance,ongSpecial);
-    Synthese_2(lay_return,stl_tmp,distance,ongSpecial);
+    Synthese_1(lay_return,dst);
+    Synthese_2(lay_return,dst);
 
 
     return(lay_return);
@@ -558,6 +541,8 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, i
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
+
+    qtv_local[2]=qtv_tmp;
 
     sql_msgRef = DoSqlMsgRefGenerique(dst);
     // Retirer le ; de la fin
@@ -691,7 +676,7 @@ void SyntheseDetails::Synthese_2_first (QGridLayout *lay_return, QStringList &st
     //------------------
 }
 
-void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial)
+void SyntheseDetails::Synthese_1(QGridLayout *lay_return, int distance)
 {
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
@@ -700,6 +685,7 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
     QString st_cri_all = "";
     QStringList boules;
 
+    qtv_local[0]=qtv_tmp;
 
     sql_msgRef = DoSqlMsgRefGenerique(distance);
     // Retirer le ; de la fin
@@ -787,16 +773,18 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, QStringList &stl_tmp, 
 }
 
 //------
-void SyntheseDetails::Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial)
+void SyntheseDetails::Synthese_2(QGridLayout *lay_return,int distance)
 {
     QString sql_msgRef = "";
-    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    QTableView *qtv_tmp = new QTableView;
-
-
     QString st_cri_all = "";
-
     QStringList boules;
+
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+
+    qtv_local[1] = new QTableView;
+    QTableView *qtv_tmp;
+    qtv_tmp = qtv_local[1];
+
 
 
     sql_msgRef = DoSqlMsgRefGenerique(distance);
@@ -880,8 +868,8 @@ void SyntheseDetails::Synthese_2(QGridLayout *lay_return, QStringList &stl_tmp, 
 
     // Connection du double click dans table voisins
     // double click dans fenetre  pour afficher details boule
-    //connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-    //         this, SLOT(slot_ZoomTirages( QModelIndex) ) );
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_ZoomTirages( QModelIndex) ) );
 
 }
 
@@ -1730,9 +1718,10 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
         st_cri2 = GEN_Where_3(5,"tb3.b",true,"=",boules,false,"or");
 
     if(col>2)
-        st_cri2= st_cri2 +" and "
-                          "( "
-                          "J like '%"
+        st_cri2= st_cri2
+                +" and "
+                 "( "
+                 "J like '%"
                 +pLaDemande->stc[0]+
                 "%' "
                 ") ";
@@ -1755,7 +1744,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
 void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
 {
     void *pSource = index.internalPointer();
-    quintptr pId = index.internalId();
+    //quintptr pId = index.internalId();
 
     int ligne = index.row();
     int col = index.column();
@@ -1764,61 +1753,41 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
     QVariant vCol = pModel->headerData(col,Qt::Horizontal);
     QString headName = vCol.toString();
 
-    QStringList stl_tmp;
-    int selTable = 0;
-    int boule_id = 0;
-    int origine = 0;
-    QString st_titre= "";
+    stCurDemande *etude = new stCurDemande;
     int zn = 0;
 
-    origine = pLaDemande->origine;
-    selTable = origine;
-    stl_tmp = pLaDemande->lst_boules[0];
-    st_titre = pLaDemande->st_titre;
+    // Prendre la config actuelle puis la modifier
+    *etude = *pLaDemande;
 
-    int choixLaBoule = index.model()->index(index.row(),0).data().toInt();
-    switch (origine) {
-    case 1:
-    case 2:
-        boule_id = pLaDemande->lgn[0];
-        col = pLaDemande->col[0];
-        stl_tmp << QString::number(choixLaBoule);
-        break;
+    void * pqtv_1 = qtv_local[0]->model()->index(0,0).internalPointer();
+    void * pqtv_2 = qtv_local[1]->model()->index(0,0).internalPointer();
+    void * pqtv_3 = qtv_local[2]->model()->index(0,0).internalPointer();
 
-    case 3:
-        boule_id =  pLaDemande->lgn[0];
-        stl_tmp << QString::number(choixLaBoule);
-        break;
-
-    default:
-        boule_id = -1;
-        break;
-    }
-
-    selTable = origine;
-
-    if (col>0 && val)
+    if( pSource == pqtv_1 )
     {
-        stCurDemande *etude = new stCurDemande;
-
-
-        QString st_lesBoules = "";
-
-        for(int j=0;j<stl_tmp.size();j++)
-        {
-            st_lesBoules= st_lesBoules + stl_tmp.at(j)+",";
-        }
-        st_lesBoules.remove(st_lesBoules.length()-1,1);
-        //st_titre = st_titre + st_lesBoules;
-        etude->origine = selTable;
-        etude->lgn[zn] = boule_id;
-        etude->col[zn] = col;
-        etude->val[zn] = val;
-        etude->stc[zn] = headName;
-        etude->st_titre = st_titre;
-        etude->lst_boules[zn] = stl_tmp;
-
-        // Nouvelle de fenetre de detail de cette boule
-        SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran);
+        zn = 0;
     }
+
+    if( pSource ==  pqtv_2)
+    {
+        zn = 1;
+    }
+
+    etude->lgn[zn] = ligne;
+    etude->col[zn] = col;
+    etude->stc[zn] = headName;
+    etude->val[zn] = val;
+
+    // On regarde si la boule est deja dans les selectionnee
+    QStringList lst_tmp = pLaDemande->lst_boules[zn];
+    QString boule;
+    boule = index.model()->index(index.row(),0).data().toString();
+
+    if(!lst_tmp.contains(boule))
+        lst_tmp << boule;
+
+    etude->lst_boules[zn]=lst_tmp;
+
+    // Nouvelle de fenetre de detail de cette boule
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran);
 }
