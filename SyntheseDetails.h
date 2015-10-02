@@ -26,6 +26,7 @@ typedef struct _demande
     QString stc[3];
     QStringList lst_boules[3];
     QString *st_baseDef;
+    QString *st_bdAll;
     QString *st_jourDef;
 }stCurDemande;
 //-----------------------------

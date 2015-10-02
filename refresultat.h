@@ -38,7 +38,7 @@ private:
     int curzn;
     stCurDemande uneDemande;
     QStringList lst_selection[3];
-    QString *st_baseDef;
+    QString *st_bdTirages;
     QString *st_JourTirageDef;
 
     QGridLayout *disposition;
@@ -73,7 +73,7 @@ public slots:
 
 
 private:
-    QString OrganiseChampsDesTirages();
+    QString OrganiseChampsDesTirages(QString st_base_reference);
     QString CompteJourTirage();
     void DoTirages(void);
     void DoComptageTotal(void);

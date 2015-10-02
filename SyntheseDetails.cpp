@@ -1287,6 +1287,9 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
 
     QStringList boules;
 
+    QString st_baseTirages = "";
+    st_baseTirages = pLaDemande->st_bdAll->remove(";");
+
     QString st_baseUse = "";
     st_baseUse = pLaDemande->st_baseDef->remove(";");
 
@@ -1340,7 +1343,7 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
             " )as tb1"
             ","
             "("
-            +st_baseUse+
+            +st_baseTirages+
             ")as tb2 "
             "where"
             "("
@@ -1761,6 +1764,7 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
 
     // Prendre la config actuelle puis la modifier
     *etude = *pLaDemande;
+
     //etude->cur_dst += dst[onglet];
     // Nouvelle reference d'ensemble de depart ?
     QString *newBaseRef = new QString;

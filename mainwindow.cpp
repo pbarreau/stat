@@ -7,6 +7,9 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QSortFilterProxyModel>
+#include <QPushButton>
+#include <QHBoxLayout>
+#include <QTableView>
 
 #include "labelclickable.h"
 #include "pointtirage.h"
@@ -478,7 +481,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 
 
     sqm_r1->setQuery(st_msg);
-    sqm_r1->setHeaderData(1,Qt::Horizontal,"Repartition");
+    //sqm_r1->setHeaderData(1,Qt::Horizontal,"Combinaison");
 
 #if 0
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
@@ -491,7 +494,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     fltComb_tmp->setFiltreConfig(sqm_r1,qtv_tmp,1);
     FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
 
-    //tv_r1->setModel(m);
+    qtv_tmp->setFixedSize(320,150);
     qtv_tmp->setColumnWidth(1,70);
     for(int j=2;j<=sqm_r1->columnCount();j++)
         qtv_tmp->setColumnWidth(j,35);
@@ -569,6 +572,9 @@ void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf
         G_sim_MaSelection[zn]= new QStandardItemModel(pConf.nbElmZone[zn],nbcol[zn]);
         G_tbv_MaSelection[zn] = new QTableView;
         tmpT_Widget[zn] = new QWidget;
+        G_tbv_MaSelection[zn]->setFixedSize(320,175);
+        G_tbv_MaSelection[zn]->verticalHeader()->hide();
+        G_tbv_MaSelection[zn]->horizontalHeader()->hide();
 
         for(i=1;i<=pConf.nbElmZone[zn];i++)/// Code a verifier en fonction bornes max
         { // Dans le cas max > 50
@@ -586,7 +592,7 @@ void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf
         G_tbv_MaSelection[zn]->setModel(G_sim_MaSelection[zn]);
         G_tbv_MaSelection[zn]->setAlternatingRowColors(true);
         G_tbv_MaSelection[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        G_tbv_MaSelection[zn]->setMinimumHeight(190);
+        //G_tbv_MaSelection[zn]->setMinimumHeight(190);
 
         layT_MaSelection[zn] = new QFormLayout;
         layT_MaSelection[zn]->addWidget(G_tbv_MaSelection[zn]);
@@ -1193,28 +1199,46 @@ void MainWindow::fen_Voisins(void)
 
 void MainWindow::FEN_ChoisirBoules(void)
 {
-    QTabWidget *tabWidget = new QTabWidget;
+    QWidget *qw_tmpWindows = new QWidget;
+    QTabWidget *tw_tmp = new QTabWidget;
+    QString st_titre = "Criteres recherche Tirages";
 
-    MonLayout_Selectioncombi(tabWidget);
-    MonLayout_SelectionBoules(tabWidget,configJeu);
+    MonLayout_Selectioncombi(tw_tmp);
+    MonLayout_SelectionBoules(tw_tmp,configJeu);
 
 
-    QFormLayout *mainLayout = new QFormLayout;
-    mainLayout->addWidget(tabWidget);
+    QGridLayout *mainLayout = new QGridLayout;
+    QHBoxLayout *hb_tmp = new QHBoxLayout;
+    QLabel * lab_tmp1 = new QLabel;
+    QLabel * lab_tmp2 = new QLabel;
+    QString st_cri_titre= "Selection c-b-e en cours :";
+    lab_tmp1->setText(st_cri_titre);
+    QPushButton *b_efface = new QPushButton ;
+    QPushButton *b_valide = new QPushButton ;
 
-    QWidget *qw_MaSelection = new QWidget;
+    lab_tmp2->setText(st_cri_titre);
+    b_efface->setText("Efface");
+    b_valide->setText("Cherche");
+    hb_tmp->addWidget(lab_tmp2,0,Qt::AlignLeft|Qt::AlignTop);
+    hb_tmp->addWidget(b_efface,0,Qt::AlignLeft|Qt::AlignTop);
+    hb_tmp->addWidget(b_valide,0,Qt::AlignLeft|Qt::AlignTop);
+
+    mainLayout->addWidget(lab_tmp1,0,0,1,1,Qt::AlignLeft|Qt::AlignTop);
+    mainLayout->addWidget(tw_tmp,1,0,1,1,Qt::AlignLeft|Qt::AlignTop);
+    mainLayout->addLayout(hb_tmp,2,0,1,1,Qt::AlignLeft|Qt::AlignTop);
+
     //qw_MaSelection->setMinimumHeight(200);
-    qw_MaSelection->setFixedSize(390,260);
-    qw_MaSelection->setLayout(mainLayout);
-    qw_MaSelection->setWindowTitle("Ma Selection");
+    //qw_tmpWindows->setFixedSize(390,220);
+    qw_tmpWindows->setLayout(mainLayout);
+    qw_tmpWindows->setWindowTitle(st_titre);
 
 
-    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_MaSelection);
-    subWindow->resize(405,300);
-    subWindow->move(1200,580);
+    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_tmpWindows);
+    subWindow->resize(380,325);
+    subWindow->move(1200,570);
 
-    qw_MaSelection->setVisible(true);
-    qw_MaSelection->show();
+    qw_tmpWindows->setVisible(true);
+    qw_tmpWindows->show();
 
 }
 void MainWindow::FEN_Ecarts(void)
@@ -1223,42 +1247,27 @@ void MainWindow::FEN_Ecarts(void)
     // Onglet pere
     QTabWidget *tab_Top = new QTabWidget;
     QWidget **wid_ForTop = new QWidget*[6];
+    QFormLayout **dsgOnglet = new QFormLayout * [6];
+    QString ongNames[]={"Psb_1","Psb_2","Absents","Ecarts","Parite","<n/2"};
 
-    QWidget *wTop_1 = new QWidget;
-    QWidget *wTop_2 = new QWidget;
-    QWidget *wTop_3 = new QWidget;
-    QWidget *wTop_4 = new QWidget;
-    QWidget *wTop_5 = new QWidget;
-    QWidget *wTop_6 = new QWidget;
+    QFormLayout * (MainWindow::*ptrFunc[])()={
+            &MainWindow::MonLayout_PrevoirTirage,&MainWindow::MonLayout_ChoixPossible,
+            &MainWindow::MonLayout_Absent,&MainWindow::MonLayout_Ecarts,
+            &MainWindow::MonLayout_Parite,&MainWindow::MonLayout_Nsur2
+};
 
-    wid_ForTop[0]= wTop_1;
-    wid_ForTop[1]= wTop_2;
-    wid_ForTop[2]= wTop_3;
-    wid_ForTop[3]= wTop_4;
-    wid_ForTop[4]= wTop_5;
-    wid_ForTop[5]= wTop_6;
 
-    tab_Top->addTab(wid_ForTop[0],tr("Psb_1"));
-    tab_Top->addTab(wid_ForTop[1],tr("Psb_2"));
-    tab_Top->addTab(wid_ForTop[2],tr("Absents"));
-    tab_Top->addTab(wid_ForTop[3],tr("Ecarts"));
-    tab_Top->addTab(wid_ForTop[4],tr("Parite"));
-    tab_Top->addTab(wid_ForTop[5],tr("<n/2"));
-    // ------------------
+    for(int i =0; i< 6;i++)
+    {
+        wid_ForTop[i]= new QWidget;
 
-    QFormLayout * design_onglet_1 = MonLayout_PrevoirTirage();
-    QFormLayout * design_onglet_2 = MonLayout_ChoixPossible();
-    QFormLayout * design_onglet_3 = MonLayout_Absent();
-    QFormLayout * design_onglet_4 = MonLayout_Ecarts();
-    QFormLayout * design_onglet_5 = MonLayout_Parite();
-    QFormLayout * design_onglet_6 = MonLayout_Nsur2();
+        if(i>2)
+            tab_Top->addTab(wid_ForTop[i],ongNames[i]);
 
-    wid_ForTop[0]->setLayout(design_onglet_1);
-    wid_ForTop[1]->setLayout(design_onglet_2);
-    wid_ForTop[2]->setLayout(design_onglet_3);
-    wid_ForTop[3]->setLayout(design_onglet_4);
-    wid_ForTop[4]->setLayout(design_onglet_5);
-    wid_ForTop[5]->setLayout(design_onglet_6);
+        dsgOnglet[i]= (this->*ptrFunc[i])();
+        wid_ForTop[i]->setLayout(dsgOnglet[i]);
+    }
+
 
     QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(tab_Top);

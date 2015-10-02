@@ -32,13 +32,14 @@ SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel
     pMaConf = pConf;
     curzn = zn;
 
-    st_baseDef = new QString;
-    *st_baseDef = OrganiseChampsDesTirages();
+    st_bdTirages = new QString;
+    *st_bdTirages = OrganiseChampsDesTirages("tirages");
 
     st_JourTirageDef = new QString;
     *st_JourTirageDef = CompteJourTirage();
 
-    uneDemande.st_baseDef = st_baseDef;
+    uneDemande.st_baseDef = st_bdTirages;
+    uneDemande.st_bdAll = st_bdTirages;
     uneDemande.st_jourDef = st_JourTirageDef;
     DoTirages();
     DoComptageTotal();
@@ -46,7 +47,7 @@ SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel
     //DoBloc3();
 }
 
-QString SyntheseGenerale::OrganiseChampsDesTirages()
+QString SyntheseGenerale::OrganiseChampsDesTirages(QString st_base_reference)
 {
 #if 0
     select tb3.id as id, tb5.id as pid, tb3.jour_tirage as J,
@@ -96,7 +97,9 @@ QString SyntheseGenerale::OrganiseChampsDesTirages()
             "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, "
             "tb5.tip as C, "
             + st_cr1 +
-            " from tirages as tb3,  "
+            " from ("
+            +st_base_reference+
+            ") as tb3,  "
             "analyses as tb4,  "
             "lstcombi as tb5 "
             "where "
@@ -118,7 +121,7 @@ void SyntheseGenerale::DoTirages(void)
     QTableView *qtv_tmp = new QTableView;
 
 
-    QString st_sqlReq = *st_baseDef;
+    QString st_sqlReq = *st_bdTirages;
 
     sqm_LesTirages->setQuery(st_sqlReq);
 
@@ -216,7 +219,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     qtv_tmp=tbv_bloc1_2;
 
     QString st_baseUse = "";
-    st_baseUse = st_baseDef->remove(";");
+    st_baseUse = st_bdTirages->remove(";");
     QString st_cr1 = "";
     QStringList lst_tmp;
     lst_tmp << "tb2.e";
@@ -319,7 +322,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     sqm_tmp=sqm_bloc1_3;
 
     QString st_baseUse = "";
-    st_baseUse = st_baseDef->remove(";");
+    st_baseUse = st_bdTirages->remove(";");
     QString st_cr1 = "";
     QStringList lst_tmp;
     lst_tmp << "tb2.e";
@@ -420,7 +423,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     qtv_tmp=tbv_bloc1_1;
 
     QString st_baseUse = "";
-    st_baseUse = st_baseDef->remove(";");
+    st_baseUse = st_bdTirages->remove(";");
     QString st_cr1 = "";
     QStringList lst_tmp;
     lst_tmp << "tb2.b";
