@@ -95,13 +95,14 @@ private slots:
 
 public slots:
     void ouvrir_mainwindows(void);
+
     void slot_ChercheVoisins(const QModelIndex &index);
-    //void slot_qtvEcart(const QModelIndex & index);
     void slot_UneSelectionActivee(const QModelIndex & index);
     void slot_UneCombiChoisie(const QModelIndex & index);
     void slot_MontrerBouleDansBase(const QModelIndex & index);
-    //void slot_MontrerTirageDansBase(const QModelIndex & index);
-    //void slot_CouvertureSelChanged(const QItemSelection &now, const QItemSelection &prev);
+    void slot_CriteresTirages (const QModelIndex & index);
+    void slot_EffaceCriteresTirages(void);
+
     void customMenuRequested(QPoint pos);
     void tablev_customContextMenu(QPoint pos);
     void pop_selAbsents(QPoint pos);
@@ -153,6 +154,7 @@ private:
     void fen_Parites(void);
     void FEN_ChoisirBoules(void);
     void fen_NewTirages(stTiragesDef *pConf);
+    void MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModelIndex & index);
 
     int BidFCId_MesPossibles(int col_id, QTableView *tbv_ptr);
     void ft_LancerTri(int tri_id);
@@ -214,6 +216,8 @@ private:
     GererBase *DB_tirages;
     SyntheseGenerale *syntheses;
     QTableView * qtv_s1;
+    stCurDemande critereTirages;
+    QLabel * lab_critere;
 
     QMenu *fileMenu;
     QMenu *helpMenu;
@@ -242,7 +246,7 @@ private:
 
     QTableView **G_tbv_Voisins;
     QTableView **G_tbv_Absents;
-    QTableView **G_tbv_MaSelection;
+    QTableView **gtbv_SelectionBoulesDeZone;
     QTableView *G_tbv_Ecarts;
     QTableView *G_tbv_MesPossibles;
     QTableView *G_tbv_TabPrevision;
@@ -259,7 +263,7 @@ private:
     QStandardItemModel **G_sim_Voisins;
     QStandardItemModel **G_sim_Absents;
     QStandardItemModel *G_sim_Ecarts ;
-    QStandardItemModel **G_sim_MaSelection ;
+    QStandardItemModel **gsim_SelectionBoulesDeZone ;
 
 
     //MonToolTips *qsim_MesPossibles ;

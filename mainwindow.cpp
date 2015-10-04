@@ -10,6 +10,7 @@
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QTableView>
+#include <QMessageBox>
 
 #include "labelclickable.h"
 #include "pointtirage.h"
@@ -555,8 +556,8 @@ void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf
 {
     int nb_zn = pConf.nb_zone;
 
-    G_tbv_MaSelection = new QTableView*[nb_zn];
-    G_sim_MaSelection= new QStandardItemModel*[nb_zn];
+    gtbv_SelectionBoulesDeZone = new QTableView*[nb_zn];
+    gsim_SelectionBoulesDeZone= new QStandardItemModel*[nb_zn];
     QWidget **tmpT_Widget = new QWidget*[nb_zn];
     QFormLayout **layT_MaSelection = new QFormLayout*[nb_zn];
     int *nbcol = new int [nb_zn];
@@ -569,12 +570,12 @@ void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf
                     (pConf.limites[zn].max/pConf.nbElmZone[zn])+1:
                     (pConf.limites[zn].max/pConf.nbElmZone[zn]);
 
-        G_sim_MaSelection[zn]= new QStandardItemModel(pConf.nbElmZone[zn],nbcol[zn]);
-        G_tbv_MaSelection[zn] = new QTableView;
+        gsim_SelectionBoulesDeZone[zn]= new QStandardItemModel(pConf.nbElmZone[zn],nbcol[zn]);
+        gtbv_SelectionBoulesDeZone[zn] = new QTableView;
         tmpT_Widget[zn] = new QWidget;
-        G_tbv_MaSelection[zn]->setFixedSize(320,175);
-        G_tbv_MaSelection[zn]->verticalHeader()->hide();
-        G_tbv_MaSelection[zn]->horizontalHeader()->hide();
+        gtbv_SelectionBoulesDeZone[zn]->setFixedSize(320,175);
+        gtbv_SelectionBoulesDeZone[zn]->verticalHeader()->hide();
+        gtbv_SelectionBoulesDeZone[zn]->horizontalHeader()->hide();
 
         for(i=1;i<=pConf.nbElmZone[zn];i++)/// Code a verifier en fonction bornes max
         { // Dans le cas max > 50
@@ -584,30 +585,38 @@ void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf
                 if(cell_val<=pConf.limites[zn].max){
                     QStandardItem *item = new QStandardItem( QString::number(i));
                     item->setData(cell_val,Qt::DisplayRole);
-                    G_sim_MaSelection[zn]->setItem(i-1,j-1,item);
+                    gsim_SelectionBoulesDeZone[zn]->setItem(i-1,j-1,item);
                 }
             }
         }
 
-        G_tbv_MaSelection[zn]->setModel(G_sim_MaSelection[zn]);
-        G_tbv_MaSelection[zn]->setAlternatingRowColors(true);
-        G_tbv_MaSelection[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        //G_tbv_MaSelection[zn]->setMinimumHeight(190);
+        gtbv_SelectionBoulesDeZone[zn]->setModel(gsim_SelectionBoulesDeZone[zn]);
+        gtbv_SelectionBoulesDeZone[zn]->setAlternatingRowColors(true);
+        gtbv_SelectionBoulesDeZone[zn]->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
         layT_MaSelection[zn] = new QFormLayout;
-        layT_MaSelection[zn]->addWidget(G_tbv_MaSelection[zn]);
+        layT_MaSelection[zn]->addWidget(gtbv_SelectionBoulesDeZone[zn]);
 
         for(j=0;j<10;j++)
         {
-            G_tbv_MaSelection[zn]->setColumnWidth(j,30);
+            gtbv_SelectionBoulesDeZone[zn]->setColumnWidth(j,30);
         }
 
         tmpT_Widget[zn]->setLayout(layT_MaSelection[zn]);
         tabN1->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
 
+        QString st_objName = "";
+        st_objName = gtbv_SelectionBoulesDeZone[zn]->objectName();
+
         // click dans fenetre ma selection
-        connect( G_tbv_MaSelection[zn], SIGNAL( doubleClicked(QModelIndex)) ,
+        connect( gtbv_SelectionBoulesDeZone[zn], SIGNAL( clicked(QModelIndex)) ,
+                 this, SLOT( slot_CriteresTirages( QModelIndex) ) );
+
+#if 0
+        // click dans fenetre ma selection
+        connect( gtbv_SelectionBoulesDeZone[zn], SIGNAL( doubleClicked(QModelIndex)) ,
                  this, SLOT( slot_UneSelectionActivee( QModelIndex) ) );
+#endif
     }
 }
 
@@ -1208,24 +1217,28 @@ void MainWindow::FEN_ChoisirBoules(void)
 
 
     QGridLayout *mainLayout = new QGridLayout;
-    QHBoxLayout *hb_tmp = new QHBoxLayout;
+    QHBoxLayout *hb_tmp1 = new QHBoxLayout;
+    QHBoxLayout *hb_tmp2 = new QHBoxLayout;
     QLabel * lab_tmp1 = new QLabel;
-    QLabel * lab_tmp2 = new QLabel;
+    lab_critere = new QLabel;
     QString st_cri_titre= "Selection c-b-e en cours :";
-    lab_tmp1->setText(st_cri_titre);
     QPushButton *b_efface = new QPushButton ;
     QPushButton *b_valide = new QPushButton ;
 
-    lab_tmp2->setText(st_cri_titre);
+    lab_tmp1->setText(st_cri_titre);
+    lab_critere->setText(" aucun - aucun - aucun");
+
+    hb_tmp1->addWidget(lab_tmp1,0,Qt::AlignLeft|Qt::AlignTop);
+    hb_tmp1->addWidget(lab_critere,0,Qt::AlignLeft|Qt::AlignTop);
+
     b_efface->setText("Efface");
     b_valide->setText("Cherche");
-    hb_tmp->addWidget(lab_tmp2,0,Qt::AlignLeft|Qt::AlignTop);
-    hb_tmp->addWidget(b_efface,0,Qt::AlignLeft|Qt::AlignTop);
-    hb_tmp->addWidget(b_valide,0,Qt::AlignLeft|Qt::AlignTop);
+    hb_tmp2->addWidget(b_efface,0,Qt::AlignLeft|Qt::AlignTop);
+    hb_tmp2->addWidget(b_valide,0,Qt::AlignLeft|Qt::AlignTop);
 
-    mainLayout->addWidget(lab_tmp1,0,0,1,1,Qt::AlignLeft|Qt::AlignTop);
+    mainLayout->addLayout(hb_tmp1,0,0,1,1,Qt::AlignLeft|Qt::AlignTop);
     mainLayout->addWidget(tw_tmp,1,0,1,1,Qt::AlignLeft|Qt::AlignTop);
-    mainLayout->addLayout(hb_tmp,2,0,1,1,Qt::AlignLeft|Qt::AlignTop);
+    mainLayout->addLayout(hb_tmp2,2,0,1,1,Qt::AlignLeft|Qt::AlignTop);
 
     //qw_MaSelection->setMinimumHeight(200);
     //qw_tmpWindows->setFixedSize(390,220);
@@ -1239,6 +1252,11 @@ void MainWindow::FEN_ChoisirBoules(void)
 
     qw_tmpWindows->setVisible(true);
     qw_tmpWindows->show();
+
+    // double click dans fenetre voisin pour afficher details boule
+    connect( b_efface, SIGNAL( clicked(QModelIndex)) ,
+             this, SLOT( slot_EffaceCriteresTirages() ) );
+
 
 }
 void MainWindow::FEN_Ecarts(void)
@@ -2146,6 +2164,119 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
 
 }
 
+void MainWindow::slot_CriteresTirages(const QModelIndex & index)
+{
+    void *pSource = index.internalPointer();
+    QItemSelectionModel *selection;
+    QModelIndexList indexes ;
+    QModelIndex un_index;
+
+    int col = index.column();
+    int val = index.data().toInt();
+    QStringList lst_tmp;
+    QString st_z1 = "";
+    lst_tmp = lab_critere->text().split("-");
+
+    // Boules
+    if(pSource == gtbv_SelectionBoulesDeZone[0]->model()->index(0,0).internalPointer())
+    {
+        selection = gtbv_SelectionBoulesDeZone[0]->selectionModel();
+        indexes = selection->selectedIndexes();
+        critereTirages.lst_boules[0].clear();
+        if(indexes.size())
+        {
+            foreach(un_index, indexes)
+            {
+                critereTirages.lst_boules[0]<< un_index.data().toString();
+            }
+
+            st_z1="";
+            for(int i =0; i< critereTirages.lst_boules[0].size();i++)
+            {
+                st_z1 = st_z1 + critereTirages.lst_boules[0].at(i) + ",";
+            }
+            st_z1.remove(st_z1.length()-1,1);
+        }
+
+    }
+
+    // Etoiles
+    if(pSource == gtbv_SelectionBoulesDeZone[1]->model()->index(0,0).internalPointer())
+    {
+        //MemoriserCriteresTirages(1, gtbv_SelectionBoulesDeZone[1], index);
+    }
+
+#ifdef READY
+    // Combinaison
+    if(pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
+    {
+        if(col>=2 && val)
+            MemoriserCriteresTirages(2, tbv_bloc1_3, index);
+    }
+#endif
+    QString new_text = lst_tmp.at(0)+"-"+st_z1+"-"+lst_tmp.at(2);
+    lab_critere->setText(new_text);
+}
+
+
+void MainWindow::MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModelIndex & index)
+{
+
+    QItemSelectionModel *selection;
+    QItemSelection une_cellule_choisie(index,index);
+    QModelIndexList indexes ;
+    QModelIndex un_index;
+
+    int nbZone = configJeu.nb_zone;
+    int nb_element_max_zone = 0;
+    QString stNomZone = 0;
+
+    int nb_items = 0;
+
+    int ligne = index.row();
+    int val = index.data().toInt();
+    const QAbstractItemModel * pModel = index.model();
+
+
+
+    nb_element_max_zone = configJeu.nbElmZone[zn];
+    stNomZone = configJeu.nomZone[zn];
+
+
+    selection = ptbv->selectionModel();
+    indexes = selection->selectedIndexes();
+    nb_items = indexes.size();
+
+    // L'utilisateur a t il tout deselectionnee
+    if(nb_items == 0)
+    {
+        critereTirages.lst_boules[zn].clear();
+        return;
+    }
+
+
+
+    if(nb_items <= nb_element_max_zone)
+    {
+        QStringList lst_tmp;
+        QString boule;
+        foreach(un_index, indexes)
+        {
+            boule = un_index.model()->index(un_index.row(),0).data().toString();
+            lst_tmp = lst_tmp << boule;
+        }
+        critereTirages.lst_boules[zn]=lst_tmp;
+    }
+    else
+    {
+        //un message d'information
+        QMessageBox::warning(0, stNomZone, tr("Attention, maximum deja selectionne !"),QMessageBox::Yes);
+        // deselectionner l'element
+        selection->select(une_cellule_choisie, QItemSelectionModel::Deselect);
+
+    }
+}
+
 void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
 {
     //static QStringList *select = new QStringList *[configJeu.nb_zone];
@@ -2153,7 +2284,7 @@ void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
     int zn = -1;
 
     // determination de la table dans l'onglet ayant recu le click
-    if (index.internalPointer() == G_sim_MaSelection[0]->index(index.row(),index.column()).internalPointer()){
+    if (index.internalPointer() == gsim_SelectionBoulesDeZone[0]->index(index.row(),index.column()).internalPointer()){
         zn = 0;
     }
     else
@@ -2163,7 +2294,7 @@ void MainWindow::slot_UneSelectionActivee(const QModelIndex & index)
 
 
 
-    QStandardItem *item1 = G_sim_MaSelection[zn]->itemFromIndex(index);
+    QStandardItem *item1 = gsim_SelectionBoulesDeZone[zn]->itemFromIndex(index);
 #ifndef QT_NO_DEBUG
     qDebug()<< item1->background();
 #endif
@@ -2246,6 +2377,14 @@ void MainWindow::slot_RepererLesTirages(const QString & myData)
     if(!list.isEmpty())
     {
         TST_MontreTirageAyantCritere(NE_FDJ::critere_boule,zn,&configJeu,list);
+    }
+}
+
+void MainWindow::slot_EffaceCriteresTirages(void)
+{
+    for(int i =0;i<3;i++)
+    {
+        critereTirages.lst_boules[i].clear();
     }
 }
 
