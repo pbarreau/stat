@@ -33,10 +33,10 @@ SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel
     curzn = zn;
 
     st_bdTirages = new QString;
-    *st_bdTirages = OrganiseChampsDesTirages("tirages");
+    *st_bdTirages = OrganiseChampsDesTirages("tirages", pConf);
 
     st_JourTirageDef = new QString;
-    *st_JourTirageDef = CompteJourTirage();
+    *st_JourTirageDef = CompteJourTirage(pConf);
 
     uneDemande.st_baseDef = st_bdTirages;
     uneDemande.st_bdAll = st_bdTirages;
@@ -47,74 +47,6 @@ SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel
     //DoBloc3();
 }
 
-QString SyntheseGenerale::OrganiseChampsDesTirages(QString st_base_reference)
-{
-#if 0
-    select tb3.id as id, tb5.id as pid, tb3.jour_tirage as J,
-            substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
-            tb5.tip as C,
-            tb3.b1 as b1,
-            tb3.b2 as b2,
-            tb3.b3 as b3,
-            tb3.b4 as b4,
-            tb3.b5 as b5,
-            tb3.e1 as e1
-            from tirages as tb3,
-            analyses as tb4,
-            lstcombi as tb5
-            where
-            (
-                tb4.id = tb3.id
-            and
-            tb5.id = tb4.id_poids
-            );
-#endif
-
-    QString st_base = "";
-    QString st_tmp = "";
-    QString st_cr1 = "";
-    QStringList lst_tmp;
-    int loop = 0;
-
-    for(int i =0 ; i< pMaConf->nb_zone; i++)
-    {
-        lst_tmp <<   pMaConf->nomZone[i];
-        st_tmp = "tb3."+pMaConf->nomZone[i];
-        loop =  pMaConf->nbElmZone[i];
-        st_tmp =  GEN_Where_3(loop,st_tmp,true," as ",lst_tmp,true,",");
-        st_cr1 = st_cr1 + st_tmp + ",";
-        lst_tmp.clear();
-    }
-#ifndef QT_NO_DEBUG
-    qDebug()<< st_cr1;
-#endif
-
-    st_cr1.remove(QRegExp("[()]"));
-    st_cr1.remove(st_cr1.length()-1,1);
-
-    st_base =
-            "select tb3.id as id, tb5.id as pid, tb3.jour_tirage as J, "
-            "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, "
-            "tb5.tip as C, "
-            + st_cr1 +
-            " from ("
-            +st_base_reference+
-            ") as tb3,  "
-            "analyses as tb4,  "
-            "lstcombi as tb5 "
-            "where "
-            "( "
-            "tb4.id = tb3.id "
-            "and "
-            "tb5.id = tb4.id_poids "
-            "); ";
-
-#ifndef QT_NO_DEBUG
-    qDebug()<< st_base;
-#endif
-
-    return st_base;
-}
 void SyntheseGenerale::DoTirages(void)
 {
     sqm_LesTirages = new QSqlQueryModel;
@@ -509,30 +441,6 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
 }
 
-QString SyntheseGenerale::CompteJourTirage()
-{
-    QString st_msg = "";
-
-    int nb_tir = pMaConf->nb_tir_semaine;
-
-    for(int i=0;i<nb_tir;i++)
-    {
-        st_msg = st_msg +
-                "count(CASE WHEN  J like '"
-                +pMaConf->jour_tir[i]+
-                "%' then 1 end) as "
-                +pMaConf->jour_tir[i].left(3)+
-                ",";
-    }
-
-#ifndef QT_NO_DEBUG
-    qDebug()<< st_msg;
-#endif
-
-    st_msg.remove(st_msg.length()-1,1);
-
-    return st_msg;
-}
 
 void SyntheseGenerale::DoBloc2(void)
 {
@@ -1073,7 +981,100 @@ on
         ) group by tbleft.boule;
 #endif
 
+QString CompteJourTirage(stTiragesDef *pMaConf)
+{
+    QString st_msg = "";
 
+    int nb_tir = pMaConf->nb_tir_semaine;
+
+    for(int i=0;i<nb_tir;i++)
+    {
+        st_msg = st_msg +
+                "count(CASE WHEN  J like '"
+                +pMaConf->jour_tir[i]+
+                "%' then 1 end) as "
+                +pMaConf->jour_tir[i].left(3)+
+                ",";
+    }
+
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_msg;
+#endif
+
+    st_msg.remove(st_msg.length()-1,1);
+
+    return st_msg;
+}
+
+
+QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf)
+{
+#if 0
+    select tb3.id as id, tb5.id as pid, tb3.jour_tirage as J,
+            substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+            tb5.tip as C,
+            tb3.b1 as b1,
+            tb3.b2 as b2,
+            tb3.b3 as b3,
+            tb3.b4 as b4,
+            tb3.b5 as b5,
+            tb3.e1 as e1
+            from tirages as tb3,
+            analyses as tb4,
+            lstcombi as tb5
+            where
+            (
+                tb4.id = tb3.id
+            and
+            tb5.id = tb4.id_poids
+            );
+#endif
+
+    QString st_base = "";
+    QString st_tmp = "";
+    QString st_cr1 = "";
+    QStringList lst_tmp;
+    int loop = 0;
+
+    for(int i =0 ; i< pMaConf->nb_zone; i++)
+    {
+        lst_tmp <<   pMaConf->nomZone[i];
+        st_tmp = "tb3."+pMaConf->nomZone[i];
+        loop =  pMaConf->nbElmZone[i];
+        st_tmp =  GEN_Where_3(loop,st_tmp,true," as ",lst_tmp,true,",");
+        st_cr1 = st_cr1 + st_tmp + ",";
+        lst_tmp.clear();
+    }
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_cr1;
+#endif
+
+    st_cr1.remove(QRegExp("[()]"));
+    st_cr1.remove(st_cr1.length()-1,1);
+
+    st_base =
+            "select tb3.id as id, tb5.id as pid, tb3.jour_tirage as J, "
+            "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, "
+            "tb5.tip as C, "
+            + st_cr1 +
+            " from ("
+            +st_base_reference+
+            ") as tb3,  "
+            "analyses as tb4,  "
+            "lstcombi as tb5 "
+            "where "
+            "( "
+            "tb4.id = tb3.id "
+            "and "
+            "tb5.id = tb4.id_poids "
+            "); ";
+
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_base;
+#endif
+
+    return st_base;
+}
 
 
 QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf)

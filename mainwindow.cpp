@@ -269,6 +269,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     NEW_ChoixPourTiragesSuivant(TB_WIN,4,&configJeu);
 
     NEW_RepartionBoules(&configJeu);
+
+
     fen_NewTirages(&configJeu);
 
 
@@ -549,7 +551,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 
     // click dans fenetre ma selection
     connect( gtbv_SelectionBoulesDeZone[2], SIGNAL( clicked(QModelIndex)) ,
-             this, SLOT( slot_CriteresTirages( QModelIndex) ) );
+             this, SLOT( slot_CriteresTiragesConstruire( QModelIndex) ) );
 
 #if 0
     // click dans fenetre
@@ -615,7 +617,7 @@ void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf
 
         // click dans fenetre ma selection
         connect( gtbv_SelectionBoulesDeZone[zn], SIGNAL( clicked(QModelIndex)) ,
-                 this, SLOT( slot_CriteresTirages( QModelIndex) ) );
+                 this, SLOT( slot_CriteresTiragesConstruire( QModelIndex) ) );
 
 #if 0
         // click dans fenetre ma selection
@@ -1261,8 +1263,12 @@ void MainWindow::FEN_ChoisirBoules(void)
     qw_tmpWindows->show();
 
     // double click dans fenetre voisin pour afficher details boule
+    connect( b_valide, SIGNAL( clicked()) ,
+             this, SLOT( slot_CriteresTiragesAppliquer() ) );
+
+    // double click dans fenetre voisin pour afficher details boule
     connect( b_efface, SIGNAL( clicked()) ,
-             this, SLOT( slot_EffaceCriteresTirages() ) );
+             this, SLOT( slot_CriteresTiragesEffacer() ) );
 
 
 }
@@ -1892,6 +1898,18 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
     QString stNames[2]={"Stat","Voisins"};
     QGridLayout *design_onglet[2];
 
+
+    // pour reecriture
+    QString *st_tmp1 = new QString;
+    QString *st_tmp2 = new QString;
+
+    *st_tmp1 =CompteJourTirage(pConf);
+    *st_tmp2 = OrganiseChampsDesTirages("tirages", pConf);
+
+    critereTirages.st_jourDef = st_tmp1;
+    critereTirages.st_baseDef = st_tmp2;
+    critereTirages.st_bdAll = st_tmp2;
+
     // Tableau de pointeur de fonction
     QGridLayout *(MainWindow::*ptrFunc[2])(stTiragesDef *pConf)=
     {&MainWindow::MonLayout_pFnNsr1,&MainWindow::MonLayout_pFnNsr2};
@@ -2170,8 +2188,24 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
 
 
 }
+void MainWindow::slot_CriteresTiragesAppliquer()
+{
+    stCurDemande *etude = new stCurDemande;
 
-void MainWindow::slot_CriteresTirages(const QModelIndex & index)
+        critereTirages.origine = 2;
+
+
+
+    // recopie de la config courante
+    critereTirages.cur_dst = 0;
+    *etude = critereTirages;
+
+    // Nouvelle de fenetre de detail de cette boule
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale);
+
+}
+
+void MainWindow::slot_CriteresTiragesConstruire(const QModelIndex & index)
 {
     void *pSource = index.internalPointer();
 
@@ -2212,6 +2246,16 @@ void MainWindow::MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModel
     QString stNomZone = "";
     QString st_z1 = "";
     QString newCritere[3];
+
+    int col = index.column();
+    int ligne = index.row();
+    int val = index.data().toInt();
+
+    const QAbstractItemModel * pModel = index.model();
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
+
+
     int nbZone = configJeu.nb_zone;
     int nb_element_max_zone = 0;
     int nb_items = 0;
@@ -2224,7 +2268,7 @@ void MainWindow::MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModel
     indexes = selection->selectedIndexes();
     nb_items = indexes.size();
 
-    if(zn>=2)
+    if(zn==2)
     {
         Zone = 0;
         nb_element_max_zone=1;
@@ -2239,8 +2283,13 @@ void MainWindow::MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModel
 
 
 
-    if(nb_items <= nb_element_max_zone)
+    if(nb_items <= nb_element_max_zone && nb_items > 0)
     {
+        critereTirages.col[zn]=col;
+        critereTirages.stc[zn]=headName;
+        critereTirages.val[zn]=val;
+        critereTirages.lgn[zn]=ligne;
+
         int i =0;
         lst_tmp = lab_critere->text().split(" - ");
 
@@ -2401,7 +2450,7 @@ void MainWindow::slot_RepererLesTirages(const QString & myData)
     }
 }
 
-void MainWindow::slot_EffaceCriteresTirages(void)
+void MainWindow::slot_CriteresTiragesEffacer(void)
 {
     QItemSelectionModel *selection;
     int nbZone = configJeu.nb_zone;

@@ -73,8 +73,8 @@ public slots:
 
 
 private:
-    QString OrganiseChampsDesTirages(QString st_base_reference);
-    QString CompteJourTirage();
+    //QString OrganiseChampsDesTirages(QString st_base_reference);
+    //QString CompteJourTirage();
     void DoTirages(void);
     void DoComptageTotal(void);
     void DoBloc2(void);

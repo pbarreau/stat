@@ -30,7 +30,8 @@ class MainWindow;
 }
 
 extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf);
-
+extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
+extern QString CompteJourTirage(stTiragesDef *pMaConf);
 
 #if 0
 class MonToolTips:public QStandardItemModel
@@ -100,8 +101,10 @@ public slots:
     void slot_UneSelectionActivee(const QModelIndex & index);
     void slot_UneCombiChoisie(const QModelIndex & index);
     void slot_MontrerBouleDansBase(const QModelIndex & index);
-    void slot_CriteresTirages (const QModelIndex & index);
-    void slot_EffaceCriteresTirages(void);
+
+    void slot_CriteresTiragesConstruire (const QModelIndex & index);
+    void slot_CriteresTiragesEffacer(void);
+    void slot_CriteresTiragesAppliquer();
 
     void customMenuRequested(QPoint pos);
     void tablev_customContextMenu(QPoint pos);
