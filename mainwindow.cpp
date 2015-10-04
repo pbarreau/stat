@@ -456,6 +456,8 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 
     QSqlQueryModel *sqm_r1 = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
+    //QTableView *qtv_tmp = gtbv_SelectionBoulesDeZone[2];
+    gtbv_SelectionBoulesDeZone[2]= qtv_tmp;
     QString st_msg ="";
 
 
@@ -516,7 +518,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
     wTop_1->setLayout(lay_return);
 
-    tabN1->addTab(wTop_1,"Combi");;
+    tabN1->addTab(wTop_1,"c");;
 
     // Mettre le dernier tirage en evidence
     QSqlQuery selection;
@@ -545,18 +547,21 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
         }
     }
 
+    // click dans fenetre ma selection
+    connect( gtbv_SelectionBoulesDeZone[2], SIGNAL( clicked(QModelIndex)) ,
+             this, SLOT( slot_CriteresTirages( QModelIndex) ) );
 
+#if 0
     // click dans fenetre
     connect( qtv_tmp, SIGNAL( doubleClicked(QModelIndex)) ,
              this, SLOT( slot_UneCombiChoisie (QModelIndex) ) );
-
+#endif
 
 }
 void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf)
 {
     int nb_zn = pConf.nb_zone;
 
-    gtbv_SelectionBoulesDeZone = new QTableView*[nb_zn];
     gsim_SelectionBoulesDeZone= new QStandardItemModel*[nb_zn];
     QWidget **tmpT_Widget = new QWidget*[nb_zn];
     QFormLayout **layT_MaSelection = new QFormLayout*[nb_zn];
@@ -1212,6 +1217,8 @@ void MainWindow::FEN_ChoisirBoules(void)
     QTabWidget *tw_tmp = new QTabWidget;
     QString st_titre = "Criteres recherche Tirages";
 
+    gtbv_SelectionBoulesDeZone = new QTableView*[3];
+
     MonLayout_Selectioncombi(tw_tmp);
     MonLayout_SelectionBoules(tw_tmp,configJeu);
 
@@ -1226,7 +1233,7 @@ void MainWindow::FEN_ChoisirBoules(void)
     QPushButton *b_valide = new QPushButton ;
 
     lab_tmp1->setText(st_cri_titre);
-    lab_critere->setText(" aucun - aucun - aucun");
+    lab_critere->setText("aucun - aucun - aucun");
 
     hb_tmp1->addWidget(lab_tmp1,0,Qt::AlignLeft|Qt::AlignTop);
     hb_tmp1->addWidget(lab_critere,0,Qt::AlignLeft|Qt::AlignTop);
@@ -1254,7 +1261,7 @@ void MainWindow::FEN_ChoisirBoules(void)
     qw_tmpWindows->show();
 
     // double click dans fenetre voisin pour afficher details boule
-    connect( b_efface, SIGNAL( clicked(QModelIndex)) ,
+    connect( b_efface, SIGNAL( clicked()) ,
              this, SLOT( slot_EffaceCriteresTirages() ) );
 
 
@@ -2167,55 +2174,29 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
 void MainWindow::slot_CriteresTirages(const QModelIndex & index)
 {
     void *pSource = index.internalPointer();
-    QItemSelectionModel *selection;
-    QModelIndexList indexes ;
-    QModelIndex un_index;
-
-    int col = index.column();
-    int val = index.data().toInt();
-    QStringList lst_tmp;
-    QString st_z1 = "";
-    lst_tmp = lab_critere->text().split("-");
 
     // Boules
     if(pSource == gtbv_SelectionBoulesDeZone[0]->model()->index(0,0).internalPointer())
     {
-        selection = gtbv_SelectionBoulesDeZone[0]->selectionModel();
-        indexes = selection->selectedIndexes();
-        critereTirages.lst_boules[0].clear();
-        if(indexes.size())
-        {
-            foreach(un_index, indexes)
-            {
-                critereTirages.lst_boules[0]<< un_index.data().toString();
-            }
-
-            st_z1="";
-            for(int i =0; i< critereTirages.lst_boules[0].size();i++)
-            {
-                st_z1 = st_z1 + critereTirages.lst_boules[0].at(i) + ",";
-            }
-            st_z1.remove(st_z1.length()-1,1);
-        }
+        MemoriserCriteresTirages(0, gtbv_SelectionBoulesDeZone[0], index);
 
     }
 
     // Etoiles
     if(pSource == gtbv_SelectionBoulesDeZone[1]->model()->index(0,0).internalPointer())
     {
-        //MemoriserCriteresTirages(1, gtbv_SelectionBoulesDeZone[1], index);
+        MemoriserCriteresTirages(1, gtbv_SelectionBoulesDeZone[1], index);
     }
 
-#ifdef READY
     // Combinaison
-    if(pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
+    if(pSource == gtbv_SelectionBoulesDeZone[2]->model()->index(0,0).internalPointer())
     {
+        int col = index.column();
+        int val = index.data().toInt();
+
         if(col>=2 && val)
-            MemoriserCriteresTirages(2, tbv_bloc1_3, index);
+            MemoriserCriteresTirages(2, gtbv_SelectionBoulesDeZone[2], index);
     }
-#endif
-    QString new_text = lst_tmp.at(0)+"-"+st_z1+"-"+lst_tmp.at(2);
-    lab_critere->setText(new_text);
 }
 
 
@@ -2227,53 +2208,93 @@ void MainWindow::MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModel
     QModelIndexList indexes ;
     QModelIndex un_index;
 
+    QStringList lst_tmp ;
+    QString stNomZone = "";
+    QString st_z1 = "";
+    QString newCritere[3];
     int nbZone = configJeu.nb_zone;
     int nb_element_max_zone = 0;
-    QString stNomZone = 0;
-
     int nb_items = 0;
-
-    int ligne = index.row();
-    int val = index.data().toInt();
-    const QAbstractItemModel * pModel = index.model();
+    int Zone = 0;
 
 
-
-    nb_element_max_zone = configJeu.nbElmZone[zn];
-    stNomZone = configJeu.nomZone[zn];
 
 
     selection = ptbv->selectionModel();
     indexes = selection->selectedIndexes();
     nb_items = indexes.size();
 
-    // L'utilisateur a t il tout deselectionnee
-    if(nb_items == 0)
+    if(zn>=2)
     {
-        critereTirages.lst_boules[zn].clear();
-        return;
+        Zone = 0;
+        nb_element_max_zone=1;
+        stNomZone="Combi";
+    }
+    else
+    {
+        nb_element_max_zone = configJeu.nbElmZone[zn];
+        Zone=zn+1;
+        stNomZone = configJeu.nomZone[zn];
     }
 
 
 
     if(nb_items <= nb_element_max_zone)
     {
-        QStringList lst_tmp;
-        QString boule;
+        int i =0;
+        lst_tmp = lab_critere->text().split(" - ");
+
+        for(i =0; i< lst_tmp.size();i++)
+        {
+            newCritere[i] = lst_tmp.at(i);
+        }
+
+        // Nouvelle selection utilisateur
+        critereTirages.lst_boules[zn].clear();
+
         foreach(un_index, indexes)
         {
-            boule = un_index.model()->index(un_index.row(),0).data().toString();
-            lst_tmp = lst_tmp << boule;
+            if(zn<2)
+            {
+                critereTirages.lst_boules[zn]<< un_index.data().toString();
+            }
+            else
+            {
+                critereTirages.lst_boules[zn]<<index.model()->index(index.row(),0).data().toString();
+            }
         }
-        critereTirages.lst_boules[zn]=lst_tmp;
+
+        st_z1="";
+        for(i =0; i< nb_items;i++)
+        {
+            st_z1 = st_z1 + critereTirages.lst_boules[zn].at(i) + ",";
+        }
+        st_z1.remove(st_z1.length()-1,1);
+
+        if(zn==2 && nb_items)
+            st_z1 = index.model()->index(index.row(),1).data().toString();
+
+        if(st_z1 == "")
+            st_z1="aucun";
+
+
+        newCritere[Zone]=st_z1;
+
+        st_z1 = "";
+        for(i =0; i< lst_tmp.size();i++)
+        {
+            st_z1 = st_z1 + newCritere[i]+" - ";
+        }
+        st_z1.remove(st_z1.length()-3,3);
+        lab_critere->setText(st_z1);
     }
     else
     {
         //un message d'information
         QMessageBox::warning(0, stNomZone, tr("Attention, maximum deja selectionne !"),QMessageBox::Yes);
+
         // deselectionner l'element
         selection->select(une_cellule_choisie, QItemSelectionModel::Deselect);
-
     }
 }
 
@@ -2382,10 +2403,20 @@ void MainWindow::slot_RepererLesTirages(const QString & myData)
 
 void MainWindow::slot_EffaceCriteresTirages(void)
 {
-    for(int i =0;i<3;i++)
+    QItemSelectionModel *selection;
+    int nbZone = configJeu.nb_zone;
+
+    for(int i=0;i<nbZone;i++)
+    {
+      selection = gtbv_SelectionBoulesDeZone[i]->selectionModel();
+      selection->clearSelection();
+    }
+
+    for(int i=0;i<3;i++)
     {
         critereTirages.lst_boules[i].clear();
     }
+    lab_critere->setText("aucun - aucun - aucun");
 }
 
 void MainWindow::slot_F2_RechercherLesTirages(const QModelIndex & index)
