@@ -2283,10 +2283,10 @@ void MainWindow::MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModel
 
 
 
-    if(nb_items <= nb_element_max_zone && nb_items > 0)
+    if(nb_items <= nb_element_max_zone)
     {
         critereTirages.col[zn]=col;
-        critereTirages.stc[zn]=headName;
+        critereTirages.stc[zn]="";
         critereTirages.val[zn]=val;
         critereTirages.lgn[zn]=ligne;
 
@@ -2320,8 +2320,10 @@ void MainWindow::MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModel
         }
         st_z1.remove(st_z1.length()-1,1);
 
-        if(zn==2 && nb_items)
+        if(zn==2 && nb_items){
             st_z1 = index.model()->index(index.row(),1).data().toString();
+            critereTirages.stc[zn]=headName;
+        }
 
         if(st_z1 == "")
             st_z1="aucun";
@@ -4422,16 +4424,23 @@ void MainWindow::slot_MontreTirageDansGraph(const QModelIndex & index)
 void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
 {
     // recuperer la ligne de la table
-    //int col = index.model()->columnCount();//myDataTableModel()->rowCount();
     int val = index.model()->index(index.row(),0).data().toInt();
+
+    // Montrer la selection dans les graphiques
+    VUE_MontreLeTirage(val);
+
+    MontreDansLaQtView(G_tbv_Tirages,val);
+    QTableView * pTableauTirages = NULL;
+    pTableauTirages = syntheses->GetListeTirages();
+    MontreDansLaQtView(pTableauTirages,val);
+
+#if 0
     QAbstractItemModel *mon_model =G_tbv_Tirages->model();
     QModelIndex item1 = mon_model->index(0,0, QModelIndex());
 
     if (item1.isValid()){
         item1 = item1.model()->index(val-1,0,QModelIndex());
 
-        // Montrer la selection dans les graphiques
-        VUE_MontreLeTirage(val);
 
 
         // Montrer la selection dans le tableau des tirages
@@ -4443,6 +4452,37 @@ void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
         QItemSelection macellule(item1, item1);
         selectionModel->select(macellule, QItemSelectionModel::Select);
     }
+#endif
+}
+
+void MainWindow::MontreDansLaQtView(QTableView *ptr_qtv, int val)
+{
+    QAbstractItemModel *mon_model = ptr_qtv->model();
+    QModelIndex item1 = mon_model->index(0,0, QModelIndex());
+
+    ptr_qtv->setAutoScroll(true);
+    ptr_qtv->setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
+
+    if (item1.isValid()){
+        item1 = item1.model()->index(val-1,0,QModelIndex());
+
+        // Associer toutes les valeurs a la vue
+        while (mon_model->canFetchMore(item1))
+        {
+            mon_model->fetchMore(item1);
+        }
+
+
+        // Montrer la selection dans le tableau des tirages
+        ptr_qtv->setCurrentIndex(item1);
+        ptr_qtv->scrollTo(item1);
+        ptr_qtv->selectRow(val-1);
+
+        QItemSelectionModel *selectionModel (ptr_qtv->selectionModel());
+        QItemSelection macellule(item1, item1);
+        selectionModel->select(macellule, QItemSelectionModel::Select);
+    }
+
 }
 
 int MainWindow::TST_TotBidDansGroupememnt(int bId, QString &st_grp)

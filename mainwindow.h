@@ -159,6 +159,8 @@ private:
     void fen_NewTirages(stTiragesDef *pConf);
     void MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModelIndex & index);
 
+    void MontreDansLaQtView(QTableView *ptr_qtv, int val);
+
     int BidFCId_MesPossibles(int col_id, QTableView *tbv_ptr);
     void ft_LancerTri(int tri_id);
     void ft_TriDesAbsents(int tri_id);

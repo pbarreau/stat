@@ -23,7 +23,10 @@ QGridLayout *SyntheseGenerale::GetDisposition(void)
 {
     return disposition;
 }
-
+QTableView *SyntheseGenerale::GetListeTirages(void)
+{
+  return  tbv_LesTirages;
+}
 
 SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel)
 {
@@ -58,14 +61,14 @@ void SyntheseGenerale::DoTirages(void)
     sqm_LesTirages->setQuery(st_sqlReq);
 
     qtv_tmp->setAlternatingRowColors(true);
-
-
+    qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setFixedSize(470,200);
 
     qtv_tmp->setModel(sqm_LesTirages);
+
 
     qtv_tmp->hideColumn(0);
     qtv_tmp->hideColumn(1);

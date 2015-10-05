@@ -64,6 +64,8 @@ private:
 public:
     SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
+    QTableView *GetListeTirages(void);
+
     // penser au destructeur pour chaque pointeur
 
 public slots:
