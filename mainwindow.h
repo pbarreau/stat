@@ -32,6 +32,7 @@ class MainWindow;
 extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf);
 extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
 extern QString CompteJourTirage(stTiragesDef *pMaConf);
+extern int RechercheInfoTirages(int leCritere);
 
 #if 0
 class MonToolTips:public QStandardItemModel
@@ -193,15 +194,16 @@ private:
     bool TST_MettreLesTotaux(int idBoule, int vBoule, int dBoule);
     void TST_CombiVoisin(int key);
     void TST_NbRepartionCombi(int ecart, int key);
-    QFormLayout * MonLayout_PrevoirTirage(void);
-    QFormLayout * MonLayout_ChoixPossible(void);
-    QFormLayout * MonLayout_Absent(void);
-    QFormLayout * MonLayout_Ecarts(void);
-    QFormLayout * MonLayout_VoisinsPresent(void);
-    QFormLayout * MonLayout_VoisinsPresent_v2(void);
+    QGridLayout * MonLayout_PrevoirTirage(void);
+    QGridLayout * MonLayout_ChoixPossible(void);
+    QGridLayout * MonLayout_Absent(void);
+    QGridLayout * MonLayout_Ecarts(void);
+    QGridLayout * MonLayout_VoisinsPresent(void);
+    QGridLayout * MonLayout_VoisinsPresent_v2(void);
     QGridLayout *MonLayout_VoisinDistribution(void);
-    QFormLayout * MonLayout_Parite();
-    QFormLayout * MonLayout_Nsur2();
+    QGridLayout *MonLayout_Parite();
+    QGridLayout *MonLayout_Details();
+    QGridLayout * MonLayout_Nsur2();
 
     QGridLayout *MonLayout_pFnNsr1(stTiragesDef *pConf);
     QGridLayout * MonLayout_pFnNsr2(stTiragesDef *pConf);
@@ -259,7 +261,7 @@ private:
     QTableView *G_tbv_Lstcombi;
     QTableView *G_tbv_LesAbsents;
     QTableView *G_tbv_Parites;
-    QTableView **G_tbv_PariteVoisin;
+    QTableView **gtbv_DernierTirageDetail;
     QTableView **G_tbv_Nsur2;
     //void **tabqtv;
     QWidget *G_w_CouvTirages;
@@ -280,7 +282,7 @@ private:
     QStandardItemModel *G_sim_Ensemble_1 ;
     QStandardItemModel *G_sim_ud;
 
-    QStandardItemModel **G_sim_PariteVoisin ;
+    QStandardItemModel **gsim_DernierTirageDetail ;
     QStandardItemModel **G_sim_Nsur2 ;
     QGraphicsScene *qgr_scene;
     QGraphicsView *qgr_view;

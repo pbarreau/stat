@@ -11,6 +11,7 @@
 #include <QHBoxLayout>
 #include <QTableView>
 #include <QMessageBox>
+#include <QSqlRecord>
 
 #include "labelclickable.h"
 #include "pointtirage.h"
@@ -145,8 +146,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Creation sous fenetre des ecarts
     //fen_Ecarts();
 
-    // Creation fenetre resultat
-    FEN_Ecarts();
 
     // Creation fenetre pour parite
     fen_Parites();
@@ -191,6 +190,11 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     TST_RechercheCombi(&configJeu,G_tbw_MontabWidget);
 
     // Creation fenetre pour memoriser la selection
+    // Creation fenetre resultat
+
+    NEW_RepartionBoules(&configJeu);
+    FEN_Ecarts();
+
     // Et affichage des combinaisons
     FEN_ChoisirBoules();
     // Creation sous fenetre des voisins
@@ -242,6 +246,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_SGRP, G_sim_Ensemble_1);
     DB_tirages->MLP_UniteDizaine(&configJeu, G_sim_ud);
 
+
     // Table a remplir
     TST_PrevisionNew(&configJeu);
 
@@ -254,7 +259,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     FEN_Graphe(&configJeu);
     /// ---- fin rem 3
     //setCentralWidget(zoneCentrale);
-
+#if 0
     // Reecriture de code
     QStringList sl_Boules;
     sl_Boules << QString::number(1);
@@ -268,8 +273,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     NEW_ChoixPourTiragesSuivant(TB_WIN,4,&configJeu);
 
-    NEW_RepartionBoules(&configJeu);
-
+#endif
 
     fen_NewTirages(&configJeu);
 
@@ -627,9 +631,9 @@ void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf
     }
 }
 
-QFormLayout * MainWindow::MonLayout_VoisinsPresent()
+QGridLayout *MainWindow::MonLayout_VoisinsPresent()
 {
-    QFormLayout *lay_return = new QFormLayout;
+    QGridLayout *lay_return = new QGridLayout;
 
     int nb_zn = configJeu.nb_zone;
     int nb_colH = 9;
@@ -728,9 +732,9 @@ QFormLayout * MainWindow::MonLayout_VoisinsPresent()
 }
 
 
-QFormLayout * MainWindow::MonLayout_VoisinsPresent_v2()
+QGridLayout *MainWindow::MonLayout_VoisinsPresent_v2()
 {
-    QFormLayout *lay_return = new QFormLayout;
+    QGridLayout *lay_return = new QGridLayout;
 
     QSqlQuery query;
     QString msg1;
@@ -1068,8 +1072,8 @@ void MainWindow::FEN_Voisins(void)
     tab_Top->addTab(wid_ForTop[2],tr("Distribution"));
     // ------------------
 
-    QFormLayout * design_onglet_1 = MonLayout_VoisinsPresent();
-    QFormLayout * design_onglet_2 = MonLayout_VoisinsPresent_v2();
+    QGridLayout * design_onglet_1 = MonLayout_VoisinsPresent();
+    QGridLayout * design_onglet_2 = MonLayout_VoisinsPresent_v2();
     QGridLayout * design_onglet_3 = MonLayout_VoisinDistribution();
 
     wid_ForTop[0]->setLayout(design_onglet_1);
@@ -1272,16 +1276,65 @@ void MainWindow::FEN_ChoisirBoules(void)
 
 
 }
+
+
+void MainWindow::FEN_Ecarts(void)
+{
+
+    QWidget *w_DataFenetre = new QWidget;
+    // Onglet pere
+    QTabWidget *tab_Top = new QTabWidget;
+    QWidget **wid_ForTop = new QWidget*[7];
+    QGridLayout **dsgOnglet = new QGridLayout * [7];
+    QString ongNames[]={"Psb_1","Psb_2","Absents","Ecarts","Details","Parite","<n/2"};
+
+    QGridLayout * (MainWindow::*ptrFunc[])()={
+            &MainWindow::MonLayout_PrevoirTirage,&MainWindow::MonLayout_ChoixPossible,
+            &MainWindow::MonLayout_Absent,&MainWindow::MonLayout_Ecarts,
+            &MainWindow::MonLayout_Details,
+            &MainWindow::MonLayout_Parite,&MainWindow::MonLayout_Nsur2
+};
+
+
+    for(int i =0; i< 7;i++)
+    {
+        wid_ForTop[i]= new QWidget;
+
+        if(i>2)
+            tab_Top->addTab(wid_ForTop[i],ongNames[i]);
+
+        dsgOnglet[i]= (this->*ptrFunc[i])();
+        wid_ForTop[i]->setLayout(dsgOnglet[i]);
+    }
+
+
+    QFormLayout *mainLayout = new QFormLayout;
+    mainLayout->addWidget(tab_Top);
+
+    //w_DataFenetre->setMinimumHeight(450);
+    //w_DataFenetre->setFixedSize(320,450);
+    w_DataFenetre->setLayout(mainLayout);
+    w_DataFenetre->setWindowTitle("Boules");
+
+    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_DataFenetre);
+    subWindow->resize(350,570);
+    subWindow->move(830,0);
+
+    //zoneCentrale->addSubWindow(w_DataFenetre);
+    w_DataFenetre->setVisible(true);
+}
+
+#if 0
 void MainWindow::FEN_Ecarts(void)
 {
     QWidget *w_DataFenetre = new QWidget;
     // Onglet pere
     QTabWidget *tab_Top = new QTabWidget;
     QWidget **wid_ForTop = new QWidget*[6];
-    QFormLayout **dsgOnglet = new QFormLayout * [6];
+    QGridLayout **dsgOnglet = new QGridLayout * [6];
     QString ongNames[]={"Psb_1","Psb_2","Absents","Ecarts","Parite","<n/2"};
 
-    QFormLayout * (MainWindow::*ptrFunc[])()={
+    QGridLayout * (MainWindow::*ptrFunc[])()={
             &MainWindow::MonLayout_PrevoirTirage,&MainWindow::MonLayout_ChoixPossible,
             &MainWindow::MonLayout_Absent,&MainWindow::MonLayout_Ecarts,
             &MainWindow::MonLayout_Parite,&MainWindow::MonLayout_Nsur2
@@ -1315,10 +1368,12 @@ void MainWindow::FEN_Ecarts(void)
     //zoneCentrale->addSubWindow(w_DataFenetre);
     w_DataFenetre->setVisible(true);
 }
+#endif
 
-QFormLayout * MainWindow:: MonLayout_PrevoirTirage(void)
+
+QGridLayout * MainWindow:: MonLayout_PrevoirTirage(void)
 {
-    QFormLayout *returnLayout = new QFormLayout;
+    QGridLayout *returnLayout = new QGridLayout;
 
     QTableView *qtv_tmp  = new QTableView;
 
@@ -1337,9 +1392,9 @@ QFormLayout * MainWindow:: MonLayout_PrevoirTirage(void)
     return(returnLayout);
 }
 
-QFormLayout * MainWindow:: MonLayout_ChoixPossible(void)
+QGridLayout * MainWindow:: MonLayout_ChoixPossible(void)
 {
-    QFormLayout *returnLayout = new QFormLayout;
+    QGridLayout *returnLayout = new QGridLayout;
 
     //QWidget *w_MesPossibles = new QWidget;
     QHeaderView *hdv_horizontal;
@@ -1427,9 +1482,9 @@ QFormLayout * MainWindow:: MonLayout_ChoixPossible(void)
 }
 
 //-------
-QFormLayout * MainWindow:: MonLayout_Absent(void)
+QGridLayout * MainWindow:: MonLayout_Absent(void)
 {
-    QFormLayout *returnLayout = new QFormLayout;
+    QGridLayout *returnLayout = new QGridLayout;
 
     //QWidget *w_MesPossibles = new QWidget;
     QHeaderView *hdv_horizontal;
@@ -1515,13 +1570,14 @@ QFormLayout * MainWindow:: MonLayout_Absent(void)
     return(returnLayout);
 }
 //-------
-QFormLayout * MainWindow:: MonLayout_Ecarts(void)
+QGridLayout * MainWindow:: MonLayout_Ecarts(void)
 {
+    QGridLayout *returnLayout = new QGridLayout;
+
     int  i;
     int zn = 0;
     G_sim_Ecarts = new QStandardItemModel(configJeu.limites[zn].max,5);
     G_tbv_Ecarts = new QTableView;
-    QFormLayout *returnLayout = new QFormLayout;
 
     G_sim_Ecarts->setHeaderData(0,Qt::Horizontal,"B"); // Boules
     G_sim_Ecarts->setHeaderData(1,Qt::Horizontal,"Ec"); // Ecart en cours
@@ -1556,21 +1612,174 @@ QFormLayout * MainWindow:: MonLayout_Ecarts(void)
     return(returnLayout);
 }
 // ---------
-QFormLayout * MainWindow::MonLayout_Parite()
+QGridLayout * MainWindow::MonLayout_Details()
 {
-    QFormLayout *lay_return = new QFormLayout;
+    QGridLayout *lay_return = new QGridLayout;
+    QTableView *tmpTblView_1 = new QTableView;
+    QTableView *tmpTblView_2 = new QTableView;
+
+    // Compter le nombre de colonne a creer
+    QString sqlReq = "";
+    QSqlQuery sql_req;
+    bool status = false;
+
+    sqlReq = "select * from repartition_bh limit 1;";
+    status = sql_req.exec(sqlReq);
+    if(status)
+    {
+        QSqlRecord ligne = sql_req.record();
+        int nb_col = ligne.count();
+        QStandardItemModel * tmpStdItem =  new QStandardItemModel(1,nb_col-2);
+        tmpTblView_1->setModel(tmpStdItem);
+        int val = 0;
+        for(int i = 2; i< nb_col; i++)
+        {
+            tmpStdItem->setHeaderData(i-2,Qt::Horizontal,ligne.fieldName(i));
+            QStandardItem *item = new QStandardItem();
+
+            // Recherche de la config pour le dernier tirage
+            val=RechercheInfoTirages(i-2);
+            item->setData(val,Qt::DisplayRole);
+            tmpStdItem->setItem(0,i-2,item);
+            tmpTblView_1->setColumnWidth(i-2,30);
+        }
+
+        tmpTblView_1->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        tmpTblView_1->setSelectionBehavior(QAbstractItemView::SelectItems);
+        tmpTblView_1->setSelectionMode(QAbstractItemView::SingleSelection);
+        tmpTblView_1->verticalHeader()->hide();
+        tmpTblView_1->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        tmpTblView_1->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+
+    }
+     lay_return->addWidget(tmpTblView_1,0,0);
+
+     // Construction table 2
+     QStandardItemModel * tmpStdItem_2 =  new QStandardItemModel(6,2);
+     tmpTblView_2->setModel(tmpStdItem_2);
+     // entete du modele
+     QStringList lstheader;
+     lstheader << "Q" << "V:+1";
+     tmpStdItem_2->setHorizontalHeaderLabels(lstheader);
+     for(int y=0;y<6;y++)
+     {
+         for(int x=0;x<2;x++)
+         {
+          QStandardItem *item = new QStandardItem();
+          if(x==0)
+          {
+           item->setData(y,Qt::DisplayRole);
+          }
+          tmpStdItem_2->setItem(y,x,item);
+          tmpTblView_2->setColumnWidth(x,50);
+         }
+     }
+     tmpTblView_2->setEditTriggers(QAbstractItemView::NoEditTriggers);
+     tmpTblView_2->setSelectionBehavior(QAbstractItemView::SelectItems);
+     tmpTblView_2->setSelectionMode(QAbstractItemView::SingleSelection);
+     tmpTblView_2->verticalHeader()->hide();
+     tmpTblView_2->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+     tmpTblView_2->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+     lay_return->addWidget(tmpTblView_2,1,0);
+
+    return(lay_return);
+}
+
+int RechercheInfoTirages(int leCritere)
+{
+    int retval = -1;
+    QString sql_req;
+    QSqlQuery req;
+    bool status = false;
+
+    QStringList cri_msg;
+    cri_msg <<"z1%2=0"<<"z1<26";
+    for(int j=0;j<=9;j++)
+    {
+        cri_msg<< "z1 like '%" + QString::number(j) + "'";
+    }
+    for(int j=0;j<6;j++)
+    {
+        cri_msg<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
+    }
+
+    QString st_cri1_1= cri_msg.at(leCritere);
+    int dst = 0;
+
+
+    sql_req =
+            "select tb3.id as id, tb5.id as pid,"
+            "tb3.jour_tirage as J,"
+            "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
+            "tb5.tip as C,"
+            "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
+            "tb3.e1 as e1,"
+            "tb2.N as N from tirages as tb3,"
+            "analyses as tb4, lstcombi as tb5 "
+            "inner join"
+            "("
+            "select *  from "
+            "("
+            "select tb1.*, count(tb2.B) as N from tirages as tb1 "
+            "left join"
+            "("
+            "select id as B from Bnrz where (z1 not null and ("
+            +st_cri1_1+
+            "))"
+            ")as tb2 "
+            "on"
+            "("
+            "tb1.b1 = tb2.B or "
+            "tb1.b2 = tb2.B or "
+            "tb1.b3 = tb2.B or "
+            "tb1.b4 = tb2.B or "
+            "tb1.b5 = tb2.B"
+            ")"
+            "group by tb1.id"
+            ") as ensemble_1 "
+            ") as tb2 "
+            "on ("
+            "(tb3.id = tb2.id + "
+            +QString::number(dst)
+            +") "
+             "and"
+             "(tb4.id = tb3.id)"
+             "and"
+             "(tb4.id_poids = tb5.id)"
+             ")"
+            ;
+    status = req.exec(sql_req);
+    if(status)
+    {
+        QSqlRecord ligne;
+        if(req.first())
+        {
+            ligne = req.record();
+            retval = ligne.value("N").toInt();
+        }
+
+    }
+
+    return retval;
+}
+
+QGridLayout * MainWindow::MonLayout_Parite()
+{
+    QGridLayout *lay_return = new QGridLayout;
 
     int nb_zn = configJeu.nb_zone;
     QTabWidget *tab_conteneur = new QTabWidget;
 
-    G_tbv_PariteVoisin = new QTableView*[nb_zn];
-    G_sim_PariteVoisin= new QStandardItemModel*[nb_zn];
+    gtbv_DernierTirageDetail = new QTableView*[nb_zn];
+    gsim_DernierTirageDetail = new QStandardItemModel*[nb_zn];
     G_lab_PariteVoisin = new QLabel*[nb_zn];
     QFormLayout **layT_Tmp_1 = new QFormLayout*[nb_zn];
     QWidget **tmpT_Widget = new QWidget*[nb_zn];
 
-    QTableView ** fn_refTbv = G_tbv_PariteVoisin;
-    QStandardItemModel ** fn_refSim = G_sim_PariteVoisin;
+    QTableView ** fn_refTbv = gtbv_DernierTirageDetail;
+    QStandardItemModel ** fn_refSim = gsim_DernierTirageDetail;
     QLabel ** fn_refLab = G_lab_PariteVoisin;
 
     for(int zn = 0;zn<nb_zn;zn++)
@@ -1644,9 +1853,9 @@ QFormLayout * MainWindow::MonLayout_Parite()
     return(lay_return);
 }
 //--------
-QFormLayout * MainWindow::MonLayout_Nsur2()
+QGridLayout *MainWindow::MonLayout_Nsur2()
 {
-    QFormLayout *lay_return = new QFormLayout;
+    QGridLayout *lay_return = new QGridLayout;
 
     int nb_zn = configJeu.nb_zone;
     QTabWidget *tab_conteneur = new QTabWidget;
@@ -1786,7 +1995,9 @@ void MainWindow::fen_Ecarts(void)
 
 
 }
+#endif
 
+#if 0
 void MainWindow::fen_MesPossibles(void)
 {
     QWidget *w_MesPossibles = new QWidget;
@@ -2578,12 +2789,12 @@ void MainWindow::slot_F3_RechercherLesTirages(const QModelIndex & index)
     const int d[2]={-1,-2};
 
     // determination de la table dans l'onglet ayant recu le click
-    if (index.internalPointer() == G_sim_PariteVoisin[0]->index(index.row(),index.column()).internalPointer())
+    if (index.internalPointer() == gsim_DernierTirageDetail[0]->index(index.row(),index.column()).internalPointer())
     {
         zn = 0;
     }
 
-    if (index.internalPointer() == G_sim_PariteVoisin[1]->index(index.row(),index.column()).internalPointer())
+    if (index.internalPointer() == gsim_DernierTirageDetail[1]->index(index.row(),index.column()).internalPointer())
     {
         zn = 1;
     }
@@ -2592,7 +2803,7 @@ void MainWindow::slot_F3_RechercherLesTirages(const QModelIndex & index)
     {
         // determination de colonne
         col = index.column();
-        rch = G_sim_PariteVoisin[zn]->index(index.row(),0).data().toInt();
+        rch = gsim_DernierTirageDetail[zn]->index(index.row(),0).data().toInt();
 
         if(col >0 && col < 3)
         {
@@ -5162,7 +5373,7 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
         {
         case NE_FDJ::critere_parite:
         {
-            modele = G_sim_PariteVoisin;
+            modele = gsim_DernierTirageDetail;
             label = G_lab_PariteVoisin;
             cri_col = pConf->nomZone[zone]+ CL_PAIR;
         }

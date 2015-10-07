@@ -701,41 +701,10 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     void *pSource = index.internalPointer();
     int col = index.column();
     int val = index.data().toInt();
-
-#if 0
-    int col = -1;
-    int val = 0;
     const QAbstractItemModel * pModel = index.model();
-    //QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
 
-
-    // Il y a t il une valeur
-    for(int i = 0; i<pModel->columnCount();i++)
-    {
-        QString headName = pModel->headerData(i,Qt::Horizontal).toString();
-        if (headName != "T")
-        {
-            continue;
-        }
-        else
-        {
-            col = i;
-        }
-    }
-
-    // Analyse de la colonne Total
-    if(col>0)
-    {
-        val = index.model()->index(index.row(),col).data().toInt();;
-
-        if (!val)
-            return;
-    }
-    else
-    {
-        return;
-    }
-#endif
 
     if(pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
     {
@@ -766,6 +735,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
         uneDemande.origine = 2;
         uneDemande.lgn[0]=index.model()->index(index.row(),1).data().toInt();
         uneDemande.col[0]=col;
+        uneDemande.stc[0]=headName;
         uneDemande.val[0]=val;
 
     }

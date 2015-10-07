@@ -55,6 +55,8 @@ private:
 public:
     SyntheseDetails(stCurDemande *uneEtude,QMdiArea *visuel);
     void MontreRechercheTirages(stCurDemande *pLaDemande);
+    QString CreationTitre_1(stCurDemande *pEtude);
+    QString CreationTitre_2(stCurDemande *pEtude);
     QGridLayout * MonLayout_pFnDetailsMontrerTirages(int ref, int elm, int dst);
     QGridLayout * MonLayout_pFnDetailsMontrerSynthese(int ref, int elm, int dst);
     QGridLayout * MonLayout_pFnDetailsMontrerRepartition(int ref, int elm, int dst);

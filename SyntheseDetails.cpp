@@ -199,8 +199,74 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     }
 
     QFormLayout *mainLayout = new QFormLayout;
-    QString st_tmp = "";
     QString st_titre = "";
+#if 0
+    QString st_tmp = "";
+    int ordre[3]={2,0,1};
+    QString Nom[3]={"B:","E:","C:"};
+
+    for(int i=0;i<3;i++)
+    {
+        int clef = ordre[i];
+        if(pEtude->lst_boules[clef].size())
+        {
+            if(pEtude->stc[clef] != "")
+            {
+                st_tmp =  st_tmp +
+                        Nom[clef] +"("
+                        + pEtude->stc[clef] +
+                        ") ";
+            }
+            else
+            {
+                st_tmp =  st_tmp + Nom[clef];
+            }
+
+
+            for(int j=0; j<pEtude->lst_boules[clef].size();j++)
+                st_tmp = st_tmp + pEtude->lst_boules[clef].at(j) + ",";
+
+        }
+    }
+    st_tmp.remove(st_tmp.length()-1,1);
+#endif
+
+    if(pEtude->origine == 1)
+    {
+       st_titre =  CreationTitre_1(pEtude);
+    }
+    else
+    {
+       st_titre =  CreationTitre_2(pEtude);
+    }
+
+    if(pEtude->st_titre != "")
+    {
+        st_titre = "Depart:("+pEtude->st_titre+")," + st_titre;
+    }
+    else
+    {
+        pEtude->st_titre = st_titre;
+    }
+
+
+    mainLayout->addWidget(tab_Top);
+    qw_main->setWindowTitle(st_titre);
+    qw_main->setLayout(mainLayout);
+
+
+    QMdiSubWindow *subWindow = pEcran->addSubWindow(qw_main);
+    //subWindow->resize(493,329);
+    //subWindow->move(737,560);
+    qw_main->setVisible(true);
+    qw_main->show();
+}
+
+QString SyntheseDetails::CreationTitre_1(stCurDemande *pEtude)
+{
+
+    QString st_tmp = "Tab1->";
+
     int ordre[3]={2,0,1};
     QString Nom[3]={"B:","E:","C:"};
 
@@ -230,27 +296,23 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     st_tmp.remove(st_tmp.length()-1,1);
 
 
-    if(pEtude->st_titre != "")
-    {
-        st_titre = "Depart:("+pEtude->st_titre+")" ;
-    }
-    else
-    {
-        pEtude->st_titre = st_tmp;
-    }
+    return st_tmp;
+}
 
-    st_titre = st_titre + st_tmp ;
+QString SyntheseDetails::CreationTitre_2(stCurDemande *pEtude)
+{
 
-    mainLayout->addWidget(tab_Top);
-    qw_main->setWindowTitle(st_titre);
-    qw_main->setLayout(mainLayout);
+    QString st_tmp = "Tab2->";
+
+       st_tmp =  st_tmp + "Nb:"+
+               QString::number(pEtude->lgn[0])+
+               ","+pEtude->stc[0] +
+                ":"+
+                QString::number(pEtude->val[0])
+               ;
 
 
-    QMdiSubWindow *subWindow = pEcran->addSubWindow(qw_main);
-    //subWindow->resize(493,329);
-    //subWindow->move(737,560);
-    qw_main->setVisible(true);
-    qw_main->show();
+    return st_tmp;
 }
 
 QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref, int elm, int dst)
