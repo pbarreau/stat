@@ -60,7 +60,8 @@ public:
     QGridLayout * MonLayout_pFnDetailsMontrerRepartition(int ref, int elm, int dst);
 
     // penser au destructeur pour chaque pointeur
-    QString DoSqlMsgRef_Tb2(QStringList &boules, int dst);
+    QString ReponsesOrigine_1(int dst);
+    QString ReponsesOrigine_2(int dst);
 
 
 public slots:

@@ -699,6 +699,9 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const
 void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 {
     void *pSource = index.internalPointer();
+    int col = index.column();
+    int val = index.data().toInt();
+
 #if 0
     int col = -1;
     int val = 0;
@@ -736,8 +739,6 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
     if(pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
     {
-        int val = index.data().toInt();
-        int col = index.column();
 
         if (col < 2 || !val)
             return;
@@ -758,6 +759,16 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
         uneDemande.origine = 1;
     }
 
+    if(
+           pSource == tbv_bloc2->model()->index(0,0).internalPointer()
+            )
+    {
+        uneDemande.origine = 2;
+        uneDemande.lgn[0]=index.model()->index(index.row(),1).data().toInt();
+        uneDemande.col[0]=col;
+        uneDemande.val[0]=val;
+
+    }
 
 
     // recopie de la config courante

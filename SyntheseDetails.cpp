@@ -1267,7 +1267,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
 
 }
 
-QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
+QString SyntheseDetails::ReponsesOrigine_1(int dst)
 {
     QString st_sqlR = "";
 
@@ -1355,7 +1355,22 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
 #ifndef QT_NO_DEBUG
     qDebug() << st_sqlR;
 #endif
-    // Requete totale
+
+    return st_sqlR;
+}
+
+QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
+{
+    QString st_sqlR = "";
+
+    if(pLaDemande->origine ==1)
+    {
+      st_sqlR =  ReponsesOrigine_1(dst);
+    }
+    else
+    {
+      st_sqlR =  ReponsesOrigine_2(dst);
+    }
     return st_sqlR;
 }
 
@@ -1445,7 +1460,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
     return(st_msg);
 }
 
-QString SyntheseDetails::DoSqlMsgRef_Tb2(QStringList &boules, int dst)
+QString SyntheseDetails::ReponsesOrigine_2(int dst)
 {
 #if 0
     select tb3.id as Tid, tb5.id as Pid,
@@ -1503,10 +1518,9 @@ QString SyntheseDetails::DoSqlMsgRef_Tb2(QStringList &boules, int dst)
     QString st_cri1_1 = "";
 
 
-    int val = pLaDemande->lgn[0];
-
+    int lgn = pLaDemande->lgn[0];
     int col=pLaDemande->col[0];
-
+    QStringList boules=pLaDemande->lst_boules[0];
 
     //---------------------
     QStringList cri_msg;
@@ -1537,15 +1551,14 @@ QString SyntheseDetails::DoSqlMsgRef_Tb2(QStringList &boules, int dst)
 
 
     st_cri1 =
-            "select tb3.id as Tid1, tb5.id as Pid,"
+            "select tb3.id as id, tb5.id as pid,"
             "tb3.jour_tirage as J,"
             "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
             "tb5.tip as C,"
             "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
             "tb3.e1 as e1,"
-            "tb3.bp as P,"
-            "tb3.bg as G "
-            "from tirages as tb3, analyses as tb4, lstcombi as tb5 "
+            "tb2.N as N from tirages as tb3,"
+            "analyses as tb4, lstcombi as tb5 "
             "inner join"
             "("
             "select *  from "
@@ -1580,21 +1593,12 @@ QString SyntheseDetails::DoSqlMsgRef_Tb2(QStringList &boules, int dst)
             ;
 
     st_cri2 ="(tb2.N ="
-            +QString::number(val)+")";
+            +QString::number(lgn)+")";
 
     // Des boules a rechercher ?
     if(boules.size())
         st_cri2 = st_cri2 + " and " + GEN_Where_3(5,"tb2.b",true,"=",boules,false,"or");
 
-#if 0
-    if(col>2)
-        st_cri2= st_cri2 +" and "
-                          "( "
-                          "J like '%"
-                +pLaDemande->st_col+
-                "%' "
-                ") ";
-#endif
 
     if((st_cri2 !="") || (st_cri3 !=""))
         st_criWhere = " where ("+ st_cri2 + st_cri3 +")";

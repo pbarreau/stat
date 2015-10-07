@@ -312,7 +312,8 @@ QString MonQtViewDelegate::SD_Tb2_2(QStringList &boules, int lgn, int dst) const
     QString st_msg = "";
     QString st_ref = "";
 
-    st_ref = pParent->pObjet->DoSqlMsgRef_Tb2(boules,dst);
+    pLaConfig->lst_boules[0] = boules;
+    st_ref = pParent->pObjet->ReponsesOrigine_2(dst);
     st_ref= st_ref.remove(st_ref.length()-1,1);
 
     st_msg =
