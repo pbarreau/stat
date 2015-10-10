@@ -94,6 +94,13 @@ void SyntheseGenerale::DoTirages(void)
 
 
     tbv_LesTirages=qtv_tmp;
+    // Simple click dans sous fenetre base
+    connect( qtv_tmp, SIGNAL( clicked(QModelIndex)) ,
+             pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
+
+    // Simple click dans sous fenetre base
+    connect( qtv_tmp, SIGNAL( clicked(QModelIndex)) ,
+             pEcran->parent(), SLOT( slot_MontreTirageAnalyse( QModelIndex) ) );
 
 #if 0
     // double click dans fenetre  pour afficher details boule

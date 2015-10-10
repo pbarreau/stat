@@ -555,7 +555,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 
     // click dans fenetre ma selection
     connect( gtbv_SelectionBoulesDeZone[2], SIGNAL( clicked(QModelIndex)) ,
-             this, SLOT( slot_CriteresTiragesConstruire( QModelIndex) ) );
+            this, SLOT( slot_CriteresTiragesConstruire( QModelIndex) ) );
 
 #if 0
     // click dans fenetre
@@ -1631,14 +1631,15 @@ QGridLayout * MainWindow::MonLayout_Details()
         int nb_col = ligne.count();
         QStandardItemModel * tmpStdItem =  new QStandardItemModel(1,nb_col-2);
         tmpTblView_1->setModel(tmpStdItem);
+        gsim_AnalyseUnTirage = tmpStdItem;
         int val = 0;
-        for(int i = 2; i< nb_col; i++)
+        for(int i = 2; i<nb_col; i++)
         {
             tmpStdItem->setHeaderData(i-2,Qt::Horizontal,ligne.fieldName(i));
             QStandardItem *item = new QStandardItem();
 
             // Recherche de la config pour le dernier tirage
-            val=RechercheInfoTirages(i-2);
+            val=RechercheInfoTirages(1,i-2);
             item->setData(val,Qt::DisplayRole);
             tmpStdItem->setItem(0,i-2,item);
             tmpTblView_1->setColumnWidth(i-2,30);
@@ -1653,41 +1654,41 @@ QGridLayout * MainWindow::MonLayout_Details()
 
 
     }
-     lay_return->addWidget(tmpTblView_1,0,0);
+    lay_return->addWidget(tmpTblView_1,0,0);
 
-     // Construction table 2
-     QStandardItemModel * tmpStdItem_2 =  new QStandardItemModel(6,2);
-     tmpTblView_2->setModel(tmpStdItem_2);
-     // entete du modele
-     QStringList lstheader;
-     lstheader << "Q" << "V:+1";
-     tmpStdItem_2->setHorizontalHeaderLabels(lstheader);
-     for(int y=0;y<6;y++)
-     {
-         for(int x=0;x<2;x++)
-         {
-          QStandardItem *item = new QStandardItem();
-          if(x==0)
-          {
-           item->setData(y,Qt::DisplayRole);
-          }
-          tmpStdItem_2->setItem(y,x,item);
-          tmpTblView_2->setColumnWidth(x,50);
-         }
-     }
-     tmpTblView_2->setEditTriggers(QAbstractItemView::NoEditTriggers);
-     tmpTblView_2->setSelectionBehavior(QAbstractItemView::SelectItems);
-     tmpTblView_2->setSelectionMode(QAbstractItemView::SingleSelection);
-     tmpTblView_2->verticalHeader()->hide();
-     tmpTblView_2->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-     tmpTblView_2->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    // Construction table 2
+    QStandardItemModel * tmpStdItem_2 =  new QStandardItemModel(6,2);
+    tmpTblView_2->setModel(tmpStdItem_2);
+    // entete du modele
+    QStringList lstheader;
+    lstheader << "Q" << "V:+1";
+    tmpStdItem_2->setHorizontalHeaderLabels(lstheader);
+    for(int y=0;y<6;y++)
+    {
+        for(int x=0;x<2;x++)
+        {
+            QStandardItem *item = new QStandardItem();
+            if(x==0)
+            {
+                item->setData(y,Qt::DisplayRole);
+            }
+            tmpStdItem_2->setItem(y,x,item);
+            tmpTblView_2->setColumnWidth(x,50);
+        }
+    }
+    tmpTblView_2->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tmpTblView_2->setSelectionBehavior(QAbstractItemView::SelectItems);
+    tmpTblView_2->setSelectionMode(QAbstractItemView::SingleSelection);
+    tmpTblView_2->verticalHeader()->hide();
+    tmpTblView_2->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    tmpTblView_2->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-     lay_return->addWidget(tmpTblView_2,1,0);
+    lay_return->addWidget(tmpTblView_2,1,0);
 
     return(lay_return);
 }
 
-int RechercheInfoTirages(int leCritere)
+int RechercheInfoTirages(int idTirage, int leCritere)
 {
     int retval = -1;
     QString sql_req;
@@ -1748,8 +1749,18 @@ int RechercheInfoTirages(int leCritere)
              "(tb4.id = tb3.id)"
              "and"
              "(tb4.id_poids = tb5.id)"
-             ")"
-            ;
+            "and"
+            "(tb2.id="
+            +QString::number(idTirage)+
+            ")"
+             ")";
+
+#ifndef QT_NO_DEBUG
+    // Effacer fenetre de debug
+    qDebug("\0x1B[2J\0x1b[;H");
+    qDebug() << sql_req;
+#endif
+
     status = req.exec(sql_req);
     if(status)
     {
@@ -1760,6 +1771,11 @@ int RechercheInfoTirages(int leCritere)
             retval = ligne.value("N").toInt();
         }
 
+    }
+    else
+    {
+        int a = 0;
+        a=a++; // Pb
     }
 
     return retval;
@@ -2403,7 +2419,7 @@ void MainWindow::slot_CriteresTiragesAppliquer()
 {
     stCurDemande *etude = new stCurDemande;
 
-        critereTirages.origine = 1;
+    critereTirages.origine = 1;
 
 
 
@@ -2670,8 +2686,8 @@ void MainWindow::slot_CriteresTiragesEffacer(void)
 
     for(int i=0;i<nbZone;i++)
     {
-      selection = gtbv_SelectionBoulesDeZone[i]->selectionModel();
-      selection->clearSelection();
+        selection = gtbv_SelectionBoulesDeZone[i]->selectionModel();
+        selection->clearSelection();
     }
 
     for(int i=0;i<3;i++)
@@ -4626,12 +4642,36 @@ void MainWindow::TST_FenetreReponses(QString fen_titre, int zn, QString req_msg,
 
 void MainWindow::slot_MontreTirageDansGraph(const QModelIndex & index)
 {
-    if (index.column()==0)
+    if (index.column()==0 || index.column()==2)
     {
         VUE_MontreLeTirage(index.row()+1);
     }
 }
 
+
+void MainWindow::slot_MontreTirageAnalyse(const QModelIndex & index)
+{
+
+    int id = index.row()+1;
+    int nb_col = gsim_AnalyseUnTirage->columnCount();
+
+    for(int i = 2; i<=nb_col; i++)
+    {
+        QStandardItem *item = gsim_AnalyseUnTirage->item(0,i-2);
+        int val = 0;
+
+        // Recherche de la config pour le  tirage
+        val=RechercheInfoTirages(id,i-2);
+
+        // affectation
+        item->setData(val,Qt::DisplayRole);
+
+        // visualisation
+        gsim_AnalyseUnTirage->setItem(0,i-2,item);
+    }
+
+
+}
 void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
 {
     // recuperer la ligne de la table
@@ -4640,10 +4680,13 @@ void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
     // Montrer la selection dans les graphiques
     VUE_MontreLeTirage(val);
 
-    MontreDansLaQtView(G_tbv_Tirages,val);
+    // Montre dans la fenetre table tirages
+    MontreDansLaQtView(G_tbv_Tirages,val,0);
+
+
     QTableView * pTableauTirages = NULL;
     pTableauTirages = syntheses->GetListeTirages();
-    MontreDansLaQtView(pTableauTirages,val);
+    MontreDansLaQtView(pTableauTirages,val,2);
 
 #if 0
     QAbstractItemModel *mon_model =G_tbv_Tirages->model();
@@ -4666,7 +4709,7 @@ void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
 #endif
 }
 
-void MainWindow::MontreDansLaQtView(QTableView *ptr_qtv, int val)
+void MainWindow::MontreDansLaQtView(QTableView *ptr_qtv, int val,int col_id)
 {
     QAbstractItemModel *mon_model = ptr_qtv->model();
     QModelIndex item1 = mon_model->index(0,0, QModelIndex());
@@ -4675,7 +4718,7 @@ void MainWindow::MontreDansLaQtView(QTableView *ptr_qtv, int val)
     ptr_qtv->setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
 
     if (item1.isValid()){
-        item1 = item1.model()->index(val-1,0,QModelIndex());
+        item1 = item1.model()->index(val-1,col_id,QModelIndex());
 
         // Associer toutes les valeurs a la vue
         while (mon_model->canFetchMore(item1))
@@ -4687,7 +4730,7 @@ void MainWindow::MontreDansLaQtView(QTableView *ptr_qtv, int val)
         // Montrer la selection dans le tableau des tirages
         ptr_qtv->setCurrentIndex(item1);
         ptr_qtv->scrollTo(item1);
-        ptr_qtv->selectRow(val-1);
+        //ptr_qtv->selectRow(val-1);
 
         QItemSelectionModel *selectionModel (ptr_qtv->selectionModel());
         QItemSelection macellule(item1, item1);

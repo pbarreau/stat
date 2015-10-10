@@ -32,7 +32,7 @@ class MainWindow;
 extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf);
 extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
 extern QString CompteJourTirage(stTiragesDef *pMaConf);
-extern int RechercheInfoTirages(int leCritere);
+extern int RechercheInfoTirages(int idTirage, int leCritere);
 
 #if 0
 class MonToolTips:public QStandardItemModel
@@ -131,6 +131,7 @@ public slots:
     void slot_RepererLesTirages(const QString &myData);
     void slot_MontreLeTirage(const QModelIndex & index);
     void slot_MontreTirageDansGraph(const QModelIndex & index);
+    void slot_MontreTirageAnalyse(const QModelIndex & index);
 
 
 private:
@@ -160,7 +161,7 @@ private:
     void fen_NewTirages(stTiragesDef *pConf);
     void MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModelIndex & index);
 
-    void MontreDansLaQtView(QTableView *ptr_qtv, int val);
+    void MontreDansLaQtView(QTableView *ptr_qtv, int val, int col_id);
 
     int BidFCId_MesPossibles(int col_id, QTableView *tbv_ptr);
     void ft_LancerTri(int tri_id);
@@ -243,7 +244,9 @@ private:
     QLabel **G_lab_Nsur2;
     QTabWidget *G_tbw_MontabWidget;
     QTableView *G_tbv_Tirages;
+    //QTableView *pTableauTirages;
     QTableView *G_tbv_CouvTirages;
+    QStandardItemModel *gsim_AnalyseUnTirage;
 
     QTableView *G_tbv_CombiSourceSelection;
     QTableView *G_tbv_ProxyCombiSourceSelection;
