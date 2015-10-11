@@ -158,6 +158,7 @@ private:
     void FEN_Ecarts(void);
     void fen_Parites(void);
     void FEN_ChoisirBoules(void);
+    void FEN_Splitter(void);
     void fen_NewTirages(stTiragesDef *pConf);
     void MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModelIndex & index);
 

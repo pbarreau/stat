@@ -12,6 +12,8 @@
 #include <QTableView>
 #include <QMessageBox>
 #include <QSqlRecord>
+#include <QSplitter>
+#include <QTreeView>
 
 #include "labelclickable.h"
 #include "pointtirage.h"
@@ -134,6 +136,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     tmp.getConfig(&configJeu);
 
     // Creation de La table de reference
+    FEN_Splitter();
 
     // Creation sous fenetre pour mettre donnees de base
     FEN_Old_Tirages();
@@ -1217,6 +1220,16 @@ void MainWindow::fen_Voisins(void)
 }
 #endif
 
+void MainWindow::FEN_Splitter(void)
+{
+    QSplitter *splitter = new QSplitter;
+    QTreeView *tree = new QTreeView(splitter);
+    QTabWidget *tw_tmp = new QTabWidget(splitter);
+    QTableView *qtv_tmp = new QTableView(splitter);
+
+    splitter->setWindowTitle("Controle");
+    splitter->show();
+}
 void MainWindow::FEN_ChoisirBoules(void)
 {
     QWidget *qw_tmpWindows = new QWidget;
