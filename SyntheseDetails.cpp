@@ -161,7 +161,7 @@ SyntheseDetails::SyntheseDetails(stCurDemande *uneEtude, QMdiArea *visuel)
     splitter_1->setVisible(true);
     splitter_1->show();
 
-    MontreRechercheTirages(uneEtude);
+    //MontreRechercheTirages(uneEtude);
 }
 
 QWidget * SyntheseDetails::SPLIT_Voisin(int i)
@@ -177,30 +177,22 @@ QWidget * SyntheseDetails::SPLIT_Voisin(int i)
     QString labNames[]={"0","+1","-1","?"};
     QString ongNames[]={"b","e","c"};
 
-    //QGridLayout * (MainWindow::*ptrFunc[])()={};
+    QGridLayout * (SyntheseDetails::*ptrFunc[])(int, int)={
+            &SyntheseDetails::Synthese_1,
+            &SyntheseDetails::Synthese_2,
+            &SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition
+    };
 
     titre->setText("Position "+labNames[i]);
 
-    // --------------
-#if 0
-    QGridLayout *lay_return = new QGridLayout;
-
-    Synthese_1(lay_return,ref,dst);
-    Synthese_2(lay_return,ref,dst);
-
-
-    return(lay_return);
- #endif
-
-    // ---------------
     for(int i =0; i< 3;i++)
     {
         wid_ForTop[i]= new QWidget;
 
         tab_Top->addTab(wid_ForTop[i],ongNames[i]);
 
-        //dsgOnglet[i]= (this->*ptrFunc[i])(i);
-        //wid_ForTop[i]->setLayout(dsgOnglet[i]);
+        dsgOnglet[i]= (this->*ptrFunc[i])(i,dst[i]);
+        wid_ForTop[i]->setLayout(dsgOnglet[i]);
     }
 
     frm_tmp->addWidget(titre);
@@ -230,7 +222,7 @@ QWidget * SyntheseDetails::SPLIT_Tirage(void)
 
         tab_Top->addTab(wid_ForTop[i],ongNames[i]);
 
-        dsgOnglet[i]= MonLayout_pFnDetailsMontrerTirages(i,0,dst[i]);
+        dsgOnglet[i]= MonLayout_pFnDetailsMontrerTirages(i,dst[i]);
         wid_ForTop[i]->setLayout(dsgOnglet[i]);
     }
 
@@ -262,7 +254,7 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
         QGridLayout *design_onglet_2[3];
 
         // Tableau de pointeur de fonction
-        QGridLayout *(SyntheseDetails::*ptrFunc[])(int , int, int )=
+        QGridLayout *(SyntheseDetails::*ptrFunc[])(int , int )=
         {&SyntheseDetails::MonLayout_pFnDetailsMontrerTirages,
                 &SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese,
                 &SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition};
@@ -283,7 +275,7 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
             wid_ForTop_1[i]->addTab(wid_ForTop_2[j],tr(stNames_2[j].toUtf8()));
 
             //
-            design_onglet_2[j] = (this->*ptrFunc[j])(i, j, dst[i]);
+            design_onglet_2[j] = (this->*ptrFunc[j])(i, dst[i]);
             wid_ForTop_2[j]->setLayout(design_onglet_2[j]);
 
             // Verifier si on est sur l'onglet n° 4
@@ -304,11 +296,11 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
 
     if(pEtude->origine == 1)
     {
-       st_titre =  CreationTitre_1(pEtude);
+        st_titre =  CreationTitre_1(pEtude);
     }
     else
     {
-       st_titre =  CreationTitre_2(pEtude);
+        st_titre =  CreationTitre_2(pEtude);
     }
 
     if(pEtude->st_titre != "")
@@ -375,18 +367,19 @@ QString SyntheseDetails::CreationTitre_2(stCurDemande *pEtude)
 
     QString st_tmp = "Tab2->";
 
-       st_tmp =  st_tmp + "Nb:"+
-               QString::number(pEtude->lgn[0])+
-               ","+pEtude->stc[0] +
-                ":"+
-                QString::number(pEtude->val[0])
-               ;
+    st_tmp =  st_tmp + "Nb:"+
+            QString::number(pEtude->lgn[0])+
+            ","+pEtude->stc[0] +
+            ":"+
+            QString::number(pEtude->val[0])
+            ;
 
 
     return st_tmp;
 }
 
-QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref, int elm, int dst)
+QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref,
+                                                                  int dst)
 {
     QGridLayout *lay_return = new QGridLayout;
 
@@ -509,7 +502,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     new_distance *=-1;
 
     // Tableau de pointeur de fonction
-    QGridLayout *(SyntheseDetails::*ptrFunc[3])(int ,int,  int )=
+    QGridLayout *(SyntheseDetails::*ptrFunc[3])(int ,  int )=
     {&SyntheseDetails::MonLayout_pFnDetailsMontrerTirages,
             &SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese,
             &SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition};
@@ -520,7 +513,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
         QGridLayout * oldOne = G_design_onglet_2[j];
         QGridLayout * monTest;
 
-        monTest = (this->*ptrFunc[j])(3,j,new_distance);
+        monTest = (this->*ptrFunc[j])(j,new_distance);
 
         // nouveau dessin ok.
         // Rechercher l'ancien pour suppression et reaffectation;
@@ -532,7 +525,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     }
 }
 
-QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int elm, int dst)
+QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int dst)
 {
     QGridLayout *lay_return = new QGridLayout;
     QGridLayout *lay_1;
@@ -547,7 +540,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int 
     return(lay_return);
 }
 
-QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, int elm, int dst)
+QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, int dst)
 {
     QGridLayout *lay_return = new QGridLayout;
 
@@ -1383,11 +1376,11 @@ QString SyntheseDetails::DoSqlMsgRefGenerique(int dst)
 
     if(pLaDemande->origine ==1)
     {
-      st_sqlR =  ReponsesOrigine_1(dst);
+        st_sqlR =  ReponsesOrigine_1(dst);
     }
     else
     {
-      st_sqlR =  ReponsesOrigine_2(dst);
+        st_sqlR =  ReponsesOrigine_2(dst);
     }
     return st_sqlR;
 }
