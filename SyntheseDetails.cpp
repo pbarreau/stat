@@ -4,6 +4,7 @@
 
 
 #include <QtGui>
+#include <QSplitter>
 
 #include <QHeaderView>
 
@@ -126,7 +127,6 @@ SyntheseDetails::SyntheseDetails(stCurDemande *uneEtude, QMdiArea *visuel)
     int d[]={0,-1,1,-2};
     QString n[]={"0","+1","-1","?"};
 
-    //qtv_local =  new QTableView * [4][3];
 
     for(int i = 0 ;i <4;i++)
     {
@@ -135,15 +135,115 @@ SyntheseDetails::SyntheseDetails(stCurDemande *uneEtude, QMdiArea *visuel)
         ong[i]=n[i];
     }
 
+    QSplitter *splitter_1 = new QSplitter (Qt::Vertical);
+    QSplitter *splitter_2 = new QSplitter (Qt::Horizontal,splitter_1);
+    QWidget **qw_tmp_1 = new QWidget *[4];
+    QWidget *qw_tmp_2 ;
+
+    //----------------
+    for(int i =0; i<4;i++)
+    {
+        qw_tmp_1[i] = SPLIT_Voisin(i);
+        splitter_2->addWidget(qw_tmp_1[i]);
+    }
+
+    qw_tmp_2 = SPLIT_Tirage();
+    splitter_1->addWidget(qw_tmp_2);
+
+    //----------------
+
+    QMdiSubWindow *subWindow = visuel->addSubWindow(splitter_1);
+    //subWindow->resize(380,325);
+    //subWindow->move(1200,570);
+
+    //splitter_1->setParent(visuel);
+    splitter_1->setWindowTitle("Controle");
+    splitter_1->setVisible(true);
+    splitter_1->show();
+
     MontreRechercheTirages(uneEtude);
 }
 
+QWidget * SyntheseDetails::SPLIT_Voisin(int i)
+{
+    QWidget * qw_retour = new QWidget;
+    QFormLayout *frm_tmp = new QFormLayout;
+
+    QLabel * titre = new QLabel;
+
+    QTabWidget *tab_Top = new QTabWidget;
+    QWidget **wid_ForTop = new QWidget*[3];
+    QGridLayout **dsgOnglet = new QGridLayout * [3];
+    QString labNames[]={"0","+1","-1","?"};
+    QString ongNames[]={"b","e","c"};
+
+    //QGridLayout * (MainWindow::*ptrFunc[])()={};
+
+    titre->setText("Position "+labNames[i]);
+
+    // --------------
+#if 0
+    QGridLayout *lay_return = new QGridLayout;
+
+    Synthese_1(lay_return,ref,dst);
+    Synthese_2(lay_return,ref,dst);
+
+
+    return(lay_return);
+ #endif
+
+    // ---------------
+    for(int i =0; i< 3;i++)
+    {
+        wid_ForTop[i]= new QWidget;
+
+        tab_Top->addTab(wid_ForTop[i],ongNames[i]);
+
+        //dsgOnglet[i]= (this->*ptrFunc[i])(i);
+        //wid_ForTop[i]->setLayout(dsgOnglet[i]);
+    }
+
+    frm_tmp->addWidget(titre);
+    frm_tmp->addWidget(tab_Top);
+    qw_retour->setLayout(frm_tmp);
+
+    return qw_retour;
+}
+
+QWidget * SyntheseDetails::SPLIT_Tirage(void)
+{
+    QWidget * qw_retour = new QWidget;
+    QFormLayout *frm_tmp = new QFormLayout;
+
+
+    QTabWidget *tab_Top = new QTabWidget;
+    QWidget **wid_ForTop = new QWidget*[4];
+    QGridLayout **dsgOnglet = new QGridLayout * [4];
+    QString ongNames[]={"0","+1","-1","?"};
+
+    //QGridLayout * (MainWindow::*ptrFunc[])()={};
+    stCurDemande uneRecherche;
+
+    for(int i =0; i< 4;i++)
+    {
+        wid_ForTop[i]= new QWidget;
+
+        tab_Top->addTab(wid_ForTop[i],ongNames[i]);
+
+        dsgOnglet[i]= MonLayout_pFnDetailsMontrerTirages(i,0,dst[i]);
+        wid_ForTop[i]->setLayout(dsgOnglet[i]);
+    }
+
+    frm_tmp->addWidget(tab_Top);
+    qw_retour->setLayout(frm_tmp);
+
+    return qw_retour;
+}
 
 void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
 {
     int bouleId = pEtude->lgn[0];
     QString colName = pEtude->stc[0];
-    //int curVal=pEtude->val[0];
 
     QWidget *qw_main = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
@@ -200,36 +300,7 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
 
     QFormLayout *mainLayout = new QFormLayout;
     QString st_titre = "";
-#if 0
-    QString st_tmp = "";
-    int ordre[3]={2,0,1};
-    QString Nom[3]={"B:","E:","C:"};
 
-    for(int i=0;i<3;i++)
-    {
-        int clef = ordre[i];
-        if(pEtude->lst_boules[clef].size())
-        {
-            if(pEtude->stc[clef] != "")
-            {
-                st_tmp =  st_tmp +
-                        Nom[clef] +"("
-                        + pEtude->stc[clef] +
-                        ") ";
-            }
-            else
-            {
-                st_tmp =  st_tmp + Nom[clef];
-            }
-
-
-            for(int j=0; j<pEtude->lst_boules[clef].size();j++)
-                st_tmp = st_tmp + pEtude->lst_boules[clef].at(j) + ",";
-
-        }
-    }
-    st_tmp.remove(st_tmp.length()-1,1);
-#endif
 
     if(pEtude->origine == 1)
     {
@@ -418,132 +489,6 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref, int e
 
     return(lay_return);
 }
-#if 0
-// --------------------------
-QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int curId, stCurDemande *pEtude, int val)
-{
-    QGridLayout *lay_return = new QGridLayout;
-
-    QStringList stl_tmp = pEtude->lst_boules;
-
-    const int Ref_D_Onglet[4]={0,-1,1,-2};
-    const bool Ref_A_Onglet[4]={false,false,false,true};
-
-    int distance = Ref_D_Onglet[curId];
-    bool ongSpecial = Ref_A_Onglet[curId];
-
-    QString sql_msgRef = "";
-    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    QTableView *qtv_tmp = new QTableView;
-
-
-    if(curId==3)
-    {
-        distance = val;
-    }
-
-    // Fonction Pour La requete de base (obtenir les tirages)
-    QString (SyntheseDetails::*ptrFunc[3])(QStringList &, int)=
-    {&SyntheseDetails::DoSqlMsgRef_Tb1,
-            &SyntheseDetails::DoSqlMsgRef_Tb2,
-            &SyntheseDetails::DoSqlMsgRef_Tb3};
-
-    // Creer le code de la requete Sql
-    int origine = pLaDemande->origine;
-    if(origine > 1 && origine <=3)
-    {
-        origine --;
-    }
-    else
-    {
-        origine = 0;
-    }
-    sql_msgRef = (this->*ptrFunc[origine])(stl_tmp,distance);
-
-    sqm_tmp->setQuery(sql_msgRef);
-
-    qtv_tmp->setSortingEnabled(false);
-    //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
-    qtv_tmp->setAlternatingRowColors(true);
-
-
-    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
-    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-
-    // Filtre
-    QHBoxLayout *tmp_hLay = new QHBoxLayout();
-
-    QComboBox *tmp_combo = ComboPerso(curId);
-
-    QLabel *tmp_lab = new QLabel(tr("Filtre :"));
-    tmp_lab->setBuddy(tmp_combo);
-
-    connect(tmp_combo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(slot_FiltreSurNewCol(int)));
-
-
-    QFormLayout *FiltreLayout = new QFormLayout;
-    FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons;
-    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,2);
-
-
-    FiltreLayout->addRow("&Recherche", fltComb_tmp);
-
-    // Mettre combo + line dans hvbox
-    tmp_hLay->addWidget(tmp_lab);
-    tmp_hLay->addWidget(tmp_combo);
-    tmp_hLay->addLayout(FiltreLayout);
-
-    qtv_tmp->hideColumn(0);
-    qtv_tmp->hideColumn(1);
-
-    // Formattage de largeur de colonnes
-    for(int j=0;j<=4;j++)
-        qtv_tmp->setColumnWidth(j,75);
-
-    for(int j=5;j<=sqm_tmp->columnCount();j++)
-        qtv_tmp->setColumnWidth(j,30);
-    qtv_tmp->setFixedSize(525,205);
-
-
-    // Ne pas modifier largeur des colonnes
-    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-
-    // Double click dans fenetre pour details et localisation dans base Tirages
-    connect( qtv_tmp, SIGNAL( doubleClicked(QModelIndex)) ,
-             pEcran->parent(), SLOT(slot_MontreLeTirage( QModelIndex) ) );
-
-    //int pos_x = 0;
-    int pos_y = 0;
-    if(ongSpecial)
-    {
-        // Dernier onglet
-        QFormLayout *distLayout = new QFormLayout;
-        dist = new QLineEdit(QString::number((distance*-1)));
-
-        distLayout->addRow("&Distance", dist);
-        lay_return->addLayout(distLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
-        bSelection = stl_tmp;
-        // Connection du line edit
-        connect(dist, SIGNAL(returnPressed()),
-                this, SLOT(slot_NouvelleDistance()));
-
-        pos_y++;
-    }
-    lay_return->addLayout(tmp_hLay,pos_y,0,Qt::AlignLeft|Qt::AlignTop);
-    lay_return->addWidget(qtv_tmp,pos_y+1,0,Qt::AlignLeft|Qt::AlignTop);
-
-    // Associer la combo de selection au filtre pour
-    // cette distance (ie cet onglet) et la Qtview associee
-    pCritere[curId] = tmp_combo;
-    pFiltre[curId] = fltComb_tmp;
-
-    return(lay_return);
-}
-#endif
 
 
 void SyntheseDetails::slot_FiltreSurNewCol(int colNum)
@@ -590,10 +535,14 @@ void SyntheseDetails::slot_NouvelleDistance(void)
 QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int elm, int dst)
 {
     QGridLayout *lay_return = new QGridLayout;
+    QGridLayout *lay_1;
+    QGridLayout *lay_2;
 
-    Synthese_1(lay_return,ref,dst);
-    Synthese_2(lay_return,ref,dst);
+    lay_1 = Synthese_1(ref,dst);
+    lay_2 = Synthese_2(ref,dst);
 
+    lay_return->addLayout(lay_1,0,0);
+    lay_return->addLayout(lay_2,0,1);
 
     return(lay_return);
 }
@@ -737,8 +686,10 @@ void SyntheseDetails::Synthese_2_first (QGridLayout *lay_return, QStringList &st
     //------------------
 }
 
-void SyntheseDetails::Synthese_1(QGridLayout *lay_return, int onglet, int distance)
+QGridLayout * SyntheseDetails::Synthese_1(int onglet, int distance)
 {
+    QGridLayout *lay_return = new QGridLayout;
+
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
 
@@ -831,11 +782,15 @@ void SyntheseDetails::Synthese_1(QGridLayout *lay_return, int onglet, int distan
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_ZoomTirages( QModelIndex) ) );
 
+    return lay_return;
+
 }
 
 //------
-void SyntheseDetails::Synthese_2(QGridLayout *lay_return, int onglet, int distance)
+QGridLayout *  SyntheseDetails::Synthese_2(int onglet, int distance)
 {
+    QGridLayout *lay_return = new QGridLayout;
+
     QString sql_msgRef = "";
     QString st_cri_all = "";
     QStringList boules;
@@ -923,14 +878,15 @@ void SyntheseDetails::Synthese_2(QGridLayout *lay_return, int onglet, int distan
 
     QLabel *titre_1 = new QLabel("Etoiles");
     //lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
-    lay_return->addWidget(titre_1,0,1,Qt::AlignLeft|Qt::AlignTop);
-    lay_return->addWidget(qtv_tmp,1,1,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(titre_1,0,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
 
     // Connection du double click dans table voisins
     // double click dans fenetre  pour afficher details boule
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_ZoomTirages( QModelIndex) ) );
 
+    return lay_return;
 }
 
 //--------

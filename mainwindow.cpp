@@ -136,7 +136,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     tmp.getConfig(&configJeu);
 
     // Creation de La table de reference
-    FEN_Splitter();
+    //FEN_Splitter();
 
     // Creation sous fenetre pour mettre donnees de base
     FEN_Old_Tirages();

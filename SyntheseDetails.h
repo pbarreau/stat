@@ -55,6 +55,10 @@ private:
 public:
     SyntheseDetails(stCurDemande *uneEtude,QMdiArea *visuel);
     void MontreRechercheTirages(stCurDemande *pLaDemande);
+
+    QWidget *SPLIT_Tirage(void);
+    QWidget *SPLIT_Voisin(int i);
+
     QString CreationTitre_1(stCurDemande *pEtude);
     QString CreationTitre_2(stCurDemande *pEtude);
     QGridLayout * MonLayout_pFnDetailsMontrerTirages(int ref, int elm, int dst);
@@ -79,8 +83,8 @@ private:
     QString DoSqlMsgRef_Tb3(QStringList &boules, int dst);
     QString DoSqlMsgRef_Tb4(QStringList &boules, int dst);
 
-    void Synthese_1(QGridLayout *lay_return, int onglet, int distance);
-    void Synthese_2(QGridLayout *lay_return, int onglet, int distance);
+    QGridLayout *Synthese_1(int onglet, int distance);
+    QGridLayout *Synthese_2(int onglet, int distance);
     void Synthese_2_first (QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
 
 
