@@ -247,7 +247,7 @@ private:
     QTableView *G_tbv_Tirages;
     //QTableView *pTableauTirages;
     QTableView *G_tbv_CouvTirages;
-    QStandardItemModel *gsim_AnalyseUnTirage;
+    //QStandardItemModel *gsim_AnalyseUnTirage;
 
     QTableView *G_tbv_CombiSourceSelection;
     QTableView *G_tbv_ProxyCombiSourceSelection;

@@ -1646,7 +1646,7 @@ QGridLayout * MainWindow::MonLayout_Details()
         int nb_col = ligne.count();
         QStandardItemModel * tmpStdItem =  new QStandardItemModel(1,nb_col-2);
         tmpTblView_1->setModel(tmpStdItem);
-        gsim_AnalyseUnTirage = tmpStdItem;
+        //gsim_AnalyseUnTirage = tmpStdItem;
         int val = 0;
         for(int i = 2; i<nb_col; i++)
         {
@@ -4667,6 +4667,7 @@ void MainWindow::slot_MontreTirageDansGraph(const QModelIndex & index)
 void MainWindow::slot_MontreTirageAnalyse(const QModelIndex & index)
 {
 
+#if 0
     int id = index.row()+1;
     int nb_col = gsim_AnalyseUnTirage->columnCount();
 
@@ -4685,6 +4686,7 @@ void MainWindow::slot_MontreTirageAnalyse(const QModelIndex & index)
         gsim_AnalyseUnTirage->setItem(0,i-2,item);
     }
 
+#endif
 
 }
 void MainWindow::slot_MontreLeTirage(const QModelIndex & index)

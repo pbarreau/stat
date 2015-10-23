@@ -61,6 +61,8 @@ private:
     QTableView * tbv_bloc3;
     QSqlTableModel * sqtblm_bloc3;
 
+    QStandardItemModel *gsim_AnalyseUnTirage;
+
 
 public:
     SyntheseGenerale(GererBase *pLaBase, int zn, stTiragesDef *pConf, QMdiArea *visuel);
@@ -72,6 +74,7 @@ public:
 public slots:
     void slot_MontreLesTirages(const QModelIndex & index);
     void slot_SelectionneBoules(const QModelIndex & index);
+    void slot_AnalyseCeTirage(const QModelIndex & index);
     void slot_ChangementEnCours(const QItemSelection &selected,const QItemSelection &deselected);
 
 
@@ -90,6 +93,7 @@ private:
 
     QGridLayout * Presente_SyntheseEcarts(void);
     QGridLayout * MonLayout_SyntheseEcarts(QStandardItemModel *G_sim_Ecarts);
+    QGridLayout * MonLayout_SyntheseDetails(void);
 
 
     QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);

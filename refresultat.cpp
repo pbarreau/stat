@@ -4,6 +4,7 @@
 
 
 #include <QtGui>
+#include <QSqlRecord>
 
 #include <QMessageBox>
 #include <QHeaderView>
@@ -101,13 +102,37 @@ void SyntheseGenerale::DoTirages(void)
 
     // Simple click dans sous fenetre base
     connect( qtv_tmp, SIGNAL( clicked(QModelIndex)) ,
-             pEcran->parent(), SLOT( slot_MontreTirageAnalyse( QModelIndex) ) );
+             this, SLOT( slot_AnalyseCeTirage( QModelIndex) ) );
 
 #if 0
     // double click dans fenetre  pour afficher details boule
     connect( tbv_bloc1, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 #endif
+
+
+}
+
+void SyntheseGenerale::slot_AnalyseCeTirage(const QModelIndex & index)
+{
+
+    int id = index.row()+1;
+    int nb_col = gsim_AnalyseUnTirage->columnCount();
+
+    for(int i = 2; i<=nb_col; i++)
+    {
+        QStandardItem *item = gsim_AnalyseUnTirage->item(0,i-2);
+        int val = 0;
+
+        // Recherche de la config pour le  tirage
+        val=RechercheInfoTirages(id,i-2);
+
+        // affectation
+        item->setData(val,Qt::DisplayRole);
+
+        // visualisation
+        gsim_AnalyseUnTirage->setItem(0,i-2,item);
+    }
 
 
 }
@@ -124,18 +149,9 @@ void SyntheseGenerale::DoComptageTotal(void)
     QGridLayout **design_onglet=new QGridLayout* [nbItems];
     QWidget **wid_ForTop = new QWidget*[nbItems];
 
-#if 0
-    // Tableau de pointeur de fonction
-    QGridLayout *(SyntheseGenerale::*ptrFunc[])(int)=
-    {
-            &SyntheseGenerale::MonLayout_SyntheseTotalBoules,
-            &SyntheseGenerale::MonLayout_SyntheseTotalEtoiles,
-            &SyntheseGenerale::MonLayout_SyntheseTotalRepartitions
-};
-#endif
     QGridLayout * (SyntheseGenerale::*ptrFunc[])()=
     {&SyntheseGenerale:: Presente_SyntheseEcarts,
-            &SyntheseGenerale:: Presente_SyntheseEcarts};
+            &SyntheseGenerale:: MonLayout_SyntheseDetails};
 
     stTiragesDef *pConf = pMaConf;
 
@@ -719,24 +735,25 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     QVariant vCol = pModel->headerData(col,Qt::Horizontal);
     QString headName = vCol.toString();
 
-
+#if 0
     if(pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
     {
 
         if (col < 2 || !val)
             return;
     }
-
+#endif
     // Le simple click a construit la liste des boules
     stCurDemande *etude = new stCurDemande;
 
     // Boules
+    //||
+    //(pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
+
     if(
             (pSource == tbv_bloc1_1->model()->index(0,0).internalPointer())
             ||
             (pSource == tbv_bloc1_2->model()->index(0,0).internalPointer())
-            ||
-            (pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
             )
     {
         uneDemande.origine = 1;
@@ -790,46 +807,125 @@ QGridLayout * SyntheseGenerale:: Presente_SyntheseEcarts(void)
     return(returnLayout);
 }
 
-QGridLayout * SyntheseGenerale:: MonLayout_SyntheseEcarts(QStandardItemModel *G_sim_Ecarts)
+QGridLayout * SyntheseGenerale:: MonLayout_SyntheseEcarts(QStandardItemModel *qsim_tmp)
 {
     QGridLayout *returnLayout = new QGridLayout;
 
     int  i;
     int zn = 0;
 
-    QTableView *G_tbv_Ecarts;
+    QTableView *qtv_tmp;
 
 
-    G_tbv_Ecarts = new QTableView;
+    qtv_tmp = new QTableView;
 
-    G_sim_Ecarts->setHeaderData(0,Qt::Horizontal,"B"); // Boules
-    G_sim_Ecarts->setHeaderData(1,Qt::Horizontal,"Ec"); // Ecart en cours
-    G_sim_Ecarts->setHeaderData(2,Qt::Horizontal,"Ep"); // ECart precedent
-    G_sim_Ecarts->setHeaderData(3,Qt::Horizontal,"Em"); // Ecart Moyen
-    G_sim_Ecarts->setHeaderData(4,Qt::Horizontal,"EM"); // Ecart Maxi
+    qsim_tmp->setHeaderData(0,Qt::Horizontal,"B"); // Boules
+    qsim_tmp->setHeaderData(1,Qt::Horizontal,"Ec"); // Ecart en cours
+    qsim_tmp->setHeaderData(2,Qt::Horizontal,"Ep"); // ECart precedent
+    qsim_tmp->setHeaderData(3,Qt::Horizontal,"Em"); // Ecart Moyen
+    qsim_tmp->setHeaderData(4,Qt::Horizontal,"EM"); // Ecart Maxi
 
     for(i=1;i<=pMaConf->limites[zn].max;i++)
     {
         QStandardItem *item = new QStandardItem( QString::number(i));
         item->setData(i,Qt::DisplayRole);
-        G_sim_Ecarts->setItem(i-1,0,item);
+        qsim_tmp->setItem(i-1,0,item);
     }
-    G_tbv_Ecarts->setModel(G_sim_Ecarts);
+    qtv_tmp->setModel(qsim_tmp);
 
-    G_tbv_Ecarts->setColumnWidth(0,45);
-    G_tbv_Ecarts->setColumnWidth(1,45);
-    G_tbv_Ecarts->setColumnWidth(2,45);
-    G_tbv_Ecarts->setColumnWidth(3,45);
-    G_tbv_Ecarts->setColumnWidth(4,45);
-    G_tbv_Ecarts->setSortingEnabled(true);
-    G_tbv_Ecarts->sortByColumn(0,Qt::AscendingOrder);
-    G_tbv_Ecarts->setAlternatingRowColors(true);
-    G_tbv_Ecarts->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    G_tbv_Ecarts->setFixedSize(280,450);
+    qtv_tmp->setColumnWidth(0,45);
+    qtv_tmp->setColumnWidth(1,45);
+    qtv_tmp->setColumnWidth(2,45);
+    qtv_tmp->setColumnWidth(3,45);
+    qtv_tmp->setColumnWidth(4,45);
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setFixedSize(280,450);
+    qtv_tmp->verticalHeader()->hide();
 
-    returnLayout->addWidget(G_tbv_Ecarts);
+
+    returnLayout->addWidget(qtv_tmp);
 
     return(returnLayout);
+}
+
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseDetails()
+{
+    QGridLayout *lay_return = new QGridLayout;
+    QTableView *tmpTblView_1 = new QTableView;
+    QTableView *tmpTblView_2 = new QTableView;
+
+    // Compter le nombre de colonne a creer
+    QString sqlReq = "";
+    QSqlQuery sql_req;
+    bool status = false;
+
+    sqlReq = "select * from repartition_bh limit 1;";
+    status = sql_req.exec(sqlReq);
+
+    if(status)
+    {
+        QSqlRecord ligne = sql_req.record();
+        int nb_col = ligne.count();
+        QStandardItemModel * tmpStdItem =  new QStandardItemModel(1,nb_col-2);
+        tmpTblView_1->setModel(tmpStdItem);
+        gsim_AnalyseUnTirage = tmpStdItem;
+        int val = 0;
+        for(int i = 2; i<nb_col; i++)
+        {
+            tmpStdItem->setHeaderData(i-2,Qt::Horizontal,ligne.fieldName(i));
+            QStandardItem *item = new QStandardItem();
+
+            // Recherche de la config pour le dernier tirage
+            val=RechercheInfoTirages(1,i-2);
+            item->setData(val,Qt::DisplayRole);
+            tmpStdItem->setItem(0,i-2,item);
+            tmpTblView_1->setColumnWidth(i-2,30);
+        }
+
+        tmpTblView_1->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        tmpTblView_1->setSelectionBehavior(QAbstractItemView::SelectItems);
+        tmpTblView_1->setSelectionMode(QAbstractItemView::SingleSelection);
+        tmpTblView_1->verticalHeader()->hide();
+        tmpTblView_1->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        tmpTblView_1->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+
+    }
+    lay_return->addWidget(tmpTblView_1,0,0);
+
+    // Construction table 2
+    QStandardItemModel * tmpStdItem_2 =  new QStandardItemModel(6,2);
+    tmpTblView_2->setModel(tmpStdItem_2);
+    // entete du modele
+    QStringList lstheader;
+    lstheader << "Q" << "V:+1";
+    tmpStdItem_2->setHorizontalHeaderLabels(lstheader);
+    for(int y=0;y<6;y++)
+    {
+        for(int x=0;x<2;x++)
+        {
+            QStandardItem *item = new QStandardItem();
+            if(x==0)
+            {
+                item->setData(y,Qt::DisplayRole);
+            }
+            tmpStdItem_2->setItem(y,x,item);
+            tmpTblView_2->setColumnWidth(x,50);
+        }
+    }
+    tmpTblView_2->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tmpTblView_2->setSelectionBehavior(QAbstractItemView::SelectItems);
+    tmpTblView_2->setSelectionMode(QAbstractItemView::SingleSelection);
+    tmpTblView_2->verticalHeader()->hide();
+    tmpTblView_2->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    tmpTblView_2->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    lay_return->addWidget(tmpTblView_2,1,0);
+
+    return(lay_return);
 }
 
 
