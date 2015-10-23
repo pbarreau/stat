@@ -53,7 +53,7 @@ private:
     FiltreCombinaisons *pFiltre[4];
 
 public:
-    SyntheseDetails(stCurDemande *uneEtude,QMdiArea *visuel);
+    SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel);
     void MontreRechercheTirages(stCurDemande *pLaDemande);
 
     QWidget *SPLIT_Tirage(void);

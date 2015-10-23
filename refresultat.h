@@ -33,6 +33,7 @@ class SyntheseGenerale : public QObject
 
 private:
     //stCurDemande *pLaDemande;
+    GererBase *bdd;
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
     int curzn;
@@ -62,7 +63,7 @@ private:
 
 
 public:
-    SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel);
+    SyntheseGenerale(GererBase *pLaBase, int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetListeTirages(void);
 
@@ -83,9 +84,12 @@ private:
     void DoBloc3(void);
     void MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const QModelIndex & index);
 
-    QGridLayout * MonLayout_SyntheseTotalBoules(int dst);
+    //QGridLayout * MonLayout_SyntheseTotalBoules(int dst);
     QGridLayout * MonLayout_SyntheseTotalEtoiles(int dst);
     QGridLayout * MonLayout_SyntheseTotalRepartitions(int dst);
+
+    QGridLayout * Presente_SyntheseEcarts(void);
+    QGridLayout * MonLayout_SyntheseEcarts(QStandardItemModel *G_sim_Ecarts);
 
 
     QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);

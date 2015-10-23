@@ -120,9 +120,9 @@ QString GEN_Where_3(int loop,
 }
 
 //---------------- Fin Local Fns ------------------------
-SyntheseDetails::SyntheseDetails(stCurDemande *uneEtude, QMdiArea *visuel)
+SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel)
 {
-    pLaDemande = uneEtude;
+    pLaDemande = pEtude;
     pEcran = visuel;
     int d[]={0,-1,1,-2};
     QString n[]={"0","+1","-1","?"};
@@ -158,8 +158,26 @@ SyntheseDetails::SyntheseDetails(stCurDemande *uneEtude, QMdiArea *visuel)
     //subWindow->resize(380,325);
     //subWindow->move(1200,570);
 
-    //splitter_1->setParent(visuel);
-    splitter_1->setWindowTitle("Controle");
+    QString st_titre = "";
+    if(pEtude->origine == 1)
+    {
+        st_titre =  CreationTitre_1(pEtude);
+    }
+    else
+    {
+        st_titre =  CreationTitre_2(pEtude);
+    }
+
+    if(pEtude->st_titre != "")
+    {
+        st_titre = "Depart:("+pEtude->st_titre+")," + st_titre;
+    }
+    else
+    {
+        pEtude->st_titre = st_titre;
+    }
+
+    splitter_1->setWindowTitle(st_titre);
     splitter_1->setVisible(true);
     splitter_1->show();
 

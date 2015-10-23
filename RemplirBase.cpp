@@ -1328,42 +1328,6 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
                 lgndeb = lgnfin;
                 // Avancer pour ensuite reculer
                 query.next();
-
-#if 0
-                // Est ce la derniere boule du tirage qui a permis la couverture
-                if( i != ref.nbElmZone[zn]-1)
-                {
-                    // Creer une nouvelle colonne couverture
-                    // creer colonne pour ordre d'arrivee
-                    CreerColonneOrdreArrivee(id_couv+1, &ref);
-
-                    // Non, alors indiquer les voisines comme nouvelles
-                    lgndeb = lgnfin;
-                    for(j=0;j<i;j++){
-                        int boule = rec.value(2+j).toInt();
-
-                        // On ne prends pas celle qui a permis la fin de couverture
-                        if(i !=j)
-                        {
-                            msg = "update " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn] +
-                                    " set " + QString::fromLocal8Bit(CL_CCOUV) +
-                                    QString::number(id_couv+1) + "=" +QString::number(boule)+
-                                    " where (id="+QString::number(nb_boules+1)+");";
-                            status = position.exec(msg);
-                            ordr_boule[nb_boules]= boule;
-                            nb_boules++;
-                            memo_boule[boule-1]++;
-                        }
-                    }
-
-                }
-                else
-                {
-                    lgndeb = lgnfin-1;
-                }
-                //sauve.bindValue(":depart", lgndeb);
-
-#endif
             }
 
         }while(query.previous());

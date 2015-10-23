@@ -25,12 +25,13 @@ QGridLayout *SyntheseGenerale::GetDisposition(void)
 }
 QTableView *SyntheseGenerale::GetListeTirages(void)
 {
-  return  tbv_LesTirages;
+    return  tbv_LesTirages;
 }
 
-SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel)
+SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, int zn, stTiragesDef *pConf, QMdiArea *visuel)
 {
     disposition = new QGridLayout;
+    bdd=pLaBase;
     pEcran = visuel;
     pMaConf = pConf;
     curzn = zn;
@@ -116,11 +117,14 @@ void SyntheseGenerale::DoComptageTotal(void)
 
     // Onglet pere
     QTabWidget *tab_Top = new QTabWidget;
-    QWidget **wid_ForTop = new QWidget*[3];
 
-    QString stNames[]={"Boules","Etoiles","Repartition"};
-    QGridLayout *design_onglet[3];
+    QString stNames[]={"Ecarts","Details"};
+    int nbItems = sizeof(stNames)/sizeof(QString);
 
+    QGridLayout **design_onglet=new QGridLayout* [nbItems];
+    QWidget **wid_ForTop = new QWidget*[nbItems];
+
+#if 0
     // Tableau de pointeur de fonction
     QGridLayout *(SyntheseGenerale::*ptrFunc[])(int)=
     {
@@ -128,16 +132,20 @@ void SyntheseGenerale::DoComptageTotal(void)
             &SyntheseGenerale::MonLayout_SyntheseTotalEtoiles,
             &SyntheseGenerale::MonLayout_SyntheseTotalRepartitions
 };
+#endif
+    QGridLayout * (SyntheseGenerale::*ptrFunc[])()=
+    {&SyntheseGenerale:: Presente_SyntheseEcarts,
+            &SyntheseGenerale:: Presente_SyntheseEcarts};
 
     stTiragesDef *pConf = pMaConf;
 
-    for(int i =0; i<3;i++)
+    for(int i =0; i<nbItems;i++)
     {
         wid_ForTop[i]=new QWidget;
         tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
 
         // Recherche a une distance de 0 sans critere de filtre
-        design_onglet[i] = (this->*ptrFunc[i])(0);
+        design_onglet[i] = (this->*ptrFunc[i])();
         wid_ForTop[i]->setLayout(design_onglet[i]);
     }
 
@@ -352,11 +360,9 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     return lay_return;
 }
 
+#if 0
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 {
-#if 0
-#endif
-
     QGridLayout *lay_return = new QGridLayout;
 
     sqm_bloc1_1 = new QSqlQueryModel;
@@ -451,6 +457,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
 }
 
+#endif
 
 void SyntheseGenerale::DoBloc2(void)
 {
@@ -736,7 +743,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     }
 
     if(
-           pSource == tbv_bloc2->model()->index(0,0).internalPointer()
+            pSource == tbv_bloc2->model()->index(0,0).internalPointer()
             )
     {
         uneDemande.origine = 2;
@@ -756,126 +763,74 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran);
 }
 
-#if 0
-void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
+QGridLayout * SyntheseGenerale:: Presente_SyntheseEcarts(void)
 {
-    void *pSource = index.internalPointer();
-    quintptr pId = index.internalId();
 
-    int ligne = index.row();
-    int col = index.column();
-    int val = index.data().toInt();
-    const QAbstractItemModel * pModel = index.model();
-    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-    QString headName = vCol.toString();
+    QGridLayout *returnLayout = new QGridLayout;
 
-    int selTable = 0;
-    int boule_id = 0;
-    QString st_titre= "";
+    QStandardItemModel *G_sim_Ecarts;
+    int zn = 0;
 
+    G_sim_Ecarts = new QStandardItemModel(pMaConf->limites[zn].max,5);
+    returnLayout = MonLayout_SyntheseEcarts(G_sim_Ecarts);
 
-    if (val)
-    {
-        stCurDemande *etude = new stCurDemande;
+    // Ordre arrivee des boules ?
+    bdd->CouvertureBase(G_sim_Ecarts,pMaConf);
 
-        QStringList stl_tmp;
-        QString st_lesBoules = "";
+    for(int i=1;i<=pMaConf->limites[zn].max;i++){
 
+        // Remplir Sous Fen les ecarts
+        bdd->DistributionSortieDeBoule(i,G_sim_Ecarts,pMaConf);
 
-        //if(index.internalPointer() == tbv_bloc2->model()->index(index.row(),index.column()).internalPointer())
-        if(index.internalPointer() == tbv_bloc2->model()->index(0,0).internalPointer())
-        {
-            selTable = 2;
-            boule_id = index.model()->index(index.row(),1).data().toInt();
-        }
-
-        if(index.internalPointer() == tbv_bloc1_1->model()->index(0,0).internalPointer())
-
-        {
-            selTable = 1;
-
-            // Multi ou uni selection
-            if(lst_selection[0].size() == 0)
-            {
-                boule_id = ligne +1;
-            }
-            else
-            {
-                boule_id=-1;
-            }
-
-        }
-
-        stl_tmp = lst_selection[0];
-
-        for(int j=0;j<stl_tmp.size();j++)
-        {
-            st_lesBoules= st_lesBoules + stl_tmp.at(j)+",";
-        }
-        st_lesBoules.remove(st_lesBoules.length()-1,1);
-
-
-        if(selTable == 1)
-            st_titre=st_lesBoules;
-
-        if(selTable == 2)
-            st_titre=st_lesBoules+
-                    " de type " + headName;
-
-        etude->origine = selTable;
-        etude->boule = boule_id;
-        etude->col = col;
-        etude->val = val;
-        etude->st_col = headName;
-        etude->st_titre = st_titre;
-        etude->lst_boules = stl_tmp;
-
-        // Nouvelle de fenetre de detail de cette boule
-        SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran);
-    }
-}
-#endif
-
-#if 0
-void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,const QTableView *pTab,const QModelIndex & index)
-{
-    QWidget *qw_main = new QWidget;
-    QTabWidget *tab_Top = new QTabWidget;
-    QWidget **wid_ForTop = new QWidget*[2];
-    QString stNames[2]={"Tirages","Repartition"};
-    QGridLayout *design_onglet[2];
-
-    // Tableau de pointeur de fonction
-    QGridLayout *(RefResultat::*ptrFunc[2])(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index)=
-    {&RefResultat::MonLayout_pFnDetailsTirages,&RefResultat::MonLayout_pFnSyntheseDetails};
-
-
-    for(int i =0; i<2;i++)
-    {
-        wid_ForTop[i]=new QWidget;
-        tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
-
-        //
-        design_onglet[i] = (this->*ptrFunc[i])(typeAnalyse,pTab, index);
-        wid_ForTop[i]->setLayout(design_onglet[i]);
+        // Montrer les valeurs probable
+        bdd->CouvMontrerProbable(i,G_sim_Ecarts);
     }
 
-    int boule = index.row()+1;
-    QFormLayout *mainLayout = new QFormLayout;
-    QString st_titre = "Details Boule : " + QString::number(boule);
-    mainLayout->addWidget(tab_Top);
-    qw_main->setWindowTitle(st_titre);
-    qw_main->setLayout(mainLayout);
 
-
-    QMdiSubWindow *subWindow = pEcran->addSubWindow(qw_main);
-    //subWindow->resize(493,329);
-    //subWindow->move(737,560);
-    qw_main->setVisible(true);
-    qw_main->show();
+    return(returnLayout);
 }
 
-#endif
+QGridLayout * SyntheseGenerale:: MonLayout_SyntheseEcarts(QStandardItemModel *G_sim_Ecarts)
+{
+    QGridLayout *returnLayout = new QGridLayout;
+
+    int  i;
+    int zn = 0;
+
+    QTableView *G_tbv_Ecarts;
+
+
+    G_tbv_Ecarts = new QTableView;
+
+    G_sim_Ecarts->setHeaderData(0,Qt::Horizontal,"B"); // Boules
+    G_sim_Ecarts->setHeaderData(1,Qt::Horizontal,"Ec"); // Ecart en cours
+    G_sim_Ecarts->setHeaderData(2,Qt::Horizontal,"Ep"); // ECart precedent
+    G_sim_Ecarts->setHeaderData(3,Qt::Horizontal,"Em"); // Ecart Moyen
+    G_sim_Ecarts->setHeaderData(4,Qt::Horizontal,"EM"); // Ecart Maxi
+
+    for(i=1;i<=pMaConf->limites[zn].max;i++)
+    {
+        QStandardItem *item = new QStandardItem( QString::number(i));
+        item->setData(i,Qt::DisplayRole);
+        G_sim_Ecarts->setItem(i-1,0,item);
+    }
+    G_tbv_Ecarts->setModel(G_sim_Ecarts);
+
+    G_tbv_Ecarts->setColumnWidth(0,45);
+    G_tbv_Ecarts->setColumnWidth(1,45);
+    G_tbv_Ecarts->setColumnWidth(2,45);
+    G_tbv_Ecarts->setColumnWidth(3,45);
+    G_tbv_Ecarts->setColumnWidth(4,45);
+    G_tbv_Ecarts->setSortingEnabled(true);
+    G_tbv_Ecarts->sortByColumn(0,Qt::AscendingOrder);
+    G_tbv_Ecarts->setAlternatingRowColors(true);
+    G_tbv_Ecarts->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    G_tbv_Ecarts->setFixedSize(280,450);
+
+    returnLayout->addWidget(G_tbv_Ecarts);
+
+    return(returnLayout);
+}
 
 
 #if EXEMPLE_SQL
@@ -1206,69 +1161,3 @@ QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pCo
 
     return st_tmp;
 }
-
-#if 0
-QString GEN_Where_2(stTiragesDef *pConf, int zone, QString operateur, int boule, QString critere,QString alias="def")
-{
-    QString ret_msg = "";
-
-    // Operateur : or | and
-    // critere : = | <>
-    // b1=0 or b2=0 or ..
-    for(int i = 0; i<pConf->nbElmZone[zone];i++)
-    {
-        ret_msg = ret_msg
-                + alias + "." + pConf->nomZone[zone]+QString::number(i+1)
-                + critere + QString::number(boule)
-                + " " + operateur+ " ";
-    }
-    int len_flag = operateur.length();
-    ret_msg.remove(ret_msg.length()-len_flag-1, len_flag+1);
-
-    return ret_msg;
-}
-#endif
-
-
-#if 0
-QString GEN_Where_1(int zn, stTiragesDef *pConf, QStringList &boules, QString op1, QString op2, QString alias)
-{
-    QString msg= "" ;
-    QString flag = " and ";
-
-    for(int i=0; i< boules.size();i++)
-    {
-        int val_boule = boules.at(i).toInt();
-        //QString msg1 = GEN_Where_2(pConf, zn,op1,val_boule,op2,alias);
-        //        QString msg1 = GEN_Where_2(pConf, zn,"or",val_boule,"=");
-        int loop = pConf->nbElmZone[zn];
-        QString msg1 = GEN_Where_3(loop, "tb1.b",true,"=",boules,false,"or");
-
-        msg = msg + "(" +msg1+ ")"
-                + flag;
-    }
-
-    msg.remove(msg.length()-flag.length(),flag.length());
-
-    return msg;
-}
-
-
-QString NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules)
-{
-    //QString col(QString::fromLocal8Bit(CL_TOARR) + pConf->nomZone[zn]);
-    QString msg= "" ;
-    QString flag = " and ";
-
-    for(int i=0; i< boules.size();i++)
-    {
-        int val_boule = boules.at(i).toInt();
-        msg = msg + "(tb1.boule !=" +QString::number(val_boule)+ ")"
-                + flag;
-    }
-
-    msg.remove(msg.length()-flag.length(),flag.length());
-
-    return msg;
-}
-#endif

@@ -201,8 +201,9 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Et affichage des combinaisons
     FEN_ChoisirBoules();
     // Creation sous fenetre des voisins
-    FEN_Voisins();
+    //FEN_Voisins();
 
+#if 0
     // Ordre arrivee des boules ?
     DB_tirages->CouvertureBase(G_sim_Ecarts,&configJeu);
 
@@ -221,17 +222,18 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
 
         // Calcul occurence de cette boule
-        DB_tirages->TotalApparitionBoule(i,&configJeu, zn, G_sim_Voisins[zn]);
+        // a voir DB_tirages->TotalApparitionBoule(i,&configJeu, zn, G_sim_Voisins[zn]);
     }
+
 
     // --
     zn=1;
     for(i=1;i<=configJeu.limites[zn].max;i++)
     {
         // Calcul occurence de cette boule
-        DB_tirages->TotalApparitionBoule(i,&configJeu, zn, G_sim_Voisins[zn]);
+        //DB_tirages->TotalApparitionBoule(i,&configJeu, zn, G_sim_Voisins[zn]);
     }
-
+#endif
     // ----------------------------
 
     /// fin rem 2
@@ -2116,7 +2118,7 @@ QGridLayout * MainWindow::MonLayout_pFnNsr1(stTiragesDef *pConf)
     QGridLayout *lay_return = new QGridLayout;
     int zone = 0;
 
-    syntheses = new SyntheseGenerale(zone,pConf,zoneCentrale);
+    syntheses = new SyntheseGenerale(DB_tirages,zone,pConf,zoneCentrale);
     lay_return = syntheses->GetDisposition();
 
 
@@ -2174,7 +2176,7 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
-    subWindow->resize(845,570);
+    subWindow->resize(845,590);
     subWindow->move(0,0);
     qw_nsr->setVisible(true);
 }
