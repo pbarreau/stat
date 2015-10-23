@@ -140,6 +140,8 @@ SyntheseDetails::SyntheseDetails(stCurDemande *uneEtude, QMdiArea *visuel)
     QWidget **qw_tmp_1 = new QWidget *[4];
     QWidget *qw_tmp_2 ;
 
+    gtab_splitter_2 = new QTabWidget *[4];
+
     //----------------
     for(int i =0; i<4;i++)
     {
@@ -171,7 +173,8 @@ QWidget * SyntheseDetails::SPLIT_Voisin(int i)
 
     QLabel * titre = new QLabel;
 
-    QTabWidget *tab_Top = new QTabWidget;
+    gtab_splitter_2[i] = new QTabWidget;
+    QTabWidget *tab_Top = gtab_splitter_2[i];
     QWidget **wid_ForTop = new QWidget*[3];
     QGridLayout **dsgOnglet = new QGridLayout * [3];
     QString labNames[]={"0","+1","-1","?"};
@@ -181,23 +184,26 @@ QWidget * SyntheseDetails::SPLIT_Voisin(int i)
             &SyntheseDetails::Synthese_1,
             &SyntheseDetails::Synthese_2,
             &SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition
-    };
+};
 
     titre->setText("Position "+labNames[i]);
 
-    for(int i =0; i< 3;i++)
+    for(int j =0; j< 3;j++)
     {
-        wid_ForTop[i]= new QWidget;
+        wid_ForTop[j]= new QWidget;
 
-        tab_Top->addTab(wid_ForTop[i],ongNames[i]);
+        tab_Top->addTab(wid_ForTop[j],ongNames[j]);
 
-        dsgOnglet[i]= (this->*ptrFunc[i])(i,dst[i]);
-        wid_ForTop[i]->setLayout(dsgOnglet[i]);
+        dsgOnglet[j]= (this->*ptrFunc[j])(j,dst[i]);
+        wid_ForTop[j]->setLayout(dsgOnglet[j]);
     }
 
     frm_tmp->addWidget(titre);
     frm_tmp->addWidget(tab_Top);
     qw_retour->setLayout(frm_tmp);
+
+    connect(tab_Top, SIGNAL(tabBarClicked(int)),
+            this, SLOT(slot_ClickSurOnglet(int)));
 
     return qw_retour;
 }
@@ -207,8 +213,9 @@ QWidget * SyntheseDetails::SPLIT_Tirage(void)
     QWidget * qw_retour = new QWidget;
     QFormLayout *frm_tmp = new QFormLayout;
 
+    gtab_tirages = new QTabWidget;
 
-    QTabWidget *tab_Top = new QTabWidget;
+    QTabWidget *tab_Top = gtab_tirages;
     QWidget **wid_ForTop = new QWidget*[4];
     QGridLayout **dsgOnglet = new QGridLayout * [4];
     QString ongNames[]={"0","+1","-1","?"};
@@ -228,6 +235,11 @@ QWidget * SyntheseDetails::SPLIT_Tirage(void)
 
     frm_tmp->addWidget(tab_Top);
     qw_retour->setLayout(frm_tmp);
+
+#if 0
+    connect(tab_Top, SIGNAL(tabBarClicked(int)),
+            this, SLOT(slot_ClickSurOnglet(int)));
+#endif
 
     return qw_retour;
 }
@@ -772,9 +784,10 @@ QGridLayout * SyntheseDetails::Synthese_1(int onglet, int distance)
 
     // Connection du double click dans table voisins
     // double click dans fenetre  pour afficher details boule
+#if 0
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_ZoomTirages( QModelIndex) ) );
-
+#endif
     return lay_return;
 
 }
@@ -1759,6 +1772,20 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
 #endif
 
     return(st_sqlR);
+}
+
+void SyntheseDetails::slot_ClickSurOnglet(int index)
+{
+#ifndef QT_NO_DEBUG
+    qDebug() << "index click ->" << index;
+#endif
+
+    for(int i = 0; i<4;i++)
+    {
+      gtab_splitter_2[i]->setCurrentIndex(index);
+    }
+
+    //gtab_tirages->setCurrentIndex(index);
 }
 
 void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)

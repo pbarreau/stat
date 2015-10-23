@@ -74,10 +74,14 @@ public slots:
     void slot_NouvelleDistance(void);
     void slot_FiltreSurNewCol(int colNum);
     void slot_ZoomTirages(const QModelIndex & index);
+    void slot_ClickSurOnglet(int index);
 
 private:
     int dst[4];
     QString ong[4];
+    QTabWidget **gtab_splitter_2;
+    QTabWidget *gtab_tirages;
+
     QString DoSqlMsgRefGenerique(int dst);
     QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
     QString DoSqlMsgRef_Tb3(QStringList &boules, int dst);
