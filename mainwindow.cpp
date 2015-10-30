@@ -135,8 +135,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Recuperation des contantes du type de jeu
     tmp.getConfig(&configJeu);
 
-    // Creation de La table de reference
-    //FEN_Splitter();
 
     // Creation sous fenetre pour mettre donnees de base
     FEN_Old_Tirages();
@@ -160,7 +158,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     // Creation des tables pour ce type jeu
     DB_tirages->CreationTablesDeLaBDD(&tmp);
-    DB_tirages->CreerTableDistriCombi();
+    //DB_tirages->CreerTableDistriCombi();
 
     //QApplication::quit();
 
@@ -3538,7 +3536,14 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
 
     //QTabWidget *onglets = ;
     //int ShowCol = ((ref->limites[0].max)/10)+1;
+    int nbBoules = floor(ref->limites[0].max/10)+1;
 
+    for(int i = 1; i<=nbBoules;i++)
+    {
+       sl_Lev0 << QString::number(i);
+    }
+
+#if 0
     if(ref->limites[0].max == 49)
     {
         sl_Lev0 << "1" << "2" << "3" << "4" << "5";
@@ -3549,6 +3554,7 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
         sl_Lev0 << "1" << "2" << "3" << "4" << "5" << "6";
         //ShowCol = 6;
     }
+#endif
 
     // Recuperation des combinaison C(1,5), C(2,5), C(3,5), C(4,5), C(5,5)
     for (int i = 0; i< 5; i++)

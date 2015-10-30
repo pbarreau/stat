@@ -1808,6 +1808,7 @@ void SyntheseDetails::slot_ClickSurOnglet(int index)
 
 void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
 {
+#if 0
     void *pSource = index.internalPointer();
     int onglet = onglets->currentIndex();
 
@@ -1868,4 +1869,5 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
 
     // Nouvelle de fenetre de detail de cette boule
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran);
+#endif
 }

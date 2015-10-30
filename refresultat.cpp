@@ -60,6 +60,10 @@ void SyntheseGenerale::DoTirages(void)
 
     QString st_sqlReq = *st_bdTirages;
 
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_sqlReq;
+#endif
+
     sqm_LesTirages->setQuery(st_sqlReq);
 
     qtv_tmp->setAlternatingRowColors(true);
@@ -174,10 +178,7 @@ void SyntheseGenerale::DoComptageTotal(void)
 
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
 {
-#if 0
-#endif
-
-    QGridLayout *lay_return = new QGridLayout;
+   QGridLayout *lay_return = new QGridLayout;
 
     sqm_bloc1_2 = new QSqlQueryModel;
     QTableView *qtv_tmp ;
@@ -607,6 +608,7 @@ void SyntheseGenerale::slot_SelectionneBoules(const QModelIndex & index)
     int col = index.column();
     int val = index.data().toInt();
 
+#if 0
     // Boules
     if(pSource == tbv_bloc1_1->model()->index(0,0).internalPointer())
     {
@@ -625,6 +627,7 @@ void SyntheseGenerale::slot_SelectionneBoules(const QModelIndex & index)
         if(col>=2 && val)
             MemoriserChoixUtilisateur(2, tbv_bloc1_3, index);
     }
+#endif
 
 }
 
@@ -747,17 +750,18 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     stCurDemande *etude = new stCurDemande;
 
     // Boules
-    //||
-    //(pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
-
+#if 0
     if(
             (pSource == tbv_bloc1_1->model()->index(0,0).internalPointer())
             ||
             (pSource == tbv_bloc1_2->model()->index(0,0).internalPointer())
+            ||
+            (pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
             )
     {
         uneDemande.origine = 1;
     }
+#endif
 
     if(
             pSource == tbv_bloc2->model()->index(0,0).internalPointer()
