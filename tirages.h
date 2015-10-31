@@ -142,6 +142,7 @@ public:
     bool CTB_Table1(QString nomTable, tirages *pRef);
     bool CreerTableDistriCombi(void);
     bool LireLesTirages(QString fileName_2, tirages *pRef);
+    bool AnalyserCeTirage(int tirId, QStringList pList[], stTiragesDef *pRef);
 
     bool OLD_LireLesTirages(QString fileName_2, tirages *pRef);
 
@@ -209,8 +210,12 @@ private:
 };
 
 
-extern void GEN_ListForAnalyse(QStringList pList[], int nbBoules);
+extern void GEN_ListForAnalyse(QStringList pList[], int nbBoules, stTiragesDef *ref);
 extern QString GEN_FieldsForAnalyse(stTiragesDef *pConf);
 extern QString GEN_FieldsForTables(stTiragesDef *pConf, QString prefix="");
+extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf);
+extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
+extern QString CompteJourTirage(stTiragesDef *pMaConf);
+extern int RechercheInfoTirages(int idTirage, int leCritere, stTiragesDef *ref);
 
 #endif // TIRAGES_H

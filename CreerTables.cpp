@@ -8,12 +8,12 @@
 
 #include "gererbase.h"
 
-void GEN_ListForAnalyse(QStringList pList[], int nbBoules)
+void GEN_ListForAnalyse(QStringList pList[], int nbBoules,stTiragesDef *ref)
 {
     QStringList lst_col;
     QStringList lst_cri;
 
-    lst_cri<<"z1%2=0"<<"z1<26";
+    lst_cri<<"z1%2=0"<<"z1<"+QString::number((ref->limites[0].max)/2);
     lst_col<<"P"<<"G";
 
     // F
@@ -26,7 +26,7 @@ void GEN_ListForAnalyse(QStringList pList[], int nbBoules)
     for(int j=0;j<=nbBoules;j++)
     {
         lst_cri<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
-        lst_col<< "U"+ QString::number(j);
+        lst_col<< "bd"+ QString::number(j);
     }
 
     pList[0] = lst_col;

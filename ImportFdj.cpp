@@ -12,6 +12,8 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 
+#include <math.h>
+
 #include "tirages.h"
 
 QString NormaliseJour(QString input);
@@ -94,6 +96,10 @@ bool GererBase::LireLesTirages(QString fileName_2, tirages *pRef)
     ligne = flux.readLine();
 
     // Analyse des suivantes
+    QStringList lstConf[2];
+    int nbBoules = floor(ref.limites[0].max/10);
+    GEN_ListForAnalyse(lstConf,nbBoules,&ref);
+
     int nb_lignes=0;
     while(! flux.atEnd() && ret)
     {
@@ -167,13 +173,48 @@ bool GererBase::LireLesTirages(QString fileName_2, tirages *pRef)
           ret = sql_2.exec();
 
           // Analyser ce tirage
-
+          if (ret)
+          {
+          ret = AnalyserCeTirage(nb_lignes, lstConf, &ref);
+          }
 
       }
 
     }
 
     return ret;
+}
+
+bool GererBase::AnalyserCeTirage(int tirId, QStringList pList[], stTiragesDef *pRef)
+{
+    bool status = true;
+
+    //nouvelle ligne dans analyse
+    QSqlQuery sql_1;
+    QString sql_msg = "insert into analyses (id) values (null);";
+
+    status = sql_1.exec(sql_msg);
+
+    int total_cri = pList[0].size();
+    for(int cri_id = 0 ; (cri_id < total_cri) && status; cri_id ++)
+    {
+     int val = RechercheInfoTirages(tirId, cri_id,pRef);
+     sql_msg = "update analyses set "
+             +pList[0].at(cri_id)+
+             "="
+             +QString::number(val)+
+             " "
+             "where id ="
+             +QString::number(tirId)+
+             ";";
+#ifndef QT_NO_DEBUG
+        qDebug() << sql_msg;
+#endif
+
+     status = sql_1.exec(sql_msg);
+    }
+
+    return status;
 }
 
 bool GererBase::OLD_LireLesTirages(QString fileName_2, tirages *pRef)

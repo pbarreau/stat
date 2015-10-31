@@ -14,6 +14,7 @@
 
 #include "filtrecombinaisons.h"
 #include "monSqlEditable.h"
+#include "tirages.h"
 
 typedef struct _demande
 {
@@ -28,6 +29,7 @@ typedef struct _demande
     QString *st_baseDef;
     QString *st_bdAll;
     QString *st_jourDef;
+    stTiragesDef *ref;
 }stCurDemande;
 //-----------------------------
 

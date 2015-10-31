@@ -29,10 +29,6 @@ namespace Ui {
 class MainWindow;
 }
 
-extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf);
-extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
-extern QString CompteJourTirage(stTiragesDef *pMaConf);
-extern int RechercheInfoTirages(int idTirage, int leCritere);
 
 #if 0
 class MonToolTips:public QStandardItemModel

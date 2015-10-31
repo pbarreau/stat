@@ -241,6 +241,7 @@ QWidget * SyntheseDetails::SPLIT_Tirage(void)
     //QGridLayout * (MainWindow::*ptrFunc[])()={};
     stCurDemande uneRecherche;
 
+
     for(int i =0; i< 4;i++)
     {
         wid_ForTop[i]= new QWidget;
@@ -1567,7 +1568,7 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
     //---------------------
     QStringList cri_msg;
 
-    cri_msg <<"z1%2=0"<<"z1<26";
+    cri_msg <<"z1%2=0"<<"z1<"+QString::number((pLaDemande->ref->limites[0].max)/2);
 
     for(int j=0;j<=9;j++)
     {

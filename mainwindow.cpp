@@ -193,7 +193,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Creation fenetre pour memoriser la selection
     // Creation fenetre resultat
 
-    NEW_RepartionBoules(&configJeu);
+    //NEW_RepartionBoules(&configJeu);
     FEN_Ecarts();
 
     // Et affichage des combinaisons
@@ -1652,7 +1652,7 @@ QGridLayout * MainWindow::MonLayout_Details()
             QStandardItem *item = new QStandardItem();
 
             // Recherche de la config pour le dernier tirage
-            val=RechercheInfoTirages(1,i-2);
+            val=RechercheInfoTirages(1,i-2,&configJeu);
             item->setData(val,Qt::DisplayRole);
             tmpStdItem->setItem(0,i-2,item);
             tmpTblView_1->setColumnWidth(i-2,30);
@@ -1701,7 +1701,7 @@ QGridLayout * MainWindow::MonLayout_Details()
     return(lay_return);
 }
 
-int RechercheInfoTirages(int idTirage, int leCritere)
+int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *ref)
 {
     int retval = -1;
     QString sql_req;
@@ -1709,68 +1709,50 @@ int RechercheInfoTirages(int idTirage, int leCritere)
     bool status = false;
 
     QStringList cri_msg;
-    cri_msg <<"z1%2=0"<<"z1<26";
+
+    int nbBoules = floor(ref->limites[0].max/10)+1;
+
+    cri_msg <<"z1%2=0"<<"z1<"+QString::number((ref->limites[0].max)/2);
     for(int j=0;j<=9;j++)
     {
         cri_msg<< "z1 like '%" + QString::number(j) + "'";
     }
-    for(int j=0;j<6;j++)
+    for(int j=0;j<nbBoules;j++)
     {
         cri_msg<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
     }
 
     QString st_cri1_1= cri_msg.at(leCritere);
-    int dst = 0;
 
 
     sql_req =
-            "select tb3.id as id, tb5.id as pid,"
-            "tb3.jour_tirage as J,"
-            "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,"
-            "tb5.tip as C,"
-            "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
-            "tb3.e1 as e1,"
-            "tb2.N as N from tirages as tb3,"
-            "analyses as tb4, lstcombi as tb5 "
-            "inner join"
-            "("
-            "select *  from "
-            "("
-            "select tb1.*, count(tb2.B) as N from tirages as tb1 "
-            "left join"
-            "("
+            "select count(tb2.B) as N from "
+            "( "
+            "select tbref.* from tirages as tbref "
+            "where (tbref.id="
+            +QString::number(idTirage)+
+            ") "
+            ") as tb1 "
+            "left join "
+            "( "
             "select id as B from Bnrz where (z1 not null and ("
             +st_cri1_1+
-            "))"
+            ")) "
             ")as tb2 "
-            "on"
-            "("
-            "tb1.b1 = tb2.B or "
-            "tb1.b2 = tb2.B or "
-            "tb1.b3 = tb2.B or "
-            "tb1.b4 = tb2.B or "
-            "tb1.b5 = tb2.B"
-            ")"
-            "group by tb1.id"
-            ") as ensemble_1 "
-            ") as tb2 "
-            "on ("
-            "(tb3.id = tb2.id + "
-            +QString::number(dst)
-            +") "
-             "and"
-             "(tb4.id = tb3.id)"
-             "and"
-             "(tb4.id_poids = tb5.id)"
-            "and"
-            "(tb2.id="
-            +QString::number(idTirage)+
-            ")"
-             ")";
+            "on "
+            "( "
+            " tb2.B = tb1.b1 or "
+            " tb2.B = tb1.b2 or "
+            " tb2.B = tb1.b3 or "
+            " tb2.B = tb1.b4 or "
+            " tb2.B = tb1.b5 "
+            ") "
+            "group by tb1.id; "
+            ;
 
 #ifndef QT_NO_DEBUG
     // Effacer fenetre de debug
-    qDebug("\0x1B[2J\0x1b[;H");
+    //qDebug("\0x1B[2J\0x1b[;H");
     qDebug() << sql_req;
 #endif
 
@@ -1784,11 +1766,6 @@ int RechercheInfoTirages(int idTirage, int leCritere)
             retval = ligne.value("N").toInt();
         }
 
-    }
-    else
-    {
-        int a = 0;
-        a=a++; // Pb
     }
 
     return retval;
@@ -2420,6 +2397,7 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
         etude->stc[3] = headName;
         etude->st_titre = msg;
         etude->lst_boules[3] = stl_tmp;
+        etude->ref = &configJeu;
 
         // Nouvelle de fenetre de detail de cette boule
         SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale);
@@ -3534,8 +3512,6 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
     //bool status = false;
     QStringList sl_Lev0;
 
-    //QTabWidget *onglets = ;
-    //int ShowCol = ((ref->limites[0].max)/10)+1;
     int nbBoules = floor(ref->limites[0].max/10)+1;
 
     for(int i = 1; i<=nbBoules;i++)

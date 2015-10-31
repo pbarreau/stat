@@ -59,6 +59,7 @@ void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
     QString msg1 = "";
     QSqlQuery query ;
     int zone = 0;
+int nbBoules = floor(pConf->limites[0].max/10);
 
     // Boule Finissant par xx
     QString str_fxx = "";
@@ -67,9 +68,9 @@ void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
     {
        str_fxx = str_fxx + "F" +QString::number(i)+ " int,";
     }
-    for(int i=0; i<6;i++)
+    for(int i=0; i<=nbBoules;i++)
     {
-       str_fxx = str_fxx + "U" +QString::number(i)+ " int,";
+       str_fxx = str_fxx + "bd" +QString::number(i)+ " int,";
     }
     //enlever la derniere ,
     str_fxx.remove(str_fxx.length()-1,1);
@@ -94,7 +95,7 @@ void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
     QStringList cri_msg;
     QStringList cri_lab;
 
-    cri_msg <<"z1%2=0"<<"z1<26";
+    cri_msg <<"z1%2=0"<<"z1<"+QString::number((pConf->limites[0].max)/2);
     cri_lab << "P" << "G";
 
     for(int j=0;j<=9;j++)
@@ -103,10 +104,11 @@ void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
       cri_lab << "F"+ QString::number(j);
     }
 
-    for(int j=0;j<6;j++)
+
+    for(int j=0;j<nbBoules;j++)
     {
       cri_msg<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
-      cri_lab << "U"+ QString::number(j);
+      cri_lab << "bd"+ QString::number(j);
     }
 
     // Creer table synthese Verticale

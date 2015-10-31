@@ -129,7 +129,7 @@ void SyntheseGenerale::slot_AnalyseCeTirage(const QModelIndex & index)
         int val = 0;
 
         // Recherche de la config pour le  tirage
-        val=RechercheInfoTirages(id,i-2);
+        val=RechercheInfoTirages(id,i-2,pMaConf);
 
         // affectation
         item->setData(val,Qt::DisplayRole);
@@ -772,6 +772,8 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
         uneDemande.col[0]=col;
         uneDemande.stc[0]=headName;
         uneDemande.val[0]=val;
+        uneDemande.ref = pMaConf;
+
 
     }
 
@@ -883,7 +885,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseDetails()
             QStandardItem *item = new QStandardItem();
 
             // Recherche de la config pour le dernier tirage
-            val=RechercheInfoTirages(1,i-2);
+            val=RechercheInfoTirages(1,i-2,pMaConf);
             item->setData(val,Qt::DisplayRole);
             tmpStdItem->setItem(0,i-2,item);
             tmpTblView_1->setColumnWidth(i-2,30);
