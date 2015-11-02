@@ -142,7 +142,12 @@ public:
     bool CTB_Table1(QString nomTable, tirages *pRef);
     bool CreerTableDistriCombi(void);
     bool LireLesTirages(QString fileName_2, tirages *pRef);
+
     bool AnalyserCeTirage(int tirId, QStringList pList[], stTiragesDef *pRef);
+    bool AnalyserTousLesTirage(stTiragesDef *pRef);
+    bool FdjAnalyse_1(int tirId, stTiragesDef *pRef);
+    bool FdjAnalyse_2(int tirId, QStringList pList[], stTiragesDef *pRef);
+    bool FdjAnalyse_3(int tirId, stTiragesDef *pRef);
 
     bool OLD_LireLesTirages(QString fileName_2, tirages *pRef);
 

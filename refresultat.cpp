@@ -123,7 +123,7 @@ void SyntheseGenerale::slot_AnalyseCeTirage(const QModelIndex & index)
     int id = index.row()+1;
     int nb_col = gsim_AnalyseUnTirage->columnCount();
 
-    for(int i = 2; i<=nb_col; i++)
+    for(int i = 2; i<=nb_col-1; i++)
     {
         QStandardItem *item = gsim_AnalyseUnTirage->item(0,i-2);
         int val = 0;
@@ -879,7 +879,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseDetails()
         tmpTblView_1->setModel(tmpStdItem);
         gsim_AnalyseUnTirage = tmpStdItem;
         int val = 0;
-        for(int i = 2; i<nb_col; i++)
+        for(int i = 2; i<nb_col-1; i++)
         {
             tmpStdItem->setHeaderData(i-2,Qt::Horizontal,ligne.fieldName(i));
             QStandardItem *item = new QStandardItem();

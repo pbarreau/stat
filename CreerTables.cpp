@@ -112,6 +112,9 @@ bool GererBase::CreerTableDistriCombi(void)
 bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
 {
     bool status;
+    QString st_sql = "";
+    QSqlQuery sql_req("");
+
     stTiragesDef ref;
 
     // Recuperation de la config jeu
@@ -143,8 +146,6 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
     for(int i = 0; i<nb_table && status ;i++)
     {
         QStringList lst_tmp = tables[i].split(";");
-        QString st_sql = "";
-        QSqlQuery sql_req("");
 
         st_sql = "create table if not exists " +
                 lst_tmp.at(0) +
@@ -161,6 +162,26 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
 
     if(status)
         status = BaseCreerTableBnrz(&ref);
+
+    // Pour table couverture
+    //QSqlQuery query;
+    for(int zone=0;(zone<ref.nb_zone) && (status == true);zone++)
+    {
+
+      // Preparer les boules de la zone
+
+        st_sql = "insert into " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zone] +
+               " (id, boule) values (:id, :boule)";
+        status = sql_req.prepare(st_sql);
+
+        for(int j=0;(j<ref.limites[zone].max)&& status;j++)
+        {
+          sql_req.bindValue(":boule", j+1);
+          status = sql_req.exec();
+        }
+        sql_req.finish();
+
+    }
 
 #if 0
     if(status)

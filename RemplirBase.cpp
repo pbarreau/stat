@@ -105,7 +105,7 @@ void GererBase::TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, Q
 
 void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,stTiragesDef *pRef)
 {
-    bool status = false;
+    bool status = true;
 
     QSqlQuery query;
     QString msg;
@@ -151,7 +151,7 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
 
     // requete a effectuer
     msg = "insert into tmp_couv (id, depart, fin, taille) values (:id, :depart, :fin, :taille)";
-    query.prepare(msg);
+    status = query.prepare(msg);
 
     // Recuperation des lignes ayant la boule
     msg = req_msg(0,boule,pRef);
@@ -221,18 +221,18 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
     item1->setData(EcartCourant,Qt::DisplayRole);
     modele->setItem(boule-1,1,item1);
 
-    QStandardItem *item2 = new QStandardItem( QString::number(222));
+    QStandardItem *item2 = new QStandardItem();
     item2->setData(EcartPrecedent,Qt::DisplayRole);
     modele->setItem(boule-1,2,item2);
 
-    QStandardItem *item3 = new QStandardItem( );
+    QStandardItem *item3 = new QStandardItem();
     QString valEM = QString::number(EcartMoyen,'g',2);
     //item3->setData(EcartMoyen,Qt::DisplayRole);
     item3->setData(valEM.toDouble(),Qt::DisplayRole);
     modele->setItem(boule-1,3,item3);
 
 
-    QStandardItem *item4 = new QStandardItem( QString::number(222));
+    QStandardItem *item4 = new QStandardItem();
     item4->setData(EcartMax,Qt::DisplayRole);
     modele->setItem(boule-1,4,item4);
 }

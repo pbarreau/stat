@@ -125,6 +125,8 @@ left join
             ) group by boule) as table_2
 on (B1=table_2.B) group by B1 order by B1 asc;
 #endif
+
+
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
     DB_tirages = new GererBase;
@@ -141,7 +143,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     /// --------- rem 1
 
-    //fen_LstCouv();
+    fen_LstCouv();
 
 
     // Creation sous fenetre des ecarts
@@ -162,7 +164,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     //QApplication::quit();
 
-    // Recuperation des données fdj
+    // Recuperation des donnees fdj
     ficSource = tmp.SelectSource(load);
     if (DB_tirages->LireLesTirages(ficSource,&tmp) == false)
     {
@@ -182,6 +184,9 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         //Rien
     }
 
+    // Les tirages sont lu on les analyses
+    DB_tirages->AnalyserTousLesTirage(&configJeu);
+
     /// ------- rem 2
     ///---------------------
     // Recherche de combinaison A deplacer ?
@@ -193,7 +198,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Creation fenetre pour memoriser la selection
     // Creation fenetre resultat
 
-    //NEW_RepartionBoules(&configJeu);
+    NEW_RepartionBoules(&configJeu);
     FEN_Ecarts();
 
     // Et affichage des combinaisons
@@ -201,11 +206,12 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Creation sous fenetre des voisins
     //FEN_Voisins();
 
-#if 0
+
     // Ordre arrivee des boules ?
     DB_tirages->CouvertureBase(G_sim_Ecarts,&configJeu);
 
 
+#if 0
 
     //// GARDER L'ORDRE D'APPEL DES FONCTIONS PB VERROU SUR LA BASE
     // --
@@ -231,8 +237,9 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         // Calcul occurence de cette boule
         //DB_tirages->TotalApparitionBoule(i,&configJeu, zn, G_sim_Voisins[zn]);
     }
-#endif
+
     // ----------------------------
+#endif
 
     /// fin rem 2
     // Remplir la sousfenetre base de données
@@ -249,7 +256,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_SGRP, G_sim_Ensemble_1);
     DB_tirages->MLP_UniteDizaine(&configJeu, G_sim_ud);
 
-
+#if 0
     // Table a remplir
     TST_PrevisionNew(&configJeu);
 
@@ -257,9 +264,21 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     TST_PrevisionType(NE_FDJ::critere_parite,&configJeu);
     // idem en regardant la valeur de n/2
     TST_PrevisionType(NE_FDJ::critere_enemble,&configJeu);
+#endif
 
 
-    FEN_Graphe(&configJeu);
+
+
+
+    //FEN_Graphe(&configJeu);
+
+
+
+
+
+
+
+
     /// ---- fin rem 3
     //setCentralWidget(zoneCentrale);
 #if 0
@@ -1645,8 +1664,9 @@ QGridLayout * MainWindow::MonLayout_Details()
         QStandardItemModel * tmpStdItem =  new QStandardItemModel(1,nb_col-2);
         tmpTblView_1->setModel(tmpStdItem);
         //gsim_AnalyseUnTirage = tmpStdItem;
+
         int val = 0;
-        for(int i = 2; i<nb_col; i++)
+        for(int i = 2; i<nb_col-1; i++)
         {
             tmpStdItem->setHeaderData(i-2,Qt::Horizontal,ligne.fieldName(i));
             QStandardItem *item = new QStandardItem();
@@ -1753,7 +1773,7 @@ int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *ref)
 #ifndef QT_NO_DEBUG
     // Effacer fenetre de debug
     //qDebug("\0x1B[2J\0x1b[;H");
-    qDebug() << sql_req;
+    //qDebug() << sql_req;
 #endif
 
     status = req.exec(sql_req);
@@ -5086,15 +5106,18 @@ void MainWindow::FEN_Graphe(stTiragesDef *pConf)
     QTabWidget *tabWidget = new QTabWidget;
     UnConteneurDessin *dessin;
 
+#if 0
     //tabWidget->set
     dessin = TST_Graphe_1(pConf);
     tabWidget->addTab(dessin,"Tirages");
+
 
     dessin = TST_Graphe_2(pConf);
     tabWidget->addTab(dessin,"Parites");
 
     dessin = TST_Graphe_3(pConf);
     tabWidget->addTab(dessin,"b<N/2");
+#endif
 
     tabWidget->setVisible(true);
 
