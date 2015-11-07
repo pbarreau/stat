@@ -783,7 +783,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     *etude = uneDemande;
 
     // Nouvelle de fenetre de detail de cette boule
-    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran);
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,gtab_Top);
 }
 
 QGridLayout * SyntheseGenerale:: Presente_SyntheseEcarts(void)

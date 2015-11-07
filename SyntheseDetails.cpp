@@ -120,7 +120,7 @@ QString GEN_Where_3(int loop,
 }
 
 //---------------- Fin Local Fns ------------------------
-SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel)
+SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
 {
     pLaDemande = pEtude;
     pEcran = visuel;
@@ -154,7 +154,8 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel)
 
     //----------------
 
-    QMdiSubWindow *subWindow = visuel->addSubWindow(splitter_1);
+    //QMdiSubWindow *subWindow = visuel->addSubWindow(splitter_1);
+
     //subWindow->resize(380,325);
     //subWindow->move(1200,570);
 
@@ -177,10 +178,15 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel)
         pEtude->st_titre = st_titre;
     }
 
+    tab_Top->addTab(splitter_1,st_titre);
+    //tab_Top->setVisible(true);
+    //tab_Top->show();
+
+#if 0
     splitter_1->setWindowTitle(st_titre);
     splitter_1->setVisible(true);
     splitter_1->show();
-
+#endif
     //MontreRechercheTirages(uneEtude);
 }
 

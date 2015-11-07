@@ -126,6 +126,10 @@ left join
 on (B1=table_2.B) group by B1 order by B1 asc;
 #endif
 
+void MainWindow::pslot_closeTabDetails(int index)
+{
+    gtab_Top->removeTab(index);
+}
 
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
@@ -133,6 +137,20 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     int i;
     tirages tmp(leJeu);
     QString ficSource;
+
+    // Preparation fenetre detail
+    w_FenetreDetails = new QWidget;
+    gtab_Top = new QTabWidget;
+    gtab_Top->setTabsClosable(true);
+    QFormLayout *mainLayout = new QFormLayout;
+    mainLayout->addWidget(gtab_Top);
+    w_FenetreDetails->setLayout(mainLayout);
+    w_FenetreDetails->setWindowTitle("Details");
+    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_FenetreDetails);
+    connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
+
+
+
 
     // Recuperation des contantes du type de jeu
     tmp.getConfig(&configJeu);
@@ -270,7 +288,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
 
 
-    //FEN_Graphe(&configJeu);
+    FEN_Graphe(&configJeu);
 
 
 
@@ -2135,6 +2153,7 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
     QString stNames[2]={"Stat","Voisins"};
     QGridLayout *design_onglet[2];
 
+    //tab_Top->setTabsClosable(true);
 
     // pour reecriture
     QString *st_tmp1 = new QString;
@@ -2420,7 +2439,8 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
         etude->ref = &configJeu;
 
         // Nouvelle de fenetre de detail de cette boule
-        SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale);
+        SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale,gtab_Top);
+        w_FenetreDetails->setVisible(true);
 
     }
 
@@ -2439,7 +2459,8 @@ void MainWindow::slot_CriteresTiragesAppliquer()
     *etude = critereTirages;
 
     // Nouvelle de fenetre de detail de cette boule
-    SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale);
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale,gtab_Top);
+    w_FenetreDetails->setVisible(true);
 
 }
 
@@ -5106,11 +5127,11 @@ void MainWindow::FEN_Graphe(stTiragesDef *pConf)
     QTabWidget *tabWidget = new QTabWidget;
     UnConteneurDessin *dessin;
 
-#if 0
+
     //tabWidget->set
     dessin = TST_Graphe_1(pConf);
     tabWidget->addTab(dessin,"Tirages");
-
+#if 0
 
     dessin = TST_Graphe_2(pConf);
     tabWidget->addTab(dessin,"Parites");

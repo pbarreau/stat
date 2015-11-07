@@ -90,6 +90,7 @@ private slots:
     bool pslot_save();
     bool pslot_saveAs();
     void pslot_about();
+    void pslot_closeTabDetails(int index);
 
 public slots:
     void ouvrir_mainwindows(void);
@@ -218,6 +219,8 @@ private:
 private:
     //Ui::MainWindow *ui;
     QMdiArea *zoneCentrale;
+    QWidget *w_FenetreDetails;
+    QTabWidget *gtab_Top;
     GererBase *DB_tirages;
     SyntheseGenerale *syntheses;
     QTableView * qtv_s1;

@@ -36,6 +36,7 @@ private:
     GererBase *bdd;
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
+    QTabWidget *gtab_Top;
     int curzn;
     stCurDemande uneDemande;
     QStringList lst_selection[3];
