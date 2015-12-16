@@ -1317,6 +1317,15 @@ QString SyntheseDetails::ReponsesOrigine_1(int dst)
     QString st_baseUse = "";
     st_baseUse = pLaDemande->st_baseDef->remove(";");
 
+#ifndef QT_NO_DEBUG
+    qDebug() << st_baseTirages;
+#endif
+
+#ifndef QT_NO_DEBUG
+    qDebug() << st_baseUse;
+#endif
+
+
     int col_day = 1;
     for(int i = 0; i< 3; i++)
     {
@@ -1541,10 +1550,16 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
     QString st_criWhere = ""; // contrainte communes
     QString st_cri1_1 = "";
 
+    int loop[]={5,1,1};
+    QString table[]={"tb2.b","tb2.e","tb5.id"};
+    bool inc1[] ={true,true,false};
+    QString cond1[]={"=","=","="};
+    bool inc2[] ={false,false,false};
+    QString cond2[]={"or","or","or"};
 
     int lgn = pLaDemande->lgn[0];
     int col=pLaDemande->col[0];
-    QStringList boules=pLaDemande->lst_boules[0];
+    QStringList boules; //=pLaDemande->lst_boules[0];
 
     //---------------------
     QStringList cri_msg;
@@ -1619,14 +1634,41 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
     st_cri2 ="(tb2.N ="
             +QString::number(lgn)+")";
 
+    QString msg_req[3];
+    QString st_cri_all = "";
+    QString jonc = " and ";
+
+    for(int i = 0; i< 3; i++)
+    {
+        boules=pLaDemande->lst_boules[i];
+        msg_req[i] = "";
+
+        // creation du message en fonction d'origine
+        if(boules.size())
+            msg_req[i]= GEN_Where_3(loop[i],table[i],inc1[i],cond1[i],boules,inc2[i],cond2[i]);
+
+        if (msg_req[i] != "")
+        {
+            st_cri_all = st_cri_all + msg_req[i] + jonc;
+        }
+
+    }
+    // on retire le dernier and
+    if(st_cri_all != "")
+    {
+        st_cri_all.remove(st_cri_all.size()-jonc.size(),jonc.size());
+        st_cri_all = " and " + st_cri_all;
+    }
+
+
     // Des boules a rechercher ?
-    if(boules.size())
-        st_cri2 = st_cri2 + " and " + GEN_Where_3(5,"tb2.b",true,"=",boules,false,"or");
+    //if(boules.size())
+    //    st_cri2 = st_cri2 + " and " + GEN_Where_3(5,"tb2.b",true,"=",boules,false,"or");
 
-
-    if((st_cri2 !="") || (st_cri3 !=""))
-        st_criWhere = " where ("+ st_cri2 + st_cri3 +")";
-
+    if(!dst){
+        if((st_cri2 !="") || (st_cri_all !=""))
+            st_criWhere = " where ("+ st_cri2 + st_cri_all +")";
+    }
 
     st_sqlR = st_cri1
             + st_criWhere +
