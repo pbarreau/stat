@@ -70,7 +70,10 @@ public:
 
 public slots:
     void slot_MontreLesTirages(const QModelIndex & index);
-    void slot_SelectionneBoules(const QModelIndex & index);
+    void slot_Select_C(const QModelIndex & index);
+    void slot_Select_E(const QModelIndex & index);
+    void slot_Select_B(const QModelIndex & index);
+
     void slot_ChangementEnCours(const QItemSelection &selected,const QItemSelection &deselected);
 
 
@@ -81,7 +84,7 @@ private:
     void DoComptageTotal(void);
     void DoBloc2(void);
     void DoBloc3(void);
-    void MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const QModelIndex & index);
+    void MemoriserChoixUtilisateur(const QModelIndex & index,int zn, QItemSelectionModel *selectionModel);
 
     QGridLayout * MonLayout_SyntheseTotalBoules(int dst);
     QGridLayout * MonLayout_SyntheseTotalEtoiles(int dst);

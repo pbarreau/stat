@@ -25,7 +25,7 @@ QGridLayout *SyntheseGenerale::GetDisposition(void)
 }
 QTableView *SyntheseGenerale::GetListeTirages(void)
 {
-  return  tbv_LesTirages;
+    return  tbv_LesTirages;
 }
 
 SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel)
@@ -118,7 +118,7 @@ void SyntheseGenerale::DoComptageTotal(void)
     QTabWidget *tab_Top = new QTabWidget;
     QWidget **wid_ForTop = new QWidget*[3];
 
-    QString stNames[]={"Boules","Etoiles","Repartition"};
+    QString stNames[]={"b","e","c"};
     QGridLayout *design_onglet[3];
 
     // Tableau de pointeur de fonction
@@ -205,6 +205,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
 
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -237,7 +238,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
 
     // simple click dans fenetre  pour selectionner boule
     connect( tbv_bloc1_2, SIGNAL(clicked(QModelIndex)) ,
-             this, SLOT(slot_SelectionneBoules( QModelIndex) ) );
+             this, SLOT(slot_Select_E( QModelIndex) ) );
 
 
     // double click dans fenetre  pour afficher details boule
@@ -305,14 +306,18 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 
     sqm_tmp->setQuery(st_msg1);
 
+    qtv_tmp->hideColumn(0);
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
 
 
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
-    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    //qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    //qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setFixedSize(290,400);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
@@ -340,9 +345,38 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
 
+
+    // Mettre le dernier tirage en evidence
+    QSqlQuery selection;
+    bool status = false;
+
+    st_msg1 = "select analyses.id, analyses.id_poids from analyses limit 1;";
+    status = selection.exec(st_msg1);
+    status = selection.first();
+    if(selection.isValid())
+    {
+        int value = selection.value(1).toInt();
+        //tv_r1->setItemDelegate(new MaQtvDelegation(NULL,value-1,1));
+
+        QAbstractItemModel *mon_model = qtv_tmp->model();
+        //QStandardItemModel *dest= (QStandardItemModel*) mon_model;
+        QModelIndex mdi_item1 = mon_model->index(0,0);
+
+        if (mdi_item1.isValid()){
+            //mdi_item1 = mdi_item1.model()->index(value-1,1);
+            mdi_item1 = mon_model->index(value-1,1);
+            QPersistentModelIndex depart(mdi_item1);
+
+            qtv_tmp->selectionModel()->setCurrentIndex(mdi_item1, QItemSelectionModel::NoUpdate);
+            qtv_tmp->scrollTo(mdi_item1);
+            qtv_tmp->setItemDelegate(new MaQtvDelegation(depart));
+        }
+    }
+
+
     // simple click dans fenetre  pour selectionner boule
     connect( tbv_bloc1_3, SIGNAL(clicked(QModelIndex)) ,
-             this, SLOT(slot_SelectionneBoules( QModelIndex) ) );
+             this, SLOT(slot_Select_C( QModelIndex) ) );
 
 
     // double click dans fenetre  pour afficher details boule
@@ -354,8 +388,6 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 {
-#if 0
-#endif
 
     QGridLayout *lay_return = new QGridLayout;
 
@@ -408,7 +440,8 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
-
+    //qtv_tmp->setStyleSheet("QTableView {selection-background-color: rgba(100, 100, 100, 150);}");
+    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
@@ -440,7 +473,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
     // simple click dans fenetre  pour selectionner boule
     connect( tbv_bloc1_1, SIGNAL(clicked(QModelIndex)) ,
-             this, SLOT(slot_SelectionneBoules( QModelIndex) ) );
+             this, SLOT(slot_Select_B( QModelIndex) ) );
 
 
     // double click dans fenetre  pour afficher details boule
@@ -475,6 +508,8 @@ void SyntheseGenerale::DoBloc2(void)
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     //qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
+    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setAlternatingRowColors(true);
     qtv_tmp->setFixedSize(470,222);
@@ -578,61 +613,49 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 
 }
 
-void SyntheseGenerale::slot_SelectionneBoules(const QModelIndex & index)
+void SyntheseGenerale::slot_Select_B(const QModelIndex & index)
 {
-    void *pSource = index.internalPointer();
-    int col = index.column();
-    int val = index.data().toInt();
+    QItemSelectionModel *selectionModel = tbv_bloc1_1->selectionModel();
 
-    // Boules
-    if(pSource == tbv_bloc1_1->model()->index(0,0).internalPointer())
-    {
-        MemoriserChoixUtilisateur(0, tbv_bloc1_1, index);
-    }
-
-    // Etoiles
-    if(pSource == tbv_bloc1_2->model()->index(0,0).internalPointer())
-    {
-        MemoriserChoixUtilisateur(1, tbv_bloc1_2, index);
-    }
-
-    // Combinaison
-    if(pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
-    {
-        if(col>=2 && val)
-            MemoriserChoixUtilisateur(2, tbv_bloc1_3, index);
-    }
+    MemoriserChoixUtilisateur(index,0,selectionModel);
 
 }
 
-void SyntheseGenerale::MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const QModelIndex & index)
+void SyntheseGenerale::slot_Select_E(const QModelIndex & index)
 {
-    QItemSelectionModel *selection;
-    QItemSelection une_cellule_choisie(index,index);
-    QModelIndexList indexes ;
-    QModelIndex un_index;
+    QItemSelectionModel *selectionModel = tbv_bloc1_2->selectionModel();
 
-    int nbZone = pMaConf->nb_zone;
-    int nb_element_max_zone = 0;
-    QString stNomZone = 0;
+    MemoriserChoixUtilisateur(index,1,selectionModel);
 
-    static int col_depart [3]= {-1,-1,-1};
-    int cur_col = index.column();
-    int nb_items = 0;
+}
 
+void SyntheseGenerale::slot_Select_C(const QModelIndex & index)
+{
+    QItemSelectionModel *selectionModel = tbv_bloc1_3->selectionModel();
+
+    MemoriserChoixUtilisateur(index,2,selectionModel);
+}
+
+void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int zn, QItemSelectionModel *selectionModel)
+{
+    static int curcol [3]= {-1,-1,-1};
     int ligne = index.row();
-    int val = index.data().toInt();
+    int val = -1;
+
     const QAbstractItemModel * pModel = index.model();
-    QVariant vCol = pModel->headerData(cur_col,Qt::Horizontal);
-    QString headName = vCol.toString();
+    QVariant vCol;
+    QString headName;
 
+    QModelIndexList indexes = selectionModel->selectedIndexes();
 
-    if (zn>=nbZone)
+    int nb_items = indexes.size();
+    int nb_element_max_zone = -1;
+    QString stNomZone = "Rien";
+
+    if(zn==2)
     {
-        nb_element_max_zone = 1;
-        col_depart[zn] = -1;
-        stNomZone = "Combinaison";
-        uneDemande.lst_boules[zn].clear();
+        nb_element_max_zone=1;
+        stNomZone="C";
     }
     else
     {
@@ -640,66 +663,86 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(int zn, QTableView *ptbv, const
         stNomZone = pMaConf->nomZone[zn];
     }
 
-    selection = ptbv->selectionModel();
-    indexes = selection->selectedIndexes();
-
-    // L'utilisateur a t il tout deselectionnee
-    if(indexes.size() == 0)
+    // Maxi choix atteind
+    if(nb_items > nb_element_max_zone)
     {
-        col_depart[zn] = -1;
-        uneDemande.lst_boules[zn].clear();
+        //un message d'information
+        QMessageBox::warning(0, stNomZone, tr("Attention, maximum element atteind !"),QMessageBox::Yes);
+
+        // deselectionner l'element
+        selectionModel->select(index, QItemSelectionModel::Deselect);
         return;
     }
 
-    // Cas selection de combinaison
-    if (zn == 2){
-        col_depart[zn] == -1;
+    // A t'on une selection ou une deselection
+    if (!nb_items)
+    {
+
+        // Efface liste des boules utilisateur
         uneDemande.lst_boules[zn].clear();
+
+        return;
     }
 
-    if (col_depart[zn] == -1)
+    // C'est une selection
+    if (nb_items == 1)
     {
-        col_depart[zn] =  cur_col;
-        uneDemande.col[zn] = cur_col;
-        uneDemande.stc[zn]=headName;
-        uneDemande.val[zn]=val;
-        uneDemande.lgn[zn]=ligne;
+        int calcol = 1;
 
-    }
-
-    // La colonne numero de boule
-    if(cur_col == col_depart[zn])
-    {
-
-        nb_items = indexes.size();
-        if(nb_items <= nb_element_max_zone)
+        curcol [zn] = index.column();
+        if(curcol[zn])
         {
-            QStringList lst_tmp;
-            QString boule;
-            foreach(un_index, indexes)
-            {
-#ifndef QT_NO_DEBUG
-                qDebug() << stNomZone
-                         <<" -> Nb items:"<<nb_items
-                        <<"Col:" << un_index.column()
-                       <<", Ligne:" << un_index.row();
-#endif
-                boule = un_index.model()->index(un_index.row(),0).data().toString();
-                lst_tmp = lst_tmp << boule;
-            }
-            uneDemande.lst_boules[zn]=lst_tmp;
+            calcol = curcol[zn];
+        }
+
+        vCol = pModel->headerData(calcol,Qt::Horizontal);
+        headName = vCol.toString();
+
+        if(zn == 2)
+        {
+            // Combi ?
+            val = index.model()->index(index.row(),0).data().toInt();
         }
         else
         {
-            //un message d'information
-            QMessageBox::warning(0, stNomZone, tr("Attention, maximum deja selectionne !"),QMessageBox::Yes);
+            val = index.data().toInt();
         }
-
+        uneDemande.lst_boules[zn].clear();
+        uneDemande.col[zn] = calcol;
+        uneDemande.stc[zn]=headName;
+        uneDemande.val[zn]=val;
+        uneDemande.lgn[zn]=ligne;
     }
     else
     {
-        // deselectionner l'element
-        selection->select(une_cellule_choisie, QItemSelectionModel::Deselect);
+        if(curcol[zn] != index.column())
+        {
+            // deselectionner l'element
+            selectionModel->select(index, QItemSelectionModel::Deselect);
+
+        }
+    }
+
+    // Memoriser info si necessaire
+    if((nb_items > 0) && (nb_items <= nb_element_max_zone))
+    {
+        QStringList lst_tmp;
+        QString boule;
+        QModelIndex un_index;
+
+        foreach(un_index, indexes)
+        {
+#ifndef QT_NO_DEBUG
+            //QString stNomZone = pMaConf->nomZone[zn];
+            qDebug() << stNomZone
+                     <<" -> Nb items:"<<nb_items
+                    <<"Col:" << un_index.column()
+                   <<", Ligne:" << un_index.row();
+#endif
+            boule = un_index.model()->index(un_index.row(),0).data().toString();
+            lst_tmp = lst_tmp << boule;
+        }
+        uneDemande.lst_boules[zn]=lst_tmp;
     }
 }
 
@@ -736,7 +779,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     }
 
     if(
-           pSource == tbv_bloc2->model()->index(0,0).internalPointer()
+            pSource == tbv_bloc2->model()->index(0,0).internalPointer()
             )
     {
         uneDemande.origine = 2;
