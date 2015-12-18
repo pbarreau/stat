@@ -120,10 +120,11 @@ QString GEN_Where_3(int loop,
 }
 
 //---------------- Fin Local Fns ------------------------
-SyntheseDetails::SyntheseDetails(stCurDemande *uneEtude, QMdiArea *visuel)
+SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
 {
-    pLaDemande = uneEtude;
+    pLaDemande = pEtude;
     pEcran = visuel;
+    gMemoTab = tab_Top;
     int d[]={0,-1,1,-2};
     QString n[]={"0","+1","-1","?"};
 
@@ -154,15 +155,39 @@ SyntheseDetails::SyntheseDetails(stCurDemande *uneEtude, QMdiArea *visuel)
 
     //----------------
 
-    QMdiSubWindow *subWindow = visuel->addSubWindow(splitter_1);
+    //QMdiSubWindow *subWindow = visuel->addSubWindow(splitter_1);
+
     //subWindow->resize(380,325);
     //subWindow->move(1200,570);
 
-    //splitter_1->setParent(visuel);
-    splitter_1->setWindowTitle("Controle");
+    QString st_titre = "";
+    if(pEtude->origine == 1)
+    {
+        st_titre =  CreationTitre_1(pEtude);
+    }
+    else
+    {
+        st_titre =  CreationTitre_2(pEtude);
+    }
+
+    if(pEtude->st_titre != "")
+    {
+        st_titre = "Depart:("+pEtude->st_titre+")," + st_titre;
+    }
+    else
+    {
+        pEtude->st_titre = st_titre;
+    }
+
+    tab_Top->addTab(splitter_1,st_titre);
+    //tab_Top->setVisible(true);
+    //tab_Top->show();
+
+#if 0
+    splitter_1->setWindowTitle(st_titre);
     splitter_1->setVisible(true);
     splitter_1->show();
-
+#endif
     //MontreRechercheTirages(uneEtude);
 }
 
@@ -1564,7 +1589,7 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
     //---------------------
     QStringList cri_msg;
 
-    cri_msg <<"z1%2=0"<<"z1<26";
+    cri_msg <<"z1%2=0"<<"z1<"+QString::number((pLaDemande->ref->limites[0].max)/2);
 
     for(int j=0;j<=9;j++)
     {
@@ -1891,5 +1916,5 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
     etude->lst_boules[zn]=lst_tmp;
 
     // Nouvelle de fenetre de detail de cette boule
-    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran);
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,gMemoTab);
 }

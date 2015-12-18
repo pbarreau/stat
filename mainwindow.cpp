@@ -125,6 +125,12 @@ left join
             ) group by boule) as table_2
 on (B1=table_2.B) group by B1 order by B1 asc;
 #endif
+
+void MainWindow::pslot_closeTabDetails(int index)
+{
+    gtab_Top->removeTab(index);
+}
+
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
     DB_tirages = new GererBase;
@@ -132,18 +138,30 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     tirages tmp(leJeu);
     QString ficSource;
 
+    // Preparation fenetre detail
+    w_FenetreDetails = new QWidget;
+    gtab_Top = new QTabWidget;
+    gtab_Top->setTabsClosable(true);
+    QFormLayout *mainLayout = new QFormLayout;
+    mainLayout->addWidget(gtab_Top);
+    w_FenetreDetails->setLayout(mainLayout);
+    w_FenetreDetails->setWindowTitle("Details");
+    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_FenetreDetails);
+    connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
+
+
+
+
     // Recuperation des contantes du type de jeu
     tmp.getConfig(&configJeu);
 
-    // Creation de La table de reference
-    //FEN_Splitter();
 
     // Creation sous fenetre pour mettre donnees de base
     FEN_Old_Tirages();
 
     /// --------- rem 1
 
-    //fen_LstCouv();
+    fen_LstCouv();
 
 
     // Creation sous fenetre des ecarts
@@ -160,11 +178,11 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     // Creation des tables pour ce type jeu
     DB_tirages->CreationTablesDeLaBDD(&tmp);
-    DB_tirages->CreerTableDistriCombi();
+    //DB_tirages->CreerTableDistriCombi();
 
     //QApplication::quit();
 
-    // Recuperation des données fdj
+    // Recuperation des donnees fdj
     ficSource = tmp.SelectSource(load);
     if (DB_tirages->LireLesTirages(ficSource,&tmp) == false)
     {
@@ -224,6 +242,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         DB_tirages->TotalApparitionBoule(i,&configJeu, zn, G_sim_Voisins[zn]);
     }
 
+
     // --
     zn=1;
     for(i=1;i<=configJeu.limites[zn].max;i++)
@@ -260,6 +279,14 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
 
     FEN_Graphe(&configJeu);
+
+
+
+
+
+
+
+
     /// ---- fin rem 3
     //setCentralWidget(zoneCentrale);
 #if 0
@@ -1646,13 +1673,13 @@ QGridLayout * MainWindow::MonLayout_Details()
         tmpTblView_1->setModel(tmpStdItem);
         gsim_AnalyseUnTirage = tmpStdItem;
         int val = 0;
-        for(int i = 2; i<nb_col; i++)
+        for(int i = 2; i<nb_col-1; i++)
         {
             tmpStdItem->setHeaderData(i-2,Qt::Horizontal,ligne.fieldName(i));
             QStandardItem *item = new QStandardItem();
 
             // Recherche de la config pour le dernier tirage
-            val=RechercheInfoTirages(1,i-2);
+            val=RechercheInfoTirages(1,i-2,&configJeu);
             item->setData(val,Qt::DisplayRole);
             tmpStdItem->setItem(0,i-2,item);
             tmpTblView_1->setColumnWidth(i-2,30);
@@ -1701,7 +1728,7 @@ QGridLayout * MainWindow::MonLayout_Details()
     return(lay_return);
 }
 
-int RechercheInfoTirages(int idTirage, int leCritere)
+int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *ref)
 {
     int retval = -1;
     QString sql_req;
@@ -1709,12 +1736,15 @@ int RechercheInfoTirages(int idTirage, int leCritere)
     bool status = false;
 
     QStringList cri_msg;
-    cri_msg <<"z1%2=0"<<"z1<26";
+
+    int nbBoules = floor(ref->limites[0].max/10)+1;
+
+    cri_msg <<"z1%2=0"<<"z1<"+QString::number((ref->limites[0].max)/2);
     for(int j=0;j<=9;j++)
     {
         cri_msg<< "z1 like '%" + QString::number(j) + "'";
     }
-    for(int j=0;j<6;j++)
+    for(int j=0;j<nbBoules;j++)
     {
         cri_msg<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
     }
@@ -1741,7 +1771,7 @@ int RechercheInfoTirages(int idTirage, int leCritere)
             "("
             "select id as B from Bnrz where (z1 not null and ("
             +st_cri1_1+
-            "))"
+            ")) "
             ")as tb2 "
             "on"
             "("
@@ -1770,8 +1800,8 @@ int RechercheInfoTirages(int idTirage, int leCritere)
 
 #ifndef QT_NO_DEBUG
     // Effacer fenetre de debug
-    qDebug("\0x1B[2J\0x1b[;H");
-    qDebug() << sql_req;
+    //qDebug("\0x1B[2J\0x1b[;H");
+    //qDebug() << sql_req;
 #endif
 
     status = req.exec(sql_req);
@@ -2116,7 +2146,7 @@ QGridLayout * MainWindow::MonLayout_pFnNsr1(stTiragesDef *pConf)
     QGridLayout *lay_return = new QGridLayout;
     int zone = 0;
 
-    syntheses = new SyntheseGenerale(zone,pConf,zoneCentrale);
+    syntheses = new SyntheseGenerale(DB_tirages,zone,pConf,zoneCentrale);
     lay_return = syntheses->GetDisposition();
 
 
@@ -2138,6 +2168,7 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
     QString stNames[2]={"Stat","Voisins"};
     QGridLayout *design_onglet[2];
 
+    //tab_Top->setTabsClosable(true);
 
     // pour reecriture
     QString *st_tmp1 = new QString;
@@ -2174,7 +2205,7 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
-    subWindow->resize(845,570);
+    subWindow->resize(845,590);
     subWindow->move(0,0);
     qw_nsr->setVisible(true);
 }
@@ -2420,9 +2451,11 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
         etude->stc[3] = headName;
         etude->st_titre = msg;
         etude->lst_boules[3] = stl_tmp;
+        etude->ref = &configJeu;
 
         // Nouvelle de fenetre de detail de cette boule
-        SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale);
+        SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale,gtab_Top);
+        w_FenetreDetails->setVisible(true);
 
     }
 
@@ -2441,7 +2474,8 @@ void MainWindow::slot_CriteresTiragesAppliquer()
     *etude = critereTirages;
 
     // Nouvelle de fenetre de detail de cette boule
-    SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale);
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale,gtab_Top);
+    w_FenetreDetails->setVisible(true);
 
 }
 
@@ -3534,9 +3568,14 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
     //bool status = false;
     QStringList sl_Lev0;
 
-    //QTabWidget *onglets = ;
-    //int ShowCol = ((ref->limites[0].max)/10)+1;
+    int nbBoules = floor(ref->limites[0].max/10)+1;
 
+    for(int i = 1; i<=nbBoules;i++)
+    {
+       sl_Lev0 << QString::number(i);
+    }
+
+#if 0
     if(ref->limites[0].max == 49)
     {
         sl_Lev0 << "1" << "2" << "3" << "4" << "5";
@@ -3547,6 +3586,7 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
         sl_Lev0 << "1" << "2" << "3" << "4" << "5" << "6";
         //ShowCol = 6;
     }
+#endif
 
     // Recuperation des combinaison C(1,5), C(2,5), C(3,5), C(4,5), C(5,5)
     for (int i = 0; i< 5; i++)
@@ -4674,7 +4714,7 @@ void MainWindow::slot_MontreTirageAnalyse(const QModelIndex & index)
         int val = 0;
 
         // Recherche de la config pour le  tirage
-        val=RechercheInfoTirages(id,i-2);
+        val=RechercheInfoTirages(id,i-2,&configJeu);
 
         // affectation
         item->setData(val,Qt::DisplayRole);
@@ -5099,6 +5139,7 @@ void MainWindow::FEN_Graphe(stTiragesDef *pConf)
     // Essai de mise en onglet des  graphiques
     QTabWidget *tabWidget = new QTabWidget;
     UnConteneurDessin *dessin;
+
 
     //tabWidget->set
     dessin = TST_Graphe_1(pConf);

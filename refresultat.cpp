@@ -4,6 +4,7 @@
 
 
 #include <QtGui>
+#include <QSqlRecord>
 
 #include <QMessageBox>
 #include <QHeaderView>
@@ -28,9 +29,10 @@ QTableView *SyntheseGenerale::GetListeTirages(void)
     return  tbv_LesTirages;
 }
 
-SyntheseGenerale::SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel)
+SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, int zn, stTiragesDef *pConf, QMdiArea *visuel)
 {
     disposition = new QGridLayout;
+    bdd=pLaBase;
     pEcran = visuel;
     pMaConf = pConf;
     curzn = zn;
@@ -57,6 +59,10 @@ void SyntheseGenerale::DoTirages(void)
 
 
     QString st_sqlReq = *st_bdTirages;
+
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_sqlReq;
+#endif
 
     sqm_LesTirages->setQuery(st_sqlReq);
 
@@ -150,10 +156,7 @@ void SyntheseGenerale::DoComptageTotal(void)
 
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
 {
-#if 0
-#endif
-
-    QGridLayout *lay_return = new QGridLayout;
+   QGridLayout *lay_return = new QGridLayout;
 
     sqm_bloc1_2 = new QSqlQueryModel;
     QTableView *qtv_tmp ;
@@ -388,7 +391,6 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 {
-
     QGridLayout *lay_return = new QGridLayout;
 
     sqm_bloc1_1 = new QSqlQueryModel;
@@ -787,6 +789,8 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
         uneDemande.col[0]=col;
         uneDemande.stc[0]=headName;
         uneDemande.val[0]=val;
+        uneDemande.ref = pMaConf;
+
 
     }
 
@@ -796,7 +800,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     *etude = uneDemande;
 
     // Nouvelle de fenetre de detail de cette boule
-    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran);
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,gtab_Top);
 }
 
 #if 0

@@ -14,6 +14,7 @@
 
 #include "filtrecombinaisons.h"
 #include "monSqlEditable.h"
+#include "tirages.h"
 
 typedef struct _demande
 {
@@ -28,6 +29,7 @@ typedef struct _demande
     QString *st_baseDef;
     QString *st_bdAll;
     QString *st_jourDef;
+    stTiragesDef *ref;
 }stCurDemande;
 //-----------------------------
 
@@ -42,6 +44,7 @@ class SyntheseDetails: public QObject
 private:
     stCurDemande *pLaDemande;
     QMdiArea *pEcran;
+    QTabWidget *gMemoTab;
 
     QTabWidget *onglets;
     QLineEdit *dist;
@@ -53,7 +56,7 @@ private:
     FiltreCombinaisons *pFiltre[4];
 
 public:
-    SyntheseDetails(stCurDemande *uneEtude,QMdiArea *visuel);
+    SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel, QTabWidget *tab_Top);
     void MontreRechercheTirages(stCurDemande *pLaDemande);
 
     QWidget *SPLIT_Tirage(void);

@@ -32,7 +32,7 @@ class MainWindow;
 extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf);
 extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
 extern QString CompteJourTirage(stTiragesDef *pMaConf);
-extern int RechercheInfoTirages(int idTirage, int leCritere);
+extern int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *pMaConf);
 
 #if 0
 class MonToolTips:public QStandardItemModel
@@ -94,6 +94,7 @@ private slots:
     bool pslot_save();
     bool pslot_saveAs();
     void pslot_about();
+    void pslot_closeTabDetails(int index);
 
 public slots:
     void ouvrir_mainwindows(void);
@@ -222,6 +223,8 @@ private:
 private:
     //Ui::MainWindow *ui;
     QMdiArea *zoneCentrale;
+    QWidget *w_FenetreDetails;
+    QTabWidget *gtab_Top;
     GererBase *DB_tirages;
     SyntheseGenerale *syntheses;
     QTableView * qtv_s1;

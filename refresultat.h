@@ -33,8 +33,10 @@ class SyntheseGenerale : public QObject
 
 private:
     //stCurDemande *pLaDemande;
+    GererBase *bdd;
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
+    QTabWidget *gtab_Top;
     int curzn;
     stCurDemande uneDemande;
     QStringList lst_selection[3];
@@ -60,9 +62,11 @@ private:
     QTableView * tbv_bloc3;
     QSqlTableModel * sqtblm_bloc3;
 
+    QStandardItemModel *gsim_AnalyseUnTirage;
+
 
 public:
-    SyntheseGenerale(int zn, stTiragesDef *pConf, QMdiArea *visuel);
+    SyntheseGenerale(GererBase *pLaBase, int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetListeTirages(void);
 
