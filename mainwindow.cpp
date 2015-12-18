@@ -1121,7 +1121,7 @@ void MainWindow::FEN_Voisins(void)
     subWindow->resize(580,570);
     subWindow->move(1180,0);
     //zoneCentrale->addSubWindow(qw_Voisins);
-    qw_Voisins->setVisible(true);
+    qw_Voisins->setVisible(false);
 }
 
 #ifdef USE_OLD_CODE
