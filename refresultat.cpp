@@ -29,12 +29,13 @@ QTableView *SyntheseGenerale::GetListeTirages(void)
     return  tbv_LesTirages;
 }
 
-SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, int zn, stTiragesDef *pConf, QMdiArea *visuel)
+SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int zn, stTiragesDef *pConf, QMdiArea *visuel)
 {
     disposition = new QGridLayout;
     bdd=pLaBase;
     pEcran = visuel;
     pMaConf = pConf;
+    ptabTop = ptabSynt;
     curzn = zn;
 
     st_bdTirages = new QString;
@@ -800,7 +801,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     *etude = uneDemande;
 
     // Nouvelle de fenetre de detail de cette boule
-    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,gtab_Top);
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
 }
 
 #if 0

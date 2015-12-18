@@ -179,7 +179,9 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
         pEtude->st_titre = st_titre;
     }
 
-    tab_Top->addTab(splitter_1,st_titre);
+    int laFeuille = tab_Top->addTab(splitter_1,st_titre);
+    tab_Top->activateWindow();
+    tab_Top->setCurrentIndex(laFeuille);
     //tab_Top->setVisible(true);
     //tab_Top->show();
 

@@ -2146,9 +2146,10 @@ QGridLayout * MainWindow::MonLayout_pFnNsr1(stTiragesDef *pConf)
     QGridLayout *lay_return = new QGridLayout;
     int zone = 0;
 
-    syntheses = new SyntheseGenerale(DB_tirages,zone,pConf,zoneCentrale);
+    syntheses = new SyntheseGenerale(DB_tirages,gtab_Top,zone,pConf,zoneCentrale);
     lay_return = syntheses->GetDisposition();
-
+    w_FenetreDetails->setVisible(true);
+    //w_FenetreDetails->lower();
 
     return(lay_return);
 }

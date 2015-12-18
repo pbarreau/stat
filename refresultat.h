@@ -36,7 +36,7 @@ private:
     GererBase *bdd;
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
-    QTabWidget *gtab_Top;
+    QTabWidget *ptabTop;
     int curzn;
     stCurDemande uneDemande;
     QStringList lst_selection[3];
@@ -66,7 +66,7 @@ private:
 
 
 public:
-    SyntheseGenerale(GererBase *pLaBase, int zn, stTiragesDef *pConf, QMdiArea *visuel);
+    SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt, int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetListeTirages(void);
 
