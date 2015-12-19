@@ -105,7 +105,7 @@ void GererBase::TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, Q
 
 void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,stTiragesDef *pRef)
 {
-    bool status = false;
+    bool status = true;
 
     QSqlQuery query;
     QString msg;
@@ -151,7 +151,7 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
 
     // requete a effectuer
     msg = "insert into tmp_couv (id, depart, fin, taille) values (:id, :depart, :fin, :taille)";
-    query.prepare(msg);
+    status = query.prepare(msg);
 
     // Recuperation des lignes ayant la boule
     msg = req_msg(0,boule,pRef);
@@ -221,18 +221,18 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
     item1->setData(EcartCourant,Qt::DisplayRole);
     modele->setItem(boule-1,1,item1);
 
-    QStandardItem *item2 = new QStandardItem( QString::number(222));
+    QStandardItem *item2 = new QStandardItem();
     item2->setData(EcartPrecedent,Qt::DisplayRole);
     modele->setItem(boule-1,2,item2);
 
-    QStandardItem *item3 = new QStandardItem( );
+    QStandardItem *item3 = new QStandardItem();
     QString valEM = QString::number(EcartMoyen,'g',2);
     //item3->setData(EcartMoyen,Qt::DisplayRole);
     item3->setData(valEM.toDouble(),Qt::DisplayRole);
     modele->setItem(boule-1,3,item3);
 
 
-    QStandardItem *item4 = new QStandardItem( QString::number(222));
+    QStandardItem *item4 = new QStandardItem();
     item4->setData(EcartMax,Qt::DisplayRole);
     modele->setItem(boule-1,4,item4);
 }
@@ -1328,42 +1328,6 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
                 lgndeb = lgnfin;
                 // Avancer pour ensuite reculer
                 query.next();
-
-#if 0
-                // Est ce la derniere boule du tirage qui a permis la couverture
-                if( i != ref.nbElmZone[zn]-1)
-                {
-                    // Creer une nouvelle colonne couverture
-                    // creer colonne pour ordre d'arrivee
-                    CreerColonneOrdreArrivee(id_couv+1, &ref);
-
-                    // Non, alors indiquer les voisines comme nouvelles
-                    lgndeb = lgnfin;
-                    for(j=0;j<i;j++){
-                        int boule = rec.value(2+j).toInt();
-
-                        // On ne prends pas celle qui a permis la fin de couverture
-                        if(i !=j)
-                        {
-                            msg = "update " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn] +
-                                    " set " + QString::fromLocal8Bit(CL_CCOUV) +
-                                    QString::number(id_couv+1) + "=" +QString::number(boule)+
-                                    " where (id="+QString::number(nb_boules+1)+");";
-                            status = position.exec(msg);
-                            ordr_boule[nb_boules]= boule;
-                            nb_boules++;
-                            memo_boule[boule-1]++;
-                        }
-                    }
-
-                }
-                else
-                {
-                    lgndeb = lgnfin-1;
-                }
-                //sauve.bindValue(":depart", lgndeb);
-
-#endif
             }
 
         }while(query.previous());

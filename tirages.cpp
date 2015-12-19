@@ -33,7 +33,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
     case NE_FDJ::fdj_loto:
       {
         conf.nb_zone = 2;
-        conf.nb_tir_semaine = 3;
+        conf.nb_tir_semaine = 4;
         conf.nbElmZone = new int [conf.nb_zone];
         conf.nbElmZone[0]=5;
         conf.nbElmZone[1]=1;
@@ -46,6 +46,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.jour_tir[0]="LUNDI";
         conf.jour_tir[1]="MERCREDI";
         conf.jour_tir[2]="SAMEDI";
+        conf.jour_tir[3]="VENDREDI";
         conf.nomZone = new QString [conf.nb_zone];
         conf.nomZone[0]="b";
         conf.nomZone[1]="e";
