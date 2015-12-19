@@ -12,6 +12,4 @@
 #include "tirages.h"
 
 
-
-
 #endif // GERERBASE_H

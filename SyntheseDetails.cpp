@@ -143,13 +143,14 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
 
     gtab_splitter_2 = new QTabWidget *[4];
 
+#if 0
     //----------------
     for(int i =0; i<4;i++)
     {
         qw_tmp_1[i] = SPLIT_Voisin(i);
         splitter_2->addWidget(qw_tmp_1[i]);
     }
-
+#endif
     qw_tmp_2 = SPLIT_Tirage();
     splitter_1->addWidget(qw_tmp_2);
 

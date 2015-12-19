@@ -26,7 +26,6 @@
 #define CL_CCOUV    "c"     /// Nom colonne couverture
 #define TB_COMBI    "comb"
 #define TB_BASE     "tirages"
-#define TB_ANLS     "analyses"
 #define TB_BNRZ     "Bnrz"   /// Table Boules Names Reference Zone
 #define TB_WIN      "BNEXT"  /// Choisir parmis ces boules pour tirages suivant du dernier en cours
 
@@ -133,24 +132,10 @@ public:
 public:
     QVariant data(const QModelIndex &index, int role) const;
     bool CreerBaseEnMemoire(bool action, NE_FDJ::E_typeJeux type);
-
-    bool OLD_CreationTablesDeLaBDD(tirages *pRef);
-
     bool CreationTablesDeLaBDD(tirages *pRref);
-    bool BaseCreerTableBnrz(stTiragesDef *pRef);
-
     bool CTB_Table1(QString nomTable, tirages *pRef);
     bool CreerTableDistriCombi(void);
     bool LireLesTirages(QString fileName_2, tirages *pRef);
-
-    bool AnalyserCeTirage(int tirId, QStringList pList[], stTiragesDef *pRef);
-    bool AnalyserTousLesTirage(stTiragesDef *pRef);
-    bool FdjAnalyse_1(int tirId, stTiragesDef *pRef);
-    bool FdjAnalyse_2(int tirId, QStringList pList[], stTiragesDef *pRef);
-    bool FdjAnalyse_3(int tirId, stTiragesDef *pRef);
-
-    bool OLD_LireLesTirages(QString fileName_2, tirages *pRef);
-
     bool SupprimerBase();
     QSqlError lastError();
     void AfficherBase(stTiragesDef *pConf, QWidget *parent, QTableView *cibleview);
@@ -213,14 +198,5 @@ private:
     int iAffichageVoisinEnCoursDeLaBoule[2];
     bool lieu;
 };
-
-
-extern void GEN_ListForAnalyse(QStringList pList[], int nbBoules, stTiragesDef *ref);
-extern QString GEN_FieldsForAnalyse(stTiragesDef *pConf);
-extern QString GEN_FieldsForTables(stTiragesDef *pConf, QString prefix="");
-extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf);
-extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
-extern QString CompteJourTirage(stTiragesDef *pMaConf);
-extern int RechercheInfoTirages(int idTirage, int leCritere, stTiragesDef *ref);
 
 #endif // TIRAGES_H
