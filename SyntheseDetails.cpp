@@ -250,13 +250,19 @@ QWidget * SyntheseDetails::SPLIT_Tirage(void)
     //QGridLayout * (MainWindow::*ptrFunc[])()={};
     stCurDemande uneRecherche;
 
+
     for(int i =0; i< 4;i++)
     {
         wid_ForTop[i]= new QWidget;
 
         tab_Top->addTab(wid_ForTop[i],ongNames[i]);
 
-        dsgOnglet[i]= MonLayout_pFnDetailsMontrerTirages(i,dst[i]);
+        QGridLayout *lay_tmp= MonLayout_pFnDetailsMontrerTirages(i,dst[i]);
+        QGridLayout *MonTest = new  QGridLayout;
+        QWidget * qw_tmp = SPLIT_Voisin(i);
+        MonTest->addLayout(lay_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+        MonTest->addWidget(qw_tmp,0,1,Qt::AlignLeft|Qt::AlignTop);
+        dsgOnglet[i]=MonTest;
         wid_ForTop[i]->setLayout(dsgOnglet[i]);
     }
 

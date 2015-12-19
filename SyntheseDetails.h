@@ -64,7 +64,7 @@ public:
 
     QString CreationTitre_1(stCurDemande *pEtude);
     QString CreationTitre_2(stCurDemande *pEtude);
-    QGridLayout * MonLayout_pFnDetailsMontrerTirages(int ref, int dst);
+    QGridLayout *MonLayout_pFnDetailsMontrerTirages(int ref, int dst);
     QGridLayout * MonLayout_pFnDetailsMontrerSynthese(int ref, int dst);
     QGridLayout * MonLayout_pFnDetailsMontrerRepartition(int ref, int dst);
 
