@@ -49,7 +49,9 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     uneDemande.st_jourDef = st_JourTirageDef;
     DoTirages();
     DoComptageTotal();
-    DoBloc2();
+    disposition->addWidget(ptabTop,1,0,1,2,Qt::AlignLeft|Qt::AlignTop);
+
+    //MonLayout_SyntheseTotalGroupement(0);
     //DoBloc3();
 }
 
@@ -72,7 +74,7 @@ void SyntheseGenerale::DoTirages(void)
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(470,200);
+    qtv_tmp->setFixedSize(475,245);
 
     qtv_tmp->setModel(sqm_LesTirages);
 
@@ -97,7 +99,7 @@ void SyntheseGenerale::DoTirages(void)
     lab_tmp->setText("Tirages");
     vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
     vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-    disposition->addLayout(vb_tmp,0,0,2,2,Qt::AlignLeft|Qt::AlignTop);
+    disposition->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
 
 
     tbv_LesTirages=qtv_tmp;
@@ -123,22 +125,23 @@ void SyntheseGenerale::DoComptageTotal(void)
 
     // Onglet pere
     QTabWidget *tab_Top = new QTabWidget;
-    QWidget **wid_ForTop = new QWidget*[3];
+    QWidget **wid_ForTop = new QWidget*[4];
 
-    QString stNames[]={"b","e","c"};
-    QGridLayout *design_onglet[3];
+    QString stNames[]={"b","e","c","g"};
+    QGridLayout *design_onglet[4];
 
     // Tableau de pointeur de fonction
     QGridLayout *(SyntheseGenerale::*ptrFunc[])(int)=
     {
             &SyntheseGenerale::MonLayout_SyntheseTotalBoules,
             &SyntheseGenerale::MonLayout_SyntheseTotalEtoiles,
-            &SyntheseGenerale::MonLayout_SyntheseTotalRepartitions
+            &SyntheseGenerale::MonLayout_SyntheseTotalRepartitions,
+            &SyntheseGenerale::MonLayout_SyntheseTotalGroupement
 };
 
     stTiragesDef *pConf = pMaConf;
 
-    for(int i =0; i<3;i++)
+    for(int i =0; i<4;i++)
     {
         wid_ForTop[i]=new QWidget;
         tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
@@ -150,14 +153,14 @@ void SyntheseGenerale::DoComptageTotal(void)
 
     QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(tab_Top);
-    disposition->addLayout(mainLayout,0,1,3,1,Qt::AlignLeft|Qt::AlignTop);
+    disposition->addLayout(mainLayout,0,1,Qt::AlignLeft|Qt::AlignTop);
 
 
 }
 
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
 {
-   QGridLayout *lay_return = new QGridLayout;
+    QGridLayout *lay_return = new QGridLayout;
 
     sqm_bloc1_2 = new QSqlQueryModel;
     QTableView *qtv_tmp ;
@@ -215,7 +218,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(225,400);
+    qtv_tmp->setFixedSize(225,180);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -322,7 +325,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     //qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     //qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(290,400);
+    qtv_tmp->setFixedSize(290,CHauteur1);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -449,7 +452,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(225,400);
+    qtv_tmp->setFixedSize(225,180);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -488,8 +491,10 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 }
 
 
-void SyntheseGenerale::DoBloc2(void)
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 {
+    QGridLayout *lay_return = new QGridLayout;
+
     QSqlTableModel *tblModel = new QSqlTableModel;
     tblModel->setTable("repartition_bh");
     tblModel->select();
@@ -515,7 +520,7 @@ void SyntheseGenerale::DoBloc2(void)
 
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setAlternatingRowColors(true);
-    qtv_tmp->setFixedSize(470,222);
+    qtv_tmp->setFixedSize(380,CHauteur1);
 
     qtv_tmp->setModel(tblModel);
     qtv_tmp->setSortingEnabled(true);
@@ -536,12 +541,19 @@ void SyntheseGenerale::DoBloc2(void)
     lab_tmp->setText("Groupement");
     vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
     vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-    disposition->addLayout(vb_tmp,2,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+    //disposition->addLayout(vb_tmp,2,0,Qt::AlignLeft|Qt::AlignTop);
 
+
+    // simple click dans fenetre  pour selectionner boule
+    connect( tbv_bloc2, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_Select_G( QModelIndex) ) );
 
     // double click dans fenetre  pour afficher details boule
     connect( tbv_bloc2, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+
+    return (lay_return);
 
 }
 
@@ -619,6 +631,7 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 void SyntheseGenerale::slot_Select_B(const QModelIndex & index)
 {
     QItemSelectionModel *selectionModel = tbv_bloc1_1->selectionModel();
+    uneDemande.selection[0] = selectionModel->selectedIndexes();
 
     MemoriserChoixUtilisateur(index,0,selectionModel);
 
@@ -627,6 +640,7 @@ void SyntheseGenerale::slot_Select_B(const QModelIndex & index)
 void SyntheseGenerale::slot_Select_E(const QModelIndex & index)
 {
     QItemSelectionModel *selectionModel = tbv_bloc1_2->selectionModel();
+    uneDemande.selection[1] = selectionModel->selectedIndexes();
 
     MemoriserChoixUtilisateur(index,1,selectionModel);
 
@@ -635,8 +649,15 @@ void SyntheseGenerale::slot_Select_E(const QModelIndex & index)
 void SyntheseGenerale::slot_Select_C(const QModelIndex & index)
 {
     QItemSelectionModel *selectionModel = tbv_bloc1_3->selectionModel();
+    uneDemande.selection[2] = selectionModel->selectedIndexes();
 
     MemoriserChoixUtilisateur(index,2,selectionModel);
+}
+
+void SyntheseGenerale::slot_Select_G(const QModelIndex & index)
+{
+    QItemSelectionModel *selectionModel = tbv_bloc2->selectionModel();
+    uneDemande.selection[3] = selectionModel->selectedIndexes();
 }
 
 void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int zn, QItemSelectionModel *selectionModel)
@@ -749,6 +770,69 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int z
     }
 }
 
+#if 1
+void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
+{
+    void *pSource = index.internalPointer();
+
+#ifndef QT_NO_DEBUG
+    qDebug()<<"Fenetre RefResultats.";
+#endif
+
+    for (int i = 0; i< 4 ;i++)
+    {
+        QModelIndexList indexes = uneDemande.selection[i];
+        if(indexes.size())
+        {
+            QModelIndex un_index;
+            // Analyse de chaque indexe
+            foreach(un_index, indexes)
+            {
+                const QAbstractItemModel * pModel = un_index.model();
+                int col = un_index.column();
+                int lgn = un_index.row();
+                int use = un_index.model()->index(lgn,0).data().toInt();
+                int val = un_index.data().toInt();
+                QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+                QString headName = vCol.toString();
+
+                if(i==3)
+                {
+                    use = lgn;
+                }
+
+#ifndef QT_NO_DEBUG
+                qDebug()<< "i:"<<i
+                        <<",col("<<col<<"):"<<headName
+                       <<", lgn:"<<lgn
+                      <<", use:"<<use
+                     <<", val:"<<val;
+#endif
+
+            }
+        }
+        else
+        {
+#ifndef QT_NO_DEBUG
+            qDebug()<< "Aucune selection active pour i="<<i;
+#endif
+
+        }
+    }
+
+    // Le simple click a construit la liste des boules
+    stCurDemande *etude = new stCurDemande;
+
+    // recopie de la config courante
+    uneDemande.cur_dst = 0;
+    uneDemande.ref = pMaConf;
+    *etude = uneDemande;
+
+    // Nouvelle de fenetre de detail de cette selection
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
+
+}
+#else
 void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 {
     void *pSource = index.internalPointer();
@@ -803,6 +887,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     // Nouvelle de fenetre de detail de cette boule
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
 }
+#endif
 
 #if 0
 void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)

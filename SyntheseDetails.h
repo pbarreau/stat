@@ -16,6 +16,10 @@
 #include "monSqlEditable.h"
 #include "tirages.h"
 
+#define CHauteur1   180
+#define XLenTir     475
+#define YLenTir     225
+
 typedef struct _demande
 {
     int origine;
@@ -29,6 +33,7 @@ typedef struct _demande
     QString *st_baseDef;
     QString *st_bdAll;
     QString *st_jourDef;
+    QModelIndexList selection[4];
     stTiragesDef *ref;
 }stCurDemande;
 //-----------------------------
@@ -112,5 +117,7 @@ private:
 extern QString GEN_Where_3(int loop, QString tb1, bool inc1,
                     QString op1, QStringList &tb2, bool inc2,
                     QString op2);
+extern QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, int niveau,
+                                                     int maxElem, QString tmpTab, QString sin);
 
 #endif // SYNTHESEDETAILS_H

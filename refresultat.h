@@ -74,6 +74,7 @@ public:
 
 public slots:
     void slot_MontreLesTirages(const QModelIndex & index);
+    void slot_Select_G(const QModelIndex & index);
     void slot_Select_C(const QModelIndex & index);
     void slot_Select_E(const QModelIndex & index);
     void slot_Select_B(const QModelIndex & index);
@@ -86,10 +87,10 @@ private:
     //QString CompteJourTirage();
     void DoTirages(void);
     void DoComptageTotal(void);
-    void DoBloc2(void);
     void DoBloc3(void);
     void MemoriserChoixUtilisateur(const QModelIndex & index,int zn, QItemSelectionModel *selectionModel);
 
+    QGridLayout * MonLayout_SyntheseTotalGroupement(int fake);
     QGridLayout * MonLayout_SyntheseTotalBoules(int dst);
     QGridLayout * MonLayout_SyntheseTotalEtoiles(int dst);
     QGridLayout * MonLayout_SyntheseTotalRepartitions(int dst);

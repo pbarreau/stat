@@ -424,6 +424,7 @@ void MainWindow::fen_LstCouv(void)
     // Ratacher cette sous fenetre
     zoneCentrale->addSubWindow(G_w_CouvTirages);
     G_w_CouvTirages->setVisible(true);
+    G_w_CouvTirages->showMinimized();
 
 #if 0
     // Selection a change
@@ -1305,6 +1306,7 @@ void MainWindow::FEN_ChoisirBoules(void)
 
     qw_tmpWindows->setVisible(true);
     qw_tmpWindows->show();
+    qw_tmpWindows->showMinimized();
 
     // double click dans fenetre voisin pour afficher details boule
     connect( b_valide, SIGNAL( clicked()) ,
@@ -1358,7 +1360,7 @@ void MainWindow::FEN_Ecarts(void)
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_DataFenetre);
     subWindow->resize(350,570);
-    subWindow->move(830,0);
+    subWindow->move(981,0);
 
     //zoneCentrale->addSubWindow(w_DataFenetre);
     w_DataFenetre->setVisible(true);
@@ -2206,7 +2208,7 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
-    subWindow->resize(845,590);
+    subWindow->resize(980,760);
     subWindow->move(0,0);
     qw_nsr->setVisible(true);
 }
@@ -5156,7 +5158,7 @@ void MainWindow::FEN_Graphe(stTiragesDef *pConf)
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(tabWidget);
     subWindow->resize(350,280);
-    subWindow->move(0,580);
+    subWindow->move(981,571);
     tabWidget->show();
 }
 

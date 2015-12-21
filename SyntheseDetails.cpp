@@ -5,6 +5,7 @@
 
 #include <QtGui>
 #include <QSplitter>
+#include <QMessageBox>
 
 #include <QHeaderView>
 
@@ -119,7 +120,190 @@ QString GEN_Where_3(int loop,
     return ret_msg;
 }
 
+QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, int niveau, int maxElem,QString tmpTab, QString sin)
+{
+    QString msg = "";
+    QString sn = QString::number(niveau);
+    QString rtab = "n"+sn;
+
+    int taille = indexes.size();
+
+    if (taille > maxElem)
+    {
+        QMessageBox::warning(0,"Selection","Depassement de bornes !",QMessageBox::Yes);
+        return  msg;
+    }
+
+    // retirer le ; si il existe
+    sin.remove(";");
+
+    if(taille)
+    {
+        QStringList lstBoules;
+        QString scritere = "";
+        QString headName = "";
+        QModelIndex un_index;
+        bool putIndice = true;
+
+        // Analyse de chaque indexe
+        foreach(un_index, indexes)
+        {
+            const QAbstractItemModel * pModel = un_index.model();
+            int col = un_index.column();
+            int lgn = un_index.row();
+            int use = un_index.model()->index(lgn,0).data().toInt();
+            int val = un_index.data().toInt();
+            QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+            headName = vCol.toString();
+
+            if(niveau>=2)
+            {
+                putIndice = false;
+            }
+
+            if(niveau==3)
+            {
+                use = lgn;
+            }
+
+            // Construire la liste des boules
+            lstBoules << QString::number(use);
+        }
+
+        // Creation du critere de filtre
+        QString tab = rtab + "." + tmpTab;
+        scritere = GEN_Where_3(maxElem,tab,putIndice,"=",lstBoules,false,"or");
+        if(headName != "T" and headName !="")
+        {
+            scritere = scritere + " and (J like '%" + headName +"%')";
+        }
+
+
+        msg = "/* DEBUT niveau " + sn
+                + " */ select " + rtab + ".* from ("
+                + sin + ") as " + rtab + " where ("
+                + scritere +"); /* FIN niveau " + sn + " */";
+    }
+    else
+    {
+        msg = sin;
+    }
+
+
+#ifndef QT_NO_DEBUG
+    qDebug()<<"";
+    qDebug()<<"Une Requete";
+    qDebug()<<msg;
+    qDebug()<<"";
+#endif
+
+    return msg;
+}
+
 //---------------- Fin Local Fns ------------------------
+SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
+{
+    pLaDemande = pEtude;
+    pEcran = visuel;
+    gMemoTab = tab_Top;
+    int d[]={0,-1,1,-2};
+    QString n[]={"0","+1","-1","?"};
+
+#ifndef QT_NO_DEBUG
+    qDebug()<<"Fenetre details.";
+    qDebug()<<"Base Reference";
+    qDebug()<<*(pEtude->st_baseDef);
+    qDebug()<<"";
+#endif
+
+    QString table = *(pEtude->st_baseDef);
+    for (int i = 0; i< 4 ;i++)
+    {
+        QModelIndexList indexes = pEtude->selection[i];
+
+        if(!indexes.size())
+            continue;
+
+        QString requete = "";
+        QString champ = "";
+        int max = 0;
+
+        if(i<2){
+            max = pEtude->ref->nbElmZone[i];
+            champ = pEtude->ref->nomZone[i];
+        }
+
+        if(i==2)
+        {
+            max = 1;
+            champ = "pid";
+        }
+
+        requete = FiltreLaBaseSelonSelectionUtilisateur(indexes,i,max,champ,table);
+
+        table = requete;
+    }
+}
+
+#if 0
+SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
+{
+    pLaDemande = pEtude;
+    pEcran = visuel;
+    gMemoTab = tab_Top;
+    int d[]={0,-1,1,-2};
+    QString n[]={"0","+1","-1","?"};
+
+#ifndef QT_NO_DEBUG
+    qDebug()<<"Fenetre details.";
+    qDebug()<<"Base Reference";
+    qDebug()<<*(pEtude->st_baseDef);
+    qDebug()<<"";
+#endif
+
+    for (int i = 0; i< 4 ;i++)
+    {
+        QModelIndexList indexes = pEtude->selection[i];
+        if(indexes.size())
+        {
+            QModelIndex un_index;
+            // Analyse de chaque indexe
+            foreach(un_index, indexes)
+            {
+                const QAbstractItemModel * pModel = un_index.model();
+                int col = un_index.column();
+                int lgn = un_index.row();
+                int use = un_index.model()->index(lgn,0).data().toInt();
+                int val = un_index.data().toInt();
+                QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+                QString headName = vCol.toString();
+
+                if(i==3)
+                {
+                    use = lgn;
+                }
+#ifndef QT_NO_DEBUG
+                qDebug()<< "i:"<<i
+                        <<",col("<<col<<"):"<<headName
+                       <<", lgn:"<<lgn
+                      <<", use:"<<use
+                     <<", val:"<<val;
+#endif
+
+            }
+        }
+        else
+        {
+#ifndef QT_NO_DEBUG
+            qDebug()<< "Aucune selection active pour i="<<i;
+#endif
+
+        }
+    }
+}
+#endif
+
+#if 0
 SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
 {
     pLaDemande = pEtude;
@@ -193,6 +377,7 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
 #endif
     //MontreRechercheTirages(uneEtude);
 }
+#endif
 
 QWidget * SyntheseDetails::SPLIT_Voisin(int i)
 {
@@ -490,7 +675,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref,
 
     for(int j=5;j<=sqm_tmp->columnCount();j++)
         qtv_tmp->setColumnWidth(j,30);
-    qtv_tmp->setFixedSize(525,205);
+    qtv_tmp->setFixedSize(XLenTir,YLenTir);
 
 
     // Ne pas modifier largeur des colonnes
@@ -639,6 +824,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, i
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->hideColumn(0); // don't show the ID
     qtv_tmp->verticalHeader()->hide();
+    qtv_tmp->setFixedSize(290,CHauteur1);
 
     // Taille/Nom des colonnes
     qtv_tmp->setColumnWidth(1,70);
@@ -804,7 +990,7 @@ QGridLayout * SyntheseDetails::Synthese_1(int onglet, int distance)
 
     for(int j=0;j<=sqm_tmp->columnCount();j++)
         qtv_tmp->setColumnWidth(j,30);
-    qtv_tmp->setFixedSize(200,230);
+    qtv_tmp->setFixedSize(200,CHauteur1);
 
 
     // Ne pas modifier largeur des colonnes
@@ -909,7 +1095,7 @@ QGridLayout *  SyntheseDetails::Synthese_2(int onglet, int distance)
 
     for(int j=0;j<=sqm_tmp->columnCount();j++)
         qtv_tmp->setColumnWidth(j,30);
-    qtv_tmp->setFixedSize(200,230);
+    qtv_tmp->setFixedSize(200,CHauteur1);
 
 
     // Ne pas modifier largeur des colonnes
@@ -1858,7 +2044,7 @@ void SyntheseDetails::slot_ClickSurOnglet(int index)
 
     for(int i = 0; i<4;i++)
     {
-      gtab_splitter_2[i]->setCurrentIndex(index);
+        gtab_splitter_2[i]->setCurrentIndex(index);
     }
 
     //gtab_tirages->setCurrentIndex(index);
