@@ -201,26 +201,79 @@ QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, int nivea
     return msg;
 }
 
+QString FiltreLesTirages(stCurDemande *pEtude)
+{
+    QString table = *(pEtude->st_baseDef);
+
+    for (int i = 0; i< 3 ;i++)
+    {
+        QModelIndexList indexes = pEtude->selection[i];
+
+        if(!indexes.size())
+            continue;
+
+        QString requete = "";
+        QString champ = "";
+        int max = 0;
+
+        if(i<2){
+            max = pEtude->ref->nbElmZone[i];
+            champ = pEtude->ref->nomZone[i];
+        }
+
+        if(i==2)
+        {
+            max = 1;
+            champ = "pid";
+        }
+
+        requete = FiltreLaBaseSelonSelectionUtilisateur(indexes,i,max,champ,table);
+
+        table = requete;
+    }
+
+    // Filtre sur les occurences
+    if(pEtude->selection[3].size())
+    {
+        QModelIndex un_index;
+        foreach (un_index, pEtude->selection[3])
+        {
+            QString requete = "";
+
+            requete = PBAR_Req2(pEtude,table,un_index,0);
+
+            table = requete;
+
+        }
+
+    }
+
+    // Sauvegarde de la table des reponses a d=0
+    *(pEtude->st_bdAll) = table;
+
+    return table;
+}
+
 //---------------- Fin Local Fns ------------------------
 SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
 {
     pLaDemande = pEtude;
     pEcran = visuel;
     gMemoTab = tab_Top;
-    int d[]={0,-1,1,-2};
-    QString n[]={"0","+1","-1","?"};
 
-#ifndef QT_NO_DEBUG
-    qDebug()<<"Fenetre details.";
-    qDebug()<<"Base Reference";
-    qDebug()<<*(pEtude->st_baseDef);
-    qDebug()<<"";
-#endif
+    QString stRequete = "";
+    stRequete = FiltreLesTirages(pEtude);
 
+    // Creation des onglets reponses
+    QWidget *uneReponse = PBAR_CreerOngletsReponses(pEtude,visuel,stRequete);
+    QString st_titre = "UnExemple";
+
+    int laFeuille = tab_Top->addTab(uneReponse,st_titre);
+    tab_Top->activateWindow();
+    tab_Top->setCurrentIndex(laFeuille);
+
+#if 0
     QString table = *(pEtude->st_baseDef);
-#ifndef QT_NO_DEBUG
-    qDebug() << table;
-#endif
 
     for (int i = 0; i< 3 ;i++)
     {
@@ -258,18 +311,8 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
             QString requete = "";
 
             requete = PBAR_Req2(pLaDemande,table,un_index,0);
-#ifndef QT_NO_DEBUG
-    qDebug() << table;
-    qDebug()<<"";
-    qDebug() << *(pLaDemande->st_baseDef);
-#endif
 
             table = requete;
-#ifndef QT_NO_DEBUG
-    qDebug() << table;
-    qDebug()<<"";
-    qDebug() << *(pLaDemande->st_baseDef);
-#endif
 
         }
 
@@ -277,10 +320,8 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
 
     // Sauvegarde de la table des reponses a d=0
     *(pLaDemande->st_bdAll) = table;
+#endif
 
-    // Creation des onglets reponses
-    QString sqlReq = "";
-    sqlReq = PBAR_Req3(pLaDemande->st_baseDef,table,0);
 }
 
 #if 0
@@ -458,6 +499,48 @@ QWidget * SyntheseDetails::SPLIT_Voisin(int i)
 
     return qw_retour;
 }
+
+QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiArea *visuel,QString stRequete)
+{
+    QWidget * qw_retour = new QWidget;
+    QGridLayout *frm_tmp = new QGridLayout;
+    QTabWidget *tab_Top = new QTabWidget;
+
+    int d[]={0,-1,1,-2};
+    QString ongNames[]={"0","+1","-1","?"};
+    QString sqlReq = "";
+
+    int maxOnglets = sizeof(d)/sizeof(int);
+
+    QWidget **wid_ForTop = new QWidget*[maxOnglets];
+    QGridLayout **dsgOnglet = new QGridLayout * [maxOnglets];
+
+    for(int i = 0; i<maxOnglets; i++)
+    {
+        // -- tableau tirages
+        wid_ForTop[i]= new QWidget;
+        tab_Top->addTab(wid_ForTop[i],ongNames[i]);
+
+        sqlReq = PBAR_Req3(pEtude->st_baseDef,stRequete,d[i]);
+        QGridLayout *lay_tmp = MonLayout_MontrerTiragesFiltres(visuel,sqlReq,i,d);
+
+        // -- onglet comptage avec tableau
+        QGridLayout *MonComptage = new  QGridLayout;
+        QWidget * qw_tmp = new QTabWidget; //PBAR_ComptageFiltre(i);
+
+        MonComptage->addLayout(lay_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+        MonComptage->addWidget(qw_tmp,0,1,Qt::AlignLeft|Qt::AlignTop);
+
+        dsgOnglet[i]=MonComptage;
+        wid_ForTop[i]->setLayout(dsgOnglet[i]);
+    }
+
+    frm_tmp->addWidget(tab_Top);
+    qw_retour->setLayout(frm_tmp);
+
+    return qw_retour;
+}
+
 
 QWidget * SyntheseDetails::SPLIT_Tirage(void)
 {
@@ -752,6 +835,89 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref,
     return(lay_return);
 }
 
+QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,QString sql_msgRef,
+                                                               int ref,int *dst)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    QTableView *qtv_tmp = new QTableView;
+
+    sqm_tmp->setQuery(sql_msgRef);
+    qtv_tmp->setModel(sqm_tmp);
+
+    qtv_tmp->setSortingEnabled(false);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->hideColumn(0);
+    qtv_tmp->hideColumn(1);
+
+    // Formattage de largeur de colonnes
+    for(int j=0;j<=4;j++)
+        qtv_tmp->setColumnWidth(j,75);
+
+    for(int j=5;j<=sqm_tmp->columnCount();j++)
+        qtv_tmp->setColumnWidth(j,30);
+
+    // Bloquer largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    // Taille tableau
+    qtv_tmp->setFixedSize(XLenTir,YLenTir);
+
+    // Double click dans fenetre pour details et localisation dans base Tirages
+    connect( qtv_tmp, SIGNAL( doubleClicked(QModelIndex)) ,
+             visuel->parent(), SLOT(slot_MontreLeTirage( QModelIndex) ) );
+
+
+    // Zone Filtre
+    QHBoxLayout *tmp_hLay = new QHBoxLayout();
+    QComboBox *tmp_combo = ComboPerso(ref);
+    QLabel *tmp_lab = new QLabel(tr("Filtre :"));
+    tmp_lab->setBuddy(tmp_combo);
+    connect(tmp_combo, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(slot_FiltreSurNewCol(int)));
+
+    QFormLayout *FiltreLayout = new QFormLayout;
+    FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons;
+    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,2);
+    FiltreLayout->addRow("&Recherche", fltComb_tmp);
+
+    // Mettre combo + line dans hvbox
+    tmp_hLay->addWidget(tmp_lab);
+    tmp_hLay->addWidget(tmp_combo);
+    tmp_hLay->addLayout(FiltreLayout);
+
+
+    int pos_y = 0;
+    if(ref==3)
+    {
+        // Dernier onglet
+        QFormLayout *distLayout = new QFormLayout;
+        dist = new QLineEdit(QString::number((dst[ref]*-1)));
+
+        distLayout->addRow("&Distance", dist);
+        lay_return->addLayout(distLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+        // Connection du line edit
+        connect(dist, SIGNAL(returnPressed()),
+                this, SLOT(slot_NouvelleDistance()));
+
+        pos_y++;
+    }
+    lay_return->addLayout(tmp_hLay,pos_y,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,pos_y+1,0,Qt::AlignLeft|Qt::AlignTop);
+
+    // Associer la combo de selection au filtre pour
+    // cette distance (ie cet onglet) et la Qtview associee
+    pCritere[ref] = tmp_combo;
+    pFiltre[ref] = fltComb_tmp;
+
+    return(lay_return);
+}
 
 void SyntheseDetails::slot_FiltreSurNewCol(int colNum)
 {
@@ -1830,25 +1996,25 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
 
 QString PBAR_Req3(QString *base, QString baseFiltre,int dst)
 {
-  QString req = "";
+    QString req = "";
 
 #ifndef QT_NO_DEBUG
     qDebug() << *base;
 #endif
 
-  req = "Select Mabdd.* from ("
-          + (*base).remove(";")
-          +") as Mabdd inner join ("
-          +baseFiltre.remove(";")
-          +")as filtre on ( Mabdd.id = filtre.id +"
-          +QString::number(dst)
-          +");";
+    req = "Select Mabdd.* from ("
+            + (*base).remove(";")
+            +") as Mabdd inner join ("
+            +baseFiltre.remove(";")
+            +")as filtre on ( Mabdd.id = filtre.id +"
+            +QString::number(dst)
+            +");";
 
 #ifndef QT_NO_DEBUG
     qDebug() << req;
 #endif
 
-  return req;
+    return req;
 }
 
 QString SyntheseDetails::ReponsesOrigine_2(int dst)

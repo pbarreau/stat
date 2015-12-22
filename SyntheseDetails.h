@@ -66,12 +66,15 @@ public:
 
     QWidget *SPLIT_Tirage(void);
     QWidget *SPLIT_Voisin(int i);
+    QWidget * PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiArea *visuel,QString stRequete);
 
     QString CreationTitre_1(stCurDemande *pEtude);
     QString CreationTitre_2(stCurDemande *pEtude);
     QGridLayout *MonLayout_pFnDetailsMontrerTirages(int ref, int dst);
     QGridLayout * MonLayout_pFnDetailsMontrerSynthese(int ref, int dst);
     QGridLayout * MonLayout_pFnDetailsMontrerRepartition(int ref, int dst);
+    QGridLayout * MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,QString sql_msgRef,
+                                                                   int ref,int *dst);
 
     // penser au destructeur pour chaque pointeur
     QString ReponsesOrigine_1(int dst);
@@ -122,5 +125,6 @@ extern QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, in
 
 extern QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int zn);
 extern QString PBAR_Req3(QString *base, QString baseFiltre,int dst);
+extern QString FiltreLesTirages(stCurDemande *pEtude);
 
 #endif // SYNTHESEDETAILS_H
