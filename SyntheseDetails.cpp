@@ -458,6 +458,51 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
 }
 #endif
 
+QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString ReqTirages, int dst)
+{
+    QWidget * qw_retour = new QWidget;
+    QFormLayout *frm_tmp = new QFormLayout;
+
+    //QLabel * titre = new QLabel;
+
+    QString ongNames[]={"b","e","c"};
+    int maxOnglets = sizeof(ongNames)/sizeof(QString);
+
+    QTabWidget *tab_Top = new QTabWidget;
+    gtab_splitter_2[dst] = tab_Top;
+
+    QWidget **wid_ForTop = new QWidget*[maxOnglets];
+    QGridLayout **dsgOnglet = new QGridLayout * [maxOnglets];
+
+    QGridLayout * (SyntheseDetails::*ptrFunc[])(stCurDemande *pEtude, QString ReqTirages, int zn,int distance)=
+    {
+            &SyntheseDetails::MonLayout_CompteBoulesZone,
+            &SyntheseDetails::MonLayout_CompteBoulesZone,
+            &SyntheseDetails::MonLayout_CompteCombi
+};
+
+    //titre->setText("Position "+labNames[i]);
+
+    for(int j =0; j< maxOnglets;j++)
+    {
+        wid_ForTop[j]= new QWidget;
+        tab_Top->addTab(wid_ForTop[j],ongNames[j]);
+
+        dsgOnglet[j]= (this->*ptrFunc[j])(pEtude,ReqTirages,j,dst);
+        wid_ForTop[j]->setLayout(dsgOnglet[j]);
+    }
+
+    //frm_tmp->addWidget(titre);
+    frm_tmp->addWidget(tab_Top);
+    qw_retour->setLayout(frm_tmp);
+
+    connect(tab_Top, SIGNAL(tabBarClicked(int)),
+            this, SLOT(slot_ClickSurOnglet(int)));
+
+
+    return qw_retour;
+}
+
 QWidget * SyntheseDetails::SPLIT_Voisin(int i)
 {
     QWidget * qw_retour = new QWidget;
@@ -506,11 +551,12 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
     QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
 
-    //d[]={0,-1,1,-2};
     QString ongNames[]={"0","+1","-1","?"};
     QString sqlReq = "";
 
     int maxOnglets = sizeof(d)/sizeof(int);
+
+    gtab_splitter_2 = new QTabWidget *[maxOnglets];
 
     QWidget **wid_ForTop = new QWidget*[maxOnglets];
     QGridLayout **dsgOnglet = new QGridLayout * [maxOnglets];
@@ -526,7 +572,7 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
 
         // -- onglet comptage avec tableau
         QGridLayout *MonComptage = new  QGridLayout;
-        QWidget * qw_tmp = new QTabWidget; //PBAR_ComptageFiltre(i);
+        QWidget * qw_tmp = PBAR_ComptageFiltre(pEtude,sqlReq,i);
 
         MonComptage->addLayout(lay_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
         MonComptage->addWidget(qw_tmp,0,1,Qt::AlignLeft|Qt::AlignTop);
@@ -924,10 +970,10 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
 
 DistancePourTirage::DistancePourTirage(int dst, QSqlQueryModel *req, QTableView *tab)
 {
-  this->setText(QString::number(dst));
+    this->setText(QString::number(dst));
     distance = this;
-  laRequete = req;
-  leTableau = tab;
+    laRequete = req;
+    leTableau = tab;
 }
 
 int DistancePourTirage::getValue(void)
@@ -939,7 +985,7 @@ int DistancePourTirage::getValue(void)
 
 void DistancePourTirage::setValue(int val)
 {
-  this->setText(QString::number(val));
+    this->setText(QString::number(val));
 }
 
 QSqlQueryModel *DistancePourTirage::getAssociatedModel(void)
@@ -949,7 +995,7 @@ QSqlQueryModel *DistancePourTirage::getAssociatedModel(void)
 
 QTableView * DistancePourTirage::getAssociatedVue(void)
 {
-  return leTableau;
+    return leTableau;
 }
 
 void SyntheseDetails::slot_FiltreSurNewCol(int colNum)
@@ -1030,6 +1076,82 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int 
 
     lay_return->addLayout(lay_1,0,0);
     lay_return->addLayout(lay_2,0,1);
+
+    return(lay_return);
+}
+
+QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QString ReqTirages, int zn, int distance)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+
+    QString sql_msgRef = "";
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+
+    QTableView *qtv_tmp = new QTableView;
+
+
+
+
+    sql_msgRef =
+            "select tbleft.id as id, tbleft.tip as Repartition, count(tbright.id) as T, "
+            +*(pEtude->st_jourDef)
+            + " "
+              "from "
+              "( "
+              "select id , tip  from lstcombi "
+              ") as tbleft "
+              "left join "
+              "( "
+            +ReqTirages.remove(";")+
+            ") as tbright "
+            "on "
+            "( "
+            "( "
+            "tbleft.id=tbright.pid"
+            ") "
+            ") group by tbleft.id order by T desc, tbleft.tip asc;"
+            ;
+#ifndef QT_NO_DEBUG
+    qDebug() << sql_msgRef;
+#endif
+
+    sqm_tmp->setQuery(sql_msgRef);
+
+    // Filtre
+    QFormLayout *FiltreLayout = new QFormLayout;
+    FiltreCombinaisons *fltComb_1 = new FiltreCombinaisons();
+    fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,1);
+    FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->hideColumn(0); // don't show the ID
+    qtv_tmp->verticalHeader()->hide();
+    qtv_tmp->setFixedSize(290,CHauteur1);
+
+    // Taille/Nom des colonnes
+    qtv_tmp->setColumnWidth(1,70);
+    for(int j=2;j<sqm_tmp->columnCount();j++)
+    {
+        qtv_tmp->setColumnWidth(j,40);
+    }
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    // Connection du double click dans table voisins
+    // double click dans fenetre  pour afficher details boule
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_ZoomTirages( QModelIndex) ) );
+
+
+    int pos_y = 0;
+
+
+    lay_return->addLayout(FiltreLayout,pos_y,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,pos_y+1,0,Qt::AlignLeft|Qt::AlignTop);
 
     return(lay_return);
 }
@@ -1172,6 +1294,99 @@ void SyntheseDetails::Synthese_2_first (QGridLayout *lay_return, QStringList &st
     lay_return->addWidget(titre_2,0,1,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp_2,1,1,Qt::AlignLeft|Qt::AlignTop);
     //------------------
+}
+
+QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int zn,int distance)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    QTableView *qtv_tmp = new QTableView;
+
+    QString st_cri_all = "";
+    QStringList boules;
+
+    if(pEtude->selection[zn].size())
+    {
+        if(distance == 0 ){
+            QModelIndex une_selection;
+            foreach (une_selection, pEtude->selection[0]) {
+                int la_boule = une_selection.model()->index(une_selection.row(),0).data().toInt();
+                boules<<QString::number(la_boule);
+            }
+            // Mettre une exception pour ne pas compter le cas
+            st_cri_all= GEN_Where_3(1,"tbleft.boule",false,"!=",boules,false,"and");
+            boules.clear();
+            st_cri_all= st_cri_all + " and ";
+        }
+#if 0
+        else
+        {
+            boules<< "tbright."+pEtude->ref->nomZone[zn];
+            st_cri_all= st_cri_all +GEN_Where_3(5,"tbleft.boule",false,"=",boules,true,"or");
+            boules.clear();
+        }
+#endif
+    }
+
+    boules<< "tbright."+pEtude->ref->nomZone[zn];
+    int loop = pEtude->ref->nbElmZone[zn];
+    st_cri_all= st_cri_all +GEN_Where_3(loop,"tbleft.boule",false,"=",boules,true,"or");
+    boules.clear();
+
+    QString sql_msgRef =
+            "select tbleft.boule as B, count(tbright.id) as T, "
+            +*(pEtude->st_jourDef)
+            + " "
+              "from "
+              "( "
+              "select id as boule from Bnrz where (z1 not null ) "
+              ") as tbleft "
+              "left join "
+              "( "
+            +ReqTirages.remove(";")+
+            ") as tbright "
+            "on "
+            "( "
+            + st_cri_all +
+            ") group by tbleft.boule; "
+            ;
+
+#ifndef QT_NO_DEBUG
+    qDebug() << sql_msgRef;
+#endif
+
+
+    sqm_tmp->setQuery(sql_msgRef);
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+    //qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
+    qtv_tmp->setModel(m);
+    qtv_tmp->verticalHeader()->hide();
+
+    for(int j=0;j<=sqm_tmp->columnCount();j++)
+        qtv_tmp->setColumnWidth(j,30);
+    qtv_tmp->setFixedSize(200,CHauteur1);
+
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    QLabel *titre_1 = new QLabel(pEtude->ref->FullNameZone[zn]);
+    //lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
+    lay_return->addWidget(titre_1,0,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
+
+    return lay_return;
 }
 
 QGridLayout * SyntheseDetails::Synthese_1(int onglet, int distance)

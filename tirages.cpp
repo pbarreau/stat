@@ -33,7 +33,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
     case NE_FDJ::fdj_loto:
       {
         conf.nb_zone = 2;
-        conf.nb_tir_semaine = 3;
+        conf.nb_tir_semaine = 4;
         conf.nbElmZone = new int [conf.nb_zone];
         conf.nbElmZone[0]=5;
         conf.nbElmZone[1]=1;
@@ -46,9 +46,13 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.jour_tir[0]="LUNDI";
         conf.jour_tir[1]="MERCREDI";
         conf.jour_tir[2]="SAMEDI";
+        conf.jour_tir[3]="VENDREDI";
         conf.nomZone = new QString [conf.nb_zone];
         conf.nomZone[0]="b";
         conf.nomZone[1]="e";
+        conf.FullNameZone = new QString [conf.nb_zone];
+        conf.FullNameZone[0]="Boules";
+        conf.FullNameZone[1]="Etoiles";
         conf.offsetFichier = new int [conf.nb_zone];
         conf.offsetFichier[0]=4;
         conf.offsetFichier[1]=9;
@@ -110,6 +114,7 @@ void tirages::getConfig(stTiragesDef *priv_conf)
   int *offsetFichier = NULL;
   QString *jour_tir = NULL;
   QString *nomZone = NULL;
+  QString *Fullzn = NULL;
   stBornes *limites = NULL;
 
   priv_conf->choixJeu = conf.choixJeu;
@@ -117,6 +122,7 @@ void tirages::getConfig(stTiragesDef *priv_conf)
   nbElmZone = new int [conf.nb_zone];
   limites = new stBornes [conf.nb_zone];
   nomZone = new QString [conf.nb_zone];
+  Fullzn = new QString [conf.nb_zone];
   offsetFichier = new int [conf.nb_zone];
 
   for(int i = 0; i< conf.nb_zone; i++)
@@ -124,11 +130,13 @@ void tirages::getConfig(stTiragesDef *priv_conf)
     nbElmZone[i]=conf.nbElmZone[i];
     limites[i]=conf.limites[i];
     nomZone[i]=conf.nomZone[i];
+    Fullzn[i]=conf.FullNameZone[i];
     offsetFichier[i]=conf.offsetFichier[i];
   }
   priv_conf->limites = limites;
   priv_conf->nbElmZone = nbElmZone;
   priv_conf->nomZone = nomZone;
+  priv_conf->FullNameZone = Fullzn;
   priv_conf->offsetFichier = offsetFichier;
 
   priv_conf->nb_tir_semaine = conf.nb_tir_semaine;

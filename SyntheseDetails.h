@@ -83,6 +83,7 @@ public:
     QWidget *SPLIT_Tirage(void);
     QWidget *SPLIT_Voisin(int i);
     QWidget * PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiArea *visuel,QString stRequete);
+    QWidget * PBAR_ComptageFiltre(stCurDemande *pEtude, QString ReqTirages, int dst);
 
     QString CreationTitre_1(stCurDemande *pEtude);
     QString CreationTitre_2(stCurDemande *pEtude);
@@ -91,6 +92,9 @@ public:
     QGridLayout * MonLayout_pFnDetailsMontrerRepartition(int ref, int dst);
     QGridLayout * MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,QString sql_msgRef,
                                                                    int ref,int *dst);
+
+    QGridLayout * MonLayout_CompteCombi(stCurDemande *pEtude, QString ReqTirages, int zn, int distance);
+    QGridLayout * MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int zn, int distance);
 
     // penser au destructeur pour chaque pointeur
     QString ReponsesOrigine_1(int dst);
