@@ -506,7 +506,7 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
     QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
 
-    int d[]={0,-1,1,-2};
+    //d[]={0,-1,1,-2};
     QString ongNames[]={"0","+1","-1","?"};
     QString sqlReq = "";
 
@@ -813,7 +813,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref,
     {
         // Dernier onglet
         QFormLayout *distLayout = new QFormLayout;
-        dist = new QLineEdit(QString::number((dst*-1)));
+        dist = new DistancePourTirage((dst*-1),sqm_tmp,qtv_tmp);
 
         distLayout->addRow("&Distance", dist);
         lay_return->addLayout(distLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
@@ -897,7 +897,10 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
     {
         // Dernier onglet
         QFormLayout *distLayout = new QFormLayout;
-        dist = new QLineEdit(QString::number((dst[ref]*-1)));
+        //dist = new QLineEdit(QString::number((dst[ref]*-1)),this);
+        int val = dst[ref]*-1;
+        dist = new DistancePourTirage(val,
+                                      sqm_tmp,qtv_tmp);
 
         distLayout->addRow("&Distance", dist);
         lay_return->addLayout(distLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
@@ -919,6 +922,36 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
     return(lay_return);
 }
 
+DistancePourTirage::DistancePourTirage(int dst, QSqlQueryModel *req, QTableView *tab)
+{
+  this->setText(QString::number(dst));
+    distance = this;
+  laRequete = req;
+  leTableau = tab;
+}
+
+int DistancePourTirage::getValue(void)
+{
+    int value = this->text().toInt();
+
+    return value;
+}
+
+void DistancePourTirage::setValue(int val)
+{
+  this->setText(QString::number(val));
+}
+
+QSqlQueryModel *DistancePourTirage::getAssociatedModel(void)
+{
+    return laRequete;
+}
+
+QTableView * DistancePourTirage::getAssociatedVue(void)
+{
+  return leTableau;
+}
+
 void SyntheseDetails::slot_FiltreSurNewCol(int colNum)
 {
     int colId[6]={2,3,4,10,11,12};
@@ -928,6 +961,31 @@ void SyntheseDetails::slot_FiltreSurNewCol(int colNum)
     pFiltre[val]->slot_setFKC(ColReal);
 }
 
+#if 1
+void SyntheseDetails::slot_NouvelleDistance(void)
+{
+    QString msg = "";
+    int new_distance = dist->getValue();
+
+    // pour Coherence par rapport a graphique et requete
+    new_distance *=-1;
+
+    // Recherche sur nouveau critere
+    msg = PBAR_Req3(pLaDemande->st_baseDef,*(pLaDemande->st_bdAll),new_distance);
+
+    // Application de la requete pour le tableau
+    QSqlQueryModel *sqlmodel = dist->getAssociatedModel();
+    QTableView *tab =dist->getAssociatedVue();
+
+    // recalcul
+    sqlmodel->setQuery(msg);
+    tab->setModel(sqlmodel);
+
+    // Memorisation
+    dist->setValue(new_distance *-1);
+    d[3]= new_distance;
+}
+#else
 void SyntheseDetails::slot_NouvelleDistance(void)
 {
     QString msg = "";
@@ -959,6 +1017,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
         G_design_onglet_2[j]=monTest;
     }
 }
+#endif
 
 QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int dst)
 {

@@ -42,6 +42,21 @@ typedef struct _demande
 
 
 //--------------------------
+class DistancePourTirage : public QLineEdit
+{
+private:
+    QLineEdit *distance;
+    QSqlQueryModel *laRequete;
+    QTableView * leTableau;
+
+public:
+    DistancePourTirage(int dst,QSqlQueryModel *req,QTableView *tab);
+    QSqlQueryModel *getAssociatedModel(void);
+    QTableView * getAssociatedVue(void);
+    int getValue(void);
+    void setValue(int val);
+};
+
 class SyntheseDetails: public QObject
 {
    Q_OBJECT
@@ -52,13 +67,14 @@ private:
     QTabWidget *gMemoTab;
 
     QTabWidget *onglets;
-    QLineEdit *dist;
+    DistancePourTirage *dist;
     QGridLayout **G_design_onglet_2;
     QStringList bSelection;
     QTableView * qtv_local[4][3];
 
     QComboBox * pCritere[4];
     FiltreCombinaisons *pFiltre[4];
+    int d[4]={0,-1,1,-2};
 
 public:
     SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel, QTabWidget *tab_Top);
