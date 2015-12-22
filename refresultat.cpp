@@ -38,6 +38,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     ptabTop = ptabSynt;
     curzn = zn;
 
+    QString *st_tmp = new QString;
     st_bdTirages = new QString;
     *st_bdTirages = OrganiseChampsDesTirages("tirages", pConf);
 
@@ -45,7 +46,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     *st_JourTirageDef = CompteJourTirage(pConf);
 
     uneDemande.st_baseDef = st_bdTirages;
-    uneDemande.st_bdAll = st_bdTirages;
+    uneDemande.st_bdAll = st_tmp;
     uneDemande.st_jourDef = st_JourTirageDef;
     DoTirages();
     DoComptageTotal();

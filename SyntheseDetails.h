@@ -120,4 +120,7 @@ extern QString GEN_Where_3(int loop, QString tb1, bool inc1,
 extern QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, int niveau,
                                                      int maxElem, QString tmpTab, QString sin);
 
+extern QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int zn);
+extern QString PBAR_Req3(QString *base, QString baseFiltre,int dst);
+
 #endif // SYNTHESEDETAILS_H

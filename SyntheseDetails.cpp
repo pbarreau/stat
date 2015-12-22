@@ -2,6 +2,7 @@
 #include <QDebug>
 #endif
 
+#include <math.h> //floor
 
 #include <QtGui>
 #include <QSplitter>
@@ -217,7 +218,11 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
 #endif
 
     QString table = *(pEtude->st_baseDef);
-    for (int i = 0; i< 4 ;i++)
+#ifndef QT_NO_DEBUG
+    qDebug() << table;
+#endif
+
+    for (int i = 0; i< 3 ;i++)
     {
         QModelIndexList indexes = pEtude->selection[i];
 
@@ -243,6 +248,39 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
 
         table = requete;
     }
+
+    // Filtre sur les occurences
+    if(pEtude->selection[3].size())
+    {
+        QModelIndex un_index;
+        foreach (un_index, pEtude->selection[3])
+        {
+            QString requete = "";
+
+            requete = PBAR_Req2(pLaDemande,table,un_index,0);
+#ifndef QT_NO_DEBUG
+    qDebug() << table;
+    qDebug()<<"";
+    qDebug() << *(pLaDemande->st_baseDef);
+#endif
+
+            table = requete;
+#ifndef QT_NO_DEBUG
+    qDebug() << table;
+    qDebug()<<"";
+    qDebug() << *(pLaDemande->st_baseDef);
+#endif
+
+        }
+
+    }
+
+    // Sauvegarde de la table des reponses a d=0
+    *(pLaDemande->st_bdAll) = table;
+
+    // Creation des onglets reponses
+    QString sqlReq = "";
+    sqlReq = PBAR_Req3(pLaDemande->st_baseDef,table,0);
 }
 
 #if 0
@@ -1711,6 +1749,106 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
             ;
 
     return(st_msg);
+}
+
+QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int zn)
+{
+    QStringList cri_msg;
+    QString     st_cri1 = "";
+    QString     st_cri2 = "";
+    QString     st_req1 = "";
+    QString     st_req2 = "";
+    QString     szn = "z" + QString::number(zn+1);
+
+    //const QAbstractItemModel * pModel = cellule.model();
+    int col = cellule.column();
+    int nbi = cellule.model()->index(cellule.row(),1).data().toInt();
+
+    cri_msg <<szn+"%2=0"<<szn+"<"+QString::number((pRef->ref->limites[0].max)/2);
+
+    for(int j=0;j<=9;j++)
+    {
+        cri_msg<< szn+ " like '%" + QString::number(j) + "'";
+    }
+
+    int max = floor(pRef->ref->limites[zn].max/10)+1;;
+    for(int j=0;j<max;j++)
+    {
+        cri_msg<< szn+" >="+QString::number(10*j)+ " and "+szn+"<="+QString::number((10*j)+9);
+    }
+
+    if(col>=2 && col <= 2+cri_msg.size())
+    {
+        col=col-2;
+    }
+    else
+    {
+        col=0;
+    }
+    st_cri1= cri_msg.at(col);
+
+    // Requete filtre sur la colonne
+    int loop = pRef->ref->nbElmZone[zn];
+    QString tbname1 = "tb1." + pRef->ref->nomZone[zn];
+    QStringList Malst;
+    Malst << "tb2.B";
+    st_cri2 = GEN_Where_3(loop,tbname1,true,"=",Malst,false,"or");
+    st_req1 = "/* DEBUT Rq Comptage */ select tb1.*, count(tb2.B) as N from ("
+            + baseFiltre.remove(";")
+            +")as tb1 "
+            +"left join"
+            +"("
+            +"select id as B from Bnrz where"
+            +"("
+            + szn + " not null and "
+            +"("
+            + st_cri1
+            +")"
+            +")"
+            +") as tb2 "
+            +"on"
+            +"("
+            + st_cri2
+            +") group by tb1.id; /* Fin Rq Comptage */";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << st_req1;
+#endif
+
+    st_req2 = "/* DEBUT Filtre Ligne */ select monfiltre.* from ("
+            + st_req1.remove(";")
+            +")as monfiltre where(monfiltre.N="
+            + QString::number(nbi)
+            +"); /* Fin Filtre ligne */";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << st_req2;
+#endif
+
+    return st_req2;
+}
+
+QString PBAR_Req3(QString *base, QString baseFiltre,int dst)
+{
+  QString req = "";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << *base;
+#endif
+
+  req = "Select Mabdd.* from ("
+          + (*base).remove(";")
+          +") as Mabdd inner join ("
+          +baseFiltre.remove(";")
+          +")as filtre on ( Mabdd.id = filtre.id +"
+          +QString::number(dst)
+          +");";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << req;
+#endif
+
+  return req;
 }
 
 QString SyntheseDetails::ReponsesOrigine_2(int dst)
