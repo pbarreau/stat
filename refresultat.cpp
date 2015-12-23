@@ -48,6 +48,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     uneDemande.st_baseDef = st_bdTirages;
     uneDemande.st_bdAll = st_tmp;
     uneDemande.st_jourDef = st_JourTirageDef;
+    uneDemande.ref = pConf;
     DoTirages();
     DoComptageTotal();
     disposition->addWidget(ptabTop,1,0,1,2,Qt::AlignLeft|Qt::AlignTop);
@@ -167,10 +168,15 @@ void SyntheseGenerale::DoComptageTotal(void)
 }
 void SyntheseGenerale::slot_RazSelection(QString)
 {
-  tbv_bloc1_1->selectionModel()->clear();
-  tbv_bloc1_2->selectionModel()->clear();
-  tbv_bloc1_3->selectionModel()->clear();
-  tbv_bloc2->selectionModel()->clear();
+  tbv_bloc1_1->selectionModel()->clearSelection();
+  tbv_bloc1_2->selectionModel()->clearSelection();
+  tbv_bloc1_2->selectionModel()->clearSelection();
+  tbv_bloc2->selectionModel()->clearSelection();
+
+  for(int i =0; i< 4;i++)
+  {
+      uneDemande.selection[i].clear();
+  }
 
   selection->setText(CTXT_SELECTION);
 }
@@ -650,6 +656,9 @@ void SyntheseGenerale::slot_Select_B(const QModelIndex & index)
     QItemSelectionModel *selectionModel = tbv_bloc1_1->selectionModel();
     uneDemande.selection[0] = selectionModel->selectedIndexes();
 
+    QString maselection = CreatreTitle(&uneDemande);
+    selection->setText(maselection);
+
     MemoriserChoixUtilisateur(index,0,selectionModel);
 
 }
@@ -658,6 +667,9 @@ void SyntheseGenerale::slot_Select_E(const QModelIndex & index)
 {
     QItemSelectionModel *selectionModel = tbv_bloc1_2->selectionModel();
     uneDemande.selection[1] = selectionModel->selectedIndexes();
+
+    QString maselection = CreatreTitle(&uneDemande);
+    selection->setText(maselection);
 
     MemoriserChoixUtilisateur(index,1,selectionModel);
 
@@ -668,6 +680,9 @@ void SyntheseGenerale::slot_Select_C(const QModelIndex & index)
     QItemSelectionModel *selectionModel = tbv_bloc1_3->selectionModel();
     uneDemande.selection[2] = selectionModel->selectedIndexes();
 
+    QString maselection = CreatreTitle(&uneDemande);
+    selection->setText(maselection);
+
     MemoriserChoixUtilisateur(index,2,selectionModel);
 }
 
@@ -675,6 +690,10 @@ void SyntheseGenerale::slot_Select_G(const QModelIndex & index)
 {
     QItemSelectionModel *selectionModel = tbv_bloc2->selectionModel();
     uneDemande.selection[3] = selectionModel->selectedIndexes();
+
+    QString maselection = CreatreTitle(&uneDemande);
+    selection->setText(maselection);
+
 }
 
 void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int zn, QItemSelectionModel *selectionModel)
@@ -688,6 +707,10 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int z
     QString headName;
 
     QModelIndexList indexes = selectionModel->selectedIndexes();
+
+    // Titre de selection
+    //QString maSelection = selection->text();
+    //QStringList lesChoix = maSelection.split("-");
 
     int nb_items = indexes.size();
     int nb_element_max_zone = -1;
@@ -787,23 +810,17 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int z
     }
 }
 
-#if 1
-void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
+QString CreatreTitle(stCurDemande *pConf)
 {
-    void *pSource = index.internalPointer();
-
-#ifndef QT_NO_DEBUG
-    qDebug()<<"Fenetre RefResultats.";
-#endif
-
     QString titre = "";
+
     for (int i = 0; i< 4 ;i++)
     {
-        QModelIndexList indexes = uneDemande.selection[i];
+        QModelIndexList indexes = pConf->selection[i];
         if(indexes.size())
         {
             if (i<2)
-                titre = titre + pMaConf->nomZone[i];
+                titre = titre + pConf->ref->nomZone[i];
             if(i==2)
                 titre = titre + "c";
             if(i==3)
@@ -857,13 +874,27 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     }
     titre = titre.remove(titre.length()-3,3);
 
+    return titre;
+}
+
+#if 1
+void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
+{
+    void *pSource = index.internalPointer();
+
+#ifndef QT_NO_DEBUG
+    qDebug()<<"Fenetre RefResultats.";
+#endif
+
+
+    QString titre = CreatreTitle(&uneDemande);
+
     // Le simple click a construit la liste des boules
     stCurDemande *etude = new stCurDemande;
 
     // recopie de la config courante
     uneDemande.st_titre = titre;
     uneDemande.cur_dst = 0;
-    uneDemande.ref = pMaConf;
     *etude = uneDemande;
 
     // Nouvelle de fenetre de detail de cette selection
