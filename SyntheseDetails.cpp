@@ -458,7 +458,7 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
 }
 #endif
 
-QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString ReqTirages, int dst)
+QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString ReqTirages, int ongPere)
 {
     QWidget * qw_retour = new QWidget;
     QFormLayout *frm_tmp = new QFormLayout;
@@ -469,7 +469,7 @@ QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString Req
     int maxOnglets = sizeof(ongNames)/sizeof(QString);
 
     QTabWidget *tab_Top = new QTabWidget;
-    gtab_splitter_2[dst] = tab_Top;
+    gtab_splitter_2[ongPere] = tab_Top;
 
     QWidget **wid_ForTop = new QWidget*[maxOnglets];
     QGridLayout **dsgOnglet = new QGridLayout * [maxOnglets];
@@ -488,7 +488,7 @@ QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString Req
         wid_ForTop[j]= new QWidget;
         tab_Top->addTab(wid_ForTop[j],ongNames[j]);
 
-        dsgOnglet[j]= (this->*ptrFunc[j])(pEtude,ReqTirages,j,dst);
+        dsgOnglet[j]= (this->*ptrFunc[j])(pEtude,ReqTirages,j,ongPere);
         wid_ForTop[j]->setLayout(dsgOnglet[j]);
     }
 
@@ -561,24 +561,24 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
     QWidget **wid_ForTop = new QWidget*[maxOnglets];
     QGridLayout **dsgOnglet = new QGridLayout * [maxOnglets];
 
-    for(int i = 0; i<maxOnglets; i++)
+    for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
     {
         // -- tableau tirages
-        wid_ForTop[i]= new QWidget;
-        tab_Top->addTab(wid_ForTop[i],ongNames[i]);
+        wid_ForTop[id_Onglet]= new QWidget;
+        tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
 
-        sqlReq = PBAR_Req3(pEtude->st_baseDef,stRequete,d[i]);
-        QGridLayout *lay_tmp = MonLayout_MontrerTiragesFiltres(visuel,sqlReq,i,d);
+        sqlReq = PBAR_Req3(pEtude->st_baseDef,stRequete,d[id_Onglet]);
+        QGridLayout *lay_tmp = MonLayout_MontrerTiragesFiltres(visuel,sqlReq,id_Onglet,d);
 
         // -- onglet comptage avec tableau
         QGridLayout *MonComptage = new  QGridLayout;
-        QWidget * qw_tmp = PBAR_ComptageFiltre(pEtude,sqlReq,i);
+        QWidget * qw_tmp = PBAR_ComptageFiltre(pEtude,sqlReq,id_Onglet);
 
         MonComptage->addLayout(lay_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
         MonComptage->addWidget(qw_tmp,0,1,Qt::AlignLeft|Qt::AlignTop);
 
-        dsgOnglet[i]=MonComptage;
-        wid_ForTop[i]->setLayout(dsgOnglet[i]);
+        dsgOnglet[id_Onglet]=MonComptage;
+        wid_ForTop[id_Onglet]->setLayout(dsgOnglet[id_Onglet]);
     }
 
     frm_tmp->addWidget(tab_Top);
@@ -990,7 +990,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     // Recherche sur nouveau critere
     msg = PBAR_Req3(pLaDemande->st_baseDef,*(pLaDemande->st_bdAll),new_distance);
 
-    // Application de la requete pour le tableau
+    // Application de la requete pour le tableau des tirages
     QSqlQueryModel *sqlmodel = dist->getAssociatedModel();
     QTableView *tab =dist->getAssociatedVue();
 
@@ -998,6 +998,34 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     sqlmodel->setQuery(msg);
     tab->setModel(sqlmodel);
 
+    // Aplication pour les onglets de comptage
+    FiltreCombinaisons *pCombi = NULL;
+    for(int id=0;id<3;id++)
+
+    {
+        QString compte = "";
+
+        if(id<2)
+        {
+            compte =  PBAR_ReqComptage(pLaDemande, msg, id, new_distance);
+        }
+        else
+        {
+            compte = PBAR_ReqNbCombi(pLaDemande, msg);
+            pCombi = dist->GetFiltre();
+        }
+
+        sqlmodel = dist->getAssociatedModel(id);
+        tab =dist->getAssociatedVue(id);
+
+        // recalcul
+        sqlmodel->setQuery(compte);
+        tab->setModel(sqlmodel);
+
+        if(pCombi != NULL)
+            pCombi->setFiltreConfig(sqlmodel,tab,1);
+
+    }
     // Memorisation
     dist->setValue(new_distance *-1);
     d[3]= new_distance;
@@ -1051,43 +1079,14 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int 
     return(lay_return);
 }
 
-QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QString ReqTirages, int zn, int distance)
+QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere)
 {
     QGridLayout *lay_return = new QGridLayout;
 
 
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-
     QTableView *qtv_tmp = new QTableView;
-
-
-
-
-    sql_msgRef =
-            "select tbleft.id as id, tbleft.tip as Repartition, count(tbright.id) as T, "
-            +*(pEtude->st_jourDef)
-            + " "
-              "from "
-              "( "
-              "select id , tip  from lstcombi "
-              ") as tbleft "
-              "left join "
-              "( "
-            +ReqTirages.remove(";")+
-            ") as tbright "
-            "on "
-            "( "
-            "( "
-            "tbleft.id=tbright.pid"
-            ") "
-            ") group by tbleft.id order by T desc, tbleft.tip asc;"
-            ;
-#ifndef QT_NO_DEBUG
-    qDebug() << sql_msgRef;
-#endif
-
-    sqm_tmp->setQuery(sql_msgRef);
 
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;
@@ -1095,7 +1094,27 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
     fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,1);
     FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
 
+    // Memorisation des pointeurs
+    if(ongPere == 3)
+    {
+        dist->keepPtr(2,sqm_tmp,qtv_tmp);
+        dist->keepFiltre(fltComb_1);
+    }
+
+
+    sql_msgRef = PBAR_ReqNbCombi(pEtude,ReqTirages);
+
+    sqm_tmp->setQuery(sql_msgRef);
+#if 0
+    // Filtre
+    QFormLayout *FiltreLayout = new QFormLayout;
+    FiltreCombinaisons *fltComb_1 = new FiltreCombinaisons();
+    fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,1);
+    FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
+#endif
+
     qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(1,Qt::AscendingOrder);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->hideColumn(0); // don't show the ID
@@ -1207,72 +1226,39 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, i
     return(lay_return);
 }
 
-void SyntheseDetails::Synthese_2_first (QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial)
+QString PBAR_ReqNbCombi(stCurDemande *pEtude, QString ReqTirages)
 {
-    //-------------------
-    QLabel *titre_2 = new QLabel("Etoiles");
-    QTableView *qtv_tmp_2 = new QTableView;
-    qtv_tmp_2->setFixedSize(340,230);
+    QString msg = "";
 
-    // Permet le traitement des requetes pour les etoiles
-    stObjDetail *config = new stObjDetail;
-    config->pObjet = this;
-    config->pDist = dist;
-    config->pOnglet =onglets;
-    config->pParamObj =pLaDemande;
+    msg =
+            "select tbleft.id as id, tbleft.tip as Repartition, count(tbright.id) as T, "
+            +*(pEtude->st_jourDef)
+            + " "
+              "from "
+              "( "
+              "select id , tip  from lstcombi "
+              ") as tbleft "
+              "left join "
+              "( "
+            +ReqTirages.remove(";")+
+            ") as tbright "
+            "on "
+            "( "
+            "( "
+            "tbleft.id=tbright.pid"
+            ") "
+            ") group by tbleft.id order by T desc, tbleft.tip asc;"
+            ;
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
 
-    MonQtViewDelegate *la = new MonQtViewDelegate(config);
-
-    QString sql_msgRef = "";
-    MaSqlRequeteEditable *model = new MaSqlRequeteEditable;
-
-    sql_msgRef = "select z1 as B, null as etoiles from Bnrz where z1 not null;";
-    model->setQuery(sql_msgRef);
-
-    qtv_tmp_2->setSortingEnabled(false);
-    //qtv_tmp_2->sortByColumn(0,Qt::AscendingOrder);
-    qtv_tmp_2->setAlternatingRowColors(true);
-
-
-    qtv_tmp_2->setSelectionMode(QAbstractItemView::SingleSelection);
-    qtv_tmp_2->setSelectionBehavior(QAbstractItemView::SelectItems);
-    qtv_tmp_2->setEditTriggers(QAbstractItemView::DoubleClicked);
-
-    qtv_tmp_2->setModel(model);
-    qtv_tmp_2->setItemDelegate(la);
-
-    // Pb Sqlite sur count
-    sql_msgRef = "select count(z1) as B from Bnrz where z1 not null;";
-    QSqlQuery qry_tmp;
-    int nblignes;
-    if(qry_tmp.exec(sql_msgRef))
-    {
-        qry_tmp.first();
-        nblignes = qry_tmp.value(0).toInt();
-    }
-
-    for (int row = 0; row < nblignes; ++row) {
-        //QModelIndex index = model->index(row, 0, QModelIndex());
-        //model->setData(index, QVariant((row + 10)));
-        qtv_tmp_2->setRowHeight(row,205);
-    }
-    qtv_tmp_2->setColumnWidth(0,40);
-    qtv_tmp_2->setColumnWidth(1,250);
-    //qtv_tmp_2->resizeColumnsToContents();
-    // Ne pas modifier largeur des colonnes
-    qtv_tmp_2->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    qtv_tmp_2->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    lay_return->addWidget(titre_2,0,1,Qt::AlignLeft|Qt::AlignTop);
-    lay_return->addWidget(qtv_tmp_2,1,1,Qt::AlignLeft|Qt::AlignTop);
-    //------------------
+    return msg;
 }
 
-QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int zn,int distance)
+QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn,int distance)
 {
-    QGridLayout *lay_return = new QGridLayout;
-
-    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    QTableView *qtv_tmp = new QTableView;
+    QString msg = "";
 
     QString st_cri_all = "";
     QStringList boules;
@@ -1290,14 +1276,6 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
             boules.clear();
             st_cri_all= st_cri_all + " and ";
         }
-#if 0
-        else
-        {
-            boules<< "tbright."+pEtude->ref->nomZone[zn];
-            st_cri_all= st_cri_all +GEN_Where_3(5,"tbleft.boule",false,"=",boules,true,"or");
-            boules.clear();
-        }
-#endif
     }
 
     boules<< "tbright."+pEtude->ref->nomZone[zn];
@@ -1305,7 +1283,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     st_cri_all= st_cri_all +GEN_Where_3(loop,"tbleft.boule",false,"=",boules,true,"or");
     boules.clear();
 
-    QString sql_msgRef =
+    msg =
             "select tbleft.boule as B, count(tbright.id) as T, "
             +*(pEtude->st_jourDef)
             + " "
@@ -1324,9 +1302,28 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
             ;
 
 #ifndef QT_NO_DEBUG
-    qDebug() << sql_msgRef;
+    qDebug() << msg;
 #endif
 
+
+    return msg;
+
+}
+
+QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int zn,int ongPere)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    QTableView *qtv_tmp = new QTableView;
+
+    // Memorisation des pointeurs
+    if(ongPere == 3)
+    {
+        dist->keepPtr(zn,sqm_tmp,qtv_tmp);
+    }
+
+    QString sql_msgRef = PBAR_ReqComptage(pEtude, ReqTirages, zn, ongPere);
 
     sqm_tmp->setQuery(sql_msgRef);
 

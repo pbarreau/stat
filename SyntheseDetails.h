@@ -86,7 +86,7 @@ public:
     QWidget *SPLIT_Tirage(void);
     QWidget *SPLIT_Voisin(int i);
     QWidget * PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiArea *visuel,QString stRequete);
-    QWidget * PBAR_ComptageFiltre(stCurDemande *pEtude, QString ReqTirages, int dst);
+    QWidget * PBAR_ComptageFiltre(stCurDemande *pEtude, QString ReqTirages, int ongPere);
 
     QString CreationTitre_1(stCurDemande *pEtude);
     QString CreationTitre_2(stCurDemande *pEtude);
@@ -96,8 +96,8 @@ public:
     QGridLayout * MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,QString sql_msgRef,
                                                                    int ref,int *dst);
 
-    QGridLayout * MonLayout_CompteCombi(stCurDemande *pEtude, QString ReqTirages, int zn, int distance);
-    QGridLayout * MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int zn, int distance);
+    QGridLayout * MonLayout_CompteCombi(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
+    QGridLayout * MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
 
     // penser au destructeur pour chaque pointeur
     QString ReponsesOrigine_1(int dst);
@@ -123,7 +123,6 @@ private:
 
     QGridLayout *Synthese_1(int onglet, int distance);
     QGridLayout *Synthese_2(int onglet, int distance);
-    void Synthese_2_first (QGridLayout *lay_return, QStringList &stl_tmp, int distance, bool ongSpecial);
 
 
     QString SD_Tb1_1(QStringList &boules, QString &sqlTblRef, int dst);
@@ -149,5 +148,7 @@ extern QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, in
 extern QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int zn);
 extern QString PBAR_Req3(QString *base, QString baseFiltre,int dst);
 extern QString FiltreLesTirages(stCurDemande *pEtude);
+extern QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn,int distance);
+extern QString PBAR_ReqNbCombi(stCurDemande *pEtude, QString ReqTirages);
 
 #endif // SYNTHESEDETAILS_H
