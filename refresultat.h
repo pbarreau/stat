@@ -25,7 +25,7 @@ typedef enum _les_tableaux
 }E_Syntese;
 }
 
-
+#define CTXT_SELECTION  "selection b:aucun - e:aucun - c:aucun - g:aucun"
 
 class SyntheseGenerale : public QObject
 {
@@ -49,6 +49,7 @@ private:
     QTableView * tbv_LesTirages;
     QSqlQueryModel *sqm_LesTirages;
 
+    LabelClickable *selection;
     QTableView * tbv_bloc1_1;
     QSqlQueryModel *sqm_bloc1_1;
     QTableView * tbv_bloc1_2;
@@ -80,7 +81,7 @@ public slots:
     void slot_Select_B(const QModelIndex & index);
 
     void slot_ChangementEnCours(const QItemSelection &selected,const QItemSelection &deselected);
-
+    void slot_RazSelection(QString);
 
 private:
     //QString OrganiseChampsDesTirages(QString st_base_reference);

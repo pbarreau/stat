@@ -60,11 +60,12 @@ public:
 };
 #endif
 
-class SyntheseDetails: public QObject
+class SyntheseDetails: public QWidget
 {
    Q_OBJECT
 
 private:
+    static int detail_id;
     stCurDemande *pLaDemande;
     QMdiArea *pEcran;
     QTabWidget *gMemoTab;
@@ -81,6 +82,8 @@ private:
 
 public:
     SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel, QTabWidget *tab_Top);
+    ~SyntheseDetails();
+
     void MontreRechercheTirages(stCurDemande *pLaDemande);
 
     QWidget *SPLIT_Tirage(void);
@@ -109,6 +112,7 @@ public slots:
     void slot_FiltreSurNewCol(int colNum);
     void slot_ZoomTirages(const QModelIndex & index);
     void slot_ClickSurOnglet(int index);
+    void slot_FermeLaRecherche(int index);
 
 private:
     int dst[4];

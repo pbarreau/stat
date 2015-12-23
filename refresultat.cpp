@@ -153,10 +153,26 @@ void SyntheseGenerale::DoComptageTotal(void)
     }
 
     QFormLayout *mainLayout = new QFormLayout;
+    selection = new LabelClickable;
+
+    selection->setText(CTXT_SELECTION);
+    connect( selection, SIGNAL( clicked(QString)) ,
+             this, SLOT( slot_RazSelection(QString) ) );
+
+    mainLayout->addWidget(selection);
     mainLayout->addWidget(tab_Top);
     disposition->addLayout(mainLayout,0,1,Qt::AlignLeft|Qt::AlignTop);
 
 
+}
+void SyntheseGenerale::slot_RazSelection(QString)
+{
+  tbv_bloc1_1->selectionModel()->clear();
+  tbv_bloc1_2->selectionModel()->clear();
+  tbv_bloc1_3->selectionModel()->clear();
+  tbv_bloc2->selectionModel()->clear();
+
+  selection->setText(CTXT_SELECTION);
 }
 
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
@@ -780,13 +796,23 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     qDebug()<<"Fenetre RefResultats.";
 #endif
 
+    QString titre = "";
     for (int i = 0; i< 4 ;i++)
     {
         QModelIndexList indexes = uneDemande.selection[i];
         if(indexes.size())
         {
+            if (i<2)
+                titre = titre + pMaConf->nomZone[i];
+            if(i==2)
+                titre = titre + "c";
+            if(i==3)
+                titre = titre + "g";
+
+
             QModelIndex un_index;
             // Analyse de chaque indexe
+            int compte = 0;
             foreach(un_index, indexes)
             {
                 const QAbstractItemModel * pModel = un_index.model();
@@ -802,35 +828,49 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
                     use = lgn;
                 }
 
-#ifndef QT_NO_DEBUG
-                qDebug()<< "i:"<<i
-                        <<",col("<<col<<"):"<<headName
-                       <<", lgn:"<<lgn
-                      <<", use:"<<use
-                     <<", val:"<<val;
-#endif
+                compte++;
+                if(compte == 1){
+                    if(i<3){
+                        titre = titre + " ("+headName+"):";
+                    }
+                 }
 
+                if(i<3){
+                    titre = titre + QString::number(use)+",";
+                }
+                else
+                {
+                  titre = titre + " (" +headName+","+QString::number(use)+"),";
+                }
             }
+            titre.remove(titre.length()-1,1);
         }
         else
         {
+
 #ifndef QT_NO_DEBUG
             qDebug()<< "Aucune selection active pour i="<<i;
 #endif
 
         }
+        titre = titre + " - ";
     }
+    titre = titre.remove(titre.length()-3,3);
 
     // Le simple click a construit la liste des boules
     stCurDemande *etude = new stCurDemande;
 
     // recopie de la config courante
+    uneDemande.st_titre = titre;
     uneDemande.cur_dst = 0;
     uneDemande.ref = pMaConf;
     *etude = uneDemande;
 
     // Nouvelle de fenetre de detail de cette selection
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
+    connect( ptabTop, SIGNAL(tabCloseRequested(int index)) ,
+             unDetail, SLOT(slot_FermeLaRecherche(int index) ) );
+
 
 }
 #else

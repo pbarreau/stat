@@ -22,6 +22,8 @@
 #include "filtrecombinaisons.h"
 #include "monQview.h"
 
+int SyntheseDetails::detail_id = 0;
+
 //------------- Local Prototypes ------------
 QComboBox *ComboPerso(int id);
 
@@ -255,18 +257,24 @@ QString FiltreLesTirages(stCurDemande *pEtude)
 }
 
 //---------------- Fin Local Fns ------------------------
+SyntheseDetails::~SyntheseDetails()
+{
+  detail_id--;
+}
+
 SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
 {
     pLaDemande = pEtude;
     pEcran = visuel;
     gMemoTab = tab_Top;
+    detail_id++;
 
     QString stRequete = "";
     stRequete = FiltreLesTirages(pEtude);
 
     // Creation des onglets reponses
     QWidget *uneReponse = PBAR_CreerOngletsReponses(pEtude,visuel,stRequete);
-    QString st_titre = "UnExemple";
+    QString st_titre = "R "+QString::number(detail_id);
 
     int laFeuille = tab_Top->addTab(uneReponse,st_titre);
     tab_Top->activateWindow();
@@ -551,6 +559,8 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
     QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
 
+    QLabel * titre = new QLabel;
+
     QString ongNames[]={"0","+1","-1","?"};
     QString sqlReq = "";
 
@@ -560,6 +570,9 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
 
     QWidget **wid_ForTop = new QWidget*[maxOnglets];
     QGridLayout **dsgOnglet = new QGridLayout * [maxOnglets];
+
+    if(pEtude->st_titre !="")
+        titre->setText(pEtude->st_titre);
 
     for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
     {
@@ -581,6 +594,7 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
         wid_ForTop[id_Onglet]->setLayout(dsgOnglet[id_Onglet]);
     }
 
+    frm_tmp->addWidget(titre);
     frm_tmp->addWidget(tab_Top);
     qw_retour->setLayout(frm_tmp);
 
@@ -2580,6 +2594,11 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
 #endif
 
     return(st_sqlR);
+}
+
+void SyntheseDetails::slot_FermeLaRecherche(int index)
+{
+  delete(this);
 }
 
 void SyntheseDetails::slot_ClickSurOnglet(int index)
