@@ -34,7 +34,8 @@ SOURCES += main.cpp\
     monSqlEditable.cpp \
     filtrecombinaisons.cpp \
     SyntheseDetails.cpp \
-    newdetails.cpp
+    newdetails.cpp \
+    distancepourtirage.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -49,7 +50,8 @@ HEADERS  += mainwindow.h \
     filtrecombinaisons.h \
     SyntheseDetails.h \
     monQview.h \
-    monSqlEditable.h
+    monSqlEditable.h \
+    distancepourtirage.h
 
 FORMS    += mainwindow.ui \
     choixjeux.ui

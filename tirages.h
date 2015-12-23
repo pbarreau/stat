@@ -40,6 +40,8 @@ typedef enum _les_jeux_a_tirages
 {
     fdj_none,   /// aucun type defini
     fdj_loto,   /// jeu : loto
+    fdj_sper,  /// superloto
+    fdj_slot,   /// Loto + super loto
     fdj_euro,   /// jeu : euromillion
     fdj_fini    /// fin de la liste des jeux possibles
 }E_typeJeux;

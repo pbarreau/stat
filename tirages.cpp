@@ -30,7 +30,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
       }
       break;
 
-    case NE_FDJ::fdj_loto:
+    case NE_FDJ::fdj_slot:
       {
         conf.nb_zone = 2;
         conf.nb_tir_semaine = 4;
@@ -59,7 +59,35 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
       }
       break;
 
-    case NE_FDJ::fdj_euro:
+  case NE_FDJ::fdj_loto:
+    {
+      conf.nb_zone = 2;
+      conf.nb_tir_semaine = 3;
+      conf.nbElmZone = new int [conf.nb_zone];
+      conf.nbElmZone[0]=5;
+      conf.nbElmZone[1]=1;
+      conf.limites = new stBornes [conf.nb_zone];
+      conf.limites[0].min = 1;
+      conf.limites[0].max = 49;
+      conf.limites[1].min = 1;
+      conf.limites[1].max = 10;
+      conf.jour_tir=new QString[conf.nb_tir_semaine];
+      conf.jour_tir[0]="LUNDI";
+      conf.jour_tir[1]="MERCREDI";
+      conf.jour_tir[2]="SAMEDI";
+      conf.nomZone = new QString [conf.nb_zone];
+      conf.nomZone[0]="b";
+      conf.nomZone[1]="e";
+      conf.FullNameZone = new QString [conf.nb_zone];
+      conf.FullNameZone[0]="Boules";
+      conf.FullNameZone[1]="Etoiles";
+      conf.offsetFichier = new int [conf.nb_zone];
+      conf.offsetFichier[0]=4;
+      conf.offsetFichier[1]=9;
+    }
+    break;
+
+  case NE_FDJ::fdj_euro:
       {
         conf.nb_zone = 2;
         conf.nb_tir_semaine = 2;
@@ -77,6 +105,9 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.nomZone = new QString [conf.nb_zone];
         conf.nomZone[0]="b";
         conf.nomZone[1]="e";
+        conf.FullNameZone = new QString [conf.nb_zone];
+        conf.FullNameZone[0]="Boules";
+        conf.FullNameZone[1]="Etoiles";
         conf.offsetFichier = new int [conf.nb_zone];
         conf.offsetFichier[0]=4;
         conf.offsetFichier[1]=9;

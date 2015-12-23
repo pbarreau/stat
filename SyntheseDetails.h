@@ -12,6 +12,7 @@
 #include <QComboBox>
 #include <QMdiArea>
 
+#include "distancepourtirage.h"
 #include "filtrecombinaisons.h"
 #include "monSqlEditable.h"
 #include "tirages.h"
@@ -42,6 +43,7 @@ typedef struct _demande
 
 
 //--------------------------
+#if 0
 class DistancePourTirage : public QLineEdit
 {
 private:
@@ -56,6 +58,7 @@ public:
     int getValue(void);
     void setValue(int val);
 };
+#endif
 
 class SyntheseDetails: public QObject
 {

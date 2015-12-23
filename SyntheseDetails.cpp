@@ -968,35 +968,6 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
     return(lay_return);
 }
 
-DistancePourTirage::DistancePourTirage(int dst, QSqlQueryModel *req, QTableView *tab)
-{
-    this->setText(QString::number(dst));
-    distance = this;
-    laRequete = req;
-    leTableau = tab;
-}
-
-int DistancePourTirage::getValue(void)
-{
-    int value = this->text().toInt();
-
-    return value;
-}
-
-void DistancePourTirage::setValue(int val)
-{
-    this->setText(QString::number(val));
-}
-
-QSqlQueryModel *DistancePourTirage::getAssociatedModel(void)
-{
-    return laRequete;
-}
-
-QTableView * DistancePourTirage::getAssociatedVue(void)
-{
-    return leTableau;
-}
 
 void SyntheseDetails::slot_FiltreSurNewCol(int colNum)
 {
