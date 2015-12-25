@@ -48,7 +48,7 @@ QComboBox *ComboPerso(int id)
     model->setHeaderData(0, Qt::Horizontal, QObject::tr("Filtre"));
 
     QStringList ChoixCol;
-    ChoixCol<<"J"<<"D"<<"C"<<"E"<<"P"<<"G";
+    ChoixCol<<"J"<<"D"<<"C"<<"E";
     for(int i = ChoixCol.size()-1; i>=0;i--)
     {
         model->insertRow(0);
@@ -280,191 +280,7 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
     tab_Top->activateWindow();
     tab_Top->setCurrentIndex(laFeuille);
 
-#if 0
-    QString table = *(pEtude->st_baseDef);
-
-    for (int i = 0; i< 3 ;i++)
-    {
-        QModelIndexList indexes = pEtude->selection[i];
-
-        if(!indexes.size())
-            continue;
-
-        QString requete = "";
-        QString champ = "";
-        int max = 0;
-
-        if(i<2){
-            max = pEtude->ref->nbElmZone[i];
-            champ = pEtude->ref->nomZone[i];
-        }
-
-        if(i==2)
-        {
-            max = 1;
-            champ = "pid";
-        }
-
-        requete = FiltreLaBaseSelonSelectionUtilisateur(indexes,i,max,champ,table);
-
-        table = requete;
-    }
-
-    // Filtre sur les occurences
-    if(pEtude->selection[3].size())
-    {
-        QModelIndex un_index;
-        foreach (un_index, pEtude->selection[3])
-        {
-            QString requete = "";
-
-            requete = PBAR_Req2(pLaDemande,table,un_index,0);
-
-            table = requete;
-
-        }
-
-    }
-
-    // Sauvegarde de la table des reponses a d=0
-    *(pLaDemande->st_bdAll) = table;
-#endif
-
 }
-
-#if 0
-SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
-{
-    pLaDemande = pEtude;
-    pEcran = visuel;
-    gMemoTab = tab_Top;
-    int d[]={0,-1,1,-2};
-    QString n[]={"0","+1","-1","?"};
-
-#ifndef QT_NO_DEBUG
-    qDebug()<<"Fenetre details.";
-    qDebug()<<"Base Reference";
-    qDebug()<<*(pEtude->st_baseDef);
-    qDebug()<<"";
-#endif
-
-    for (int i = 0; i< 4 ;i++)
-    {
-        QModelIndexList indexes = pEtude->selection[i];
-        if(indexes.size())
-        {
-            QModelIndex un_index;
-            // Analyse de chaque indexe
-            foreach(un_index, indexes)
-            {
-                const QAbstractItemModel * pModel = un_index.model();
-                int col = un_index.column();
-                int lgn = un_index.row();
-                int use = un_index.model()->index(lgn,0).data().toInt();
-                int val = un_index.data().toInt();
-                QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-                QString headName = vCol.toString();
-
-                if(i==3)
-                {
-                    use = lgn;
-                }
-#ifndef QT_NO_DEBUG
-                qDebug()<< "i:"<<i
-                        <<",col("<<col<<"):"<<headName
-                       <<", lgn:"<<lgn
-                      <<", use:"<<use
-                     <<", val:"<<val;
-#endif
-
-            }
-        }
-        else
-        {
-#ifndef QT_NO_DEBUG
-            qDebug()<< "Aucune selection active pour i="<<i;
-#endif
-
-        }
-    }
-}
-#endif
-
-#if 0
-SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
-{
-    pLaDemande = pEtude;
-    pEcran = visuel;
-    gMemoTab = tab_Top;
-    int d[]={0,-1,1,-2};
-    QString n[]={"0","+1","-1","?"};
-
-
-    for(int i = 0 ;i <4;i++)
-    {
-        //dst[i]=d[i]+uneEtude->cur_dst;
-        dst[i]=d[i];
-        ong[i]=n[i];
-    }
-
-    QSplitter *splitter_1 = new QSplitter (Qt::Vertical);
-    QSplitter *splitter_2 = new QSplitter (Qt::Horizontal,splitter_1);
-    QWidget **qw_tmp_1 = new QWidget *[4];
-    QWidget *qw_tmp_2 ;
-
-    gtab_splitter_2 = new QTabWidget *[4];
-
-#if 0
-    //----------------
-    for(int i =0; i<4;i++)
-    {
-        qw_tmp_1[i] = SPLIT_Voisin(i);
-        splitter_2->addWidget(qw_tmp_1[i]);
-    }
-#endif
-    qw_tmp_2 = SPLIT_Tirage();
-    splitter_1->addWidget(qw_tmp_2);
-
-    //----------------
-
-    //QMdiSubWindow *subWindow = visuel->addSubWindow(splitter_1);
-
-    //subWindow->resize(380,325);
-    //subWindow->move(1200,570);
-
-    QString st_titre = "";
-    if(pEtude->origine == 1)
-    {
-        st_titre =  CreationTitre_1(pEtude);
-    }
-    else
-    {
-        st_titre =  CreationTitre_2(pEtude);
-    }
-
-    if(pEtude->st_titre != "")
-    {
-        st_titre = "Depart:("+pEtude->st_titre+")," + st_titre;
-    }
-    else
-    {
-        pEtude->st_titre = st_titre;
-    }
-
-    int laFeuille = tab_Top->addTab(splitter_1,st_titre);
-    tab_Top->activateWindow();
-    tab_Top->setCurrentIndex(laFeuille);
-    //tab_Top->setVisible(true);
-    //tab_Top->show();
-
-#if 0
-    splitter_1->setWindowTitle(st_titre);
-    splitter_1->setVisible(true);
-    splitter_1->show();
-#endif
-    //MontreRechercheTirages(uneEtude);
-}
-#endif
 
 QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString ReqTirages, int ongPere)
 {
@@ -487,7 +303,7 @@ QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString Req
             &SyntheseDetails::MonLayout_CompteBoulesZone,
             &SyntheseDetails::MonLayout_CompteBoulesZone,
             &SyntheseDetails::MonLayout_CompteCombi
-};
+    };
 
     //titre->setText("Position "+labNames[i]);
 
@@ -558,6 +374,8 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
     QWidget * qw_retour = new QWidget;
     QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
+
+    onglets = tab_Top;
 
     QLabel * titre = new QLabel;
 

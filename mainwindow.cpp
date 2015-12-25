@@ -2168,7 +2168,7 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
     QWidget *qw_nsr = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
     QWidget **wid_ForTop = new QWidget*[2];
-    QString stNames[2]={"Stat","Voisins"};
+    QString stNames[2]={"Glob","Spe"};
     QGridLayout *design_onglet[2];
 
     //tab_Top->setTabsClosable(true);
@@ -2176,13 +2176,16 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
     // pour reecriture
     QString *st_tmp1 = new QString;
     QString *st_tmp2 = new QString;
+    QString *st_tmp3 = new QString;
+
 
     *st_tmp1 =CompteJourTirage(pConf);
     *st_tmp2 = OrganiseChampsDesTirages("tirages", pConf);
+*st_tmp3 = *st_tmp2 ;
 
     critereTirages.st_jourDef = st_tmp1;
     critereTirages.st_baseDef = st_tmp2;
-    critereTirages.st_bdAll = st_tmp2;
+    critereTirages.st_bdAll = st_tmp3;
 
     // Tableau de pointeur de fonction
     QGridLayout *(MainWindow::*ptrFunc[2])(stTiragesDef *pConf)=
