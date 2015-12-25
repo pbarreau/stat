@@ -6,8 +6,10 @@
 #include <QAbstractItemModel>
 #include <QSqlTableModel>
 #include <QTableView>
-
 #include <QLineEdit>
+
+#include "monfiltreproxymodel.h"
+
 
 //Q_DECLARE_METATYPE(QRegExp::PatternSyntax)
 
@@ -17,18 +19,18 @@ class FiltreCombinaisons : public QLineEdit
 
 public:
     explicit FiltreCombinaisons(QWidget *parent = 0);
-    void setFiltreConfig(QAbstractItemModel *model, QAbstractItemView *view, int colId);
+    void setFiltreConfig(QAbstractItemModel *model, QAbstractItemView *view, const QList<qint32> &filterColumns);
 
 
 public slots:
     void slot_TraiterFiltre();
-    void slot_setFKC(int colId);
+    void slot_setFKC(int colId, int nbCol);
 ;
 
 private:
     QRegExp::PatternSyntax syntax;
     Qt::CaseSensitivity typeCase;
-    QSortFilterProxyModel *proxyModel;
+    MonFiltreProxyModel *proxyModel;
     QAbstractItemView *sourceView;
     //QSqlTableModel *sourceModel;
     QAbstractItemModel *sourceModel;

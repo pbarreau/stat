@@ -48,7 +48,7 @@ QComboBox *ComboPerso(int id)
     model->setHeaderData(0, Qt::Horizontal, QObject::tr("Filtre"));
 
     QStringList ChoixCol;
-    ChoixCol<<"J"<<"D"<<"C"<<"E";
+    ChoixCol<<"J"<<"D"<<"C"<<"B"<<"E";
     for(int i = ChoixCol.size()-1; i>=0;i--)
     {
         model->insertRow(0);
@@ -655,7 +655,9 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref,
 
     QFormLayout *FiltreLayout = new QFormLayout;
     FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons;
-    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,2);
+    QList<qint32> colid;
+    colid << 2;
+    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
 
 
     FiltreLayout->addRow("&Recherche", fltComb_tmp);
@@ -761,7 +763,9 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
 
     QFormLayout *FiltreLayout = new QFormLayout;
     FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons;
-    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,2);
+    QList<qint32> colid;
+    colid << 2;
+    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
     FiltreLayout->addRow("&Recherche", fltComb_tmp);
 
     // Mettre combo + line dans hvbox
@@ -803,11 +807,22 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
 
 void SyntheseDetails::slot_FiltreSurNewCol(int colNum)
 {
-    int colId[6]={2,3,4,10,11,12};
-    int ColReal = colId[colNum];
+    int z1 = pLaDemande->ref->nbElmZone[0];
+    int z2 = pLaDemande->ref->nbElmZone[1];
+    int ConfZn[5][2]={
+        {2,1},
+        {3,1},
+        {4,1},
+        {5,z1},
+        {5+z1,z2}
+    };
+
+    int ColReal = ConfZn[colNum][0];
+    int nbCol = ConfZn[colNum][1];
 
     int val = onglets->currentIndex();
-    pFiltre[val]->slot_setFKC(ColReal);
+    pFiltre[val]->clear();
+    pFiltre[val]->slot_setFKC(ColReal,nbCol);
 }
 
 #if 1
@@ -854,8 +869,11 @@ void SyntheseDetails::slot_NouvelleDistance(void)
         sqlmodel->setQuery(compte);
         tab->setModel(sqlmodel);
 
-        if(pCombi != NULL)
-            pCombi->setFiltreConfig(sqlmodel,tab,1);
+        if(pCombi != NULL){
+            QList<qint32> colid;
+            colid << 1;
+            pCombi->setFiltreConfig(sqlmodel,tab,colid);
+        }
 
     }
     // Memorisation
@@ -923,7 +941,11 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;
     FiltreCombinaisons *fltComb_1 = new FiltreCombinaisons();
-    fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,1);
+    QList<qint32> colid;
+    colid << 1;
+    fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
+
+    //fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,1);
     FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
 
     // Memorisation des pointeurs
@@ -1023,7 +1045,11 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, i
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;
     FiltreCombinaisons *fltComb_1 = new FiltreCombinaisons();
-    fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,1);
+    QList<qint32> colid;
+    colid << 1;
+    fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
+
+    //fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,1);
     FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
 
     qtv_tmp->setSortingEnabled(true);

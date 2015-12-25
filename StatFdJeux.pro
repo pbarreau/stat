@@ -35,7 +35,8 @@ SOURCES += main.cpp\
     filtrecombinaisons.cpp \
     SyntheseDetails.cpp \
     newdetails.cpp \
-    distancepourtirage.cpp
+    distancepourtirage.cpp \
+    monfiltreproxymodel.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -51,7 +52,8 @@ HEADERS  += mainwindow.h \
     SyntheseDetails.h \
     monQview.h \
     monSqlEditable.h \
-    distancepourtirage.h
+    distancepourtirage.h \
+    monfiltreproxymodel.h
 
 FORMS    += mainwindow.ui \
     choixjeux.ui

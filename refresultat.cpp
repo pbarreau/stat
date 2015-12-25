@@ -369,7 +369,11 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;
     FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
-    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,1);
+    QList<qint32> colid;
+    colid << 1;
+    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
+
+    //fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,1);
     FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
 
     lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
