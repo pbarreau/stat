@@ -717,6 +717,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref,
 
 
 //----------------
+//http://www.qtcentre.org/threads/11247-how-to-color-a-cell-in-a-QTableView
 MaSQlModel::MaSQlModel(QObject *parent):QSqlQueryModel(parent)
 {
 
@@ -724,20 +725,31 @@ MaSQlModel::MaSQlModel(QObject *parent):QSqlQueryModel(parent)
 
 QVariant MaSQlModel::data(const QModelIndex &index, int role) const
 {
-    if(role == Qt::DisplayRole)
+    if(index.column()>4 )
     {
-        if(index.column()>4)
+        int val = QSqlQueryModel::data(index,role).toInt();
+
+         if(role == Qt::DisplayRole)
         {
-         int val = QSqlQueryModel::data(index,role).toInt();
+            if(val <=9)
+            {
+                QString sval = "0"+QString::number(val);
 
-         if(val <=9)
-         {
-             QString sval = "0"+QString::number(val);
-
-             return sval;
-         }
+                return sval;
+            }
         }
+
     }
+
+
+    if(index.column()>=10)
+    {
+        if((role == Qt::TextColorRole))
+        {
+            return QColor(Qt::red);
+        }
+   }
+
     return QSqlQueryModel::data(index,role);
 }
 //----------------

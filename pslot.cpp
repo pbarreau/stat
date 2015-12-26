@@ -44,7 +44,7 @@ void MainWindow::pslot_close()
 {
   for(int i= 0; i<3; i++)
   {
-    delete(une_vue[i]);
+    //delete(une_vue[i]);
   }
   close();
 }
