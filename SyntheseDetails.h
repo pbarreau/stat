@@ -60,6 +60,15 @@ public:
 };
 #endif
 
+class MaSQlModel:public QSqlQueryModel
+{
+    Q_OBJECT
+
+public:
+    explicit MaSQlModel(QObject *parent = 0);
+    QVariant data(const QModelIndex &index, int role) const;
+};
+
 class SyntheseDetails: public QWidget
 {
    Q_OBJECT

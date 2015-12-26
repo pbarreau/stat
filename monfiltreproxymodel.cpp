@@ -1,5 +1,6 @@
 #include <QLabel>
 #include "monfiltreproxymodel.h"
+//http://www.qtcentre.org/threads/24267-QSortFilterProxyModel-setFilterRegExp-for-more-than-1-column
 
 MonFiltreProxyModel::MonFiltreProxyModel(QLabel *pText, QObject *parent) : QSortFilterProxyModel(parent)
 {

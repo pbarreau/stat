@@ -259,7 +259,7 @@ QString FiltreLesTirages(stCurDemande *pEtude)
 //---------------- Fin Local Fns ------------------------
 SyntheseDetails::~SyntheseDetails()
 {
-  detail_id--;
+    detail_id--;
 }
 
 SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
@@ -303,7 +303,7 @@ QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString Req
             &SyntheseDetails::MonLayout_CompteBoulesZone,
             &SyntheseDetails::MonLayout_CompteBoulesZone,
             &SyntheseDetails::MonLayout_CompteCombi
-    };
+};
 
     //titre->setText("Position "+labNames[i]);
 
@@ -715,12 +715,42 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref,
     return(lay_return);
 }
 
+
+//----------------
+MaSQlModel::MaSQlModel(QObject *parent):QSqlQueryModel(parent)
+{
+
+}
+
+QVariant MaSQlModel::data(const QModelIndex &index, int role) const
+{
+    if(role == Qt::DisplayRole)
+    {
+        if(index.column()>4)
+        {
+         int val = QSqlQueryModel::data(index,role).toInt();
+
+         if(val <=9)
+         {
+             QString sval = "0"+QString::number(val);
+
+             return sval;
+         }
+        }
+    }
+    return QSqlQueryModel::data(index,role);
+}
+//----------------
+
+
+
 QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,QString sql_msgRef,
                                                                int ref,int *dst)
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    //QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    MaSQlModel *sqm_tmp = new MaSQlModel;
     QTableView *qtv_tmp = new QTableView;
 
     sqm_tmp->setQuery(sql_msgRef);
@@ -2446,7 +2476,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
 
 void SyntheseDetails::slot_FermeLaRecherche(int index)
 {
-  delete(this);
+    delete(this);
 }
 
 void SyntheseDetails::slot_ClickSurOnglet(int index)
