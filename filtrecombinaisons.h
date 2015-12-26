@@ -7,6 +7,7 @@
 #include <QSqlTableModel>
 #include <QTableView>
 #include <QLineEdit>
+#include <QLabel>
 
 #include "monfiltreproxymodel.h"
 
@@ -20,6 +21,8 @@ class FiltreCombinaisons : public QLineEdit
 public:
     explicit FiltreCombinaisons(QWidget *parent = 0);
     void setFiltreConfig(QAbstractItemModel *model, QAbstractItemView *view, const QList<qint32> &filterColumns);
+    int getRowAffected(void);
+    QLabel *getLabel(void);
 
 
 public slots:
@@ -34,6 +37,7 @@ private:
     QAbstractItemView *sourceView;
     //QSqlTableModel *sourceModel;
     QAbstractItemModel *sourceModel;
+    QLabel *totalLignes;
 
 };
 

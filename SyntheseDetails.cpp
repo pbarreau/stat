@@ -768,10 +768,18 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
     fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
     FiltreLayout->addRow("&Recherche", fltComb_tmp);
 
+    // Associer la combo de selection au filtre pour
+    // cette distance (ie cet onglet) et la Qtview associee
+    pCritere[ref] = tmp_combo;
+    pFiltre[ref] = fltComb_tmp;
+
+    QLabel *tmp_lab2 = fltComb_tmp->getLabel();
+
     // Mettre combo + line dans hvbox
     tmp_hLay->addWidget(tmp_lab);
     tmp_hLay->addWidget(tmp_combo);
     tmp_hLay->addLayout(FiltreLayout);
+    tmp_hLay->addWidget(tmp_lab2);
 
 
     int pos_y = 0;
@@ -796,10 +804,6 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
     lay_return->addLayout(tmp_hLay,pos_y,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp,pos_y+1,0,Qt::AlignLeft|Qt::AlignTop);
 
-    // Associer la combo de selection au filtre pour
-    // cette distance (ie cet onglet) et la Qtview associee
-    pCritere[ref] = tmp_combo;
-    pFiltre[ref] = fltComb_tmp;
 
     return(lay_return);
 }

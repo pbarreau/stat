@@ -2,21 +2,25 @@
 #define MONFILTREPROXYMODEL_H
 
 #include <QSortFilterProxyModel>
+#include <QLabel>
 
 class MonFiltreProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 
 public:
-    explicit MonFiltreProxyModel(QObject *parent = 0);
+    explicit MonFiltreProxyModel(QLabel *pText, QObject *parent = 0);
     void setFilterKeyColumns(const QList<qint32> &filterColumns);
     void addFilterRegExp(const QRegExp &pattern);
+    int getFilterNbRow(void);
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
 
 private:
     QMap<qint32, QRegExp> m_columnPatterns;
+    int ligneVisibles;
+    QLabel *pTotal;
 
 };
 

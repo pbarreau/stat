@@ -1,7 +1,10 @@
+#include <QLabel>
 #include "monfiltreproxymodel.h"
 
-MonFiltreProxyModel::MonFiltreProxyModel(QObject *parent) : QSortFilterProxyModel(parent)
+MonFiltreProxyModel::MonFiltreProxyModel(QLabel *pText, QObject *parent) : QSortFilterProxyModel(parent)
 {
+    pTotal = pText;
+    ligneVisibles = -1;
 }
 
 void MonFiltreProxyModel::setFilterKeyColumns(const QList<qint32> &filterColumns)
@@ -20,11 +23,15 @@ void MonFiltreProxyModel::addFilterRegExp(const QRegExp &pattern)
         iter != m_columnPatterns.constEnd();
         ++iter)
     {
-        QString Sval = pattern.pattern();
         qint32 col = iter.key();
         m_columnPatterns[col] = pattern;
     }
     filterChanged();
+
+    // Nouveau resultat de lignes comment remonter info ???
+    ligneVisibles = this->rowCount();
+    QString msg = "Total : " + QString::number(ligneVisibles);
+    pTotal->setText(msg);
 }
 
 bool MonFiltreProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
@@ -35,7 +42,8 @@ bool MonFiltreProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sou
         return true;
 
     for(QMap<qint32, QRegExp>::const_iterator iter = m_columnPatterns.constBegin();
-        iter != m_columnPatterns.constEnd();
+        (iter != m_columnPatterns.constEnd())
+        && !ret;
         ++iter)
     {
         int colId = iter.key();
@@ -48,9 +56,14 @@ bool MonFiltreProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sou
 
         ret = celVal.contains(maVal,Qt::CaseInsensitive);
 
-        if(!ret)
-            return ret;
+        //if(!ret)
+        //    return ret;
     }
 
     return ret;
+}
+
+int MonFiltreProxyModel::getFilterNbRow(void)
+{
+    return ligneVisibles;
 }

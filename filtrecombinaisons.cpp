@@ -7,10 +7,12 @@
 FiltreCombinaisons::FiltreCombinaisons(QWidget *parent) :
     QLineEdit(parent)
 {
-    proxyModel = new MonFiltreProxyModel;
+    totalLignes = new QLabel;
+    proxyModel = new MonFiltreProxyModel(totalLignes);
 
     syntax = QRegExp::PatternSyntax(QRegExp::Wildcard);
     typeCase= Qt::CaseInsensitive;
+
 
     connect(this, SIGNAL(textChanged(QString)), this, SLOT(slot_TraiterFiltre()));
 }
@@ -42,7 +44,6 @@ void FiltreCombinaisons::setFiltreConfig(QAbstractItemModel *model,QAbstractItem
 
 void FiltreCombinaisons::slot_setFKC(int colId, int nbCol)
 {
-    // Not Applicable : int cur = proxyModel->filterKeyColumn();
     QList<qint32> LaLesColonnes;
     for(int i=colId;i<=(colId+nbCol-1);i++)
     {
@@ -50,4 +51,17 @@ void FiltreCombinaisons::slot_setFKC(int colId, int nbCol)
     }
     proxyModel->setFilterKeyColumns(LaLesColonnes);
 
+}
+
+QLabel *FiltreCombinaisons::getLabel(void)
+{
+    //QString msg = "Total2 : " + QString::number(proxyModel->getFilterNbRow());
+    //totalLignes->setText(msg);
+
+    return totalLignes;
+}
+
+int FiltreCombinaisons::getRowAffected(void)
+{
+    return(proxyModel->getFilterNbRow());
 }
