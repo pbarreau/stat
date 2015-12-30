@@ -18,6 +18,7 @@ private:
 
     QSqlQueryModel *qmVoisin[3];
     QTableView * tvVoisin[3];
+    QSortFilterProxyModel *fpVoisin[3];
     FiltreCombinaisons *pFiltre;
 
 
@@ -30,11 +31,12 @@ public:
     QSqlQueryModel *getAssociatedModel(int i);
     QTableView * getAssociatedVue(int i);
     FiltreCombinaisons *GetFiltre(void);
+    QSortFilterProxyModel *GetProxyModel(int i);
 
 
     int getValue(void);
     void setValue(int val);
-    void keepPtr(int ong, QSqlQueryModel *req, QTableView *tab);
+    void keepPtr(int ong, QSqlQueryModel *req, QTableView *tab, QSortFilterProxyModel *sfp);
     void keepFiltre(FiltreCombinaisons *ptr);
 
 signals:

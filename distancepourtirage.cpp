@@ -24,11 +24,14 @@ void DistancePourTirage::setValue(int val)
     this->setText(QString::number(val));
 }
 
-void DistancePourTirage::keepPtr(int ong, QSqlQueryModel *req, QTableView *tab)
+void DistancePourTirage::keepPtr(int ong, QSqlQueryModel *req,
+                                 QTableView *tab,
+                                 QSortFilterProxyModel *sfp)
 {
     if(ong >=0 and ong < 3){
         qmVoisin[ong] = req;
         tvVoisin[ong] = tab;
+        fpVoisin[ong] = sfp;
     }
 }
 
@@ -46,6 +49,12 @@ FiltreCombinaisons *DistancePourTirage::GetFiltre(void)
 QSqlQueryModel *DistancePourTirage::getAssociatedModel(void)
 {
     return laRequete;
+}
+
+QSortFilterProxyModel *DistancePourTirage::GetProxyModel(int i)
+{
+    if(i>=0 and i<3)
+        return fpVoisin[i];
 }
 
 QSqlQueryModel *DistancePourTirage::getAssociatedModel(int i)

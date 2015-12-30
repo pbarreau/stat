@@ -141,8 +141,8 @@ public:
     bool LireLesTirages(QString fileName_2, tirages *pRef);
     bool SupprimerBase();
     QSqlError lastError();
-    void AfficherBase(stTiragesDef *pConf, QWidget *parent, QTableView *cibleview);
-    void AfficherResultatCouverture(stTiragesDef *pConf, QWidget *parent, QTableView *cibleview);
+    void AfficherBase(stTiragesDef *pConf, QTableView *cibleview);
+    void AfficherResultatCouverture(stTiragesDef *pConf, QTableView *cibleview);
     void DistributionSortieDeBoule(int boule, QStandardItemModel *modele, stTiragesDef *pRef);
     void RechercheVoisin(int boule, int zn, stTiragesDef *pConf, LabelClickable *l_nb, QStandardItemModel *fen);
     void RechercheAbsent(int boule, int zn, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *fen);

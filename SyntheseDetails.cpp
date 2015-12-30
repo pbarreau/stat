@@ -729,7 +729,7 @@ QVariant MaSQlModel::data(const QModelIndex &index, int role) const
     {
         int val = QSqlQueryModel::data(index,role).toInt();
 
-         if(role == Qt::DisplayRole)
+        if(role == Qt::DisplayRole)
         {
             if(val <=9)
             {
@@ -748,7 +748,7 @@ QVariant MaSQlModel::data(const QModelIndex &index, int role) const
         {
             return QColor(Qt::red);
         }
-   }
+    }
 
     return QSqlQueryModel::data(index,role);
 }
@@ -829,7 +829,6 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
     {
         // Dernier onglet
         QFormLayout *distLayout = new QFormLayout;
-        //dist = new QLineEdit(QString::number((dst[ref]*-1)),this);
         int val = dst[ref]*-1;
         dist = new DistancePourTirage(val,
                                       sqm_tmp,qtv_tmp);
@@ -871,7 +870,6 @@ void SyntheseDetails::slot_FiltreSurNewCol(int colNum)
     pFiltre[val]->slot_setFKC(ColReal,nbCol);
 }
 
-#if 1
 void SyntheseDetails::slot_NouvelleDistance(void)
 {
     QString msg = "";
@@ -886,6 +884,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     // Application de la requete pour le tableau des tirages
     QSqlQueryModel *sqlmodel = dist->getAssociatedModel();
     QTableView *tab =dist->getAssociatedVue();
+
 
     // recalcul
     sqlmodel->setQuery(msg);
@@ -910,10 +909,20 @@ void SyntheseDetails::slot_NouvelleDistance(void)
 
         sqlmodel = dist->getAssociatedModel(id);
         tab =dist->getAssociatedVue(id);
+        QSortFilterProxyModel *m = dist->GetProxyModel(id);
 
         // recalcul
         sqlmodel->setQuery(compte);
-        tab->setModel(sqlmodel);
+        if(m !=NULL)
+        {
+            m->setDynamicSortFilter(true);
+            m->setSourceModel(sqlmodel);
+            tab->setModel(m);
+        }
+        else
+        {
+            tab->setModel(sqlmodel);
+        }
 
         if(pCombi != NULL){
             QList<qint32> colid;
@@ -926,39 +935,6 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     dist->setValue(new_distance *-1);
     d[3]= new_distance;
 }
-#else
-void SyntheseDetails::slot_NouvelleDistance(void)
-{
-    QString msg = "";
-    int new_distance = dist->text().toInt();
-
-    // pour Coherence par rapport a graphique et requete
-    new_distance *=-1;
-
-    // Tableau de pointeur de fonction
-    QGridLayout *(SyntheseDetails::*ptrFunc[3])(int ,  int )=
-    {&SyntheseDetails::MonLayout_pFnDetailsMontrerTirages,
-            &SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese,
-            &SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition};
-
-    for(int j =0; j<3;j++)
-    {
-        // Effacer l'ancien layout et mettre le nouveau
-        QGridLayout * oldOne = G_design_onglet_2[j];
-        QGridLayout * monTest;
-
-        monTest = (this->*ptrFunc[j])(j,new_distance);
-
-        // nouveau dessin ok.
-        // Rechercher l'ancien pour suppression et reaffectation;
-        QWidget *onp = oldOne->parentWidget();
-        delete(oldOne);
-
-        onp->setLayout(monTest);
-        G_design_onglet_2[j]=monTest;
-    }
-}
-#endif
 
 QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerSynthese(int ref, int dst)
 {
@@ -997,7 +973,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
     // Memorisation des pointeurs
     if(ongPere == 3)
     {
-        dist->keepPtr(2,sqm_tmp,qtv_tmp);
+        dist->keepPtr(2,sqm_tmp,qtv_tmp, NULL);
         dist->keepFiltre(fltComb_1);
     }
 
@@ -1221,12 +1197,6 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
 
-    // Memorisation des pointeurs
-    if(ongPere == 3)
-    {
-        dist->keepPtr(zn,sqm_tmp,qtv_tmp);
-    }
-
     QString sql_msgRef = PBAR_ReqComptage(pEtude, ReqTirages, zn, ongPere);
 
     sqm_tmp->setQuery(sql_msgRef);
@@ -1242,6 +1212,14 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_tmp);
+
+    // Memorisation des pointeurs
+    if(ongPere == 3)
+    {
+        dist->keepPtr(zn,sqm_tmp,qtv_tmp,m);
+    }
+
+
     qtv_tmp->setModel(m);
     qtv_tmp->verticalHeader()->hide();
 

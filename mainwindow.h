@@ -211,6 +211,9 @@ private:
     QGridLayout *MonLayout_pFnNsr1(stTiragesDef *pConf);
     QGridLayout * MonLayout_pFnNsr2(stTiragesDef *pConf);
 
+    QGridLayout *MonLayout_OldTbvTirage(int x, int y);
+    QGridLayout *MonLayout_OldTbvCouverture(int x, int y);
+
     void MonLayout_Selectioncombi(QTabWidget *tabN1);
     void MonLayout_SelectionBoules(QTabWidget *tabN1, stTiragesDef &pConf);
 

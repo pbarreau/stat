@@ -97,7 +97,7 @@ bool GererBase::SupprimerBase()
 #endif
 }
 
-void GererBase::AfficherBase(stTiragesDef *pConf,QWidget *parent, QTableView *cibleview)
+void GererBase::AfficherBase(stTiragesDef *pConf, QTableView *cibleview)
 {
     int i=0,j=0, depart = 0;
     int tot = 0;
@@ -163,13 +163,13 @@ void GererBase::AfficherBase(stTiragesDef *pConf,QWidget *parent, QTableView *ci
     // Jour ?
     cibleview->setColumnWidth(j,90);
 
-    cibleview->setMinimumHeight(450);
-    parent->setMinimumWidth(500);
-    parent->setMinimumHeight(500);
+    //cibleview->setMinimumHeight(450);
+    //parent->setMinimumWidth(500);
+    //parent->setMinimumHeight(500);
 }
 
 
-void GererBase::AfficherResultatCouverture(stTiragesDef *pConf,QWidget *parent, QTableView *cibleview)
+void GererBase::AfficherResultatCouverture(stTiragesDef *pConf, QTableView *cibleview)
 {
     int zn=0;
     int j=0;
@@ -180,7 +180,7 @@ void GererBase::AfficherResultatCouverture(stTiragesDef *pConf,QWidget *parent, 
 
     QString msg(QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn]);
 
-    tbl_couverture = new QSqlTableModel(parent, db);
+    tbl_couverture = new QSqlTableModel;
     tbl_couverture->setTable(msg);
     tbl_couverture->select();
 
@@ -198,9 +198,9 @@ void GererBase::AfficherResultatCouverture(stTiragesDef *pConf,QWidget *parent, 
         cibleview->setColumnWidth(j,30);
     }
 
-    cibleview->setMinimumHeight(450);
-    parent->setMinimumWidth(500);
-    parent->setMinimumHeight(500);
+    //cibleview->setMinimumHeight(450);
+    //parent->setMinimumWidth(500);
+    //parent->setMinimumHeight(500);
 }
 
 void GererBase::MontrerLaBoule(int boule, QTableView *fen)

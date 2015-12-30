@@ -144,9 +144,9 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     gtab_Top->setTabsClosable(true);
     QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(gtab_Top);
-    w_FenetreDetails->setLayout(mainLayout);
-    w_FenetreDetails->setWindowTitle("Details");
-    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_FenetreDetails);
+    //w_FenetreDetails->setLayout(mainLayout);
+    //w_FenetreDetails->setWindowTitle("Details");
+    //QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_FenetreDetails);
     connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
 
 
@@ -161,7 +161,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     /// --------- rem 1
 
-    fen_LstCouv();
+    //fen_LstCouv();
 
 
     // Creation sous fenetre des ecarts
@@ -255,12 +255,12 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     /// fin rem 2
     // Remplir la sousfenetre base de données
-    DB_tirages->AfficherBase(&configJeu,G_w_Tirages,G_tbv_Tirages);
+    DB_tirages->AfficherBase(&configJeu,G_tbv_Tirages);
     /// rem 3
 
 
     // Remplir la sous fenetre resultat couverture
-    DB_tirages->AfficherResultatCouverture(&configJeu,G_w_CouvTirages,G_tbv_CouvTirages);
+    DB_tirages->AfficherResultatCouverture(&configJeu,G_tbv_CouvTirages);
 
 
     // Remplir la sous fenetre de parite
@@ -322,9 +322,88 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 #endif
 }
 
+QGridLayout *MainWindow::MonLayout_OldTbvTirage(int x, int y)
+{
+    QGridLayout *tmpGrid = new  QGridLayout;
+    G_tbv_Tirages = new QTableView;
 
+    G_tbv_Tirages->setSelectionMode(QAbstractItemView::SingleSelection);
+    G_tbv_Tirages->setSelectionBehavior(QAbstractItemView::SelectItems);
+    G_tbv_Tirages->setStyleSheet("QTableView {selection-background-color: red;}");
+    G_tbv_Tirages->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    G_tbv_Tirages->setAlternatingRowColors(true);
+    G_tbv_Tirages->setFixedSize(x,y);
+
+    tmpGrid->addWidget(G_tbv_Tirages);
+    return tmpGrid;
+}
+
+QGridLayout *MainWindow::MonLayout_OldTbvCouverture(int x, int y)
+{
+    QGridLayout *tmpGrid = new  QGridLayout;
+    G_tbv_CouvTirages = new QTableView;
+
+    G_tbv_CouvTirages->setSelectionMode(QAbstractItemView::MultiSelection);
+    G_tbv_CouvTirages->setSelectionBehavior(QAbstractItemView::SelectItems);
+    G_tbv_CouvTirages->setStyleSheet("QTableView {selection-background-color: red;}");
+    G_tbv_CouvTirages->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    G_tbv_CouvTirages->setAlternatingRowColors(true);
+    G_tbv_CouvTirages->setFixedSize(x,y);
+
+    tmpGrid->addWidget(G_tbv_CouvTirages);
+    return tmpGrid;
+}
+#if 1
 void MainWindow::FEN_Old_Tirages(void)
 {
+#define C_TailleX   550
+#define C_TailleY   300
+#define C_Delta     50
+
+    QWidget *w_DataFenetre = new QWidget;
+    QTabWidget *tab_Top = new QTabWidget;
+
+    QString ongNames[]={"Liste","Couverture"};
+    int nbOng = sizeof(ongNames)/sizeof(QString);
+
+    QWidget **wid_ForTop = new QWidget*[nbOng];
+    QGridLayout **dsgOnglet = new QGridLayout * [nbOng];
+
+    QGridLayout * (MainWindow::*ptrFunc[])(int,int)={
+            &MainWindow::MonLayout_OldTbvTirage,
+            &MainWindow::MonLayout_OldTbvCouverture};
+
+    for(int i =0; i< nbOng;i++)
+    {
+        wid_ForTop[i]= new QWidget;
+
+        tab_Top->addTab(wid_ForTop[i],ongNames[i]);
+
+        dsgOnglet[i]= (this->*ptrFunc[i])(C_TailleX,C_TailleY);
+        wid_ForTop[i]->setLayout(dsgOnglet[i]);
+    }
+
+    QFormLayout *mainLayout = new QFormLayout;
+    mainLayout->addWidget(tab_Top);
+
+    w_DataFenetre->setLayout(mainLayout);
+    w_DataFenetre->setWindowTitle("Tirages");
+
+    QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_DataFenetre);
+    subWindow->resize(C_TailleX+C_Delta,C_TailleY+C_Delta);
+    subWindow->move(0,0);
+
+    w_DataFenetre->setVisible(true);
+
+
+}
+//--------
+#else
+void MainWindow::FEN_Old_Tirages(void)
+{
+#define C_TailleX   550
+#define C_TailleY   520
+
     // Onglet pere
     QTabWidget *tab_Top = new QTabWidget;
     QWidget **wid_ForTop = new QWidget*[2];
@@ -361,7 +440,7 @@ void MainWindow::FEN_Old_Tirages(void)
     G_tbv_Tirages->setAlternatingRowColors(true);
     //qtv_Tirages->setMinimumHeight(800);
     //Gtv_Tirages->setMinimumWidth(460);
-    //Gtv_Tirages->setFixedSize(600,600);
+    G_tbv_Tirages->setFixedSize(C_TailleX,C_TailleY);
 
     lay_ForTop[0]->addWidget(G_tbv_Tirages);
     wid_ForTop[0]->setLayout(lay_ForTop[0]);
@@ -373,6 +452,7 @@ void MainWindow::FEN_Old_Tirages(void)
     G_tbv_CouvTirages->setStyleSheet("QTableView {selection-background-color: red;}");
     G_tbv_CouvTirages->setEditTriggers(QAbstractItemView::NoEditTriggers);
     G_tbv_CouvTirages->setAlternatingRowColors(true);
+    G_tbv_CouvTirages->setFixedSize(C_TailleX,C_TailleY);
 
     lay_ForTop[1]->addWidget(G_tbv_CouvTirages);
     wid_ForTop[1]->setLayout(lay_ForTop[1]);
@@ -384,7 +464,7 @@ void MainWindow::FEN_Old_Tirages(void)
     G_w_Tirages->setLayout(lay_tirages);
     G_w_Tirages->setWindowTitle("Tirages");
     //Gw_Tirages->setMinimumHeight(420);
-    G_w_Tirages->setFixedSize(600,500);
+    //G_w_Tirages->setFixedSize(600,500);
 
     zoneCentrale->addSubWindow(G_w_Tirages);
     G_w_Tirages->setVisible(true);
@@ -401,6 +481,7 @@ void MainWindow::FEN_Old_Tirages(void)
 
 
 }
+#endif
 
 void MainWindow::fen_LstCouv(void)
 {
@@ -1801,11 +1882,11 @@ int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *ref)
              "(tb4.id = tb3.id)"
              "and"
              "(tb4.id_poids = tb5.id)"
-            "and"
-            "(tb2.id="
+             "and"
+             "(tb2.id="
             +QString::number(idTirage)+
             ")"
-             ")";
+            ")";
 
 #ifndef QT_NO_DEBUG
     // Effacer fenetre de debug
@@ -2157,7 +2238,7 @@ QGridLayout * MainWindow::MonLayout_pFnNsr1(stTiragesDef *pConf)
 
     syntheses = new SyntheseGenerale(DB_tirages,gtab_Top,zone,pConf,zoneCentrale);
     lay_return = syntheses->GetDisposition();
-    w_FenetreDetails->setVisible(true);
+    //w_FenetreDetails->setVisible(true);
     //w_FenetreDetails->lower();
 
     return(lay_return);
@@ -2188,7 +2269,7 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
 
     *st_tmp1 =CompteJourTirage(pConf);
     *st_tmp2 = OrganiseChampsDesTirages("tirages", pConf);
-*st_tmp3 = *st_tmp2 ;
+    *st_tmp3 = *st_tmp2 ;
 
     critereTirages.st_jourDef = st_tmp1;
     critereTirages.st_baseDef = st_tmp2;
@@ -2468,7 +2549,7 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
 
         // Nouvelle de fenetre de detail de cette boule
         SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale,gtab_Top);
-        w_FenetreDetails->setVisible(true);
+        //w_FenetreDetails->setVisible(true);
 
     }
 
@@ -2488,7 +2569,7 @@ void MainWindow::slot_CriteresTiragesAppliquer()
 
     // Nouvelle de fenetre de detail de cette boule
     SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale,gtab_Top);
-    w_FenetreDetails->setVisible(true);
+    //w_FenetreDetails->setVisible(true);
 
 }
 
@@ -3585,7 +3666,7 @@ void MainWindow::TST_RechercheCombi(stTiragesDef *ref, QTabWidget *onglets)
 
     for(int i = 1; i<=nbBoules;i++)
     {
-       sl_Lev0 << QString::number(i);
+        sl_Lev0 << QString::number(i);
     }
 
 #if 0
