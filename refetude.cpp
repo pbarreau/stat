@@ -127,21 +127,46 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
 QGridLayout *RefEtude::MonLayout_TabCouvertures()
 {
     QGridLayout *returnLayout = new QGridLayout;
+    QList<sCouv *> lstCouv;
+
     int zn = 0;
-    if(RechercheCouverture(zn))
+    if(RechercheCouverture(&lstCouv, zn))
     {
-        ;// Assocaition recherche avec qttable !
+        ;// Association recherche avec qttable !
+        int nb_colH = lstCouv.size();
+        int nb_lgn = p_conf->limites[zn].max;
+        QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,nb_colH);
+        QTableView *tmpTblView = new QTableView;
+        tmpTblView->setModel(tmpStdItem);
+
+        for(int i=nb_colH;i>0;i--)
+        {
+            QString colName = "C" +QString::number(i);
+            int curcol = nb_colH - i;
+            tmpStdItem->setHeaderData(curcol,Qt::Horizontal,colName);
+                    // Remplir resultat
+            for(int pos=0;pos <nb_lgn;pos++)
+            {
+              QStandardItem *item = new QStandardItem();
+              int b_val = lstCouv.at(i-1)->p_val[pos][1];
+              item->setData(b_val,Qt::DisplayRole);
+              tmpStdItem->setItem(pos,curcol,item);
+              tmpTblView->setColumnWidth(curcol,35);
+            }
+        }
+
+        returnLayout->addWidget(tmpTblView,0,0);
     }
 
     return returnLayout;
 }
 
-bool RefEtude::RechercheCouverture(int zn)
+bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
 {
     QSqlQuery query;
     bool status = false;
     bool uneCouvDePlus = false;
-    QList<sCouv *> lstCouv;
+
 
     status = query.exec(p_stRefTirages);
 
@@ -152,27 +177,27 @@ bool RefEtude::RechercheCouverture(int zn)
     if(status){
         // Premiere recherche de couverture
         sCouv *tmpCouv = new sCouv(zn,p_conf);
-        lstCouv.append(tmpCouv);
+        lstCouv->append(tmpCouv);
 
         do
         {
             if(uneCouvDePlus)
             {
                 sCouv *tmpCouv = new sCouv(zn,p_conf);
-                lstCouv.append(tmpCouv);
+                lstCouv->append(tmpCouv);
             }
 
             QSqlRecord rec  = query.record();
             int bId = 0;
-            uneCouvDePlus = AnalysePourCouverture(rec,&bId,zn,lstCouv.last());
+            uneCouvDePlus = AnalysePourCouverture(rec,&bId,zn,lstCouv->last());
 
             // Une couverture c'est produite en cours d'analyse du tirage
             if(uneCouvDePlus)
             {
                 sCouv *tmpCouv = new sCouv(zn,p_conf);
-                lstCouv.append(tmpCouv);
+                lstCouv->append(tmpCouv);
 
-              uneCouvDePlus = AnalysePourCouverture(rec,&bId,zn,lstCouv.last());
+              uneCouvDePlus = AnalysePourCouverture(rec,&bId,zn,lstCouv->last());
             }
 
 
@@ -185,7 +210,7 @@ bool RefEtude::RechercheCouverture(int zn)
 bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,sCouv *memo)
 {
     static bool depart=true;
-    static int total = 0;
+    static int total = 1;
     bool retVal = false;
 
     int id = unTirage.value(0).toInt();
@@ -204,7 +229,7 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
         b_val = unTirage.value(5+bId).toInt();
 
         // une couverture complete ?
-        if((total+1) <= memo->p_conf->limites[zn].max)
+        if(total <= memo->p_conf->limites[zn].max)
         {
             // non
 
@@ -212,7 +237,7 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
             if(memo->p_val[b_val-1][0])
             {
                 // recuperer position
-                int pos = memo->p_val[b_val-1][0];
+                int pos = memo->p_val[b_val-1][0]-1;
 
                 // incrementer la decouverte
                 memo->p_val[pos][2]++;
@@ -224,8 +249,8 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
                 // memoriser a l'indice de la boule sa position
                 memo->p_val[b_val-1][0]=total;
                 // sauver sa position
-                memo->p_val[total][1]=b_val;
-                memo->p_val[total][2]=1;
+                memo->p_val[total-1][1]=b_val;
+                memo->p_val[total-1][2]=1;
                 total++;
             }
         }
@@ -234,7 +259,7 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
             // oui
             retVal = true;
 
-            total=0;
+            total=1;
             depart=true;
             memo->p_fin=id;
 

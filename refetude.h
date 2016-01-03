@@ -18,7 +18,6 @@ class sCouv
     int p_deb;
     int p_fin;
     int **p_val;
-    int *p_connu;
 };
 
 class RefEtude:private sCouv
@@ -32,7 +31,7 @@ private:
     QGridLayout *MonLayout_TabCouvertures();
     QGridLayout *MonLayout_TabEcarts();
 
-    bool RechercheCouverture(int zn);
+    bool RechercheCouverture(QList<sCouv *> *lstCouv, int zn);
     bool AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn, sCouv *memo);
 
 private:
