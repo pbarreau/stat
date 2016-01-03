@@ -21,6 +21,9 @@
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
 
+
+#include "refetude.h"
+
 //#include <QtPlugin>
 //Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
 
@@ -2270,6 +2273,10 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
     *st_tmp1 =CompteJourTirage(pConf);
     *st_tmp2 = OrganiseChampsDesTirages("tirages", pConf);
     *st_tmp3 = *st_tmp2 ;
+
+    // test de nouvelle fenetre
+    RefEtude *unTest = new RefEtude(*st_tmp2,0,pConf);
+    return;
 
     critereTirages.st_jourDef = st_tmp1;
     critereTirages.st_baseDef = st_tmp2;
