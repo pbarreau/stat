@@ -17,6 +17,9 @@
 
 #include "refetude.h"
 
+#define XLenTir 500
+#define YLenTir 200
+
 sCouv::sCouv(int zn, stTiragesDef *pDef):p_conf(pDef),p_deb(-1),p_fin(-1)
 {
     int maxItems = p_conf->limites[zn].max;
@@ -41,7 +44,7 @@ sCouv::~sCouv()
 }
 
 RefEtude::RefEtude(QString stFiltreTirages,int zn,
-                   stTiragesDef *pDef):p_stRefTirages(stFiltreTirages),p_conf(pDef),sCouv(zn,pDef)
+                   stTiragesDef *pDef):p_stRefTirages(stFiltreTirages),p_conf(pDef)
 {
     QWidget *uneReponse = CreationOnglets();
 
@@ -86,9 +89,6 @@ QWidget *RefEtude::CreationOnglets()
 
 QGridLayout *RefEtude::MonLayout_TabTirages()
 {
-#define XLenTir 500
-#define YLenTir 200
-
     QGridLayout *lay_return = new QGridLayout;
 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
@@ -127,38 +127,158 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
 QGridLayout *RefEtude::MonLayout_TabCouvertures()
 {
     QGridLayout *returnLayout = new QGridLayout;
-    QList<sCouv *> lstCouv;
+    //QList<sCouv *> *lstCouv = p_MaListe;
 
     int zn = 0;
-    if(RechercheCouverture(&lstCouv, zn))
+    if(RechercheCouverture(&p_MaListe, zn))
     {
         ;// Association recherche avec qttable !
-        int nb_colH = lstCouv.size();
-        int nb_lgn = p_conf->limites[zn].max;
-        QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,nb_colH);
-        QTableView *tmpTblView = new QTableView;
-        tmpTblView->setModel(tmpStdItem);
-
-        for(int i=nb_colH;i>0;i--)
-        {
-            QString colName = "C" +QString::number(i);
-            int curcol = nb_colH - i;
-            tmpStdItem->setHeaderData(curcol,Qt::Horizontal,colName);
-                    // Remplir resultat
-            for(int pos=0;pos <nb_lgn;pos++)
-            {
-              QStandardItem *item = new QStandardItem();
-              int b_val = lstCouv.at(i-1)->p_val[pos][1];
-              item->setData(b_val,Qt::DisplayRole);
-              tmpStdItem->setItem(pos,curcol,item);
-              tmpTblView->setColumnWidth(curcol,35);
-            }
-        }
-
-        returnLayout->addWidget(tmpTblView,0,0);
+        QTableView *tbv_tmp1 = TablePourLstcouv(&p_MaListe, zn);
+        QTableView *tbv_tmp2 = DetailsLstcouv(zn);
+        returnLayout->addWidget(tbv_tmp1,0,0);
+        returnLayout->addWidget(tbv_tmp2,0,1);
     }
 
     return returnLayout;
+}
+
+QTableView * RefEtude::DetailsLstcouv(int zn)
+{
+    QTableView *qtv_tmp = new QTableView;
+
+    int nb_lgn = p_conf->limites[zn].max;
+    QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,3);
+
+    QString colName[]={"A","B","T"};
+    qtv_tmp->setModel(tmpStdItem);
+
+    for(int i=0;i<3;i++)
+    {
+        tmpStdItem->setHeaderData(i,Qt::Horizontal,colName[i]);
+        // Remplir resultat
+        for(int pos=0;pos <nb_lgn;pos++)
+        {
+            QStandardItem *item = new QStandardItem();
+
+            if(i == 0){
+                item->setData(pos+1,Qt::DisplayRole);
+            }
+            tmpStdItem->setItem(pos,i,item);
+            qtv_tmp->setColumnWidth(i,35);
+        }
+    }
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // Bloquer largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->hide();
+
+    // Taille tableau
+    qtv_tmp->setFixedSize(XLenTir/3,YLenTir);
+    qtv_tmp->setEnabled(false);
+
+    p_tbv_2 = qtv_tmp;
+    p_qsim_2 = tmpStdItem;
+    return qtv_tmp;
+}
+
+QTableView * RefEtude::TablePourLstcouv(QList<sCouv *> *lstCouv,int zn)
+{
+    QTableView *qtv_tmp = new QTableView;
+
+    int nb_colH = lstCouv->size();
+    int nb_lgn = p_conf->limites[zn].max;
+    QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,nb_colH);
+    qtv_tmp->setModel(tmpStdItem);
+
+    for(int i=nb_colH;i>0;i--)
+    {
+        QString colName = "C" +QString::number(i);
+        int curcol = nb_colH - i;
+        tmpStdItem->setHeaderData(curcol,Qt::Horizontal,colName);
+        // Remplir resultat
+        for(int pos=0;pos <nb_lgn;pos++)
+        {
+            QStandardItem *item = new QStandardItem();
+            int b_val = lstCouv->at(i-1)->p_val[pos][1];
+            item->setData(b_val,Qt::DisplayRole);
+            tmpStdItem->setItem(pos,curcol,item);
+            qtv_tmp->setColumnWidth(curcol,35);
+        }
+    }
+
+    qtv_tmp->setSortingEnabled(false);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // Bloquer largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    // Taille tableau
+    qtv_tmp->setFixedSize((XLenTir)*2/3,YLenTir);
+
+    // simple click dans fenetre  pour selectionner boule
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_Couverture( QModelIndex) ) );
+
+    p_tbv_1 = qtv_tmp;
+
+
+    return qtv_tmp;
+}
+
+void RefEtude::slot_Couverture(const QModelIndex & index)
+{
+    int col = index.column();
+    static int previous = -1;
+
+    QItemSelectionModel *selectionModel = p_tbv_1->selectionModel();
+    if(selectionModel->selectedIndexes().size() == 0)
+    {
+        p_tbv_2->setEnabled(false);
+        previous = -1;
+    }
+    else
+    {
+       if(previous != col)
+       {
+           previous = col;
+       }
+       else
+       {
+           return;
+       }
+        int nbItem = p_MaListe.size();
+        sCouv *pUndetails = p_MaListe.at(nbItem-1-col);
+
+        p_tbv_2->sortByColumn(0,Qt::AscendingOrder);
+
+        int zn = 0;
+        int nbBoules = p_conf->limites[zn].max;
+        for(int i=0;i<nbBoules;i++)
+        {
+            QStandardItem * item_1 = p_qsim_2->item(i,1);
+            QStandardItem * item_2 = p_qsim_2->item(i,2);
+
+            item_1->setData(pUndetails->p_val[i][1],Qt::DisplayRole);
+            item_2->setData(pUndetails->p_val[i][2],Qt::DisplayRole);
+
+            p_qsim_2->setItem(i,1,item_1);
+            p_qsim_2->setItem(i,2,item_2);
+        }
+        p_tbv_2->setEnabled(true);
+    }
+
 }
 
 bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
@@ -197,7 +317,7 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
                 sCouv *tmpCouv = new sCouv(zn,p_conf);
                 lstCouv->append(tmpCouv);
 
-              uneCouvDePlus = AnalysePourCouverture(rec,&bId,zn,lstCouv->last());
+                uneCouvDePlus = AnalysePourCouverture(rec,&bId,zn,lstCouv->last());
             }
 
 

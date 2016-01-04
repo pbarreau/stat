@@ -20,8 +20,9 @@ class sCouv
     int **p_val;
 };
 
-class RefEtude:private sCouv
+class RefEtude: public QObject
 {
+Q_OBJECT
 public:
     RefEtude(QString stFiltreTirages, int zn, stTiragesDef *pDef);
 
@@ -33,10 +34,19 @@ private:
 
     bool RechercheCouverture(QList<sCouv *> *lstCouv, int zn);
     bool AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn, sCouv *memo);
+    QTableView * TablePourLstcouv(QList<sCouv *> *lstCouv,int zn);
+    QTableView * DetailsLstcouv(int zn);
+
+public slots:
+    void slot_Couverture(const QModelIndex & index);
 
 private:
     QString p_stRefTirages;
     stTiragesDef *p_conf;
+    QList<sCouv *> p_MaListe;
+    QTableView *p_tbv_1;
+    QTableView *p_tbv_2;
+    QStandardItemModel *p_qsim_2;
 };
 
 #endif // REFETUDE_H
