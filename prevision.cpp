@@ -9,70 +9,88 @@
 -- comptage boule sur ligne v1
 select tbleft.id as R, tbleft.blgn as B,count(tbleft.blgn) as T, MAX(tbleft.sortie) as Smax from
 (
-select id, b1k as blgn, b1r as sortie  from BNEXT_b_D1 where id = 1
-union all
-select id, b2k as blgn, b2r as sortie  from BNEXT_b_D1 where id = 1
-union all
-select id, b3k as blgn, b3r as sortie   from BNEXT_b_D1 where id = 1
-union all
-select id, b4k as blgn, b4r as sortie   from BNEXT_b_D1 where id = 1
-union all
-select id,b5k as blgn, b5r as sortie   from BNEXT_b_D1 where id = 1
-) as tbleft
+        select id, b1k as blgn, b1r as sortie  from BNEXT_b_D1 where id = 1
+        union all
+        select id, b2k as blgn, b2r as sortie  from BNEXT_b_D1 where id = 1
+        union all
+        select id, b3k as blgn, b3r as sortie   from BNEXT_b_D1 where id = 1
+        union all
+        select id, b4k as blgn, b4r as sortie   from BNEXT_b_D1 where id = 1
+        union all
+        select id,b5k as blgn, b5r as sortie   from BNEXT_b_D1 where id = 1
+        ) as tbleft
 left join
 (
-select id,z1 from Bnrz where id <= 49
-)as tbright
+        select id,z1 from Bnrz where id <= 49
+        )as tbright
 on
 (
-tbright.z1 = tbleft.blgn
-) group by tbleft.blgn;
+        tbright.z1 = tbleft.blgn
+        ) group by tbleft.blgn;
 
 
 -- comptage boule sur ligne v2
 select tbleft.z1 as B,count(tbright.blgn) as T, MAX (tbright.sortie) as Smax from (select z1 from Bnrz where id <= 49) as tbleft
 left join
 (
-select b1k as blgn, b1r as sortie  from BNEXT_b_D1 where id = 1
-union all
-select b2k as blgn, b2r as sortie  from BNEXT_b_D1 where id = 1
-union all
-select b3k as blgn, b3r as sortie   from BNEXT_b_D1 where id = 1
-union all
-select b4k as blgn, b4r as sortie   from BNEXT_b_D1 where id = 1
-union all
-select b5k as blgn, b5r as sortie   from BNEXT_b_D1 where id = 1
-) as tbright
+        select b1k as blgn, b1r as sortie  from BNEXT_b_D1 where id = 1
+        union all
+        select b2k as blgn, b2r as sortie  from BNEXT_b_D1 where id = 1
+        union all
+        select b3k as blgn, b3r as sortie   from BNEXT_b_D1 where id = 1
+        union all
+        select b4k as blgn, b4r as sortie   from BNEXT_b_D1 where id = 1
+        union all
+        select b5k as blgn, b5r as sortie   from BNEXT_b_D1 where id = 1
+        ) as tbright
 on
 (
-tbleft.z1 = tbright.blgn
-) group by tbleft.z1;
+        tbleft.z1 = tbright.blgn
+        ) group by tbleft.z1;
 
 -- synthese
 select r as R, b as B, sum(t) as T, max (s) as Smax from tmpBilan group by b order by r asc, T desc, b desc ;
 
 #endif
 
-void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
+void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
 {
     bool status = true;
     QString msg1 = "";
     QSqlQuery query ;
     int zone = 0;
 
-    // Boule Finissant par xx
+
+    int maxElems = pConf->limites[zone].max;
+    int nbBoules = floor(maxElems/10)+1;
+
+    QStringList cri_msg;
+    QStringList cri_lab;
     QString str_fxx = "";
-    //QString str_dxx = "";
-    for(int i=0; i<10;i++)
+
+    // Parite & nb elment dans groupe
+    cri_msg <<"z1%2=0"<<"z1<"+QString::number(maxElems/2);
+    cri_lab << "P" << "G";
+
+
+    // Boule finissant par [0..9]
+    for(int j=0;j<=9;j++)
     {
-       str_fxx = str_fxx + "F" +QString::number(i)+ " int,";
+        cri_msg<< "z1 like '%" + QString::number(j) + "'";
+        cri_lab << "F"+ QString::number(j);
+        str_fxx = str_fxx + "F" +QString::number(j)+ " int,";
     }
-    for(int i=0; i<6;i++)
+
+    // Nombre de 10zaine
+    for(int j=0;j<nbBoules;j++)
     {
-       str_fxx = str_fxx + "U" +QString::number(i)+ " int,";
+        cri_msg<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
+        cri_lab << "U"+ QString::number(j);
+        str_fxx = str_fxx + "U" +QString::number(j)+ " int,";
     }
     //enlever la derniere ,
     str_fxx.remove(str_fxx.length()-1,1);
+
 
     // Creer table synthese Horizontale
     msg1 =  "create table if not exists repartition_bh "
@@ -91,23 +109,6 @@ void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
 
 
 
-    QStringList cri_msg;
-    QStringList cri_lab;
-
-    cri_msg <<"z1%2=0"<<"z1<26";
-    cri_lab << "P" << "G";
-
-    for(int j=0;j<=9;j++)
-    {
-      cri_msg<< "z1 like '%" + QString::number(j) + "'";
-      cri_lab << "F"+ QString::number(j);
-    }
-
-    for(int j=0;j<6;j++)
-    {
-      cri_msg<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
-      cri_lab << "U"+ QString::number(j);
-    }
 
     // Creer table synthese Verticale
     msg1 =  "create table if not exists repartition_bv "
@@ -123,16 +124,16 @@ void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
     query.finish();
 
 
-    // Parite/Groupe
+    // Parite/Groupe,...
     status = true;
     for(int i=0; (i< cri_msg.count()) && (status == true);i++)
     {
         // Creer Requete pour compter items
         msg1 = cri_msg[i];
-        msg1 = GetSql(msg1);
+        msg1 = GetSql(st_base,msg1);
 
 #ifndef QT_NO_DEBUG
-    qDebug() << msg1;
+        qDebug() << msg1;
 #endif
 
         status = query.exec(msg1);
@@ -153,7 +154,7 @@ void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
                         + "="+QString::number(tot) + " where id="
                         +QString::number(key)+";";
 #ifndef QT_NO_DEBUG
-    qDebug() << msg1;
+                qDebug() << msg1;
 #endif
 
                 status = sq2.exec(msg1);
@@ -168,9 +169,9 @@ void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
                             +QString::number(key-1)+ "="
                             +QString::number(tot) + " where id="
                             +QString::number(i+1)+";";
-    #ifndef QT_NO_DEBUG
-        qDebug() << msg1;
-    #endif
+#ifndef QT_NO_DEBUG
+                    qDebug() << msg1;
+#endif
 
                     status = sq2.exec(msg1);
 
@@ -184,57 +185,57 @@ void MainWindow::NEW_RepartionBoules(stTiragesDef *pConf)
     }
 }
 
-QString MainWindow::GetSql(QString st_cri)
+QString MainWindow::GetSql(QString st_tirages, QString st_cri)
 {
 #if 0
     --- Requete recherche parite sur base pour tirages
-    -- requete de groupement des paritees
-    select Nb, count(Nb) as Tp from
-    (
-    -- Req_1 : pour compter le nombre de boules pair par tirages
-    select tb1.id as Tid, count(tb2.B) as Nb from
-    (
-    select * from tirages
-    ) as tb1
-    left join
-    (
-    select id as B from Bnrz where (z1 not null  and (z1%2 = 0))
-    ) as tb2
-    on
-    (
-     tb2.B = tb1.b1 or
-     tb2.B = tb1.b2 or
-     tb2.B = tb1.b3 or
-     tb2.B = tb1.b4 or
-     tb2.B = tb1.b5
-    ) group by tb1.id order by Nb desc
-    -- fin req_1
-    )
-    group by Nb;
+            -- requete de groupement des paritees
+            select Nb, count(Nb) as Tp from
+            (
+                -- Req_1 : pour compter le nombre de boules pair par tirages
+                select tb1.id as Tid, count(tb2.B) as Nb from
+                (
+                    select * from tirages
+                    ) as tb1
+                left join
+                (
+                    select id as B from Bnrz where (z1 not null  and (z1%2 = 0))
+                    ) as tb2
+                on
+                (
+                    tb2.B = tb1.b1 or
+            tb2.B = tb1.b2 or
+            tb2.B = tb1.b3 or
+            tb2.B = tb1.b4 or
+            tb2.B = tb1.b5
+            ) group by tb1.id order by Nb desc
+                -- fin req_1
+                )
+            group by Nb;
 #endif
-  QString st_return =
-          "select Nb, count(Nb) as Tp from "
-          "("
-          "select tb1.id as Tid, count(tb2.B) as Nb from "
-          "("
-          "select * from tirages "
-          ") as tb1 "
-          "left join "
-          "("
-          "select id as B from Bnrz where (z1 not null  and ("+st_cri+")) "
-          ") as tb2 "
-          "on "
-          "("
-          "tb2.B = tb1.b1 or "
-          "tb2.B = tb1.b2 or "
-          "tb2.B = tb1.b3 or "
-          "tb2.B = tb1.b4 or "
-          "tb2.B = tb1.b5 "
-          ") group by tb1.id order by Nb desc "
-          ")"
-          "group by Nb;";
+    QString st_return =
+            "select Nb, count(Nb) as Tp from "
+            "("
+            "select tb1.id as Tid, count(tb2.B) as Nb from "
+            "("
+            "select * from " + st_tirages +" "
+                                           ") as tb1 "
+                                           "left join "
+                                           "("
+                                           "select id as B from Bnrz where (z1 not null  and ("+st_cri+")) "
+                                                                                                       ") as tb2 "
+                                                                                                       "on "
+                                                                                                       "("
+                                                                                                       "tb2.B = tb1.b1 or "
+                                                                                                       "tb2.B = tb1.b2 or "
+                                                                                                       "tb2.B = tb1.b3 or "
+                                                                                                       "tb2.B = tb1.b4 or "
+                                                                                                       "tb2.B = tb1.b5 "
+                                                                                                       ") group by tb1.id order by Nb desc "
+                                                                                                       ")"
+                                                                                                       "group by Nb;";
 
-  return(st_return);
+    return(st_return);
 }
 
 void MainWindow::NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPrecedent,stTiragesDef *pConf)
@@ -264,7 +265,7 @@ void MainWindow::NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPreced
            "("
            "select r as R, b as B, sum(t) as T, max (s) as Smax "
            "from tmpBilan group by r,b order by r asc, T desc, b asc "
-            ")"
+           ")"
            ";";
     status = query.exec(msg1);
     query.finish();
@@ -307,7 +308,7 @@ bool MainWindow::NEW_AnalyserCeTirage(int idTirage,  QString stTblRef,int zone, 
 
         if(bpos< nb_elem)
         {
-          msg1 = msg1 + ",";
+            msg1 = msg1 + ",";
         }
 
     }
@@ -401,31 +402,31 @@ bool MainWindow::NEW_FaireBilan(int idTirage, QString stTblRef,int zone, stTirag
     for(int i = 1; (i<=nbRang) && status == true;i++)
     {
         msg1 = "insert into tmpBilan (d, r, b, t, s) select D, R, B, T,Smax from "
-                "("
-                "select tbleft.d as D, tbleft.id as R, tbleft.blgn as B,count(tbleft.blgn) as T, MAX(tbleft.sortie) as Smax from "
-                "("
-                "select d, id, b1k as blgn, b1r as sortie  from "+nomTable+" where id =" +QString::number(i)+ " "
-                "union all "
-                "select d, id, b2k as blgn, b2r as sortie  from "+nomTable+" where id =" +QString::number(i)+ " "
-                "union all "
-                "select d, id, b3k as blgn, b3r as sortie   from "+nomTable+" where id =" +QString::number(i)+ " "
-                "union all "
-                "select d, id, b4k as blgn, b4r as sortie   from "+nomTable+" where id =" +QString::number(i)+ " "
-                "union all "
-                "select d, id,b5k as blgn, b5r as sortie   from "+nomTable+" where id =" +QString::number(i)+ " "
-                ") as tbleft "
-                "left join "
-                "("
-                "select id,z1 from Bnrz where id <="
+               "("
+               "select tbleft.d as D, tbleft.id as R, tbleft.blgn as B,count(tbleft.blgn) as T, MAX(tbleft.sortie) as Smax from "
+               "("
+               "select d, id, b1k as blgn, b1r as sortie  from "+nomTable+" where id =" +QString::number(i)+ " "
+                                                                                                             "union all "
+                                                                                                             "select d, id, b2k as blgn, b2r as sortie  from "+nomTable+" where id =" +QString::number(i)+ " "
+                                                                                                                                                                                                           "union all "
+                                                                                                                                                                                                           "select d, id, b3k as blgn, b3r as sortie   from "+nomTable+" where id =" +QString::number(i)+ " "
+                                                                                                                                                                                                                                                                                                          "union all "
+                                                                                                                                                                                                                                                                                                          "select d, id, b4k as blgn, b4r as sortie   from "+nomTable+" where id =" +QString::number(i)+ " "
+                                                                                                                                                                                                                                                                                                                                                                                                         "union all "
+                                                                                                                                                                                                                                                                                                                                                                                                         "select d, id,b5k as blgn, b5r as sortie   from "+nomTable+" where id =" +QString::number(i)+ " "
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ") as tbleft "
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       "left join "
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       "("
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       "select id,z1 from Bnrz where id <="
                 +QString::number(pConf->limites[zone].max)+" "
-                ")as tbright "
-                "on"
-                "("
-                "tbright.z1 = tbleft.blgn "
-                ") group by tbleft.blgn "
-                ");";
+                                                           ")as tbright "
+                                                           "on"
+                                                           "("
+                                                           "tbright.z1 = tbleft.blgn "
+                                                           ") group by tbleft.blgn "
+                                                           ");";
 #ifndef QT_NO_DEBUG
-    qDebug() << msg1;
+        qDebug() << msg1;
 #endif
 
         status = query.exec(msg1);
@@ -447,20 +448,20 @@ QString MainWindow::NEW_ColHeaderName(int idTirage,int zone, stTiragesDef *pConf
     QString st_tb = "t1.id";
     QString st_msg2 = " from "
                       "(select id from "  TB_BNRZ  " where id <= "
-                       +QString::number(pConf->limites[zone].max)+
-                       ") as t1 "
-                       "inner join "
-                       "(select tirages.* from tirages where id = "
-                       +QString::number(idTirage)+
-                       ") as t2 "
-                       "on "
-                       "("
-                       "t1.id = t2.b1 or "
-                       "t1.id = t2.b2 or "
-                       "t1.id = t2.b3 or "
-                       "t1.id = t2.b4 or "
-                       "t1.id = t2.b5 "
-                       ");";
+            +QString::number(pConf->limites[zone].max)+
+            ") as t1 "
+            "inner join "
+            "(select tirages.* from tirages where id = "
+            +QString::number(idTirage)+
+            ") as t2 "
+            "on "
+            "("
+            "t1.id = t2.b1 or "
+            "t1.id = t2.b2 or "
+            "t1.id = t2.b3 or "
+            "t1.id = t2.b4 or "
+            "t1.id = t2.b5 "
+            ");";
 
     msg1 = "select "+ st_tb+ st_msg2;
 
@@ -500,7 +501,7 @@ QString MainWindow::NEW_ColHeaderName(int idTirage,int zone, stTiragesDef *pConf
 
                 if(bpos< nb_elem)
                 {
-                  msg1 = msg1 + ",";
+                    msg1 = msg1 + ",";
                 }
 
             }while(query.next());

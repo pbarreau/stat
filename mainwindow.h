@@ -144,8 +144,8 @@ private:
     void NEW_ChercherTotalBoules(QStringList choix, stTiragesDef *pConf);
     QString NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBoule, int distance, stTiragesDef *pConf, int trie=0);
     QString NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules);
-    void NEW_RepartionBoules(stTiragesDef *pConf);
-    QString GetSql(QString st_cri);
+    void NEW_RepartionBoules(QString st_base, stTiragesDef *pConf);
+    QString GetSql(QString st_tirages, QString st_cri);
     void NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPrecedent,stTiragesDef *pConf);
     QString NEW_ColHeaderName(int idTirage, int zone, stTiragesDef *pConf);
     bool NEW_SyntheseDeBoule(int uneBoule, int colId, int loop, QString stTbRef, stTiragesDef *pConf);

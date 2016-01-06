@@ -216,7 +216,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Creation fenetre pour memoriser la selection
     // Creation fenetre resultat
 
-    NEW_RepartionBoules(&configJeu);
+    NEW_RepartionBoules("tirages", &configJeu);
     FEN_Ecarts();
 
     // Et affichage des combinaisons
