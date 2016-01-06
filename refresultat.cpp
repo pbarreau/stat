@@ -166,6 +166,7 @@ void SyntheseGenerale::DoComptageTotal(void)
 
 
 }
+
 void SyntheseGenerale::slot_RazSelection(QString)
 {
   tbv_bloc1_1->selectionModel()->clearSelection();
@@ -517,7 +518,48 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
 }
 
+QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
+{
+    QStringList *tmp = new QStringList [2];
 
+    int maxElems = pConf->limites[zn].max;
+    int nbBoules = floor(maxElems/10)+1;
+
+
+    // Parite & nb elment dans groupe
+    tmp[0] <<"z1%2=0"<<"z1<"+QString::number(maxElems/2);
+    tmp[1] << "P" << "G";
+
+
+    // Boule finissant par [0..9]
+    for(int j=0;j<=9;j++)
+    {
+        tmp[0]<< "z1 like '%" + QString::number(j) + "'";
+        tmp[1] << "F"+ QString::number(j);
+    }
+
+    // Nombre de 10zaine
+    for(int j=0;j<nbBoules;j++)
+    {
+        tmp[0]<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
+        tmp[1] << "U"+ QString::number(j);
+    }
+
+    return tmp;
+}
+
+#if 0
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+    int zone = 0;
+    int maxElems = uneDemande.ref->limites[zone].max;
+    int nbBoules = floor(maxElems/10)+1;
+
+    return (lay_return);
+}
+#else
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 {
     QGridLayout *lay_return = new QGridLayout;
@@ -584,8 +626,12 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 
 }
 
+#endif
+// ------------------------------
+
 void SyntheseGenerale::DoBloc3(void)
 {
+#if 0
     QSqlTableModel *tblModel = new QSqlTableModel;
     tblModel->setTable("repartition_bv");
     tblModel->select();
@@ -632,6 +678,7 @@ void SyntheseGenerale::DoBloc3(void)
 
     //disposition->addWidget(qtv_tmp,1,1,Qt::AlignLeft|Qt::AlignTop);
     tbv_bloc3=qtv_tmp;
+#endif
 }
 
 void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,

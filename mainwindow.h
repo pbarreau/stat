@@ -33,6 +33,7 @@ extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesD
 extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
 extern QString CompteJourTirage(stTiragesDef *pMaConf);
 extern int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *pMaConf);
+extern QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri);
 
 #if 0
 class MonToolTips:public QStandardItemModel
@@ -145,7 +146,6 @@ private:
     QString NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBoule, int distance, stTiragesDef *pConf, int trie=0);
     QString NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules);
     void NEW_RepartionBoules(QString st_base, stTiragesDef *pConf);
-    QString GetSql(QString st_tirages, QString st_cri);
     void NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPrecedent,stTiragesDef *pConf);
     QString NEW_ColHeaderName(int idTirage, int zone, stTiragesDef *pConf);
     bool NEW_SyntheseDeBoule(int uneBoule, int colId, int loop, QString stTbRef, stTiragesDef *pConf);

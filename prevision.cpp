@@ -60,32 +60,32 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
     QSqlQuery query ;
     int zone = 0;
 
-
+    QStringList *maRef = LstCritereGroupement(zone,pConf);
     int maxElems = pConf->limites[zone].max;
     int nbBoules = floor(maxElems/10)+1;
 
-    QStringList cri_msg;
-    QStringList cri_lab;
+    QStringList cri_msg=maRef[0];
+    QStringList cri_lab=maRef[1];
     QString str_fxx = "";
 
     // Parite & nb elment dans groupe
-    cri_msg <<"z1%2=0"<<"z1<"+QString::number(maxElems/2);
-    cri_lab << "P" << "G";
+    //cri_msg <<"z1%2=0"<<"z1<"+QString::number(maxElems/2);
+    //cri_lab << "P" << "G";
 
 
     // Boule finissant par [0..9]
     for(int j=0;j<=9;j++)
     {
-        cri_msg<< "z1 like '%" + QString::number(j) + "'";
-        cri_lab << "F"+ QString::number(j);
+        //cri_msg<< "z1 like '%" + QString::number(j) + "'";
+        //cri_lab << "F"+ QString::number(j);
         str_fxx = str_fxx + "F" +QString::number(j)+ " int,";
     }
 
     // Nombre de 10zaine
     for(int j=0;j<nbBoules;j++)
     {
-        cri_msg<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
-        cri_lab << "U"+ QString::number(j);
+        //cri_msg<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
+        //cri_lab << "U"+ QString::number(j);
         str_fxx = str_fxx + "U" +QString::number(j)+ " int,";
     }
     //enlever la derniere ,
@@ -108,7 +108,7 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
 
 
 
-
+#if 0
 
     // Creer table synthese Verticale
     msg1 =  "create table if not exists repartition_bv "
@@ -123,6 +123,7 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
     status = query.exec(msg1);
     query.finish();
 
+#endif
 
     // Parite/Groupe,...
     status = true;
@@ -130,7 +131,7 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
     {
         // Creer Requete pour compter items
         msg1 = cri_msg[i];
-        msg1 = GetSql(st_base,msg1);
+        msg1 = sql_RegroupeSelonCritere(st_base,msg1);
 
 #ifndef QT_NO_DEBUG
         qDebug() << msg1;
@@ -159,6 +160,7 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
 
                 status = sq2.exec(msg1);
 
+#if 0
                 if(status)
                 {
 
@@ -176,6 +178,8 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
                     status = sq2.exec(msg1);
 
                 }
+#endif
+
                 key++;
             }while(query.next() && status);
         }
@@ -185,7 +189,7 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
     }
 }
 
-QString MainWindow::GetSql(QString st_tirages, QString st_cri)
+QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
 {
 #if 0
     --- Requete recherche parite sur base pour tirages
@@ -218,22 +222,24 @@ QString MainWindow::GetSql(QString st_tirages, QString st_cri)
             "("
             "select tb1.id as Tid, count(tb2.B) as Nb from "
             "("
-            "select * from " + st_tirages +" "
-                                           ") as tb1 "
-                                           "left join "
-                                           "("
-                                           "select id as B from Bnrz where (z1 not null  and ("+st_cri+")) "
-                                                                                                       ") as tb2 "
-                                                                                                       "on "
-                                                                                                       "("
-                                                                                                       "tb2.B = tb1.b1 or "
-                                                                                                       "tb2.B = tb1.b2 or "
-                                                                                                       "tb2.B = tb1.b3 or "
-                                                                                                       "tb2.B = tb1.b4 or "
-                                                                                                       "tb2.B = tb1.b5 "
-                                                                                                       ") group by tb1.id order by Nb desc "
-                                                                                                       ")"
-                                                                                                       "group by Nb;";
+            "select * from " + st_tirages
+            +" "
+             ") as tb1 "
+             "left join "
+             "("
+             "select id as B from Bnrz where (z1 not null  and ("+st_cri
+            +")) "
+             ") as tb2 "
+             "on "
+             "("
+             "tb2.B = tb1.b1 or "
+             "tb2.B = tb1.b2 or "
+             "tb2.B = tb1.b3 or "
+             "tb2.B = tb1.b4 or "
+             "tb2.B = tb1.b5 "
+             ") group by tb1.id order by Nb desc "
+             ")"
+             "group by Nb;";
 
     return(st_return);
 }
