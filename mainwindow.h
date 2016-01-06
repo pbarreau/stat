@@ -33,7 +33,6 @@ extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesD
 extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
 extern QString CompteJourTirage(stTiragesDef *pMaConf);
 extern int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *pMaConf);
-extern QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri);
 
 #if 0
 class MonToolTips:public QStandardItemModel

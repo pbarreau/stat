@@ -260,6 +260,60 @@ qDebug() << table;
     return table;
 }
 
+QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
+{
+#if 0
+    --- Requete recherche parite sur base pour tirages
+            -- requete de groupement des paritees
+            select Nb, count(Nb) as Tp from
+            (
+                -- Req_1 : pour compter le nombre de boules pair par tirages
+                select tb1.id as Tid, count(tb2.B) as Nb from
+                (
+                    select * from tirages
+                    ) as tb1
+                left join
+                (
+                    select id as B from Bnrz where (z1 not null  and (z1%2 = 0))
+                    ) as tb2
+                on
+                (
+                    tb2.B = tb1.b1 or
+            tb2.B = tb1.b2 or
+            tb2.B = tb1.b3 or
+            tb2.B = tb1.b4 or
+            tb2.B = tb1.b5
+            ) group by tb1.id order by Nb desc
+                -- fin req_1
+                )
+            group by Nb;
+#endif
+    QString st_return =
+            "select Nb, count(Nb) as Tp from "
+            "("
+            "select tb1.id as Tid, count(tb2.B) as Nb from "
+            "("
+            "select * from (" + st_tirages
+            +") as r1 "
+             ") as tb1 "
+             "left join "
+             "("
+             "select id as B from Bnrz where (z1 not null  and ("+st_cri
+            +")) "
+             ") as tb2 "
+             "on "
+             "("
+             "tb2.B = tb1.b1 or "
+             "tb2.B = tb1.b2 or "
+             "tb2.B = tb1.b3 or "
+             "tb2.B = tb1.b4 or "
+             "tb2.B = tb1.b5 "
+             ") group by tb1.id order by Nb desc "
+             ")"
+             "group by Nb;";
+
+    return(st_return);
+}
 //---------------- Fin Local Fns ------------------------
 SyntheseDetails::~SyntheseDetails()
 {
@@ -293,7 +347,7 @@ QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString Req
 
     //QLabel * titre = new QLabel;
 
-    QString ongNames[]={"b","e","c"};
+    QString ongNames[]={"b","e","c","g"};
     int maxOnglets = sizeof(ongNames)/sizeof(QString);
 
     QTabWidget *tab_Top = new QTabWidget;
@@ -306,7 +360,8 @@ QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString Req
     {
             &SyntheseDetails::MonLayout_CompteBoulesZone,
             &SyntheseDetails::MonLayout_CompteBoulesZone,
-            &SyntheseDetails::MonLayout_CompteCombi
+            &SyntheseDetails::MonLayout_CompteCombi,
+            &SyntheseDetails::MonLayout_CompteDistribution
 };
 
     //titre->setText("Position "+labNames[i]);
@@ -1025,6 +1080,108 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
 
     return(lay_return);
 }
+
+QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude, QString ReqTirages, int laPos, int ongPere)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+    int zn=0;
+    int maxElems = pEtude->ref->limites[zn].max;
+    int nbBoules = floor(maxElems/10)+1;
+
+    QStringList *maRef = LstCritereGroupement(zn,pEtude->ref);
+    int nbCol = maRef[0].size();
+    int nbLgn = pEtude->ref->nbElmZone[zn] + 1;
+
+    QTableView *qtv_tmp = new QTableView;
+    QStandardItemModel * tmpStdItem = NULL;
+    QSqlQuery query ;
+
+    //Creer un tableau d'element standard
+    if(nbCol)
+    {
+        tmpStdItem =  new QStandardItemModel(nbLgn,nbCol);
+        qtv_tmp->setModel(tmpStdItem);
+
+        QStringList tmp=maRef[1];
+        tmp.insert(0,"Nb");
+        tmpStdItem->setHorizontalHeaderLabels(tmp);
+        for(int lgn=0;lgn<nbLgn;lgn++)
+        {
+            for(int pos=0;pos <=nbCol;pos++)
+            {
+                QStandardItem *item = new QStandardItem();
+
+                if(pos == 0){
+                    item->setData(lgn,Qt::DisplayRole);
+                }
+                tmpStdItem->setItem(lgn,pos,item);
+                qtv_tmp->setColumnWidth(pos,30);
+            }
+        }
+        // Gestion du QTableView
+        qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+        qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+        qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+        qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        qtv_tmp->setAlternatingRowColors(true);
+        qtv_tmp->setFixedSize(380,CHauteur1);
+
+        qtv_tmp->setSortingEnabled(true);
+        qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+        qtv_tmp->verticalHeader()->hide();
+
+        QHeaderView *htop = qtv_tmp->horizontalHeader();
+        htop->setSectionResizeMode(QHeaderView::Fixed);
+        qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+
+        QVBoxLayout *vb_tmp = new QVBoxLayout;
+        QLabel * lab_tmp = new QLabel;
+        lab_tmp->setText("Groupement par memoire");
+        vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+        vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+        lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+    }
+    else
+    {
+        return lay_return;
+    }
+
+    bool status = true;
+    for(int i=0; (i< nbCol) && (status == true);i++)
+    {
+        // Creer Requete pour compter items
+        QString msg1 = maRef[0].at(i);
+        QString sqlReq = "";
+        sqlReq = sql_RegroupeSelonCritere(*(pEtude->st_baseDef),msg1);
+
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
+#endif
+
+        status = query.exec(sqlReq);
+
+        // Mise a jour de la tables des resultats
+        if(status)
+        {
+            query.first();
+            do
+            {
+                int nb = query.value(0).toInt();
+                int tot = query.value(1).toInt();
+
+                QStandardItem * item_1 = tmpStdItem->item(nb,i+1);
+                item_1->setData(tot,Qt::DisplayRole);
+                tmpStdItem->setItem(nb,i+1,item_1);
+            }while(query.next() && status);
+        }
+    }
+
+    return(lay_return);
+}
+
 
 QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, int dst)
 {

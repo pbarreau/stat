@@ -111,6 +111,7 @@ public:
 
     QGridLayout * MonLayout_CompteCombi(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
     QGridLayout * MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
+    QGridLayout * MonLayout_CompteDistribution(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
 
     // penser au destructeur pour chaque pointeur
     QString ReponsesOrigine_1(int dst);
@@ -164,5 +165,7 @@ extern QString PBAR_Req3(QString *base, QString baseFiltre,int dst);
 extern QString FiltreLesTirages(stCurDemande *pEtude);
 extern QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn,int distance);
 extern QString PBAR_ReqNbCombi(stCurDemande *pEtude, QString ReqTirages);
+extern QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf);
+extern QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri);
 
 #endif // SYNTHESEDETAILS_H

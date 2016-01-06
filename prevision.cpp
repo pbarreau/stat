@@ -4,6 +4,7 @@
 
 #include <QtGui>
 #include "mainwindow.h"
+#include "SyntheseDetails.h"
 
 #if 0
 -- comptage boule sur ligne v1
@@ -190,60 +191,6 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
     }
 }
 
-QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
-{
-#if 0
-    --- Requete recherche parite sur base pour tirages
-            -- requete de groupement des paritees
-            select Nb, count(Nb) as Tp from
-            (
-                -- Req_1 : pour compter le nombre de boules pair par tirages
-                select tb1.id as Tid, count(tb2.B) as Nb from
-                (
-                    select * from tirages
-                    ) as tb1
-                left join
-                (
-                    select id as B from Bnrz where (z1 not null  and (z1%2 = 0))
-                    ) as tb2
-                on
-                (
-                    tb2.B = tb1.b1 or
-            tb2.B = tb1.b2 or
-            tb2.B = tb1.b3 or
-            tb2.B = tb1.b4 or
-            tb2.B = tb1.b5
-            ) group by tb1.id order by Nb desc
-                -- fin req_1
-                )
-            group by Nb;
-#endif
-    QString st_return =
-            "select Nb, count(Nb) as Tp from "
-            "("
-            "select tb1.id as Tid, count(tb2.B) as Nb from "
-            "("
-            "select * from (" + st_tirages
-            +") as r1 "
-             ") as tb1 "
-             "left join "
-             "("
-             "select id as B from Bnrz where (z1 not null  and ("+st_cri
-            +")) "
-             ") as tb2 "
-             "on "
-             "("
-             "tb2.B = tb1.b1 or "
-             "tb2.B = tb1.b2 or "
-             "tb2.B = tb1.b3 or "
-             "tb2.B = tb1.b4 or "
-             "tb2.B = tb1.b5 "
-             ") group by tb1.id order by Nb desc "
-             ")"
-             "group by Nb;";
-
-    return(st_return);
-}
 
 void MainWindow::NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPrecedent,stTiragesDef *pConf)
 {

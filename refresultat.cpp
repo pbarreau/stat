@@ -1048,6 +1048,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     // recopie de la config courante
     uneDemande.st_titre = titre;
     uneDemande.cur_dst = 0;
+    //uneDemande.ref
     *etude = uneDemande;
     //etude->st_bdAll = etude->st_baseDef;
 
