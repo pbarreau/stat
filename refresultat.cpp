@@ -169,17 +169,17 @@ void SyntheseGenerale::DoComptageTotal(void)
 
 void SyntheseGenerale::slot_RazSelection(QString)
 {
-  tbv_bloc1_1->selectionModel()->clearSelection();
-  tbv_bloc1_2->selectionModel()->clearSelection();
-  tbv_bloc1_2->selectionModel()->clearSelection();
-  tbv_bloc2->selectionModel()->clearSelection();
+    tbv_bloc1_1->selectionModel()->clearSelection();
+    tbv_bloc1_2->selectionModel()->clearSelection();
+    tbv_bloc1_2->selectionModel()->clearSelection();
+    tbv_bloc2->selectionModel()->clearSelection();
 
-  for(int i =0; i< 4;i++)
-  {
-      uneDemande.selection[i].clear();
-  }
+    for(int i =0; i< 4;i++)
+    {
+        uneDemande.selection[i].clear();
+    }
 
-  selection->setText(CTXT_SELECTION);
+    selection->setText(CTXT_SELECTION);
 }
 
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
@@ -548,7 +548,7 @@ QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
     return tmp;
 }
 
-#if 0
+#if 1
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 {
     QGridLayout *lay_return = new QGridLayout;
@@ -556,6 +556,94 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
     int zone = 0;
     int maxElems = uneDemande.ref->limites[zone].max;
     int nbBoules = floor(maxElems/10)+1;
+
+    QStringList *maRef = LstCritereGroupement(zone,uneDemande.ref);
+    int nbCol = maRef[0].size();
+    int nbLgn = uneDemande.ref->nbElmZone[zone] + 1;
+
+    QTableView *qtv_tmp ;
+    tbv_bloc2 = new QTableView;
+    qtv_tmp=tbv_bloc2;
+    QStandardItemModel * tmpStdItem = NULL;
+    QSqlQuery query ;
+
+    //Creer un tableau d'element standard
+    if(nbCol)
+    {
+        tmpStdItem =  new QStandardItemModel(nbLgn,nbCol);
+        qtv_tmp->setModel(tmpStdItem);
+
+        QStringList tmp=maRef[1];
+        tmp.insert(0,"Nb");
+        tmpStdItem->setHorizontalHeaderLabels(tmp);
+        for(int lgn=0;lgn<nbLgn;lgn++)
+        {
+            for(int pos=0;pos <=nbCol;pos++)
+            {
+                QStandardItem *item = new QStandardItem();
+
+                if(pos == 0){
+                    item->setData(lgn,Qt::DisplayRole);
+                }
+                tmpStdItem->setItem(lgn,pos,item);
+                qtv_tmp->setColumnWidth(pos,30);
+            }
+        }
+        // Gestion du QTableView
+        qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+        qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+        qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+        qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        qtv_tmp->setAlternatingRowColors(true);
+        qtv_tmp->setFixedSize(380,CHauteur1);
+
+        qtv_tmp->setSortingEnabled(true);
+        //qtv_tmp->hideColumn(0);
+        qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+        qtv_tmp->verticalHeader()->hide();
+
+        //for(int i=0;i<tblModel->columnCount();i++)
+            //qtv_tmp->setColumnWidth(i,30);
+
+        QHeaderView *htop = qtv_tmp->horizontalHeader();
+        htop->setSectionResizeMode(QHeaderView::Fixed);
+        qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+
+        QVBoxLayout *vb_tmp = new QVBoxLayout;
+        QLabel * lab_tmp = new QLabel;
+        lab_tmp->setText("Groupement");
+        vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+        vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+        lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+    }
+    else
+    {
+        return lay_return;
+    }
+
+    return (lay_return);
+
+    bool status = true;
+    for(int i=0; (i< maRef[0][0].count()) && (status == true);i++)
+    {
+        // Creer Requete pour compter items
+        QString msg1 = maRef[i][0];
+        msg1 = sql_RegroupeSelonCritere(*(uneDemande.st_baseDef),msg1);
+
+#ifndef QT_NO_DEBUG
+        qDebug() << msg1;
+#endif
+
+        status = query.exec(msg1);
+
+        // Mise a jour de la tables des resultats
+        if(status)
+        {
+            query.first();
+        }
+    }
 
     return (lay_return);
 }
@@ -901,14 +989,14 @@ QString CreatreTitle(stCurDemande *pConf)
                     if(i<3){
                         titre = titre + " ("+headName+"):";
                     }
-                 }
+                }
 
                 if(i<3){
                     titre = titre + QString::number(use)+",";
                 }
                 else
                 {
-                  titre = titre + " (" +headName+","+QString::number(use)+"),";
+                    titre = titre + " (" +headName+","+QString::number(use)+"),";
                 }
             }
             titre.remove(titre.length()-1,1);
