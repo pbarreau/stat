@@ -207,6 +207,10 @@ QString FiltreLesTirages(stCurDemande *pEtude)
 {
     QString table = *(pEtude->st_baseDef);
 
+#ifndef QT_NO_DEBUG
+qDebug() << table;
+#endif
+
     for (int i = 0; i< 3 ;i++)
     {
         QModelIndexList indexes = pEtude->selection[i];
@@ -2050,9 +2054,12 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
     QString     st_req2 = "";
     QString     szn = "z" + QString::number(zn+1);
 
-    //const QAbstractItemModel * pModel = cellule.model();
     int col = cellule.column();
+#if USE_repartition_bh
     int nbi = cellule.model()->index(cellule.row(),1).data().toInt();
+#else
+    int nbi = cellule.model()->index(cellule.row(),0).data().toInt();
+#endif
 
     cri_msg <<szn+"%2=0"<<szn+"<"+QString::number((pRef->ref->limites[0].max)/2);
 
@@ -2067,10 +2074,18 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
         cri_msg<< szn+" >="+QString::number(10*j)+ " and "+szn+"<="+QString::number((10*j)+9);
     }
 
+#if USE_repartition_bh
     if(col>=2 && col <= 2+cri_msg.size())
     {
         col=col-2;
     }
+#else
+    if(col>=1 && col <= 1+cri_msg.size())
+    {
+        col=col-1;
+    }
+
+#endif
     else
     {
         col=0;

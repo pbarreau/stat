@@ -41,6 +41,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     QString *st_tmp = new QString;
     st_bdTirages = new QString;
     *st_bdTirages = OrganiseChampsDesTirages("tirages", pConf);
+    *st_tmp = *st_bdTirages;
 
     st_JourTirageDef = new QString;
     *st_JourTirageDef = CompteJourTirage(pConf);
@@ -548,106 +549,8 @@ QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
     return tmp;
 }
 
-#if 1
-QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
-{
-    QGridLayout *lay_return = new QGridLayout;
 
-    int zone = 0;
-    int maxElems = uneDemande.ref->limites[zone].max;
-    int nbBoules = floor(maxElems/10)+1;
-
-    QStringList *maRef = LstCritereGroupement(zone,uneDemande.ref);
-    int nbCol = maRef[0].size();
-    int nbLgn = uneDemande.ref->nbElmZone[zone] + 1;
-
-    QTableView *qtv_tmp ;
-    tbv_bloc2 = new QTableView;
-    qtv_tmp=tbv_bloc2;
-    QStandardItemModel * tmpStdItem = NULL;
-    QSqlQuery query ;
-
-    //Creer un tableau d'element standard
-    if(nbCol)
-    {
-        tmpStdItem =  new QStandardItemModel(nbLgn,nbCol);
-        qtv_tmp->setModel(tmpStdItem);
-
-        QStringList tmp=maRef[1];
-        tmp.insert(0,"Nb");
-        tmpStdItem->setHorizontalHeaderLabels(tmp);
-        for(int lgn=0;lgn<nbLgn;lgn++)
-        {
-            for(int pos=0;pos <=nbCol;pos++)
-            {
-                QStandardItem *item = new QStandardItem();
-
-                if(pos == 0){
-                    item->setData(lgn,Qt::DisplayRole);
-                }
-                tmpStdItem->setItem(lgn,pos,item);
-                qtv_tmp->setColumnWidth(pos,30);
-            }
-        }
-        // Gestion du QTableView
-        qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
-        qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-        qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-
-        qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        qtv_tmp->setAlternatingRowColors(true);
-        qtv_tmp->setFixedSize(380,CHauteur1);
-
-        qtv_tmp->setSortingEnabled(true);
-        //qtv_tmp->hideColumn(0);
-        qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
-        qtv_tmp->verticalHeader()->hide();
-
-        //for(int i=0;i<tblModel->columnCount();i++)
-            //qtv_tmp->setColumnWidth(i,30);
-
-        QHeaderView *htop = qtv_tmp->horizontalHeader();
-        htop->setSectionResizeMode(QHeaderView::Fixed);
-        qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-
-
-        QVBoxLayout *vb_tmp = new QVBoxLayout;
-        QLabel * lab_tmp = new QLabel;
-        lab_tmp->setText("Groupement");
-        vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-        vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-        lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
-    }
-    else
-    {
-        return lay_return;
-    }
-
-    return (lay_return);
-
-    bool status = true;
-    for(int i=0; (i< maRef[0][0].count()) && (status == true);i++)
-    {
-        // Creer Requete pour compter items
-        QString msg1 = maRef[i][0];
-        msg1 = sql_RegroupeSelonCritere(*(uneDemande.st_baseDef),msg1);
-
-#ifndef QT_NO_DEBUG
-        qDebug() << msg1;
-#endif
-
-        status = query.exec(msg1);
-
-        // Mise a jour de la tables des resultats
-        if(status)
-        {
-            query.first();
-        }
-    }
-
-    return (lay_return);
-}
-#else
+#if USE_repartition_bh
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 {
     QGridLayout *lay_return = new QGridLayout;
@@ -713,7 +616,118 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
     return (lay_return);
 
 }
+#else
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
+{
+    QGridLayout *lay_return = new QGridLayout;
 
+    int zone = 0;
+    int maxElems = uneDemande.ref->limites[zone].max;
+    int nbBoules = floor(maxElems/10)+1;
+
+    QStringList *maRef = LstCritereGroupement(zone,uneDemande.ref);
+    int nbCol = maRef[0].size();
+    int nbLgn = uneDemande.ref->nbElmZone[zone] + 1;
+
+    QTableView *qtv_tmp ;
+    tbv_bloc2 = new QTableView;
+    qtv_tmp=tbv_bloc2;
+    QStandardItemModel * tmpStdItem = NULL;
+    QSqlQuery query ;
+
+    //Creer un tableau d'element standard
+    if(nbCol)
+    {
+        tmpStdItem =  new QStandardItemModel(nbLgn,nbCol);
+        qtv_tmp->setModel(tmpStdItem);
+
+        QStringList tmp=maRef[1];
+        tmp.insert(0,"Nb");
+        tmpStdItem->setHorizontalHeaderLabels(tmp);
+        for(int lgn=0;lgn<nbLgn;lgn++)
+        {
+            for(int pos=0;pos <=nbCol;pos++)
+            {
+                QStandardItem *item = new QStandardItem();
+
+                if(pos == 0){
+                    item->setData(lgn,Qt::DisplayRole);
+                }
+                tmpStdItem->setItem(lgn,pos,item);
+                qtv_tmp->setColumnWidth(pos,30);
+            }
+        }
+        // Gestion du QTableView
+        qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+        qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+        qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+        qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        qtv_tmp->setAlternatingRowColors(true);
+        qtv_tmp->setFixedSize(380,CHauteur1);
+
+        qtv_tmp->setSortingEnabled(true);
+        qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+        qtv_tmp->verticalHeader()->hide();
+
+        QHeaderView *htop = qtv_tmp->horizontalHeader();
+        htop->setSectionResizeMode(QHeaderView::Fixed);
+        qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+
+        QVBoxLayout *vb_tmp = new QVBoxLayout;
+        QLabel * lab_tmp = new QLabel;
+        lab_tmp->setText("Groupement par memoire");
+        vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+        vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+        lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+    }
+    else
+    {
+        return lay_return;
+    }
+
+    bool status = true;
+    for(int i=0; (i< nbCol) && (status == true);i++)
+    {
+        // Creer Requete pour compter items
+        QString msg1 = maRef[0].at(i);
+        QString sqlReq = "";
+        sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_baseDef),msg1);
+
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
+#endif
+
+        status = query.exec(sqlReq);
+
+        // Mise a jour de la tables des resultats
+        if(status)
+        {
+            query.first();
+            do
+            {
+                int nb = query.value(0).toInt();
+                int tot = query.value(1).toInt();
+
+                QStandardItem * item_1 = tmpStdItem->item(nb,i+1);
+                item_1->setData(tot,Qt::DisplayRole);
+                tmpStdItem->setItem(nb,i+1,item_1);
+            }while(query.next() && status);
+        }
+    }
+
+    // simple click dans fenetre  pour selectionner boule
+    connect( tbv_bloc2, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_Select_G( QModelIndex) ) );
+
+    // double click dans fenetre  pour afficher details boule
+    connect( tbv_bloc2, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+
+    return (lay_return);
+
+}
 #endif
 // ------------------------------
 
@@ -1035,6 +1049,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     uneDemande.st_titre = titre;
     uneDemande.cur_dst = 0;
     *etude = uneDemande;
+    //etude->st_bdAll = etude->st_baseDef;
 
     // Nouvelle de fenetre de detail de cette selection
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);

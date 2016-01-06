@@ -20,6 +20,7 @@
 #define CHauteur1   180
 #define XLenTir     475
 #define YLenTir     225
+#define USE_repartition_bh  0
 
 typedef struct _demande
 {

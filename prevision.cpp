@@ -91,7 +91,7 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
     //enlever la derniere ,
     str_fxx.remove(str_fxx.length()-1,1);
 
-
+#if USE_repartition_bh
     // Creer table synthese Horizontale
     msg1 =  "create table if not exists repartition_bh "
             "("
@@ -106,7 +106,7 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
     status = query.exec(msg1);
     query.finish();
 
-
+#endif
 
 #if 0
 
@@ -146,6 +146,7 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
             int key = 1;
             do
             {
+                #if USE_repartition_bh
                 QSqlQuery sq2;
                 int nb = query.value(0).toInt();
                 int tot = query.value(1).toInt();
@@ -179,7 +180,7 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
 
                 }
 #endif
-
+#endif
                 key++;
             }while(query.next() && status);
         }
@@ -222,8 +223,8 @@ QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
             "("
             "select tb1.id as Tid, count(tb2.B) as Nb from "
             "("
-            "select * from " + st_tirages
-            +" "
+            "select * from (" + st_tirages
+            +") as r1 "
              ") as tb1 "
              "left join "
              "("
