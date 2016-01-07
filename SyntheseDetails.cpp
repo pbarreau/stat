@@ -293,7 +293,7 @@ QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
             "("
             "select tb1.id as Tid, count(tb2.B) as Nb from "
             "("
-            "select * from (" + st_tirages
+            "select * from (" + st_tirages.remove(";")
             +") as r1 "
              ") as tb1 "
              "left join "
@@ -1155,7 +1155,8 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
         // Creer Requete pour compter items
         QString msg1 = maRef[0].at(i);
         QString sqlReq = "";
-        sqlReq = sql_RegroupeSelonCritere(*(pEtude->st_baseDef),msg1);
+        //sqlReq = sql_RegroupeSelonCritere(*(pEtude->st_baseDef),msg1);
+sqlReq = sql_RegroupeSelonCritere(ReqTirages,msg1);
 
 #ifndef QT_NO_DEBUG
         qDebug() << sqlReq;
