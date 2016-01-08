@@ -208,7 +208,7 @@ QString FiltreLesTirages(stCurDemande *pEtude)
     QString table = *(pEtude->st_baseDef);
 
 #ifndef QT_NO_DEBUG
-qDebug() << table;
+    qDebug() << table;
 #endif
 
     for (int i = 0; i< 3 ;i++)
@@ -1155,8 +1155,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
         // Creer Requete pour compter items
         QString msg1 = maRef[0].at(i);
         QString sqlReq = "";
-        //sqlReq = sql_RegroupeSelonCritere(*(pEtude->st_baseDef),msg1);
-sqlReq = sql_RegroupeSelonCritere(ReqTirages,msg1);
+        sqlReq = sql_RegroupeSelonCritere(ReqTirages,msg1);
 
 #ifndef QT_NO_DEBUG
         qDebug() << sqlReq;

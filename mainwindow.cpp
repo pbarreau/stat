@@ -4810,6 +4810,11 @@ void MainWindow::slot_MontreTirageDansGraph(const QModelIndex & index)
 void MainWindow::slot_MontreTirageAnalyse(const QModelIndex & index)
 {
 
+#ifndef QT_NO_DEBUG
+qDebug() << "A debuger slot_MontreTirageAnalyse";
+#endif
+  return;
+
     int id = index.row()+1;
     int nb_col = gsim_AnalyseUnTirage->columnCount();
 
