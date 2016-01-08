@@ -47,7 +47,22 @@ void MainWindow::pslot_closeTabDetails(int index)
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
 
-    DB_tirages = new GererBase(dest_bdd,leJeu,&configJeu);
+    DB_tirages = new GererBase(dest_bdd,load,leJeu,&configJeu);
+
+
+    w_FenetreDetails = new QWidget;
+    gtab_Top = new QTabWidget;
+    gtab_Top->setTabsClosable(true);
+    QFormLayout *mainLayout = new QFormLayout;
+    mainLayout->addWidget(gtab_Top);
+    connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
+
+
+    TST_EtoileCombi(&configJeu);
+
+    fen_NewTirages(&configJeu);
+    FEN_Graphe(&configJeu);
+
     return;
 
 
@@ -59,7 +74,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     w_FenetreDetails = new QWidget;
     gtab_Top = new QTabWidget;
     gtab_Top->setTabsClosable(true);
-    QFormLayout *mainLayout = new QFormLayout;
+    //QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(gtab_Top);
     connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
 
@@ -87,11 +102,11 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     /// --- Fim rem 1
 
     // Preparer la base de données
-    DB_tirages->CreerBaseEnMemoire(dest_bdd,leJeu);
+    //DB_tirages->CreerBaseEnMemoire(dest_bdd,leJeu);
 
 
     // Creation des tables pour ce type jeu
-    DB_tirages->CreationTablesDeLaBDD(&tmp);
+    //DB_tirages->CreationTablesDeLaBDD(&tmp);
     //DB_tirages->CreerTableDistriCombi();
 
     //QApplication::quit();
@@ -4722,9 +4737,9 @@ void MainWindow::slot_MontreTirageAnalyse(const QModelIndex & index)
 {
 
 #ifndef QT_NO_DEBUG
-qDebug() << "A debuger slot_MontreTirageAnalyse";
+    qDebug() << "A debuger slot_MontreTirageAnalyse";
 #endif
-  return;
+    return;
 
     int id = index.row()+1;
     int nb_col = gsim_AnalyseUnTirage->columnCount();
@@ -4755,36 +4770,17 @@ void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
     VUE_MontreLeTirage(val);
 
     // Montre dans la fenetre table tirages
-    MontreDansLaQtView(G_tbv_Tirages,val,0);
+    //MontreDansLaQtView(G_tbv_Tirages,val,0);
 
 
     QTableView * pTableauTirages = NULL;
     pTableauTirages = syntheses->GetListeTirages();
     MontreDansLaQtView(pTableauTirages,val,2);
-
-#if 0
-    QAbstractItemModel *mon_model =G_tbv_Tirages->model();
-    QModelIndex item1 = mon_model->index(0,0, QModelIndex());
-
-    if (item1.isValid()){
-        item1 = item1.model()->index(val-1,0,QModelIndex());
-
-
-
-        // Montrer la selection dans le tableau des tirages
-        G_tbv_Tirages->setCurrentIndex(item1);
-        G_tbv_Tirages->scrollTo(item1);
-        G_tbv_Tirages->selectRow(val-1);
-
-        QItemSelectionModel *selectionModel (G_tbv_Tirages->selectionModel());
-        QItemSelection macellule(item1, item1);
-        selectionModel->select(macellule, QItemSelectionModel::Select);
-    }
-#endif
 }
 
 void MainWindow::MontreDansLaQtView(QTableView *ptr_qtv, int val,int col_id)
 {
+
     QAbstractItemModel *mon_model = ptr_qtv->model();
     QModelIndex item1 = mon_model->index(0,0, QModelIndex());
 

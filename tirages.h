@@ -132,12 +132,12 @@ class GererBase : public QObject,tirages
     Q_OBJECT
 public:
     GererBase(QObject *parent = 0);
-    GererBase(bool enMemoire,NE_FDJ::E_typeJeux leJeu,stTiragesDef *pConf);
+    GererBase(bool enMemoire,bool autoLoad,NE_FDJ::E_typeJeux leJeu,stTiragesDef *pConf);
     ~GererBase();
 
 public:
     QVariant data(const QModelIndex &index, int role) const;
-    bool CreerBaseEnMemoire(bool action, NE_FDJ::E_typeJeux type);
+    bool CreerBasePourEtude(bool action, NE_FDJ::E_typeJeux type);
     bool CreationTablesDeLaBDD(tirages *pRref);
     bool CTB_Table1(QString nomTable, tirages *pRef);
     bool CreerTableDistriCombi(void);
@@ -204,6 +204,8 @@ private:
     bool f4();
     bool SauverCombiVersTable (QStringList &combi);
     bool MettrePonderationCombi(int delta);
+    void LireFichiersDesTirages(bool autoLoad);
+    void AffectePoidsATirage_v2();
 
 private:
     QSqlDatabase db;

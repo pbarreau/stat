@@ -2,6 +2,9 @@
 #include <QDebug>
 #endif
 
+#include <QApplication>
+#include <math.h>
+
 #include <QFile>
 #include <QSqlTableModel>
 #include <QSqlQuery>
@@ -18,10 +21,10 @@ GererBase::GererBase(QObject *parent) :
 {
 }
 
-GererBase::GererBase(bool enMemoire,NE_FDJ::E_typeJeux leJeu,stTiragesDef *pConf)
+GererBase::GererBase(bool enMemoire, bool autoLoad, NE_FDJ::E_typeJeux leJeu, stTiragesDef *pConf)
 {
     // Creation de la base
-    if(CreerBaseEnMemoire(enMemoire,leJeu)==true)
+    if(CreerBasePourEtude(enMemoire,leJeu)==true)
     {
         typeTirages = new tirages(leJeu);
         typeTirages->getConfigFor(pConf);
@@ -29,6 +32,10 @@ GererBase::GererBase(bool enMemoire,NE_FDJ::E_typeJeux leJeu,stTiragesDef *pConf
 
         // Creer les tables initiales de la base
         CreationTablesDeLaBDD_v2();
+
+        // Charger les fichiers de donnees
+        LireFichiersDesTirages(autoLoad);
+
     }
 }
 
@@ -37,7 +44,80 @@ GererBase::~GererBase(void)
 
 }
 
-bool GererBase::CreerBaseEnMemoire(bool action,NE_FDJ::E_typeJeux type)
+void GererBase::LireFichiersDesTirages(bool autoLoad)
+{
+    QString ficSource = typeTirages->SelectSource(autoLoad);
+
+    if (LireLesTirages(ficSource,typeTirages) == false)
+    {
+        QApplication::quit();
+
+    }
+
+    if(typeTirages->conf.choixJeu == NE_FDJ::fdj_euro){
+        // Lecture des anciennes base des tirages
+        ficSource = "euromillions_2.csv";
+        LireLesTirages(ficSource,typeTirages);
+        ficSource="euromillions.csv";
+        LireLesTirages(ficSource,typeTirages);
+    }
+    else
+    {
+        //Rien
+    }
+
+    // La lecture a fait  l'analyse des tirages
+    // on affecte un poids pour chacun des tirages
+    AffectePoidsATirage_v2();
+
+}
+
+void GererBase::AffectePoidsATirage_v2()
+{
+    bool status = false;
+    QSqlQuery sql_1;
+    QSqlQuery sql_2;
+    QString msg_1 = "select * from lstcombi;";
+    stTiragesDef ref=typeTirages->conf;
+    int zn = 0;
+    int nbBoules = floor(ref.limites[zn].max/10);
+
+    status = sql_1.exec(msg_1);
+    if(status)
+    {
+        sql_1.first();
+        if(sql_1.isValid())
+        {
+
+            do{
+                int coef[6]={0};
+                QString msg_2 = "";
+                int id_poids = sql_1.value(0).toInt();
+
+                for(int i = 0; i<= nbBoules;i++)
+                {
+                    coef[i] = sql_1.value(4+i).toInt();
+                    msg_2 = msg_2 + "bd"+QString::number(i)
+                            +"="+QString::number(coef[i])+ " and ";
+                }
+
+                // creation d'une requete mise a jour des poids
+                //double poids = sql_1.value(lastcol-1).toDouble();
+                msg_2.remove(msg_2.length()-5,5);
+                msg_2 = "Update analyses set id_poids="
+                        +QString::number(id_poids)
+                        +" where(id in (select id from analyses where("
+                        +msg_2+")"
+                        +"));";
+
+                status = sql_2.exec(msg_2);
+
+            }while(sql_1.next()&& status);
+        }
+    }
+}
+
+bool GererBase::CreerBasePourEtude(bool action,NE_FDJ::E_typeJeux type)
 {
     // http://developer.nokia.com/community/wiki/Creating_an_SQLite_database_in_Qt
     db = QSqlDatabase::addDatabase("QSQLITE");
