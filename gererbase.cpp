@@ -16,8 +16,20 @@
 GererBase::GererBase(QObject *parent) :
     QObject(parent)
 {
-    iAffichageVoisinEnCoursDeLaBoule [0]= 0;
-    iAffichageVoisinEnCoursDeLaBoule [1]= 0;
+}
+
+GererBase::GererBase(bool enMemoire,NE_FDJ::E_typeJeux leJeu,stTiragesDef *pConf)
+{
+    // Creation de la base
+    if(CreerBaseEnMemoire(enMemoire,leJeu)==true)
+    {
+        typeTirages = new tirages(leJeu);
+        typeTirages->getConfigFor(pConf);
+        typeTirages->ListeCombinaison(pConf);
+
+        // Creer les tables initiales de la base
+        CreationTablesDeLaBDD_v2();
+    }
 }
 
 GererBase::~GererBase(void)
@@ -32,8 +44,7 @@ bool GererBase::CreerBaseEnMemoire(bool action,NE_FDJ::E_typeJeux type)
 
     QString mabase = "";
 
-    lieu = action;
-    if(action == true){
+     if(action == true){
 
         db.setDatabaseName(":memory:");
     }

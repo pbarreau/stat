@@ -27,26 +27,6 @@
 //#include <QtPlugin>
 //Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
 
-#if 0
-#include <QGraphicsEllipseItem>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-
-#include <QMessageBox>
-#include <QSqlQuery>
-#include <QSqlRecord>
-
-#include <QFile>
-#include <QFileDialog>
-#include <QTextStream>
-#include <QLineEdit>
-#include <QLabel>
-#include <QStandardItemModel>
-#include <QTableWidget>
-#include <QModelIndex>
-#include <QBrush>
-#include <QTabWidget>
-#endif
 
 #include <math.h>
 
@@ -58,76 +38,6 @@
 #include "gererbase.h"
 
 static stTiragesDef configJeu;
-#if 0
-Requete pour compter le nombre total de sortie des boules:
-    select count (boule) from (select boule from oazb)as t1
-  left join tirages on (
-  t1.boule = tirages.b1 or
-  t1.boule = tirages.b2 or
-  t1.boule = tirages.b3 or
-  t1.boule = tirages.b4 or
-  t1.boule = tirages.b5
-  ) group by boule;
-
-// Requete pour compter le nb de fois boule k avec les 48 autres:
-select boule as B1, table_2.T as T1 from (select boule from oazb)as t2
-left join
-(
-        select boule as B, count (boule)as T from (select boule from oazb where(boule !=2))as t1
-        left join tirages on (
-            (
-                t1.boule = tirages.b1 or
-        t1.boule = tirages.b2 or
-        t1.boule = tirages.b3 or
-        t1.boule = tirages.b4 or
-        t1.boule = tirages.b5
-        )
-            and
-            (
-                tirages.b1=2 or
-        tirages.b2=2 or
-        tirages.b3=2 or
-        tirages.b4=2 or
-        tirages.b5=2
-        )
-            ) group by boule
-        ) as table_2 on (B1=table_2.B) group by B1;
-
-// Requete pour nb k avec les 48 autres a une distance D=0
-select t3.boule as B1, table_2.T as T1
-from (select oazb.boule from oazb)as t3
-left join
-(
-        select t1.boule as B, count (t1.boule) as T
-        from (select oazb.boule from oazb where(oazb.boule != 1))as t1
-        left join
-        (
-            select *
-            from
-            (select id as id1 from tirages
-             where
-             (
-                 tirages.b1=1 or
-        tirages.b2=1 or
-        tirages.b3=1 or
-        tirages.b4=1 or
-        tirages.b5=1
-        )
-             ) as tabl4
-            left join tirages on tabl4.id1=tirages.id + 0
-        ) as t2
-        on
-        (
-            (
-                t1.boule = t2.b1 or
-        t1.boule = t2.b2 or
-        t1.boule = t2.b3 or
-        t1.boule = t2.b4 or
-        t1.boule = t2.b5
-        )
-            ) group by boule) as table_2
-on (B1=table_2.B) group by B1 order by B1 asc;
-#endif
 
 void MainWindow::pslot_closeTabDetails(int index)
 {
@@ -136,7 +46,11 @@ void MainWindow::pslot_closeTabDetails(int index)
 
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
-    DB_tirages = new GererBase;
+
+    DB_tirages = new GererBase(dest_bdd,leJeu,&configJeu);
+    return;
+
+
     int i;
     tirages tmp(leJeu);
     QString ficSource;
@@ -147,16 +61,13 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     gtab_Top->setTabsClosable(true);
     QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(gtab_Top);
-    //w_FenetreDetails->setLayout(mainLayout);
-    //w_FenetreDetails->setWindowTitle("Details");
-    //QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_FenetreDetails);
     connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
 
 
 
 
     // Recuperation des contantes du type de jeu
-    tmp.getConfig(&configJeu);
+    //tmp.getConfigFor(&configJeu);
 
 
     // Creation sous fenetre pour mettre donnees de base

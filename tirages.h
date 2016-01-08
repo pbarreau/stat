@@ -72,6 +72,8 @@ typedef struct _tirages_def
     stBornes *limites;
     unsigned char nb_tir_semaine;
     unsigned char nb_zone;
+    QStringList sl_Lev0;
+    QStringList sl_Lev1[5];
 }stTiragesDef;
 
 typedef struct _un_tirage
@@ -82,9 +84,8 @@ typedef struct _un_tirage
 
 class tirages
 {
-private:
+protected:
     static stTiragesDef conf;
-    static int **couverture;
 
 public:
     static QString *lib_col;
@@ -92,7 +93,7 @@ public:
 
 public:
     tirages(NE_FDJ::E_typeJeux jeu = NE_FDJ::fdj_none);
-    void getConfig(stTiragesDef *priv_conf);
+    void getConfigFor(stTiragesDef *priv_conf);
     QString SelectSource(bool load);
     QString s_LibColBase(stTiragesDef *ref);
     QString s_LibColAnalyse(stTiragesDef *pRef);
@@ -100,6 +101,7 @@ public:
     int RechercheNbBoulesPairs(int zone); // Nombre de nombre pair dans la zone
     int RechercheNbBoulesDansGrp1(int zone); // Nombre de nombre de la zone appartenant a E1;
     int RechercheNbBoulesLimite(int zone, int min, int max);
+    void ListeCombinaison(stTiragesDef *ref);
 
 };
 
@@ -125,11 +127,12 @@ protected:
     }
 };
 
-class GererBase : public QObject
+class GererBase : public QObject,tirages
 {
     Q_OBJECT
 public:
     GererBase(QObject *parent = 0);
+    GererBase(bool enMemoire,NE_FDJ::E_typeJeux leJeu,stTiragesDef *pConf);
     ~GererBase();
 
 public:
@@ -194,12 +197,20 @@ private:
     void MontrerDetailCombinaison(QString msg);
     void CreerTablePonderationAbsentDeBoule(int b_id, int zone, stTiragesDef *pConf);
 
+    bool CreationTablesDeLaBDD_v2();
+    bool f1();
+    bool f2();
+    bool f3();
+    bool f4();
+    bool SauverCombiVersTable (QStringList &combi);
+    bool MettrePonderationCombi(int delta);
+
 private:
     QSqlDatabase db;
+    tirages *typeTirages;
     QSqlTableModel *tbl_model;
     QSqlTableModel *tbl_couverture;
     int iAffichageVoisinEnCoursDeLaBoule[2];
-    bool lieu;
 };
 
 #endif // TIRAGES_H

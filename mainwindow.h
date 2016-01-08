@@ -223,11 +223,10 @@ private:
     QStandardItemModel * TST_SetTblViewVal(int nbLigne, QTableView *qtv_r);
 
 private:
-    //Ui::MainWindow *ui;
+    GererBase *DB_tirages;
     QMdiArea *zoneCentrale;
     QWidget *w_FenetreDetails;
     QTabWidget *gtab_Top;
-    GererBase *DB_tirages;
     SyntheseGenerale *syntheses;
     QTableView * qtv_s1;
     stCurDemande critereTirages;

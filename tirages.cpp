@@ -1,14 +1,13 @@
 #include <QFileDialog>
 
+#include <math.h>
 #include "tirages.h"
+
+static  void FGEN_RechercheCombi(int k, QStringList &l, const QString &s, QStringList &ret);
 
 // Variables static de la classe
 stTiragesDef tirages::conf;
 QString *tirages::lib_col;
-//NE_FDJ::E_typeJeux tirages::choixJeu;
-//NE_FDJ::E_typeJeux tirages.conf.choixJeu;
-//NE_FDJ::E_typeJeux tirages::conf::choixJeu;
-int **tirages::couverture;
 
 tirages::tirages(NE_FDJ::E_typeJeux jeu)
 {
@@ -119,7 +118,6 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
   }
 
   lib_col = new QString [conf.nb_zone];
-  couverture = new int *[conf.nb_zone];
   value.valBoules = new int *[conf.nb_zone];
   for(zone = 0; zone < conf.nb_zone; zone++)
   {
@@ -129,16 +127,10 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
     {
       value.valBoules[zone][j]=0;
     }
-
-    couverture[zone]=new int[conf.limites[zone].max];
-    for(j=0;j<conf.limites[zone].max;j++)
-    {
-      couverture[zone][j]=0;
-    }
   }
 }
 
-void tirages::getConfig(stTiragesDef *priv_conf)
+void tirages::getConfigFor(stTiragesDef *priv_conf)
 {
 
   int *nbElmZone = NULL;
@@ -342,6 +334,47 @@ int tirages::RechercheNbBoulesDansGrp1(int zone)
 
 }
 
+void tirages::ListeCombinaison(stTiragesDef *ref)
+{
+  int nbBoules = floor(ref->limites[0].max/10)+1;
+  for(int i = 1; i<=nbBoules;i++)
+  {
+      conf.sl_Lev0 << QString::number(i);
+  }
+
+  // Recuperation des combinaison C(1,5), C(2,5), C(3,5), C(4,5), C(5,5)
+  for (int i = 0; i< 5; i++)
+  {
+      FGEN_RechercheCombi(i+1, conf.sl_Lev0, "" , conf.sl_Lev1[i]);
+
+  }
+
+}
+
+// Recherche des combinaison possible
+void FGEN_RechercheCombi(int k, QStringList &l, const QString &s, QStringList &ret)
+{
+    QStringList tmp = l;
+
+    tmp.removeAt(0);
+
+    if (k==0) {
+        ret << s ;
+        return;
+    }
+    if (l.isEmpty()) return;
+
+    if (s.isEmpty())
+    {
+        FGEN_RechercheCombi(k-1, tmp, l.at(0),ret);
+    }
+    else
+    {
+        FGEN_RechercheCombi(k-1, tmp, s+","+l.at(0),ret);
+    }
+
+    FGEN_RechercheCombi(k, tmp, s,ret);
+}
 
 // http://forum.hardware.fr/hfr/Programmation/C-2/resolu-renvoyer-combinaison-sujet_23393_1.htm
 // C : http://www.dcode.fr/generer-calculer-combinaisons

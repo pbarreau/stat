@@ -23,7 +23,7 @@ PointTirage::PointTirage(NE_FDJ::E_typeJeux leJeu, eGType sceneType) :
   tirRef = new tirages(leJeu);
 
   stTiragesDef mesdef;
-  tirRef->getConfig(&mesdef);
+  tirRef->getConfigFor(&mesdef);
 
   tirDef = mesdef;
 

@@ -16,7 +16,6 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     choixjeux.cpp \
     CreerTables.cpp \
-    etudierjeu.cpp \
     gererbase.cpp \
     ihm.cpp \
     ImportFdj.cpp \
@@ -41,7 +40,6 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
-    etudierjeu.h \
     gererbase.h \
     mygraphicsview.h \
     pointtirage.h \

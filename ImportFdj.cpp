@@ -42,7 +42,7 @@ bool GererBase::LireLesTirages(QString fileName_2, tirages *pRef)
   QString ligne = "";
   QStringList list1;
   stTiragesDef ref;
-  pRef->getConfig(&ref);
+  pRef->getConfigFor(&ref);
 
   QString str_1 = "";
   QString str_2 = "";
