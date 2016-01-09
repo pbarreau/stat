@@ -16,7 +16,6 @@
 #include "tirages.h"
 #include "labelclickable.h"
 
-QString req_msg(QString base, int zone, int boule, stTiragesDef *ref);
 // 1,$s/ r"/ r_"\+pConf->nomZone[zone]\+"_"/g
 
 void GererBase::TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, QStandardItemModel *modele)
@@ -1447,7 +1446,7 @@ void GererBase::CouvMontrerProbable(int i,
 QString req_msg(QString base, int zone, int boule, stTiragesDef *ref)
 {
     int max_elm_zone = ref->nbElmZone[zone];
-    QString msg = "select id from "+ base +" where (";
+    QString msg = "select r1.id as id from ("+ base +") as r1 where (";
 
 
     // Suite msg requete

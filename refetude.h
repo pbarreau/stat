@@ -37,7 +37,10 @@ private:
     QTableView * TablePourLstcouv(QList<sCouv *> *lstCouv,int zn);
     QTableView * DetailsLstcouv(int zn);
 
-    void RemplirTableauEcart(QStandardItemModel *sim_tmp);
+    void RemplirTableauEcart(int zn,QStandardItemModel *sim_tmp);
+    void MontrerBoulesNonSorties(int zn, QStandardItemModel *sim_tmp, sCouv *curCouv, int memo_last_boule);
+    void DistributionSortieDeBoule_v2(int zn, int boule, QStandardItemModel *modele);
+    void CouvMontrerProbable_v2(int i,QStandardItemModel *dest);
 
 public slots:
     void slot_Couverture(const QModelIndex & index);

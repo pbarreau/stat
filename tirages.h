@@ -219,5 +219,6 @@ private:
 
 
 extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
+extern QString req_msg(QString base, int zone, int boule, stTiragesDef *ref);
 
 #endif // TIRAGES_H
