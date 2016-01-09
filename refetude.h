@@ -36,6 +36,8 @@ private:
     bool AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn, sCouv *memo);
     QTableView * TablePourLstcouv(QList<sCouv *> *lstCouv,int zn);
     QTableView * DetailsLstcouv(int zn);
+    QTableView * tbForBaseRef();
+    QTableView * tbForBaseEcart();
 
     void RemplirTableauEcart(int zn,QStandardItemModel *sim_tmp);
     void MontrerBoulesNonSorties(int zn, QStandardItemModel *sim_tmp, sCouv *curCouv, int memo_last_boule);

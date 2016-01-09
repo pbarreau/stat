@@ -1054,13 +1054,13 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->hideColumn(0); // don't show the ID
     qtv_tmp->verticalHeader()->hide();
-    qtv_tmp->setFixedSize(290,CHauteur1);
+    qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
 
     // Taille/Nom des colonnes
     qtv_tmp->setColumnWidth(1,70);
     for(int j=2;j<sqm_tmp->columnCount();j++)
     {
-        qtv_tmp->setColumnWidth(j,40);
+        qtv_tmp->setColumnWidth(j,LCELL);
     }
     // Ne pas modifier largeur des colonnes
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
@@ -1116,7 +1116,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
                     item->setData(lgn,Qt::DisplayRole);
                 }
                 tmpStdItem->setItem(lgn,pos,item);
-                qtv_tmp->setColumnWidth(pos,30);
+                qtv_tmp->setColumnWidth(pos,LCELL);
             }
         }
         // Gestion du QTableView
@@ -1126,7 +1126,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
 
         qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
         qtv_tmp->setAlternatingRowColors(true);
-        qtv_tmp->setFixedSize(380,CHauteur1);
+        qtv_tmp->setFixedSize(CLargeur1*1.8,CHauteur1);
 
         qtv_tmp->setSortingEnabled(true);
         qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
@@ -1385,8 +1385,8 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     qtv_tmp->verticalHeader()->hide();
 
     for(int j=0;j<=sqm_tmp->columnCount();j++)
-        qtv_tmp->setColumnWidth(j,30);
-    qtv_tmp->setFixedSize(200,CHauteur1);
+        qtv_tmp->setColumnWidth(j,LCELL);
+    qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
 
     // Ne pas modifier largeur des colonnes
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);

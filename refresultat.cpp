@@ -245,7 +245,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(225,180);
+    qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -255,7 +255,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     for(int j=0;j<2;j++)
         qtv_tmp->setColumnWidth(j,30);
     for(int j=2;j<=sqm_bloc1_2->columnCount();j++)
-        qtv_tmp->setColumnWidth(j,40);
+        qtv_tmp->setColumnWidth(j,LCELL);
 
 
     // Ne pas modifier largeur des colonnes
@@ -352,7 +352,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     //qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     //qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(290,CHauteur1);
+    qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -362,7 +362,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     qtv_tmp->setColumnWidth(0,30);
     qtv_tmp->setColumnWidth(1,70);
     for(int j=2;j<=sqm_tmp->columnCount();j++)
-        qtv_tmp->setColumnWidth(j,40);
+        qtv_tmp->setColumnWidth(j,LCELL);
 
 
     // Ne pas modifier largeur des colonnes
@@ -483,7 +483,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(225,180);
+    qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -493,7 +493,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     for(int j=0;j<2;j++)
         qtv_tmp->setColumnWidth(j,30);
     for(int j=2;j<=sqm_bloc1_1->columnCount();j++)
-        qtv_tmp->setColumnWidth(j,40);
+        qtv_tmp->setColumnWidth(j,LCELL);
 
 
     // Ne pas modifier largeur des colonnes
@@ -656,7 +656,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
                     item->setData(lgn,Qt::DisplayRole);
                 }
                 tmpStdItem->setItem(lgn,pos,item);
-                qtv_tmp->setColumnWidth(pos,30);
+                qtv_tmp->setColumnWidth(pos,LCELL);
             }
         }
         // Gestion du QTableView
@@ -666,7 +666,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 
         qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
         qtv_tmp->setAlternatingRowColors(true);
-        qtv_tmp->setFixedSize(380,CHauteur1);
+        qtv_tmp->setFixedSize(CLargeur1*1.8,CHauteur1);
 
         qtv_tmp->setSortingEnabled(true);
         qtv_tmp->sortByColumn(0,Qt::AscendingOrder);

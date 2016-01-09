@@ -16,10 +16,7 @@
 #include <QHeaderView>
 
 #include "refetude.h"
-#include "SyntheseDetails.h"
-
-//#define XLenTir 500
-//#define YLenTir 200
+#include "tirages.h"
 
 sCouv::sCouv(int zn, stTiragesDef *pDef):p_conf(pDef),p_deb(-1),p_fin(-1)
 {
@@ -47,11 +44,10 @@ sCouv::~sCouv()
 RefEtude::RefEtude(QString stFiltreTirages,int zn,
                    stTiragesDef *pDef):p_stRefTirages(stFiltreTirages),p_conf(pDef)
 {
+    RechercheCouverture(&p_MaListe, zn);
+
     QWidget *uneReponse = CreationOnglets();
 
-#ifndef QT_NO_DEBUG
-    qDebug()<< stFiltreTirages;
-#endif
 
     uneReponse->show();
 }
@@ -92,47 +88,103 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
 {
     QGridLayout *lay_return = new QGridLayout;
 
+    QTableView *tbv_tmp1 = tbForBaseRef();
+    QTableView *tbv_tmp2 = tbForBaseEcart();
+    lay_return->addWidget(tbv_tmp1,0,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(tbv_tmp2,0,1,Qt::AlignLeft|Qt::AlignTop);
+
+    return lay_return;
+}
+
+QTableView *RefEtude::tbForBaseRef()
+{
+    QTableView *tbv_tmp = new QTableView;
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    QTableView *qtv_tmp = new QTableView;
 
     sqm_tmp->setQuery(p_stRefTirages);
-    qtv_tmp->setModel(sqm_tmp);
+    tbv_tmp->setModel(sqm_tmp);
 
-    qtv_tmp->setSortingEnabled(false);
+    tbv_tmp->setSortingEnabled(false);
+    tbv_tmp->setAlternatingRowColors(true);
+    tbv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    tbv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    tbv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tbv_tmp->hideColumn(0);
+    tbv_tmp->hideColumn(1);
+
+    // Formattage de largeur de colonnes
+    for(int j=0;j<=4;j++)
+        tbv_tmp->setColumnWidth(j,75);
+
+    for(int j=5;j<=sqm_tmp->columnCount();j++)
+        tbv_tmp->setColumnWidth(j,LCELL);
+
+    // Bloquer largeur des colonnes
+    tbv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    tbv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    // Taille tableau
+    tbv_tmp->setFixedSize(XLenTir*2/3,YLenTir);
+
+    return tbv_tmp;
+}
+
+QTableView *RefEtude::tbForBaseEcart()
+{
+    QTableView *qtv_tmp = new QTableView;
+
+    int zn = 0;
+    int nb_lgn = p_conf->limites[zn].max;
+    QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,5);
+
+    QString colName[]={"B","Ec","Ep","Em","EM"};
+    qtv_tmp->setModel(tmpStdItem);
+
+    int nbcol = sizeof(colName)/sizeof(QString);
+    for(int i=0;i<nbcol;i++)
+    {
+        tmpStdItem->setHeaderData(i,Qt::Horizontal,colName[i]);
+        // Remplir resultat
+        for(int pos=0;pos <nb_lgn;pos++)
+        {
+            QStandardItem *item = new QStandardItem();
+
+            if(i == 0){
+                item->setData(pos+1,Qt::DisplayRole);
+            }
+            tmpStdItem->setItem(pos,i,item);
+            qtv_tmp->setColumnWidth(i,LCELL);
+        }
+    }
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->hideColumn(0);
-    qtv_tmp->hideColumn(1);
-
-    // Formattage de largeur de colonnes
-    for(int j=0;j<=4;j++)
-        qtv_tmp->setColumnWidth(j,75);
-
-    for(int j=5;j<=sqm_tmp->columnCount();j++)
-        qtv_tmp->setColumnWidth(j,30);
 
     // Bloquer largeur des colonnes
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->hide();
 
     // Taille tableau
-    qtv_tmp->setFixedSize(XLenTir,YLenTir);
+    qtv_tmp->setFixedSize(XLenTir/3,YLenTir);
 
-    lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+    // Remplir le tableau
+    RemplirTableauEcart(zn,tmpStdItem);
 
-    return lay_return;
+    return qtv_tmp;
 }
 
 QGridLayout *RefEtude::MonLayout_TabCouvertures()
 {
     QGridLayout *returnLayout = new QGridLayout;
-    //QList<sCouv *> *lstCouv = p_MaListe;
 
     int zn = 0;
-    if(RechercheCouverture(&p_MaListe, zn))
-    {
+    int nbCouv = p_MaListe.size();
+    if(nbCouv){
         ;// Association recherche avec qttable !
         QTableView *tbv_tmp1 = TablePourLstcouv(&p_MaListe, zn);
         QTableView *tbv_tmp2 = DetailsLstcouv(zn);
@@ -427,7 +479,7 @@ QGridLayout *RefEtude::MonLayout_TabEcarts()
                 item->setData(pos+1,Qt::DisplayRole);
             }
             tmpStdItem->setItem(pos,i,item);
-            qtv_tmp->setColumnWidth(i,45);
+            qtv_tmp->setColumnWidth(i,LCELL);
         }
     }
 
@@ -444,7 +496,7 @@ QGridLayout *RefEtude::MonLayout_TabEcarts()
     qtv_tmp->verticalHeader()->hide();
 
     // Taille tableau
-    qtv_tmp->setFixedSize(XLenTir,YLenTir);
+    qtv_tmp->setFixedSize(XLenTir/3,YLenTir);
     returnLayout->addWidget(qtv_tmp,0,0);
 
     // Remplir le tableau

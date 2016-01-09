@@ -16,6 +16,12 @@
 
 #include "labelclickable.h"
 
+#define CHauteur1   225
+#define CLargeur1   200
+#define XLenTir     500
+#define YLenTir     225
+#define LCELL       30
+
 #define C_EUR_NB_ZN 2       /// Constante jeu euro nb de zone 2
 #define C_LTO_NB_ZN 2
 #define CL_PAIR     "p"     /// Constante Label pour parite
