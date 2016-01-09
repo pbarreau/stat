@@ -16,7 +16,7 @@
 #include "tirages.h"
 #include "labelclickable.h"
 
-QString req_msg(int zone, int boule, stTiragesDef *ref);
+QString req_msg(QString base, int zone, int boule, stTiragesDef *ref);
 // 1,$s/ r"/ r_"\+pConf->nomZone[zone]\+"_"/g
 
 void GererBase::TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, QStandardItemModel *modele)
@@ -103,7 +103,7 @@ void GererBase::TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, Q
     }
 }
 
-void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,stTiragesDef *pRef)
+void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele)
 {
     bool status = false;
 
@@ -120,7 +120,7 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
     int lgndeb=0, lgnfin=0;
     int nbTotCouv = 0, EcartMax=0, EcartCourant = 0, EcartPrecedent=0;
     int a_loop = 0;
-
+stTiragesDef *pRef = &typeTirages->conf;
 
     // recuperation du nombre de tirage total
     msg= "select count (*)  from tirages";
@@ -139,7 +139,7 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
     }
 #endif
 
-    msg =  "create table tmp_couv (id INTEGER PRIMARY KEY, depart int, fin int, taille int)";
+    msg =  "create temporary table tmp_couv (id INTEGER PRIMARY KEY, depart int, fin int, taille int)";
     status = query.exec(msg);
 #ifndef QT_NO_DEBUG
     if(!status){
@@ -154,7 +154,7 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele,
     query.prepare(msg);
 
     // Recuperation des lignes ayant la boule
-    msg = req_msg(0,boule,pRef);
+    msg = req_msg(TB_BASE,0,boule,pRef);
     status = selection.exec(msg);
 
 
@@ -1398,10 +1398,6 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
     }
 }
 
-//void GererBase::CouvMontrerProbable(int i,
-//                                    int col_m,
-//                                    int col_v,
-//                                    QStandardItemModel *dest)
 void GererBase::CouvMontrerProbable(int i,
                                     QStandardItemModel *dest)
 
@@ -1448,16 +1444,14 @@ void GererBase::CouvMontrerProbable(int i,
 
 }
 
-QString req_msg(int zone, int boule, stTiragesDef *ref)
+QString req_msg(QString base, int zone, int boule, stTiragesDef *ref)
 {
     int max_elm_zone = ref->nbElmZone[zone];
-    int col_id = 0;
-    //QString *tab = ref->nomZone;
-    QString msg = "select id from tirages where (";
+    QString msg = "select id from "+ base +" where (";
 
 
     // Suite msg requete
-    for(col_id=1;col_id<=max_elm_zone;col_id++)
+    for(int col_id=1;col_id<=max_elm_zone;col_id++)
     {
         msg = msg +
                 ref->nomZone[zone] +

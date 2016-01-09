@@ -153,19 +153,15 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     // Ordre arrivee des boules ?
     DB_tirages->CouvertureBase(G_sim_Ecarts,&configJeu);
 
-
-
     //// GARDER L'ORDRE D'APPEL DES FONCTIONS PB VERROU SUR LA BASE
     // --
     int zn = 0;
     for(i=1;i<=configJeu.limites[zn].max;i++){
         // Remplir Sous Fen les ecarts
-        DB_tirages->DistributionSortieDeBoule(i,G_sim_Ecarts,&configJeu);
+        DB_tirages->DistributionSortieDeBoule(i,G_sim_Ecarts);
         // Montrer les valeurs probable
         //DB_tirages->CouvMontrerProbable(i,3,1,G_sim_Ecarts);
         DB_tirages->CouvMontrerProbable(i,G_sim_Ecarts);
-
-
 
         // Calcul occurence de cette boule
         DB_tirages->TotalApparitionBoule(i,&configJeu, zn, G_sim_Voisins[zn]);
@@ -2197,7 +2193,9 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
 
 
     *st_tmp1 =CompteJourTirage(pConf);
-    *st_tmp2 = OrganiseChampsDesTirages("tirages", pConf);
+    //*st_tmp2 = OrganiseChampsDesTirages("tirages", pConf);
+    *st_tmp2 = "select * from "
+            REF_BASE ";";
     *st_tmp3 = *st_tmp2 ;
 
     //---------------------------------------------------------------

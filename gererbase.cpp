@@ -44,13 +44,18 @@ GererBase::~GererBase(void)
 
 }
 
-void GererBase::LireFichiersDesTirages(bool autoLoad)
+bool GererBase::LireFichiersDesTirages(bool autoLoad)
 {
+    bool status = false;
+
     QString ficSource = typeTirages->SelectSource(autoLoad);
 
-    if (LireLesTirages(ficSource,typeTirages) == false)
+    status = LireLesTirages(ficSource,typeTirages);
+
+    if (status == false)
     {
         QApplication::quit();
+        return status;
 
     }
 
@@ -68,11 +73,33 @@ void GererBase::LireFichiersDesTirages(bool autoLoad)
 
     // La lecture a fait  l'analyse des tirages
     // on affecte un poids pour chacun des tirages
-    AffectePoidsATirage_v2();
+    status = AffectePoidsATirage_v2();
+
+    // Creer une table bien organisee
+    if(status)
+        status = ReorganiserLesTirages();
 
 }
 
-void GererBase::AffectePoidsATirage_v2()
+bool GererBase::ReorganiserLesTirages()
+{
+    stTiragesDef ref=typeTirages->conf;
+    bool status = false;
+    QSqlQuery sql_1;
+    QString st_tmp2 ;
+
+
+    st_tmp2 = OrganiseChampsDesTirages(TB_BASE, &ref);
+    st_tmp2 = "Create table if not exists "
+             REF_BASE
+            " as " + st_tmp2;
+
+    status = sql_1.exec(st_tmp2);
+
+    return status;
+}
+
+bool GererBase::AffectePoidsATirage_v2()
 {
     bool status = false;
     QSqlQuery sql_1;
@@ -115,6 +142,8 @@ void GererBase::AffectePoidsATirage_v2()
             }while(sql_1.next()&& status);
         }
     }
+
+    return status;
 }
 
 bool GererBase::CreerBasePourEtude(bool action,NE_FDJ::E_typeJeux type)
@@ -124,7 +153,7 @@ bool GererBase::CreerBasePourEtude(bool action,NE_FDJ::E_typeJeux type)
 
     QString mabase = "";
 
-     if(action == true){
+    if(action == true){
 
         db.setDatabaseName(":memory:");
     }

@@ -26,6 +26,7 @@
 #define CL_CCOUV    "c"     /// Nom colonne couverture
 #define TB_COMBI    "comb"
 #define TB_BASE     "tirages"
+#define REF_BASE    "RefTirages"
 #define TB_BNRZ     "Bnrz"   /// Table Boules Names Reference Zone
 #define TB_WIN      "BNEXT"  /// Choisir parmis ces boules pour tirages suivant du dernier en cours
 
@@ -146,7 +147,7 @@ public:
     QSqlError lastError();
     void AfficherBase(stTiragesDef *pConf, QTableView *cibleview);
     void AfficherResultatCouverture(stTiragesDef *pConf, QTableView *cibleview);
-    void DistributionSortieDeBoule(int boule, QStandardItemModel *modele, stTiragesDef *pRef);
+    void DistributionSortieDeBoule(int boule, QStandardItemModel *modele);
     void RechercheVoisin(int boule, int zn, stTiragesDef *pConf, LabelClickable *l_nb, QStandardItemModel *fen);
     void RechercheAbsent(int boule, int zn, stTiragesDef *pConf, QLabel *l_nb, QStandardItemModel *fen);
     int TotalRechercheVoisinADistanceDe(int dist, int b_id, int zn, stTiragesDef *pConf, int voisin);
@@ -204,8 +205,9 @@ private:
     bool f4();
     bool SauverCombiVersTable (QStringList &combi);
     bool MettrePonderationCombi(int delta);
-    void LireFichiersDesTirages(bool autoLoad);
-    void AffectePoidsATirage_v2();
+    bool LireFichiersDesTirages(bool autoLoad);
+    bool AffectePoidsATirage_v2();
+    bool ReorganiserLesTirages();
 
 private:
     QSqlDatabase db;
@@ -214,5 +216,8 @@ private:
     QSqlTableModel *tbl_couverture;
     int iAffichageVoisinEnCoursDeLaBoule[2];
 };
+
+
+extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
 
 #endif // TIRAGES_H

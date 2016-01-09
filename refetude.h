@@ -37,6 +37,8 @@ private:
     QTableView * TablePourLstcouv(QList<sCouv *> *lstCouv,int zn);
     QTableView * DetailsLstcouv(int zn);
 
+    void RemplirTableauEcart(QStandardItemModel *sim_tmp);
+
 public slots:
     void slot_Couverture(const QModelIndex & index);
 

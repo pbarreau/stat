@@ -40,7 +40,9 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
 
     QString *st_tmp = new QString;
     st_bdTirages = new QString;
-    *st_bdTirages = OrganiseChampsDesTirages("tirages", pConf);
+    //*st_bdTirages = OrganiseChampsDesTirages("tirages", pConf);
+    *st_bdTirages = "select * from "  REF_BASE  ";";
+
     *st_tmp = *st_bdTirages;
 
     st_JourTirageDef = new QString;

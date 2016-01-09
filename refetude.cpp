@@ -16,9 +16,10 @@
 #include <QHeaderView>
 
 #include "refetude.h"
+#include "SyntheseDetails.h"
 
-#define XLenTir 500
-#define YLenTir 200
+//#define XLenTir 500
+//#define YLenTir 200
 
 sCouv::sCouv(int zn, stTiragesDef *pDef):p_conf(pDef),p_deb(-1),p_fin(-1)
 {
@@ -152,7 +153,9 @@ QTableView * RefEtude::DetailsLstcouv(int zn)
     QString colName[]={"A","B","T"};
     qtv_tmp->setModel(tmpStdItem);
 
-    for(int i=0;i<3;i++)
+    int nbcol = sizeof(colName)/sizeof(QString);
+
+    for(int i=0;i<nbcol;i++)
     {
         tmpStdItem->setHeaderData(i,Qt::Horizontal,colName[i]);
         // Remplir resultat
@@ -371,6 +374,9 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
                 // sauver sa position
                 memo->p_val[total-1][1]=b_val;
                 memo->p_val[total-1][2]=1;
+
+                // Marquer comme vue
+                //memo->p_val[total-1][3]=1;
                 total++;
             }
         }
@@ -399,5 +405,99 @@ QGridLayout *RefEtude::MonLayout_TabEcarts()
 {
     QGridLayout *returnLayout = new QGridLayout;
 
+    QTableView *qtv_tmp = new QTableView;
+
+    int zn = 0;
+    int nb_lgn = p_conf->limites[zn].max;
+    QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,5);
+
+    QString colName[]={"B","Ec","Ep","Em","EM"};
+    qtv_tmp->setModel(tmpStdItem);
+
+    int nbcol = sizeof(colName)/sizeof(QString);
+    for(int i=0;i<nbcol;i++)
+    {
+        tmpStdItem->setHeaderData(i,Qt::Horizontal,colName[i]);
+        // Remplir resultat
+        for(int pos=0;pos <nb_lgn;pos++)
+        {
+            QStandardItem *item = new QStandardItem();
+
+            if(i == 0){
+                item->setData(pos+1,Qt::DisplayRole);
+            }
+            tmpStdItem->setItem(pos,i,item);
+            qtv_tmp->setColumnWidth(i,35);
+        }
+    }
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // Bloquer largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->hide();
+
+    // Taille tableau
+    qtv_tmp->setFixedSize(XLenTir,YLenTir);
+    returnLayout->addWidget(qtv_tmp,0,0);
+
+    // Remplir le tableau
+    RemplirTableauEcart(tmpStdItem);
+
     return returnLayout;
+}
+
+void RefEtude::RemplirTableauEcart(QStandardItemModel *sim_tmp)
+{
+  // Montrer les boules "non" encore sorties
+    int zn = 0;
+    int totCouv = p_MaListe.size();
+    int nbBoule = p_conf->limites[zn].max;
+
+    if(!totCouv)
+        return;
+
+    sCouv *curCouv = p_MaListe.last();
+    sCouv *PrvCouv = NULL;
+    int memo_last_boule = 0;
+
+    if(totCouv >1){
+        PrvCouv = p_MaListe.at(totCouv-2);
+        memo_last_boule = PrvCouv->p_val[nbBoule-1][1];
+    }
+
+    for(int i = 0; i< nbBoule ;i++)
+    {
+        int maVal_0 = curCouv->p_val[i][0];
+        int maVal_1 = curCouv->p_val[i][1];
+        int maVal_2 = curCouv->p_val[i][2];
+        if (!maVal_0)
+        {
+            QStandardItem *item1 = sim_tmp->item(i);
+            QBrush macouleur;
+            QColor unecouleur;
+
+            if(i!=memo_last_boule-1)
+            {
+                macouleur.setColor(Qt::green);
+                macouleur.setStyle(Qt::SolidPattern);
+            }
+            else
+            {
+                // http://stackoverflow.com/questions/8571059/how-to-generate-new-qcolors-that-are-different
+                // http://goffgrafix.com/pantone-rgb-800.php
+                unecouleur.setRgb(255,127,30);
+                macouleur.setColor(unecouleur);
+                macouleur.setStyle(Qt::SolidPattern);
+            }
+            item1->setBackground(macouleur);
+        }
+    }
+
 }
