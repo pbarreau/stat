@@ -41,10 +41,14 @@ sCouv::~sCouv()
     delete p_val;
 }
 
-RefEtude::RefEtude(QString stFiltreTirages,int zn,
-                   stTiragesDef *pDef):p_stRefTirages(stFiltreTirages),p_conf(pDef)
+RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
+                   stTiragesDef *pDef):p_db(db),p_stRefTirages(stFiltreTirages),p_conf(pDef)
 {
+    QSqlQuery query;
+
     RechercheCouverture(&p_MaListe, zn);
+
+    qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
 
     QWidget *uneReponse = CreationOnglets();
 
@@ -126,6 +130,18 @@ QTableView *RefEtude::tbForBaseRef()
     // Taille tableau
     tbv_tmp->setFixedSize(XLenTir*2/3,YLenTir);
 
+    // ----------------------
+    // voir effet !!!
+    //sqm_tmp->clear();
+    while (sqm_tmp->canFetchMore())
+    {
+        sqm_tmp->fetchMore();
+    }
+
+    //sqm_tmp->canFetchMore();
+
+
+    // ---------------------
     return tbv_tmp;
 }
 
@@ -173,6 +189,8 @@ QTableView *RefEtude::tbForBaseEcart()
     qtv_tmp->setFixedSize(XLenTir/3,YLenTir);
 
     // Remplir le tableau
+    //DistributionSortieDeBoule_v2(zn, 1,tmpStdItem);
+
     RemplirTableauEcart(zn,tmpStdItem);
 
     return qtv_tmp;
@@ -523,8 +541,10 @@ void RefEtude::RemplirTableauEcart(int zn, QStandardItemModel *sim_tmp)
         memo_last_boule = PrvCouv->p_val[nbBoule-1][1];
     }
 
+
     // Montrer boules pas encore sorties.
     MontrerBoulesNonSorties(zn,sim_tmp,curCouv,memo_last_boule);
+
 
     for(int i=1;i<=nbBoule;i++){
         // Remplir Sous Fen les ecarts
@@ -576,46 +596,50 @@ void RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel
     bool status = false;
 
     QSqlQuery query;
-    QString msg;
-
-
     QSqlQuery selection;
-    QString msg1;
-    QStringList tmp;
+    QString msg;
+    //QString tmp_table = "UneTable";
+
     double EcartMoyen = 0.0;
-    int nbTirages=0;
-    int calcul;
     int lgndeb=0, lgnfin=0;
+    int nbTirages=0;
+    //int calcul;
     int nbTotCouv = 0, EcartMax=0, EcartCourant = 0, EcartPrecedent=0;
     int a_loop = 0;
     stTiragesDef *pRef = p_conf;
 
+    qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
+
+    msg =  "create table tmp_couv (id integer primary key, depart int, fin int, taille int);";
+    status = query.exec(msg);
+
+    if(0){
+    while(query.isActive())
+    {
+        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
+        qDebug()<< p_db->lastError();
+        ;//rien
+    }
+}
+
     QString useBase = p_stRefTirages;
     useBase = useBase.remove(";");
     // recuperation du nombre de tirage total
-    msg= "select count (*)  from ("+useBase+") as r1;";
+    //msg= "select count (*)  from ("+useBase+") as r1;";
+    msg= "select count (*)  from (tirages) as r1;";
     status = query.exec(msg);
-    query.first();
-    nbTirages = query.value(0).toInt();
-    query.finish();
 
 
-    // creation d'une table temporaire
-    msg = "DROP table IF EXISTS tmp_couv";
-    status = query.exec(msg);
-#ifndef QT_NO_DEBUG
-    if(!status){
-        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
+    if (status){
+        query.first();
+        nbTirages = query.value(0).toInt();
+        //query.finish();
     }
-#endif
 
-    msg =  "create table tmp_couv (id INTEGER PRIMARY KEY, depart int, fin int, taille int)";
-    status = query.exec(msg);
-#ifndef QT_NO_DEBUG
-    if(!status){
-        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
-    }
-#endif
+
+    if(!status)
+        return;
+
 
 
 
@@ -626,7 +650,9 @@ void RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel
     // Recuperation des lignes ayant la boule
     msg = req_msg(useBase,zn,boule,pRef);
     status = selection.exec(msg);
-
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
 
     //Partir de la fin des tirages trouves
     selection.last(); // derniere ligne ayant le numero
@@ -634,31 +660,35 @@ void RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel
         lgndeb = nbTirages;
         nbTirages = 0; //calcul des intervales
         a_loop = 1;
+        int Lataille = 0;
         do
         {
-            QSqlRecord rec  = selection.record();
-            calcul = rec.value(0).toInt();
             lgnfin = selection.value(0).toInt();
+            Lataille = lgndeb-lgnfin;
 
             query.bindValue(":depart", lgndeb);
             query.bindValue(":fin", lgnfin);
-            query.bindValue(":taille", lgndeb-lgnfin+1);
+            query.bindValue(":taille", Lataille);
             // Mettre dans la base
             status = query.exec();
+            if (!status){
+                qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
 
-            nbTirages += (lgndeb-lgnfin);
-            lgndeb = lgnfin-1;
+            }
+
+            nbTirages += Lataille;
+            lgndeb = lgnfin;
             a_loop++;
-        }while(selection.previous());
-        //selection.finish();
-        //query.finish();
+        }while(selection.previous() && status);
     }
+
+
 
     // Rajouter une ligne pour ecart le plus recent
     lgnfin = 1;
     query.bindValue(":depart", lgndeb);
     query.bindValue(":fin", lgnfin);
-    query.bindValue(":taille", lgndeb-lgnfin+1);
+    query.bindValue(":taille", lgndeb-lgnfin);
     // Mettre dans la base
     status = query.exec();
     nbTirages += (lgndeb-lgnfin);
@@ -691,20 +721,35 @@ void RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel
     item1->setData(EcartCourant,Qt::DisplayRole);
     modele->setItem(boule-1,1,item1);
 
-    QStandardItem *item2 = new QStandardItem( QString::number(222));
+    QStandardItem *item2 = new QStandardItem;
     item2->setData(EcartPrecedent,Qt::DisplayRole);
     modele->setItem(boule-1,2,item2);
 
-    QStandardItem *item3 = new QStandardItem( );
+    QStandardItem *item3 = new QStandardItem;
     QString valEM = QString::number(EcartMoyen,'g',2);
     //item3->setData(EcartMoyen,Qt::DisplayRole);
     item3->setData(valEM.toDouble(),Qt::DisplayRole);
     modele->setItem(boule-1,3,item3);
 
 
-    QStandardItem *item4 = new QStandardItem( QString::number(222));
+    QStandardItem *item4 = new QStandardItem;
     item4->setData(EcartMax,Qt::DisplayRole);
     modele->setItem(boule-1,4,item4);
+
+    //selection.finish();
+    //query.finish();
+
+
+    // Suppression d'une table temporaire
+    msg = "DROP table tmp_couv;";
+    status = query.exec(msg);
+
+#ifndef QT_NO_DEBUG
+    if(!status){
+        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
+    }
+#endif
+
 }
 
 void RefEtude::CouvMontrerProbable_v2(int i,QStandardItemModel *dest)

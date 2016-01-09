@@ -1257,8 +1257,10 @@ void GererBase::MontrerDetailCombinaison(QString msg)
     //qtv_rep->show();
 
     // ??
-    tw_resu->addTab(tv_r1,tr("Details"));
-    tw_resu->addTab(qtv_rep,tr("Synthese"));
+    //tw_resu->addTab(tv_r1,tr("Details"));
+    //tw_resu->addTab(qtv_rep,tr("Synthese"));
+    tw_resu->addTab(tv_r1,"Details");
+    tw_resu->addTab(qtv_rep,"Synthese");
     mainLayout->addWidget(tw_resu);
     qw_fenResu->setLayout(mainLayout);
     qw_fenResu->setWindowTitle(msg);

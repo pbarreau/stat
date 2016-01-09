@@ -2201,7 +2201,7 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
     //---------------------------------------------------------------
     //
     // test de nouvelle fenetre
-    RefEtude *unTest = new RefEtude(*st_tmp2,0,pConf);
+    RefEtude *unTest = new RefEtude(DB_tirages,*st_tmp2,0,pConf);
     //return;
     //
     //---------------------------------------------------------------

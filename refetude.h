@@ -24,7 +24,7 @@ class RefEtude: public QObject
 {
 Q_OBJECT
 public:
-    RefEtude(QString stFiltreTirages, int zn, stTiragesDef *pDef);
+    RefEtude(GererBase *db, QString stFiltreTirages, int zn, stTiragesDef *pDef);
 
 private:
     QWidget *CreationOnglets();
@@ -48,6 +48,7 @@ public slots:
     void slot_Couverture(const QModelIndex & index);
 
 private:
+    GererBase *p_db;
     QString p_stRefTirages;
     stTiragesDef *p_conf;
     QList<sCouv *> p_MaListe;
