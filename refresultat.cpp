@@ -69,6 +69,14 @@ void SyntheseGenerale::DoTirages(void)
     tbv_LesTirages = unTest->GetListeTirages();
 
     disposition->addWidget(uneReponse,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+    connect( tbv_LesTirages, SIGNAL( activated(QModelIndex)) ,
+             pEcran->parent(), SLOT( slot_MontreLeTirage( QModelIndex) ) );
+
+#if 0
+    connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
+             pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
+#endif
 }
 
 #else

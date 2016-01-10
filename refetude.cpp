@@ -44,6 +44,8 @@ sCouv::~sCouv()
 RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
                    stTiragesDef *pDef):p_db(db),p_stRefTirages(stFiltreTirages),p_conf(pDef)
 {
+    int zone = 0;
+    maRef = LstCritereGroupement(zn,p_conf);
 
     RechercheCouverture(&p_MaListe, zn);
 
@@ -100,47 +102,46 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
 
 QTableView *RefEtude::tbForBaseLigne()
 {
-  QTableView *qtv_tmp = new QTableView;
+    QTableView *qtv_tmp = new QTableView;
 
-  int zone = 0;
-  QStringList *maRef = LstCritereGroupement(zone,p_conf);
-  int nbcol = maRef[1].size();
+    int nbcol = maRef[1].size();
+    QStandardItemModel * tmpStdItem =  new QStandardItemModel(1,nbcol);
+    p_qsim_3 = tmpStdItem;
 
-  QStandardItemModel * tmpStdItem =  new QStandardItemModel(1,nbcol);
+    qtv_tmp->setModel(tmpStdItem);
 
-  qtv_tmp->setModel(tmpStdItem);
+    for(int i=0;i<nbcol;i++)
+    {
+        tmpStdItem->setHeaderData(i,Qt::Horizontal,maRef[1].at(i));
+        QStandardItem *item = new QStandardItem();
+        tmpStdItem->setItem(0,i,item);
+        qtv_tmp->setColumnWidth(i,LCELL);
+    }
 
-  for(int i=0;i<nbcol;i++)
-  {
-      tmpStdItem->setHeaderData(i,Qt::Horizontal,maRef[1].at(i));
-      QStandardItem *item = new QStandardItem();
-      tmpStdItem->setItem(0,i,item);
-      qtv_tmp->setColumnWidth(i,LCELL);
-  }
+    qtv_tmp->setSortingEnabled(false);
+    //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-  qtv_tmp->setSortingEnabled(false);
-  //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
-  qtv_tmp->setAlternatingRowColors(true);
-  qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
-  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    // Bloquer largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->hide();
 
-  // Bloquer largeur des colonnes
-  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-  qtv_tmp->verticalHeader()->hide();
-
-  // Taille tableau
-  qtv_tmp->setFixedSize(XLenTir,70);
+    // Taille tableau
+    qtv_tmp->setFixedSize(XLenTir,70);
 
 
-  return qtv_tmp;
+    return qtv_tmp;
 }
 
 QTableView *RefEtude::tbForBaseRef()
 {
     QTableView *tbv_tmp = new QTableView;
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    //p_qsim_3=sqm_tmp;
 
     sqm_tmp->setQuery(p_stRefTirages);
     tbv_tmp->setModel(sqm_tmp);
@@ -181,6 +182,10 @@ QTableView *RefEtude::tbForBaseRef()
 
     // ---------------------
     p_tbv_0 = tbv_tmp;
+    // click dans fenetre voisin pour afficher boule doubleClicked clicked activated
+    connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
+             this, SLOT( slot_ShowDetails( QModelIndex) ) );
+
     return tbv_tmp;
 }
 
@@ -394,6 +399,60 @@ void RefEtude::slot_Couverture(const QModelIndex & index)
             p_qsim_2->setItem(i,2,item_2);
         }
         p_tbv_2->setEnabled(true);
+    }
+
+}
+
+void RefEtude::slot_ShowDetails(const QModelIndex & index)
+{
+    static int sortir = 0;
+
+    // recuperer la ligne de la table
+    int lgn = index.model()->index(index.row(),0).data().toInt();
+
+    if(sortir != lgn)
+    {
+        sortir = lgn;
+    }
+    else
+    {
+        return;
+    }
+
+    QSqlQuery query;
+    QStandardItemModel *tmpStdItem = p_qsim_3;
+
+    int nbCol = maRef[0].size();
+    bool status = true;
+    for(int i=0; (i< nbCol) && (status == true);i++)
+    {
+        // Creer Requete pour compter items
+        QString msg1 = maRef[0].at(i);
+        QString sqlReq = "";
+        sqlReq = sql_ComptePourUnTirage(lgn,p_stRefTirages,msg1);
+
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
+#endif
+
+        status = query.exec(sqlReq);
+        //qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
+        //qDebug()<< p_db->lastError();
+
+        // Mise a jour de la tables des resultats
+        if(status)
+        {
+            query.first();
+            do
+            {
+                //int id = query.value(0).toInt();
+                int tot = query.value(1).toInt();
+
+                QStandardItem * item_1 = tmpStdItem->item(0,i);
+                item_1->setData(tot,Qt::DisplayRole);
+                tmpStdItem->setItem(0,i,item_1);
+            }while(query.next() && status);
+        }
     }
 
 }
@@ -658,13 +717,13 @@ void RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel
     status = query.exec(msg);
 
     if(0){
-    while(query.isActive())
-    {
-        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
-        qDebug()<< p_db->lastError();
-        ;//rien
+        while(query.isActive())
+        {
+            qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
+            qDebug()<< p_db->lastError();
+            ;//rien
+        }
     }
-}
 
     QString useBase = p_stRefTirages;
     useBase = useBase.remove(";");

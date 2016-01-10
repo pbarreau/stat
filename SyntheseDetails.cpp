@@ -260,6 +260,54 @@ QString FiltreLesTirages(stCurDemande *pEtude)
     return table;
 }
 
+QString sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri)
+{
+#if 0
+    /* Req_1 : pour compter le nombre de boules pair par tirages */
+     select tb1.id as Tid, count(tb2.B) as Nb from
+     (
+         select * from tirages where id=1
+         ) as tb1
+     left join
+     (
+         select id as B from Bnrz where (z1 not null  and (z1%2 = 0))
+         ) as tb2
+     on
+     (
+         tb2.B = tb1.b1 or
+ tb2.B = tb1.b2 or
+ tb2.B = tb1.b3 or
+ tb2.B = tb1.b4 or
+ tb2.B = tb1.b5
+ ) group by tb1.id; /* Fin Req_1 */
+#endif
+
+     QString st_return =
+             "select tb1.id as Tid, count(tb2.B) as Nb from "
+             "("
+             "select * from (" + st_tirages.remove(";")
+             + " where id = "
+             +QString::number(id)
+             +") as r1 "
+              ") as tb1 "
+              "left join "
+              "("
+              "select id as B from Bnrz where (z1 not null  and ("+st_cri
+             +")) "
+              ") as tb2 "
+              "on "
+              "("
+              "tb2.B = tb1.b1 or "
+              "tb2.B = tb1.b2 or "
+              "tb2.B = tb1.b3 or "
+              "tb2.B = tb1.b4 or "
+              "tb2.B = tb1.b5 "
+              ") group by tb1.id;";
+
+     return(st_return);
+
+}
+
 QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
 {
 #if 0

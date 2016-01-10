@@ -48,6 +48,7 @@ private:
 
 public slots:
     void slot_Couverture(const QModelIndex & index);
+    void slot_ShowDetails(const QModelIndex & index);
 
 private:
     GererBase *p_db;
@@ -58,6 +59,8 @@ private:
     QTableView *p_tbv_1;
     QTableView *p_tbv_2;
     QStandardItemModel *p_qsim_2;
+    QStandardItemModel *p_qsim_3;
+    QStringList *maRef;
 };
 
 #endif // REFETUDE_H
