@@ -88,12 +88,53 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
 {
     QGridLayout *lay_return = new QGridLayout;
 
+    QTableView *tbv_tmp0 = tbForBaseLigne();
     QTableView *tbv_tmp1 = tbForBaseRef();
     QTableView *tbv_tmp2 = tbForBaseEcart();
-    lay_return->addWidget(tbv_tmp1,0,0,Qt::AlignLeft|Qt::AlignTop);
-    lay_return->addWidget(tbv_tmp2,0,1,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(tbv_tmp0,0,0,1,3,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(tbv_tmp1,1,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(tbv_tmp2,1,1,Qt::AlignLeft|Qt::AlignTop);
 
     return lay_return;
+}
+
+QTableView *RefEtude::tbForBaseLigne()
+{
+  QTableView *qtv_tmp = new QTableView;
+
+  int zone = 0;
+  QStringList *maRef = LstCritereGroupement(zone,p_conf);
+  int nbcol = maRef[1].size();
+
+  QStandardItemModel * tmpStdItem =  new QStandardItemModel(1,nbcol);
+
+  qtv_tmp->setModel(tmpStdItem);
+
+  for(int i=0;i<nbcol;i++)
+  {
+      tmpStdItem->setHeaderData(i,Qt::Horizontal,maRef[1].at(i));
+      QStandardItem *item = new QStandardItem();
+      tmpStdItem->setItem(0,i,item);
+      qtv_tmp->setColumnWidth(i,LCELL);
+  }
+
+  qtv_tmp->setSortingEnabled(false);
+  //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+  qtv_tmp->setAlternatingRowColors(true);
+  qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+  // Bloquer largeur des colonnes
+  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->verticalHeader()->hide();
+
+  // Taille tableau
+  qtv_tmp->setFixedSize(XLenTir,70);
+
+
+  return qtv_tmp;
 }
 
 QTableView *RefEtude::tbForBaseRef()
@@ -125,7 +166,7 @@ QTableView *RefEtude::tbForBaseRef()
     tbv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
     // Taille tableau
-    tbv_tmp->setFixedSize(XLenTir*2/3,YLenTir);
+    tbv_tmp->setFixedSize(XLenTir*2/3,CHauteur2);
 
     // ----------------------
     // voir effet !!!
@@ -189,7 +230,7 @@ QTableView *RefEtude::tbForBaseEcart()
     qtv_tmp->verticalHeader()->hide();
 
     // Taille tableau
-    qtv_tmp->setFixedSize(XLenTir/3,YLenTir);
+    qtv_tmp->setFixedSize(XLenTir/3,CHauteur2);
 
     // Remplir le tableau
     //DistributionSortieDeBoule_v2(zn, 1,tmpStdItem);

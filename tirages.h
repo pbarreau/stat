@@ -21,6 +21,7 @@
 #define XLenTir     500
 #define YLenTir     250
 #define LCELL       30
+#define CHauteur2   185
 
 #define C_EUR_NB_ZN 2       /// Constante jeu euro nb de zone 2
 #define C_LTO_NB_ZN 2
@@ -226,5 +227,6 @@ private:
 
 extern QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf);
 extern QString req_msg(QString base, int zone, int boule, stTiragesDef *ref);
+extern QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf);
 
 #endif // TIRAGES_H

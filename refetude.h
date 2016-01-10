@@ -37,6 +37,7 @@ private:
     bool AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn, sCouv *memo);
     QTableView * TablePourLstcouv(QList<sCouv *> *lstCouv,int zn);
     QTableView * DetailsLstcouv(int zn);
+    QTableView * tbForBaseLigne();
     QTableView * tbForBaseRef();
     QTableView * tbForBaseEcart();
 
