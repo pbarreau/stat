@@ -11,6 +11,7 @@
 #include <QVBoxLayout>
 #include <QSortFilterProxyModel>
 
+#include "refetude.h"
 #include "refresultat.h"
 #include "SyntheseDetails.h"
 
@@ -60,6 +61,17 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     //DoBloc3();
 }
 
+#if 1
+void SyntheseGenerale::DoTirages(void)
+{
+    RefEtude *unTest = new RefEtude(bdd,*st_bdTirages,0,pMaConf);
+    QWidget *uneReponse = unTest->CreationOnglets();
+    tbv_LesTirages = unTest->GetListeTirages();
+
+    disposition->addWidget(uneReponse,0,0,Qt::AlignLeft|Qt::AlignTop);
+}
+
+#else
 void SyntheseGenerale::DoTirages(void)
 {
     sqm_LesTirages = new QSqlQueryModel;
@@ -124,6 +136,7 @@ void SyntheseGenerale::DoTirages(void)
 
 
 }
+#endif
 
 void SyntheseGenerale::DoComptageTotal(void)
 {
@@ -235,6 +248,17 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
 #endif
 
     sqm_bloc1_2->setQuery(st_msg1);
+    // Renommer le nom des colonnes
+    QSqlQueryModel *sqm_tmp=sqm_bloc1_2;
+    int nbcol = sqm_tmp->columnCount();
+    for(int i = 0; i<nbcol;i++)
+    {
+        QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+        if(headName.size()>2)
+        {
+            sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+        }
+    }
 
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
@@ -245,7 +269,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
+    qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -339,6 +363,15 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 #endif
 
     sqm_tmp->setQuery(st_msg1);
+    int nbcol = sqm_tmp->columnCount();
+    for(int i = 0; i<nbcol;i++)
+    {
+        QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+        if(headName.size()>2)
+        {
+            sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+        }
+    }
 
     qtv_tmp->hideColumn(0);
     qtv_tmp->setSortingEnabled(true);
@@ -352,7 +385,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     //qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     //qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
+    qtv_tmp->setFixedSize(250,CHauteur1);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -474,6 +507,18 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
     sqm_bloc1_1->setQuery(st_msg1);
 
+    // Renommer le nom des colonnes
+    QSqlQueryModel *sqm_tmp=sqm_bloc1_1;
+    int nbcol = sqm_tmp->columnCount();
+    for(int i = 0; i<nbcol;i++)
+    {
+        QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+        if(headName.size()>2)
+        {
+            sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+        }
+    }
+
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
@@ -483,7 +528,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
+    qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);

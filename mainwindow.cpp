@@ -22,7 +22,7 @@
 #include "SyntheseDetails.h"
 
 
-#include "refetude.h"
+//#include "refetude.h"
 
 //#include <QtPlugin>
 //Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
@@ -60,7 +60,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     TST_EtoileCombi(&configJeu);
 
-    fen_NewTirages(&configJeu);
+    FEN_NewTirages(&configJeu);
     FEN_Graphe(&configJeu);
 
     return;
@@ -230,7 +230,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
 #endif
 
-    fen_NewTirages(&configJeu);
+    FEN_NewTirages(&configJeu);
 
 
 #if 0
@@ -2176,7 +2176,7 @@ QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
     return(lay_return);
 }
 
-void MainWindow::fen_NewTirages(stTiragesDef *pConf)
+void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
 {
     QWidget *qw_nsr = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
@@ -2201,7 +2201,7 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
     //---------------------------------------------------------------
     //
     // test de nouvelle fenetre
-    RefEtude *unTest = new RefEtude(DB_tirages,*st_tmp2,0,pConf);
+    //RefEtude *unTest = new RefEtude(DB_tirages,*st_tmp2,0,pConf);
     //return;
     //
     //---------------------------------------------------------------
@@ -2234,7 +2234,7 @@ void MainWindow::fen_NewTirages(stTiragesDef *pConf)
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
-    subWindow->resize(980,760);
+    subWindow->resize(1000,860);
     subWindow->move(0,0);
     qw_nsr->setVisible(true);
 }

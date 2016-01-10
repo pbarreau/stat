@@ -19,7 +19,7 @@
 #define CHauteur1   225
 #define CLargeur1   200
 #define XLenTir     500
-#define YLenTir     225
+#define YLenTir     250
 #define LCELL       30
 
 #define C_EUR_NB_ZN 2       /// Constante jeu euro nb de zone 2

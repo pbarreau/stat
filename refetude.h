@@ -25,9 +25,10 @@ class RefEtude: public QObject
 Q_OBJECT
 public:
     RefEtude(GererBase *db, QString stFiltreTirages, int zn, stTiragesDef *pDef);
+    QWidget *CreationOnglets();
+    QTableView *GetListeTirages(void);
 
 private:
-    QWidget *CreationOnglets();
     QGridLayout *MonLayout_TabTirages();
     QGridLayout *MonLayout_TabCouvertures();
     QGridLayout *MonLayout_TabEcarts();
@@ -52,6 +53,7 @@ private:
     QString p_stRefTirages;
     stTiragesDef *p_conf;
     QList<sCouv *> p_MaListe;
+    QTableView *p_tbv_0;
     QTableView *p_tbv_1;
     QTableView *p_tbv_2;
     QStandardItemModel *p_qsim_2;

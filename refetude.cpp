@@ -44,16 +44,13 @@ sCouv::~sCouv()
 RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
                    stTiragesDef *pDef):p_db(db),p_stRefTirages(stFiltreTirages),p_conf(pDef)
 {
-    QSqlQuery query;
 
     RechercheCouverture(&p_MaListe, zn);
 
-    qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
-
+#if 0
     QWidget *uneReponse = CreationOnglets();
-
-
     uneReponse->show();
+#endif
 }
 
 QWidget *RefEtude::CreationOnglets()
@@ -62,7 +59,7 @@ QWidget *RefEtude::CreationOnglets()
     QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
 
-    QString ongNames[]={"Tirages","Couvertures","Ecarts"};
+    QString ongNames[]={"Tirages","Couvertures"};
     int maxOnglets = sizeof(ongNames)/sizeof(QString);
 
     QWidget **wid_ForTop = new QWidget*[maxOnglets];
@@ -70,8 +67,7 @@ QWidget *RefEtude::CreationOnglets()
 
     QGridLayout * (RefEtude::*ptrFunc[])()={
             &RefEtude::MonLayout_TabTirages,
-            &RefEtude::MonLayout_TabCouvertures,
-            &RefEtude::MonLayout_TabEcarts};
+            &RefEtude::MonLayout_TabCouvertures};
 
     for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
     {
@@ -110,6 +106,7 @@ QTableView *RefEtude::tbForBaseRef()
 
     tbv_tmp->setSortingEnabled(false);
     tbv_tmp->setAlternatingRowColors(true);
+    tbv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
     tbv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     tbv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     tbv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -142,7 +139,13 @@ QTableView *RefEtude::tbForBaseRef()
 
 
     // ---------------------
+    p_tbv_0 = tbv_tmp;
     return tbv_tmp;
+}
+
+QTableView *RefEtude::GetListeTirages(void)
+{
+    return  p_tbv_0;
 }
 
 QTableView *RefEtude::tbForBaseEcart()

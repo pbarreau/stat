@@ -1040,13 +1040,18 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
     sql_msgRef = PBAR_ReqNbCombi(pEtude,ReqTirages);
 
     sqm_tmp->setQuery(sql_msgRef);
-#if 0
-    // Filtre
-    QFormLayout *FiltreLayout = new QFormLayout;
-    FiltreCombinaisons *fltComb_1 = new FiltreCombinaisons();
-    fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,1);
-    FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
-#endif
+
+    // Mettre le nom des colonnes sur 2 lettres
+    int nbcol = sqm_tmp->columnCount();
+    for(int i = 0; i<nbcol;i++)
+    {
+        QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+        if(headName.size()>2)
+        {
+            sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+        }
+    }
+
 
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(1,Qt::AscendingOrder);
@@ -1361,6 +1366,17 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     QString sql_msgRef = PBAR_ReqComptage(pEtude, ReqTirages, zn, ongPere);
 
     sqm_tmp->setQuery(sql_msgRef);
+
+    // Renommer le nom des colonnes
+    int nbcol = sqm_tmp->columnCount();
+    for(int i = 0; i<nbcol;i++)
+    {
+        QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+        if(headName.size()>2)
+        {
+            sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+        }
+    }
 
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
