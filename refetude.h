@@ -24,7 +24,7 @@ class RefEtude: public QObject
 {
 Q_OBJECT
 public:
-    RefEtude(GererBase *db, QString stFiltreTirages, int zn, stTiragesDef *pDef);
+    RefEtude(GererBase *db, QString stFiltreTirages, int zn, stTiragesDef *pDef, QMdiArea *visuel, QTabWidget *tab_Top);
     QWidget *CreationOnglets();
     QTableView *GetListeTirages(void);
 
@@ -49,18 +49,24 @@ private:
 public slots:
     void slot_Couverture(const QModelIndex & index);
     void slot_ShowDetails(const QModelIndex & index);
+    void slot_Type_G(const QModelIndex & index);
 
 private:
     GererBase *p_db;
     QString p_stRefTirages;
     stTiragesDef *p_conf;
     QList<sCouv *> p_MaListe;
+
     QTableView *p_tbv_0;
     QTableView *p_tbv_1;
     QTableView *p_tbv_2;
+    QTableView * p_tbv_3;
+
     QStandardItemModel *p_qsim_2;
     QStandardItemModel *p_qsim_3;
     QStringList *maRef;
+    QMdiArea *p_affiche;
+    QTabWidget *p_reponse;
 };
 
 #endif // REFETUDE_H

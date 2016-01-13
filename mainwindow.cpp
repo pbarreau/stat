@@ -2473,7 +2473,7 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
         QStringList stl_tmp;
         //stl_tmp << QString::number(ligne+1);
 
-        etude->origine = 1;
+        etude->origine = Tableau3;
         etude->lgn[3] = index.model()->index(index.row(),0).data().toInt();;
         etude->col[3] = colon;
         etude->val[3] = val;
@@ -2494,7 +2494,7 @@ void MainWindow::slot_CriteresTiragesAppliquer()
 {
     stCurDemande *etude = new stCurDemande;
 
-    critereTirages.origine = 1;
+    critereTirages.origine = Tableau4;
 
 
 

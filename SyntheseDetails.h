@@ -19,9 +19,17 @@
 
 #define USE_repartition_bh  0
 
+typedef enum _origineClick
+{
+    Tableau1,
+    Tableau2,
+    Tableau3,
+    Tableau4
+}teClicFrom;
+
 typedef struct _demande
 {
-    int origine;
+    teClicFrom origine;
     int cur_dst;
     int lgn[3];
     int col[3];
@@ -69,7 +77,7 @@ public:
 
 class SyntheseDetails: public QWidget
 {
-   Q_OBJECT
+    Q_OBJECT
 
 private:
     static int detail_id;
@@ -104,7 +112,7 @@ public:
     QGridLayout * MonLayout_pFnDetailsMontrerSynthese(int ref, int dst);
     QGridLayout * MonLayout_pFnDetailsMontrerRepartition(int ref, int dst);
     QGridLayout * MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,QString sql_msgRef,
-                                                                   int ref,int *dst);
+                                                  int ref,int *dst);
 
     QGridLayout * MonLayout_CompteCombi(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
     QGridLayout * MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
@@ -152,8 +160,8 @@ private:
 };
 
 extern QString GEN_Where_3(int loop, QString tb1, bool inc1,
-                    QString op1, QStringList &tb2, bool inc2,
-                    QString op2);
+                           QString op1, QStringList &tb2, bool inc2,
+                           QString op2);
 extern QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, int niveau,
                                                      int maxElem, QString tmpTab, QString sin);
 
@@ -162,5 +170,6 @@ extern QString PBAR_Req3(QString *base, QString baseFiltre,int dst);
 extern QString FiltreLesTirages(stCurDemande *pEtude);
 extern QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn,int distance);
 extern QString PBAR_ReqNbCombi(stCurDemande *pEtude, QString ReqTirages);
+extern QString CreatreTitle(stCurDemande *pConf);
 
 #endif // SYNTHESEDETAILS_H

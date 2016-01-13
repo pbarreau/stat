@@ -64,7 +64,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
 #if 1
 void SyntheseGenerale::DoTirages(void)
 {
-    RefEtude *unTest = new RefEtude(bdd,*st_bdTirages,0,pMaConf);
+    RefEtude *unTest = new RefEtude(bdd,*st_bdTirages,0,pMaConf,pEcran,ptabTop);
     QWidget *uneReponse = unTest->CreationOnglets();
     tbv_LesTirages = unTest->GetListeTirages();
 
@@ -1099,18 +1099,17 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
     // Le simple click a construit la liste des boules
     stCurDemande *etude = new stCurDemande;
+    etude->origine = Tableau2;
 
     // recopie de la config courante
     uneDemande.st_titre = titre;
     uneDemande.cur_dst = 0;
-    //uneDemande.ref
     *etude = uneDemande;
-    //etude->st_bdAll = etude->st_baseDef;
 
     // Nouvelle de fenetre de detail de cette selection
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
-    connect( ptabTop, SIGNAL(tabCloseRequested(int index)) ,
-             unDetail, SLOT(slot_FermeLaRecherche(int index) ) );
+    connect( ptabTop, SIGNAL(tabCloseRequested(int)) ,
+             unDetail, SLOT(slot_FermeLaRecherche(int) ) );
 
 
 }

@@ -230,6 +230,7 @@ extern QString req_msg(QString base, int zone, int boule, stTiragesDef *ref);
 extern QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf);
 extern QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri);
 extern QString sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri);
+extern QString CompteJourTirage(stTiragesDef *pMaConf);
 
 
 #endif // TIRAGES_H

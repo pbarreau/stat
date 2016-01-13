@@ -16,6 +16,7 @@
 #include <QHeaderView>
 
 #include "refetude.h"
+#include "SyntheseDetails.h"
 #include "tirages.h"
 
 sCouv::sCouv(int zn, stTiragesDef *pDef):p_conf(pDef),p_deb(-1),p_fin(-1)
@@ -42,9 +43,9 @@ sCouv::~sCouv()
 }
 
 RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
-                   stTiragesDef *pDef):p_db(db),p_stRefTirages(stFiltreTirages),p_conf(pDef)
+                   stTiragesDef *pDef,QMdiArea *visuel, QTabWidget *tab_Top):p_db(db),
+    p_stRefTirages(stFiltreTirages),p_conf(pDef),p_affiche(visuel),p_reponse(tab_Top)
 {
-    int zone = 0;
     maRef = LstCritereGroupement(zn,p_conf);
 
     RechercheCouverture(&p_MaListe, zn);
@@ -133,10 +134,49 @@ QTableView *RefEtude::tbForBaseLigne()
     // Taille tableau
     qtv_tmp->setFixedSize(XLenTir,70);
 
+    // double click dans fenetre  pour afficher details boule
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_Type_G( QModelIndex) ) );
 
+    p_tbv_3 = qtv_tmp;
     return qtv_tmp;
 }
 
+void RefEtude::slot_Type_G(const QModelIndex & index)
+{
+    const QAbstractItemModel * pModel = index.model();
+    int col = index.column();
+    //int lgn = index.row();
+    //int use = un_index.model()->index(lgn,0).data().toInt();
+    int val = index.data().toInt();
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
+
+
+    QString titre = "b: - e: - c: - g:("
+            +headName+","+QString::number(val)+")";
+
+    stCurDemande *etude = new stCurDemande;
+
+    etude->origine = Tableau1;
+    QItemSelectionModel *selectionModel = p_tbv_3->selectionModel();
+    etude->selection[3] = selectionModel->selectedIndexes();
+    etude->st_titre = titre;
+    etude->cur_dst = 0;
+    etude->st_baseDef = &p_stRefTirages;
+    etude->ref = p_conf;
+    etude->st_bdAll = new QString;
+    etude->st_jourDef = new QString;
+    *(etude->st_jourDef) = CompteJourTirage(p_conf);
+
+
+    // Nouvelle de fenetre de detail de cette selection
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,p_affiche,p_reponse);
+    connect( p_reponse, SIGNAL(tabCloseRequested(int)) ,
+             unDetail, SLOT(slot_FermeLaRecherche(int) ) );
+
+
+}
 QTableView *RefEtude::tbForBaseRef()
 {
     QTableView *tbv_tmp = new QTableView;

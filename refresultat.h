@@ -17,7 +17,6 @@
 
 #include "tirages.h"
 
-extern QString CreatreTitle(stCurDemande *pConf);
 
 namespace NE_Analyses{
 typedef enum _les_tableaux

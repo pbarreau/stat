@@ -30,7 +30,6 @@ class MainWindow;
 }
 
 extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf);
-extern QString CompteJourTirage(stTiragesDef *pMaConf);
 extern int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *pMaConf);
 
 #if 0

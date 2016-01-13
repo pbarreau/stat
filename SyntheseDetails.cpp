@@ -264,47 +264,47 @@ QString sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri)
 {
 #if 0
     /* Req_1 : pour compter le nombre de boules pair par tirages */
-     select tb1.id as Tid, count(tb2.B) as Nb from
-     (
-         select * from tirages where id=1
-         ) as tb1
-     left join
-     (
-         select id as B from Bnrz where (z1 not null  and (z1%2 = 0))
-         ) as tb2
-     on
-     (
-         tb2.B = tb1.b1 or
- tb2.B = tb1.b2 or
- tb2.B = tb1.b3 or
- tb2.B = tb1.b4 or
- tb2.B = tb1.b5
- ) group by tb1.id; /* Fin Req_1 */
+    select tb1.id as Tid, count(tb2.B) as Nb from
+            (
+                select * from tirages where id=1
+            ) as tb1
+            left join
+            (
+                select id as B from Bnrz where (z1 not null  and (z1%2 = 0))
+                ) as tb2
+            on
+            (
+                tb2.B = tb1.b1 or
+            tb2.B = tb1.b2 or
+            tb2.B = tb1.b3 or
+            tb2.B = tb1.b4 or
+            tb2.B = tb1.b5
+            ) group by tb1.id; /* Fin Req_1 */
 #endif
 
-     QString st_return =
-             "select tb1.id as Tid, count(tb2.B) as Nb from "
+    QString st_return =
+            "select tb1.id as Tid, count(tb2.B) as Nb from "
+            "("
+            "select * from (" + st_tirages.remove(";")
+            + " where id = "
+            +QString::number(id)
+            +") as r1 "
+             ") as tb1 "
+             "left join "
              "("
-             "select * from (" + st_tirages.remove(";")
-             + " where id = "
-             +QString::number(id)
-             +") as r1 "
-              ") as tb1 "
-              "left join "
-              "("
-              "select id as B from Bnrz where (z1 not null  and ("+st_cri
-             +")) "
-              ") as tb2 "
-              "on "
-              "("
-              "tb2.B = tb1.b1 or "
-              "tb2.B = tb1.b2 or "
-              "tb2.B = tb1.b3 or "
-              "tb2.B = tb1.b4 or "
-              "tb2.B = tb1.b5 "
-              ") group by tb1.id;";
+             "select id as B from Bnrz where (z1 not null  and ("+st_cri
+            +")) "
+             ") as tb2 "
+             "on "
+             "("
+             "tb2.B = tb1.b1 or "
+             "tb2.B = tb1.b2 or "
+             "tb2.B = tb1.b3 or "
+             "tb2.B = tb1.b4 or "
+             "tb2.B = tb1.b5 "
+             ") group by tb1.id;";
 
-     return(st_return);
+    return(st_return);
 
 }
 
@@ -373,7 +373,7 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
     pLaDemande = pEtude;
     pEcran = visuel;
     gMemoTab = tab_Top;
-    detail_id++;
+    detail_id = gMemoTab->count()+1;
 
     QString stRequete = "";
     stRequete = FiltreLesTirages(pEtude);
@@ -1383,10 +1383,12 @@ QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn,int di
             + " "
               "from "
               "( "
-              "select id as boule from Bnrz where (z1 not null ) "
-              ") as tbleft "
-              "left join "
-              "( "
+              "select id as boule from Bnrz where (z"
+            +QString::number(zn+1)
+            +" not null ) "
+             ") as tbleft "
+             "left join "
+             "( "
             +ReqTirages.remove(";")+
             ") as tbright "
             "on "
@@ -2276,11 +2278,16 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
     QString     szn = "z" + QString::number(zn+1);
 
     int col = cellule.column();
-#if USE_repartition_bh
-    int nbi = cellule.model()->index(cellule.row(),1).data().toInt();
-#else
-    int nbi = cellule.model()->index(cellule.row(),0).data().toInt();
-#endif
+
+    int nbi = -1;
+    if(pRef->origine == Tableau1)
+    {
+        nbi = cellule.model()->index(cellule.row(),cellule.column()).data().toInt();
+    }
+    else
+    {
+        nbi = cellule.model()->index(cellule.row(),0).data().toInt();
+    }
 
     cri_msg <<szn+"%2=0"<<szn+"<"+QString::number((pRef->ref->limites[0].max)/2);
 
@@ -2295,21 +2302,15 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
         cri_msg<< szn+" >="+QString::number(10*j)+ " and "+szn+"<="+QString::number((10*j)+9);
     }
 
-#if USE_repartition_bh
-    if(col>=2 && col <= 2+cri_msg.size())
-    {
-        col=col-2;
-    }
-#else
-    if(col>=1 && col <= 1+cri_msg.size())
-    {
-        col=col-1;
-    }
-
-#endif
-    else
-    {
-        col=0;
+    if(pRef->origine !=Tableau1){
+        if(col>=1 && col <= 1+cri_msg.size())
+        {
+            col=col-1;
+        }
+        else
+        {
+            col=0;
+        }
     }
     st_cri1= cri_msg.at(col);
 
@@ -2702,7 +2703,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
 
 void SyntheseDetails::slot_FermeLaRecherche(int index)
 {
-    delete(this);
+    delete gMemoTab->widget(index);
 }
 
 void SyntheseDetails::slot_ClickSurOnglet(int index)
