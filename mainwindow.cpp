@@ -37,6 +37,8 @@
 #include "tirages.h"
 #include "gererbase.h"
 
+#include "chartwidget.h"
+
 static stTiragesDef configJeu;
 
 void MainWindow::pslot_closeTabDetails(int index)
@@ -49,6 +51,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     DB_tirages = new GererBase(dest_bdd,load,leJeu,&configJeu);
 
+    ChartWidget *test = new ChartWidget;
+    test->show();
 
     w_FenetreDetails = new QWidget;
     gtab_Top = new QTabWidget;

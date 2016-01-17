@@ -12,6 +12,20 @@ TARGET = StatFdJeux
 TEMPLATE = app
 
 
+
+include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
+
+win32:CONFIG(release, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchart2
+else:win32:CONFIG(debug, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchartd2
+win32: LIBS += -LC:/Devel/kdchart-2.5.1-source/lib/ -ltesttools2
+
+INCLUDEPATH += "C:/Devel/kdchart-2.5.1-source/include"
+DEPENDPATH += "C:/Devel/kdchart-2.5.1-source/include"
+
+message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
+
+
+
 SOURCES += main.cpp\
         mainwindow.cpp \
     choixjeux.cpp \
@@ -36,7 +50,8 @@ SOURCES += main.cpp\
     newdetails.cpp \
     distancepourtirage.cpp \
     monfiltreproxymodel.cpp \
-    refetude.cpp
+    refetude.cpp \
+    chartwidget.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -53,7 +68,9 @@ HEADERS  += mainwindow.h \
     monSqlEditable.h \
     distancepourtirage.h \
     monfiltreproxymodel.h \
-    refetude.h
+    refetude.h \
+    chartwidget.h \
+
 
 FORMS    += mainwindow.ui \
     choixjeux.ui
