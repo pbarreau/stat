@@ -215,6 +215,7 @@ private:
     bool LireFichiersDesTirages(bool autoLoad);
     bool AffectePoidsATirage_v2();
     bool ReorganiserLesTirages();
+    bool GrouperCombi(int zn);
 
 private:
     QSqlDatabase db;

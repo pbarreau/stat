@@ -70,13 +70,14 @@ void SyntheseGenerale::DoTirages(void)
 
     disposition->addWidget(uneReponse,0,0,Qt::AlignLeft|Qt::AlignTop);
 
+#if 0
     connect( tbv_LesTirages, SIGNAL( activated(QModelIndex)) ,
              pEcran->parent(), SLOT( slot_MontreLeTirage( QModelIndex) ) );
 
-#if 0
+#endif
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
-#endif
+
 }
 
 #else
@@ -1396,9 +1397,9 @@ QString CompteJourTirage(stTiragesDef *pMaConf)
     {
         st_msg = st_msg +
                 "count(CASE WHEN  J like '"
-                +pMaConf->jour_tir[i]+
+                +pMaConf->jour_tir[i].left(2)+
                 "%' then 1 end) as "
-                +pMaConf->jour_tir[i].left(3)+
+                +pMaConf->jour_tir[i].left(2)+
                 ",";
     }
 

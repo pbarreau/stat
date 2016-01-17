@@ -8,6 +8,9 @@
 
 #include "gererbase.h"
 
+extern QString ContruireRechercheCombi(int i,int zn,stTiragesDef *pRef);
+extern QString DetailsSomme(int zn, stTiragesDef *pRef);
+
 bool GererBase::CreerTableDistriCombi(void)
 {
     bool ret = true;
@@ -166,16 +169,163 @@ bool GererBase::f4()
 {
     bool status = true;
     stTiragesDef ref=typeTirages->conf;
+    int zn = 0;
 
     for(int i =0; i<5 && status;i++)
     {
         status = SauverCombiVersTable(ref.sl_Lev1[i]);
     }
 
+    // Regrouper Le type des combinaisons
+    if(status)
+        status = GrouperCombi(zn);
+
     if(status)
         status = MettrePonderationCombi(50);
 
     return status;
+}
+
+bool GererBase::GrouperCombi(int zn)
+{
+    bool status = true;
+
+    QSqlQuery sql_1;
+
+    QString st_critere = "";
+    QString msg_1 = "";
+    int max= typeTirages->conf.nbElmZone[0];
+
+    for(int i = 5; i>1 && status;i--)
+    {
+        st_critere = ContruireRechercheCombi(i,zn,&typeTirages->conf);
+
+        st_critere = "select id from lstcombi where ("
+                + st_critere
+                +")";
+
+        msg_1 = "update lstcombi set pos = "
+                +QString::number(6-i)
+                +" where id in("
+                +st_critere
+                +");";
+
+#ifndef QT_NO_DEBUG
+        qDebug() << msg_1;
+#endif
+
+        // Executer la requete
+        status = sql_1.exec(msg_1);
+    }
+
+    //
+    QString str_union="union all ";
+    st_critere ="";
+    for(int i =1; i<=max;i++)
+    {
+        st_critere = st_critere + "select * from lstcombi where b"
+                +QString::number(i)
+                +"=1 "
+                +str_union;
+    }
+    st_critere.remove(st_critere.size()-str_union.size(),str_union.size());
+
+    st_critere = "select id from(select id, count(id) as T from("
+            +st_critere+") as u1 group by id order by T) as r1 where (r1.T=3)";
+
+    msg_1 = "update lstcombi set pos = 5 where id in("
+            +st_critere
+            +");";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << msg_1;
+#endif
+
+    // Executer la requete
+    status = sql_1.exec(msg_1);
+
+    if(status)
+    {
+        st_critere = ContruireRechercheCombi(1,zn,&typeTirages->conf);
+
+        st_critere = "select id from lstcombi where ("
+                + st_critere
+                +")";
+
+        msg_1 = "update lstcombi set pos = 6 where id in("
+                +st_critere
+                +");";
+
+#ifndef QT_NO_DEBUG
+        qDebug() << msg_1;
+#endif
+
+        // Executer la requete
+        status = sql_1.exec(msg_1);
+    }
+
+    return status;
+}
+
+QString ContruireRechercheCombi(int i,int zn,stTiragesDef *pRef)
+{
+    QStringList lstBoules;
+    QString tmp = "";
+    QString champ = "";
+
+    bool putIndice = true;
+    int max = 0;
+
+    max = pRef->nbElmZone[zn];
+    champ = pRef->nomZone[zn];
+
+    lstBoules << QString::number(i);
+    if(i>2){
+        tmp = GEN_Where_3(max,champ,putIndice,"=",lstBoules,false,"or");
+    }
+
+    if (i==2)
+    {
+        tmp = DetailsSomme(zn,pRef);
+    }
+
+    if(i==1)
+    {
+        tmp = GEN_Where_3(max,champ,putIndice,"=",lstBoules,false,"and");
+    }
+
+#ifndef QT_NO_DEBUG
+    qDebug() << tmp;
+#endif
+
+    return tmp;
+}
+
+QString DetailsSomme(int zn,stTiragesDef *pRef)
+{
+    QString tmp = "";
+
+    QString champ = "";
+    int max = 0;
+
+    max = pRef->nbElmZone[zn];
+    champ = pRef->nomZone[zn];
+
+
+    for(int i=1;i<max;i++)
+    {
+        tmp = tmp+"(";
+        for(int j=i+1;j<=max;j++)
+        {
+            tmp=tmp+"(b"+QString::number(i)+"=2 and b"+QString::number(j)+"=2)";
+            tmp = tmp+"or";
+        }
+        tmp.remove(tmp.length()-2,2); // dernier or
+        tmp = tmp+")or";
+    }
+    tmp.remove(tmp.length()-2,2); // dernier or
+
+    return tmp;
 }
 
 bool  GererBase::MettrePonderationCombi(int delta)

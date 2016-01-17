@@ -249,7 +249,7 @@ QTableView *RefEtude::tbForBaseEcart()
     for(int i=0;i<nbcol;i++)
     {
         tmpStdItem->setHeaderData(i,Qt::Horizontal,colName[i]);
-        // Remplir resultat
+        // Creer cellule du tableau
         for(int pos=0;pos <nb_lgn;pos++)
         {
             QStandardItem *item = new QStandardItem();
@@ -278,8 +278,6 @@ QTableView *RefEtude::tbForBaseEcart()
     qtv_tmp->setFixedSize(XLenTir/3,CHauteur2);
 
     // Remplir le tableau
-    //DistributionSortieDeBoule_v2(zn, 1,tmpStdItem);
-
     RemplirTableauEcart(zn,tmpStdItem);
 
     return qtv_tmp;
@@ -670,10 +668,12 @@ void RefEtude::RemplirTableauEcart(int zn, QStandardItemModel *sim_tmp)
 {
     // Montrer les boules "non" encore sorties
     int totCouv = p_MaListe.size();
-    int nbBoule = p_conf->limites[zn].max;
 
     if(!totCouv)
         return;
+
+    int nbBoule = p_conf->limites[zn].max;
+    double *Tot7B = new double[nbBoule];
 
     sCouv *curCouv = p_MaListe.last();
     sCouv *PrvCouv = NULL;
@@ -689,14 +689,35 @@ void RefEtude::RemplirTableauEcart(int zn, QStandardItemModel *sim_tmp)
     MontrerBoulesNonSorties(zn,sim_tmp,curCouv,memo_last_boule);
 
 
+    double moyenne = 0.0;
+    double m2 = 0.0;
+    int sommeBoule = 0;
     for(int i=1;i<=nbBoule;i++){
         // Remplir Sous Fen les ecarts
-        DistributionSortieDeBoule_v2(zn, i,sim_tmp);
+        double val = DistributionSortieDeBoule_v2(zn, i,sim_tmp);
+        Tot7B[i-1] = val;
+        moyenne = moyenne + (Tot7B[i-1] *i);
+        m2+=val*i;
+        sommeBoule = sommeBoule + i;
 
         // Montrer les valeurs probable
         CouvMontrerProbable_v2(i,sim_tmp);
     }
 
+    // moyenne de la serie
+    moyenne = moyenne/sommeBoule;
+
+    //variance de la serie
+    double V = 0.0;
+    for(int i=1;i<=nbBoule;i++){
+        CouvMontrerProbable_v3(i,moyenne,sim_tmp);
+        V = V + (Tot7B[i-1]*pow((i-moyenne),2.0))/sommeBoule;
+    }
+
+    // ecart type
+    double E = sqrt(V);
+
+    E++;
 
 
 }
@@ -734,25 +755,39 @@ void RefEtude::MontrerBoulesNonSorties(int zn, QStandardItemModel *sim_tmp, sCou
 
 }
 
-void RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel *modele)
+double  RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel *modele)
 {
     bool status = false;
 
     QSqlQuery query;
     QSqlQuery selection;
-    QString msg;
-    //QString tmp_table = "UneTable";
+    QString msg="";
+    QString msg_ligne="";
 
     double EcartMoyen = 0.0;
     int lgndeb=0, lgnfin=0;
     int nbTirages=0;
     //int calcul;
-    int nbTotCouv = 0, EcartMax=0, EcartCourant = 0, EcartPrecedent=0;
+    int EcartMax=0, EcartCourant = 0, EcartPrecedent=0;
     int a_loop = 0;
     stTiragesDef *pRef = p_conf;
+    QString useBase = p_stRefTirages;
+    useBase = useBase.remove(";");
 
-    qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
 
+    // Recuperation des lignes ayant la boule
+    msg_ligne = req_msg(useBase,zn,boule,pRef);
+    status = selection.exec(msg_ligne);
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
+#if 0
+    // calcul des ecarts pour la boule
+    msg = "select count (*)  from ("+msg_ligne+") as T;";
+    status = query.exec(msg);
+    query.first();
+    int nbTot7boule = query.value(0).toInt();
+#endif
     msg =  "create table tmp_couv (id integer primary key, depart int, fin int, taille int);";
     status = query.exec(msg);
 
@@ -765,8 +800,6 @@ void RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel
         }
     }
 
-    QString useBase = p_stRefTirages;
-    useBase = useBase.remove(";");
     // recuperation du nombre de tirage total
     //msg= "select count (*)  from ("+useBase+") as r1;";
     msg= "select count (*)  from (tirages) as r1;";
@@ -781,7 +814,7 @@ void RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel
 
 
     if(!status)
-        return;
+        return EcartMoyen;
 
 
 
@@ -790,13 +823,8 @@ void RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel
     msg = "insert into tmp_couv (id, depart, fin, taille) values (:id, :depart, :fin, :taille)";
     query.prepare(msg);
 
-    // Recuperation des lignes ayant la boule
-    msg = req_msg(useBase,zn,boule,pRef);
-    status = selection.exec(msg);
-#ifndef QT_NO_DEBUG
-    qDebug() << msg;
-#endif
 
+    //status = selection.exec(msg_ligne);
     //Partir de la fin des tirages trouves
     selection.last(); // derniere ligne ayant le numero
     if(selection.isValid()){
@@ -836,11 +864,6 @@ void RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel
     status = query.exec();
     nbTirages += (lgndeb-lgnfin);
 
-    // calcul des ecarts pour la boule
-    msg = "select count (*)  from tmp_couv";
-    status = query.exec(msg);
-    query.first();
-    nbTotCouv = query.value(0).toInt();
 
     // Moyenne
     if(a_loop>0)
@@ -893,13 +916,14 @@ void RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemModel
     }
 #endif
 
+    return EcartMoyen;
 }
 
 void RefEtude::CouvMontrerProbable_v2(int i,QStandardItemModel *dest)
 {
 
     double rayon = 1.5;
-    const QColor fond[4]={QColor(255,156,86,190),
+    const QColor fond[]={QColor(255,156,86,190),
                           QColor(140,255,124,190),
                           QColor(70,160,220,190),
                           QColor(255,40,180,190)
@@ -913,13 +937,14 @@ void RefEtude::CouvMontrerProbable_v2(int i,QStandardItemModel *dest)
     }
     int Ec = cellule[0]->data(Qt::DisplayRole).toInt();
     int Ep = cellule[1]->data(Qt::DisplayRole).toInt();
-    int Em = cellule[2]->data(Qt::DisplayRole).toInt();
-    double EM = cellule[3]->data(Qt::DisplayRole).toDouble();
+    double Em = cellule[2]->data(Qt::DisplayRole).toDouble();
+    int EM = cellule[3]->data(Qt::DisplayRole).toInt();
 
     int d1 = abs(Ep-Ec);
-    int d2 = abs(Em-Ec);
+    double d2 = abs(Em-Ec);
     int d3 = abs(EM-Ec);
-    int d4 = abs(Em-Ep);
+    double d4 = abs(Em-Ep);
+
     if(d1 <= rayon)
     {
         cellule[1]->setBackground(QBrush(fond[0]));
@@ -937,4 +962,20 @@ void RefEtude::CouvMontrerProbable_v2(int i,QStandardItemModel *dest)
         cellule[0]->setBackground(QBrush(fond[3]));
     }
 
+}
+
+void RefEtude::CouvMontrerProbable_v3(int i,double Emg, QStandardItemModel *dest)
+{
+
+    double rayon = 1.5;
+    const QColor fond[]={QColor(219,188,255,255)
+                         };
+
+    double Ec = dest->item(i-1,1)->data(Qt::DisplayRole).toDouble();
+    double d5 = abs(Ec-Emg);
+
+    if(d5 <= rayon)
+    {
+        dest->item(i-1,4)->setBackground(QBrush(fond[0]));
+    }
 }

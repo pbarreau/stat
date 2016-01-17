@@ -61,7 +61,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     TST_EtoileCombi(&configJeu);
 
     FEN_NewTirages(&configJeu);
-    FEN_Graphe(&configJeu);
+    //FEN_Graphe(&configJeu);
 
     return;
 
@@ -2173,6 +2173,23 @@ QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
 {
     QGridLayout *lay_return = new QGridLayout;
 
+    // Essai de mise en onglet des  graphiques
+    QTabWidget *tabWidget = new QTabWidget;
+    UnConteneurDessin *dessin;
+
+
+    //tabWidget->set
+    dessin = TST_Graphe_1(pConf);
+    tabWidget->addTab(dessin,"Tirages");
+
+    dessin = TST_Graphe_2(pConf);
+    tabWidget->addTab(dessin,"Parites");
+
+    dessin = TST_Graphe_3(pConf);
+    tabWidget->addTab(dessin,"b<N/2");
+
+    lay_return->addWidget(tabWidget);
+
     return(lay_return);
 }
 
@@ -2181,7 +2198,7 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
     QWidget *qw_nsr = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
     QWidget **wid_ForTop = new QWidget*[2];
-    QString stNames[2]={"Glob","Spe"};
+    QString stNames[2]={"Glob","Graf"};
     QGridLayout *design_onglet[2];
 
     //tab_Top->setTabsClosable(true);
