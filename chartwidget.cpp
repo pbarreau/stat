@@ -17,9 +17,9 @@ ChartWidget::ChartWidget(QWidget *parent) :
     {
 
         // initialize the ItemModel and fill in some data
-        m_model.insertRows( 0, 10 );
-        m_model.insertColumns(  0,  5 );
-        int value = 0;
+        m_model.insertRows( 0, 49 );
+        m_model.insertColumns(  0,  1 );
+        int value = 20;
         for ( int column = 0; column < m_model.columnCount(); ++column ) {
             for ( int row = 0; row < m_model.rowCount(); ++row ) {
                 QModelIndex index = m_model.index( row, column );
