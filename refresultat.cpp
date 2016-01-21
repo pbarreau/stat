@@ -774,11 +774,11 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
     }
 
     // simple click dans fenetre  pour selectionner boule
-    connect( tbv_bloc2, SIGNAL(clicked(QModelIndex)) ,
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_Select_G( QModelIndex) ) );
 
     // double click dans fenetre  pour afficher details boule
-    connect( tbv_bloc2, SIGNAL(doubleClicked(QModelIndex)) ,
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
     return (lay_return);
@@ -1102,10 +1102,14 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     stCurDemande *etude = new stCurDemande;
     etude->origine = Tableau2;
 
-    // recopie de la config courante
-    uneDemande.st_titre = titre;
-    uneDemande.cur_dst = 0;
-    *etude = uneDemande;
+    etude->selection[3] = uneDemande.selection[3];
+    etude->st_titre = titre;
+    etude->cur_dst = 0;
+    etude->st_baseDef = uneDemande.st_baseDef;
+    etude->ref = uneDemande.ref;
+    etude->st_bdAll = new QString;
+    etude->st_jourDef = new QString;
+    *(etude->st_jourDef) = CompteJourTirage(uneDemande.ref);
 
     // Nouvelle de fenetre de detail de cette selection
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
