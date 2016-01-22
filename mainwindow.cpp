@@ -2255,7 +2255,7 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
 
 
     QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
-    subWindow->resize(1000,860);
+    subWindow->resize(1080,860);
     subWindow->move(0,0);
     qw_nsr->setVisible(true);
 }

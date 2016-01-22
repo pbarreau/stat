@@ -481,6 +481,8 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
     QWidget * qw_retour = new QWidget;
     QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
+    QSqlQuery sq_count;
+    bool status = false;
 
     onglets = tab_Top;
 
@@ -506,14 +508,37 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
         tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
 
         sqlReq = PBAR_Req3(pEtude->st_baseDef,stRequete,d[id_Onglet]);
-        QGridLayout *lay_tmp = MonLayout_MontrerTiragesFiltres(visuel,sqlReq,id_Onglet,d);
 
-        // -- onglet comptage avec tableau
+        // Verifier que cette requete produit des resultats
+        QString st_count = "select count (*) from ("
+                +sqlReq.remove(";")+");";
+        status = sq_count.exec(st_count);
+        int nb_resultat = 0;
+        if(status)
+        {
+            sq_count.first();
+            nb_resultat = sq_count.value(0).toInt();
+        }
+
+        // Affichage a retourner
         QGridLayout *MonComptage = new  QGridLayout;
-        QWidget * qw_tmp = PBAR_ComptageFiltre(pEtude,sqlReq,id_Onglet);
 
-        MonComptage->addLayout(lay_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
-        MonComptage->addWidget(qw_tmp,0,1,Qt::AlignLeft|Qt::AlignTop);
+
+        if(nb_resultat){
+            QGridLayout *lay_tmp = MonLayout_MontrerTiragesFiltres(visuel,sqlReq,id_Onglet,d);
+            MonComptage->addLayout(lay_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+            // -- onglet comptage avec tableau
+            QWidget * qw_tmp = PBAR_ComptageFiltre(pEtude,sqlReq,id_Onglet);
+            MonComptage->addWidget(qw_tmp,0,1,Qt::AlignLeft|Qt::AlignTop);
+        }
+        else
+        {
+            QLabel * lb_info = new QLabel;
+            lb_info->setText("Pas de réponses selon ce critere ...");
+            MonComptage->addWidget(lb_info,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+        }
 
         dsgOnglet[id_Onglet]=MonComptage;
         wid_ForTop[id_Onglet]->setLayout(dsgOnglet[id_Onglet]);
@@ -1038,6 +1063,9 @@ void SyntheseDetails::slot_NouvelleDistance(void)
         }
 
     }
+
+    // Recalcul pour les groupements TBD
+
     // Memorisation
     dist->setValue(new_distance *-1);
     d[3]= new_distance;
