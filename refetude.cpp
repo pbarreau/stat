@@ -7,6 +7,7 @@
 #include <QString>
 #include <QGridLayout>
 #include <QTabWidget>
+#include <QSpinBox>
 
 #include <QSqlQuery>
 #include <QSqlRecord>
@@ -23,13 +24,20 @@ sCouv::sCouv(int zn, stTiragesDef *pDef):p_conf(pDef),p_deb(-1),p_fin(-1)
 {
     int maxItems = p_conf->limites[zn].max;
     p_val = new int *[maxItems];
+    p_TotalMois = new int *[maxItems];
+    p_trackingBoule = new QList<bool> [maxItems];
+
 
     for(int i=0;i<maxItems;i++)
     {
         p_val[i]=new int[3];
-
         if(p_val[i])
             memset(p_val[i],0,3*sizeof(int));
+
+        //mettre a zero compteur des mois
+        p_TotalMois[i] = new int[12];
+        if(p_TotalMois[i])
+            memset(p_TotalMois[i],0,12*sizeof(int));
     }
 }
 
@@ -40,6 +48,13 @@ sCouv::~sCouv()
         delete p_val[i];
     }
     delete p_val;
+
+    for(int i=0;i<12;i++)
+    {
+        delete p_TotalMois[i];
+    }
+    delete p_TotalMois;
+
 }
 
 RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
@@ -62,7 +77,7 @@ QWidget *RefEtude::CreationOnglets()
     QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
 
-    QString ongNames[]={"Tirages","Couvertures"};
+    QString ongNames[]={"Tirages","Couvertures","Mois"};
     int maxOnglets = sizeof(ongNames)/sizeof(QString);
 
     QWidget **wid_ForTop = new QWidget*[maxOnglets];
@@ -70,7 +85,8 @@ QWidget *RefEtude::CreationOnglets()
 
     QGridLayout * (RefEtude::*ptrFunc[])()={
             &RefEtude::MonLayout_TabTirages,
-            &RefEtude::MonLayout_TabCouvertures};
+            &RefEtude::MonLayout_TabCouvertures,
+            &RefEtude::MonLayout_TabMois};
 
     for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
     {
@@ -391,10 +407,249 @@ QTableView * RefEtude::TablePourLstcouv(QList<sCouv *> *lstCouv,int zn)
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_Couverture( QModelIndex) ) );
 
+    // double click dans fenetre  pour selectionner boule
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_SelectPartBase( QModelIndex) ) );
+
+
     p_tbv_1 = qtv_tmp;
 
 
     return qtv_tmp;
+}
+
+QGridLayout *RefEtude::MonLayout_TabMois()
+{
+    QGridLayout *returnLayout = new QGridLayout;
+
+    int zn = 0;
+    int nbCouv = p_MaListe.size();
+    if(nbCouv){
+
+        QGridLayout *gl_1 = MonLayout_TabMois_1(zn);
+        QGridLayout *gl_2 = MonLayout_TabMois_2(&p_MaListe,zn);
+
+        returnLayout->addLayout(gl_1,0,0);
+        returnLayout->addLayout(gl_2,0,1);
+    }
+
+    return returnLayout;
+}
+
+QGridLayout *RefEtude::MonLayout_TabMois_1(int zn)
+{
+    QGridLayout *lay_return = new QGridLayout;
+    QVBoxLayout *vb_tmp = new QVBoxLayout;
+    QLabel * lab_tmp = new QLabel;
+
+    lab_tmp->setText("Base");
+    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+    QTableView *qtv_tmp = TableMoisBase(zn);
+    vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+    lay_return->addLayout(vb_tmp,0,0);
+
+    return lay_return;
+}
+
+QGridLayout *RefEtude::MonLayout_TabMois_2(QList<sCouv *> *lstCouv,int zn)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+    QVBoxLayout *vb_tmp = new QVBoxLayout;
+    QHBoxLayout *hb_tmp = new QHBoxLayout;
+
+    QLabel * lab_tmp = new QLabel;
+    lab_tmp->setText("Couv:");
+    hb_tmp->addWidget(lab_tmp,Qt::AlignLeft|Qt::AlignTop);
+
+    QSpinBox *selCouv = new QSpinBox;
+    int max = lstCouv->size();
+    selCouv->setRange(1,max);
+    selCouv->setSingleStep(1);
+    selCouv->setValue(max);
+    hb_tmp->addWidget(selCouv,Qt::AlignLeft|Qt::AlignTop);
+
+
+    QTableView *qtv_tmp = TableMoisCouv(zn);
+
+    vb_tmp->addLayout(hb_tmp,Qt::AlignLeft|Qt::AlignTop);
+    vb_tmp->addWidget(qtv_tmp,Qt::AlignLeft|Qt::AlignTop);
+
+    lay_return->addLayout(vb_tmp,0,0);
+
+    // remplir avec derniere converture
+    slot_TotalCouverture(max);
+
+    connect(selCouv, SIGNAL(valueChanged(int)),
+            this, SLOT(slot_TotalCouverture(int)));
+
+    return lay_return;
+}
+
+QTableView * RefEtude::TableMoisBase(int zn)
+{
+    QTableView *qtv_tmp = new QTableView;
+
+    int nb_lgn = p_conf->limites[zn].max;
+    QString colName[]={"B","J","F","M","A","M","J","J","A","S","O","N","D"};
+    int nb_colH = sizeof(colName)/sizeof(QString);
+    QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,nb_colH);
+    qtv_tmp->setModel(tmpStdItem);
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+
+    for(int i=0;i<nb_colH;i++)
+    {
+        tmpStdItem->setHeaderData(i,Qt::Horizontal,colName[i]);
+        // Remplir resultat
+        for(int pos=0;pos <nb_lgn;pos++)
+        {
+            QStandardItem *item = new QStandardItem();
+            if(i==0){
+                item->setData(pos+1,Qt::DisplayRole);
+            }
+            else
+            {
+                int tot = p_couvBase[pos][i-1];
+                item->setData(tot,Qt::DisplayRole);
+            }
+            tmpStdItem->setItem(pos,i,item);
+            qtv_tmp->setColumnWidth(i,30);
+        }
+    }
+
+
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // Bloquer largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    // faire disparaitre vertical header
+    qtv_tmp->verticalHeader()->hide();
+
+    // Taille tableau
+    qtv_tmp->setFixedSize((XLenTir)*1/2,YLenTir);
+
+    return qtv_tmp;
+}
+
+QTableView * RefEtude::TableMoisCouv(int zn)
+{
+    QTableView *qtv_tmp = new QTableView;
+
+    int nb_lgn = p_conf->limites[zn].max;
+    QString colName[]={"B","J","F","M","A","M","J","J","A","S","O","N","D"};
+    int nb_colH = sizeof(colName)/sizeof(QString);
+    QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,nb_colH);
+    p_qsim_4 = tmpStdItem;
+    qtv_tmp->setModel(tmpStdItem);
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+
+    for(int i=0;i<nb_colH;i++)
+    {
+        tmpStdItem->setHeaderData(i,Qt::Horizontal,colName[i]);
+        // Remplir resultat
+        for(int pos=0;pos <nb_lgn;pos++)
+        {
+            QStandardItem *item = new QStandardItem();
+            if(i==0){
+                item->setData(pos+1,Qt::DisplayRole);
+            }
+            tmpStdItem->setItem(pos,i,item);
+            qtv_tmp->setColumnWidth(i,30);
+        }
+    }
+
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // Bloquer largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    // faire disparaitre vertical header
+    qtv_tmp->verticalHeader()->hide();
+
+    // Taille tableau
+    qtv_tmp->setFixedSize((XLenTir)*1/2,YLenTir);
+
+    return qtv_tmp;
+}
+
+void RefEtude::slot_SelectPartBase(const QModelIndex & index)
+{
+    // recuperer le debut et fin de cette couverture
+    const QAbstractItemModel * pModel = index.model();
+    int col = index.column();
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
+    QSqlQuery sql;
+    bool status = false;
+
+    int deb = p_MaListe.at(p_MaListe.size()-col-1)->p_deb;
+    int fin = p_MaListe.at(p_MaListe.size()-col-1)->p_fin;
+
+    if (fin <0)
+            fin=1;
+
+    QString selBase = "select * from ("+
+            p_stRefTirages.remove(";")
+            +") where id BETWEEN "
+            + QString::number(fin)
+            + " and "
+            + QString::number(deb) + ";";
+
+#ifndef QT_NO_DEBUG
+    qDebug()<< "slot_SelectPartBase";
+    qDebug()<< selBase;
+    qDebug()<< "\n";
+#endif
+
+    status = sql.exec(selBase);
+
+    if(!status)
+        return;
+
+    sql.first();
+    QString st_deb = sql.value("D").toString();
+
+    sql.last();
+    QString st_fin = sql.value("D").toString();
+
+    QString titre = "Couverture : "
+            + headName
+            + "-> deb = "
+            + st_deb
+            + ", fin = "
+            +st_fin;
+
+    stCurDemande *etude = new stCurDemande;
+    etude->origine = Tableau3;
+    etude->st_titre = titre;
+    etude->cur_dst = 0;
+    etude->ref = p_conf;
+    etude->st_baseDef = new QString;
+    *(etude->st_baseDef)=selBase;
+    etude->st_bdAll = new QString;
+    etude->st_jourDef = new QString;
+    *(etude->st_jourDef) = CompteJourTirage(p_conf);
+
+    // Nouvelle de fenetre de detail de cette selection
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,p_affiche,p_reponse);
+    connect( p_reponse, SIGNAL(tabCloseRequested(int)) ,
+             unDetail, SLOT(slot_FermeLaRecherche(int) ) );
+
 }
 
 void RefEtude::slot_Couverture(const QModelIndex & index)
@@ -439,6 +694,22 @@ void RefEtude::slot_Couverture(const QModelIndex & index)
         p_tbv_2->setEnabled(true);
     }
 
+}
+
+void RefEtude::slot_TotalCouverture(int index)
+{
+    int nb_lgn = p_conf->limites[0].max;
+    for(int i=1;i<=12;i++)
+    {
+        // Remplir resultat
+        for(int pos=0;pos <nb_lgn;pos++)
+        {
+            QStandardItem *item = p_qsim_4->item(pos,i);
+            int nval = p_MaListe.at(index-1)->p_TotalMois[pos][i-1];
+            item->setData(nval,Qt::DisplayRole);
+            p_qsim_4->setItem(pos,i,item);
+        }
+    }
 }
 
 void RefEtude::slot_ShowDetails(const QModelIndex & index)
@@ -504,6 +775,7 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
 
     status = query.exec(p_stRefTirages);
 
+
     // Se positionner au debut des tirages du jeu
     if (status)
         status = query.last();
@@ -536,6 +808,29 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
 
 
         }while(query.previous());
+
+        // toute la base a ete traite, faire une synthese
+        int max_boule = p_conf->limites[zn].max;
+        p_couvBase = new int *[max_boule];
+        for(int i=0;i<max_boule;i++)
+        {
+            p_couvBase[i]=new int[12];
+            if(p_couvBase[i])
+                memset(p_couvBase[i],0,12*sizeof(int));
+        }
+
+        int maxCouv = lstCouv->size();
+        for(int i =0; i< maxCouv;i++)
+        {
+            for(int j=0;j<max_boule;j++)
+            {
+                for(int k = 0; k<12;k++)
+                {
+                    p_couvBase[j][k] = p_couvBase[j][k]
+                            + lstCouv->at(i)->p_TotalMois[j][k];
+                }
+            }
+        }
     }
 
     return status;
@@ -557,15 +852,35 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
 
     // parcour des boules
     int b_val = 0;
+    QString st_date = "";
+    int max_boule = p_conf->limites[zn].max;
     for(int bId=(*bIdStart);bId<memo->p_conf->nbElmZone[zn];bId++)
     {
         // recuperer une boule
         b_val = unTirage.value(5+bId).toInt();
 
+
         // une couverture complete ?
         if(total <= memo->p_conf->limites[zn].max)
         {
             // non
+
+            // memoriser le mois
+            st_date = unTirage.value(3).toString();
+            QStringList tmpSplit = st_date.split("/");
+            int leMois = tmpSplit.at(1).toInt() -1;
+            memo->p_TotalMois[b_val-1][leMois]++;
+
+            // memoriser sequencement on/off de chaque boule
+            for(int i =0; i< max_boule;i++)
+            {
+                bool bouleLevel = false;
+
+                if(i==(b_val-1))
+                    bouleLevel = true;
+
+                memo->p_trackingBoule[i].append(bouleLevel);
+            }
 
             // Boule deja connue ?
             if(memo->p_val[b_val-1][0])
@@ -924,10 +1239,10 @@ void RefEtude::CouvMontrerProbable_v2(int i,QStandardItemModel *dest)
 
     double rayon = 1.5;
     const QColor fond[]={QColor(255,156,86,190),
-                          QColor(140,255,124,190),
-                          QColor(70,160,220,190),
-                          QColor(255,40,180,190)
-                         };
+                         QColor(140,255,124,190),
+                         QColor(70,160,220,190),
+                         QColor(255,40,180,190)
+                        };
 
     QStandardItem *cellule[4];
 
@@ -969,7 +1284,7 @@ void RefEtude::CouvMontrerProbable_v3(int i,double Emg, QStandardItemModel *dest
 
     double rayon = 1.5;
     const QColor fond[]={QColor(219,188,255,255)
-                         };
+                        };
 
     double Ec = dest->item(i-1,1)->data(Qt::DisplayRole).toDouble();
     double d5 = abs(Ec-Emg);
