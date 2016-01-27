@@ -51,8 +51,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     DB_tirages = new GererBase(dest_bdd,load,leJeu,&configJeu);
 
-    ChartWidget *test = new ChartWidget;
-    test->show();
+    //ChartWidget *test = new ChartWidget;
+    //test->show();
 
     w_FenetreDetails = new QWidget;
     gtab_Top = new QTabWidget;
@@ -2181,8 +2181,11 @@ QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
     QTabWidget *tabWidget = new QTabWidget;
     UnConteneurDessin *dessin;
 
+    ChartWidget *test = new ChartWidget;
+    //test->show();
 
-    //tabWidget->set
+    tabWidget->addTab(test,"Spirale");
+
     dessin = TST_Graphe_1(pConf);
     tabWidget->addTab(dessin,"Tirages");
 
@@ -2205,7 +2208,6 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
     QString stNames[2]={"Glob","Graf"};
     QGridLayout *design_onglet[2];
 
-    //tab_Top->setTabsClosable(true);
 
     // pour reecriture
     QString *st_tmp1 = new QString;
