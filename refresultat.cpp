@@ -1100,8 +1100,8 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
     // Le simple click a construit la liste des boules
     stCurDemande *etude = new stCurDemande;
-    etude->origine = Tableau2;
     *etude = uneDemande;
+    etude->origine = Tableau2;
 
     //etude->selection[3] = uneDemande.selection[3];
     etude->st_titre = titre;

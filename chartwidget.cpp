@@ -1,13 +1,5 @@
 #include <QtGui>
-#if 0
-#include <KDChartChart>
-#include <KDChartPolarDiagram>
-#include <KDChartDataValueAttributes>
-#include <KDChartBackgroundAttributes>
 
-
-using namespace KDChart;
-#endif
 
 #include "chartwidget.h"
 

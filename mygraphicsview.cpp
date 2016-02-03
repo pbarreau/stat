@@ -76,7 +76,7 @@ void MyGraphicsView::DessineCourbeSql(QString msg_2, NE_FDJ::E_typeJeux leJeu, Q
                y = y -  y_sql * C_COEF_Y* scale_y;
                y -=delta_y;
 
-                // Ajount d'une boule representant un tirage
+                // Ajout d'une boule representant un tirage
                 PointTirage *ptir = new PointTirage(leJeu,scene_type);
 
                 ptir->setPos(x,y);

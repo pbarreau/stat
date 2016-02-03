@@ -5199,7 +5199,6 @@ void MainWindow::FEN_Graphe(stTiragesDef *pConf)
 
 UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
 {
-    //UnConteneurDessin *
     une_vue[0] = new UnConteneurDessin;
     QString msg_2="";
     QString msg_3 = "";
@@ -5208,8 +5207,6 @@ UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
 
     msg_2="select analyses.id, lstcombi.poids, lstcombi.pos from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
     myview[0]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::red,2,20);
-    //myview[0]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::black,1,1,10);
-
 
     // select tirages.id, comb_e.poids from tirages inner join comb_e on comb_e.e1=tirages.e1 and comb_e.e2 = tirages.e2
     msg_2 = "select tirages.id, comb_e.poids from tirages inner join comb_e on ";
