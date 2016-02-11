@@ -21,8 +21,10 @@
 #include "SyntheseDetails.h"
 #include "filtrecombinaisons.h"
 #include "monQview.h"
+#include "myqtableview.h"
 
 int SyntheseDetails::detail_id = 0;
+const QString ongNames[]={"0","+1","-1","?"};
 
 //------------- Local Prototypes ------------
 QComboBox *ComboPerso(int id);
@@ -488,12 +490,17 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
 
     QLabel * titre = new QLabel;
 
-    QString ongNames[]={"0","+1","-1","?"};
+    // QString ongNames[]={"0","+1","-1","?"};
     QString sqlReq = "";
 
     int maxOnglets = sizeof(d)/sizeof(int);
 
     gtab_splitter_2 = new QTabWidget *[maxOnglets];
+    // Mettre a null comme initialisation
+    for(int i =0; i<maxOnglets;i++)
+    {
+        gtab_splitter_2[i] =  NULL;
+    }
 
     QWidget **wid_ForTop = new QWidget*[maxOnglets];
     QGridLayout **dsgOnglet = new QGridLayout * [maxOnglets];
@@ -1175,6 +1182,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
     int nbLgn = pEtude->ref->nbElmZone[zn] + 1;
 
     QTableView *qtv_tmp = new QTableView;
+    //myQTableView *qtv_tmp = new myQTableView;
     QStandardItemModel * tmpStdItem = NULL;
     QSqlQuery query ;
 
@@ -1260,9 +1268,61 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
         }
     }
 
+    // double click dans fenetre  pour afficher details boule
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_detailsDetails( QModelIndex) ) );
+
+#if 0
+    connect( qtv_tmp, SIGNAL(MydoubleClicked(QTableView,QModelIndex)) ,
+             this, SLOT(slot_detailsDetails(QTableView, QModelIndex) ) );
+
+
+    // simple click dans fenetre  pour selectionner boule
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_details_G( QModelIndex) ) );
+
+#endif
     return(lay_return);
 }
 
+//void SyntheseDetails::slot_detailsDetails(const QTableView &view, const QModelIndex & index)
+void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
+{
+    QTableView *view = qobject_cast<QTableView *>(sender());
+
+    QItemSelectionModel *selectionModel = view->selectionModel();
+    //int nb_item = selectionModel->selectedIndexes().size();
+
+    // construit la liste des boules
+    stCurDemande *etude = new stCurDemande;
+    etude->origine = Tableau2;
+    etude->selection[3] = selectionModel->selectedIndexes();
+
+    etude->cur_dst = 0;
+    // base depend de la demande et de la distance
+    QString stRequete = "";
+    stRequete = FiltreLesTirages(pLaDemande);
+    QString maselection = CreatreTitle(etude);
+
+    int id_Onglet = onglets->currentIndex();
+
+    etude->st_titre = "R"+QString::number(detail_id)
+            +" \""+ongNames[id_Onglet]+"\" " + maselection;
+
+    etude->st_baseDef = new QString;
+    *(etude->st_baseDef) = PBAR_Req3(pLaDemande->st_baseDef,stRequete,d[id_Onglet]);
+
+    etude->ref = pLaDemande->ref;
+    etude->st_bdAll = new QString;
+    etude->st_jourDef = new QString;
+    *(etude->st_jourDef) = CompteJourTirage(pLaDemande->ref);
+
+    // Nouvelle de fenetre de detail de cette selection
+    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,gMemoTab);
+    connect( gMemoTab, SIGNAL(tabCloseRequested(int)) ,
+             unDetail, SLOT(slot_FermeLaRecherche(int) ) );
+
+}
 
 QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, int dst)
 {
@@ -2388,9 +2448,27 @@ QString PBAR_Req3(QString *base, QString baseFiltre,int dst)
     QString req = "";
 
 #ifndef QT_NO_DEBUG
+    qDebug() << "BASE";
     qDebug() << *base;
 #endif
 
+#if 0
+    QString sid = QString::number(dst);
+
+    req = "Select Mabdd_d"+sid
+            +".* from ("
+            + (*base).remove(";")
+            +") as Mabdd_d"
+            +sid
+            +" inner join ("
+            +baseFiltre.remove(";")
+            +")as filtre on ( Mabdd_d"
+            +sid
+            +".id = filtre.id +"
+            +QString::number(dst)
+            +");";
+
+#endif
     req = "Select Mabdd.* from ("
             + (*base).remove(";")
             +") as Mabdd inner join ("
@@ -2399,8 +2477,11 @@ QString PBAR_Req3(QString *base, QString baseFiltre,int dst)
             +QString::number(dst)
             +");";
 
+
 #ifndef QT_NO_DEBUG
+    qDebug() << "Req niv:"<<QString::number(dst);
     qDebug() << req;
+    qDebug() << "\n";
 #endif
 
     return req;
@@ -2742,7 +2823,8 @@ void SyntheseDetails::slot_ClickSurOnglet(int index)
 
     for(int i = 0; i<4;i++)
     {
-        gtab_splitter_2[i]->setCurrentIndex(index);
+        if(gtab_splitter_2[i])
+            gtab_splitter_2[i]->setCurrentIndex(index);
     }
 
     //gtab_tirages->setCurrentIndex(index);

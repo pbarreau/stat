@@ -129,6 +129,7 @@ public slots:
     void slot_ZoomTirages(const QModelIndex & index);
     void slot_ClickSurOnglet(int index);
     void slot_FermeLaRecherche(int index);
+    void slot_detailsDetails(const QModelIndex & index);
 
 private:
     int dst[4];

@@ -733,7 +733,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 
         QVBoxLayout *vb_tmp = new QVBoxLayout;
         QLabel * lab_tmp = new QLabel;
-        lab_tmp->setText("Groupement par memoire");
+        lab_tmp->setText("Type Regroupement");
         vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
         vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
         lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
@@ -1103,7 +1103,6 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     *etude = uneDemande;
     etude->origine = Tableau2;
 
-    //etude->selection[3] = uneDemande.selection[3];
     etude->st_titre = titre;
     etude->cur_dst = 0;
     etude->st_baseDef = uneDemande.st_baseDef;

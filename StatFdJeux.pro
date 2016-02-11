@@ -51,7 +51,9 @@ SOURCES += main.cpp\
     distancepourtirage.cpp \
     monfiltreproxymodel.cpp \
     refetude.cpp \
-    chartwidget.cpp
+    chartwidget.cpp \
+    myqabstractitemviewofqtable.cpp \
+    myqtableview.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -70,6 +72,8 @@ HEADERS  += mainwindow.h \
     monfiltreproxymodel.h \
     refetude.h \
     chartwidget.h \
+    myqabstractitemviewofqtable.h \
+    myqtableview.h
 
 
 FORMS    += mainwindow.ui \
