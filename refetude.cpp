@@ -173,7 +173,9 @@ void RefEtude::slot_Type_G(const QModelIndex & index)
             +headName+","+QString::number(val)+")";
 
     stCurDemande *etude = new stCurDemande;
-
+QString *st_tmp1 = new QString;
+    *st_tmp1 = "select * from "
+            REF_BASE ";";
     etude->origine = Tableau1;
     QItemSelectionModel *selectionModel = p_tbv_3->selectionModel();
     etude->selection[3] = selectionModel->selectedIndexes();
@@ -182,10 +184,11 @@ void RefEtude::slot_Type_G(const QModelIndex & index)
     etude->st_LDT_Reference = &p_stRefTirages;
     etude->ref = p_conf;
     etude->st_LDT_Filtre = new QString;
+    etude->st_LDT_Depart = st_tmp1;
     etude->st_jourDef = new QString;
     *(etude->st_jourDef) = CompteJourTirage(p_conf);
 
-
+etude->st_TablePere = REF_BASE;
     // Nouvelle de fenetre de detail de cette selection
     SyntheseDetails *unDetail = new SyntheseDetails(etude,p_affiche,p_reponse);
     connect( p_reponse, SIGNAL(tabCloseRequested(int)) ,
