@@ -2467,7 +2467,19 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
     QStringList Malst;
     Malst << "tb2.B";
     st_cri2 = GEN_Where_3(loop,tbname1,true,"=",Malst,false,"or");
-    st_req1 = "/* DEBUT Rq Comptage */ select tb1.*, count(tb2.B) as N"+sId+" from ("
+
+    // Correction de bug pour avoir uniquement colonne qui nous interresse
+    QString st_col= "id,pid,J,D,C,";
+    QStringList lstVide;
+    lstVide << "";
+    st_col = st_col + GEN_Where_3(loop,tbname1,true,"",lstVide,false,",");
+    loop = pRef->ref->nbElmZone[1];
+    tbname1 = "tb1." + pRef->ref->nomZone[1];
+    st_col = st_col +","+ GEN_Where_3(loop,tbname1,true,"",lstVide,false,",");
+    st_col.remove("(");
+    st_col.remove(")");
+
+    st_req1 = "/* DEBUT Rq Comptage */ select "+st_col+", count(tb2.B) as N from ("
             + baseFiltre.remove(";")
             +")as tb1 "
             +"left join"
@@ -2502,7 +2514,7 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
     //Filtre Ligne
     st_req2 = "/* _"+sId+":DEBUT FL */ select monfiltre_"+sId+".* from ("
             + st_req1.remove(";")
-            +")as monfiltre_"+sId+" where(monfiltre_"+sId+".N"+sId+"="
+            +")as monfiltre_"+sId+" where(monfiltre_"+sId+".N="
             + QString::number(nbi)
             +"); /* _"+sId+":FIN FL */";
 
