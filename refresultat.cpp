@@ -1107,6 +1107,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     etude->origine = Tableau2;
 
     etude->st_titre = titre;
+    etude->st_TablePere = REF_BASE;
     etude->cur_dst = 0;
     etude->st_LDT_Reference = uneDemande.st_LDT_Reference;
     etude->ref = uneDemande.ref;

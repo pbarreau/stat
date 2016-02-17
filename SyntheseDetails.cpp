@@ -24,6 +24,8 @@
 #include "myqtableview.h"
 
 int SyntheseDetails::detail_id = 0;
+int SyntheseDetails::vue_id = 0;
+int SyntheseDetails::niv_id = 0;
 const QString ongNames[]={"0","+1","-1","?"};
 
 //------------- Local Prototypes ------------
@@ -207,7 +209,8 @@ QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, int nivea
 
 QString FiltreLesTirages(stCurDemande *pEtude)
 {
-    QString table = *(pEtude->st_LDT_Reference);
+    //QString table = *(pEtude->st_LDT_Reference);
+    QString table = "SELECT * from " + (pEtude->st_TablePere);
 
 #ifndef QT_NO_DEBUG
     qDebug() << table;
@@ -367,6 +370,13 @@ QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
 //---------------- Fin Local Fns ------------------------
 SyntheseDetails::~SyntheseDetails()
 {
+    // supression de vue
+    QSqlQuery sql;
+    bool status = false;
+
+    QString req_vue = "drop view " + view_id + ";";
+    status = sql.exec(req_vue);
+
     detail_id--;
 }
 
@@ -379,6 +389,35 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
 
     QString stRequete = "";
     stRequete = FiltreLesTirages(pEtude);
+#ifndef QT_NO_DEBUG
+    qDebug() << stRequete;
+#endif
+
+    // creation d'une vue pour cette recherche
+    QSqlQuery query;
+    bool status = false;
+
+    view_id = "v"+QString::number(vue_id)+"n"+QString::number(niv_id);
+    QString req_vue = "create temp view if not exists " + view_id
+            + " as select * from(" +stRequete.remove(";")+")as LaTable;";
+
+#ifndef QT_NO_DEBUG
+    qDebug()<<"################";
+    qDebug() << req_vue;
+    qDebug()<<"################";
+#endif
+
+    cur_vue = vue_id;
+    cur_niv = niv_id;
+    vue_id++;
+    niv_id++;
+
+    status = query.exec(req_vue);
+#ifndef QT_NO_DEBUG
+    if(!status){
+        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
+    }
+#endif
 
     // Creation des onglets reponses
     QWidget *uneReponse = PBAR_CreerOngletsReponses(pEtude,visuel,stRequete);
@@ -508,17 +547,20 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
     if(pEtude->st_titre !="")
         titre->setText(pEtude->st_titre);
 
+    QString view_id = "v"+QString::number(cur_vue)+"n"+QString::number(cur_niv);
+
     for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
     {
         // -- tableau tirages
         wid_ForTop[id_Onglet]= new QWidget;
         tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
         if(id_Onglet==0){
-            sqlReq = PBAR_Req3(pEtude->st_LDT_Reference,stRequete,d[id_Onglet]);
+            //sqlReq = PBAR_Req3(pEtude->st_LDT_Reference,stRequete,d[id_Onglet]);
+            sqlReq = PBAR_Req3(&(pEtude->st_TablePere),view_id,d[id_Onglet]);
         }
         else
         {
-            sqlReq = PBAR_Req3(pEtude->st_LDT_Depart,stRequete,d[id_Onglet]);
+            sqlReq = PBAR_Req3(pEtude->st_LDT_Depart,view_id,d[id_Onglet]);
         }
 
         // Verifier que cette requete produit des resultats
@@ -1023,7 +1065,8 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     new_distance *=-1;
 
     // Recherche sur nouveau critere
-    msg = PBAR_Req3(pLaDemande->st_LDT_Reference,*(pLaDemande->st_LDT_Filtre),new_distance);
+    //msg = PBAR_Req3(pLaDemande->st_LDT_Reference,*(pLaDemande->st_LDT_Filtre),new_distance);
+    msg = PBAR_Req3(&(pLaDemande->st_TablePere),view_id,new_distance);
 
     // Application de la requete pour le tableau des tirages
     QSqlQueryModel *sqlmodel = dist->getAssociatedModel();
@@ -1307,9 +1350,11 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
     etude->selection[3] = selectionModel->selectedIndexes();
 
     etude->cur_dst = 0;
+    etude->st_TablePere = view_id;
     // base depend de la demande et de la distance
     QString stRequete = "";
     stRequete = FiltreLesTirages(pLaDemande);
+
     //stRequete = FiltreLesTirages(etude);
     QString maselection = CreatreTitle(etude);
 
@@ -1319,8 +1364,9 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
             +" \""+ongNames[id_Onglet]+"\" " + maselection;
 
     etude->st_LDT_Reference = new QString;
-    *(etude->st_LDT_Reference) = PBAR_Req3(pLaDemande->st_LDT_Reference,stRequete,d[id_Onglet]);
-    //*(etude->st_LDT_Reference) = PBAR_Req3(pLaDemande->st_LDT_Depart,stRequete,d[id_Onglet]);
+    QString uneTable = (pLaDemande->st_LDT_Reference)->remove(";");
+    *(etude->st_LDT_Reference) = PBAR_Req3(&uneTable,stRequete,d[id_Onglet]);
+    //*(etude->st_LDT_Reference) = PBAR_Req3(pLaDemande->st_LDT_Reference,stRequete,d[id_Onglet]);
 
     etude->ref = pLaDemande->ref;
     etude->st_LDT_Filtre = new QString;
@@ -2412,13 +2458,16 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
     }
     st_cri1= cri_msg.at(col);
 
+    static int monId = 0;
+    QString sId = QString::number(monId);
+
     // Requete filtre sur la colonne
     int loop = pRef->ref->nbElmZone[zn];
     QString tbname1 = "tb1." + pRef->ref->nomZone[zn];
     QStringList Malst;
     Malst << "tb2.B";
     st_cri2 = GEN_Where_3(loop,tbname1,true,"=",Malst,false,"or");
-    st_req1 = "/* DEBUT Rq Comptage */ select tb1.*, count(tb2.B) as N from ("
+    st_req1 = "/* DEBUT Rq Comptage */ select tb1.*, count(tb2.B) as N"+sId+" from ("
             + baseFiltre.remove(";")
             +")as tb1 "
             +"left join"
@@ -2434,7 +2483,7 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
             +"on"
             +"("
             + st_cri2
-        +") group by tb1.id; /* Fin Rq Comptage */";
+            +") group by tb1.id; /* Fin Rq Comptage */";
 
 #ifndef QT_NO_DEBUG
     qDebug() << "\nst_req1";
@@ -2442,8 +2491,6 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
     qDebug() << "----------\n";
 #endif
 
-    static int monId = 0;
-    QString sId = QString::number(monId);
 #if 0
     //Filtre Ligne
     st_req2 = "/* _"+sId+":DEBUT FL */ select monfiltre_"+sId+".* from ("
@@ -2455,7 +2502,7 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
     //Filtre Ligne
     st_req2 = "/* _"+sId+":DEBUT FL */ select monfiltre_"+sId+".* from ("
             + st_req1.remove(";")
-            +")as monfiltre_"+sId+" where(monfiltre_"+sId+".N="
+            +")as monfiltre_"+sId+" where(monfiltre_"+sId+".N"+sId+"="
             + QString::number(nbi)
             +"); /* _"+sId+":FIN FL */";
 
@@ -2482,19 +2529,19 @@ QString PBAR_Req3(QString *base, QString baseFiltre,int dst)
 #endif
 
 #if 0
-    req = "Select Mabdd.* from ("
-            + (*base).remove(";")
-            +") as Mabdd inner join ("
-            +baseFiltre.remove(";")
-            +")as filtre on ( Mabdd.id = filtre.id +"
-            +QString::number(dst)
-            +");";
-
-#endif
     req = "Select Mabdd_"+sId+".* from ("
             + (*base).remove(";")
             +") as Mabdd_"+sId+" inner join ("
             +baseFiltre.remove(";")
+            +")as filtre_"+sId+" on ( Mabdd_"+sId+".id = filtre_"+sId+".id +"
+            +QString::number(dst)
+            +");";
+#endif
+
+    req = "Select Mabdd_"+sId+".* from ("
+            + (*base)
+            +") as Mabdd_"+sId+" inner join ("
+            +baseFiltre
             +")as filtre_"+sId+" on ( Mabdd_"+sId+".id = filtre_"+sId+".id +"
             +QString::number(dst)
             +");";

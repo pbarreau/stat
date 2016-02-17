@@ -41,6 +41,7 @@ typedef struct _demande
     QString *st_LDT_Reference;
     QString *st_LDT_Filtre;
     QString *st_jourDef;
+    QString st_TablePere;
     QModelIndexList selection[4];
     stTiragesDef *ref;
 }stCurDemande;
@@ -82,6 +83,11 @@ class SyntheseDetails: public QWidget
 
 private:
     static int detail_id;
+    static int vue_id;
+    static int niv_id;
+    int cur_vue;
+    int cur_niv;
+    QString view_id;
     stCurDemande *pLaDemande;
     QMdiArea *pEcran;
     QTabWidget *gMemoTab;
