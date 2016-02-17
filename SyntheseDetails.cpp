@@ -2434,28 +2434,44 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
             +"on"
             +"("
             + st_cri2
-            +") group by tb1.id; /* Fin Rq Comptage */";
+        +") group by tb1.id; /* Fin Rq Comptage */";
 
 #ifndef QT_NO_DEBUG
+    qDebug() << "\nst_req1";
     qDebug() << st_req1;
+    qDebug() << "----------\n";
 #endif
 
-    st_req2 = "/* DEBUT Filtre Ligne */ select monfiltre.* from ("
+    static int monId = 0;
+    QString sId = QString::number(monId);
+#if 0
+    //Filtre Ligne
+    st_req2 = "/* _"+sId+":DEBUT FL */ select monfiltre_"+sId+".* from ("
             + st_req1.remove(";")
-            +")as monfiltre where(monfiltre.N="
+            +")as monfiltre_"+sId+" where(monfiltre_"+sId+".N="
             + QString::number(nbi)
-            +"); /* Fin Filtre ligne */";
+            +"); /* _"+sId+":FIN FL */";
+#endif
+    //Filtre Ligne
+    st_req2 = "/* _"+sId+":DEBUT FL */ select monfiltre_"+sId+".* from ("
+            + st_req1.remove(";")
+            +")as monfiltre_"+sId+" where(monfiltre_"+sId+".N="
+            + QString::number(nbi)
+            +"); /* _"+sId+":FIN FL */";
 
 #ifndef QT_NO_DEBUG
     qDebug() << st_req2;
 #endif
 
+    monId++;
     return st_req2;
 }
 
 QString PBAR_Req3(QString *base, QString baseFiltre,int dst)
 {
     QString req = "";
+    static int monId = 0;
+    QString sId = QString::number(monId);
 
 #ifndef QT_NO_DEBUG
     qDebug() << "\nBASE";
@@ -2466,27 +2482,20 @@ QString PBAR_Req3(QString *base, QString baseFiltre,int dst)
 #endif
 
 #if 0
-    QString sid = QString::number(dst);
-
-    req = "Select Mabdd_d"+sid
-            +".* from ("
-            + (*base).remove(";")
-            +") as Mabdd_d"
-            +sid
-            +" inner join ("
-            +baseFiltre.remove(";")
-            +")as filtre on ( Mabdd_d"
-            +sid
-            +".id = filtre.id +"
-            +QString::number(dst)
-            +");";
-
-#endif
     req = "Select Mabdd.* from ("
             + (*base).remove(";")
             +") as Mabdd inner join ("
             +baseFiltre.remove(";")
             +")as filtre on ( Mabdd.id = filtre.id +"
+            +QString::number(dst)
+            +");";
+
+#endif
+    req = "Select Mabdd_"+sId+".* from ("
+            + (*base).remove(";")
+            +") as Mabdd_"+sId+" inner join ("
+            +baseFiltre.remove(";")
+            +")as filtre_"+sId+" on ( Mabdd_"+sId+".id = filtre_"+sId+".id +"
             +QString::number(dst)
             +");";
 
@@ -2497,6 +2506,7 @@ QString PBAR_Req3(QString *base, QString baseFiltre,int dst)
     qDebug() << "\n";
 #endif
 
+    monId++;
     return req;
 }
 
