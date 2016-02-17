@@ -207,7 +207,7 @@ QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, int nivea
 
 QString FiltreLesTirages(stCurDemande *pEtude)
 {
-    QString table = *(pEtude->st_baseDef);
+    QString table = *(pEtude->st_LDT_Reference);
 
 #ifndef QT_NO_DEBUG
     qDebug() << table;
@@ -257,7 +257,7 @@ QString FiltreLesTirages(stCurDemande *pEtude)
     }
 
     // Sauvegarde de la table des reponses a d=0
-    *(pEtude->st_bdAll) = table;
+    *(pEtude->st_LDT_Filtre) = table;
 
     return table;
 }
@@ -513,8 +513,13 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
         // -- tableau tirages
         wid_ForTop[id_Onglet]= new QWidget;
         tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
-
-        sqlReq = PBAR_Req3(pEtude->st_baseDef,stRequete,d[id_Onglet]);
+        if(id_Onglet==0){
+            sqlReq = PBAR_Req3(pEtude->st_LDT_Reference,stRequete,d[id_Onglet]);
+        }
+        else
+        {
+            sqlReq = PBAR_Req3(pEtude->st_LDT_Depart,stRequete,d[id_Onglet]);
+        }
 
         // Verifier que cette requete produit des resultats
         QString st_count = "select count (*) from ("
@@ -1018,7 +1023,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     new_distance *=-1;
 
     // Recherche sur nouveau critere
-    msg = PBAR_Req3(pLaDemande->st_baseDef,*(pLaDemande->st_bdAll),new_distance);
+    msg = PBAR_Req3(pLaDemande->st_LDT_Reference,*(pLaDemande->st_LDT_Filtre),new_distance);
 
     // Application de la requete pour le tableau des tirages
     QSqlQueryModel *sqlmodel = dist->getAssociatedModel();
@@ -1295,6 +1300,9 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
 
     // construit la liste des boules
     stCurDemande *etude = new stCurDemande;
+    // recopie la config
+    *etude = *pLaDemande;
+    // Modification
     etude->origine = Tableau2;
     etude->selection[3] = selectionModel->selectedIndexes();
 
@@ -1302,6 +1310,7 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
     // base depend de la demande et de la distance
     QString stRequete = "";
     stRequete = FiltreLesTirages(pLaDemande);
+    //stRequete = FiltreLesTirages(etude);
     QString maselection = CreatreTitle(etude);
 
     int id_Onglet = onglets->currentIndex();
@@ -1309,11 +1318,12 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
     etude->st_titre = "R"+QString::number(detail_id)
             +" \""+ongNames[id_Onglet]+"\" " + maselection;
 
-    etude->st_baseDef = new QString;
-    *(etude->st_baseDef) = PBAR_Req3(pLaDemande->st_baseDef,stRequete,d[id_Onglet]);
+    etude->st_LDT_Reference = new QString;
+    *(etude->st_LDT_Reference) = PBAR_Req3(pLaDemande->st_LDT_Reference,stRequete,d[id_Onglet]);
+    //*(etude->st_LDT_Reference) = PBAR_Req3(pLaDemande->st_LDT_Depart,stRequete,d[id_Onglet]);
 
     etude->ref = pLaDemande->ref;
-    etude->st_bdAll = new QString;
+    etude->st_LDT_Filtre = new QString;
     etude->st_jourDef = new QString;
     *(etude->st_jourDef) = CompteJourTirage(pLaDemande->ref);
 
@@ -2175,10 +2185,10 @@ QString SyntheseDetails::ReponsesOrigine_1(int dst)
     QStringList boules;
 
     QString st_baseTirages = "";
-    st_baseTirages = pLaDemande->st_bdAll->remove(";");
+    st_baseTirages = pLaDemande->st_LDT_Filtre->remove(";");
 
     QString st_baseUse = "";
-    st_baseUse = pLaDemande->st_baseDef->remove(";");
+    st_baseUse = pLaDemande->st_LDT_Reference->remove(";");
 
 #ifndef QT_NO_DEBUG
     qDebug() << st_baseTirages;
@@ -2448,8 +2458,11 @@ QString PBAR_Req3(QString *base, QString baseFiltre,int dst)
     QString req = "";
 
 #ifndef QT_NO_DEBUG
-    qDebug() << "BASE";
+    qDebug() << "\nBASE";
     qDebug() << *base;
+    qDebug() << "-----------------";
+    qDebug() << "Filtre";
+    qDebug() << baseFiltre;
 #endif
 
 #if 0
@@ -2479,7 +2492,7 @@ QString PBAR_Req3(QString *base, QString baseFiltre,int dst)
 
 
 #ifndef QT_NO_DEBUG
-    qDebug() << "Req niv:"<<QString::number(dst);
+    qDebug() << "\nReq niv:"<<QString::number(dst);
     qDebug() << req;
     qDebug() << "\n";
 #endif
@@ -2853,7 +2866,7 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
     // Nouvelle reference d'ensemble de depart ?
     QString *newBaseRef = new QString;
     *newBaseRef = DoSqlMsgRefGenerique (dst[onglet]);
-    etude->st_baseDef = newBaseRef;
+    etude->st_LDT_Reference = newBaseRef;
 
     void * pqtv_1 = qtv_local[onglet][0]->model()->index(0,0).internalPointer();
     void * pqtv_2 = qtv_local[onglet][1]->model()->index(0,0).internalPointer();

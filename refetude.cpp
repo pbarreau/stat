@@ -179,9 +179,9 @@ void RefEtude::slot_Type_G(const QModelIndex & index)
     etude->selection[3] = selectionModel->selectedIndexes();
     etude->st_titre = titre;
     etude->cur_dst = 0;
-    etude->st_baseDef = &p_stRefTirages;
+    etude->st_LDT_Reference = &p_stRefTirages;
     etude->ref = p_conf;
-    etude->st_bdAll = new QString;
+    etude->st_LDT_Filtre = new QString;
     etude->st_jourDef = new QString;
     *(etude->st_jourDef) = CompteJourTirage(p_conf);
 
@@ -639,9 +639,9 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
     etude->st_titre = titre;
     etude->cur_dst = 0;
     etude->ref = p_conf;
-    etude->st_baseDef = new QString;
-    *(etude->st_baseDef)=selBase;
-    etude->st_bdAll = new QString;
+    etude->st_LDT_Reference = new QString;
+    *(etude->st_LDT_Reference)=selBase;
+    etude->st_LDT_Filtre = new QString;
     etude->st_jourDef = new QString;
     *(etude->st_jourDef) = CompteJourTirage(p_conf);
 

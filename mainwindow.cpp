@@ -2213,13 +2213,15 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
     QString *st_tmp1 = new QString;
     QString *st_tmp2 = new QString;
     QString *st_tmp3 = new QString;
+    QString *st_tmp4 = new QString;
 
 
-    *st_tmp1 =CompteJourTirage(pConf);
     //*st_tmp2 = OrganiseChampsDesTirages("tirages", pConf);
-    *st_tmp2 = "select * from "
+    *st_tmp1 = "select * from "
             REF_BASE ";";
-    *st_tmp3 = *st_tmp2 ;
+    *st_tmp2 = *st_tmp1 ;
+    *st_tmp3 = *st_tmp1 ;
+    *st_tmp4 =CompteJourTirage(pConf);
 
     //---------------------------------------------------------------
     //
@@ -2229,9 +2231,10 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
     //
     //---------------------------------------------------------------
 
-    critereTirages.st_jourDef = st_tmp1;
-    critereTirages.st_baseDef = st_tmp2;
-    critereTirages.st_bdAll = st_tmp3;
+    critereTirages.st_LDT_Depart = st_tmp1;
+    critereTirages.st_LDT_Reference = st_tmp2;
+    critereTirages.st_LDT_Filtre = st_tmp3;
+    critereTirages.st_jourDef = st_tmp4;
 
     // Tableau de pointeur de fonction
     QGridLayout *(MainWindow::*ptrFunc[2])(stTiragesDef *pConf)=
