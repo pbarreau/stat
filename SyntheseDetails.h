@@ -31,6 +31,7 @@ typedef struct _demande
 {
     teClicFrom origine;
     int cur_dst;
+    int req_niv;
     int lgn[3];
     int col[3];
     int val[3];
@@ -85,6 +86,7 @@ private:
     static int detail_id;
     static int vue_id;
     static int niv_id;
+    static int d[4];
     int cur_vue;
     int cur_niv;
     QString view_id;
@@ -100,7 +102,7 @@ private:
 
     QComboBox * pCritere[4];
     FiltreCombinaisons *pFiltre[4];
-    int d[4]={0,-1,1,-2};
+    //int d[4]={0,-1,1,-2};
 
 public:
     SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel, QTabWidget *tab_Top);
@@ -180,4 +182,6 @@ extern QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn
 extern QString PBAR_ReqNbCombi(stCurDemande *pEtude, QString ReqTirages);
 extern QString CreatreTitle(stCurDemande *pConf);
 
+// Variables
+extern const QString C_TousLesTirages;
 #endif // SYNTHESEDETAILS_H

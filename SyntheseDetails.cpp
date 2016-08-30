@@ -26,7 +26,9 @@
 int SyntheseDetails::detail_id = 0;
 int SyntheseDetails::vue_id = 0;
 int SyntheseDetails::niv_id = 0;
+int SyntheseDetails::d[4]={0,-1,1,-2};
 const QString ongNames[]={"0","+1","-1","?"};
+const QString C_TousLesTirages = "select * from "  REF_BASE ;
 
 //------------- Local Prototypes ------------
 QComboBox *ComboPerso(int id);
@@ -199,8 +201,8 @@ QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, int nivea
 
 #ifndef QT_NO_DEBUG
     qDebug()<<"";
-    qDebug()<<"Une Requete";
-    qDebug()<<msg;
+    qDebug()<<" FiltreLaBaseSelonSelectionUtilisateur";
+    qDebug()<<" "<< msg;
     qDebug()<<"";
 #endif
 
@@ -209,13 +211,25 @@ QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, int nivea
 
 QString FiltreLesTirages(stCurDemande *pEtude)
 {
-    //QString table = *(pEtude->st_LDT_Reference);
+#if 0
+    // Je filtre les tirages per rapport a la tble pere en repectant les criteres de selection utlisateur
+    // pour une distance donnee
     QString table = "SELECT * from " + (pEtude->st_TablePere);
+    //Recherche des resultats a la distance de l'onglet
+    table = PBAR_Req3(&(pEtude->st_TablePere),table,pEtude->cur_dst);
 
-#ifndef QT_NO_DEBUG
-    qDebug() << table;
 #endif
 
+    // la base de reference de travail est celle de l'on connait a la distance specifiee
+    QString table = "";
+    table = PBAR_Req3(pEtude->st_LDT_Depart,*(pEtude->st_LDT_Reference),pEtude->cur_dst);
+
+#ifndef QT_NO_DEBUG
+    qDebug()<<"FiltreLesTirages in:";
+    qDebug() << table;
+#endif
+    // Lecture des criteres de l'utilisateur
+    // onglets b-e-c
     for (int i = 0; i< 3 ;i++)
     {
         QModelIndexList indexes = pEtude->selection[i];
@@ -227,11 +241,13 @@ QString FiltreLesTirages(stCurDemande *pEtude)
         QString champ = "";
         int max = 0;
 
+        // onglets b-e
         if(i<2){
             max = pEtude->ref->nbElmZone[i];
             champ = pEtude->ref->nomZone[i];
         }
 
+        //onglet c
         if(i==2)
         {
             max = 1;
@@ -261,6 +277,11 @@ QString FiltreLesTirages(stCurDemande *pEtude)
 
     // Sauvegarde de la table des reponses a d=0
     *(pEtude->st_LDT_Filtre) = table;
+
+#ifndef QT_NO_DEBUG
+    qDebug()<<"FiltreLesTirages out:";
+    qDebug() << table;
+#endif
 
     return table;
 }
@@ -388,18 +409,25 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
     detail_id = gMemoTab->count()+1;
 
     QString stRequete = "";
+
     stRequete = FiltreLesTirages(pEtude);
-#ifndef QT_NO_DEBUG
-    qDebug() << stRequete;
-#endif
+
+    //Recherche des resultats a la distance de l'onglet
+    //QString sqlReq = PBAR_Req3(&(pEtude->st_TablePere),stRequete,pEtude->cur_dst);
 
     // creation d'une vue pour cette recherche
     QSqlQuery query;
     bool status = false;
 
-    view_id = "v"+QString::number(vue_id)+"n"+QString::number(niv_id);
+    view_id = "vue_"+QString::number(vue_id);
     QString req_vue = "create temp view if not exists " + view_id
             + " as select * from(" +stRequete.remove(";")+")as LaTable;";
+    status = query.exec(req_vue);
+#ifndef QT_NO_DEBUG
+    if(!status){
+        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
+    }
+#endif
 
 #ifndef QT_NO_DEBUG
     qDebug()<<"################";
@@ -412,12 +440,7 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
     vue_id++;
     niv_id++;
 
-    status = query.exec(req_vue);
-#ifndef QT_NO_DEBUG
-    if(!status){
-        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
-    }
-#endif
+    //status = query.exec(req_vue);
 
     // Creation des onglets reponses
     QWidget *uneReponse = PBAR_CreerOngletsReponses(pEtude,visuel,stRequete);
@@ -547,13 +570,15 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
     if(pEtude->st_titre !="")
         titre->setText(pEtude->st_titre);
 
-    QString view_id = "v"+QString::number(cur_vue)+"n"+QString::number(cur_niv);
+    //QString view_id = "v"+QString::number(cur_vue)+"n"+QString::number(cur_niv);
 
     for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
     {
         // -- tableau tirages
         wid_ForTop[id_Onglet]= new QWidget;
         tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
+        sqlReq = PBAR_Req3(&(pEtude->st_TablePere),stRequete,d[id_Onglet]);
+#if 0
         if(id_Onglet==0){
             //sqlReq = PBAR_Req3(pEtude->st_LDT_Reference,stRequete,d[id_Onglet]);
             sqlReq = PBAR_Req3(&(pEtude->st_TablePere),view_id,d[id_Onglet]);
@@ -562,7 +587,7 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
         {
             sqlReq = PBAR_Req3(pEtude->st_LDT_Depart,view_id,d[id_Onglet]);
         }
-
+#endif
         // Verifier que cette requete produit des resultats
         QString st_count = "select count (*) from ("
                 +sqlReq.remove(";")+");";
@@ -1340,39 +1365,63 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
 
     QItemSelectionModel *selectionModel = view->selectionModel();
     //int nb_item = selectionModel->selectedIndexes().size();
+    int id_Onglet = onglets->currentIndex();
+    int id_OngMaster = gMemoTab->currentIndex();
 
     // construit la liste des boules
     stCurDemande *etude = new stCurDemande;
     // recopie la config
     *etude = *pLaDemande;
+
     // Modification
     etude->origine = Tableau2;
     etude->selection[3] = selectionModel->selectedIndexes();
 
-    etude->cur_dst = 0;
+    etude->cur_dst = d[id_Onglet];
+    etude->req_niv = (pLaDemande->req_niv)++;
     etude->st_TablePere = view_id;
-    // base depend de la demande et de la distance
-    QString stRequete = "";
-    stRequete = FiltreLesTirages(pLaDemande);
 
-    //stRequete = FiltreLesTirages(etude);
     QString maselection = CreatreTitle(etude);
 
-    int id_Onglet = onglets->currentIndex();
-    int id_OngMaster = gMemoTab->currentIndex();
 
     etude->st_titre = "R"+QString::number(id_OngMaster+1)
             +" \""+ongNames[id_Onglet]+"\" " + maselection;
 
+
+#if 0
+    // base depend de la demande et de la distance
+    QString stRequete = "";
+    stRequete = FiltreLesTirages(pLaDemande);
+
     etude->st_LDT_Reference = new QString;
-    QString uneTable = (pLaDemande->st_LDT_Reference)->remove(";");
-    *(etude->st_LDT_Reference) = PBAR_Req3(&uneTable,stRequete,d[id_Onglet]);
+    QString uneTable = PBAR_Req3(&(pLaDemande->st_TablePere),stRequete,d[id_Onglet]);
+    *(etude->st_LDT_Reference) = uneTable;
+
+    QSqlQuery query;
+    bool status = false;
+
+    QString req_vue = "create temp view if not exists " + view_id
+            + " as select * from(" +uneTable.remove(";")+")as LaTable;";
+    status = query.exec(req_vue);
+#ifndef QT_NO_DEBUG
+    if(!status){
+        qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
+    }
+#endif
+#endif
+    //QString uneTable = (pLaDemande->st_LDT_Reference)->remove(";");
+    //*(etude->st_LDT_Reference) = PBAR_Req3(&uneTable,stRequete,d[id_Onglet]);
     //*(etude->st_LDT_Reference) = PBAR_Req3(pLaDemande->st_LDT_Reference,stRequete,d[id_Onglet]);
 
     etude->ref = pLaDemande->ref;
     etude->st_LDT_Filtre = new QString;
     etude->st_jourDef = new QString;
     *(etude->st_jourDef) = CompteJourTirage(pLaDemande->ref);
+
+    QString *tmp_ref = new QString;
+    *tmp_ref = *(pLaDemande->st_LDT_Reference);
+    etude->st_LDT_Reference = tmp_ref;
+    *tmp_ref=FiltreLesTirages(etude);
 
     // Nouvelle de fenetre de detail de cette selection
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,gMemoTab);
@@ -2499,7 +2548,7 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
             +") group by tb1.id; /* Fin Rq Comptage */";
 
 #ifndef QT_NO_DEBUG
-    qDebug() << "\nst_req1";
+    qDebug() << "PBAR_Req2";
     qDebug() << st_req1;
     qDebug() << "----------\n";
 #endif
@@ -2513,14 +2562,23 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
             +"); /* _"+sId+":FIN FL */";
 #endif
     //Filtre Ligne
+#if 0
     st_req2 = "/* _"+sId+":DEBUT FL */ select monfiltre_"+sId+".* from ("
+            + st_req1.remove(";")
+            +")as monfiltre_"+sId+" where(monfiltre_"+sId+".N="
+            + QString::number(nbi)
+            +"); /* _"+sId+":FIN FL */";
+#endif
+    //    st_req2 = "/* _"+sId+":DEBUT FL */ select id,pid,J,D,C,b1,b2,b3,b4,b5,e1 from ("
+
+    st_req2 = "/* _"+sId+":DEBUT FL */ select "+st_col.remove("tb1.")+" from ("
             + st_req1.remove(";")
             +")as monfiltre_"+sId+" where(monfiltre_"+sId+".N="
             + QString::number(nbi)
             +"); /* _"+sId+":FIN FL */";
 
 #ifndef QT_NO_DEBUG
-    qDebug() << st_req2;
+    qDebug() << " "<< st_req2;
 #endif
 
     monId++;
@@ -2550,11 +2608,10 @@ QString PBAR_Req3(QString *base, QString baseFiltre,int dst)
             +QString::number(dst)
             +");";
 #endif
-
     req = "Select Mabdd_"+sId+".* from ("
-            + (*base)
+            + C_TousLesTirages
             +") as Mabdd_"+sId+" inner join ("
-            +baseFiltre
+            +baseFiltre.remove(";")
             +")as filtre_"+sId+" on ( Mabdd_"+sId+".id = filtre_"+sId+".id +"
             +QString::number(dst)
             +");";

@@ -187,8 +187,7 @@ void RefEtude::slot_Type_G(const QModelIndex & index)
 
     stCurDemande *etude = new stCurDemande;
 QString *st_tmp1 = new QString;
-    *st_tmp1 = "select * from "
-            REF_BASE ";";
+    *st_tmp1 = C_TousLesTirages;
     etude->origine = Tableau1;
     QItemSelectionModel *selectionModel = p_tbv_3->selectionModel();
     etude->selection[3] = selectionModel->selectedIndexes();

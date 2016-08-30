@@ -42,7 +42,6 @@ SOURCES += main.cpp\
     labelclickable.cpp \
     ReEcriture.cpp \
     prevision.cpp \
-    refresultat.cpp \
     monQview.cpp \
     monSqlEditable.cpp \
     filtrecombinaisons.cpp \
@@ -54,6 +53,7 @@ SOURCES += main.cpp\
     chartwidget.cpp \
     myqabstractitemviewofqtable.cpp \
     myqtableview.cpp \
+    SyntheseGenerale.cpp \
     progression.cpp
 
 HEADERS  += mainwindow.h \

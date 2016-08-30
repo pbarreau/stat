@@ -43,7 +43,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     QString *st_tmp2 = new QString;
     st_bdTirages = new QString;
     //*st_bdTirages = OrganiseChampsDesTirages("tirages", pConf);
-    *st_bdTirages = "select * from "  REF_BASE  ";";
+    *st_bdTirages = C_TousLesTirages;
 
     *st_tmp = *st_bdTirages;
     *st_tmp2 = *st_bdTirages;
@@ -1109,6 +1109,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     etude->st_titre = titre;
     etude->st_TablePere = REF_BASE;
     etude->cur_dst = 0;
+    etude->req_niv = 0;
     etude->st_LDT_Reference = uneDemande.st_LDT_Reference;
     etude->ref = uneDemande.ref;
     etude->st_LDT_Filtre = new QString;

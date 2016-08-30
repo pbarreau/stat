@@ -79,6 +79,8 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
     if(status)
         status = ReorganiserLesTirages();
 
+    return status;
+
 }
 
 bool GererBase::ReorganiserLesTirages()
