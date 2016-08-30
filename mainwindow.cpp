@@ -18,6 +18,7 @@
 #include "labelclickable.h"
 #include "pointtirage.h"
 #include "refresultat.h"
+#include "refetude.h"
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
 
@@ -53,6 +54,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     //ChartWidget *test = new ChartWidget;
     //test->show();
+    RechercheProgressionBoules(&configJeu);
 
     w_FenetreDetails = new QWidget;
     gtab_Top = new QTabWidget;
@@ -2251,6 +2253,18 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
         wid_ForTop[i]->setLayout(design_onglet[i]);
     }
 
+    // Les deux onglets sont crees faire une nouvelle spirale
+    //QStandardItemModel *pSimEcart = new QStandardItemModel;
+    //QStandardItemModel **pSimEcart = new QStandardItemModel *;
+    RefEtude *tmpEtude = new RefEtude();
+    QStandardItemModel * pSimEcart = tmpEtude->GetPtrToModel();
+
+    //int nb1 = (*pSimEcart)->rowCount();
+    //int nb2 = (*pSimEcart)->columnCount();
+    int nb1 = pSimEcart->rowCount();
+
+    ChartWidget *test = new ChartWidget(pSimEcart);
+    test->show();
 
     QFormLayout *mainLayout = new QFormLayout;
     mainLayout->addWidget(tab_Top);

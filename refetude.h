@@ -26,9 +26,11 @@ class RefEtude: public QObject
 {
 Q_OBJECT
 public:
+    RefEtude();
     RefEtude(GererBase *db, QString stFiltreTirages, int zn, stTiragesDef *pDef, QMdiArea *visuel, QTabWidget *tab_Top);
     QWidget *CreationOnglets();
     QTableView *GetListeTirages(void);
+    QStandardItemModel *GetPtrToModel(void);
 
 private:
     QGridLayout *MonLayout_TabTirages();
@@ -62,6 +64,7 @@ public slots:
     void slot_SelectPartBase(const QModelIndex & index);
 
 private:
+    static QStandardItemModel *p_simResu;
     GererBase *p_db;
     QString p_stRefTirages;
     stTiragesDef *p_conf;

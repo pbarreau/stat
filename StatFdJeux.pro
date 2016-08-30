@@ -53,7 +53,8 @@ SOURCES += main.cpp\
     refetude.cpp \
     chartwidget.cpp \
     myqabstractitemviewofqtable.cpp \
-    myqtableview.cpp
+    myqtableview.cpp \
+    progression.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \

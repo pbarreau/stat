@@ -20,6 +20,9 @@
 #include "SyntheseDetails.h"
 #include "tirages.h"
 
+// declaration de variable de classe
+QStandardItemModel *RefEtude::p_simResu = new QStandardItemModel;
+
 sCouv::sCouv(int zn, stTiragesDef *pDef):p_conf(pDef),p_deb(-1),p_fin(-1)
 {
     int maxItems = p_conf->limites[zn].max;
@@ -57,6 +60,11 @@ sCouv::~sCouv()
 
 }
 
+// Pour connaitre l'adresse du tableau de resultat
+RefEtude::RefEtude()
+{
+}
+
 RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
                    stTiragesDef *pDef,QMdiArea *visuel, QTabWidget *tab_Top):p_db(db),
     p_stRefTirages(stFiltreTirages),p_conf(pDef),p_affiche(visuel),p_reponse(tab_Top)
@@ -69,6 +77,11 @@ RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
     QWidget *uneReponse = CreationOnglets();
     uneReponse->show();
 #endif
+}
+
+QStandardItemModel *RefEtude::GetPtrToModel()
+{
+    return p_simResu;
 }
 
 QWidget *RefEtude::CreationOnglets()
@@ -298,6 +311,14 @@ QTableView *RefEtude::tbForBaseEcart()
 
     // Remplir le tableau
     RemplirTableauEcart(zn,tmpStdItem);
+
+    // Memoriser addresse du tableau
+    p_simResu = tmpStdItem;
+    int col = tmpStdItem->columnCount();
+    int lgn = tmpStdItem->rowCount();
+
+    col = p_simResu->columnCount();
+    lgn = p_simResu->rowCount();
 
     return qtv_tmp;
 }
@@ -978,6 +999,15 @@ QGridLayout *RefEtude::MonLayout_TabEcarts()
 
     // Remplir le tableau
     RemplirTableauEcart(zn,tmpStdItem);
+
+    // Memoriser addresse du tableau
+    p_simResu = tmpStdItem;
+    int col = tmpStdItem->columnCount();
+    int lgn = tmpStdItem->rowCount();
+
+    col = p_simResu->columnCount();
+    lgn = p_simResu->rowCount();
+
 
     return returnLayout;
 }

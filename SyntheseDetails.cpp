@@ -1359,8 +1359,9 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
     QString maselection = CreatreTitle(etude);
 
     int id_Onglet = onglets->currentIndex();
+    int id_OngMaster = gMemoTab->currentIndex();
 
-    etude->st_titre = "R"+QString::number(detail_id)
+    etude->st_titre = "R"+QString::number(id_OngMaster+1)
             +" \""+ongNames[id_Onglet]+"\" " + maselection;
 
     etude->st_LDT_Reference = new QString;
