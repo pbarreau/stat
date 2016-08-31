@@ -1469,7 +1469,7 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
     // Inuitialement *tmp_ref = *(pLaDemande->st_LDT_Reference);
     *tmp_ref = "select * from " + vueId +";";
     etude->st_LDT_Reference = tmp_ref;
-    *tmp_ref=FiltreLesTirages(etude);
+    //*tmp_ref=FiltreLesTirages(etude);
 
     // Nouvelle de fenetre de detail de cette selection
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,gMemoTab);
