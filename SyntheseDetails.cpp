@@ -393,12 +393,17 @@ SyntheseDetails::~SyntheseDetails()
 {
     // supression de vue
     QSqlQuery sql;
-    bool status = false;
 
-    QString req_vue = "drop view " + view_id + ";";
-    status = sql.exec(req_vue);
 
-    detail_id--;
+    // supression de toutes les vues rattachee aux onglets
+    QString req_vue = "";
+    bool status = true;
+    for (int id=1;(id<=gMemoTab->count()) && (status == true);id++)
+    {
+        req_vue = "drop view v_R"+QString::number(id); + ";";
+        status = sql.exec(req_vue);
+    }
+
 }
 
 SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
@@ -410,16 +415,27 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
 
     QString stRequete = "";
 
+    // Preparation du nom de la vue en fonction de l'onglet
+    if(gMemoTab->currentIndex()== -1)
+    {
+        vue_id = 1;
+    }
+    else
+    {
+        vue_id = gMemoTab->count()+1;
+    }
+
     stRequete = FiltreLesTirages(pEtude);
 
     //Recherche des resultats a la distance de l'onglet
     //QString sqlReq = PBAR_Req3(&(pEtude->st_TablePere),stRequete,pEtude->cur_dst);
 
+#if 0
     // creation d'une vue pour cette recherche
     QSqlQuery query;
     bool status = false;
 
-    view_id = "vue_"+QString::number(vue_id);
+    view_id = "v_R"+QString::number(vue_id);
     QString req_vue = "create temp view if not exists " + view_id
             + " as select * from(" +stRequete.remove(";")+")as LaTable;";
     status = query.exec(req_vue);
@@ -434,17 +450,16 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
     qDebug() << req_vue;
     qDebug()<<"################";
 #endif
-
+#endif
     cur_vue = vue_id;
     cur_niv = niv_id;
-    vue_id++;
-    niv_id++;
+    //vue_id++;
+    //niv_id++;
 
-    //status = query.exec(req_vue);
 
     // Creation des onglets reponses
     QWidget *uneReponse = PBAR_CreerOngletsReponses(pEtude,visuel,stRequete);
-    QString st_titre = "R "+QString::number(detail_id);
+    QString st_titre = "R "+QString::number(vue_id);
 
     int laFeuille = tab_Top->addTab(uneReponse,st_titre);
     tab_Top->activateWindow();
@@ -570,14 +585,34 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
     if(pEtude->st_titre !="")
         titre->setText(pEtude->st_titre);
 
-    //QString view_id = "v"+QString::number(cur_vue)+"n"+QString::number(cur_niv);
 
+    QSqlQuery query;
+    QString req_vue = "";
     for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
     {
         // -- tableau tirages
         wid_ForTop[id_Onglet]= new QWidget;
         tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
         sqlReq = PBAR_Req3(&(pEtude->st_TablePere),stRequete,d[id_Onglet]);
+
+        //Creer la vue pour la requete a la bonne distance dans le bon onglet pere
+        // creation d'une vue pour cette recherche
+        req_vue = "create temp view if not exists v_R"
+                +QString::number(vue_id)+"_"+ QString::number(id_Onglet)
+                + " as select * from(" +sqlReq.remove(";")+")as LaTable;";
+        status = query.exec(req_vue);
+
+    #ifndef QT_NO_DEBUG
+        qDebug()<<"################";
+        qDebug() << req_vue;
+        qDebug()<<"#####";
+
+        if(!status){
+            qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
+            qDebug()<<"################";
+        }
+    #endif
+
 #if 0
         if(id_Onglet==0){
             //sqlReq = PBAR_Req3(pEtude->st_LDT_Reference,stRequete,d[id_Onglet]);
@@ -1379,7 +1414,15 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
 
     etude->cur_dst = d[id_Onglet];
     etude->req_niv = (pLaDemande->req_niv)++;
-    etude->st_TablePere = view_id;
+    //etude->st_TablePere = view_id;
+    //etude->st_LDT_Reference =new QString;
+
+#if 0
+    etude->st_LDT_Depart = st_tmp1;
+    etude->st_LDT_Reference = st_tmp2;
+    etude->st_LDT_Filtre = st_tmp3;
+    etude->st_jourDef = st_tmp4;
+#endif
 
     QString maselection = CreatreTitle(etude);
 
@@ -1418,8 +1461,13 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
     etude->st_jourDef = new QString;
     *(etude->st_jourDef) = CompteJourTirage(pLaDemande->ref);
 
+    QString vueId = "v_R"+QString::number(gMemoTab->currentIndex()+1)
+            +"_"+QString::number(onglets->currentIndex());
+    //*(etude->st_LDT_Reference)= "select * from " + vueId +";";
+
     QString *tmp_ref = new QString;
-    *tmp_ref = *(pLaDemande->st_LDT_Reference);
+    // Inuitialement *tmp_ref = *(pLaDemande->st_LDT_Reference);
+    *tmp_ref = "select * from " + vueId +";";
     etude->st_LDT_Reference = tmp_ref;
     *tmp_ref=FiltreLesTirages(etude);
 
