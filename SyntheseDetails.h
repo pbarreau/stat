@@ -87,6 +87,7 @@ private:
     static int vue_id;
     static int niv_id;
     static int d[4];
+    static QStringList tabNames;
     int cur_vue;
     int cur_niv;
     QString view_id;

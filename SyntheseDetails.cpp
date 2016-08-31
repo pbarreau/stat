@@ -29,6 +29,7 @@ int SyntheseDetails::niv_id = 0;
 int SyntheseDetails::d[4]={0,-1,1,-2};
 const QString ongNames[]={"0","+1","-1","?"};
 const QString C_TousLesTirages = "select * from "  REF_BASE ;
+QStringList SyntheseDetails::tabNames;
 
 //------------- Local Prototypes ------------
 QComboBox *ComboPerso(int id);
@@ -222,7 +223,9 @@ QString FiltreLesTirages(stCurDemande *pEtude)
 
     // la base de reference de travail est celle de l'on connait a la distance specifiee
     QString table = "";
-    table = PBAR_Req3(pEtude->st_LDT_Depart,*(pEtude->st_LDT_Reference),pEtude->cur_dst);
+    //table = PBAR_Req3(pEtude->st_LDT_Depart,*(pEtude->st_LDT_Reference),pEtude->cur_dst);
+    // La vue contient deja les infos a la bonne distance
+    table = PBAR_Req3(pEtude->st_LDT_Depart,*(pEtude->st_LDT_Reference),0);
 
 #ifndef QT_NO_DEBUG
     qDebug()<<"FiltreLesTirages in:";
@@ -276,7 +279,7 @@ QString FiltreLesTirages(stCurDemande *pEtude)
     }
 
     // Sauvegarde de la table des reponses a d=0
-    *(pEtude->st_LDT_Filtre) = table;
+    //*(pEtude->st_LDT_Filtre) = table;
 
 #ifndef QT_NO_DEBUG
     qDebug()<<"FiltreLesTirages out:";
@@ -391,18 +394,7 @@ QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
 //---------------- Fin Local Fns ------------------------
 SyntheseDetails::~SyntheseDetails()
 {
-    // supression de vue
-    QSqlQuery sql;
 
-
-    // supression de toutes les vues rattachee aux onglets
-    QString req_vue = "";
-    bool status = true;
-    for (int id=1;(id<=gMemoTab->count()) && (status == true);id++)
-    {
-        req_vue = "drop view v_R"+QString::number(id); + ";";
-        status = sql.exec(req_vue);
-    }
 
 }
 
@@ -411,10 +403,10 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
     pLaDemande = pEtude;
     pEcran = visuel;
     gMemoTab = tab_Top;
-    detail_id = gMemoTab->count()+1;
+    detail_id ++;
 
     QString stRequete = "";
-
+#if 0
     // Preparation du nom de la vue en fonction de l'onglet
     if(gMemoTab->currentIndex()== -1)
     {
@@ -424,6 +416,7 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
     {
         vue_id = gMemoTab->count()+1;
     }
+#endif
 
     stRequete = FiltreLesTirages(pEtude);
 
@@ -451,19 +444,20 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
     qDebug()<<"################";
 #endif
 #endif
-    cur_vue = vue_id;
-    cur_niv = niv_id;
+    //cur_vue = vue_id;
+    //cur_niv = niv_id;
     //vue_id++;
     //niv_id++;
 
 
     // Creation des onglets reponses
     QWidget *uneReponse = PBAR_CreerOngletsReponses(pEtude,visuel,stRequete);
-    QString st_titre = "R "+QString::number(vue_id);
+    QString st_titre = "R "+QString::number(detail_id);
 
-    int laFeuille = tab_Top->addTab(uneReponse,st_titre);
-    tab_Top->activateWindow();
-    tab_Top->setCurrentIndex(laFeuille);
+    int laFeuille = gMemoTab->addTab(uneReponse,st_titre);
+    tabNames << st_titre;
+    gMemoTab->activateWindow();
+    gMemoTab->setCurrentIndex(laFeuille);
 
 }
 
@@ -598,11 +592,11 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
         //Creer la vue pour la requete a la bonne distance dans le bon onglet pere
         // creation d'une vue pour cette recherche
         req_vue = "create temp view if not exists v_R"
-                +QString::number(vue_id)+"_"+ QString::number(id_Onglet)
+                +QString::number(detail_id)+"_"+ QString::number(id_Onglet)
                 + " as select * from(" +sqlReq.remove(";")+")as LaTable;";
         status = query.exec(req_vue);
 
-    #ifndef QT_NO_DEBUG
+#ifndef QT_NO_DEBUG
         qDebug()<<"################";
         qDebug() << req_vue;
         qDebug()<<"#####";
@@ -611,7 +605,7 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
             qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
             qDebug()<<"################";
         }
-    #endif
+#endif
 
 #if 0
         if(id_Onglet==0){
@@ -1402,18 +1396,25 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
     //int nb_item = selectionModel->selectedIndexes().size();
     int id_Onglet = onglets->currentIndex();
     int id_OngMaster = gMemoTab->currentIndex();
+    QString tabName = gMemoTab->tabText(id_OngMaster);
+    QStringList RealId = tabName.split(" ");
+    int useId = RealId.at(RealId.size()-1).toInt();
 
     // construit la liste des boules
     stCurDemande *etude = new stCurDemande;
     // recopie la config
-    *etude = *pLaDemande;
+    //*etude = *pLaDemande;
 
     // Modification
     etude->origine = Tableau2;
+    etude->cur_dst = d[id_Onglet];
+
+    etude->st_LDT_Depart = pLaDemande->st_LDT_Depart;
+    //etude->st_LDT_Reference = pLaDemande->st_LDT_Reference;
+
     etude->selection[3] = selectionModel->selectedIndexes();
 
-    etude->cur_dst = d[id_Onglet];
-    etude->req_niv = (pLaDemande->req_niv)++;
+    //etude->req_niv = (pLaDemande->req_niv)++;
     //etude->st_TablePere = view_id;
     //etude->st_LDT_Reference =new QString;
 
@@ -1427,7 +1428,7 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
     QString maselection = CreatreTitle(etude);
 
 
-    etude->st_titre = "R"+QString::number(id_OngMaster+1)
+    etude->st_titre = "R"+QString::number(useId)
             +" \""+ongNames[id_Onglet]+"\" " + maselection;
 
 
@@ -1461,7 +1462,7 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
     etude->st_jourDef = new QString;
     *(etude->st_jourDef) = CompteJourTirage(pLaDemande->ref);
 
-    QString vueId = "v_R"+QString::number(gMemoTab->currentIndex()+1)
+    QString vueId = "v_R"+QString::number(useId)
             +"_"+QString::number(onglets->currentIndex());
     //*(etude->st_LDT_Reference)= "select * from " + vueId +";";
 
@@ -3000,7 +3001,50 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
 
 void SyntheseDetails::slot_FermeLaRecherche(int index)
 {
-    delete gMemoTab->widget(index);
+    static int previous = -1;
+
+    QSqlQuery sql;
+    QString req_vue = "";
+    bool status = true;
+
+    //qDebug()<< gMemoTab->tabText(index);
+
+    if((previous != index) && (tabNames.size()!=0))
+    {
+        previous = index;
+
+
+        QString tabName = tabNames.at(index);
+        QStringList RealId = tabName.split(" ");
+        int useId = RealId.at(RealId.size()-1).toInt();
+
+        // Supression des vues des tables
+        for (int id=0;(id<onglets->count()) && (status == true);id++)
+        {
+            req_vue = "drop view v_R"
+                    +QString::number(useId)
+                    + "_" +QString::number(id)
+                    + ";";
+            status = sql.exec(req_vue);
+
+#ifndef QT_NO_DEBUG
+            qDebug()<<"### SUPPRESSION DE VUE :" << req_vue <<"###";
+
+            if(!status){
+                qDebug() << "ERROR:" << sql.executedQuery()  << "-" << sql.lastError().text();
+                qDebug()<<"####";
+            }
+#endif
+
+        }
+
+        // supression des widget de l'onglet
+        tabNames.removeAt(index);
+        delete gMemoTab->widget(index);
+    }
+    if(gMemoTab->currentIndex() == -1)
+        previous = -1;
+
 }
 
 void SyntheseDetails::slot_ClickSurOnglet(int index)
