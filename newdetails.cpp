@@ -12,7 +12,7 @@ void SyntheseDetails::NewSqlGenerique(int dst)
 {
     // Tirages avec filtre
     QString st_baseUse = "";
-    st_baseUse = pLaDemande->st_LDT_Reference->remove(";");
+    st_baseUse = pLaDemande->st_Ensemble_1->remove(";");
     QString st_cr1 = "";
     QStringList lst_tmp;
 

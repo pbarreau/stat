@@ -2233,7 +2233,7 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
     //---------------------------------------------------------------
 
     critereTirages.st_LDT_Depart = st_tmp1;
-    critereTirages.st_LDT_Reference = st_tmp2;
+    critereTirages.st_Ensemble_1 = st_tmp2;
     critereTirages.st_LDT_Filtre = st_tmp3;
     critereTirages.st_jourDef = st_tmp4;
 

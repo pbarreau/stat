@@ -51,7 +51,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     st_JourTirageDef = new QString;
     *st_JourTirageDef = CompteJourTirage(pConf);
 
-    uneDemande.st_LDT_Reference = st_bdTirages;
+    uneDemande.st_Ensemble_1 = st_bdTirages;
     uneDemande.st_LDT_Depart = st_tmp2;
     uneDemande.st_LDT_Filtre = st_tmp;
     uneDemande.st_jourDef = st_JourTirageDef;
@@ -752,7 +752,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
         // Creer Requete pour compter items
         QString msg1 = maRef[0].at(i);
         QString sqlReq = "";
-        sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_LDT_Reference),msg1);
+        sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_Ensemble_1),msg1);
 
 #ifndef QT_NO_DEBUG
         qDebug() << sqlReq;
@@ -1110,7 +1110,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     etude->st_TablePere = REF_BASE;
     etude->cur_dst = 0;
     etude->req_niv = 0;
-    etude->st_LDT_Reference = uneDemande.st_LDT_Reference;
+    etude->st_Ensemble_1 = uneDemande.st_Ensemble_1;
     etude->ref = uneDemande.ref;
     etude->st_LDT_Filtre = new QString;
     etude->st_jourDef = new QString;

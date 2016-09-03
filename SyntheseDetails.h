@@ -39,10 +39,11 @@ typedef struct _demande
     QString stc[3];
     QStringList lst_boules[3];
     QString *st_LDT_Depart;
-    QString *st_LDT_Reference;
+    QString *st_Ensemble_1;
     QString *st_LDT_Filtre;
     QString *st_jourDef;
     QString st_TablePere;
+    QString st_viewName[4];
     QModelIndexList selection[4];
     stTiragesDef *ref;
 }stCurDemande;
@@ -177,7 +178,7 @@ extern QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, in
                                                      int maxElem, QString tmpTab, QString sin);
 
 extern QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int zn);
-extern QString PBAR_Req3(QString *base, QString baseFiltre,int dst);
+extern QString PBAR_Req3(QString *base, QString ensemble_1, int dst);
 extern QString FiltreLesTirages(stCurDemande *pEtude);
 extern QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn,int distance);
 extern QString PBAR_ReqNbCombi(stCurDemande *pEtude, QString ReqTirages);
