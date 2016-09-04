@@ -183,6 +183,12 @@ extern QString FiltreLesTirages(stCurDemande *pEtude);
 extern QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn,int distance);
 extern QString PBAR_ReqNbCombi(stCurDemande *pEtude, QString ReqTirages);
 extern QString CreatreTitle(stCurDemande *pConf);
+extern void MemoriserChoixUtilisateur(const QModelIndex & index,
+                                      int zn,
+                                      QItemSelectionModel *selectionModel,
+                                      stTiragesDef *pTiragesConf,
+                                      stCurDemande *pUneDemande);
+
 
 // Variables
 extern const QString C_TousLesTirages;

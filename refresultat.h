@@ -78,10 +78,10 @@ public:
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex & index);
     void slot_MontreLesTirages(const QModelIndex & index);    
-    void slot_Select_G(const QModelIndex & index);
-    void slot_Select_C(const QModelIndex & index);
-    void slot_Select_E(const QModelIndex & index);
-    void slot_Select_B(const QModelIndex & index);
+    //void slot_Select_G(const QModelIndex & index);
+    //void slot_Select_C(const QModelIndex & index);
+    //void slot_Select_E(const QModelIndex & index);
+    //void slot_Select_B(const QModelIndex & index);
 
     void slot_ChangementEnCours(const QItemSelection &selected,const QItemSelection &deselected);
     void slot_RazSelection(QString);
@@ -92,7 +92,6 @@ private:
     void DoTirages(void);
     void DoComptageTotal(void);
     void DoBloc3(void);
-    void MemoriserChoixUtilisateur(const QModelIndex & index,int zn, QItemSelectionModel *selectionModel);
 
     QGridLayout * MonLayout_SyntheseTotalGroupement(int fake);
     QGridLayout * MonLayout_SyntheseTotalBoules(int dst);

@@ -70,6 +70,126 @@ QComboBox *ComboPerso(int id)
     return tmp_combo;
 }
 
+//------
+void MemoriserChoixUtilisateur(const QModelIndex & index,
+                                                 int zn,
+                                                 QItemSelectionModel *selectionModel,
+                                                 stTiragesDef *pTiragesConf,
+                                                 stCurDemande *pUneDemande)
+{
+
+    static int curcol [3]= {-1,-1,-1};
+    int ligne = index.row();
+    int val = -1;
+
+    const QAbstractItemModel * pModel = index.model();
+
+    QModelIndexList indexes = selectionModel->selectedIndexes();
+
+
+    int nb_items = indexes.size();
+    int nb_element_max_zone = -1;
+    QString stNomZone = "Rien";
+
+    QVariant vCol;
+    QString headName;
+
+    if(zn==2)
+    {
+        nb_element_max_zone=1;
+        stNomZone="C";
+    }
+    else
+    {
+        nb_element_max_zone = pTiragesConf->nbElmZone[zn];
+        stNomZone = pTiragesConf->nomZone[zn];
+    }
+
+    // Maxi choix atteind
+    if(nb_items > nb_element_max_zone)
+    {
+        //un message d'information
+        QMessageBox::warning(0, stNomZone, "Attention, maximum element atteind !",QMessageBox::Yes);
+
+        // deselectionner l'element
+        selectionModel->select(index, QItemSelectionModel::Deselect);
+        return;
+    }
+
+    // A t'on une selection ou une deselection
+    if (!nb_items)
+    {
+
+        // Efface liste des boules utilisateur
+        pUneDemande->lst_boules[zn].clear();
+
+        return;
+    }
+
+    // C'est une selection
+    if (nb_items == 1)
+    {
+        int calcol = 1;
+
+        curcol [zn] = index.column();
+        if(curcol[zn])
+        {
+            calcol = curcol[zn];
+        }
+
+        vCol = pModel->headerData(calcol,Qt::Horizontal);
+        headName = vCol.toString();
+
+        if(zn == 2)
+        {
+            // Combi ?
+            val = index.model()->index(index.row(),0).data().toInt();
+        }
+        else
+        {
+            val = index.data().toInt();
+        }
+        pUneDemande->lst_boules[zn].clear();
+        pUneDemande->col[zn] = calcol;
+        pUneDemande->stc[zn]=headName;
+        pUneDemande->val[zn]=val;
+        pUneDemande->lgn[zn]=ligne;
+    }
+    else
+    {
+        if(curcol[zn] != index.column())
+        {
+            // deselectionner l'element
+            selectionModel->select(index, QItemSelectionModel::Deselect);
+
+        }
+    }
+
+    // Memoriser info si necessaire
+    if((nb_items > 0) && (nb_items <= nb_element_max_zone))
+    {
+        QStringList lst_tmp;
+        QString boule;
+        QModelIndex un_index;
+
+        foreach(un_index, indexes)
+        {
+#ifndef QT_NO_DEBUG
+            //QString stNomZone = pMaConf->nomZone[zn];
+            qDebug() << stNomZone
+                     <<" -> Nb items:"<<nb_items
+                    <<"Col:" << un_index.column()
+                   <<", Ligne:" << un_index.row();
+#endif
+            boule = un_index.model()->index(un_index.row(),0).data().toString();
+            lst_tmp = lst_tmp << boule;
+        }
+        pUneDemande->lst_boules[zn]=lst_tmp;
+    }
+}
+
+//------
+
 QString GEN_Where_3(int loop,
                     QString tb1,
                     bool inc1,

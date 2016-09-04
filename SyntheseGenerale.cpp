@@ -895,11 +895,15 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
     QString maselection = CreatreTitle(&uneDemande);
     selection->setText(maselection);
 
+//    stTiragesDef *pTiragesConf = pMaConf;
+//    stCurDemande *pUneDemande = &uneDemande;
+
     // ne pas memoriser quand onglet des regroupements
     if(origine<(ptabComptage->count()-1))
-        MemoriserChoixUtilisateur(index,origine,selectionModel);
+        MemoriserChoixUtilisateur(index,origine,selectionModel,pMaConf,&uneDemande);
 }
 
+#if 0
 void SyntheseGenerale::slot_Select_B(const QModelIndex & index)
 {
     QItemSelectionModel *selectionModel = tbv_bloc1_1->selectionModel();
@@ -944,11 +948,15 @@ void SyntheseGenerale::slot_Select_G(const QModelIndex & index)
     selection->setText(maselection);
 
 }
+#endif
 
-void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int zn, QItemSelectionModel *selectionModel)
+#if 0
+void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,
+                                                 int zn,
+                                                 QItemSelectionModel *selectionModel,
+                                                 stTiragesDef *pTiragesConf,
+                                                 stCurDemande *pUneDemande)
 {
-    stTiragesDef *pTiragesConf = pMaConf;
-    stCurDemande *pUneDemande = &uneDemande;
 
     static int curcol [3]= {-1,-1,-1};
     int ligne = index.row();
@@ -1059,6 +1067,8 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int z
         pUneDemande->lst_boules[zn]=lst_tmp;
     }
 }
+#endif
+
 
 QString CreatreTitle(stCurDemande *pConf)
 {
