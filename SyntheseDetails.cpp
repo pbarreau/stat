@@ -2969,8 +2969,6 @@ void SyntheseDetails::slot_ClickSurOnglet(int index)
         if(gtab_splitter_2[i])
             gtab_splitter_2[i]->setCurrentIndex(index);
     }
-
-    //gtab_tirages->setCurrentIndex(index);
 }
 
 void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)

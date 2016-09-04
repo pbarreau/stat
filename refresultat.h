@@ -38,6 +38,7 @@ private:
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
     QTabWidget *ptabTop;
+    QTabWidget *ptabComptage;
     int curzn;
     stCurDemande uneDemande;
     QStringList lst_selection[3];
@@ -75,7 +76,8 @@ public:
     // penser au destructeur pour chaque pointeur
 
 public slots:
-    void slot_MontreLesTirages(const QModelIndex & index);
+    void slot_ClicDeSelectionTableau(const QModelIndex & index);
+    void slot_MontreLesTirages(const QModelIndex & index);    
     void slot_Select_G(const QModelIndex & index);
     void slot_Select_C(const QModelIndex & index);
     void slot_Select_E(const QModelIndex & index);

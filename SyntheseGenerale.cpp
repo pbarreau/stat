@@ -160,6 +160,7 @@ void SyntheseGenerale::DoComptageTotal(void)
     QString stNames[]={"b","e","c","g"};
     QGridLayout *design_onglet[4];
 
+    ptabComptage = tab_Top;
     // Tableau de pointeur de fonction
     QGridLayout *(SyntheseGenerale::*ptrFunc[])(int)=
     {
@@ -307,8 +308,13 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     lay_return->addLayout(vb_tmp,0,0);
 
     // simple click dans fenetre  pour selectionner boule
+#if 0
     connect( tbv_bloc1_2, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_Select_E( QModelIndex) ) );
+#endif
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
 
 
     // double click dans fenetre  pour afficher details boule
@@ -458,8 +464,13 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 
 
     // simple click dans fenetre  pour selectionner boule
+#if 0
     connect( tbv_bloc1_3, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_Select_C( QModelIndex) ) );
+#endif
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
 
 
     // double click dans fenetre  pour afficher details boule
@@ -566,8 +577,12 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     lay_return->addLayout(vb_tmp,0,0);
 
     // simple click dans fenetre  pour selectionner boule
+#if 0
     connect( tbv_bloc1_1, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_Select_B( QModelIndex) ) );
+#endif
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
 
     // double click dans fenetre  pour afficher details boule
@@ -777,8 +792,12 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
     }
 
     // simple click dans fenetre  pour selectionner boule
+#if 0
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_Select_G( QModelIndex) ) );
+#endif
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
     // double click dans fenetre  pour afficher details boule
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
@@ -861,6 +880,24 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 
     }
 
+}
+
+void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
+{
+    // L'onglet implique le tableau...
+    int origine = ptabComptage->currentIndex();
+
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QItemSelectionModel *selectionModel = view->selectionModel();
+
+    uneDemande.selection[origine] = selectionModel->selectedIndexes();
+
+    QString maselection = CreatreTitle(&uneDemande);
+    selection->setText(maselection);
+
+    // ne pas memoriser quand onglet des regroupements
+    if(origine<(ptabComptage->count()-1))
+        MemoriserChoixUtilisateur(index,origine,selectionModel);
 }
 
 void SyntheseGenerale::slot_Select_B(const QModelIndex & index)
