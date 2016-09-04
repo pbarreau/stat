@@ -947,23 +947,24 @@ void SyntheseGenerale::slot_Select_G(const QModelIndex & index)
 
 void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int zn, QItemSelectionModel *selectionModel)
 {
+    stTiragesDef *pTiragesConf = pMaConf;
+    stCurDemande *pUneDemande = &uneDemande;
+
     static int curcol [3]= {-1,-1,-1};
     int ligne = index.row();
     int val = -1;
 
     const QAbstractItemModel * pModel = index.model();
-    QVariant vCol;
-    QString headName;
 
     QModelIndexList indexes = selectionModel->selectedIndexes();
 
-    // Titre de selection
-    //QString maSelection = selection->text();
-    //QStringList lesChoix = maSelection.split("-");
 
     int nb_items = indexes.size();
     int nb_element_max_zone = -1;
     QString stNomZone = "Rien";
+
+    QVariant vCol;
+    QString headName;
 
     if(zn==2)
     {
@@ -972,8 +973,8 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int z
     }
     else
     {
-        nb_element_max_zone = pMaConf->nbElmZone[zn];
-        stNomZone = pMaConf->nomZone[zn];
+        nb_element_max_zone = pTiragesConf->nbElmZone[zn];
+        stNomZone = pTiragesConf->nomZone[zn];
     }
 
     // Maxi choix atteind
@@ -992,7 +993,7 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int z
     {
 
         // Efface liste des boules utilisateur
-        uneDemande.lst_boules[zn].clear();
+        pUneDemande->lst_boules[zn].clear();
 
         return;
     }
@@ -1020,11 +1021,11 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int z
         {
             val = index.data().toInt();
         }
-        uneDemande.lst_boules[zn].clear();
-        uneDemande.col[zn] = calcol;
-        uneDemande.stc[zn]=headName;
-        uneDemande.val[zn]=val;
-        uneDemande.lgn[zn]=ligne;
+        pUneDemande->lst_boules[zn].clear();
+        pUneDemande->col[zn] = calcol;
+        pUneDemande->stc[zn]=headName;
+        pUneDemande->val[zn]=val;
+        pUneDemande->lgn[zn]=ligne;
     }
     else
     {
@@ -1055,7 +1056,7 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int z
             boule = un_index.model()->index(un_index.row(),0).data().toString();
             lst_tmp = lst_tmp << boule;
         }
-        uneDemande.lst_boules[zn]=lst_tmp;
+        pUneDemande->lst_boules[zn]=lst_tmp;
     }
 }
 
