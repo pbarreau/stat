@@ -2912,13 +2912,13 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
 
 void SyntheseDetails::slot_FermeLaRecherche(int index)
 {
+#if 0
     static int previous = -1;
 
     QSqlQuery sql;
     QString req_vue = "";
     bool status = true;
 
-    //qDebug()<< gMemoTab->tabText(index);
 
     if((previous != index) && (tabNames.size()!=0))
     {
@@ -2955,7 +2955,7 @@ void SyntheseDetails::slot_FermeLaRecherche(int index)
     }
     if(gMemoTab->currentIndex() == -1)
         previous = -1;
-
+#endif
 }
 
 void SyntheseDetails::slot_ClickSurOnglet(int index)
