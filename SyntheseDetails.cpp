@@ -72,10 +72,10 @@ QComboBox *ComboPerso(int id)
 
 //------
 void MemoriserChoixUtilisateur(const QModelIndex & index,
-                                                 int zn,
-                                                 QItemSelectionModel *selectionModel,
-                                                 stTiragesDef *pTiragesConf,
-                                                 stCurDemande *pUneDemande)
+                               int zn,
+                               QItemSelectionModel *selectionModel,
+                               stTiragesDef *pTiragesConf,
+                               stCurDemande *pUneDemande)
 {
 
     static int curcol [3]= {-1,-1,-1};
@@ -779,7 +779,7 @@ void SyntheseDetails::MontreRechercheTirages(stCurDemande *pEtude)
     QTabWidget **wid_ForTop_1 = new QTabWidget*[4];
 
     //onglets = tab_Top;
-    onglets = tab_Top;
+    //onglets = tab_Top;
 
     for(int i =0; i<4;i++)
     {
@@ -1323,10 +1323,13 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    // Connection du double click dans table voisins
+    // simple click dans fenetre  pour selectionner boule
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
     // double click dans fenetre  pour afficher details boule
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-             this, SLOT(slot_ZoomTirages( QModelIndex) ) );
+             this, SLOT(slot_detailsDetails( QModelIndex) ) );
 
 
     int pos_y = 0;
@@ -1437,6 +1440,10 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
         }
     }
 
+    // simple click dans fenetre  pour selectionner boule
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
     // double click dans fenetre  pour afficher details boule
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_detailsDetails( QModelIndex) ) );
@@ -1469,6 +1476,9 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
 
     // construit la liste des boules
     stCurDemande *etude = new stCurDemande;
+
+    // recopie
+    //*etude = *pLaDemande;
 
     // Modification
     etude->ref = pLaDemande->ref;
@@ -1705,6 +1715,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     qtv_tmp->setAlternatingRowColors(true);
     //qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+    //qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
@@ -1729,6 +1740,14 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     // Ne pas modifier largeur des colonnes
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    // simple click dans fenetre  pour selectionner boule
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
+    // double click dans fenetre  pour afficher details boule
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_detailsDetails( QModelIndex) ) );
 
     QLabel *titre_1 = new QLabel(pEtude->ref->FullNameZone[zn]);
     //lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
@@ -3091,6 +3110,29 @@ void SyntheseDetails::slot_ClickSurOnglet(int index)
     }
 }
 
+void SyntheseDetails::slot_ClicDeSelectionTableau(const QModelIndex &index)
+{
+    // L'onglet implique le tableau...
+    int origine = onglets->currentIndex();
+
+
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QItemSelectionModel *selectionModel = view->selectionModel();
+
+    //pLaDemande->selection[origine] = selectionModel->selectedIndexes();
+
+    //QString maselection = CreatreTitle(pLaDemande);
+    //selection->setText(maselection);
+
+#if 0
+    // ne pas memoriser quand onglet des regroupements
+    if(origine<(onglets->count()-1))
+        MemoriserChoixUtilisateur(index,origine,selectionModel,
+                                  pLaDemande->ref,pLaDemande);
+#endif
+}
+
+#if 0
 void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
 {
     void *pSource = index.internalPointer();
@@ -3154,3 +3196,4 @@ void SyntheseDetails::slot_ZoomTirages(const QModelIndex & index)
     // Nouvelle de fenetre de detail de cette boule
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,gMemoTab);
 }
+#endif

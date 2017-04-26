@@ -117,13 +117,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     //QApplication::quit();
 
-    // Recuperation des donnees fdj
-    ficSource = tmp.SelectSource(load);
-    if (DB_tirages->LireLesTirages(ficSource,&tmp) == false)
-    {
-        QApplication::quit();
-
-    }
 
     if(leJeu == NE_FDJ::fdj_euro){
         // Lecture des anciennes base des tirages
@@ -134,7 +127,21 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     }
     else
     {
-        //Rien
+#if 0
+        // Recuperation des donnees fdj
+        ficSource = tmp.SelectSource(load);
+        if (DB_tirages->LireLesTirages(ficSource,&tmp) == false)
+        {
+            QApplication::quit();
+
+        }
+#endif
+        // Lecture des anciennes base des tirages
+        ficSource = "loto2017.csv";
+        DB_tirages->LireLesTirages(ficSource,&tmp);
+        ficSource="nouveau_loto.csv";
+        DB_tirages->LireLesTirages(ficSource,&tmp);
+
     }
 
     /// ------- rem 2

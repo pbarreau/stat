@@ -137,7 +137,7 @@ public:
 public slots:
     void slot_NouvelleDistance(void);
     void slot_FiltreSurNewCol(int colNum);
-    void slot_ZoomTirages(const QModelIndex & index);
+    void slot_ClicDeSelectionTableau(const QModelIndex & index);
     void slot_ClickSurOnglet(int index);
     void slot_FermeLaRecherche(int index);
     void slot_detailsDetails(const QModelIndex & index);

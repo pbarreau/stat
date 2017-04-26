@@ -43,7 +43,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     QString *st_tmp2 = new QString;
     st_bdTirages = new QString;
     //*st_bdTirages = OrganiseChampsDesTirages("tirages", pConf);
-    *st_bdTirages = C_TousLesTirages;
+    *st_bdTirages = "select * from "  REF_BASE  ";";
 
     *st_tmp = *st_bdTirages;
     *st_tmp2 = *st_bdTirages;
@@ -51,7 +51,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     st_JourTirageDef = new QString;
     *st_JourTirageDef = CompteJourTirage(pConf);
 
-    uneDemande.st_Ensemble_1 = st_bdTirages;
+    uneDemande.st_LDT_Reference = st_bdTirages;
     uneDemande.st_LDT_Depart = st_tmp2;
     uneDemande.st_LDT_Filtre = st_tmp;
     uneDemande.st_jourDef = st_JourTirageDef;
@@ -160,7 +160,6 @@ void SyntheseGenerale::DoComptageTotal(void)
     QString stNames[]={"b","e","c","g"};
     QGridLayout *design_onglet[4];
 
-    ptabComptage = tab_Top;
     // Tableau de pointeur de fonction
     QGridLayout *(SyntheseGenerale::*ptrFunc[])(int)=
     {
@@ -308,9 +307,8 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     lay_return->addLayout(vb_tmp,0,0);
 
     // simple click dans fenetre  pour selectionner boule
-    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
-
+    connect( tbv_bloc1_2, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_Select_E( QModelIndex) ) );
 
 
     // double click dans fenetre  pour afficher details boule
@@ -460,13 +458,8 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 
 
     // simple click dans fenetre  pour selectionner boule
-#if 0
     connect( tbv_bloc1_3, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_Select_C( QModelIndex) ) );
-#endif
-    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
-
 
 
     // double click dans fenetre  pour afficher details boule
@@ -573,12 +566,8 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     lay_return->addLayout(vb_tmp,0,0);
 
     // simple click dans fenetre  pour selectionner boule
-#if 0
     connect( tbv_bloc1_1, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_Select_B( QModelIndex) ) );
-#endif
-    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
 
     // double click dans fenetre  pour afficher details boule
@@ -763,7 +752,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
         // Creer Requete pour compter items
         QString msg1 = maRef[0].at(i);
         QString sqlReq = "";
-        sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_Ensemble_1),msg1);
+        sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_LDT_Reference),msg1);
 
 #ifndef QT_NO_DEBUG
         qDebug() << sqlReq;
@@ -788,12 +777,8 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
     }
 
     // simple click dans fenetre  pour selectionner boule
-#if 0
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_Select_G( QModelIndex) ) );
-#endif
-    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
     // double click dans fenetre  pour afficher details boule
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
@@ -878,22 +863,163 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 
 }
 
-void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
+void SyntheseGenerale::slot_Select_B(const QModelIndex & index)
 {
-    // L'onglet implique le tableau...
-    int origine = ptabComptage->currentIndex();
-
-    QTableView *view = qobject_cast<QTableView *>(sender());
-    QItemSelectionModel *selectionModel = view->selectionModel();
-
-    uneDemande.selection[origine] = selectionModel->selectedIndexes();
+    QItemSelectionModel *selectionModel = tbv_bloc1_1->selectionModel();
+    uneDemande.selection[0] = selectionModel->selectedIndexes();
 
     QString maselection = CreatreTitle(&uneDemande);
     selection->setText(maselection);
 
-    // ne pas memoriser quand onglet des regroupements
-    if(origine<(ptabComptage->count()-1))
-        MemoriserChoixUtilisateur(index,origine,selectionModel,pMaConf,&uneDemande);
+    MemoriserChoixUtilisateur(index,0,selectionModel);
+
+}
+
+void SyntheseGenerale::slot_Select_E(const QModelIndex & index)
+{
+    QItemSelectionModel *selectionModel = tbv_bloc1_2->selectionModel();
+    uneDemande.selection[1] = selectionModel->selectedIndexes();
+
+    QString maselection = CreatreTitle(&uneDemande);
+    selection->setText(maselection);
+
+    MemoriserChoixUtilisateur(index,1,selectionModel);
+
+}
+
+void SyntheseGenerale::slot_Select_C(const QModelIndex & index)
+{
+    QItemSelectionModel *selectionModel = tbv_bloc1_3->selectionModel();
+    uneDemande.selection[2] = selectionModel->selectedIndexes();
+
+    QString maselection = CreatreTitle(&uneDemande);
+    selection->setText(maselection);
+
+    MemoriserChoixUtilisateur(index,2,selectionModel);
+}
+
+void SyntheseGenerale::slot_Select_G(const QModelIndex & index)
+{
+    QItemSelectionModel *selectionModel = tbv_bloc2->selectionModel();
+    uneDemande.selection[3] = selectionModel->selectedIndexes();
+
+    QString maselection = CreatreTitle(&uneDemande);
+    selection->setText(maselection);
+
+}
+
+void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int zn, QItemSelectionModel *selectionModel)
+{
+    static int curcol [3]= {-1,-1,-1};
+    int ligne = index.row();
+    int val = -1;
+
+    const QAbstractItemModel * pModel = index.model();
+    QVariant vCol;
+    QString headName;
+
+    QModelIndexList indexes = selectionModel->selectedIndexes();
+
+    // Titre de selection
+    //QString maSelection = selection->text();
+    //QStringList lesChoix = maSelection.split("-");
+
+    int nb_items = indexes.size();
+    int nb_element_max_zone = -1;
+    QString stNomZone = "Rien";
+
+    if(zn==2)
+    {
+        nb_element_max_zone=1;
+        stNomZone="C";
+    }
+    else
+    {
+        nb_element_max_zone = pMaConf->nbElmZone[zn];
+        stNomZone = pMaConf->nomZone[zn];
+    }
+
+    // Maxi choix atteind
+    if(nb_items > nb_element_max_zone)
+    {
+        //un message d'information
+        QMessageBox::warning(0, stNomZone, tr("Attention, maximum element atteind !"),QMessageBox::Yes);
+
+        // deselectionner l'element
+        selectionModel->select(index, QItemSelectionModel::Deselect);
+        return;
+    }
+
+    // A t'on une selection ou une deselection
+    if (!nb_items)
+    {
+
+        // Efface liste des boules utilisateur
+        uneDemande.lst_boules[zn].clear();
+
+        return;
+    }
+
+    // C'est une selection
+    if (nb_items == 1)
+    {
+        int calcol = 1;
+
+        curcol [zn] = index.column();
+        if(curcol[zn])
+        {
+            calcol = curcol[zn];
+        }
+
+        vCol = pModel->headerData(calcol,Qt::Horizontal);
+        headName = vCol.toString();
+
+        if(zn == 2)
+        {
+            // Combi ?
+            val = index.model()->index(index.row(),0).data().toInt();
+        }
+        else
+        {
+            val = index.data().toInt();
+        }
+        uneDemande.lst_boules[zn].clear();
+        uneDemande.col[zn] = calcol;
+        uneDemande.stc[zn]=headName;
+        uneDemande.val[zn]=val;
+        uneDemande.lgn[zn]=ligne;
+    }
+    else
+    {
+        if(curcol[zn] != index.column())
+        {
+            // deselectionner l'element
+            selectionModel->select(index, QItemSelectionModel::Deselect);
+
+        }
+    }
+
+    // Memoriser info si necessaire
+    if((nb_items > 0) && (nb_items <= nb_element_max_zone))
+    {
+        QStringList lst_tmp;
+        QString boule;
+        QModelIndex un_index;
+
+        foreach(un_index, indexes)
+        {
+#ifndef QT_NO_DEBUG
+            //QString stNomZone = pMaConf->nomZone[zn];
+            qDebug() << stNomZone
+                     <<" -> Nb items:"<<nb_items
+                    <<"Col:" << un_index.column()
+                   <<", Ligne:" << un_index.row();
+#endif
+            boule = un_index.model()->index(un_index.row(),0).data().toString();
+            lst_tmp = lst_tmp << boule;
+        }
+        uneDemande.lst_boules[zn]=lst_tmp;
+    }
 }
 
 QString CreatreTitle(stCurDemande *pConf)
@@ -983,8 +1109,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     etude->st_titre = titre;
     etude->st_TablePere = REF_BASE;
     etude->cur_dst = 0;
-    etude->req_niv = 0;
-    etude->st_Ensemble_1 = uneDemande.st_Ensemble_1;
+    etude->st_LDT_Reference = uneDemande.st_LDT_Reference;
     etude->ref = uneDemande.ref;
     etude->st_LDT_Filtre = new QString;
     etude->st_jourDef = new QString;
