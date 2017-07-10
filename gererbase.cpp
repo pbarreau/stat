@@ -59,8 +59,9 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
 
     }
 
+    // Lecture des anciennes base des tirages
     if(typeTirages->conf.choixJeu == NE_FDJ::fdj_euro){
-        // Lecture des anciennes base des tirages
+        LireLesTirages(ficSource,typeTirages);
         ficSource = "euromillions_2.csv";
         LireLesTirages(ficSource,typeTirages);
         ficSource="euromillions.csv";
@@ -68,7 +69,8 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
     }
     else
     {
-        //Rien
+        ficSource="nouveau_loto.csv";
+        LireLesTirages(ficSource,typeTirages);
     }
 
     // La lecture a fait  l'analyse des tirages

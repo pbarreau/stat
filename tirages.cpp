@@ -278,7 +278,7 @@ QString tirages::SelectSource(bool load)
       break;
     case NE_FDJ::fdj_loto:
       msg="Fichier pour Loto";
-      fileName_2="nouveau_loto.csv";
+      fileName_2="loto2017.csv";
       break;
     default:
       break;
