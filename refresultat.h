@@ -51,6 +51,8 @@ private:
     QTableView * tbv_LesTirages;
     QSqlQueryModel *sqm_LesTirages;
 
+    QTableView * tbv_LesEcarts;
+
     LabelClickable *selection;
     QTableView * tbv_bloc1_1;
     QSqlQueryModel *sqm_bloc1_1;
@@ -58,6 +60,8 @@ private:
     QSqlQueryModel *sqm_bloc1_2;
     QTableView * tbv_bloc1_3;
     QSqlQueryModel *sqm_bloc1_3;
+
+    QSortFilterProxyModel * mysortModel;
 
     QTableView * tbv_bloc2;
     QSqlTableModel * sqtblm_bloc2;
@@ -72,12 +76,16 @@ public:
     SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt, int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetListeTirages(void);
+    void GetInfoTableau(int onglet, QTableView **pTbl, QSqlQueryModel **pSqm, QSortFilterProxyModel **pSfpm);
+
 
     // penser au destructeur pour chaque pointeur
 
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex & index);
-    void slot_MontreLesTirages(const QModelIndex & index);    
+    void slot_MontreLesTirages(const QModelIndex & index);
+    void slot_ShowTotalBoule(const QModelIndex & index);
+    void slot_ShowBoule(const QModelIndex & index);
     //void slot_Select_G(const QModelIndex & index);
     //void slot_Select_C(const QModelIndex & index);
     //void slot_Select_E(const QModelIndex & index);

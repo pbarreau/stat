@@ -30,6 +30,7 @@ public:
     RefEtude(GererBase *db, QString stFiltreTirages, int zn, stTiragesDef *pDef, QMdiArea *visuel, QTabWidget *tab_Top);
     QWidget *CreationOnglets();
     QTableView *GetListeTirages(void);
+    QTableView *GetLesEcarts(void);
     QStandardItemModel *GetPtrToModel(void);
 
 private:
@@ -59,6 +60,8 @@ private:
 public slots:
     void slot_Couverture(const QModelIndex & index);
     void slot_ShowDetails(const QModelIndex & index);
+    void slot_ShowBoule(const QModelIndex & index);
+    void slot_ShowBoule_2(const QModelIndex & index);
     void slot_Type_G(const QModelIndex & index);
     void slot_TotalCouverture(int index);
     void slot_SelectPartBase(const QModelIndex & index);
@@ -75,6 +78,7 @@ private:
     QTableView *p_tbv_1;
     QTableView *p_tbv_2;
     QTableView * p_tbv_3;
+    QTableView * p_tbv_4;
 
     QStandardItemModel *p_qsim_2;
     QStandardItemModel *p_qsim_3;

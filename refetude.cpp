@@ -253,9 +253,15 @@ QTableView *RefEtude::tbForBaseRef()
 
     // ---------------------
     p_tbv_0 = tbv_tmp;
-    // click dans fenetre voisin pour afficher boule doubleClicked clicked activated
+
+    // click sur une ligne des tirages effectue l'analyse de la ligne
     connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
              this, SLOT( slot_ShowDetails( QModelIndex) ) );
+
+    // click sur la zone reservee au boules du tirage
+    connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
+             this, SLOT( slot_ShowBoule( QModelIndex) ) );
+
 
     return tbv_tmp;
 }
@@ -263,6 +269,11 @@ QTableView *RefEtude::tbForBaseRef()
 QTableView *RefEtude::GetListeTirages(void)
 {
     return  p_tbv_0;
+}
+
+QTableView *RefEtude::GetLesEcarts(void)
+{
+ return    p_tbv_4;
 }
 
 QTableView *RefEtude::tbForBaseEcart()
@@ -318,6 +329,16 @@ QTableView *RefEtude::tbForBaseEcart()
 
     col = p_simResu->columnCount();
     lgn = p_simResu->rowCount();
+
+     p_tbv_4 = qtv_tmp;
+
+     // click sur la zone reservee au boules du tirage
+     connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
+              this, SLOT( slot_ShowBoule( QModelIndex) ) );
+
+
+     connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
+              this, SLOT( slot_ShowBoule_2( QModelIndex) ) );
 
     return qtv_tmp;
 }
@@ -733,6 +754,37 @@ void RefEtude::slot_TotalCouverture(int index)
             p_qsim_4->setItem(pos,i,item);
         }
     }
+}
+void RefEtude::slot_ShowBoule(const QModelIndex & index)
+{
+    int val = 0;
+
+
+    // recuperer la valeur de la colonne
+    int col = index.column();
+
+    if(col > 4 && col <= 4 + p_conf->nbElmZone[0])
+    {
+        // recuperer la valeur a la colone de la table
+        val = index.model()->index(index.row(),index.column()).data().toInt();
+        p_simResu->sort(0);
+        p_tbv_4->scrollTo(p_simResu->index(val-1,1));
+    }
+
+    col = 0;
+}
+
+void RefEtude::slot_ShowBoule_2(const QModelIndex & index)
+{
+    int val = 0;
+
+
+    // recuperer la valeur de la colonne
+    int col = index.column();
+    val = index.model()->index(index.row(),0).data().toInt();
+
+
+    col = 0;
 }
 
 void RefEtude::slot_ShowDetails(const QModelIndex & index)

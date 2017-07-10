@@ -30,6 +30,49 @@ QTableView *SyntheseGenerale::GetListeTirages(void)
     return  tbv_LesTirages;
 }
 
+void SyntheseGenerale::GetInfoTableau(int onglet, QTableView **pTbl, QSqlQueryModel **pSqm, QSortFilterProxyModel **pSfpm)
+{
+    // se mettre sur le bon onglet
+    ptabComptage->setCurrentIndex(onglet);
+
+    // renvoyer les infos
+    *pTbl = tbv_bloc1_1;
+    *pSqm = sqm_bloc1_1;
+    *pSfpm = mysortModel;
+}
+void SyntheseGenerale::slot_ShowTotalBoule(const QModelIndex &index)
+{
+    // se mettre sur le bon onglet
+    ptabComptage->setCurrentIndex(0);
+
+    int val = index.model()->index(index.row(),0).data().toInt();
+    mysortModel->sort(0);
+    tbv_bloc1_1->scrollTo(mysortModel->index(val-1,0));
+}
+
+void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
+{
+    int val = 0;
+
+
+
+    // recuperer la valeur de la colonne
+    int col = index.column();
+
+    if(col > 4 && col <= 4 + pMaConf->nbElmZone[0])
+    {
+        // se mettre sur le bon onglet
+        ptabComptage->setCurrentIndex(0);
+
+        // recuperer la valeur a la colone de la table
+        val = index.model()->index(index.row(),index.column()).data().toInt();
+        mysortModel->sort(0);
+        tbv_bloc1_1->scrollTo(mysortModel->index(val-1,0));
+    }
+
+    col = 0;
+}
+
 SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int zn, stTiragesDef *pConf, QMdiArea *visuel)
 {
     disposition = new QGridLayout;
@@ -58,6 +101,9 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     uneDemande.ref = pConf;
     DoTirages();
     DoComptageTotal();
+
+    // Connection du click dans le tableau ecart vers le tableau total
+
     disposition->addWidget(ptabTop,1,0,1,2,Qt::AlignLeft|Qt::AlignTop);
 
     //MonLayout_SyntheseTotalGroupement(0);
@@ -70,16 +116,21 @@ void SyntheseGenerale::DoTirages(void)
     RefEtude *unTest = new RefEtude(bdd,*st_bdTirages,0,pMaConf,pEcran,ptabTop);
     QWidget *uneReponse = unTest->CreationOnglets();
     tbv_LesTirages = unTest->GetListeTirages();
+    tbv_LesEcarts = unTest->GetLesEcarts();
 
     disposition->addWidget(uneReponse,0,0,Qt::AlignLeft|Qt::AlignTop);
 
-#if 0
-    connect( tbv_LesTirages, SIGNAL( activated(QModelIndex)) ,
-             pEcran->parent(), SLOT( slot_MontreLeTirage( QModelIndex) ) );
-
-#endif
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
+
+
+
+    connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
+             this, SLOT( slot_ShowBoule( QModelIndex) ) );
+
+    connect( tbv_LesEcarts, SIGNAL( clicked(QModelIndex)) ,
+             this, SLOT( slot_ShowTotalBoule( QModelIndex) ) );
+
 
 }
 
@@ -552,6 +603,9 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_bloc1_1);
+
+    mysortModel = m;
+
     qtv_tmp->setModel(m);
     qtv_tmp->verticalHeader()->hide();
     for(int j=0;j<2;j++)

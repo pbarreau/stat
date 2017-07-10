@@ -56,6 +56,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     //test->show();
     RechercheProgressionBoules(&configJeu);
 
+
     w_FenetreDetails = new QWidget;
     gtab_Top = new QTabWidget;
     gtab_Top->setTabsClosable(true);
@@ -71,7 +72,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     return;
 
-
+#if 0
     int i;
     tirages tmp(leJeu);
     QString ficSource;
@@ -217,7 +218,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
 
     FEN_Graphe(&configJeu);
-
+#endif
 
 
 
@@ -4805,6 +4806,30 @@ void MainWindow::slot_MontreTirageAnalyse(const QModelIndex & index)
 
 
 }
+void MainWindow::slot_PresenteLaBoule(const QModelIndex & index)
+{
+    QTableView *pTbv1 = NULL;
+    QTableView *pTbv2 = NULL;
+
+    QSqlQueryModel *pSqm1 =NULL;
+    QSqlQueryModel *pSqm2 =NULL;
+
+    QSortFilterProxyModel *pSfpm1 =NULL;
+    QSortFilterProxyModel *pSfpm2 =NULL;
+
+
+    // recuperer la valeur de la boule
+    int val = index.model()->index(index.row(),0).data().toInt();
+
+    // Recuperer le tableau des comptages
+    syntheses->GetInfoTableau(0, &pTbv1 , &pSqm1 , &pSfpm1);
+    pSfpm1->sort(0);
+    pTbv1->scrollTo(pSfpm1->index(val-1,0));
+
+
+
+}
+
 void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
 {
     // recuperer la ligne de la table

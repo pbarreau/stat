@@ -132,6 +132,7 @@ public slots:
     void slot_MontreLeTirage(const QModelIndex & index);
     void slot_MontreTirageDansGraph(const QModelIndex & index);
     void slot_MontreTirageAnalyse(const QModelIndex & index);
+    void slot_PresenteLaBoule(const QModelIndex & index);
 
 
 private:

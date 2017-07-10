@@ -16,6 +16,7 @@
 #include "filtrecombinaisons.h"
 #include "monSqlEditable.h"
 #include "tirages.h"
+//#include "refresultat.h"
 
 #define USE_repartition_bh  0
 

@@ -1745,6 +1745,10 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             pEcran->parent(), SLOT(slot_PresenteLaBoule( QModelIndex) ) );
+
+
     // double click dans fenetre  pour afficher details boule
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_detailsDetails( QModelIndex) ) );
@@ -3112,6 +3116,7 @@ void SyntheseDetails::slot_ClickSurOnglet(int index)
 
 void SyntheseDetails::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
+    int val = 0;
     // L'onglet implique le tableau...
     int origine = onglets->currentIndex();
 
@@ -3119,11 +3124,15 @@ void SyntheseDetails::slot_ClicDeSelectionTableau(const QModelIndex &index)
     QTableView *view = qobject_cast<QTableView *>(sender());
     QItemSelectionModel *selectionModel = view->selectionModel();
 
+    if(origine == 0)
+    {
+        val = index.model()->index(index.row(),0).data().toInt();
+    }
     //pLaDemande->selection[origine] = selectionModel->selectedIndexes();
 
     //QString maselection = CreatreTitle(pLaDemande);
     //selection->setText(maselection);
-
+val = 0;
 #if 0
     // ne pas memoriser quand onglet des regroupements
     if(origine<(onglets->count()-1))
