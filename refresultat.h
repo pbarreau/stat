@@ -13,7 +13,7 @@
 
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
-
+#include "refetude.h"
 
 #include "tirages.h"
 
@@ -39,6 +39,7 @@ private:
     QMdiArea *pEcran;
     QTabWidget *ptabTop;
     QTabWidget *ptabComptage;
+    RefEtude *tabEcarts;
     int curzn;
     stCurDemande uneDemande;
     QStringList lst_selection[3];
@@ -76,6 +77,7 @@ public:
     SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt, int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetListeTirages(void);
+    RefEtude *GetTabEcarts(void);
     void GetInfoTableau(int onglet, QTableView **pTbl, QSqlQueryModel **pSqm, QSortFilterProxyModel **pSfpm);
 
 

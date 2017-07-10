@@ -4809,25 +4809,25 @@ void MainWindow::slot_MontreTirageAnalyse(const QModelIndex & index)
 void MainWindow::slot_PresenteLaBoule(const QModelIndex & index)
 {
     QTableView *pTbv1 = NULL;
-    QTableView *pTbv2 = NULL;
-
     QSqlQueryModel *pSqm1 =NULL;
-    QSqlQueryModel *pSqm2 =NULL;
-
+    QStandardItemModel *pSim1 =NULL;
     QSortFilterProxyModel *pSfpm1 =NULL;
-    QSortFilterProxyModel *pSfpm2 =NULL;
 
 
     // recuperer la valeur de la boule
     int val = index.model()->index(index.row(),0).data().toInt();
 
+    // Recuperer le tableau des ecarts
+    ecarts = syntheses->GetTabEcarts();
+    ecarts->GetInfoTableau(0, &pTbv1 , &pSim1 , &pSfpm1);
+    pSim1->sort(0);
+    pTbv1->scrollTo(pSim1->index(val-1,1));
+    //p_tbv_4->scrollTo(p_simResu->index(val-1,1));
+
     // Recuperer le tableau des comptages
     syntheses->GetInfoTableau(0, &pTbv1 , &pSqm1 , &pSfpm1);
     pSfpm1->sort(0);
     pTbv1->scrollTo(pSfpm1->index(val-1,0));
-
-
-
 }
 
 void MainWindow::slot_MontreLeTirage(const QModelIndex & index)

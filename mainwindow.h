@@ -23,6 +23,7 @@
 #include "pointtirage.h"
 #include "refresultat.h"
 #include "filtrecombinaisons.h"
+#include "refetude.h"
 
 
 namespace Ui {
@@ -228,6 +229,7 @@ private:
     QWidget *w_FenetreDetails;
     QTabWidget *gtab_Top;
     SyntheseGenerale *syntheses;
+    RefEtude *ecarts;
     QTableView * qtv_s1;
     stCurDemande critereTirages;
     QLabel * lab_critere;

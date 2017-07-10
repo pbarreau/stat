@@ -5,6 +5,7 @@
 #include <QString>
 #include <QGridLayout>
 #include <QTabWidget>
+#include <QSortFilterProxyModel>
 #include "tirages.h"
 
 class sCouv
@@ -32,6 +33,7 @@ public:
     QTableView *GetListeTirages(void);
     QTableView *GetLesEcarts(void);
     QStandardItemModel *GetPtrToModel(void);
+    void GetInfoTableau(int onglet, QTableView **pTbl, QStandardItemModel **pSim, QSortFilterProxyModel **pSfpm);
 
 private:
     QGridLayout *MonLayout_TabTirages();

@@ -276,6 +276,16 @@ QTableView *RefEtude::GetLesEcarts(void)
  return    p_tbv_4;
 }
 
+void RefEtude::GetInfoTableau(int onglet, QTableView **pTbl, QStandardItemModel **pSim, QSortFilterProxyModel **pSfpm)
+{
+    // se mettre sur le bon onglet
+    //ptabComptage->setCurrentIndex(onglet);
+
+    // renvoyer les infos
+    *pTbl = p_tbv_4;
+    *pSim = p_simResu;
+    *pSfpm = NULL;
+}
 QTableView *RefEtude::tbForBaseEcart()
 {
     QTableView *qtv_tmp = new QTableView;

@@ -29,6 +29,10 @@ QTableView *SyntheseGenerale::GetListeTirages(void)
 {
     return  tbv_LesTirages;
 }
+RefEtude *SyntheseGenerale::GetTabEcarts(void)
+{
+    return tabEcarts;
+}
 
 void SyntheseGenerale::GetInfoTableau(int onglet, QTableView **pTbl, QSqlQueryModel **pSqm, QSortFilterProxyModel **pSfpm)
 {
@@ -115,6 +119,9 @@ void SyntheseGenerale::DoTirages(void)
 {
     RefEtude *unTest = new RefEtude(bdd,*st_bdTirages,0,pMaConf,pEcran,ptabTop);
     QWidget *uneReponse = unTest->CreationOnglets();
+
+    tabEcarts = unTest;
+
     tbv_LesTirages = unTest->GetListeTirages();
     tbv_LesEcarts = unTest->GetLesEcarts();
 
