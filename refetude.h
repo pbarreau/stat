@@ -10,11 +10,11 @@
 
 class sCouv
 {
-    public:
+public:
     sCouv(int zn,stTiragesDef *pDef);
     ~sCouv();
 
-    public:
+public:
     stTiragesDef *p_conf;
     int **p_TotalMois;
     QList<bool> *p_trackingBoule;
@@ -25,7 +25,7 @@ class sCouv
 
 class RefEtude: public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     RefEtude();
     RefEtude(GererBase *db, QString stFiltreTirages, int zn, stTiragesDef *pDef, QMdiArea *visuel, QTabWidget *tab_Top);
@@ -38,10 +38,14 @@ public:
 private:
     QGridLayout *MonLayout_TabTirages();
     QGridLayout *MonLayout_TabCouvertures();
+    QGridLayout *MonLayout_TabCouvertures_boules();
+    QGridLayout *MonLayout_TabCouvertures_etoiles();
     QGridLayout *MonLayout_TabEcarts();
     QGridLayout *MonLayout_TabEcart_2();
     QGridLayout *MonLayout_TabEcart_3();
     QGridLayout *MonLayout_TabMois();
+    QGridLayout *MonLayout_TabMois_boules();
+    QGridLayout *MonLayout_TabMois_etoiles();
     QGridLayout *MonLayout_TabMois_1(int zn);
     QGridLayout *MonLayout_TabMois_2(QList<sCouv *> *lstCouv,int zn);
 
@@ -56,6 +60,8 @@ private:
     QTableView * TableMoisCouv(int zn);
 
     QWidget *EcartOnglets();
+    QWidget *CouvOglGroup();
+    QWidget *CouvMois_OglGroup();
 
     void RemplirTableauEcart(int zn,QStandardItemModel *sim_tmp);
     void MontrerBoulesNonSorties(int zn, QStandardItemModel *sim_tmp, sCouv *curCouv, int memo_last_boule);
@@ -90,7 +96,7 @@ private:
     QStandardItemModel *p_qsim_2;
     QStandardItemModel *p_qsim_3;
     QStandardItemModel *p_qsim_4;
-    QStringList *maRef;
+    QStringList **maRef;
     QMdiArea *p_affiche;
     QTabWidget *p_reponse;
 };

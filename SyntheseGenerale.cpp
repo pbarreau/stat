@@ -646,6 +646,10 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
 }
 
+// Cette fonction retourne un pointeur sur un tableau de QStringList
+// Ce tableau comporte 2 elements
+// Element 0 liste des requetes construites
+// Element 1 Liste des titres assosies a la requete
 QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
 {
     QStringList *tmp = new QStringList [2];

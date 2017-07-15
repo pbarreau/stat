@@ -24,6 +24,7 @@
 // declaration de variable de classe
 QStandardItemModel *RefEtude::p_simResu = new QStandardItemModel;
 
+// argument de p_deb et p_fin contient id de la ligne du tirage
 sCouv::sCouv(int zn, stTiragesDef *pDef):p_conf(pDef),p_deb(-1),p_fin(-1)
 {
     int maxItems = p_conf->limites[zn].max;
@@ -70,7 +71,14 @@ RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
                    stTiragesDef *pDef,QMdiArea *visuel, QTabWidget *tab_Top):p_db(db),
     p_stRefTirages(stFiltreTirages),p_conf(pDef),p_affiche(visuel),p_reponse(tab_Top)
 {
-    maRef = LstCritereGroupement(zn,p_conf);
+    // Nombre de zone composant un tirage (2: 1 zone boules + 1 zone etoiles)
+    int nb_zones = p_conf->nb_zone;
+
+    // Creation des variables resultats
+    maRef = new QStringList*[nb_zones];
+
+    // Pour chacune des zones effectuer un calcul de couverture
+    maRef[0] = LstCritereGroupement(zn,p_conf);
 
     RechercheCouverture(&p_MaListe, zn);
 
@@ -136,8 +144,9 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
 QTableView *RefEtude::tbForBaseLigne()
 {
     QTableView *qtv_tmp = new QTableView;
+    int zn = 0;
 
-    int nbcol = maRef[1].size();
+    int nbcol = maRef[zn][1].size();
     QStandardItemModel * tmpStdItem =  new QStandardItemModel(1,nbcol);
     p_qsim_3 = tmpStdItem;
 
@@ -145,7 +154,7 @@ QTableView *RefEtude::tbForBaseLigne()
 
     for(int i=0;i<nbcol;i++)
     {
-        tmpStdItem->setHeaderData(i,Qt::Horizontal,maRef[1].at(i));
+        tmpStdItem->setHeaderData(i,Qt::Horizontal,maRef[zn][1].at(i));
         QStandardItem *item = new QStandardItem();
         tmpStdItem->setItem(0,i,item);
         qtv_tmp->setColumnWidth(i,LCELL);
@@ -414,7 +423,70 @@ QTableView *RefEtude::tbForBaseEcart()
     return qtv_tmp;
 }
 
-QGridLayout *RefEtude::MonLayout_TabCouvertures()
+QWidget *RefEtude::CouvMois_OglGroup()
+{
+    QWidget * qw_retour = new QWidget;
+    QGridLayout *frm_tmp = new QGridLayout;
+    QTabWidget *tab_Top = new QTabWidget;
+
+    QString ongNames[]={"b","e"};
+    int maxOnglets = sizeof(ongNames)/sizeof(QString);
+
+    QWidget **wid_ForTop = new QWidget*[maxOnglets];
+    QGridLayout **dsgOnglet = new QGridLayout * [maxOnglets];
+
+    QGridLayout * (RefEtude::*ptrFunc[])()={
+            &RefEtude::MonLayout_TabMois_boules,
+            &RefEtude::MonLayout_TabMois_etoiles};
+
+    for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
+    {
+        wid_ForTop[id_Onglet]= new QWidget;
+        tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
+
+        dsgOnglet[id_Onglet]=(this->*ptrFunc[id_Onglet])();
+        wid_ForTop[id_Onglet]->setLayout(dsgOnglet[id_Onglet]);
+    }
+
+    frm_tmp->addWidget(tab_Top);
+    qw_retour->setLayout(frm_tmp);
+
+    return qw_retour;
+}
+
+// Couverture Groupe d'onglet pour boules et etoiles
+QWidget *RefEtude::CouvOglGroup()
+{
+    QWidget * qw_retour = new QWidget;
+    QGridLayout *frm_tmp = new QGridLayout;
+    QTabWidget *tab_Top = new QTabWidget;
+
+    QString ongNames[]={"b","e"};
+    int maxOnglets = sizeof(ongNames)/sizeof(QString);
+
+    QWidget **wid_ForTop = new QWidget*[maxOnglets];
+    QGridLayout **dsgOnglet = new QGridLayout * [maxOnglets];
+
+    QGridLayout * (RefEtude::*ptrFunc[])()={
+            &RefEtude::MonLayout_TabCouvertures_boules,
+            &RefEtude::MonLayout_TabCouvertures_etoiles};
+
+    for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
+    {
+        wid_ForTop[id_Onglet]= new QWidget;
+        tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
+
+        dsgOnglet[id_Onglet]=(this->*ptrFunc[id_Onglet])();
+        wid_ForTop[id_Onglet]->setLayout(dsgOnglet[id_Onglet]);
+    }
+
+    frm_tmp->addWidget(tab_Top);
+    qw_retour->setLayout(frm_tmp);
+
+    return qw_retour;
+}
+
+QGridLayout *RefEtude::MonLayout_TabCouvertures_boules()
 {
     QGridLayout *returnLayout = new QGridLayout;
 
@@ -427,6 +499,24 @@ QGridLayout *RefEtude::MonLayout_TabCouvertures()
         returnLayout->addWidget(tbv_tmp1,0,0);
         returnLayout->addWidget(tbv_tmp2,0,1);
     }
+
+    return returnLayout;
+}
+
+QGridLayout *RefEtude::MonLayout_TabCouvertures_etoiles()
+{
+    QGridLayout *returnLayout = new QGridLayout;
+    return returnLayout;
+}
+
+QGridLayout *RefEtude::MonLayout_TabCouvertures()
+{
+    QGridLayout *returnLayout = new QGridLayout;
+
+
+    QWidget *tbv_tmp1 = CouvOglGroup();
+    returnLayout->addWidget(tbv_tmp1,0,0);
+
 
     return returnLayout;
 }
@@ -537,6 +627,17 @@ QGridLayout *RefEtude::MonLayout_TabMois()
 {
     QGridLayout *returnLayout = new QGridLayout;
 
+    QWidget *tbv_tmp1 = CouvMois_OglGroup();
+    returnLayout->addWidget(tbv_tmp1,0,0);
+
+    return returnLayout;
+}
+
+
+QGridLayout *RefEtude::MonLayout_TabMois_boules()
+{
+    QGridLayout *returnLayout = new QGridLayout;
+
     int zn = 0;
     int nbCouv = p_MaListe.size();
     if(nbCouv){
@@ -547,6 +648,13 @@ QGridLayout *RefEtude::MonLayout_TabMois()
         returnLayout->addLayout(gl_1,0,0);
         returnLayout->addLayout(gl_2,0,1);
     }
+
+    return returnLayout;
+}
+
+QGridLayout *RefEtude::MonLayout_TabMois_etoiles()
+{
+    QGridLayout *returnLayout = new QGridLayout;
 
     return returnLayout;
 }
@@ -889,6 +997,7 @@ void RefEtude::slot_ShowBoule_2(const QModelIndex & index)
 void RefEtude::slot_ShowDetails(const QModelIndex & index)
 {
     static int sortir = 0;
+    int zn = 0; // A remplacer par detection du tableview ayant recut le click
 
     // recuperer la ligne de la table
     int lgn = index.model()->index(index.row(),0).data().toInt();
@@ -905,12 +1014,12 @@ void RefEtude::slot_ShowDetails(const QModelIndex & index)
     QSqlQuery query;
     QStandardItemModel *tmpStdItem = p_qsim_3;
 
-    int nbCol = maRef[0].size();
+    int nbCol = maRef[zn][0].size();
     bool status = true;
     for(int i=0; (i< nbCol) && (status == true);i++)
     {
         // Creer Requete pour compter items
-        QString msg1 = maRef[0].at(i);
+        QString msg1 = maRef[zn][0].at(i);
         QString sqlReq = "";
         sqlReq = sql_ComptePourUnTirage(lgn,p_stRefTirages,msg1);
 
