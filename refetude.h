@@ -84,7 +84,7 @@ private:
     GererBase *p_db;
     QString p_stRefTirages;
     stTiragesDef *p_conf;
-    QList<sCouv *> p_MaListe;
+    QList<sCouv *> p_MaListe[2];
     int **p_couvBase;
 
     QTableView *p_tbv_0;

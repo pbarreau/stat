@@ -80,7 +80,7 @@ RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
     // Pour chacune des zones effectuer un calcul de couverture
     maRef[0] = LstCritereGroupement(zn,p_conf);
 
-    RechercheCouverture(&p_MaListe, zn);
+    RechercheCouverture(&p_MaListe[zn], zn);
 
 #if 0
     QWidget *uneReponse = CreationOnglets();
@@ -491,10 +491,10 @@ QGridLayout *RefEtude::MonLayout_TabCouvertures_boules()
     QGridLayout *returnLayout = new QGridLayout;
 
     int zn = 0;
-    int nbCouv = p_MaListe.size();
+    int nbCouv = p_MaListe[zn].size();
     if(nbCouv){
         ;// Association recherche avec qttable !
-        QTableView *tbv_tmp1 = TablePourLstcouv(&p_MaListe, zn);
+        QTableView *tbv_tmp1 = TablePourLstcouv(&p_MaListe[zn], zn);
         QTableView *tbv_tmp2 = DetailsLstcouv(zn);
         returnLayout->addWidget(tbv_tmp1,0,0);
         returnLayout->addWidget(tbv_tmp2,0,1);
@@ -639,11 +639,11 @@ QGridLayout *RefEtude::MonLayout_TabMois_boules()
     QGridLayout *returnLayout = new QGridLayout;
 
     int zn = 0;
-    int nbCouv = p_MaListe.size();
+    int nbCouv = p_MaListe[zn].size();
     if(nbCouv){
 
         QGridLayout *gl_1 = MonLayout_TabMois_1(zn);
-        QGridLayout *gl_2 = MonLayout_TabMois_2(&p_MaListe,zn);
+        QGridLayout *gl_2 = MonLayout_TabMois_2(&p_MaListe[zn],zn);
 
         returnLayout->addLayout(gl_1,0,0);
         returnLayout->addLayout(gl_2,0,1);
@@ -819,9 +819,9 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
     QString headName = vCol.toString();
     QSqlQuery sql;
     bool status = false;
-
-    int deb = p_MaListe.at(p_MaListe.size()-col-1)->p_deb;
-    int fin = p_MaListe.at(p_MaListe.size()-col-1)->p_fin;
+    int zn = 0;
+    int deb = p_MaListe[zn].at(p_MaListe[zn].size()-col-1)->p_deb;
+    int fin = p_MaListe[zn].at(p_MaListe[zn].size()-col-1)->p_fin;
 
     if (fin <0)
         fin=1;
@@ -913,6 +913,7 @@ void RefEtude::slot_Couverture(const QModelIndex & index)
 {
     int col = index.column();
     static int previous = -1;
+    int zn = 0;
 
     QItemSelectionModel *selectionModel = p_tbv_1->selectionModel();
     if(selectionModel->selectedIndexes().size() == 0)
@@ -930,12 +931,11 @@ void RefEtude::slot_Couverture(const QModelIndex & index)
         {
             return;
         }
-        int nbItem = p_MaListe.size();
-        sCouv *pUndetails = p_MaListe.at(nbItem-1-col);
+        int nbItem = p_MaListe[zn].size();
+        sCouv *pUndetails = p_MaListe[zn].at(nbItem-1-col);
 
         p_tbv_2->sortByColumn(0,Qt::AscendingOrder);
 
-        int zn = 0;
         int nbBoules = p_conf->limites[zn].max;
         for(int i=0;i<nbBoules;i++)
         {
@@ -956,13 +956,15 @@ void RefEtude::slot_Couverture(const QModelIndex & index)
 void RefEtude::slot_TotalCouverture(int index)
 {
     int nb_lgn = p_conf->limites[0].max;
+    int zn = 0;
+
     for(int i=1;i<=12;i++)
     {
         // Remplir resultat
         for(int pos=0;pos <nb_lgn;pos++)
         {
             QStandardItem *item = p_qsim_4->item(pos,i);
-            int nval = p_MaListe.at(index-1)->p_TotalMois[pos][i-1];
+            int nval = p_MaListe[zn].at(index-1)->p_TotalMois[pos][i-1];
             item->setData(nval,Qt::DisplayRole);
             p_qsim_4->setItem(pos,i,item);
         }
@@ -1284,7 +1286,7 @@ QGridLayout *RefEtude::MonLayout_TabEcarts()
 void RefEtude::RemplirTableauEcart(int zn, QStandardItemModel *sim_tmp)
 {
     // Montrer les boules "non" encore sorties
-    int totCouv = p_MaListe.size();
+    int totCouv = p_MaListe[zn].size();
 
     if(!totCouv)
         return;
@@ -1292,12 +1294,12 @@ void RefEtude::RemplirTableauEcart(int zn, QStandardItemModel *sim_tmp)
     int nbBoule = p_conf->limites[zn].max;
     double *Tot7B = new double[nbBoule];
 
-    sCouv *curCouv = p_MaListe.last();
+    sCouv *curCouv = p_MaListe[zn].last();
     sCouv *PrvCouv = NULL;
     int memo_last_boule = 0;
 
     if(totCouv >1){
-        PrvCouv = p_MaListe.at(totCouv-2);
+        PrvCouv = p_MaListe[zn].at(totCouv-2);
         memo_last_boule = PrvCouv->p_val[nbBoule-1][1];
     }
 
