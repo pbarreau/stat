@@ -106,12 +106,8 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     DoTirages();
     DoComptageTotal();
 
-    // Connection du click dans le tableau ecart vers le tableau total
 
     disposition->addWidget(ptabTop,1,0,1,2,Qt::AlignLeft|Qt::AlignTop);
-
-    //MonLayout_SyntheseTotalGroupement(0);
-    //DoBloc3();
 }
 
 #if 1

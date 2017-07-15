@@ -11,6 +11,7 @@
 
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QToolTip>
 
 #include <QSqlQueryModel>
 #include <QTableView>
@@ -122,7 +123,9 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
 
     QTableView *tbv_tmp0 = tbForBaseLigne();
     QTableView *tbv_tmp1 = tbForBaseRef();
-    QTableView *tbv_tmp2 = tbForBaseEcart();
+
+    QWidget *tbv_tmp2 = EcartOnglets();
+
     lay_return->addWidget(tbv_tmp0,0,0,1,3,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(tbv_tmp1,1,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(tbv_tmp2,1,1,Qt::AlignLeft|Qt::AlignTop);
@@ -186,7 +189,7 @@ void RefEtude::slot_Type_G(const QModelIndex & index)
             +headName+","+QString::number(val)+")";
 
     stCurDemande *etude = new stCurDemande;
-QString *st_tmp1 = new QString;
+    QString *st_tmp1 = new QString;
     *st_tmp1 = C_TousLesTirages;
     etude->origine = Tableau1;
     QItemSelectionModel *selectionModel = p_tbv_3->selectionModel();
@@ -200,7 +203,7 @@ QString *st_tmp1 = new QString;
     etude->st_jourDef = new QString;
     *(etude->st_jourDef) = CompteJourTirage(p_conf);
 
-etude->st_TablePere = REF_BASE;
+    etude->st_TablePere = REF_BASE;
     // Nouvelle de fenetre de detail de cette selection
     SyntheseDetails *unDetail = new SyntheseDetails(etude,p_affiche,p_reponse);
     connect( p_reponse, SIGNAL(tabCloseRequested(int)) ,
@@ -273,7 +276,7 @@ QTableView *RefEtude::GetListeTirages(void)
 
 QTableView *RefEtude::GetLesEcarts(void)
 {
- return    p_tbv_4;
+    return    p_tbv_4;
 }
 
 void RefEtude::GetInfoTableau(int onglet, QTableView **pTbl, QStandardItemModel **pSim, QSortFilterProxyModel **pSfpm)
@@ -286,6 +289,60 @@ void RefEtude::GetInfoTableau(int onglet, QTableView **pTbl, QStandardItemModel 
     *pSim = p_simResu;
     *pSfpm = NULL;
 }
+
+QWidget *RefEtude::EcartOnglets()
+{
+    QWidget * qw_retour = new QWidget;
+    QGridLayout *frm_tmp = new QGridLayout;
+    QTabWidget *tab_Top = new QTabWidget;
+
+    QString ongNames[]={"b","e"};
+    int maxOnglets = sizeof(ongNames)/sizeof(QString);
+
+    QWidget **wid_ForTop = new QWidget*[maxOnglets];
+    QGridLayout **dsgOnglet = new QGridLayout * [maxOnglets];
+
+    QGridLayout * (RefEtude::*ptrFunc[])()={
+            &RefEtude::MonLayout_TabEcart_2,
+            &RefEtude::MonLayout_TabEcart_3};
+
+    for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
+    {
+        wid_ForTop[id_Onglet]= new QWidget;
+        tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
+
+        dsgOnglet[id_Onglet]=(this->*ptrFunc[id_Onglet])();
+        wid_ForTop[id_Onglet]->setLayout(dsgOnglet[id_Onglet]);
+    }
+
+    frm_tmp->addWidget(tab_Top);
+    qw_retour->setLayout(frm_tmp);
+
+    return qw_retour;
+}
+
+QGridLayout *RefEtude::MonLayout_TabEcart_2()
+{
+    QGridLayout *returnLayout = new QGridLayout;
+
+    // Association recherche avec qttable !
+    QTableView *tbv_tmp1 = tbForBaseEcart();
+    returnLayout->addWidget(tbv_tmp1,0,0);
+
+    return returnLayout;
+}
+
+QGridLayout *RefEtude::MonLayout_TabEcart_3()
+{
+    QGridLayout *returnLayout = new QGridLayout;
+
+    // Association recherche avec qttable !
+    //QTableView *tbv_tmp1 = tbForBaseEcart;
+    //returnLayout->addWidget(tbv_tmp1,0,0);
+
+    return returnLayout;
+}
+
 QTableView *RefEtude::tbForBaseEcart()
 {
     QTableView *qtv_tmp = new QTableView;
@@ -340,15 +397,19 @@ QTableView *RefEtude::tbForBaseEcart()
     col = p_simResu->columnCount();
     lgn = p_simResu->rowCount();
 
-     p_tbv_4 = qtv_tmp;
+    p_tbv_4 = qtv_tmp;
 
-     // click sur la zone reservee au boules du tirage
-     connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
-              this, SLOT( slot_ShowBoule( QModelIndex) ) );
+    // click sur la zone reservee au boules du tirage
+    connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
+             this, SLOT( slot_ShowBoule( QModelIndex) ) );
 
 
-     connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
-              this, SLOT( slot_ShowBoule_2( QModelIndex) ) );
+    connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
+             this, SLOT( slot_ShowBoule_2( QModelIndex) ) );
+
+    qtv_tmp->setMouseTracking(true);
+    connect(qtv_tmp,
+            SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 
     return qtv_tmp;
 }
@@ -655,7 +716,7 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
     int fin = p_MaListe.at(p_MaListe.size()-col-1)->p_fin;
 
     if (fin <0)
-            fin=1;
+        fin=1;
 
     QString selBase = "select * from ("+
             p_stRefTirages.remove(";")
@@ -704,6 +765,34 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
     connect( p_reponse, SIGNAL(tabCloseRequested(int)) ,
              unDetail, SLOT(slot_FermeLaRecherche(int) ) );
 
+}
+
+void RefEtude::slot_AideToolTip(const QModelIndex & index)
+{
+    int r,g,b,a;
+    int val = index.model()->index(index.row(),0).data().toInt();
+    QStandardItem *item1 = p_simResu->item(index.row(),index.column());
+    QBrush colcell = item1->background();
+    QString msg;
+    msg = "Boule " + QString::number(val)+"\n";
+    colcell.color().getRgb(&r,&g,&b,&a);
+
+    if(colcell == Qt::green)
+    {
+        msg = msg  + "pas encore sortie.";
+    }
+
+    if((r==255) && (g==156) && (b==86))
+    {
+        msg = msg + QString("Ec proche de Ep");
+    }
+    else
+    {
+        msg = msg + QString("r=%1,g=%2,b=%3,a=%4").arg(r).arg(g).arg(b).arg(a);
+    }
+
+
+    QToolTip::showText (QCursor::pos(), msg);
 }
 
 void RefEtude::slot_Couverture(const QModelIndex & index)
@@ -1022,7 +1111,7 @@ QGridLayout *RefEtude::MonLayout_TabEcarts()
     int nb_lgn = p_conf->limites[zn].max;
     QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,5);
 
-    QString colName[]={"B","Ec","Ep","Em","EM"};
+    QString colName[]={"R","Ec","Ep","Em","EM"};
     qtv_tmp->setModel(tmpStdItem);
 
     int nbcol = sizeof(colName)/sizeof(QString);
@@ -1041,6 +1130,7 @@ QGridLayout *RefEtude::MonLayout_TabEcarts()
             qtv_tmp->setColumnWidth(i,LCELL);
         }
     }
+
 
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
@@ -1069,6 +1159,9 @@ QGridLayout *RefEtude::MonLayout_TabEcarts()
     col = p_simResu->columnCount();
     lgn = p_simResu->rowCount();
 
+    qtv_tmp->setMouseTracking(true);
+    connect(qtv_tmp,
+            SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 
     return returnLayout;
 }
@@ -1128,7 +1221,6 @@ void RefEtude::RemplirTableauEcart(int zn, QStandardItemModel *sim_tmp)
 
     E++;
 
-
 }
 
 void RefEtude::MontrerBoulesNonSorties(int zn, QStandardItemModel *sim_tmp, sCouv *curCouv,int memo_last_boule)
@@ -1154,7 +1246,7 @@ void RefEtude::MontrerBoulesNonSorties(int zn, QStandardItemModel *sim_tmp, sCou
             {
                 // http://stackoverflow.com/questions/8571059/how-to-generate-new-qcolors-that-are-different
                 // http://goffgrafix.com/pantone-rgb-800.php
-                unecouleur.setRgb(255,127,30);
+                unecouleur.setRgb(255,127,30); // Orange
                 macouleur.setColor(unecouleur);
                 macouleur.setStyle(Qt::SolidPattern);
             }
@@ -1377,7 +1469,7 @@ void RefEtude::CouvMontrerProbable_v3(int i,double Emg, QStandardItemModel *dest
 {
 
     double rayon = 1.5;
-    const QColor fond[]={QColor(219,188,255,255)
+    const QColor fond[]={QColor(219,188,255,255) // Violet
                         };
 
     double Ec = dest->item(i-1,1)->data(Qt::DisplayRole).toDouble();

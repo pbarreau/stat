@@ -39,6 +39,8 @@ private:
     QGridLayout *MonLayout_TabTirages();
     QGridLayout *MonLayout_TabCouvertures();
     QGridLayout *MonLayout_TabEcarts();
+    QGridLayout *MonLayout_TabEcart_2();
+    QGridLayout *MonLayout_TabEcart_3();
     QGridLayout *MonLayout_TabMois();
     QGridLayout *MonLayout_TabMois_1(int zn);
     QGridLayout *MonLayout_TabMois_2(QList<sCouv *> *lstCouv,int zn);
@@ -53,6 +55,8 @@ private:
     QTableView * TableMoisBase(int zn);
     QTableView * TableMoisCouv(int zn);
 
+    QWidget *EcartOnglets();
+
     void RemplirTableauEcart(int zn,QStandardItemModel *sim_tmp);
     void MontrerBoulesNonSorties(int zn, QStandardItemModel *sim_tmp, sCouv *curCouv, int memo_last_boule);
     double DistributionSortieDeBoule_v2(int zn, int boule, QStandardItemModel *modele);
@@ -60,6 +64,7 @@ private:
     void CouvMontrerProbable_v3(int i,double Emg, QStandardItemModel *dest);
 
 public slots:
+    void slot_AideToolTip(const QModelIndex & index);
     void slot_Couverture(const QModelIndex & index);
     void slot_ShowDetails(const QModelIndex & index);
     void slot_ShowBoule(const QModelIndex & index);
