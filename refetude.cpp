@@ -865,6 +865,12 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
     etude->st_Ensemble_1 = new QString;
     *(etude->st_Ensemble_1)=selBase;
     etude->st_LDT_Filtre = new QString;
+
+    //QString *st_tmp1 = new QString;
+    //*st_tmp1 = C_TousLesTirages;
+    etude->st_LDT_Depart = new QString;
+    *(etude->st_LDT_Depart) = C_TousLesTirages;
+
     etude->st_jourDef = new QString;
     *(etude->st_jourDef) = CompteJourTirage(p_conf);
 
