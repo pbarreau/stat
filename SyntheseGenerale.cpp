@@ -650,6 +650,8 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 // Ce tableau comporte 2 elements
 // Element 0 liste des requetes construites
 // Element 1 Liste des titres assosies a la requete
+// En fonction de la zone a etudier les requetes sont adaptees
+// pour integrer le nombre maxi de boules a prendre en compte
 QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
 {
     QStringList *tmp = new QStringList [2];

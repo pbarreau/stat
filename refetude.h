@@ -19,7 +19,7 @@ private:
 
 public:
     stTiragesDef *p_conf;
-    int **p_TotalMois[2];
+    int **p_TotalMois;
     QList<bool> *p_trackingBoule;
     int p_deb;
     int p_fin;
@@ -87,21 +87,23 @@ private:
     GererBase *p_db;
     QString p_stRefTirages;
     stTiragesDef *p_conf;
-    QList<sCouv *> p_MaListe[2];
-    int **p_couvBase[2];
+    QList<sCouv *> p_ListeDesCouverturesSurZnId[2];
+    int ***p_couvBase;
 
     QTableView *p_tbv_0;
-    QTableView *p_tbv_1;
-    QTableView *p_tbv_2;
+    QTableView *p_tbv_1[2];
+    QTableView *p_tbv_2[2];
     QTableView * p_tbv_3;
     QTableView * p_tbv_4;
 
-    QStandardItemModel *p_qsim_2;
+    QStandardItemModel *p_qsim_2[2];
     QStandardItemModel *p_qsim_3;
     QStandardItemModel *p_qsim_4;
-    QStringList **maRef;
+    QStringList **codeSqlDeRegroupementSurZnId;
     QMdiArea *p_affiche;
     QTabWidget *p_reponse;
+    QTabWidget *tabTrackCouverture;
+
 };
 
 #endif // REFETUDE_H

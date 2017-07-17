@@ -25,24 +25,24 @@
 QStandardItemModel *RefEtude::p_simResu = new QStandardItemModel;
 
 // argument de p_deb et p_fin contient id de la ligne du tirage
-sCouv::sCouv(int zn, stTiragesDef *pDef):p_conf(pDef),p_deb(-1),p_fin(-1)
+sCouv::sCouv(int zn, stTiragesDef *pDef):zoneEtudie(zn),p_conf(pDef),p_deb(-1),p_fin(-1)
 {
     int maxItems = p_conf->limites[zn].max;
     p_val = new int *[maxItems];
-    p_TotalMois[zn] = new int *[maxItems];
+    p_TotalMois = new int *[maxItems];
     p_trackingBoule = new QList<bool> [maxItems];
 
 
     for(int i=0;i<maxItems;i++)
     {
-        p_val[i]=new int[3];
-        if(p_val[i])
+        p_val[i]=new int[3]; // Colonne (A)rrivee), (B)oule), (T)otal
+        if(p_val[i]) // Allocation memoire OK
             memset(p_val[i],0,3*sizeof(int));
 
         //mettre a zero compteur des mois
-        p_TotalMois[zn][i] = new int[12];
-        if(p_TotalMois[zn][i])
-            memset(p_TotalMois[zn][i],0,12*sizeof(int));
+        p_TotalMois[i] = new int[12];
+        if(p_TotalMois[i])
+            memset(p_TotalMois[i],0,12*sizeof(int));
     }
 }
 
@@ -56,9 +56,9 @@ sCouv::~sCouv()
 
     for(int i=0;i<12;i++)
     {
-        delete p_TotalMois[zoneEtudie][i];
+        delete p_TotalMois[i];
     }
-    delete p_TotalMois[zoneEtudie];
+    delete p_TotalMois;
 
 }
 
@@ -74,14 +74,16 @@ RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
     // Nombre de zone composant un tirage (2: 1 zone boules + 1 zone etoiles)
     int nb_zones = p_conf->nb_zone;
 
-    // Creation des variables resultats
-    maRef = new QStringList*[nb_zones];
+    // Tableau des Requetes sql a appliquer + titre colonne du resultat
+    // Par zone
+    codeSqlDeRegroupementSurZnId = new QStringList*[nb_zones];
+    p_couvBase = new int **[nb_zones];
 
     for(int i = 0; i< nb_zones; i++)
     {
         // Pour chacune des zones effectuer un calcul de couverture
-        maRef[i] = LstCritereGroupement(i,p_conf);
-        RechercheCouverture(&p_MaListe[i], i);
+        codeSqlDeRegroupementSurZnId[i] = LstCritereGroupement(i,p_conf);
+        RechercheCouverture(&p_ListeDesCouverturesSurZnId[i], i);
     }
 
 #if 0
@@ -148,7 +150,7 @@ QTableView *RefEtude::tbForBaseLigne()
     QTableView *qtv_tmp = new QTableView;
     int zn = 0;
 
-    int nbcol = maRef[zn][1].size();
+    int nbcol = codeSqlDeRegroupementSurZnId[zn][1].size();
     QStandardItemModel * tmpStdItem =  new QStandardItemModel(1,nbcol);
     p_qsim_3 = tmpStdItem;
 
@@ -156,7 +158,7 @@ QTableView *RefEtude::tbForBaseLigne()
 
     for(int i=0;i<nbcol;i++)
     {
-        tmpStdItem->setHeaderData(i,Qt::Horizontal,maRef[zn][1].at(i));
+        tmpStdItem->setHeaderData(i,Qt::Horizontal,codeSqlDeRegroupementSurZnId[zn][1].at(i));
         QStandardItem *item = new QStandardItem();
         tmpStdItem->setItem(0,i,item);
         qtv_tmp->setColumnWidth(i,LCELL);
@@ -462,6 +464,7 @@ QWidget *RefEtude::CouvOglGroup()
     QWidget * qw_retour = new QWidget;
     QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
+    tabTrackCouverture = tab_Top;
 
     QString ongNames[]={"b","e"};
     int maxOnglets = sizeof(ongNames)/sizeof(QString);
@@ -493,10 +496,10 @@ QGridLayout *RefEtude::MonLayout_TabCouvertures_boules()
     QGridLayout *returnLayout = new QGridLayout;
 
     int zn = 0;
-    int nbCouv = p_MaListe[zn].size();
+    int nbCouv = p_ListeDesCouverturesSurZnId[zn].size();
     if(nbCouv){
         ;// Association recherche avec qttable !
-        QTableView *tbv_tmp1 = TablePourLstcouv(&p_MaListe[zn], zn);
+        QTableView *tbv_tmp1 = TablePourLstcouv(&p_ListeDesCouverturesSurZnId[zn], zn);
         QTableView *tbv_tmp2 = DetailsLstcouv(zn);
         returnLayout->addWidget(tbv_tmp1,0,0);
         returnLayout->addWidget(tbv_tmp2,0,1);
@@ -510,10 +513,10 @@ QGridLayout *RefEtude::MonLayout_TabCouvertures_etoiles()
     QGridLayout *returnLayout = new QGridLayout;
 
     int zn = 1;
-    int nbCouv = p_MaListe[zn].size();
+    int nbCouv = p_ListeDesCouverturesSurZnId[zn].size();
     if(nbCouv){
         ;// Association recherche avec qttable !
-        QTableView *tbv_tmp1 = TablePourLstcouv(&p_MaListe[zn], zn);
+        QTableView *tbv_tmp1 = TablePourLstcouv(&p_ListeDesCouverturesSurZnId[zn], zn);
         QTableView *tbv_tmp2 = DetailsLstcouv(zn);
         returnLayout->addWidget(tbv_tmp1,0,0);
         returnLayout->addWidget(tbv_tmp2,0,1);
@@ -578,8 +581,8 @@ QTableView * RefEtude::DetailsLstcouv(int zn)
     qtv_tmp->setFixedSize(XLenTir/3,YLenTir);
     qtv_tmp->setEnabled(false);
 
-    p_tbv_2 = qtv_tmp;
-    p_qsim_2 = tmpStdItem;
+    p_tbv_2[zn] = qtv_tmp;
+    p_qsim_2[zn] = tmpStdItem;
     return qtv_tmp;
 }
 
@@ -621,16 +624,18 @@ QTableView * RefEtude::TablePourLstcouv(QList<sCouv *> *lstCouv,int zn)
     // Taille tableau
     qtv_tmp->setFixedSize((XLenTir)*2/3,YLenTir);
 
+    p_tbv_1[zn] = qtv_tmp;
+
     // simple click dans fenetre  pour selectionner boule
-    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+    connect( p_tbv_1[zn], SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_Couverture( QModelIndex) ) );
 
     // double click dans fenetre  pour selectionner boule
-    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+    connect( p_tbv_1[zn], SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_SelectPartBase( QModelIndex) ) );
 
 
-    p_tbv_1 = qtv_tmp;
+    //p_tbv_1[zn] = qtv_tmp;
 
 
     return qtv_tmp;
@@ -652,11 +657,11 @@ QGridLayout *RefEtude::MonLayout_TabMois_boules()
     QGridLayout *returnLayout = new QGridLayout;
 
     int zn = 0;
-    int nbCouv = p_MaListe[zn].size();
+    int nbCouv = p_ListeDesCouverturesSurZnId[zn].size();
     if(nbCouv){
 
         QGridLayout *gl_1 = MonLayout_TabMois_1(zn);
-        QGridLayout *gl_2 = MonLayout_TabMois_2(&p_MaListe[zn],zn);
+        QGridLayout *gl_2 = MonLayout_TabMois_2(&p_ListeDesCouverturesSurZnId[zn],zn);
 
         returnLayout->addLayout(gl_1,0,0);
         returnLayout->addLayout(gl_2,0,1);
@@ -833,8 +838,8 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
     QSqlQuery sql;
     bool status = false;
     int zn = 0;
-    int deb = p_MaListe[zn].at(p_MaListe[zn].size()-col-1)->p_deb;
-    int fin = p_MaListe[zn].at(p_MaListe[zn].size()-col-1)->p_fin;
+    int deb = p_ListeDesCouverturesSurZnId[zn].at(p_ListeDesCouverturesSurZnId[zn].size()-col-1)->p_deb;
+    int fin = p_ListeDesCouverturesSurZnId[zn].at(p_ListeDesCouverturesSurZnId[zn].size()-col-1)->p_fin;
 
     if (fin <0)
         fin=1;
@@ -925,43 +930,45 @@ void RefEtude::slot_AideToolTip(const QModelIndex & index)
 void RefEtude::slot_Couverture(const QModelIndex & index)
 {
     int col = index.column();
-    static int previous = -1;
-    int zn = 0;
+    static int previous[2] ={-1,-1};
 
-    QItemSelectionModel *selectionModel = p_tbv_1->selectionModel();
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    int zn = tabTrackCouverture->currentIndex();
+
+    QItemSelectionModel *selectionModel = view->selectionModel();
     if(selectionModel->selectedIndexes().size() == 0)
     {
-        p_tbv_2->setEnabled(false);
-        previous = -1;
+        p_tbv_2[zn]->setEnabled(false);
+        previous[zn] = -1;
     }
     else
     {
-        if(previous != col)
+        if(previous[zn] != col)
         {
-            previous = col;
+            previous[zn] = col;
         }
         else
         {
             return;
         }
-        int nbItem = p_MaListe[zn].size();
-        sCouv *pUndetails = p_MaListe[zn].at(nbItem-1-col);
+        int nbItem = p_ListeDesCouverturesSurZnId[zn].size();
+        sCouv *pUndetails = p_ListeDesCouverturesSurZnId[zn].at(nbItem-1-col);
 
-        p_tbv_2->sortByColumn(0,Qt::AscendingOrder);
+        p_tbv_2[zn]->sortByColumn(0,Qt::AscendingOrder);
 
         int nbBoules = p_conf->limites[zn].max;
         for(int i=0;i<nbBoules;i++)
         {
-            QStandardItem * item_1 = p_qsim_2->item(i,1);
-            QStandardItem * item_2 = p_qsim_2->item(i,2);
+            QStandardItem * item_1 = p_qsim_2[zn]->item(i,1);
+            QStandardItem * item_2 = p_qsim_2[zn]->item(i,2);
 
             item_1->setData(pUndetails->p_val[i][1],Qt::DisplayRole);
             item_2->setData(pUndetails->p_val[i][2],Qt::DisplayRole);
 
-            p_qsim_2->setItem(i,1,item_1);
-            p_qsim_2->setItem(i,2,item_2);
+            p_qsim_2[zn]->setItem(i,1,item_1);
+            p_qsim_2[zn]->setItem(i,2,item_2);
         }
-        p_tbv_2->setEnabled(true);
+        p_tbv_2[zn]->setEnabled(true);
     }
 
 }
@@ -977,7 +984,7 @@ void RefEtude::slot_TotalCouverture(int index)
         for(int pos=0;pos <nb_lgn;pos++)
         {
             QStandardItem *item = p_qsim_4->item(pos,i);
-            int nval = p_MaListe[zn].at(index-1)->p_TotalMois[zn][pos][i-1];
+            int nval = p_ListeDesCouverturesSurZnId[zn].at(index-1)->p_TotalMois[pos][i-1];
             item->setData(nval,Qt::DisplayRole);
             p_qsim_4->setItem(pos,i,item);
         }
@@ -1035,12 +1042,12 @@ void RefEtude::slot_ShowDetails(const QModelIndex & index)
     QSqlQuery query;
     QStandardItemModel *tmpStdItem = p_qsim_3;
 
-    int nbCol = maRef[zn][0].size();
+    int nbCol = codeSqlDeRegroupementSurZnId[zn][0].size();
     bool status = true;
     for(int i=0; (i< nbCol) && (status == true);i++)
     {
         // Creer Requete pour compter items
-        QString msg1 = maRef[zn][0].at(i);
+        QString msg1 = codeSqlDeRegroupementSurZnId[zn][0].at(i);
         QString sqlReq = "";
         sqlReq = sql_ComptePourUnTirage(lgn,p_stRefTirages,msg1);
 
@@ -1097,8 +1104,8 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
                 lstCouv->append(tmpCouv);
             }
 
-            QSqlRecord rec  = query.record();
-            int bId = 0;
+            QSqlRecord rec  = query.record(); // Tirage a etudier
+            int bId = 0; // Indice de la boule a regarder dans la zone concernee
             uneCouvDePlus = AnalysePourCouverture(rec,&bId,zn,lstCouv->last());
 
             // Une couverture c'est produite en cours d'analyse du tirage
@@ -1131,7 +1138,7 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
                 for(int k = 0; k<12;k++)
                 {
                     p_couvBase[zn][j][k] = p_couvBase[zn][j][k]
-                            + lstCouv->at(i)->p_TotalMois[zn][j][k];
+                            + lstCouv->at(i)->p_TotalMois[j][k];
                 }
             }
         }
@@ -1163,20 +1170,21 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
     for(int i = 0; i<= zn; i++)
     {
         if(i){
-        delta = delta + p_conf->nbElmZone[zn-1];
+            delta = delta + p_conf->nbElmZone[zn-1];
         }
     }
 
     for(int bId=(*bIdStart);bId<memo->p_conf->nbElmZone[zn];bId++)
     {
-        // recuperer une boule
+        // recuperer la boule
         b_val = unTirage.value(5+delta+bId).toInt();
 
         if(zn == 1)
         {
-            int a =2;
+            int a =2; // Pour mettre un point d'arret
             a++;
         }
+
         // une couverture complete ?
         if(total <= memo->p_conf->limites[zn].max)
         {
@@ -1186,9 +1194,9 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
             st_date = unTirage.value(3).toString();
             QStringList tmpSplit = st_date.split("/");
             int leMois = tmpSplit.at(1).toInt() -1;
-            memo->p_TotalMois[zn][b_val-1][leMois]++;
+            memo->p_TotalMois[b_val-1][leMois]++;
 
-            // memoriser sequencement on/off de chaque boule
+            // memoriser sequencement on/off apparition de chaque boule
             for(int i =0; i< max_boule;i++)
             {
                 bool bouleLevel = false;
@@ -1219,7 +1227,6 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
                 memo->p_val[total-1][2]=1;
 
                 // Marquer comme vue
-                //memo->p_val[total-1][3]=1;
                 total++;
             }
         }
@@ -1233,9 +1240,14 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
             memo->p_fin=id;
 
             // Quelle position dans le tirage termine la couverture
-            if(bId<memo->p_conf->nbElmZone[zn]-1)
+            if((bId + 1)<memo->p_conf->nbElmZone[zn]-1)
             {
-                *bIdStart = bId;
+                *bIdStart = bId+1;
+                break;
+            }
+            else
+            {
+                *bIdStart = 0;
                 break;
             }
         }
@@ -1312,7 +1324,7 @@ QGridLayout *RefEtude::MonLayout_TabEcarts()
 void RefEtude::RemplirTableauEcart(int zn, QStandardItemModel *sim_tmp)
 {
     // Montrer les boules "non" encore sorties
-    int totCouv = p_MaListe[zn].size();
+    int totCouv = p_ListeDesCouverturesSurZnId[zn].size();
 
     if(!totCouv)
         return;
@@ -1320,12 +1332,12 @@ void RefEtude::RemplirTableauEcart(int zn, QStandardItemModel *sim_tmp)
     int nbBoule = p_conf->limites[zn].max;
     double *Tot7B = new double[nbBoule];
 
-    sCouv *curCouv = p_MaListe[zn].last();
+    sCouv *curCouv = p_ListeDesCouverturesSurZnId[zn].last();
     sCouv *PrvCouv = NULL;
     int memo_last_boule = 0;
 
     if(totCouv >1){
-        PrvCouv = p_MaListe[zn].at(totCouv-2);
+        PrvCouv = p_ListeDesCouverturesSurZnId[zn].at(totCouv-2);
         memo_last_boule = PrvCouv->p_val[nbBoule-1][1];
     }
 
