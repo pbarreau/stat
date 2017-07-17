@@ -14,9 +14,12 @@ public:
     sCouv(int zn,stTiragesDef *pDef);
     ~sCouv();
 
+private:
+    int zoneEtudie;
+
 public:
     stTiragesDef *p_conf;
-    int **p_TotalMois;
+    int **p_TotalMois[2];
     QList<bool> *p_trackingBoule;
     int p_deb;
     int p_fin;
@@ -85,7 +88,7 @@ private:
     QString p_stRefTirages;
     stTiragesDef *p_conf;
     QList<sCouv *> p_MaListe[2];
-    int **p_couvBase;
+    int **p_couvBase[2];
 
     QTableView *p_tbv_0;
     QTableView *p_tbv_1;

@@ -29,7 +29,7 @@ sCouv::sCouv(int zn, stTiragesDef *pDef):p_conf(pDef),p_deb(-1),p_fin(-1)
 {
     int maxItems = p_conf->limites[zn].max;
     p_val = new int *[maxItems];
-    p_TotalMois = new int *[maxItems];
+    p_TotalMois[zn] = new int *[maxItems];
     p_trackingBoule = new QList<bool> [maxItems];
 
 
@@ -40,9 +40,9 @@ sCouv::sCouv(int zn, stTiragesDef *pDef):p_conf(pDef),p_deb(-1),p_fin(-1)
             memset(p_val[i],0,3*sizeof(int));
 
         //mettre a zero compteur des mois
-        p_TotalMois[i] = new int[12];
-        if(p_TotalMois[i])
-            memset(p_TotalMois[i],0,12*sizeof(int));
+        p_TotalMois[zn][i] = new int[12];
+        if(p_TotalMois[zn][i])
+            memset(p_TotalMois[zn][i],0,12*sizeof(int));
     }
 }
 
@@ -56,9 +56,9 @@ sCouv::~sCouv()
 
     for(int i=0;i<12;i++)
     {
-        delete p_TotalMois[i];
+        delete p_TotalMois[zoneEtudie][i];
     }
-    delete p_TotalMois;
+    delete p_TotalMois[zoneEtudie];
 
 }
 
@@ -77,10 +77,12 @@ RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
     // Creation des variables resultats
     maRef = new QStringList*[nb_zones];
 
-    // Pour chacune des zones effectuer un calcul de couverture
-    maRef[0] = LstCritereGroupement(zn,p_conf);
-
-    RechercheCouverture(&p_MaListe[zn], zn);
+    for(int i = 0; i< nb_zones; i++)
+    {
+        // Pour chacune des zones effectuer un calcul de couverture
+        maRef[i] = LstCritereGroupement(i,p_conf);
+        RechercheCouverture(&p_MaListe[i], i);
+    }
 
 #if 0
     QWidget *uneReponse = CreationOnglets();
@@ -506,6 +508,17 @@ QGridLayout *RefEtude::MonLayout_TabCouvertures_boules()
 QGridLayout *RefEtude::MonLayout_TabCouvertures_etoiles()
 {
     QGridLayout *returnLayout = new QGridLayout;
+
+    int zn = 1;
+    int nbCouv = p_MaListe[zn].size();
+    if(nbCouv){
+        ;// Association recherche avec qttable !
+        QTableView *tbv_tmp1 = TablePourLstcouv(&p_MaListe[zn], zn);
+        QTableView *tbv_tmp2 = DetailsLstcouv(zn);
+        returnLayout->addWidget(tbv_tmp1,0,0);
+        returnLayout->addWidget(tbv_tmp2,0,1);
+    }
+
     return returnLayout;
 }
 
@@ -736,7 +749,7 @@ QTableView * RefEtude::TableMoisBase(int zn)
             }
             else
             {
-                int tot = p_couvBase[pos][i-1];
+                int tot = p_couvBase[zn][pos][i-1];
                 item->setData(tot,Qt::DisplayRole);
             }
             tmpStdItem->setItem(pos,i,item);
@@ -964,7 +977,7 @@ void RefEtude::slot_TotalCouverture(int index)
         for(int pos=0;pos <nb_lgn;pos++)
         {
             QStandardItem *item = p_qsim_4->item(pos,i);
-            int nval = p_MaListe[zn].at(index-1)->p_TotalMois[pos][i-1];
+            int nval = p_MaListe[zn].at(index-1)->p_TotalMois[zn][pos][i-1];
             item->setData(nval,Qt::DisplayRole);
             p_qsim_4->setItem(pos,i,item);
         }
@@ -1102,12 +1115,12 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
 
         // toute la base a ete traite, faire une synthese
         int max_boule = p_conf->limites[zn].max;
-        p_couvBase = new int *[max_boule];
+        p_couvBase[zn] = new int *[max_boule];
         for(int i=0;i<max_boule;i++)
         {
-            p_couvBase[i]=new int[12];
-            if(p_couvBase[i])
-                memset(p_couvBase[i],0,12*sizeof(int));
+            p_couvBase[zn][i]=new int[12];
+            if(p_couvBase[zn][i])
+                memset(p_couvBase[zn][i],0,12*sizeof(int));
         }
 
         int maxCouv = lstCouv->size();
@@ -1117,8 +1130,8 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
             {
                 for(int k = 0; k<12;k++)
                 {
-                    p_couvBase[j][k] = p_couvBase[j][k]
-                            + lstCouv->at(i)->p_TotalMois[j][k];
+                    p_couvBase[zn][j][k] = p_couvBase[zn][j][k]
+                            + lstCouv->at(i)->p_TotalMois[zn][j][k];
                 }
             }
         }
@@ -1145,12 +1158,25 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
     int b_val = 0;
     QString st_date = "";
     int max_boule = p_conf->limites[zn].max;
+    int delta = 0;
+
+    for(int i = 0; i<= zn; i++)
+    {
+        if(i){
+        delta = delta + p_conf->nbElmZone[zn-1];
+        }
+    }
+
     for(int bId=(*bIdStart);bId<memo->p_conf->nbElmZone[zn];bId++)
     {
         // recuperer une boule
-        b_val = unTirage.value(5+bId).toInt();
+        b_val = unTirage.value(5+delta+bId).toInt();
 
-
+        if(zn == 1)
+        {
+            int a =2;
+            a++;
+        }
         // une couverture complete ?
         if(total <= memo->p_conf->limites[zn].max)
         {
@@ -1160,7 +1186,7 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
             st_date = unTirage.value(3).toString();
             QStringList tmpSplit = st_date.split("/");
             int leMois = tmpSplit.at(1).toInt() -1;
-            memo->p_TotalMois[b_val-1][leMois]++;
+            memo->p_TotalMois[zn][b_val-1][leMois]++;
 
             // memoriser sequencement on/off de chaque boule
             for(int i =0; i< max_boule;i++)
