@@ -22,7 +22,7 @@
 #include "tirages.h"
 
 // declaration de variable de classe
-QStandardItemModel *RefEtude::p_simResu = new QStandardItemModel;
+QStandardItemModel **RefEtude::p_simResu = new QStandardItemModel*[2];
 
 // argument de p_deb et p_fin contient id de la ligne du tirage
 sCouv::sCouv(int zn, stTiragesDef *pDef):zoneEtudie(zn),p_conf(pDef),p_deb(-1),p_fin(-1)
@@ -94,7 +94,8 @@ RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
 
 QStandardItemModel *RefEtude::GetPtrToModel()
 {
-    return p_simResu;
+    int zn = 0;
+    return p_simResu[zn];
 }
 
 QWidget *RefEtude::CreationOnglets()
@@ -289,17 +290,19 @@ QTableView *RefEtude::GetListeTirages(void)
 
 QTableView *RefEtude::GetLesEcarts(void)
 {
-    return    p_tbv_4;
+    int zn = 0;
+    return    p_tbv_4[zn];
 }
 
 void RefEtude::GetInfoTableau(int onglet, QTableView **pTbl, QStandardItemModel **pSim, QSortFilterProxyModel **pSfpm)
 {
     // se mettre sur le bon onglet
     //ptabComptage->setCurrentIndex(onglet);
+    int zn = 0;
 
     // renvoyer les infos
-    *pTbl = p_tbv_4;
-    *pSim = p_simResu;
+    *pTbl = p_tbv_4[zn];
+    *pSim = p_simResu[zn];
     *pSfpm = NULL;
 }
 
@@ -339,7 +342,7 @@ QGridLayout *RefEtude::MonLayout_TabEcart_2()
     QGridLayout *returnLayout = new QGridLayout;
 
     // Association recherche avec qttable !
-    QTableView *tbv_tmp1 = tbForBaseEcart();
+    QTableView *tbv_tmp1 = tbForBaseEcart(0);
     returnLayout->addWidget(tbv_tmp1,0,0);
 
     return returnLayout;
@@ -350,17 +353,16 @@ QGridLayout *RefEtude::MonLayout_TabEcart_3()
     QGridLayout *returnLayout = new QGridLayout;
 
     // Association recherche avec qttable !
-    //QTableView *tbv_tmp1 = tbForBaseEcart;
-    //returnLayout->addWidget(tbv_tmp1,0,0);
+    QTableView *tbv_tmp1 = tbForBaseEcart(1);
+    returnLayout->addWidget(tbv_tmp1,0,0);
 
     return returnLayout;
 }
 
-QTableView *RefEtude::tbForBaseEcart()
+QTableView *RefEtude::tbForBaseEcart(int zn)
 {
     QTableView *qtv_tmp = new QTableView;
 
-    int zn = 0;
     int nb_lgn = p_conf->limites[zn].max;
     QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,5);
 
@@ -408,14 +410,14 @@ QTableView *RefEtude::tbForBaseEcart()
     RemplirTableauEcart(zn,tmpStdItem);
 
     // Memoriser addresse du tableau
-    p_simResu = tmpStdItem;
+    p_simResu[zn] = tmpStdItem;
     int col = tmpStdItem->columnCount();
     int lgn = tmpStdItem->rowCount();
 
-    col = p_simResu->columnCount();
-    lgn = p_simResu->rowCount();
+    col = p_simResu[zn]->columnCount();
+    lgn = p_simResu[zn]->rowCount();
 
-    p_tbv_4 = qtv_tmp;
+    p_tbv_4[zn] = qtv_tmp;
 
     // click sur la zone reservee au boules du tirage
     connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
@@ -907,7 +909,9 @@ void RefEtude::slot_AideToolTip(const QModelIndex & index)
 {
     int r,g,b,a;
     int val = index.model()->index(index.row(),0).data().toInt();
-    QStandardItem *item1 = p_simResu->item(index.row(),index.column());
+
+    int zn = 0;
+    QStandardItem *item1 = p_simResu[zn]->item(index.row(),index.column());
     QBrush colcell = item1->background();
     QString msg;
     msg = "Boule " + QString::number(val)+"\n";
@@ -997,7 +1001,7 @@ void RefEtude::slot_TotalCouverture(int index)
 void RefEtude::slot_ShowBoule(const QModelIndex & index)
 {
     int val = 0;
-
+    int zn = 0;
 
     // recuperer la valeur de la colonne
     int col = index.column();
@@ -1006,8 +1010,8 @@ void RefEtude::slot_ShowBoule(const QModelIndex & index)
     {
         // recuperer la valeur a la colone de la table
         val = index.model()->index(index.row(),index.column()).data().toInt();
-        p_simResu->sort(0);
-        p_tbv_4->scrollTo(p_simResu->index(val-1,1));
+        p_simResu[zn]->sort(0);
+        p_tbv_4[zn]->scrollTo(p_simResu[zn]->index(val-1,1));
     }
 
     col = 0;
@@ -1331,12 +1335,12 @@ QGridLayout *RefEtude::MonLayout_TabEcarts()
     RemplirTableauEcart(zn,tmpStdItem);
 
     // Memoriser addresse du tableau
-    p_simResu = tmpStdItem;
+    p_simResu[zn] = tmpStdItem;
     int col = tmpStdItem->columnCount();
     int lgn = tmpStdItem->rowCount();
 
-    col = p_simResu->columnCount();
-    lgn = p_simResu->rowCount();
+    col = p_simResu[zn]->columnCount();
+    lgn = p_simResu[zn]->rowCount();
 
     qtv_tmp->setMouseTracking(true);
     connect(qtv_tmp,

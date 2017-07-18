@@ -58,7 +58,7 @@ private:
     QTableView * DetailsLstcouv(int zn);
     QTableView * tbForBaseLigne();
     QTableView * tbForBaseRef();
-    QTableView * tbForBaseEcart();
+    QTableView * tbForBaseEcart(int zn);
     QTableView * TableMoisBase(int zn);
     QTableView * TableMoisCouv(int zn);
 
@@ -83,7 +83,7 @@ public slots:
     void slot_SelectPartBase(const QModelIndex & index);
 
 private:
-    static QStandardItemModel *p_simResu;
+    static QStandardItemModel **p_simResu;
     GererBase *p_db;
     QString p_stRefTirages;
     stTiragesDef *p_conf;
@@ -94,7 +94,7 @@ private:
     QTableView *p_tbv_1[2];
     QTableView *p_tbv_2[2];
     QTableView * p_tbv_3;
-    QTableView * p_tbv_4;
+    QTableView * p_tbv_4[2];
 
     QStandardItemModel *p_qsim_2[2];
     QStandardItemModel *p_qsim_3;

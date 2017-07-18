@@ -4822,7 +4822,6 @@ void MainWindow::slot_PresenteLaBoule(const QModelIndex & index)
     ecarts->GetInfoTableau(0, &pTbv1 , &pSim1 , &pSfpm1);
     pSim1->sort(0);
     pTbv1->scrollTo(pSim1->index(val-1,1));
-    //p_tbv_4->scrollTo(p_simResu->index(val-1,1));
 
     // Recuperer le tableau des comptages
     syntheses->GetInfoTableau(0, &pTbv1 , &pSqm1 , &pSfpm1);
