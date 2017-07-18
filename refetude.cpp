@@ -472,16 +472,16 @@ QWidget *RefEtude::CouvOglGroup()
     QWidget **wid_ForTop = new QWidget*[maxOnglets];
     QGridLayout **dsgOnglet = new QGridLayout * [maxOnglets];
 
-    QGridLayout * (RefEtude::*ptrFunc[])()={
-            &RefEtude::MonLayout_TabCouvertures_boules,
-            &RefEtude::MonLayout_TabCouvertures_etoiles};
+    QGridLayout * (RefEtude::*ptrFunc[])(int)={
+            &RefEtude::MonLayout_TabCouverturesZnId,
+            &RefEtude::MonLayout_TabCouverturesZnId};
 
     for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
     {
         wid_ForTop[id_Onglet]= new QWidget;
         tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
 
-        dsgOnglet[id_Onglet]=(this->*ptrFunc[id_Onglet])();
+        dsgOnglet[id_Onglet]=(this->*ptrFunc[id_Onglet])(id_Onglet);
         wid_ForTop[id_Onglet]->setLayout(dsgOnglet[id_Onglet]);
     }
 
@@ -491,11 +491,10 @@ QWidget *RefEtude::CouvOglGroup()
     return qw_retour;
 }
 
-QGridLayout *RefEtude::MonLayout_TabCouvertures_boules()
+QGridLayout *RefEtude::MonLayout_TabCouverturesZnId(int zn)
 {
     QGridLayout *returnLayout = new QGridLayout;
 
-    int zn = 0;
     int nbCouv = p_ListeDesCouverturesSurZnId[zn].size();
     if(nbCouv){
         ;// Association recherche avec qttable !
@@ -633,9 +632,6 @@ QTableView * RefEtude::TablePourLstcouv(QList<sCouv *> *lstCouv,int zn)
     // double click dans fenetre  pour selectionner boule
     connect( p_tbv_1[zn], SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_SelectPartBase( QModelIndex) ) );
-
-
-    //p_tbv_1[zn] = qtv_tmp;
 
 
     return qtv_tmp;
@@ -837,7 +833,9 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
     QString headName = vCol.toString();
     QSqlQuery sql;
     bool status = false;
-    int zn = 0;
+
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    int zn = tabTrackCouverture->currentIndex();
     int deb = p_ListeDesCouverturesSurZnId[zn].at(p_ListeDesCouverturesSurZnId[zn].size()-col-1)->p_deb;
     int fin = p_ListeDesCouverturesSurZnId[zn].at(p_ListeDesCouverturesSurZnId[zn].size()-col-1)->p_fin;
 
@@ -869,6 +867,7 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
     QString st_fin = sql.value("D").toString();
 
     QString titre = "Couverture : "
+            +tabTrackCouverture->tabText(zn)+"-"
             + headName
             + "-> deb = "
             + st_deb
@@ -1082,8 +1081,7 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
     QSqlQuery query;
     bool status = false;
     bool uneCouvDePlus = false;
-
-
+    int max_boule = p_conf->limites[zn].max;
     status = query.exec(p_stRefTirages);
 
 
@@ -1096,6 +1094,9 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
         sCouv *tmpCouv = new sCouv(zn,p_conf);
         lstCouv->append(tmpCouv);
 
+        bool depart=true;
+        int total = 0; // aucune boule encore lue
+
         do
         {
             if(uneCouvDePlus)
@@ -1106,7 +1107,7 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
 
             QSqlRecord rec  = query.record(); // Tirage a etudier
             int bId = 0; // Indice de la boule a regarder dans la zone concernee
-            uneCouvDePlus = AnalysePourCouverture(rec,&bId,zn,lstCouv->last());
+            uneCouvDePlus = AnalysePourCouverture(rec,&depart, &total, &bId,zn,lstCouv->last());
 
             // Une couverture c'est produite en cours d'analyse du tirage
             if(uneCouvDePlus)
@@ -1114,14 +1115,26 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
                 sCouv *tmpCouv = new sCouv(zn,p_conf);
                 lstCouv->append(tmpCouv);
 
-                uneCouvDePlus = AnalysePourCouverture(rec,&bId,zn,lstCouv->last());
+                // Si l'analyse demande de partir de 0 alors allez au tirage suivant
+                if(bId == 0)
+                {
+                    if(query.previous())
+                    {
+                        rec= query.record();
+                    }
+                    else
+                    {
+                        // Plus d'autre tirage a etudier
+                        break;
+                    }
+                }
+                uneCouvDePlus = AnalysePourCouverture(rec,&depart, &total,&bId,zn,lstCouv->last());
             }
 
 
         }while(query.previous());
 
         // toute la base a ete traite, faire une synthese
-        int max_boule = p_conf->limites[zn].max;
         p_couvBase[zn] = new int *[max_boule];
         for(int i=0;i<max_boule;i++)
         {
@@ -1147,18 +1160,17 @@ bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
     return status;
 }
 
-bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,sCouv *memo)
+bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, bool *depart, int *total,int *bIdStart, int zn,sCouv *memo)
 {
-    static bool depart=true;
-    static int total = 1;
     bool retVal = false;
 
     int id = unTirage.value(0).toInt();
+    int bId = 0;
 
-    if(depart)
+    if(*depart)
     {
         memo->p_deb = id;
-        depart = false;
+        *depart = false;
     }
 
     // parcour des boules
@@ -1174,19 +1186,14 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
         }
     }
 
-    for(int bId=(*bIdStart);bId<memo->p_conf->nbElmZone[zn];bId++)
+    for(bId=(*bIdStart);bId<memo->p_conf->nbElmZone[zn];bId++)
     {
         // recuperer la boule
         b_val = unTirage.value(5+delta+bId).toInt();
 
-        if(zn == 1)
-        {
-            int a =2; // Pour mettre un point d'arret
-            a++;
-        }
 
         // une couverture complete ?
-        if(total <= memo->p_conf->limites[zn].max)
+        if((*total) < memo->p_conf->limites[zn].max)
         {
             // non
 
@@ -1196,6 +1203,13 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
             int leMois = tmpSplit.at(1).toInt() -1;
             memo->p_TotalMois[b_val-1][leMois]++;
 
+            if(st_date == "10/07/2017" && zn==1)
+            {
+                int a = 1;
+                a++;
+            }
+
+#if 0
             // memoriser sequencement on/off apparition de chaque boule
             for(int i =0; i< max_boule;i++)
             {
@@ -1206,6 +1220,7 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
 
                 memo->p_trackingBoule[i].append(bouleLevel);
             }
+#endif
 
             // Boule deja connue ?
             if(memo->p_val[b_val-1][0])
@@ -1220,36 +1235,40 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn,
             }
             else
             {
-                // memoriser a l'indice de la boule sa position
-                memo->p_val[b_val-1][0]=total;
-                // sauver sa position
-                memo->p_val[total-1][1]=b_val;
-                memo->p_val[total-1][2]=1;
+                // Cette boule est nouvelle pour cette recherche de couverture
+                (*total)++; // une boule de plus dans celle a surveiller
 
-                // Marquer comme vue
-                total++;
+                // memoriser a l'indice de la boule son numero d'arrivee
+                memo->p_val[b_val-1][0]=*total;
+                // sauver sa position
+                memo->p_val[(*total)-1][1]=b_val;
+                memo->p_val[(*total)-1][2]=1;
             }
         }
         else
         {
             // oui
-            retVal = true;
+            break; // arret des recherches sur cette zone
+        }
+    }
 
-            total=1;
-            depart=true;
-            memo->p_fin=id;
+    // Ensemble complet ?
+    if((*total) == memo->p_conf->limites[zn].max )
+    {
+        retVal = true;
 
-            // Quelle position dans le tirage termine la couverture
-            if((bId + 1)<memo->p_conf->nbElmZone[zn]-1)
-            {
-                *bIdStart = bId+1;
-                break;
-            }
-            else
-            {
-                *bIdStart = 0;
-                break;
-            }
+        (*total)=0;
+        (*depart)=true;
+        memo->p_fin=id;
+
+        // Quelle position dans le tirage termine la couverture
+        if((bId + 1)<memo->p_conf->nbElmZone[zn]-1)
+        {
+            *bIdStart = bId+1;
+        }
+        else
+        {
+            *bIdStart = 0;
         }
     }
 

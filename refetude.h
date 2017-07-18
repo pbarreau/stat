@@ -41,7 +41,7 @@ public:
 private:
     QGridLayout *MonLayout_TabTirages();
     QGridLayout *MonLayout_TabCouvertures();
-    QGridLayout *MonLayout_TabCouvertures_boules();
+    QGridLayout *MonLayout_TabCouverturesZnId(int zn);
     QGridLayout *MonLayout_TabCouvertures_etoiles();
     QGridLayout *MonLayout_TabEcarts();
     QGridLayout *MonLayout_TabEcart_2();
@@ -53,7 +53,7 @@ private:
     QGridLayout *MonLayout_TabMois_2(QList<sCouv *> *lstCouv,int zn);
 
     bool RechercheCouverture(QList<sCouv *> *lstCouv, int zn);
-    bool AnalysePourCouverture(QSqlRecord unTirage, int *bIdStart, int zn, sCouv *memo);
+    bool AnalysePourCouverture(QSqlRecord unTirage, bool *depart, int *total, int *bIdStart, int zn, sCouv *memo);
     QTableView * TablePourLstcouv(QList<sCouv *> *lstCouv,int zn);
     QTableView * DetailsLstcouv(int zn);
     QTableView * tbForBaseLigne();
