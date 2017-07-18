@@ -365,12 +365,17 @@ QTableView *RefEtude::tbForBaseEcart()
     QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,5);
 
     QString colName[]={"B","Ec","Ep","Em","EM"};
+    QString colTip[]={"Boule","Ecart courant","Ecart precedent","Ecart moyen","Ecart Max"};
     qtv_tmp->setModel(tmpStdItem);
 
     int nbcol = sizeof(colName)/sizeof(QString);
+    QStandardItem **headerItem = new QStandardItem*[nbcol];
     for(int i=0;i<nbcol;i++)
     {
-        tmpStdItem->setHeaderData(i,Qt::Horizontal,colName[i]);
+        headerItem [i] = new QStandardItem(colName[i]);
+        tmpStdItem->setHorizontalHeaderItem(i,headerItem [i]);
+        headerItem [i]->setToolTip(colTip[i]);
+        //tmpStdItem->setHeaderData(i,Qt::Horizontal,colName[i]);
         // Creer cellule du tableau
         for(int pos=0;pos <nb_lgn;pos++)
         {
