@@ -113,6 +113,18 @@ public:
 
 };
 
+typedef struct _tiragesFileFormat
+{
+    QString name;   /// file name
+    bool f_get; /// File get
+    int nbZone; /// Nb zone d'un tirage
+    int o_date; /// Offset dans fichier pour avoir la date
+    int o_day;  /// Offset dans fichier pour avoir le jour
+    int o_ordered;  /// Offset dans fichier pour avoir ordre sortie des boules
+    int *o_zone;    /// Offset debut de chaque zone
+    int *o_znsz;    /// Taille dans chaque zone
+}tiragesFileFormat;
+
 class DelegationDeCouleur : public QItemDelegate
 {
     Q_OBJECT
@@ -150,6 +162,8 @@ public:
     bool CTB_Table1(QString nomTable, tirages *pRef);
     bool CreerTableDistriCombi(void);
     bool LireLesTirages(QString fileName_2, tirages *pRef);
+    bool NEW_LireLesTirages(int file_id, tiragesFileFormat unTableau[], tirages *pRef);
+    bool NEW_AnalyseLesTirages(tirages *pRef);
     bool SupprimerBase();
     QSqlError lastError();
     void AfficherBase(stTiragesDef *pConf, QTableView *cibleview);
@@ -187,7 +201,7 @@ public:
     QString TST_ZoneRequete(stTiragesDef *pConf, int zone, QString operateur, int boule, QString critere);
     QString TST_GetIntervalCouverture(int etendue);
     void TST_LBcDistBr(int zn,stTiragesDef *pConf,int dist, int br,int bc);
-   int TST_TotalRechercheADistance_F2(int dist, QString col, int bp_ref, int bp_look);
+    int TST_TotalRechercheADistance_F2(int dist, QString col, int bp_ref, int bp_look);
 
 public slots:
     void slot_DetailsCombinaison(const QModelIndex & index) ;

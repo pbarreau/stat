@@ -46,12 +46,32 @@ void SyntheseGenerale::GetInfoTableau(int onglet, QTableView **pTbl, QSqlQueryMo
 }
 void SyntheseGenerale::slot_ShowTotalBoule(const QModelIndex &index)
 {
-    // se mettre sur le bon onglet
+    QAbstractItemModel *mon_model = tbv_LesTirages->model();
+
+    int ecart = 0;
+
+    //recuperer la colonne
+    int col_id = index.column();
+
+    // se mettre sur le bon onglet pour montrer le total
     ptabComptage->setCurrentIndex(0);
 
     int val = index.model()->index(index.row(),0).data().toInt();
     mysortModel->sort(0);
     tbv_bloc1_1->scrollTo(mysortModel->index(val-1,0));
+
+
+
+    if((col_id == 1) || (col_id ==2)){
+        // Montrer le tirage precedent contenant la boule
+        ecart = index.model()->index(index.row(),1).data().toInt();
+
+        if(col_id == 2)
+            ecart = ecart + index.model()->index(index.row(),col_id).data().toInt();
+        // se Positionner sur un element visible de la table (colonne 2 des tirages: la date)
+        QModelIndex item1 = tbv_LesTirages->model()->index(ecart,2);
+        tbv_LesTirages->scrollTo(item1,QAbstractItemView::PositionAtCenter);
+    }
 }
 
 void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
@@ -130,6 +150,12 @@ void SyntheseGenerale::DoTirages(void)
 
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              this, SLOT( slot_ShowBoule( QModelIndex) ) );
+
+#if 0
+    // Double click sur ecart et localisation dans base Tirages
+    connect( tbv_LesEcarts, SIGNAL( doubleClicked(QModelIndex)) ,
+             pEcran->parent(), SLOT(slot_MontreLeTirage( QModelIndex) ) );
+#endif
 
     connect( tbv_LesEcarts, SIGNAL( clicked(QModelIndex)) ,
              this, SLOT( slot_ShowTotalBoule( QModelIndex) ) );

@@ -97,7 +97,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.limites[0].min = 1;
         conf.limites[0].max = 50;
         conf.limites[1].min = 1;
-        conf.limites[1].max = 11;
+        conf.limites[1].max = 12;
         conf.jour_tir=new QString[conf.nb_tir_semaine];
         conf.jour_tir[0]="MARDI";
         conf.jour_tir[1]="VENDREDI";
@@ -274,7 +274,7 @@ QString tirages::SelectSource(bool load)
   {
     case NE_FDJ::fdj_euro:
       msg = "Fichier pour Euro million";
-      fileName_2 = "euromillions_3.csv";
+      fileName_2 = "euromillions_4.csv";
       break;
     case NE_FDJ::fdj_loto:
       msg="Fichier pour Loto";

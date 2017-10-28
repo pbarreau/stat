@@ -43,10 +43,102 @@ GererBase::~GererBase(void)
 {
 
 }
-
 bool GererBase::LireFichiersDesTirages(bool autoLoad)
 {
     bool status = false;
+    QString req_vue = "";
+    QSqlQuery query;
+
+    tiragesFileFormat *LesTirages;
+    int nbelemt = 0;
+
+
+    int o_zone[]={4,9};
+    int o_znsz[]={5,2};
+    int o_znsz2[]={5,1};
+    int o_zone2[]={5,10};
+    tiragesFileFormat euroMillions[]=
+    {
+        {"euromillions.csv",false,2,2,1,11,o_zone,o_znsz},
+        {"euromillions_2.csv",false,2,2,1,11,o_zone,o_znsz},
+        {"euromillions_3.csv",false,2,2,1,11,o_zone,o_znsz},
+        {"euromillions_4.csv",true,2,2,1,12,o_zone2,o_znsz}
+    };
+
+    tiragesFileFormat loto[]=
+    {
+        {"nouveau_loto.csv",false,2,2,1,10,o_zone,o_znsz2},
+        {"loto2017.csv",true,2,2,1,10,o_zone,o_znsz2},
+        {"superloto2017.csv",false,2,2,1,10,o_zone,o_znsz2},
+        {"nouveau_superloto.csv",false,2,2,1,10,o_zone,o_znsz2},
+        {"lotonoel2017.csv",false,2,2,1,10,o_zone,o_znsz2}
+    };
+
+    if(typeTirages->conf.choixJeu == NE_FDJ::fdj_euro){
+        nbelemt = sizeof(euroMillions)/sizeof(tiragesFileFormat);
+        LesTirages = euroMillions;
+    }
+    else
+    {
+        nbelemt = sizeof(loto)/sizeof(tiragesFileFormat);
+        LesTirages = loto;
+
+    }
+
+    // Creer une table temporaire que l'on va trier apres chargement total
+    stTiragesDef ref;
+    typeTirages->getConfigFor(&ref);
+
+    QString str_1 = typeTirages->s_LibColBase(&ref);
+    QString str_s = str_1;
+    qDebug() << str_1;
+
+    // Retirer le premier element
+    str_1.remove("date_tirage, ");
+    str_1.replace(",", " int,");
+    str_1 =  "create temp table if not exists v_tirages (date_tirage text," +
+            str_1 + " text, file int);";
+    qDebug() << str_1;
+
+    status = query.exec(str_1);
+
+
+    // Lectures des fichiers de la Fd jeux
+    do
+    {
+        status = NEW_LireLesTirages(nbelemt-1, &LesTirages[nbelemt-1], typeTirages);
+        nbelemt--;
+    }while((status == true) && nbelemt);
+
+    // Trier la table temporaire et la mettre dans la table tirage
+    str_1 = "insert into tirages ("+ str_s +",file) select * from v_tirages order by date_tirage desc;";
+    qDebug() << str_1;
+    status = query.exec(str_1);
+
+    // supprimer la table temporaire
+    str_1 = "drop table v_tirages;";
+    qDebug() << str_1;
+    status = query.exec(str_1);
+
+    // Effectuer l'analyse
+    status = NEW_AnalyseLesTirages(typeTirages);
+
+    // on affecte un poids pour chacun des tirages
+    status = AffectePoidsATirage_v2();
+
+    // Creer une table bien organisee
+    if(status)
+        status = ReorganiserLesTirages();
+
+    return status;
+}
+
+#if 0
+bool GererBase::LireFichiersDesTirages(bool autoLoad)
+{
+    bool status = false;
+    QString req_vue = "";
+    QSqlQuery query;
 
     QString ficSource = typeTirages->SelectSource(autoLoad);
 
@@ -59,8 +151,10 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
 
     }
 
-    // Lecture des anciennes base des tirages
+    // Lecture des anciennes bases des tirages
     if(typeTirages->conf.choixJeu == NE_FDJ::fdj_euro){
+        LireLesTirages(ficSource,typeTirages);
+        ficSource = "euromillions_3.csv";
         LireLesTirages(ficSource,typeTirages);
         ficSource = "euromillions_2.csv";
         LireLesTirages(ficSource,typeTirages);
@@ -73,6 +167,13 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
         LireLesTirages(ficSource,typeTirages);
     }
 
+    // tous les fichiers sont lu.
+    //trie decroissant selon la date;
+    req_vue = "create temp view if not exists v_tirages as select * from tirages order by date_tirage desc;";
+    status = query.exec(req_vue);
+    //QApplication::quit();
+    // A FAIRE
+
     // La lecture a fait  l'analyse des tirages
     // on affecte un poids pour chacun des tirages
     status = AffectePoidsATirage_v2();
@@ -84,6 +185,7 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
     return status;
 
 }
+#endif
 
 bool GererBase::ReorganiserLesTirages()
 {
@@ -95,7 +197,7 @@ bool GererBase::ReorganiserLesTirages()
 
     st_tmp2 = OrganiseChampsDesTirages(TB_BASE, &ref);
     st_tmp2 = "Create table if not exists "
-             REF_BASE
+            REF_BASE
             " as " + st_tmp2;
 
     status = sql_1.exec(st_tmp2);

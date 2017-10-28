@@ -10,6 +10,7 @@
 #include <QStyledItemDelegate>
 #include <QTabWidget>
 #include <QComboBox>
+#include <QAbstractItemModel>
 
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
@@ -71,7 +72,6 @@ private:
     QSqlTableModel * sqtblm_bloc3;
 
     QStandardItemModel *gsim_AnalyseUnTirage;
-
 
 public:
     SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt, int zn, stTiragesDef *pConf, QMdiArea *visuel);
