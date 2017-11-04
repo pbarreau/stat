@@ -11,6 +11,9 @@
 #include <QTabWidget>
 #include <QComboBox>
 #include <QAbstractItemModel>
+#include <QAction>
+#include <QObject>
+#include <QModelIndex>
 
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
@@ -29,12 +32,35 @@ typedef enum _les_tableaux
 
 #define CTXT_SELECTION  "selection b:aucun - e:aucun - c:aucun - g:aucun"
 
+class B_ActFrMdlIndex:public QAction //Barreau_ActionFromModelIndex
+{
+    Q_OBJECT
+public:
+    B_ActFrMdlIndex(const QModelIndex &index,const QString &label,QObject * parent =0,...)
+        :QAction(label,parent), m_index(index)
+    {connect(this, SIGNAL(triggered()), this, SLOT(onTriggered()));}
+
+protected Q_SLOTS:
+    void onTriggered()
+    {
+        emit sig_SelectionTirage(m_index);
+    }
+
+Q_SIGNALS:
+    void sig_SelectionTirage(const QModelIndex &my_index);
+
+private:
+    QModelIndex m_index;
+};
+
 class SyntheseGenerale : public QObject
 {
     Q_OBJECT
 
 private:
+
     //stCurDemande *pLaDemande;
+    B_ActFrMdlIndex *MonTraitement;
     GererBase *bdd;
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
@@ -80,10 +106,11 @@ public:
     RefEtude *GetTabEcarts(void);
     void GetInfoTableau(int onglet, QTableView **pTbl, QSqlQueryModel **pSqm, QSortFilterProxyModel **pSfpm);
 
-
     // penser au destructeur pour chaque pointeur
 
 public slots:
+    void slot_MaFonctionDeCalcul(const QModelIndex &my_index);
+    void slot_ccmr_TbvLesTirages(QPoint pos); /// custom context menu request
     void slot_ClicDeSelectionTableau(const QModelIndex & index);
     void slot_MontreLesTirages(const QModelIndex & index);
     void slot_ShowTotalBoule(const QModelIndex & index);

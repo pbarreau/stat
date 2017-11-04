@@ -5,6 +5,7 @@
 
 #include <QtGui>
 #include <QSqlRecord>
+#include <QMenu>
 
 #include <QMessageBox>
 #include <QHeaderView>
@@ -130,11 +131,116 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     disposition->addWidget(ptabTop,1,0,1,2,Qt::AlignLeft|Qt::AlignTop);
 }
 
+void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index)
+{
+    QString msg = "";
+    int zone = 0;
+
+    int total = pMaConf->limites[zone].max;
+    int possible = total/2;
+    int start[possible];
+    memset(start,-1,sizeof(int)*possible);
+    stOrdreArrivee links[total+1];
+    memset(links,0,sizeof(stOrdreArrivee)*(total+1));
+
+    // Preparation des liens
+    int i = 1;
+    start[0]= 1;
+    for(i; i< total;i++)
+    {
+        links[i].n = i+1;
+        links[i].p = i-1;
+    }
+    links[i].p = i-1;
+
+    int val = my_index.model()->index(my_index.row(),0).data().toInt();
+    msg = "select * from tirages where(id between 0 and " + QString::number(val) +");";
+
+    QSqlQuery requete;
+    bool status = false;
+    status = requete.exec(msg);
+    status = requete.last();
+    if(requete.isValid())
+    {
+        int nb = pMaConf->nbElmZone[zone];
+        do{
+            QSqlRecord record = requete.record();
+            for (i=1;i<=nb;i++)
+            {
+                QString champ = pMaConf->nomZone[zone]+QString::number(i);
+                int boule = record.value(champ).toInt();
+
+                // Enlever le lien
+                links[links[boule].p].n =links[boule].n;
+                links[links[boule].n].p = links[links[boule].p].n;
+                links[boule].n = 0;
+
+                // la boule change de niveau
+                links[boule].y++;
+                boule++;
+            }
+        }while(requete.previous());
+    }
+
+    QSqlQueryModel *model = new QSqlQueryModel;
+    QTableView *view = new QTableView;
+
+    model->setQuery(msg);
+    view->setModel(model);
+    view->setWindowTitle("Tirage :"+ QString::number(val));
+    view->show();
+}
+
+void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
+{
+    QMenu *MonMenu=new QMenu(pEcran);
+    QString msg = "Recherche";
+    QModelIndex index = tbv_LesTirages->indexAt(pos);
+
+
+    MonTraitement = new B_ActFrMdlIndex(index,msg);
+    MonMenu->addAction(MonTraitement);
+
+    connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex)), this, SLOT(slot_MaFonctionDeCalcul(const QModelIndex)) );
+
+    MonMenu->exec(tbv_LesTirages->viewport()->mapToGlobal(pos));
+
+#if 0
+    int val = 0;
+
+
+
+    // recuperer la valeur de la colonne
+    int col = index.column();
+
+    if(col > 4 && col <= 4 + pMaConf->nbElmZone[0])
+    {
+        // se mettre sur le bon onglet
+        ptabComptage->setCurrentIndex(0);
+
+        // recuperer la valeur a la colone de la table
+        val = index.model()->index(index.row(),index.column()).data().toInt();
+        mysortModel->sort(0);
+        tbv_bloc1_1->scrollTo(mysortModel->index(val-1,0));
+    }
+
+    int v_id = G_sim_MesPossibles->index(index.row(),index.column()).data().toInt();
+    QVariant  hdata =  index.model()->headerData(index.column(),Qt::Horizontal);
+    QString msg = hdata.toString();
+    msg = msg.split("b").at(1);
+    int b_id = msg.toInt();
+    DB_tirages->PopulateCellMenu(b_id, v_id, 0, &configJeu, menu, this);
+    menu->popup(G_tbv_MesPossibles->viewport()->mapToGlobal(pos));
+#endif
+
+}
+
 #if 1
 void SyntheseGenerale::DoTirages(void)
 {
     RefEtude *unTest = new RefEtude(bdd,*st_bdTirages,0,pMaConf,pEcran,ptabTop);
     QWidget *uneReponse = unTest->CreationOnglets();
+
 
     tabEcarts = unTest;
 
@@ -147,9 +253,13 @@ void SyntheseGenerale::DoTirages(void)
              pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
 
 
-
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              this, SLOT( slot_ShowBoule( QModelIndex) ) );
+
+    tbv_LesTirages->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(tbv_LesTirages, SIGNAL(customContextMenuRequested(QPoint)),this,
+            SLOT(slot_ccmr_TbvLesTirages(QPoint)));
+
 
 #if 0
     // Double click sur ecart et localisation dans base Tirages

@@ -6,6 +6,7 @@
 #include <QString>
 #include <QStringList>
 #include <math.h>
+#include <QProcess>
 
 #include <QTextStream>
 
@@ -72,28 +73,41 @@ bool GererBase::LireLesTirages(QString fileName_2, tirages *pRef)
     // Table des tirages
     str_1 = pRef->s_LibColBase(&ref);
     str_2 = str_1;
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
 
     str_1.replace(QRegExp("\\s+"),""); // suppression des espaces
     str_1.replace(",",", :");
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
 
     str_1 = "INSERT INTO tirages (id," + str_2 + ")VALUES (:id, :" + str_1 + ")";
     sql_1.prepare(str_1);
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
 
     // Table des analyses
     str_1 = pRef->s_LibColAnalyse(&ref);
     str_2 = str_1;
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
 
     str_1.replace(QRegExp("\\s+"),""); // suppression des espaces
     str_1.replace(",",", :");
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
 
     str_1 = "INSERT INTO analyses (id," + str_2 + ")VALUES (:id, :" + str_1 + ")";
     sql_2.prepare(str_1);
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
+
 
     // Construction d'une variable en fonction du max /10
     int **pRZone = new int *[max_zone]; // Pointeur de repartition des zones
@@ -272,15 +286,22 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
     // Table des analyses
     QString str_1 = pRef->s_LibColAnalyse(&ref);
     QString str_2 = str_1;
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
 
     str_1.replace(QRegExp("\\s+"),""); // suppression des espaces
     str_1.replace(",",", :");
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
+
 
     str_1 = "INSERT INTO analyses (id," + str_2 + ")VALUES (:id, :" + str_1 + ")";
     sql_1.prepare(str_1);
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
 
     int max_zone = ref.nb_zone;
     // Construction d'une variable en fonction du max /10
@@ -297,7 +318,7 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
     status = sql_all.exec(sAllTirages);
     if (!status)
     {
-     return status;
+        return status;
     }
 
     status = sql_all.first();
@@ -355,6 +376,21 @@ bool GererBase::NEW_LireLesTirages(int file_id,tiragesFileFormat *unTableau, tir
         msgBox.setText(clef_1);
         msgBox.exec();
         return false;
+
+        // Tentative de telechargemnt
+        //wget https://media.fdj.fr/generated/game/loto/loto2017.zip  --no-check-certificate
+        //unzip -o loto2017.zip
+        QProcess process;
+        QString maCommande = "wget https://media.fdj.fr/generated/game/loto/";
+        QString file = ((unTableau->name).split(".")).at(0);
+        maCommande = maCommande + file+".zip --no-check-certificate";
+        process.start(maCommande);
+        maCommande = "unzip -o "+file+".zip";
+        process.start(maCommande);
+        if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            return true;
+        }
     }
 
 
@@ -367,14 +403,20 @@ bool GererBase::NEW_LireLesTirages(int file_id,tiragesFileFormat *unTableau, tir
 
     QString str_1 = pRef->s_LibColBase(&ref);
     QString str_2 = str_1;
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
     str_1.replace(QRegExp("\\s+"),""); // suppression des espaces
     str_1.replace(",",", :");
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
 
-    str_1 = "INSERT INTO v_tirages (" + str_2 + ",file)VALUES (:" + str_1 + ":file);";
+    str_1 = "INSERT INTO v_tirages (" + str_2 + ",file)VALUES (:" + str_1 + ", :file);";
     sql_1.prepare(str_1);
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
 
     // --- DEBUT ANALYSE DU FICHIER
     QString date_tirage = "";
@@ -394,6 +436,7 @@ bool GererBase::NEW_LireLesTirages(int file_id,tiragesFileFormat *unTableau, tir
 
         //traitement de la ligne
         list1 = ligne.split(";");
+
 
         // Recuperation du date_tirage
         date_tirage= DateAnormer(list1.at(unTableau->o_date));

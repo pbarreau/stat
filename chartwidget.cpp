@@ -1,6 +1,6 @@
 #include <QtGui>
 
-
+#if 0
 #include "chartwidget.h"
 
 ChartWidget::ChartWidget(QStandardItemModel *pdata)
@@ -265,3 +265,4 @@ ChartWidget::ChartWidget(QWidget *parent) :
     }
 
 }
+#endif

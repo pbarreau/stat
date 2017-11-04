@@ -1,6 +1,6 @@
 #ifndef CHARTWIDGET_H
 #define CHARTWIDGET_H
-
+#if 0
 #include <QWidget>
 #include <QStandardItemModel>
 
@@ -30,5 +30,5 @@ private:
 
 
 };
-
+#endif
 #endif // CHARTWIDGET_H

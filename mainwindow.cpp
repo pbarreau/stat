@@ -2191,10 +2191,10 @@ QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
     QTabWidget *tabWidget = new QTabWidget;
     UnConteneurDessin *dessin;
 
-    ChartWidget *test = new ChartWidget;
+    //ChartWidget *test = new ChartWidget;
     //test->show();
 
-    tabWidget->addTab(test,"Spirale");
+    //tabWidget->addTab(test,"Spirale");
 
     dessin = TST_Graphe_1(pConf);
     tabWidget->addTab(dessin,"Tirages");
@@ -2270,7 +2270,7 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
     //int nb2 = (*pSimEcart)->columnCount();
     int nb1 = pSimEcart->rowCount();
 
-    ChartWidget *test = new ChartWidget(pSimEcart);
+    /// ChartWidget *test = new ChartWidget(pSimEcart);
     //test->show();
 
     QFormLayout *mainLayout = new QFormLayout;
@@ -3062,7 +3062,7 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
     int b_id =0;
     int col_id = 0;
     QStringList lst_boule;
-    boolean bNouvelleRecherche = false;
+    bool bNouvelleRecherche = false;
 
     // determination de la fenetre ayant recu le click
     if(index.internalPointer() == G_sim_Voisins[0]->index(index.row(),index.column()).internalPointer())

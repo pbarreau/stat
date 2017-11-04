@@ -90,10 +90,21 @@ typedef struct _un_tirage
     int **valBoules;
 }stUnTirage;
 
+typedef struct _ordreArrivee
+{
+    int x;  /// ordre arrivee
+    int y;  /// nb de fois
+    int n;  /// suivant
+    int p;  /// precedent
+}stOrdreArrivee;
+
+
 class tirages
 {
 protected:
     static stTiragesDef conf;
+    static stOrdreArrivee *arrive;
+    static int *total;
 
 public:
     static QString *lib_col;
@@ -112,6 +123,7 @@ public:
     void ListeCombinaison(stTiragesDef *ref);
 
 };
+
 
 typedef struct _tiragesFileFormat
 {

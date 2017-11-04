@@ -4,6 +4,7 @@
 
 #include <QApplication>
 #include <math.h>
+#include <QDir>
 
 #include <QFile>
 #include <QSqlTableModel>
@@ -91,14 +92,18 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
 
     QString str_1 = typeTirages->s_LibColBase(&ref);
     QString str_s = str_1;
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
 
     // Retirer le premier element
     str_1.remove("date_tirage, ");
     str_1.replace(",", " int,");
     str_1 =  "create temp table if not exists v_tirages (date_tirage text," +
             str_1 + " text, file int);";
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
 
     status = query.exec(str_1);
 
@@ -112,13 +117,18 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
 
     // Trier la table temporaire et la mettre dans la table tirage
     str_1 = "insert into tirages ("+ str_s +",file) select * from v_tirages order by date_tirage desc;";
+#ifndef QT_NO_DEBUG
     qDebug() << str_1;
+#endif
     status = query.exec(str_1);
 
+#if 0
     // supprimer la table temporaire
     str_1 = "drop table v_tirages;";
     qDebug() << str_1;
     status = query.exec(str_1);
+#endif
+    //QApplication::quit();
 
     // Effectuer l'analyse
     status = NEW_AnalyseLesTirages(typeTirages);
