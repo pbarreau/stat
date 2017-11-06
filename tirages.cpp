@@ -7,7 +7,7 @@ static  void FGEN_RechercheCombi(int k, QStringList &l, const QString &s, QStrin
 
 // Variables static de la classe
 stTiragesDef tirages::conf;
-stOrdreArrivee *tirages::arrive;
+stMyLinkedList *tirages::arrive;
 int *tirages::total;
 QString *tirages::lib_col;
 
@@ -123,8 +123,8 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
     if(conf.nb_zone)
     {
         int nbelment = conf.limites[0].max;
-        arrive = new stOrdreArrivee[nbelment];
-        memset(arrive,0,sizeof(stOrdreArrivee)*nbelment);
+        arrive = new stMyLinkedList[nbelment];
+        memset(arrive,0,sizeof(stMyLinkedList)*nbelment);
 
         total = new int [nbelment+1];
         for(int i =1; i<=nbelment;i++ )

@@ -90,20 +90,26 @@ typedef struct _un_tirage
     int **valBoules;
 }stUnTirage;
 
+typedef struct _myhead
+{
+    int depart;
+    int total;
+}stMyHeadedList;
+
 typedef struct _ordreArrivee
 {
     int x;  /// ordre arrivee
     int y;  /// nb de fois
     int n;  /// suivant
     int p;  /// precedent
-}stOrdreArrivee;
+}stMyLinkedList;
 
 
 class tirages
 {
 protected:
     static stTiragesDef conf;
-    static stOrdreArrivee *arrive;
+    static stMyLinkedList *arrive;
     static int *total;
 
 public:

@@ -138,14 +138,21 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index)
 
     int total = pMaConf->limites[zone].max;
     int possible = total/2;
+    //stMyHeadedList start[possible];
+    //memset(start,-1,sizeof(stMyHeadedList)*possible);
     int start[possible];
     memset(start,-1,sizeof(int)*possible);
-    stOrdreArrivee links[total+1];
-    memset(links,0,sizeof(stOrdreArrivee)*(total+1));
+    int nbtot[possible];
+    memset(nbtot,-1,sizeof(int)*possible);
+
+    stMyLinkedList links[total+1];
+    memset(links,0,sizeof(stMyLinkedList)*(total+1));
 
     // Preparation des liens
     int i = 1;
+    //start[0].depart= 1;
     start[0]= 1;
+    nbtot[0]=total;
     for(i; i< total;i++)
     {
         links[i].n = i+1;
@@ -158,26 +165,88 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index)
 
     QSqlQuery requete;
     bool status = false;
+    int boule = 0;
     status = requete.exec(msg);
     status = requete.last();
+    int maVerif = 0;
     if(requete.isValid())
     {
         int nb = pMaConf->nbElmZone[zone];
         do{
             QSqlRecord record = requete.record();
+            maVerif++;
             for (i=1;i<=nb;i++)
             {
                 QString champ = pMaConf->nomZone[zone]+QString::number(i);
-                int boule = record.value(champ).toInt();
+                boule = record.value(champ).toInt();
+
+                nbtot[links[boule].y]--;
 
                 // Enlever le lien
-                links[links[boule].p].n =links[boule].n;
-                links[links[boule].n].p = links[links[boule].p].n;
+                if(links[boule].p <=0)
+                {
+                    links[links[boule].n].p=-1;
+                    if(links[boule].n){
+                        start[links[boule].y]= links[boule].n;
+                    }
+                    else
+                    {
+                        start[links[boule].y]=-1;
+                        nbtot[links[boule].y]=-1;
+                    }
+                }
+                else{
+                    links[links[boule].p].n = links[boule].n;
+                    links[links[boule].n].p = links[boule].p;
+                }
+
+                // indiquer la nouvelle position
+                int b= boule;
+                do
+                {
+                    b = links[b].n;
+                    if(links[b].x)
+                        links[b].x--;
+                }while(links[b].n);
                 links[boule].n = 0;
 
                 // la boule change de niveau
                 links[boule].y++;
-                boule++;
+
+                // Positionne la boule dans liste
+                if(start[links[boule].y] == -1)
+                {
+                    start[links[boule].y] = boule;
+                    nbtot[links[boule].y] = 1;
+
+                    links[boule].x = 1;
+                    links[boule].p = -1;
+                }
+                else
+                {
+                    nbtot[links[boule].y]++;
+
+                    // Mettre la boule a la fin de la liste chainee
+                    // dernier element
+                    int cur = start[links[boule].y];
+                    int last = 0;
+                    do{
+                        last = links[cur].n;
+                        if(last)
+                            cur = last;
+                    }while(last);
+
+                    // Faire add node
+                    links[cur].n = boule;
+                    links[boule].p = cur;
+                    links[boule].x = (links[cur].x)+1;
+                }
+
+                if(nbtot[0]<0)
+                {
+                    int a = boule;
+                    break;
+                }
             }
         }while(requete.previous());
     }
