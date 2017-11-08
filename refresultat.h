@@ -145,13 +145,4 @@ private:
     //QString SD_Tb2(QStringList boules, QString sqlTblRef, int dst);
 
 };
-
-class Delegate : public QItemDelegate
-{
-    Q_OBJECT
-public:
-    Delegate(QWidget *parent = 0) : QItemDelegate(parent) {}
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-               const QModelIndex &index) const;
-};
 #endif // REFRESULTAT_H
