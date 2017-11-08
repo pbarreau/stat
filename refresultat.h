@@ -105,7 +105,7 @@ public:
     QTableView *GetListeTirages(void);
     RefEtude *GetTabEcarts(void);
     void GetInfoTableau(int onglet, QTableView **pTbl, QSqlQueryModel **pSqm, QSortFilterProxyModel **pSfpm);
-    void MemoriserProgression(stMyHeadedList *h, stMyLinkedList *l, int y, int cid, int tid);
+    void MemoriserProgression(QString table, stMyHeadedList *h, stMyLinkedList *l, int y, int cid, int tid);
     void PresenterResultat(int cid, int tid);
 
     // penser au destructeur pour chaque pointeur

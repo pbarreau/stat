@@ -204,16 +204,14 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int 
     int total = pMaConf->limites[zone].max;
     int possible = total/2;
 
-    msg = "create table if not exists stepper (id integer primary key, cid int, tid int, y int, b int);";
+    int val = my_index.model()->index(my_index.row(),0).data().toInt();
+    QString table = "stepper_"+QString::number(val);
 
+    msg = "create table if not exists "+ table  + "(id integer primary key, cid int, tid int, y int, b int);";
     status = requete.exec(msg);
-    ///qDebug() << "Status :" << status;
+
     stMyHeadedList linksInfo[possible];
     memset(linksInfo,-1,sizeof(stMyHeadedList)*possible);
-    ///int start[possible];
-    ///memset(start,-1,sizeof(int)*possible);
-    ///int nbtot[possible];
-    ///memset(nbtot,-1,sizeof(int)*possible);
 
     stMyLinkedList links[total+1];
     memset(links,0,sizeof(stMyLinkedList)*(total+1));
@@ -222,8 +220,7 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int 
     int i = 1;
     linksInfo[0].depart= 1;
     linksInfo[0].total = total;
-    ///start[0]= 1;
-    ///nbtot[0]=total;
+
     for(i=1; i< total;i++)
     {
         links[i].n = i+1;
@@ -231,7 +228,6 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int 
     }
     links[i].p = i-1;
 
-    int val = my_index.model()->index(my_index.row(),0).data().toInt();
     msg = "select * from tirages where(id between 0 and " + QString::number(val) +");";
 
     int boule = 0;
@@ -325,7 +321,7 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int 
 
             // On a parcouru toutes les boules de ce tirage
             // on va lire les listes chainees
-            MemoriserProgression(&linksInfo[0],links, possible, cid, tid);
+            MemoriserProgression(table,&linksInfo[0],links, possible, cid, tid);
         }while(requete.previous());
 
         // Presentation des resultats
@@ -338,91 +334,15 @@ void SyntheseGenerale::PresenterResultat(int cid,int tid)
 {
     ShowStepper *unReponse = new ShowStepper(cid,tid);
 
-#if 0
-    QSqlQuery requete;
-    bool status = false;
-    QString msg = "";
-
-    /// Preparation de la feuille
-    QWidget * Resultats = new QWidget;
-    QGridLayout *layout = new QGridLayout();
-    QHBoxLayout *layForBtn = new QHBoxLayout;
-    QPushButton *nextButton = new QPushButton(tr("&Next"));
-    QPushButton *previousButton = new QPushButton(tr("&Previous"));
-
-    nextButton->setMaximumWidth(50);
-    previousButton->setMaximumWidth(50);
-    layForBtn->addWidget(previousButton);
-    layForBtn->addWidget(nextButton);
-
-    // determination du nombre de colonne
-    msg = "select max(tot) as M from (select  count (distinct y) as tot  from stepper group by cid);";
-    status = requete.exec(msg);
-    if(status)
-    {
-        status = requete.first();
-        if(requete.isValid())
-        {
-            QSqlRecord record = requete.record();
-            int tCol = record.value(0).toInt();
-
-            QSplitter *splitter = new QSplitter;
-            QSqlQueryModel *model = new QSqlQueryModel [tCol];
-            QTableView *view = new QTableView[tCol];
-            Delegate *MaGestion = new Delegate  [tCol];
-#if 0
-            QDataWidgetMapper *mapper = new QDataWidgetMapper [tCol];
-            QSqlRelationalDelegate *mapDeleg = new QSqlRelationalDelegate [tCol];
-#endif
-            for(int i = 0; i< tCol; i++)
-            {
-                ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
-                msg = "select b as y" + QString::number(i)+
-                        " from stepper where (cid ="+
-                        QString::number(cid)+ " and tid ="+
-                        QString::number(tid)+ " and y="+
-                        QString::number(i)+ ") order by id;";
-
-                model[i].setQuery(msg);
-
-#if 0
-                mapper[i].setModel(&model[i]);
-                mapper[i].setItemDelegate(&mapDeleg[i]);
-                connect(previousButton, SIGNAL(clicked()),
-                        &mapper[i], SLOT(toPrevious()));
-                connect(nextButton, SIGNAL(clicked()),
-                        &mapper[i], SLOT(toNext()));
-                mapper[i].toFirst();
-#endif
-
-                view[i].setModel(&model[i]);
-                view[i].setParent(splitter);
-                view[i].setItemDelegate(&MaGestion[i]);
-                view[i].setSortingEnabled(false);
-                view[i].setEditTriggers(QAbstractItemView::NoEditTriggers);
-                view[i].setColumnWidth(0,LCELL);
-                view[i].horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-                view[i].verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-                view[i].setFixedWidth(LCELL+45);
-
-            }
-            layout->addLayout(layForBtn,0,0);
-            //layout->addWidget(nextButton, 0, 1, Qt::AlignTop);
-            layout->addWidget(splitter, 1, 0, Qt::AlignLeft);
-            Resultats->setLayout(layout);
-            Resultats->setWindowTitle("Resultats");
-            Resultats->show();
-        }
-    }
-#endif
 }
 
-void SyntheseGenerale::MemoriserProgression(stMyHeadedList *h,stMyLinkedList *l, int y, int cid, int tid)
+void SyntheseGenerale::MemoriserProgression(QString table,stMyHeadedList *h,stMyLinkedList *l, int y, int cid, int tid)
 {
     QSqlQuery sql;
     bool sta = false;
 
-    QString msg = "insert into stepper (id,cid,tid,y,b) values (null,:cid, :tid, :y, :b);";
+    QString msg = "insert into "+
+            table + " (id,cid,tid,y,b) values (null,:cid, :tid, :y, :b);";
     sta = sql.prepare(msg);
     ///qDebug() << "Prepare :" << sta;
     sql.bindValue(":cid", cid);

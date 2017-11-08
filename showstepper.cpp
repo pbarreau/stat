@@ -11,11 +11,65 @@
 #include "showstepper.h"
 #include "delegate.h"
 
+void ShowStepper::toPrevious(void)
+{
+    int cid = cid_start;
+
+    if((tid_cur >= 0) && (tid_cur < tid_start))
+        tid_cur++;
+
+    ExecSql(cid,tid_cur);
+
+}
+
+void ShowStepper::toNext(void)
+{
+    int cid = cid_start;
+
+    if((tid_cur <= tid_start) && (tid_cur>0))
+        tid_cur--;
+
+    ExecSql(cid,tid_cur);
+
+}
+
+void ShowStepper::ExecSql(int cid, int tid)
+{
+    QString msg = "";
+
+    for(int i = 0; i< my_tCol; i++)
+    {
+        ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
+        msg = "select b as y" + QString::number(i)+
+                " from stepper where (cid ="+
+                QString::number(cid)+ " and tid ="+
+                QString::number(tid)+ " and y="+
+                QString::number(i)+ ") order by id;";
+
+        my_model[i].setQuery(msg);
+    }
+
+}
+
+ShowStepper::~ShowStepper()
+{
+    QSqlQuery requete;
+    bool status = false;
+
+   QString msg = "drop table stepper_"+QString::number(tid_start)+";";
+   status = requete.exec(msg);
+}
+
 ShowStepper::ShowStepper(int cid, int tid)
 {
     QSqlQuery requete;
     bool status = false;
     QString msg = "";
+
+    tid_start = tid;
+    cid_start = cid;
+
+    tid_cur = tid;
 
     /// Preparation de la feuille
     QWidget * Resultats = new QWidget;
@@ -29,6 +83,11 @@ ShowStepper::ShowStepper(int cid, int tid)
     layForBtn->addWidget(previousButton);
     layForBtn->addWidget(nextButton);
 
+    connect(previousButton, SIGNAL(clicked()),
+            this, SLOT(toPrevious()));
+    connect(nextButton, SIGNAL(clicked()),
+            this, SLOT(toNext()));
+
     // determination du nombre de colonne
     msg = "select max(tot) as M from (select  count (distinct y) as tot  from stepper group by cid);";
     status = requete.exec(msg);
@@ -38,17 +97,18 @@ ShowStepper::ShowStepper(int cid, int tid)
         if(requete.isValid())
         {
             QSqlRecord record = requete.record();
-            int tCol = record.value(0).toInt();
+            my_tCol = record.value(0).toInt();
+
 
             QSplitter *splitter = new QSplitter;
-            QSqlQueryModel *model = new QSqlQueryModel [tCol];
-            QTableView *view = new QTableView[tCol];
-            Delegate *MaGestion = new Delegate  [tCol];
+            my_model = new QSqlQueryModel [my_tCol];
+            QTableView *view = new QTableView[my_tCol];
+            Delegate *MaGestion = new Delegate  [my_tCol];
 #if 0
             QDataWidgetMapper *mapper = new QDataWidgetMapper [tCol];
             QSqlRelationalDelegate *mapDeleg = new QSqlRelationalDelegate [tCol];
 #endif
-            for(int i = 0; i< tCol; i++)
+            for(int i = 0; i< my_tCol; i++)
             {
                 ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
                 msg = "select b as y" + QString::number(i)+
@@ -57,7 +117,7 @@ ShowStepper::ShowStepper(int cid, int tid)
                         QString::number(tid)+ " and y="+
                         QString::number(i)+ ") order by id;";
 
-                model[i].setQuery(msg);
+                my_model[i].setQuery(msg);
 
 #if 0
                 mapper[i].setModel(&model[i]);
@@ -69,7 +129,7 @@ ShowStepper::ShowStepper(int cid, int tid)
                 mapper[i].toFirst();
 #endif
 
-                view[i].setModel(&model[i]);
+                view[i].setModel(&my_model[i]);
                 view[i].setParent(splitter);
                 view[i].setItemDelegate(&MaGestion[i]);
                 view[i].setSortingEnabled(false);
