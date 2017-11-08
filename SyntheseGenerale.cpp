@@ -11,6 +11,10 @@
 #include <QHeaderView>
 #include <QVBoxLayout>
 #include <QSortFilterProxyModel>
+#include <QSplitter>
+#include <QPushButton>
+#include <QDataWidgetMapper>
+#include <QSqlRelationalDelegate>
 
 #include "refetude.h"
 #include "refresultat.h"
@@ -21,6 +25,64 @@
 
 //extern MainWindow w;
 
+
+QGridLayout *SyntheseGenerale::MonLayout_TabAuguste(int col, int lgn)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+    QTableView *tbv_tmp0 = tbForPrincipeAuguste(col, lgn);
+
+
+    lay_return->addWidget(tbv_tmp0,0,0,1,3,Qt::AlignLeft|Qt::AlignTop);
+
+    return lay_return;
+}
+
+QTableView *SyntheseGenerale::tbForPrincipeAuguste(int nbcol, int nblgn)
+{
+    QTableView *qtv_tmp = new QTableView;
+    int zn = 0;
+
+
+    QStandardItemModel * tmpStdItem =  new QStandardItemModel(1,nbcol);
+    ///p_qsim_3 = tmpStdItem;
+
+    qtv_tmp->setModel(tmpStdItem);
+
+    for(int i=0;i<nbcol;i++)
+    {
+        tmpStdItem->setHeaderData(i,Qt::Horizontal,QString::number(i));
+
+        for(int j = 0; i< nblgn;j++)
+        {
+            QStandardItem *item = new QStandardItem();
+            tmpStdItem->setItem(j,i,item);
+        }
+        qtv_tmp->setColumnWidth(i,LCELL);
+    }
+
+    qtv_tmp->setSortingEnabled(false);
+    //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // Bloquer largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ///qtv_tmp->verticalHeader()->hide();
+
+    // Taille tableau
+    qtv_tmp->setFixedSize(XLenTir,CHauteur2);
+
+    // double click dans fenetre  pour afficher details boule
+    ///connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+    ///         this, SLOT(slot_Type_G( QModelIndex) ) );
+
+    ///p_tbv_3 = qtv_tmp;
+    return qtv_tmp;
+}
 
 QGridLayout *SyntheseGenerale::GetDisposition(void)
 {
@@ -131,29 +193,37 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     disposition->addWidget(ptabTop,1,0,1,2,Qt::AlignLeft|Qt::AlignTop);
 }
 
-void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index)
+void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid)
 {
+    QSqlQuery requete;
+    bool status = false;
     QString msg = "";
     int zone = 0;
 
     int total = pMaConf->limites[zone].max;
     int possible = total/2;
-    //stMyHeadedList start[possible];
-    //memset(start,-1,sizeof(stMyHeadedList)*possible);
-    int start[possible];
-    memset(start,-1,sizeof(int)*possible);
-    int nbtot[possible];
-    memset(nbtot,-1,sizeof(int)*possible);
+
+    msg = "create table if not exists stepper (id integer primary key, cid int, tid int, y int, b int);";
+
+    status = requete.exec(msg);
+    ///qDebug() << "Status :" << status;
+    stMyHeadedList linksInfo[possible];
+    memset(linksInfo,-1,sizeof(stMyHeadedList)*possible);
+    ///int start[possible];
+    ///memset(start,-1,sizeof(int)*possible);
+    ///int nbtot[possible];
+    ///memset(nbtot,-1,sizeof(int)*possible);
 
     stMyLinkedList links[total+1];
     memset(links,0,sizeof(stMyLinkedList)*(total+1));
 
     // Preparation des liens
     int i = 1;
-    //start[0].depart= 1;
-    start[0]= 1;
-    nbtot[0]=total;
-    for(i; i< total;i++)
+    linksInfo[0].depart= 1;
+    linksInfo[0].total = total;
+    ///start[0]= 1;
+    ///nbtot[0]=total;
+    for(i=1; i< total;i++)
     {
         links[i].n = i+1;
         links[i].p = i-1;
@@ -163,9 +233,8 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index)
     int val = my_index.model()->index(my_index.row(),0).data().toInt();
     msg = "select * from tirages where(id between 0 and " + QString::number(val) +");";
 
-    QSqlQuery requete;
-    bool status = false;
     int boule = 0;
+    int tid = 0;
     status = requete.exec(msg);
     status = requete.last();
     int maVerif = 0;
@@ -174,25 +243,29 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index)
         int nb = pMaConf->nbElmZone[zone];
         do{
             QSqlRecord record = requete.record();
+            tid = record.value(0).toInt();
             maVerif++;
             for (i=1;i<=nb;i++)
             {
                 QString champ = pMaConf->nomZone[zone]+QString::number(i);
                 boule = record.value(champ).toInt();
 
-                nbtot[links[boule].y]--;
+                linksInfo[links[boule].y].total--;///nbtot[links[boule].y]--;
 
                 // Enlever le lien
                 if(links[boule].p <=0)
                 {
                     links[links[boule].n].p=-1;
                     if(links[boule].n){
-                        start[links[boule].y]= links[boule].n;
+
+                        linksInfo[links[boule].y].depart=links[boule].n;///start[links[boule].y]= links[boule].n;
                     }
                     else
                     {
-                        start[links[boule].y]=-1;
-                        nbtot[links[boule].y]=-1;
+
+
+                        linksInfo[links[boule].y].depart=-1;///start[links[boule].y]=-1;
+                        linksInfo[links[boule].y].total=0; ///nbtot[links[boule].y]=0;
                     }
                 }
                 else{
@@ -214,21 +287,21 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index)
                 links[boule].y++;
 
                 // Positionne la boule dans liste
-                if(start[links[boule].y] == -1)
+                if(linksInfo[links[boule].y].depart == -1)///if(start[links[boule].y] == -1)
                 {
-                    start[links[boule].y] = boule;
-                    nbtot[links[boule].y] = 1;
+                    linksInfo[links[boule].y].depart = boule; ///start[links[boule].y] = boule;
+                    linksInfo[links[boule].y].total = 1;///nbtot[links[boule].y] = 1;
 
                     links[boule].x = 1;
                     links[boule].p = -1;
                 }
                 else
                 {
-                    nbtot[links[boule].y]++;
+                    linksInfo[links[boule].y].total++;///nbtot[links[boule].y]++;
 
                     // Mettre la boule a la fin de la liste chainee
                     // dernier element
-                    int cur = start[links[boule].y];
+                    int cur = linksInfo[links[boule].y].depart;///start[links[boule].y];
                     int last = 0;
                     do{
                         last = links[cur].n;
@@ -242,24 +315,165 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index)
                     links[boule].x = (links[cur].x)+1;
                 }
 
-                if(nbtot[0]<0)
+                if(linksInfo[0].total <=0)///if(nbtot[0]<=0)
                 {
-                    int a = boule;
-                    break;
+                    cid++;
+                    break;/// ou continue ?
                 }
             }
+
+            // On a parcouru toutes les boules de ce tirage
+            // on va lire les listes chainees
+            MemoriserProgression(&linksInfo[0],links, possible, cid, tid);
         }while(requete.previous());
+
+        // Presentation des resultats
+        PresenterResultat(0,val);
+
     }
-
-    QSqlQueryModel *model = new QSqlQueryModel;
-    QTableView *view = new QTableView;
-
-    model->setQuery(msg);
-    view->setModel(model);
-    view->setWindowTitle("Tirage :"+ QString::number(val));
-    view->show();
 }
 
+void SyntheseGenerale::PresenterResultat(int cid,int tid)
+{
+    QSqlQuery requete;
+    bool status = false;
+    QString msg = "";
+
+    /// Preparation de la feuille
+    QWidget * Resultats = new QWidget;
+    QGridLayout *layout = new QGridLayout();
+    QHBoxLayout *layForBtn = new QHBoxLayout;
+    QPushButton *nextButton = new QPushButton(tr("&Next"));
+    QPushButton *previousButton = new QPushButton(tr("&Previous"));
+
+    nextButton->setMaximumWidth(50);
+    previousButton->setMaximumWidth(50);
+    layForBtn->addWidget(previousButton);
+    layForBtn->addWidget(nextButton);
+
+    // determination du nombre de colonne
+    msg = "select max(tot) as M from (select  count (distinct y) as tot  from stepper group by cid);";
+    status = requete.exec(msg);
+    if(status)
+    {
+        status = requete.first();
+        if(requete.isValid())
+        {
+            QSqlRecord record = requete.record();
+            int tCol = record.value(0).toInt();
+
+            QSplitter *splitter = new QSplitter;
+            QSqlQueryModel *model = new QSqlQueryModel [tCol];
+            QTableView *view = new QTableView[tCol];
+            Delegate *MaGestion = new Delegate  [tCol];
+#if 0
+            QDataWidgetMapper *mapper = new QDataWidgetMapper [tCol];
+            QSqlRelationalDelegate *mapDeleg = new QSqlRelationalDelegate [tCol];
+#endif
+            for(int i = 0; i< tCol; i++)
+            {
+                ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
+                msg = "select b as y" + QString::number(i)+
+                        " from stepper where (cid ="+
+                        QString::number(cid)+ " and tid ="+
+                        QString::number(tid)+ " and y="+
+                        QString::number(i)+ ") order by id;";
+
+                model[i].setQuery(msg);
+
+#if 0
+                mapper[i].setModel(&model[i]);
+                mapper[i].setItemDelegate(&mapDeleg[i]);
+                connect(previousButton, SIGNAL(clicked()),
+                        &mapper[i], SLOT(toPrevious()));
+                connect(nextButton, SIGNAL(clicked()),
+                        &mapper[i], SLOT(toNext()));
+                mapper[i].toFirst();
+#endif
+
+                view[i].setModel(&model[i]);
+                view[i].setParent(splitter);
+                view[i].setItemDelegate(&MaGestion[i]);
+                view[i].setSortingEnabled(false);
+                view[i].setEditTriggers(QAbstractItemView::NoEditTriggers);
+                view[i].setColumnWidth(0,LCELL);
+                view[i].horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+                view[i].verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+                view[i].setFixedWidth(LCELL+45);
+
+            }
+            layout->addLayout(layForBtn,0,0);
+            //layout->addWidget(nextButton, 0, 1, Qt::AlignTop);
+            layout->addWidget(splitter, 1, 0, Qt::AlignLeft);
+            Resultats->setLayout(layout);
+            Resultats->setWindowTitle("Resultats");
+            Resultats->show();
+        }
+    }
+}
+
+void SyntheseGenerale::MemoriserProgression(stMyHeadedList *h,stMyLinkedList *l, int y, int cid, int tid)
+{
+    QSqlQuery sql;
+    bool sta = false;
+
+    QString msg = "insert into stepper (id,cid,tid,y,b) values (null,:cid, :tid, :y, :b);";
+    sta = sql.prepare(msg);
+    ///qDebug() << "Prepare :" << sta;
+    sql.bindValue(":cid", cid);
+    sql.bindValue(":tid", tid);
+
+    /// Mise en place des valeurs
+    for (int i = 0; i< y;i++)
+    {
+        if(h[i].total>0)
+        {
+            sql.bindValue(":y", i);
+
+            // Parcourir la liste chainee
+            int data = h[i].depart;
+            do
+            {
+                sql.bindValue(":b", data);
+                sta = sql.exec();
+                data = l[data].n;
+            }while(data && (sta == true));
+        }
+    }
+
+}
+
+//---------------------------------------------------
+void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                     const QModelIndex &index) const
+{
+    int col = index.column();
+    int val = 0;
+    QColor u[]={QColor(247,255,15,180),
+                QColor(0,157,255,180),
+                QColor(82,63,255,180),
+                QColor(255,12,222,180),
+                QColor(255,42,0,180),
+                QColor(255,157,0,180),
+                QColor(76,255,0,180),
+                QColor(255,0,0,180)
+               };
+
+    if (index.data().canConvert(QMetaType::Int))
+    {
+        val =  index.data().toInt();
+        val = (int)floor(val/10);
+
+        if(val < 0 || val >6)
+            val = 7;
+
+        painter->fillRect(option.rect, u[val]);
+    }
+    // Remettre le texte initial sur la couleur
+    QItemDelegate::paint(painter, option, index);
+}
+
+//--------------------
 void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
 {
     QMenu *MonMenu=new QMenu(pEcran);
@@ -270,7 +484,7 @@ void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
     MonTraitement = new B_ActFrMdlIndex(index,msg);
     MonMenu->addAction(MonTraitement);
 
-    connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex)), this, SLOT(slot_MaFonctionDeCalcul(const QModelIndex)) );
+    connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex,int)), this, SLOT(slot_MaFonctionDeCalcul(const QModelIndex,int)) );
 
     MonMenu->exec(tbv_LesTirages->viewport()->mapToGlobal(pos));
 

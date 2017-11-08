@@ -43,11 +43,11 @@ public:
 protected Q_SLOTS:
     void onTriggered()
     {
-        emit sig_SelectionTirage(m_index);
+        emit sig_SelectionTirage(m_index,0);
     }
 
 Q_SIGNALS:
-    void sig_SelectionTirage(const QModelIndex &my_index);
+    void sig_SelectionTirage(const QModelIndex &my_index, int val);
 
 private:
     QModelIndex m_index;
@@ -105,11 +105,13 @@ public:
     QTableView *GetListeTirages(void);
     RefEtude *GetTabEcarts(void);
     void GetInfoTableau(int onglet, QTableView **pTbl, QSqlQueryModel **pSqm, QSortFilterProxyModel **pSfpm);
+    void MemoriserProgression(stMyHeadedList *h, stMyLinkedList *l, int y, int cid, int tid);
+    void PresenterResultat(int cid, int tid);
 
     // penser au destructeur pour chaque pointeur
 
 public slots:
-    void slot_MaFonctionDeCalcul(const QModelIndex &my_index);
+    void slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid);
     void slot_ccmr_TbvLesTirages(QPoint pos); /// custom context menu request
     void slot_ClicDeSelectionTableau(const QModelIndex & index);
     void slot_MontreLesTirages(const QModelIndex & index);
@@ -135,10 +137,21 @@ private:
     QGridLayout * MonLayout_SyntheseTotalEtoiles(int dst);
     QGridLayout * MonLayout_SyntheseTotalRepartitions(int dst);
 
+    QTableView *tbForPrincipeAuguste(int nbcol, int nblgn);
+    QGridLayout *MonLayout_TabAuguste(int col, int lgn);
 
     QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);
 
     //QString SD_Tb2(QStringList boules, QString sqlTblRef, int dst);
 
+};
+
+class Delegate : public QItemDelegate
+{
+    Q_OBJECT
+public:
+    Delegate(QWidget *parent = 0) : QItemDelegate(parent) {}
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,
+               const QModelIndex &index) const;
 };
 #endif // REFRESULTAT_H
