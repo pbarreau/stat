@@ -15,6 +15,7 @@ public:
 public slots:
     void toPrevious(void);
     void toNext(void);
+    void slot_EndResultat(QObject*);
 
 private:
     int my_tCol;
@@ -22,6 +23,7 @@ private:
     int tid_start;
     int cid_start;
     QSqlQueryModel *my_model;
+    QString useTable;
 };
 
 #endif // SHOWSTEPPER_H

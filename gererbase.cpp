@@ -1239,7 +1239,9 @@ void GererBase::RangerValeurResultat(int &totCol,int &lgn, QString &msg, int &va
 
     //http://apiexamples.com/cpp/QtCore/QRegExp.html
     if (regex.indexIn(msg_cal) < 0) {
+#ifndef QT_NO_DEBUG
         qDebug("Can't find a match.");
+#endif
         return;
     }
 

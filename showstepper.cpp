@@ -1,3 +1,7 @@
+#ifndef QT_NO_DEBUG
+#include <QDebug>
+#endif
+
 #include <QSqlQuery>
 #include <QGridLayout>
 #include <QPushButton>
@@ -22,6 +26,25 @@ void ShowStepper::toPrevious(void)
 
 }
 
+void  ShowStepper::slot_EndResultat(QObject*)
+{
+    QSqlQuery requete;
+    bool status = false;
+
+    QString msg = "drop table "+useTable+";";
+    status = requete.exec(msg);
+
+
+#ifndef QT_NO_DEBUG
+    if(!status)
+    {
+        qDebug() << "ERROR:" << requete.executedQuery()  << "-" << requete.lastError().text();
+        //qDebug()<< lastError();
+    }
+
+#endif
+}
+
 void ShowStepper::toNext(void)
 {
     int cid = cid_start;
@@ -41,7 +64,8 @@ void ShowStepper::ExecSql(int cid, int tid)
     {
         ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
         msg = "select b as y" + QString::number(i)+
-                " from stepper where (cid ="+
+                " from "+
+                useTable+" where (cid ="+
                 QString::number(cid)+ " and tid ="+
                 QString::number(tid)+ " and y="+
                 QString::number(i)+ ") order by id;";
@@ -53,11 +77,6 @@ void ShowStepper::ExecSql(int cid, int tid)
 
 ShowStepper::~ShowStepper()
 {
-    QSqlQuery requete;
-    bool status = false;
-
-   QString msg = "drop table stepper_"+QString::number(tid_start)+";";
-   status = requete.exec(msg);
 }
 
 ShowStepper::ShowStepper(int cid, int tid)
@@ -70,6 +89,7 @@ ShowStepper::ShowStepper(int cid, int tid)
     cid_start = cid;
 
     tid_cur = tid;
+    useTable = "stepper_"+QString::number(tid_start);
 
     /// Preparation de la feuille
     QWidget * Resultats = new QWidget;
@@ -89,7 +109,8 @@ ShowStepper::ShowStepper(int cid, int tid)
             this, SLOT(toNext()));
 
     // determination du nombre de colonne
-    msg = "select max(tot) as M from (select  count (distinct y) as tot  from stepper group by cid);";
+    msg = "select max(tot) as M from (select  count (distinct y) as tot  from "+
+            useTable+" group by cid);";
     status = requete.exec(msg);
     if(status)
     {
@@ -104,30 +125,18 @@ ShowStepper::ShowStepper(int cid, int tid)
             my_model = new QSqlQueryModel [my_tCol];
             QTableView *view = new QTableView[my_tCol];
             Delegate *MaGestion = new Delegate  [my_tCol];
-#if 0
-            QDataWidgetMapper *mapper = new QDataWidgetMapper [tCol];
-            QSqlRelationalDelegate *mapDeleg = new QSqlRelationalDelegate [tCol];
-#endif
             for(int i = 0; i< my_tCol; i++)
             {
                 ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
                 msg = "select b as y" + QString::number(i)+
-                        " from stepper where (cid ="+
+                        " from "+
+                        useTable+" where (cid ="+
                         QString::number(cid)+ " and tid ="+
                         QString::number(tid)+ " and y="+
                         QString::number(i)+ ") order by id;";
 
                 my_model[i].setQuery(msg);
 
-#if 0
-                mapper[i].setModel(&model[i]);
-                mapper[i].setItemDelegate(&mapDeleg[i]);
-                connect(previousButton, SIGNAL(clicked()),
-                        &mapper[i], SLOT(toPrevious()));
-                connect(nextButton, SIGNAL(clicked()),
-                        &mapper[i], SLOT(toNext()));
-                mapper[i].toFirst();
-#endif
 
                 view[i].setModel(&my_model[i]);
                 view[i].setParent(splitter);
@@ -141,8 +150,10 @@ ShowStepper::ShowStepper(int cid, int tid)
 
             }
             layout->addLayout(layForBtn,0,0);
-            //layout->addWidget(nextButton, 0, 1, Qt::AlignTop);
             layout->addWidget(splitter, 1, 0, Qt::AlignLeft);
+
+            Resultats->setAttribute(Qt::WA_DeleteOnClose);
+            connect( Resultats, SIGNAL(destroyed(QObject*)), this, SLOT(slot_EndResultat(QObject*)) );
             Resultats->setLayout(layout);
             Resultats->setWindowTitle("Resultats");
             Resultats->show();

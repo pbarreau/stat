@@ -207,8 +207,14 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int 
     int val = my_index.model()->index(my_index.row(),0).data().toInt();
     QString table = "stepper_"+QString::number(val);
 
+    msg = "drop table  "+ table  + ";";
+    status = requete.exec(msg);
+
     msg = "create table if not exists "+ table  + "(id integer primary key, cid int, tid int, y int, b int);";
     status = requete.exec(msg);
+    if(!status){
+        return;
+    }
 
     stMyHeadedList linksInfo[possible];
     memset(linksInfo,-1,sizeof(stMyHeadedList)*possible);
