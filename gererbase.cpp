@@ -111,9 +111,9 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
     // Lectures des fichiers de la Fd jeux
     do
     {
-        status = NEW_LireLesTirages(nbelemt-1, &LesTirages[nbelemt-1], typeTirages);
         nbelemt--;
-    }while((status == true) && nbelemt);
+        status = NEW_LireLesTirages(nbelemt, &LesTirages[nbelemt], typeTirages);
+    }while((status == true) && (nbelemt>0));
 
     // Trier la table temporaire et la mettre dans la table tirage
     str_1 = "insert into tirages ("+ str_s +",file) select * from v_tirages order by date_tirage desc;";
