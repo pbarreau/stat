@@ -52,8 +52,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     DB_tirages = new GererBase(dest_bdd,load,leJeu,&configJeu);
 
-    //ChartWidget *test = new ChartWidget;
-    //test->show();
     RechercheProgressionBoules(&configJeu);
 
 
@@ -68,197 +66,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     TST_EtoileCombi(&configJeu);
 
     FEN_NewTirages(&configJeu);
-    //FEN_Graphe(&configJeu);
-
-    return;
-
-#if 0
-    int i;
-    tirages tmp(leJeu);
-    QString ficSource;
-
-    // Preparation fenetre detail
-    w_FenetreDetails = new QWidget;
-    gtab_Top = new QTabWidget;
-    gtab_Top->setTabsClosable(true);
-    //QFormLayout *mainLayout = new QFormLayout;
-    mainLayout->addWidget(gtab_Top);
-    connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
-
-
-
-
-    // Recuperation des contantes du type de jeu
-    //tmp.getConfigFor(&configJeu);
-
-
-    // Creation sous fenetre pour mettre donnees de base
-    FEN_Old_Tirages();
-
-    /// --------- rem 1
-
-    //fen_LstCouv();
-
-
-    // Creation sous fenetre des ecarts
-    //fen_Ecarts();
-
-
-    // Creation fenetre pour parite
-    fen_Parites();
-    /// --- Fim rem 1
-
-    // Preparer la base de données
-    //DB_tirages->CreerBaseEnMemoire(dest_bdd,leJeu);
-
-
-    // Creation des tables pour ce type jeu
-    //DB_tirages->CreationTablesDeLaBDD(&tmp);
-    //DB_tirages->CreerTableDistriCombi();
-
-    //QApplication::quit();
-
-
-    if(leJeu == NE_FDJ::fdj_euro){
-        // Lecture des anciennes base des tirages
-        ficSource = "euromillions_2.csv";
-        DB_tirages->LireLesTirages(ficSource,&tmp);
-        ficSource="euromillions.csv";
-        DB_tirages->LireLesTirages(ficSource,&tmp);
-    }
-    else
-    {
-#if 0
-        // Recuperation des donnees fdj
-        ficSource = tmp.SelectSource(load);
-        if (DB_tirages->LireLesTirages(ficSource,&tmp) == false)
-        {
-            QApplication::quit();
-
-        }
-#endif
-        // Lecture des anciennes base des tirages
-        ficSource = "loto2017.csv";
-        DB_tirages->LireLesTirages(ficSource,&tmp);
-        ficSource="nouveau_loto.csv";
-        DB_tirages->LireLesTirages(ficSource,&tmp);
-
-    }
-
-    /// ------- rem 2
-    ///---------------------
-    // Recherche de combinaison A deplacer ?
-    //DB_tirages->RechercheCombinaison(&configJeu,tabWidget,zoneCentrale);
-    //TST_EtoileCombi(&configJeu,G_tbw_MontabWidget);
-    TST_EtoileCombi(&configJeu);
-    TST_RechercheCombi(&configJeu,G_tbw_MontabWidget);
-
-    // Creation fenetre pour memoriser la selection
-    // Creation fenetre resultat
-
-    NEW_RepartionBoules("tirages", &configJeu);
-    FEN_Ecarts();
-
-    // Et affichage des combinaisons
-    FEN_ChoisirBoules();
-    // Creation sous fenetre des voisins
-    FEN_Voisins();
-
-    // Ordre arrivee des boules ?
-    DB_tirages->CouvertureBase(G_sim_Ecarts,&configJeu);
-
-    //// GARDER L'ORDRE D'APPEL DES FONCTIONS PB VERROU SUR LA BASE
-    // --
-    int zn = 0;
-    for(i=1;i<=configJeu.limites[zn].max;i++){
-        // Remplir Sous Fen les ecarts
-        DB_tirages->DistributionSortieDeBoule(i,G_sim_Ecarts);
-        // Montrer les valeurs probable
-        //DB_tirages->CouvMontrerProbable(i,3,1,G_sim_Ecarts);
-        DB_tirages->CouvMontrerProbable(i,G_sim_Ecarts);
-
-        // Calcul occurence de cette boule
-        DB_tirages->TotalApparitionBoule(i,&configJeu, zn, G_sim_Voisins[zn]);
-    }
-
-
-    // --
-    zn=1;
-    for(i=1;i<=configJeu.limites[zn].max;i++)
-    {
-        // Calcul occurence de cette boule
-        DB_tirages->TotalApparitionBoule(i,&configJeu, zn, G_sim_Voisins[zn]);
-    }
-
-    // ----------------------------
-
-    /// fin rem 2
-    // Remplir la sousfenetre base de données
-    DB_tirages->AfficherBase(&configJeu,G_tbv_Tirages);
-    /// rem 3
-
-
-    // Remplir la sous fenetre resultat couverture
-    DB_tirages->AfficherResultatCouverture(&configJeu,G_tbv_CouvTirages);
-
-
-    // Remplir la sous fenetre de parite
-    DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_PAIR, G_sim_Parites);
-    DB_tirages->MLP_DansLaQtTabView(&configJeu, CL_SGRP, G_sim_Ensemble_1);
-    DB_tirages->MLP_UniteDizaine(&configJeu, G_sim_ud);
-
-
-    // Table a remplir
-    TST_PrevisionNew(&configJeu);
-
-    // Prevision des prochains tirage basee sur la parite du dernier tirage
-    TST_PrevisionType(NE_FDJ::critere_parite,&configJeu);
-    // idem en regardant la valeur de n/2
-    TST_PrevisionType(NE_FDJ::critere_enemble,&configJeu);
-
-
-    FEN_Graphe(&configJeu);
-#endif
-
-
-
-
-
-
-
-    /// ---- fin rem 3
-    //setCentralWidget(zoneCentrale);
-#if 0
-    // Reecriture de code
-    QStringList sl_Boules;
-    sl_Boules << QString::number(1);
-    sl_Boules << QString::number(2);
-    //0 : sur la ligne, -1 avant la ligne ie prevision; +1 apres ie hier
-    NEW_ChercherTotalBoulesAUneDistance(sl_Boules,-1,&configJeu);
-
-    int zn_test=0;
-    int dist = 1;
-    ComptageGenerique(zn_test,dist,sl_Boules,&configJeu);
-
-    NEW_ChoixPourTiragesSuivant(TB_WIN,4,&configJeu);
-
-#endif
-
-    FEN_NewTirages(&configJeu);
-
-
-#if 0
-    // Arranger les fenetres
-    QPoint position(0, 0);
-
-    foreach (QMdiSubWindow *window, zoneCentrale->subWindowList()) {
-        //QRect rect(0, 0, mdiArea->width(),
-        //          mdiArea->height() / mdiArea->subWindowList().count());
-        //window->setGeometry(rect);
-        window->move(position);
-        position.setX(position.x() + window->width());
-    }
-#endif
 }
 
 QGridLayout *MainWindow::MonLayout_OldTbvTirage(int x, int y)
@@ -484,6 +291,7 @@ void MaQtvDelegation::paint(QPainter *painter, const QStyleOptionViewItem &optio
 
 void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 {
+    bool status = false;
 #if 0
     select t1.id as id, t1.tip as Repartition, count(t1.id_poids)as T,
             count (case when t1.J like 'lun%' then 1 end)as LUN,
@@ -583,7 +391,6 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 
     // Mettre le dernier tirage en evidence
     QSqlQuery selection;
-    bool status = false;
 
     st_msg = "select analyses.id, analyses.id_poids from analyses limit 1;";
     status = selection.exec(st_msg);
@@ -790,10 +597,9 @@ QGridLayout *MainWindow::MonLayout_VoisinsPresent()
 QGridLayout *MainWindow::MonLayout_VoisinsPresent_v2()
 {
     QGridLayout *lay_return = new QGridLayout;
-
+    bool ret = false;
     QSqlQuery query;
     QString msg1;
-    bool ret = false;
     int maxBoules = 49;
 
     // Creation de la table ou pas
@@ -1278,9 +1084,6 @@ void MainWindow::fen_Voisins(void)
 void MainWindow::FEN_Splitter(void)
 {
     QSplitter *splitter = new QSplitter;
-    QTreeView *tree = new QTreeView(splitter);
-    QTabWidget *tw_tmp = new QTabWidget(splitter);
-    QTableView *qtv_tmp = new QTableView(splitter);
 
     splitter->setWindowTitle("Controle");
     splitter->show();
@@ -1846,8 +1649,7 @@ int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *ref)
     }
     else
     {
-        int a = 0;
-        a=a++; // Pb
+        ; // Pb
     }
 
     return retval;
@@ -2268,9 +2070,9 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
 
     //int nb1 = (*pSimEcart)->rowCount();
     //int nb2 = (*pSimEcart)->columnCount();
-    int nb1 = pSimEcart->rowCount();
+    //int nb1 = pSimEcart->rowCount();
 
-    ChartWidget *test = new ChartWidget(pSimEcart);
+    //ChartWidget *test = new ChartWidget(pSimEcart);
     //test->show();
 
     QFormLayout *mainLayout = new QFormLayout;

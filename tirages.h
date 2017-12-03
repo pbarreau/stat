@@ -108,7 +108,7 @@ public:
     QString qs_zColBaseName(int zone);
     int RechercheNbBoulesPairs(int zone); // Nombre de nombre pair dans la zone
     int RechercheNbBoulesDansGrp1(int zone); // Nombre de nombre de la zone appartenant a E1;
-    int RechercheNbBoulesLimite(int zone, int min, int max);
+    //int RechercheNbBoulesLimite(int zone, int min, int max);
     void ListeCombinaison(stTiragesDef *ref);
 
 };

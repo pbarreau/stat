@@ -296,7 +296,7 @@ QString tirages::SelectSource(bool load)
   return     fileName_2;
 }
 
-
+#if 0
 int tirages::RechercheNbBoulesLimite(int zone, int min, int max)
 {
   int i;
@@ -308,6 +308,7 @@ int tirages::RechercheNbBoulesLimite(int zone, int min, int max)
   }
   return ret;
 }
+#endif
 
 int tirages::RechercheNbBoulesPairs(int zone)
 {

@@ -35,11 +35,11 @@ void MainWindow::RechercheProgressionBoules(stTiragesDef *pConf)
                 // recuperer chacune des boules
                 int boule=req.value(i).toInt();
 
+                if(boule > 0){
                 tab2[tab1[boule-1]]=0;
                 tab2[nbBoulesJeu+i]=boule;
-
-
                 tab1[boule-1]=nbBoulesJeu+i;
+                }
             }
 
             // faire remonter
