@@ -65,7 +65,7 @@ bool GererBase::f1()
         requete.remove("date_tirage, ");
         requete.replace(",", " int,");
         requete =  "create table tirages (id integer primary key,date_tirage TEXT," +
-                requete + " int);";
+                requete + " text);";
 
         status = query.exec(requete);
         query.finish();
