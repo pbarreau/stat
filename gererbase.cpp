@@ -47,7 +47,73 @@ GererBase::~GererBase(void)
 bool GererBase::LireFichiersDesTirages(bool autoLoad)
 {
     bool status = false;
+    int nbelemt = 0;
+    tiragesFileFormat *LesFichiers;
 
+    stFzn p1Zn[] =
+    {
+        {4,5,1,50},
+        {9,2,1,10}
+    };
+    stFzn p2Zn[] =
+    {
+        {4,5,1,49},
+        {9,1,1,10}
+    };
+
+    tiragesFileFormat euroMillions[]=
+    {
+        {"euromillions_4.csv",NE_FDJ::fdj_euro,
+         {false,2,1,2,&p1Zn[0]}
+        },
+        {"euromillions_3.csv",NE_FDJ::fdj_euro,
+         {false,2,1,2,&p1Zn[0]}
+        },
+        {"euromillions_2.csv",NE_FDJ::fdj_euro,
+         {false,2,1,2,&p1Zn[0]}
+        },
+        {"euromillions.csv",NE_FDJ::fdj_euro,
+         {false,2,1,2,&p1Zn[0]}
+        }
+    };
+
+    tiragesFileFormat loto[]=
+    {
+        {"loto2017.csv",NE_FDJ::fdj_loto,
+         {false,2,1,2,&p2Zn[0]}
+        },
+        {"superloto2017.csv",NE_FDJ::fdj_loto,
+         {false,2,1,2,&p2Zn[0]}
+        },
+        {"lotonoel2017.csv",NE_FDJ::fdj_loto,
+         {false,2,1,2,&p2Zn[0]}
+        },
+        {"nouveau_superloto.csv",NE_FDJ::fdj_loto,
+         {false,2,1,2,&p2Zn[0]}
+        },
+        {"nouveau_loto.csv",NE_FDJ::fdj_loto,
+         {false,2,1,2,&p2Zn[0]}
+        }
+    };
+
+    if(typeTirages->conf.choixJeu == NE_FDJ::fdj_euro){
+         nbelemt = sizeof(euroMillions)/sizeof(tiragesFileFormat);
+         LesFichiers = euroMillions;
+     }
+     else
+     {
+         nbelemt = sizeof(loto)/sizeof(tiragesFileFormat);
+         LesFichiers = loto;
+     }
+
+    // Lectures des fichiers de la Fd jeux
+    do
+    {
+        status = LireLesTirages(&LesFichiers[nbelemt-1]);
+        nbelemt--;
+    }while((status == true) && (nbelemt>0));
+
+#if 0
     QString ficSource = typeTirages->SelectSource(autoLoad);
 
     status = LireLesTirages(ficSource,typeTirages);
@@ -72,6 +138,7 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
         ficSource="nouveau_loto.csv";
         LireLesTirages(ficSource,typeTirages);
     }
+#endif
 
     // La lecture a fait  l'analyse des tirages
     // on affecte un poids pour chacun des tirages
@@ -95,7 +162,7 @@ bool GererBase::ReorganiserLesTirages()
 
     st_tmp2 = OrganiseChampsDesTirages(TB_BASE, &ref);
     st_tmp2 = "Create table if not exists "
-             REF_BASE
+            REF_BASE
             " as " + st_tmp2;
 
     status = sql_1.exec(st_tmp2);

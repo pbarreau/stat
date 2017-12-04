@@ -113,6 +113,30 @@ public:
 
 };
 
+typedef struct _znfDef
+{
+    int start;  /// offset de debut zone dans fichier
+    int len;    /// taille dans la zone
+    int min;    /// valeur mini possible
+    int max;    /// valeur maxi possible
+}stFzn;
+
+typedef struct _keyForFile
+{
+    bool wget;  /// A telecharger ?
+    int ofdate; /// Offset dans fichier pour avoir la date
+    int ofday;  /// Offset dans fichier pour avoir le jour
+    int nbZone; /// Nb zone a lire
+    stFzn *pZn; /// Pointeur vers caracteristique de chacune des zones
+}stKey;
+
+typedef struct _tiragesFileFormat
+{
+    QString fname;              /// file name
+    NE_FDJ::E_typeJeux type;    /// type de jeux
+    stKey param;
+}tiragesFileFormat;
+
 class DelegationDeCouleur : public QItemDelegate
 {
     Q_OBJECT
@@ -149,7 +173,7 @@ public:
     bool CreationTablesDeLaBDD(tirages *pRref);
     bool CTB_Table1(QString nomTable, tirages *pRef);
     bool CreerTableDistriCombi(void);
-    bool LireLesTirages(QString fileName_2, tirages *pRef);
+    bool LireLesTirages(tiragesFileFormat *def);
     bool SupprimerBase();
     QSqlError lastError();
     void AfficherBase(stTiragesDef *pConf, QTableView *cibleview);

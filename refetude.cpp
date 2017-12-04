@@ -1212,11 +1212,6 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, bool *depart, int *tot
             int leMois = tmpSplit.at(1).toInt() -1;
             memo->p_TotalMois[b_val-1][leMois]++;
 
-            if(st_date == "10/07/2017" && zn==1)
-            {
-                int a = 1;
-                a++;
-            }
 
 #if 0
             // memoriser sequencement on/off apparition de chaque boule
