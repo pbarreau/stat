@@ -68,6 +68,20 @@ typedef struct _val_max_min
     int max;
 }stBornes;
 
+typedef struct _gererBaseParam
+{
+    bool destination;
+    bool typeChargement;
+    NE_FDJ::E_typeJeux typeJeu;
+
+}stParam;
+
+typedef struct _MyErrors
+{
+    bool status;
+    QString msg;
+}stErr;
+
 typedef struct _tirages_def
 {
     class tirages *pTir;
@@ -163,8 +177,8 @@ class GererBase : public QObject,tirages
 {
     Q_OBJECT
 public:
-    GererBase(QObject *parent = 0);
-    GererBase(bool enMemoire,bool autoLoad,NE_FDJ::E_typeJeux leJeu,stTiragesDef *pConf);
+    //GererBase(QObject *parent = 0);
+    GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf);
     ~GererBase();
 
 public:
@@ -173,7 +187,7 @@ public:
     bool CreationTablesDeLaBDD(tirages *pRref);
     bool CTB_Table1(QString nomTable, tirages *pRef);
     bool CreerTableDistriCombi(void);
-    bool LireLesTirages(tiragesFileFormat *def);
+    bool LireLesTirages(tiragesFileFormat *def,stErr *retErr);
     bool SupprimerBase();
     QSqlError lastError();
     void AfficherBase(stTiragesDef *pConf, QTableView *cibleview);
@@ -236,7 +250,7 @@ private:
     bool f4();
     bool SauverCombiVersTable (QStringList &combi);
     bool MettrePonderationCombi(int delta);
-    bool LireFichiersDesTirages(bool autoLoad);
+    bool LireFichiersDesTirages(bool autoLoad,stErr *retErr);
     bool AffectePoidsATirage_v2();
     bool ReorganiserLesTirages();
     bool GrouperCombi(int zn);

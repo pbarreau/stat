@@ -18,12 +18,12 @@
 #include "tirages.h"
 
 QString DateAnormer(QString input);
-QString JourFromDate(QString LaDate, QString verif);
+QString JourFromDate(QString LaDate, QString verif, stErr *retErr);
 
 // pour trier la fusion superloto + loto :
 // sort -o mysort.txt -t ";" -r -n -k3.9 -k3.4 -k3 nouveau_loto.csv
 // http://www.cyberciti.biz/faq/linux-unix-sort-date-data-using-sortcommand/
-bool GererBase::LireLesTirages(tiragesFileFormat *def)
+bool GererBase::LireLesTirages(tiragesFileFormat *def,stErr *retErr)
 {
     QString fileName_2 = def->fname;
     tirages *pRef = typeTirages;
@@ -31,15 +31,16 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def)
     QString msg = "";
     QString clef_1= "";
     QString clef_2= "";
-    bool ret = false;
+    bool ret = true;
 
     // On ouvre notre fichier en lecture seule et on verifie l'ouverture
     if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        QMessageBox msgBox;
-        msg = "Auto chargement : " + fileName_2 + "\nEchec!!";
-        msgBox.setText(msg);
-        msgBox.exec();
+        //QMessageBox msgBox;
+        retErr->msg = "Auto chargement : " + fileName_2 + "\nEchec!!";
+        retErr->status = false;
+        //msgBox.setText(msg);
+        //msgBox.exec();
         return false;
     }
 
@@ -103,7 +104,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def)
 
     // Analyse des suivantes
     int nb_lignes=0;
-    while(! flux.atEnd())
+    while((! flux.atEnd() )&& (ret == true))
     {
         ligne = flux.readLine();
         nb_lignes++;
@@ -116,7 +117,15 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def)
         sql_1.bindValue(":date_tirage", date_tirage);
 
         // Calcul du jour de la semaine
-        jour_tirage = JourFromDate(date_tirage, list1.at(1));
+        jour_tirage = JourFromDate(date_tirage, list1.at(1),retErr);
+        if(retErr->status == false)
+        {
+            msg = retErr->msg;
+            msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1)+"\n"+msg;
+            retErr->msg = msg;
+            ret= false;
+            break;
+        }
         sql_1.bindValue(":jour_tirage", jour_tirage);
 
         // Recuperation des boules
@@ -152,9 +161,17 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def)
                 }
                 else
                 {
-                    val1 = -1; // Bug pour la valeur lue
+                    ret = false; // Bug pour la valeur lue
+                    msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1);
+                    msg= msg +"\nzn:"+QString::number(zone)+",el:"+QString::number(ElmZone);
+                    msg= msg +",val:"+QString::number(val1);
+                    retErr->status = false;
+                    retErr->msg = msg;
                 }
             }
+
+            if(ret == false)
+                break;
 
             for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
             {
@@ -176,11 +193,15 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def)
             sql_1.bindValue(clef_1.replace(QRegExp("\\s+"),""),nbE1);
 
         }
+
+        if(ret == false)
+            break;
+
         // Mettre dans la base
         ret = sql_1.exec();
         ret = sql_2.exec();
     }
-    return true;
+    return ret;
 }
 
 QString DateAnormer(QString input)
@@ -219,7 +240,7 @@ QString DateAnormer(QString input)
     return ladate;
 }
 
-QString JourFromDate(QString LaDate, QString verif)
+QString JourFromDate(QString LaDate, QString verif, stErr *retErr)
 {
     // http://algor.chez.com/date/date.htm
     QString tab[] = {"MARDI","MERCREDI","JEUDI","VENDREDI","SAMEDI","DIMANCHE","LUNDI"};
@@ -248,9 +269,10 @@ QString JourFromDate(QString LaDate, QString verif)
 
     retval = tab [JS];
 
-    if(retval != verif.trimmed())
+    if(retval.left(2) != verif.trimmed().left(2))
     {
-        s = s+1;
+        retErr->status = false;
+        retErr->msg = "Err:JourFromDate->" + LaDate+"\n"+retval+" != "+verif.trimmed();
     }
 
     return retval;

@@ -49,23 +49,39 @@ void MainWindow::pslot_closeTabDetails(int index)
 
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
+    stParam input;
+    input.destination =dest_bdd;
+    input.typeChargement = load;
+    input.typeJeu = leJeu;
 
-    DB_tirages = new GererBase(dest_bdd,load,leJeu,&configJeu);
+    stErr NoErrors;
+    NoErrors.status = true;
+    NoErrors.msg = "None";
 
-    RechercheProgressionBoules(&configJeu);
+    DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
+
+    if(NoErrors.status == false)
+    {
+        QMessageBox::critical(this,tr("Glob"),NoErrors.msg,QMessageBox::Yes,QMessageBox::NoButton);
+        QApplication::quit();
+    }
+    else
+    {
+        RechercheProgressionBoules(&configJeu);
 
 
-    w_FenetreDetails = new QWidget;
-    gtab_Top = new QTabWidget;
-    gtab_Top->setTabsClosable(true);
-    QFormLayout *mainLayout = new QFormLayout;
-    mainLayout->addWidget(gtab_Top);
-    connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
+        w_FenetreDetails = new QWidget;
+        gtab_Top = new QTabWidget;
+        gtab_Top->setTabsClosable(true);
+        QFormLayout *mainLayout = new QFormLayout;
+        mainLayout->addWidget(gtab_Top);
+        connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
 
 
-    TST_EtoileCombi(&configJeu);
+        TST_EtoileCombi(&configJeu);
 
-    FEN_NewTirages(&configJeu);
+        FEN_NewTirages(&configJeu);
+    }
 }
 
 QGridLayout *MainWindow::MonLayout_OldTbvTirage(int x, int y)

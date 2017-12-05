@@ -16,13 +16,21 @@
 
 #include "tirages.h"
 
+#if 0
 GererBase::GererBase(QObject *parent) :
     QObject(parent)
 {
 }
+#endif
 
-GererBase::GererBase(bool enMemoire, bool autoLoad, NE_FDJ::E_typeJeux leJeu, stTiragesDef *pConf)
+GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
+//GererBase::GererBase(bool enMemoire, bool autoLoad, NE_FDJ::E_typeJeux leJeu, stTiragesDef *pConf)
 {
+    //bool status = ok;
+    bool enMemoire = param->destination;
+    bool autoLoad = param->typeChargement;
+    NE_FDJ::E_typeJeux leJeu = param->typeJeu;
+
     // Creation de la base
     if(CreerBasePourEtude(enMemoire,leJeu)==true)
     {
@@ -34,8 +42,13 @@ GererBase::GererBase(bool enMemoire, bool autoLoad, NE_FDJ::E_typeJeux leJeu, st
         CreationTablesDeLaBDD_v2();
 
         // Charger les fichiers de donnees
-        LireFichiersDesTirages(autoLoad);
+        LireFichiersDesTirages(autoLoad, retErr);
 
+    }
+    else
+    {
+        retErr->status = false;
+        retErr->msg = "CreerBasePourEtude";
     }
 }
 
@@ -44,7 +57,7 @@ GererBase::~GererBase(void)
 
 }
 
-bool GererBase::LireFichiersDesTirages(bool autoLoad)
+bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
 {
     bool status = false;
     int nbelemt = 0;
@@ -61,16 +74,27 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
         {9,1,1,10}
     };
 
+    stFzn p3Zn[] =
+    {
+        {4,5,1,50},
+        {9,2,1,11}
+    };
+    stFzn p4Zn[] =
+    {
+        {5,5,1,50},
+        {10,2,1,12}
+    };
+
     tiragesFileFormat euroMillions[]=
     {
         {"euromillions_4.csv",NE_FDJ::fdj_euro,
-         {false,2,1,2,&p1Zn[0]}
+         {false,2,1,2,&p4Zn[0]}
         },
         {"euromillions_3.csv",NE_FDJ::fdj_euro,
-         {false,2,1,2,&p1Zn[0]}
+         {false,2,1,2,&p3Zn[0]}
         },
         {"euromillions_2.csv",NE_FDJ::fdj_euro,
-         {false,2,1,2,&p1Zn[0]}
+         {false,2,1,2,&p3Zn[0]}
         },
         {"euromillions.csv",NE_FDJ::fdj_euro,
          {false,2,1,2,&p1Zn[0]}
@@ -97,19 +121,19 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
     };
 
     if(typeTirages->conf.choixJeu == NE_FDJ::fdj_euro){
-         nbelemt = sizeof(euroMillions)/sizeof(tiragesFileFormat);
-         LesFichiers = euroMillions;
-     }
-     else
-     {
-         nbelemt = sizeof(loto)/sizeof(tiragesFileFormat);
-         LesFichiers = loto;
-     }
+        nbelemt = sizeof(euroMillions)/sizeof(tiragesFileFormat);
+        LesFichiers = euroMillions;
+    }
+    else
+    {
+        nbelemt = sizeof(loto)/sizeof(tiragesFileFormat);
+        LesFichiers = loto;
+    }
 
     // Lectures des fichiers de la Fd jeux
     do
     {
-        status = LireLesTirages(&LesFichiers[nbelemt-1]);
+        status = LireLesTirages(&LesFichiers[nbelemt-1],retErr);
         nbelemt--;
     }while((status == true) && (nbelemt>0));
 
@@ -142,7 +166,8 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad)
 
     // La lecture a fait  l'analyse des tirages
     // on affecte un poids pour chacun des tirages
-    status = AffectePoidsATirage_v2();
+    if(status)
+        status = AffectePoidsATirage_v2();
 
     // Creer une table bien organisee
     if(status)
