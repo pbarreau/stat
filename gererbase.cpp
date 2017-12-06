@@ -132,6 +132,11 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
         LesFichiers = loto;
     }
 
+#ifndef QT_NO_DEBUG
+    // Effacer fenetre de debug
+    qDebug()<<"\0x1B[2J\0x1b[;H";
+#endif
+
     // Creer une table temporaire que l'on va trier apres chargement total
     stTiragesDef ref;
     typeTirages->getConfigFor(&ref);
@@ -145,7 +150,7 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
     // Retirer le premier element
     str_1.remove("date_tirage, ");
     str_1.replace(",", " int,");
-    str_1 =  "create temp table if not exists v_tirages (date_tirage text," +
+    str_1 =  "create table if not exists v_tirages (id integer primary key, date_tirage text," +
             str_1 + " text, file int);";
 #ifndef QT_NO_DEBUG
     qDebug() << str_1;
@@ -162,19 +167,32 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
     };
 
     if(status){
+#if 0
         // Trier la table temporaire et la mettre dans la table tirage
-        str_1 = "insert into tirages ("+ str_s +",file) select * from v_tirages order by date_tirage desc;";
+        str_1 = "insert into tirages (id,"+ str_s +",file) select * from v_tirages order by date_tirage desc;";
 #ifndef QT_NO_DEBUG
         qDebug() << str_1;
 #endif
         status = query.exec(str_1);
+#endif
+        // supprimer la table temporaire
+        if(status)
+        {
+            str_1 = "drop table v_tirages;";
+#ifndef QT_NO_DEBUG
+            qDebug() << str_1;
+#endif
+            status = query.exec(str_1);
+
+        }
+
     }
 
-
+#if 0
     // Effectuer l'analyse
     if(status)
         status = NEW_AnalyseLesTirages(typeTirages);
-
+#endif
     // on affecte un poids pour chacun des tirages
     if(status)
         status = AffectePoidsATirage_v2();

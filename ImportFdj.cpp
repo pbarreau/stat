@@ -30,17 +30,13 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
     QFile fichier(fileName_2);
     QString msg = "";
     QString clef_1= "";
-    QString clef_2= "";
     bool ret = true;
 
     // On ouvre notre fichier en lecture seule et on verifie l'ouverture
     if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        //QMessageBox msgBox;
         retErr->msg = "Auto chargement : " + fileName_2 + "\nEchec!!";
         retErr->status = false;
-        //msgBox.setText(msg);
-        //msgBox.exec();
         return false;
     }
 
@@ -53,12 +49,13 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
 
     QString str_1 = "";
     QString str_2 = "";
-    //QString cln_tirages = pRef->s_LibColBase(&ref);
-    //QString LesColonnes = cln_tirages;
 
     QSqlQuery sql_1(db);
+#if 1
     QSqlQuery sql_2(db);
-
+    QString clef_2= "";
+    int val2 = 0;
+#endif
     int nbPair = 0;
     int nbE1 = 0;
 
@@ -72,17 +69,19 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
     int maxValZone = 0;
     int minValZone = 0;
     int val1 = 0;
-    int val2 = 0;
 
     // Table des tirages
     str_1 = pRef->s_LibColBase(&ref);
     str_2 = str_1;
     str_1.replace(QRegExp("\\s+"),""); // suppression des espaces
     str_1.replace(",",", :");
-    //str_1 = "INSERT INTO tirages (id," + str_2 + ")VALUES (:id, :" + str_1 + ")";
-    str_1 = "INSERT INTO v_tirages (" + str_2 + ",file)VALUES (:" + str_1 + ", :file);";
+    str_1 = "INSERT INTO tirages (id," + str_2 + ",file) VALUES (:id, :" + str_1 + ", :file);";
+#ifndef QT_NO_DEBUG
+    qDebug() << str_1;
+#endif
     sql_1.prepare(str_1);
-#if 0
+
+#if 1
     // Table des analyses
     str_1 = pRef->s_LibColAnalyse(&ref);
     str_2 = str_1;
@@ -138,7 +137,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
         {
             maxValZone = def->param.pZn[zone].max;
             minValZone = def->param.pZn[zone].min;
-#if 0
+#if 1
             for(int j = 0; j < (def->param.pZn[zone].max/10)+1; j++)
                 pRZone[zone][j]=0;
 #endif
@@ -160,7 +159,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
                     clef_1 = ":"+ref.nomZone[zone]+QString::number(ElmZone+1);
                     clef_1.replace(QRegExp("\\s+"),"");
                     sql_1.bindValue(clef_1,val1);
-#if 0
+#if 1
                     // incrementation du compteur unite/dizaine
                     pRZone[zone][val1/10]++;
 #endif
@@ -184,7 +183,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
                 // Toutes les clefs sont faites ?
                 sql_1.bindValue(":file",file_id);
             }
-#if 0
+#if 1
             for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
             {
                 val2 = pRZone[zone][j];
@@ -211,7 +210,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
 
         // Mettre dans la base
         ret = sql_1.exec();
-#if 0
+#if 1
         ret = sql_2.exec();
 #endif
     }
@@ -344,6 +343,8 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
     status = sql_all.first();
     while(status)
     {
+        QSqlRecord ligne = sql_all.record();
+
         // Recuperation des boules
         for(int zone=0;zone< max_zone;zone++)
         {
@@ -351,10 +352,9 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
                 pRZone[zone][j]=0;
 
             int maxElmZone = ref.nbElmZone[zone];
-
+            // recuperer chaque tirage pour compter unité, dizaine,...
             for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
             {
-                QSqlRecord ligne = sql_all.record();
                 QString champ = ref.nomZone[zone]+QString::number(ElmZone+1);
 
                 // La valeur a deja ete verifie dans chargement des donnees
@@ -364,6 +364,7 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
                 pRZone[zone][val1/10]++;
             }
 
+            //Affecter les resutats precedents dans la table analyse
             for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
             {
                 int val2 = pRZone[zone][j];
