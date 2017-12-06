@@ -60,6 +60,8 @@ GererBase::~GererBase(void)
 bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
 {
     bool status = false;
+    QString req_vue = "";
+    QSqlQuery query;
     int nbelemt = 0;
     tiragesFileFormat *LesFichiers;
 
@@ -130,41 +132,49 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
         LesFichiers = loto;
     }
 
-    // Lectures des fichiers de la Fd jeux
-    do
-    {
-        status = LireLesTirages(&LesFichiers[nbelemt-1],retErr);
-        nbelemt--;
-    }while((status == true) && (nbelemt>0));
+    // Creer une table temporaire que l'on va trier apres chargement total
+    stTiragesDef ref;
+    typeTirages->getConfigFor(&ref);
 
-#if 0
-    QString ficSource = typeTirages->SelectSource(autoLoad);
-
-    status = LireLesTirages(ficSource,typeTirages);
-
-    if (status == false)
-    {
-        QApplication::quit();
-        return status;
-
-    }
-
-    // Lecture des anciennes base des tirages
-    if(typeTirages->conf.choixJeu == NE_FDJ::fdj_euro){
-        LireLesTirages(ficSource,typeTirages);
-        ficSource = "euromillions_2.csv";
-        LireLesTirages(ficSource,typeTirages);
-        ficSource="euromillions.csv";
-        LireLesTirages(ficSource,typeTirages);
-    }
-    else
-    {
-        ficSource="nouveau_loto.csv";
-        LireLesTirages(ficSource,typeTirages);
-    }
+    QString str_1 = typeTirages->s_LibColBase(&ref);
+    QString str_s = str_1;
+#ifndef QT_NO_DEBUG
+    qDebug() << str_1;
 #endif
 
-    // La lecture a fait  l'analyse des tirages
+    // Retirer le premier element
+    str_1.remove("date_tirage, ");
+    str_1.replace(",", " int,");
+    str_1 =  "create temp table if not exists v_tirages (date_tirage text," +
+            str_1 + " text, file int);";
+#ifndef QT_NO_DEBUG
+    qDebug() << str_1;
+#endif
+
+    status = query.exec(str_1);
+
+
+    // Lectures des fichiers de la Fd jeux
+    while((status == true) && (nbelemt>0))
+    {
+        status = LireLesTirages(&LesFichiers[nbelemt-1],nbelemt-1,retErr);
+        nbelemt--;
+    };
+
+    if(status){
+        // Trier la table temporaire et la mettre dans la table tirage
+        str_1 = "insert into tirages ("+ str_s +",file) select * from v_tirages order by date_tirage desc;";
+#ifndef QT_NO_DEBUG
+        qDebug() << str_1;
+#endif
+        status = query.exec(str_1);
+    }
+
+
+    // Effectuer l'analyse
+    if(status)
+        status = NEW_AnalyseLesTirages(typeTirages);
+
     // on affecte un poids pour chacun des tirages
     if(status)
         status = AffectePoidsATirage_v2();

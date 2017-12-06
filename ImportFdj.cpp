@@ -23,7 +23,7 @@ QString JourFromDate(QString LaDate, QString verif, stErr *retErr);
 // pour trier la fusion superloto + loto :
 // sort -o mysort.txt -t ";" -r -n -k3.9 -k3.4 -k3 nouveau_loto.csv
 // http://www.cyberciti.biz/faq/linux-unix-sort-date-data-using-sortcommand/
-bool GererBase::LireLesTirages(tiragesFileFormat *def,stErr *retErr)
+bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr)
 {
     QString fileName_2 = def->fname;
     tirages *pRef = typeTirages;
@@ -79,9 +79,10 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,stErr *retErr)
     str_2 = str_1;
     str_1.replace(QRegExp("\\s+"),""); // suppression des espaces
     str_1.replace(",",", :");
-    str_1 = "INSERT INTO tirages (id," + str_2 + ")VALUES (:id, :" + str_1 + ")";
+    //str_1 = "INSERT INTO tirages (id," + str_2 + ")VALUES (:id, :" + str_1 + ")";
+    str_1 = "INSERT INTO v_tirages (" + str_2 + ",file)VALUES (:" + str_1 + ", :file);";
     sql_1.prepare(str_1);
-
+#if 0
     // Table des analyses
     str_1 = pRef->s_LibColAnalyse(&ref);
     str_2 = str_1;
@@ -92,12 +93,16 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,stErr *retErr)
 
     // Construction d'une variable en fonction du max /10
     int **pRZone = new int *[max_zone]; // Pointeur de repartition des zones
+
+
     for(zone=0;zone< max_zone;zone++)
     {
         maxValZone = def->param.pZn[zone].max;
         pRZone[zone]=new int[(maxValZone/10)+1];
     }
+#endif
 
+    // --- DEBUT ANALYSE DU FICHIER
     // Passer la premiere ligne
     ligne = flux.readLine();
 
@@ -133,10 +138,10 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,stErr *retErr)
         {
             maxValZone = def->param.pZn[zone].max;
             minValZone = def->param.pZn[zone].min;
-
+#if 0
             for(int j = 0; j < (def->param.pZn[zone].max/10)+1; j++)
                 pRZone[zone][j]=0;
-
+#endif
             maxElmZone = def->param.pZn[zone].len;
 
             for(ElmZone=0;ElmZone < maxElmZone;ElmZone++)
@@ -155,9 +160,10 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,stErr *retErr)
                     clef_1 = ":"+ref.nomZone[zone]+QString::number(ElmZone+1);
                     clef_1.replace(QRegExp("\\s+"),"");
                     sql_1.bindValue(clef_1,val1);
-
+#if 0
                     // incrementation du compteur unite/dizaine
                     pRZone[zone][val1/10]++;
+#endif
                 }
                 else
                 {
@@ -170,9 +176,15 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,stErr *retErr)
                 }
             }
 
-            if(ret == false)
+            if(ret == false){
                 break;
-
+            }
+            else
+            {
+                // Toutes les clefs sont faites ?
+                sql_1.bindValue(":file",file_id);
+            }
+#if 0
             for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
             {
                 val2 = pRZone[zone][j];
@@ -181,7 +193,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,stErr *retErr)
                 clef_2.replace(QRegExp("\\s+"),"");
                 sql_2.bindValue(clef_2,val2);
             }
-
+#endif
             // Calcul perso a mettre dans la base
             // Automatisation possible ?????
             nbPair = pRef->RechercheNbBoulesPairs(zone);
@@ -199,7 +211,9 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,stErr *retErr)
 
         // Mettre dans la base
         ret = sql_1.exec();
+#if 0
         ret = sql_2.exec();
+#endif
     }
     return ret;
 }
@@ -276,4 +290,96 @@ QString JourFromDate(QString LaDate, QString verif, stErr *retErr)
     }
 
     return retval;
+}
+
+bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
+{
+    bool status = false;
+    QSqlQuery sql_1;
+    QSqlQuery sql_all;
+    QString clef_1= "";
+    QString sAllTirages = "";
+
+    stTiragesDef ref;
+    pRef->getConfigFor(&ref);
+
+    // Table des analyses
+    QString str_1 = pRef->s_LibColAnalyse(&ref);
+    QString str_2 = str_1;
+#ifndef QT_NO_DEBUG
+    qDebug() << str_1;
+#endif
+
+    str_1.replace(QRegExp("\\s+"),""); // suppression des espaces
+    str_1.replace(",",", :");
+#ifndef QT_NO_DEBUG
+    qDebug() << str_1;
+#endif
+
+
+    str_1 = "INSERT INTO analyses (id," + str_2 + ")VALUES (:id, :" + str_1 + ")";
+    sql_1.prepare(str_1);
+#ifndef QT_NO_DEBUG
+    qDebug() << str_1;
+#endif
+
+    int max_zone = ref.nb_zone;
+    // Construction d'une variable en fonction du max /10
+    int **pRZone = new int *[max_zone]; // Pointeur de repartition des zones
+    for(int zone=0;zone< max_zone;zone++)
+    {
+        pRZone[zone]=new int[(ref.limites[zone].max/10)+1];
+    }
+
+
+    // Requete pour recuperer tous les tirages
+    sAllTirages = "select * from tirages; ";
+
+    status = sql_all.exec(sAllTirages);
+    if (!status)
+    {
+        return status;
+    }
+
+    status = sql_all.first();
+    while(status)
+    {
+        // Recuperation des boules
+        for(int zone=0;zone< max_zone;zone++)
+        {
+            for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
+                pRZone[zone][j]=0;
+
+            int maxElmZone = ref.nbElmZone[zone];
+
+            for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
+            {
+                QSqlRecord ligne = sql_all.record();
+                QString champ = ref.nomZone[zone]+QString::number(ElmZone+1);
+
+                // La valeur a deja ete verifie dans chargement des donnees
+                int val1 = ligne.value(champ).toInt();
+
+                // incrementation du compteur unite/dizaine
+                pRZone[zone][val1/10]++;
+            }
+
+            for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
+            {
+                int val2 = pRZone[zone][j];
+                // Preparation pour affectation variable sql (analyses)
+                clef_1 = ":"+ref.nomZone[zone]+"d"+QString::number(j);
+                clef_1.replace(QRegExp("\\s+"),"");
+                sql_1.bindValue(clef_1,val2);
+            }
+
+        }
+        // Mettre dans la base
+        status = sql_1.exec();
+
+        //passer a ligne suivante
+        status = sql_all.next();
+    }
+
+    return status;
 }

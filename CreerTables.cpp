@@ -64,8 +64,8 @@ bool GererBase::f1()
         // Retirer le premier element
         requete.remove("date_tirage, ");
         requete.replace(",", " int,");
-        requete =  "create table tirages (id integer primary key,date_tirage TEXT," +
-                requete + " text);";
+        requete =  "create table tirages (id integer primary key,date_tirage text," +
+                requete + " text, file int);";
 
         status = query.exec(requete);
         query.finish();

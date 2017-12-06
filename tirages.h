@@ -187,7 +187,8 @@ public:
     bool CreationTablesDeLaBDD(tirages *pRref);
     bool CTB_Table1(QString nomTable, tirages *pRef);
     bool CreerTableDistriCombi(void);
-    bool LireLesTirages(tiragesFileFormat *def,stErr *retErr);
+    bool LireLesTirages(tiragesFileFormat *def,int file_id,stErr *retErr);
+    bool NEW_AnalyseLesTirages(tirages *pRef);
     bool SupprimerBase();
     QSqlError lastError();
     void AfficherBase(stTiragesDef *pConf, QTableView *cibleview);
