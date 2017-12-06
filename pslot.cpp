@@ -1,11 +1,11 @@
+#ifndef QT_NO_DEBUG
+#include <QDebug>
+#endif
+
 #include <QtGui>
 #include <QMessageBox>
 #include <QMdiSubWindow>
 #include <QMdiArea>
-
-#ifndef QT_NO_DEBUG
-#include <QDebug>
-#endif
 
 #include "mainwindow.h"
 #include "choixjeux.h"

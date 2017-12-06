@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>212</width>
+    <width>245</width>
     <height>171</height>
    </rect>
   </property>
@@ -68,7 +68,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Chargement automatique </string>
+    <string>Auto</string>
    </property>
   </widget>
   <widget class="QCheckBox" name="rb_bdd">
@@ -81,7 +81,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Bdd sur disque</string>
+    <string>Bdd dsk</string>
    </property>
   </widget>
  </widget>

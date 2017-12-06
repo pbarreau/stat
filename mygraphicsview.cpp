@@ -1,4 +1,6 @@
-
+#ifndef QT_NO_DEBUG
+#include <QDebug>
+#endif
 
 //Qt includes
 #include <QGraphicsView>
@@ -8,10 +10,6 @@
 #include <QScrollBar>
 #include <QMouseEvent>
 #include <QWheelEvent>
-
-#ifndef QT_NO_DEBUG
-#include <QDebug>
-#endif
 
 #include <QString>
 #include <QSqlDatabase>

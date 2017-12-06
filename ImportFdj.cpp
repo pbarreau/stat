@@ -352,7 +352,7 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
                 pRZone[zone][j]=0;
 
             int maxElmZone = ref.nbElmZone[zone];
-            // recuperer chaque tirage pour compter unitÃ©, dizaine,...
+            // recuperer chaque tirage pour compter unité, dizaine,...
             for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
             {
                 QString champ = ref.nomZone[zone]+QString::number(ElmZone+1);

@@ -10,6 +10,10 @@
 #include <QStyledItemDelegate>
 #include <QTabWidget>
 #include <QComboBox>
+#include <QAbstractItemModel>
+#include <QAction>
+#include <QObject>
+#include <QModelIndex>
 
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
@@ -28,12 +32,35 @@ typedef enum _les_tableaux
 
 #define CTXT_SELECTION  "selection b:aucun - e:aucun - c:aucun - g:aucun"
 
+class B_ActFrMdlIndex:public QAction //Barreau_ActionFromModelIndex
+{
+    Q_OBJECT
+public:
+    B_ActFrMdlIndex(const QModelIndex &index,const QString &label,QObject * parent =0,...)
+        :QAction(label,parent), m_index(index)
+    {connect(this, SIGNAL(triggered()), this, SLOT(onTriggered()));}
+
+protected Q_SLOTS:
+    void onTriggered()
+    {
+        emit sig_SelectionTirage(m_index,0);
+    }
+
+Q_SIGNALS:
+    void sig_SelectionTirage(const QModelIndex &my_index, int val);
+
+private:
+    QModelIndex m_index;
+};
+
 class SyntheseGenerale : public QObject
 {
     Q_OBJECT
 
 private:
+
     //stCurDemande *pLaDemande;
+    B_ActFrMdlIndex *MonTraitement;
     GererBase *bdd;
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
@@ -72,18 +99,20 @@ private:
 
     QStandardItemModel *gsim_AnalyseUnTirage;
 
-
 public:
     SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt, int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetListeTirages(void);
     RefEtude *GetTabEcarts(void);
     void GetInfoTableau(int onglet, QTableView **pTbl, QSqlQueryModel **pSqm, QSortFilterProxyModel **pSfpm);
-
+    void MemoriserProgression(QString table, stMyHeadedList *h, stMyLinkedList *l, int y, int cid, int tid);
+    void PresenterResultat(int cid, int tid);
 
     // penser au destructeur pour chaque pointeur
 
 public slots:
+    void slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid);
+    void slot_ccmr_TbvLesTirages(QPoint pos); /// custom context menu request
     void slot_ClicDeSelectionTableau(const QModelIndex & index);
     void slot_MontreLesTirages(const QModelIndex & index);
     void slot_ShowTotalBoule(const QModelIndex & index);
@@ -108,6 +137,8 @@ private:
     QGridLayout * MonLayout_SyntheseTotalEtoiles(int dst);
     QGridLayout * MonLayout_SyntheseTotalRepartitions(int dst);
 
+    QTableView *tbForPrincipeAuguste(int nbcol, int nblgn);
+    QGridLayout *MonLayout_TabAuguste(int col, int lgn);
 
     QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);
 

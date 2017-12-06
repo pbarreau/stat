@@ -104,10 +104,27 @@ typedef struct _un_tirage
     int **valBoules;
 }stUnTirage;
 
+typedef struct _myhead
+{
+    int depart;
+    int total;
+}stMyHeadedList;
+
+typedef struct _ordreArrivee
+{
+    int x;  /// ordre arrivee
+    int y;  /// nb de fois
+    int n;  /// suivant
+    int p;  /// precedent
+}stMyLinkedList;
+
+
 class tirages
 {
 protected:
     static stTiragesDef conf;
+    static stMyLinkedList *arrive;
+    static int *total;
 
 public:
     static QString *lib_col;

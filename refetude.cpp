@@ -1473,8 +1473,10 @@ double  RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemMo
     if(0){
         while(query.isActive())
         {
+#ifndef QT_NO_DEBUG
             qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
             qDebug()<< p_db->lastError();
+#endif
             ;//rien
         }
     }
@@ -1522,7 +1524,9 @@ double  RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemMo
             // Mettre dans la base
             status = query.exec();
             if (!status){
+#ifndef QT_NO_DEBUG
                 qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
+#endif
 
             }
 

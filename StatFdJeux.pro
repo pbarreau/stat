@@ -54,7 +54,9 @@ SOURCES += main.cpp\
     myqabstractitemviewofqtable.cpp \
     myqtableview.cpp \
     SyntheseGenerale.cpp \
-    progression.cpp
+    progression.cpp \
+    showstepper.cpp \
+    delegate.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -74,7 +76,9 @@ HEADERS  += mainwindow.h \
     refetude.h \
     chartwidget.h \
     myqabstractitemviewofqtable.h \
-    myqtableview.h
+    myqtableview.h \
+    showstepper.h \
+    delegate.h
 
 
 FORMS    += mainwindow.ui \
