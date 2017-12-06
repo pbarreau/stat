@@ -158,6 +158,10 @@ bool GererBase::f3()
         requete = "create table analyses (id INTEGER PRIMARY KEY,"+
                 requete + " int, id_poids int);";
 
+#ifndef QT_NO_DEBUG
+        qDebug() << requete;
+#endif
+
         status = query.exec(requete);
         query.finish();
     }

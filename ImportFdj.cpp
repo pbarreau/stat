@@ -26,11 +26,7 @@ QString JourFromDate(QString LaDate, QString verif, stErr *retErr);
 bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr)
 {
     QString fileName_2 = def->fname;
-    tirages *pRef = typeTirages;
     QFile fichier(fileName_2);
-    QString msg = "";
-    QString clef_1= "";
-    bool ret = true;
 
     // On ouvre notre fichier en lecture seule et on verifie l'ouverture
     if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -40,24 +36,28 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
         return false;
     }
 
-
-    QTextStream flux(&fichier);
-    QString ligne = "";
-    QStringList list1;
     stTiragesDef ref;
+    tirages *pRef = typeTirages;
     pRef->getConfigFor(&ref);
 
     QString str_1 = "";
     QString str_2 = "";
 
     QSqlQuery sql_1(db);
-#if 1
+#if 0
     QSqlQuery sql_2(db);
     QString clef_2= "";
     int val2 = 0;
 #endif
     int nbPair = 0;
     int nbE1 = 0;
+
+    QString msg = "";
+    QString clef_1= "";
+    bool ret = true;
+    QTextStream flux(&fichier);
+    QString ligne = "";
+    QStringList list1;
 
     // Variable pour garder valeur des lignes
     QString date_tirage = "";
@@ -75,13 +75,13 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
     str_2 = str_1;
     str_1.replace(QRegExp("\\s+"),""); // suppression des espaces
     str_1.replace(",",", :");
-    str_1 = "INSERT INTO tirages (id," + str_2 + ",file) VALUES (:id, :" + str_1 + ", :file);";
+    str_1 = "INSERT INTO v_tirages (" + str_2 + ",file) VALUES (:" + str_1 + ", :file);";
 #ifndef QT_NO_DEBUG
     qDebug() << str_1;
 #endif
     sql_1.prepare(str_1);
 
-#if 1
+#if 0
     // Table des analyses
     str_1 = pRef->s_LibColAnalyse(&ref);
     str_2 = str_1;
@@ -137,7 +137,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
         {
             maxValZone = def->param.pZn[zone].max;
             minValZone = def->param.pZn[zone].min;
-#if 1
+#if 0
             for(int j = 0; j < (def->param.pZn[zone].max/10)+1; j++)
                 pRZone[zone][j]=0;
 #endif
@@ -159,7 +159,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
                     clef_1 = ":"+ref.nomZone[zone]+QString::number(ElmZone+1);
                     clef_1.replace(QRegExp("\\s+"),"");
                     sql_1.bindValue(clef_1,val1);
-#if 1
+#if 0
                     // incrementation du compteur unite/dizaine
                     pRZone[zone][val1/10]++;
 #endif
@@ -183,7 +183,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
                 // Toutes les clefs sont faites ?
                 sql_1.bindValue(":file",file_id);
             }
-#if 1
+#if 0
             for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
             {
                 val2 = pRZone[zone][j];
@@ -210,7 +210,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
 
         // Mettre dans la base
         ret = sql_1.exec();
-#if 1
+#if 0
         ret = sql_2.exec();
 #endif
     }
@@ -316,7 +316,7 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
 #endif
 
 
-    str_1 = "INSERT INTO analyses (id," + str_2 + ")VALUES (:id, :" + str_1 + ")";
+    str_1 = "INSERT INTO analyses (" + str_2 + ")VALUES (:" + str_1 + ")";
     sql_1.prepare(str_1);
 #ifndef QT_NO_DEBUG
     qDebug() << str_1;
@@ -379,8 +379,9 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
         status = sql_1.exec();
 
         //passer a ligne suivante
-        status = sql_all.next();
+        if (status)
+            status = sql_all.next();
     }
 
-    return status;
+    return true;
 }

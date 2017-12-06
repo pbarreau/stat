@@ -150,7 +150,7 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
     // Retirer le premier element
     str_1.remove("date_tirage, ");
     str_1.replace(",", " int,");
-    str_1 =  "create table if not exists v_tirages (id integer primary key, date_tirage text," +
+    str_1 =  "create table if not exists v_tirages (date_tirage text," +
             str_1 + " text, file int);";
 #ifndef QT_NO_DEBUG
     qDebug() << str_1;
@@ -167,14 +167,16 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
     };
 
     if(status){
-#if 0
+#if 1
         // Trier la table temporaire et la mettre dans la table tirage
-        str_1 = "insert into tirages (id,"+ str_s +",file) select * from v_tirages order by date_tirage desc;";
+        str_1 = "insert into tirages ("+ str_s +",file) select * from v_tirages order by date_tirage desc;";
 #ifndef QT_NO_DEBUG
         qDebug() << str_1;
 #endif
         status = query.exec(str_1);
 #endif
+
+#if 0
         // supprimer la table temporaire
         if(status)
         {
@@ -185,14 +187,14 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
             status = query.exec(str_1);
 
         }
-
+#endif
     }
 
-#if 0
+
     // Effectuer l'analyse
     if(status)
         status = NEW_AnalyseLesTirages(typeTirages);
-#endif
+
     // on affecte un poids pour chacun des tirages
     if(status)
         status = AffectePoidsATirage_v2();
@@ -247,10 +249,15 @@ bool GererBase::AffectePoidsATirage_v2()
 
                 for(int i = 0; i<= nbBoules;i++)
                 {
+                    // Voir les champs de la table
+                    // les unites commence en position 4
                     coef[i] = sql_1.value(4+i).toInt();
                     msg_2 = msg_2 + "bd"+QString::number(i)
                             +"="+QString::number(coef[i])+ " and ";
                 }
+#ifndef QT_NO_DEBUG
+        qDebug() << msg_2;
+#endif
 
                 // creation d'une requete mise a jour des poids
                 //double poids = sql_1.value(lastcol-1).toDouble();
@@ -260,6 +267,9 @@ bool GererBase::AffectePoidsATirage_v2()
                         +" where(id in (select id from analyses where("
                         +msg_2+")"
                         +"));";
+#ifndef QT_NO_DEBUG
+        qDebug() << msg_2;
+#endif
 
                 status = sql_2.exec(msg_2);
 
