@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QSqlQueryModel>
+#include <QLabel>
 
 class ShowStepper: public QObject
 {
@@ -10,7 +11,10 @@ class ShowStepper: public QObject
 public:
     ~ShowStepper();
     ShowStepper(int cid, int tid);
+
+private:
     void ExecSql(int cid,int tid);
+    void setLabel(int tid);
 
 public slots:
     void toPrevious(void);
@@ -24,6 +28,10 @@ private:
     int cid_start;
     QSqlQueryModel *my_model;
     QString useTable;
+    QLabel * dNext;
+    QLabel * dCurr;
+    QLabel * dPrev;
+
 };
 
 #endif // SHOWSTEPPER_H

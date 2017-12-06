@@ -10,19 +10,23 @@
 #include <QTableView>
 #include <QSqlRecord>
 #include <QHeaderView>
+#include <QDate>
 
 #include "tirages.h"
 #include "showstepper.h"
 #include "delegate.h"
 
+QString GetTirageInfo(int id);
+
 void ShowStepper::toPrevious(void)
 {
     int cid = cid_start;
 
-    if((tid_cur >= 0) && (tid_cur < tid_start))
+    if((tid_cur >= 0) && (tid_cur < tid_start)){
         tid_cur++;
-
-    ExecSql(cid,tid_cur);
+        setLabel(tid_cur);
+        ExecSql(cid,tid_cur);
+    }
 
 }
 
@@ -49,10 +53,11 @@ void ShowStepper::toNext(void)
 {
     int cid = cid_start;
 
-    if((tid_cur <= tid_start) && (tid_cur>0))
+    if((tid_cur <= tid_start) && (tid_cur>1)){
         tid_cur--;
-
-    ExecSql(cid,tid_cur);
+        setLabel(tid_cur);
+        ExecSql(cid,tid_cur);
+    }
 
 }
 
@@ -79,6 +84,35 @@ ShowStepper::~ShowStepper()
 {
 }
 
+void ShowStepper::setLabel(int tid)
+{
+    QString msg1 = "";
+    QString msg2 = "";
+    QString msg3 = "";
+
+    msg1 = GetTirageInfo(tid);
+    dCurr->setText(msg1);
+
+    if(tid == tid_start)
+    {
+        msg2 = msg1;
+    }
+    else
+    {
+        msg2 = GetTirageInfo(tid+1);
+    }
+    dPrev->setText(msg2);
+
+    if(tid == 1)
+    {
+        msg3 = msg1;
+    }
+    else
+    {
+        msg3 = GetTirageInfo(tid-1);
+    }
+    dNext->setText(msg3);
+}
 ShowStepper::ShowStepper(int cid, int tid)
 {
     QSqlQuery requete;
@@ -91,17 +125,26 @@ ShowStepper::ShowStepper(int cid, int tid)
     tid_cur = tid;
     useTable = "stepper_"+QString::number(tid_start);
 
+
     /// Preparation de la feuille
     QWidget * Resultats = new QWidget;
     QGridLayout *layout = new QGridLayout();
     QHBoxLayout *layForBtn = new QHBoxLayout;
-    QPushButton *nextButton = new QPushButton(tr("&Next"));
-    QPushButton *previousButton = new QPushButton(tr("&Previous"));
+    QPushButton *nextButton = new QPushButton(tr("Tir&+1"));
+    QPushButton *previousButton = new QPushButton(tr("Tir&-1"));
+    dNext =new QLabel;
+    dCurr =new QLabel;
+    dPrev =new QLabel;
+
+    setLabel(tid);
 
     nextButton->setMaximumWidth(50);
     previousButton->setMaximumWidth(50);
+    layForBtn->addWidget(dPrev);
     layForBtn->addWidget(previousButton);
+    layForBtn->addWidget(dCurr);
     layForBtn->addWidget(nextButton);
+    layForBtn->addWidget(dNext);
 
     connect(previousButton, SIGNAL(clicked()),
             this, SLOT(toPrevious()));
@@ -149,8 +192,9 @@ ShowStepper::ShowStepper(int cid, int tid)
                 view[i].setFixedWidth(LCELL+45);
 
             }
-            layout->addLayout(layForBtn,0,0);
-            layout->addWidget(splitter, 1, 0, Qt::AlignLeft);
+            layout->addLayout(layForBtn,0,0,1,5,Qt::AlignHCenter);
+            layout->addWidget(splitter, 1,0,1,5, Qt::AlignHCenter);
+            layout->setRowStretch(1,1);
 
             Resultats->setAttribute(Qt::WA_DeleteOnClose);
             connect( Resultats, SIGNAL(destroyed(QObject*)), this, SLOT(slot_EndResultat(QObject*)) );
@@ -159,4 +203,33 @@ ShowStepper::ShowStepper(int cid, int tid)
             Resultats->show();
         }
     }
+}
+
+QString GetTirageInfo(int id)
+{
+    QSqlQuery requete;
+    QString tmp = "";
+    bool status = false;
+
+    tmp = "select * from tirages where(id ="+QString::number(id)+");";
+    status = requete.exec(tmp);
+    if(status)
+    {
+        status = requete.first();
+        if(requete.isValid())
+        {
+            QSqlRecord record = requete.record();
+            QDate verif = record.value(1).toDate();
+            tmp = verif.toString("dd/MM/yyyy");
+            tmp = tmp +":";
+            for(int i=0;i<5;i++)
+            {
+                tmp = tmp + record.value(2+i).toString();
+                tmp = tmp+",";
+            }
+            tmp.remove(tmp.length()-1,1);
+        }
+    }
+
+    return tmp;
 }
