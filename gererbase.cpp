@@ -167,14 +167,9 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
     };
 
     if(status){
-#if 1
         // Trier la table temporaire et la mettre dans la table tirage
         str_1 = "insert into tirages ("+ str_s +",file) select * from v_tirages order by date_tirage desc;";
-#ifndef QT_NO_DEBUG
-        qDebug() << str_1;
-#endif
         status = query.exec(str_1);
-#endif
 
 #if 0
         // supprimer la table temporaire

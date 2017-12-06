@@ -44,11 +44,6 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
     QString str_2 = "";
 
     QSqlQuery sql_1(db);
-#if 0
-    QSqlQuery sql_2(db);
-    QString clef_2= "";
-    int val2 = 0;
-#endif
     int nbPair = 0;
     int nbE1 = 0;
 
@@ -76,30 +71,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
     str_1.replace(QRegExp("\\s+"),""); // suppression des espaces
     str_1.replace(",",", :");
     str_1 = "INSERT INTO v_tirages (" + str_2 + ",file) VALUES (:" + str_1 + ", :file);";
-#ifndef QT_NO_DEBUG
-    qDebug() << str_1;
-#endif
     sql_1.prepare(str_1);
-
-#if 0
-    // Table des analyses
-    str_1 = pRef->s_LibColAnalyse(&ref);
-    str_2 = str_1;
-    str_1.replace(QRegExp("\\s+"),""); // suppression des espaces
-    str_1.replace(",",", :");
-    str_1 = "INSERT INTO analyses (id," + str_2 + ")VALUES (:id, :" + str_1 + ")";
-    sql_2.prepare(str_1);
-
-    // Construction d'une variable en fonction du max /10
-    int **pRZone = new int *[max_zone]; // Pointeur de repartition des zones
-
-
-    for(zone=0;zone< max_zone;zone++)
-    {
-        maxValZone = def->param.pZn[zone].max;
-        pRZone[zone]=new int[(maxValZone/10)+1];
-    }
-#endif
 
     // --- DEBUT ANALYSE DU FICHIER
     // Passer la premiere ligne
@@ -137,10 +109,6 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
         {
             maxValZone = def->param.pZn[zone].max;
             minValZone = def->param.pZn[zone].min;
-#if 0
-            for(int j = 0; j < (def->param.pZn[zone].max/10)+1; j++)
-                pRZone[zone][j]=0;
-#endif
             maxElmZone = def->param.pZn[zone].len;
 
             for(ElmZone=0;ElmZone < maxElmZone;ElmZone++)
@@ -159,10 +127,6 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
                     clef_1 = ":"+ref.nomZone[zone]+QString::number(ElmZone+1);
                     clef_1.replace(QRegExp("\\s+"),"");
                     sql_1.bindValue(clef_1,val1);
-#if 0
-                    // incrementation du compteur unite/dizaine
-                    pRZone[zone][val1/10]++;
-#endif
                 }
                 else
                 {
@@ -183,16 +147,6 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
                 // Toutes les clefs sont faites ?
                 sql_1.bindValue(":file",file_id);
             }
-#if 0
-            for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
-            {
-                val2 = pRZone[zone][j];
-                // Preparation pour affectation variable sql (analyses)
-                clef_2 = ":"+ref.nomZone[zone]+"d"+QString::number(j);
-                clef_2.replace(QRegExp("\\s+"),"");
-                sql_2.bindValue(clef_2,val2);
-            }
-#endif
             // Calcul perso a mettre dans la base
             // Automatisation possible ?????
             nbPair = pRef->RechercheNbBoulesPairs(zone);
@@ -202,7 +156,6 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
             nbE1 = pRef->RechercheNbBoulesDansGrp1(zone);
             clef_1 = " :" + ref.nomZone[zone]+ CL_SGRP ;
             sql_1.bindValue(clef_1.replace(QRegExp("\\s+"),""),nbE1);
-
         }
 
         if(ret == false)
@@ -210,9 +163,6 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
 
         // Mettre dans la base
         ret = sql_1.exec();
-#if 0
-        ret = sql_2.exec();
-#endif
     }
     return ret;
 }
