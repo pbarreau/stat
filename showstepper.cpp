@@ -69,7 +69,7 @@ void ShowStepper::ExecSql(int cid, int tid)
     {
         ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
         msg = "select b as y" + QString::number(i)+
-                " from "+
+                ",c from "+
                 useTable+" where (cid ="+
                 QString::number(cid)+ " and tid ="+
                 QString::number(tid)+ " and y="+
@@ -172,7 +172,7 @@ ShowStepper::ShowStepper(int cid, int tid)
             {
                 ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
                 msg = "select b as y" + QString::number(i)+
-                        " from "+
+                        ",c from "+
                         useTable+" where (cid ="+
                         QString::number(cid)+ " and tid ="+
                         QString::number(tid)+ " and y="+
@@ -182,6 +182,7 @@ ShowStepper::ShowStepper(int cid, int tid)
 
 
                 view[i].setModel(&my_model[i]);
+                view[i].hideColumn(1);
                 view[i].setParent(splitter);
                 view[i].setItemDelegate(&MaGestion[i]);
                 view[i].setSortingEnabled(false);

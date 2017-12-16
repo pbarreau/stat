@@ -26,6 +26,7 @@
 
 //extern MainWindow w;
 
+QString GetBoulesOfTirage(int tir);
 
 QGridLayout *SyntheseGenerale::MonLayout_TabAuguste(int col, int lgn)
 {
@@ -210,7 +211,12 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int 
     msg = "drop table  "+ table  + ";";
     status = requete.exec(msg);
 
-    msg = "create table if not exists "+ table  + "(id integer primary key, cid int, tid int, y int, b int);";
+    //cid : couverture id
+    //tid : tirage id
+    //y : nombre de fois sortie depuis tirage de selection
+    //b ; numero de boule
+    //c : couleur a mettre pour cette boule
+    msg = "create table if not exists "+ table  + "(id integer primary key, cid int, tid int, y int, b int, c int);";
     status = requete.exec(msg);
     if(!status){
         return;
@@ -327,7 +333,7 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int 
 
             // On a parcouru toutes les boules de ce tirage
             // on va lire les listes chainees
-            MemoriserProgression(table,&linksInfo[0],links, possible, cid, tid);
+            MemoriserProgression(table,&linksInfo[0],links, val,possible, cid, tid);
         }while(requete.previous());
 
         // Presentation des resultats
@@ -342,17 +348,18 @@ void SyntheseGenerale::PresenterResultat(int cid,int tid)
 
 }
 
-void SyntheseGenerale::MemoriserProgression(QString table,stMyHeadedList *h,stMyLinkedList *l, int y, int cid, int tid)
+void SyntheseGenerale::MemoriserProgression(QString table,stMyHeadedList *h,stMyLinkedList *l, int start, int y, int cid, int tid)
 {
     QSqlQuery sql;
     bool sta = false;
 
     QString msg = "insert into "+
-            table + " (id,cid,tid,y,b) values (null,:cid, :tid, :y, :b);";
+            table + " (id,cid,tid,y,b,c) values (null,:cid, :tid, :y, :b, :c);";
     sta = sql.prepare(msg);
     ///qDebug() << "Prepare :" << sta;
     sql.bindValue(":cid", cid);
     sql.bindValue(":tid", tid);
+    sql.bindValue(":c", 0);
 
     /// Mise en place des valeurs
     for (int i = 0; i< y;i++)
@@ -372,6 +379,96 @@ void SyntheseGenerale::MemoriserProgression(QString table,stMyHeadedList *h,stMy
         }
     }
 
+    // Colorier
+    MettreCouleur(start, tid);
+}
+
+QString GetBoulesOfTirage(int tir)
+{
+    bool sta = false;
+    QSqlQuery sql;
+    QString msg = "";
+
+    msg="select b1,b2,b3,b4,b5 from reftirages where(id =" +
+            QString::number(tir) +");";
+
+    // lancer la requete
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
+    sta = sql.exec(msg);
+
+    sta = sql.first();
+    if(sql.isValid())
+    {
+        msg= "";
+        QSqlRecord resultat = sql.record();
+        for(int i =0; i<5; i++)
+        {
+            msg= msg+ resultat.value(i).toString()+",";
+        }
+        msg.remove(msg.length()-1,1);
+    }
+
+    return msg;
+}
+
+void SyntheseGenerale::MettreCouleur(int start, int cur)
+{
+    bool sta = false;
+    QSqlQuery sql;
+    QString msg = "";
+    QString val = "";
+    QString table = "stepper_"+QString::number(start);
+
+
+    // Couleur pour tirage courant
+    val = GetBoulesOfTirage(cur);
+    // preparer la requete mise a jour
+    msg = "update " + table + " set c=1 where (" + table
+            + ".tid = " + QString::number(cur)
+            + " and (" + table +".b in ("+val+")));";
+
+    // lancer la requete
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
+    sta = sql.exec(msg);
+
+
+    // Mise en place indicateur tirage suivant
+    if(cur-1>0)
+    {
+
+        val = GetBoulesOfTirage(cur - 1);
+        // preparer la requete mise a jour
+        msg = "update " + table + " set c=2 where (" + table
+                + ".tid = " + QString::number(cur)
+                + " and (" + table +".b in ("+val+")));";
+
+        // lancer la requete
+    #ifndef QT_NO_DEBUG
+        qDebug() << msg;
+    #endif
+        sta = sql.exec(msg);
+
+    }
+
+    //Mise en place tirage precedent
+    if(start - cur > 0)
+    {
+        val = GetBoulesOfTirage(cur + 1);
+        // preparer la requete mise a jour
+        msg = "update " + table + " set c=3 where (" + table
+                + ".tid = " + QString::number(cur)
+                + " and (" + table +".b in ("+val+")));";
+
+        // lancer la requete
+    #ifndef QT_NO_DEBUG
+        qDebug() << msg;
+    #endif
+        sta = sql.exec(msg);
+    }
 }
 
 void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
