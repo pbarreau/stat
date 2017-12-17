@@ -421,6 +421,21 @@ void SyntheseGenerale::MettreCouleur(int start, int cur)
     QString val = "";
     QString table = "stepper_"+QString::number(start);
 
+    //Mise en place tirage precedent
+    if(start - cur > 0)
+    {
+        val = GetBoulesOfTirage(cur + 1);
+        // preparer la requete mise a jour
+        msg = "update " + table + " set c=3 where (" + table
+                + ".tid = " + QString::number(cur)
+                + " and (" + table +".b in ("+val+")));";
+
+        // lancer la requete
+    #ifndef QT_NO_DEBUG
+        qDebug() << msg;
+    #endif
+        sta = sql.exec(msg);
+    }
 
     // Couleur pour tirage courant
     val = GetBoulesOfTirage(cur);
@@ -454,21 +469,6 @@ void SyntheseGenerale::MettreCouleur(int start, int cur)
 
     }
 
-    //Mise en place tirage precedent
-    if(start - cur > 0)
-    {
-        val = GetBoulesOfTirage(cur + 1);
-        // preparer la requete mise a jour
-        msg = "update " + table + " set c=3 where (" + table
-                + ".tid = " + QString::number(cur)
-                + " and (" + table +".b in ("+val+")));";
-
-        // lancer la requete
-    #ifndef QT_NO_DEBUG
-        qDebug() << msg;
-    #endif
-        sta = sql.exec(msg);
-    }
 }
 
 void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
