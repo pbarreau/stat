@@ -56,7 +56,8 @@ SOURCES += main.cpp\
     SyntheseGenerale.cpp \
     progression.cpp \
     showstepper.cpp \
-    delegate.cpp
+    delegate.cpp \
+    combinaison.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
