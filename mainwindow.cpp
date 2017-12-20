@@ -21,7 +21,7 @@
 #include "refetude.h"
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
-
+#include "car.h"
 
 //#include "refetude.h"
 
@@ -57,6 +57,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     stErr NoErrors;
     NoErrors.status = true;
     NoErrors.msg = "None";
+    GammaNk a(5,3);
+    return;
 
     DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
 

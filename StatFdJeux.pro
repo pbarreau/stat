@@ -57,7 +57,8 @@ SOURCES += main.cpp\
     progression.cpp \
     showstepper.cpp \
     delegate.cpp \
-    combinaison.cpp
+    combinaison.cpp \
+    car.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -79,7 +80,8 @@ HEADERS  += mainwindow.h \
     myqabstractitemviewofqtable.h \
     myqtableview.h \
     showstepper.h \
-    delegate.h
+    delegate.h \
+    car.h
 
 
 FORMS    += mainwindow.ui \

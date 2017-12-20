@@ -88,6 +88,8 @@ double compter_combinaisons(double x,double y)
 
 
 //----------------------------------
+/// http://dictionnaire.sensagent.leparisien.fr/Combinaison%20avec%20r%C3%A9p%C3%A9tition/fr-fr/
+
 void afficher(int *t, int l) {
     int i,j;
     for (i = 0; i < l; ++i) printf("%d ",t[i]);
