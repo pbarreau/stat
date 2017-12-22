@@ -15,6 +15,7 @@
 #include <QTableWidget>
 
 #include "tirages.h"
+#include "car.h"
 
 #if 0
 GererBase::GererBase(QObject *parent) :
@@ -37,6 +38,11 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
         typeTirages = new tirages(leJeu);
         typeTirages->getConfigFor(pConf);
         typeTirages->ListeCombinaison(pConf);
+
+        /// Test ok
+        ///
+        ///QString msg = GammaNk::MakeSqlFromGamma(pConf,1,2);
+        ///return;
 
         // Creer les tables initiales de la base
         CreationTablesDeLaBDD_v2();

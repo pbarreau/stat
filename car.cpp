@@ -1,14 +1,19 @@
+#ifndef QT_NO_DEBUG
+#include <QDebug>
+#endif
+
 #include <QString>
 #include <QStringList>
 
 #include "car.h"
 
+QString ConstruireRequete(QString item, int n, QString name, int step);
 QString LireTableau(int *t, int n);
 
 GammaNk::GammaNk(int n, int k)
 {
-    cardinal = CompterCardinalGamma(n,k);
-    coef = GenereCombinaison(n,k);
+    nbItem = CompterCardinalGamma(n,k);
+    coefItem = GenereCombinaison(n,k);
 }
 
 double GammaNk::CalculerFactorielle(double *x)
@@ -29,6 +34,11 @@ double GammaNk::CalculerFactorielle(double *x)
     return 0;
 }
 
+double GammaNk::cardinal(void)
+{
+    return(nbItem);
+}
+
 double GammaNk::CompterCardinalGamma(int n, int k)
 {
     double v1 = n+k-1;
@@ -43,10 +53,15 @@ double GammaNk::CompterCardinalGamma(int n, int k)
 
 }
 
+QStringList GammaNk::coef(void)
+{
+    return (coefItem);
+}
+
 QStringList GammaNk::GenereCombinaison(int n, int k)
 {
     int tab[1024];
-    int ptrTab = 0;
+    //int ptrTab = 0;
     int ptrCur = 0;
     int tmp =0;
 
@@ -66,29 +81,52 @@ QStringList GammaNk::GenereCombinaison(int n, int k)
         tab[ptrCur]--;
         tab[ptrCur+1]=tmp+1;
 
-#if 0
-        if(tab[n] !=0)
-        {
-            tmp = tab[n];
-            tab[n] = 0;
-            ptrTab--;
-            ptrCur =  ptrTab;
-            tab[ptrCur] = tab[ptrCur] -1;
-            tab[ptrCur+1] = tmp + 1;
-        }
-        else
-        {
-            ptrCur =  ptrTab;
-            tab[ptrCur] = tab[ptrCur] -1;
-            tab[ptrCur+1] = 1;
-            ptrTab++;
-        }
-#endif
     }
     ligne = LireTableau(tab, n);
     lst << ligne;
 
     return lst;
+}
+
+QString GammaNk::MakeSqlFromGamma(stTiragesDef *pTirDef, int step, int k)
+{
+    int zone = 0;
+    int n = pTirDef->nbElmZone[zone];
+    QString name = pTirDef->nomZone[zone];
+    QString tmp1 = "";
+    QString tmp2 = "";
+    GammaNk a(n,k);
+    QStringList lesCoefs = a.coef();
+
+    for(int i = 0; i< lesCoefs.size(); i++)
+    {
+        tmp1 = ConstruireRequete(lesCoefs.at(i),n,name, step);
+        tmp2 = tmp2 + "("+ tmp1 +")" + "or";
+    }
+    tmp2.remove(tmp2.length()-2,2);
+
+#ifndef QT_NO_DEBUG
+qDebug()<< tmp2;
+#endif
+
+    return tmp2;
+}
+
+QString ConstruireRequete(QString item, int n, QString name, int step)
+{
+    QStringList lst = item.split(";");
+    QString tmp = "";
+
+        for(int i=1;i<lst.size();i++)
+        {
+         tmp = tmp + "("+name+lst.at(i)+
+                 "="+name+lst.at(0)+"+"+
+                 QString::number(i*step)+")";
+         tmp = tmp + "and";
+        }
+        tmp.remove(tmp.length()-3,3);
+
+        return tmp;
 }
 
 QString LireTableau(int *t, int n)
