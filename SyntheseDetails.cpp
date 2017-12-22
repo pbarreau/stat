@@ -538,7 +538,7 @@ QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString Req
     QString ongNames[]={"b","e","c","g"};
     int maxOnglets = sizeof(ongNames)/sizeof(QString);
 
-    QTabWidget *tab_Top = new QTabWidget;
+    tab_Top = new QTabWidget;
     gtab_splitter_2[ongPere] = tab_Top;
 
     QWidget **wid_ForTop = new QWidget*[maxOnglets];
@@ -1461,37 +1461,45 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
     return(lay_return);
 }
 
-//void SyntheseDetails::slot_detailsDetails(const QTableView &view, const QModelIndex & index)
 void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
 {
     QTableView *view = qobject_cast<QTableView *>(sender());
-
     QItemSelectionModel *selectionModel = view->selectionModel();
-    //int nb_item = selectionModel->selectedIndexes().size();
+    // construit la liste des boules
+    stCurDemande *etude = new stCurDemande;
     int id_Onglet = onglets->currentIndex();
+    etude->cur_dst = d[id_Onglet];
+
+    int idGrpOnglet_3 = tab_Top->currentIndex();
+    etude->selection[idGrpOnglet_3] = selectionModel->selectedIndexes();
+
+    //int nb_item = selectionModel->selectedIndexes().size();
     int id_OngMaster = gMemoTab->currentIndex();
     QString tabName = gMemoTab->tabText(id_OngMaster);
     QStringList RealId = tabName.split(" ");
     int useId = RealId.at(RealId.size()-1).toInt();
 
-    // construit la liste des boules
-    stCurDemande *etude = new stCurDemande;
 
     // recopie
     //*etude = *pLaDemande;
 
     // Modification
     etude->ref = pLaDemande->ref;
-    etude->cur_dst = d[id_Onglet];
-    etude->selection[3] = selectionModel->selectedIndexes();
+#ifndef QT_NO_DEBUG
+qDebug()<< "\nSyntheseDetails::slot_detailsDetails\n"<<etude->ref;
+#endif
+
 
     QString maselection = CreatreTitle(etude);
     etude->st_titre = "R"+QString::number(useId)
-            +" \""+ongNames[id_Onglet]+"\" " + maselection;
+            +" \""+ongNames[id_Onglet]+":"+ maselection+"\" " ;
 
     etude->st_Ensemble_1 = new QString;
     int id = onglets->currentIndex();
     *(etude->st_Ensemble_1) = "select * from " + pLaDemande->st_viewName[id] +";";
+#ifndef QT_NO_DEBUG
+qDebug()<< "\n"<<*(etude->st_Ensemble_1)<<"\n-----";
+#endif
 
     etude->st_jourDef = new QString;
     *(etude->st_jourDef) = CompteJourTirage(pLaDemande->ref);
@@ -1714,8 +1722,8 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
     //qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
-    qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
-    //qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    //qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+    qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
@@ -3116,14 +3124,14 @@ void SyntheseDetails::slot_ClickSurOnglet(int index)
 
 void SyntheseDetails::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
-    int val = 0;
+#if 0
     // L'onglet implique le tableau...
     int origine = onglets->currentIndex();
-
 
     QTableView *view = qobject_cast<QTableView *>(sender());
     QItemSelectionModel *selectionModel = view->selectionModel();
 
+    pLaDemande[].selection[origine] = selectionModel->selectedIndexes();
     if(origine == 0)
     {
         val = index.model()->index(index.row(),0).data().toInt();
@@ -3132,8 +3140,6 @@ void SyntheseDetails::slot_ClicDeSelectionTableau(const QModelIndex &index)
 
     //QString maselection = CreatreTitle(pLaDemande);
     //selection->setText(maselection);
-val = 0;
-#if 0
     // ne pas memoriser quand onglet des regroupements
     if(origine<(onglets->count()-1))
         MemoriserChoixUtilisateur(index,origine,selectionModel,

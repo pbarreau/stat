@@ -98,6 +98,8 @@ private:
     QTabWidget *gMemoTab;
 
     QTabWidget *onglets;
+    QTabWidget *tab_Top;
+
     DistancePourTirage *dist;
     QGridLayout **G_design_onglet_2;
     QStringList bSelection;
