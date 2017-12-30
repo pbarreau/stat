@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSqlQueryModel>
 #include <QLabel>
+#include <QHBoxLayout>
 
 class ShowStepper: public QObject
 {
@@ -15,6 +16,7 @@ public:
 private:
     void ExecSql(int cid,int tid);
     void setLabel(int tid);
+    QHBoxLayout *setTiragesLayout(void);
 
 public slots:
     void toPrevious(void);

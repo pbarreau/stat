@@ -115,41 +115,28 @@ void ShowStepper::setLabel(int tid)
 }
 ShowStepper::ShowStepper(int cid, int tid)
 {
+    tid_start = tid;
+    cid_start = cid;
+    tid_cur = tid;
+
     QSqlQuery requete;
     bool status = false;
     QString msg = "";
-
-    tid_start = tid;
-    cid_start = cid;
-
-    tid_cur = tid;
     useTable = "stepper_"+QString::number(tid_start);
+
+    //QGridLayout *frm_tmp = new QGridLayout;
+    QTabWidget *tab_Top = new QTabWidget;
+    QString ongNames[]={"Progression","Etudier"};
+    int maxOnglets = sizeof(ongNames)/sizeof(QString);
+    //QWidget **wid_ForTop = new QWidget*[maxOnglets];
+    //QGridLayout **gridOnglet = new QGridLayout * [maxOnglets];
+
 
 
     /// Preparation de la feuille
     QWidget * Resultats = new QWidget;
     QGridLayout *layout = new QGridLayout();
-    QHBoxLayout *layForBtn = new QHBoxLayout;
-    QPushButton *nextButton = new QPushButton(tr("Tir&+1"));
-    QPushButton *previousButton = new QPushButton(tr("Tir&-1"));
-    dNext =new QLabel;
-    dCurr =new QLabel;
-    dPrev =new QLabel;
-
-    setLabel(tid);
-
-    nextButton->setMaximumWidth(50);
-    previousButton->setMaximumWidth(50);
-    layForBtn->addWidget(dPrev);
-    layForBtn->addWidget(previousButton);
-    layForBtn->addWidget(dCurr);
-    layForBtn->addWidget(nextButton);
-    layForBtn->addWidget(dNext);
-
-    connect(previousButton, SIGNAL(clicked()),
-            this, SLOT(toPrevious()));
-    connect(nextButton, SIGNAL(clicked()),
-            this, SLOT(toNext()));
+    QHBoxLayout *layForBtn = setTiragesLayout();
 
     // determination du nombre de colonne
     msg = "select max(tot) as M from (select  count (distinct y) as tot  from "+
@@ -193,8 +180,20 @@ ShowStepper::ShowStepper(int cid, int tid)
                 view[i].setFixedWidth(LCELL+45);
 
             }
+            setLabel(tid);
             layout->addLayout(layForBtn,0,0,1,5,Qt::AlignHCenter);
-            layout->addWidget(splitter, 1,0,1,5, Qt::AlignHCenter);
+#if 0
+            for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
+            {
+                wid_ForTop[id_Onglet]= new QWidget;
+                tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
+            }
+#endif
+
+            tab_Top->addTab(splitter,ongNames[0]);
+            QWidget * tmp = new QWidget;
+            tab_Top->addTab(tmp,ongNames[1]);
+            layout->addWidget(tab_Top, 1,0,1,5, Qt::AlignHCenter);
             layout->setRowStretch(1,1);
 
             Resultats->setAttribute(Qt::WA_DeleteOnClose);
@@ -204,6 +203,33 @@ ShowStepper::ShowStepper(int cid, int tid)
             Resultats->show();
         }
     }
+}
+
+QHBoxLayout *ShowStepper::setTiragesLayout(void)
+{
+    QHBoxLayout *tmpHbl = new QHBoxLayout;
+
+    QPushButton *nextButton = new QPushButton(tr("Tir&+1"));
+    QPushButton *previousButton = new QPushButton(tr("Tir&-1"));
+    dNext =new QLabel;
+    dCurr =new QLabel;
+    dPrev =new QLabel;
+
+    nextButton->setMaximumWidth(50);
+    previousButton->setMaximumWidth(50);
+    tmpHbl->addWidget(dPrev);
+    tmpHbl->addWidget(previousButton);
+    tmpHbl->addWidget(dCurr);
+    tmpHbl->addWidget(nextButton);
+    tmpHbl->addWidget(dNext);
+
+    connect(previousButton, SIGNAL(clicked()),
+            this, SLOT(toPrevious()));
+    connect(nextButton, SIGNAL(clicked()),
+            this, SLOT(toNext()));
+
+
+    return tmpHbl;
 }
 
 QString GetTirageInfo(int id)
@@ -221,7 +247,8 @@ QString GetTirageInfo(int id)
         {
             QSqlRecord record = requete.record();
             QDate verif = record.value(1).toDate();
-            tmp = verif.toString("dd/MM/yyyy");
+            tmp = "T"+QString::number(id)+"["+
+                    verif.toString("dd/MM/yyyy");
             tmp = tmp +":";
             for(int i=0;i<5;i++)
             {
@@ -229,6 +256,7 @@ QString GetTirageInfo(int id)
                 tmp = tmp+",";
             }
             tmp.remove(tmp.length()-1,1);
+            tmp = tmp+"]";
         }
     }
 

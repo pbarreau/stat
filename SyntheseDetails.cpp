@@ -631,7 +631,8 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
     // QString ongNames[]={"0","+1","-1","?"};
     QString sqlReq = "";
 
-    int maxOnglets = sizeof(d)/sizeof(int);
+    ///int maxOnglets = sizeof(d)/sizeof(int);
+    int maxOnglets = sizeof(ongNames)/sizeof(QString);
 
     gtab_splitter_2 = new QTabWidget *[maxOnglets];
     // Mettre a null comme initialisation
