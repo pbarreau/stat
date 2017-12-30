@@ -5,6 +5,7 @@
 #include <QSqlQuery>
 #include <QGridLayout>
 #include <QPushButton>
+#include <QCheckBox>
 #include <QSplitter>
 #include <QSqlQueryModel>
 #include <QTableView>
@@ -26,6 +27,7 @@ void ShowStepper::toPrevious(void)
         tid_cur++;
         setLabel(tid_cur);
         ExecSql(cid,tid_cur);
+        ExecSql_2(cid,tid_cur);
     }
 
 }
@@ -57,6 +59,7 @@ void ShowStepper::toNext(void)
         tid_cur--;
         setLabel(tid_cur);
         ExecSql(cid,tid_cur);
+        ExecSql_2(cid,tid_cur);
     }
 
 }
@@ -76,6 +79,27 @@ void ShowStepper::ExecSql(int cid, int tid)
                 QString::number(i)+ ") order by id;";
 
         my_model[i].setQuery(msg);
+    }
+
+}
+void ShowStepper::ExecSql_2(int cid, int tid)
+{
+    QString msg = "";
+
+    for(int i = 1; i< my_tCol; i++)
+    {
+        msg = "select r1.b as y" + QString::number(i)+
+                ",r1.c from ("+
+                "select distinct r2.id, r2.b, r2.c,r1.y as y0, r2.y as y1 from " +
+                useTable+" as r1,"+useTable+ " as r2 " +
+                "where ( (r2.y = r1.y+1)and(r2.b = r1.b)and (r1.y ="+QString::number(i-1)+")"+
+                "and(r2.cid ="+QString::number(cid)+ ")and (r2.tid ="+QString::number(tid)+"))" +
+                "order by r2.id desc limit 3)as r1 order by r1.id;";
+
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+        my_model_2[i-1].setQuery(msg);
     }
 
 }
@@ -126,7 +150,7 @@ ShowStepper::ShowStepper(int cid, int tid)
 
     //QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
-    QString ongNames[]={"Progression","Etudier"};
+    QString ongNames[]={"Progression","Montrer"};
     int maxOnglets = sizeof(ongNames)/sizeof(QString);
     //QWidget **wid_ForTop = new QWidget*[maxOnglets];
     //QGridLayout **gridOnglet = new QGridLayout * [maxOnglets];
@@ -137,6 +161,7 @@ ShowStepper::ShowStepper(int cid, int tid)
     QWidget * Resultats = new QWidget;
     QGridLayout *layout = new QGridLayout();
     QHBoxLayout *layForBtn = setTiragesLayout();
+    QHBoxLayout *layForChk = setCheckBoxes();
 
     // determination du nombre de colonne
     msg = "select max(tot) as M from (select  count (distinct y) as tot  from "+
@@ -149,50 +174,22 @@ ShowStepper::ShowStepper(int cid, int tid)
         {
             QSqlRecord record = requete.record();
             my_tCol = record.value(0).toInt();
+            QSplitter *splitter_1 = SetDataSplitter_1(my_tCol, cid, tid);
+            QSplitter *splitter_2 = SetDataSplitter_2(my_tCol, cid, tid);
 
-
-            QSplitter *splitter = new QSplitter;
-            my_model = new QSqlQueryModel [my_tCol];
-            QTableView *view = new QTableView[my_tCol];
-            Delegate *MaGestion = new Delegate  [my_tCol];
-            for(int i = 0; i< my_tCol; i++)
-            {
-                ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
-                msg = "select b as y" + QString::number(i)+
-                        ",c from "+
-                        useTable+" where (cid ="+
-                        QString::number(cid)+ " and tid ="+
-                        QString::number(tid)+ " and y="+
-                        QString::number(i)+ ") order by id;";
-
-                my_model[i].setQuery(msg);
-
-
-                view[i].setModel(&my_model[i]);
-                view[i].hideColumn(1);
-                view[i].setParent(splitter);
-                view[i].setItemDelegate(&MaGestion[i]);
-                view[i].setSortingEnabled(false);
-                view[i].setEditTriggers(QAbstractItemView::NoEditTriggers);
-                view[i].setColumnWidth(0,LCELL);
-                view[i].horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-                view[i].verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-                view[i].setFixedWidth(LCELL+45);
-
-            }
             setLabel(tid);
             layout->addLayout(layForBtn,0,0,1,5,Qt::AlignHCenter);
-#if 0
-            for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
-            {
-                wid_ForTop[id_Onglet]= new QWidget;
-                tab_Top->addTab(wid_ForTop[id_Onglet],ongNames[id_Onglet]);
-            }
-#endif
 
-            tab_Top->addTab(splitter,ongNames[0]);
-            QWidget * tmp = new QWidget;
-            tab_Top->addTab(tmp,ongNames[1]);
+            tab_Top->addTab(splitter_1,ongNames[0]);
+
+            QWidget *widTab_2 = new QWidget;
+            QGridLayout *layTab_2 = new QGridLayout();
+            layTab_2->addLayout(layForChk,0,0,1,5,Qt::AlignHCenter);
+            layTab_2->addWidget(splitter_2, 1,0,1,5, Qt::AlignHCenter);
+            layTab_2->setRowStretch(1,1);
+            widTab_2->setLayout(layTab_2);
+            tab_Top->addTab(widTab_2,ongNames[1]);
+
             layout->addWidget(tab_Top, 1,0,1,5, Qt::AlignHCenter);
             layout->setRowStretch(1,1);
 
@@ -205,6 +202,41 @@ ShowStepper::ShowStepper(int cid, int tid)
     }
 }
 
+QHBoxLayout *ShowStepper::setCheckBoxes (void)
+{
+    QHBoxLayout *tmpHbl = new QHBoxLayout;
+
+    QCheckBox *checkbox_1 = new QCheckBox(tr("&-1"));
+    QCheckBox *checkbox_2 = new QCheckBox(tr("&0"));
+    QCheckBox *checkbox_3 = new QCheckBox(tr("&+1"));
+
+
+    tmpHbl->addWidget(checkbox_1);
+    tmpHbl->addWidget(checkbox_2);
+    tmpHbl->addWidget(checkbox_3);
+
+    connect(checkbox_1, SIGNAL(stateChanged(int)),
+            this, SLOT(slot_chkLess(int)));
+    connect(checkbox_2, SIGNAL(stateChanged(int)),
+            this, SLOT(slot_chkThis(int)));
+    connect(checkbox_3, SIGNAL(stateChanged(int)),
+            this, SLOT(slot_chkAdd(int)));
+
+    return tmpHbl;
+}
+
+void ShowStepper::slot_chkLess(int state)
+{
+
+}
+void ShowStepper::slot_chkThis(int state)
+{
+
+}
+void ShowStepper::slot_chkAdd(int state)
+{
+
+}
 QHBoxLayout *ShowStepper::setTiragesLayout(void)
 {
     QHBoxLayout *tmpHbl = new QHBoxLayout;
@@ -232,6 +264,102 @@ QHBoxLayout *ShowStepper::setTiragesLayout(void)
     return tmpHbl;
 }
 
+QSplitter *ShowStepper::SetDataSplitter_1(int col, int cid, int tid)
+{
+    QSplitter *tmpSplit = new QSplitter;
+    QString msg = "";
+
+    my_model = new QSqlQueryModel [col];
+    QTableView *view = new QTableView[col];
+    Delegate *MaGestion = new Delegate  [col];
+    for(int i = 0; i< col; i++)
+    {
+        ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
+        msg = "select b as y" + QString::number(i)+
+                ",c from "+
+                useTable+" where (cid ="+
+                QString::number(cid)+ " and tid ="+
+                QString::number(tid)+ " and y="+
+                QString::number(i)+ ") order by id;";
+
+        my_model[i].setQuery(msg);
+
+
+        view[i].setModel(&my_model[i]);
+        view[i].hideColumn(1);
+        view[i].setParent(tmpSplit);
+        view[i].setItemDelegate(&MaGestion[i]);
+        view[i].setSortingEnabled(false);
+        view[i].setEditTriggers(QAbstractItemView::NoEditTriggers);
+        view[i].setColumnWidth(0,LCELL);
+        view[i].horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        view[i].verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        view[i].setFixedWidth(LCELL+45);
+
+    }
+
+    return tmpSplit;
+}
+
+QSplitter *ShowStepper::SetDataSplitter_2(int col, int cid, int tid)
+{
+    QSplitter *tmpSplit = new QSplitter;
+    QString msg = "";
+
+    my_model_2 = new QSqlQueryModel [col-1];
+    QTableView *view = new QTableView[col-1];
+    Delegate *MaGestion = new Delegate  [col-1];
+#if 0
+    select r1.b as y, r1.c from
+            (
+                select distinct r2.id, r2.b, r2.c,r1.y as y0, r2.y as y1 from stepper_30 as r1, stepper_30 as r2
+                where
+                (
+                    (r2.y = r1.y+1)
+                    and
+                    (r2.b = r1.b)
+                    and
+                    (r1.y = 0)
+                    and
+                    (r2.cid = 0)
+                    and
+                    (r2.tid = 28)
+                    ) order by r2.id desc limit 3
+                ) as r1
+            order by r1.id;
+#endif
+    for(int i = 1; i< col; i++)
+    {
+        ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
+        msg = "select r1.b as y" + QString::number(i)+
+                ",r1.c from ("+
+                "select distinct r2.id, r2.b, r2.c,r1.y as y0, r2.y as y1 from " +
+                useTable+" as r1,"+useTable+ " as r2 " +
+                "where ( (r2.y = r1.y+1)and(r2.b = r1.b)and (r1.y ="+QString::number(i-1)+")"+
+                "and(r2.cid ="+QString::number(cid)+ ")and (r2.tid ="+QString::number(tid)+"))" +
+                "order by r2.id desc limit 3)as r1 order by r1.id;";
+
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+
+        my_model_2[i-1].setQuery(msg);
+
+
+        view[i-1].setModel(&my_model_2[i-1]);
+        view[i-1].hideColumn(1);
+        view[i-1].setParent(tmpSplit);
+        view[i-1].setItemDelegate(&MaGestion[i-1]);
+        view[i-1].setSortingEnabled(false);
+        view[i-1].setEditTriggers(QAbstractItemView::NoEditTriggers);
+        view[i-1].setColumnWidth(0,LCELL);
+        view[i-1].horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        view[i-1].verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        view[i-1].setFixedWidth(LCELL+45);
+    }
+
+    return tmpSplit;
+}
 QString GetTirageInfo(int id)
 {
     QSqlQuery requete;
