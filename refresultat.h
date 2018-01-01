@@ -105,14 +105,17 @@ public:
     QTableView *GetListeTirages(void);
     RefEtude *GetTabEcarts(void);
     void GetInfoTableau(int onglet, QTableView **pTbl, QSqlQueryModel **pSqm, QSortFilterProxyModel **pSfpm);
+#ifdef USE_SG_CODE
     void MemoriserProgression(QString table, stMyHeadedList *h, stMyLinkedList *l, int start, int y, int cid, int tid);
     void MettreCouleur(int start, int cur);
     void PresenterResultat(int cid, int tid);
-
+#endif
     // penser au destructeur pour chaque pointeur
 
 public slots:
+#ifdef USE_SG_CODE
     void slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid);
+#endif
     void slot_ccmr_TbvLesTirages(QPoint pos); /// custom context menu request
     void slot_ClicDeSelectionTableau(const QModelIndex & index);
     void slot_MontreLesTirages(const QModelIndex & index);

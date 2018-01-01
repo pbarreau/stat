@@ -25,8 +25,9 @@
 #include "mainwindow.h"
 
 //extern MainWindow w;
-
+#ifdef USE_SG_CODE
 QString GetBoulesOfTirage(int tir);
+#endif
 
 QGridLayout *SyntheseGenerale::MonLayout_TabAuguste(int col, int lgn)
 {
@@ -194,6 +195,8 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
 
     disposition->addWidget(ptabTop,1,0,1,2,Qt::AlignLeft|Qt::AlignTop);
 }
+
+#ifdef USE_SG_CODE
 
 void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid)
 {
@@ -470,18 +473,21 @@ void SyntheseGenerale::MettreCouleur(int start, int cur)
     }
 
 }
+#endif
 
 void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
 {
     QMenu *MonMenu=new QMenu(pEcran);
     QString msg = "Recherche";
+    ShowStepper *UnDetail = new ShowStepper(pMaConf);
     QModelIndex index = tbv_LesTirages->indexAt(pos);
 
 
     MonTraitement = new B_ActFrMdlIndex(index,msg);
     MonMenu->addAction(MonTraitement);
 
-    connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex,int)), this, SLOT(slot_MaFonctionDeCalcul(const QModelIndex,int)) );
+    connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex,int)),
+            UnDetail, SLOT(slot_MaFonctionDeCalcul(const QModelIndex,int)) );
 
     MonMenu->exec(tbv_LesTirages->viewport()->mapToGlobal(pos));
 

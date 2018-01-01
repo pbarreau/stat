@@ -19,7 +19,287 @@
 
 QString GetTirageInfo(int id);
 
-void ShowStepper::toPrevious(void)
+#ifndef USE_SG_CODE
+QString GetBoulesOfTirage(int tir);
+
+void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid)
+{
+    QSqlQuery requete;
+    bool status = false;
+    QString msg = "";
+    int zone = 0;
+
+    int total = pGlobConf->limites[zone].max;
+    int possible = total/2;
+
+    int val = my_index.model()->index(my_index.row(),0).data().toInt();
+    QString table = "stepper_"+QString::number(val);
+
+    msg = "drop table  "+ table  + ";";
+    status = requete.exec(msg);
+
+    //cid : couverture id
+    //tid : tirage id
+    //y : nombre de fois sortie depuis tirage de selection
+    //b ; numero de boule
+    //c : couleur a mettre pour cette boule
+    msg = "create table if not exists "+ table  + "(id integer primary key, cid int, tid int, y int, b int, c int);";
+    status = requete.exec(msg);
+    if(!status){
+        return;
+    }
+
+    stMyHeadedList linksInfo[possible];
+    memset(linksInfo,-1,sizeof(stMyHeadedList)*possible);
+
+    stMyLinkedList links[total+1];
+    memset(links,0,sizeof(stMyLinkedList)*(total+1));
+
+    // Preparation des liens
+    int i = 1;
+    linksInfo[0].depart= 1;
+    linksInfo[0].total = total;
+
+    for(i=1; i< total;i++)
+    {
+        links[i].n = i+1;
+        links[i].p = i-1;
+    }
+    links[i].p = i-1;
+
+    msg = "select * from tirages where(id between 0 and " + QString::number(val) +");";
+
+    int boule = 0;
+    int tid = 0;
+    status = requete.exec(msg);
+    status = requete.last();
+    int maVerif = 0;
+    if(requete.isValid())
+    {
+        int nb = pGlobConf->nbElmZone[zone];
+        do{
+            QSqlRecord record = requete.record();
+            tid = record.value(0).toInt();
+            maVerif++;
+            for (i=1;i<=nb;i++)
+            {
+                QString champ = pGlobConf->nomZone[zone]+QString::number(i);
+                boule = record.value(champ).toInt();
+
+                linksInfo[links[boule].y].total--;///nbtot[links[boule].y]--;
+
+                // Enlever le lien
+                if(links[boule].p <=0)
+                {
+                    links[links[boule].n].p=-1;
+                    if(links[boule].n){
+
+                        linksInfo[links[boule].y].depart=links[boule].n;///start[links[boule].y]= links[boule].n;
+                    }
+                    else
+                    {
+
+
+                        linksInfo[links[boule].y].depart=-1;///start[links[boule].y]=-1;
+                        linksInfo[links[boule].y].total=0; ///nbtot[links[boule].y]=0;
+                    }
+                }
+                else{
+                    links[links[boule].p].n = links[boule].n;
+                    links[links[boule].n].p = links[boule].p;
+                }
+
+                // indiquer la nouvelle position
+                int b= boule;
+                do
+                {
+                    b = links[b].n;
+                    if(links[b].x)
+                        links[b].x--;
+                }while(links[b].n);
+                links[boule].n = 0;
+
+                // la boule change de niveau
+                links[boule].y++;
+
+                // Positionne la boule dans liste
+                if(linksInfo[links[boule].y].depart == -1)///if(start[links[boule].y] == -1)
+                {
+                    linksInfo[links[boule].y].depart = boule; ///start[links[boule].y] = boule;
+                    linksInfo[links[boule].y].total = 1;///nbtot[links[boule].y] = 1;
+
+                    links[boule].x = 1;
+                    links[boule].p = -1;
+                }
+                else
+                {
+                    linksInfo[links[boule].y].total++;///nbtot[links[boule].y]++;
+
+                    // Mettre la boule a la fin de la liste chainee
+                    // dernier element
+                    int cur = linksInfo[links[boule].y].depart;///start[links[boule].y];
+                    int last = 0;
+                    do{
+                        last = links[cur].n;
+                        if(last)
+                            cur = last;
+                    }while(last);
+
+                    // Faire add node
+                    links[cur].n = boule;
+                    links[boule].p = cur;
+                    links[boule].x = (links[cur].x)+1;
+                }
+
+                if(linksInfo[0].total <=0)///if(nbtot[0]<=0)
+                {
+                    cid++;
+                    break;/// ou continue ?
+                }
+            }
+
+            // On a parcouru toutes les boules de ce tirage
+            // on va lire les listes chainees
+            MemoriserProgression(table,&linksInfo[0],links, val,possible, cid, tid);
+        }while(requete.previous());
+
+        // Presentation des resultats
+        PresenterResultat(0,val);
+
+    }
+}
+
+void ShowStepper::PresenterResultat(int cid,int tid)
+{
+    ShowStepper *unReponse = new ShowStepper(cid,tid);
+
+}
+
+void ShowStepper::MemoriserProgression(QString table,stMyHeadedList *h,stMyLinkedList *l, int start, int y, int cid, int tid)
+{
+    QSqlQuery sql;
+    bool sta = false;
+
+    QString msg = "insert into "+
+            table + " (id,cid,tid,y,b,c) values (null,:cid, :tid, :y, :b, :c);";
+    sta = sql.prepare(msg);
+    ///qDebug() << "Prepare :" << sta;
+    sql.bindValue(":cid", cid);
+    sql.bindValue(":tid", tid);
+    sql.bindValue(":c", 0);
+
+    /// Mise en place des valeurs
+    for (int i = 0; i< y;i++)
+    {
+        if(h[i].total>0)
+        {
+            sql.bindValue(":y", i);
+
+            // Parcourir la liste chainee
+            int data = h[i].depart;
+            do
+            {
+                sql.bindValue(":b", data);
+                sta = sql.exec();
+                data = l[data].n;
+            }while(data && (sta == true));
+        }
+    }
+
+    // Colorier
+    MettreCouleur(start, tid);
+}
+
+QString GetBoulesOfTirage(int tir)
+{
+    bool sta = false;
+    QSqlQuery sql;
+    QString msg = "";
+
+    msg="select b1,b2,b3,b4,b5 from reftirages where(id =" +
+            QString::number(tir) +");";
+
+    // lancer la requete
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
+    sta = sql.exec(msg);
+
+    sta = sql.first();
+    if(sql.isValid())
+    {
+        msg= "";
+        QSqlRecord resultat = sql.record();
+        for(int i =0; i<5; i++)
+        {
+            msg= msg+ resultat.value(i).toString()+",";
+        }
+        msg.remove(msg.length()-1,1);
+    }
+
+    return msg;
+}
+
+void ShowStepper::MettreCouleur(int start, int cur)
+{
+    bool sta = false;
+    QSqlQuery sql;
+    QString msg = "";
+    QString val = "";
+    QString table = "stepper_"+QString::number(start);
+
+    //Mise en place tirage precedent
+    if(start - cur > 0)
+    {
+        val = GetBoulesOfTirage(cur + 1);
+        // preparer la requete mise a jour
+        msg = "update " + table + " set c=3 where (" + table
+                + ".tid = " + QString::number(cur)
+                + " and (" + table +".b in ("+val+")));";
+
+        // lancer la requete
+    #ifndef QT_NO_DEBUG
+        qDebug() << msg;
+    #endif
+        sta = sql.exec(msg);
+    }
+
+    // Couleur pour tirage courant
+    val = GetBoulesOfTirage(cur);
+    // preparer la requete mise a jour
+    msg = "update " + table + " set c=1 where (" + table
+            + ".tid = " + QString::number(cur)
+            + " and (" + table +".b in ("+val+")));";
+
+    // lancer la requete
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
+    sta = sql.exec(msg);
+
+
+    // Mise en place indicateur tirage suivant
+    if(cur-1>0)
+    {
+
+        val = GetBoulesOfTirage(cur - 1);
+        // preparer la requete mise a jour
+        msg = "update " + table + " set c=2 where (" + table
+                + ".tid = " + QString::number(cur)
+                + " and (" + table +".b in ("+val+")));";
+
+        // lancer la requete
+    #ifndef QT_NO_DEBUG
+        qDebug() << msg;
+    #endif
+        sta = sql.exec(msg);
+
+    }
+
+}
+#endif
+
+void ShowStepper::slot_BtnPrev(void)
 {
     int cid = cid_start;
 
@@ -51,7 +331,7 @@ void  ShowStepper::slot_EndResultat(QObject*)
 #endif
 }
 
-void ShowStepper::toNext(void)
+void ShowStepper::slot_BtnNext(void)
 {
     int cid = cid_start;
 
@@ -137,6 +417,15 @@ void ShowStepper::setLabel(int tid)
     }
     dNext->setText(msg3);
 }
+ShowStepper::ShowStepper(stTiragesDef *pdef)
+{
+    tid_start = 0;
+    cid_start = 0;
+    tid_cur = 0;
+
+    pGlobConf =  pdef;
+}
+
 ShowStepper::ShowStepper(int cid, int tid)
 {
     tid_start = tid;
@@ -256,9 +545,9 @@ QHBoxLayout *ShowStepper::setTiragesLayout(void)
     tmpHbl->addWidget(dNext);
 
     connect(previousButton, SIGNAL(clicked()),
-            this, SLOT(toPrevious()));
+            this, SLOT(slot_BtnPrev()));
     connect(nextButton, SIGNAL(clicked()),
-            this, SLOT(toNext()));
+            this, SLOT(slot_BtnNext()));
 
 
     return tmpHbl;
