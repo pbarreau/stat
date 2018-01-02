@@ -58,7 +58,8 @@ SOURCES += main.cpp\
     showstepper.cpp \
     delegate.cpp \
     combinaison.cpp \
-    car.cpp
+    car.cpp \
+    ctabfilterzncount.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -81,7 +82,8 @@ HEADERS  += mainwindow.h \
     myqtableview.h \
     showstepper.h \
     delegate.h \
-    car.h
+    car.h \
+    ctabfilterzncount.h
 
 
 FORMS    += mainwindow.ui \

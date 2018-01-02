@@ -33,6 +33,12 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     // Creation de la table pour recuperer les tirages
     status = f1();
 
+#if 0
+    // Creation Table des noms des zones et abregees
+    if(status)
+        status = f1_1();
+#endif
+
     // Creation Table nom des boules des zones
     if(status)
         status = f2();
@@ -71,6 +77,31 @@ bool GererBase::f1()
         query.finish();
     }
 
+
+    return status;
+}
+
+bool GererBase::f1_1()
+{
+    bool status = true;
+
+    QSqlQuery query;
+    QString requete = "";
+    QString st_table = TB_ZDSC;
+
+    requete =  "create table " + st_table +
+            "(id integer primary key,version int,Name text, Abv text, nb int, min int, max int);";
+
+    status = query.exec(requete);
+
+    if(status)
+    {
+        //mettre les infos
+        requete = "insert into "+st_table+" (id,version,Name,Abv,nb,min,max) values "+
+                "(NULL,1,'Boules','b',5),(NULL,'Etoiles','e');";
+        status = query.exec(requete);
+    }
+    query.finish();
 
     return status;
 }

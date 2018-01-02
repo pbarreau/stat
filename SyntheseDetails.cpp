@@ -473,6 +473,7 @@ QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
                 -- fin req_1
                 )
             group by Nb;
+    data, range, name, filter
 #endif
     QString st_return =
             "select Nb, count(Nb) as Tp from "

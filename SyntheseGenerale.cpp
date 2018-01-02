@@ -1079,27 +1079,29 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
 {
     QStringList *tmp = new QStringList [2];
+    QString fields = "z"+QString::number(zn+1);
 
     int maxElems = pConf->limites[zn].max;
     int nbBoules = floor(maxElems/10)+1;
 
 
     // Parite & nb elment dans groupe
-    tmp[0] <<"z1%2=0"<<"z1<"+QString::number(maxElems/2);
+    tmp[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
     tmp[1] << "P" << "G";
 
 
     // Boule finissant par [0..9]
     for(int j=0;j<=9;j++)
     {
-        tmp[0]<< "z1 like '%" + QString::number(j) + "'";
+        tmp[0]<< fields+" like '%" + QString::number(j) + "'";
         tmp[1] << "F"+ QString::number(j);
     }
 
     // Nombre de 10zaine
     for(int j=0;j<nbBoules;j++)
     {
-        tmp[0]<< "z1 >="+QString::number(10*j)+ " and z1<="+QString::number((10*j)+9);
+        tmp[0]<< fields+" >="+QString::number(10*j)+
+                 " and "+fields+"<="+QString::number((10*j)+9);
         tmp[1] << "U"+ QString::number(j);
     }
 

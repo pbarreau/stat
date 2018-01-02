@@ -34,7 +34,8 @@
 #define TB_COMBI    "comb"
 #define TB_BASE     "tirages"
 #define REF_BASE    "RefTirages"
-#define TB_BNRZ     "Bnrz"   /// Table Boules Names Reference Zone
+#define TB_BNRZ     "Bnrz"          /// Table Boules Names Reference Zone
+#define TB_ZDSC     "Ref_znName"    /// Table Reference des noms des Zones
 #define TB_WIN      "BNEXT"  /// Choisir parmis ces boules pour tirages suivant du dernier en cours
 
 #define CL_IHM_TOT_0    8
@@ -263,6 +264,7 @@ private:
 
     bool CreationTablesDeLaBDD_v2();
     bool f1();
+    bool f1_1();
     bool f2();
     bool f3();
     bool f4();

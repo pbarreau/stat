@@ -21,6 +21,7 @@
 #include "refetude.h"
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
+#include "ctabfilterzncount.h"
 
 //#include "refetude.h"
 
@@ -58,6 +59,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     NoErrors.msg = "None";
 
     DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
+
+    QTabWidget *test = new cTabFilterZnCount("tirages",&configJeu);
 
     if(NoErrors.status == false)
     {

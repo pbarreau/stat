@@ -323,6 +323,7 @@ void ShowStepper::slot_BtnPrev(void)
         setLabel(tid_cur);
         ExecSql(cid,tid_cur);
         ExecSql_2(cid,tid_cur);
+        ExecSql_3(cid,tid_cur);
     }
 
 }
@@ -355,6 +356,7 @@ void ShowStepper::slot_BtnNext(void)
         setLabel(tid_cur);
         ExecSql(cid,tid_cur);
         ExecSql_2(cid,tid_cur);
+        ExecSql_3(cid,tid_cur);
     }
 
 }
@@ -391,11 +393,27 @@ void ShowStepper::ExecSql_2(int cid, int tid)
                 "and(r2.cid ="+QString::number(cid)+ ")and (r2.tid ="+QString::number(tid)+"))" +
                 "order by r2.id desc limit 3)as r1 order by r1.id;";
 
-#ifndef QT_NO_DEBUG
-        qDebug() << msg;
-#endif
         my_model_2[i-1].setQuery(msg);
     }
+
+}
+
+void ShowStepper::ExecSql_3(int cid, int tid)
+{
+    QString msg = "";
+    int zn = 0;
+    int col = floor(pGlobConf->limites[zn].max/10);
+
+    for(int i = 0; i<= col; i++)
+    {
+         msg = "select r1.b as d" + QString::number(i)+
+                ",r1.c,r1.bgc from "+useTable+" as r1 " +
+                "where ( (r1.b between "+
+                QString::number(i*10)+" and "+QString::number(((i+1)*10)-1)+") "+
+                "and(r1.cid ="+QString::number(cid)+ ") and (r1.tid ="+QString::number(tid)+"))" +
+                "order by r1.b;";
+
+        my_model_3[i].setQuery(msg);    }
 
 }
 
@@ -447,6 +465,9 @@ ShowStepper::RunStepper(int cid, int tid)
     cid_start = cid;
     tid_cur = tid;
 
+    int zn = 0;
+    int nbBoules = floor(pGlobConf->limites[zn].max/10);
+
     QSqlQuery requete;
     bool status = false;
     QString msg = "";
@@ -454,7 +475,7 @@ ShowStepper::RunStepper(int cid, int tid)
 
     //QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
-    QString ongNames[]={"Progression","Montrer"};
+    QString ongNames[]={"Progression","Focus 1", "Focus 2"};
     int maxOnglets = sizeof(ongNames)/sizeof(QString);
     //QWidget **wid_ForTop = new QWidget*[maxOnglets];
     //QGridLayout **gridOnglet = new QGridLayout * [maxOnglets];
@@ -479,20 +500,23 @@ ShowStepper::RunStepper(int cid, int tid)
             QSqlRecord record = requete.record();
             my_tCol = record.value(0).toInt();
             QSplitter *splitter_1 = SetDataSplitter_1(my_tCol, cid, tid);
-            QSplitter *splitter_2 = SetDataSplitter_2(my_tCol, cid, tid);
+            QSplitter *splitter_2 = SetDataSplitter_2(nbBoules, cid, tid);
+            QSplitter *splitter_3 = SetDataSplitter_3(my_tCol, cid, tid);
 
             setLabel(tid);
             layout->addLayout(layForBtn,0,0,1,5,Qt::AlignHCenter);
 
             tab_Top->addTab(splitter_1,ongNames[0]);
+            tab_Top->addTab(splitter_2,ongNames[1]);
 
-            QWidget *widTab_2 = new QWidget;
-            QGridLayout *layTab_2 = new QGridLayout();
-            layTab_2->addLayout(layForChk,0,0,1,5,Qt::AlignHCenter);
-            layTab_2->addWidget(splitter_2, 1,0,1,5, Qt::AlignHCenter);
-            layTab_2->setRowStretch(1,1);
-            widTab_2->setLayout(layTab_2);
-            tab_Top->addTab(widTab_2,ongNames[1]);
+            QWidget *widTab_3 = new QWidget;
+            QGridLayout *layTab_3 = new QGridLayout();
+            layTab_3->addLayout(layForChk,0,0,1,5,Qt::AlignHCenter);
+            layTab_3->addWidget(splitter_3, 1,0,1,5, Qt::AlignHCenter);
+            layTab_3->setRowStretch(1,1);
+            widTab_3->setLayout(layTab_3);
+            tab_Top->addTab(widTab_3,ongNames[2]);
+
 
             layout->addWidget(tab_Top, 1,0,1,5, Qt::AlignHCenter);
             layout->setRowStretch(1,1);
@@ -665,7 +689,7 @@ QSplitter *ShowStepper::SetDataSplitter_1(int col, int cid, int tid)
     return tmpSplit;
 }
 
-QSplitter *ShowStepper::SetDataSplitter_2(int col, int cid, int tid)
+QSplitter *ShowStepper::SetDataSplitter_3(int col, int cid, int tid)
 {
     QSplitter *tmpSplit = new QSplitter;
     QString msg = "";
@@ -734,6 +758,67 @@ QSplitter *ShowStepper::SetDataSplitter_2(int col, int cid, int tid)
     return tmpSplit;
 }
 
+QSplitter *ShowStepper::SetDataSplitter_2(int col, int cid, int tid)
+{
+    QSplitter *tmpSplit = new QSplitter;
+    QString msg = "";
+
+    my_model_3 = new QSqlQueryModel [col+1];
+    QTableView *view = new QTableView[col+1];
+    Delegate *MaGestion = new Delegate  [col+1];
+#if 0
+select r1.b as d0,r1.c,r1.bgc
+        from stepper_4 as r1
+        where (
+            (r1.b beteween 0 and 9)
+            and
+            (r1.cid =0)
+            and
+            (r1.tid =4)
+            )order by r1.b;
+#endif
+    for(int i = 0; i<= col; i++)
+    {
+        ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
+        msg = "select r1.b as d" + QString::number(i)+
+                ",r1.c,r1.bgc from "+useTable+" as r1 " +
+                "where ( (r1.b between "+
+                QString::number(i*10)+" and "+QString::number(((i+1)*10)-1)+") "+
+                "and(r1.cid ="+QString::number(cid)+ ") and (r1.tid ="+QString::number(tid)+"))" +
+                "order by r1.b;";
+
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+
+        my_model_3[i].setQuery(msg);
+
+
+        view[i].setModel(&my_model_3[i]);
+        view[i].verticalHeader()->hide();
+        view[i].hideColumn(1);
+        view[i].hideColumn(2);
+        view[i].setParent(tmpSplit);
+        view[i].setItemDelegate(&MaGestion[i]);
+        view[i].setSortingEnabled(false);
+        view[i].setEditTriggers(QAbstractItemView::NoEditTriggers);
+        view[i].setColumnWidth(0,LCELL);
+        view[i].horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        view[i].verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        view[i].setFixedWidth(LCELL+45);
+        view[i].setSelectionMode(QAbstractItemView::SingleSelection);
+        msg = "sds3_"+QString::number(i);
+        view[i].setObjectName(msg);
+
+        // simple click dans fenetre  pour selectionner boule
+        connect( &view[i], SIGNAL(clicked(QModelIndex)) ,
+                 this, SLOT(slot_MontrerBoule( QModelIndex) ) );
+
+    }
+
+    return tmpSplit;
+}
+
 void ShowStepper::slot_MontrerBoule(QModelIndex index)
 {
     QTableView *view = qobject_cast<QTableView *>(sender());
@@ -765,6 +850,7 @@ void ShowStepper::slot_MontrerBoule(QModelIndex index)
 
     ExecSql(0,tid_cur);
     ExecSql_2(0,tid_cur);
+    ExecSql_3(0,tid_cur);
 
     int nb_items = indexes.size();
 

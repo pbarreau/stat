@@ -22,11 +22,13 @@ public:
 private:
     void ExecSql(int cid,int tid);
     void ExecSql_2(int cid,int tid);
+    void ExecSql_3(int cid,int tid);
     void setLabel(int tid);
     QHBoxLayout *setTiragesLayout(void);
     QHBoxLayout *setCheckBoxes(void);
     QSplitter *SetDataSplitter_1(int col, int cid, int tid);
     QSplitter *SetDataSplitter_2(int col, int cid, int tid);
+    QSplitter *SetDataSplitter_3(int col, int cid, int tid);
     void SetBgColorCell(int tbl, int cid, int tid, int bid);
 #ifndef USE_CODE_IN_SG
     void MemoriserProgression(QString table, stMyHeadedList *h, stMyLinkedList *l, int start, int y, int cid, int tid);
@@ -57,6 +59,7 @@ private:
     stTiragesDef *pGlobConf;
     QSqlQueryModel *my_model;
     QSqlQueryModel *my_model_2;
+    QSqlQueryModel *my_model_3;
     QString useTable;
     QLabel * dNext;
     QLabel * dCurr;
