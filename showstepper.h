@@ -6,8 +6,10 @@
 #include <QLabel>
 #include <QHBoxLayout>
 #include <QSplitter>
+#include <QCheckBox>
 
 #include "tirages.h"
+
 
 class ShowStepper: public QObject
 {
@@ -15,7 +17,7 @@ class ShowStepper: public QObject
 public:
     ~ShowStepper();
     ShowStepper(stTiragesDef *pdef);
-    ShowStepper(int cid, int tid);
+    RunStepper(int cid, int tid);
 
 private:
     void ExecSql(int cid,int tid);
@@ -25,12 +27,14 @@ private:
     QHBoxLayout *setCheckBoxes(void);
     QSplitter *SetDataSplitter_1(int col, int cid, int tid);
     QSplitter *SetDataSplitter_2(int col, int cid, int tid);
-#ifndef USE_SG_CODE
+    void SetBgColorCell(int tbl, int cid, int tid, int bid);
+#ifndef USE_CODE_IN_SG
     void MemoriserProgression(QString table, stMyHeadedList *h, stMyLinkedList *l, int start, int y, int cid, int tid);
     void MettreCouleur(int start, int cur);
     void PresenterResultat(int cid, int tid);
 #endif
-    // penser au destructeur pour chaque pointeur
+
+
 
 public slots:
     void slot_BtnPrev(void);
@@ -39,6 +43,7 @@ public slots:
     void slot_chkLess(int);
     void slot_chkThis(int);
     void slot_chkAdd(int);
+	void slot_MontrerBoule(QModelIndex index);
 #ifndef USE_SG_CODE
     void slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid);
 #endif
@@ -56,6 +61,10 @@ private:
     QLabel * dNext;
     QLabel * dCurr;
     QLabel * dPrev;
+    QCheckBox *checkbox_1;
+    QCheckBox *checkbox_2;
+    QCheckBox *checkbox_3;
+
 
 };
 

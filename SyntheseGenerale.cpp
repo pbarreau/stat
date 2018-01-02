@@ -218,8 +218,9 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int 
     //tid : tirage id
     //y : nombre de fois sortie depuis tirage de selection
     //b ; numero de boule
-    //c : couleur a mettre pour cette boule
-    msg = "create table if not exists "+ table  + "(id integer primary key, cid int, tid int, y int, b int, c int);";
+    //c : couleur crayon a mettre pour cette boule
+    //bgc : couleur du fond
+    msg = "create table if not exists "+ table  + "(id integer primary key, cid int, tid int, y int, b int, c int, bgc int);";
     status = requete.exec(msg);
     if(!status){
         return;
@@ -357,12 +358,13 @@ void SyntheseGenerale::MemoriserProgression(QString table,stMyHeadedList *h,stMy
     bool sta = false;
 
     QString msg = "insert into "+
-            table + " (id,cid,tid,y,b,c) values (null,:cid, :tid, :y, :b, :c);";
+            table + " (id,cid,tid,y,b,c,bgc) values (null,:cid, :tid, :y, :b, :c, :bgc);";
     sta = sql.prepare(msg);
     ///qDebug() << "Prepare :" << sta;
     sql.bindValue(":cid", cid);
     sql.bindValue(":tid", tid);
     sql.bindValue(":c", 0);
+    sql.bindValue(":bgc", 0);
 
     /// Mise en place des valeurs
     for (int i = 0; i< y;i++)
@@ -434,9 +436,9 @@ void SyntheseGenerale::MettreCouleur(int start, int cur)
                 + " and (" + table +".b in ("+val+")));";
 
         // lancer la requete
-    #ifndef QT_NO_DEBUG
+#ifndef QT_NO_DEBUG
         qDebug() << msg;
-    #endif
+#endif
         sta = sql.exec(msg);
     }
 
@@ -465,15 +467,15 @@ void SyntheseGenerale::MettreCouleur(int start, int cur)
                 + " and (" + table +".b in ("+val+")));";
 
         // lancer la requete
-    #ifndef QT_NO_DEBUG
+#ifndef QT_NO_DEBUG
         qDebug() << msg;
-    #endif
+#endif
         sta = sql.exec(msg);
 
     }
 
 }
-#endif
+#endif // code a mettre dans stepper
 
 void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
 {

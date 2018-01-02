@@ -62,6 +62,20 @@ typedef enum _critere_recherche
 }E_typeCritere;
 }
 
+typedef struct _myhead
+{
+    int depart;
+    int total;
+}stMyHeadedList;
+
+typedef struct _ordreArrivee
+{
+    int x;  /// ordre arrivee
+    int y;  /// nb de fois
+    int n;  /// suivant
+    int p;  /// precedent
+}stMyLinkedList;
+
 typedef struct _val_max_min
 {
     int min;
@@ -103,20 +117,6 @@ typedef struct _un_tirage
     QString date;
     int **valBoules;
 }stUnTirage;
-
-typedef struct _myhead
-{
-    int depart;
-    int total;
-}stMyHeadedList;
-
-typedef struct _ordreArrivee
-{
-    int x;  /// ordre arrivee
-    int y;  /// nb de fois
-    int n;  /// suivant
-    int p;  /// precedent
-}stMyLinkedList;
 
 
 class tirages

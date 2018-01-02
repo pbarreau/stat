@@ -26,24 +26,37 @@ void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid)
 {
     QSqlQuery requete;
     bool status = false;
+    int val = my_index.model()->index(my_index.row(),0).data().toInt();
+    QString table = "stepper_"+QString::number(val);
+
     QString msg = "";
     int zone = 0;
+
+    msg = "SELECT count(name) FROM sqlite_master WHERE type='table' AND name='"+table+"'";
+    status = requete.exec(msg);
+    if(status)
+    {
+        requete.first();
+        if (requete.value(0).toInt())
+        {
+            RunStepper(0,val);
+            return;
+        }
+    }
 
     int total = pGlobConf->limites[zone].max;
     int possible = total/2;
 
-    int val = my_index.model()->index(my_index.row(),0).data().toInt();
-    QString table = "stepper_"+QString::number(val);
 
-    msg = "drop table  "+ table  + ";";
-    status = requete.exec(msg);
+
 
     //cid : couverture id
     //tid : tirage id
     //y : nombre de fois sortie depuis tirage de selection
     //b ; numero de boule
-    //c : couleur a mettre pour cette boule
-    msg = "create table if not exists "+ table  + "(id integer primary key, cid int, tid int, y int, b int, c int);";
+    //c : couleur crayon a mettre pour cette boule
+    //bgc : couleur du fond
+    msg = "create table if not exists "+ table  + "(id integer primary key, cid int, tid int, y int, b int, c int, bgc int);";
     status = requete.exec(msg);
     if(!status){
         return;
@@ -164,14 +177,15 @@ void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid)
         }while(requete.previous());
 
         // Presentation des resultats
-        PresenterResultat(0,val);
+        //PresenterResultat(0,val);
+        RunStepper(0,val);
 
     }
 }
 
 void ShowStepper::PresenterResultat(int cid,int tid)
 {
-    ShowStepper *unReponse = new ShowStepper(cid,tid);
+    //ShowStepper *unReponse = new ShowStepper(cid,tid);
 
 }
 
@@ -181,12 +195,13 @@ void ShowStepper::MemoriserProgression(QString table,stMyHeadedList *h,stMyLinke
     bool sta = false;
 
     QString msg = "insert into "+
-            table + " (id,cid,tid,y,b,c) values (null,:cid, :tid, :y, :b, :c);";
+            table + " (id,cid,tid,y,b,c,bgc) values (null,:cid, :tid, :y, :b, :c, :bgc);";
     sta = sql.prepare(msg);
     ///qDebug() << "Prepare :" << sta;
     sql.bindValue(":cid", cid);
     sql.bindValue(":tid", tid);
     sql.bindValue(":c", 0);
+    sql.bindValue(":bgc", 0);
 
     /// Mise en place des valeurs
     for (int i = 0; i< y;i++)
@@ -258,9 +273,9 @@ void ShowStepper::MettreCouleur(int start, int cur)
                 + " and (" + table +".b in ("+val+")));";
 
         // lancer la requete
-    #ifndef QT_NO_DEBUG
+#ifndef QT_NO_DEBUG
         qDebug() << msg;
-    #endif
+#endif
         sta = sql.exec(msg);
     }
 
@@ -289,9 +304,9 @@ void ShowStepper::MettreCouleur(int start, int cur)
                 + " and (" + table +".b in ("+val+")));";
 
         // lancer la requete
-    #ifndef QT_NO_DEBUG
+#ifndef QT_NO_DEBUG
         qDebug() << msg;
-    #endif
+#endif
         sta = sql.exec(msg);
 
     }
@@ -352,7 +367,7 @@ void ShowStepper::ExecSql(int cid, int tid)
     {
         ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
         msg = "select b as y" + QString::number(i)+
-                ",c from "+
+                ",c, bgc from "+
                 useTable+" where (cid ="+
                 QString::number(cid)+ " and tid ="+
                 QString::number(tid)+ " and y="+
@@ -369,8 +384,8 @@ void ShowStepper::ExecSql_2(int cid, int tid)
     for(int i = 1; i< my_tCol; i++)
     {
         msg = "select r1.b as y" + QString::number(i)+
-                ",r1.c from ("+
-                "select distinct r2.id, r2.b, r2.c,r1.y as y0, r2.y as y1 from " +
+                ",r1.c, r1.bgc from ("+
+                "select distinct r2.id, r2.b, r2.c, r2.bgc, r1.y as y0, r2.y as y1 from " +
                 useTable+" as r1,"+useTable+ " as r2 " +
                 "where ( (r2.y = r1.y+1)and(r2.b = r1.b)and (r1.y ="+QString::number(i-1)+")"+
                 "and(r2.cid ="+QString::number(cid)+ ")and (r2.tid ="+QString::number(tid)+"))" +
@@ -426,7 +441,7 @@ ShowStepper::ShowStepper(stTiragesDef *pdef)
     pGlobConf =  pdef;
 }
 
-ShowStepper::ShowStepper(int cid, int tid)
+ShowStepper::RunStepper(int cid, int tid)
 {
     tid_start = tid;
     cid_start = cid;
@@ -495,9 +510,9 @@ QHBoxLayout *ShowStepper::setCheckBoxes (void)
 {
     QHBoxLayout *tmpHbl = new QHBoxLayout;
 
-    QCheckBox *checkbox_1 = new QCheckBox(tr("&-1"));
-    QCheckBox *checkbox_2 = new QCheckBox(tr("&0"));
-    QCheckBox *checkbox_3 = new QCheckBox(tr("&+1"));
+    checkbox_1 = new QCheckBox(tr("&-1"));
+    checkbox_2 = new QCheckBox(tr("&0"));
+    checkbox_3 = new QCheckBox(tr("&+1"));
 
 
     tmpHbl->addWidget(checkbox_1);
@@ -526,6 +541,65 @@ void ShowStepper::slot_chkAdd(int state)
 {
 
 }
+
+void ShowStepper::SetBgColorCell(int tbl, int cid, int tid, int bid)
+{
+    bool sta = false;
+    QSqlQuery sql;
+    QString msg = "";
+    QString val = "";
+    QString table = "stepper_"+QString::number(tbl);
+
+    // regarder la valeur courant du fond
+    // syteme a bascule
+    msg = "select " + table + ".bgc from "+ table +
+            " where (" +
+            table + ".cid = " + QString::number(cid) +
+            " and " +
+            table + ".tid = " + QString::number(tid) +
+            " and " +
+            table + ".b = " + QString::number(bid)+");";
+
+    // lancer la requete
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
+    sta = sql.exec(msg);
+    int newcolor = 0;
+
+    if(sta)
+    {
+        sql.first();
+
+        // regarder la valeur
+        newcolor = sql.value(0).toInt();
+
+        if(newcolor == 0)
+        {
+            newcolor = 1;
+        }
+        else
+        {
+            newcolor = 0;
+        }
+    }
+    // preparer la requete mise a jour
+    msg = "update " + table + " set bgc="+QString::number(newcolor)+
+            " where (" +
+            table + ".cid = " + QString::number(cid) +
+            " and " +
+            table + ".tid = " + QString::number(tid) +
+            " and " +
+            table + ".b = " + QString::number(bid)+");";
+
+    // lancer la requete
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
+    sta = sql.exec(msg);
+
+}
+
 QHBoxLayout *ShowStepper::setTiragesLayout(void)
 {
     QHBoxLayout *tmpHbl = new QHBoxLayout;
@@ -565,7 +639,7 @@ QSplitter *ShowStepper::SetDataSplitter_1(int col, int cid, int tid)
     {
         ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
         msg = "select b as y" + QString::number(i)+
-                ",c from "+
+                ",c,bgc from "+
                 useTable+" where (cid ="+
                 QString::number(cid)+ " and tid ="+
                 QString::number(tid)+ " and y="+
@@ -576,6 +650,7 @@ QSplitter *ShowStepper::SetDataSplitter_1(int col, int cid, int tid)
 
         view[i].setModel(&my_model[i]);
         view[i].hideColumn(1);
+        view[i].hideColumn(2);
         view[i].setParent(tmpSplit);
         view[i].setItemDelegate(&MaGestion[i]);
         view[i].setSortingEnabled(false);
@@ -621,8 +696,8 @@ QSplitter *ShowStepper::SetDataSplitter_2(int col, int cid, int tid)
     {
         ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
         msg = "select r1.b as y" + QString::number(i)+
-                ",r1.c from ("+
-                "select distinct r2.id, r2.b, r2.c,r1.y as y0, r2.y as y1 from " +
+                ",r1.c,r1.bgc from ("+
+                "select distinct r2.id, r2.b, r2.c, r2.bgc, r1.y as y0, r2.y as y1 from " +
                 useTable+" as r1,"+useTable+ " as r2 " +
                 "where ( (r2.y = r1.y+1)and(r2.b = r1.b)and (r1.y ="+QString::number(i-1)+")"+
                 "and(r2.cid ="+QString::number(cid)+ ")and (r2.tid ="+QString::number(tid)+"))" +
@@ -637,6 +712,7 @@ QSplitter *ShowStepper::SetDataSplitter_2(int col, int cid, int tid)
 
         view[i-1].setModel(&my_model_2[i-1]);
         view[i-1].hideColumn(1);
+        view[i-1].hideColumn(2);
         view[i-1].setParent(tmpSplit);
         view[i-1].setItemDelegate(&MaGestion[i-1]);
         view[i-1].setSortingEnabled(false);
@@ -645,10 +721,55 @@ QSplitter *ShowStepper::SetDataSplitter_2(int col, int cid, int tid)
         view[i-1].horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
         view[i-1].verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
         view[i-1].setFixedWidth(LCELL+45);
+        view[i-1].setSelectionMode(QAbstractItemView::SingleSelection);
+        msg = "sds2_"+QString::number(i-1);
+        view[i-1].setObjectName(msg);
+
+        // simple click dans fenetre  pour selectionner boule
+        connect( &view[i-1], SIGNAL(clicked(QModelIndex)) ,
+                this, SLOT(slot_MontrerBoule( QModelIndex) ) );
+
     }
 
     return tmpSplit;
 }
+
+void ShowStepper::slot_MontrerBoule(QModelIndex index)
+{
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QString name = view->objectName();
+
+    QItemSelectionModel *selectionModel = view->selectionModel();
+    const QAbstractItemModel * pModel = index.model();
+
+    QModelIndexList indexes = selectionModel->selectedIndexes();
+
+
+    int val = index.data().toInt();
+
+    // A ton coche +ou- 1
+    if(checkbox_1->isChecked())
+    {
+        SetBgColorCell(tid_start,0,tid_cur,val-1);
+    }
+
+    //if(checkbox_2->isChecked())
+    {
+        SetBgColorCell(tid_start,0,tid_cur,val);
+    }
+
+    if(checkbox_3->isChecked())
+    {
+        SetBgColorCell(tid_start,0,tid_cur,val+1);
+    }
+
+    ExecSql(0,tid_cur);
+    ExecSql_2(0,tid_cur);
+
+    int nb_items = indexes.size();
+
+}
+
 QString GetTirageInfo(int id)
 {
     QSqlQuery requete;
