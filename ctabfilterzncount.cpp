@@ -6,6 +6,8 @@
 #include <QTableView>
 #include <QSqlQuery>
 #include <QHeaderView>
+#include <QToolTip>
+#include <QStackedWidget>
 
 #include "ctabfilterzncount.h"
 
@@ -28,7 +30,8 @@ cTabFilterZnCount::cTabFilterZnCount(QString in, stTiragesDef *def)
     {
         QString *name = new QString;
         QTableView *calcul = (this->*ptrFunc[i])(name, i);
-        tab_Top->addTab(calcul,tr((*name).toUtf8()));
+        int tab_id = tab_Top->addTab(calcul,tr((*name).toUtf8()));
+        //calcul->setParent(tab_Top->children().at(tab_id));
     }
 
     QWidget * Resultats = new QWidget;
@@ -61,6 +64,15 @@ QTableView *cTabFilterZnCount::znCalculRegroupement(QString * pName, int i)
         QStringList tmp=maRef[1];
         tmp.insert(0,"Nb");
         tmpStdItem->setHorizontalHeaderLabels(tmp);
+
+        QStringList tooltips=maRef[2];
+        tooltips.insert(0,"Total");
+        for(int pos=0;pos <=nbCol;pos++)
+        {
+            QStandardItem *item = tmpStdItem->horizontalHeaderItem(pos);
+            item->setToolTip(tooltips.at(pos));
+        }
+
         for(int lgn=0;lgn<nbLgn;lgn++)
         {
             for(int pos=0;pos <=nbCol;pos++)
@@ -88,41 +100,49 @@ QTableView *cTabFilterZnCount::znCalculRegroupement(QString * pName, int i)
         qtv_tmp->verticalHeader()->hide();
 
         QHeaderView *htop = qtv_tmp->horizontalHeader();
-        htop->setSectionResizeMode(QHeaderView::Fixed);
-        qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        htop->setSectionResizeMode(QHeaderView::ResizeToContents);
+        qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    }
+        // simple click dans fenetre  pour selectionner boule
+        connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+                 this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
-    bool status = true;
-    for(int j=0; (j< nbCol) && (status == true);j++)
-    {
-        // Creer Requete pour compter items
-        QString msg1 = maRef[0].at(j);
-        QString sqlReq = "";
-        sqlReq = ApplayFilters(db_data,msg1,i,conf);
+
+        qtv_tmp->setMouseTracking(true);
+        connect(qtv_tmp,
+                SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
+
+        ///------------------------------
+        bool status = true;
+        for(int j=0; (j< nbCol) && (status == true);j++)
+        {
+            // Creer Requete pour compter items
+            QString msg1 = maRef[0].at(j);
+            QString sqlReq = "";
+            sqlReq = ApplayFilters(db_data,msg1,i,conf);
 
 #ifndef QT_NO_DEBUG
-        qDebug() << sqlReq;
+            qDebug() << sqlReq;
 #endif
 
-        status = query.exec(sqlReq);
+            status = query.exec(sqlReq);
 
-        // Mise a jour de la tables des resultats
-        if(status)
-        {
-            query.first();
-            do
+            // Mise a jour de la tables des resultats
+            if(status)
             {
-                int nb = query.value(0).toInt();
-                int tot = query.value(1).toInt();
+                query.first();
+                do
+                {
+                    int nb = query.value(0).toInt();
+                    int tot = query.value(1).toInt();
 
-                QStandardItem * item_1 = tmpStdItem->item(nb,j+1);
-                item_1->setData(tot,Qt::DisplayRole);
-                tmpStdItem->setItem(nb,j+1,item_1);
-            }while(query.next() && status);
+                    QStandardItem * item_1 = tmpStdItem->item(nb,j+1);
+                    item_1->setData(tot,Qt::DisplayRole);
+                    tmpStdItem->setItem(nb,j+1,item_1);
+                }while(query.next() && status);
+            }
         }
     }
-
     return qtv_tmp;
 }
 
@@ -134,7 +154,7 @@ QTableView *cTabFilterZnCount::znCalculRegroupement(QString * pName, int i)
 // pour integrer le nombre maxi de boules a prendre en compte
 QStringList * cTabFilterZnCount::CreateFilterForData(int zn, stTiragesDef *pConf)
 {
-    QStringList *tmp = new QStringList [2];
+    QStringList *tmp = new QStringList [3];
     QString fields = "z"+QString::number(zn+1);
 
     int maxElems = pConf->limites[zn].max;
@@ -144,6 +164,7 @@ QStringList * cTabFilterZnCount::CreateFilterForData(int zn, stTiragesDef *pConf
     // Parite & nb elment dans groupe
     tmp[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
     tmp[1] << "P" << "G";
+    tmp[2] << "Pair" << "< E/2";
 
 
     // Boule finissant par [0..9]
@@ -151,6 +172,7 @@ QStringList * cTabFilterZnCount::CreateFilterForData(int zn, stTiragesDef *pConf
     {
         tmp[0]<< fields+" like '%" + QString::number(j) + "'";
         tmp[1] << "F"+ QString::number(j);
+        tmp[2] << "Finissant par: "+ QString::number(j);
     }
 
     // Nombre de 10zaine
@@ -159,6 +181,7 @@ QStringList * cTabFilterZnCount::CreateFilterForData(int zn, stTiragesDef *pConf
         tmp[0]<< fields+" >="+QString::number(10*j)+
                  " and "+fields+"<="+QString::number((10*j)+9);
         tmp[1] << "U"+ QString::number(j);
+        tmp[2] << "Entre:"+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
     }
 
     return tmp;
@@ -200,20 +223,22 @@ QString cTabFilterZnCount::ApplayFilters(QString st_tirages, QString st_cri,int 
             "("
             "select tb1.id as Tid, count(tb2.B) as Nb from "
             "("
-            "select * from (" + st_tirages.remove(";")
-            +") as r1 "
-             ") as tb1 "
-             "left join "
-             "("
-             "select id as B from Bnrz where (z1 not null  and ("+st_cri
-            +")) "
-             ") as tb2 "
-             "on "
-             "("
+            "select * from (" + st_tirages.remove(";")+") as r1 "
+                                                       ") as tb1 "+
+            "left join "
+            "("
+            "select id as B from Bnrz where (z"+QString::number(zn+1)+
+            " not null  and ("+st_cri+")) ) as tb2 " +
+            "on "+
+            "("
             +st_tmp+
             ") group by tb1.id order by Nb desc "
             ")"
             "group by Nb;";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << st_return;
+#endif
 
     return(st_return);
 }
@@ -224,7 +249,6 @@ QString cTabFilterZnCount::ActionElmZone(QString critere , QString operateur, in
 
     // Operateur : or | and
     // critere : = | <>
-    // b1=0 or b2=0 or ..
     for(int i = 0; i<pConf->nbElmZone[zone];i++)
     {
         ret_msg = ret_msg +"tb2.B "+ critere +" tb1."
@@ -234,5 +258,45 @@ QString cTabFilterZnCount::ActionElmZone(QString critere , QString operateur, in
     int len_flag = operateur.length();
     ret_msg.remove(ret_msg.length()-len_flag-1, len_flag+1);
 
+#ifndef QT_NO_DEBUG
+    qDebug() << ret_msg;
+#endif
+
     return ret_msg;
+}
+
+void cTabFilterZnCount::slot_AideToolTip(const QModelIndex & index)
+{
+    QString msg="";
+    const QAbstractItemModel * pModel = index.model();
+    int col = index.column();
+
+    //QTableView *view = qobject_cast<QTableView *>(sender());
+
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
+
+    if (col >=1)
+    {
+        //int val = index.model()->index(index.row(),col).data().toInt();
+        QString s_nb = index.model()->index(index.row(),0).data().toString();
+        QString s_va = index.model()->index(index.row(),col).data().toString();
+        QString s_hd = headName;
+        msg = msg + QString("%1 tirage(s) \nayant %2 boule(s)%3").arg(s_va).arg(s_nb).arg(s_hd);
+    }
+    if(msg.length())
+        QToolTip::showText (QCursor::pos(), msg);
+}
+
+void cTabFilterZnCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
+{
+    // L'onglet implique le tableau...
+    int tab_index = 0;
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent());
+    //QItemSelectionModel *selectionModel = view->selectionModel();
+
+    tab_index = curOnglet->currentIndex();
+
+    tab_index++; // stop
 }

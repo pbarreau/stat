@@ -16,6 +16,10 @@ class cTabFilterZnCount:public QTabWidget
 public:
     cTabFilterZnCount(QString in, stTiragesDef *def);
 
+public slots:
+    void slot_AideToolTip(const QModelIndex & index);
+    void slot_ClicDeSelectionTableau(const QModelIndex &index);
+
 private:
     QTabWidget *tab_Top;
     QTableView *qtv;
