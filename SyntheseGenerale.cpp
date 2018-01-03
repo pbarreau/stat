@@ -15,6 +15,7 @@
 #include <QPushButton>
 #include <QDataWidgetMapper>
 #include <QSqlRelationalDelegate>
+#include <QStackedWidget>
 
 #include "refetude.h"
 #include "refresultat.h"
@@ -1370,10 +1371,13 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
-    int origine = ptabComptage->currentIndex();
+    //int origine = ptabComptage->currentIndex();
+    int origine = 0;
 
     QTableView *view = qobject_cast<QTableView *>(sender());
+    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
     QItemSelectionModel *selectionModel = view->selectionModel();
+    origine =curOnglet->currentIndex();
 
     uneDemande.selection[origine] = selectionModel->selectedIndexes();
 

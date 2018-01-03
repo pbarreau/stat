@@ -21,16 +21,17 @@ public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
 
 private:
-    QTabWidget *tab_Top;
-    QTableView *qtv;
+    //QTabWidget *tab_Top;
+    //QTableView *qtv;
     QString db_data;
     stTiragesDef *conf;
-    QStringList *filter;
+    QStringList **maRef; //zn_filter
 
 private:
-    QTableView *znCalculRegroupement(QString * pName, int i);
+    QTableView *znCalculRegroupement(QString * pName, int zn);
     QStringList * CreateFilterForData(int zn, stTiragesDef *pConf);
     QString ApplayFilters(QString st_tirages, QString st_cri,int zn, stTiragesDef *pConf);
+    QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn, stTiragesDef *pConf);
     QString ActionElmZone(QString operateur, QString critere,int zone, stTiragesDef *pConf);
 
 };
