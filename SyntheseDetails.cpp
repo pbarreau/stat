@@ -522,6 +522,7 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
 
     QString stRequete = "";
     stRequete = FiltreLesTirages(pEtude);
+    view_id = stRequete;
 
     // Creation des onglets reponses
     QWidget *uneReponse = PBAR_CreerOngletsReponses(pEtude,visuel,stRequete);
@@ -1195,6 +1196,10 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     // Recherche sur nouveau critere
     //msg = PBAR_Req3(pLaDemande->st_LDT_Reference,*(pLaDemande->st_LDT_Filtre),new_distance);
     msg = PBAR_Req3(&(pLaDemande->st_TablePere),view_id,new_distance);
+    //msg = PBAR_Req3(&(pLaDemande->st_TablePere),*(pLaDemande->st_LDT_Filtre),new_distance);
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
 
     // Application de la requete pour le tableau des tirages
     QSqlQueryModel *sqlmodel = dist->getAssociatedModel();
