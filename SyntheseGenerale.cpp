@@ -1218,7 +1218,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
             }
         }
         // Gestion du QTableView
-        qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+        qtv_tmp->setSelectionMode(QAbstractItemView::MultiSelection);
         qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
         qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
@@ -1231,8 +1231,8 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
         qtv_tmp->verticalHeader()->hide();
 
         QHeaderView *htop = qtv_tmp->horizontalHeader();
-        htop->setSectionResizeMode(QHeaderView::Fixed);
-        qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        htop->setSectionResizeMode(QHeaderView::ResizeToContents);
+        qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
 
         QVBoxLayout *vb_tmp = new QVBoxLayout;
@@ -1279,8 +1279,9 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 
     // simple click dans fenetre  pour selectionner boule
 #if 0
-    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-             this, SLOT(slot_Select_G( QModelIndex) ) );
+    qtv_tmp->setMouseTracking(true);
+    connect(qtv_tmp,
+            SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 #endif
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
