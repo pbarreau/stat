@@ -1374,11 +1374,37 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
     // L'onglet implique le tableau...
     //int origine = ptabComptage->currentIndex();
     int origine = 0;
+    int col = index.column();
+    boolean noSelection = false;
 
     QTableView *view = qobject_cast<QTableView *>(sender());
     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
     QItemSelectionModel *selectionModel = view->selectionModel();
     origine =curOnglet->currentIndex();
+
+    switch (origine) {
+    case 0:
+    case 1:
+    case 3:
+        if(col==0)
+            noSelection = true;
+        break;
+    case 2:
+        if(col<=1)
+            noSelection = true;
+        break;
+    default:
+        noSelection = true;
+        break;
+    }
+
+    // verifier
+    if(noSelection){
+        // deselectionner l'element
+        selectionModel->select(index, QItemSelectionModel::Deselect);
+
+        return;
+    }
 
     uneDemande.selection[origine] = selectionModel->selectedIndexes();
 
