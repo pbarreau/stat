@@ -72,7 +72,7 @@ QComboBox *ComboPerso(int id)
 
 //------
 void MemoriserChoixUtilisateur(const QModelIndex & index,
-                               int zn,
+                               int idOnglet,
                                QItemSelectionModel *selectionModel,
                                stTiragesDef *pTiragesConf,
                                stCurDemande *pUneDemande)
@@ -94,15 +94,15 @@ void MemoriserChoixUtilisateur(const QModelIndex & index,
     QVariant vCol;
     QString headName;
 
-    if(zn==2)
+    if(idOnglet==2)
     {
         nb_element_max_zone=1;
         stNomZone="C";
     }
     else
     {
-        nb_element_max_zone = pTiragesConf->nbElmZone[zn];
-        stNomZone = pTiragesConf->nomZone[zn];
+        nb_element_max_zone = pTiragesConf->nbElmZone[idOnglet];
+        stNomZone = pTiragesConf->nomZone[idOnglet];
     }
 
     // Maxi choix atteind
@@ -121,7 +121,7 @@ void MemoriserChoixUtilisateur(const QModelIndex & index,
     {
 
         // Efface liste des boules utilisateur
-        pUneDemande->lst_boules[zn].clear();
+        pUneDemande->lst_boules[idOnglet].clear();
 
         return;
     }
@@ -131,16 +131,16 @@ void MemoriserChoixUtilisateur(const QModelIndex & index,
     {
         int calcol = 1;
 
-        curcol [zn] = index.column();
-        if(curcol[zn])
+        curcol [idOnglet] = index.column();
+        if(curcol[idOnglet])
         {
-            calcol = curcol[zn];
+            calcol = curcol[idOnglet];
         }
 
         vCol = pModel->headerData(calcol,Qt::Horizontal);
         headName = vCol.toString();
 
-        if(zn == 2)
+        if(idOnglet == 2)
         {
             // Combi ?
             val = index.model()->index(index.row(),0).data().toInt();
@@ -149,19 +149,24 @@ void MemoriserChoixUtilisateur(const QModelIndex & index,
         {
             val = index.data().toInt();
         }
-        pUneDemande->lst_boules[zn].clear();
-        pUneDemande->col[zn] = calcol;
-        pUneDemande->stc[zn]=headName;
-        pUneDemande->val[zn]=val;
-        pUneDemande->lgn[zn]=ligne;
+        pUneDemande->lst_boules[idOnglet].clear();
+        pUneDemande->col[idOnglet] = calcol;
+        pUneDemande->stc[idOnglet]=headName;
+        pUneDemande->val[idOnglet]=val;
+        pUneDemande->lgn[idOnglet]=ligne;
     }
     else
     {
-        if(curcol[zn] != index.column())
+        if(curcol[idOnglet] != index.column())
         {
             // deselectionner l'element
             selectionModel->select(index, QItemSelectionModel::Deselect);
-
+            // prendre le voisin
+            selectionModel->select(index.sibling(index.row(),curcol[idOnglet]), QItemSelectionModel::Select);
+            // Mettre a jour les indexes choisi
+            indexes = selectionModel->selectedIndexes();
+            pUneDemande->selection[idOnglet]=indexes;
+            nb_items = -1;
         }
     }
 
@@ -184,7 +189,7 @@ void MemoriserChoixUtilisateur(const QModelIndex & index,
             boule = un_index.model()->index(un_index.row(),0).data().toString();
             lst_tmp = lst_tmp << boule;
         }
-        pUneDemande->lst_boules[zn]=lst_tmp;
+        pUneDemande->lst_boules[idOnglet]=lst_tmp;
     }
 }
 

@@ -1381,12 +1381,15 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 
     uneDemande.selection[origine] = selectionModel->selectedIndexes();
 
-    QString maselection = CreatreTitle(&uneDemande);
-    selection->setText(maselection);
-
     // ne pas memoriser quand onglet des regroupements
     if(origine<(ptabComptage->count()-1))
         MemoriserChoixUtilisateur(index,origine,selectionModel,pMaConf,&uneDemande);
+
+    ///Memoriser peut modifier contenu de uneDemande !!!!
+    QString maselection = CreatreTitle(&uneDemande);
+    selection->setText(maselection);
+
+
 }
 
 QString CreatreTitle(stCurDemande *pConf)

@@ -19,6 +19,7 @@ cTabFilterZnCount::cTabFilterZnCount(QString in, stTiragesDef *def)
 
     int nb_zones = def->nb_zone;
     maRef = new  QStringList* [nb_zones] ;
+    lesSelections = new QModelIndexList [nb_zones];
 
     QTableView *(cTabFilterZnCount::*ptrFunc[])(QString *, int) =
     {
@@ -103,10 +104,13 @@ QTableView *cTabFilterZnCount::znCalculRegroupement(QString * pName, int zn)
         htop->setSectionResizeMode(QHeaderView::ResizeToContents);
         qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-        // simple click dans fenetre  pour selectionner boule
+        // simple click dans fenetre  pour selectionner boules
         connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
                  this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
+        // Double click dans fenetre  pour creer requete
+        connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+                 this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
 
         qtv_tmp->setMouseTracking(true);
         connect(qtv_tmp,
@@ -322,42 +326,52 @@ void cTabFilterZnCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
     int tab_index = 0;
-    QString st_critere = "";
     QTableView *view = qobject_cast<QTableView *>(sender());
     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent());
     QItemSelectionModel *selectionModel = view->selectionModel();
     tab_index = curOnglet->currentIndex();
-    QModelIndexList indexes = selectionModel->selectedIndexes();
+    lesSelections[tab_index]= selectionModel->selectedIndexes();
+}
+
+void cTabFilterZnCount::slot_RequeteFromSelection(const QModelIndex &index)
+{
+    QString st_critere = "";
+    QString sqlReq ="";
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent());
 
     /// il y a t'il une selection
-    if(indexes.size())
+    ///parcourir tous les onglets
+    sqlReq = db_data;
+    int nb_item = curOnglet->count();
+    for(int onglet = 0; onglet<nb_item;onglet++)
     {
-        QModelIndex un_index;
-        QString st_logical = " and ";
-        QString sqlReq ="";
-        int curCol = 0;
-        int occure = 0;
+        QModelIndexList indexes =  lesSelections[onglet];
 
-        /// Parcourir les selections
-        sqlReq = db_data;
-        foreach(un_index, indexes)
+        if(indexes.size())
         {
-            curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
-            occure = un_index.model()->index(un_index.row(), 0).data().toInt();
-            if(curCol)
-            {
-                st_critere = "("+maRef[tab_index][0].at(curCol-1)+")";
-                sqlReq =TrouverTirages(curCol,occure,sqlReq,st_critere,tab_index,conf);
-                //st_critere = st_critere + st_logical;
-            }
-        }
-        //st_critere.remove(st_critere.length()-st_logical.length(),st_logical.length());
+            QModelIndex un_index;
+            int curCol = 0;
+            int occure = 0;
 
-        // Creation requete
-        //sqlReq = ApplayFilters(db_data,st_critere,tab_index,conf);
+            /// Parcourir les selections
+            foreach(un_index, indexes)
+            {
+                curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
+                occure = un_index.model()->index(un_index.row(), 0).data().toInt();
+                if(curCol)
+                {
+                    st_critere = "("+maRef[onglet][0].at(curCol-1)+")";
+                    sqlReq =TrouverTirages(curCol,occure,sqlReq,st_critere,onglet,conf);
+                }
+            }
+
 #ifndef QT_NO_DEBUG
-        qDebug() << sqlReq;
+            qDebug() << sqlReq;
 #endif
 
+        }
+
     }
+
 }

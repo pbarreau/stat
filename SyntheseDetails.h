@@ -187,7 +187,7 @@ extern QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn
 extern QString PBAR_ReqNbCombi(stCurDemande *pEtude, QString ReqTirages);
 extern QString CreatreTitle(stCurDemande *pConf);
 extern void MemoriserChoixUtilisateur(const QModelIndex & index,
-                                      int zn,
+                                      int idOnglet,
                                       QItemSelectionModel *selectionModel,
                                       stTiragesDef *pTiragesConf,
                                       stCurDemande *pUneDemande);

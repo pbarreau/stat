@@ -19,13 +19,14 @@ public:
 public slots:
     void slot_AideToolTip(const QModelIndex & index);
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
+    void slot_RequeteFromSelection(const QModelIndex &index);
+
 
 private:
-    //QTabWidget *tab_Top;
-    //QTableView *qtv;
     QString db_data;
     stTiragesDef *conf;
     QStringList **maRef; //zn_filter
+    QModelIndexList *lesSelections;
 
 private:
     QTableView *znCalculRegroupement(QString * pName, int zn);
