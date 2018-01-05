@@ -69,7 +69,6 @@ HEADERS  += mainwindow.h \
     tirages.h \
     types_jeux.h \
     labelclickable.h \
-    refresultat.h \
     filtrecombinaisons.h \
     SyntheseDetails.h \
     monQview.h \
@@ -83,7 +82,8 @@ HEADERS  += mainwindow.h \
     showstepper.h \
     delegate.h \
     car.h \
-    ctabfilterzncount.h
+    ctabfilterzncount.h \
+    SyntheseGenerale.h
 
 
 FORMS    += mainwindow.ui \

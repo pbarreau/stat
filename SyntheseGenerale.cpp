@@ -18,7 +18,7 @@
 #include <QStackedWidget>
 
 #include "refetude.h"
-#include "refresultat.h"
+#include "SyntheseGenerale.h"
 #include "SyntheseDetails.h"
 #include "showstepper.h"
 
@@ -171,7 +171,10 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     pEcran = visuel;
     pMaConf = pConf;
     ptabTop = ptabSynt;
-    curzn = zn;
+    //curzn = zn;
+    int nb_zones = pConf->nb_zone;
+    maRef = new  QStringList* [nb_zones] ;
+
 
     QString *st_tmp = new QString;
     QString *st_tmp2 = new QString;
@@ -1079,7 +1082,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 // pour integrer le nombre maxi de boules a prendre en compte
 QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
 {
-    QStringList *tmp = new QStringList [2];
+    QStringList *sl_filter = new QStringList [3];
     QString fields = "z"+QString::number(zn+1);
 
     int maxElems = pConf->limites[zn].max;
@@ -1087,26 +1090,29 @@ QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
 
 
     // Parite & nb elment dans groupe
-    tmp[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
-    tmp[1] << "P" << "G";
+    sl_filter[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
+    sl_filter[1] << "P" << "G";
+    sl_filter[2] << "Pair" << "< E/2";
 
 
     // Boule finissant par [0..9]
     for(int j=0;j<=9;j++)
     {
-        tmp[0]<< fields+" like '%" + QString::number(j) + "'";
-        tmp[1] << "F"+ QString::number(j);
+        sl_filter[0]<< fields+" like '%" + QString::number(j) + "'";
+        sl_filter[1] << "F"+ QString::number(j);
+        sl_filter[2] << "Finissant par: "+ QString::number(j);
     }
 
     // Nombre de 10zaine
     for(int j=0;j<nbBoules;j++)
     {
-        tmp[0]<< fields+" >="+QString::number(10*j)+
-                 " and "+fields+"<="+QString::number((10*j)+9);
-        tmp[1] << "U"+ QString::number(j);
+        sl_filter[0]<< fields+" >="+QString::number(10*j)+
+                       " and "+fields+"<="+QString::number((10*j)+9);
+        sl_filter[1] << "U"+ QString::number(j);
+        sl_filter[2] << "Entre:"+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
     }
 
-    return tmp;
+    return sl_filter;
 }
 
 
@@ -1185,8 +1191,9 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
     int maxElems = uneDemande.ref->limites[zone].max;
     int nbBoules = floor(maxElems/10)+1;
 
-    QStringList *maRef = LstCritereGroupement(zone,uneDemande.ref);
-    int nbCol = maRef[0].size();
+    //QStringList *maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
+    maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
+    int nbCol = maRef[zone][0].size();
     int nbLgn = uneDemande.ref->nbElmZone[zone] + 1;
 
     QTableView *qtv_tmp ;
@@ -1201,7 +1208,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
         tmpStdItem =  new QStandardItemModel(nbLgn,nbCol);
         qtv_tmp->setModel(tmpStdItem);
 
-        QStringList tmp=maRef[1];
+        QStringList tmp=maRef[zone][1];
         tmp.insert(0,"Nb");
         tmpStdItem->setHorizontalHeaderLabels(tmp);
         for(int lgn=0;lgn<nbLgn;lgn++)
@@ -1251,7 +1258,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
     for(int i=0; (i< nbCol) && (status == true);i++)
     {
         // Creer Requete pour compter items
-        QString msg1 = maRef[0].at(i);
+        QString msg1 = maRef[zone][0].at(i);
         QString sqlReq = "";
         sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_Ensemble_1),msg1);
 
@@ -1348,6 +1355,7 @@ void SyntheseGenerale::DoBloc3(void)
 #endif
 }
 
+#if 0
 void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
                                               const QItemSelection &deselected)
 {
@@ -1368,12 +1376,14 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
     }
 
 }
+#endif
 
 void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
     //int origine = ptabComptage->currentIndex();
     int origine = 0;
+    int totOngl = 0;
     int col = index.column();
     boolean noSelection = false;
 
@@ -1381,6 +1391,7 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
     QItemSelectionModel *selectionModel = view->selectionModel();
     origine =curOnglet->currentIndex();
+    totOngl = curOnglet->count();
 
     switch (origine) {
     case 0:
@@ -1409,7 +1420,8 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
     uneDemande.selection[origine] = selectionModel->selectedIndexes();
 
     // ne pas memoriser quand onglet des regroupements
-    if(origine<(ptabComptage->count()-1))
+    //if(origine<(ptabComptage->count()-1))
+    if(origine < (totOngl-1))
         MemoriserChoixUtilisateur(index,origine,selectionModel,pMaConf,&uneDemande);
 
     ///Memoriser peut modifier contenu de uneDemande !!!!
@@ -1486,24 +1498,97 @@ QString CreatreTitle(stCurDemande *pConf)
     return titre;
 }
 
-#if 1
+QString SyntheseGenerale::ActionElmZone(QString critere , QString operateur, int zone, stTiragesDef *pConf)
+{
+    QString ret_msg = "";
+
+    // Operateur : or | and
+    // critere : = | <>
+    for(int i = 0; i<pConf->nbElmZone[zone];i++)
+    {
+        ret_msg = ret_msg +"tb2.B "+ critere +" tb1."
+                + pConf->nomZone[zone]+QString::number(i+1)
+                + " " + operateur+ " ";
+    }
+    int len_flag = operateur.length();
+    ret_msg.remove(ret_msg.length()-len_flag-1, len_flag+1);
+
+#ifndef QT_NO_DEBUG
+    qDebug() << ret_msg;
+#endif
+
+    return ret_msg;
+}
+
+QString SyntheseGenerale::TrouverTirages(int col, int nb, QString st_tirages, QString st_cri,int zn, stTiragesDef *pConf)
+{
+    QString st_tmp =  ActionElmZone("=","or",zn,pConf);
+    QString st_return =
+            "select tb1.*, count(tb2.B) as N"+QString::number(col)+ " "+
+            "from (" + st_tirages.remove(";")+
+            ") as tb1 "
+            "left join "
+            "("
+            "select id as B from Bnrz where (z"+QString::number(zn+1)+
+            " not null  and ("+st_cri+")) ) as tb2 " +
+            "on "+
+            "("
+            +st_tmp+
+            ") group by tb1.id";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << st_return;
+#endif
+    st_return ="select * from("+
+            st_return+
+            ")as tb1 where(tb1.N"+QString::number(col)+ "="+
+            QString::number(nb)+");";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << st_return;
+#endif
+
+    return(st_return);
+}
+
 void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 {
-    void *pSource = index.internalPointer();
-
 #ifndef QT_NO_DEBUG
     qDebug()<<"Fenetre RefResultats.";
 #endif
 
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
+    int nb_item = curOnglet->count();
 
-    QString titre = CreatreTitle(&uneDemande);
+    // Tableau de fonction permettant de creer la requete adapte a l'onglet
+    QString (SyntheseGenerale::*ptrFunc[])(int,QString)=
+    {
+            &SyntheseGenerale::SqlCreateCodeBoule,
+            &SyntheseGenerale::SqlCreateCodeBoule,
+            &SyntheseGenerale::SqlCreateCodeCombi,
+            &SyntheseGenerale::SqlCreateCodeGroupe
+};
+
+    ///parcourir tous les onglets
+
 
     // Le simple click a construit la liste des boules
+    //----------
+    QString sqlReq = *(uneDemande.st_LDT_Depart);
+    for(int onglet = 0; onglet<nb_item;onglet++)
+    {
+        sqlReq = (this->*ptrFunc[onglet])(onglet,sqlReq);
+    }
+
+    //----------
     stCurDemande *etude = new stCurDemande;
     *etude = uneDemande;
+
+
     etude->origine = Tableau2;
 
-    etude->st_titre = titre;
+    etude->st_titre = CreatreTitle(&uneDemande);
     etude->st_TablePere = REF_BASE;
     etude->cur_dst = 0;
     etude->req_niv = 0;
@@ -1512,6 +1597,17 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     etude->st_LDT_Filtre = new QString;
     etude->st_jourDef = new QString;
     *(etude->st_jourDef) = CompteJourTirage(uneDemande.ref);
+    *(etude->st_LDT_Filtre) = sqlReq;
+
+#ifndef QT_NO_DEBUG
+    qDebug()<<etude->st_titre;
+    qDebug()<<etude->st_TablePere;
+    qDebug()<<*(etude->st_Ensemble_1);
+    qDebug()<<*(etude->st_LDT_Filtre);
+    qDebug()<<*(etude->st_jourDef);
+    qDebug()<<"etude->st_jourDef";
+#endif
+
 
     // Nouvelle de fenetre de detail de cette selection
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
@@ -1520,139 +1616,141 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
 
 }
-#else
-void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
+QString SyntheseGenerale::SqlCreateCodeBoule(int onglet, QString table)
 {
-    void *pSource = index.internalPointer();
-    int col = index.column();
-    int val = index.data().toInt();
-    const QAbstractItemModel * pModel = index.model();
-    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-    QString headName = vCol.toString();
+    QString st_critere = "";
+    QString sqlReq ="";
 
+    QModelIndexList indexes =  uneDemande.selection[onglet];
 
-    if(pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
+    /// il y a t'il une selection
+    sqlReq = table;
+    if(indexes.size())
     {
+        int max = uneDemande.ref->nbElmZone[onglet];
+        QString champ = uneDemande.ref->nomZone[onglet];
 
-        if (col < 2 || !val)
-            return;
+        sqlReq = FiltreLaBaseSelonSelectionUtilisateur(indexes,onglet,max,champ,table);
+
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
+#endif
     }
-
-    // Le simple click a construit la liste des boules
-    stCurDemande *etude = new stCurDemande;
-
-    // Boules
-    if(
-            (pSource == tbv_bloc1_1->model()->index(0,0).internalPointer())
-            ||
-            (pSource == tbv_bloc1_2->model()->index(0,0).internalPointer())
-            ||
-            (pSource == tbv_bloc1_3->model()->index(0,0).internalPointer())
-            )
-    {
-        uneDemande.origine = 1;
-    }
-
-    if(
-            pSource == tbv_bloc2->model()->index(0,0).internalPointer()
-            )
-    {
-        uneDemande.origine = 2;
-        uneDemande.lgn[0]=index.model()->index(index.row(),1).data().toInt();
-        uneDemande.col[0]=col;
-        uneDemande.stc[0]=headName;
-        uneDemande.val[0]=val;
-        uneDemande.ref = pMaConf;
-
-
-    }
-
-
-    // recopie de la config courante
-    uneDemande.cur_dst = 0;
-    *etude = uneDemande;
-
-    // Nouvelle de fenetre de detail de cette boule
-    SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
+    return sqlReq;
 }
+QString SyntheseGenerale::SqlCreateCodeEtoile(int onglet, QString table)
+{
+    QString st_critere = "";
+    QString sqlReq ="";
+
+    QModelIndexList indexes =  uneDemande.selection[onglet];
+
+    /// il y a t'il une selection
+    sqlReq = table;
+    if(indexes.size())
+    {
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
+#endif
+    }
+    return sqlReq;
+}
+QString SyntheseGenerale::SqlCreateCodeCombi(int onglet, QString table)
+{
+    QString st_critere = "";
+    QString sqlReq ="";
+
+    QModelIndexList indexes =  uneDemande.selection[onglet];
+
+    /// il y a t'il une selection
+    sqlReq = table;
+    if(indexes.size())
+    {
+        int max = 1;
+        QString champ = "pid";
+
+        sqlReq = FiltreLaBaseSelonSelectionUtilisateur(indexes,onglet,max,champ,table);
+
+
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
+#endif
+    }
+    return sqlReq;
+}
+
+QString SyntheseGenerale::SqlCreateCodeGroupe(int onglet, QString table)
+{
+    QString st_critere = "";
+    QString sqlReq ="";
+
+    QModelIndexList indexes =  uneDemande.selection[onglet];
+
+    /// il y a t'il une selection
+    sqlReq = table;
+    if(indexes.size())
+    {
+        QModelIndex un_index;
+        int curCol = 0;
+        int occure = 0;
+
+        /// Parcourir les selections
+        foreach(un_index, indexes)
+        {
+            curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
+            occure = un_index.model()->index(un_index.row(), 0).data().toInt();
+            if(curCol)
+            {
+                st_critere = "("+maRef[0][0].at(curCol-1)+")";
+                sqlReq =TrouverTirages(curCol,occure,sqlReq,st_critere,0,uneDemande.ref);
+            }
+        }
+
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
 #endif
 
+    }
+    return sqlReq;
+}
+
 #if 0
-void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
+void SyntheseGenerale::FillRegroupement(int nbCol,stTiragesDef *conf)
 {
-    void *pSource = index.internalPointer();
-    quintptr pId = index.internalId();
+    QSqlQuery query ;
 
-    int ligne = index.row();
-    int col = index.column();
-    int val = index.data().toInt();
-    const QAbstractItemModel * pModel = index.model();
-    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-    QString headName = vCol.toString();
-
-    int selTable = 0;
-    int boule_id = 0;
-    QString st_titre= "";
-
-
-    if (val)
+    ///------------------------------
+    bool status = true;
+    int zn = 0;
+    for(int j=0; (j< nbCol) && (status == true);j++)
     {
-        stCurDemande *etude = new stCurDemande;
+        // Creer Requete pour compter items
+        QString msg1 = maRef[zn][0].at(j);
+        QString sqlReq = "";
+        QString db_data = ;
+        sqlReq = ApplayFilters(db_data,msg1,zn,conf);
+        //sqlReq = sql_RegroupeSelonCritere()
 
-        QStringList stl_tmp;
-        QString st_lesBoules = "";
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
+#endif
 
+        status = query.exec(sqlReq);
 
-        //if(index.internalPointer() == tbv_bloc2->model()->index(index.row(),index.column()).internalPointer())
-        if(index.internalPointer() == tbv_bloc2->model()->index(0,0).internalPointer())
+        // Mise a jour de la tables des resultats
+        if(status)
         {
-            selTable = 2;
-            boule_id = index.model()->index(index.row(),1).data().toInt();
-        }
-
-        if(index.internalPointer() == tbv_bloc1_1->model()->index(0,0).internalPointer())
-
-        {
-            selTable = 1;
-
-            // Multi ou uni selection
-            if(lst_selection[0].size() == 0)
+            query.first();
+            do
             {
-                boule_id = ligne +1;
-            }
-            else
-            {
-                boule_id=-1;
-            }
+                int nb = query.value(0).toInt();
+                int tot = query.value(1).toInt();
 
+                QStandardItem * item_1 = tmpStdItem->item(nb,j+1);
+                item_1->setData(tot,Qt::DisplayRole);
+                tmpStdItem->setItem(nb,j+1,item_1);
+            }while(query.next() && status);
         }
-
-        stl_tmp = lst_selection[0];
-
-        for(int j=0;j<stl_tmp.size();j++)
-        {
-            st_lesBoules= st_lesBoules + stl_tmp.at(j)+",";
-        }
-        st_lesBoules.remove(st_lesBoules.length()-1,1);
-
-
-        if(selTable == 1)
-            st_titre=st_lesBoules;
-
-        if(selTable == 2)
-            st_titre=st_lesBoules+
-                    " de type " + headName;
-
-        etude->origine = selTable;
-        etude->boule = boule_id;
-        etude->col = col;
-        etude->val = val;
-        etude->st_col = headName;
-        etude->st_titre = st_titre;
-        etude->lst_boules = stl_tmp;
-
-        // Nouvelle de fenetre de detail de cette boule
-        SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran);
     }
 }
 #endif

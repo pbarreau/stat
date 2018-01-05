@@ -67,9 +67,10 @@ private:
     QTabWidget *ptabTop;
     QTabWidget *ptabComptage;
     RefEtude *tabEcarts;
-    int curzn;
+    //int curzn;
     stCurDemande uneDemande;
-    QStringList lst_selection[3];
+    //QStringList lst_selection[3];
+    QStringList **maRef; //zn_filter
     QString *st_bdTirages;
     QString *st_JourTirageDef;
 
@@ -77,7 +78,7 @@ private:
     //QStandardItemModel *sim_bloc1;
 
     QTableView * tbv_LesTirages;
-    QSqlQueryModel *sqm_LesTirages;
+    //QSqlQueryModel *sqm_LesTirages;
 
     QTableView * tbv_LesEcarts;
 
@@ -92,12 +93,12 @@ private:
     QSortFilterProxyModel * mysortModel;
 
     QTableView * tbv_bloc2;
-    QSqlTableModel * sqtblm_bloc2;
+    //QSqlTableModel * sqtblm_bloc2;
 
-    QTableView * tbv_bloc3;
-    QSqlTableModel * sqtblm_bloc3;
+    //QTableView * tbv_bloc3;
+    //QSqlTableModel * sqtblm_bloc3;
 
-    QStandardItemModel *gsim_AnalyseUnTirage;
+    //QStandardItemModel *gsim_AnalyseUnTirage;
 
 public:
     SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt, int zn, stTiragesDef *pConf, QMdiArea *visuel);
@@ -126,7 +127,7 @@ public slots:
     //void slot_Select_E(const QModelIndex & index);
     //void slot_Select_B(const QModelIndex & index);
 
-    void slot_ChangementEnCours(const QItemSelection &selected,const QItemSelection &deselected);
+    //void slot_ChangementEnCours(const QItemSelection &selected,const QItemSelection &deselected);
     void slot_RazSelection(QString);
 
 private:
@@ -135,6 +136,12 @@ private:
     void DoTirages(void);
     void DoComptageTotal(void);
     void DoBloc3(void);
+    QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri,int zn, stTiragesDef *pConf);
+    QString ActionElmZone(QString critere , QString operateur, int zone, stTiragesDef *pConf);
+    QString SqlCreateCodeBoule(int onglet, QString table);
+    QString SqlCreateCodeEtoile(int onglet, QString table);
+    QString SqlCreateCodeCombi(int onglet, QString table);
+    QString SqlCreateCodeGroupe(int onglet, QString table);
 
     QGridLayout * MonLayout_SyntheseTotalGroupement(int fake);
     QGridLayout * MonLayout_SyntheseTotalBoules(int dst);

@@ -6,6 +6,7 @@
 #include <QTableView>
 
 #include "filtrecombinaisons.h"
+#include <QStandardItemModel>
 
 class DistancePourTirage : public QLineEdit
 {
@@ -16,10 +17,11 @@ private:
     QSqlQueryModel *laRequete;
     QTableView * leTableau;
 
-    QSqlQueryModel *qmVoisin[3];
-    QTableView * tvVoisin[3];
+    QSqlQueryModel *qmVoisin[4];
+    QTableView * tvVoisin[4];
     QSortFilterProxyModel *fpVoisin[3];
     FiltreCombinaisons *pFiltre;
+    QStandardItemModel *model;
 
 
 public:
@@ -27,6 +29,7 @@ public:
 
     QSqlQueryModel *getAssociatedModel(void);
     QTableView * getAssociatedVue(void);
+    QStandardItemModel *GetStandardModel(void);
 
     QSqlQueryModel *getAssociatedModel(int i);
     QTableView * getAssociatedVue(int i);
@@ -37,6 +40,7 @@ public:
     int getValue(void);
     void setValue(int val);
     void keepPtr(int ong, QSqlQueryModel *req, QTableView *tab, QSortFilterProxyModel *sfp);
+    void keepPtr(QStandardItemModel *ong);
     void keepFiltre(FiltreCombinaisons *ptr);
 
 signals:

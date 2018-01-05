@@ -21,7 +21,7 @@
 #include "gererbase.h"
 #include "tirages.h"
 #include "pointtirage.h"
-#include "refresultat.h"
+#include "SyntheseGenerale.h"
 #include "filtrecombinaisons.h"
 #include "refetude.h"
 

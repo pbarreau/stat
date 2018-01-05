@@ -451,6 +451,52 @@ QString sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri)
 
 }
 
+void SyntheseDetails::RecalculGroupement(QString st_tirages,int nbCol,QStandardItemModel *tmpStdItem)
+{
+    QSqlQuery query ;
+    //int nbCol = tab->horizontalHeader()->count();
+    bool status = true;
+    int zn = 0;
+    for(int j=0; (j< nbCol-1) && (status == true);j++)
+    {
+        //Effacer calcul precedent
+        for(int k =0;k<(pLaDemande->ref->nbElmZone[zn])+1;k++)
+        {
+            QStandardItem * item_1 = tmpStdItem->item(k,j+1);
+            item_1->setData("",Qt::DisplayRole);
+            tmpStdItem->setItem(k,j+1,item_1);
+        }
+
+        // Creer Requete pour compter items
+        QString msg1 = maRef[zn][0].at(j);
+        QString sqlReq = "";
+        //QStandardItemModel * tmpStdItem = qobject_cast<QStandardItemModel *>(tab->model());
+        sqlReq = sql_RegroupeSelonCritere(st_tirages,msg1);
+
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
+#endif
+
+        status = query.exec(sqlReq);
+
+        // Mise a jour de la tables des resultats
+        if(status)
+        {
+            query.first();
+            do
+            {
+                int nb = query.value(0).toInt();
+                int tot = query.value(1).toInt();
+
+                QStandardItem * item_1 = tmpStdItem->item(nb,j+1);
+                item_1->setData(tot,Qt::DisplayRole);
+                tmpStdItem->setItem(nb,j+1,item_1);
+            }while(query.next() && status);
+        }
+    }
+
+}
+
 QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
 {
 #if 0
@@ -479,8 +525,8 @@ QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
                 )
             group by Nb;
     data, range, name, filter
-#endif
-    QString st_return =
+        #endif
+            QString st_return =
             "select Nb, count(Nb) as Tp from "
             "("
             "select tb1.id as Tid, count(tb2.B) as Nb from "
@@ -521,8 +567,18 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
     detail_id ++;
 
     QString stRequete = "";
-    stRequete = FiltreLesTirages(pEtude);
-    view_id = stRequete;
+    int nb_zones = pEtude->ref->nb_zone;
+    maRef = new  QStringList* [nb_zones] ;
+
+    if((*pEtude->st_LDT_Filtre).size()!=0)
+    {
+        stRequete = (*pEtude->st_LDT_Filtre);
+    }
+    else
+    {
+        stRequete = FiltreLesTirages(pEtude);
+    }
+    //view_id = stRequete;
 
     // Creation des onglets reponses
     QWidget *uneReponse = PBAR_CreerOngletsReponses(pEtude,visuel,stRequete);
@@ -1194,9 +1250,8 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     new_distance *=-1;
 
     // Recherche sur nouveau critere
-    //msg = PBAR_Req3(pLaDemande->st_LDT_Reference,*(pLaDemande->st_LDT_Filtre),new_distance);
-    msg = PBAR_Req3(&(pLaDemande->st_TablePere),view_id,new_distance);
-    //msg = PBAR_Req3(&(pLaDemande->st_TablePere),*(pLaDemande->st_LDT_Filtre),new_distance);
+    msg = PBAR_Req3(pLaDemande->st_LDT_Depart,*(pLaDemande->st_LDT_Filtre),new_distance);
+    //msg = PBAR_Req3(pLaDemande->st_LDT_Depart,*(pLaDemande->st_Ensemble_1),new_distance);
 #ifndef QT_NO_DEBUG
     qDebug() << msg;
 #endif
@@ -1253,6 +1308,9 @@ void SyntheseDetails::slot_NouvelleDistance(void)
     }
 
     // Recalcul pour les groupements TBD
+    QStandardItemModel *monModel =dist->GetStandardModel();
+    int nbCol = monModel->columnCount();
+    RecalculGroupement(msg, nbCol, monModel);
 
     // Memorisation
     dist->setValue(new_distance *-1);
@@ -1361,24 +1419,25 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
     int maxElems = pEtude->ref->limites[zn].max;
     int nbBoules = floor(maxElems/10)+1;
 
-    QStringList *maRef = LstCritereGroupement(zn,pEtude->ref);
-    int nbCol = maRef[0].size();
+    //QStringList *maRef[0] = LstCritereGroupement(zn,pEtude->ref);
+    maRef[zn] = LstCritereGroupement(zn,pEtude->ref);
+    int nbCol = maRef[zn][0].size();
     int nbLgn = pEtude->ref->nbElmZone[zn] + 1;
 
     QTableView *qtv_tmp = new QTableView;
     //myQTableView *qtv_tmp = new myQTableView;
-    QStandardItemModel * tmpStdItem = NULL;
+    QStandardItemModel * sqm_tmp = NULL;
     QSqlQuery query ;
 
     //Creer un tableau d'element standard
     if(nbCol)
     {
-        tmpStdItem =  new QStandardItemModel(nbLgn,nbCol);
-        qtv_tmp->setModel(tmpStdItem);
+        sqm_tmp =  new QStandardItemModel(nbLgn,nbCol);
+        qtv_tmp->setModel(sqm_tmp);
 
-        QStringList tmp=maRef[1];
+        QStringList tmp=maRef[zn][1];
         tmp.insert(0,"Nb");
-        tmpStdItem->setHorizontalHeaderLabels(tmp);
+        sqm_tmp->setHorizontalHeaderLabels(tmp);
         for(int lgn=0;lgn<nbLgn;lgn++)
         {
             for(int pos=0;pos <=nbCol;pos++)
@@ -1388,7 +1447,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
                 if(pos == 0){
                     item->setData(lgn,Qt::DisplayRole);
                 }
-                tmpStdItem->setItem(lgn,pos,item);
+                sqm_tmp->setItem(lgn,pos,item);
                 qtv_tmp->setColumnWidth(pos,LCELL);
             }
         }
@@ -1412,21 +1471,33 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
 
         QVBoxLayout *vb_tmp = new QVBoxLayout;
         QLabel * lab_tmp = new QLabel;
-        lab_tmp->setText("Groupement par memoire");
+        lab_tmp->setText("Groupement...");
         vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
         vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
         lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+        // Memorisation des pointeurs
+        if(ongPere == 3)
+        {
+            dist->keepPtr(sqm_tmp);
+        }
+
     }
     else
     {
         return lay_return;
     }
 
+#ifndef QT_NO_DEBUG
+        qDebug() << ReqTirages;
+#endif
+
     bool status = true;
     for(int i=0; (i< nbCol) && (status == true);i++)
     {
+        // Effacer les elements precedent
         // Creer Requete pour compter items
-        QString msg1 = maRef[0].at(i);
+        QString msg1 = maRef[zn][0].at(i);
         QString sqlReq = "";
         sqlReq = sql_RegroupeSelonCritere(ReqTirages,msg1);
 
@@ -1445,9 +1516,9 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
                 int nb = query.value(0).toInt();
                 int tot = query.value(1).toInt();
 
-                QStandardItem * item_1 = tmpStdItem->item(nb,i+1);
+                QStandardItem * item_1 = sqm_tmp->item(nb,i+1);
                 item_1->setData(tot,Qt::DisplayRole);
-                tmpStdItem->setItem(nb,i+1,item_1);
+                sqm_tmp->setItem(nb,i+1,item_1);
             }while(query.next() && status);
         }
     }
@@ -1498,7 +1569,7 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
     // Modification
     etude->ref = pLaDemande->ref;
 #ifndef QT_NO_DEBUG
-qDebug()<< "\nSyntheseDetails::slot_detailsDetails\n"<<etude->ref;
+    qDebug()<< "\nSyntheseDetails::slot_detailsDetails\n"<<etude->ref;
 #endif
 
 
@@ -1510,7 +1581,7 @@ qDebug()<< "\nSyntheseDetails::slot_detailsDetails\n"<<etude->ref;
     int id = onglets->currentIndex();
     *(etude->st_Ensemble_1) = "select * from " + pLaDemande->st_viewName[id] +";";
 #ifndef QT_NO_DEBUG
-qDebug()<< "\n"<<*(etude->st_Ensemble_1)<<"\n-----";
+    qDebug()<< "\n"<<*(etude->st_Ensemble_1)<<"\n-----";
 #endif
 
     etude->st_jourDef = new QString;
@@ -1708,14 +1779,14 @@ QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn,int di
 
 }
 
-QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int zn,int ongPere)
+QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int curOng,int ongPere)
 {
     QGridLayout *lay_return = new QGridLayout;
 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
 
-    QString sql_msgRef = PBAR_ReqComptage(pEtude, ReqTirages, zn, ongPere);
+    QString sql_msgRef = PBAR_ReqComptage(pEtude, ReqTirages, curOng, ongPere);
 
     sqm_tmp->setQuery(sql_msgRef);
 
@@ -1746,7 +1817,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     // Memorisation des pointeurs
     if(ongPere == 3)
     {
-        dist->keepPtr(zn,sqm_tmp,qtv_tmp,m);
+        dist->keepPtr(curOng,sqm_tmp,qtv_tmp,m);
     }
 
 
@@ -1773,7 +1844,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_detailsDetails( QModelIndex) ) );
 
-    QLabel *titre_1 = new QLabel(pEtude->ref->FullNameZone[zn]);
+    QLabel *titre_1 = new QLabel(pEtude->ref->FullNameZone[curOng]);
     //lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
     lay_return->addWidget(titre_1,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);

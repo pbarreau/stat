@@ -17,7 +17,7 @@
 
 #include "labelclickable.h"
 #include "pointtirage.h"
-#include "refresultat.h"
+#include "SyntheseGenerale.h"
 #include "refetude.h"
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"

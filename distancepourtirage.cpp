@@ -1,5 +1,6 @@
 #include <QSqlQueryModel>
 #include <QTableView>
+#include <QStandardItemModel>
 
 #include "distancepourtirage.h"
 
@@ -24,11 +25,21 @@ void DistancePourTirage::setValue(int val)
     this->setText(QString::number(val));
 }
 
+void DistancePourTirage::keepPtr(QStandardItemModel *ong)
+{
+    model = ong;
+}
+
+QStandardItemModel *DistancePourTirage::GetStandardModel(void)
+{
+    return model;
+}
+
 void DistancePourTirage::keepPtr(int ong, QSqlQueryModel *req,
                                  QTableView *tab,
                                  QSortFilterProxyModel *sfp)
 {
-    if(ong >=0 and ong < 3){
+    if(ong >=0 and ong <= 3){
         qmVoisin[ong] = req;
         tvVoisin[ong] = tab;
         fpVoisin[ong] = sfp;
@@ -61,6 +72,7 @@ QSqlQueryModel *DistancePourTirage::getAssociatedModel(int i)
 {
     if(i>=0 and i<3)
         return qmVoisin[i];
+
 }
 
 QTableView * DistancePourTirage::getAssociatedVue(void)
@@ -70,6 +82,6 @@ QTableView * DistancePourTirage::getAssociatedVue(void)
 
 QTableView *DistancePourTirage::getAssociatedVue(int i)
 {
-    if(i>=0 and i<3)
+    if(i>=0 and i<=3)
         return tvVoisin[i];
 }

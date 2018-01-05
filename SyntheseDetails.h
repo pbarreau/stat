@@ -107,6 +107,7 @@ private:
 
     QComboBox * pCritere[4];
     FiltreCombinaisons *pFiltre[4];
+    QStringList **maRef;
     //int d[4]={0,-1,1,-2};
 
 public:
@@ -129,7 +130,7 @@ public:
                                                   int ref,int *dst);
 
     QGridLayout * MonLayout_CompteCombi(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
-    QGridLayout * MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
+    QGridLayout * MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int curOng, int ongPere);
     QGridLayout * MonLayout_CompteDistribution(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
 
     // penser au destructeur pour chaque pointeur
@@ -169,6 +170,8 @@ private:
     QString SD_Tb2_3(QStringList &boules, QString &sqlTblRef, int dst);
 
     void NewSqlGenerique(int dst);
+    void RecalculGroupement(QString st_tirages, int nbCol, QStandardItemModel *tmpStdItem);
+
 
 
 
