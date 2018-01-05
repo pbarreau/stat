@@ -7,6 +7,7 @@
 #include <QtGui>
 #include <QSplitter>
 #include <QMessageBox>
+#include <QToolTip>
 
 #include <QHeaderView>
 
@@ -1417,7 +1418,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
 
     int zn=0;
     int maxElems = pEtude->ref->limites[zn].max;
-    int nbBoules = floor(maxElems/10)+1;
+    //int nbBoules = floor(maxElems/10)+1;
 
     //QStringList *maRef[0] = LstCritereGroupement(zn,pEtude->ref);
     maRef[zn] = LstCritereGroupement(zn,pEtude->ref);
@@ -1438,6 +1439,15 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
         QStringList tmp=maRef[zn][1];
         tmp.insert(0,"Nb");
         sqm_tmp->setHorizontalHeaderLabels(tmp);
+
+        QStringList tooltips=maRef[zn][2];
+        tooltips.insert(0,"Total");
+        for(int pos=0;pos <=nbCol;pos++)
+        {
+            QStandardItem *item = sqm_tmp->horizontalHeaderItem(pos);
+            item->setToolTip(tooltips.at(pos));
+        }
+
         for(int lgn=0;lgn<nbLgn;lgn++)
         {
             for(int pos=0;pos <=nbCol;pos++)
@@ -1531,17 +1541,32 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_detailsDetails( QModelIndex) ) );
 
-#if 0
-    connect( qtv_tmp, SIGNAL(MydoubleClicked(QTableView,QModelIndex)) ,
-             this, SLOT(slot_detailsDetails(QTableView, QModelIndex) ) );
+    qtv_tmp->setMouseTracking(true);
+    connect(qtv_tmp,
+            SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 
-
-    // simple click dans fenetre  pour selectionner boule
-    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-             this, SLOT(slot_details_G( QModelIndex) ) );
-
-#endif
     return(lay_return);
+}
+
+void SyntheseDetails::slot_AideToolTip(const QModelIndex & index)
+{
+    QString msg="";
+    const QAbstractItemModel * pModel = index.model();
+    int col = index.column();
+
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
+
+    if (col >=1)
+    {
+        QString s_nb = index.model()->index(index.row(),0).data().toString();
+        QString s_va = index.model()->index(index.row(),col).data().toString();
+        QString s_hd = headName;
+        msg = msg + QString("%1 tirage(s) \nayant %2 boule(s)%3").arg(s_va).arg(s_nb).arg(s_hd);
+    }
+
+    if(msg.length())
+        QToolTip::showText (QCursor::pos(), msg);
 }
 
 void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)

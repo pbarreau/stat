@@ -6,6 +6,7 @@
 #include <QtGui>
 #include <QSqlRecord>
 #include <QMenu>
+#include <QToolTip>
 
 #include <QMessageBox>
 #include <QHeaderView>
@@ -1211,6 +1212,15 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
         QStringList tmp=maRef[zone][1];
         tmp.insert(0,"Nb");
         tmpStdItem->setHorizontalHeaderLabels(tmp);
+
+        QStringList tooltips=maRef[zone][2];
+        tooltips.insert(0,"Total");
+        for(int pos=0;pos <=nbCol;pos++)
+        {
+            QStandardItem *item = tmpStdItem->horizontalHeaderItem(pos);
+            item->setToolTip(tooltips.at(pos));
+        }
+
         for(int lgn=0;lgn<nbLgn;lgn++)
         {
             for(int pos=0;pos <=nbCol;pos++)
@@ -1302,6 +1312,26 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 }
 #endif
 // ------------------------------
+void SyntheseGenerale::slot_AideToolTip(const QModelIndex & index)
+{
+    QString msg="";
+    const QAbstractItemModel * pModel = index.model();
+    int col = index.column();
+
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
+
+    if (col >=1)
+    {
+        QString s_nb = index.model()->index(index.row(),0).data().toString();
+        QString s_va = index.model()->index(index.row(),col).data().toString();
+        QString s_hd = headName;
+        msg = msg + QString("%1 tirage(s) \nayant %2 boule(s)%3").arg(s_va).arg(s_nb).arg(s_hd);
+    }
+
+    if(msg.length())
+        QToolTip::showText (QCursor::pos(), msg);
+}
 
 void SyntheseGenerale::DoBloc3(void)
 {

@@ -129,6 +129,8 @@ public slots:
 
     //void slot_ChangementEnCours(const QItemSelection &selected,const QItemSelection &deselected);
     void slot_RazSelection(QString);
+    void slot_AideToolTip(const QModelIndex & index);
+
 
 private:
     //QString OrganiseChampsDesTirages(QString st_base_reference);

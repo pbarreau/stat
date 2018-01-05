@@ -145,6 +145,8 @@ public slots:
     void slot_ClickSurOnglet(int index);
     void slot_FermeLaRecherche(int index);
     void slot_detailsDetails(const QModelIndex & index);
+    void slot_AideToolTip(const QModelIndex & index);
+
 
 private:
     int dst[4];
