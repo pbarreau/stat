@@ -1190,7 +1190,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 
     int zone = 0;
     int maxElems = uneDemande.ref->limites[zone].max;
-    int nbBoules = floor(maxElems/10)+1;
+    //int nbBoules = floor(maxElems/10)+1;
 
     //QStringList *maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
     maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
@@ -1295,11 +1295,11 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
     }
 
     // simple click dans fenetre  pour selectionner boule
-#if 0
+
     qtv_tmp->setMouseTracking(true);
     connect(qtv_tmp,
             SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
-#endif
+
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
