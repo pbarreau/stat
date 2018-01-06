@@ -1337,10 +1337,14 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
 {
     QGridLayout *lay_return = new QGridLayout;
 
+    int zone = 0;
+    QTableView *qtv_tmp = new QTableView;
+    QString qtv_name = QString::fromLatin1(TB_SC) + "_z"+QString::number(zone+1);
+    qtv_tmp->setObjectName(qtv_name);
 
     QString sql_msgRef = "";
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    QTableView *qtv_tmp = new QTableView;
+
 
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;
@@ -1417,16 +1421,20 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
     QGridLayout *lay_return = new QGridLayout;
 
     int zn=0;
+    QTableView *qtv_tmp = new QTableView;
+    QString qtv_name = "";
+    qtv_name = QString::fromLatin1(TB_SG) + "_z"+QString::number(zn+1);
+    qtv_tmp->setObjectName(qtv_name);
+
     int maxElems = pEtude->ref->limites[zn].max;
-    //int nbBoules = floor(maxElems/10)+1;
+
 
     //QStringList *maRef[0] = LstCritereGroupement(zn,pEtude->ref);
     maRef[zn] = LstCritereGroupement(zn,pEtude->ref);
     int nbCol = maRef[zn][0].size();
     int nbLgn = pEtude->ref->nbElmZone[zn] + 1;
 
-    QTableView *qtv_tmp = new QTableView;
-    //myQTableView *qtv_tmp = new myQTableView;
+
     QStandardItemModel * sqm_tmp = NULL;
     QSqlQuery query ;
 
@@ -1808,8 +1816,11 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QTableView *qtv_tmp = new QTableView;
+    QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(curOng+1);
+    qtv_tmp->setObjectName(qtv_name);
+
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
 
     QString sql_msgRef = PBAR_ReqComptage(pEtude, ReqTirages, curOng, ongPere);
 

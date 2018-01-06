@@ -701,9 +701,15 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     QGridLayout *lay_return = new QGridLayout;
 
     sqm_bloc1_2 = new QSqlQueryModel;
-    QTableView *qtv_tmp ;
-    tbv_bloc1_2 = new QTableView;
-    qtv_tmp=tbv_bloc1_2;
+
+    int zn = 1;
+    QTableView *qtv_tmp = new QTableView;
+    QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
+    qtv_tmp->setObjectName(qtv_name);
+
+    //tbv_bloc1_2 = new QTableView;
+    //qtv_tmp=tbv_bloc1_2;
+    tbv_bloc1_2 = qtv_tmp;
 
     QString st_baseUse = "";
     st_baseUse = st_bdTirages->remove(";");
@@ -808,17 +814,20 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
 
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 {
-#if 0
-#endif
-
     QGridLayout *lay_return = new QGridLayout;
 
-    QTableView *qtv_tmp ;
+    int zn = 0;
+    QTableView *qtv_tmp = new QTableView;
+    QString qtv_name = QString::fromLatin1(TB_SC) + "_z"+QString::number(zn+1);
+    qtv_tmp->setObjectName(qtv_name);
+
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
 
-    tbv_bloc1_3 = new QTableView;
+    //tbv_bloc1_3 = new QTableView;
+    //qtv_tmp=tbv_bloc1_3;
+    tbv_bloc1_3 =qtv_tmp;
+
     sqm_bloc1_3 = new QSqlQueryModel;
-    qtv_tmp=tbv_bloc1_3;
     sqm_tmp=sqm_bloc1_3;
 
     QString st_baseUse = "";
@@ -966,9 +975,15 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     QGridLayout *lay_return = new QGridLayout;
 
     sqm_bloc1_1 = new QSqlQueryModel;
-    QTableView *qtv_tmp ;
-    tbv_bloc1_1 = new QTableView;
-    qtv_tmp=tbv_bloc1_1;
+
+    int zn = 0;
+    QTableView *qtv_tmp = new QTableView;
+    QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
+    qtv_tmp->setObjectName(qtv_name);
+
+    //tbv_bloc1_1 = new QTableView;
+    //qtv_tmp=tbv_bloc1_1;
+    tbv_bloc1_1 = qtv_tmp;
 
     QString st_baseUse = "";
     st_baseUse = st_bdTirages->remove(";");
@@ -1199,9 +1214,17 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
     int nbCol = maRef[zone][0].size();
     int nbLgn = uneDemande.ref->nbElmZone[zone] + 1;
 
-    QTableView *qtv_tmp ;
-    tbv_bloc2 = new QTableView;
-    qtv_tmp=tbv_bloc2;
+    QTableView *qtv_tmp = new QTableView;
+    QString qtv_name = "";
+    qtv_name = QString::fromLatin1(TB_SG) +
+            QString::fromLatin1("_z")
+            +QString::number(zone+1);
+    qtv_tmp->setObjectName(qtv_name);
+
+    //tbv_bloc2 = new QTableView;
+    //qtv_tmp=tbv_bloc2;
+    tbv_bloc2 = qtv_tmp;
+
     QStandardItemModel * tmpStdItem = NULL;
     QSqlQuery query ;
 

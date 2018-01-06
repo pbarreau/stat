@@ -19,6 +19,7 @@
 
 #include <QMenu>
 #include <QCheckBox>
+#include <QAction>
 #include <QWidgetAction>
 
 #include "refetude.h"
@@ -27,6 +28,9 @@
 
 // declaration de variable de classe
 QStandardItemModel **RefEtude::p_simResu = new QStandardItemModel*[2];
+
+// Fonction locale
+bool VerifierValeur(int item,int *lev, QString table);
 
 // argument de p_deb et p_fin contient id de la ligne du tirage
 sCouv::sCouv(int zn, stTiragesDef *pDef):zoneEtudie(zn),p_conf(pDef),p_deb(-1),p_fin(-1)
@@ -380,14 +384,37 @@ void RefEtude::slot_ccmr_tbForBaseEcart(QPoint pos)
             val =  index.model()->index(index.row(),0).data().toInt();
         }
         // verifier si la valeur est deja connue
-
-        QMenu *MonMenu=new QMenu(p_affiche);
         QString msg = "Selection";
+        QMenu *MonMenu=new QMenu(p_affiche);
         QCheckBox *checkBox = new QCheckBox(MonMenu);
-        checkBox->setText("p:0");
-        checkBox->setChecked(true);
+        QString tbl = view->objectName();
+
+        QString str_chkName = QString::number(val)+":"+tbl;
+        checkBox->setObjectName(str_chkName);
+
+        int niveau = 0;
+        bool existe = false;
+        existe = VerifierValeur(val,&niveau, tbl);
+
+        if(existe)
+        {
+            if(niveau != 0)
+            {
+                QString st_niveau = "p:"+QString::number(niveau);
+                checkBox->setText(st_niveau);
+            }
+            checkBox->setChecked(true);
+        }
+        else
+        {
+            checkBox->setText(msg);
+            checkBox->setChecked(false);
+        }
         QWidgetAction *checkableAction = new QWidgetAction(MonMenu);
         checkableAction->setDefaultWidget(checkBox);
+
+        connect(checkBox,SIGNAL(stateChanged(int)),this,SLOT(slot_SetPriority(int)));
+
         MonMenu->addAction(checkableAction);
         MonMenu->exec(view->viewport()->mapToGlobal(pos));
     }
@@ -395,9 +422,88 @@ void RefEtude::slot_ccmr_tbForBaseEcart(QPoint pos)
 
 }
 
+void RefEtude::slot_SetPriority(int val)
+{
+  QCheckBox *chk = qobject_cast<QCheckBox *>(sender());
+  QStringList def = chk->objectName().split(":");
+  QMenu *TopMenu = qobject_cast<QMenu *>(chk->parent());
+
+  if(chk->isChecked())
+  {
+      //creation du menu
+      QString msg = "Priorite";
+      QMenu *MonMenu=new QMenu(msg,p_affiche);
+
+      for(int i =1; i<=5;i++)
+      {
+          QString name = QString::number(i);
+          QAction *act = new QAction(name,p_affiche);
+          act->setObjectName(name);
+          MonMenu->addAction(act);
+          connect(act,SIGNAL(triggered()),this,SLOT(slot_ChoosePriority()));
+
+      }
+      TopMenu->addMenu(MonMenu);
+  }
+  else
+  {
+      /// detruire la ligne
+  }
+}
+
+void RefEtude::slot_ChoosePriority()
+{
+    QAction *act = qobject_cast<QAction *>(sender());
+
+    int val = (act->objectName()).toInt();
+    val = val+1;
+    // requete insertion
+}
+
+/// Cette fonction cherche dans la table designée si une valeur est presente
+/// auquel cas le champs priorité est aussi retourné
+/// item : valeur a rechercher
+/// *lev : valeur de priorité trouvé
+/// table : nom de la table dans laquelle il faut chercher
+bool VerifierValeur(int item,int *lev, QString table)
+{
+    bool ret = false;
+    QSqlQuery query ;
+    QString msg = "";
+
+    msg = "select * from " + table + " " +
+            "where (val = "+QString::number(item)+");";
+    ret =  query.exec(msg);
+
+    if(!ret)
+    {
+#ifndef QT_NO_DEBUG
+        qDebug() << "select: " <<table<<"->"<< query.lastError();
+        qDebug() << "Bad code:\n"<<msg<<"\n-------";
+#endif
+    }
+    else
+    {
+#ifndef QT_NO_DEBUG
+        qDebug() << "Fn VerifierValeur:\n"<<msg<<"\n-------";
+#endif
+
+        // A t on un resultat
+        ret = query.first();
+        if(query.isValid())
+        {
+            int val = query.value(2).toInt();
+            *lev = val;
+        }
+    }
+
+    return ret;
+}
+
 QTableView *RefEtude::tbForBaseEcart(int zn)
 {
     QTableView *qtv_tmp = new QTableView;
+    QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
 
     int nb_lgn = p_conf->limites[zn].max;
     QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,5);
@@ -405,6 +511,7 @@ QTableView *RefEtude::tbForBaseEcart(int zn)
     QString colName[]={"B","Ec","Ep","Em","EM"};
     QString colTip[]={"Boule","Ecart courant","Ecart precedent","Ecart moyen","Ecart Max"};
     qtv_tmp->setModel(tmpStdItem);
+    qtv_tmp->setObjectName(qtv_name);
 
     int nbcol = sizeof(colName)/sizeof(QString);
     QStandardItem **headerItem = new QStandardItem*[nbcol];
