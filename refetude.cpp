@@ -17,6 +17,10 @@
 #include <QTableView>
 #include <QHeaderView>
 
+#include <QMenu>
+#include <QCheckBox>
+#include <QWidgetAction>
+
 #include "refetude.h"
 #include "SyntheseDetails.h"
 #include "tirages.h"
@@ -359,6 +363,38 @@ QGridLayout *RefEtude::MonLayout_TabEcart_3()
     return returnLayout;
 }
 
+void RefEtude::slot_ccmr_tbForBaseEcart(QPoint pos)
+{
+    /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
+    /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
+
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QModelIndex index = view->indexAt(pos);
+    int col = view->columnAt(pos.x());
+
+    if(col == 0)
+    {
+        int val = 0;
+        if(index.model()->index(index.row(),0).data().canConvert(QMetaType::Int))
+        {
+            val =  index.model()->index(index.row(),0).data().toInt();
+        }
+        // verifier si la valeur est deja connue
+
+        QMenu *MonMenu=new QMenu(p_affiche);
+        QString msg = "Selection";
+        QCheckBox *checkBox = new QCheckBox(MonMenu);
+        checkBox->setText("p:0");
+        checkBox->setChecked(true);
+        QWidgetAction *checkableAction = new QWidgetAction(MonMenu);
+        checkableAction->setDefaultWidget(checkBox);
+        MonMenu->addAction(checkableAction);
+        MonMenu->exec(view->viewport()->mapToGlobal(pos));
+    }
+
+
+}
+
 QTableView *RefEtude::tbForBaseEcart(int zn)
 {
     QTableView *qtv_tmp = new QTableView;
@@ -430,6 +466,10 @@ QTableView *RefEtude::tbForBaseEcart(int zn)
     qtv_tmp->setMouseTracking(true);
     connect(qtv_tmp,
             SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
+
+    qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+            SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
 
     return qtv_tmp;
 }

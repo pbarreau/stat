@@ -43,6 +43,10 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     if(status)
         status = f2();
 
+    // Creation Table des selections utilisateur
+    if(status)
+        status = f2_2();
+
     // creation de la table analyse des boules (lors du chargement de la base)
     if(status)
         status = f3();
@@ -171,6 +175,48 @@ bool GererBase::f2()
 
 
     return status;
+}
+
+bool GererBase::f2_2()
+{
+    bool status = true;
+
+    QSqlQuery q_create;
+    QString st_refTbl[] = {TB_SE,TB_SC,TB_SG};
+    QString st_sqldf = ""; /// sql definition
+    QString st_table = "";
+
+    stTiragesDef ref = typeTirages->conf;
+    int maxTbl = sizeof(st_refTbl)/sizeof(QString);
+
+    // Creation des tables permettant la sauvegarde des selections
+    // pour creation de filtres
+
+    int nb_zone = ref.nb_zone;
+
+    for(int tbl = 0; (tbl < maxTbl) && status; tbl++)
+    {
+        for(int zone=0;(zone<nb_zone)&& status;zone++)
+        {
+            st_table = st_refTbl[tbl] + "_z"+QString::number(zone+1);
+            st_sqldf =  "create table "+st_table+" (id Integer primary key, val int, p int);";
+            status = q_create.exec(st_sqldf);
+        }
+
+    }
+    q_create.finish();
+
+#ifndef QT_NO_DEBUG
+    if(!status)
+    {
+        qDebug() << "create: " <<st_table<<"->"<< q_create.lastError();
+        qDebug() << "Bad code:\n"<<st_sqldf<<"\n-------";
+    }
+#endif
+
+
+    return status;
+
 }
 
 bool GererBase::f3()

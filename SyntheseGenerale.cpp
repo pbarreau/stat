@@ -484,11 +484,13 @@ void SyntheseGenerale::MettreCouleur(int start, int cur)
 
 void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
 {
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QModelIndex index = view->indexAt(pos);
+
     QMenu *MonMenu=new QMenu(pEcran);
     QString msg = "Recherche";
     ShowStepper *UnDetail = new ShowStepper(pMaConf);
-    QModelIndex index = tbv_LesTirages->indexAt(pos);
-
+    // QModelIndex index = tbv_LesTirages->indexAt(pos);
 
     MonTraitement = new B_ActFrMdlIndex(index,msg);
     MonMenu->addAction(MonTraitement);

@@ -81,6 +81,7 @@ public slots:
     void slot_Type_G(const QModelIndex & index);
     void slot_TotalCouverture(int index);
     void slot_SelectPartBase(const QModelIndex & index);
+    void slot_ccmr_tbForBaseEcart(QPoint pos);
 
 private:
     static QStandardItemModel **p_simResu;

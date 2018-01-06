@@ -36,7 +36,9 @@
 #define REF_BASE    "RefTirages"
 #define TB_BNRZ     "Bnrz"          /// Table Boules Names Reference Zone
 #define TB_ZDSC     "Ref_znName"    /// Table Reference des noms des Zones
-#define TB_WIN      "BNEXT"  /// Choisir parmis ces boules pour tirages suivant du dernier en cours
+#define TB_SE       "SelElemt"  /// Choix de boules dans zone
+#define TB_SC       "SelComb"  /// Choix de combinaison dans zone
+#define TB_SG       "SelGrp"  /// Choix de criteres groupement dans zone
 
 #define CL_IHM_TOT_0    8
 #define CL_IHM_TOT_2    7
@@ -266,6 +268,7 @@ private:
     bool f1();
     bool f1_1();
     bool f2();
+    bool f2_2();
     bool f3();
     bool f4();
     bool SauverCombiVersTable (QStringList &combi);

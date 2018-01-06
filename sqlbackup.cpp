@@ -11,6 +11,7 @@
 /// http://www.sqlite.org/backup.html
 /// http://www.sqlite.org/c3ref/backup_finish.html#sqlite3backupinit
 /// https://stackoverflow.com/questions/1711631/improve-insert-per-second-performance-of-sqlite
+/// https://forum.qt.io/topic/8879/solved-saving-and-restoring-an-in-memory-sqlite-database/2
 sqlBackup::sqlBackup()
 {
 
