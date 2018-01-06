@@ -59,7 +59,8 @@ SOURCES += main.cpp\
     delegate.cpp \
     combinaison.cpp \
     car.cpp \
-    ctabfilterzncount.cpp
+    ctabfilterzncount.cpp \
+    sqlbackup.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -83,7 +84,8 @@ HEADERS  += mainwindow.h \
     delegate.h \
     car.h \
     ctabfilterzncount.h \
-    SyntheseGenerale.h
+    SyntheseGenerale.h \
+    sqlbackup.h
 
 
 FORMS    += mainwindow.ui \

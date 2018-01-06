@@ -4,6 +4,7 @@
 #include <QStyleOptionViewItem>
 #include <QTextDocument>
 #include <QAbstractTextDocumentLayout>
+#include <QLineF>
 
 #include "delegate.h"
 
@@ -12,6 +13,11 @@
 void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
                      const QModelIndex &index) const
 {
+    QStyleOptionViewItem maModif(option);
+    //QPainter MonPainter(painter->device());
+    //MonPainter.setPen(QPen(Qt::black,1));
+    QLineF angleline;
+
     int val = 0;
     int bg = 0;
 
@@ -19,6 +25,12 @@ void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
                  QColor(224,255,147,255),QColor(231,181,255,255),QColor(73,179,255,255),
                  Qt::red,Qt::white};
     QColor p[]= {Qt::gray,Qt::red,Qt::black,Qt::black};
+
+    QPalette t(u[1]);
+    if (option.state & QStyle::State_Selected)
+    {
+        painter->fillRect(option.rect, t.highlight());
+    }
 
 
     // A t on un chiffre (boule)?
@@ -41,26 +53,32 @@ void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
             }
         }
 
+
         painter->fillRect(option.rect, u[val]);
     }
 
 
-    QStyleOptionViewItem maModif(option);
 
     if(index.model()->index(index.row(),1).data().canConvert(QMetaType::Int))
     {
+
         int pen = index.model()->index(index.row(),1).data().toInt();
         if (pen >=0 && pen < 4)
         {
             switch(pen)
             {
+
             case 1:
+                //test diagonale
+                angleline.setPoints(maModif.rect.topLeft(), maModif.rect.bottomRight());
+                painter->drawLine(angleline);
             case 2:
             {
+
                 QString lab = index.model()->data(index,Qt::DisplayRole).toString();
                 QTextDocument doc;
                 doc.setHtml(QString("<html><strong>%1</strong></html>").arg(lab));
-                doc.setTextWidth(maModif.rect.width());
+                //doc.setTextWidth(maModif.rect.width());
 
                 painter->save();
                 painter->translate(maModif.rect.left(), maModif.rect.top());
@@ -71,10 +89,25 @@ void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
                 ctx.palette.setColor(QPalette::Text, p[pen]);
                 ctx.clip = clip;
                 doc.documentLayout()->draw(painter, ctx);
+
+
                 painter->restore();
             }
                 break;
+            case 3:
+                //test diagonale
+                angleline.setPoints(maModif.rect.topLeft(), maModif.rect.bottomRight());
+                painter->drawLine(angleline);
+                maModif.palette.setColor(QPalette::Text,p[pen]);
+                QItemDelegate::paint(painter, maModif, index);
+                break;
+
             default:
+                //test diagonale
+                angleline.setPoints(maModif.rect.topRight(), maModif.rect.bottomLeft());
+                //angleline.setLine();
+                painter->drawLine(angleline);
+
                 maModif.palette.setColor(QPalette::Text,p[pen]);
                 QItemDelegate::paint(painter, maModif, index);
                 break;
