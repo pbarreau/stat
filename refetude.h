@@ -72,6 +72,9 @@ private:
     void CouvMontrerProbable_v2(int i, QStandardItemModel *dest);
     void CouvMontrerProbable_v3(int i,double Emg, QStandardItemModel *dest);
 
+    QMenu *ContruireMenu(QString tbl, int val);
+
+
 public slots:
     void slot_AideToolTip(const QModelIndex & index);
     void slot_Couverture(const QModelIndex & index);
@@ -83,7 +86,7 @@ public slots:
     void slot_SelectPartBase(const QModelIndex & index);
     void slot_ccmr_tbForBaseEcart(QPoint pos);
     void slot_SetPriority(int val);
-    void slot_ChoosePriority();
+    void slot_ChoosePriority(QAction *cmd);
 
 private:
     static QStandardItemModel **p_simResu;
