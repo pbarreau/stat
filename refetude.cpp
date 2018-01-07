@@ -411,6 +411,10 @@ QMenu *RefEtude::ContruireMenu(QString tbl, int val)
     {
         QString name = QString::number(i);
         QAction *radio = new QAction(name,grpPri);
+        name = QString::number(existe)+
+                ":"+QString::number(niveau)+
+                ":"+name+":"+QString::number(val)+
+                ":"+tbl;
         radio->setObjectName(name);
         radio->setCheckable(true);
         menu->addAction(radio);
@@ -419,161 +423,15 @@ QMenu *RefEtude::ContruireMenu(QString tbl, int val)
     QAction *uneAction;
     if(niveau)
     {
-        uneAction = qobject_cast<QAction *>(grpPri->children().at(niveau));
+        uneAction = qobject_cast<QAction *>(grpPri->children().at(niveau-1));
         uneAction->setChecked(true);
     }
-
+    connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
     return menu;
 }
 
 void RefEtude::slot_SetPriority(int val)
 {
-}
-
-void RefEtude::slot_ChoosePriority(QAction *cmd)
-{
-}
-
-#if 0
-void RefEtude::slot_ccmr_tbForBaseEcart(QPoint pos)
-{
-    /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
-    /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
-
-    QTableView *view = qobject_cast<QTableView *>(sender());
-    QModelIndex index = view->indexAt(pos);
-    int col = view->columnAt(pos.x());
-
-    if(col == 0)
-    {
-        int val = 0;
-        if(index.model()->index(index.row(),0).data().canConvert(QMetaType::Int))
-        {
-            val =  index.model()->index(index.row(),0).data().toInt();
-        }
-        // verifier si la valeur est deja connue
-        QString msg = "Selection";
-        QMenu *MonMenu=new QMenu(p_affiche);
-        QCheckBox *checkBox = new QCheckBox(MonMenu);
-        QString tbl = view->objectName();
-
-        QString str_chkName = QString::number(val)+":"+tbl;
-        checkBox->setObjectName(str_chkName);
-
-        int niveau = 0;
-        bool existe = false;
-        existe = VerifierValeur(val,&niveau, tbl);
-
-        if(existe)
-        {
-            if(niveau != 0)
-            {
-                QString st_niveau = "p:"+QString::number(niveau);
-                checkBox->setText(st_niveau);
-            }
-            checkBox->setChecked(true);
-        }
-        else
-        {
-            checkBox->setText(msg);
-            checkBox->setChecked(false);
-        }
-        QWidgetAction *checkableAction = new QWidgetAction(MonMenu);
-        checkableAction->setDefaultWidget(checkBox);
-
-        connect(checkBox,SIGNAL(stateChanged(int)),this,SLOT(slot_SetPriority(int)));
-
-        MonMenu->addAction(checkableAction);
-        MonMenu->exec(view->viewport()->mapToGlobal(pos));
-    }
-
-
-}
-
-void RefEtude::slot_SetPriority(int val)
-{
-    QCheckBox *chk = qobject_cast<QCheckBox *>(sender());
-    QString st_from = chk->objectName();
-
-    /// Verifier coherence des donnees
-    /// pos 0: valeur de la boule de cliquage
-    /// pos 1: Nom de la table
-    QStringList def = st_from.split(":");
-    if(def.size()!=2)
-        return;
-
-
-    QMenu *TopMenu = qobject_cast<QMenu *>(chk->parent());
-
-    /// Recherche de l'info dans la bonne table pour faire un update,
-    ///  un delete ou un insert
-    int curPriority = -1;
-    QSqlQuery query;
-    QString msg = "Select * from " + def[1] + " where(val ="+def[0]+");";
-    bool rep = query.exec(msg);
-
-    if(!rep)
-    {
-#ifndef QT_NO_DEBUG
-        qDebug() << "select: " <<def[1]<<"->"<< query.lastError();
-        qDebug() << "Bad code:\n"<<msg<<"\n-------";
-#endif
-        msg = "0:"+st_from;
-    }
-    else
-    {
-#ifndef QT_NO_DEBUG
-        qDebug() << "Fn slot_SetPriority:\n"<<msg<<"\n-------";
-#endif
-
-        rep = query.first();
-        if(!rep)
-        {
-            msg = "0:"+st_from;
-        }
-        else
-        {
-            msg = "1:"+st_from;
-            curPriority = query.value(2).toInt();
-        }
-    }
-
-    //creation du menu
-    QString msg2 = "Priorite";
-    QMenu *MonMenu=new QMenu(msg2,p_affiche);
-    QActionGroup *grpPri = new  QActionGroup(MonMenu);
-
-    if(chk->isChecked())
-    {
-
-        for(int i =1; i<=5;i++)
-        {
-            QString name = QString::number(i);
-            QAction *radio = new QAction(name,grpPri);
-            name = name + ":" + msg;
-            radio->setObjectName(name);
-            radio->setCheckable(true);
-            MonMenu->addAction(radio);
-        }
-        QAction *uneAction;
-        if(curPriority >=0 && curPriority <5){
-            uneAction = qobject_cast<QAction *>(grpPri->children().at(curPriority));
-            uneAction->setChecked(true);
-        }
-        else
-        {
-            uneAction = qobject_cast<QAction *>(grpPri->children().at(0));
-            uneAction->setChecked(false);
-        }
-
-        connect(grpPri,SIGNAL(triggered(QAction *)),this,SLOT(slot_ChoosePriority(QAction *)));
-        TopMenu->addMenu(MonMenu);
-    }
-    else
-    {
-        /// detruire la ligne
-        TopMenu->deleteLater();
-    }
 }
 
 void RefEtude::slot_ChoosePriority(QAction *cmd)
@@ -584,47 +442,65 @@ void RefEtude::slot_ChoosePriority(QAction *cmd)
     QString st_from = cmd->objectName();
     QStringList def = st_from.split(":");
     /// Verifier coherence des donnees
-    /// pos 0: nvlle priorite
-    /// pos 1: ligne trouvee dans table
-    /// pos 2: element selectionne
-    /// pos 3:nom de table
-    if(def.size()!=4)
+    /// pos 0: ligne trouvee dans table
+    /// pos 1: ancie priorite
+    /// pos 2: nvlle priorite
+    /// pos 3: element selectionne
+    /// pos 4:nom de table
+    if(def.size()!=5)
         return;
 
-    int val = def[0].toInt();
-    int trv = def[1].toInt();
-    int elm = def[2].toInt();
-    QString tbl = def[3];
+    int trv = def[0].toInt();
+    int v_1 = def[1].toInt();
+    int v_2 = def[2].toInt();
+    int elm = def[3].toInt();
+    QString tbl = def[4];
 
-    // requete insertion
-    if(trv==0)
+    // faut il inserer une nouvelle ligne
+    if(trv ==0)
     {
-        msg = "insert into " + tbl+"(id,val,p) values(NULL,"+def[2]+
-                ","+ def[0] +");";
+        msg = "insert into " + tbl + " (id, val, p) values(NULL,"
+                +def[3]+","+ def[2]+");";
+
     }
-    else
+    // Verifier si if faut supprimer la priorite
+    if(v_1 == v_2)
     {
-        msg = "update " + tbl+"set p="+def[0]+
-                " where(val="+ def[1] +");";
+        msg = "delete from " + tbl + " " +
+                "where (val="+def[3]+");";
+        trv = 0;
+    }
+
+    // faut il une mise a jour ?
+    if((v_1 != v_2)&& (trv!=0))
+    {
+        msg = "update " + tbl + " set p="+def[2]+" "+
+                "where (val="+def[3]+");";
+
     }
 
     bool rep = query.exec(msg);
 
     if(!rep)
     {
+        trv = false;
 #ifndef QT_NO_DEBUG
-        qDebug() << "select: " <<def[1]<<"->"<< query.lastError();
+        qDebug() << "select: " <<def[3]<<"->"<< query.lastError();
         qDebug() << "Bad code:\n"<<msg<<"\n-------";
 #endif
     }
     else
     {
+        trv = true;
 #ifndef QT_NO_DEBUG
-        qDebug() << "Fn slot_ChoosePriority:\n"<<msg<<"\n-------";
+        qDebug() << "Fn :\n"<<msg<<"\n-------";
 #endif
+
     }
+
+    cmd->setChecked(true);
 }
-#endif
+
 
 /// Cette fonction cherche dans la table designée si une valeur est presente
 /// auquel cas le champs priorité est aussi retourné
