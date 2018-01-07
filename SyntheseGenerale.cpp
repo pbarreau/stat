@@ -1084,12 +1084,147 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
              this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
 
+    qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+            SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
+
     // double click dans fenetre  pour afficher details boule
     connect( tbv_bloc1_1, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
     return lay_return;
 
+}
+
+void SyntheseGenerale::slot_ccmr_tbForBaseEcart(QPoint pos)
+{
+    /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
+    /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
+
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QModelIndex index = view->indexAt(pos);
+    int col = view->columnAt(pos.x());
+
+    if(col == 0)
+    {
+        QString tbl = view->objectName();
+
+        int val = 0;
+        if(index.model()->index(index.row(),0).data().canConvert(QMetaType::Int))
+        {
+            val =  index.model()->index(index.row(),0).data().toInt();
+        }
+
+        QMenu *MonMenu = new QMenu(pEcran);
+        QMenu *subMenu= ContruireMenu(tbl,val);
+        MonMenu->addMenu(subMenu);
+        MonMenu->exec(view->viewport()->mapToGlobal(pos));
+    }
+}
+
+QMenu *SyntheseGenerale::ContruireMenu(QString tbl, int val)
+{
+    QString msg2 = "Priorite";
+    QMenu *menu =new QMenu(msg2, pEcran);
+    //menu->setWindowFlags(Qt::Tool);
+    //menu->setTitle(msg2);
+    QActionGroup *grpPri = new  QActionGroup(menu);
+
+    int niveau = 0;
+    bool existe = false;
+    existe = VerifierValeur(val,&niveau, tbl);
+
+
+
+    for(int i =1; i<=5;i++)
+    {
+        QString name = QString::number(i);
+        QAction *radio = new QAction(name,grpPri);
+        name = QString::number(existe)+
+                ":"+QString::number(niveau)+
+                ":"+name+":"+QString::number(val)+
+                ":"+tbl;
+        radio->setObjectName(name);
+        radio->setCheckable(true);
+        menu->addAction(radio);
+    }
+
+    QAction *uneAction;
+    if(niveau)
+    {
+        uneAction = qobject_cast<QAction *>(grpPri->children().at(niveau-1));
+        uneAction->setChecked(true);
+    }
+    connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+    return menu;
+}
+
+
+void SyntheseGenerale::slot_ChoosePriority(QAction *cmd)
+{
+    QSqlQuery query;
+    QString msg = "";
+
+    QString st_from = cmd->objectName();
+    QStringList def = st_from.split(":");
+    /// Verifier coherence des donnees
+    /// pos 0: ligne trouvee dans table
+    /// pos 1: ancie priorite
+    /// pos 2: nvlle priorite
+    /// pos 3: element selectionne
+    /// pos 4:nom de table
+    if(def.size()!=5)
+        return;
+
+    int trv = def[0].toInt();
+    int v_1 = def[1].toInt();
+    int v_2 = def[2].toInt();
+    int elm = def[3].toInt();
+    QString tbl = def[4];
+
+    // faut il inserer une nouvelle ligne
+    if(trv ==0)
+    {
+        msg = "insert into " + tbl + " (id, val, p) values(NULL,"
+                +def[3]+","+ def[2]+");";
+
+    }
+    // Verifier si if faut supprimer la priorite
+    if(v_1 == v_2)
+    {
+        msg = "delete from " + tbl + " " +
+                "where (val="+def[3]+");";
+        trv = 0;
+    }
+
+    // faut il une mise a jour ?
+    if((v_1 != v_2)&& (trv!=0))
+    {
+        msg = "update " + tbl + " set p="+def[2]+" "+
+                "where (val="+def[3]+");";
+
+    }
+
+    bool rep = query.exec(msg);
+
+    if(!rep)
+    {
+        trv = false;
+#ifndef QT_NO_DEBUG
+        qDebug() << "select: " <<def[3]<<"->"<< query.lastError();
+        qDebug() << "Bad code:\n"<<msg<<"\n-------";
+#endif
+    }
+    else
+    {
+        trv = true;
+#ifndef QT_NO_DEBUG
+        qDebug() << "Fn :\n"<<msg<<"\n-------";
+#endif
+
+    }
+
+    cmd->setChecked(true);
 }
 
 // Cette fonction retourne un pointeur sur un tableau de QStringList

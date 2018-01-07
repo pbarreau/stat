@@ -30,7 +30,6 @@
 QStandardItemModel **RefEtude::p_simResu = new QStandardItemModel*[2];
 
 // Fonction locale
-bool VerifierValeur(int item,int *lev, QString table);
 
 // argument de p_deb et p_fin contient id de la ligne du tirage
 sCouv::sCouv(int zn, stTiragesDef *pDef):zoneEtudie(zn),p_conf(pDef),p_deb(-1),p_fin(-1)

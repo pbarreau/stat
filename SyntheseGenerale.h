@@ -131,6 +131,11 @@ public slots:
     void slot_RazSelection(QString);
     void slot_AideToolTip(const QModelIndex & index);
 
+    void slot_ccmr_tbForBaseEcart(QPoint pos);
+    QMenu *ContruireMenu(QString tbl, int val);
+    void slot_ChoosePriority(QAction *cmd);
+
+
 
 private:
     //QString OrganiseChampsDesTirages(QString st_base_reference);

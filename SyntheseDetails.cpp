@@ -1880,6 +1880,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_detailsDetails( QModelIndex) ) );
 
+
     QLabel *titre_1 = new QLabel(pEtude->ref->FullNameZone[curOng]);
     //lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
     lay_return->addWidget(titre_1,0,0,Qt::AlignLeft|Qt::AlignTop);

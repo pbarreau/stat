@@ -293,6 +293,7 @@ extern QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf);
 extern QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri);
 extern QString sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri);
 extern QString CompteJourTirage(stTiragesDef *pMaConf);
+extern bool VerifierValeur(int item,int *lev, QString table);
 
 
 #endif // TIRAGES_H
