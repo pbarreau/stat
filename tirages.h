@@ -34,8 +34,9 @@
 #define TB_COMBI    "comb"
 #define TB_BASE     "tirages"
 #define REF_BASE    "RefTirages"
-#define TB_BNRZ     "Bnrz"          /// Table Boules Names Reference Zone
-#define TB_ZDSC     "Ref_znName"    /// Table Reference des noms des Zones
+#define TB_RZ       "Ref_znName"    /// Table Reference des noms des Zones
+#define TB_RZVA     "Ref_znLimits"  /// limites sur Zones
+#define TB_RZBN     "Bnrz"          /// Table Boules Names des Reference Zone
 #define TB_SE       "SelElemt"  /// Choix de boules dans zone
 #define TB_SC       "SelComb"  /// Choix de combinaison dans zone
 #define TB_SG       "SelGrp"  /// Choix de criteres groupement dans zone
@@ -81,6 +82,7 @@ typedef struct _ordreArrivee
 
 typedef struct _val_max_min
 {
+    int len;
     int min;
     int max;
 }stBornes;
@@ -267,6 +269,7 @@ private:
     bool CreationTablesDeLaBDD_v2();
     bool f1();
     bool f1_1();
+    bool f1_2();
     bool f2();
     bool f2_2();
     bool f3();

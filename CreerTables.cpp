@@ -33,11 +33,13 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     // Creation de la table pour recuperer les tirages
     status = f1();
 
-#if 0
     // Creation Table des noms des zones et abregees
     if(status)
         status = f1_1();
-#endif
+
+    // Creation Table des limintes des zones
+    if(status)
+        status = f1_2();
 
     // Creation Table nom des boules des zones
     if(status)
@@ -91,32 +93,93 @@ bool GererBase::f1_1()
 
     QSqlQuery query;
     QString requete = "";
-    QString st_table = TB_ZDSC;
+    QString st_table = TB_RZ;
+
+    stTiragesDef ref = typeTirages->conf;
 
     requete =  "create table " + st_table +
-            "(id integer primary key,version int,Name text, Abv text, nb int, min int, max int);";
+            "(id integer primary key,name text, abv text);";
 
     status = query.exec(requete);
 
     if(status)
     {
         //mettre les infos
-        requete = "insert into "+st_table+" (id,version,Name,Abv,nb,min,max) values "+
-                "(NULL,1,'Boules','b',5),(NULL,'Etoiles','e');";
-        status = query.exec(requete);
+        int totZone = ref.nb_zone;
+        for(int i = 0; (i<totZone) && status;i++)
+        {
+            requete = "insert into "+st_table+" (id,name,abv) values "+
+                    "(NULL,'"+ref.FullNameZone[i]+"','"+
+                    ref.nomZone[i]+"');";
+            status = query.exec(requete);
+        }
     }
-    query.finish();
 
+#ifndef QT_NO_DEBUG
+    if(!status)
+    {
+        qDebug() << "create: " <<st_table<<"->"<< query.lastError();
+        qDebug() << "Bad code:\n"<<requete<<"\n-------";
+    }
+#endif
+
+    query.finish();
     return status;
+#if 0
+        requete = "insert into "+st_table+" (id,name,abv) values "+
+                "(NULL,'Boules','b'),(NULL,'Etoiles','e');";
+#endif
 }
 
+/// Fonction pour creer les infos numerique d'une zone
+bool GererBase::f1_2()
+{
+    bool status = true;
+
+    QSqlQuery query;
+    QString requete = "";
+    QString st_table = TB_RZVA;
+
+    stTiragesDef ref = typeTirages->conf;
+
+    requete =  "create table " + st_table +
+            "(id integer primary key,len int, min int, max int);";
+
+    status = query.exec(requete);
+
+    if(status)
+    {
+        //mettre les infos
+        int totZone = ref.nb_zone;
+        for(int i = 0; (i<totZone) && status;i++)
+        {
+            requete = "insert into "+st_table+" (id,len,min,max) values "+
+                    "(NULL,"+QString::number(ref.nbElmZone[i])+","+
+                    QString::number(ref.limites[i].min)+","+
+                    QString::number(ref.limites[i].max)+
+                    ");";
+            status = query.exec(requete);
+        }
+    }
+
+#ifndef QT_NO_DEBUG
+    if(!status)
+    {
+        qDebug() << "create: " <<st_table<<"->"<< query.lastError();
+        qDebug() << "Bad code:\n"<<requete<<"\n-------";
+    }
+#endif
+
+    query.finish();
+    return status;
+}
 bool GererBase::f2()
 {
     bool status = true;
 
     QSqlQuery query;
     QString requete = "";
-    QString st_table = TB_BNRZ;
+    QString st_table = TB_RZBN;
 
     stTiragesDef ref = typeTirages->conf;
 
@@ -598,7 +661,7 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
 
 
     // Creation Table Reference Boules des Zones
-    status = CTB_Table1(TB_BNRZ,pRef);
+    status = CTB_Table1(TB_RZBN,pRef);
 
     // Creation table pour la couverture
     for(zone=0;(zone<ref.nb_zone && status == true);zone++)

@@ -35,7 +35,10 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
     // Creation de la base
     if(CreerBasePourEtude(enMemoire,leJeu)==true)
     {
+        // Creeer la configuration de lecture
         typeTirages = new tirages(leJeu);
+
+        //Donner les infos aux autres classes
         typeTirages->getConfigFor(pConf);
         typeTirages->ListeCombinaison(pConf);
 

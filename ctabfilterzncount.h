@@ -8,7 +8,18 @@
 
 #include "tirages.h"
 
-class cTabFilterZnCount:public QTabWidget
+typedef struct {
+    QString complet;
+    QString court;
+}cZonesNames;
+
+typedef struct {
+    int len;
+    int min;
+    int max;
+}cZonesLimits;
+
+class cTabFilterZnCount:public QTabWidget,public cZonesNames //: protected cZonesLimits
 {
     Q_OBJECT
     /// in : infos representant les tirages
@@ -25,15 +36,20 @@ public slots:
 private:
     QString db_data;
     stTiragesDef *conf;
+    int nbZone;
+    cZonesNames *names;
+    cZonesLimits *limites;
     QStringList **maRef; //zn_filter
     QModelIndexList *lesSelections;
 
 private:
     QTableView *znCalculRegroupement(QString * pName, int zn);
-    QStringList * CreateFilterForData(int zn, stTiragesDef *pConf);
-    QString ApplayFilters(QString st_tirages, QString st_cri,int zn, stTiragesDef *pConf);
-    QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn, stTiragesDef *pConf);
-    QString ActionElmZone(QString operateur, QString critere,int zone, stTiragesDef *pConf);
+    QStringList * CreateFilterForData(int zn);
+    QString ApplayFilters(QString st_tirages, QString st_cri,int zn);
+    QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
+    QString ActionElmZone(QString operateur, QString critere,int zone);
+    void  RecupererConfiguration(void);
+
 
 };
 
