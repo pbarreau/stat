@@ -5,6 +5,8 @@
 #include <QTableView>
 #include <QString>
 #include <QStringList>
+#include <QMenu>
+#include <QActionGroup>
 
 #include "compter.h"
 #include "tirages.h"
@@ -20,6 +22,10 @@ public:
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
     void slot_RequeteFromSelection(const QModelIndex &index);
+    void slot_ccmr_tbForBaseEcart(QPoint pos);
+    void slot_ChoosePriority(QAction *cmd);
+
+
 
 private:
     static int total;
@@ -39,6 +45,9 @@ private:
                         QString op2
                         );
     QString PBAR_ReqComptage(QString ReqTirages, int zn,int distance);
+    QMenu *ContruireMenu(QString tbl, int val);
+    bool VerifierValeur(int item,int *lev, QString table);
+
 
 };
 
