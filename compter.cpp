@@ -9,8 +9,59 @@
 #include <QToolTip>
 #include <QStackedWidget>
 
-#include "comptage.h"
+#include "compter.h"
 #include "tirages.h"
+
+void B_Comptage::CreerCritereJours(void)
+{
+    QString st_tmp = "";
+
+    QSqlQuery query ;
+    QString msg = "";
+    QString st_table = "";
+    bool status = false;
+
+    if(db_data == TB_BASE){
+      st_table =  "jour_tirage";
+    }
+    else
+    {
+       st_table = "J";
+    }
+
+    msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
+            db_data+") as tb1 order by J;";
+
+    status = query.exec(msg);
+
+    if(status)
+    {
+        status = query.first();
+        if (query.isValid())
+        {
+            do
+            {
+                //count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,
+                st_tmp = st_tmp + "count(CASE WHEN  J like '"+
+                        query.value(0).toString()+"%' then 1 end) as "+
+                        query.value(0).toString()+",";
+            }while(status = query.next());
+
+            //supprimer derniere ','
+            st_tmp.remove(st_tmp.length()-1,1);
+            st_tmp = st_tmp + " ";
+        }
+    }
+
+#ifndef QT_NO_DEBUG
+        qDebug() << "CreerCritereJours ->"<< query.lastError();
+        qDebug() << "SQL 1:\n"<<msg<<"\n-------";
+        qDebug() << "SQL 2:\n"<<st_tmp<<"\n-------";
+#endif
+
+    query.finish();
+    db_jours = st_tmp;
+}
 
 void B_Comptage::RecupererConfiguration(void)
 {
@@ -56,20 +107,23 @@ void B_Comptage::RecupererConfiguration(void)
         }
     }
 #ifndef QT_NO_DEBUG
-    if(!status)
-    {
         qDebug() << "RecupererConfiguration ->"<< query.lastError();
-        qDebug() << "Bad code:\n"<<msg<<"\n-------";
-    }
+        qDebug() << "SQL 1:\n"<<msg<<"\n-------";
 #endif
 
     query.finish();
 
 }
 
-B_Comptage::B_Comptage()
+B_Comptage::B_Comptage(QString *in):db_data(*in)
 {
- RecupererConfiguration();
+    nbZone = 0;
+    db_jours = "";
+    names = NULL;
+    limites = NULL;
+
+    RecupererConfiguration();
+    CreerCritereJours();
 }
 
 void B_Comptage::slot_AideToolTip(const QModelIndex & index)

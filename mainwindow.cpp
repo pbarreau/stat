@@ -21,12 +21,6 @@
 #include "refetude.h"
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
-#include "ctabfilterzncount.h"
-
-//#include "refetude.h"
-
-//#include <QtPlugin>
-//Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
 
 
 #include <math.h>
@@ -39,6 +33,12 @@
 #include "gererbase.h"
 
 #include "chartwidget.h"
+
+
+#include "compter_groupes.h"
+#include "compter_zones.h"
+
+
 
 static stTiragesDef configJeu;
 
@@ -66,8 +66,12 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
 
-    cTabFilterZnCount *test = new cTabFilterZnCount("tirages",&configJeu);
+    QString st_table = REF_BASE;
+    cCompterGroupes *test = new cCompterGroupes(st_table);
     connect(test,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),this,SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
+
+    cTabZnCount *test2 = new cTabZnCount(st_table);
+    connect(test2,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),this,SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
 
     if(NoErrors.status == false)
     {

@@ -24,7 +24,7 @@
 #include "SyntheseGenerale.h"
 #include "filtrecombinaisons.h"
 #include "refetude.h"
-#include "ctabfilterzncount.h"
+#include "compter_groupes.h"
 
 namespace Ui {
 class MainWindow;

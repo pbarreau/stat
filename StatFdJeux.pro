@@ -59,10 +59,10 @@ SOURCES += main.cpp\
     delegate.cpp \
     combinaison.cpp \
     car.cpp \
-    ctabfilterzncount.cpp \
     sqlbackup.cpp \
-    ctabzncount.cpp \
-    comptage.cpp
+    compter_zones.cpp \
+    compter_groupes.cpp \
+    compter.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -85,11 +85,12 @@ HEADERS  += mainwindow.h \
     showstepper.h \
     delegate.h \
     car.h \
-    ctabfilterzncount.h \
+    ccomptergroupes.h \
     SyntheseGenerale.h \
     sqlbackup.h \
-    ctabzncount.h \
-    comptage.h
+    compter_groupes.h \
+    compter_zones.h \
+    compter.h
 
 
 FORMS    += mainwindow.ui \

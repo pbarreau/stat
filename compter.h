@@ -1,5 +1,7 @@
-#ifndef COMPTAGE_H
-#define COMPTAGE_H
+#ifndef COMPTER_H
+#define COMPTER_H
+
+#include <QSqlDatabase>
 
 #include <QTabWidget>
 #include <QTableView>
@@ -27,7 +29,7 @@ class B_Comptage:public QTabWidget
 {
     Q_OBJECT
 public:
-    B_Comptage();
+    B_Comptage(QString *in);
 
 protected:
     virtual QTableView *Compter(QString * pName, int zn)=0;
@@ -36,6 +38,7 @@ protected:
 
 private:
     void  RecupererConfiguration(void);
+    void  CreerCritereJours(void);
 
 
 public :
@@ -44,9 +47,9 @@ public :
 protected:
     int nbZone;
     QString db_data;
+    QString db_jours;
     cZonesNames *names;
     cZonesLimits *limites;
-    //QModelIndexList *lesSelections;
 
 public slots:
     void slot_AideToolTip(const QModelIndex & index);
@@ -58,4 +61,4 @@ Q_SIGNALS:
 
 };
 
-#endif // COMPTAGE_H
+#endif // COMPTER_H

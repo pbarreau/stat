@@ -9,88 +9,28 @@
 #include <QToolTip>
 #include <QStackedWidget>
 
-#include "ctabfilterzncount.h"
+#include "compter_groupes.h"
 
-int cTabFilterZnCount::total = 0;
+int cCompterGroupes::total = 0;
 
-#if 0
-void cTabFilterZnCount::RecupererConfiguration(void)
-{
-    QSqlQuery query ;
-    QString msg = "";
-    bool status = false;
-
-    msg = "select count(id) as tot from (" + QString::fromLocal8Bit(TB_RZ) + ");";
-    status = query.exec(msg);
-
-    if(status)
-    {
-        status = query.first();
-        if (query.isValid())
-        {
-            nbZone = query.value(0).toInt();
-            names  = new cZonesNames [nbZone];
-            limites = new cZonesLimits [nbZone];
-
-            // remplir les infos
-            msg = "select tb1.id, tb1.name, tb1.abv, tb2.len, tb2.min, tb2.max from " +
-                    QString::fromLocal8Bit(TB_RZ) + " as tb1, " +
-                    QString::fromLocal8Bit(TB_RZVA) + " as tb2 " +
-                    " where (tb1.id = tb2.id );";
-            status = query.exec(msg);
-
-            if(status)
-            {
-                status = query.first();
-                if (query.isValid())
-                {
-                    for(int i = 0; (i< nbZone) && status; i++)
-                    {
-                        names[i].complet = query.value(1).toString();
-                        names[i].court = query.value(2).toString();
-                        limites[i].len = query.value(3).toInt();
-                        limites[i].min = query.value(4).toInt();
-                        limites[i].max = query.value(5).toInt();
-                        status = query.next();
-                    }
-                }
-            }
-        }
-    }
-#ifndef QT_NO_DEBUG
-    if(!status)
-    {
-        qDebug() << "RecupererConfiguration ->"<< query.lastError();
-        qDebug() << "Bad code:\n"<<msg<<"\n-------";
-    }
-#endif
-
-    query.finish();
-
-}
-#endif
-
-cTabFilterZnCount::~cTabFilterZnCount()
+cCompterGroupes::~cCompterGroupes()
 {
     total --;
 }
 
-cTabFilterZnCount::cTabFilterZnCount(QString in, stTiragesDef *def)
+cCompterGroupes::cCompterGroupes(QString in):B_Comptage(&in)
 {
     total++;
-    db_data = in;
     QTabWidget *tab_Top = new QTabWidget;
-
-    //RecupererConfiguration();
 
     int nb_zones = nbZone;
     maRef = new  QStringList* [nb_zones] ;
     lesSelections = new QModelIndexList [nb_zones];
 
-    QTableView *(cTabFilterZnCount::*ptrFunc[])(QString *, int) =
+    QTableView *(cCompterGroupes::*ptrFunc[])(QString *, int) =
     {
-            &cTabFilterZnCount::Compter,
-            &cTabFilterZnCount::Compter
+            &cCompterGroupes::Compter,
+            &cCompterGroupes::Compter
 
 };
 
@@ -110,13 +50,13 @@ cTabFilterZnCount::cTabFilterZnCount(QString in, stTiragesDef *def)
 
 }
 
-QTableView *cTabFilterZnCount::Compter(QString * pName, int zn)
+QTableView *cCompterGroupes::Compter(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
     int nbLgn = limites[zn].len + 1;
     (* pName) = names[zn].court;
 
-    QStandardItemModel * tmpStdItem = NULL;
+    QStandardItemModel * sqm_tmp = NULL;
     QSqlQuery query ;
 
     maRef[zn] = CreateFilterForData(zn);
@@ -125,18 +65,18 @@ QTableView *cTabFilterZnCount::Compter(QString * pName, int zn)
     //Creer un tableau d'element standard
     if(nbCol)
     {
-        tmpStdItem =  new QStandardItemModel(nbLgn,nbCol);
-        qtv_tmp->setModel(tmpStdItem);
+        sqm_tmp =  new QStandardItemModel(nbLgn,nbCol);
+        qtv_tmp->setModel(sqm_tmp);
 
         QStringList tmp=maRef[zn][1];
         tmp.insert(0,"Nb");
-        tmpStdItem->setHorizontalHeaderLabels(tmp);
+        sqm_tmp->setHorizontalHeaderLabels(tmp);
 
         QStringList tooltips=maRef[zn][2];
         tooltips.insert(0,"Total");
         for(int pos=0;pos <=nbCol;pos++)
         {
-            QStandardItem *item = tmpStdItem->horizontalHeaderItem(pos);
+            QStandardItem *item = sqm_tmp->horizontalHeaderItem(pos);
             item->setToolTip(tooltips.at(pos));
         }
 
@@ -149,8 +89,8 @@ QTableView *cTabFilterZnCount::Compter(QString * pName, int zn)
                 if(pos == 0){
                     item->setData(lgn,Qt::DisplayRole);
                 }
-                tmpStdItem->setItem(lgn,pos,item);
-                qtv_tmp->setColumnWidth(pos,LCELL);
+                sqm_tmp->setItem(lgn,pos,item);
+                //qtv_tmp->setColumnWidth(pos,LCELL);
             }
         }
         // Gestion du QTableView
@@ -160,15 +100,24 @@ QTableView *cTabFilterZnCount::Compter(QString * pName, int zn)
 
         qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
         qtv_tmp->setAlternatingRowColors(true);
-        qtv_tmp->setFixedSize(CLargeur1*1.8,CHauteur1);
 
         qtv_tmp->setSortingEnabled(true);
         qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
         qtv_tmp->verticalHeader()->hide();
 
-        QHeaderView *htop = qtv_tmp->horizontalHeader();
-        htop->setSectionResizeMode(QHeaderView::ResizeToContents);
+        //largeur des colonnes
+        qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
         qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+        int b = qtv_tmp->columnWidth(0);
+        int n = sqm_tmp->columnCount();
+        qtv_tmp->setFixedWidth((b*n)+5);
+
+        //n = (qtv_tmp->horizontalHeader()->height()) * (nbLgn+1.2);
+        b = qtv_tmp->rowHeight(0);
+        n =nbLgn+1;
+        qtv_tmp->setFixedHeight((b*n)+5);
+        //qtv_tmp->setFixedSize(CLargeur1*1.8,CHauteur1);
 
         // simple click dans fenetre  pour selectionner boules
         connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
@@ -206,9 +155,9 @@ QTableView *cTabFilterZnCount::Compter(QString * pName, int zn)
                     int nb = query.value(0).toInt();
                     int tot = query.value(1).toInt();
 
-                    QStandardItem * item_1 = tmpStdItem->item(nb,j+1);
+                    QStandardItem * item_1 = sqm_tmp->item(nb,j+1);
                     item_1->setData(tot,Qt::DisplayRole);
-                    tmpStdItem->setItem(nb,j+1,item_1);
+                    sqm_tmp->setItem(nb,j+1,item_1);
                 }while(query.next() && status);
             }
         }
@@ -222,7 +171,7 @@ QTableView *cTabFilterZnCount::Compter(QString * pName, int zn)
 // Element 1 Liste des titres assosies a la requete
 // En fonction de la zone a etudier les requetes sont adaptees
 // pour integrer le nombre maxi de boules a prendre en compte
-QStringList * cTabFilterZnCount::CreateFilterForData(int zn)
+QStringList * cCompterGroupes::CreateFilterForData(int zn)
 {
     QStringList *sl_filter = new QStringList [3];
     QString fields = "z"+QString::number(zn+1);
@@ -257,7 +206,7 @@ QStringList * cTabFilterZnCount::CreateFilterForData(int zn)
 
     return sl_filter;
 }
-QString cTabFilterZnCount::TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn)
+QString cCompterGroupes::TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn)
 {
     QString st_tmp =  CriteresCreer("=","or",zn);
     QString st_return =
@@ -288,7 +237,7 @@ QString cTabFilterZnCount::TrouverTirages(int col, int nb, QString st_tirages, Q
     return(st_return);
 }
 
-QString cTabFilterZnCount::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
+QString cCompterGroupes::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
 {
 #if 0
     --- Requete recherche parite sur base pour tirages
@@ -344,54 +293,7 @@ QString cTabFilterZnCount::CriteresAppliquer(QString st_tirages, QString st_cri,
     return(st_return);
 }
 
-#if 0
-QString cTabFilterZnCount::CriteresCreer(QString critere , QString operateur, int zone)
-{
-    QString ret_msg = "";
-
-    // Operateur : or | and
-    // critere : = | <>
-    int totElements = limites[zone].len;
-    for(int i = 0; i<totElements;i++)
-    {
-        QString zName = names[zone].court;
-        ret_msg = ret_msg +"tb2.B "+ critere +" tb1."
-                + zName+QString::number(i+1)
-                + " " + operateur+ " ";
-    }
-    int len_flag = operateur.length();
-    ret_msg.remove(ret_msg.length()-len_flag-1, len_flag+1);
-
-#ifndef QT_NO_DEBUG
-    qDebug() << ret_msg;
-#endif
-
-    return ret_msg;
-}
-
-void cTabFilterZnCount::slot_AideToolTip(const QModelIndex & index)
-{
-    QString msg="";
-    const QAbstractItemModel * pModel = index.model();
-    int col = index.column();
-
-    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-    QString headName = vCol.toString();
-
-    if (col >=1)
-    {
-        //int val = index.model()->index(index.row(),col).data().toInt();
-        QString s_nb = index.model()->index(index.row(),0).data().toString();
-        QString s_va = index.model()->index(index.row(),col).data().toString();
-        QString s_hd = headName;
-        msg = msg + QString("%1 tirage(s) \nayant %2 boule(s)%3").arg(s_va).arg(s_nb).arg(s_hd);
-    }
-    if(msg.length())
-        QToolTip::showText (QCursor::pos(), msg);
-}
-#endif
-
-void cTabFilterZnCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
+void cCompterGroupes::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
     int tab_index = 0;
@@ -402,7 +304,7 @@ void cTabFilterZnCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
     lesSelections[tab_index]= selectionModel->selectedIndexes();
 }
 
-void cTabFilterZnCount::slot_RequeteFromSelection(const QModelIndex &index)
+void cCompterGroupes::slot_RequeteFromSelection(const QModelIndex &index)
 {
     QString st_titre = "";
     QVariant vCol;
