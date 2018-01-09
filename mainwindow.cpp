@@ -47,6 +47,12 @@ void MainWindow::pslot_closeTabDetails(int index)
     gtab_Top->removeTab(index);
 }
 
+void MainWindow::slot_NouvelEnsemble(const B_RequeteFromTbv &calcul)
+{
+    qDebug()<<calcul.db_data;
+    qDebug()<<calcul.tb_data;
+}
+
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
     stParam input;
@@ -60,7 +66,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
 
-    QTabWidget *test = new cTabFilterZnCount("tirages",&configJeu);
+    cTabFilterZnCount *test = new cTabFilterZnCount("tirages",&configJeu);
+    connect(test,SIGNAL(sig_BsqlReady(B_RequeteFromTbv)),this,SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
 
     if(NoErrors.status == false)
     {

@@ -11,6 +11,8 @@
 
 #include "ctabfilterzncount.h"
 
+int cTabFilterZnCount::total = 0;
+
 void cTabFilterZnCount::RecupererConfiguration(void)
 {
     QSqlQuery query ;
@@ -66,15 +68,19 @@ void cTabFilterZnCount::RecupererConfiguration(void)
 
 }
 
+cTabFilterZnCount::~cTabFilterZnCount()
+{
+    total --;
+}
+
 cTabFilterZnCount::cTabFilterZnCount(QString in, stTiragesDef *def)
 {
+    total++;
     db_data = in;
-    conf = NULL;
     QTabWidget *tab_Top = new QTabWidget;
 
     RecupererConfiguration();
 
-    //int nb_zones = def->nb_zone;
     int nb_zones = nbZone;
     maRef = new  QStringList* [nb_zones] ;
     lesSelections = new QModelIndexList [nb_zones];
@@ -105,10 +111,8 @@ cTabFilterZnCount::cTabFilterZnCount(QString in, stTiragesDef *def)
 QTableView *cTabFilterZnCount::znCalculRegroupement(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
-    //int nbLgn = conf->nbElmZone[zn] + 1;
-    //(* pName) = conf->nomZone[zn];
-int nbLgn = limites[zn].len + 1;
-(* pName) = names[zn].court;
+    int nbLgn = limites[zn].len + 1;
+    (* pName) = names[zn].court;
 
     QStandardItemModel * tmpStdItem = NULL;
     QSqlQuery query ;
@@ -368,8 +372,6 @@ void cTabFilterZnCount::slot_AideToolTip(const QModelIndex & index)
     const QAbstractItemModel * pModel = index.model();
     int col = index.column();
 
-    //QTableView *view = qobject_cast<QTableView *>(sender());
-
     QVariant vCol = pModel->headerData(col,Qt::Horizontal);
     QString headName = vCol.toString();
 
@@ -398,6 +400,11 @@ void cTabFilterZnCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
 
 void cTabFilterZnCount::slot_RequeteFromSelection(const QModelIndex &index)
 {
+    QString st_titre = "";
+    QVariant vCol;
+    QString headName;
+    const QAbstractItemModel * pModel = index.model();
+
     QString st_critere = "";
     QString sqlReq ="";
     QTableView *view = qobject_cast<QTableView *>(sender());
@@ -424,10 +431,20 @@ void cTabFilterZnCount::slot_RequeteFromSelection(const QModelIndex &index)
                 occure = un_index.model()->index(un_index.row(), 0).data().toInt();
                 if(curCol)
                 {
+                    vCol = pModel->headerData(curCol,Qt::Horizontal);
+                    headName = vCol.toString();
+                    st_titre = st_titre + "("+headName+"," + QString::number(occure) + "),";
+
                     st_critere = "("+maRef[onglet][0].at(curCol-1)+")";
                     sqlReq =TrouverTirages(curCol,occure,sqlReq,st_critere,onglet);
                 }
             }
+            st_titre.remove(st_titre.length()-1,1);
+
+            // signaler que cet objet a construit la requete
+            a.db_data = sqlReq;
+            a.tb_data = "g"+QString::number(total)+":"+st_titre;
+            emit sig_BsqlReady(a);
 
 #ifndef QT_NO_DEBUG
             qDebug() << sqlReq;

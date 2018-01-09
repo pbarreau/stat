@@ -24,7 +24,7 @@
 #include "SyntheseGenerale.h"
 #include "filtrecombinaisons.h"
 #include "refetude.h"
-
+#include "ctabfilterzncount.h"
 
 namespace Ui {
 class MainWindow;
@@ -134,6 +134,8 @@ public slots:
     void slot_MontreTirageDansGraph(const QModelIndex & index);
     void slot_MontreTirageAnalyse(const QModelIndex & index);
     void slot_PresenteLaBoule(const QModelIndex & index);
+    void slot_NouvelEnsemble(const B_RequeteFromTbv &calcul);
+
 
 
 private:

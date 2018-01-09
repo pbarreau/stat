@@ -19,13 +19,20 @@ typedef struct {
     int max;
 }cZonesLimits;
 
-class cTabFilterZnCount:public QTabWidget,public cZonesNames //: protected cZonesLimits
+typedef struct
+{
+ QString db_data;
+ QString tb_data;
+}B_RequeteFromTbv;
+
+class cTabFilterZnCount:public QTabWidget
 {
     Q_OBJECT
     /// in : infos representant les tirages
     /// tb : nom de la table decrivant les zones
 public:
     cTabFilterZnCount(QString in, stTiragesDef *def);
+    ~cTabFilterZnCount();
 
 public slots:
     void slot_AideToolTip(const QModelIndex & index);
@@ -33,9 +40,12 @@ public slots:
     void slot_RequeteFromSelection(const QModelIndex &index);
 
 
+public :
+    B_RequeteFromTbv a;
+
 private:
+    static int total;
     QString db_data;
-    stTiragesDef *conf;
     int nbZone;
     cZonesNames *names;
     cZonesLimits *limites;
@@ -49,6 +59,9 @@ private:
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
     QString ActionElmZone(QString operateur, QString critere,int zone);
     void  RecupererConfiguration(void);
+
+Q_SIGNALS:
+    void sig_BsqlReady(const B_RequeteFromTbv &my_answer);
 
 
 };
