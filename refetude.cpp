@@ -1275,7 +1275,6 @@ void RefEtude::slot_ShowDetails(const QModelIndex & index)
             }while(query.next() && status);
         }
     }
-
 }
 
 bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)

@@ -132,39 +132,170 @@ QTableView *cCompterGroupes::Compter(QString * pName, int zn)
                 SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 
         ///------------------------------
-        bool status = true;
-        for(int j=0; (j< nbCol) && (status == true);j++)
-        {
-            // Creer Requete pour compter items
-            QString msg1 = maRef[zn][0].at(j);
-            QString sqlReq = "";
-            sqlReq = CriteresAppliquer(db_data,msg1,zn);
-
-#ifndef QT_NO_DEBUG
-            qDebug() << sqlReq;
-#endif
-
-            status = query.exec(sqlReq);
-
-            // Mise a jour de la tables des resultats
-            if(status)
-            {
-                query.first();
-                do
-                {
-                    int nb = query.value(0).toInt();
-                    int tot = query.value(1).toInt();
-
-                    QStandardItem * item_1 = sqm_tmp->item(nb,j+1);
-                    item_1->setData(tot,Qt::DisplayRole);
-                    sqm_tmp->setItem(nb,j+1,item_1);
-                }while(query.next() && status);
-            }
-        }
+        RecalculGroupement(zn,nbCol,sqm_tmp);
     }
     return qtv_tmp;
 }
 
+void cCompterGroupes::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp)
+{
+    bool status = true;
+    QSqlQuery query ;
+
+    for(int j=0; (j< nbCol) && (status == true);j++)
+    {
+        //Effacer calcul precedent
+        for(int k=0; k<limites[zn].len+1;k++)
+        {
+            QStandardItem * item_1 = sqm_tmp->item(k,j+1);
+            item_1->setData("",Qt::DisplayRole);
+            sqm_tmp->setItem(k,j+1,item_1);
+        }
+
+        // Creer Requete pour compter items
+        QString msg1 = maRef[zn][0].at(j);
+        QString sqlReq = "";
+        sqlReq = CriteresAppliquer(db_data,msg1,zn);
+
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
+#endif
+
+        status = query.exec(sqlReq);
+
+        // Mise a jour de la tables des resultats
+        if(status)
+        {
+            query.first();
+            do
+            {
+                int nb = query.value(0).toInt();
+                int tot = query.value(1).toInt();
+
+                QStandardItem * item_1 = sqm_tmp->item(nb,j+1);
+                item_1->setData(tot,Qt::DisplayRole);
+                sqm_tmp->setItem(nb,j+1,item_1);
+            }while(query.next() && status);
+        }
+    }
+
+}
+
+#if 0
+///------------------
+void SyntheseDetails::RecalculGroupement(QString st_tirages,int nbCol,QStandardItemModel *tmpStdItem)
+{
+    QSqlQuery query ;
+    //int nbCol = tab->horizontalHeader()->count();
+    bool status = true;
+    int zn = 0;
+    for(int j=0; (j< nbCol-1) && (status == true);j++)
+    {
+        //Effacer calcul precedent
+        for(int k =0;k<(pLaDemande->ref->nbElmZone[zn])+1;k++)
+        {
+            QStandardItem * item_1 = tmpStdItem->item(k,j+1);
+            item_1->setData("",Qt::DisplayRole);
+            tmpStdItem->setItem(k,j+1,item_1);
+        }
+
+        // Creer Requete pour compter items
+        QString msg1 = maRef[zn][0].at(j);
+        QString sqlReq = "";
+        //QStandardItemModel * tmpStdItem = qobject_cast<QStandardItemModel *>(tab->model());
+        sqlReq = sql_RegroupeSelonCritere(st_tirages,msg1);
+
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
+#endif
+
+        status = query.exec(sqlReq);
+
+        // Mise a jour de la tables des resultats
+        if(status)
+        {
+            query.first();
+            do
+            {
+                int nb = query.value(0).toInt();
+                int tot = query.value(1).toInt();
+
+                QStandardItem * item_1 = tmpStdItem->item(nb,j+1);
+                item_1->setData(tot,Qt::DisplayRole);
+                tmpStdItem->setItem(nb,j+1,item_1);
+            }while(query.next() && status);
+        }
+    }
+
+}
+#endif
+/// --------------------
+#if 0
+QTableView *cCompterGroupes::Compter(QString * pName, int zn,int id)
+{
+
+    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent());
+    QItemSelectionModel *selectionModel = view->selectionModel();
+    tab_index = curOnglet->currentIndex();
+
+
+}
+
+void cCompterGroupes::slot_ShowDetails(const QModelIndex & index)
+{
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    static int sortir = 0;
+
+    int zn = 0; // A remplacer par detection du tableview ayant recut le click
+
+    // recuperer la ligne de la table
+    int lgn = index.model()->index(index.row(),0).data().toInt();
+
+    if(sortir != lgn)
+    {
+        sortir = lgn;
+    }
+    else
+    {
+        return;
+    }
+
+    QSqlQuery query;
+    QStandardItemModel *tmpStdItem = p_qsim_3;
+
+    int nbCol = codeSqlDeRegroupementSurZnId[zn][0].size();
+    bool status = true;
+    for(int i=0; (i< nbCol) && (status == true);i++)
+    {
+        // Creer Requete pour compter items
+        QString msg1 = codeSqlDeRegroupementSurZnId[zn][0].at(i);
+        QString sqlReq = "";
+        sqlReq = sql_ComptePourUnTirage(lgn,p_stRefTirages,msg1);
+
+#ifndef QT_NO_DEBUG
+        qDebug() << sqlReq;
+#endif
+
+        status = query.exec(sqlReq);
+
+        // Mise a jour de la tables des resultats
+        if(status)
+        {
+            query.first();
+            do
+            {
+                //int id = query.value(0).toInt();
+                int tot = query.value(1).toInt();
+
+                QStandardItem * item_1 = tmpStdItem->item(0,i);
+                item_1->setData(tot,Qt::DisplayRole);
+                tmpStdItem->setItem(0,i,item_1);
+            }while(query.next() && status);
+        }
+    }
+
+}
+#endif
 // Cette fonction retourne un pointeur sur un tableau de QStringList
 // Ce tableau comporte 2 elements
 // Element 0 liste des requetes construites

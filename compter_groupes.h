@@ -29,9 +29,12 @@ private:
 
 private:
     QTableView *Compter(QString * pName, int zn);
+    QTableView *Compter(QString * pName, int zn,int id);
     QStringList * CreateFilterForData(int zn);
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
+    void RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp);
+
 
 };
 
