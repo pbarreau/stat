@@ -67,7 +67,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
 
     cTabFilterZnCount *test = new cTabFilterZnCount("tirages",&configJeu);
-    connect(test,SIGNAL(sig_BsqlReady(B_RequeteFromTbv)),this,SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
+    connect(test,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),this,SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
 
     if(NoErrors.status == false)
     {

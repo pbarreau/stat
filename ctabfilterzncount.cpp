@@ -13,6 +13,7 @@
 
 int cTabFilterZnCount::total = 0;
 
+#if 0
 void cTabFilterZnCount::RecupererConfiguration(void)
 {
     QSqlQuery query ;
@@ -67,6 +68,7 @@ void cTabFilterZnCount::RecupererConfiguration(void)
     query.finish();
 
 }
+#endif
 
 cTabFilterZnCount::~cTabFilterZnCount()
 {
@@ -79,7 +81,7 @@ cTabFilterZnCount::cTabFilterZnCount(QString in, stTiragesDef *def)
     db_data = in;
     QTabWidget *tab_Top = new QTabWidget;
 
-    RecupererConfiguration();
+    //RecupererConfiguration();
 
     int nb_zones = nbZone;
     maRef = new  QStringList* [nb_zones] ;
@@ -87,8 +89,8 @@ cTabFilterZnCount::cTabFilterZnCount(QString in, stTiragesDef *def)
 
     QTableView *(cTabFilterZnCount::*ptrFunc[])(QString *, int) =
     {
-            &cTabFilterZnCount::znCalculRegroupement,
-            &cTabFilterZnCount::znCalculRegroupement
+            &cTabFilterZnCount::Compter,
+            &cTabFilterZnCount::Compter
 
 };
 
@@ -108,7 +110,7 @@ cTabFilterZnCount::cTabFilterZnCount(QString in, stTiragesDef *def)
 
 }
 
-QTableView *cTabFilterZnCount::znCalculRegroupement(QString * pName, int zn)
+QTableView *cTabFilterZnCount::Compter(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
     int nbLgn = limites[zn].len + 1;
@@ -187,7 +189,7 @@ QTableView *cTabFilterZnCount::znCalculRegroupement(QString * pName, int zn)
             // Creer Requete pour compter items
             QString msg1 = maRef[zn][0].at(j);
             QString sqlReq = "";
-            sqlReq = ApplayFilters(db_data,msg1,zn);
+            sqlReq = CriteresAppliquer(db_data,msg1,zn);
 
 #ifndef QT_NO_DEBUG
             qDebug() << sqlReq;
@@ -257,7 +259,7 @@ QStringList * cTabFilterZnCount::CreateFilterForData(int zn)
 }
 QString cTabFilterZnCount::TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn)
 {
-    QString st_tmp =  ActionElmZone("=","or",zn);
+    QString st_tmp =  CriteresCreer("=","or",zn);
     QString st_return =
             "select tb1.*, count(tb2.B) as N"+QString::number(col)+ " "+
             "from (" + st_tirages.remove(";")+
@@ -286,7 +288,7 @@ QString cTabFilterZnCount::TrouverTirages(int col, int nb, QString st_tirages, Q
     return(st_return);
 }
 
-QString cTabFilterZnCount::ApplayFilters(QString st_tirages, QString st_cri, int zn)
+QString cTabFilterZnCount::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
 {
 #if 0
     --- Requete recherche parite sur base pour tirages
@@ -316,7 +318,7 @@ QString cTabFilterZnCount::ApplayFilters(QString st_tirages, QString st_cri, int
     ////---data, range, name, filter
 #endif
 
-    QString st_tmp =  ActionElmZone("=","or",zn);
+    QString st_tmp =  CriteresCreer("=","or",zn);
     QString st_return =
             "select Nb, count(Nb) as Tp from "
             "("
@@ -342,7 +344,8 @@ QString cTabFilterZnCount::ApplayFilters(QString st_tirages, QString st_cri, int
     return(st_return);
 }
 
-QString cTabFilterZnCount::ActionElmZone(QString critere , QString operateur, int zone)
+#if 0
+QString cTabFilterZnCount::CriteresCreer(QString critere , QString operateur, int zone)
 {
     QString ret_msg = "";
 
@@ -386,6 +389,7 @@ void cTabFilterZnCount::slot_AideToolTip(const QModelIndex & index)
     if(msg.length())
         QToolTip::showText (QCursor::pos(), msg);
 }
+#endif
 
 void cTabFilterZnCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
@@ -444,7 +448,7 @@ void cTabFilterZnCount::slot_RequeteFromSelection(const QModelIndex &index)
             // signaler que cet objet a construit la requete
             a.db_data = sqlReq;
             a.tb_data = "g"+QString::number(total)+":"+st_titre;
-            emit sig_BsqlReady(a);
+            emit sig_ComptageReady(a);
 
 #ifndef QT_NO_DEBUG
             qDebug() << sqlReq;

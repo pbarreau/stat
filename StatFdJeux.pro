@@ -61,7 +61,8 @@ SOURCES += main.cpp\
     car.cpp \
     ctabfilterzncount.cpp \
     sqlbackup.cpp \
-    ctabzncount.cpp
+    ctabzncount.cpp \
+    comptage.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -87,7 +88,8 @@ HEADERS  += mainwindow.h \
     ctabfilterzncount.h \
     SyntheseGenerale.h \
     sqlbackup.h \
-    ctabzncount.h
+    ctabzncount.h \
+    comptage.h
 
 
 FORMS    += mainwindow.ui \
