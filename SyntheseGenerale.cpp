@@ -553,7 +553,7 @@ void SyntheseGenerale::DoTirages(void)
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              test, SLOT( slot_DecodeTirage( QModelIndex) ) );
 
-    cTabZnCount *test2 = new cTabZnCount(st_table);
+    cCompterZoneElmts *test2 = new cCompterZoneElmts(st_table);
     connect(test2,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),pEcran->parent(),SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
 
 

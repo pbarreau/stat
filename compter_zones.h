@@ -11,13 +11,13 @@
 #include "compter.h"
 #include "tirages.h"
 
-class cTabZnCount:public B_Comptage
+class cCompterZoneElmts:public B_Comptage
 {
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    cTabZnCount(QString in);
-    ~cTabZnCount();
+    cCompterZoneElmts(QString in);
+    ~cCompterZoneElmts();
 
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);

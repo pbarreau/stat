@@ -62,7 +62,8 @@ SOURCES += main.cpp\
     sqlbackup.cpp \
     compter_zones.cpp \
     compter_groupes.cpp \
-    compter.cpp
+    compter.cpp \
+    compter_combinaisons.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -90,7 +91,8 @@ HEADERS  += mainwindow.h \
     sqlbackup.h \
     compter_groupes.h \
     compter_zones.h \
-    compter.h
+    compter.h \
+    compter_combinaisons.h
 
 
 FORMS    += mainwindow.ui \

@@ -18,14 +18,14 @@
 #include <QMenu>
 
 #include "compter_zones.h"
-int cTabZnCount::total = 0;
+int cCompterZoneElmts::total = 0;
 
-cTabZnCount::~cTabZnCount()
+cCompterZoneElmts::~cCompterZoneElmts()
 {
     total --;
 }
 
-cTabZnCount::cTabZnCount(QString in):B_Comptage(&in)
+cCompterZoneElmts::cCompterZoneElmts(QString in):B_Comptage(&in)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget;
@@ -33,10 +33,10 @@ cTabZnCount::cTabZnCount(QString in):B_Comptage(&in)
     int nb_zones = nbZone;
     lesSelections = new QModelIndexList [nb_zones];
 
-    QGridLayout *(cTabZnCount::*ptrFunc[])(QString *, int) =
+    QGridLayout *(cCompterZoneElmts::*ptrFunc[])(QString *, int) =
     {
-            &cTabZnCount::Compter,
-            &cTabZnCount::Compter
+            &cCompterZoneElmts::Compter,
+            &cCompterZoneElmts::Compter
 
 };
 
@@ -58,7 +58,7 @@ cTabZnCount::cTabZnCount(QString in):B_Comptage(&in)
 }
 
 
-void cTabZnCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
+void cCompterZoneElmts::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
     int tab_index = 0;
@@ -69,7 +69,7 @@ void cTabZnCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
     lesSelections[tab_index]= selectionModel->selectedIndexes();
 }
 
-void cTabZnCount::slot_RequeteFromSelection(const QModelIndex &index)
+void cCompterZoneElmts::slot_RequeteFromSelection(const QModelIndex &index)
 {
     QString st_titre = "";
     QVariant vCol;
@@ -132,7 +132,7 @@ void cTabZnCount::slot_RequeteFromSelection(const QModelIndex &index)
 
 }
 
-QString cTabZnCount::GEN_Where_3(int loop,
+QString cCompterZoneElmts::GEN_Where_3(int loop,
                     QString tb1,
                     bool inc1,
                     QString op1,
@@ -196,7 +196,7 @@ QString cTabZnCount::GEN_Where_3(int loop,
     return ret_msg;
 }
 
-QString cTabZnCount::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
+QString cCompterZoneElmts::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 {
     QString msg = "";
 
@@ -255,7 +255,7 @@ QString cTabZnCount::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     return msg;
 }
 
-QGridLayout *cTabZnCount::Compter(QString * pName, int zn)
+QGridLayout *cCompterZoneElmts::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
 
@@ -326,7 +326,7 @@ QGridLayout *cTabZnCount::Compter(QString * pName, int zn)
     return lay_return;
 }
 
-void cTabZnCount::slot_ccmr_tbForBaseEcart(QPoint pos)
+void cCompterZoneElmts::slot_ccmr_tbForBaseEcart(QPoint pos)
 {
     /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
     /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
@@ -352,7 +352,7 @@ void cTabZnCount::slot_ccmr_tbForBaseEcart(QPoint pos)
     }
 }
 
-QMenu *cTabZnCount::ContruireMenu(QString tbl, int val)
+QMenu *cCompterZoneElmts::ContruireMenu(QString tbl, int val)
 {
     QString msg2 = "Priorite";
     QMenu *menu =new QMenu(msg2, this);
@@ -388,7 +388,7 @@ QMenu *cTabZnCount::ContruireMenu(QString tbl, int val)
 }
 
 
-void cTabZnCount::slot_ChoosePriority(QAction *cmd)
+void cCompterZoneElmts::slot_ChoosePriority(QAction *cmd)
 {
     QSqlQuery query;
     QString msg = "";
@@ -461,7 +461,7 @@ void cTabZnCount::slot_ChoosePriority(QAction *cmd)
 /// item : valeur a rechercher
 /// *lev : valeur de priorité trouvé
 /// table : nom de la table dans laquelle il faut chercher
-bool cTabZnCount::VerifierValeur(int item,int *lev, QString table)
+bool cCompterZoneElmts::VerifierValeur(int item,int *lev, QString table)
 {
     bool ret = false;
     QSqlQuery query ;
