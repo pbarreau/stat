@@ -12,6 +12,7 @@
 #include <QTableView>
 #include <QHeaderView>
 #include <QToolTip>
+#include <QMessageBox>
 
 #include <QActionGroup>
 #include <QAction>
@@ -56,7 +57,7 @@ cCompterZoneElmts::cCompterZoneElmts(QString in):B_Comptage(&in)
     Resultats->show();
 }
 
-#if 0
+
 void cCompterZoneElmts::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
@@ -65,9 +66,70 @@ void cCompterZoneElmts::slot_ClicDeSelectionTableau(const QModelIndex &index)
     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
     QItemSelectionModel *selectionModel = view->selectionModel();
     tab_index = curOnglet->currentIndex();
+
+    // Colonne courante
+    int col = index.column();
+
+    // Aucune colonne active ?
+    if(memo[tab_index]==-1)
+    {
+        // alors memoriser la colonne active
+        memo[tab_index] =col;
+    }
+    else
+    {
+        /// une colonne a deja ete selectionne
+        /// combien d'elements deja selectionne ?
+        int tot_items = selectionModel->selectedIndexes().size();
+
+        if(tot_items >1)
+        {
+            /// plus d'un elements
+            /// verifier si le nouvel element choisi
+            /// est aussi sur la meme colonne
+            if(col != memo[tab_index])
+            {
+                /// nom alors deselectionner l'element
+                selectionModel->select(index, QItemSelectionModel::Deselect);
+                return;
+            }
+        }
+        else
+        {
+            /// c'est un changement de colonne
+            /// ou une deselection d'element
+            if(!tot_items)
+            {
+                /// c'est une deselection
+                /// prochain coup on peut prendre
+                /// ou l'on veut
+                memo[tab_index]=-1;
+            }
+            else
+            {
+                /// on a changer de colonne
+                memo[tab_index]=col;
+            }
+        }
+    }
+
+
+    //  choix Maxi atteind ?
+    int nb_items = selectionModel->selectedIndexes().size();
+    if(nb_items > limites[tab_index].len)
+    {
+        //un message d'information
+        QMessageBox::warning(0, names[tab_index].complet, "Attention, maximum element atteind !",QMessageBox::Yes);
+
+        // deselectionner l'element
+        selectionModel->select(index, QItemSelectionModel::Deselect);
+        return;
+    }
+
     lesSelections[tab_index]= selectionModel->selectedIndexes();
+    LabelFromSelection(selectionModel,tab_index);
 }
-#endif
+
 
 void cCompterZoneElmts::slot_RequeteFromSelection(const QModelIndex &index)
 {
@@ -133,13 +195,13 @@ void cCompterZoneElmts::slot_RequeteFromSelection(const QModelIndex &index)
 }
 
 QString cCompterZoneElmts::GEN_Where_3(int loop,
-                    QString tb1,
-                    bool inc1,
-                    QString op1,
-                    QStringList &tb2,
-                    bool inc2,
-                    QString op2
-                    )
+                                       QString tb1,
+                                       bool inc1,
+                                       QString op1,
+                                       QStringList &tb2,
+                                       bool inc2,
+                                       QString op2
+                                       )
 {
     QString ret_msg = "";
     QString ind_1 = "";
@@ -189,8 +251,8 @@ QString cCompterZoneElmts::GEN_Where_3(int loop,
     ret_msg.remove(ret_msg.length()-flag.length(),flag.length());
 
 #ifndef QT_NO_DEBUG
-        qDebug() << "GEN_Where_3\n";
-        qDebug() << "SQL msg:\n"<<ret_msg<<"\n-------";
+    qDebug() << "GEN_Where_3\n";
+    qDebug() << "SQL msg:\n"<<ret_msg<<"\n-------";
 #endif
 
     return ret_msg;
@@ -244,11 +306,11 @@ QString cCompterZoneElmts::PBAR_ReqComptage(QString ReqTirages, int zn,int dista
             ;
 
 #ifndef QT_NO_DEBUG
-        qDebug() << "PBAR_ReqComptage\n";
-        qDebug() << "SQL 1:\n"<<st_cri_all<<"\n-------";
-        qDebug() << "SQL 2:\n"<<db_jours<<"\n-------";
-        qDebug() << "SQL 3:\n"<<ReqTirages<<"\n-------";
-        qDebug() << "SQL msg:\n"<<msg<<"\n-------";
+    qDebug() << "PBAR_ReqComptage\n";
+    qDebug() << "SQL 1:\n"<<st_cri_all<<"\n-------";
+    qDebug() << "SQL 2:\n"<<db_jours<<"\n-------";
+    qDebug() << "SQL 3:\n"<<ReqTirages<<"\n-------";
+    qDebug() << "SQL msg:\n"<<msg<<"\n-------";
 #endif
 
 

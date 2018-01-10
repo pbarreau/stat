@@ -37,7 +37,7 @@ protected:
     virtual QGridLayout *Compter(QString * pName, int zn)=0;
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString CriteresCreer(QString operateur, QString critere,int zone);
-    void LabelFromSelection(const QModelIndexList &indexes, int zn);
+    void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
 
 private:
     void RecupererConfiguration(void);

@@ -8,6 +8,7 @@
 #include <QHeaderView>
 #include <QToolTip>
 #include <QStackedWidget>
+//#include <QMessageBox>
 
 #include "compter.h"
 #include "tirages.h"
@@ -161,45 +162,23 @@ void B_Comptage::slot_ClicDeSelectionTableau(const QModelIndex &index)
     QTableView *view = qobject_cast<QTableView *>(sender());
     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
     QItemSelectionModel *selectionModel = view->selectionModel();
-
-    //static int memo[nbZone]={0};
-    QString tableName = view->objectName();
-
     tab_index = curOnglet->currentIndex();
-    if(tableName != "")
+#if 0
+    //  choix Maxi atteind ?
+    int nb_items = selectionModel->selectedIndexes().size();
+    if(nb_items > limites[tab_index].len)
     {
-        int col = index.column();
-        if(memo[tab_index]==-1)
-        {
-            memo[tab_index] =col;
-        }
-        else
-        {
-            int tot_items = selectionModel->selectedIndexes().size();
-            if(tot_items >1)
-            {
-                if(col != memo[tab_index])
-                {
-                    // deselectionner l'element
-                    selectionModel->select(index, QItemSelectionModel::Deselect);
-                    return;
-                }
-            }
-            else
-            {
-                if(!tot_items)
-                {
-                    memo[tab_index]=-1;
-                }
-                else
-                {
-                    memo[tab_index]=col;
-                }
-            }
-        }
+        //un message d'information
+        QMessageBox::warning(0, names[tab_index].complet, "Attention, maximum element atteind !",QMessageBox::Yes);
+
+        // deselectionner l'element
+        selectionModel->select(index, QItemSelectionModel::Deselect);
+        return;
     }
+#endif
+
     lesSelections[tab_index]= selectionModel->selectedIndexes();
-    LabelFromSelection(selectionModel->selectedIndexes(),tab_index);
+    LabelFromSelection(selectionModel,tab_index);
 }
 
 #if 0
@@ -235,11 +214,14 @@ QString B_Comptage::CriteresAppliquer(QString st_tirages, QString st_cri, int zn
 {
 }
 
-void B_Comptage::LabelFromSelection(const QModelIndexList &indexes, int zn)
+void B_Comptage::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
 {
-    if(indexes.size())
+    QModelIndexList indexes = selectionModel->selectedIndexes();
+    QString str_titre = names[zn].court + "[";
+
+    int nb_items = indexes.size();
+    if(nb_items)
     {
-        QString str_titre = names[zn].court + "[";
         QModelIndex un_index;
         int curCol = 0;
         int occure = 0;
@@ -248,7 +230,6 @@ void B_Comptage::LabelFromSelection(const QModelIndexList &indexes, int zn)
         foreach(un_index, indexes)
         {
             const QAbstractItemModel * pModel = un_index.model();
-
             curCol = pModel->index(un_index.row(), un_index.column()).column();
             occure = pModel->index(un_index.row(), 0).data().toInt();
 
@@ -266,12 +247,11 @@ void B_Comptage::LabelFromSelection(const QModelIndexList &indexes, int zn)
 
         // supression derniere ','
         str_titre.remove(str_titre.length()-1,1);
-
-        // on marque la fin
-        str_titre = str_titre +"]";
-
-        // informer disponibilité
-        names[zn].selection = str_titre;
-        emit sig_TitleReady(str_titre);
     }
+    // on marque la fin
+    str_titre = str_titre +"]";
+
+    // informer disponibilité
+    names[zn].selection = str_titre;
+    emit sig_TitleReady(str_titre);
 }

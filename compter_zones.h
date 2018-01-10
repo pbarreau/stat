@@ -20,7 +20,7 @@ public:
     ~cCompterZoneElmts();
 
 public slots:
-    //void slot_ClicDeSelectionTableau(const QModelIndex &index);
+    void slot_ClicDeSelectionTableau(const QModelIndex &index);
     void slot_RequeteFromSelection(const QModelIndex &index);
     void slot_ccmr_tbForBaseEcart(QPoint pos);
     void slot_ChoosePriority(QAction *cmd);
