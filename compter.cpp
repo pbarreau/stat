@@ -147,6 +147,7 @@ void B_Comptage::slot_AideToolTip(const QModelIndex & index)
         QToolTip::showText (QCursor::pos(), msg);
 }
 
+#if 0
 void B_Comptage::slot_ClicDeSelectionTableau(const QModelIndex & index)
 {
 }
@@ -154,6 +155,7 @@ void B_Comptage::slot_ClicDeSelectionTableau(const QModelIndex & index)
 void B_Comptage::slot_RequeteFromSelection(const QModelIndex & index)
 {
 }
+#endif
 
 QString B_Comptage::CriteresCreer(QString critere , QString operateur, int zone)
 {

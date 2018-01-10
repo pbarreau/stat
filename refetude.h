@@ -7,6 +7,7 @@
 #include <QTabWidget>
 #include <QSortFilterProxyModel>
 #include "tirages.h"
+#include "compter_groupes.h"
 
 class sCouv
 {
@@ -109,6 +110,7 @@ private:
     QMdiArea *p_affiche;
     QTabWidget *p_reponse;
     QTabWidget *tabTrackCouverture;
+    cCompterGroupes *unTest;
 
 };
 

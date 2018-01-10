@@ -25,6 +25,8 @@ cCompterGroupes::cCompterGroupes(QString in):B_Comptage(&in)
 
     int nb_zones = nbZone;
     maRef = new  QStringList* [nb_zones] ;
+    p_qsim_3 = new QStandardItemModel *[nb_zones];
+
     lesSelections = new QModelIndexList [nb_zones];
 
     QGridLayout *(cCompterGroupes::*ptrFunc[])(QString *, int) =
@@ -36,6 +38,7 @@ cCompterGroupes::cCompterGroupes(QString in):B_Comptage(&in)
 
     for(int i = 0; i< nb_zones; i++)
     {
+
         QString *name = new QString;
         QWidget *tmpw = new QWidget;
         QGridLayout *calcul = (this->*ptrFunc[i])(name, i);
@@ -55,6 +58,63 @@ cCompterGroupes::cCompterGroupes(QString in):B_Comptage(&in)
 QGridLayout *cCompterGroupes::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
+
+    maRef[zn] = CreateFilterForData(zn);
+
+    QTableView *qtv_tmp_1 = CompterLigne (pName, zn);
+    QTableView *qtv_tmp_2 = CompterEnsemble (pName, zn);
+
+    // positionner les tableaux
+    lay_return->addWidget(qtv_tmp_1,0,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp_2,1,0,Qt::AlignLeft|Qt::AlignTop);
+
+
+    return lay_return;
+}
+
+QTableView *cCompterGroupes::CompterLigne(QString * pName, int zn)
+{
+    QTableView *qtv_tmp = new QTableView;
+    int nbCol = maRef[zn][0].size();
+    QStandardItemModel * sqm_tmp =  new QStandardItemModel(1,nbCol);
+    p_qsim_3[zn] = sqm_tmp;
+    qtv_tmp->setModel(sqm_tmp);
+
+    QStringList tmp=maRef[zn][1];
+    sqm_tmp->setHorizontalHeaderLabels(tmp);
+
+    for(int pos=0;pos<nbCol;pos++)
+    {
+        QStandardItem *item = new QStandardItem();
+        sqm_tmp->setItem(0,pos,item);
+        qtv_tmp->setColumnWidth(pos,LCELL);
+    }
+
+    qtv_tmp->setSortingEnabled(false);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // Bloquer largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->hide();
+
+    // Taille tableau
+    int b = qtv_tmp->columnWidth(0);
+    int n = sqm_tmp->columnCount();
+    qtv_tmp->setFixedWidth((b*n)+5);
+
+    b = HCELL;
+    n = 1;
+    qtv_tmp->setFixedHeight((b*n)+5);
+
+    return qtv_tmp;
+}
+
+QTableView *cCompterGroupes::CompterEnsemble(QString * pName, int zn)
+{
     QTableView *qtv_tmp = new QTableView;
     int nbLgn = limites[zn].len + 1;
     (* pName) = names[zn].court;
@@ -62,7 +122,6 @@ QGridLayout *cCompterGroupes::Compter(QString * pName, int zn)
     QStandardItemModel * sqm_tmp = NULL;
     QSqlQuery query ;
 
-    maRef[zn] = CreateFilterForData(zn);
     int nbCol = maRef[zn][0].size();
 
     //Creer un tableau d'element standard
@@ -132,9 +191,6 @@ QGridLayout *cCompterGroupes::Compter(QString * pName, int zn)
 
         qtv_tmp->setMouseTracking(true);
 
-        // positionner le tableau
-        lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
-
         connect(qtv_tmp,
                 SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 
@@ -142,7 +198,7 @@ QGridLayout *cCompterGroupes::Compter(QString * pName, int zn)
         RecalculGroupement(zn,nbCol,sqm_tmp);
     }
 
-    return lay_return;
+    return qtv_tmp;
 }
 
 void cCompterGroupes::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp)
@@ -189,54 +245,102 @@ void cCompterGroupes::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sq
 
 }
 
-#if 0
-///------------------
-void SyntheseDetails::RecalculGroupement(QString st_tirages,int nbCol,QStandardItemModel *tmpStdItem)
+QString cCompterGroupes::sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri, int zn)
 {
-    QSqlQuery query ;
-    //int nbCol = tab->horizontalHeader()->count();
-    bool status = true;
-    int zn = 0;
-    for(int j=0; (j< nbCol-1) && (status == true);j++)
-    {
-        //Effacer calcul precedent
-        for(int k =0;k<(pLaDemande->ref->nbElmZone[zn])+1;k++)
-        {
-            QStandardItem * item_1 = tmpStdItem->item(k,j+1);
-            item_1->setData("",Qt::DisplayRole);
-            tmpStdItem->setItem(k,j+1,item_1);
-        }
-
-        // Creer Requete pour compter items
-        QString msg1 = maRef[zn][0].at(j);
-        QString sqlReq = "";
-        //QStandardItemModel * tmpStdItem = qobject_cast<QStandardItemModel *>(tab->model());
-        sqlReq = sql_RegroupeSelonCritere(st_tirages,msg1);
-
-#ifndef QT_NO_DEBUG
-        qDebug() << sqlReq;
+#if 0
+    /* Req_1 : pour compter le nombre de boules pair par tirages */
+    select tb1.id as Tid, count(tb2.B) as Nb from
+            (
+                select * from tirages where id=1
+            ) as tb1
+            left join
+            (
+                select id as B from Bnrz where (z1 not null  and (z1%2 = 0))
+                ) as tb2
+            on
+            (
+                tb2.B = tb1.b1 or
+            tb2.B = tb1.b2 or
+            tb2.B = tb1.b3 or
+            tb2.B = tb1.b4 or
+            tb2.B = tb1.b5
+            ) group by tb1.id; /* Fin Req_1 */
 #endif
 
-        status = query.exec(sqlReq);
+    QString st_tmp =  CriteresCreer("=","or",zn);
+    QString st_return =
+            "select tb1.id as Tid, count(tb2.B) as Nb from "
+            "(("
+            "select * from " + st_tirages.remove(";")
+            + " where id = "
+            +QString::number(id)
+            +") as r1 "
+             ") as tb1 "
+             "left join "
+             "("
+             "select id as B from Bnrz where (z"+QString::number(zn+1)+
+            " not null  and ("+st_cri+")) ) as tb2 " +
+            "on "
+            "("
+            +st_tmp+
+            ") group by tb1.id;";
 
-        // Mise a jour de la tables des resultats
-        if(status)
-        {
-            query.first();
-            do
-            {
-                int nb = query.value(0).toInt();
-                int tot = query.value(1).toInt();
-
-                QStandardItem * item_1 = tmpStdItem->item(nb,j+1);
-                item_1->setData(tot,Qt::DisplayRole);
-                tmpStdItem->setItem(nb,j+1,item_1);
-            }while(query.next() && status);
-        }
-    }
+    return(st_return);
 
 }
+
+void cCompterGroupes::slot_DecodeTirage(const QModelIndex & index)
+{
+    static int sortir = 0;
+
+    // recuperer la ligne de la table
+    int lgn = index.model()->index(index.row(),0).data().toInt();
+
+    if(sortir != lgn)
+    {
+        sortir = lgn;
+    }
+    else
+    {
+        return;
+    }
+
+    QSqlQuery query;
+
+    for(int zn = 0; zn < nbZone;zn ++)
+    {
+        QStandardItemModel *sqm_tmp = p_qsim_3[zn];
+        int nbCol = maRef[zn][0].size();
+        bool status = true;
+        for(int j=0; (j< nbCol) && (status == true);j++)
+        {
+            // Creer Requete pour compter items
+            QString msg1 = maRef[zn][0].at(j);
+            QString sqlReq = "";
+            sqlReq = sql_ComptePourUnTirage(lgn,db_data,msg1,zn);
+
+#ifndef QT_NO_DEBUG
+            qDebug() << sqlReq;
 #endif
+
+            status = query.exec(sqlReq);
+            // Mise a jour de la tables des resultats
+            if(status)
+            {
+                query.first();
+                do
+                {
+                    int tot = query.value(1).toInt();
+
+                    QStandardItem * item_1 = sqm_tmp->item(0,j);
+                    item_1->setData(tot,Qt::DisplayRole);
+                    sqm_tmp->setItem(0,j,item_1);
+                }while(query.next() && status);
+            }
+        }
+    }
+}
+
 /// --------------------
 #if 0
 QTableView *cCompterGroupes::Compter(QString * pName, int zn,int id)

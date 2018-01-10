@@ -66,12 +66,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
 
-    QString st_table = REF_BASE;
-    cCompterGroupes *test = new cCompterGroupes(st_table);
-    connect(test,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),this,SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
-
-    cTabZnCount *test2 = new cTabZnCount(st_table);
-    connect(test2,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),this,SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
 
     if(NoErrors.status == false)
     {
@@ -2094,12 +2088,9 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
     // Les deux onglets sont crees faire une nouvelle spirale
     //QStandardItemModel *pSimEcart = new QStandardItemModel;
     //QStandardItemModel **pSimEcart = new QStandardItemModel *;
-    RefEtude *tmpEtude = new RefEtude();
-    QStandardItemModel * pSimEcart = tmpEtude->GetPtrToModel();
+    //RefEtude *tmpEtude = new RefEtude();
+    //QStandardItemModel * pSimEcart = tmpEtude->GetPtrToModel();
 
-    //int nb1 = (*pSimEcart)->rowCount();
-    //int nb2 = (*pSimEcart)->columnCount();
-    //int nb1 = pSimEcart->rowCount();
 
     //ChartWidget *test = new ChartWidget(pSimEcart);
     //test->show();

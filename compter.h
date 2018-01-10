@@ -22,8 +22,8 @@ typedef struct {
 
 typedef struct
 {
- QString db_data;
- QString tb_data;
+    QString db_data;
+    QString tb_data;
 }B_RequeteFromTbv;
 
 class B_Comptage:public QTabWidget
@@ -54,8 +54,11 @@ protected:
 
 public slots:
     void slot_AideToolTip(const QModelIndex & index);
+#if 0
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
     void slot_RequeteFromSelection(const QModelIndex &index);
+    void slot_DecodeTirage(const QModelIndex & index);
+#endif
 
 Q_SIGNALS:
     void sig_ComptageReady(const B_RequeteFromTbv &my_answer);
