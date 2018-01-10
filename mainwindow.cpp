@@ -47,7 +47,7 @@ void MainWindow::pslot_closeTabDetails(int index)
     gtab_Top->removeTab(index);
 }
 
-void MainWindow::slot_NouvelEnsemble(const B_RequeteFromTbv &calcul)
+void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
 {
     qDebug()<<calcul.db_data;
     qDebug()<<calcul.tb_data;

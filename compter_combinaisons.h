@@ -28,7 +28,6 @@ public slots:
 private:
     static int total;
     int last; // indice du dernier tirage
-    QModelIndexList *lesSelections;
 
 
 private:

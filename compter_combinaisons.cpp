@@ -26,10 +26,6 @@ cCompterCombinaisons::cCompterCombinaisons(QString in):B_Comptage(&in)
     total++;
     QTabWidget *tab_Top = new QTabWidget;
 
-    int nb_zones = nbZone;
-
-    lesSelections = new QModelIndexList [nb_zones];
-
     QGridLayout *(cCompterCombinaisons::*ptrFunc[])(QString *, int) =
     {
             &cCompterCombinaisons::Compter,

@@ -134,7 +134,7 @@ public slots:
     void slot_MontreTirageDansGraph(const QModelIndex & index);
     void slot_MontreTirageAnalyse(const QModelIndex & index);
     void slot_PresenteLaBoule(const QModelIndex & index);
-    void slot_NouvelEnsemble(const B_RequeteFromTbv &calcul);
+    void slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul);
 
 
 

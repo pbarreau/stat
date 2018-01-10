@@ -27,8 +27,6 @@ cCompterGroupes::cCompterGroupes(QString in):B_Comptage(&in)
     maRef = new  QStringList* [nb_zones] ;
     p_qsim_3 = new QStandardItemModel *[nb_zones];
 
-    lesSelections = new QModelIndexList [nb_zones];
-
     QGridLayout *(cCompterGroupes::*ptrFunc[])(QString *, int) =
     {
             &cCompterGroupes::Compter,
@@ -75,6 +73,7 @@ QGridLayout *cCompterGroupes::Compter(QString * pName, int zn)
 QTableView *cCompterGroupes::CompterLigne(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
+
     int nbCol = maRef[zn][0].size();
     QStandardItemModel * sqm_tmp =  new QStandardItemModel(1,nbCol);
     p_qsim_3[zn] = sqm_tmp;
@@ -536,6 +535,7 @@ QString cCompterGroupes::CriteresAppliquer(QString st_tirages, QString st_cri, i
     return(st_return);
 }
 
+#if 0
 void cCompterGroupes::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
@@ -543,16 +543,16 @@ void cCompterGroupes::slot_ClicDeSelectionTableau(const QModelIndex &index)
     QTableView *view = qobject_cast<QTableView *>(sender());
     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
     QItemSelectionModel *selectionModel = view->selectionModel();
+
     tab_index = curOnglet->currentIndex();
     lesSelections[tab_index]= selectionModel->selectedIndexes();
+    LabelFromSelection(selectionModel->selectedIndexes(),tab_index);
 }
+#endif
 
 void cCompterGroupes::slot_RequeteFromSelection(const QModelIndex &index)
 {
     QString st_titre = "";
-    QVariant vCol;
-    QString headName;
-    const QAbstractItemModel * pModel = index.model();
 
     QString st_critere = "";
     QString sqlReq ="";
@@ -569,7 +569,8 @@ void cCompterGroupes::slot_RequeteFromSelection(const QModelIndex &index)
 
         if(indexes.size())
         {
-            st_titre = st_titre + names[onglet].court + "[";
+            st_titre = st_titre + names[onglet].selection + "-";
+
             QModelIndex un_index;
             int curCol = 0;
             int occure = 0;
@@ -581,21 +582,11 @@ void cCompterGroupes::slot_RequeteFromSelection(const QModelIndex &index)
                 occure = un_index.model()->index(un_index.row(), 0).data().toInt();
                 if(curCol)
                 {
-                    vCol = pModel->headerData(curCol,Qt::Horizontal);
-                    headName = vCol.toString();
-                    st_titre = st_titre + "("+headName+"," + QString::number(occure) + "),";
-
                     st_critere = "("+maRef[onglet][0].at(curCol-1)+")";
                     sqlReq =TrouverTirages(curCol,occure,sqlReq,st_critere,onglet);
                 }
             }
-            // supression derniere ','
-            st_titre.remove(st_titre.length()-1,1);
-
-            // on passe a la zone suivante
-            st_titre = st_titre +"]-";
         }
-
     }
 
     /// on informe !!!

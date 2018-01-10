@@ -22,7 +22,7 @@ public:
     ~cCompterGroupes();
 
 public slots:
-    void slot_ClicDeSelectionTableau(const QModelIndex &index);
+    //void slot_ClicDeSelectionTableau(const QModelIndex &index);
     void slot_RequeteFromSelection(const QModelIndex &index);
     void slot_DecodeTirage(const QModelIndex & index);
 
@@ -30,7 +30,6 @@ public slots:
 private:
     static int total;
     QStringList **maRef; //zn_filter
-    QModelIndexList *lesSelections;
     QStandardItemModel ** p_qsim_3;
 
 

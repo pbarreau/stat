@@ -31,7 +31,6 @@ cCompterZoneElmts::cCompterZoneElmts(QString in):B_Comptage(&in)
     QTabWidget *tab_Top = new QTabWidget;
 
     int nb_zones = nbZone;
-    lesSelections = new QModelIndexList [nb_zones];
 
     QGridLayout *(cCompterZoneElmts::*ptrFunc[])(QString *, int) =
     {
@@ -57,7 +56,7 @@ cCompterZoneElmts::cCompterZoneElmts(QString in):B_Comptage(&in)
     Resultats->show();
 }
 
-
+#if 0
 void cCompterZoneElmts::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
@@ -68,6 +67,7 @@ void cCompterZoneElmts::slot_ClicDeSelectionTableau(const QModelIndex &index)
     tab_index = curOnglet->currentIndex();
     lesSelections[tab_index]= selectionModel->selectedIndexes();
 }
+#endif
 
 void cCompterZoneElmts::slot_RequeteFromSelection(const QModelIndex &index)
 {

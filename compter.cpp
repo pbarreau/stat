@@ -22,11 +22,11 @@ void B_Comptage::CreerCritereJours(void)
     bool status = false;
 
     if(db_data == TB_BASE){
-      st_table =  "jour_tirage";
+        st_table =  "jour_tirage";
     }
     else
     {
-       st_table = "J";
+        st_table = "J";
     }
 
     msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
@@ -54,9 +54,9 @@ void B_Comptage::CreerCritereJours(void)
     }
 
 #ifndef QT_NO_DEBUG
-        qDebug() << "CreerCritereJours ->"<< query.lastError();
-        qDebug() << "SQL 1:\n"<<msg<<"\n-------";
-        qDebug() << "SQL 2:\n"<<st_tmp<<"\n-------";
+    qDebug() << "CreerCritereJours ->"<< query.lastError();
+    qDebug() << "SQL 1:\n"<<msg<<"\n-------";
+    qDebug() << "SQL 2:\n"<<st_tmp<<"\n-------";
 #endif
 
     query.finish();
@@ -78,6 +78,12 @@ void B_Comptage::RecupererConfiguration(void)
         if (query.isValid())
         {
             nbZone = query.value(0).toInt();
+            // J'assume que si la requete retourne qq chose
+            // alors il y a au moins une zone existante
+            lesSelections = new QModelIndexList [nbZone];
+            memo = new int [nbZone];
+            memset(memo,-1, sizeof(int)*nbZone);
+
             names  = new cZonesNames [nbZone];
             limites = new cZonesLimits [nbZone];
 
@@ -95,6 +101,7 @@ void B_Comptage::RecupererConfiguration(void)
                 {
                     for(int i = 0; (i< nbZone) && status; i++)
                     {
+                        names[i].selection = "";
                         names[i].complet = query.value(1).toString();
                         names[i].court = query.value(2).toString();
                         limites[i].len = query.value(3).toInt();
@@ -107,8 +114,8 @@ void B_Comptage::RecupererConfiguration(void)
         }
     }
 #ifndef QT_NO_DEBUG
-        qDebug() << "RecupererConfiguration ->"<< query.lastError();
-        qDebug() << "SQL 1:\n"<<msg<<"\n-------";
+    qDebug() << "RecupererConfiguration ->"<< query.lastError();
+    qDebug() << "SQL 1:\n"<<msg<<"\n-------";
 #endif
 
     query.finish();
@@ -147,11 +154,55 @@ void B_Comptage::slot_AideToolTip(const QModelIndex & index)
         QToolTip::showText (QCursor::pos(), msg);
 }
 
-#if 0
-void B_Comptage::slot_ClicDeSelectionTableau(const QModelIndex & index)
+void B_Comptage::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
+    // L'onglet implique le tableau...
+    int tab_index = 0;
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
+    QItemSelectionModel *selectionModel = view->selectionModel();
+
+    //static int memo[nbZone]={0};
+    QString tableName = view->objectName();
+
+    tab_index = curOnglet->currentIndex();
+    if(tableName != "")
+    {
+        int col = index.column();
+        if(memo[tab_index]==-1)
+        {
+            memo[tab_index] =col;
+        }
+        else
+        {
+            int tot_items = selectionModel->selectedIndexes().size();
+            if(tot_items >1)
+            {
+                if(col != memo[tab_index])
+                {
+                    // deselectionner l'element
+                    selectionModel->select(index, QItemSelectionModel::Deselect);
+                    return;
+                }
+            }
+            else
+            {
+                if(!tot_items)
+                {
+                    memo[tab_index]=-1;
+                }
+                else
+                {
+                    memo[tab_index]=col;
+                }
+            }
+        }
+    }
+    lesSelections[tab_index]= selectionModel->selectedIndexes();
+    LabelFromSelection(selectionModel->selectedIndexes(),tab_index);
 }
 
+#if 0
 void B_Comptage::slot_RequeteFromSelection(const QModelIndex & index)
 {
 }
@@ -182,4 +233,45 @@ QString B_Comptage::CriteresCreer(QString critere , QString operateur, int zone)
 }
 QString B_Comptage::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
 {
+}
+
+void B_Comptage::LabelFromSelection(const QModelIndexList &indexes, int zn)
+{
+    if(indexes.size())
+    {
+        QString str_titre = names[zn].court + "[";
+        QModelIndex un_index;
+        int curCol = 0;
+        int occure = 0;
+
+        /// Parcourir les selections
+        foreach(un_index, indexes)
+        {
+            const QAbstractItemModel * pModel = un_index.model();
+
+            curCol = pModel->index(un_index.row(), un_index.column()).column();
+            occure = pModel->index(un_index.row(), 0).data().toInt();
+
+            // si on n'est pas sur la premiere colonne
+            if(curCol)
+            {
+                QVariant vCol;
+                QString headName;
+
+                vCol = pModel->headerData(curCol,Qt::Horizontal);
+                headName = vCol.toString();
+                str_titre = str_titre + "("+headName+"," + QString::number(occure) + "),";
+            }
+        }
+
+        // supression derniere ','
+        str_titre.remove(str_titre.length()-1,1);
+
+        // on marque la fin
+        str_titre = str_titre +"]";
+
+        // informer disponibilité
+        names[zn].selection = str_titre;
+        emit sig_TitleReady(str_titre);
+    }
 }
