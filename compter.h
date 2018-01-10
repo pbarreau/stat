@@ -37,6 +37,10 @@ protected:
     virtual QGridLayout *Compter(QString * pName, int zn)=0;
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString CriteresCreer(QString operateur, QString critere,int zone);
+    QString GEN_Where_3(int loop,
+                        QString tb1,bool inc1,QString op1,
+                        QStringList &tb2,bool inc2,QString op2
+                        );
     void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
 
 private:
@@ -56,6 +60,7 @@ protected:
     cZonesNames *names;
     cZonesLimits *limites;
     QModelIndexList *lesSelections;
+    QString *sqlSelection;
 
 public slots:
     void slot_AideToolTip(const QModelIndex & index);

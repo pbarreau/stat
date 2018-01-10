@@ -70,6 +70,14 @@ void cCompterZoneElmts::slot_ClicDeSelectionTableau(const QModelIndex &index)
     // Colonne courante
     int col = index.column();
 
+    /// click sur la colonne boule id ?
+    if(!col)
+    {
+        /// oui alors deselectionner l'element
+        selectionModel->select(index, QItemSelectionModel::Deselect);
+        return;
+    }
+
     // Aucune colonne active ?
     if(memo[tab_index]==-1)
     {
@@ -89,7 +97,7 @@ void cCompterZoneElmts::slot_ClicDeSelectionTableau(const QModelIndex &index)
             /// est aussi sur la meme colonne
             if(col != memo[tab_index])
             {
-                /// nom alors deselectionner l'element
+                /// non alors deselectionner l'element
                 selectionModel->select(index, QItemSelectionModel::Deselect);
                 return;
             }
@@ -128,136 +136,144 @@ void cCompterZoneElmts::slot_ClicDeSelectionTableau(const QModelIndex &index)
 
     lesSelections[tab_index]= selectionModel->selectedIndexes();
     LabelFromSelection(selectionModel,tab_index);
+    SqlFromSelection(selectionModel,tab_index);
 }
 
+void cCompterZoneElmts::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
+{
+    QModelIndexList indexes = selectionModel->selectedIndexes();
+
+    int nb_items = indexes.size();
+    if(nb_items)
+    {
+        QModelIndex un_index;
+        QStringList lstBoules;
+
+        QVariant vCol;
+        QString headName;
+        int curCol = 0;
+        int occure = 0;
+
+
+        /// Parcourir les selections
+        foreach(un_index, indexes)
+        {
+            const QAbstractItemModel * pModel = un_index.model();
+            curCol = pModel->index(un_index.row(), un_index.column()).column();
+            occure = pModel->index(un_index.row(), 0).data().toInt();
+
+            // si on n'est pas sur la premiere colonne
+            if(curCol)
+            {
+                vCol = pModel->headerData(curCol,Qt::Horizontal);
+                headName = vCol.toString();
+
+                // Construire la liste des boules
+                lstBoules << QString::number(occure);
+            }
+        }
+
+        // Creation du critere de filtre
+        int loop = limites[zn].len;
+        QString tab = "tbz."+names[zn].court;
+        QString scritere = GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
+        if(headName != "T" and headName !="")
+        {
+            scritere = scritere + " and (J like '%" + headName +"%')";
+        }
+        sqlSelection[zn] = scritere;
+    }
+}
 
 void cCompterZoneElmts::slot_RequeteFromSelection(const QModelIndex &index)
 {
-    QString st_titre = "";
-    QVariant vCol;
-    QString headName;
-    const QAbstractItemModel * pModel = index.model();
-
     QString st_critere = "";
     QString sqlReq ="";
+    QString st_titre ="";
     QTableView *view = qobject_cast<QTableView *>(sender());
     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
 
-    /// il y a t'il une selection
     ///parcourir tous les onglets
     sqlReq = db_data;
     int nb_item = curOnglet->count();
     for(int onglet = 0; onglet<nb_item;onglet++)
     {
-        QModelIndexList indexes =  lesSelections[onglet];
-
-        if(indexes.size())
-        {
-            st_titre = st_titre + names[onglet].court + "[";
-            QModelIndex un_index;
-            int curCol = 0;
-            int occure = 0;
-
-            /// Parcourir les selections
-            foreach(un_index, indexes)
-            {
-                curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
-                occure = un_index.model()->index(un_index.row(), 0).data().toInt();
-                if(curCol)
-                {
-                    vCol = pModel->headerData(curCol,Qt::Horizontal);
-                    headName = vCol.toString();
-                    st_titre = st_titre + "("+headName+"," + QString::number(occure) + "),";
-
-                    st_critere = "(TBD)";
-                    sqlReq = "A Coder !!";
-                }
-            }
-            // supression derniere ','
-            st_titre.remove(st_titre.length()-1,1);
-
-            // on passe a la zone suivante
-            st_titre = st_titre +"]-";
+        if(sqlSelection[onglet]!=""){
+        st_critere = st_critere + "(/* DEBUT CRITERE z_"+
+                QString::number(onglet+1)+ "*/" +
+                sqlSelection[onglet]+ "/* FIN CRITERE z_"+
+                QString::number(onglet+1)+ "*/)and";
         }
-
+        st_titre = st_titre + names[onglet].selection;
     }
 
-    /// on informe !!!
-    if(st_titre!="")
-    {
-        st_titre.remove(st_titre.length()-1,1);
-        // signaler que cet objet a construit la requete
-        a.db_data = sqlReq;
-        a.tb_data = "s"+QString::number(total)+":"+st_titre;
-        emit sig_ComptageReady(a);
-    }
+    /// suppression du dernier 'and'
+    st_critere.remove(st_critere.length()-3,3);
 
+    sqlReq = "/* CAS Zone */select tbz.* from ("
+            + sqlReq + ") as tbz where ("
+            + st_critere +"); /* FIN CAS Zone */";
+
+
+    // signaler que cet objet a construit la requete
+    a.db_data = sqlReq;
+    a.tb_data = st_titre;
+    emit sig_ComptageReady(a);
 }
 
-QString cCompterZoneElmts::GEN_Where_3(int loop,
-                                       QString tb1,
-                                       bool inc1,
-                                       QString op1,
-                                       QStringList &tb2,
-                                       bool inc2,
-                                       QString op2
-                                       )
+#if 0
+void toto ()
 {
-    QString ret_msg = "";
-    QString ind_1 = "";
-    QString ind_2 = "";
+    QStringList lstBoules;
+    QString scritere = "";
+    QString headName = "";
+    QModelIndex un_index;
+    bool putIndice = true;
 
-    QString flag = " and ";
-
-    for(int j=0; j< tb2.size();j++)
+    // Analyse de chaque indexe
+    foreach(un_index, indexes)
     {
-        ret_msg = ret_msg + "(";
-        for(int i = 0; i<loop;i++)
+        const QAbstractItemModel * pModel = un_index.model();
+        int col = un_index.column();
+        int lgn = un_index.row();
+        int use = un_index.model()->index(lgn,0).data().toInt();
+        int val = un_index.data().toInt();
+        QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+        headName = vCol.toString();
+
+        if(niveau>=2)
         {
-            // Mettre un nombre apres  1er table
-            if(inc1)
-            {
-                ind_1 = tb1+QString::number(i+1);
-            }
-            else
-            {
-                ind_1 = tb1;
-            }
-
-            // Mettre un nombre apres  2eme table
-            if(inc2)
-            {
-                ind_2 = tb2.at(j)+QString::number(i+1);
-            }
-            else
-            {
-                ind_2 = tb2.at(j);
-            }
-
-            // Construire message
-            ret_msg = ret_msg
-                    + ind_1
-                    + op1
-                    + ind_2
-                    + " " + op2 + " ";
+            putIndice = false;
         }
-        // retirer le dernier operateur (op2)
-        ret_msg.remove(ret_msg.length()-op2.length()-1, op2.length()+1);
 
-        ret_msg =  ret_msg + ")";
-        ret_msg = ret_msg + flag;
+        if(niveau==3)
+        {
+            use = lgn;
+        }
+
+        // Construire la liste des boules
+        lstBoules << QString::number(use);
     }
-    // retirer le dernier operateur
-    ret_msg.remove(ret_msg.length()-flag.length(),flag.length());
 
-#ifndef QT_NO_DEBUG
-    qDebug() << "GEN_Where_3\n";
-    qDebug() << "SQL msg:\n"<<ret_msg<<"\n-------";
+    // Creation du critere de filtre
+    QString tab = rtab + "." + tmpTab;
+    scritere = GEN_Where_3(maxElem,tab,putIndice,"=",lstBoules,false,"or");
+    if(headName != "T" and headName !="")
+    {
+        scritere = scritere + " and (J like '%" + headName +"%')";
+    }
+
+
+    msg = "/* DEBUT niveau " + sn
+            + " */ select " + rtab + ".* from ("
+            + sin + ") as " + rtab + " where ("
+            + scritere +"); /* FIN niveau " + sn + " */";
+
+}
 #endif
 
-    return ret_msg;
-}
-
+/// Requete permettant de remplir le tableau
+///
 QString cCompterZoneElmts::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 {
     QString msg = "";

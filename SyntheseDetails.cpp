@@ -195,7 +195,8 @@ void MemoriserChoixUtilisateur(const QModelIndex & index,
 }
 
 //------
-
+/// Fonction permettant de creer des requetes generiques
+/// tb2 contient la liste des elements à chercher
 QString GEN_Where_3(int loop,
                     QString tb1,
                     bool inc1,
