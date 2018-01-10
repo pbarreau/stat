@@ -5,6 +5,7 @@
 #include <QTableView>
 #include <QString>
 #include <QStringList>
+#include <QGridLayout>
 
 #include "compter.h"
 #include "tirages.h"
@@ -28,8 +29,8 @@ private:
     QModelIndexList *lesSelections;
 
 private:
-    QTableView *Compter(QString * pName, int zn);
-    QTableView *Compter(QString * pName, int zn,int id);
+    QGridLayout *Compter(QString * pName, int zn);
+    QGridLayout *Compter(QString * pName, int zn,int id);
     QStringList * CreateFilterForData(int zn);
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);

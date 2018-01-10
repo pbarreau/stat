@@ -33,7 +33,7 @@ cTabZnCount::cTabZnCount(QString in):B_Comptage(&in)
     int nb_zones = nbZone;
     lesSelections = new QModelIndexList [nb_zones];
 
-    QTableView *(cTabZnCount::*ptrFunc[])(QString *, int) =
+    QGridLayout *(cTabZnCount::*ptrFunc[])(QString *, int) =
     {
             &cTabZnCount::Compter,
             &cTabZnCount::Compter
@@ -43,8 +43,10 @@ cTabZnCount::cTabZnCount(QString in):B_Comptage(&in)
     for(int i = 0; i< nb_zones; i++)
     {
         QString *name = new QString;
-        QTableView *calcul = (this->*ptrFunc[i])(name, i);
-        tab_Top->addTab(calcul,tr((*name).toUtf8()));
+        QWidget *tmpw = new QWidget;
+        QGridLayout *calcul = (this->*ptrFunc[i])(name, i);
+        tmpw->setLayout(calcul);
+        tab_Top->addTab(tmpw,tr((*name).toUtf8()));
     }
 
     QWidget * Resultats = new QWidget;
@@ -61,59 +63,73 @@ void cTabZnCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
     // L'onglet implique le tableau...
     int tab_index = 0;
     QTableView *view = qobject_cast<QTableView *>(sender());
-    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent());
+    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
     QItemSelectionModel *selectionModel = view->selectionModel();
     tab_index = curOnglet->currentIndex();
     lesSelections[tab_index]= selectionModel->selectedIndexes();
 }
 
 void cTabZnCount::slot_RequeteFromSelection(const QModelIndex &index)
-{    QString st_titre = "";
-     QVariant vCol;
-     QString headName;
-     const QAbstractItemModel * pModel = index.model();
+{
+    QString st_titre = "";
+    QVariant vCol;
+    QString headName;
+    const QAbstractItemModel * pModel = index.model();
 
-     QString st_critere = "";
-     QString sqlReq ="";
-     QTableView *view = qobject_cast<QTableView *>(sender());
-     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent());
+    QString st_critere = "";
+    QString sqlReq ="";
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
 
-     /// il y a t'il une selection
-     ///parcourir tous les onglets
-     sqlReq = db_data;
-     int nb_item = curOnglet->count();
-     for(int onglet = 0; onglet<nb_item;onglet++)
-     {
-         QModelIndexList indexes =  lesSelections[onglet];
+    /// il y a t'il une selection
+    ///parcourir tous les onglets
+    sqlReq = db_data;
+    int nb_item = curOnglet->count();
+    for(int onglet = 0; onglet<nb_item;onglet++)
+    {
+        QModelIndexList indexes =  lesSelections[onglet];
 
-         if(indexes.size())
-         {
-             QModelIndex un_index;
-             int curCol = 0;
-             int occure = 0;
+        if(indexes.size())
+        {
+            st_titre = st_titre + names[onglet].court + "[";
+            QModelIndex un_index;
+            int curCol = 0;
+            int occure = 0;
 
-             /// Parcourir les selections
-             foreach(un_index, indexes)
-             {
-                 curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
-                 occure = un_index.model()->index(un_index.row(), 0).data().toInt();
-                 if(curCol)
-                 {
-                     vCol = pModel->headerData(curCol,Qt::Horizontal);
-                     headName = vCol.toString();
-                     st_titre = st_titre + "("+headName+"," + QString::number(occure) + "),";
-                 }
-             }
-             st_titre.remove(st_titre.length()-1,1);
+            /// Parcourir les selections
+            foreach(un_index, indexes)
+            {
+                curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
+                occure = un_index.model()->index(un_index.row(), 0).data().toInt();
+                if(curCol)
+                {
+                    vCol = pModel->headerData(curCol,Qt::Horizontal);
+                    headName = vCol.toString();
+                    st_titre = st_titre + "("+headName+"," + QString::number(occure) + "),";
 
-             // signaler que cet objet a construit la requete
-             a.db_data = sqlReq;
-             a.tb_data = "b"+QString::number(total)+":"+st_titre;
-             emit sig_ComptageReady(a);
+                    st_critere = "(TBD)";
+                    sqlReq = "A Coder !!";
+                }
+            }
+            // supression derniere ','
+            st_titre.remove(st_titre.length()-1,1);
 
-         }
+            // on passe a la zone suivante
+            st_titre = st_titre +"]-";
+        }
 
-     }
+    }
+
+    /// on informe !!!
+    if(st_titre!="")
+    {
+        st_titre.remove(st_titre.length()-1,1);
+        // signaler que cet objet a construit la requete
+        a.db_data = sqlReq;
+        a.tb_data = "s"+QString::number(total)+":"+st_titre;
+        emit sig_ComptageReady(a);
+    }
+
 }
 
 QString cTabZnCount::GEN_Where_3(int loop,
@@ -239,8 +255,10 @@ QString cTabZnCount::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     return msg;
 }
 
-QTableView *cTabZnCount::Compter(QString * pName, int zn)
+QGridLayout *cTabZnCount::Compter(QString * pName, int zn)
 {
+    QGridLayout *lay_return = new QGridLayout;
+
     QTableView *qtv_tmp = new QTableView;
     (* pName) = names[zn].court;
 
@@ -285,11 +303,9 @@ QTableView *cTabZnCount::Compter(QString * pName, int zn)
     int n = sqm_tmp->columnCount();
     qtv_tmp->setFixedWidth((n+0.85)*b);
 
-#if 0
-    for(int j=0;j<=sqm_tmp->columnCount();j++)
-        qtv_tmp->setColumnWidth(j,LCELL);
-    qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
-#endif
+    // positionner le tableau
+    lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
 
     // simple click dans fenetre  pour selectionner boules
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
@@ -307,7 +323,7 @@ QTableView *cTabZnCount::Compter(QString * pName, int zn)
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
 
-    return qtv_tmp;
+    return lay_return;
 }
 
 void cTabZnCount::slot_ccmr_tbForBaseEcart(QPoint pos)

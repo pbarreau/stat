@@ -7,6 +7,7 @@
 #include <QTableView>
 #include <QString>
 #include <QStringList>
+#include <QGridLayout>
 
 typedef struct {
     QString complet;
@@ -32,7 +33,7 @@ public:
     B_Comptage(QString *in);
 
 protected:
-    virtual QTableView *Compter(QString * pName, int zn)=0;
+    virtual QGridLayout *Compter(QString * pName, int zn)=0;
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString CriteresCreer(QString operateur, QString critere,int zone);
 
