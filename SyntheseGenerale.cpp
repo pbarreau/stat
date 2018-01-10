@@ -25,7 +25,7 @@
 
 #include "compter_groupes.h"
 #include "compter_zones.h"
-
+#include "compter_combinaisons.h"
 //
 #include "mainwindow.h"
 
@@ -549,13 +549,16 @@ void SyntheseGenerale::DoTirages(void)
 
     QString st_table = REF_BASE;
     cCompterGroupes *test = new cCompterGroupes(st_table);
-    connect(test,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),this,SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
+    connect(test,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),
+            this,SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              test, SLOT( slot_DecodeTirage( QModelIndex) ) );
 
     cCompterZoneElmts *test2 = new cCompterZoneElmts(st_table);
     connect(test2,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),pEcran->parent(),SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
 
+    cCompterCombinaisons *test3 = new cCompterCombinaisons(st_table);
+    connect(test3,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),pEcran->parent(),SLOT(slot_NouvelEnsemble(B_RequeteFromTbv)));
 
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );

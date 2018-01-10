@@ -27,11 +27,14 @@ public slots:
 
 private:
     static int total;
+    int last; // indice du dernier tirage
     QModelIndexList *lesSelections;
 
 
 private:
     QGridLayout *Compter(QString * pName, int zn);
+    QString RequetePourTrouverTotal_z1(QString st_baseUse,QString st_cr1, int dst);
+
 };
 
 #endif // CCOMPTERCOMBINAISONS_H

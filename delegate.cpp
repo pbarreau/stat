@@ -126,3 +126,26 @@ void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
     //QColor ItemForegroundColor = index.data(Qt::ForegroundRole).value<QColor>();
 
 }
+
+void Dlgt_Combi::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                       const QModelIndex &index) const
+{
+    int col = index.column();
+    QStyleOptionViewItem maModif(option);
+    QColor u[]= {QColor(201,230,255,255),QColor(200,170,100,140)};
+
+    if(col==2)
+    {
+        // regarder col 0 pour savoir
+        if(index.model()->index(index.row(),0).data().canConvert(QMetaType::Int))
+        {
+            int val =  index.model()->index(index.row(),0).data().toInt();
+
+            if (val)
+            {
+              painter->fillRect(option.rect, u[1]);
+            }
+        }
+    }
+    QItemDelegate::paint(painter, maModif, index);
+}

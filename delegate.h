@@ -12,4 +12,14 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const;
 };
+
+class Dlgt_Combi : public QItemDelegate
+{
+    Q_OBJECT
+public:
+    Dlgt_Combi(QWidget *parent = 0) : QItemDelegate(parent) {}
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,
+               const QModelIndex &index) const;
+};
+
 #endif // DELEGATE_H
