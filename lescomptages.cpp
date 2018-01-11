@@ -24,9 +24,28 @@ cLesComptages::cLesComptages(QString stLesTirages)
     cCompterCombinaisons *c2 = new cCompterCombinaisons(stLesTirages);
     cCompterGroupes *c3 = new cCompterGroupes(stLesTirages);
 
-    tab_Top->addTab(c1,"Zones");
-    tab_Top->addTab(c2,"Combinaisons");
-    tab_Top->addTab(c3,"Groupes");
+    QGridLayout **pConteneur = new QGridLayout *[3];
+    QWidget **pMonTmpWidget = new QWidget * [3];
+
+    for(int i = 0; i< 3;i++)
+    {
+        QGridLayout * grd_tmp = new QGridLayout;
+        pConteneur[i] = grd_tmp;
+
+        QWidget * wid_tmp = new QWidget;
+        pMonTmpWidget [i] = wid_tmp;
+    }
+    pConteneur[0]->addWidget(c1,1,0);
+    pConteneur[1]->addWidget(c2,1,0);
+    pConteneur[2]->addWidget(c3,1,0);
+
+    pMonTmpWidget[0]->setLayout(pConteneur[0]);
+    pMonTmpWidget[1]->setLayout(pConteneur[1]);
+    pMonTmpWidget[2]->setLayout(pConteneur[2]);
+
+    tab_Top->addTab(pMonTmpWidget[0],tr("Zones"));
+    tab_Top->addTab(pMonTmpWidget[1],tr("Combinaisons"));
+    tab_Top->addTab(pMonTmpWidget[2],tr("Groupes"));
 
     QGridLayout *tmp_layout = new QGridLayout;
     LabelClickable *selection = new LabelClickable;

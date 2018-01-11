@@ -25,7 +25,7 @@ cCompterCombinaisons::~cCompterCombinaisons()
 cCompterCombinaisons::cCompterCombinaisons(QString in):B_Comptage(&in)
 {
     total++;
-    QTabWidget *tab_Top = new QTabWidget;
+    QTabWidget *tab_Top = new QTabWidget(this);
     unNom = "'Compter Combinaisons'";
 
     QGridLayout *(cCompterCombinaisons::*ptrFunc[])(QString *, int) =
@@ -44,12 +44,14 @@ cCompterCombinaisons::cCompterCombinaisons(QString in):B_Comptage(&in)
         tab_Top->addTab(tmpw,tr((*name).toUtf8()));
     }
 
+#if 0
     QWidget * Resultats = new QWidget;
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(tab_Top);
     Resultats->setLayout(layout);
     Resultats->setWindowTitle("Test3-"+QString::number(total));
     Resultats->show();
+#endif
 }
 
 void cCompterCombinaisons::slot_ClicDeSelectionTableau(const QModelIndex &index)
@@ -241,6 +243,7 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QStr
 QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
+    (* pName) = names[zn].court;
 
     QTableView *qtv_tmp = new QTableView;
 

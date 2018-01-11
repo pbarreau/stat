@@ -2016,11 +2016,12 @@ QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
     QTabWidget *tabWidget = new QTabWidget;
     UnConteneurDessin *dessin;
 
+#ifdef CHARTWIDGET_H
     ChartWidget *test = new ChartWidget;
     //test->show();
 
     tabWidget->addTab(test,"Spirale");
-
+#endif
     dessin = TST_Graphe_1(pConf);
     tabWidget->addTab(dessin,"Tirages");
 

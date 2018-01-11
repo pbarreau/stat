@@ -443,10 +443,11 @@ void cCompterZoneElmts::slot_ChoosePriority(QAction *cmd)
     QString tbl = def[4];
 
     // faut il inserer une nouvelle ligne
+    /// TB_SE
     if(trv ==0)
     {
-        msg = "insert into " + tbl + " (id, val, p) values(NULL,"
-                +def[3]+","+ def[2]+");";
+        msg = "insert into " + tbl + " (id, val, p, f) values(NULL,"
+                +def[3]+","+ def[2]+",0);";
 
     }
     // Verifier si if faut supprimer la priorite

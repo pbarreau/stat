@@ -257,12 +257,13 @@ bool GererBase::f2_2()
 
     int nb_zone = ref.nb_zone;
 
+    /// creation de tables en fonction des choix possibles
     for(int tbl = 0; (tbl < maxTbl) && status; tbl++)
     {
         for(int zone=0;(zone<nb_zone)&& status;zone++)
         {
             st_table = st_refTbl[tbl] + "_z"+QString::number(zone+1);
-            st_sqldf =  "create table "+st_table+" (id Integer primary key, val int, p int);";
+            st_sqldf =  "create table "+st_table+" (id Integer primary key, val int, p int, f int);";
             status = q_create.exec(st_sqldf);
         }
 
