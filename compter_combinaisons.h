@@ -33,6 +33,8 @@ private:
 private:
     QGridLayout *Compter(QString * pName, int zn);
     QString RequetePourTrouverTotal_z1(QString st_baseUse,QString st_cr1, int dst);
+    void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
+    void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
 
 };
 

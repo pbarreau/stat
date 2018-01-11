@@ -63,7 +63,8 @@ SOURCES += main.cpp\
     compter_zones.cpp \
     compter_groupes.cpp \
     compter.cpp \
-    compter_combinaisons.cpp
+    compter_combinaisons.cpp \
+    lescomptages.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -92,7 +93,8 @@ HEADERS  += mainwindow.h \
     compter_groupes.h \
     compter_zones.h \
     compter.h \
-    compter_combinaisons.h
+    compter_combinaisons.h \
+    lescomptages.h
 
 
 FORMS    += mainwindow.ui \

@@ -22,20 +22,20 @@ public:
     ~cCompterGroupes();
 
 public slots:
-    //void slot_ClicDeSelectionTableau(const QModelIndex &index);
+    void slot_ClicDeSelectionTableau(const QModelIndex &index);
     void slot_RequeteFromSelection(const QModelIndex &index);
     void slot_DecodeTirage(const QModelIndex & index);
 
 
 private:
     static int total;
+    int demande;
     QStringList **maRef; //zn_filter
     QStandardItemModel ** p_qsim_3;
 
 
 private:
     QGridLayout *Compter(QString * pName, int zn);
-    //QGridLayout *Compter(QString * pName, int zn,int id);
     QTableView *CompterLigne(QString * pName, int zn);
     QTableView *CompterEnsemble(QString * pName, int zn);
     QStringList * CreateFilterForData(int zn);
@@ -43,6 +43,8 @@ private:
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
     void RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp);
     QString sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri, int zn);
+    void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
+
 
 
 };

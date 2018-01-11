@@ -123,7 +123,11 @@ void B_Comptage::RecupererConfiguration(void)
 
 }
 
-B_Comptage::B_Comptage(QString *in):db_data(*in)
+B_Comptage::B_Comptage(QString *in):B_Comptage(in,NULL)
+{
+}
+
+B_Comptage::B_Comptage(QString *in, QWidget *unParent=0):QWidget(unParent), db_data(*in)
 {
     nbZone = 0;
     db_jours = "";

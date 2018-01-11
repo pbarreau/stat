@@ -26,6 +26,7 @@
 #include "compter_groupes.h"
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
+#include "lescomptages.h"
 //
 #include "mainwindow.h"
 
@@ -547,6 +548,7 @@ void SyntheseGenerale::DoTirages(void)
 
     disposition->addWidget(uneReponse,0,0,Qt::AlignLeft|Qt::AlignTop);
 
+    /// ------------------------------
     QString st_table = REF_BASE;
     cCompterGroupes *test = new cCompterGroupes(st_table);
     connect(test,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),
@@ -554,7 +556,7 @@ void SyntheseGenerale::DoTirages(void)
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              test, SLOT( slot_DecodeTirage( QModelIndex) ) );
 
-    cCompterZoneElmts *test2 = new cCompterZoneElmts(st_table);
+    cCompterZoneElmts *test2 = new cCompterZoneElmts(st_table,NULL);
     connect(test2,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),
             pEcran->parent(),SLOT(slot_NOUVEAU_Ensemble(B_RequeteFromTbv)));
 
@@ -562,6 +564,9 @@ void SyntheseGenerale::DoTirages(void)
     connect(test3,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),
             pEcran->parent(),SLOT(slot_NOUVEAU_Ensemble(B_RequeteFromTbv)));
 
+    cLesComptages *tous = new cLesComptages(st_table);
+
+    /// -------------------------------------
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
 

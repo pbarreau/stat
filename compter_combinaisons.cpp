@@ -9,6 +9,7 @@
 #include <QGridLayout>
 #include <QSortFilterProxyModel>
 #include <QFormLayout>
+#include <QStackedWidget>
 
 #include "delegate.h"
 #include "filtrecombinaisons.h"
@@ -25,6 +26,7 @@ cCompterCombinaisons::cCompterCombinaisons(QString in):B_Comptage(&in)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget;
+    unNom = "'Compter Combinaisons'";
 
     QGridLayout *(cCompterCombinaisons::*ptrFunc[])(QString *, int) =
     {
@@ -46,17 +48,157 @@ cCompterCombinaisons::cCompterCombinaisons(QString in):B_Comptage(&in)
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(tab_Top);
     Resultats->setLayout(layout);
-    Resultats->setWindowTitle("Test3");
+    Resultats->setWindowTitle("Test3-"+QString::number(total));
     Resultats->show();
 }
 
 void cCompterCombinaisons::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
+    // L'onglet implique le tableau...
+    int tab_index = 0;
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
+    QItemSelectionModel *selectionModel = view->selectionModel();
+    tab_index = curOnglet->currentIndex();
+
+    // Colonne courante
+    int col = index.column();
+
+    /// click sur une colonne a ne pas regarder ?
+    if(col <=2 )
+    {
+        /// oui alors deselectionner l'element
+        selectionModel->select(index, QItemSelectionModel::Deselect);
+        return;
+    }
+    lesSelections[tab_index]=selectionModel->selectedIndexes();
+
+    LabelFromSelection(selectionModel,tab_index);
+    SqlFromSelection(selectionModel,tab_index);
+}
+
+void cCompterCombinaisons::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
+{
+    QString str_titre =  "c[";
+
+
+    QModelIndexList indexes = selectionModel->selectedIndexes();
+    int nb_items = indexes.size();
+    if(nb_items)
+    {
+        QModelIndex un_index;
+        int curCol = 0;
+        int occure = 0;
+
+        /// Parcourir les selections
+        foreach(un_index, indexes)
+        {
+            const QAbstractItemModel * pModel = un_index.model();
+            curCol = pModel->index(un_index.row(), un_index.column()).column();
+            occure = pModel->index(un_index.row(), 1).data().toInt();
+
+            // si on n'est pas sur la premiere colonne
+            if(curCol)
+            {
+                QVariant vCol;
+                QString headName;
+
+                vCol = pModel->headerData(curCol,Qt::Horizontal);
+                headName = vCol.toString();
+                str_titre = str_titre + "("+headName+"," + QString::number(occure) + "),";
+            }
+        }
+
+        // supression derniere ','
+        str_titre.remove(str_titre.length()-1,1);
+    }
+    // on marque la fin
+    str_titre = str_titre +"]";
+
+    // informer disponibilité
+    names[zn].selection = str_titre;
+    emit sig_TitleReady(str_titre);
+}
+
+void cCompterCombinaisons::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
+{
+    QModelIndexList indexes = selectionModel->selectedIndexes();
+
+    int nb_items = indexes.size();
+    if(nb_items)
+    {
+        QModelIndex un_index;
+        QStringList lstBoules;
+
+        QVariant vCol;
+        QString headName;
+        int curCol = 0;
+        int occure = 0;
+
+
+        /// Parcourir les selections
+        foreach(un_index, indexes)
+        {
+            const QAbstractItemModel * pModel = un_index.model();
+            curCol = pModel->index(un_index.row(), un_index.column()).column();
+            occure = pModel->index(un_index.row(), 1).data().toInt();
+
+            // si on n'est pas sur colonne interdite
+            if(curCol>2)
+            {
+                vCol = pModel->headerData(curCol,Qt::Horizontal);
+                headName = vCol.toString();
+
+                // Construire la liste des boules
+                lstBoules << QString::number(occure);
+            }
+        }
+
+        // Creation du critere de filtre
+        QString tab = "tbz.pid";
+        QString scritere = GEN_Where_3(1,tab,false,"=",lstBoules,false,"or");
+        if(headName != "T" and headName !="")
+        {
+            scritere = scritere + " and (J like '%" + headName +"%')";
+        }
+        sqlSelection[zn] = scritere;
+    }
 }
 
 void cCompterCombinaisons::slot_RequeteFromSelection(const QModelIndex &index)
 {
+    QString st_critere = "";
+    QString sqlReq ="";
+    QString st_titre ="";
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
 
+    ///parcourir tous les onglets
+    sqlReq = db_data;
+    int nb_item = curOnglet->count();
+    for(int onglet = 0; onglet<nb_item;onglet++)
+    {
+        if(sqlSelection[onglet]!=""){
+            st_critere = st_critere + "(/* DEBUT CRITERE z_"+
+                    QString::number(onglet+1)+ "*/" +
+                    sqlSelection[onglet]+ "/* FIN CRITERE z_"+
+                    QString::number(onglet+1)+ "*/)and";
+        }
+        st_titre = st_titre + names[onglet].selection;
+    }
+
+    /// suppression du dernier 'and'
+    st_critere.remove(st_critere.length()-3,3);
+
+    sqlReq = "/* CAS "+unNom+" */select tbz.* from ("
+            + sqlReq + ") as tbz where ("
+            + st_critere +"); /* FIN CAS "+unNom+" */";
+
+
+    // signaler que cet objet a construit la requete
+    a.db_data = sqlReq;
+    a.tb_data = st_titre;
+    emit sig_ComptageReady(a);
 }
 
 QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QString st_cr1, int dst)
@@ -141,6 +283,14 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
 
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    // simple click dans fenetre  pour selectionner boules
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
+    // Double click dans fenetre  pour creer requete
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
 
 #if 0
     qtv_tmp->setColumnWidth(1,30);

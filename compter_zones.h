@@ -7,6 +7,8 @@
 #include <QStringList>
 #include <QMenu>
 #include <QActionGroup>
+#include <QWidget>
+#include <QObject>
 
 #include "compter.h"
 #include "tirages.h"
@@ -16,7 +18,7 @@ class cCompterZoneElmts:public B_Comptage
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    cCompterZoneElmts(QString in);
+    cCompterZoneElmts(QString in, QWidget *LeParent);
     ~cCompterZoneElmts();
 
 public slots:

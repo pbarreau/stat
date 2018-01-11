@@ -21,7 +21,10 @@ cCompterGroupes::~cCompterGroupes()
 cCompterGroupes::cCompterGroupes(QString in):B_Comptage(&in)
 {
     total++;
-    QTabWidget *tab_Top = new QTabWidget;
+    QTabWidget *tab_Top = new QTabWidget(this);
+    unNom = "'Compter Groupes'";
+    demande = 0;
+
 
     int nb_zones = nbZone;
     maRef = new  QStringList* [nb_zones] ;
@@ -44,13 +47,14 @@ cCompterGroupes::cCompterGroupes(QString in):B_Comptage(&in)
         tab_Top->addTab(tmpw,tr((*name).toUtf8()));
     }
 
+#if 0
     QWidget * Resultats = new QWidget;
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(tab_Top);
     Resultats->setLayout(layout);
-    Resultats->setWindowTitle("Test");
+    Resultats->setWindowTitle("Test1-"+QString::number(total));
     Resultats->show();
-
+#endif
 }
 
 QGridLayout *cCompterGroupes::Compter(QString * pName, int zn)
@@ -340,73 +344,6 @@ void cCompterGroupes::slot_DecodeTirage(const QModelIndex & index)
     }
 }
 
-/// --------------------
-#if 0
-QTableView *cCompterGroupes::Compter(QString * pName, int zn,int id)
-{
-
-    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent());
-    QItemSelectionModel *selectionModel = view->selectionModel();
-    tab_index = curOnglet->currentIndex();
-
-
-}
-
-void cCompterGroupes::slot_ShowDetails(const QModelIndex & index)
-{
-    QTableView *view = qobject_cast<QTableView *>(sender());
-    static int sortir = 0;
-
-    int zn = 0; // A remplacer par detection du tableview ayant recut le click
-
-    // recuperer la ligne de la table
-    int lgn = index.model()->index(index.row(),0).data().toInt();
-
-    if(sortir != lgn)
-    {
-        sortir = lgn;
-    }
-    else
-    {
-        return;
-    }
-
-    QSqlQuery query;
-    QStandardItemModel *tmpStdItem = p_qsim_3;
-
-    int nbCol = codeSqlDeRegroupementSurZnId[zn][0].size();
-    bool status = true;
-    for(int i=0; (i< nbCol) && (status == true);i++)
-    {
-        // Creer Requete pour compter items
-        QString msg1 = codeSqlDeRegroupementSurZnId[zn][0].at(i);
-        QString sqlReq = "";
-        sqlReq = sql_ComptePourUnTirage(lgn,p_stRefTirages,msg1);
-
-#ifndef QT_NO_DEBUG
-        qDebug() << sqlReq;
-#endif
-
-        status = query.exec(sqlReq);
-
-        // Mise a jour de la tables des resultats
-        if(status)
-        {
-            query.first();
-            do
-            {
-                //int id = query.value(0).toInt();
-                int tot = query.value(1).toInt();
-
-                QStandardItem * item_1 = tmpStdItem->item(0,i);
-                item_1->setData(tot,Qt::DisplayRole);
-                tmpStdItem->setItem(0,i,item_1);
-            }while(query.next() && status);
-        }
-    }
-
-}
-#endif
 // Cette fonction retourne un pointeur sur un tableau de QStringList
 // Ce tableau comporte 2 elements
 // Element 0 liste des requetes construites
@@ -450,8 +387,10 @@ QStringList * cCompterGroupes::CreateFilterForData(int zn)
 }
 QString cCompterGroupes::TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn)
 {
+
     QString st_tmp =  CriteresCreer("=","or",zn);
     QString st_return =
+            "/*S"+QString::number(demande)+"a '"+st_cri+"'*/"+
             "select tb1.*, count(tb2.B) as N"+QString::number(col)+ " "+
             "from (" + st_tirages.remove(";")+
             ") as tb1 "
@@ -462,15 +401,18 @@ QString cCompterGroupes::TrouverTirages(int col, int nb, QString st_tirages, QSt
             "on "+
             "("
             +st_tmp+
-            ") group by tb1.id";
+            ") group by tb1.id"+
+            "/*S"+QString::number(demande)+"a*/";
 
-#ifndef QT_NO_DEBUG
-    qDebug() << st_return;
-#endif
-    st_return ="select * from("+
+
+    st_return =
+            "/*S"+QString::number(demande)+"b*/"+
+            "select * from("+
             st_return+
             ")as tb1 where(tb1.N"+QString::number(col)+ "="+
-            QString::number(nb)+");";
+            QString::number(nb)+")/*S"+QString::number(demande)+"b*/;";
+
+    demande++;
 
 #ifndef QT_NO_DEBUG
     qDebug() << st_return;
@@ -535,7 +477,6 @@ QString cCompterGroupes::CriteresAppliquer(QString st_tirages, QString st_cri, i
     return(st_return);
 }
 
-#if 0
 void cCompterGroupes::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
@@ -543,10 +484,104 @@ void cCompterGroupes::slot_ClicDeSelectionTableau(const QModelIndex &index)
     QTableView *view = qobject_cast<QTableView *>(sender());
     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
     QItemSelectionModel *selectionModel = view->selectionModel();
-
     tab_index = curOnglet->currentIndex();
-    lesSelections[tab_index]= selectionModel->selectedIndexes();
-    LabelFromSelection(selectionModel->selectedIndexes(),tab_index);
+
+    // Colonne courante
+    int col = index.column();
+
+    /// click sur la colonne boule id ?
+    if(!col)
+    {
+        /// oui alors deselectionner l'element
+        selectionModel->select(index, QItemSelectionModel::Deselect);
+        return;
+    }
+
+    lesSelections[tab_index]=selectionModel->selectedIndexes();
+    LabelFromSelection(selectionModel,tab_index);
+}
+
+void cCompterGroupes::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
+{
+    QModelIndexList indexes = selectionModel->selectedIndexes();
+
+    int nb_items = indexes.size();
+    if(nb_items)
+    {
+        QModelIndex un_index;
+        QStringList lstBoules;
+
+        QVariant vCol;
+        QString headName;
+        int curCol = 0;
+        int occure = 0;
+
+
+        /// Parcourir les selections
+        foreach(un_index, indexes)
+        {
+            const QAbstractItemModel * pModel = un_index.model();
+            curCol = pModel->index(un_index.row(), un_index.column()).column();
+            occure = pModel->index(un_index.row(), 0).data().toInt();
+
+            // si on n'est pas sur la premiere colonne
+            if(curCol)
+            {
+                vCol = pModel->headerData(curCol,Qt::Horizontal);
+                headName = vCol.toString();
+
+                // Construire la liste des boules
+                lstBoules << QString::number(occure);
+            }
+        }
+
+        // Creation du critere de filtre
+        int loop = limites[zn].len;
+        QString tab = "tbz."+names[zn].court;
+        QString scritere = GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
+        if(headName != "T" and headName !="")
+        {
+            scritere = scritere + " and (J like '%" + headName +"%')";
+        }
+        sqlSelection[zn] = scritere;
+    }
+}
+
+#if 0
+void cCompterGroupes::slot_RequeteFromSelection(const QModelIndex &index)
+{
+    QString st_critere = "";
+    QString sqlReq ="";
+    QString st_titre ="";
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
+
+    ///parcourir tous les onglets
+    sqlReq = db_data;
+    int nb_item = curOnglet->count();
+    for(int onglet = 0; onglet<nb_item;onglet++)
+    {
+        if(sqlSelection[onglet]!=""){
+            st_critere = st_critere + "(/* DEBUT CRITERE z_"+
+                    QString::number(onglet+1)+ "*/" +
+                    sqlSelection[onglet]+ "/* FIN CRITERE z_"+
+                    QString::number(onglet+1)+ "*/)and";
+        }
+        st_titre = st_titre + names[onglet].selection;
+    }
+
+    /// suppression du dernier 'and'
+    st_critere.remove(st_critere.length()-3,3);
+
+    sqlReq = "/* CAS "+unNom+" */select tbz.* from ("
+            + sqlReq + ") as tbz where ("
+            + st_critere +"); /* FIN CAS "+unNom+" */";
+
+
+    // signaler que cet objet a construit la requete
+    a.db_data = sqlReq;
+    a.tb_data = st_titre;
+    emit sig_ComptageReady(a);
 }
 #endif
 
@@ -594,6 +629,10 @@ void cCompterGroupes::slot_RequeteFromSelection(const QModelIndex &index)
     {
         st_titre.remove(st_titre.length()-1,1);
         // signaler que cet objet a construit la requete
+        sqlReq = "/*CAS "+unNom+" */"
+                + sqlReq +
+                "/*FIN CAS "+unNom+" */";
+
         a.db_data = sqlReq;
         a.tb_data = "g"+QString::number(total)+":"+st_titre;
         emit sig_ComptageReady(a);

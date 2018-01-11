@@ -26,10 +26,11 @@ cCompterZoneElmts::~cCompterZoneElmts()
     total --;
 }
 
-cCompterZoneElmts::cCompterZoneElmts(QString in):B_Comptage(&in)
+cCompterZoneElmts::cCompterZoneElmts(QString in, QWidget *LeParent):B_Comptage(&in,LeParent)
 {
     total++;
-    QTabWidget *tab_Top = new QTabWidget;
+    QTabWidget *tab_Top = new QTabWidget(this);
+    unNom = "'Compter Zones'";
 
     int nb_zones = nbZone;
 
@@ -49,12 +50,15 @@ cCompterZoneElmts::cCompterZoneElmts(QString in):B_Comptage(&in)
         tab_Top->addTab(tmpw,tr((*name).toUtf8()));
     }
 
+    tab_Top->setWindowTitle("Test2-"+QString::number(total));
+#if 0
     QWidget * Resultats = new QWidget;
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(tab_Top);
     Resultats->setLayout(layout);
-    Resultats->setWindowTitle("Test2");
+    Resultats->setWindowTitle("Test2-"+QString::number(total));
     Resultats->show();
+#endif
 }
 
 
@@ -134,7 +138,7 @@ void cCompterZoneElmts::slot_ClicDeSelectionTableau(const QModelIndex &index)
         return;
     }
 
-    lesSelections[tab_index]= selectionModel->selectedIndexes();
+    //lesSelections[tab_index]= selectionModel->selectedIndexes();
     LabelFromSelection(selectionModel,tab_index);
     SqlFromSelection(selectionModel,tab_index);
 }
@@ -199,10 +203,10 @@ void cCompterZoneElmts::slot_RequeteFromSelection(const QModelIndex &index)
     for(int onglet = 0; onglet<nb_item;onglet++)
     {
         if(sqlSelection[onglet]!=""){
-        st_critere = st_critere + "(/* DEBUT CRITERE z_"+
-                QString::number(onglet+1)+ "*/" +
-                sqlSelection[onglet]+ "/* FIN CRITERE z_"+
-                QString::number(onglet+1)+ "*/)and";
+            st_critere = st_critere + "(/* DEBUT CRITERE z_"+
+                    QString::number(onglet+1)+ "*/" +
+                    sqlSelection[onglet]+ "/* FIN CRITERE z_"+
+                    QString::number(onglet+1)+ "*/)and";
         }
         st_titre = st_titre + names[onglet].selection;
     }
@@ -210,9 +214,9 @@ void cCompterZoneElmts::slot_RequeteFromSelection(const QModelIndex &index)
     /// suppression du dernier 'and'
     st_critere.remove(st_critere.length()-3,3);
 
-    sqlReq = "/* CAS Zone */select tbz.* from ("
+    sqlReq = "/* CAS "+unNom+" */select tbz.* from ("
             + sqlReq + ") as tbz where ("
-            + st_critere +"); /* FIN CAS Zone */";
+            + st_critere +"); /* FIN CAS "+unNom+" */";
 
 
     // signaler que cet objet a construit la requete
@@ -221,56 +225,6 @@ void cCompterZoneElmts::slot_RequeteFromSelection(const QModelIndex &index)
     emit sig_ComptageReady(a);
 }
 
-#if 0
-void toto ()
-{
-    QStringList lstBoules;
-    QString scritere = "";
-    QString headName = "";
-    QModelIndex un_index;
-    bool putIndice = true;
-
-    // Analyse de chaque indexe
-    foreach(un_index, indexes)
-    {
-        const QAbstractItemModel * pModel = un_index.model();
-        int col = un_index.column();
-        int lgn = un_index.row();
-        int use = un_index.model()->index(lgn,0).data().toInt();
-        int val = un_index.data().toInt();
-        QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-        headName = vCol.toString();
-
-        if(niveau>=2)
-        {
-            putIndice = false;
-        }
-
-        if(niveau==3)
-        {
-            use = lgn;
-        }
-
-        // Construire la liste des boules
-        lstBoules << QString::number(use);
-    }
-
-    // Creation du critere de filtre
-    QString tab = rtab + "." + tmpTab;
-    scritere = GEN_Where_3(maxElem,tab,putIndice,"=",lstBoules,false,"or");
-    if(headName != "T" and headName !="")
-    {
-        scritere = scritere + " and (J like '%" + headName +"%')";
-    }
-
-
-    msg = "/* DEBUT niveau " + sn
-            + " */ select " + rtab + ".* from ("
-            + sin + ") as " + rtab + " where ("
-            + scritere +"); /* FIN niveau " + sn + " */";
-
-}
-#endif
 
 /// Requete permettant de remplir le tableau
 ///
