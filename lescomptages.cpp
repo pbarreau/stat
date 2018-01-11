@@ -23,7 +23,7 @@ void cLesComptages::slot_changerTitreZone(QString le_titre)
 
     cur_titre = "Z:"+titre[0]+"C:"+titre[1]+"G:"+titre[2];
 #endif
-    selection[0].setText(le_titre);
+    selection[0].setText("Z:"+le_titre);
 }
 
 cLesComptages::cLesComptages(QString stLesTirages)
@@ -66,7 +66,7 @@ cLesComptages::cLesComptages(QString stLesTirages)
     for(i; i< 3; i++)
     {
       selection[i].setText(clef[i]+"aucun");
-      tmp_layout->addWidget(selection,i,0);
+      tmp_layout->addWidget(&selection[i],i,0);
     }
     tmp_layout->addWidget(tab_Top,i,0);
 
