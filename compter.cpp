@@ -311,7 +311,20 @@ void B_Comptage::LabelFromSelection(const QItemSelectionModel *selectionModel, i
     // on marque la fin
     str_titre = str_titre +"]";
 
-    // informer disponibilité
+    // On sauvegarde la selection en cours
     names[zn].selection = str_titre;
+
+    // on construit le nouveau titre
+    str_titre = "";
+    for(int i=0; i< nbZone; i++)
+    {
+        if(names[i].selection != ""){
+            str_titre = str_titre + names[i].selection+",";
+        }
+    }
+    // retirer la derniere ','
+    str_titre.remove(str_titre.length()-1,1);
+
+    // informer disponibilité
     emit sig_TitleReady(str_titre);
 }

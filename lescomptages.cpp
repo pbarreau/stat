@@ -5,7 +5,7 @@
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
 #include "labelclickable.h"
-#include "SyntheseGenerale.h"
+//#include "SyntheseGenerale.h"
 
 #include "lescomptages.h"
 int cLesComptages::total = 0;
@@ -15,12 +15,25 @@ cLesComptages::~cLesComptages()
     total --;
 }
 
+void cLesComptages::slot_changerTitreZone(QString le_titre)
+{
+#if 0
+    titre[0] = le_titre;
+    QString cur_titre = "";
+
+    cur_titre = "Z:"+titre[0]+"C:"+titre[1]+"G:"+titre[2];
+#endif
+    selection[0].setText(le_titre);
+}
+
 cLesComptages::cLesComptages(QString stLesTirages)
 {
     QWidget * Resultats = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
 
     cCompterZoneElmts *c1 = new cCompterZoneElmts(stLesTirages, Resultats);
+    connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
+
     cCompterCombinaisons *c2 = new cCompterCombinaisons(stLesTirages);
     cCompterGroupes *c3 = new cCompterGroupes(stLesTirages);
 
@@ -48,22 +61,21 @@ cLesComptages::cLesComptages(QString stLesTirages)
     tab_Top->addTab(pMonTmpWidget[2],tr("Groupes"));
 
     QGridLayout *tmp_layout = new QGridLayout;
-    LabelClickable *selection = new LabelClickable;
-    selection->setText(CTXT_SELECTION);
+    QString clef[]={"Z:","C:","G:"};
+    int i = 0;
+    for(i; i< 3; i++)
+    {
+      selection[i].setText(clef[i]+"aucun");
+      tmp_layout->addWidget(selection,i,0);
+    }
+    tmp_layout->addWidget(tab_Top,i,0);
 
 #if 0
     connect( selection, SIGNAL( clicked(QString)) ,
              this, SLOT( slot_RazSelection(QString) ) );
 #endif
 
-    tmp_layout->addWidget(selection,0,0);
-    tmp_layout->addWidget(tab_Top,1,0);
-    //this->addLayout(tmp_layout,0,0,Qt::AlignLeft|Qt::AlignTop);
-
     /// ----------------
-    /// ----------------
-    //QGridLayout *layout = new QGridLayout();
-    //layout->addWidget(tab_Top);
     Resultats->setLayout(tmp_layout);
     Resultats->setWindowTitle("ALL");
     Resultats->show();

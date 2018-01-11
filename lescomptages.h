@@ -4,6 +4,9 @@
 #include <QString>
 #include <QGridLayout>
 
+#include "labelclickable.h"
+
+#define CTXT_LABEL  "selection Z:aucun - C:aucun - G:aucun"
 
 class cLesComptages:public QGridLayout
 {
@@ -14,8 +17,14 @@ public:
     cLesComptages(QString stLesTirages);
     ~cLesComptages();
 
+public slots:
+    void slot_changerTitreZone(QString le_titre);
+
 private:
     static int total;
+    LabelClickable selection[3];
+    QString titre[3];
+    QString sql[3];
 };
 
 #endif // LESCOMPTAGES_H
