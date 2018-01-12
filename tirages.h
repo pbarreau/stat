@@ -14,6 +14,7 @@
 #include <QTabWidget>
 #include <QMdiArea>
 
+#include "cnp.h"
 #include "labelclickable.h"
 
 #define CHauteur1   225
@@ -206,9 +207,13 @@ public:
     GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf);
     ~GererBase();
 
+
 public:
     QVariant data(const QModelIndex &index, int role) const;
     bool CreerBasePourEtude(bool action, NE_FDJ::E_typeJeux type);
+    bool OPtimiseAccesBase(void);
+    bool CreerTableCnp();
+
     bool CreationTablesDeLaBDD(tirages *pRref);
     bool CTB_Table1(QString nomTable, tirages *pRef);
     bool CreerTableDistriCombi(void);
@@ -255,6 +260,7 @@ public:
 
 public slots:
     void slot_DetailsCombinaison(const QModelIndex & index) ;
+    void slot_UseCnpLine(const sigData &d, const QString &p);
 
 private:
     void combirec(int k, QStringList &l, const QString &s, QStringList &ret);

@@ -2,6 +2,9 @@
 #include <QDebug>
 #endif
 
+#include <QObject>
+#include <QStringList>
+
 #include "cnp.h"
 
 Cnp::Cnp(int n, int p):n(n),p(p)
@@ -10,6 +13,7 @@ Cnp::Cnp(int n, int p):n(n),p(p)
     int cnp_v2 = CalculerCnp_v2();
 
     cnp = cnp_v1;
+    pos = 0;
     tab = NULL;
 }
 
@@ -28,15 +32,24 @@ int Cnp::GetCnp(void)
     return cnp;
 }
 
-void Cnp::ShowPascal(void)
+bool Cnp::CalculerPascal(void)
 {
+    bool isOK = false;
+
     if(tab==NULL){
-        FaireTableauPascal();
+        isOK = FaireTableauPascal();
     }
-    MontrerTableau_v1();
+
+    return isOK;
 }
 
-int * Cnp::ShowPascalLine(int lineId)
+void Cnp::ShowPascal(void)
+{
+    if (CalculerPascal())
+        MontrerTableau_v1();
+}
+
+int * Cnp::GetPascalLine(int lineId)
 {
     int *ptr = NULL;
 
@@ -55,6 +68,7 @@ int * Cnp::ShowPascalLine(int lineId)
     return ptr;
 }
 
+
 void Cnp::MontrerTableau_v1(void)
 {
     if(tab==NULL) return;
@@ -71,17 +85,28 @@ void Cnp::MontrerTableau_v1(void)
 #endif
 }
 
-void Cnp::FaireTableauPascal(void)
+bool Cnp::FaireTableauPascal(void)
 {
+    bool isOk = false;
     tab = new int *[cnp]; /// tableau de pointeur d'entiers de Cnp lignes
 
-    /// initialisation recursion
-    int *L = new int [p];
-    int *t = new int [n];
-    for(int i =0; i<n;i++) t[i]=i;
+    /// Allocation memoire OK ?
+    if(tab != NULL){
+        /// initialisation recursion
+        int *L = new int [p];
+        int *t = new int [n];
 
-    /// demarrage
-    CreerLigneTrianglePascal(0,L,t,n);
+        if(t != NULL)
+            for(int i =0; i<n;i++) t[i]=i;
+
+        /// demarrage
+        if((L != NULL) && (t !=NULL)){
+            CreerLigneTrianglePascal(0,L,t,n);
+            isOk = true;
+        }
+    }
+
+    return isOk;
 }
 
 void Cnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
@@ -95,7 +120,18 @@ void Cnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
 
     if(k==p){
         tab[pos]=new int [p];
-        for(i=0;i<p;i++) tab[pos][i]=L[i]+1;
+        QString laLigne = "";
+        for(i=0;i<p;i++){
+            tab[pos][i]=L[i]+1;
+
+            laLigne = laLigne + QString::number(tab[pos][i]);
+            if(i<(p-1)) laLigne = laLigne +",";
+        }
+        d.val_cnp = cnp;
+        d.val_n =n;
+        d.val_p = p;
+        d.val_pos = pos;
+        emit sig_LineReady(d,laLigne);
         pos++;
         return;
     }
@@ -264,3 +300,56 @@ int Cnp::CalculerCnp_v2(void)
 ///     }
 /// }
 /// /// -------------------------------------------------------------
+/// /* comb2.c
+///  *
+///  * Recherche de toutes les combinaisons de p Ã©lÃ©ments de
+///  * l'ensemble {1, 2, 3, 4, 5, ..., n}
+///  *
+///  * 01/05/2005 Jean-Paul Davalan <jpdvl@wanadoo.fr>
+///  *
+///  * compilation :  gcc -O2 -o comb2 comb2.c
+///  * usage : comb2 n p
+///  *
+///  */
+/// #include <stdio.h>
+/// #include <stdlib.h>
+/// #include <string.h>
+///
+/// void combinaisons(int n, int p, int k, int *L, int *t, int r) {
+/// 	int i, j, j1, t2[n];
+/// 	if(r<p-k) return;
+/// 	if(k==p) {
+/// 		for(i=0;i<p;i++) printf("%d ", L[i] + 1);
+/// 		printf("\n");
+/// 		return;
+/// 	}
+/// 	for(i=0;i<r;i++) {
+/// 		L[k] = t[i];
+/// 		for(j=i+1, j1=0;j<r;j++, j1++) {
+/// 			t2[j1] = t[j];
+/// 		}
+/// 		combinaisons(n, p, k+1, L, t2, j1);
+/// 	}
+/// }
+///
+/// void effectue(int n, int p) {
+///         int L[p], t[n], i;
+///         for(i=0;i<n;i++)
+///                 t[i] = i;
+///         combinaisons(n, p, 0, L, t, n);
+/// }
+///
+/// int main(int argc, char *argv[]) {
+///  int n, p;
+///         if(argc<3) {
+///                 printf("usage : %s n p\n",argv[0]);
+///                 exit(1);
+///         }
+///         n = atoi(argv[1]); // lecture des paramÃ¨tres
+///         p = atoi(argv[2]);
+///         if(n<0 || p<0 || p>n) return 0;
+///         effectue(n, p);
+///
+///         return 0;
+/// }
+///

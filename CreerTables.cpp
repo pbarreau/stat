@@ -6,6 +6,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 
+#include "cnp.h"
 #include "gererbase.h"
 
 extern QString ContruireRechercheCombi(int i,int zn,stTiragesDef *pRef);
@@ -26,12 +27,30 @@ bool GererBase::CreerTableDistriCombi(void)
     return ret;
 }
 
+bool GererBase::CreerTableCnp()
+{
+    bool isOk=false;
+
+    Cnp *a = new Cnp(20,5);
+    int b = a->GetCnp();
+
+    connect(a,SIGNAL(sig_LineReady(sigData,QString)),
+            this,SLOT(slot_UseCnpLine(sigData,QString)));
+
+    /// lancer la recherche des coefficient
+    isOk=a->CalculerPascal();
+
+}
+
 bool GererBase::CreationTablesDeLaBDD_v2()
 {
     bool status = true;
 
+    status = CreerTableCnp();
+
     // Creation de la table pour recuperer les tirages
-    status = f1();
+    if (status)
+        status = f1();
 
     // Creation Table des noms des zones et abregees
     if(status)
@@ -126,8 +145,8 @@ bool GererBase::f1_1()
     query.finish();
     return status;
 #if 0
-        requete = "insert into "+st_table+" (id,name,abv) values "+
-                "(NULL,'Boules','b'),(NULL,'Etoiles','e');";
+    requete = "insert into "+st_table+" (id,name,abv) values "+
+            "(NULL,'Boules','b'),(NULL,'Etoiles','e');";
 #endif
 }
 

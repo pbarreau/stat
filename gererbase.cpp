@@ -4,6 +4,8 @@
 
 #include <QApplication>
 #include <math.h>
+#include <iomanip>
+#include <iostream>
 
 #include <QFile>
 #include <QSqlTableModel>
@@ -14,8 +16,10 @@
 #include <QTableView>
 #include <QTableWidget>
 
+#include "cnp.h"
 #include "tirages.h"
 #include "car.h"
+#include "SyntheseDetails.h"
 
 #if 0
 GererBase::GererBase(QObject *parent) :
@@ -23,6 +27,28 @@ GererBase::GererBase(QObject *parent) :
 {
 }
 #endif
+
+bool GererBase::OPtimiseAccesBase(void)
+{
+    bool isOk = true;
+    QSqlQuery query;
+
+    QString stRequete[]={
+        "PRAGMA synchronous = OFF",
+        "PRAGMA page_size = 4096",
+        "PRAGMA cache_size = 16384",
+        "PRAGMA temp_store = MEMORY",
+        "PRAGMA journal_mode = OFF",
+        "PRAGMA locking_mode = EXCLUSIVE"
+    };
+    int items = sizeof(stRequete)/sizeof(QString);
+
+    for(int i=0; (i<items)&& isOk ;i++){
+        isOk = query.exec(stRequete[i]);
+    }
+
+    return isOk;
+}
 
 GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
 //GererBase::GererBase(bool enMemoire, bool autoLoad, NE_FDJ::E_typeJeux leJeu, stTiragesDef *pConf)
@@ -35,6 +61,9 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
     // Creation de la base
     if(CreerBasePourEtude(enMemoire,leJeu)==true)
     {
+        /// Test Optimisation acces de la base
+        OPtimiseAccesBase();
+
         // Creeer la configuration de lecture
         typeTirages = new tirages(leJeu);
 
@@ -42,9 +71,6 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
         typeTirages->getConfigFor(pConf);
         typeTirages->ListeCombinaison(pConf);
 
-        int cnpValue = typeTirages->Cnp_v2(15,5);
-        QStringList maListe; ///= new QStringList [cnpValue];
-        typeTirages->ConstruireListeCnp(15,5,maListe);
 
         /// Test ok
         ///
@@ -63,6 +89,75 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
         retErr->status = false;
         retErr->msg = "CreerBasePourEtude";
     }
+}
+void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
+{
+#ifndef QT_NO_DEBUG
+    static int i = 0;
+    QString stNum = QString::number(i);
+
+    stNum.rightJustified(6,'0',true);
+
+    qDebug()<<"C("<<QString::number(d.val_n)<<","
+           <<QString::number(d.val_p)<<"):"
+          << stNum <<"<->"<<QString::number(d.val_pos)<<" sur "<<d.val_cnp
+          <<" -> "<<p;
+    i++;
+#endif
+
+    static QString colNames = "";
+    QSqlQuery query;
+    QString msg = "";
+    static bool isOk = true;
+
+    /// Creer la table
+    if( (d.val_pos == 0) && (isOk == true))
+    {
+        msg = "create table if not exists Cnp_"+QString::number(d.val_n)
+                + "_" + QString::number(d.val_p)+"(id integer primary key, ";
+        int loop = 5;
+        QStringList elem;
+        elem << "int";
+        colNames = GEN_Where_3(loop,"b",true," ",elem,false,",");
+        // retirer premiere paranthense
+        colNames.remove(0,1);
+        msg = msg+colNames+";";
+
+        /// debut de transaction
+        isOk = QSqlDatabase::database().transaction();
+
+        isOk = query.exec(msg);
+        colNames.remove("int");
+
+#ifndef QT_NO_DEBUG
+        qDebug()<< msg;
+#endif
+    }
+
+
+    /// Rajouter chaque ligne
+    msg = "insert into Cnp_"+QString::number(d.val_n)
+            + "_" + QString::number(d.val_p)
+            +"(id,"+colNames
+            +"values(NULL,"+p+");";
+    isOk = query.exec(msg);
+
+
+    /// derniere ligne effectuer la transaction globale
+    if((d.val_pos == (d.val_cnp-1)) && (isOk == true))
+    {
+        isOk = QSqlDatabase::database().commit();
+    }
+
+    if(isOk == false)
+    {
+#ifndef QT_NO_DEBUG
+        qDebug()<< "SQL ERROR:" << query.executedQuery()  << "\n";
+        qDebug()<< query.lastError().text();
+        qDebug()<< msg;
+#endif
+    }
+
 }
 
 GererBase::~GererBase(void)
