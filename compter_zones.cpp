@@ -390,9 +390,10 @@ QMenu *cCompterZoneElmts::ContruireMenu(QString tbl, int val)
     QMenu *menu =new QMenu(msg2, this);
     QActionGroup *grpPri = new  QActionGroup(menu);
 
+    int col = 2;
     int niveau = 0;
     bool existe = false;
-    existe = VerifierValeur(val,&niveau, tbl);
+    existe = VerifierValeur(val, tbl,col,&niveau);
 
 
 
@@ -488,48 +489,3 @@ void cCompterZoneElmts::slot_ChoosePriority(QAction *cmd)
     cmd->setChecked(true);
 }
 
-
-/// Cette fonction cherche dans la table designée si une valeur est presente
-/// auquel cas le champs priorité est aussi retourné
-/// item : valeur a rechercher
-/// *lev : valeur de priorité trouvé
-/// table : nom de la table dans laquelle il faut chercher
-bool cCompterZoneElmts::VerifierValeur(int item,int *lev, QString table)
-{
-    bool ret = false;
-    QSqlQuery query ;
-    QString msg = "";
-
-    msg = "select * from " + table + " " +
-            "where (val = "+QString::number(item)+");";
-    ret =  query.exec(msg);
-
-    if(!ret)
-    {
-#ifndef QT_NO_DEBUG
-        qDebug() << "select: " <<table<<"->"<< query.lastError();
-        qDebug() << "Bad code:\n"<<msg<<"\n-------";
-#endif
-    }
-    else
-    {
-#ifndef QT_NO_DEBUG
-        qDebug() << "Fn VerifierValeur:\n"<<msg<<"\n-------";
-#endif
-
-        // A t on un resultat
-        ret = query.first();
-        if(query.isValid())
-        {
-            int val = query.value(2).toInt();
-
-            if(val >0 && val <=5)
-            {
-                *lev = val;
-            }
-
-        }
-    }
-
-    return ret;
-}

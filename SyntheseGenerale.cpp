@@ -1153,9 +1153,10 @@ QMenu *SyntheseGenerale::ContruireMenu(QString tbl, int val)
     //menu->setTitle(msg2);
     QActionGroup *grpPri = new  QActionGroup(menu);
 
+    int col = 2;
     int niveau = 0;
     bool existe = false;
-    existe = VerifierValeur(val,&niveau, tbl);
+    existe = VerifierValeur(val, tbl, col, &niveau);
 
 
 

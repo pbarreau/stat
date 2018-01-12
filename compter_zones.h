@@ -39,9 +39,9 @@ private:
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
     QString PBAR_ReqComptage(QString ReqTirages, int zn,int distance);
     QMenu *ContruireMenu(QString tbl, int val);
-    bool VerifierValeur(int item,int *lev, QString table);
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
 #if 0
+    bool VerifierValeur(int item, QString table,int idColValue,int *lev);
     QString GEN_Where_3(int loop,
                         QString tb1,
                         bool inc1,

@@ -344,3 +344,50 @@ void B_Comptage::LabelFromSelection(const QItemSelectionModel *selectionModel, i
     // informer disponibilité
     emit sig_TitleReady(str_titre);
 }
+
+
+/// Cette fonction cherche dans la table designée si une valeur est presente
+/// auquel cas le champs situe a idColValue est aussi retourné
+/// item : valeur a rechercher
+/// table : nom de la table dans laquelle il faut chercher
+/// idColValue colonne de la table ou se trouve la valeur
+/// *lev : valeur de priorité trouvé
+bool B_Comptage::VerifierValeur(int item,QString table,int idColValue,int *lev)
+{
+    bool ret = false;
+    QSqlQuery query ;
+    QString msg = "";
+
+    msg = "select * from " + table + " " +
+            "where (val = "+QString::number(item)+");";
+    ret =  query.exec(msg);
+
+    if(!ret)
+    {
+#ifndef QT_NO_DEBUG
+        qDebug() << "select: " <<table<<"->"<< query.lastError();
+        qDebug() << "Bad code:\n"<<msg<<"\n-------";
+#endif
+    }
+    else
+    {
+#ifndef QT_NO_DEBUG
+        qDebug() << "Fn VerifierValeur:\n"<<msg<<"\n-------";
+#endif
+
+        // A t on un resultat
+        ret = query.first();
+        if(query.isValid())
+        {
+            int val = query.value(idColValue).toInt();
+
+            if(val >0 && val <=5)
+            {
+                *lev = val;
+            }
+
+        }
+    }
+
+    return ret;
+}

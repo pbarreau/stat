@@ -43,6 +43,8 @@ protected:
                         QStringList &tb2,bool inc2,QString op2
                         );
     void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
+    bool VerifierValeur(int item, QString table,int idColValue,int *lev);
+
 
 private:
     void RecupererConfiguration(void);

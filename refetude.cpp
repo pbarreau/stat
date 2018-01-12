@@ -391,28 +391,42 @@ void RefEtude::slot_ccmr_tbForBaseEcart(QPoint pos)
         QMenu *MonMenu = new QMenu(p_affiche);
         QMenu *subMenu= ContruireMenu(tbl,val);
         MonMenu->addMenu(subMenu);
+
+        QCheckBox *chkb_1 = new QCheckBox;
+        chkb_1->setText("Filtrer");
+        chkb_1->setChecked(false);
+        QWidgetAction *chk_act_1 = new QWidgetAction(MonMenu);
+        chk_act_1->setDefaultWidget(chkb_1);
+        MonMenu->addAction(chk_act_1);
+
         MonMenu->exec(view->viewport()->mapToGlobal(pos));
     }
 }
 
+/// cette fonction construit un menu
+/// et montre quel item mettre en valeur
+/// en interrogeant la table d'une base de donnees
 QMenu *RefEtude::ContruireMenu(QString tbl, int val)
 {
     QString msg2 = "Priorite";
     QMenu *menu =new QMenu(msg2, p_affiche);
-    //menu->setWindowFlags(Qt::Tool);
-    //menu->setTitle(msg2);
     QActionGroup *grpPri = new  QActionGroup(menu);
 
+    int col = 2;
     int niveau = 0;
     bool existe = false;
-    existe = VerifierValeur(val,&niveau, tbl);
+    existe = VerifierValeur(val, tbl,col,&niveau);
 
 
 
+    /// Nombre d'item a mettre
     for(int i =1; i<=5;i++)
     {
         QString name = QString::number(i);
         QAction *radio = new QAction(name,grpPri);
+
+        /// contruction d'un message a decoder
+        /// dans le slot de reception
         name = QString::number(existe)+
                 ":"+QString::number(niveau)+
                 ":"+name+":"+QString::number(val)+
@@ -422,6 +436,7 @@ QMenu *RefEtude::ContruireMenu(QString tbl, int val)
         menu->addAction(radio);
     }
 
+    /// la variable contient la valeur recuperee de la base
     QAction *uneAction;
     if(niveau)
     {
@@ -509,7 +524,7 @@ void RefEtude::slot_ChoosePriority(QAction *cmd)
 /// item : valeur a rechercher
 /// *lev : valeur de priorité trouvé
 /// table : nom de la table dans laquelle il faut chercher
-bool VerifierValeur(int item,int *lev, QString table)
+bool VerifierValeur(int item, QString table,int idColValue,int *lev)
 {
     bool ret = false;
     QSqlQuery query ;
@@ -536,7 +551,7 @@ bool VerifierValeur(int item,int *lev, QString table)
         ret = query.first();
         if(query.isValid())
         {
-            int val = query.value(2).toInt();
+            int val = query.value(idColValue).toInt();
 
             if(val >0 && val <=5)
             {
