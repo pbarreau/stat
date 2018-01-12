@@ -74,6 +74,7 @@ private:
     void CouvMontrerProbable_v3(int i,double Emg, QStandardItemModel *dest);
 
     QMenu *ContruireMenu(QString tbl, int val);
+    void CompleteMenu(QMenu *LeMenu, QString tbl, int clef);
 
 
 public slots:
@@ -88,6 +89,11 @@ public slots:
     void slot_ccmr_tbForBaseEcart(QPoint pos);
     void slot_SetPriority(int val);
     void slot_ChoosePriority(QAction *cmd);
+#ifdef CHKB_VERSION_1
+    void slot_wdaFilter(int val);
+#else
+    void slot_wdaFilter(bool val);
+#endif
 
 private:
     static QStandardItemModel **p_simResu;

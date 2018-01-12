@@ -391,16 +391,70 @@ void RefEtude::slot_ccmr_tbForBaseEcart(QPoint pos)
         QMenu *MonMenu = new QMenu(p_affiche);
         QMenu *subMenu= ContruireMenu(tbl,val);
         MonMenu->addMenu(subMenu);
+        CompleteMenu(MonMenu, tbl, val);
 
-        QCheckBox *chkb_1 = new QCheckBox;
-        chkb_1->setText("Filtrer");
-        chkb_1->setChecked(false);
-        QWidgetAction *chk_act_1 = new QWidgetAction(MonMenu);
-        chk_act_1->setDefaultWidget(chkb_1);
-        MonMenu->addAction(chk_act_1);
 
         MonMenu->exec(view->viewport()->mapToGlobal(pos));
     }
+}
+
+#ifdef CHKB_VERSION_1
+void RefEtude::slot_wdaFilter(int val)
+{
+    //QWidgetAction *wdaFrom = qobject_cast<QWidgetAction *>(sender());
+    QCheckBox *chkFrom = qobject_cast<QCheckBox *>(sender());
+
+#ifndef QT_NO_DEBUG
+    //qDebug() << "Boule :("<< wdaFrom->objectName()<<") check:"<< wdaFrom->isChecked();
+    qDebug() << "Boule :("<< chkFrom->objectName()<<") check:"<< chkFrom->isChecked();
+#endif
+}
+#else
+/// https://openclassrooms.com/forum/sujet/qt-inclure-check-box-dans-un-menu-deroulant-67907
+void RefEtude::slot_wdaFilter(bool val)
+{
+    QAction *chkFrom = qobject_cast<QAction *>(sender());
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "Boule :("<< chkFrom->objectName()<<") check:"<< val;
+#endif
+}
+#endif
+
+void RefEtude::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
+{
+    int col = 3;
+    int niveau = 0;
+    bool existe = false;
+    existe = VerifierValeur(clef, tbl,col,&niveau);
+
+#ifdef CHKB_VERSION_1
+    QCheckBox *chkb_1 = new QCheckBox;
+    chkb_1->setText("Filtrer");
+    QWidgetAction *chk_act_1 = new QWidgetAction(LeMenu);
+    chk_act_1->setDefaultWidget(chkb_1);
+    connect(chkb_1,SIGNAL(stateChanged(int)),this,SLOT(slot_wdaFilter(int)));
+
+    if((!existe) || (!niveau))
+    {
+        chkb_1->setChecked(false);
+    }
+    else
+    {
+        chkb_1->setChecked(true);
+    }
+
+    LeMenu->addAction(chk_act_1);
+#else
+    QAction *filtrer = LeMenu->addAction("Filtrer");
+    filtrer->setCheckable(true);
+    filtrer->setChecked(true);
+    connect(filtrer,SIGNAL(triggered(bool)),
+            this,SLOT(slot_wdaFilter(bool)));
+#endif
+
+
+
 }
 
 /// cette fonction construit un menu
