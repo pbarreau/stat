@@ -134,6 +134,8 @@ public slots:
     void slot_ccmr_tbForBaseEcart(QPoint pos);
     QMenu *ContruireMenu(QString tbl, int val);
     void slot_ChoosePriority(QAction *cmd);
+    void slot_wdaFilter(int val);
+
 
 
 
@@ -159,6 +161,7 @@ private:
     QGridLayout *MonLayout_TabAuguste(int col, int lgn);
 
     QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);
+    void CompleteMenu(QMenu *LeMenu,QString tbl, int clef);
 
     //QString SD_Tb2(QStringList boules, QString sqlTblRef, int dst);
 

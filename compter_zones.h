@@ -26,6 +26,8 @@ public slots:
     void slot_RequeteFromSelection(const QModelIndex &index);
     void slot_ccmr_tbForBaseEcart(QPoint pos);
     void slot_ChoosePriority(QAction *cmd);
+    void slot_wdaFilter(bool val);
+
 
 
 
@@ -39,7 +41,9 @@ private:
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
     QString PBAR_ReqComptage(QString ReqTirages, int zn,int distance);
     QMenu *ContruireMenu(QString tbl, int val);
+    void CompleteMenu(QMenu *LeMenu,QString tbl, int clef);
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
+
 #if 0
     bool VerifierValeur(int item, QString table,int idColValue,int *lev);
     QString GEN_Where_3(int loop,

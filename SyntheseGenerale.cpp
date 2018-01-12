@@ -17,6 +17,7 @@
 #include <QDataWidgetMapper>
 #include <QSqlRelationalDelegate>
 #include <QStackedWidget>
+#include <QWidgetAction>
 
 #include "refetude.h"
 #include "SyntheseGenerale.h"
@@ -1141,8 +1142,47 @@ void SyntheseGenerale::slot_ccmr_tbForBaseEcart(QPoint pos)
         QMenu *MonMenu = new QMenu(pEcran);
         QMenu *subMenu= ContruireMenu(tbl,val);
         MonMenu->addMenu(subMenu);
+        CompleteMenu(MonMenu, tbl, val);
+
+
         MonMenu->exec(view->viewport()->mapToGlobal(pos));
     }
+}
+
+void SyntheseGenerale::slot_wdaFilter(int val)
+{
+    //QWidgetAction *wdaFrom = qobject_cast<QWidgetAction *>(sender());
+    QCheckBox *chkFrom = qobject_cast<QCheckBox *>(sender());
+
+#ifndef QT_NO_DEBUG
+    //qDebug() << "Boule :("<< wdaFrom->objectName()<<") check:"<< wdaFrom->isChecked();
+    qDebug() << "Boule :("<< chkFrom->objectName()<<") check:"<< chkFrom->isChecked();
+#endif
+}
+
+void SyntheseGenerale::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
+{
+    int col = 3;
+    int niveau = 0;
+    bool existe = false;
+    existe = VerifierValeur(clef, tbl,col,&niveau);
+
+    QCheckBox *chkb_1 = new QCheckBox;
+    chkb_1->setText("Filtrer");
+    QWidgetAction *chk_act_1 = new QWidgetAction(LeMenu);
+    chk_act_1->setDefaultWidget(chkb_1);
+    connect(chkb_1,SIGNAL(stateChanged(int)),this,SLOT(slot_wdaFilter(int)));
+
+    if((!existe) || (!niveau))
+    {
+        chkb_1->setChecked(false);
+    }
+    else
+    {
+        chkb_1->setChecked(true);
+    }
+
+    LeMenu->addAction(chk_act_1);
 }
 
 QMenu *SyntheseGenerale::ContruireMenu(QString tbl, int val)

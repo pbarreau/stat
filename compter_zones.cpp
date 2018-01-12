@@ -380,8 +380,98 @@ void cCompterZoneElmts::slot_ccmr_tbForBaseEcart(QPoint pos)
         QMenu *MonMenu = new QMenu(this);
         QMenu *subMenu= ContruireMenu(tbl,val);
         MonMenu->addMenu(subMenu);
+        CompleteMenu(MonMenu, tbl, val);
+
+
         MonMenu->exec(view->viewport()->mapToGlobal(pos));
     }
+}
+
+/// https://openclassrooms.com/forum/sujet/qt-inclure-check-box-dans-un-menu-deroulant-67907
+void cCompterZoneElmts::slot_wdaFilter(bool val)
+{
+    QAction *chkFrom = qobject_cast<QAction *>(sender());
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "Boule :("<< chkFrom->objectName()<<") check:"<< val;
+#endif
+    QSqlQuery query;
+    QString msg = "";
+
+    QString st_from = chkFrom->objectName();
+    QStringList def = st_from.split(":");
+    /// Verifier coherence des donnees
+    /// pos 0: ligne trouvee dans table
+    /// pos 1: ancie priorite
+    /// pos 2: nvlle priorite
+    /// pos 3: element selectionne
+    /// pos 4:nom de table
+    if(def.size()!=5)
+        return;
+
+    int trv = def[0].toInt();
+    int v_1 = def[1].toInt();
+    int v_2 = def[2].toInt();
+    int elm = def[3].toInt();
+    QString tbl = def[4];
+
+    // faut il inserer une nouvelle ligne CREER UNE VARIABLE POUR LES COLONNES
+    /// TB_SE
+    if(trv ==0)
+    {
+        msg = "insert into " + tbl + " (id, val, p, f) values(NULL,"
+                +def[3]+",0,"+QString::number(val)+");";
+
+    }
+    else
+    {
+        msg = "update " + tbl + " set f="+QString::number(val)+" "+
+                "where (val="+def[3]+");";
+    }
+
+    bool rep = query.exec(msg);
+
+    if(!rep)
+    {
+        trv = false;
+#ifndef QT_NO_DEBUG
+        qDebug() << "select: " <<def[3]<<"->"<< query.lastError();
+        qDebug() << "Bad code:\n"<<msg<<"\n-------";
+#endif
+    }
+    else
+    {
+        trv = true;
+#ifndef QT_NO_DEBUG
+        qDebug() << "Fn :\n"<<msg<<"\n-------";
+#endif
+
+    }
+
+    delete chkFrom;
+}
+
+void cCompterZoneElmts::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
+{
+    int col = 3;
+    int niveau = 0;
+    bool existe = false;
+    existe = VerifierValeur(clef, tbl,col,&niveau);
+
+    QAction *filtrer = LeMenu->addAction("Filtrer");
+    filtrer->setCheckable(true);
+
+    int i = 0;
+    QString name = QString::number(i);
+    name = QString::number(existe)+
+            ":"+QString::number(niveau)+
+            ":"+name+":"+QString::number(clef)+
+            ":"+tbl;
+
+    filtrer->setObjectName(name);
+    filtrer->setChecked(niveau);
+    connect(filtrer,SIGNAL(triggered(bool)),
+            this,SLOT(slot_wdaFilter(bool)));
 }
 
 QMenu *cCompterZoneElmts::ContruireMenu(QString tbl, int val)
@@ -454,7 +544,7 @@ void cCompterZoneElmts::slot_ChoosePriority(QAction *cmd)
     // Verifier si if faut supprimer la priorite
     if(v_1 == v_2)
     {
-        msg = "delete from " + tbl + " " +
+        msg = "update " + tbl + " set p=0 "+
                 "where (val="+def[3]+");";
         trv = 0;
     }
