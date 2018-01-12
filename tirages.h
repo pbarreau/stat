@@ -146,6 +146,9 @@ public:
     int RechercheNbBoulesDansGrp1(int zone); // Nombre de nombre de la zone appartenant a E1;
     //int RechercheNbBoulesLimite(int zone, int min, int max);
     void ListeCombinaison(stTiragesDef *ref);
+    void ConstruireListeCnp(int n, int p, QStringList &out);
+    int Cnp_v2(int n, int p);
+
 
 };
 

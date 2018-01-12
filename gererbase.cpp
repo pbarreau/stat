@@ -42,6 +42,10 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
         typeTirages->getConfigFor(pConf);
         typeTirages->ListeCombinaison(pConf);
 
+        int cnpValue = typeTirages->Cnp_v2(15,5);
+        QStringList maListe; ///= new QStringList [cnpValue];
+        typeTirages->ConstruireListeCnp(15,5,maListe);
+
         /// Test ok
         ///
         ///QString msg = GammaNk::MakeSqlFromGamma(pConf,1,2);
@@ -260,7 +264,7 @@ bool GererBase::AffectePoidsATirage_v2()
                             +"="+QString::number(coef[i])+ " and ";
                 }
 #ifndef QT_NO_DEBUG
-        qDebug() << msg_2;
+                qDebug() << msg_2;
 #endif
 
                 // creation d'une requete mise a jour des poids
@@ -272,7 +276,7 @@ bool GererBase::AffectePoidsATirage_v2()
                         +msg_2+")"
                         +"));";
 #ifndef QT_NO_DEBUG
-        qDebug() << msg_2;
+                qDebug() << msg_2;
 #endif
 
                 status = sql_2.exec(msg_2);

@@ -64,7 +64,8 @@ SOURCES += main.cpp\
     compter_groupes.cpp \
     compter.cpp \
     compter_combinaisons.cpp \
-    lescomptages.cpp
+    lescomptages.cpp \
+    cnp.cpp
 
 HEADERS  += mainwindow.h \
     choixjeux.h \
@@ -94,7 +95,8 @@ HEADERS  += mainwindow.h \
     compter_zones.h \
     compter.h \
     compter_combinaisons.h \
-    lescomptages.h
+    lescomptages.h \
+    cnp.h
 
 
 FORMS    += mainwindow.ui \
