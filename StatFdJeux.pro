@@ -66,7 +66,9 @@ SOURCES += \
 		refetude.cpp \
 		showstepper.cpp \
 		sqlbackup.cpp \
-		tirages.cpp
+		tirages.cpp \
+    cappliquerfiltres.cpp \
+    cassemble.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -97,7 +99,9 @@ HEADERS  += \
 		showstepper.h \
 		sqlbackup.h \
 		tirages.h \
-		types_jeux.h
+		types_jeux.h \
+    cappliquerfiltres.h \
+    cassemble.h
 
 
 FORMS    += mainwindow.ui \

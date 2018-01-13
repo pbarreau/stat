@@ -14,6 +14,7 @@
 #include "delegate.h"
 #include "filtrecombinaisons.h"
 #include "compter_combinaisons.h"
+#include "cnp.h"
 
 int cCompterCombinaisons::total = 0;
 

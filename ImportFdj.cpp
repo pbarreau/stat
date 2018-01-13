@@ -16,6 +16,7 @@
 #include <QSqlRecord>
 
 #include "tirages.h"
+#include "gererbase.h"
 
 QString DateAnormer(QString input);
 QString JourFromDate(QString LaDate, QString verif, stErr *retErr);

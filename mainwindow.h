@@ -17,14 +17,14 @@
 #include <QGraphicsView>
 #include <QFormLayout>
 
-#include "MyGraphicsView.h"
-#include "gererbase.h"
+
 #include "tirages.h"
-#include "pointtirage.h"
+#include "gererbase.h"
+
 #include "SyntheseGenerale.h"
-#include "filtrecombinaisons.h"
-#include "refetude.h"
-#include "compter_groupes.h"
+
+#include "pointtirage.h"
+
 
 namespace Ui {
 class MainWindow;

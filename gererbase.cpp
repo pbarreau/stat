@@ -16,10 +16,11 @@
 #include <QTableView>
 #include <QTableWidget>
 
-#include "cnp.h"
 #include "tirages.h"
-#include "car.h"
+#include "gererbase.h"
 #include "SyntheseDetails.h"
+#include "cnp.h"
+#include "car.h"
 
 #if 0
 GererBase::GererBase(QObject *parent) :

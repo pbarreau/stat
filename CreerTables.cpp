@@ -6,12 +6,18 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 
-#include "cnp.h"
 #include "gererbase.h"
 #include "SyntheseDetails.h"
+#include "cnp.h"
 
 extern QString ContruireRechercheCombi(int i,int zn,stTiragesDef *pRef);
 extern QString DetailsSomme(int zn, stTiragesDef *pRef);
+
+
+
+
+
+
 
 bool GererBase::CreerTableDistriCombi(void)
 {
@@ -54,9 +60,57 @@ bool GererBase::CreerTableCnp()
 
 }
 
+bool GererBase::RajouterTable(stTbToCreate des)
+{
+ bool isOk = true;
+
+ return isOk;
+}
 bool GererBase::CreationTablesDeLaBDD_v2()
 {
     bool status = true;
+    QSqlQuery query;
+    QString requete = "";
+
+#if 0
+    "Bnrz:",
+    "SelElemt:",
+    "SelComb:",
+    "SelGrp",
+    "tirages",
+    "RefTirages",
+    "Analyse"
+#endif
+
+    const QString aCreer[]=
+    {
+        "TablesList:tbName text,usage int,description text",
+        "Ref_znName:name text, abv text",
+        "DistriCombi:id_com int, tip text, s1 int, s2 int, p1 int, p2 int",
+        "Ref_znLimits:len int, min int, max int"
+    };
+
+    const QString data_1[]=
+    {
+        "Boules,b",
+        "Etoiles,e"
+    };
+
+#if 0
+    stTbToCreate depart[]
+    {
+        {aCreer[0],NULL,NULL},
+        {aCreer[1],data_1,f1}
+    };
+
+    int total = sizeof(depart)/sizeof(stTbToCreate);
+    for(int i=0;i<total;i++)
+    {
+        RajouterTable(depart[i]);
+    }
+#endif
+    //tbName from TablesList where usage = 1;
+    //requete = "create table TablesList"
 
     status = CreerTableCnp();
 

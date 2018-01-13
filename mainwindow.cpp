@@ -15,14 +15,6 @@
 #include <QSplitter>
 #include <QTreeView>
 
-#include "labelclickable.h"
-#include "pointtirage.h"
-#include "SyntheseGenerale.h"
-#include "refetude.h"
-#include "filtrecombinaisons.h"
-#include "SyntheseDetails.h"
-
-
 #include <math.h>
 
 #include "mygraphicsview.h"
@@ -31,6 +23,14 @@
 #include "choixjeux.h"
 #include "tirages.h"
 #include "gererbase.h"
+#include "labelclickable.h"
+#include "pointtirage.h"
+#include "SyntheseGenerale.h"
+#include "refetude.h"
+#include "filtrecombinaisons.h"
+#include "SyntheseDetails.h"
+
+
 
 #include "chartwidget.h"
 

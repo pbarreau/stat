@@ -17,9 +17,9 @@
 
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
-#include "refetude.h"
 
-#include "tirages.h"
+
+#include "refetude.h"
 
 
 namespace NE_Analyses{
