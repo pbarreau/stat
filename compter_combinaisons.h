@@ -37,6 +37,7 @@ private:
     void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
     QString RequetePourTrouverTotal_z2(QString st_baseUse,int zn);
+    QString ConstruireCriteres(int zn);
 
 
 };

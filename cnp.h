@@ -12,17 +12,17 @@ typedef struct
  int val_cnp;
 }sigData;
 
-class Cnp:public QObject
+class BP_Cnp:public QObject
 {
     Q_OBJECT
 
 public:
-    Cnp(int n, int p);
-    ~Cnp();
-    int GetCnp(void);
-    int * GetPascalLine(int lineId);
-    bool CalculerPascal(void);
-    void ShowPascal(void);
+    BP_Cnp(int n, int p);
+    ~BP_Cnp();
+    int BP_count(void);
+    int * BP_GetPascalLine(int lineId);
+    bool BP_CalculerPascal(void);
+    void BP_ShowPascal(void);
 
 
 private:

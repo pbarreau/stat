@@ -242,27 +242,7 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QStr
 
 QString cCompterCombinaisons::RequetePourTrouverTotal_z2(QString st_baseUse,int zn)
 {
-    QString tab="tb1."+names[zn].court;
-    int loop = limites[zn].len;
-    QStringList list;
-    list << tab;
-    QString st_col = GEN_Where_3(loop,tab,true,",",list,false,"");
-
-    QString stTb2 = st_col.replace("tb1","tb2");
-
-    tab = "tb1."+names[zn].court;
-    list<<"tb2."+names[zn].court;
-    QString  st_OnDef = GEN_Where_3(loop,tab,true,"=",list,true," and ");
-
-    stTb2 = " (tb1.e1 = tb2.e1 and  tb1.e2=tb2.e2 )"
-            "or"
-            "(tb1.e1 = tb2.e2 and tb1.e2=tb2.e1)";
-#ifndef QT_NO_DEBUG
-    qDebug()<< st_col;
-    qDebug()<< stTb2;
-    qDebug()<< st_OnDef;
-#endif
-
+    QString st_criteres = ConstruireCriteres(zn);
     QString st_msg1 =
             "select count(CASE when tb2.id = 1 then 1 end) as last, tb1.*,count(tb2.id) as T, "
             + db_jours +
@@ -275,17 +255,60 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z2(QString st_baseUse,int 
             "("
             "select tb2.* from "
             "("
-            +st_baseUse+ " as tb2"
+            +st_baseUse+
+            " as tb2"
+            ")"
             " )as tb2 "
             "on"
             "("
-            + stTb2 +
+            + st_criteres +
             ")group by tb1.id order by T desc";
 
 #ifndef QT_NO_DEBUG
     qDebug()<< st_msg1;
 #endif
     return    st_msg1 ;
+}
+
+QString cCompterCombinaisons::ConstruireCriteres(int zn)
+{
+    /// critere a construire
+    QString msg = "";
+
+    /// recuperer le nombre de boules constituant la zone
+    int lenZn = limites[zn].len;
+
+    /// caculer le nombre de maniere distincte
+    /// de prendre 1 dans l'ensemble
+    BP_Cnp *b = new BP_Cnp(lenZn,1);
+    int items = b->BP_count();
+
+
+    /// prendre chaque possibilite
+    for(int i = 0; i< items;i++)
+    {
+        /// recuperer la ligne donnant le coefficient
+        int * ligne = b->BP_GetPascalLine(i);
+
+        /// prendre chaque coefficient de la ligne
+        /// ICI pas la peine car la ligne contient 1 seul element
+        int value = ligne[0];
+
+        ///contruire le nom du champ de la table
+        QString tab1 = "tb1."+names[zn].court+QString::number(value);
+
+        /// construire la requete sur ce champs
+        int loop = lenZn;
+        QStringList lstChamps;
+        lstChamps << "tb2."+names[zn].court;
+        msg = msg + GEN_Where_3(loop,tab1,false,"=",lstChamps,true,"or");
+        if(i<lenZn-1)
+            msg = msg + "and";
+    }
+#ifndef QT_NO_DEBUG
+    qDebug()<< msg;
+#endif
+    return msg;
 }
 
 QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
@@ -428,8 +451,10 @@ QGridLayout *cCompterCombinaisons::Compter_euro(QString * pName, int zn)
     QFormLayout *FiltreLayout = new QFormLayout;
     FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
     QList<qint32> colid;
-    colid << 1;
-    colid << 2;
+    for(int i=0; i<limites[zn].len; i++)
+    {
+        colid << i+2;
+    }
     fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
 
     FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);

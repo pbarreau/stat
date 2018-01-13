@@ -7,7 +7,7 @@
 
 #include "cnp.h"
 
-Cnp::Cnp(int n, int p):n(n),p(p)
+BP_Cnp::BP_Cnp(int n, int p):n(n),p(p)
 {
     int cnp_v1 = CalculerCnp_v1();
     int cnp_v2 = CalculerCnp_v2();
@@ -17,7 +17,7 @@ Cnp::Cnp(int n, int p):n(n),p(p)
     tab = NULL;
 }
 
-Cnp::~Cnp()
+BP_Cnp::~BP_Cnp()
 {
     if(tab !=NULL){
         for(int i = 0; i< cnp;i++){
@@ -27,12 +27,12 @@ Cnp::~Cnp()
     }
 }
 
-int Cnp::GetCnp(void)
+int BP_Cnp::BP_count(void)
 {
     return cnp;
 }
 
-bool Cnp::CalculerPascal(void)
+bool BP_Cnp::BP_CalculerPascal(void)
 {
     bool isOK = false;
 
@@ -43,13 +43,13 @@ bool Cnp::CalculerPascal(void)
     return isOK;
 }
 
-void Cnp::ShowPascal(void)
+void BP_Cnp::BP_ShowPascal(void)
 {
-    if (CalculerPascal())
+    if (BP_CalculerPascal())
         MontrerTableau_v1();
 }
 
-int * Cnp::GetPascalLine(int lineId)
+int * BP_Cnp::BP_GetPascalLine(int lineId)
 {
     int *ptr = NULL;
 
@@ -69,7 +69,7 @@ int * Cnp::GetPascalLine(int lineId)
 }
 
 
-void Cnp::MontrerTableau_v1(void)
+void BP_Cnp::MontrerTableau_v1(void)
 {
     if(tab==NULL) return;
 #ifndef QT_NO_DEBUG
@@ -85,7 +85,7 @@ void Cnp::MontrerTableau_v1(void)
 #endif
 }
 
-bool Cnp::FaireTableauPascal(void)
+bool BP_Cnp::FaireTableauPascal(void)
 {
     bool isOk = false;
     tab = new int *[cnp]; /// tableau de pointeur d'entiers de Cnp lignes
@@ -109,7 +109,7 @@ bool Cnp::FaireTableauPascal(void)
     return isOk;
 }
 
-void Cnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
+void BP_Cnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
 {
     int i = 0;
     int j = 0;
@@ -145,7 +145,7 @@ void Cnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
     }
 }
 
-int Cnp::CalculerCnp_v1(void)
+int BP_Cnp::CalculerCnp_v1(void)
 {
     if(n<0 || p<0 || p>n) return 0;
 
@@ -158,7 +158,7 @@ int Cnp::CalculerCnp_v1(void)
     }
     return t[p]; //On renvoie la valeur recherchée.
 }
-int Cnp::CalculerCnp_v2(void)
+int BP_Cnp::CalculerCnp_v2(void)
 {
     if(n<0 || p<0 || p>n) return 0;
 

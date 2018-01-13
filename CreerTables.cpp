@@ -8,6 +8,7 @@
 
 #include "cnp.h"
 #include "gererbase.h"
+#include "SyntheseDetails.h"
 
 extern QString ContruireRechercheCombi(int i,int zn,stTiragesDef *pRef);
 extern QString DetailsSomme(int zn, stTiragesDef *pRef);
@@ -41,14 +42,14 @@ bool GererBase::CreerTableCnp()
         maxPz = BMIN(CNP_P_MAX,maxPz);
 
         curZone = i;
-        Cnp *a = new Cnp(maxNz,maxPz);
-        int b = a->GetCnp();
+        BP_Cnp *a = new BP_Cnp(maxNz,maxPz);
+        int b = a->BP_count();
 
         connect(a,SIGNAL(sig_LineReady(sigData,QString)),
                 this,SLOT(slot_UseCnpLine(sigData,QString)));
 
         /// lancer la recherche des coefficient
-        isOk=a->CalculerPascal();
+        isOk=a->BP_CalculerPascal();
     }
 
 }
