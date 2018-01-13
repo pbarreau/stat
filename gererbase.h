@@ -34,8 +34,6 @@ public:
 public:
     QVariant data(const QModelIndex &index, int role) const;
     bool CreerBasePourEtude(bool action, NE_FDJ::E_typeJeux type);
-    bool OPtimiseAccesBase(void);
-    bool CreerTableCnp();
 
     bool CreationTablesDeLaBDD(tirages *pRref);
     bool CTB_Table1(QString nomTable, tirages *pRef);
@@ -98,14 +96,20 @@ private:
     void MontrerDetailCombinaison(QString msg);
     void CreerTablePonderationAbsentDeBoule(int b_id, int zone, stTiragesDef *pConf);
 
+    bool OPtimiseAccesBase(void);
     bool CreationTablesDeLaBDD_v2();
-    bool f1();
-    bool f1_1();
-    bool f1_2();
-    bool f2();
-    bool f2_2();
-    bool f3();
-    bool f4();
+    bool RajouterTable(stTbToCreate des);
+    bool TraitementPerso(QString tb, QString *data);
+    bool CreerTableCnp(QString tb, QString *data);
+
+    bool f1(QString tb, QString *data);
+    bool f1_1(QString tb, QString *data);
+    bool f1_2(QString tb, QString *data);
+    bool f2(QString tb, QString *data);
+    bool f2_2(QString tb, QString *data);
+    bool f3(QString tb, QString *data);
+    bool f4(QString tb, QString *data);
+
     bool SauverCombiVersTable (QStringList &combi);
     bool MettrePonderationCombi(int delta);
     bool LireFichiersDesTirages(bool autoLoad,stErr *retErr);
@@ -113,8 +117,6 @@ private:
     bool ReorganiserLesTirages();
     bool GrouperCombi(int zn);
 
-    bool RajouterTable(stTbToCreate des);
-    bool TraitementPerso(QString def, QString *data);
 
 private:
     QSqlDatabase db;

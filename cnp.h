@@ -10,6 +10,7 @@ typedef struct
  int val_p;
  int val_pos;
  int val_cnp;
+ QString val_tb;    /// prefix dans la base
 }sigData;
 
 class BP_Cnp:public QObject
@@ -32,6 +33,7 @@ private:
     int pos;    /// varie de 0 au début à Cnp-1 à la fin
     int **tab;  /// tableau de Cnp lignes contenant chacune une combinaison
                 /// sous la forme de p entiers (de 1 au moins à n au plus)
+    QString tb; /// prefix table dans la base
     sigData d;
 
 private:

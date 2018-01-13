@@ -2,7 +2,10 @@
 #include <QDebug>
 #endif
 
+#include <QMessageBox>
+
 #include <QString>
+#include <QStringList>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 
@@ -34,7 +37,7 @@ bool GererBase::CreerTableDistriCombi(void)
     return ret;
 }
 
-bool GererBase::CreerTableCnp()
+bool GererBase::CreerTableCnp(QString tb, QString *data)
 {
     bool isOk=true;
 
@@ -58,12 +61,15 @@ bool GererBase::CreerTableCnp()
         isOk=a->BP_CalculerPascal();
     }
 
+    return(isOk);
 }
 
 bool GererBase::RajouterTable(stTbToCreate des)
 {
     bool isOk = true;
     QString msg = "";
+    QSqlQuery query;
+    QStringList input;
 
     // A t on une fonction de traitement
     if(des.pFuncInit != NULL)
@@ -74,25 +80,100 @@ bool GererBase::RajouterTable(stTbToCreate des)
     else
     {
         /// traitement local de creation de la table
-        QStringList input;
-        input << des.tbDef.split(":");
+        input << des.tbDef.simplified().split(":");
+        /// en 0 le nom de la table
+        /// en 1 les champs
+        if(input.size() != 2){
+            return (false);
+        }
+
+        /// Analyse des champs
+        QStringList fields;
+        fields << input.at(1).split(",");
+
+        /// determination des noms de colonne et des types
+        QString definition = "";
+        QStringList colNames;
+        QStringList typNames;
+        foreach (definition, fields) {
+            QStringList analyse;
+            definition = definition.trimmed();
+            analyse<<definition.split(" ");
+            if(analyse.size() != 2){
+                return false;
+            }
+            colNames<<(analyse.at(0)).simplified();
+            typNames<<(analyse.at(1)).simplified();
+        }
+#if 0
+        for(int i=0;i<fields.size();i++){
+            QStringList analyse;
+            definition = fields.at(i);
+            definition.simplified();
+            analyse<<definition.split(' ');
+            if(analyse.size() != 2){
+                return false;
+            }
+            colNames<<(analyse.at(0)).simplified();
+            typNames<<(analyse.at(1)).simplified();
+        }
+#endif
+
+        msg = "create table if not exists "
+                + input.at(0)
+                +"(id integer primary key,"
+                + input.at(1)
+                +");";
 
         /// traitement creation table
+        isOk = query.exec(msg);
 
         /// traitement insertion donnees
-        if(des.tbData != NULL)
+        if((des.tbData != NULL) && isOk)
         {
-            /// traitement
-            msg = "insert into";
+            /// verifier que le nombre de donnees
+            /// a inserer correspond au nombre de champs
+            for(int i = 0; (i< (des.nb_data))&& isOk;i++)
+            {
+                QString data = des.tbData[i];
+                QStringList items;
+                items << data.simplified().split(",");
+                if(items.size() != colNames.size())
+                    return false;
+                /// nb de data en accord
+                msg = "insert into "
+                        + input.at(0)
+                        + "(id,"
+                        + colNames.join(",")
+                        +")values(null,"
+                        +data
+                        +");";
+                /// traitement
+                isOk = query.exec(msg);
+            }
         }
-     }
+    }
+
+#ifndef QT_NO_DEBUG
+    if(!isOk)
+    {
+        qDebug() << "create: " <<input.at(0)<<"->"<< query.lastError();
+        qDebug() << "Bad code:\n"<<msg<<"\n-------";
+    }
+#endif
+
+    query.finish();
 
     return isOk;
 }
 
 bool GererBase::TraitementPerso(QString def, QString *data)
 {
+    bool isOk = true;
+    QSqlQuery query;
+    QString msg = "";
 
+    return isOk;
 }
 
 bool GererBase::CreationTablesDeLaBDD_v2()
@@ -101,80 +182,56 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     QSqlQuery query;
     QString requete = "";
 
-#if 0
-    "Bnrz:",
-    "SelElemt:",
-    "SelComb:",
-    "SelGrp",
-    "tirages",
-    "RefTirages",
-    "Analyse"
-#endif
 
     QString aCreer[]=
     {
         "TablesList:tbName text,usage int,description text",
-        "Ref_znName:name text, abv text",
-        "DistriCombi:id_com int, tip text, s1 int, s2 int, p1 int, p2 int",
-        "Ref_znLimits:len int, min int, max int"
+        "ExplAvecData:name text, abv text",
+        "TbNomCreeDansLaFonctionAppelee:CNP",
+        "TbNomCreeDansLaFonctionAppelee:1",
+        "TbNomCreeDansLaFonctionAppelee:2",
+        "TbNomCreeDansLaFonctionAppelee:3",
+        "TbNomCreeDansLaFonctionAppelee:4",
+        "TbNomCreeDansLaFonctionAppelee:5",
+        "TbNomCreeDansLaFonctionAppelee:6",
+        "TbNomCreeDansLaFonctionAppelee:7"
     };
 
     QString data_1[]=
     {
-        "Boules,b",
-        "Etoiles,e"
+        "'Boules','b'",
+        "'Etoiles','e'"
     };
 
     stTbToCreate depart[]
     {
         {aCreer[0],NULL,0,NULL},
-        {aCreer[1],&data_1[0],sizeof(data_1)/sizeof(QString*),TraitementPerso}
+        {aCreer[1],&data_1[0],sizeof(data_1)/sizeof(QString*),NULL},
+        {aCreer[2],NULL,0,CreerTableCnp},
+        {aCreer[3],NULL,0,f1}, ///tirages
+        {aCreer[4],NULL,0,f1_1}, ///noms des zones
+        {aCreer[5],NULL,0,f1_2}, /// limites
+        {aCreer[6],NULL,0,f2}, /// nom des boules
+        {aCreer[7],NULL,0,f2_2}, /// selections utilisateur
+        {aCreer[8],NULL,0,f3}, /// analyse des boules
+        {aCreer[9],NULL,0,f4} /// table des combinaisons
     };
 
     int total = sizeof(depart)/sizeof(stTbToCreate);
-    for(int i=0;i<total;i++)
+    for(int i=0;(i<total) && status;i++)
     {
-        RajouterTable(depart[i]);
+        status = RajouterTable(depart[i]);
+        if(!status){
+            QString tbName = (depart[i].tbDef.split(":")).at(0);
+            //un message d'information
+            QMessageBox::critical(0, tbName, "Erreur traitement !",QMessageBox::Yes);
+        }
     }
-
-    //tbName from TablesList where usage = 1;
-    //requete = "create table TablesList"
-
-    status = CreerTableCnp();
-
-    // Creation de la table pour recuperer les tirages
-    if (status)
-        status = f1();
-
-    // Creation Table des noms des zones et abregees
-    if(status)
-        status = f1_1();
-
-    // Creation Table des limintes des zones
-    if(status)
-        status = f1_2();
-
-    // Creation Table nom des boules des zones
-    if(status)
-        status = f2();
-
-    // Creation Table des selections utilisateur
-    if(status)
-        status = f2_2();
-
-    // creation de la table analyse des boules (lors du chargement de la base)
-    if(status)
-        status = f3();
-
-    // creation de la table des combinaisons
-    if(status)
-        status = f4();
-
 
     return status;
 }
 
-bool GererBase::f1()
+bool GererBase::f1(QString tb, QString *data)
 {
     bool status = true;
 
@@ -200,7 +257,7 @@ bool GererBase::f1()
     return status;
 }
 
-bool GererBase::f1_1()
+bool GererBase::f1_1(QString tb, QString *data)
 {
     bool status = true;
 
@@ -238,14 +295,10 @@ bool GererBase::f1_1()
 
     query.finish();
     return status;
-#if 0
-    requete = "insert into "+st_table+" (id,name,abv) values "+
-            "(NULL,'Boules','b'),(NULL,'Etoiles','e');";
-#endif
 }
 
 /// Fonction pour creer les infos numerique d'une zone
-bool GererBase::f1_2()
+bool GererBase::f1_2(QString tb, QString *data)
 {
     bool status = true;
 
@@ -286,7 +339,7 @@ bool GererBase::f1_2()
     query.finish();
     return status;
 }
-bool GererBase::f2()
+bool GererBase::f2(QString tb, QString *data)
 {
     bool status = true;
 
@@ -353,7 +406,7 @@ bool GererBase::f2()
     return status;
 }
 
-bool GererBase::f2_2()
+bool GererBase::f2_2(QString tb, QString *data)
 {
     bool status = true;
 
@@ -396,7 +449,7 @@ bool GererBase::f2_2()
 
 }
 
-bool GererBase::f3()
+bool GererBase::f3(QString tb, QString *data)
 {
     bool status = true;
 
@@ -419,7 +472,7 @@ bool GererBase::f3()
     return status;
 }
 
-bool GererBase::f4()
+bool GererBase::f4(QString tb, QString *data)
 {
     bool status = true;
     stTiragesDef ref=typeTirages->conf;

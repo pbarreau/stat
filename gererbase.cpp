@@ -146,7 +146,9 @@ void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
 
 
     /// Rajouter chaque ligne
-    msg = "insert into Cnp_"+QString::number(d.val_n)
+    msg = "insert into "
+            +d.val_tb
+            +"Cnp_"+QString::number(d.val_n)
             + "_" + QString::number(d.val_p)
             +"(id,"+colNames
             +"values(NULL,"+p+");";

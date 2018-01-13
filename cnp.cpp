@@ -15,6 +15,8 @@ BP_Cnp::BP_Cnp(int n, int p):n(n),p(p)
     cnp = cnp_v1;
     pos = 0;
     tab = NULL;
+    tb="";
+
 }
 
 BP_Cnp::~BP_Cnp()
@@ -131,6 +133,7 @@ void BP_Cnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
         d.val_n =n;
         d.val_p = p;
         d.val_pos = pos;
+        d.val_tb = tb;
         emit sig_LineReady(d,laLigne);
         pos++;
         return;
