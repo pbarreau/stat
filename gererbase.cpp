@@ -53,7 +53,12 @@ bool GererBase::OPtimiseAccesBase(void)
 GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
 //GererBase::GererBase(bool enMemoire, bool autoLoad, NE_FDJ::E_typeJeux leJeu, stTiragesDef *pConf)
 {
-    //bool status = ok;
+    curZone = 0;
+    typeTirages = NULL;
+    tbl_model = NULL;
+    tbl_couverture = NULL;
+
+
     bool enMemoire = param->destination;
     bool autoLoad = param->typeChargement;
     NE_FDJ::E_typeJeux leJeu = param->typeJeu;
@@ -69,6 +74,8 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
 
         //Donner les infos aux autres classes
         typeTirages->getConfigFor(pConf);
+        typeTirages->getConfigFor(&conf);
+
         typeTirages->ListeCombinaison(pConf);
 
 
@@ -113,12 +120,14 @@ void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
     /// Creer la table
     if( (d.val_pos == 0) && (isOk == true))
     {
+        i = 0;
         msg = "create table if not exists Cnp_"+QString::number(d.val_n)
                 + "_" + QString::number(d.val_p)+"(id integer primary key, ";
-        int loop = 5;
+        int loop = conf.nbElmZone[curZone];
         QStringList elem;
         elem << "int";
-        colNames = GEN_Where_3(loop,"b",true," ",elem,false,",");
+        QString zname = conf.nomZone[curZone];
+        colNames = GEN_Where_3(loop,zname,true," ",elem,false,",");
         // retirer premiere paranthense
         colNames.remove(0,1);
         msg = msg+colNames+";";

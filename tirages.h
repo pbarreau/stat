@@ -47,6 +47,9 @@
 #define CL_IHM_TOT_1    6
 
 #define BMAX(a,b) (((a)>(b))?(a):(b))
+#define BMIN(a,b) (((a)<(b))?(a):(b))
+#define CNP_N_MAX   20
+#define CNP_P_MAX   5
 
 namespace NE_FDJ{
 typedef enum _les_jeux_a_tirages
@@ -292,6 +295,8 @@ private:
 
 private:
     QSqlDatabase db;
+    stTiragesDef conf;
+    int curZone;
     tirages *typeTirages;
     QSqlTableModel *tbl_model;
     QSqlTableModel *tbl_couverture;

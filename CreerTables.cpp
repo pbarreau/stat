@@ -29,16 +29,27 @@ bool GererBase::CreerTableDistriCombi(void)
 
 bool GererBase::CreerTableCnp()
 {
-    bool isOk=false;
+    bool isOk=true;
 
-    Cnp *a = new Cnp(20,5);
-    int b = a->GetCnp();
+    int nbZone = conf.nb_zone;
 
-    connect(a,SIGNAL(sig_LineReady(sigData,QString)),
-            this,SLOT(slot_UseCnpLine(sigData,QString)));
+    for(int i = 0; (i< nbZone) && isOk; i++)
+    {
+        int maxNz = conf.limites[i].max;
+        int maxPz = conf.nbElmZone[i];
+        maxNz = BMIN(CNP_N_MAX,maxNz);
+        maxPz = BMIN(CNP_P_MAX,maxPz);
 
-    /// lancer la recherche des coefficient
-    isOk=a->CalculerPascal();
+        curZone = i;
+        Cnp *a = new Cnp(maxNz,maxPz);
+        int b = a->GetCnp();
+
+        connect(a,SIGNAL(sig_LineReady(sigData,QString)),
+                this,SLOT(slot_UseCnpLine(sigData,QString)));
+
+        /// lancer la recherche des coefficient
+        isOk=a->CalculerPascal();
+    }
 
 }
 
