@@ -12,11 +12,13 @@
 #include "labelclickable.h"
 #include "cnp.h"
 
+class GererBase;
 typedef struct
 {
-    QString *tbDef; /// description de la table
+    QString tbDef; /// description de la table
     QString *tbData; /// donnees a mettre
-    bool (*pFuncInit)(QString, QString *); /// fonction traitant les donnees
+    int nb_data; // nb donnees a mettre
+    bool (GererBase::*pFuncInit)(QString, QString *); /// fonction traitant les donnees
 }stTbToCreate;
 
 
@@ -110,7 +112,9 @@ private:
     bool AffectePoidsATirage_v2();
     bool ReorganiserLesTirages();
     bool GrouperCombi(int zn);
+
     bool RajouterTable(stTbToCreate des);
+    bool TraitementPerso(QString def, QString *data);
 
 private:
     QSqlDatabase db;

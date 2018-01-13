@@ -62,10 +62,39 @@ bool GererBase::CreerTableCnp()
 
 bool GererBase::RajouterTable(stTbToCreate des)
 {
- bool isOk = true;
+    bool isOk = true;
+    QString msg = "";
 
- return isOk;
+    // A t on une fonction de traitement
+    if(des.pFuncInit != NULL)
+    {
+        // faire avec la fonction
+        isOk=(this->*(des.pFuncInit))(des.tbDef,des.tbData);
+    }
+    else
+    {
+        /// traitement local de creation de la table
+        QStringList input;
+        input << des.tbDef.split(":");
+
+        /// traitement creation table
+
+        /// traitement insertion donnees
+        if(des.tbData != NULL)
+        {
+            /// traitement
+            msg = "insert into";
+        }
+     }
+
+    return isOk;
 }
+
+bool GererBase::TraitementPerso(QString def, QString *data)
+{
+
+}
+
 bool GererBase::CreationTablesDeLaBDD_v2()
 {
     bool status = true;
@@ -82,7 +111,7 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     "Analyse"
 #endif
 
-    const QString aCreer[]=
+    QString aCreer[]=
     {
         "TablesList:tbName text,usage int,description text",
         "Ref_znName:name text, abv text",
@@ -90,17 +119,16 @@ bool GererBase::CreationTablesDeLaBDD_v2()
         "Ref_znLimits:len int, min int, max int"
     };
 
-    const QString data_1[]=
+    QString data_1[]=
     {
         "Boules,b",
         "Etoiles,e"
     };
 
-#if 0
     stTbToCreate depart[]
     {
-        {aCreer[0],NULL,NULL},
-        {aCreer[1],data_1,f1}
+        {aCreer[0],NULL,0,NULL},
+        {aCreer[1],&data_1[0],sizeof(data_1)/sizeof(QString*),TraitementPerso}
     };
 
     int total = sizeof(depart)/sizeof(stTbToCreate);
@@ -108,7 +136,7 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     {
         RajouterTable(depart[i]);
     }
-#endif
+
     //tbName from TablesList where usage = 1;
     //requete = "create table TablesList"
 
