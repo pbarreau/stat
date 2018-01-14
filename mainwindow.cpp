@@ -29,6 +29,7 @@
 #include "refetude.h"
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
+#include "lescomptages.h"
 
 
 
@@ -74,6 +75,14 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     }
     else
     {
+        ///
+        ///
+        ///
+        QString st_table = REF_BASE;
+        tous = new cLesComptages(st_table);
+        connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_AppliquerFiltres()));
+
+
         RechercheProgressionBoules(&configJeu);
 
 

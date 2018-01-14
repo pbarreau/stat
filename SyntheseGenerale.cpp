@@ -548,7 +548,7 @@ void SyntheseGenerale::DoTirages(void)
     tbv_LesEcarts = unTest->GetLesEcarts();
 
     disposition->addWidget(uneReponse,0,0,Qt::AlignLeft|Qt::AlignTop);
-
+#if 0
     /// ------------------------------
     QString st_table = REF_BASE;
     cCompterGroupes *test = new cCompterGroupes(st_table);
@@ -568,6 +568,8 @@ void SyntheseGenerale::DoTirages(void)
     cLesComptages *tous = new cLesComptages(st_table);
 
     /// -------------------------------------
+ #endif
+
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
 

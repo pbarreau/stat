@@ -1,11 +1,16 @@
+#ifndef QT_NO_DEBUG
+#include <QDebug>
+#include <QSqlError>
+#endif
+
 #include <QFormLayout>
 #include <QTabWidget>
+#include <QSqlQuery>
 
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
 #include "labelclickable.h"
-//#include "SyntheseGenerale.h"
 
 #include "lescomptages.h"
 int cLesComptages::total = 0;
@@ -65,8 +70,8 @@ cLesComptages::cLesComptages(QString stLesTirages)
     int i = 0;
     for(i; i< 3; i++)
     {
-      selection[i].setText(clef[i]+"aucun");
-      tmp_layout->addWidget(&selection[i],i,0);
+        selection[i].setText(clef[i]+"aucun");
+        tmp_layout->addWidget(&selection[i],i,0);
     }
     tmp_layout->addWidget(tab_Top,i,0);
 
@@ -79,4 +84,18 @@ cLesComptages::cLesComptages(QString stLesTirages)
     Resultats->setLayout(tmp_layout);
     Resultats->setWindowTitle("ALL");
     Resultats->show();
+}
+
+void cLesComptages::slot_AppliquerFiltres()
+{
+    QSqlQuery query;
+    QString msg = "";
+
+    /// Selectionner les boules choisi par l'utilisateur pour en faire
+    /// un ensemble d'etude
+    msg = "Select tb1.val from tt where (f not null and p=1) desc;";
+    ///CREATE TABLE equipments_backup AS SELECT * FROM  Cnp_7_5
+    /// https://stackoverflow.com/questions/2361921/select-into-statement-in-sqlite
+
+
 }

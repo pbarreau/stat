@@ -19,6 +19,7 @@ public:
 
 public slots:
     void slot_changerTitreZone(QString le_titre);
+    void slot_AppliquerFiltres();
 
 private:
     static int total;

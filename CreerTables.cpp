@@ -109,19 +109,6 @@ bool GererBase::RajouterTable(stTbToCreate des)
             colNames<<(analyse.at(0)).simplified();
             typNames<<(analyse.at(1)).simplified();
         }
-#if 0
-        for(int i=0;i<fields.size();i++){
-            QStringList analyse;
-            definition = fields.at(i);
-            definition.simplified();
-            analyse<<definition.split(' ');
-            if(analyse.size() != 2){
-                return false;
-            }
-            colNames<<(analyse.at(0)).simplified();
-            typNames<<(analyse.at(1)).simplified();
-        }
-#endif
 
         msg = "create table if not exists "
                 + input.at(0)

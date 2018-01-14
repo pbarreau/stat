@@ -38,12 +38,6 @@ protected:
     virtual QGridLayout *Compter(QString * pName, int zn)=0;
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString CriteresCreer(QString operateur, QString critere,int zone);
-#if 0
-    QString GEN_Where_3(int loop,
-                        QString tb1,bool inc1,QString op1,
-                        QStringList &tb2,bool inc2,QString op2
-                        );
-#endif
     void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
     bool VerifierValeur(int item, QString table,int idColValue,int *lev);
 

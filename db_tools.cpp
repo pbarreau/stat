@@ -9,11 +9,6 @@
 
 #include "db_tools.h"
 
-DB_Tools::DB_Tools()
-{
-
-}
-
 /// cette fonction construit une chaine sous contrainte
 /// on peut mettre n indice (loop) apres tb1 si inc1 = vrai
 /// idem pour chacun des elments de tb2 si inc2 = vrai
@@ -81,4 +76,72 @@ QString DB_Tools::GEN_Where_3(int loop,
 #endif
 
     return ret_msg;
+}
+
+QString DB_Tools::innerJoin(stJoinArgs ja)
+{
+    QString arg1 = ja.arg1;
+    QString arg2 = ja.arg2;
+    QString arg3 = ja.arg3;
+    QString arg4 = ja.arg4;
+    QString msg = "";
+
+    msg = "select " + arg1 + " from ("+arg2+")as tb1 "
+            "inner join ("+arg3+")as tb2 "
+            "on ("+arg4+")";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "DB_Tools::innerJoin\n";
+    qDebug() << "msg:\n"<<msg<<"\n-------";
+#endif
+
+    return msg;
+}
+
+QString DB_Tools::leftJoin(stJoinArgs ja)
+{
+    QString arg1 = ja.arg1;
+    QString arg2 = ja.arg2;
+    QString arg3 = ja.arg3;
+    QString arg4 = ja.arg4;
+    QString msg = "";
+
+    msg = "select " + arg1 + " from ("+arg2+")as tb1 "
+            "left join ("+arg3+")as tb2 "
+            "on ("+arg4+")";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "DB_Tools::leftJoin\n";
+    qDebug() << "msg:\n"<<msg<<"\n-------";
+#endif
+
+    return msg;
+}
+
+QString DB_Tools::innerJoinFiltered(stJoinArgs ja,QString arg5)
+{
+    QString msg = "";
+
+    msg = innerJoin(ja)+"where("+arg5+")";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "DB_Tools::innerJoinFiltered\n";
+    qDebug() << "msg:\n"<<msg<<"\n-------";
+#endif
+
+    return msg;
+}
+
+QString DB_Tools::leftJoinFiltered(stJoinArgs ja,QString arg5)
+{
+    QString msg = "";
+
+    msg = leftJoin(ja)+"where("+arg5+")";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "DB_Tools::leftJoinFiltered\n";
+    qDebug() << "msg:\n"<<msg<<"\n-------";
+#endif
+
+    return msg;
 }

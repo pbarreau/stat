@@ -19,10 +19,6 @@ void MainWindow::pslot_newGame()
 
 void MainWindow::pslot_open()
 {
-#ifndef QT_NO_DEBUG
- qDebug () << zoneCentrale->activeSubWindow()->pos();
- qDebug () << zoneCentrale->activeSubWindow()->size();;
-#endif
 }
 
 bool MainWindow::pslot_save()

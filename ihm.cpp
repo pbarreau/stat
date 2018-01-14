@@ -38,6 +38,11 @@ void MainWindow::createActions()
   saveAct->setStatusTip(tr("Sauver jeu sur disque"));
   connect(saveAct, SIGNAL(triggered()), this, SLOT(pslot_save()));
 
+  runAct = new QAction(QIcon(":/images/index.ico"), tr("&Run"), this);
+  runAct->setStatusTip(tr("Filter jeu"));
+  /// La connection s'effectue a la creation de l'objet.
+
+
   saveAsAct = new QAction(tr("Sau&ver sous..."), this);
   saveAsAct->setShortcuts(QKeySequence::SaveAs);
   saveAsAct->setStatusTip(tr("Sauver jeu sous autre nom"));
@@ -75,6 +80,7 @@ void MainWindow::createToolBars()
   fileToolBar->addAction(newAct);
   fileToolBar->addAction(openAct);
   fileToolBar->addAction(saveAct);
+  fileToolBar->addAction(runAct);
 }
 
 void MainWindow::createStatusBar()

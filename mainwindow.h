@@ -22,6 +22,7 @@
 #include "gererbase.h"
 
 #include "SyntheseGenerale.h"
+#include "lescomptages.h"
 
 #include "pointtirage.h"
 
@@ -228,6 +229,8 @@ private:
 private:
     GererBase *DB_tirages;
     QMdiArea *zoneCentrale;
+    cLesComptages *tous;
+
     QWidget *w_FenetreDetails;
     QTabWidget *gtab_Top;
     SyntheseGenerale *syntheses;
@@ -244,6 +247,7 @@ private:
     QAction *saveAct;
     QAction *saveAsAct;
     QAction *exitAct;
+    QAction *runAct;
     QAction *aboutAct;
 
     LabelClickable **G_lab_nbSorties;

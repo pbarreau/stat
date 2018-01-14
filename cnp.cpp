@@ -205,51 +205,86 @@ void BP_Cnp::slot_UseCnpLine(const QString &Laligne)
     i++;
 #endif
 
+    static QString st_table ="";
     static QString colNames = "";
+    static bool isOk = true;
+    static bool skipInsert = false;
     QSqlQuery query;
     QString msg = "";
-    static bool isOk = true;
 
-    /// Creer la table
-    if( (d.val_pos == 0) && (isOk == true))
+    /// Creer la table ?
+    if( (d.val_pos == 0)
+            && (isOk == true)
+            && (skipInsert == false))
     {
-        i = 0;
-        msg = "create table if not exists MyCnp_"+QString::number(d.val_n)
-                + "_" + QString::number(d.val_p)+"(id integer primary key, ";
-        int loop = d.val_p;
-        QStringList elem;
-        elem << "int";
-        QString zname = "c";
-        colNames = DB_Tools::GEN_Where_3(loop,zname,true," ",elem,false,",");
-        // retirer premiere paranthense
-        colNames.remove(0,1);
-        msg = msg+colNames+";";
+        /// nom de la table
+        st_table = "MyCnp_"+QString::number(d.val_n)
+                + "_" + QString::number(d.val_p);
 
-        /// debut de transaction
-        isOk = QSqlDatabase::database().transaction();
+        /// Verifier si la table existe deja
+        msg = "SELECT name FROM sqlite_master "
+              "WHERE type='table' AND name='"+st_table+"';";
 
         isOk = query.exec(msg);
-        colNames.remove("int");
+        if(isOk)
+        {
+            query.first();
+            if(!query.isValid())
+            {
+                /// une reponse invalide indique que la table
+                ///  n'existe pas
+                skipInsert = false;
+
+                /// on peut la creer
+                i = 0;
+                msg = "create table if not exists "
+                        + st_table +"(id integer primary key, ";
+                int loop = d.val_p;
+                QStringList elem;
+                elem << "int";
+                QString zname = "c";
+                colNames = DB_Tools::GEN_Where_3(loop,zname,true," ",elem,false,",");
+                // retirer premiere paranthense
+                colNames.remove(0,1);
+                msg = msg+colNames+";";
+
+                /// debut de transaction
+                isOk = QSqlDatabase::database().transaction();
+
+                isOk = query.exec(msg);
+                colNames.remove("int");
 
 #ifndef QT_NO_DEBUG
-        qDebug()<< msg;
+                qDebug()<< msg;
 #endif
+
+            }
+            else
+            {
+                skipInsert = true;
+            }
+        }
+
     }
 
+    /// Rajouter info si la table n'existe pas encore
+    if((skipInsert==false) && isOk==true){
+        /// Rajouter chaque ligne
+        msg = "insert into "
+                +st_table
+                +"(id,"+colNames
+                +"values(NULL,"+Laligne+");";
+        isOk = query.exec(msg);
 
-    /// Rajouter chaque ligne
-    msg = "insert into MyCnp_"+QString::number(d.val_n)
-            + "_" + QString::number(d.val_p)
-            +"(id,"+colNames
-            +"values(NULL,"+Laligne+");";
-    isOk = query.exec(msg);
 
+        /// derniere ligne effectuer la transaction globale
+        if((d.val_pos == (d.val_cnp-1)) && (isOk == true))
+        {
+            isOk = QSqlDatabase::database().commit();
+        }
 
-    /// derniere ligne effectuer la transaction globale
-    if((d.val_pos == (d.val_cnp-1)) && (isOk == true))
-    {
-        isOk = QSqlDatabase::database().commit();
     }
+
 
     if(isOk == false)
     {
@@ -261,6 +296,8 @@ void BP_Cnp::slot_UseCnpLine(const QString &Laligne)
     }
 
 }
+
+
 /// /* -----------------------------------------------------------------
 ///  *  Code C de reference
 ///  *  http://jm.davalan.org/mots/comb/comb/combalgo.html
@@ -387,6 +424,8 @@ void BP_Cnp::slot_UseCnpLine(const QString &Laligne)
 ///         combinaisons(comb, k+1, L, t2, j1);
 ///     }
 /// }
+///
+///
 /// /// -------------------------------------------------------------
 /// /* comb2.c
 ///  *
