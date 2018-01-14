@@ -19,6 +19,8 @@
 #include <QMenu>
 
 #include "compter_zones.h"
+#include "db_tools.h"
+
 int cCompterZoneElmts::total = 0;
 
 cCompterZoneElmts::~cCompterZoneElmts()
@@ -180,7 +182,7 @@ void cCompterZoneElmts::SqlFromSelection (const QItemSelectionModel *selectionMo
         // Creation du critere de filtre
         int loop = limites[zn].len;
         QString tab = "tbz."+names[zn].court;
-        QString scritere = GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
+        QString scritere = DB_Tools::GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
         if(headName != "T" and headName !="")
         {
             scritere = scritere + " and (J like '%" + headName +"%')";
@@ -244,7 +246,7 @@ QString cCompterZoneElmts::PBAR_ReqComptage(QString ReqTirages, int zn,int dista
                 boules<<QString::number(la_boule);
             }
             // Mettre une exception pour ne pas compter le cas
-            st_cri_all= GEN_Where_3(1,"tbleft.boule",false,"!=",boules,false,"and");
+            st_cri_all= DB_Tools::GEN_Where_3(1,"tbleft.boule",false,"!=",boules,false,"and");
             boules.clear();
             st_cri_all= st_cri_all + " and ";
         }
@@ -252,7 +254,7 @@ QString cCompterZoneElmts::PBAR_ReqComptage(QString ReqTirages, int zn,int dista
 
     boules<< "tbright."+names[zn].court;
     int loop = limites[zn].len;
-    st_cri_all= st_cri_all +GEN_Where_3(loop,"tbleft.boule",false,"=",boules,true,"or");
+    st_cri_all= st_cri_all +DB_Tools::GEN_Where_3(loop,"tbleft.boule",false,"=",boules,true,"or");
     boules.clear();
 
     msg =

@@ -15,6 +15,7 @@
 #include "filtrecombinaisons.h"
 #include "compter_combinaisons.h"
 #include "cnp.h"
+#include "db_tools.h"
 
 int cCompterCombinaisons::total = 0;
 
@@ -159,7 +160,7 @@ void cCompterCombinaisons::SqlFromSelection (const QItemSelectionModel *selectio
 
         // Creation du critere de filtre
         QString tab = "tbz.pid";
-        QString scritere = GEN_Where_3(1,tab,false,"=",lstBoules,false,"or");
+        QString scritere = DB_Tools::GEN_Where_3(1,tab,false,"=",lstBoules,false,"or");
         if(headName != "T" and headName !="")
         {
             scritere = scritere + " and (J like '%" + headName +"%')";
@@ -250,7 +251,7 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z2(QString st_baseUse,int 
             " "
             "from  "
             "("
-            +"Cnp_"+QString::number(limites[zn].max)+"_"+QString::number(limites[zn].len)+
+            +"MyCnp_"+QString::number(limites[zn].max)+"_"+QString::number(limites[zn].len)+
             ") as tb1 "
             "left join "
             "("
@@ -289,20 +290,21 @@ QString cCompterCombinaisons::ConstruireCriteres(int zn)
     for(int i = 0; i< items;i++)
     {
         /// recuperer la ligne donnant le coefficient
-        int * ligne = b->BP_GetPascalLine(i);
+        int * ligne = b->BP_getPascalLine(i);
 
         /// prendre chaque coefficient de la ligne
         /// ICI pas la peine car la ligne contient 1 seul element
         int value = ligne[0];
 
         ///contruire le nom du champ de la table
-        QString tab1 = "tb1."+names[zn].court+QString::number(value);
+        //QString tab1 = "tb1."+names[zn].court+QString::number(value);
+        QString tab1 = "tb1.c"+QString::number(value);
 
         /// construire la requete sur ce champs
         int loop = lenZn;
         QStringList lstChamps;
         lstChamps << "tb2."+names[zn].court;
-        msg = msg + GEN_Where_3(loop,tab1,false,"=",lstChamps,true,"or");
+        msg = msg + DB_Tools::GEN_Where_3(loop,tab1,false,"=",lstChamps,true,"or");
         if(i<lenZn-1)
             msg = msg + "and";
     }

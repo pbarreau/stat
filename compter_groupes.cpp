@@ -10,6 +10,7 @@
 #include <QStackedWidget>
 
 #include "compter_groupes.h"
+#include "db_tools.h"
 
 int cCompterGroupes::total = 0;
 
@@ -538,7 +539,7 @@ void cCompterGroupes::SqlFromSelection (const QItemSelectionModel *selectionMode
         // Creation du critere de filtre
         int loop = limites[zn].len;
         QString tab = "tbz."+names[zn].court;
-        QString scritere = GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
+        QString scritere = DB_Tools::GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
         if(headName != "T" and headName !="")
         {
             scritere = scritere + " and (J like '%" + headName +"%')";

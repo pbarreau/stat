@@ -58,9 +58,13 @@ bool GererBase::CreerTableCnp(QString tb, QString *data)
                 this,SLOT(slot_UseCnpLine(sigData,QString)));
 
         /// lancer la recherche des coefficient
-        isOk=a->BP_CalculerPascal();
+        //isOk=a->BP_CalculerPascal();
     }
 
+    /// Pour Voir les resultats
+    /// A verifier incidence double creation
+    BP_Cnp *a = new BP_Cnp(12,2);
+    BP_Cnp *b = new BP_Cnp(10,1);
     return(isOk);
 }
 

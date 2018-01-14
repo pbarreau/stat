@@ -21,9 +21,8 @@ public:
     BP_Cnp(int n, int p);
     ~BP_Cnp();
     int BP_count(void);
-    int * BP_GetPascalLine(int lineId);
-    bool BP_CalculerPascal(void);
-    void BP_ShowPascal(void);
+    int * BP_getPascalLine(int lineId);
+    QString BP_getTableName();
 
 
 private:
@@ -42,6 +41,12 @@ private:
     void CreerLigneTrianglePascal(int k, int *L, int *t, int r);
     bool FaireTableauPascal(void);
     void MontrerTableau_v1(void);
+    bool CalculerPascal(void);
+    void BP_ShowPascal(void);
+    void slot_UseCnpLine(const QString &Laligne);
+
+
+
 
 Q_SIGNALS:
     void sig_LineReady(const sigData &data, const QString &ligne);

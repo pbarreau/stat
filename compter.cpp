@@ -172,6 +172,7 @@ void B_Comptage::slot_ClicDeSelectionTableau(const QModelIndex &index)
     LabelFromSelection(selectionModel,tab_index);
 }
 
+#if 0
 /// cette fonction construit une chaine sous contrainte
 /// on peut mettre n indice (loop) apres tb1 si inc1 = vrai
 /// idem pour chacun des elments de tb2 si inc2 = vrai
@@ -240,6 +241,7 @@ QString B_Comptage::GEN_Where_3(int loop,
 
     return ret_msg;
 }
+#endif
 
 #if 0
 void B_Comptage::slot_RequeteFromSelection(const QModelIndex & index)

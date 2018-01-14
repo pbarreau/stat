@@ -68,7 +68,8 @@ SOURCES += \
 		sqlbackup.cpp \
 		tirages.cpp \
     cappliquerfiltres.cpp \
-    cassemble.cpp
+    cassemble.cpp \
+    db_tools.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -101,7 +102,8 @@ HEADERS  += \
 		tirages.h \
 		types_jeux.h \
     cappliquerfiltres.h \
-    cassemble.h
+    cassemble.h \
+    db_tools.h
 
 
 FORMS    += mainwindow.ui \

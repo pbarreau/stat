@@ -1,10 +1,13 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
+#include <QSqlError>
 #endif
 
 #include <QObject>
+#include <QSqlQuery>
 #include <QStringList>
 
+#include "db_tools.h"
 #include "cnp.h"
 
 BP_Cnp::BP_Cnp(int n, int p):n(n),p(p)
@@ -16,7 +19,10 @@ BP_Cnp::BP_Cnp(int n, int p):n(n),p(p)
     pos = 0;
     tab = NULL;
     tb="";
-
+    if(CalculerPascal()==false)
+    {
+        delete (this);
+    }
 }
 
 BP_Cnp::~BP_Cnp()
@@ -27,6 +33,7 @@ BP_Cnp::~BP_Cnp()
         }
         delete(tab);
     }
+
 }
 
 int BP_Cnp::BP_count(void)
@@ -34,7 +41,12 @@ int BP_Cnp::BP_count(void)
     return cnp;
 }
 
-bool BP_Cnp::BP_CalculerPascal(void)
+QString BP_Cnp::BP_getTableName()
+{
+    return tb;
+}
+
+bool BP_Cnp::CalculerPascal(void)
 {
     bool isOK = false;
 
@@ -47,11 +59,12 @@ bool BP_Cnp::BP_CalculerPascal(void)
 
 void BP_Cnp::BP_ShowPascal(void)
 {
-    if (BP_CalculerPascal())
+    if (CalculerPascal())
         MontrerTableau_v1();
 }
 
-int * BP_Cnp::BP_GetPascalLine(int lineId)
+
+int * BP_Cnp::BP_getPascalLine(int lineId)
 {
     int *ptr = NULL;
 
@@ -133,8 +146,9 @@ void BP_Cnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
         d.val_n =n;
         d.val_p = p;
         d.val_pos = pos;
-        d.val_tb = tb;
-        emit sig_LineReady(d,laLigne);
+        d.val_tb = "";
+        slot_UseCnpLine(laLigne);
+        //emit sig_LineReady(d,laLigne);
         pos++;
         return;
     }
@@ -176,6 +190,77 @@ int BP_Cnp::CalculerCnp_v2(void)
     return l_cnp;
 }
 
+void BP_Cnp::slot_UseCnpLine(const QString &Laligne)
+{
+#ifndef QT_NO_DEBUG
+    static int i = 0;
+    QString stNum = QString::number(i);
+
+    stNum.rightJustified(6,'0',true);
+
+    qDebug()<<"C("<<QString::number(d.val_n)<<","
+           <<QString::number(d.val_p)<<"):"
+          << stNum <<"<->"<<QString::number(d.val_pos)<<" sur "<<d.val_cnp
+          <<" -> "<<Laligne;
+    i++;
+#endif
+
+    static QString colNames = "";
+    QSqlQuery query;
+    QString msg = "";
+    static bool isOk = true;
+
+    /// Creer la table
+    if( (d.val_pos == 0) && (isOk == true))
+    {
+        i = 0;
+        msg = "create table if not exists MyCnp_"+QString::number(d.val_n)
+                + "_" + QString::number(d.val_p)+"(id integer primary key, ";
+        int loop = d.val_p;
+        QStringList elem;
+        elem << "int";
+        QString zname = "c";
+        colNames = DB_Tools::GEN_Where_3(loop,zname,true," ",elem,false,",");
+        // retirer premiere paranthense
+        colNames.remove(0,1);
+        msg = msg+colNames+";";
+
+        /// debut de transaction
+        isOk = QSqlDatabase::database().transaction();
+
+        isOk = query.exec(msg);
+        colNames.remove("int");
+
+#ifndef QT_NO_DEBUG
+        qDebug()<< msg;
+#endif
+    }
+
+
+    /// Rajouter chaque ligne
+    msg = "insert into MyCnp_"+QString::number(d.val_n)
+            + "_" + QString::number(d.val_p)
+            +"(id,"+colNames
+            +"values(NULL,"+Laligne+");";
+    isOk = query.exec(msg);
+
+
+    /// derniere ligne effectuer la transaction globale
+    if((d.val_pos == (d.val_cnp-1)) && (isOk == true))
+    {
+        isOk = QSqlDatabase::database().commit();
+    }
+
+    if(isOk == false)
+    {
+#ifndef QT_NO_DEBUG
+        qDebug()<< "SQL ERROR:" << query.executedQuery()  << "\n";
+        qDebug()<< query.lastError().text();
+        qDebug()<< msg;
+#endif
+    }
+
+}
 /// /* -----------------------------------------------------------------
 ///  *  Code C de reference
 ///  *  http://jm.davalan.org/mots/comb/comb/combalgo.html
