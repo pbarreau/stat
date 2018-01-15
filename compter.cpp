@@ -8,6 +8,7 @@
 #include <QHeaderView>
 #include <QToolTip>
 #include <QStackedWidget>
+#include <QMenu>
 
 #include "compter.h"
 #include "tirages.h"
@@ -87,6 +88,8 @@ void B_Comptage::RecupererConfiguration(void)
 
             names  = new cZonesNames [nbZone];
             limites = new cZonesLimits [nbZone];
+            sqmZones = new QSqlQueryModel* [nbZone];
+
 
             // remplir les infos
             msg = "select tb1.id, tb1.name, tb1.abv, tb2.len, tb2.min, tb2.max from " +
@@ -147,9 +150,8 @@ void B_Comptage::slot_AideToolTip(const QModelIndex & index)
     QVariant vCol = pModel->headerData(col,Qt::Horizontal);
     QString headName = vCol.toString();
 
-    if (col >1)
+    if (col >=1)
     {
-        //int val = index.model()->index(index.row(),col).data().toInt();
         QString s_nb = index.model()->index(index.row(),0).data().toString();
         QString s_va = index.model()->index(index.row(),col).data().toString();
         QString s_hd = headName;
@@ -239,7 +241,7 @@ void B_Comptage::LabelFromSelection(const QItemSelectionModel *selectionModel, i
     }
     else
     {
-      str_titre = "";
+        str_titre = "";
     }
 
     // On sauvegarde la selection en cours
@@ -264,7 +266,7 @@ void B_Comptage::LabelFromSelection(const QItemSelectionModel *selectionModel, i
     // Tout est deselectionné ?
     if(isVide == nbZone)
     {
-      str_titre = "Aucun";
+        str_titre = "Aucun";
     }
 
     // informer disponibilité
@@ -284,6 +286,7 @@ bool B_Comptage::VerifierValeur(int item,QString table,int idColValue,int *lev)
     QSqlQuery query ;
     QString msg = "";
 
+    /// La colonne val sert de foreign key
     msg = "select * from " + table + " " +
             "where (val = "+QString::number(item)+");";
     ret =  query.exec(msg);
@@ -306,14 +309,241 @@ bool B_Comptage::VerifierValeur(int item,QString table,int idColValue,int *lev)
         if(query.isValid())
         {
             int val = query.value(idColValue).toInt();
-
-            if(val >0 && val <=5)
-            {
-                *lev = val;
-            }
-
+            *lev = val;
         }
     }
-
     return ret;
 }
+
+void B_Comptage::slot_ccmr_tbForBaseEcart(QPoint pos)
+{
+    /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
+    /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
+
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QModelIndex index = view->indexAt(pos);
+    int col = view->columnAt(pos.x());
+
+    if(col == 0)
+    {
+        QString tbl = view->objectName();
+
+        int val = 0;
+        if(index.model()->index(index.row(),col).data().canConvert(QMetaType::Int))
+        {
+            val =  index.model()->index(index.row(),col).data().toInt();
+        }
+
+        QMenu *MonMenu = new QMenu(this);
+        QMenu *subMenu= ContruireMenu(tbl,val);
+        MonMenu->addMenu(subMenu);
+        CompleteMenu(MonMenu, tbl, val);
+
+
+        MonMenu->exec(view->viewport()->mapToGlobal(pos));
+    }
+}
+
+QMenu *B_Comptage::ContruireMenu(QString tbl, int val)
+{
+    QString msg2 = "Priorite";
+    QMenu *menu =new QMenu(msg2, this);
+    QActionGroup *grpPri = new  QActionGroup(menu);
+
+    int col = 2; /// dans la table colonne p
+    int niveau = 0;
+    bool existe = false;
+    existe = VerifierValeur(val, tbl,col,&niveau);
+
+
+
+    /// Total de priorite a afficher
+    for(int i =1; i<=5;i++)
+    {
+        QString name = QString::number(i);
+        QAction *radio = new QAction(name,grpPri);
+        name = QString::number(existe)+
+                ":"+QString::number(niveau)+
+                ":"+name+":"+QString::number(val)+
+                ":"+tbl;
+        radio->setObjectName(name);
+        radio->setCheckable(true);
+        menu->addAction(radio);
+    }
+
+    QAction *uneAction;
+    if(niveau)
+    {
+        uneAction = qobject_cast<QAction *>(grpPri->children().at(niveau-1));
+        uneAction->setChecked(true);
+    }
+    connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+    return menu;
+}
+
+
+/// Selectionner une priorite de choix pour une boule
+/// Cela conduira a la mettre dans un ensemble pour generer les jeux posibles
+void B_Comptage::slot_ChoosePriority(QAction *cmd)
+{
+    QSqlQuery query;
+    QString msg = "";
+
+    QString st_from = cmd->objectName();
+    QStringList def = st_from.split(":");
+    /// Verifier coherence des donnees
+    /// pos 0: ligne trouvee dans table
+    /// pos 1: ancie priorite
+    /// pos 2: nvlle priorite
+    /// pos 3: element selectionne
+    /// pos 4:nom de table
+    if(def.size()!=5)
+        return;
+
+    int trv = def[0].toInt();
+    int v_1 = def[1].toInt();
+    int v_2 = def[2].toInt();
+    int elm = def[3].toInt();
+    QString tbl = def[4];
+
+    // faut il inserer une nouvelle ligne
+    /// TB_SE
+    if(trv ==0)
+    {
+        msg = "insert into " + tbl + " (id, val, p, f) values(NULL,"
+                +def[3]+","+ def[2]+",0);";
+
+    }
+    // Verifier si if faut supprimer la priorite
+    if(v_1 == v_2)
+    {
+        msg = "update " + tbl + " set p=0 "+
+                "where (val="+def[3]+");";
+        trv = 0;
+    }
+
+    // faut il une mise a jour ?
+    if((v_1 != v_2)&& (trv!=0))
+    {
+        msg = "update " + tbl + " set p="+def[2]+" "+
+                "where (val="+def[3]+");";
+
+    }
+
+    bool rep = query.exec(msg);
+
+    if(!rep)
+    {
+        trv = false;
+#ifndef QT_NO_DEBUG
+        qDebug() << "select: " <<def[3]<<"->"<< query.lastError();
+        qDebug() << "Bad code:\n"<<msg<<"\n-------";
+#endif
+    }
+    else
+    {
+        trv = true;
+#ifndef QT_NO_DEBUG
+        qDebug() << "Fn :\n"<<msg<<"\n-------";
+#endif
+
+    }
+
+    /// montrer que l'on a compris
+    /// la demande utilisateur
+    cmd->setChecked(true);
+}
+
+void B_Comptage::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
+{
+    int col = 3; /// dans la table colonne "f"
+    int niveau = 0;
+    bool existe = false;
+    existe = VerifierValeur(clef, tbl,col,&niveau);
+
+    QAction *filtrer = LeMenu->addAction("Filtrer");
+    filtrer->setCheckable(true);
+
+    int i = 0;
+    QString name = QString::number(i);
+    name = QString::number(existe)+
+            ":"+QString::number(niveau)+
+            ":"+name+":"+QString::number(clef)+
+            ":"+tbl;
+
+    filtrer->setObjectName(name);
+    filtrer->setChecked(niveau);
+    connect(filtrer,SIGNAL(triggered(bool)),
+            this,SLOT(slot_wdaFilter(bool)));
+}
+
+/// https://openclassrooms.com/forum/sujet/qt-inclure-check-box-dans-un-menu-deroulant-67907
+void B_Comptage::slot_wdaFilter(bool val)
+{
+    QAction *chkFrom = qobject_cast<QAction *>(sender());
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "Boule :("<< chkFrom->objectName()<<") check:"<< val;
+#endif
+    QSqlQuery query;
+    QString msg = "";
+
+    QString st_from = chkFrom->objectName();
+    QStringList def = st_from.split(":");
+    /// Verifier coherence des donnees
+    /// pos 0: ligne trouvee dans table
+    /// pos 1: ancie priorite
+    /// pos 2: nvlle priorite
+    /// pos 3: element selectionne
+    /// pos 4:nom de table
+    if(def.size()!=5)
+        return;
+
+    int trv = def[0].toInt();
+    int v_1 = def[1].toInt();
+    int v_2 = def[2].toInt();
+    int elm = def[3].toInt();
+    QString tbl = def[4];
+
+    // faut il inserer une nouvelle ligne CREER UNE VARIABLE POUR LES COLONNES
+    /// TB_SE
+    if(trv ==0)
+    {
+        msg = "insert into " + tbl + " (id, val, p, f) values(NULL,"
+                +def[3]+",0,"+QString::number(val)+");";
+
+    }
+    else
+    {
+        msg = "update " + tbl + " set f="+QString::number(val)+" "+
+                "where (val="+def[3]+");";
+    }
+
+    bool rep = query.exec(msg);
+
+    if(!rep)
+    {
+        trv = false;
+#ifndef QT_NO_DEBUG
+        qDebug() << "select: " <<def[3]<<"->"<< query.lastError();
+        qDebug() << "Bad code:\n"<<msg<<"\n-------";
+#endif
+    }
+    else
+    {
+        trv = true;
+#ifndef QT_NO_DEBUG
+        qDebug() << "Fn :\n"<<msg<<"\n-------";
+#endif
+
+    }
+
+    /// Recharger les reponses dans le tableau
+    int zn = tbl.split("z").at(1).toInt() - 1;
+    QString Montest = sqmZones[zn]->query().executedQuery();
+    qDebug() << Montest;
+    sqmZones[zn]->setQuery(Montest);
+
+    delete chkFrom;
+}
+

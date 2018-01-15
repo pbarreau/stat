@@ -8,6 +8,7 @@
 #include <QString>
 #include <QStringList>
 #include <QGridLayout>
+#include <QSqlQueryModel>
 
 typedef struct _cZonesNames {
     QString complet;    /// nom long de la zone
@@ -40,7 +41,8 @@ protected:
     QString CriteresCreer(QString operateur, QString critere,int zone);
     void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
     bool VerifierValeur(int item, QString table,int idColValue,int *lev);
-
+    QMenu *ContruireMenu(QString tbl, int val);
+    void CompleteMenu(QMenu *LeMenu,QString tbl, int clef);
 
 private:
     void RecupererConfiguration(void);
@@ -61,10 +63,17 @@ protected:
     cZonesLimits *limites;  /// limites a utiliser sur les zones
     QModelIndexList *lesSelections; /// liste des selections dans les tableaux
     QString *sqlSelection;  /// code sql generee pour un tableau
+    QSqlQueryModel **sqmZones; /// pour mettre a jour le tableau des resultats
+
 
 public slots:
     void slot_AideToolTip(const QModelIndex & index);
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
+    void slot_ccmr_tbForBaseEcart(QPoint pos);
+    void slot_ChoosePriority(QAction *cmd);
+    void slot_wdaFilter(bool val);
+
+
 
 Q_SIGNALS:
     void sig_TitleReady(const QString &title);

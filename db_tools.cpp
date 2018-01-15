@@ -112,7 +112,7 @@ QString DB_Tools::leftJoin(stJoinArgs ja)
 
 #ifndef QT_NO_DEBUG
     qDebug() << "DB_Tools::leftJoin";
-    qDebug() << "msg:\n"<<msg<<"\n-------";
+    qDebug() << msg<<"\n-------\n";
 #endif
 
     return msg;

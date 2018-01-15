@@ -132,22 +132,23 @@ void Dlgt_Combi::paint(QPainter *painter, const QStyleOptionViewItem &option,
 {
     int col = index.column();
     int row = index.row();
+    int nbCol = index.model()->columnCount();
     int val = 0;
     QStyleOptionViewItem maModif(option);
     QColor u[]= {QColor(201,230,255,255),QColor(200,170,100,140)};
 
 
-    /// Regarder la valeur de la colone 0
+    /// Regarder la valeur de la derniere colonne
     /// Elle indique que mettre comme couleur
-    if(index.model()->index(index.row(),0).data().canConvert(QMetaType::Int))
+    if(index.model()->index(index.row(),nbCol-1).data().canConvert(QMetaType::Int))
     {
-        val =  index.model()->index(index.row(),0).data().toInt();
+        val =  index.model()->index(index.row(),nbCol-1).data().toInt();
     }
 
 
     switch(col)
     {
-    case 1: /// Filtre active sur le cas
+    case 0: /// Filtre active sur le cas
     {
         if (val & 0x2)
         {
@@ -155,7 +156,7 @@ void Dlgt_Combi::paint(QPainter *painter, const QStyleOptionViewItem &option,
         }
     }
         break;
-    case 2: /// C'est le dernier tirage
+    case 1: /// C'est le dernier tirage
     {
         if (val & 0x1)
         {

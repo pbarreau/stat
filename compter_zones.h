@@ -26,16 +26,9 @@ public:
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
     void slot_RequeteFromSelection(const QModelIndex &index);
-    void slot_ccmr_tbForBaseEcart(QPoint pos);
-    void slot_ChoosePriority(QAction *cmd);
-    void slot_wdaFilter(bool val);
-
-
-
 
 private:
     static int total;
-    QSqlQueryModel **sqmZones; /// pour mettre a jour le tableau des resultats
 
 private:
     QGridLayout *Compter(QString * pName, int zn);
@@ -43,8 +36,6 @@ private:
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
     QString PBAR_ReqComptage(QString ReqTirages, int zn,int distance);
-    QMenu *ContruireMenu(QString tbl, int val);
-    void CompleteMenu(QMenu *LeMenu,QString tbl, int clef);
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
 
 #if 0

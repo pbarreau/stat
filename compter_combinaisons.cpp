@@ -207,9 +207,9 @@ void cCompterCombinaisons::slot_RequeteFromSelection(const QModelIndex &index)
 
 QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QString st_cr1, int dst)
 {
-    QString arg1 = "count(CASE when tbRight.id = 1 then 1 end) as L,"
-                   " tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T, "
-            + db_jours;
+    QString arg1 = "tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T, "
+            + db_jours+
+            ",count(CASE when tbRight.id = 1 then 1 end) as L";
     QString arg2 = "select id,tip from lstcombi";
 
     QString arg3 = "select tb2.* from "
@@ -240,7 +240,7 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QStr
 #endif
 
 
-    arg1 = "(tbLeft.L| (case when tbRight.val is not null then 0x2 end))as R, tbLeft.id as Id ,Repartition,T ";
+    arg1 = "tbLeft.*,(tbLeft.L | (case when (tbRight.f==1) then 0x2 end))as F ";
     arg2 = st_msg1;
     arg3 = " select * from SelComb_z1";
     arg4 = "tbLeft.id = tbRight.val";
@@ -261,8 +261,9 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z2(QString st_baseUse,int 
 {
     QString st_criteres = ConstruireCriteres(zn);
     QString st_msg1 =
-            "select count(CASE when tb2.id = 1 then 1 end) as last, tb1.*,count(tb2.id) as T, "
+            "select tb1.*,count(tb2.id) as T, "
             + db_jours +
+            ", count(CASE when (tb2.id == 1) then 1 end) as L"
             " "
             "from  "
             "("
@@ -339,11 +340,8 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    sqmZones[zn] = sqm_tmp;
 
-    //tbv_bloc1_3 =qtv_tmp;
-
-    //sqm_bloc1_3 = new QSqlQueryModel;
-    //sqm_tmp=sqm_bloc1_3;
 
     QString st_baseUse = db_data;
     QString st_cr1 = "tbLeft.id=tbRight.pid";
@@ -370,7 +368,7 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
     qtv_tmp->setItemDelegate(new Dlgt_Combi); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
-    qtv_tmp->hideColumn(0);
+    //qtv_tmp->hideColumn(0);
 
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -400,13 +398,18 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
     QFormLayout *FiltreLayout = new QFormLayout;
     FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
     QList<qint32> colid;
-    colid << 2;
+    colid << 1; /// colonne Repartition
     fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
 
     FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
 
     lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
+
+    /// Selection & priorite
+    qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+            SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
 
     return lay_return;
 }
@@ -422,6 +425,7 @@ QGridLayout *cCompterCombinaisons::Compter_euro(QString * pName, int zn)
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    sqmZones[zn] = sqm_tmp;
 
 
     QString st_baseUse = db_data;
@@ -449,7 +453,7 @@ QGridLayout *cCompterCombinaisons::Compter_euro(QString * pName, int zn)
     qtv_tmp->setItemDelegate(new Dlgt_Combi);
 
     qtv_tmp->verticalHeader()->hide();
-    qtv_tmp->hideColumn(0);
+    //qtv_tmp->hideColumn(0);
 
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
