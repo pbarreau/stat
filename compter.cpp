@@ -147,7 +147,7 @@ void B_Comptage::slot_AideToolTip(const QModelIndex & index)
     QVariant vCol = pModel->headerData(col,Qt::Horizontal);
     QString headName = vCol.toString();
 
-    if (col >=1)
+    if (col >1)
     {
         //int val = index.model()->index(index.row(),col).data().toInt();
         QString s_nb = index.model()->index(index.row(),0).data().toString();

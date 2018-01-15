@@ -9,6 +9,7 @@
 #include <QActionGroup>
 #include <QWidget>
 #include <QObject>
+#include <QSortFilterProxyModel>
 
 #include "compter.h"
 #include "tirages.h"
@@ -33,6 +34,8 @@ public slots:
 
 private:
     static int total;
+    QSortFilterProxyModel *monProx;
+    QTableView *Monqtv;
 
 private:
     QGridLayout *Compter(QString * pName, int zn);

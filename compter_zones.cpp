@@ -20,6 +20,7 @@
 
 #include "compter_zones.h"
 #include "db_tools.h"
+#include "delegate.h"
 
 int cCompterZoneElmts::total = 0;
 
@@ -257,25 +258,24 @@ QString cCompterZoneElmts::PBAR_ReqComptage(QString ReqTirages, int zn,int dista
     st_cri_all= st_cri_all +DB_Tools::GEN_Where_3(loop,"tbleft.boule",false,"=",boules,true,"or");
     boules.clear();
 
-    msg =
-            "select tbleft.boule as B, count(tbright.id) as T, "
-            +db_jours
-            + " "
-              "from "
-              "( "
-              "select id as boule from Bnrz where (z"
+    QString arg1 = "tbleft.boule as B, count(tbright.id) as T, "
+            +db_jours;
+    QString arg2 ="select id as boule from Bnrz where (z"
             +QString::number(zn+1)
-            +" not null ) "
-             ") as tbleft "
-             "left join "
-             "( "
-            +ReqTirages.remove(";")+
-            ") as tbright "
-            "on "
-            "( "
-            + st_cri_all +
-            ") group by tbleft.boule; "
-            ;
+            +" not null )";
+
+    QString arg3 = ReqTirages.remove(";");
+    QString arg4 = st_cri_all;
+
+    stJoinArgs args;
+    args.arg1 = arg1;
+    args.arg2 = arg2;
+    args.arg3 = arg3;
+    args.arg4 = arg4;
+
+    msg = DB_Tools::leftJoin(args);
+    msg = msg + "group by tbLeft.boule";
+
 
 #ifndef QT_NO_DEBUG
     qDebug() << "PBAR_ReqComptage\n";
@@ -286,6 +286,22 @@ QString cCompterZoneElmts::PBAR_ReqComptage(QString ReqTirages, int zn,int dista
 #endif
 
 
+    /// on rajoute une colone pour la couleur
+    arg1 = "(case when tbRight.val is not null then 0x2 end)as R, tbLeft.* ";
+    arg2 = msg;
+    arg3 = " select * from SelElemt_z"+QString::number(zn+1);
+    arg4 = "tbLeft.B = tbRight.val";
+
+    args.arg1 = arg1;
+    args.arg2 = arg2;
+    args.arg3 = arg3;
+    args.arg4 = arg4;
+
+    msg = DB_Tools::leftJoin(args);
+#ifndef QT_NO_DEBUG
+    qDebug()<< msg;
+#endif
+
     return msg;
 }
 
@@ -295,6 +311,7 @@ QGridLayout *cCompterZoneElmts::Compter(QString * pName, int zn)
 
     QTableView *qtv_tmp = new QTableView;
     (* pName) = names[zn].court;
+    Monqtv = qtv_tmp;
 
     QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
@@ -306,8 +323,6 @@ QGridLayout *cCompterZoneElmts::Compter(QString * pName, int zn)
 
     sqm_tmp->setQuery(sql_msgRef);
 
-    qtv_tmp->setSortingEnabled(true);
-    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
     //qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
     //qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
@@ -318,6 +333,7 @@ QGridLayout *cCompterZoneElmts::Compter(QString * pName, int zn)
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_tmp);
+    monProx = m;
 
 #if 0
     // Memorisation des pointeurs
@@ -328,7 +344,13 @@ QGridLayout *cCompterZoneElmts::Compter(QString * pName, int zn)
 #endif
 
     qtv_tmp->setModel(m);
+    qtv_tmp->setItemDelegate(new Dlgt_Combi); /// Delegation
+
     qtv_tmp->verticalHeader()->hide();
+    //qtv_tmp->hideColumn(0);
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(1,Qt::AscendingOrder);
+
 
     //largeur des colonnes
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -369,14 +391,14 @@ void cCompterZoneElmts::slot_ccmr_tbForBaseEcart(QPoint pos)
     QModelIndex index = view->indexAt(pos);
     int col = view->columnAt(pos.x());
 
-    if(col == 0)
+    if(col == 1)
     {
         QString tbl = view->objectName();
 
         int val = 0;
-        if(index.model()->index(index.row(),0).data().canConvert(QMetaType::Int))
+        if(index.model()->index(index.row(),1).data().canConvert(QMetaType::Int))
         {
-            val =  index.model()->index(index.row(),0).data().toInt();
+            val =  index.model()->index(index.row(),1).data().toInt();
         }
 
         QMenu *MonMenu = new QMenu(this);
@@ -449,6 +471,8 @@ void cCompterZoneElmts::slot_wdaFilter(bool val)
 #endif
 
     }
+
+    Monqtv->setModel(monProx);
 
     delete chkFrom;
 }
