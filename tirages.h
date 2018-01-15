@@ -81,14 +81,14 @@ typedef struct _ordreArrivee
     int p;  /// precedent
 }stMyLinkedList;
 
-typedef struct _val_max_min
+typedef struct _stBornes
 {
     int len;
     int min;
     int max;
 }stBornes;
 
-typedef struct _gererBaseParam
+typedef struct _stParam
 {
     bool destination;
     bool typeChargement;
@@ -96,13 +96,13 @@ typedef struct _gererBaseParam
 
 }stParam;
 
-typedef struct _MyErrors
+typedef struct _stErr
 {
     bool status;
     QString msg;
 }stErr;
 
-typedef struct _tirages_def
+typedef struct _stTiragesDef
 {
     class tirages *pTir;
     NE_FDJ::E_typeJeux choixJeu;
@@ -118,7 +118,7 @@ typedef struct _tirages_def
     QStringList sl_Lev1[5];
 }stTiragesDef;
 
-typedef struct _un_tirage
+typedef struct _stUnTirage
 {
     QString date;
     int **valBoules;
@@ -170,6 +170,7 @@ typedef struct _keyForFile
     stFzn *pZn; /// Pointeur vers caracteristique de chacune des zones
 }stKey;
 
+/// Tirage file format
 typedef struct _tiragesFileFormat
 {
     QString fname;              /// file name

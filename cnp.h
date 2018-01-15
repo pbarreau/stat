@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QStringList>
 
-typedef struct
+typedef struct _sigData
 {
  int val_n;
  int val_p;

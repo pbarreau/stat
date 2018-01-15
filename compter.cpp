@@ -30,7 +30,7 @@ void B_Comptage::CreerCritereJours(void)
     }
 
     msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
-            db_data+") as tb1 order by J;";
+            db_data+") as tb1 order by J asc;";
 
     status = query.exec(msg);
 

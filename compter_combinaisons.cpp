@@ -207,18 +207,13 @@ void cCompterCombinaisons::slot_RequeteFromSelection(const QModelIndex &index)
 
 QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QString st_cr1, int dst)
 {
-    QString st_msg1 =
-            "select count(CASE when tb2.id = 1 then 1 end) as last, tb1.id as Id, tb1.tip as Repartition, count(tb2.id) as T, "
-            + db_jours +
-            " "
-            "from  "
-            "("
-            "select id,tip from lstcombi"
-            ") as tb1 "
-            "left join "
-            "("
-            "select tb2.* from "
-            "("
+    QString arg1 = "count(CASE when tbRight.id = 1 then 1 end) as L,"
+                   " tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T, "
+            + db_jours;
+    QString arg2 = "select id,tip from lstcombi";
+
+    QString arg3 = "select tb2.* from "
+                   "("
             +st_baseUse+
             " )as tb1"
             ","
@@ -229,13 +224,33 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QStr
             "("
             "tb2.id=tb1.id+"
             +QString::number(dst) +
-            ")"
-            ") as tb2 "
-            "on "
-            "("
-            +st_cr1+
-            ") group by tb1.id;";
+            ")";
+    QString arg4 = st_cr1;
 
+    stJoinArgs args;
+    args.arg1 = arg1;
+    args.arg2 = arg2;
+    args.arg3 = arg3;
+    args.arg4 = arg4;
+
+    QString st_msg1 = DB_Tools::leftJoin(args);
+    st_msg1 = st_msg1 + "group by tbLeft.id";
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_msg1;
+#endif
+
+
+    arg1 = "(tbLeft.L| (case when tbRight.val is not null then 0x2 end))as R, tbLeft.id as Id ,Repartition,T ";
+    arg2 = st_msg1;
+    arg3 = " select * from SelComb_z1";
+    arg4 = "tbLeft.id = tbRight.val";
+
+    args.arg1 = arg1;
+    args.arg2 = arg2;
+    args.arg3 = arg3;
+    args.arg4 = arg4;
+
+    st_msg1 = DB_Tools::leftJoin(args);
 #ifndef QT_NO_DEBUG
     qDebug()<< st_msg1;
 #endif
@@ -297,7 +312,6 @@ QString cCompterCombinaisons::ConstruireCriteres(int zn)
         int value = ligne[0];
 
         ///contruire le nom du champ de la table
-        //QString tab1 = "tb1."+names[zn].court+QString::number(value);
         QString tab1 = "tb1.c"+QString::number(value);
 
         /// construire la requete sur ce champs
@@ -332,7 +346,7 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
     //sqm_tmp=sqm_bloc1_3;
 
     QString st_baseUse = db_data;
-    QString st_cr1 = "tb1.id=tb2.pid";
+    QString st_cr1 = "tbLeft.id=tbRight.pid";
     QString st_msg1 = RequetePourTrouverTotal_z1(db_data,st_cr1,0);
 
     sqm_tmp->setQuery(st_msg1);
@@ -353,7 +367,7 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_tmp);
     qtv_tmp->setModel(m);
-    qtv_tmp->setItemDelegate(new Dlgt_Combi);
+    qtv_tmp->setItemDelegate(new Dlgt_Combi); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
     qtv_tmp->hideColumn(0);

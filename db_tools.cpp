@@ -86,8 +86,8 @@ QString DB_Tools::innerJoin(stJoinArgs ja)
     QString arg4 = ja.arg4;
     QString msg = "";
 
-    msg = "select " + arg1 + " from ("+arg2+")as tb1 "
-            "inner join ("+arg3+")as tb2 "
+    msg = "select " + arg1 + " from ("+arg2+")as tbLeft "
+            "inner join ("+arg3+")as tbRight "
             "on ("+arg4+")";
 
 #ifndef QT_NO_DEBUG
@@ -106,12 +106,12 @@ QString DB_Tools::leftJoin(stJoinArgs ja)
     QString arg4 = ja.arg4;
     QString msg = "";
 
-    msg = "select " + arg1 + " from ("+arg2+")as tb1 "
-            "left join ("+arg3+")as tb2 "
+    msg = "select " + arg1 + " from ("+arg2+")as tbLeft "
+            "left join ("+arg3+")as tbRight "
             "on ("+arg4+")";
 
 #ifndef QT_NO_DEBUG
-    qDebug() << "DB_Tools::leftJoin\n";
+    qDebug() << "DB_Tools::leftJoin";
     qDebug() << "msg:\n"<<msg<<"\n-------";
 #endif
 

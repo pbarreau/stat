@@ -17,6 +17,9 @@ public:
     cLesComptages(QString stLesTirages);
     ~cLesComptages();
 
+private:
+    QString ListeDesJeux(int zn);
+
 public slots:
     void slot_changerTitreZone(QString le_titre);
     void slot_AppliquerFiltres();

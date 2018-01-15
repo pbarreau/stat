@@ -1649,6 +1649,9 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
     origine =curOnglet->currentIndex();
     totOngl = curOnglet->count();
 
+    QString name1 = view->objectName();
+    QString name2 = selectionModel->objectName();
+
     switch (origine) {
     case 0:
     case 1:

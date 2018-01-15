@@ -12,6 +12,7 @@
 #include "gererbase.h"
 #include "SyntheseDetails.h"
 #include "cnp.h"
+#include "db_tools.h"
 
 extern QString ContruireRechercheCombi(int i,int zn,stTiragesDef *pRef);
 extern QString DetailsSomme(int zn, stTiragesDef *pRef);

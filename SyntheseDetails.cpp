@@ -265,6 +265,7 @@ QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, int nivea
 
     int taille = indexes.size();
 
+
     if (taille > maxElem)
     {
         QMessageBox::warning(0,"Selection","Depassement de bornes !",QMessageBox::Yes);

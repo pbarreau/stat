@@ -9,19 +9,19 @@
 #include <QStringList>
 #include <QGridLayout>
 
-typedef struct {
+typedef struct _cZonesNames {
     QString complet;    /// nom long de la zone
     QString court;      /// nom abreg de la zone
     QString selection;  /// nom correspondant à la selection en cours
 }cZonesNames;
 
-typedef struct {
+typedef struct _cZonesLimits{
     int len;    /// nombre d'elements composant la zone
     int min;    /// valeur mini possible pour un element
     int max;    /// valeur maxi possible pour un element
 }cZonesLimits;
 
-typedef struct
+typedef struct _B_RequeteFromTbv
 {
     QString db_data;    /// requete pour la base de donnees
     QString tb_data;    /// titre de cette requete
@@ -65,10 +65,6 @@ protected:
 public slots:
     void slot_AideToolTip(const QModelIndex & index);
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
-#if 0
-    void slot_RequeteFromSelection(const QModelIndex &index);
-    void slot_DecodeTirage(const QModelIndex & index);
-#endif
 
 Q_SIGNALS:
     void sig_TitleReady(const QString &title);
