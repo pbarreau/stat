@@ -37,6 +37,8 @@ cCompterZoneElmts::cCompterZoneElmts(QString in, QWidget *LeParent):B_Comptage(&
 
     int nb_zones = nbZone;
 
+    sqmZones = new QSqlQueryModel* [nbZone];
+
     QGridLayout *(cCompterZoneElmts::*ptrFunc[])(QString *, int) =
     {
             &cCompterZoneElmts::Compter,
@@ -287,7 +289,7 @@ QString cCompterZoneElmts::PBAR_ReqComptage(QString ReqTirages, int zn,int dista
 
 
     /// on rajoute une colone pour la couleur
-    arg1 = "(case when tbRight.val is not null then 0x2 end)as R, tbLeft.* ";
+    arg1 = "(case when (tbRight.f==1) then 0x2 end)as R, tbLeft.* ";
     arg2 = msg;
     arg3 = " select * from SelElemt_z"+QString::number(zn+1);
     arg4 = "tbLeft.B = tbRight.val";
@@ -311,13 +313,12 @@ QGridLayout *cCompterZoneElmts::Compter(QString * pName, int zn)
 
     QTableView *qtv_tmp = new QTableView;
     (* pName) = names[zn].court;
-    Monqtv = qtv_tmp;
 
     QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-
+    sqmZones[zn] = sqm_tmp;
     QString ReqTirages = db_data;
     QString sql_msgRef = PBAR_ReqComptage(ReqTirages, zn, 0);
 
@@ -333,7 +334,6 @@ QGridLayout *cCompterZoneElmts::Compter(QString * pName, int zn)
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_tmp);
-    monProx = m;
 
 #if 0
     // Memorisation des pointeurs
@@ -472,7 +472,11 @@ void cCompterZoneElmts::slot_wdaFilter(bool val)
 
     }
 
-    Monqtv->setModel(monProx);
+    /// Recharger les reponses dans le tableau
+    int zn = tbl.split("z").at(1).toInt() - 1;
+    QString Montest = sqmZones[zn]->query().executedQuery();
+    qDebug() << Montest;
+    sqmZones[zn]->setQuery(Montest);
 
     delete chkFrom;
 }
@@ -601,7 +605,6 @@ void cCompterZoneElmts::slot_ChoosePriority(QAction *cmd)
 #endif
 
     }
-
     cmd->setChecked(true);
 }
 

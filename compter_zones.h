@@ -10,6 +10,7 @@
 #include <QWidget>
 #include <QObject>
 #include <QSortFilterProxyModel>
+#include <QSqlQueryModel>
 
 #include "compter.h"
 #include "tirages.h"
@@ -34,8 +35,7 @@ public slots:
 
 private:
     static int total;
-    QSortFilterProxyModel *monProx;
-    QTableView *Monqtv;
+    QSqlQueryModel **sqmZones; /// pour mettre a jour le tableau des resultats
 
 private:
     QGridLayout *Compter(QString * pName, int zn);

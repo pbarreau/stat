@@ -131,6 +131,7 @@ void Dlgt_Combi::paint(QPainter *painter, const QStyleOptionViewItem &option,
                        const QModelIndex &index) const
 {
     int col = index.column();
+    int row = index.row();
     int val = 0;
     QStyleOptionViewItem maModif(option);
     QColor u[]= {QColor(201,230,255,255),QColor(200,170,100,140)};
