@@ -3,6 +3,7 @@
 #endif
 
 #include <QMessageBox>
+#include <QApplication>
 
 #include <QString>
 #include <QStringList>
@@ -11,7 +12,8 @@
 
 #include "gererbase.h"
 #include "SyntheseDetails.h"
-#include "cnp.h"
+#include "cnp_SansRepetition.h"
+#include "cnp_AvecRepetition.h"
 #include "db_tools.h"
 
 extern QString ContruireRechercheCombi(int i,int zn,stTiragesDef *pRef);
@@ -38,6 +40,32 @@ bool GererBase::CreerTableDistriCombi(void)
     return ret;
 }
 
+/// Table des combinaisons avec repetitions
+bool GererBase::CreerTableGnp(QString tb, QString *data)
+{
+    bool isOk=true;
+
+    int nbZone = conf.nb_zone;
+#ifndef QT_NO_DEBUG
+    int b = 0;
+#endif
+
+    for(int i = 0; (i< nbZone) && isOk; i++)
+    {
+        int maxNz = floor(conf.limites[i].max/10)+1;
+        int maxPz = conf.limites[i].neg;
+        maxNz = BMIN(GNP_N_MAX,maxNz);
+        maxPz = BMIN(GNP_P_MAX,maxPz);
+
+        BP_Gnp *a = new BP_Gnp(maxNz,maxPz);
+#ifndef QT_NO_DEBUG
+    b = a->BP_count();
+#endif
+    }
+    return(isOk);
+}
+
+/// Table des combinaisons sans repetitions
 bool GererBase::CreerTableCnp(QString tb, QString *data)
 {
     bool isOk=true;
@@ -46,20 +74,18 @@ bool GererBase::CreerTableCnp(QString tb, QString *data)
 
     for(int i = 0; (i< nbZone) && isOk; i++)
     {
-        int maxNz = conf.limites[i].max;
         int maxPz = conf.nbElmZone[i];
+        int maxNz = conf.limites[i].max;
         maxNz = BMIN(CNP_N_MAX,maxNz);
         maxPz = BMIN(CNP_P_MAX,maxPz);
 
-        curZone = i;
         BP_Cnp *a = new BP_Cnp(maxNz,maxPz);
         int b = a->BP_count();
-
+#if USE_CNP_SLOT_LINE
+        curZone = i;
         connect(a,SIGNAL(sig_LineReady(sigData,QString)),
                 this,SLOT(slot_UseCnpLine(sigData,QString)));
-
-        /// lancer la recherche des coefficient
-        //isOk=a->BP_CalculerPascal();
+#endif
     }
 
     /// Pour Voir les resultats
@@ -180,6 +206,7 @@ bool GererBase::CreationTablesDeLaBDD_v2()
         "TablesList:tbName text,usage int,description text",
         "ExplAvecData:name text, abv text",
         "TbNomCreeDansLaFonctionAppelee:CNP",
+        "TbNomCreeDansLaFonctionAppelee:Gamma_NP",
         "TbNomCreeDansLaFonctionAppelee:1",
         "TbNomCreeDansLaFonctionAppelee:2",
         "TbNomCreeDansLaFonctionAppelee:3",
@@ -195,28 +222,39 @@ bool GererBase::CreationTablesDeLaBDD_v2()
         "'Etoiles','e'"
     };
 
+    int position = 0;
     stTbToCreate depart[]
     {
-        {aCreer[0],NULL,0,NULL},
-        {aCreer[1],&data_1[0],sizeof(data_1)/sizeof(QString*),NULL},
-        {aCreer[2],NULL,0,CreerTableCnp},
-        {aCreer[3],NULL,0,f1}, ///tirages
-        {aCreer[4],NULL,0,f1_1}, ///noms des zones
-        {aCreer[5],NULL,0,f1_2}, /// limites
-        {aCreer[6],NULL,0,f2}, /// nom des boules
-        {aCreer[7],NULL,0,f2_2}, /// selections utilisateur
-        {aCreer[8],NULL,0,f3}, /// analyse des boules
-        {aCreer[9],NULL,0,f4} /// table des combinaisons
+        {aCreer[position++],NULL,0,NULL},
+        {aCreer[position++],&data_1[0],sizeof(data_1)/sizeof(QString*),NULL},
+        {aCreer[position++],NULL,0,CreerTableCnp},
+        {aCreer[position++],NULL,0,CreerTableGnp},
+        {aCreer[position++],NULL,0,f1}, ///tirages
+        {aCreer[position++],NULL,0,f1_1}, ///noms des zones
+        {aCreer[position++],NULL,0,f1_2}, /// limites
+        {aCreer[position++],NULL,0,f2}, /// nom des boules
+        {aCreer[position++],NULL,0,f2_2}, /// selections utilisateur
+        {aCreer[position++],NULL,0,f3}, /// analyse des boules
+        {aCreer[position],NULL,0,f4} /// table des combinaisons
     };
 
-    int total = sizeof(depart)/sizeof(stTbToCreate);
-    for(int i=0;(i<total) && status;i++)
+    int total_1 = sizeof(aCreer)/sizeof(QString);
+    int total_2 = sizeof(depart)/sizeof(stTbToCreate);
+
+    if(total_1 != total_2)
+    {
+        QMessageBox::critical(0, "tbName", "Erreur traitement !",QMessageBox::Yes);
+        QApplication::quit();
+    }
+
+    for(int i=0;(i<total_2) && status;i++)
     {
         status = RajouterTable(depart[i]);
         if(!status){
             QString tbName = (depart[i].tbDef.split(":")).at(0);
             //un message d'information
             QMessageBox::critical(0, tbName, "Erreur traitement !",QMessageBox::Yes);
+            QApplication::quit();
         }
     }
 
@@ -300,8 +338,13 @@ bool GererBase::f1_2(QString tb, QString *data)
 
     stTiragesDef ref = typeTirages->conf;
 
+    /// id  : clef primaire
+    /// len : nb de boules composant la zone a etudier
+    /// min : valeur minimale d'un element de l'ensemble concerne
+    /// max : valeur maximale d'un element de l'ensemble concerne
+    /// neg : nombre d'element a avoir sur l'ensemble pour gagner le jackpot
     requete =  "create table " + st_table +
-            "(id integer primary key,len int, min int, max int);";
+            "(id integer primary key,len int, min int, max int, neg int);";
 
     status = query.exec(requete);
 
@@ -311,10 +354,11 @@ bool GererBase::f1_2(QString tb, QString *data)
         int totZone = ref.nb_zone;
         for(int i = 0; (i<totZone) && status;i++)
         {
-            requete = "insert into "+st_table+" (id,len,min,max) values "+
+            requete = "insert into "+st_table+" (id,len,min,max,neg) values "+
                     "(NULL,"+QString::number(ref.nbElmZone[i])+","+
                     QString::number(ref.limites[i].min)+","+
-                    QString::number(ref.limites[i].max)+
+                    QString::number(ref.limites[i].max)+ "," +
+                    QString::number(ref.limites[i].neg)+
                     ");";
             status = query.exec(requete);
         }

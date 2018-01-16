@@ -43,10 +43,6 @@
 #define CL_IHM_TOT_2    7
 #define CL_IHM_TOT_1    6
 
-#define BMAX(a,b) (((a)>(b))?(a):(b))
-#define BMIN(a,b) (((a)<(b))?(a):(b))
-#define CNP_N_MAX   7
-#define CNP_P_MAX   5
 
 namespace NE_FDJ{
 typedef enum _les_jeux_a_tirages
@@ -83,9 +79,10 @@ typedef struct _ordreArrivee
 
 typedef struct _stBornes
 {
-    int len;
-    int min;
-    int max;
+    int len;    /// nb element composant la zone
+    int min;    /// val min de la zone
+    int max;    /// val max de la zone
+    int neg;    /// nb element a avoir sur la zone pour gagner
 }stBornes;
 
 typedef struct _stParam

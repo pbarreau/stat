@@ -5,18 +5,76 @@
 #include <QString>
 #include <QStringList>
 
-#include "car.h"
+#include "cnp_AvecRepetition.h"
 
+BP_Gnp::BP_Gnp(int n, int p):BP_Cnp((n+p-1),p)
+{
+}
+BP_Gnp::~BP_Gnp()
+{
+}
+
+#if 0
 QString ConstruireRequete(QString item, int n, QString name, int step);
 QString LireTableau(int *t, int n);
 
-GammaNk::GammaNk(int n, int k)
+BP_Gnp::BP_Gnp(int n, int p)
 {
-    nbItem = CompterCardinalGamma(n,k);
-    coefItem = GenereCombinaison(n,k);
+    gnp = Cardinal_np();
+    pos = 0;
+    tab = NULL;
+
+    coefItem = GenereCombinaison(n,p);
 }
 
-double GammaNk::CalculerFactorielle(double *x)
+BP_Gnp::~BP_Gnp()
+{
+    if(tab !=NULL){
+        for(int i = 0; i< gnp;i++){
+            delete(tab[i]);
+        }
+        delete(tab);
+    }
+}
+
+bool BP_Gnp::CalculerGamma(void)
+{
+    bool isOK = false;
+
+    if(tab==NULL){
+        isOK = FaireTableauGamma();
+    }
+
+    return isOK;
+}
+
+bool BP_Gnp::FaireTableauGamma(void)
+{
+    bool isOk = false;
+    tab = new int *[gnp]; /// tableau de pointeur d'entiers de Cnp lignes
+
+    /// Allocation memoire OK ?
+    if(tab != NULL){
+        /// initialisation recursion
+        int *L = new int [p];
+        int *t = new int [n];
+
+        if(t != NULL){
+
+            for(int i =0; i<n;i++) t[i]=i;
+        }
+
+        /// demarrage
+        if((L != NULL) && (t !=NULL)){
+            CreerLigneTrianglePascal(0,L,t,n);
+            isOk = true;
+        }
+    }
+
+    return isOk;
+}
+
+double BP_Gnp::CalculerFactorielle(double *x)
 {
     double i;
     double result=1;
@@ -34,16 +92,16 @@ double GammaNk::CalculerFactorielle(double *x)
     return 0;
 }
 
-double GammaNk::cardinal(void)
+double BP_Gnp::CalculerGnp(void)
 {
-    return(nbItem);
+    return(gnp);
 }
 
-double GammaNk::CompterCardinalGamma(int n, int k)
+double BP_Gnp::Cardinal_np()
 {
-    double v1 = n+k-1;
+    double v1 = n+p-1;
     double v2 = n-1;
-    double v3 = k;
+    double v3 = p;
 
     double tmp = 0;
 
@@ -53,12 +111,12 @@ double GammaNk::CompterCardinalGamma(int n, int k)
 
 }
 
-QStringList GammaNk::coef(void)
+QStringList BP_Gnp::coef(void)
 {
     return (coefItem);
 }
 
-QStringList GammaNk::GenereCombinaison(int n, int k)
+QStringList BP_Gnp::GenereCombinaison(int n, int k)
 {
     int tab[1024];
     //int ptrTab = 0;
@@ -88,14 +146,14 @@ QStringList GammaNk::GenereCombinaison(int n, int k)
     return lst;
 }
 
-QString GammaNk::MakeSqlFromGamma(stTiragesDef *pTirDef, int step, int k)
+QString BP_Gnp::MakeSqlFromGamma(stTiragesDef *pTirDef, int step, int k)
 {
     int zone = 0;
     int n = pTirDef->nbElmZone[zone];
     QString name = pTirDef->nomZone[zone];
     QString tmp1 = "";
     QString tmp2 = "";
-    GammaNk a(n,k);
+    BP_Gnp a(n,k);
     QStringList lesCoefs = a.coef();
 
     for(int i = 0; i< lesCoefs.size(); i++)
@@ -141,3 +199,4 @@ QString LireTableau(int *t, int n)
     tmp.remove(tmp.length()-1,1);
     return tmp;
 }
+#endif

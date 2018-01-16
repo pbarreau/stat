@@ -10,7 +10,7 @@
 
 #include "tirages.h"
 #include "labelclickable.h"
-#include "cnp.h"
+#include "cnp_SansRepetition.h"
 
 class GererBase;
 typedef struct
@@ -77,11 +77,10 @@ public:
     QString TST_ZoneRequete(stTiragesDef *pConf, int zone, QString operateur, int boule, QString critere);
     QString TST_GetIntervalCouverture(int etendue);
     void TST_LBcDistBr(int zn,stTiragesDef *pConf,int dist, int br,int bc);
-   int TST_TotalRechercheADistance_F2(int dist, QString col, int bp_ref, int bp_look);
+    int TST_TotalRechercheADistance_F2(int dist, QString col, int bp_ref, int bp_look);
 
 public slots:
     void slot_DetailsCombinaison(const QModelIndex & index) ;
-    void slot_UseCnpLine(const sigData &d, const QString &p);
 
 private:
     void combirec(int k, QStringList &l, const QString &s, QStringList &ret);
@@ -101,6 +100,7 @@ private:
     bool RajouterTable(stTbToCreate des);
     bool TraitementPerso(QString tb, QString *data);
     bool CreerTableCnp(QString tb, QString *data);
+    bool CreerTableGnp(QString tb, QString *data);
 
     bool f1(QString tb, QString *data);
     bool f1_1(QString tb, QString *data);
@@ -121,11 +121,18 @@ private:
 private:
     QSqlDatabase db;
     stTiragesDef conf;
-    int curZone;
     tirages *typeTirages;
     QSqlTableModel *tbl_model;
     QSqlTableModel *tbl_couverture;
     int iAffichageVoisinEnCoursDeLaBoule[2];
+
+#if USE_CNP_SLOT_LINE
+private:
+    int curZone;
+public slots:
+    void slot_UseCnpLine(const sigData &d, const QString &p);
+#endif
+
 };
 
 #endif // GERERBASE_H

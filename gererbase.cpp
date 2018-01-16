@@ -19,8 +19,8 @@
 #include "tirages.h"
 #include "gererbase.h"
 #include "SyntheseDetails.h"
-#include "cnp.h"
-#include "car.h"
+#include "cnp_SansRepetition.h"
+#include "cnp_AvecRepetition.h"
 
 #if 0
 GererBase::GererBase(QObject *parent) :
@@ -52,9 +52,10 @@ bool GererBase::OPtimiseAccesBase(void)
 }
 
 GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
-//GererBase::GererBase(bool enMemoire, bool autoLoad, NE_FDJ::E_typeJeux leJeu, stTiragesDef *pConf)
 {
+#if USE_CNP_SLOT_LINE
     curZone = 0;
+#endif
     typeTirages = NULL;
     tbl_model = NULL;
     tbl_couverture = NULL;
@@ -98,6 +99,8 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
         retErr->msg = "CreerBasePourEtude";
     }
 }
+
+#if USE_CNP_SLOT_LINE
 void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
 {
 #ifndef QT_NO_DEBUG
@@ -171,6 +174,7 @@ void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
     }
 
 }
+#endif
 
 GererBase::~GererBase(void)
 {
@@ -516,7 +520,7 @@ void GererBase::AfficherBase(stTiragesDef *pConf, QTableView *cibleview)
         }
     }
 
-    // definir largeur pour colonne parité
+    // definir largeur pour colonne paritï¿½
     for(i=j;i<j+def.nb_zone;i++)
     {
         cibleview->setColumnWidth(i,30);
@@ -1522,7 +1526,7 @@ void GererBase::MontrerDetailCombinaison(QString msg)
 
 #if 0
 // pseudo code
-début denombrement_combinaisons( k , n )
+dï¿½but denombrement_combinaisons( k , n )
 {
     si (k = n) retourner 1;
     si (k > n/2) k = n-k;

@@ -14,7 +14,7 @@
 #include "delegate.h"
 #include "filtrecombinaisons.h"
 #include "compter_combinaisons.h"
-#include "cnp.h"
+#include "cnp_SansRepetition.h"
 #include "db_tools.h"
 
 int cCompterCombinaisons::total = 0;

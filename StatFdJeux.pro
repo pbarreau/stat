@@ -36,10 +36,8 @@ SOURCES += \
 		RemplirBase.cpp \
 		SyntheseDetails.cpp \
 		SyntheseGenerale.cpp \
-		car.cpp \
 		chartwidget.cpp \
 		choixjeux.cpp \
-		cnp.cpp \
 		combinaison.cpp \
 		compter.cpp \
 		compter_combinaisons.cpp \
@@ -69,16 +67,16 @@ SOURCES += \
 		tirages.cpp \
     cappliquerfiltres.cpp \
     cassemble.cpp \
-    db_tools.cpp
+    db_tools.cpp \
+    cnp_SansRepetition.cpp \
+    cnp_AvecRepetition.cpp
 
 HEADERS  += \
 		mainwindow.h \
 		SyntheseDetails.h \
 		SyntheseGenerale.h \
-		car.h \
 		chartwidget.h \
 		choixjeux.h \
-		cnp.h \
 		compter.h \
 		compter_combinaisons.h \
 		compter_groupes.h \
@@ -103,7 +101,9 @@ HEADERS  += \
 		types_jeux.h \
     cappliquerfiltres.h \
     cassemble.h \
-    db_tools.h
+    db_tools.h \
+    cnp_AvecRepetition.h \
+    cnp_SansRepetition.h
 
 
 FORMS    += mainwindow.ui \

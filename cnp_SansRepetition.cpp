@@ -8,17 +8,17 @@
 #include <QStringList>
 
 #include "db_tools.h"
-#include "cnp.h"
+#include "cnp_SansRepetition.h"
 
 BP_Cnp::BP_Cnp(int n, int p):n(n),p(p)
 {
-    int cnp_v1 = CalculerCnp_v1();
+    int cnp_v1 = Cardinal_np();
     int cnp_v2 = CalculerCnp_v2();
 
     cnp = cnp_v1;
     pos = 0;
     tab = NULL;
-    tb="";
+
     if(CalculerPascal()==false)
     {
         delete (this);
@@ -33,7 +33,6 @@ BP_Cnp::~BP_Cnp()
         }
         delete(tab);
     }
-
 }
 
 int BP_Cnp::BP_count(void)
@@ -41,11 +40,7 @@ int BP_Cnp::BP_count(void)
     return cnp;
 }
 
-QString BP_Cnp::BP_getTableName()
-{
-    return tb;
-}
-
+#if 0
 bool BP_Cnp::CalculerPascal(void)
 {
     bool isOK = false;
@@ -56,6 +51,7 @@ bool BP_Cnp::CalculerPascal(void)
 
     return isOK;
 }
+#endif
 
 void BP_Cnp::BP_ShowPascal(void)
 {
@@ -73,7 +69,7 @@ int * BP_Cnp::BP_getPascalLine(int lineId)
 
     /// calcul deja fait ?
     if(tab==NULL){
-        FaireTableauPascal();
+        CalculerPascal();
     }
 
     /// Obtenir ligne
@@ -100,9 +96,13 @@ void BP_Cnp::MontrerTableau_v1(void)
 #endif
 }
 
-bool BP_Cnp::FaireTableauPascal(void)
+bool BP_Cnp::CalculerPascal(void)
 {
-    bool isOk = false;
+    bool isOk = true;
+
+    if (tab != NULL)
+        return isOk;
+
     tab = new int *[cnp]; /// tableau de pointeur d'entiers de Cnp lignes
 
     /// Allocation memoire OK ?
@@ -110,6 +110,9 @@ bool BP_Cnp::FaireTableauPascal(void)
         /// initialisation recursion
         int *L = new int [p];
         int *t = new int [n];
+
+        /// pour verifier allocation memoire
+        isOk = false;
 
         if(t != NULL)
             for(int i =0; i<n;i++) t[i]=i;
@@ -119,6 +122,10 @@ bool BP_Cnp::FaireTableauPascal(void)
             CreerLigneTrianglePascal(0,L,t,n);
             isOk = true;
         }
+    }
+    else
+    {
+        isOk = false;
     }
 
     return isOk;
@@ -142,13 +149,15 @@ void BP_Cnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
             laLigne = laLigne + QString::number(tab[pos][i]);
             if(i<(p-1)) laLigne = laLigne +",";
         }
+        insertLineInDbTable(laLigne);
+#if USE_CNP_SLOT_LINE
         d.val_cnp = cnp;
         d.val_n =n;
         d.val_p = p;
         d.val_pos = pos;
         d.val_tb = "";
-        slot_UseCnpLine(laLigne);
-        //emit sig_LineReady(d,laLigne);
+        emit sig_LineReady(d,laLigne);
+#endif
         pos++;
         return;
     }
@@ -162,7 +171,7 @@ void BP_Cnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
     }
 }
 
-int BP_Cnp::CalculerCnp_v1(void)
+int BP_Cnp::Cardinal_np(void)
 {
     if(n<0 || p<0 || p>n) return 0;
 
@@ -190,19 +199,28 @@ int BP_Cnp::CalculerCnp_v2(void)
     return l_cnp;
 }
 
-void BP_Cnp::slot_UseCnpLine(const QString &Laligne)
+/// Cette fonction insert les coefficient cnp dans la table appropriee
+/// celle ci est creer si necessaire lors du traitement
+/// de la premiere ligne
+void BP_Cnp::insertLineInDbTable(const QString &Laligne)
 {
+    QString msg = "";
+
 #ifndef QT_NO_DEBUG
-    static int i = 0;
-    QString stNum = QString::number(i);
-
+    static int verifLineId = 0;
+    QString stNum = QString::number(verifLineId);
     stNum.rightJustified(6,'0',true);
-
-    qDebug()<<"C("<<QString::number(d.val_n)<<","
-           <<QString::number(d.val_p)<<"):"
-          << stNum <<"<->"<<QString::number(d.val_pos)<<" sur "<<d.val_cnp
+    msg = "C(%1,%2:%3<->%4 sur %5 ->)";
+    msg.arg(n).arg(p).arg(stNum).arg(pos).arg(cnp);
+    msg = msg + Laligne;
+    qDebug()<< msg;
+#if 0
+    qDebug()<<"C("<<QString::number(n)<<","
+           <<QString::number(p)<<"):"
+          << stNum <<"<->"<<QString::number(pos)<<" sur "<<cnp
           <<" -> "<<Laligne;
-    i++;
+#endif
+    verifLineId++;
 #endif
 
     static QString st_table ="";
@@ -210,22 +228,22 @@ void BP_Cnp::slot_UseCnpLine(const QString &Laligne)
     static bool isOk = true;
     static bool skipInsert = false;
     QSqlQuery query;
-    QString msg = "";
+
 
     /// Creer la table ?
-    if( (d.val_pos == 0)
+    if( (pos == 0)
             && (isOk == true)
             && (skipInsert == false))
     {
         /// nom de la table
-        st_table = "MyCnp_"+QString::number(d.val_n)
-                + "_" + QString::number(d.val_p);
+        st_table = "MyCnp_"+QString::number(n)
+                + "_" + QString::number(p);
 
         /// Verifier si la table existe deja
         msg = "SELECT name FROM sqlite_master "
               "WHERE type='table' AND name='"+st_table+"';";
-
         isOk = query.exec(msg);
+
         if(isOk)
         {
             query.first();
@@ -235,18 +253,28 @@ void BP_Cnp::slot_UseCnpLine(const QString &Laligne)
                 ///  n'existe pas
                 skipInsert = false;
 
+#ifndef QT_NO_DEBUG
                 /// on peut la creer
-                i = 0;
+                verifLineId = 0;
+#endif
                 msg = "create table if not exists "
                         + st_table +"(id integer primary key, ";
-                int loop = d.val_p;
-                QStringList elem;
-                elem << "int";
-                QString zname = "c";
-                colNames = DB_Tools::GEN_Where_3(loop,zname,true," ",elem,false,",");
-                // retirer premiere paranthense
-                colNames.remove(0,1);
-                msg = msg+colNames+";";
+
+                QString ref = "c%1 int";
+                colNames = "";
+                for(int i= 0; i<p;i++)
+                {
+                    colNames = colNames + ref.arg(i+1);
+                    if(i<p-1)
+                        colNames = colNames + ",";
+                }
+#ifndef QT_NO_DEBUG
+                qDebug()<< msg;
+                qDebug()<< colNames;
+#endif
+
+                /// Premiere Requete a executer
+                msg = msg+colNames+");";
 
                 /// debut de transaction
                 isOk = QSqlDatabase::database().transaction();
@@ -256,8 +284,8 @@ void BP_Cnp::slot_UseCnpLine(const QString &Laligne)
 
 #ifndef QT_NO_DEBUG
                 qDebug()<< msg;
+                qDebug()<< colNames;
 #endif
-
             }
             else
             {
@@ -272,13 +300,13 @@ void BP_Cnp::slot_UseCnpLine(const QString &Laligne)
         /// Rajouter chaque ligne
         msg = "insert into "
                 +st_table
-                +"(id,"+colNames
+                +"(id,"+colNames+")"
                 +"values(NULL,"+Laligne+");";
         isOk = query.exec(msg);
 
 
         /// derniere ligne effectuer la transaction globale
-        if((d.val_pos == (d.val_cnp-1)) && (isOk == true))
+        if((pos == (cnp-1)) && (isOk == true))
         {
             isOk = QSqlDatabase::database().commit();
         }
