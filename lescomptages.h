@@ -4,6 +4,7 @@
 #include <QString>
 #include <QGridLayout>
 
+#include "compter.h"
 #include "labelclickable.h"
 
 #define CTXT_LABEL  "selection Z:aucun - C:aucun - G:aucun"

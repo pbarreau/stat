@@ -9,7 +9,10 @@
 #include <QStringList>
 #include <QGridLayout>
 #include <QSqlQueryModel>
-
+/// https://fr.wikibooks.org/wiki/Programmation_C%2B%2B/Les_classes
+/// https://fr.wikipedia.org/wiki/Fonction_virtuelle
+/// https://openclassrooms.com/courses/programmez-avec-le-langage-c/le-polymorphisme-1
+/// http://apais.developpez.com/tutoriels/c++/fonctions-virtuelles-en-cpp/?page=page_1
 typedef struct _cZonesNames {
     QString complet;    /// nom long de la zone
     QString court;      /// nom abreg de la zone
@@ -20,6 +23,7 @@ typedef struct _cZonesLimits{
     int len;    /// nombre d'elements composant la zone
     int min;    /// valeur mini possible pour un element
     int max;    /// valeur maxi possible pour un element
+    int neg;    /// nb elements a avoir pour jackpot
 }cZonesLimits;
 
 typedef struct _B_RequeteFromTbv
@@ -63,7 +67,7 @@ protected:
     cZonesLimits *limites;  /// limites a utiliser sur les zones
     QModelIndexList *lesSelections; /// liste des selections dans les tableaux
     QString *sqlSelection;  /// code sql generee pour un tableau
-    QSqlQueryModel **sqmZones; /// pour mettre a jour le tableau des resultats
+    QSqlQueryModel *sqmZones; /// pour mettre a jour le tableau des resultats
 
 
 public slots:

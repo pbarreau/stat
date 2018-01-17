@@ -209,7 +209,7 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QStr
 {
     QString arg1 = "tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T, "
             + db_jours+
-            ",count(CASE when tbRight.id = 1 then 1 end) as L";
+            ",count(CASE when tbRight.id == 1 then 1 end) as L";
     QString arg2 = "select id,tip from lstcombi";
 
     QString arg3 = "select tb2.* from "
@@ -234,13 +234,13 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QStr
     args.arg4 = arg4;
 
     QString st_msg1 = DB_Tools::leftJoin(args);
-    st_msg1 = st_msg1 + "group by tbLeft.id";
+    st_msg1 = st_msg1 + "group by tbLeft.id order by T desc";
 #ifndef QT_NO_DEBUG
     qDebug()<< st_msg1;
 #endif
 
 
-    arg1 = "tbLeft.*,(tbLeft.L | (case when (tbRight.f==1) then 0x2 end))as F ";
+    arg1 = "tbLeft.*,(tbLeft.L | (case when (tbRight.f==1) then 0x2 else tbLeft.L end))as F ";
     arg2 = st_msg1;
     arg3 = " select * from SelComb_z1";
     arg4 = "tbLeft.id = tbRight.val";
@@ -285,6 +285,23 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z2(QString st_baseUse,int 
 #ifndef QT_NO_DEBUG
     qDebug()<< st_msg1;
 #endif
+
+    QString arg1 = "tbLeft.*,(tbLeft.L | (case when (tbRight.f==1) then 0x2 else tbLeft.L end))as F ";
+    QString arg2 = st_msg1;
+    QString arg3 = " select * from SelComb_z2";
+    QString arg4 = "tbLeft.id = tbRight.val";
+
+    stJoinArgs args;
+    args.arg1 = arg1;
+    args.arg2 = arg2;
+    args.arg3 = arg3;
+    args.arg4 = arg4;
+
+    st_msg1 = DB_Tools::leftJoin(args);
+#ifndef QT_NO_DEBUG
+    qDebug()<< st_msg1;
+#endif
+
     return    st_msg1 ;
 }
 
@@ -339,16 +356,14 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
     QString qtv_name = QString::fromLatin1(TB_SC) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
-    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    sqmZones[zn] = sqm_tmp;
+    QSqlQueryModel *sqm_tmp = &sqmZones[zn];
 
-
-    QString st_baseUse = db_data;
+    //QString st_baseUse = db_data;
     QString st_cr1 = "tbLeft.id=tbRight.pid";
     QString st_msg1 = RequetePourTrouverTotal_z1(db_data,st_cr1,0);
 
     sqm_tmp->setQuery(st_msg1);
-    int nbcol = sqm_tmp->columnCount();
+    //int nbcol = sqm_tmp->columnCount();
 
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
@@ -359,7 +374,7 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    qtv_tmp->setFixedSize(250,CHauteur1);
+    //qtv_tmp->setFixedSize(250,CHauteur1);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -381,6 +396,14 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
 
+    qtv_tmp->setMouseTracking(true);
+    connect(qtv_tmp,
+            SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
+
+    /// Selection & priorite
+    qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+            SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
 #if 0
     qtv_tmp->setColumnWidth(1,30);
     qtv_tmp->setColumnWidth(2,70);
@@ -406,10 +429,6 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
     lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
 
-    /// Selection & priorite
-    qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
-            SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
 
     return lay_return;
 }
@@ -424,8 +443,9 @@ QGridLayout *cCompterCombinaisons::Compter_euro(QString * pName, int zn)
     QString qtv_name = QString::fromLatin1(TB_SC) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
-    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    sqmZones[zn] = sqm_tmp;
+   // QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    //sqmZones[zn] = sqm_tmp;
+    QSqlQueryModel *sqm_tmp = &sqmZones[zn];
 
 
     QString st_baseUse = db_data;
@@ -444,13 +464,13 @@ QGridLayout *cCompterCombinaisons::Compter_euro(QString * pName, int zn)
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    qtv_tmp->setFixedSize(250,CHauteur1);
+    //qtv_tmp->setFixedSize(250,CHauteur1);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_tmp);
     qtv_tmp->setModel(m);
-    qtv_tmp->setItemDelegate(new Dlgt_Combi);
+    qtv_tmp->setItemDelegate(new Dlgt_Combi); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
     //qtv_tmp->hideColumn(0);
@@ -466,7 +486,15 @@ QGridLayout *cCompterCombinaisons::Compter_euro(QString * pName, int zn)
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
 
+    qtv_tmp->setMouseTracking(true);
+    connect(qtv_tmp,
+            SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 
+
+    /// Selection & priorite
+    qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+            SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
 
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;

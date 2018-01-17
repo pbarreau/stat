@@ -143,6 +143,10 @@ void Dlgt_Combi::paint(QPainter *painter, const QStyleOptionViewItem &option,
     if(index.model()->index(index.row(),nbCol-1).data().canConvert(QMetaType::Int))
     {
         val =  index.model()->index(index.row(),nbCol-1).data().toInt();
+        if(col ==1 && row ==102)
+        {
+            val =val;
+        }
     }
 
 

@@ -88,11 +88,11 @@ void B_Comptage::RecupererConfiguration(void)
 
             names  = new cZonesNames [nbZone];
             limites = new cZonesLimits [nbZone];
-            sqmZones = new QSqlQueryModel* [nbZone];
+            sqmZones = new QSqlQueryModel [nbZone];
 
 
             // remplir les infos
-            msg = "select tb1.id, tb1.name, tb1.abv, tb2.len, tb2.min, tb2.max from " +
+            msg = "select tb1.id, tb1.name, tb1.abv, tb2.len, tb2.min, tb2.max, tb2.neg from " +
                     QString::fromLocal8Bit(TB_RZ) + " as tb1, " +
                     QString::fromLocal8Bit(TB_RZVA) + " as tb2 " +
                     " where (tb1.id = tb2.id );";
@@ -111,6 +111,7 @@ void B_Comptage::RecupererConfiguration(void)
                         limites[i].len = query.value(3).toInt();
                         limites[i].min = query.value(4).toInt();
                         limites[i].max = query.value(5).toInt();
+                        limites[i].neg = query.value(6).toInt();
                         status = query.next();
                     }
                 }
@@ -134,8 +135,12 @@ B_Comptage::B_Comptage(QString *in, QWidget *unParent=0):QWidget(unParent), db_d
 {
     nbZone = 0;
     db_jours = "";
+    lesSelections = NULL;
+    sqlSelection = NULL;
+    memo = NULL;
     names = NULL;
     limites = NULL;
+    sqmZones = NULL;
 
     RecupererConfiguration();
     CreerCritereJours();
@@ -540,9 +545,9 @@ void B_Comptage::slot_wdaFilter(bool val)
 
     /// Recharger les reponses dans le tableau
     int zn = tbl.split("z").at(1).toInt() - 1;
-    QString Montest = sqmZones[zn]->query().executedQuery();
+    QString Montest = sqmZones[zn].query().executedQuery();
     qDebug() << Montest;
-    sqmZones[zn]->setQuery(Montest);
+    sqmZones[zn].setQuery(Montest);
 
     delete chkFrom;
 }

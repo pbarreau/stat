@@ -316,8 +316,11 @@ QGridLayout *cCompterZoneElmts::Compter(QString * pName, int zn)
     QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
-    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    sqmZones[zn] = sqm_tmp;
+    //QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    //sqmZones[zn] = sqm_tmp;
+    QSqlQueryModel *sqm_tmp = &sqmZones[zn];
+
+
     QString ReqTirages = db_data;
     QString sql_msgRef = PBAR_ReqComptage(ReqTirages, zn, 0);
 
