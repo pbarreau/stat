@@ -59,7 +59,7 @@ bool GererBase::CreerTableGnp(QString tb, QString *data)
 
         BP_Gnp *a = new BP_Gnp(maxNz,maxPz);
 #ifndef QT_NO_DEBUG
-    b = a->BP_count();
+        b = a->BP_count();
 #endif
     }
     return(isOk);
@@ -384,53 +384,83 @@ bool GererBase::f2(QString tb, QString *data)
     stTiragesDef ref = typeTirages->conf;
 
 
-    // Creation Table Boules Names References Zones
+    /// Creation Table Boules Names References Zones
+    /// - pour chaque zone dans la table on a une colonne z suivi d'un chiffre
+    /// cela represente le symbole associe aux elements de la zone
+    /// pour recuperer un symbole on se base sur son id et la colonne a laquelle
+    /// il appartient
+    /// - tz1 : texte des arrangements (relation table Cnp)
+    ///
+    ///
     requete =  "create table "+st_table+" (id Integer primary key,";
 
     int nb_zone = ref.nb_zone;
     int max_boules = 0;
+    QString def_1 = "z%1 int, tz%1 int";
+    QString colDf = "(id,";
     for(int zone=0;(zone<nb_zone);zone++)
     {
-        requete = requete + "z"+QString::number(zone+1)+" int";
+
+        /// champs z1...
+        requete = requete + def_1.arg(zone+1);
+        colDf = colDf + (def_1.arg(zone+1)).remove(" int");
         if(zone+1 < nb_zone)
         {
             requete = requete + ",";
+            colDf = colDf + ",";
             max_boules = BMAX(ref.limites[zone].max,
                               ref.limites[zone+1].max);
         }
     }
     requete = requete + ");";
+    colDf = colDf + ")";
     status = query.exec(requete);
     query.finish();
+#ifndef QT_NO_DEBUG
+    qDebug()<< requete;
+    qDebug()<< colDf;
+#endif
 
     // Creation des ids englobant
     for(int j=1;j<=max_boules && status == true;j++)
     {
-        requete = "insert into "+st_table+" (id";
-
-        // Colonnes a mettre
-        for(int zone=0;(zone<ref.nb_zone);zone++)
-        {
-            for(int bz = j; (bz<=j) && j <= ref.limites[zone].max;bz++ )
-            {
-                requete = requete + ", z"
-                        +QString::number(zone+1);
-            }
-
-        }
-
+        requete = "insert into "+st_table + colDf;
         // Mise en place des valeurs
-        requete = requete + ") values (NULL";
+        requete = requete + "values (NULL,";
         for(int zone=0;(zone<ref.nb_zone);zone++)
         {
-            for(int bz = j; (bz<=j) && j <= ref.limites[zone].max;bz++ )
-            {
-                requete = requete + ","
-                        +QString::number(j);
+            //int nbDizaine = floor(ref.limites[zone].max/10)+1;
+            int nbDizaine = ref.limites[zone].neg + 1;
+
+            /// symbole ligne j colone z
+            /// champs zx
+            if(j<=ref.limites[zone].max){
+                requete = requete + QString::number(j);
             }
+            else
+            {
+                requete = requete + "NULL";
+            }
+            requete = requete + ",";
+
+            /// Champs tzx
+            if(j<=nbDizaine){
+                requete = requete + QString::number(j-1);
+            }
+            else
+            {
+                requete = requete + "NULL";
+            }
+
+            /// Zone suivante ?
+            if(zone < (ref.nb_zone)-1)
+                requete = requete + ",";
 
         }
         requete = requete + ");";
+#ifndef QT_NO_DEBUG
+    qDebug()<< requete;
+#endif
 
         status = query.exec(requete);
         query.finish();
