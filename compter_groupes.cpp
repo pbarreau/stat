@@ -38,12 +38,17 @@ cCompterGroupes::cCompterGroupes(QString in):B_Comptage(&in)
 
 };
 
-    for(int i = 0; i< nb_zones; i++)
+    for(int zn = 0; zn< nb_zones; zn++)
     {
-
-        QString *name = new QString;
+        QString *name = &db_data;
         QWidget *tmpw = new QWidget;
-        QGridLayout *calcul = (this->*ptrFunc[i])(name, i);
+
+        maRef[zn] = CreateFilterForData(zn);
+
+        QString tblSynthese = "Montest";
+        bool isOK = AnalyserEnsembleTirage(db_data,tblSynthese,zn);
+
+        QGridLayout *calcul = (this->*ptrFunc[zn])(name, zn);
         tmpw->setLayout(calcul);
         tab_Top->addTab(tmpw,tr((*name).toUtf8()));
     }
@@ -62,7 +67,6 @@ QGridLayout *cCompterGroupes::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    maRef[zn] = CreateFilterForData(zn);
 
     QTableView *qtv_tmp_1 = CompterLigne (pName, zn);
     QTableView *qtv_tmp_2 = CompterEnsemble (pName, zn);
@@ -73,6 +77,125 @@ QGridLayout *cCompterGroupes::Compter(QString * pName, int zn)
 
 
     return lay_return;
+}
+
+bool cCompterGroupes::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
+{
+    /// Verifier si des vues temporaires precedentes sont encore presentes
+    /// Si oui les effacer
+    /// Si non prendre la liste des criteres a appliquer sur l'ensemble
+    /// puis faire tant qu'il existe un critere
+    /// effectuer la selection comptage vers une nouvelle vu temporaire i
+    /// quand on arrive a nombre de criteres total -1 la vue destination
+    /// sera OutputTable.
+
+    bool isOk = true;
+    QString msg = "";
+    QSqlQuery query;
+    QString stDefBoules = TB_RZBN;
+    QString st_OnDef = "";
+
+    //int nbZone = nbZone;
+    QString ref="(tbleft.%1%2=tbRight.B)";
+
+    /// sur quel nom des elements de la zone
+    st_OnDef=""; /// remettre a zero pour chacune des zones
+    for(int j=0;j<limites[zn].len;j++)
+    {
+        st_OnDef = st_OnDef + ref.arg(names[zn].court).arg(j+1);
+        if(j<(limites[zn].len)-1)
+            st_OnDef = st_OnDef + " or ";
+    }
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "on definition:"<<st_OnDef;
+#endif
+
+    QStringList *slst=&maRef[zn][0];
+
+    /// Verifier si des tables existent deja
+    if(SupprimerVueIntermediaires())
+    {
+        /// les anciennes vues ne sont pas presentes
+        ///  on peut faire les calculs
+        int loop = 0;
+        int nbTot = slst[0].size();
+        QString curName = InputTable;
+        QString curTarget = "view vt_0";
+        do
+        {
+            msg = "create " + curTarget
+                    +" as select tbLeft.*, count(tbRight.B) as "
+                    + slst[1].at(loop)
+                    +" from("+curName+")as tbLeft "
+                    +"left join (select c1.id as B from "
+                    +stDefBoules+" as c1 where (c1.z"
+                    +QString::number(zn+1)+" not null and (c1."
+                    +slst[0].at(loop)+"))) as tbRight on ("
+                    +st_OnDef+") group by tbLeft.id";
+            isOk = query.exec(msg);
+#ifndef QT_NO_DEBUG
+            qDebug() << "msg:"<<msg;
+#endif
+            loop++;
+            curName = "vt_" +  QString::number(loop-1);
+            if(loop <  nbTot-1)
+            {
+                curTarget = "view vt_"+QString::number(loop);
+            }
+            else
+            {
+                curTarget = "table vrz"+QString::number(zn+1)+"_"+OutputTable;
+            }
+        }while(loop < nbTot && isOk);
+
+
+        /// supression tables intermediaires
+        if(isOk)
+            isOk = SupprimerVueIntermediaires();
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "AnalyserEnsembleTirage:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+    return isOk;
+}
+
+bool cCompterGroupes::SupprimerVueIntermediaires(void)
+{
+    bool isOk = true;
+    QString msg = "";
+    QSqlQuery query;
+    QSqlQuery qDel;
+
+    msg = "SELECT name FROM sqlite_master "
+          "WHERE type='view' AND name like'vt_%';";
+    isOk = query.exec(msg);
+
+    if(isOk)
+    {
+        query.first();
+        if(query.isValid())
+        {
+            /// il en existe donc les suprimer
+            do
+            {
+                QString viewName = query.value("name").toString();
+                msg = "drop view if exists "+viewName;
+                isOk = qDel.exec(msg);
+            }while(query.next()&& isOk);
+        }
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "SupprimerVueIntermediaires:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
+    return isOk;
 }
 
 QTableView *cCompterGroupes::CompterLigne(QString * pName, int zn)
@@ -121,7 +244,7 @@ QTableView *cCompterGroupes::CompterEnsemble(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
     int nbLgn = limites[zn].len + 1;
-    (* pName) = names[zn].court;
+    //(* pName) = names[zn].court;
 
     QStandardItemModel * sqm_tmp = NULL;
     QSqlQuery query ;

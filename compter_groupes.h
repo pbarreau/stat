@@ -20,6 +20,8 @@ class cCompterGroupes:public B_Comptage
 public:
     cCompterGroupes(QString in);
     ~cCompterGroupes();
+    bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
+    bool SupprimerVueIntermediaires(void);
 
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);

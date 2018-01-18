@@ -172,13 +172,11 @@ bool GererBase::RajouterTable(stTbToCreate des)
         }
     }
 
-#ifndef QT_NO_DEBUG
     if(!isOk)
     {
-        qDebug() << "create: " <<input.at(0)<<"->"<< query.lastError();
-        qDebug() << "Bad code:\n"<<msg<<"\n-------";
+        QString ErrLoc = "RajouterTable:"+input.at(0);
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
     }
-#endif
 
     query.finish();
 

@@ -6,6 +6,10 @@
 
 #include <QString>
 #include <QStringList>
+#include <QMessageBox>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QApplication>
 
 #include "db_tools.h"
 
@@ -19,9 +23,9 @@
 /// avec lst ayant b
 /// 'tb3.b1 as b1,'...'tb5.b5 as b5,'
 QString DB_Tools::GEN_Where_3(int loop,
-                                QString tb1,bool inc1,QString op1,
-                                QStringList &tb2,bool inc2,QString op2
-                                )
+                              QString tb1,bool inc1,QString op1,
+                              QStringList &tb2,bool inc2,QString op2
+                              )
 {
     QString ret_msg = "";
     QString ind_1 = "";
@@ -87,8 +91,8 @@ QString DB_Tools::innerJoin(stJoinArgs ja)
     QString msg = "";
 
     msg = "select " + arg1 + " from ("+arg2+")as tbLeft "
-            "inner join ("+arg3+")as tbRight "
-            "on ("+arg4+")";
+                                            "inner join ("+arg3+")as tbRight "
+                                                                "on ("+arg4+")";
 
 #ifndef QT_NO_DEBUG
     qDebug() << "DB_Tools::innerJoin\n";
@@ -107,8 +111,8 @@ QString DB_Tools::leftJoin(stJoinArgs ja)
     QString msg = "";
 
     msg = "select " + arg1 + " from ("+arg2+")as tbLeft "
-            "left join ("+arg3+")as tbRight "
-            "on ("+arg4+")";
+                                            "left join ("+arg3+")as tbRight "
+                                                               "on ("+arg4+")";
 
 #ifndef QT_NO_DEBUG
     qDebug() << "DB_Tools::leftJoin";
@@ -138,10 +142,35 @@ QString DB_Tools::leftJoinFiltered(stJoinArgs ja,QString arg5)
 
     msg = leftJoin(ja)+"where("+arg5+")";
 
-#ifndef QT_NO_DEBUG
-    qDebug() << "DB_Tools::leftJoinFiltered\n";
-    qDebug() << "msg:\n"<<msg<<"\n-------";
-#endif
+    DB_Tools::DisplayError("DB_Tools::leftJoinFiltered",NULL,msg);
 
     return msg;
+}
+
+void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
+{
+    //un message d'information
+    QMessageBox::critical(NULL, fnName, "Erreur traitement !",QMessageBox::Yes);
+
+#ifndef QT_NO_DEBUG
+    QString sqlError = "";
+    QString sqlText = "";
+
+    if(pCurrent !=NULL)
+    {
+        sqlError = pCurrent->lastError().text();
+        sqlText = pCurrent->lastQuery();
+    }
+    else
+    {
+        sqlError = "Not in query";
+        sqlText = "Can not say";
+    }
+    qDebug() << "Fonction:"<<fnName;
+    qDebug() << "Error from Query:"<<sqlError;
+    qDebug() << "Code of Query:"<<sqlText;
+    qDebug() << "Code wanted:"<<sqlCode<<"\n--------------";
+#endif
+    QApplication::exit();
+
 }
