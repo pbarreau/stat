@@ -1667,7 +1667,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, i
             + " "
               "from "
               "( "
-              "select id , tip  from lstcombi "
+              "select id , tip  from lstCombi_z1 "
               ") as tbleft "
               "left join "
               "( "
@@ -1738,7 +1738,7 @@ QString PBAR_ReqNbCombi(stCurDemande *pEtude, QString ReqTirages)
             + " "
               "from "
               "( "
-              "select id , tip  from lstcombi "
+              "select id , tip  from lstCombi_z1 "
               ") as tbleft "
               "left join "
               "( "
@@ -2118,7 +2118,7 @@ QString SyntheseDetails::SD_Tb1_1(QStringList &boules, QString &sqlTblRef,int ds
                 tb3.e1 as e1,
                 tb3.bp as P,
                 tb3.bg as G
-                from tirages as tb3, analyses as tb4, lstcombi as tb5
+                from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
                 inner join
                 (
                     select *  from tirages as tb1
@@ -2350,7 +2350,7 @@ QString SyntheseDetails::SD_Tb2_3(QStringList &boules, QString &sqlTblRef,int ds
                 ) as tbleft
             left join
             (
-                select tb3.id as Tid1, tb5.id as Pid1, tb3.jour_tirage as J, substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, tb5.tip as C, tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, tb3.e1 as e1 from tirages as tb3, analyses as tb4, lstcombi as tb5 inner join ( select tirages.*,  analyses.id_poids from tirages,analyses where ( tirages.id=analyses.id and analyses.id_poids = 115) ) as tb2 on ( (tb3.id = tb2.id + 0) and (tb4.id = tb3.id) and (tb4.id_poids = tb5.id) )
+                select tb3.id as Tid1, tb5.id as Pid1, tb3.jour_tirage as J, substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, tb5.tip as C, tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, tb3.e1 as e1 from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5 inner join ( select tirages.*,  analyses.id_poids from tirages,analyses where ( tirages.id=analyses.id and analyses.id_poids = 115) ) as tb2 on ( (tb3.id = tb2.id + 0) and (tb4.id = tb3.id) and (tb4.id_poids = tb5.id) )
                 ) as tbright
             on
             (
@@ -2398,24 +2398,24 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
 #if 0
     select tg.id as cid, tg.tip as Repartition,count(tr.new_pid) as T,
             count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM
-            from lstcombi as tg
+            from lstCombi_z1 as tg
             left join
             (
                 -- debuftleft
                 select tg.id as previous_id,tr.id as new_id, tr.npid as new_pid, tg.*,tr.*from
-                (select tirages.*, lstcombi.id as previous_pid from tirages, analyses, lstcombi
+                (select tirages.*, lstCombi_z1.id as previous_pid from tirages, analyses, lstCombi_z1
                  where
                  (
-                     lstcombi.id = 125
+                     lstCombi_z1.id = 125
             and
             tirages.id = analyses.id
             and
-            analyses.id_poids = lstcombi.id
+            analyses.id_poids = lstCombi_z1.id
             )
                  ) as tg
                 left join
                 (
-                    select t1.*,t2.id as npid from tirages as t1, lstcombi as t2, analyses as t3
+                    select t1.*,t2.id as npid from tirages as t1, lstCombi_z1 as t2, analyses as t3
                     where (t1.id=t3.id and t3.id_poids=t2.id)
                     )as tr
                 on
@@ -2443,21 +2443,21 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
     st_sqlR =
             "select tg.id as cid, tg.tip as Repartition,count(tr.new_pid) as T, "
             "count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM "
-            "from lstcombi as tg "
+            "from lstCombi_z1 as tg "
             "left join "
             "( "
             "/* debuftleft */"
             "select tg.id as previous_id,tr.id as new_id, tr.npid as new_pid, tg.*,tr.*from "
-            "(select tirages.*, lstcombi.id as previous_pid from tirages, analyses, lstcombi "
+            "(select tirages.*, lstCombi_z1.id as previous_pid from tirages, analyses, lstCombi_z1 "
             "where "
             "( "
-            "lstcombi.id = "
+            "lstCombi_z1.id = "
             + QString::number(val) +
             " "
             "and "
             "tirages.id = analyses.id "
             "and "
-            "analyses.id_poids = lstcombi.id "
+            "analyses.id_poids = lstCombi_z1.id "
             + st_cri1 +
             ") "
             ") as tg "
@@ -2469,7 +2469,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
             "t2.tip as C,"
             "t1.b1 as b1, t1.b2 as b2,t1.b3 as b3,t1.b4 as b4,t1.b5 as b5,"
             "t1.e1 as e1,"
-            "t2.id as npid from tirages as t1, lstcombi as t2, analyses as t3 "
+            "t2.id as npid from tirages as t1, lstCombi_z1 as t2, analyses as t3 "
             "where (t1.id=t3.id and t3.id_poids=t2.id) "
             ")as tr "
             "on  "
@@ -2619,7 +2619,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
             tb3.e1 as e1,
             tb3.bp as P,
             tb3.bg as G
-            from tirages as tb3, analyses as tb4, lstcombi as tb5
+            from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
             inner join
             (
                 select *  from tirages as tb1
@@ -2669,7 +2669,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
             "tb3.e1 as e1,"
             "tb3.bp as P,"
             "tb3.bg as G "
-            "from tirages as tb3, analyses as tb4, lstcombi as tb5 "
+            "from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5 "
             "inner join"
             "("
             "select *  from tirages as tb1 "
@@ -2871,7 +2871,7 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
             tb3.e1 as e1,
             tb3.bp as P,
             tb3.bg as G
-            from tirages as tb3, analyses as tb4, lstcombi as tb5
+            from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
             inner join
 
 
@@ -2964,7 +2964,7 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
             "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
             "tb3.e1 as e1,"
             "tb2.N as N from tirages as tb3,"
-            "analyses as tb4, lstcombi as tb5 "
+            "analyses as tb4, lstCombi_z1 as tb5 "
             "inner join"
             "("
             "select *  from "
@@ -3058,7 +3058,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
             tb5.tip as C,
             tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
             tb3.e1 as e1
-            from tirages as tb3, analyses as tb4, lstcombi as tb5
+            from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
             inner join
             (
                 select tirages.*,  analyses.id_poids from tirages,analyses
@@ -3090,7 +3090,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
             "tb5.tip as C, "
             "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, "
             "tb3.e1 as e1 "
-            "from tirages as tb3, analyses as tb4, lstcombi as tb5 "
+            "from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5 "
             "inner join "
             "( "
             "select tirages.*, analyses.id_poids from tirages,analyses "
@@ -3133,7 +3133,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
                           "tb5.tip as C, "
                           "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, "
                           "tb3.e1 as e1 "
-                          "from tirages as tb3, analyses as tb4, lstcombi as tb5 "
+                          "from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5 "
                           "inner join "
                           "( "
                           "select tirages.*,  analyses.id_poids from tirages,analyses "

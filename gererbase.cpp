@@ -349,7 +349,7 @@ bool GererBase::AffectePoidsATirage_v2()
     bool status = false;
     QSqlQuery sql_1;
     QSqlQuery sql_2;
-    QString msg_1 = "select * from lstcombi;";
+    QString msg_1 = "select * from lstCombi_z1;";
     stTiragesDef ref=typeTirages->conf;
     int zn = 0;
     int nbBoules = floor(ref.limites[zn].max/10);
@@ -369,8 +369,9 @@ bool GererBase::AffectePoidsATirage_v2()
                 for(int i = 0; i<= nbBoules;i++)
                 {
                     // Voir les champs de la table
-                    // les unites commence en position 4
-                    coef[i] = sql_1.value(4+i).toInt();
+                    // les unites commence en position 4 (ancienne version)
+                    // 1 vouvelle version de lstCombi_z1
+                    coef[i] = sql_1.value(1+i).toInt();
                     msg_2 = msg_2 + "bd"+QString::number(i)
                             +"="+QString::number(coef[i])+ " and ";
                 }

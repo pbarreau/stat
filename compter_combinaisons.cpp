@@ -210,7 +210,7 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QStr
     QString arg1 = "tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T, "
             + db_jours+
             ",count(CASE when tbRight.id == 1 then 1 end) as L";
-    QString arg2 = "select id,tip from lstcombi";
+    QString arg2 = "select id,tip from lstCombi_z1";
 
     QString arg3 = "select tb2.* from "
                    "("

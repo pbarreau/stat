@@ -869,7 +869,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
             " "
             "from  "
             "("
-            "select id,tip from lstcombi"
+            "select id,tip from lstCombi_z1"
             ") as tb1 "
             "left join "
             "("
@@ -2066,7 +2066,7 @@ tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
 tb3.e1 as e1,
 tb3.bp as P,
 tb3.bg as G
-from tirages as tb3, analyses as tb4, lstcombi as tb5
+from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
 inner join
 (
         select *  from tirages as tb1
@@ -2110,7 +2110,7 @@ left join
         tb3.e1 as e1,
         tb3.bp as P,
         tb3.bg as G
-        from tirages as tb3, analyses as tb4, lstcombi as tb5
+        from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
         inner join
         (
             select *  from tirages as tb1
@@ -2190,7 +2190,7 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             tb3.e1 as e1
             from tirages as tb3,
             analyses as tb4,
-            lstcombi as tb5
+            lstCombi_z1 as tb5
             where
             (
                 tb4.id = tb3.id
@@ -2230,7 +2230,7 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             +st_base_reference+
             ") as tb3,  "
             "analyses as tb4,  "
-            "lstcombi as tb5 "
+            "lstCombi_z1 as tb5 "
             "where "
             "( "
             "tb4.id = tb3.id "

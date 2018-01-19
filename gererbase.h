@@ -108,7 +108,10 @@ private:
     bool f2(QString tb, QString *data);
     bool f2_2(QString tb, QString *data);
     bool f3(QString tb, QString *data);
+
     bool f4(QString tb, QString *data);
+    bool TraitementCodeVueCombi(int zn);
+    bool TraitementCodeTblCombi(int zn);
 
     bool SauverCombiVersTable (QStringList &combi);
     bool MettrePonderationCombi(int delta);

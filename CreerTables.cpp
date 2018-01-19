@@ -459,7 +459,7 @@ bool GererBase::f2(QString tb, QString *data)
         }
         requete = requete + ");";
 #ifndef QT_NO_DEBUG
-    qDebug()<< requete;
+        qDebug()<< requete;
 #endif
 
         status = query.exec(requete);
@@ -536,32 +536,70 @@ bool GererBase::f3(QString tb, QString *data)
     return status;
 }
 
-#if 0
+//#if 0
 bool GererBase::f4(QString tb, QString *data)
 {
     bool isOk = true;
-    QSqlQuery query;
-    QString msg = "CREATE table if not exists lstcombi (id INTEGER PRIMARY KEY,";
-
     int nbZone = conf.nb_zone;
+
     for (int zn=0;(zn < nbZone-1) && isOk;zn++ )
     {
-        int lenZn = conf.limites[zn].len;
-        QString ref=conf.nomZone[zn]+"%1 int,";
-        for(int pos=0;pos<lenZn;pos++){
-            msg = msg + ref.arg(pos+1);
-        }
-        msg = msg + "tip text, poids real)";
+        isOk = TraitementCodeVueCombi(zn);
 
-        isOk = query.exec(msg);
-#ifndef QT_NO_DEBUG
-    qDebug() << msg<<"\n-------";
-#endif
+        if(isOk)
+            isOk = TraitementCodeTblCombi(zn);
     }
 
     if(!isOk)
     {
         QString ErrLoc = "f4:";
+        DB_Tools::DisplayError(ErrLoc,NULL,"");
+    }
+
+    return isOk;
+}
+
+bool GererBase::TraitementCodeVueCombi(int zn)
+{
+    bool isOk = true;
+    QSqlQuery query;
+    QString msg = "";
+    QString ref_1 = "";
+
+    QString viewCode[]=
+    {
+        "drop view if exists tbr%1;",
+        "create view if not exists tbr%1 as select tbChoix.tz%1 as b "
+        "from (%2 as tbChoix)where(tbChoix.tz%1 is not null);"
+    };
+    int argViewCount[]={1,2};
+
+    /// Traitement de la vue
+    int nbLgnCode = sizeof(viewCode)/sizeof(QString);
+    for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+        msg = "";
+        switch(argViewCount[lgnCode]){
+        case 1:
+            msg = msg + viewCode[lgnCode].arg(zn+1);
+            break;
+        case 2:
+            ref_1 = TB_RZBN;
+            msg = msg + viewCode[lgnCode].arg(zn+1).arg(ref_1);
+            break;
+        default:
+            msg = "Error on the number of args";
+            break;
+        }
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+
+        isOk = query.exec(msg);
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "TraitementCodeVueCombi:";
         DB_Tools::DisplayError(ErrLoc,&query,msg);
     }
 
@@ -569,9 +607,112 @@ bool GererBase::f4(QString tb, QString *data)
 
     return isOk;
 }
+
+bool GererBase::TraitementCodeTblCombi(int zn)
+{
+    bool isOk = true;
+    QSqlQuery query;
+    QString msg = "";
+
+    QString tblCode[]=
+    {
+        "drop table if exists lstCombi_z%1;",
+        "create table if not exists lstCombi_z%1 (id integer primary key,%2);",
+        "insert into lstCombi_z%1 select NULL,%2 from (%3) where(%4="
+        +QString::number(+conf.limites[zn].neg)+");"
+    };
+    int argTblCount[]={1,2,4};
+
+    QString ref_1 = "";
+    QString ref_2 = "";
+    QString ref_3 = "";
+    QString ref_4 = "";
+    QString ref_5 = "";
+    int nbLgnCode= 0;
+
+
+    /// traitement creation table en fonction 10zaine
+    int lenZn = floor(conf.limites[zn].max/10)+1;
+    ref_1="t%1."+conf.nomZone[zn]+" as "+conf.nomZone[zn]+"%1";
+    QString msg1 = "";
+    for(int pos=0;pos<lenZn;pos++){
+        msg1 = msg1 + ref_1.arg(pos+1);
+        if(pos < lenZn -1)
+            msg1 = msg1 + ",";
+    }
+
+    nbLgnCode = sizeof(tblCode)/sizeof(QString);
+    for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+        msg="";
+        switch(argTblCount[lgnCode]){
+        case 1:
+            msg = tblCode[lgnCode].arg(zn+1);
+            break;
+        case 2:{
+            ref_1=msg1+",";
+            ref_1.replace(QRegExp("t\\d\.b\\s+as\\s+"),"");
+            ref_1.replace(",", " int,");
+            ref_1=ref_1 + "tip text, poids real";
+            msg = tblCode[lgnCode].arg(zn+1).arg(ref_1);
+        }
+            break;
+        case 4:{
+            ref_1="%d";
+            ref_2="t%1."+conf.nomZone[zn];
+            ref_3="(%1*t%2."+conf.nomZone[zn]+")";
+            ref_4="tbr%1 as t%2";
+            ref_5="b%1";
+            QString msg2 = "";
+            QString msg3 = "";
+            QString msg4 = "";
+            QString msg5 = "";
+            for(int pos=0;pos<lenZn;pos++){
+                msg2 = msg2 + ref_2.arg(pos+1);
+                msg3 = msg3 + ref_3.arg(1<<pos).arg(pos+1);
+                msg4 = msg4 + ref_4.arg(zn+1).arg(pos+1);
+                msg5 = msg5 + ref_5.arg(pos+1);
+                if(pos < lenZn -1){
+                    ref_1 = ref_1 + "/%d";
+                    msg2 = msg2 + ",";
+                    msg3 = msg3 + "+";
+                    msg4 = msg4 + ",";
+                    msg5 = msg5 + "+";
+                }
+            }
+
+            ref_2=msg1+","+QString::fromLocal8Bit("printf('%1',%2)as tip,(%3) as poids");
+            ref_1 = ref_2.arg(ref_1).arg(msg2).arg(msg3);
+            ref_2 = msg4;
+            ref_3 = msg5;
+            msg = tblCode[lgnCode].arg(QString::number(zn+1),ref_1,ref_2,ref_3);
+        }
+            break;
+        default:
+            msg = "Error on the number of args";
+            break;
+        }
+
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
 #endif
 
-bool GererBase::f4(QString tb, QString *data)
+        isOk = query.exec(msg);
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "TraitementCodeVueCombi:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
+    query.finish();
+
+    return isOk;
+}
+
+//#endif
+
+/* bool GererBase::f4(QString tb, QString *data)
 {
     bool status = true;
     stTiragesDef ref=typeTirages->conf;
@@ -591,7 +732,7 @@ bool GererBase::f4(QString tb, QString *data)
 
     return status;
 }
-
+*/
 
 bool GererBase::GrouperCombi(int zn)
 {
@@ -607,11 +748,11 @@ bool GererBase::GrouperCombi(int zn)
     {
         st_critere = ContruireRechercheCombi(i,zn,&typeTirages->conf);
 
-        st_critere = "select id from lstcombi where ("
+        st_critere = "select id from lstCombi_z1 where ("
                 + st_critere
                 +")";
 
-        msg_1 = "update lstcombi set pos = "
+        msg_1 = "update lstCombi_z1 set pos = "
                 +QString::number(6-i)
                 +" where id in("
                 +st_critere
@@ -630,7 +771,7 @@ bool GererBase::GrouperCombi(int zn)
     st_critere ="";
     for(int i =1; i<=max;i++)
     {
-        st_critere = st_critere + "select * from lstcombi where b"
+        st_critere = st_critere + "select * from lstCombi_z1 where b"
                 +QString::number(i)
                 +"=1 "
                 +str_union;
@@ -640,7 +781,7 @@ bool GererBase::GrouperCombi(int zn)
     st_critere = "select id from(select id, count(id) as T from("
             +st_critere+") as u1 group by id order by T) as r1 where (r1.T=3)";
 
-    msg_1 = "update lstcombi set pos = 5 where id in("
+    msg_1 = "update lstCombi_z1 set pos = 5 where id in("
             +st_critere
             +");";
 
@@ -655,11 +796,11 @@ bool GererBase::GrouperCombi(int zn)
     {
         st_critere = ContruireRechercheCombi(1,zn,&typeTirages->conf);
 
-        st_critere = "select id from lstcombi where ("
+        st_critere = "select id from lstCombi_z1 where ("
                 + st_critere
                 +")";
 
-        msg_1 = "update lstcombi set pos = 6 where id in("
+        msg_1 = "update lstCombi_z1 set pos = 6 where id in("
                 +st_critere
                 +");";
 
@@ -740,7 +881,7 @@ bool  GererBase::MettrePonderationCombi(int delta)
     bool status = false;
     QSqlQuery sql_1;
     QSqlQuery sql_2;
-    QString msg_1 = "select pos, count(pos)as T from lstcombi group by pos;";
+    QString msg_1 = "select pos, count(pos)as T from lstCombi_z1 group by pos;";
 
 
     status = sql_1.exec(msg_1);
@@ -760,7 +901,7 @@ bool  GererBase::MettrePonderationCombi(int delta)
 
                 for(int i = depart; (i<(depart+nblgn)) && (status == true);i++)
                 {
-                    msg_1 = "update lstcombi set poids="
+                    msg_1 = "update lstCombi_z1 set poids="
                             +QString::number(val)+" where (id="
                             +QString::number(i)
                             +");";
@@ -797,7 +938,7 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
     QString st_cols = "";
     QString st_vals = "";
     QString st_valtips = "";
-    QString msg_1 = " CREATE table if not exists lstcombi (id INTEGER PRIMARY KEY, pos int, comb int,rot int, b1 int, b2 int ,b3 int ,b4 int, b5 int, b6 int, poids real, tip text);";
+    QString msg_1 = " CREATE table if not exists lstCombi_z1 (id INTEGER PRIMARY KEY, pos int, comb int,rot int, b1 int, b2 int ,b3 int ,b4 int, b5 int, b6 int, poids real, tip text);";
 
 
     int coef[5][2][5] = {
@@ -861,7 +1002,7 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
                             }
                             st_valtips.remove(st_valtips.length()-1,1);
 
-                            msg_1 = "insert into lstcombi (id,pos,comb,rot,"
+                            msg_1 = "insert into lstCombi_z1 (id,pos,comb,rot,"
                                     + st_cols + ",tip) Values (NULL,"
                                     + QString::number(loop)+","
                                     + QString::number(i)+","
@@ -895,7 +1036,7 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
                 }
                 st_valtips.remove(st_valtips.length()-1,1);
 
-                msg_1 = "insert into lstcombi (id,pos,comb,rot,"
+                msg_1 = "insert into lstCombi_z1 (id,pos,comb,rot,"
                         + st_cols + ",tip) Values (NULL,"
                         + QString::number(loop)+","
                         + QString::number(i)+",0,"

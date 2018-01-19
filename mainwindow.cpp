@@ -5084,7 +5084,8 @@ UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
 
     myview[0] = new MyGraphicsView(eRepartition,une_vue[0], "Tirages",Qt::white);
 
-    msg_2="select analyses.id, lstcombi.poids, lstcombi.pos from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
+    //msg_2="select analyses.id, lstcombi.poids, lstcombi.pos from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
+    msg_2="select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
     myview[0]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::red,2,20);
 
     // select tirages.id, comb_e.poids from tirages inner join comb_e on comb_e.e1=tirages.e1 and comb_e.e2 = tirages.e2
