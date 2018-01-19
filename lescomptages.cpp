@@ -96,8 +96,9 @@ void cLesComptages::slot_AppliquerFiltres()
     /// Selectionner les boules choisi par l'utilisateur pour en faire
     /// un ensemble d'etude
     ///
+
 #if 0
-    CREATE table  if not exists E1z1Cnp_7_5 as select * from Cnp_7_5
+    /* CREATE table  if not exists E1z1Cnp_7_5 as select * from Cnp_7_5
 
             delete from E1z1Cnp_7_5
 
@@ -129,8 +130,40 @@ void cLesComptages::slot_AppliquerFiltres()
             tbCnp.b3 = tb3.id
             )
 
-        #endif
-            msg = "Select tb1.val from tt where (f not null and p=1) desc;";
+            */
+#endif
+
+#if 0
+    /*
+drop table if exists toto;
+create table toto (id integer primary key, b1 int, b2 iint, b3 int , b4 int, b5 int, lab text);
+
+insert into toto select NULL,t1.b as b1, t2.b as b2, t3.b as b3, t4.b as b4, t5.b as b5, printf("%d/%d/%d/%d/%d",t1.b,t2.b,T3.b,t4.b,t5.b) as lab
+from tbr1 as t1,  tbr1 as t2, tbr1 as t3, tbr1 as t4, tbr1 as t5
+where(b1+b2+b3+b4+b5 = 5)
+
+
+select tbLeft.*, tbRight.id from vrz1_Montest as tbLeft
+left join
+(
+ select * from toto
+) as tbRight
+on
+(
+tbLeft.u0 = tbRight.b1
+and
+tbLeft.u1 = tbRight.b2
+and
+tbLeft.u2 = tbRight.b3
+and
+tbLeft.u3 = tbRight.b4
+and
+tbLeft.u4 = tbRight.b5
+)
+      */
+#endif
+
+    msg = "Select tb1.val from tt where (f not null and p=1) desc;";
     ///CREATE TABLE equipments_backup AS SELECT * FROM  Cnp_7_5
     /// https://stackoverflow.com/questions/2361921/select-into-statement-in-sqlite
     msg = ListeDesJeux(0);

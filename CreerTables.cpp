@@ -536,6 +536,41 @@ bool GererBase::f3(QString tb, QString *data)
     return status;
 }
 
+#if 0
+bool GererBase::f4(QString tb, QString *data)
+{
+    bool isOk = true;
+    QSqlQuery query;
+    QString msg = "CREATE table if not exists lstcombi (id INTEGER PRIMARY KEY,";
+
+    int nbZone = conf.nb_zone;
+    for (int zn=0;(zn < nbZone-1) && isOk;zn++ )
+    {
+        int lenZn = conf.limites[zn].len;
+        QString ref=conf.nomZone[zn]+"%1 int,";
+        for(int pos=0;pos<lenZn;pos++){
+            msg = msg + ref.arg(pos+1);
+        }
+        msg = msg + "tip text, poids real)";
+
+        isOk = query.exec(msg);
+#ifndef QT_NO_DEBUG
+    qDebug() << msg<<"\n-------";
+#endif
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "f4:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
+    query.finish();
+
+    return isOk;
+}
+#endif
+
 bool GererBase::f4(QString tb, QString *data)
 {
     bool status = true;
@@ -556,6 +591,7 @@ bool GererBase::f4(QString tb, QString *data)
 
     return status;
 }
+
 
 bool GererBase::GrouperCombi(int zn)
 {

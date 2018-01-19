@@ -274,7 +274,7 @@ private:
     QTableView *G_tbv_MesPossibles;
     QTableView *G_tbv_TabPrevision;
     QTableView *G_tbv_TabPrevision_v2;
-    QTableView *G_tbv_Lstcombi;
+    //QTableView *G_tbv_lstcombi_z1;
     QTableView *G_tbv_LesAbsents;
     QTableView *G_tbv_Parites;
     QTableView **gtbv_DernierTirageDetail;
