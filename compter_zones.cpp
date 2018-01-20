@@ -313,11 +313,9 @@ QGridLayout *cCompterZoneElmts::Compter(QString * pName, int zn)
     QTableView *qtv_tmp = new QTableView;
     (* pName) = names[zn].court;
 
-    QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(TB2_SE) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
-    //QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    //sqmZones[zn] = sqm_tmp;
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];
 
 

@@ -69,7 +69,8 @@ SOURCES += \
     cassemble.cpp \
     db_tools.cpp \
     cnp_SansRepetition.cpp \
-    cnp_AvecRepetition.cpp
+    cnp_AvecRepetition.cpp \
+    etudierjeux.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -103,7 +104,8 @@ HEADERS  += \
     cassemble.h \
     db_tools.h \
     cnp_AvecRepetition.h \
-    cnp_SansRepetition.h
+    cnp_SansRepetition.h \
+    etudierjeux.h
 
 
 FORMS    += mainwindow.ui \

@@ -35,9 +35,6 @@
 #define TB_RZ       "Ref_znName"    /// Table Reference des noms des Zones
 #define TB_RZVA     "Ref_znLimits"  /// limites sur Zones
 #define TB_RZBN     "Bnrz"          /// Table Boules Names des Reference Zone
-#define TB_SE       "SelElemt"  /// Choix de boules dans zone
-#define TB_SC       "SelComb"  /// Choix de combinaison dans zone
-#define TB_SG       "SelGrp"  /// Choix de criteres groupement dans zone
 
 #define CL_IHM_TOT_0    8
 #define CL_IHM_TOT_2    7

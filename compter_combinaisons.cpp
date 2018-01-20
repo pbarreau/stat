@@ -353,7 +353,7 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
 
     QTableView *qtv_tmp = new QTableView;
 
-    QString qtv_name = QString::fromLatin1(TB_SC) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(TB2_SC) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];
@@ -440,7 +440,7 @@ QGridLayout *cCompterCombinaisons::Compter_euro(QString * pName, int zn)
 
     QTableView *qtv_tmp = new QTableView;
 
-    QString qtv_name = QString::fromLatin1(TB_SC) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(TB2_SC) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
    // QSqlQueryModel *sqm_tmp = new QSqlQueryModel;

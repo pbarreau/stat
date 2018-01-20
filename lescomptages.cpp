@@ -3,9 +3,12 @@
 #include <QSqlError>
 #endif
 
+#include <QFile>
+#include <QApplication>
 #include <QFormLayout>
 #include <QTabWidget>
 #include <QSqlQuery>
+#include <QSqlResult>
 
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
@@ -35,8 +38,233 @@ void cLesComptages::slot_changerTitreZone(QString le_titre)
 
 cLesComptages::cLesComptages(QString stLesTirages)
 {
+    Q_UNUSED(stLesTirages)
+
+    if(ouvrirBase(eBddUseDisk,eGameLoto)==true)
+    {
+        effectuerTraitement(eGameLoto);
+        dbInUse.close();
+    }
+}
+
+/// Cette fonction ouvre la base en memoire ou sur disque
+/// sur disque l'on nomme le fichier de maniere unique selon
+/// la nature du jeu
+/// la fonction retourne true si ouverture est realisee
+/// false autrement
+/// input :
+/// - cible memoire ou disque
+/// - game loto ou euro
+///
+bool cLesComptages::ouvrirBase(eBddUse cible, eGame game)
+{
+    bool isOk = true;
+
+    dbUseName = "Game_"+QString::number(total);
+    dbInUse = QSqlDatabase::addDatabase("QSQLITE",dbUseName);
+
+    QString mabase = "";
+
+    switch(cible)
+    {
+    case eBddUseRam:
+        mabase = ":memory:";
+        break;
+    case eBddUseDisk:
+    {
+        QString ext="sqlite";
+
+        switch(game)
+        {
+        case eGameLoto:
+            mabase = "Loto"+dbUseName+"."+ext;
+            break;
+        case eGameEuro:
+            mabase = "Euro"+dbUseName+"."+ext;
+            break;
+        }
+#ifdef Q_OS_LINUX
+        // NOTE: We have to store database file into user home folder in Linux
+        QString path(QDir::home().path());
+        path.append(QDir::separator()).append(mabase);
+        mabase = QDir::toNativeSeparators(path);
+#endif
+        QFile fichier(mabase);
+
+        if(fichier.exists())
+        {
+            fichier.remove();
+        }
+
+    }
+        break;
+    default:
+        mabase = ":memory:";
+        break;
+    }
+
+    /// definition de la base pour ce calcul
+    dbInUse.setDatabaseName(mabase);
+
+    // Open database
+    isOk = dbInUse.open();
+
+    return isOk;
+}
+
+void cLesComptages::effectuerTraitement(eGame game)
+{
+    definirConstantesDuJeu(game);
+    creerTablesDeLaBase();
+}
+
+void cLesComptages::definirConstantesDuJeu(eGame game)
+{
+    /// Pour l'instant en loto ou en euro il y a 2 'zones'
+    /// une pour les boules
+    /// une pour les etoiles
+    gameInfo.nbDef = 2; /// boules + etoiles
+
+    switch(game)
+    {
+    case eGameLoto:
+        gameInfo.limites = new stParam_1 [gameInfo.nbDef];
+        gameInfo.nom = new stParam_2 [gameInfo.nbDef];
+
+        /// boules
+        gameInfo.limites[0].min=1;
+        gameInfo.limites[0].max=49;
+        gameInfo.limites[0].len=5;
+        gameInfo.limites[0].win=5;
+        gameInfo.nom[0].std = "Boules";
+        gameInfo.nom[0].abv = "b";
+
+        /// etoiles
+        gameInfo.limites[1].min=1;
+        gameInfo.limites[1].max=10;
+        gameInfo.limites[1].len=1;
+        gameInfo.limites[1].win=1;
+        gameInfo.nom[1].std = "Etoiles";
+        gameInfo.nom[1].abv = "e";
+        break;
+
+    case eGameEuro:
+        gameInfo.limites = new stParam_1 [gameInfo.nbDef];
+        gameInfo.nom = new stParam_2 [gameInfo.nbDef];
+
+        /// boules
+        gameInfo.limites[0].min=1;
+        gameInfo.limites[0].max=50;
+        gameInfo.limites[0].len=5;
+        gameInfo.limites[0].win=5;
+        gameInfo.nom[0].std = "Boules";
+        gameInfo.nom[0].abv = "b";
+
+        /// etoiles
+        gameInfo.limites[1].min=1;
+        gameInfo.limites[1].max=12;
+        gameInfo.limites[1].len=2;
+        gameInfo.limites[1].win=2;
+        gameInfo.nom[1].std = "Etoiles";
+        gameInfo.nom[1].abv = "e";
+        break;
+
+    default:
+        gameInfo.nbDef = 0; /// boules + etoiles
+        gameInfo.limites = NULL;
+        gameInfo.nom = NULL;
+        break;
+    }
+}
+
+bool cLesComptages::creerTablesDeLaBase(void)
+{
+    bool isOk= true;
+    QSqlQuery q(dbInUse);
+
+    stCreateTable creerTables[]={
+        {"Definitions",f1}
+    };
+
+    int nbACreer = sizeof(creerTables)/sizeof(stCreateTable);
+    for(int uneTable=0;(uneTable<nbACreer) && isOk;uneTable++)
+    {
+        /// Nom de la table
+        QString tbName = creerTables[uneTable].tbDef;
+
+        /// Fonction de traitement de la creation
+        isOk=(this->*(creerTables[uneTable].pFuncInit))(tbName,&q);
+
+        /// Analyser le retour de traitement
+        if(!isOk){
+            //un message d'information
+            QMessageBox::critical(0, tbName, "Erreur traitement !",QMessageBox::Yes);
+#ifndef QT_NO_DEBUG
+            qDebug() <<q.lastError().text();
+#endif
+            QApplication::quit();
+        }
+    }
+
+    return isOk;
+}
+
+/// Creation de la table donnant les carateristique du jeu
+bool cLesComptages::f1(QString tbName,QSqlQuery *query)
+{
+    bool isOk= true;
+    QString msg = "";
+
+    QString colsDef = "min int, max int, len int, win int, abv text, std text";
+    msg = "create table if not exists "
+            + tbName
+            + "(id integer primary key,"
+            + colsDef
+            +");";
+
+    isOk = query->exec(msg);
+
+    /// preparation des insertions
+    msg = "insert into "
+            +tbName
+            +"(id,min,max,len,win,abv,std)values(NULL,:arg1, :arg2, :arg3, :arg4, :arg5, :arg6)";
+    query->prepare(msg);
+#ifndef QT_NO_DEBUG
+    qDebug() <<msg;
+#endif
+
+    /// la table est cree mettre les infos
+    if(isOk)
+    {
+        /// Parcourir toutes les definition
+        for(int def = 0; (def<gameInfo.nbDef) && isOk;def++)
+        {
+            query->bindValue(":arg1",gameInfo.limites[def].min);
+            query->bindValue(":arg2",gameInfo.limites[def].max);
+            query->bindValue(":arg3",gameInfo.limites[def].len);
+            query->bindValue(":arg4",gameInfo.limites[def].win);
+            query->bindValue(":arg5",gameInfo.nom[def].abv);
+            query->bindValue(":arg6",gameInfo.nom[def].std);
+
+            /// executer la commande sql
+            isOk = query->exec();
+        }
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "cLesComptages::f1";
+        DB_Tools::DisplayError(ErrLoc,query,msg);
+    }
+
+    return isOk;
+}
+
+void cLesComptages::efffectuerTraitement_2()
+{
     QWidget * Resultats = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
+    QString stLesTirages = "";
 
     cCompterZoneElmts *c1 = new cCompterZoneElmts(stLesTirages, Resultats);
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));

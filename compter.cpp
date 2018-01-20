@@ -5,13 +5,13 @@
 #include <QGridLayout>
 #include <QTableView>
 #include <QSqlQuery>
+#include <QSqlError>
 #include <QHeaderView>
 #include <QToolTip>
 #include <QStackedWidget>
 #include <QMenu>
 
 #include "compter.h"
-#include "tirages.h"
 
 void B_Comptage::CreerCritereJours(void)
 {
@@ -22,7 +22,7 @@ void B_Comptage::CreerCritereJours(void)
     QString st_table = "";
     bool status = false;
 
-    if(db_data == TB_BASE){
+    if(db_data == TB2_BASE){
         st_table =  "jour_tirage";
     }
     else
@@ -70,7 +70,7 @@ void B_Comptage::RecupererConfiguration(void)
     QString msg = "";
     bool status = false;
 
-    msg = "select count(id) as tot from (" + QString::fromLocal8Bit(TB_RZ) + ");";
+    msg = "select count(id) as tot from (" + QString::fromLocal8Bit(TB2_RZ) + ");";
     status = query.exec(msg);
 
     if(status)
@@ -93,8 +93,8 @@ void B_Comptage::RecupererConfiguration(void)
 
             // remplir les infos
             msg = "select tb1.id, tb1.name, tb1.abv, tb2.len, tb2.min, tb2.max, tb2.neg from " +
-                    QString::fromLocal8Bit(TB_RZ) + " as tb1, " +
-                    QString::fromLocal8Bit(TB_RZVA) + " as tb2 " +
+                    QString::fromLocal8Bit(TB2_RZ) + " as tb1, " +
+                    QString::fromLocal8Bit(TB2_RZVA) + " as tb2 " +
                     " where (tb1.id = tb2.id );";
             status = query.exec(msg);
 

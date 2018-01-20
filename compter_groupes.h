@@ -6,11 +6,9 @@
 #include <QString>
 #include <QStringList>
 #include <QGridLayout>
-
+#include <QStandardItemModel>
 #include "compter.h"
-#include "tirages.h"
 
-#define HCELL       55
 
 class cCompterGroupes:public B_Comptage
 {

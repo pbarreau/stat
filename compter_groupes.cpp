@@ -92,7 +92,7 @@ bool cCompterGroupes::AnalyserEnsembleTirage(QString InputTable, QString OutputT
     bool isOk = true;
     QString msg = "";
     QSqlQuery query;
-    QString stDefBoules = TB_RZBN;
+    QString stDefBoules = TB2_RZBN;
     QString st_OnDef = "";
 
     //int nbZone = nbZone;
@@ -214,7 +214,7 @@ QTableView *cCompterGroupes::CompterLigne(QString * pName, int zn)
     {
         QStandardItem *item = new QStandardItem();
         sqm_tmp->setItem(0,pos,item);
-        qtv_tmp->setColumnWidth(pos,LCELL);
+        qtv_tmp->setColumnWidth(pos,CEL2_L);
     }
 
     qtv_tmp->setSortingEnabled(false);
@@ -233,7 +233,7 @@ QTableView *cCompterGroupes::CompterLigne(QString * pName, int zn)
     int n = sqm_tmp->columnCount();
     qtv_tmp->setFixedWidth((b*n)+5);
 
-    b = HCELL;
+    b = CEL2_H;
     n = 1;
     qtv_tmp->setFixedHeight((b*n)+5);
 
@@ -244,7 +244,6 @@ QTableView *cCompterGroupes::CompterEnsemble(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
     int nbLgn = limites[zn].len + 1;
-    //(* pName) = names[zn].court;
 
     QStandardItemModel * sqm_tmp = NULL;
     QSqlQuery query ;

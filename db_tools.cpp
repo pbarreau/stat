@@ -174,3 +174,4 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
     QApplication::exit();
 
 }
+

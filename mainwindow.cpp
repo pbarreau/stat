@@ -325,12 +325,12 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 {
     bool status = false;
 #if 0
-    select t1.id as id, t1.tip as Repartition, count(t1.id_poids)as T,
+    select t1.id as id, t1.tip as Repartition, count(t1.fk_idCombi_z1)as T,
             count (case when t1.J like 'lun%' then 1 end)as LUN,
             count (case when t1.J like 'mer%' then 1 end)as MER ,
             count (case when t1.J like 'sam%' then 1 end)as SAM
             from (
-                SELECT lstcombi.id,lstcombi.tip,analyses.id_poids,analyses.id as id2, (case when analyses.id is null then null else
+                SELECT lstcombi.id,lstcombi.tip,analyses.fk_idCombi_z1,analyses.id as id2, (case when analyses.id is null then null else
                                                                                        (
                                                                                            select tirages.jour_tirage from tirages where (tirages.id = analyses.id)
                                                                                            )
@@ -339,10 +339,10 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
                 LEFT JOIN analyses
                 ON
                 (
-                    (lstcombi.id = analyses.id_poids)
+                    (lstcombi.id = analyses.fk_idCombi_z1)
                     )
                 )as t1
-            GROUP BY tip having (((t1.id=t1.id_poids) or (t1.id_poids is null)))
+            GROUP BY tip having (((t1.id=t1.fk_idCombi_z1) or (t1.fk_idCombi_z1 is null)))
             order by id asc;
 #endif
 
@@ -358,12 +358,12 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     QString st_msg ="";
 
 
-    st_msg = "select t1.id as id, t1.tip as Repartition, count(t1.id_poids)as T, "
+    st_msg = "select t1.id as id, t1.tip as Repartition, count(t1.fk_idCombi_z1)as T, "
              "count (case when t1.J like 'lun%' then 1 end)as LUN, "
              "count (case when t1.J like 'mer%' then 1 end)as MER , "
              "count (case when t1.J like 'sam%' then 1 end)as SAM  "
              " from ( "
-             "SELECT lstcombi.id,lstcombi.tip,analyses.id_poids,analyses.id as id2, "
+             "SELECT lstcombi.id,lstcombi.tip,analyses.fk_idCombi_z1,analyses.id as id2, "
              "(case when analyses.id is null then null else  "
              "( "
              " select tirages.jour_tirage from tirages where (tirages.id = analyses.id) "
@@ -373,10 +373,10 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
              "LEFT JOIN analyses "
              "ON  "
              "( "
-             " (lstcombi.id = analyses.id_poids)  "
+             " (lstcombi.id = analyses.fk_idCombi_z1)  "
              ") "
              " )as t1 "
-             " GROUP BY tip having (((t1.id=t1.id_poids) or (t1.id_poids is null)))  "
+             " GROUP BY tip having (((t1.id=t1.fk_idCombi_z1) or (t1.fk_idCombi_z1 is null)))  "
              " order by id asc; ";
 
 
@@ -424,7 +424,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     // Mettre le dernier tirage en evidence
     QSqlQuery selection;
 
-    st_msg = "select analyses.id, analyses.id_poids from analyses limit 1;";
+    st_msg = "select analyses.id, analyses.fk_idCombi_z1 from analyses limit 1;";
     status = selection.exec(st_msg);
     status = selection.first();
     if(selection.isValid())
@@ -747,18 +747,18 @@ void MainWindow::TST_NbRepartionCombi(int ecart,int key)
     int d[4]={1,2,-1,-2};
     bool status = false;
 
-    msg =   "select id, count(id_poids) as T  from (SELECT lstcombi.id,t2.id_poids "
+    msg =   "select id, count(fk_idCombi_z1) as T  from (SELECT lstcombi.id,t2.fk_idCombi_z1 "
             "FROM lstcombi "
             "LEFT JOIN (select * "
             "from (select analyses.id "
-            "from analyses where analyses.id_poids = "
+            "from analyses where analyses.fk_idCombi_z1 = "
             +QString::number(key)+
             ") as t1 "
             "left join analyses on t1.id = analyses.id + "
             +QString::number(d[ecart])+
             ") as t2 "
-            "ON lstcombi.id = t2.id_poids)as t1 "
-            "GROUP BY id having ((t1.id=t1.id_poids)or (t1.id_poids is null)) "
+            "ON lstcombi.id = t2.fk_idCombi_z1)as t1 "
+            "GROUP BY id having ((t1.id=t1.fk_idCombi_z1)or (t1.fk_idCombi_z1 is null)) "
             "order by t1.id asc;";
 
 #ifndef QT_NO_DEBUG
@@ -1655,7 +1655,7 @@ int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *ref)
              "and"
              "(tb4.id = tb3.id)"
              "and"
-             "(tb4.id_poids = tb5.id)"
+             "(tb4.fk_idCombi_z1 = tb5.id)"
              "and"
              "(tb2.id="
             +QString::number(idTirage)+
@@ -4142,17 +4142,17 @@ void MainWindow::slot_TST_DetailsCombinaison( const QModelIndex & index)
 void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, int choix)
 {
 #if 0
-    select * from (select id, id_poids from analyses where analyses.id_poids = 107);
+    select * from (select id, fk_idCombi_z1 from analyses where analyses.fk_idCombi_z1 = 107);
 
-    select  analyses.id, analyses.id_poids from
-            (select id, id_poids from analyses where analyses.id_poids = 107) as t1
+    select  analyses.id, analyses.fk_idCombi_z1 from
+            (select id, fk_idCombi_z1 from analyses where analyses.fk_idCombi_z1 = 107) as t1
             left join analyses on t1.id = analyses.id+1;
 
-    select t2.id_poids,tirages.* from
-            (select  analyses.id, analyses.id_poids from
-             (select id, id_poids from analyses where analyses.id_poids = 107) as t1
+    select t2.fk_idCombi_z1,tirages.* from
+            (select  analyses.id, analyses.fk_idCombi_z1 from
+             (select id, fk_idCombi_z1 from analyses where analyses.fk_idCombi_z1 = 107) as t1
              left join analyses on t1.id = analyses.id+1) as t2
-            left join tirages on t2.id=tirages.id where(t2.id_poids = 57);
+            left join tirages on t2.id=tirages.id where(t2.fk_idCombi_z1 = 57);
 #endif
     QWidget *qw_fenResu = new QWidget;
     QTabWidget *tw_resu = new QTabWidget;
@@ -4170,14 +4170,14 @@ void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, in
 
     if(choix != 0)
     {
-        st_where =   "where(t2.id_poids = "+QString::number(choix)+")" ;
+        st_where =   "where(t2.fk_idCombi_z1 = "+QString::number(choix)+")" ;
     }
 
-    //t2.id_poids,
+    //t2.fk_idCombi_z1,
     // "+QString::number(d[distance])+"
     st_msg = "select tirages.* from "
-             "(select  analyses.id, analyses.id_poids from "
-             "(select id, id_poids from analyses where analyses.id_poids = "
+             "(select  analyses.id, analyses.fk_idCombi_z1 from "
+             "(select id, fk_idCombi_z1 from analyses where analyses.fk_idCombi_z1 = "
             +QString::number(critere)
             +") as t1 "
              "left join analyses on t1.id = analyses.id + %1 ) as t2 "
@@ -4988,7 +4988,7 @@ void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
             do{
                 int coef[6]={0};
                 QString msg_2 = "";
-                int id_poids = sql_1.value(0).toInt();
+                int fk_idCombi_z1 = sql_1.value(0).toInt();
 
                 for(int i = 0; i<= nbBoules;i++)
                 {
@@ -5000,13 +5000,13 @@ void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
                 // creation d'une requete mise a jour des poids
                 //double poids = sql_1.value(lastcol-1).toDouble();
 #if 0
-                update analyses set id_poids=14 where(id in
+                update analyses set fk_idCombi_z1=14 where(id in
                                                       (select id from analyses where (bd0=1 and bd1=1 and bd2=2 and bd3=1 and bd4=0 and bd5=0)
                                                        ));
 #endif
                 msg_2.remove(msg_2.length()-5,5);
-                msg_2 = "Update analyses set id_poids="
-                        +QString::number(id_poids)
+                msg_2 = "Update analyses set fk_idCombi_z1="
+                        +QString::number(fk_idCombi_z1)
                         +" where(id in (select id from analyses where("
                         +msg_2+")"
                         +"));";
@@ -5022,11 +5022,11 @@ void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
 void MainWindow::TST_MettrePonderationSurTirages(void)
 {
 #if 0
-    select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;
+    select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;
 #endif
     bool status = false;
     QSqlQuery sql_1;
-    QString msg_1 = "select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
+    QString msg_1 = "select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;";
 
     QFile fichier("ponder.txt");
     fichier.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -5084,8 +5084,8 @@ UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
 
     myview[0] = new MyGraphicsView(eRepartition,une_vue[0], "Tirages",Qt::white);
 
-    //msg_2="select analyses.id, lstcombi.poids, lstcombi.pos from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
-    msg_2="select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
+    //msg_2="select analyses.id, lstcombi.poids, lstcombi.pos from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;";
+    msg_2="select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;";
     myview[0]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::red,2,20);
 
     // select tirages.id, comb_e.poids from tirages inner join comb_e on comb_e.e1=tirages.e1 and comb_e.e2 = tirages.e2
@@ -5446,7 +5446,7 @@ void MainWindow::VUE_MontreLeTirage(double x)
     int delta[3]={0,0,0};
 
     st_msg[0] = "select pos from lstcombi inner  join "
-                "(select id_poids as clef from analyses where id = "
+                "(select fk_idCombi_z1 as clef from analyses where id = "
             +QString::number(x)+
             ") as t2 on t2.clef = lstcombi.id ;";
 

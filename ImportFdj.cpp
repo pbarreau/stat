@@ -73,6 +73,9 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
     str_1.replace(",",", :");
     str_1 = "INSERT INTO v_tirages (" + str_2 + ",file) VALUES (:" + str_1 + ", :file);";
     sql_1.prepare(str_1);
+#ifndef QT_NO_DEBUG
+    qDebug() <<str_1;
+#endif
 
     // --- DEBUT ANALYSE DU FICHIER
     // Passer la premiere ligne

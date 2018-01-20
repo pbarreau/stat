@@ -28,7 +28,8 @@
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "lescomptages.h"
-//
+#include "compter.h"
+
 #include "mainwindow.h"
 
 //extern MainWindow w;
@@ -730,7 +731,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
 
     int zn = 1;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(TB2_SE) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     //tbv_bloc1_2 = new QTableView;
@@ -844,7 +845,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 
     int zn = 0;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(TB_SC) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(TB2_SC) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
@@ -955,7 +956,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     QSqlQuery selection;
     bool status = false;
 
-    st_msg1 = "select analyses.id, analyses.id_poids from analyses limit 1;";
+    st_msg1 = "select analyses.id, analyses.fk_idCombi_z1 from analyses limit 1;";
     status = selection.exec(st_msg1);
     status = selection.first();
     if(selection.isValid())
@@ -1004,7 +1005,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
     int zn = 0;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(TB2_SE) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     //tbv_bloc1_1 = new QTableView;
@@ -1417,7 +1418,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 
     QTableView *qtv_tmp = new QTableView;
     QString qtv_name = "";
-    qtv_name = QString::fromLatin1(TB_SG) +
+    qtv_name = QString::fromLatin1(TB2_SG) +
             QString::fromLatin1("_z")
             +QString::number(zone+1);
     qtv_tmp->setObjectName(qtv_name);
@@ -2086,7 +2087,7 @@ on (
         and
         (tb4.id = tb3.id)
         and
-        (tb4.id_poids = tb5.id)
+        (tb4.fk_idCombi_z1 = tb5.id)
         )
 ;
 --Fin requete tb3
@@ -2130,7 +2131,7 @@ left join
             and
             (tb4.id = tb3.id)
             and
-            (tb4.id_poids = tb5.id)
+            (tb4.fk_idCombi_z1 = tb5.id)
             )
         --Fin requete tb3
         ) as tbright
@@ -2195,7 +2196,7 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             (
                 tb4.id = tb3.id
             and
-            tb5.id = tb4.id_poids
+            tb5.id = tb4.fk_idCombi_z1
             );
 #endif
 
@@ -2235,7 +2236,7 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             "( "
             "tb4.id = tb3.id "
             "and "
-            "tb5.id = tb4.id_poids "
+            "tb5.id = tb4.fk_idCombi_z1 "
             "); ";
 
 #ifndef QT_NO_DEBUG

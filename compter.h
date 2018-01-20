@@ -9,6 +9,19 @@
 #include <QStringList>
 #include <QGridLayout>
 #include <QSqlQueryModel>
+
+#define CEL2_H  55
+#define CEL2_L  40
+
+#define TB2_RZBN    "RZBN"
+#define TB2_RZVA    "RZVA"
+#define TB2_RZ      "RZ"
+#define TB2_BASE    "BASE"
+#define TB2_SE      "SelElemt"  /// Choix de boules dans zone
+#define TB2_SC      "SelComb"  /// Choix de combinaison dans zone
+#define TB2_SG      "SelGrp"  /// Choix de criteres groupement dans zone
+
+
 /// https://fr.wikibooks.org/wiki/Programmation_C%2B%2B/Les_classes
 /// https://fr.wikipedia.org/wiki/Fonction_virtuelle
 /// https://openclassrooms.com/courses/programmez-avec-le-langage-c/le-polymorphisme-1

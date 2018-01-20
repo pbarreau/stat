@@ -13,7 +13,6 @@
 #include <QSqlQueryModel>
 
 #include "compter.h"
-#include "tirages.h"
 
 class cCompterZoneElmts:public B_Comptage
 {

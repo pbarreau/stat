@@ -364,7 +364,7 @@ bool GererBase::AffectePoidsATirage_v2()
             do{
                 int coef[6]={0};
                 QString msg_2 = "";
-                int id_poids = sql_1.value(0).toInt();
+                int fk_idCombi_z1 = sql_1.value(0).toInt();
 
                 for(int i = 0; i<= nbBoules;i++)
                 {
@@ -382,8 +382,8 @@ bool GererBase::AffectePoidsATirage_v2()
                 // creation d'une requete mise a jour des poids
                 //double poids = sql_1.value(lastcol-1).toDouble();
                 msg_2.remove(msg_2.length()-5,5);
-                msg_2 = "Update analyses set id_poids="
-                        +QString::number(id_poids)
+                msg_2 = "Update analyses set fk_idCombi_z1="
+                        +QString::number(fk_idCombi_z1)
                         +" where(id in (select id from analyses where("
                         +msg_2+")"
                         +"));";

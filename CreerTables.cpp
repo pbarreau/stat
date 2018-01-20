@@ -15,6 +15,7 @@
 #include "cnp_SansRepetition.h"
 #include "cnp_AvecRepetition.h"
 #include "db_tools.h"
+#include "compter.h"
 
 extern QString ContruireRechercheCombi(int i,int zn,stTiragesDef *pRef);
 extern QString DetailsSomme(int zn, stTiragesDef *pRef);
@@ -475,7 +476,7 @@ bool GererBase::f2_2(QString tb, QString *data)
     bool status = true;
 
     QSqlQuery q_create;
-    QString st_refTbl[] = {TB_SE,TB_SC,TB_SG};
+    QString st_refTbl[] = {TB2_SE,TB2_SC,TB2_SG};
     QString st_sqldf = ""; /// sql definition
     QString st_table = "";
 
@@ -527,7 +528,7 @@ bool GererBase::f3(QString tb, QString *data)
     {
         requete.replace(",", " int,");
         requete = "create table analyses (id INTEGER PRIMARY KEY,"+
-                requete + " int, id_poids int);";
+                requete + " int, fk_idCombi_z1 int);";
 
         status = query.exec(requete);
         query.finish();
@@ -1110,7 +1111,7 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
     {
         requete.replace(",", " int,");
         requete = "create table analyses (id INTEGER PRIMARY KEY,"+
-                requete + " int, id_poids int);";
+                requete + " int, fk_idCombi_z1 int);";
 
         status = query.exec(requete);
         query.finish();

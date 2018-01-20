@@ -8,7 +8,6 @@
 #include <QGridLayout>
 
 #include "compter.h"
-#include "tirages.h"
 
 #define HCELL       55
 
