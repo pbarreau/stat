@@ -12,6 +12,8 @@
 
 #define CEL2_H  55
 #define CEL2_L  40
+#define BMAX_2(a,b) (((a)>(b))?(a):(b))
+#define BMIN_2(a,b) (((a)<(b))?(a):(b))
 
 #define TB2_RZBN    "RZBN"
 #define TB2_RZVA    "RZVA"

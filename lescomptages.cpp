@@ -36,13 +36,24 @@ void cLesComptages::slot_changerTitreZone(QString le_titre)
     selection[0].setText("Z:"+le_titre);
 }
 
-cLesComptages::cLesComptages(QString stLesTirages)
+cLesComptages::cLesComptages(eGame game, eBddUse def)
+{
+    curGame = game;
+    if(ouvrirBase(def,game)==true)
+    {
+        effectuerTraitement(game);
+        dbInUse.close();
+    }
+}
+
+cLesComptages::cLesComptages(eGame game, eBddUse def, QString stLesTirages)
 {
     Q_UNUSED(stLesTirages)
 
-    if(ouvrirBase(eBddUseDisk,eGameLoto)==true)
+    curGame = game;
+    if(ouvrirBase(def,game)==true)
     {
-        effectuerTraitement(eGameLoto);
+        effectuerTraitement(game);
         dbInUse.close();
     }
 }
@@ -183,7 +194,9 @@ bool cLesComptages::creerTablesDeLaBase(void)
     QSqlQuery q(dbInUse);
 
     stCreateTable creerTables[]={
-        {"Definitions",f1}
+        {"Def_fdjeu",f3},
+        {"Def_zones",f1},
+        {"Def_elemt",f2}
     };
 
     int nbACreer = sizeof(creerTables)/sizeof(stCreateTable);
@@ -257,6 +270,244 @@ bool cLesComptages::f1(QString tbName,QSqlQuery *query)
         DB_Tools::DisplayError(ErrLoc,query,msg);
     }
 
+    return isOk;
+}
+
+bool cLesComptages::f2(QString tbName,QSqlQuery *query)
+{
+    bool isOk= true;
+    QString msg = "";
+
+    QString colsDef = "";
+    QString argsDef = "";
+    QString def_1 = "z%1 int, tz%1 int";
+    QString def_2 = ":arg%1, :arg%2";
+
+    int totDef=gameInfo.nbDef;
+    int maxElemts = 0;
+    for(int def = 0; (def<totDef) && isOk;def++)
+    {
+        /// Noms des colonnes a mettre
+        colsDef=colsDef + def_1.arg(def+1);
+
+        /// valeurs
+        argsDef = argsDef + def_2.arg((def*2)+1).arg((def*2)+2);
+
+        /// derniere zone a traiter
+        if(def<totDef-1){
+            colsDef = colsDef + ",";
+            argsDef = argsDef + ",";
+
+            /// Maximum d'element
+            maxElemts = BMAX_2(gameInfo.limites[def].max,
+                               gameInfo.limites[def+1].max);
+        }
+    }
+
+    msg = "create table if not exists "
+            + tbName
+            + "(id integer primary key,"
+            + colsDef
+            +");";
+
+    isOk = query->exec(msg);
+
+    if(isOk)
+    {
+        /// Preparer la requete Sql
+        colsDef.remove("int");
+        QString msg1 = "insert into "
+                +tbName
+                +"(id,"+colsDef+")values(NULL,";
+
+        /// mettre des valeurs en sequence
+        for(int line=1;(line <maxElemts+1)&& isOk;line++)
+        {
+            QString stValues="";
+            for(int def = 0; (def<totDef) ;def++)
+            {
+                int maxItems = gameInfo.limites[def].max;
+                int nbDizaine = floor(maxItems/10)+1;
+
+                /// Boules
+                if(line<=maxItems){
+                    stValues = stValues + QString::number(line);
+                }
+                else{
+                    stValues = stValues +"NULL";
+                }
+                stValues = stValues + ",";
+                /// dizaine
+                if(line<=nbDizaine){
+                    stValues = stValues + QString::number(line-1);
+                }
+                else{
+                    stValues = stValues +"NULL";
+                }
+
+                if(def < totDef -1)
+                    stValues = stValues + ",";
+            }
+            msg = msg1 + stValues + ")";
+#ifndef QT_NO_DEBUG
+            qDebug() <<msg;
+#endif
+            isOk = query->exec(msg);
+        }
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "cLesComptages::f2";
+        DB_Tools::DisplayError(ErrLoc,query,msg);
+    }
+
+    return isOk;
+}
+
+bool cLesComptages::f3(QString tbName,QSqlQuery *query)
+{
+    bool isOk= true;
+    QString msg = "";
+    QString colsDef = "";
+
+    int totDef=gameInfo.nbDef;
+    for(int def = 0; (def<totDef) && isOk;def++)
+    {
+        QString ref = gameInfo.nom[def].abv+"%1 int";
+
+        int totElm = gameInfo.limites[def].len;
+        for(int elm=0;elm<totElm;elm++){
+            colsDef=colsDef + ref.arg(elm+1);
+            if(elm<totElm-1){
+                colsDef = colsDef + ",";
+            }
+        }
+        if(def<totDef-1){
+            colsDef = colsDef + ",";
+        }
+    }
+
+    msg = "create table if not exists "
+            + tbName
+            + "(id integer primary key, date text, jour text,"
+            + colsDef
+            +");";
+
+#ifndef QT_NO_DEBUG
+    qDebug() <<msg;
+#endif
+
+    isOk = query->exec(msg);
+
+    if(isOk)
+    {
+        /// mettre des infos
+        isOk = chargerDonneesFdjeux();
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "cLesComptages::f3";
+        DB_Tools::DisplayError(ErrLoc,query,msg);
+    }
+
+    return isOk;
+}
+
+bool cLesComptages::chargerDonneesFdjeux(void)
+{
+    bool isOk= true;
+
+    stFdjData *LesFichiers;
+    int nbelemt = 0;
+
+
+    /// avec les differentes version des jeux
+    /// le format des fichiers repertoriant les resultats
+    /// a change
+    stZnDef p1Zn[] =
+    {
+        {4,5,1,50},
+        {9,2,1,10}
+    };
+    stZnDef p2Zn[] =
+    {
+        {4,5,1,49},
+        {9,1,1,10}
+    };
+
+    stZnDef p3Zn[] =
+    {
+        {4,5,1,50},
+        {9,2,1,11}
+    };
+    stZnDef p4Zn[] =
+    {
+        {5,5,1,50},
+        {10,2,1,12}
+    };
+
+    /// Liste des fichiers pour Euromillions
+    stFdjData euroMillions[]=
+    {
+        {"euromillions_4.csv",
+         {false,2,1,2,&p4Zn[0]}
+        },
+        {"euromillions_3.csv",
+         {false,2,1,2,&p3Zn[0]}
+        },
+        {"euromillions_2.csv",
+         {false,2,1,2,&p3Zn[0]}
+        },
+        {"euromillions.csv",
+         {false,2,1,2,&p1Zn[0]}
+        }
+    };
+
+    /// Liste des fichiers pour loto
+    stFdjData loto[]=
+    {
+        {"loto2017.csv",
+         {false,2,1,2,&p2Zn[0]}
+        },
+        {"superloto2017.csv",
+         {false,2,1,2,&p2Zn[0]}
+        },
+        {"lotonoel2017.csv",
+         {false,2,1,2,&p2Zn[0]}
+        },
+        {"nouveau_superloto.csv",
+         {false,2,1,2,&p2Zn[0]}
+        },
+        {"nouveau_loto.csv",
+         {false,2,1,2,&p2Zn[0]}
+        }
+    };
+
+    if(curGame == eGameEuro){
+        nbelemt = sizeof(euroMillions)/sizeof(stFdjData);
+        LesFichiers = euroMillions;
+    }
+    else
+    {
+        nbelemt = sizeof(loto)/sizeof(stFdjData);
+        LesFichiers = loto;
+    }
+
+    // Lectures des fichiers de la Fd jeux
+    while((isOk == true) && (nbelemt>0))
+    {
+        isOk = LireLesTirages(&LesFichiers[nbelemt-1],nbelemt-1);
+        nbelemt--;
+    };
+
+    return isOk;
+}
+
+bool cLesComptages::LireLesTirages(stFdjData *def,int file_id)
+{
+    bool isOk= true;
     return isOk;
 }
 

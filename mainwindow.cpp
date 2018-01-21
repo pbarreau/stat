@@ -79,7 +79,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         ///
         ///
         QString st_table = REF_BASE;
-        tous = new cLesComptages(st_table);
+        tous = new cLesComptages(eGameLoto,eBddUseDisk);
         connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_AppliquerFiltres()));
 
 

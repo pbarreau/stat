@@ -18,8 +18,8 @@ class cLesComptages;
 /// -------ENUM---------
 /// Type de jeu possible d'etudier
 typedef enum _eGame{
- eGameLoto, /// Loto
- eGameEuro  /// Euro million
+    eGameLoto, /// Loto
+    eGameEuro  /// Euro million
 }eGame;
 
 /// Localisation de la base de donnees
@@ -28,6 +28,30 @@ typedef enum _eBddDest{
     eBddUseDisk   /// sur disque
 }eBddUse;
 /// -------STRUCT---------
+typedef struct _stZnDef
+{
+    int start;  /// offset de debut zone dans fichier
+    int len;    /// taille dans la zone
+    int min;    /// valeur mini possible
+    int max;    /// valeur maxi possible
+}stZnDef;
+
+typedef struct _stConfFdjData
+{
+    bool wget;  /// A telecharger ?
+    int ofdate; /// Offset dans fichier pour avoir la date
+    int ofday;  /// Offset dans fichier pour avoir le jour
+    int nbZone; /// Nb zone a lire
+    stZnDef *pZn; /// Pointeur vers caracteristique de chacune des zones
+}stConfFdjData;
+
+/// Tirage file format
+typedef struct _stFdjData
+{
+    QString fname;              /// file name
+    stConfFdjData param;
+}stFdjData;
+
 typedef struct
 {
     QString tbDef; /// nom de la table
@@ -36,10 +60,10 @@ typedef struct
 
 /// Renseignement sur les bornes de la zone a etudier
 typedef struct _stParam_1{
-int min; /// plus petite valeur possible
-int max; /// plus gande valeur possible
-int len; /// nb d'elements pouvant etre choisi entre min et max
-int win; /// nb d'element dans len assurant le jackpot
+    int min; /// plus petite valeur possible
+    int max; /// plus gande valeur possible
+    int len; /// nb d'elements pouvant etre choisi entre min et max
+    int win; /// nb d'element dans len assurant le jackpot
 }stParam_1;
 
 /// Renseignement sur le nom de la zone a etudier
@@ -64,7 +88,8 @@ class cLesComptages:public QGridLayout
 
     /// in : infos representant les tirages
 public:
-    cLesComptages(QString stLesTirages);
+    cLesComptages(eGame game, eBddUse def);
+    cLesComptages(eGame game, eBddUse def, QString stLesTirages);
     ~cLesComptages();
 
 private:
@@ -74,8 +99,14 @@ private:
     bool creerTablesDeLaBase(void);
     void definirConstantesDuJeu(eGame game);
     bool f1(QString tbName,QSqlQuery *query);
+    bool f2(QString tbName,QSqlQuery *query);
+    bool f3(QString tbName,QSqlQuery *query);
+
 
     /// TBD
+    bool chargerDonneesFdjeux(void);
+    bool LireLesTirages(stFdjData *def,int file_id);
+
     void efffectuerTraitement_2();
 
 
@@ -84,10 +115,11 @@ public slots:
     void slot_AppliquerFiltres();
 
 private:
-    static int total;
-    QSqlDatabase dbInUse;
-    QString dbUseName;
-    stGameConf gameInfo;
+    static int total;       /// compteur des objets de cette classe
+    QSqlDatabase dbInUse;   /// base de donnees associee a cet objets
+    QString dbUseName;      /// nom de la connection
+    eGame curGame;          /// type de jeu
+    stGameConf gameInfo;    /// parametres du jeu
     LabelClickable selection[3];
     QString titre[3];
     QString sql[3];
