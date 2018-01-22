@@ -5,6 +5,7 @@
 
 #include <QFile>
 #include <QApplication>
+#include <QString>
 #include <QFormLayout>
 #include <QTabWidget>
 #include <QSqlQuery>
@@ -407,21 +408,25 @@ bool cLesComptages::f3(QString tbName,QSqlQuery *query)
     bool isOk= true;
     QString msg = "";
     QString colsDef = "";
+    QString cAsDef = ""; /// column as def
 
     int totDef=gameInfo.nbDef;
     for(int def = 0; (def<totDef) && isOk;def++)
     {
         QString ref = gameInfo.nom[def].abv+"%1 int";
-
+        QString ref_2 = "printf('%02d',"+gameInfo.nom[def].abv+"%1)as "+gameInfo.nom[def].abv+"%1";
         int totElm = gameInfo.limites[def].len;
         for(int elm=0;elm<totElm;elm++){
             colsDef=colsDef + ref.arg(elm+1);
+            cAsDef = cAsDef + ref_2.arg(elm+1);
             if(elm<totElm-1){
                 colsDef = colsDef + ",";
+                cAsDef = cAsDef + ",";
             }
         }
         if(def<totDef-1){
             colsDef = colsDef + ",";
+            cAsDef = cAsDef + ",";
         }
     }
 
@@ -464,7 +469,7 @@ bool cLesComptages::f3(QString tbName,QSqlQuery *query)
                     + "select NULL,"
                     + "substr(src.D,-2,2)||'/'||substr(src.D,6,2)||'/'||substr(src.D,1,4) as D,"
                     + "src.J,"
-                    + colsDef + ",file from("
+                    + cAsDef + ",file from("
                     + tables[0] + " as src)order by date(src.D) desc,src.J desc";
 #ifndef QT_NO_DEBUG
             qDebug() <<msg;
@@ -510,10 +515,10 @@ bool cLesComptages::f4(QString tb, QSqlQuery *query)
     for (int zn=0;(zn < nbZone) && isOk;zn++ )
     {
         if(gameInfo.limites[zn].win>2){
-        isOk = TraitementCodeVueCombi(zn);
+            isOk = TraitementCodeVueCombi(zn);
 
-        if(isOk)
-            isOk = TraitementCodeTblCombi(tb,zn);
+            if(isOk)
+                isOk = TraitementCodeTblCombi(tb,zn);
         }
         else
         {
@@ -521,7 +526,11 @@ bool cLesComptages::f4(QString tb, QSqlQuery *query)
             int p = gameInfo.limites[zn].win;
             QString tbName = C_TBL_4"_z"+QString::number(zn+1);
             // calculer les combinaisons avec repetition
-           BP_Cnp *a = new BP_Cnp(n,p,dbInUse,tbName);
+            BP_Cnp *a = new BP_Cnp(n,p,dbInUse,tbName);
+
+            tbName = tbName + "_Cnp_" + QString::number(n) +"_" +
+                    QString::number(p);
+            isOk = TraitementCodeTblCombi_2(tb,tbName,zn);
         }
     }
 
@@ -688,6 +697,81 @@ bool cLesComptages::TraitementCodeTblCombi(QString tbName,int zn)
     return isOk;
 }
 
+bool cLesComptages::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn)
+{
+    bool isOk = true;
+    QSqlQuery query(dbInUse);
+    QString msg = "";
+
+    msg = "drop table if exists "+tbName+"_z"+QString::number(zn+1);
+    isOk = query.exec(msg);
+#ifndef QT_NO_DEBUG
+    qDebug() << msg;
+#endif
+
+    if(isOk){
+        /// traitement creation table
+        int lenZn = gameInfo.limites[zn].len;
+        QString ref_1="c%1 int";
+        QString ref_2="(%1*c%2)";//"+gameInfo.nom[zn].abv+"
+        QString msg1 = "";
+        QString msg2 = "";
+        for(int pos=0;pos<lenZn;pos++){
+            msg1 = msg1 + ref_1.arg(pos+1);
+            msg2 = msg2 + ref_2.arg(1<<(pos)).arg((pos+1));
+            if(pos < lenZn -1){
+                msg1 = msg1 + ",";
+                msg2 = msg2 + "+";
+            }
+        }
+
+        ref_1 = msg1;
+        ref_1 = ref_1.replace("c",gameInfo.nom[zn].abv) + +",tip text, poids real" ;
+        msg = "create table if not exists "
+                +tbName+"_z"+QString::number(zn+1)
+                +"(id integer primary key,"
+                +ref_1
+                +");";
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+
+        isOk = query.exec(msg);
+
+        if(isOk){
+            msg1 = msg1.remove("int");
+            msg = msg1;
+            msg = msg.replace(QRegExp("c\\d\\s+"),"%02d");
+            msg = msg.replace(",","/");
+            /// traitement insertion dans table
+            msg = "insert into "+tbName+"_z"
+                    +QString::number(zn+1)
+                    +" select NULL,"
+                    +msg1 + ",(printf('"+msg+"',"+msg1+"))as tip,("+msg2+") as poids "
+                    +"from ("+tbCnp+")";
+#ifndef QT_NO_DEBUG
+            qDebug() << msg;
+#endif
+            query.exec(msg);
+            if(isOk){
+                /// Supprimer la table Cnp
+                msg = "drop table if exists "+tbCnp;
+                //isOk = query.exec(msg);
+            }
+        }
+
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "TraitementCodeVueCombi:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
+    query.finish();
+
+    return isOk;
+}
 bool cLesComptages::chargerDonneesFdjeux(QString destTable)
 {
     bool isOk= true;

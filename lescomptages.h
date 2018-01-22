@@ -113,6 +113,7 @@ private:
     bool f4(QString tbName,QSqlQuery *query);
     bool TraitementCodeVueCombi(int zn);
     bool TraitementCodeTblCombi(QString tbName,int zn);
+    bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
 
 
     /// TBD

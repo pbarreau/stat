@@ -283,8 +283,10 @@ QTableView *RefEtude::tbForBaseRef()
     connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
              this, SLOT( slot_ShowDetails( QModelIndex) ) );
 
+#if 0
     connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
              this, SLOT( slot_DecodeTirage( QModelIndex) ) );
+#endif
 
     // click sur la zone reservee au boules du tirage
     connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
