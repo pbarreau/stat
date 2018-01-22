@@ -16,6 +16,7 @@
 #include "labelclickable.h"
 
 #include "lescomptages.h"
+#include "cnp_AvecRepetition.h"
 #include "db_tools.h"
 
 int cLesComptages::total = 0;
@@ -120,6 +121,40 @@ bool cLesComptages::ouvrirBase(eBddUse cible, eGame game)
     // Open database
     isOk = dbInUse.open();
 
+    if(isOk)
+        isOk = OPtimiseAccesBase();
+
+
+    return isOk;
+}
+
+bool cLesComptages::OPtimiseAccesBase(void)
+{
+    bool isOk = true;
+    QSqlQuery query(dbInUse);
+    QString msg = "";
+
+    QString stRequete[]={
+        "PRAGMA synchronous = OFF",
+        "PRAGMA page_size = 4096",
+        "PRAGMA cache_size = 16384",
+        "PRAGMA temp_store = MEMORY",
+        "PRAGMA journal_mode = OFF",
+        "PRAGMA locking_mode = EXCLUSIVE"
+    };
+    int items = sizeof(stRequete)/sizeof(QString);
+
+    for(int i=0; (i<items)&& isOk ;i++){
+        msg = stRequete[i];
+        isOk = query.exec(msg);
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "cLesComptages::OPtimiseAccesBase";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
     return isOk;
 }
 
@@ -196,7 +231,8 @@ bool cLesComptages::creerTablesDeLaBase(void)
     stCreateTable creerTables[]={
         {"Def_fdjeu",f3},
         {"Def_zones",f1},
-        {"Def_elemt",f2}
+        {C_TBL_2,f2},
+        {C_TBL_4,f4},
     };
 
     int nbACreer = sizeof(creerTables)/sizeof(stCreateTable);
@@ -327,7 +363,7 @@ bool cLesComptages::f2(QString tbName,QSqlQuery *query)
             for(int def = 0; (def<totDef) ;def++)
             {
                 int maxItems = gameInfo.limites[def].max;
-                int nbDizaine = floor(maxItems/10)+1;
+                //int nbDizaine = floor(maxItems/10)+1;
 
                 /// Boules
                 if(line<=maxItems){
@@ -337,8 +373,9 @@ bool cLesComptages::f2(QString tbName,QSqlQuery *query)
                     stValues = stValues +"NULL";
                 }
                 stValues = stValues + ",";
-                /// dizaine
-                if(line<=nbDizaine){
+
+                /// Nb boules pour gagner
+                if(line<=gameInfo.limites[def].win+1){
                     stValues = stValues + QString::number(line-1);
                 }
                 else{
@@ -388,22 +425,60 @@ bool cLesComptages::f3(QString tbName,QSqlQuery *query)
         }
     }
 
-    msg = "create table if not exists "
-            + tbName
-            + "(id integer primary key, date text, jour text,"
-            + colsDef
-            +");";
+    /// J: jour ie Lundi...
+    /// D: date xx/yy/nnnn
+    /// creation d'une table temporaire et d'une table destination
+    QString tables[]={"tmp_"+tbName,tbName};
+    for(int i=0; i<2 && isOk;i++)
+    {
+        QString stKeyOn = "";
+        if (i==1)
+            stKeyOn = "id integer primary key,";
+
+        msg = "create table if not exists "
+                + tables[i]
+                + "("+ stKeyOn +"D text, J text,"
+                + colsDef
+                +",file int);";
 
 #ifndef QT_NO_DEBUG
-    qDebug() <<msg;
+        qDebug() <<msg;
 #endif
 
-    isOk = query->exec(msg);
+        isOk = query->exec(msg);
+    }
 
+    /// Les tables sont presentes maintenant
     if(isOk)
     {
-        /// mettre des infos
-        isOk = chargerDonneesFdjeux();
+        /// mettre les infos brut dans la table temporaire
+        isOk = chargerDonneesFdjeux(tables[0]);
+
+        if(isOk)
+        {
+            /// mettre les infos triees dans la table de reference
+            colsDef.remove("int");
+            /// trier les resultats pour la table finale
+            msg = "insert into "
+                    + tables[1] + " "
+                    + "select NULL,"
+                    + "substr(src.D,-2,2)||'/'||substr(src.D,6,2)||'/'||substr(src.D,1,4) as D,"
+                    + "src.J,"
+                    + colsDef + ",file from("
+                    + tables[0] + " as src)order by date(src.D) desc,src.J desc";
+#ifndef QT_NO_DEBUG
+            qDebug() <<msg;
+#endif
+
+            isOk = query->exec(msg);
+
+            if(isOk){
+                /// supprimer la table tremporaire
+                msg = "drop table if exists " + tables[0];
+                isOk = query->exec(msg);
+            }
+
+        }
     }
 
     if(!isOk)
@@ -415,12 +490,211 @@ bool cLesComptages::f3(QString tbName,QSqlQuery *query)
     return isOk;
 }
 
-bool cLesComptages::chargerDonneesFdjeux(void)
+/// Creation des tables pour les combinaisons a rechercher
+/// Normalement il faudrait chercher les Cnp
+/// dans le cas loto C(49,5) = 1906884
+/// autre approche pour gagner il faut 5 boules
+/// reparties sur 4 dizaines. on a donc 6 valeurs
+/// possible (0-5) a repartir sur chaque dizaine
+/// tel que le total soit 5 (le nombre de boule a avoir
+/// pour gagner.
+/// Pour les etoiles les combinaisons  sont
+/// moins nombreuses, on fait le calcul Cnp classique
+bool cLesComptages::f4(QString tb, QSqlQuery *query)
+{
+    Q_UNUSED(query)
+
+    bool isOk = true;
+    int nbZone = gameInfo.nbDef;
+
+    for (int zn=0;(zn < nbZone) && isOk;zn++ )
+    {
+        if(gameInfo.limites[zn].win>2){
+        isOk = TraitementCodeVueCombi(zn);
+
+        if(isOk)
+            isOk = TraitementCodeTblCombi(tb,zn);
+        }
+        else
+        {
+            int n = gameInfo.limites[zn].max;
+            int p = gameInfo.limites[zn].win;
+            QString tbName = C_TBL_4"_z"+QString::number(zn+1);
+            // calculer les combinaisons avec repetition
+           BP_Cnp *a = new BP_Cnp(n,p,dbInUse,tbName);
+        }
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "f4:";
+        DB_Tools::DisplayError(ErrLoc,NULL,"");
+    }
+
+    return isOk;
+}
+
+bool cLesComptages::TraitementCodeVueCombi(int zn)
+{
+    bool isOk = true;
+    QSqlQuery query(dbInUse);
+    QString msg = "";
+    QString ref_1 = "";
+
+    QString viewCode[]=
+    {
+        "drop view if exists tbr%1;",
+        "create view if not exists tbr%1 as select tbChoix.tz%1 as "
+        +gameInfo.nom[zn].abv+ " "
+        "from (%2 as tbChoix)where(tbChoix.tz%1 is not null);"
+    };
+    int argViewCount[]={1,2};
+
+    /// Traitement de la vue
+    int nbLgnCode = sizeof(viewCode)/sizeof(QString);
+    for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+        msg = "";
+        switch(argViewCount[lgnCode]){
+        case 1:
+            msg = msg + viewCode[lgnCode].arg(zn+1);
+            break;
+        case 2:
+            ref_1 = C_TBL_2;
+            msg = msg + viewCode[lgnCode].arg(zn+1).arg(ref_1);
+            break;
+        default:
+            msg = "Error on the number of args";
+            break;
+        }
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+
+        isOk = query.exec(msg);
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "TraitementCodeVueCombi:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
+    query.finish();
+
+    return isOk;
+}
+
+bool cLesComptages::TraitementCodeTblCombi(QString tbName,int zn)
+{
+    bool isOk = true;
+    QSqlQuery query(dbInUse);
+    QString msg = "";
+
+    QString tblCode[]=
+    {
+        "drop table if exists "+tbName+"_z%1;",
+        "create table if not exists "+tbName+"_z%1 (id integer primary key,%2);",
+        "insert into "+tbName+"_z%1 select NULL,%2 from (%3) where(%4="
+        +QString::number(+gameInfo.limites[zn].win)+");"
+    };
+    int argTblCount[]={1,2,4};
+
+    QString ref_1 = "";
+    QString ref_2 = "";
+    QString ref_3 = "";
+    QString ref_4 = "";
+    QString ref_5 = "";
+    int nbLgnCode= 0;
+
+
+    /// traitement creation table en fonction 10zaine
+    int lenZn = floor(gameInfo.limites[zn].max/10)+1;
+    ref_1="t%1."+gameInfo.nom[zn].abv+" as "+gameInfo.nom[zn].abv+"%1";
+    QString msg1 = "";
+    for(int pos=0;pos<lenZn;pos++){
+        msg1 = msg1 + ref_1.arg(pos+1);
+        if(pos < lenZn -1)
+            msg1 = msg1 + ",";
+    }
+
+    nbLgnCode = sizeof(tblCode)/sizeof(QString);
+    for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+        msg="";
+        switch(argTblCount[lgnCode]){
+        case 1:
+            msg = tblCode[lgnCode].arg(zn+1);
+            break;
+        case 2:{
+            ref_1=msg1+",";
+            ref_1.replace(QRegExp("t\\d\."
+                                  +gameInfo.nom[zn].abv
+                                  +"\\s+as\\s+"),"");
+            ref_1.replace(",", " int,");
+            ref_1=ref_1 + "tip text, poids real";
+            msg = tblCode[lgnCode].arg(zn+1).arg(ref_1);
+        }
+            break;
+        case 4:{
+            ref_1="%d";
+            ref_2="t%1."+gameInfo.nom[zn].abv;
+            ref_3="(%1*t%2."+gameInfo.nom[zn].abv+")";
+            ref_4="tbr%1 as t%2";
+            ref_5=gameInfo.nom[zn].abv+"%1";
+            QString msg2 = "";
+            QString msg3 = "";
+            QString msg4 = "";
+            QString msg5 = "";
+            for(int pos=0;pos<lenZn;pos++){
+                msg2 = msg2 + ref_2.arg(pos+1);
+                msg3 = msg3 + ref_3.arg(1<<pos).arg(pos+1);
+                msg4 = msg4 + ref_4.arg(zn+1).arg(pos+1);
+                msg5 = msg5 + ref_5.arg(pos+1);
+                if(pos < lenZn -1){
+                    ref_1 = ref_1 + "/%d";
+                    msg2 = msg2 + ",";
+                    msg3 = msg3 + "+";
+                    msg4 = msg4 + ",";
+                    msg5 = msg5 + "+";
+                }
+            }
+
+            ref_2=msg1+","+QString::fromLocal8Bit("printf('%1',%2)as tip,(%3) as poids");
+            ref_1 = ref_2.arg(ref_1).arg(msg2).arg(msg3);
+            ref_2 = msg4;
+            ref_3 = msg5;
+            msg = tblCode[lgnCode].arg(QString::number(zn+1),ref_1,ref_2,ref_3);
+        }
+            break;
+        default:
+            msg = "Error on the number of args";
+            break;
+        }
+
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+
+        isOk = query.exec(msg);
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "TraitementCodeVueCombi:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
+    query.finish();
+
+    return isOk;
+}
+
+bool cLesComptages::chargerDonneesFdjeux(QString destTable)
 {
     bool isOk= true;
 
     stFdjData *LesFichiers;
     int nbelemt = 0;
+    int fId = 0;
 
 
     /// avec les differentes version des jeux
@@ -449,38 +723,40 @@ bool cLesComptages::chargerDonneesFdjeux(void)
     };
 
     /// Liste des fichiers pour Euromillions
+    fId = 0;
     stFdjData euroMillions[]=
     {
-        {"euromillions_4.csv",
+        {"euromillions_4.csv",fId++,
          {false,2,1,2,&p4Zn[0]}
         },
-        {"euromillions_3.csv",
+        {"euromillions_3.csv",fId++,
          {false,2,1,2,&p3Zn[0]}
         },
-        {"euromillions_2.csv",
+        {"euromillions_2.csv",fId++,
          {false,2,1,2,&p3Zn[0]}
         },
-        {"euromillions.csv",
+        {"euromillions.csv",fId++,
          {false,2,1,2,&p1Zn[0]}
         }
     };
 
     /// Liste des fichiers pour loto
+    fId = 0;
     stFdjData loto[]=
     {
-        {"loto2017.csv",
+        {"loto2017.csv",fId++,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"superloto2017.csv",
+        {"superloto2017.csv",fId++,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"lotonoel2017.csv",
+        {"lotonoel2017.csv",fId++,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"nouveau_superloto.csv",
+        {"nouveau_superloto.csv",fId++,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"nouveau_loto.csv",
+        {"nouveau_loto.csv",fId++,
          {false,2,1,2,&p2Zn[0]}
         }
     };
@@ -498,17 +774,224 @@ bool cLesComptages::chargerDonneesFdjeux(void)
     // Lectures des fichiers de la Fd jeux
     while((isOk == true) && (nbelemt>0))
     {
-        isOk = LireLesTirages(&LesFichiers[nbelemt-1],nbelemt-1);
+        isOk = LireLesTirages(destTable, &LesFichiers[nbelemt-1]);
         nbelemt--;
     };
+
+
 
     return isOk;
 }
 
-bool cLesComptages::LireLesTirages(stFdjData *def,int file_id)
+bool cLesComptages::LireLesTirages(QString tblName, stFdjData *def)
 {
     bool isOk= true;
+    QSqlQuery query(dbInUse);
+
+    QString fileName_2 = def->fname;
+    QFile fichier(fileName_2);
+
+    // On ouvre notre fichier en lecture seule et on verifie l'ouverture
+    if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QMessageBox::critical(0, "LireLesTirages", "Erreur chargement !:\n"+fileName_2,QMessageBox::Yes);
+        return false;
+    }
+
+    /// Variables traitement
+    QTextStream flux(&fichier);
+    QString ligne = "";
+    QStringList list1;
+    QString reqCols = "";
+    QString reqValues = "";
+    QString data = "";
+    QString msg = "";
+    stErr2 retErr;
+
+    // --- DEBUT ANALYSE DU FICHIER
+    // Passer la premiere ligne
+    ligne = flux.readLine();
+
+    // Analyse des suivantes
+    int nb_lignes=0;
+    while((! flux.atEnd() )&& (isOk == true))
+    {
+        ligne = flux.readLine();
+        nb_lignes++;
+        reqCols = "";
+        reqValues = "";
+
+        //traitement de la ligne
+        list1 = ligne.split(";");
+
+        // Recuperation du date_tirage (D)
+        data = DateAnormer(list1.at(2));
+        // Presentation de la date
+        reqCols = reqCols + "D,";
+        reqValues = reqValues + "'"
+                + data+ "',";
+#if 0
+        QStringList tmp = data.split("-");
+        reqValues = reqValues + "'"
+                + tmp.at(2)+"/"
+                + tmp.at(1)+"/"
+                + tmp.at(0)+ "',";
+#endif
+        // Recuperation et verification du jour (J) en fonction de la date
+        data = JourFromDate(data, list1.at(1),&retErr);
+        if(retErr.status == false)
+        {
+            msg = retErr.msg;
+            msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1)+"\n"+msg;
+            QMessageBox::critical(0, "cLesComptages::LireLesTirages", msg,QMessageBox::Yes);
+            return false;
+        }
+        reqCols = reqCols + "J,";
+        reqValues = reqValues + "'"+data + "',";
+
+        // Recuperation des boules
+        int max_zone = gameInfo.nbDef;
+        for(int zone=0;zone< max_zone;zone++)
+        {
+            int maxValZone = def->param.pZn[zone].max;
+            int minValZone = def->param.pZn[zone].min;
+            int maxElmZone = def->param.pZn[zone].len;
+
+            for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
+            {
+                // Recuperation de la valeur
+                int val1 = list1.at(def->param.pZn[zone].start+ElmZone).toInt();
+
+                // verification coherence
+                if((val1 >= def->param.pZn[zone].min)
+                        &&
+                        (val1 <=def->param.pZn[zone].max))
+                {
+                    /// On rajoute a Req values
+                    reqCols = reqCols+gameInfo.nom[zone].abv+QString::number(ElmZone+1);
+                    reqValues = reqValues + QString::number(val1);
+                }
+                else
+                {
+                    /// Bug pour la valeur lue
+                    msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1);
+                    msg= msg +"\nzn:"+QString::number(zone)+",el:"+QString::number(ElmZone);
+                    msg= msg +",val:"+QString::number(val1);
+                    QMessageBox::critical(0, "LireLesTirages", msg,QMessageBox::Yes);
+                    return false;
+                }
+
+                /// tous les elements sont vus ?
+                if(ElmZone < maxElmZone-1){
+                    reqCols = reqCols + ",";
+                    reqValues = reqValues + ",";
+                }
+            }
+
+            /// voir si passage a nouvelle zone
+            if(zone< max_zone-1){
+                reqCols = reqCols + ",";
+                reqValues = reqValues + ",";
+            }
+        }
+        /// Toutes les zones sont faites, ecrire dans la base
+        msg = "insert into "
+                +tblName+"("
+                +reqCols+",file)values("
+                + reqValues +","+QString::number(def->id)
+                + ")";
+#ifndef QT_NO_DEBUG
+        qDebug() <<msg;
+#endif
+        isOk = query.exec(msg);
+
+    }  /// Fin while
+
+
+    if(!isOk)
+    {
+        QString ErrLoc = "cLesComptages::LireLesTirages";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
     return isOk;
+}
+
+QString cLesComptages::DateAnormer(QString input)
+{
+    // La fonction doit retourner une date au format  AAAA-MM-JJ
+    // http://fr.wikipedia.org/wiki/ISO_8601
+    QString ladate = "";
+
+    // regarder la taille de la date
+    if (input.size()==10){
+        // fdj euro million v2 -> JJ/MM/AAAA
+        QStringList tmp = input.split("/");
+        ladate = tmp.at(2) + "-"
+                + tmp.at(1)+ "-"
+                + tmp.at(0);
+    }
+    else
+    {
+        if(input.contains("/"))
+        {
+            // fdj euro million v2 -> JJ/MM/AA
+            QStringList tmp = input.split("/");
+            ladate = "20" + tmp.at(2) + "-"
+                    + tmp.at(1)+ "-"
+                    + tmp.at(0);
+        }
+        else
+        {
+            // fdj euro million v1 -> AAAAMMJJ
+            ladate =input.left(4) + "-"
+                    + input.mid(4,2)+ "-"
+                    + input.right(2);
+
+        }
+    }
+    return ladate;
+}
+
+QString cLesComptages::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
+{
+    // http://algor.chez.com/date/date.htm
+    QString tab[] = {"MARDI","MERCREDI","JEUDI","VENDREDI","SAMEDI","DIMANCHE","LUNDI"};
+    QStringList tmp = LaDate.split("-");
+    QString retval = "";
+
+    int anne = tmp.at(0).toInt();
+    int mois = tmp.at(1).toInt();
+    int date = tmp.at(2).toInt();
+
+    retErr->status = true;
+    retErr->msg = "Ok";
+
+    int JS = 0;
+    double JD = 0.0;
+    double  s = 0.0;
+
+    if(mois < 3)
+    {
+        mois+=12;
+        anne--;
+    }
+
+    s = anne/100;
+    JD = (1720996.5 - s) + (s / 4) + floor(365.25*anne) + floor(30.6001*(mois+1)) + date;
+    JD = JD - floor(JD/7)*7;
+
+    JS = (int)floor(JD)%7;
+
+    retval = tab [JS];
+
+    if(retval.left(2) != verif.trimmed().left(2))
+    {
+        retErr->status = false;
+        retErr->msg = "Err:JourFromDate->" + LaDate+"\n"+retval+" != "+verif.trimmed();
+    }
+
+    return retval;
 }
 
 void cLesComptages::efffectuerTraitement_2()

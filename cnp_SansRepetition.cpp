@@ -6,11 +6,26 @@
 #include <QObject>
 #include <QSqlQuery>
 #include <QStringList>
+#include <QSqlDatabase>
 
 #include "db_tools.h"
 #include "cnp_SansRepetition.h"
 
-BP_Cnp::BP_Cnp(int n, int p):n(n),p(p)
+BP_Cnp::BP_Cnp(int n, int p,QSqlDatabase destBdd, QString tbName="My"):n(n),p(p),dbToUse(destBdd),tbName(tbName)
+{
+    int cnp_v1 = Cardinal_np();
+    int cnp_v2 = CalculerCnp_v2();
+
+    cnp = cnp_v1;
+    pos = 0;
+    tab = NULL;
+
+    if(CalculerPascal()==false)
+    {
+        delete (this);
+    }
+}
+BP_Cnp::BP_Cnp(int n, int p):n(n),p(p),tbName("My")
 {
     int cnp_v1 = Cardinal_np();
     int cnp_v2 = CalculerCnp_v2();
@@ -227,7 +242,7 @@ void BP_Cnp::insertLineInDbTable(const QString &Laligne)
     static QString colNames = "";
     static bool isOk = true;
     static bool skipInsert = false;
-    QSqlQuery query;
+    QSqlQuery query(dbToUse);
 
 
     /// Creer la table ?
@@ -236,7 +251,7 @@ void BP_Cnp::insertLineInDbTable(const QString &Laligne)
             && (skipInsert == false))
     {
         /// nom de la table
-        st_table = "MyCnp_"+QString::number(n)
+        st_table = tbName+"_Cnp_"+QString::number(n)
                 + "_" + QString::number(p);
 
         /// Verifier si la table existe deja

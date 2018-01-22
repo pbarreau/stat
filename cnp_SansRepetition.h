@@ -2,7 +2,9 @@
 #define CNP_H
 
 #include <QObject>
+#include <QString>
 #include <QStringList>
+#include <QSqlDatabase>
 
 #define BMAX(a,b) (((a)>(b))?(a):(b))
 #define BMIN(a,b) (((a)<(b))?(a):(b))
@@ -31,6 +33,7 @@ class BP_Cnp:public QObject
     Q_OBJECT
 
 public:
+    BP_Cnp(int n, int p, QSqlDatabase destBdd, QString tbName);
     BP_Cnp(int n, int p);
     ~BP_Cnp();
     int BP_count(void);
@@ -45,8 +48,8 @@ private:
     int pos;    /// varie de 0 au début à Cnp-1 à la fin
     int **tab;  /// tableau de Cnp lignes contenant chacune une combinaison
     /// sous la forme de p entiers (de 1 au moins à n au plus)
-    /// QString tb; /// prefix table dans la base
-
+    QString tbName; /// prefix table dans la base
+    QSqlDatabase dbToUse;
 
 
 #if USE_CNP_SLOT_LINE

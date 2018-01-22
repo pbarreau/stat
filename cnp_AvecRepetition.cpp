@@ -4,9 +4,13 @@
 
 #include <QString>
 #include <QStringList>
+#include <QSqlDatabase>
 
 #include "cnp_AvecRepetition.h"
 
+BP_Gnp::BP_Gnp(int n, int p,QSqlDatabase destBdd,QString tab="My"):BP_Cnp((n+p-1),p, destBdd,tab)
+{
+}
 BP_Gnp::BP_Gnp(int n, int p):BP_Cnp((n+p-1),p)
 {
 }

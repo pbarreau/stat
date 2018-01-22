@@ -8,6 +8,7 @@
 class BP_Gnp:public BP_Cnp
 {
 public:
+    BP_Gnp(int n, int p, QSqlDatabase destBdd, QString tab);
     BP_Gnp(int n, int p);
     ~BP_Gnp();
 };

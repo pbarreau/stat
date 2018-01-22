@@ -28,6 +28,12 @@ typedef enum _eBddDest{
     eBddUseDisk   /// sur disque
 }eBddUse;
 /// -------STRUCT---------
+typedef struct _stErr2
+{
+    bool status;
+    QString msg;
+}stErr2;
+
 typedef struct _stZnDef
 {
     int start;  /// offset de debut zone dans fichier
@@ -48,7 +54,8 @@ typedef struct _stConfFdjData
 /// Tirage file format
 typedef struct _stFdjData
 {
-    QString fname;              /// file name
+    QString fname;  /// fichier en cours de traitement
+    int id;
     stConfFdjData param;
 }stFdjData;
 
@@ -95,17 +102,24 @@ public:
 private:
     QString ListeDesJeux(int zn);
     bool ouvrirBase(eBddUse cible, eGame game);
+    bool OPtimiseAccesBase(void);
     void effectuerTraitement(eGame game);
+
     bool creerTablesDeLaBase(void);
     void definirConstantesDuJeu(eGame game);
     bool f1(QString tbName,QSqlQuery *query);
     bool f2(QString tbName,QSqlQuery *query);
     bool f3(QString tbName,QSqlQuery *query);
+    bool f4(QString tbName,QSqlQuery *query);
+    bool TraitementCodeVueCombi(int zn);
+    bool TraitementCodeTblCombi(QString tbName,int zn);
 
 
     /// TBD
-    bool chargerDonneesFdjeux(void);
-    bool LireLesTirages(stFdjData *def,int file_id);
+    bool chargerDonneesFdjeux(QString tbName);
+    bool LireLesTirages(QString tblName, stFdjData *def);
+    QString DateAnormer(QString input);
+    QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
     void efffectuerTraitement_2();
 
