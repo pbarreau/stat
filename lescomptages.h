@@ -135,6 +135,8 @@ private:
     QString dbUseName;      /// nom de la connection
     eGame curGame;          /// type de jeu
     stGameConf gameInfo;    /// parametres du jeu
+    QStringList **slFlt;    /// zn_filters
+    QString tblTirages;
     LabelClickable selection[3];
     QString titre[3];
     QString sql[3];

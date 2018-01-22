@@ -23,8 +23,11 @@
 #define TB2_SC      "SelComb"  /// Choix de combinaison dans zone
 #define TB2_SG      "SelGrp"  /// Choix de criteres groupement dans zone
 
+#define C_TBL_1     "Def_zones"
 #define C_TBL_2     "Def_elemt"
-#define C_TBL_4 "Def_comb"
+#define C_TBL_3     "Def_fdjeu"
+#define C_TBL_4     "Def_comb"
+#define C_TBL_5     "Cal_def"
 
 /// https://fr.wikibooks.org/wiki/Programmation_C%2B%2B/Les_classes
 /// https://fr.wikipedia.org/wiki/Fonction_virtuelle

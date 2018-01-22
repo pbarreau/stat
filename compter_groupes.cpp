@@ -483,11 +483,14 @@ QStringList * cCompterGroupes::CreateFilterForData(int zn)
     int nbBoules = floor(maxElems/10)+1;
 
 
-    // Parite & nb elment dans groupe
-    sl_filter[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
-    sl_filter[1] << "P" << "G";
-    sl_filter[2] << "Pair" << "< E/2";
-
+    // Nombre de 10zaine
+    for(int j=0;j<nbBoules;j++)
+    {
+        sl_filter[0]<< fields+" >="+QString::number(10*j)+
+                       " and "+fields+"<="+QString::number((10*j)+9);
+        sl_filter[1] << "U"+ QString::number(j);
+        sl_filter[2] << "Entre:"+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
+    }
 
     // Boule finissant par [0..9]
     for(int j=0;j<=9;j++)
@@ -497,14 +500,13 @@ QStringList * cCompterGroupes::CreateFilterForData(int zn)
         sl_filter[2] << "Finissant par: "+ QString::number(j);
     }
 
-    // Nombre de 10zaine
-    for(int j=0;j<nbBoules;j++)
-    {
-        sl_filter[0]<< fields+" >="+QString::number(10*j)+
-                       " and "+fields+"<="+QString::number((10*j)+9);
-        sl_filter[1] << "U"+ QString::number(j);
-        sl_filter[2] << "Entre:"+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
-    }
+    // Parite & nb elment dans groupe
+    sl_filter[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
+    sl_filter[1] << "P" << "G";
+    sl_filter[2] << "Pair" << "< E/2";
+
+
+
 
     return sl_filter;
 }

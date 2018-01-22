@@ -230,10 +230,11 @@ bool cLesComptages::creerTablesDeLaBase(void)
     QSqlQuery q(dbInUse);
 
     stCreateTable creerTables[]={
-        {"Def_fdjeu",f3},
-        {"Def_zones",f1},
-        {C_TBL_2,f2},
-        {C_TBL_4,f4},
+        {C_TBL_3,f3},   /// Table des tirages
+        {C_TBL_1,f1},   /// Table des nom des zones et abregees
+        {C_TBL_2,f2},   /// Liste des boules par zone
+        {C_TBL_4,f4},    /// Table des combinaisons
+        {C_TBL_5,f5}    /// Table des Analyses
     };
 
     int nbACreer = sizeof(creerTables)/sizeof(stCreateTable);
@@ -310,6 +311,8 @@ bool cLesComptages::f1(QString tbName,QSqlQuery *query)
     return isOk;
 }
 
+/// Creation des listes de reference des noms
+/// des boules et du nombre par zone
 bool cLesComptages::f2(QString tbName,QSqlQuery *query)
 {
     bool isOk= true;
@@ -409,6 +412,9 @@ bool cLesComptages::f3(QString tbName,QSqlQuery *query)
     QString msg = "";
     QString colsDef = "";
     QString cAsDef = ""; /// column as def
+
+    /// Cette table contient tous les tirages
+    tblTirages =  tbName;
 
     int totDef=gameInfo.nbDef;
     for(int def = 0; (def<totDef) && isOk;def++)
@@ -534,6 +540,27 @@ bool cLesComptages::f4(QString tb, QSqlQuery *query)
         }
     }
 
+    if(!isOk)
+    {
+        QString ErrLoc = "f4:";
+        DB_Tools::DisplayError(ErrLoc,NULL,"");
+    }
+
+    return isOk;
+}
+
+bool cLesComptages::f5(QString tb, QSqlQuery *query)
+{
+    Q_UNUSED(query)
+
+    bool isOk = true;
+    int nbZone = gameInfo.nbDef;
+
+    for (int zn=0;(zn < nbZone) && isOk;zn++ )
+    {
+        QString tbReponses = tb + "_" + QString::number(zn+1);
+        isOk = AnalyserEnsembleTirage(tblTirages,tbReponses);
+    }
     if(!isOk)
     {
         QString ErrLoc = "f4:";
@@ -1279,4 +1306,167 @@ QString cLesComptages::ListeDesJeux(int zn)
 
     ///----------------------
     return msg;
+}
+
+bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
+{
+    /// Verifier si des vues temporaires precedentes sont encore presentes
+    /// Si oui les effacer
+    /// Si non prendre la liste des criteres a appliquer sur l'ensemble
+    /// puis faire tant qu'il existe un critere
+    /// effectuer la selection comptage vers une nouvelle vu temporaire i
+    /// quand on arrive a nombre de criteres total -1 la vue destination
+    /// sera OutputTable.
+
+    bool isOk = true;
+    QString msg = "";
+    QSqlQuery query(dbInUse);
+    QString stDefBoules = C_TBL_2;
+    QString st_OnDef = "";
+
+    QString ref="(tbleft.%1%2=tbRight.B)";
+
+    /// sur quel nom des elements de la zone
+    st_OnDef=""; /// remettre a zero pour chacune des zones
+    int znLen = gameInfo.limites[zn].len;
+    for(int j=0;j<znLen;j++)
+    {
+        st_OnDef = st_OnDef + ref.arg(gameInfo.nom[zn].abv).arg(j+1);
+        if(j<znLen-1)
+            st_OnDef = st_OnDef + " or ";
+    }
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "on definition:"<<st_OnDef;
+#endif
+
+    QStringList *slst=&slFlt[zn][0];
+
+    /// Verifier si des tables existent deja
+    if(SupprimerVueIntermediaires())
+    {
+        /// les anciennes vues ne sont pas presentes
+        ///  on peut faire les calculs
+        int loop = 0;
+        int nbTot = slst[0].size();
+        QString curName = InputTable;
+        QString curTarget = "view vt_0";
+        do
+        {
+            msg = "create " + curTarget
+                    +" as select tbLeft.*, count(tbRight.B) as "
+                    + slst[1].at(loop)
+                    +" from("+curName+")as tbLeft "
+                    +"left join (select c1.id as B from "
+                    +stDefBoules+" as c1 where (c1.z"
+                    +QString::number(zn+1)+" not null and (c1."
+                    +slst[0].at(loop)+"))) as tbRight on ("
+                    +st_OnDef+") group by tbLeft.id";
+            isOk = query.exec(msg);
+#ifndef QT_NO_DEBUG
+            qDebug() << "msg:"<<msg;
+#endif
+            loop++;
+            curName = "vt_" +  QString::number(loop-1);
+            if(loop <  nbTot-1)
+            {
+                curTarget = "view vt_"+QString::number(loop);
+            }
+            else
+            {
+                curTarget = "table vrz"+QString::number(zn+1)+"_"+OutputTable;
+            }
+        }while(loop < nbTot && isOk);
+
+
+        /// supression tables intermediaires
+        if(isOk)
+            isOk = SupprimerVueIntermediaires();
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "AnalyserEnsembleTirage:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+    return isOk;
+}
+
+bool cLesComptages::SupprimerVueIntermediaires(void)
+{
+    bool isOk = true;
+    QString msg = "";
+    QSqlQuery query;
+    QSqlQuery qDel;
+
+    msg = "SELECT name FROM sqlite_master "
+          "WHERE type='view' AND name like'vt_%';";
+    isOk = query.exec(msg);
+
+    if(isOk)
+    {
+        query.first();
+        if(query.isValid())
+        {
+            /// il en existe donc les suprimer
+            do
+            {
+                QString viewName = query.value("name").toString();
+                msg = "drop view if exists "+viewName;
+                isOk = qDel.exec(msg);
+            }while(query.next()&& isOk);
+        }
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "SupprimerVueIntermediaires:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
+    return isOk;
+}
+
+// Cette fonction retourne un pointeur sur un tableau de QStringList
+// Ce tableau comporte 2 elements
+// Element 0 liste des requetes construites
+// Element 1 Liste des titres assosies a la requete
+// En fonction de la zone a etudier les requetes sont adaptees
+// pour integrer le nombre maxi de boules a prendre en compte
+QStringList * cLesComptages::CreateFilterForData(int zn)
+{
+    QStringList *sl_filter = new QStringList [3];
+    QString fields = "z"+QString::number(zn+1);
+
+    //int maxElems = pConf->limites[zn].max;
+    int maxElems = limites[zn].max;
+    int nbBoules = floor(maxElems/10)+1;
+
+
+    // Nombre de 10zaine
+    for(int j=0;j<nbBoules;j++)
+    {
+        sl_filter[0]<< fields+" >="+QString::number(10*j)+
+                       " and "+fields+"<="+QString::number((10*j)+9);
+        sl_filter[1] << "U"+ QString::number(j);
+        sl_filter[2] << "Entre:"+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
+    }
+
+    // Boule finissant par [0..9]
+    for(int j=0;j<=9;j++)
+    {
+        sl_filter[0]<< fields+" like '%" + QString::number(j) + "'";
+        sl_filter[1] << "F"+ QString::number(j);
+        sl_filter[2] << "Finissant par: "+ QString::number(j);
+    }
+
+    // Parite & nb elment dans groupe
+    sl_filter[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
+    sl_filter[1] << "P" << "G";
+    sl_filter[2] << "Pair" << "< E/2";
+
+
+
+
+    return sl_filter;
 }
