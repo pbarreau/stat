@@ -41,6 +41,7 @@ void cLesComptages::slot_changerTitreZone(QString le_titre)
 cLesComptages::cLesComptages(eGame game, eBddUse def)
 {
     curGame = game;
+    gameInfo.type = game;
     if(ouvrirBase(def,game)==true)
     {
         effectuerTraitement(game);
@@ -53,6 +54,7 @@ cLesComptages::cLesComptages(eGame game, eBddUse def, QString stLesTirages)
     Q_UNUSED(stLesTirages)
 
     curGame = game;
+    gameInfo.type = game;
     if(ouvrirBase(def,game)==true)
     {
         effectuerTraitement(game);
@@ -874,7 +876,7 @@ bool cLesComptages::chargerDonneesFdjeux(QString destTable)
         }
     };
 
-    if(curGame == eGameEuro){
+    if(gameInfo.type == eGameEuro){
         nbelemt = sizeof(euroMillions)/sizeof(stFdjData);
         LesFichiers = euroMillions;
     }
@@ -1351,12 +1353,27 @@ bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTab
         ///  on peut faire les calculs
         int loop = 0;
         int nbTot = slst[0].size();
+        int colId = 0;
         QString curName = InputTable;
         QString curTarget = "view vt_0";
         QString lastTitle = "tbLeft.id  as Id,";
         QString curTitle = "tbLeft.*";
         do
         {
+            /// Dans le cas zone etoiles prendre la valeur directe
+            QString colName = slst[1].at(loop);
+            if(zn==1 && colName.contains("U")&&colId<znLen){
+                colId++;
+                msg = "create " + curTarget
+                        +" as select "+curTitle+", tbRight."
+                        +gameInfo.nom[zn].abv+QString::number(colId)+" as "
+                        + slst[1].at(loop)
+                        +" from("+curName+")as tbLeft "
+                        +"left join ( "
+                        +C_TBL_3+") as tbRight  on (tbRight.id = tbLeft.id)";
+
+            }
+            else{
             msg = "create " + curTarget
                     +" as select "+curTitle+", count(tbRight.B) as "
                     + slst[1].at(loop)
@@ -1366,6 +1383,7 @@ bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTab
                     +QString::number(zn+1)+" not null and (c1."
                     +slst[0].at(loop)+"))) as tbRight on ("
                     +st_OnDef+") group by tbLeft.id";
+            }
             isOk = query.exec(msg);
 
             curName = "vt_" +  QString::number(loop);
@@ -1386,29 +1404,38 @@ bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTab
         }while(loop < nbTot && isOk);
 
         if(isOk){
+            ///msg=AssocierClefCombi(zn);
+            ///isOk = query.exec(msg);
             /// mise en correspondance de la reference combinaison
-            QString ref_1 = "(tbLeft.U%1 = tbRight."+gameInfo.nom[zn].abv+"%2)";
+            QString msg = "";
+            QString ref_1 = "";
             QString stCombi = "";
             QString stLien = "";
-            if(zn == 1){
-                ref_1 = "("
-                        "(tbLeft.U0 = tbRight."+gameInfo.nom[zn].abv+"%1)"+
-                        "and"
-                        "(tbLeft.U1 = tbRight."+gameInfo.nom[zn].abv+"%2)"+
-                        ")";
+
+            ref_1 = "(tbLeft.U%1 = tbRight."+gameInfo.nom[zn].abv+"%2)";
+            stLien = " and ";
+
+            if(gameInfo.type == eGameEuro && zn == 1){
+            ref_1 = "((tbLeft.U%3 = tbRight."+gameInfo.nom[zn].abv+"%1)"
+                    +"or"+
+                    "(tbLeft.U%3 = tbRight."+gameInfo.nom[zn].abv+"%2))";
+            stLien = " and ";
             }
+
+            int znLen = gameInfo.limites[zn].len;
             for(int pos=0;pos<znLen;pos++){
-                if(zn == 0){
-                stCombi = stCombi + ref_1.arg(pos).arg(pos+1);
-                stLien = " and ";
+                if(gameInfo.type == eGameEuro && zn == 1){
+                    stCombi = stCombi
+                            + ref_1.arg((pos%2)+1).arg(((pos+1)%2)+1).arg(pos);
+
+                }else{
+                    stCombi = stCombi + ref_1.arg(pos).arg(pos+1);
                 }
-                else{
-                    stCombi = stCombi + ref_1.arg((pos%2)+1).arg(((pos+1)%2)+1);
-                    stLien = " or ";
-                }
+
                 if(pos<znLen-1)
                     stCombi = stCombi + stLien;
             }
+
             curTarget = curTarget.remove("table");
             msg = "create table Ref"
                     +QString::number(zn+1)+"_"+OutputTable
@@ -1419,11 +1446,10 @@ bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTab
                     + stCombi
                     +")"
                     ;
-#ifndef QT_NO_DEBUG
+        #ifndef QT_NO_DEBUG
             qDebug() << "msg:"<<msg;
-#endif
-
-            isOk = query.exec(msg);
+        #endif
+           isOk = query.exec(msg);
         }
 
         /// supression tables intermediaires
@@ -1438,6 +1464,57 @@ bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTab
     }
     return isOk;
 }
+
+#if 0
+QString cLesComptages::AssocierClefCombi(int zn)
+{
+    /// mise en correspondance de la reference combinaison
+    QString msg = "";
+    QString ref_1 = "";
+    QString stCombi = "";
+    QString stLien = "";
+
+    ref_1 = "(tbLeft.U%1 = tbRight."+gameInfo.nom[zn].abv+"%2)";
+    stLien = " and ";
+
+    if(gameInfo.type == eGameEuro && zn == 1){
+    ref_1 = "(tbLeft.U0 = tbRight."+gameInfo.nom[zn].abv+"%1)"
+            +"and"+
+            "(tbLeft.U0 = tbRight."+gameInfo.nom[zn].abv+"%2)";
+    stLien = " or ";
+    }
+
+    int znLen = gameInfo.limites[zn].len;
+    for(int pos=0;pos<znLen;pos++){
+        if(gameInfo.type == eGameEuro && zn == 1){
+            stCombi = stCombi
+                    + ref_1.arg((pos%2)+1).arg(((pos+1)%2)+1);
+
+        }else{
+            stCombi = stCombi + ref_1.arg(pos).arg(pos+1);
+        }
+
+        if(pos<znLen-1)
+            stCombi = stCombi + stLien;
+    }
+
+    curTarget = curTarget.remove("table");
+    msg = "create table Ref"
+            +QString::number(zn+1)+"_"+OutputTable
+            +" as select tbLeft.*,tbRight.id as idComb  from ("
+            +curTarget+")as tbLeft left join ("
+            + C_TBL_4 "_z"+QString::number(zn+1)
+            +")as tbRight on("
+            + stCombi
+            +")"
+            ;
+#ifndef QT_NO_DEBUG
+    qDebug() << "msg:"<<msg;
+#endif
+
+    return msg;
+}
+#endif
 
 bool cLesComptages::SupprimerVueIntermediaires(void)
 {

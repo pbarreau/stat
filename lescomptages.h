@@ -82,6 +82,7 @@ typedef struct _stParam_2
 
 /// Definition d'un jeu
 typedef struct _stGameConf{
+    eGame type; /// type du jeu
     int nbDef; /// nombre de zones a regarder
     stParam_1 *limites; /// bornes sur la zone
     stParam_2 *nom; /// nom de la zone
