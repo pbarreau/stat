@@ -111,10 +111,14 @@ private:
     bool f2(QString tbName,QSqlQuery *query);
     bool f3(QString tbName,QSqlQuery *query);
     bool f4(QString tbName,QSqlQuery *query);
+    bool f5(QString tbName,QSqlQuery *query);
     bool TraitementCodeVueCombi(int zn);
     bool TraitementCodeTblCombi(QString tbName,int zn);
     bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
 
+    bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
+    bool SupprimerVueIntermediaires(void);
+    QStringList * CreateFilterForData(int zn);
 
     /// TBD
     bool chargerDonneesFdjeux(QString tbName);

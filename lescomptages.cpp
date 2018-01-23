@@ -555,11 +555,13 @@ bool cLesComptages::f5(QString tb, QSqlQuery *query)
 
     bool isOk = true;
     int nbZone = gameInfo.nbDef;
+    slFlt = new  QStringList* [nbZone] ;
 
     for (int zn=0;(zn < nbZone) && isOk;zn++ )
     {
+        slFlt[zn] = CreateFilterForData(zn);
         QString tbReponses = tb + "_" + QString::number(zn+1);
-        isOk = AnalyserEnsembleTirage(tblTirages,tbReponses);
+        isOk = AnalyserEnsembleTirage(tblTirages,tbReponses,zn);
     }
     if(!isOk)
     {
@@ -1438,8 +1440,8 @@ QStringList * cLesComptages::CreateFilterForData(int zn)
     QStringList *sl_filter = new QStringList [3];
     QString fields = "z"+QString::number(zn+1);
 
-    //int maxElems = pConf->limites[zn].max;
-    int maxElems = limites[zn].max;
+    ///int maxElems = limites[zn].max;
+    int maxElems = gameInfo.limites[zn].max;
     int nbBoules = floor(maxElems/10)+1;
 
 
