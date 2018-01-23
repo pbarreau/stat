@@ -1353,10 +1353,12 @@ bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTab
         int nbTot = slst[0].size();
         QString curName = InputTable;
         QString curTarget = "view vt_0";
+        QString lastTitle = "tbLeft.id  as Id,";
+        QString curTitle = "tbLeft.*";
         do
         {
             msg = "create " + curTarget
-                    +" as select tbLeft.*, count(tbRight.B) as "
+                    +" as select "+curTitle+", count(tbRight.B) as "
                     + slst[1].at(loop)
                     +" from("+curName+")as tbLeft "
                     +"left join (select c1.id as B from "
@@ -1365,21 +1367,64 @@ bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTab
                     +slst[0].at(loop)+"))) as tbRight on ("
                     +st_OnDef+") group by tbLeft.id";
             isOk = query.exec(msg);
-#ifndef QT_NO_DEBUG
-            qDebug() << "msg:"<<msg;
-#endif
+
+            curName = "vt_" +  QString::number(loop);
+            lastTitle = lastTitle
+                    + "tbLeft."+slst[1].at(loop)
+                    +" as "+slst[1].at(loop);
             loop++;
-            curName = "vt_" +  QString::number(loop-1);
             if(loop <  nbTot-1)
             {
                 curTarget = "view vt_"+QString::number(loop);
+                lastTitle = lastTitle + ",";
             }
             else
             {
                 curTarget = "table vrz"+QString::number(zn+1)+"_"+OutputTable;
+                curTitle = lastTitle;
             }
         }while(loop < nbTot && isOk);
 
+        if(isOk){
+            /// mise en correspondance de la reference combinaison
+            QString ref_1 = "(tbLeft.U%1 = tbRight."+gameInfo.nom[zn].abv+"%2)";
+            QString stCombi = "";
+            QString stLien = "";
+            if(zn == 1){
+                ref_1 = "("
+                        "(tbLeft.U0 = tbRight."+gameInfo.nom[zn].abv+"%1)"+
+                        "and"
+                        "(tbLeft.U1 = tbRight."+gameInfo.nom[zn].abv+"%2)"+
+                        ")";
+            }
+            for(int pos=0;pos<znLen;pos++){
+                if(zn == 0){
+                stCombi = stCombi + ref_1.arg(pos).arg(pos+1);
+                stLien = " and ";
+                }
+                else{
+                    stCombi = stCombi + ref_1.arg((pos%2)+1).arg(((pos+1)%2)+1);
+                    stLien = " or ";
+                }
+                if(pos<znLen-1)
+                    stCombi = stCombi + stLien;
+            }
+            curTarget = curTarget.remove("table");
+            msg = "create table Ref"
+                    +QString::number(zn+1)+"_"+OutputTable
+                    +" as select tbLeft.*,tbRight.id as idComb  from ("
+                    +curTarget+")as tbLeft left join ("
+                    + C_TBL_4 "_z"+QString::number(zn+1)
+                    +")as tbRight on("
+                    + stCombi
+                    +")"
+                    ;
+#ifndef QT_NO_DEBUG
+            qDebug() << "msg:"<<msg;
+#endif
+
+            isOk = query.exec(msg);
+        }
 
         /// supression tables intermediaires
         if(isOk)
@@ -1398,8 +1443,8 @@ bool cLesComptages::SupprimerVueIntermediaires(void)
 {
     bool isOk = true;
     QString msg = "";
-    QSqlQuery query;
-    QSqlQuery qDel;
+    QSqlQuery query(dbInUse);
+    QSqlQuery qDel(dbInUse);
 
     msg = "SELECT name FROM sqlite_master "
           "WHERE type='view' AND name like'vt_%';";
