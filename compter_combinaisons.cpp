@@ -33,9 +33,10 @@ BCountComb::BCountComb(QString in,QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
     QGridLayout *(BCountComb::*ptrFunc[])(QString *, int) =
     {
             &BCountComb::Compter,
-            &BCountComb::Compter_euro
+            &BCountComb::Compter
 
 };
+///    &BCountComb::Compter_euro
 
     for(int i = 0; i< 2; i++)
     {
@@ -205,27 +206,31 @@ void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
     emit sig_ComptageReady(a);
 }
 
-QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,QString st_cr1, int dst)
+QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int dst)
 {
+    QString stTbAnalyse = "Ref"
+            +QString::number(zn+1)
+            +"_Cal_def_"
+            +QString::number(zn+1);
     QString arg1 = "tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T, "
             + db_jours+
             ",count(CASE when tbRight.id == 1 then 1 end) as L";
-    QString arg2 = "select id,tip from lstCombi_z1";
+    QString arg2 = "select id,tip from Def_comb_z"+QString::number(zn+1);
 
-    QString arg3 = "select tb2.* from "
+    QString arg3 = "select tb2.*,tb3.idComb from "
                    "("
             +st_baseUse+
             " )as tb1"
             ","
             "("
             +st_baseUse+
-            ")as tb2 "
+            ")as tb2,("+stTbAnalyse+")as tb3 "
             "where"
             "("
-            "tb2.id=tb1.id+"
-            +QString::number(dst) +
+            "(tb2.id=tb1.id+"
+            +QString::number(dst) + ") and (tb3.id=tb2.id)"
             ")";
-    QString arg4 = st_cr1;
+    QString arg4 = "tbLeft.id=tbRight.idComb";
 
     stJoinArgs args;
     args.arg1 = arg1;
@@ -242,7 +247,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,QString st_cr1
 
     arg1 = "tbLeft.*,(tbLeft.L | (case when (tbRight.f==1) then 0x2 else tbLeft.L end))as F ";
     arg2 = st_msg1;
-    arg3 = " select * from SelComb_z1";
+    arg3 = " select * from SelComb_z"+QString::number(zn+1);
     arg4 = "tbLeft.id = tbRight.val";
 
     args.arg1 = arg1;
@@ -360,7 +365,7 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
 
     //QString st_baseUse = db_data;
     QString st_cr1 = "tbLeft.id=tbRight.pid";
-    QString st_msg1 = RequetePourTrouverTotal_z1(db_data,st_cr1,0);
+    QString st_msg1 = RequetePourTrouverTotal_z1(db_data,zn,0);
 
     sqm_tmp->setQuery(st_msg1,dbToUse);
     //int nbcol = sqm_tmp->columnCount();
@@ -443,8 +448,6 @@ QGridLayout *BCountComb::Compter_euro(QString * pName, int zn)
     QString qtv_name = QString::fromLatin1(TB2_SC) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
-   // QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    //sqmZones[zn] = sqm_tmp;
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];
 
 

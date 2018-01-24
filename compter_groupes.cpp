@@ -42,12 +42,12 @@ BCountGroup::BCountGroup(QString in,QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
     {
         QString *name = &db_data;
         QWidget *tmpw = new QWidget;
-
+#if 0
         maRef[zn] = CreateFilterForData(zn);
 
         QString tblSynthese = "Montest";
         bool isOK = AnalyserEnsembleTirage(db_data,tblSynthese,zn);
-
+#endif
         QGridLayout *calcul = (this->*ptrFunc[zn])(name, zn);
         tmpw->setLayout(calcul);
         tab_Top->addTab(tmpw,tr((*name).toUtf8()));
