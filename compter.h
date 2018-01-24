@@ -28,6 +28,9 @@
 #define C_TBL_3     "Def_fdjeu"
 #define C_TBL_4     "Def_comb"
 #define C_TBL_5     "Cal_def"
+#define C_TBL_6     "SelElemt"
+#define C_TBL_7     "SelComb"
+#define C_TBL_8     "SelGrp"
 
 /// https://fr.wikibooks.org/wiki/Programmation_C%2B%2B/Les_classes
 /// https://fr.wikipedia.org/wiki/Fonction_virtuelle
@@ -52,12 +55,12 @@ typedef struct _B_RequeteFromTbv
     QString tb_data;    /// titre de cette requete
 }B_RequeteFromTbv;
 
-class B_Comptage:public QWidget
+class BCount:public QWidget
 {
     Q_OBJECT
 public:
-    B_Comptage(QString *in);
-    B_Comptage(QString *in, QWidget *unParent);
+    BCount(QString *in,QSqlDatabase useDb);
+    BCount(QString *in, QSqlDatabase fromDb, QWidget *unParent);
 
 protected:
     virtual QGridLayout *Compter(QString * pName, int zn)=0;
@@ -88,6 +91,7 @@ protected:
     QModelIndexList *lesSelections; /// liste des selections dans les tableaux
     QString *sqlSelection;  /// code sql generee pour un tableau
     QSqlQueryModel *sqmZones; /// pour mettre a jour le tableau des resultats
+    QSqlDatabase dbToUse;
 
 
 public slots:

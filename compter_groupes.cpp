@@ -12,14 +12,14 @@
 #include "compter_groupes.h"
 #include "db_tools.h"
 
-int cCompterGroupes::total = 0;
+int BCountGroup::total = 0;
 
-cCompterGroupes::~cCompterGroupes()
+BCountGroup::~BCountGroup()
 {
     total --;
 }
 
-cCompterGroupes::cCompterGroupes(QString in):B_Comptage(&in)
+BCountGroup::BCountGroup(QString in,QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
@@ -31,10 +31,10 @@ cCompterGroupes::cCompterGroupes(QString in):B_Comptage(&in)
     maRef = new  QStringList* [nb_zones] ;
     p_qsim_3 = new QStandardItemModel *[nb_zones];
 
-    QGridLayout *(cCompterGroupes::*ptrFunc[])(QString *, int) =
+    QGridLayout *(BCountGroup::*ptrFunc[])(QString *, int) =
     {
-            &cCompterGroupes::Compter,
-            &cCompterGroupes::Compter
+            &BCountGroup::Compter,
+            &BCountGroup::Compter
 
 };
 
@@ -63,7 +63,7 @@ cCompterGroupes::cCompterGroupes(QString in):B_Comptage(&in)
 #endif
 }
 
-QGridLayout *cCompterGroupes::Compter(QString * pName, int zn)
+QGridLayout *BCountGroup::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
 
@@ -79,7 +79,7 @@ QGridLayout *cCompterGroupes::Compter(QString * pName, int zn)
     return lay_return;
 }
 
-bool cCompterGroupes::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
+bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
 {
     /// Verifier si des vues temporaires precedentes sont encore presentes
     /// Si oui les effacer
@@ -91,8 +91,8 @@ bool cCompterGroupes::AnalyserEnsembleTirage(QString InputTable, QString OutputT
 
     bool isOk = true;
     QString msg = "";
-    QSqlQuery query;
-    QString stDefBoules = TB2_RZBN;
+    QSqlQuery query(dbToUse);
+    QString stDefBoules = C_TBL_2;
     QString st_OnDef = "";
 
     //int nbZone = nbZone;
@@ -163,7 +163,7 @@ bool cCompterGroupes::AnalyserEnsembleTirage(QString InputTable, QString OutputT
     return isOk;
 }
 
-bool cCompterGroupes::SupprimerVueIntermediaires(void)
+bool BCountGroup::SupprimerVueIntermediaires(void)
 {
     bool isOk = true;
     QString msg = "";
@@ -198,7 +198,7 @@ bool cCompterGroupes::SupprimerVueIntermediaires(void)
     return isOk;
 }
 
-QTableView *cCompterGroupes::CompterLigne(QString * pName, int zn)
+QTableView *BCountGroup::CompterLigne(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
 
@@ -240,7 +240,7 @@ QTableView *cCompterGroupes::CompterLigne(QString * pName, int zn)
     return qtv_tmp;
 }
 
-QTableView *cCompterGroupes::CompterEnsemble(QString * pName, int zn)
+QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
     int nbLgn = limites[zn].len + 1;
@@ -327,7 +327,7 @@ QTableView *cCompterGroupes::CompterEnsemble(QString * pName, int zn)
     return qtv_tmp;
 }
 
-void cCompterGroupes::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp)
+void BCountGroup::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp)
 {
     bool status = true;
     QSqlQuery query ;
@@ -371,7 +371,7 @@ void cCompterGroupes::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sq
 
 }
 
-QString cCompterGroupes::sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri, int zn)
+QString BCountGroup::sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri, int zn)
 {
 #if 0
     /* Req_1 : pour compter le nombre de boules pair par tirages */
@@ -415,7 +415,7 @@ QString cCompterGroupes::sql_ComptePourUnTirage(int id,QString st_tirages, QStri
 
 }
 
-void cCompterGroupes::slot_DecodeTirage(const QModelIndex & index)
+void BCountGroup::slot_DecodeTirage(const QModelIndex & index)
 {
     static int sortir = 0;
 
@@ -473,7 +473,7 @@ void cCompterGroupes::slot_DecodeTirage(const QModelIndex & index)
 // Element 1 Liste des titres assosies a la requete
 // En fonction de la zone a etudier les requetes sont adaptees
 // pour integrer le nombre maxi de boules a prendre en compte
-QStringList * cCompterGroupes::CreateFilterForData(int zn)
+QStringList * BCountGroup::CreateFilterForData(int zn)
 {
     QStringList *sl_filter = new QStringList [3];
     QString fields = "z"+QString::number(zn+1);
@@ -510,7 +510,7 @@ QStringList * cCompterGroupes::CreateFilterForData(int zn)
 
     return sl_filter;
 }
-QString cCompterGroupes::TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn)
+QString BCountGroup::TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn)
 {
 
     QString st_tmp =  CriteresCreer("=","or",zn);
@@ -546,7 +546,7 @@ QString cCompterGroupes::TrouverTirages(int col, int nb, QString st_tirages, QSt
     return(st_return);
 }
 
-QString cCompterGroupes::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
+QString BCountGroup::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
 {
 #if 0
     --- Requete recherche parite sur base pour tirages
@@ -602,7 +602,7 @@ QString cCompterGroupes::CriteresAppliquer(QString st_tirages, QString st_cri, i
     return(st_return);
 }
 
-void cCompterGroupes::slot_ClicDeSelectionTableau(const QModelIndex &index)
+void BCountGroup::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
     int tab_index = 0;
@@ -626,7 +626,7 @@ void cCompterGroupes::slot_ClicDeSelectionTableau(const QModelIndex &index)
     LabelFromSelection(selectionModel,tab_index);
 }
 
-void cCompterGroupes::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
+void BCountGroup::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
 {
     QModelIndexList indexes = selectionModel->selectedIndexes();
 
@@ -710,7 +710,7 @@ void cCompterGroupes::slot_RequeteFromSelection(const QModelIndex &index)
 }
 #endif
 
-void cCompterGroupes::slot_RequeteFromSelection(const QModelIndex &index)
+void BCountGroup::slot_RequeteFromSelection(const QModelIndex &index)
 {
     QString st_titre = "";
 

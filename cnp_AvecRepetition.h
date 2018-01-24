@@ -5,12 +5,12 @@
 #include "cnp_SansRepetition.h"
 
 // combinaison avec répétition
-class BP_Gnp:public BP_Cnp
+class BGnp:public BCnp
 {
 public:
-    BP_Gnp(int n, int p, QSqlDatabase destBdd, QString tab);
-    BP_Gnp(int n, int p);
-    ~BP_Gnp();
+    BGnp(int n, int p, QSqlDatabase destBdd, QString tab);
+    BGnp(int n, int p);
+    ~BGnp();
 };
 
 #if 0

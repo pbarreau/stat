@@ -11,13 +11,13 @@
 
 #define HCELL       55
 
-class cCompterCombinaisons:public B_Comptage
+class BCountComb:public BCount
 {
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    cCompterCombinaisons(QString in);
-    ~cCompterCombinaisons();
+    BCountComb(QString in, QSqlDatabase fromDb);
+    ~BCountComb();
 
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);

@@ -122,7 +122,7 @@ private:
     QMdiArea *p_affiche;
     QTabWidget *p_reponse;
     QTabWidget *tabTrackCouverture;
-    cCompterGroupes *unTest;
+    BCountGroup *unTest;
 
 };
 

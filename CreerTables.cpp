@@ -58,7 +58,7 @@ bool GererBase::CreerTableGnp(QString tb, QString *data)
         maxNz = BMIN(GNP_N_MAX,maxNz);
         maxPz = BMIN(GNP_P_MAX,maxPz);
 
-        BP_Gnp *a = new BP_Gnp(maxNz,maxPz);
+        BGnp *a = new BGnp(maxNz,maxPz);
 #ifndef QT_NO_DEBUG
         b = a->BP_count();
 #endif
@@ -80,7 +80,7 @@ bool GererBase::CreerTableCnp(QString tb, QString *data)
         maxNz = BMIN(CNP_N_MAX,maxNz);
         maxPz = BMIN(CNP_P_MAX,maxPz);
 
-        BP_Cnp *a = new BP_Cnp(maxNz,maxPz);
+        BCnp *a = new BCnp(maxNz,maxPz);
         int b = a->BP_count();
 #if USE_CNP_SLOT_LINE
         curZone = i;
@@ -91,8 +91,8 @@ bool GererBase::CreerTableCnp(QString tb, QString *data)
 
     /// Pour Voir les resultats
     /// A verifier incidence double creation
-    BP_Cnp *a = new BP_Cnp(12,2);
-    BP_Cnp *b = new BP_Cnp(10,1);
+    BCnp *a = new BCnp(12,2);
+    BCnp *b = new BCnp(10,1);
     return(isOk);
 }
 

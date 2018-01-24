@@ -20,14 +20,14 @@
 #include "cnp_AvecRepetition.h"
 #include "db_tools.h"
 
-int cLesComptages::total = 0;
+int BPrevision::total = 0;
 
-cLesComptages::~cLesComptages()
+BPrevision::~BPrevision()
 {
     total --;
 }
 
-void cLesComptages::slot_changerTitreZone(QString le_titre)
+void BPrevision::slot_changerTitreZone(QString le_titre)
 {
 #if 0
     titre[0] = le_titre;
@@ -38,27 +38,25 @@ void cLesComptages::slot_changerTitreZone(QString le_titre)
     selection[0].setText("Z:"+le_titre);
 }
 
-cLesComptages::cLesComptages(eGame game, eBddUse def)
+BPrevision::BPrevision(eGame game, eBddUse def)
 {
-    curGame = game;
     gameInfo.type = game;
     if(ouvrirBase(def,game)==true)
     {
         effectuerTraitement(game);
-        dbInUse.close();
+        //dbInUse.close();
     }
 }
 
-cLesComptages::cLesComptages(eGame game, eBddUse def, QString stLesTirages)
+BPrevision::BPrevision(eGame game, eBddUse def, QString stLesTirages)
 {
     Q_UNUSED(stLesTirages)
 
-    curGame = game;
     gameInfo.type = game;
     if(ouvrirBase(def,game)==true)
     {
         effectuerTraitement(game);
-        dbInUse.close();
+        //dbInUse.close(); /// Autrement les requetes donnent base fermee
     }
 }
 
@@ -71,7 +69,7 @@ cLesComptages::cLesComptages(eGame game, eBddUse def, QString stLesTirages)
 /// - cible memoire ou disque
 /// - game loto ou euro
 ///
-bool cLesComptages::ouvrirBase(eBddUse cible, eGame game)
+bool BPrevision::ouvrirBase(eBddUse cible, eGame game)
 {
     bool isOk = true;
 
@@ -131,7 +129,7 @@ bool cLesComptages::ouvrirBase(eBddUse cible, eGame game)
     return isOk;
 }
 
-bool cLesComptages::OPtimiseAccesBase(void)
+bool BPrevision::OPtimiseAccesBase(void)
 {
     bool isOk = true;
     QSqlQuery query(dbInUse);
@@ -161,13 +159,14 @@ bool cLesComptages::OPtimiseAccesBase(void)
     return isOk;
 }
 
-void cLesComptages::effectuerTraitement(eGame game)
+void BPrevision::effectuerTraitement(eGame game)
 {
     definirConstantesDuJeu(game);
     creerTablesDeLaBase();
+    effectuerComptage();
 }
 
-void cLesComptages::definirConstantesDuJeu(eGame game)
+void BPrevision::definirConstantesDuJeu(eGame game)
 {
     /// Pour l'instant en loto ou en euro il y a 2 'zones'
     /// une pour les boules
@@ -226,7 +225,7 @@ void cLesComptages::definirConstantesDuJeu(eGame game)
     }
 }
 
-bool cLesComptages::creerTablesDeLaBase(void)
+bool BPrevision::creerTablesDeLaBase(void)
 {
     bool isOk= true;
     QSqlQuery q(dbInUse);
@@ -236,7 +235,10 @@ bool cLesComptages::creerTablesDeLaBase(void)
         {C_TBL_1,f1},   /// Table des nom des zones et abregees
         {C_TBL_2,f2},   /// Liste des boules par zone
         {C_TBL_4,f4},    /// Table des combinaisons
-        {C_TBL_5,f5}    /// Table des Analyses
+        {C_TBL_5,f5},    /// Table des Analyses
+        {C_TBL_6,f6},    /// Selection utilisateur
+        {C_TBL_7,f6},    /// Selection utilisateur
+        {C_TBL_8,f6}    /// Selection utilisateur
     };
 
     int nbACreer = sizeof(creerTables)/sizeof(stCreateTable);
@@ -263,7 +265,7 @@ bool cLesComptages::creerTablesDeLaBase(void)
 }
 
 /// Creation de la table donnant les carateristique du jeu
-bool cLesComptages::f1(QString tbName,QSqlQuery *query)
+bool BPrevision::f1(QString tbName,QSqlQuery *query)
 {
     bool isOk= true;
     QString msg = "";
@@ -315,7 +317,7 @@ bool cLesComptages::f1(QString tbName,QSqlQuery *query)
 
 /// Creation des listes de reference des noms
 /// des boules et du nombre par zone
-bool cLesComptages::f2(QString tbName,QSqlQuery *query)
+bool BPrevision::f2(QString tbName,QSqlQuery *query)
 {
     bool isOk= true;
     QString msg = "";
@@ -408,7 +410,7 @@ bool cLesComptages::f2(QString tbName,QSqlQuery *query)
     return isOk;
 }
 
-bool cLesComptages::f3(QString tbName,QSqlQuery *query)
+bool BPrevision::f3(QString tbName,QSqlQuery *query)
 {
     bool isOk= true;
     QString msg = "";
@@ -513,7 +515,7 @@ bool cLesComptages::f3(QString tbName,QSqlQuery *query)
 /// pour gagner.
 /// Pour les etoiles les combinaisons  sont
 /// moins nombreuses, on fait le calcul Cnp classique
-bool cLesComptages::f4(QString tb, QSqlQuery *query)
+bool BPrevision::f4(QString tb, QSqlQuery *query)
 {
     Q_UNUSED(query)
 
@@ -534,7 +536,7 @@ bool cLesComptages::f4(QString tb, QSqlQuery *query)
             int p = gameInfo.limites[zn].win;
             QString tbName = C_TBL_4"_z"+QString::number(zn+1);
             // calculer les combinaisons avec repetition
-            BP_Cnp *a = new BP_Cnp(n,p,dbInUse,tbName);
+            BCnp *a = new BCnp(n,p,dbInUse,tbName);
 
             tbName = tbName + "_Cnp_" + QString::number(n) +"_" +
                     QString::number(p);
@@ -551,7 +553,7 @@ bool cLesComptages::f4(QString tb, QSqlQuery *query)
     return isOk;
 }
 
-bool cLesComptages::f5(QString tb, QSqlQuery *query)
+bool BPrevision::f5(QString tb, QSqlQuery *query)
 {
     Q_UNUSED(query)
 
@@ -567,14 +569,41 @@ bool cLesComptages::f5(QString tb, QSqlQuery *query)
     }
     if(!isOk)
     {
-        QString ErrLoc = "f4:";
+        QString ErrLoc = "f5:";
         DB_Tools::DisplayError(ErrLoc,NULL,"");
     }
 
     return isOk;
 }
 
-bool cLesComptages::TraitementCodeVueCombi(int zn)
+bool BPrevision::f6(QString tb, QSqlQuery *query)
+{
+    bool isOk = true;
+
+    QString st_sqldf = ""; /// sql definition
+    QString st_table = "";
+
+    // Creation des tables permettant la sauvegarde des selections
+    // pour creation de filtres
+    int nb_zone = gameInfo.nbDef;
+
+    for(int zone=0;(zone<nb_zone)&& isOk;zone++)
+    {
+        st_table = tb + "_z"+QString::number(zone+1);
+        st_sqldf =  "create table "+st_table+" (id Integer primary key, val int, p int, f int);";
+        isOk = query->exec(st_sqldf);
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "f6:";
+        DB_Tools::DisplayError(ErrLoc,NULL,"");
+    }
+
+    return isOk;
+}
+
+bool BPrevision::TraitementCodeVueCombi(int zn)
 {
     bool isOk = true;
     QSqlQuery query(dbInUse);
@@ -624,7 +653,7 @@ bool cLesComptages::TraitementCodeVueCombi(int zn)
     return isOk;
 }
 
-bool cLesComptages::TraitementCodeTblCombi(QString tbName,int zn)
+bool BPrevision::TraitementCodeTblCombi(QString tbName,int zn)
 {
     bool isOk = true;
     QSqlQuery query(dbInUse);
@@ -728,7 +757,7 @@ bool cLesComptages::TraitementCodeTblCombi(QString tbName,int zn)
     return isOk;
 }
 
-bool cLesComptages::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn)
+bool BPrevision::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn)
 {
     bool isOk = true;
     QSqlQuery query(dbInUse);
@@ -803,7 +832,7 @@ bool cLesComptages::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int 
 
     return isOk;
 }
-bool cLesComptages::chargerDonneesFdjeux(QString destTable)
+bool BPrevision::chargerDonneesFdjeux(QString destTable)
 {
     bool isOk= true;
 
@@ -898,7 +927,7 @@ bool cLesComptages::chargerDonneesFdjeux(QString destTable)
     return isOk;
 }
 
-bool cLesComptages::LireLesTirages(QString tblName, stFdjData *def)
+bool BPrevision::LireLesTirages(QString tblName, stFdjData *def)
 {
     bool isOk= true;
     QSqlQuery query(dbInUse);
@@ -1032,7 +1061,7 @@ bool cLesComptages::LireLesTirages(QString tblName, stFdjData *def)
     return isOk;
 }
 
-QString cLesComptages::DateAnormer(QString input)
+QString BPrevision::DateAnormer(QString input)
 {
     // La fonction doit retourner une date au format  AAAA-MM-JJ
     // http://fr.wikipedia.org/wiki/ISO_8601
@@ -1068,7 +1097,7 @@ QString cLesComptages::DateAnormer(QString input)
     return ladate;
 }
 
-QString cLesComptages::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
+QString BPrevision::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
 {
     // http://algor.chez.com/date/date.htm
     QString tab[] = {"MARDI","MERCREDI","JEUDI","VENDREDI","SAMEDI","DIMANCHE","LUNDI"};
@@ -1109,17 +1138,17 @@ QString cLesComptages::JourFromDate(QString LaDate, QString verif, stErr2 *retEr
     return retval;
 }
 
-void cLesComptages::efffectuerTraitement_2()
+void BPrevision::effectuerComptage()
 {
     QWidget * Resultats = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
-    QString stLesTirages = "";
+    QString stLesTirages = C_TBL_3;
 
-    cCompterZoneElmts *c1 = new cCompterZoneElmts(stLesTirages, Resultats);
+    BCountElem *c1 = new BCountElem(stLesTirages,dbInUse,Resultats);
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
 
-    cCompterCombinaisons *c2 = new cCompterCombinaisons(stLesTirages);
-    cCompterGroupes *c3 = new cCompterGroupes(stLesTirages);
+    //BCountComb *c2 = new BCountComb(stLesTirages,dbInUse);
+    //BCountGroup *c3 = new BCountGroup(stLesTirages,dbInUse);
 
     QGridLayout **pConteneur = new QGridLayout *[3];
     QWidget **pMonTmpWidget = new QWidget * [3];
@@ -1133,8 +1162,8 @@ void cLesComptages::efffectuerTraitement_2()
         pMonTmpWidget [i] = wid_tmp;
     }
     pConteneur[0]->addWidget(c1,1,0);
-    pConteneur[1]->addWidget(c2,1,0);
-    pConteneur[2]->addWidget(c3,1,0);
+    //pConteneur[1]->addWidget(c2,1,0);
+    //pConteneur[2]->addWidget(c3,1,0);
 
     pMonTmpWidget[0]->setLayout(pConteneur[0]);
     pMonTmpWidget[1]->setLayout(pConteneur[1]);
@@ -1165,7 +1194,7 @@ void cLesComptages::efffectuerTraitement_2()
     Resultats->show();
 }
 
-void cLesComptages::slot_AppliquerFiltres()
+void BPrevision::slot_AppliquerFiltres()
 {
     QSqlQuery query;
     QString msg = "";
@@ -1247,7 +1276,7 @@ tbLeft.u4 = tbRight.b5
 
 }
 
-QString cLesComptages::ListeDesJeux(int zn)
+QString BPrevision::ListeDesJeux(int zn)
 {
     ///----------------------
     int loop = 0;
@@ -1312,7 +1341,7 @@ QString cLesComptages::ListeDesJeux(int zn)
     return msg;
 }
 
-bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
+bool BPrevision::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
 {
     /// Verifier si des vues temporaires precedentes sont encore presentes
     /// Si oui les effacer
@@ -1374,15 +1403,15 @@ bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTab
 
             }
             else{
-            msg = "create " + curTarget
-                    +" as select "+curTitle+", count(tbRight.B) as "
-                    + slst[1].at(loop)
-                    +" from("+curName+")as tbLeft "
-                    +"left join (select c1.id as B from "
-                    +stDefBoules+" as c1 where (c1.z"
-                    +QString::number(zn+1)+" not null and (c1."
-                    +slst[0].at(loop)+"))) as tbRight on ("
-                    +st_OnDef+") group by tbLeft.id";
+                msg = "create " + curTarget
+                        +" as select "+curTitle+", count(tbRight.B) as "
+                        + slst[1].at(loop)
+                        +" from("+curName+")as tbLeft "
+                        +"left join (select c1.id as B from "
+                        +stDefBoules+" as c1 where (c1.z"
+                        +QString::number(zn+1)+" not null and (c1."
+                        +slst[0].at(loop)+"))) as tbRight on ("
+                        +st_OnDef+") group by tbLeft.id";
             }
             isOk = query.exec(msg);
 
@@ -1416,10 +1445,10 @@ bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTab
             stLien = " and ";
 
             if(gameInfo.type == eGameEuro && zn == 1){
-            ref_1 = "((tbLeft.U%3 = tbRight."+gameInfo.nom[zn].abv+"%1)"
-                    +"or"+
-                    "(tbLeft.U%3 = tbRight."+gameInfo.nom[zn].abv+"%2))";
-            stLien = " and ";
+                ref_1 = "((tbLeft.U%3 = tbRight."+gameInfo.nom[zn].abv+"%1)"
+                        +"or"+
+                        "(tbLeft.U%3 = tbRight."+gameInfo.nom[zn].abv+"%2))";
+                stLien = " and ";
             }
 
             int znLen = gameInfo.limites[zn].len;
@@ -1446,10 +1475,10 @@ bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTab
                     + stCombi
                     +")"
                     ;
-        #ifndef QT_NO_DEBUG
+#ifndef QT_NO_DEBUG
             qDebug() << "msg:"<<msg;
-        #endif
-           isOk = query.exec(msg);
+#endif
+            isOk = query.exec(msg);
         }
 
         /// supression tables intermediaires
@@ -1465,58 +1494,7 @@ bool cLesComptages::AnalyserEnsembleTirage(QString InputTable, QString OutputTab
     return isOk;
 }
 
-#if 0
-QString cLesComptages::AssocierClefCombi(int zn)
-{
-    /// mise en correspondance de la reference combinaison
-    QString msg = "";
-    QString ref_1 = "";
-    QString stCombi = "";
-    QString stLien = "";
-
-    ref_1 = "(tbLeft.U%1 = tbRight."+gameInfo.nom[zn].abv+"%2)";
-    stLien = " and ";
-
-    if(gameInfo.type == eGameEuro && zn == 1){
-    ref_1 = "(tbLeft.U0 = tbRight."+gameInfo.nom[zn].abv+"%1)"
-            +"and"+
-            "(tbLeft.U0 = tbRight."+gameInfo.nom[zn].abv+"%2)";
-    stLien = " or ";
-    }
-
-    int znLen = gameInfo.limites[zn].len;
-    for(int pos=0;pos<znLen;pos++){
-        if(gameInfo.type == eGameEuro && zn == 1){
-            stCombi = stCombi
-                    + ref_1.arg((pos%2)+1).arg(((pos+1)%2)+1);
-
-        }else{
-            stCombi = stCombi + ref_1.arg(pos).arg(pos+1);
-        }
-
-        if(pos<znLen-1)
-            stCombi = stCombi + stLien;
-    }
-
-    curTarget = curTarget.remove("table");
-    msg = "create table Ref"
-            +QString::number(zn+1)+"_"+OutputTable
-            +" as select tbLeft.*,tbRight.id as idComb  from ("
-            +curTarget+")as tbLeft left join ("
-            + C_TBL_4 "_z"+QString::number(zn+1)
-            +")as tbRight on("
-            + stCombi
-            +")"
-            ;
-#ifndef QT_NO_DEBUG
-    qDebug() << "msg:"<<msg;
-#endif
-
-    return msg;
-}
-#endif
-
-bool cLesComptages::SupprimerVueIntermediaires(void)
+bool BPrevision::SupprimerVueIntermediaires(void)
 {
     bool isOk = true;
     QString msg = "";
@@ -1557,7 +1535,7 @@ bool cLesComptages::SupprimerVueIntermediaires(void)
 // Element 1 Liste des titres assosies a la requete
 // En fonction de la zone a etudier les requetes sont adaptees
 // pour integrer le nombre maxi de boules a prendre en compte
-QStringList * cLesComptages::CreateFilterForData(int zn)
+QStringList * BPrevision::CreateFilterForData(int zn)
 {
     QStringList *sl_filter = new QStringList [3];
     QString fields = "z"+QString::number(zn+1);

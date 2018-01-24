@@ -28,14 +28,14 @@ typedef struct _sigData
 }sigData;
 #endif
 
-class BP_Cnp:public QObject
+class BCnp:public QObject
 {
     Q_OBJECT
 
 public:
-    BP_Cnp(int n, int p, QSqlDatabase destBdd, QString tbName);
-    BP_Cnp(int n, int p);
-    ~BP_Cnp();
+    BCnp(int n, int p, QSqlDatabase destBdd, QString tbName);
+    BCnp(int n, int p);
+    ~BCnp();
     int BP_count(void);
     int * BP_getPascalLine(int lineId);
 

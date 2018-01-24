@@ -10,7 +10,7 @@
 #include "labelclickable.h"
 
 /// informer de la prochaine definition de la classe
-class cLesComptages;
+class BPrevision;
 
 /// -------DEFINE---------
 #define CTXT_LABEL  "selection Z:aucun - C:aucun - G:aucun"
@@ -62,7 +62,7 @@ typedef struct _stFdjData
 typedef struct
 {
     QString tbDef; /// nom de la table
-    bool (cLesComptages::*pFuncInit)(QString tbName,QSqlQuery *query); /// fonction traitant la creation
+    bool (BPrevision::*pFuncInit)(QString tbName,QSqlQuery *query); /// fonction traitant la creation
 }stCreateTable;
 
 /// Renseignement sur les bornes de la zone a etudier
@@ -90,15 +90,15 @@ typedef struct _stGameConf{
 
 
 /// -------CLASS---------
-class cLesComptages:public QGridLayout
+class BPrevision:public QGridLayout
 {
     Q_OBJECT
 
     /// in : infos representant les tirages
 public:
-    cLesComptages(eGame game, eBddUse def);
-    cLesComptages(eGame game, eBddUse def, QString stLesTirages);
-    ~cLesComptages();
+    BPrevision(eGame game, eBddUse def);
+    BPrevision(eGame game, eBddUse def, QString stLesTirages);
+    ~BPrevision();
 
 private:
     QString ListeDesJeux(int zn);
@@ -113,6 +113,7 @@ private:
     bool f3(QString tbName,QSqlQuery *query);
     bool f4(QString tbName,QSqlQuery *query);
     bool f5(QString tbName,QSqlQuery *query);
+    bool f6(QString tbName,QSqlQuery *query);
     bool TraitementCodeVueCombi(int zn);
     bool TraitementCodeTblCombi(QString tbName,int zn);
     bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
@@ -127,7 +128,7 @@ private:
     QString DateAnormer(QString input);
     QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
-    void efffectuerTraitement_2();
+    void effectuerComptage();
 
 
 public slots:
@@ -138,7 +139,6 @@ private:
     static int total;       /// compteur des objets de cette classe
     QSqlDatabase dbInUse;   /// base de donnees associee a cet objets
     QString dbUseName;      /// nom de la connection
-    eGame curGame;          /// type de jeu
     stGameConf gameInfo;    /// parametres du jeu
     QStringList **slFlt;    /// zn_filters
     QString tblTirages;

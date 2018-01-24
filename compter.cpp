@@ -12,16 +12,18 @@
 #include <QMenu>
 
 #include "compter.h"
+#include "db_tools.h"
 
-void B_Comptage::CreerCritereJours(void)
+void BCount::CreerCritereJours(void)
 {
     QString st_tmp = "";
 
-    QSqlQuery query ;
+    QSqlQuery query(dbToUse) ;
     QString msg = "";
-    QString st_table = "";
+    QString st_table = "J";
     bool status = false;
 
+#if 0
     if(db_data == TB2_BASE){
         st_table =  "jour_tirage";
     }
@@ -29,7 +31,7 @@ void B_Comptage::CreerCritereJours(void)
     {
         st_table = "J";
     }
-
+#endif
     msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
             db_data+") as tb1 order by J asc;";
 
@@ -64,18 +66,18 @@ void B_Comptage::CreerCritereJours(void)
     db_jours = st_tmp;
 }
 
-void B_Comptage::RecupererConfiguration(void)
+void BCount::RecupererConfiguration(void)
 {
-    QSqlQuery query ;
+    QSqlQuery query(dbToUse) ;
     QString msg = "";
-    bool status = false;
+    bool isOk = false;
 
-    msg = "select count(id) as tot from (" + QString::fromLocal8Bit(TB2_RZ) + ");";
-    status = query.exec(msg);
+    msg = "select count(id) as tot from (" + QString::fromLocal8Bit(C_TBL_1) + ");";
+    isOk = query.exec(msg);
 
-    if(status)
+    if(isOk)
     {
-        status = query.first();
+        isOk = query.first();
         if (query.isValid())
         {
             nbZone = query.value(0).toInt();
@@ -92,18 +94,16 @@ void B_Comptage::RecupererConfiguration(void)
 
 
             // remplir les infos
-            msg = "select tb1.id, tb1.name, tb1.abv, tb2.len, tb2.min, tb2.max, tb2.neg from " +
-                    QString::fromLocal8Bit(TB2_RZ) + " as tb1, " +
-                    QString::fromLocal8Bit(TB2_RZVA) + " as tb2 " +
-                    " where (tb1.id = tb2.id );";
-            status = query.exec(msg);
+            msg = "select tb1.id, tb1.std, tb1.abv, tb1.len, tb1.min, tb1.max, tb1.win from " +
+                    QString::fromLocal8Bit(C_TBL_1) + " as tb1;";
+            isOk = query.exec(msg);
 
-            if(status)
+            if(isOk)
             {
-                status = query.first();
+                isOk = query.first();
                 if (query.isValid())
                 {
-                    for(int i = 0; (i< nbZone) && status; i++)
+                    for(int i = 0; (i< nbZone) && isOk; i++)
                     {
                         names[i].selection = "";
                         names[i].complet = query.value(1).toString();
@@ -112,26 +112,31 @@ void B_Comptage::RecupererConfiguration(void)
                         limites[i].min = query.value(4).toInt();
                         limites[i].max = query.value(5).toInt();
                         limites[i].neg = query.value(6).toInt();
-                        status = query.next();
+
+                        if(i<nbZone-1)
+                            isOk = query.next();
                     }
                 }
             }
         }
     }
-#ifndef QT_NO_DEBUG
-    qDebug() << "RecupererConfiguration ->"<< query.lastError();
-    qDebug() << "SQL 1:\n"<<msg<<"\n-------";
-#endif
+
+    if(!isOk)
+    {
+        QString ErrLoc = "RecupererConfiguration:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
 
     query.finish();
 
 }
 
-B_Comptage::B_Comptage(QString *in):B_Comptage(in,NULL)
+BCount::BCount(QString *in,QSqlDatabase useDb):BCount(in,useDb,NULL)
 {
 }
 
-B_Comptage::B_Comptage(QString *in, QWidget *unParent=0):QWidget(unParent), db_data(*in)
+BCount::BCount(QString *in, QSqlDatabase fromDb, QWidget *unParent=0)
+    :QWidget(unParent), db_data(*in),dbToUse(fromDb)
 {
     nbZone = 0;
     db_jours = "";
@@ -146,7 +151,7 @@ B_Comptage::B_Comptage(QString *in, QWidget *unParent=0):QWidget(unParent), db_d
     CreerCritereJours();
 }
 
-void B_Comptage::slot_AideToolTip(const QModelIndex & index)
+void BCount::slot_AideToolTip(const QModelIndex & index)
 {
     QString msg="";
     const QAbstractItemModel * pModel = index.model();
@@ -166,7 +171,7 @@ void B_Comptage::slot_AideToolTip(const QModelIndex & index)
         QToolTip::showText (QCursor::pos(), msg);
 }
 
-void B_Comptage::slot_ClicDeSelectionTableau(const QModelIndex &index)
+void BCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
     int tab_index = 0;
@@ -180,7 +185,7 @@ void B_Comptage::slot_ClicDeSelectionTableau(const QModelIndex &index)
 }
 
 
-QString B_Comptage::CriteresCreer(QString critere , QString operateur, int zone)
+QString BCount::CriteresCreer(QString critere , QString operateur, int zone)
 {
     QString ret_msg = "";
 
@@ -203,11 +208,11 @@ QString B_Comptage::CriteresCreer(QString critere , QString operateur, int zone)
 
     return ret_msg;
 }
-QString B_Comptage::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
+QString BCount::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
 {
 }
 
-void B_Comptage::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
+void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
 {
     QModelIndexList indexes = selectionModel->selectedIndexes();
     QString str_titre = names[zn].court + "[";
@@ -285,10 +290,10 @@ void B_Comptage::LabelFromSelection(const QItemSelectionModel *selectionModel, i
 /// table : nom de la table dans laquelle il faut chercher
 /// idColValue colonne de la table ou se trouve la valeur
 /// *lev : valeur de priorité trouvé
-bool B_Comptage::VerifierValeur(int item,QString table,int idColValue,int *lev)
+bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
 {
     bool ret = false;
-    QSqlQuery query ;
+    QSqlQuery query(dbToUse) ;
     QString msg = "";
 
     /// La colonne val sert de foreign key
@@ -320,7 +325,7 @@ bool B_Comptage::VerifierValeur(int item,QString table,int idColValue,int *lev)
     return ret;
 }
 
-void B_Comptage::slot_ccmr_tbForBaseEcart(QPoint pos)
+void BCount::slot_ccmr_tbForBaseEcart(QPoint pos)
 {
     /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
     /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
@@ -349,7 +354,7 @@ void B_Comptage::slot_ccmr_tbForBaseEcart(QPoint pos)
     }
 }
 
-QMenu *B_Comptage::ContruireMenu(QString tbl, int val)
+QMenu *BCount::ContruireMenu(QString tbl, int val)
 {
     QString msg2 = "Priorite";
     QMenu *menu =new QMenu(msg2, this);
@@ -389,9 +394,9 @@ QMenu *B_Comptage::ContruireMenu(QString tbl, int val)
 
 /// Selectionner une priorite de choix pour une boule
 /// Cela conduira a la mettre dans un ensemble pour generer les jeux posibles
-void B_Comptage::slot_ChoosePriority(QAction *cmd)
+void BCount::slot_ChoosePriority(QAction *cmd)
 {
-    QSqlQuery query;
+    QSqlQuery query(dbToUse);
     QString msg = "";
 
     QString st_from = cmd->objectName();
@@ -459,7 +464,7 @@ void B_Comptage::slot_ChoosePriority(QAction *cmd)
     cmd->setChecked(true);
 }
 
-void B_Comptage::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
+void BCount::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
 {
     int col = 3; /// dans la table colonne "f"
     int niveau = 0;
@@ -483,14 +488,14 @@ void B_Comptage::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
 }
 
 /// https://openclassrooms.com/forum/sujet/qt-inclure-check-box-dans-un-menu-deroulant-67907
-void B_Comptage::slot_wdaFilter(bool val)
+void BCount::slot_wdaFilter(bool val)
 {
     QAction *chkFrom = qobject_cast<QAction *>(sender());
 
 #ifndef QT_NO_DEBUG
     qDebug() << "Boule :("<< chkFrom->objectName()<<") check:"<< val;
 #endif
-    QSqlQuery query;
+    QSqlQuery query(dbToUse);
     QString msg = "";
 
     QString st_from = chkFrom->objectName();
@@ -547,7 +552,7 @@ void B_Comptage::slot_wdaFilter(bool val)
     int zn = tbl.split("z").at(1).toInt() - 1;
     QString Montest = sqmZones[zn].query().executedQuery();
     qDebug() << Montest;
-    sqmZones[zn].setQuery(Montest);
+    sqmZones[zn].setQuery(Montest,dbToUse);
 
     delete chkFrom;
 }

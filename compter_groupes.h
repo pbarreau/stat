@@ -10,14 +10,14 @@
 #include "compter.h"
 
 
-class cCompterGroupes:public B_Comptage
+class BCountGroup:public BCount
 {
     Q_OBJECT
     /// in : infos representant les tirages
     /// tb : nom de la table decrivant les zones
 public:
-    cCompterGroupes(QString in);
-    ~cCompterGroupes();
+    BCountGroup(QString in,QSqlDatabase fromDb);
+    ~BCountGroup();
     bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
     bool SupprimerVueIntermediaires(void);
 

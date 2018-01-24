@@ -22,14 +22,14 @@
 #include "db_tools.h"
 #include "delegate.h"
 
-int cCompterZoneElmts::total = 0;
+int BCountElem::total = 0;
 
-cCompterZoneElmts::~cCompterZoneElmts()
+BCountElem::~BCountElem()
 {
     total --;
 }
 
-cCompterZoneElmts::cCompterZoneElmts(QString in, QWidget *LeParent):B_Comptage(&in,LeParent)
+BCountElem::BCountElem(QString in, QSqlDatabase fromDb,QWidget *LeParent):BCount(&in,fromDb,LeParent)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
@@ -38,10 +38,10 @@ cCompterZoneElmts::cCompterZoneElmts(QString in, QWidget *LeParent):B_Comptage(&
     int nb_zones = nbZone;
 
 
-    QGridLayout *(cCompterZoneElmts::*ptrFunc[])(QString *, int) =
+    QGridLayout *(BCountElem::*ptrFunc[])(QString *, int) =
     {
-            &cCompterZoneElmts::Compter,
-            &cCompterZoneElmts::Compter
+            &BCountElem::Compter,
+            &BCountElem::Compter
 
 };
 
@@ -66,7 +66,7 @@ cCompterZoneElmts::cCompterZoneElmts(QString in, QWidget *LeParent):B_Comptage(&
 }
 
 
-void cCompterZoneElmts::slot_ClicDeSelectionTableau(const QModelIndex &index)
+void BCountElem::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
     int tab_index = 0;
@@ -147,7 +147,7 @@ void cCompterZoneElmts::slot_ClicDeSelectionTableau(const QModelIndex &index)
     SqlFromSelection(selectionModel,tab_index);
 }
 
-void cCompterZoneElmts::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
+void BCountElem::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
 {
     QModelIndexList indexes = selectionModel->selectedIndexes();
 
@@ -193,7 +193,7 @@ void cCompterZoneElmts::SqlFromSelection (const QItemSelectionModel *selectionMo
     }
 }
 
-void cCompterZoneElmts::slot_RequeteFromSelection(const QModelIndex &index)
+void BCountElem::slot_RequeteFromSelection(const QModelIndex &index)
 {
     QString st_critere = "";
     QString sqlReq ="";
@@ -232,7 +232,7 @@ void cCompterZoneElmts::slot_RequeteFromSelection(const QModelIndex &index)
 
 /// Requete permettant de remplir le tableau
 ///
-QString cCompterZoneElmts::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
+QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 {
     QString msg = "";
 
@@ -261,7 +261,8 @@ QString cCompterZoneElmts::PBAR_ReqComptage(QString ReqTirages, int zn,int dista
 
     QString arg1 = "tbleft.boule as B, count(tbright.id) as T, "
             +db_jours;
-    QString arg2 ="select id as boule from Bnrz where (z"
+    QString arg2 ="select id as boule from "
+            +QString::fromLatin1(C_TBL_2)+" where (z"
             +QString::number(zn+1)
             +" not null )";
 
@@ -306,7 +307,7 @@ QString cCompterZoneElmts::PBAR_ReqComptage(QString ReqTirages, int zn,int dista
     return msg;
 }
 
-QGridLayout *cCompterZoneElmts::Compter(QString * pName, int zn)
+QGridLayout *BCountElem::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
 
@@ -321,8 +322,11 @@ QGridLayout *cCompterZoneElmts::Compter(QString * pName, int zn)
 
     QString ReqTirages = db_data;
     QString sql_msgRef = PBAR_ReqComptage(ReqTirages, zn, 0);
+#ifndef QT_NO_DEBUG
+    qDebug() << "SQL:"<<sql_msgRef;
+#endif
 
-    sqm_tmp->setQuery(sql_msgRef);
+    sqm_tmp->setQuery(sql_msgRef,dbToUse);
 
     qtv_tmp->setAlternatingRowColors(true);
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);

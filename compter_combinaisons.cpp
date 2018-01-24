@@ -17,23 +17,23 @@
 #include "cnp_SansRepetition.h"
 #include "db_tools.h"
 
-int cCompterCombinaisons::total = 0;
+int BCountComb::total = 0;
 
-cCompterCombinaisons::~cCompterCombinaisons()
+BCountComb::~BCountComb()
 {
     total --;
 }
 
-cCompterCombinaisons::cCompterCombinaisons(QString in):B_Comptage(&in)
+BCountComb::BCountComb(QString in,QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
     unNom = "'Compter Combinaisons'";
 
-    QGridLayout *(cCompterCombinaisons::*ptrFunc[])(QString *, int) =
+    QGridLayout *(BCountComb::*ptrFunc[])(QString *, int) =
     {
-            &cCompterCombinaisons::Compter,
-            &cCompterCombinaisons::Compter_euro
+            &BCountComb::Compter,
+            &BCountComb::Compter_euro
 
 };
 
@@ -56,7 +56,7 @@ cCompterCombinaisons::cCompterCombinaisons(QString in):B_Comptage(&in)
 #endif
 }
 
-void cCompterCombinaisons::slot_ClicDeSelectionTableau(const QModelIndex &index)
+void BCountComb::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
     int tab_index = 0;
@@ -81,7 +81,7 @@ void cCompterCombinaisons::slot_ClicDeSelectionTableau(const QModelIndex &index)
     SqlFromSelection(selectionModel,tab_index);
 }
 
-void cCompterCombinaisons::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
+void BCountComb::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
 {
     QString str_titre =  "c[";
 
@@ -124,7 +124,7 @@ void cCompterCombinaisons::LabelFromSelection(const QItemSelectionModel *selecti
     emit sig_TitleReady(str_titre);
 }
 
-void cCompterCombinaisons::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
+void BCountComb::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
 {
     QModelIndexList indexes = selectionModel->selectedIndexes();
 
@@ -169,7 +169,7 @@ void cCompterCombinaisons::SqlFromSelection (const QItemSelectionModel *selectio
     }
 }
 
-void cCompterCombinaisons::slot_RequeteFromSelection(const QModelIndex &index)
+void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
 {
     QString st_critere = "";
     QString sqlReq ="";
@@ -205,7 +205,7 @@ void cCompterCombinaisons::slot_RequeteFromSelection(const QModelIndex &index)
     emit sig_ComptageReady(a);
 }
 
-QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QString st_cr1, int dst)
+QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,QString st_cr1, int dst)
 {
     QString arg1 = "tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T, "
             + db_jours+
@@ -257,7 +257,7 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z1(QString st_baseUse,QStr
     return    st_msg1 ;
 }
 
-QString cCompterCombinaisons::RequetePourTrouverTotal_z2(QString st_baseUse,int zn)
+QString BCountComb::RequetePourTrouverTotal_z2(QString st_baseUse,int zn)
 {
     QString st_criteres = ConstruireCriteres(zn);
     QString st_msg1 =
@@ -305,7 +305,7 @@ QString cCompterCombinaisons::RequetePourTrouverTotal_z2(QString st_baseUse,int 
     return    st_msg1 ;
 }
 
-QString cCompterCombinaisons::ConstruireCriteres(int zn)
+QString BCountComb::ConstruireCriteres(int zn)
 {
     /// critere a construire
     QString msg = "";
@@ -315,7 +315,7 @@ QString cCompterCombinaisons::ConstruireCriteres(int zn)
 
     /// caculer le nombre de maniere distincte
     /// de prendre 1 dans l'ensemble
-    BP_Cnp *b = new BP_Cnp(lenZn,1);
+    BCnp *b = new BCnp(lenZn,1);
     int items = b->BP_count();
 
 
@@ -346,7 +346,7 @@ QString cCompterCombinaisons::ConstruireCriteres(int zn)
     return msg;
 }
 
-QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
+QGridLayout *BCountComb::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
     (* pName) = names[zn].court;
@@ -362,7 +362,7 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
     QString st_cr1 = "tbLeft.id=tbRight.pid";
     QString st_msg1 = RequetePourTrouverTotal_z1(db_data,st_cr1,0);
 
-    sqm_tmp->setQuery(st_msg1);
+    sqm_tmp->setQuery(st_msg1,dbToUse);
     //int nbcol = sqm_tmp->columnCount();
 
     qtv_tmp->setSortingEnabled(true);
@@ -433,7 +433,7 @@ QGridLayout *cCompterCombinaisons::Compter(QString * pName, int zn)
     return lay_return;
 }
 
-QGridLayout *cCompterCombinaisons::Compter_euro(QString * pName, int zn)
+QGridLayout *BCountComb::Compter_euro(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
     (* pName) = names[zn].court;
@@ -452,7 +452,7 @@ QGridLayout *cCompterCombinaisons::Compter_euro(QString * pName, int zn)
     QString st_cr1 = "tb1.id=tb2.pid";
     QString st_msg1 = RequetePourTrouverTotal_z2(db_data,zn);
 
-    sqm_tmp->setQuery(st_msg1);
+    sqm_tmp->setQuery(st_msg1,dbToUse);
     int nbcol = sqm_tmp->columnCount();
 
     qtv_tmp->setSortingEnabled(true);

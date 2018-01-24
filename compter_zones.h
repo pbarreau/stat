@@ -14,13 +14,13 @@
 
 #include "compter.h"
 
-class cCompterZoneElmts:public B_Comptage
+class BCountElem:public BCount
 {
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    cCompterZoneElmts(QString in, QWidget *LeParent);
-    ~cCompterZoneElmts();
+    BCountElem(QString in, QSqlDatabase fromDb, QWidget *LeParent);
+    ~BCountElem();
 
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);

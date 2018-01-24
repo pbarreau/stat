@@ -11,7 +11,7 @@
 #include "db_tools.h"
 #include "cnp_SansRepetition.h"
 
-BP_Cnp::BP_Cnp(int n, int p,QSqlDatabase destBdd, QString tbName="My"):n(n),p(p),dbToUse(destBdd),tbName(tbName)
+BCnp::BCnp(int n, int p,QSqlDatabase destBdd, QString tbName="My"):n(n),p(p),dbToUse(destBdd),tbName(tbName)
 {
     int cnp_v1 = Cardinal_np();
     int cnp_v2 = CalculerCnp_v2();
@@ -25,7 +25,7 @@ BP_Cnp::BP_Cnp(int n, int p,QSqlDatabase destBdd, QString tbName="My"):n(n),p(p)
         delete (this);
     }
 }
-BP_Cnp::BP_Cnp(int n, int p):n(n),p(p),tbName("My")
+BCnp::BCnp(int n, int p):n(n),p(p),tbName("My")
 {
     int cnp_v1 = Cardinal_np();
     int cnp_v2 = CalculerCnp_v2();
@@ -40,7 +40,7 @@ BP_Cnp::BP_Cnp(int n, int p):n(n),p(p),tbName("My")
     }
 }
 
-BP_Cnp::~BP_Cnp()
+BCnp::~BCnp()
 {
     if(tab !=NULL){
         for(int i = 0; i< cnp;i++){
@@ -50,7 +50,7 @@ BP_Cnp::~BP_Cnp()
     }
 }
 
-int BP_Cnp::BP_count(void)
+int BCnp::BP_count(void)
 {
     return cnp;
 }
@@ -68,14 +68,14 @@ bool BP_Cnp::CalculerPascal(void)
 }
 #endif
 
-void BP_Cnp::BP_ShowPascal(void)
+void BCnp::BP_ShowPascal(void)
 {
     if (CalculerPascal())
         MontrerTableau_v1();
 }
 
 
-int * BP_Cnp::BP_getPascalLine(int lineId)
+int * BCnp::BP_getPascalLine(int lineId)
 {
     int *ptr = NULL;
 
@@ -95,7 +95,7 @@ int * BP_Cnp::BP_getPascalLine(int lineId)
 }
 
 
-void BP_Cnp::MontrerTableau_v1(void)
+void BCnp::MontrerTableau_v1(void)
 {
     if(tab==NULL) return;
 #ifndef QT_NO_DEBUG
@@ -111,7 +111,7 @@ void BP_Cnp::MontrerTableau_v1(void)
 #endif
 }
 
-bool BP_Cnp::CalculerPascal(void)
+bool BCnp::CalculerPascal(void)
 {
     bool isOk = true;
 
@@ -146,7 +146,7 @@ bool BP_Cnp::CalculerPascal(void)
     return isOk;
 }
 
-void BP_Cnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
+void BCnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
 {
     int i = 0;
     int j = 0;
@@ -186,7 +186,7 @@ void BP_Cnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
     }
 }
 
-int BP_Cnp::Cardinal_np(void)
+int BCnp::Cardinal_np(void)
 {
     if(n<0 || p<0 || p>n) return 0;
 
@@ -199,7 +199,7 @@ int BP_Cnp::Cardinal_np(void)
     }
     return t[p]; //On renvoie la valeur recherchée.
 }
-int BP_Cnp::CalculerCnp_v2(void)
+int BCnp::CalculerCnp_v2(void)
 {
     if(n<0 || p<0 || p>n) return 0;
 
@@ -217,7 +217,7 @@ int BP_Cnp::CalculerCnp_v2(void)
 /// Cette fonction insert les coefficient cnp dans la table appropriee
 /// celle ci est creer si necessaire lors du traitement
 /// de la premiere ligne
-void BP_Cnp::insertLineInDbTable(const QString &Laligne)
+void BCnp::insertLineInDbTable(const QString &Laligne)
 {
     QString msg = "";
 

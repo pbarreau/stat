@@ -229,7 +229,7 @@ private:
 private:
     GererBase *DB_tirages;
     QMdiArea *zoneCentrale;
-    cLesComptages *tous;
+    BPrevision *tous;
 
     QWidget *w_FenetreDetails;
     QTabWidget *gtab_Top;
