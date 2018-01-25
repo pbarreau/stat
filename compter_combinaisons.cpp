@@ -36,7 +36,7 @@ BCountComb::BCountComb(QString in,QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
             &BCountComb::Compter
 
 };
-///    &BCountComb::Compter_euro
+    ///    &BCountComb::Compter_euro
 
     int nb_zones = nbZone;
     for(int i = 0; i< nb_zones; i++)
@@ -229,11 +229,11 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
             "("
             +st_baseUse+
             ")as tb2,("+stTbAnalyse+")as tb3 "
-            "where"
-            "("
-            "(tb2.id=tb1.id+"
+                                    "where"
+                                    "("
+                                    "(tb2.id=tb1.id+"
             +QString::number(dst) + ") and (tb3.id=tb2.id)"
-            ")";
+                                    ")";
     QString arg4 = "tbLeft.id=tbRight.idComb";
 
     stJoinArgs args;
@@ -380,6 +380,26 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
 
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
+    qtv_tmp->setModel(m);
+    qtv_tmp->setItemDelegate(new Dlgt_Combi); /// Delegation
+
+    qtv_tmp->verticalHeader()->hide();
+    //qtv_tmp->hideColumn(0);
+
+    //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    int nbCol = sqm_tmp->columnCount();
+    qtv_tmp->setColumnWidth(0,CEL2_L);
+    for(int pos=2;pos<nbCol;pos++)
+    {
+        qtv_tmp->setColumnWidth(pos,CEL2_L);
+    }
+    int L = CEL2_L*nbCol;
+    qtv_tmp->setFixedWidth(L);;
     qtv_tmp->setFixedHeight(hCommon);
 #if 0
     qtv_tmp->setColumnWidth(1,30);
@@ -391,18 +411,6 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 #endif
-
-    QSortFilterProxyModel *m=new QSortFilterProxyModel();
-    m->setDynamicSortFilter(true);
-    m->setSourceModel(sqm_tmp);
-    qtv_tmp->setModel(m);
-    qtv_tmp->setItemDelegate(new Dlgt_Combi); /// Delegation
-
-    qtv_tmp->verticalHeader()->hide();
-    //qtv_tmp->hideColumn(0);
-
-    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // simple click dans fenetre  pour selectionner boules
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
