@@ -21,7 +21,7 @@ BCountGroup::~BCountGroup()
     total --;
 }
 
-BCountGroup::BCountGroup(QString in,QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
+BCountGroup::BCountGroup(QString in,QStringList** lstCri, QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
@@ -30,7 +30,8 @@ BCountGroup::BCountGroup(QString in,QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
 
 
     int nb_zones = nbZone;
-    maRef = new  QStringList* [nb_zones] ;
+    //maRef = new  QStringList* [nb_zones] ;
+    maRef = lstCri;
     p_qsim_3 = new QStandardItemModel *[nb_zones];
 
     QGridLayout *(BCountGroup::*ptrFunc[])(QString *, int) =
@@ -231,13 +232,15 @@ QTableView *BCountGroup::CompterLigne(QString * pName, int zn)
     qtv_tmp->verticalHeader()->hide();
 
     // Taille tableau
-    int b = qtv_tmp->columnWidth(0);
-    int n = sqm_tmp->columnCount();
-    qtv_tmp->setFixedWidth((b*n)+5);
+    //int b = qtv_tmp->columnWidth(0);
+    //int n = sqm_tmp->columnCount();
+    //qtv_tmp->setFixedWidth((b*n)+5);
+    int L = (nbCol * CEL2_L)/2;
+    qtv_tmp->setFixedWidth(L);
 
-    b = CEL2_H;
-    n = 1;
-    qtv_tmp->setFixedHeight((b*n)+5);
+    int b = CEL2_H;
+    double n = 1.5;
+    qtv_tmp->setFixedHeight(b*n);
 
     return qtv_tmp;
 }
@@ -280,11 +283,19 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 
 
     //largeur des colonnes
-    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    int b = qtv_tmp->columnWidth(1);
-    int n = sqm_tmp->columnCount();
-    //qtv_tmp->setFixedWidth((n+0.85)*b);
+    //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    int nbCol = sqm_tmp->columnCount();
+    for(int pos=0;pos<nbCol;pos++)
+    {
+        qtv_tmp->setColumnWidth(pos,CEL2_L);
+    }
+    int L = (nbCol * CEL2_L)/2;
+    qtv_tmp->setFixedWidth(L);
+
+
+    int h = ((limites[zn].len+2)*(qtv_tmp->rowHeight(1)))+(CEL2_H/2);
+    qtv_tmp->setFixedHeight(h);
 
     // positionner le tableau
     //lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);

@@ -28,6 +28,7 @@ public slots:
 
 private:
     static int total;
+    int hCommon; // taille des tableaux
 
 private:
     QGridLayout *Compter(QString * pName, int zn);

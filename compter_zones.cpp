@@ -47,6 +47,9 @@ BCountElem::BCountElem(QString in, QSqlDatabase fromDb,QWidget *LeParent):BCount
 
     for(int i = 0; i< nb_zones; i++)
     {
+        if(i<nb_zones-1)
+            hCommon = CEL2_H * BMAX_2((floor(limites[i].max/10)+1),(floor(limites[i+1].max/10)+1));
+
         QString *name = new QString;
         QWidget *tmpw = new QWidget;
         QGridLayout *calcul = (this->*ptrFunc[i])(name, i);
@@ -337,13 +340,6 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_tmp);
 
-#if 0
-    // Memorisation des pointeurs
-    if(ongPere == 3)
-    {
-        dist->keepPtr(curOng,sqm_tmp,qtv_tmp,m);
-    }
-#endif
 
     qtv_tmp->setModel(m);
     qtv_tmp->setItemDelegate(new Dlgt_Combi); /// Delegation
@@ -355,11 +351,17 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
 
 
     //largeur des colonnes
-    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    int b = qtv_tmp->columnWidth(1);
-    int n = sqm_tmp->columnCount();
-    //qtv_tmp->setFixedWidth((n+0.85)*b);
+    int nbCol = sqm_tmp->columnCount();
+    for(int pos=0;pos<nbCol;pos++)
+    {
+        qtv_tmp->setColumnWidth(pos,CEL2_L);
+    }
+    int l = CEL2_L * (nbCol+1);
+    qtv_tmp->setFixedWidth(l);
+
+    qtv_tmp->setFixedHeight(hCommon);
+    //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // positionner le tableau
     lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);

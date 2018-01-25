@@ -38,8 +38,12 @@ BCountComb::BCountComb(QString in,QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
 };
 ///    &BCountComb::Compter_euro
 
-    for(int i = 0; i< 2; i++)
+    int nb_zones = nbZone;
+    for(int i = 0; i< nb_zones; i++)
     {
+        if(i<nb_zones-1)
+            hCommon = CEL2_H * BMAX_2((floor(limites[i].max/10)+1),(floor(limites[i+1].max/10)+1));
+
         QString *name = new QString;
         QWidget *tmpw = new QWidget;
         QGridLayout *calcul = (this->*ptrFunc[i])(name, i);
@@ -376,7 +380,17 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    //qtv_tmp->setFixedSize(250,CHauteur1);
+    qtv_tmp->setFixedHeight(hCommon);
+#if 0
+    qtv_tmp->setColumnWidth(1,30);
+    qtv_tmp->setColumnWidth(2,70);
+
+    for(int j=2;j<=sqm_tmp->columnCount();j++)
+        qtv_tmp->setColumnWidth(j,LCELL);
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+#endif
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
@@ -406,16 +420,6 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
     qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
-#if 0
-    qtv_tmp->setColumnWidth(1,30);
-    qtv_tmp->setColumnWidth(2,70);
-
-    for(int j=2;j<=sqm_tmp->columnCount();j++)
-        qtv_tmp->setColumnWidth(j,LCELL);
-    // Ne pas modifier largeur des colonnes
-    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-#endif
 
 
 

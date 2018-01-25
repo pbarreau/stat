@@ -1230,7 +1230,7 @@ void BPrevision::effectuerComptage()
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
 
     BCountComb *c2 = new BCountComb(stLesTirages,dbInUse);
-    BCountGroup *c3 = new BCountGroup(stLesTirages,dbInUse);
+    BCountGroup *c3 = new BCountGroup(stLesTirages,slFlt,dbInUse);
 
     QGridLayout **pConteneur = new QGridLayout *[3];
     QWidget **pMonTmpWidget = new QWidget * [3];
@@ -1245,7 +1245,7 @@ void BPrevision::effectuerComptage()
     }
     pConteneur[0]->addWidget(c1,1,0);
     pConteneur[1]->addWidget(c2,1,0);
-    //pConteneur[2]->addWidget(c3,1,0);
+    pConteneur[2]->addWidget(c3,1,0);
 
     pMonTmpWidget[0]->setLayout(pConteneur[0]);
     pMonTmpWidget[1]->setLayout(pConteneur[1]);
