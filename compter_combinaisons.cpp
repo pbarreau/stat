@@ -363,12 +363,9 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
 
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];
 
-    //QString st_baseUse = db_data;
-    QString st_cr1 = "tbLeft.id=tbRight.pid";
     QString st_msg1 = RequetePourTrouverTotal_z1(db_data,zn,0);
 
     sqm_tmp->setQuery(st_msg1,dbToUse);
-    //int nbcol = sqm_tmp->columnCount();
 
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);

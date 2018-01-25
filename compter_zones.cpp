@@ -359,7 +359,7 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     int b = qtv_tmp->columnWidth(1);
     int n = sqm_tmp->columnCount();
-    qtv_tmp->setFixedWidth((n+0.85)*b);
+    //qtv_tmp->setFixedWidth((n+0.85)*b);
 
     // positionner le tableau
     lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);

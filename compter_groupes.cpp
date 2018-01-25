@@ -8,9 +8,11 @@
 #include <QHeaderView>
 #include <QToolTip>
 #include <QStackedWidget>
+#include <QSortFilterProxyModel>
 
 #include "compter_groupes.h"
 #include "db_tools.h"
+#include "delegate.h"
 
 int BCountGroup::total = 0;
 
@@ -243,6 +245,76 @@ QTableView *BCountGroup::CompterLigne(QString * pName, int zn)
 QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
+    (* pName) = names[zn].court;
+
+    QString qtv_name = QString::fromLatin1(TB2_SG) + "_z"+QString::number(zn+1);
+    qtv_tmp->setObjectName(qtv_name);
+
+    QSqlQueryModel *sqm_tmp = &sqmZones[zn];
+
+
+
+    QString sql_msgRef = "select * from TblCompact_z"+QString::number(zn+1);
+#ifndef QT_NO_DEBUG
+    qDebug() << "SQL:"<<sql_msgRef;
+#endif
+
+    sqm_tmp->setQuery(sql_msgRef,dbToUse);
+
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
+
+    qtv_tmp->setModel(m);
+    qtv_tmp->setItemDelegate(new Dlgt_Combi); /// Delegation
+
+    qtv_tmp->verticalHeader()->hide();
+    //qtv_tmp->hideColumn(0);
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+
+
+    //largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    int b = qtv_tmp->columnWidth(1);
+    int n = sqm_tmp->columnCount();
+    //qtv_tmp->setFixedWidth((n+0.85)*b);
+
+    // positionner le tableau
+    //lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+
+    // simple click dans fenetre  pour selectionner boules
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
+    // Double click dans fenetre  pour creer requete
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
+
+    qtv_tmp->setMouseTracking(true);
+    connect(qtv_tmp,
+            SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
+
+    /// Selection & priorite
+    qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+            SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
+
+    return qtv_tmp;
+
+}
+
+#if 0
+QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
+{
+    QTableView *qtv_tmp = new QTableView;
     int nbLgn = limites[zn].len + 1;
 
     QStandardItemModel * sqm_tmp = NULL;
@@ -250,6 +322,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 
     int nbCol = maRef[zn][0].size();
 
+    /// QString st_msg1 = "select * from TblCompact_z"+QString::number(zn+1);
     //Creer un tableau d'element standard
     if(nbCol)
     {
@@ -326,6 +399,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 
     return qtv_tmp;
 }
+#endif
 
 void BCountGroup::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp)
 {

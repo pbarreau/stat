@@ -566,7 +566,10 @@ bool BPrevision::f5(QString tb, QSqlQuery *query)
         slFlt[zn] = CreateFilterForData(zn);
         QString tbReponses = tb + "_" + QString::number(zn+1);
         isOk = AnalyserEnsembleTirage(tblTirages,tbReponses,zn);
+        if(isOk)
+            isOk = FaireTableauSynthese(tbReponses,zn);
     }
+
     if(!isOk)
     {
         QString ErrLoc = "f5:";
@@ -603,6 +606,85 @@ bool BPrevision::f6(QString tb, QSqlQuery *query)
     return isOk;
 }
 
+bool BPrevision::FaireTableauSynthese(QString InputTable, int zn)
+{
+    bool isOk = true;
+    QString msg = "";
+    QSqlQuery query(dbInUse);
+    QString stDefBoules = C_TBL_2;
+    QString stCurTable = "Ref"+QString::number(zn+1)+"_"+InputTable;
+    QString prvName = "";
+    QString curName  ="";
+
+    /// Verifier si des tables existent deja
+    if(SupprimerVueIntermediaires())
+    {
+        /// Plus de table intermediaire commencer
+        curName = "vt_0";
+        msg = "create view if not exists "
+                +curName+" as select Choix.tz"
+                +QString::number(zn+1)+ " as Nb"
+                +" from("+stDefBoules+")as Choix where(Choix.tz"
+                +QString::number(zn+1)+ " is not null)";
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+
+        isOk = query.exec(msg);
+        QStringList *slst=&slFlt[zn][0];
+
+        int nbCols = slst[1].size();
+        curName = "vt_1";
+        QString stGenre = "view";
+        for(int loop = 0; (loop < nbCols)&& isOk; loop ++){
+            prvName ="vt_"+QString::number(loop);
+            msg = "create "+stGenre+" if not exists "
+                    + curName
+                    +" as select tbleft.*, count(tbRight.id)as "
+                    +slst[1].at(loop)
+                    + " from("+prvName+") as tbLeft "
+                    +"left join ("
+                    +stCurTable
+                    +") as tbRight on (tbLeft.Nb = tbRight."
+                    +slst[1].at(loop)+")group by tbLeft.Nb";
+#ifndef QT_NO_DEBUG
+            qDebug() << msg;
+#endif
+            isOk = query.exec(msg);
+            if(loop<nbCols-1)
+                curName ="vt_"+QString::number(loop+2);
+#if 0
+            if(loop<nbCols-2){
+                curName ="vt_"+QString::number(loop+2);
+            }
+            else
+            {
+                curName = "TblCompact_z"+ QString::number(zn+1) ;
+                stGenre = "table";
+            }
+#endif
+        }
+        /// Rajouter a la fin une colonne pour fitrage
+        if(isOk){
+            msg = "create table if not exists TblCompact_z"
+                    + QString::number(zn+1)
+                    +" as select tb1.*, NULL as F from ("+curName+") as tb1";
+#ifndef QT_NO_DEBUG
+            qDebug() << msg;
+#endif
+
+            isOk = query.exec(msg);
+        }
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "FaireTableauSynthese:";
+        DB_Tools::DisplayError(ErrLoc,&query,"");
+    }
+
+    return isOk;
+}
 bool BPrevision::TraitementCodeVueCombi(int zn)
 {
     bool isOk = true;
@@ -1148,7 +1230,7 @@ void BPrevision::effectuerComptage()
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
 
     BCountComb *c2 = new BCountComb(stLesTirages,dbInUse);
-    //BCountGroup *c3 = new BCountGroup(stLesTirages,dbInUse);
+    BCountGroup *c3 = new BCountGroup(stLesTirages,dbInUse);
 
     QGridLayout **pConteneur = new QGridLayout *[3];
     QWidget **pMonTmpWidget = new QWidget * [3];
