@@ -38,7 +38,7 @@ BCountComb::BCountComb(QString in,QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
 };
     ///    &BCountComb::Compter_euro
 
-    int nb_zones = nbZone;
+    int nb_zones = znCount;
     for(int i = 0; i< nb_zones; i++)
     {
         if(i<nb_zones-1)
@@ -125,7 +125,7 @@ void BCountComb::LabelFromSelection(const QItemSelectionModel *selectionModel, i
     str_titre = str_titre +"]";
 
     // informer disponibilité
-    names[zn].selection = str_titre;
+    names[zn].sel = str_titre;
     emit sig_TitleReady(str_titre);
 }
 
@@ -193,7 +193,7 @@ void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
                     sqlSelection[onglet]+ "/* FIN CRITERE z_"+
                     QString::number(onglet+1)+ "*/)and";
         }
-        st_titre = st_titre + names[onglet].selection;
+        st_titre = st_titre + names[onglet].sel;
     }
 
     /// suppression du dernier 'and'
@@ -344,7 +344,7 @@ QString BCountComb::ConstruireCriteres(int zn)
         /// construire la requete sur ce champs
         int loop = lenZn;
         QStringList lstChamps;
-        lstChamps << "tb2."+names[zn].court;
+        lstChamps << "tb2."+names[zn].abv;
         msg = msg + DB_Tools::GEN_Where_3(loop,tab1,false,"=",lstChamps,true,"or");
         if(i<lenZn-1)
             msg = msg + "and";
@@ -358,7 +358,7 @@ QString BCountComb::ConstruireCriteres(int zn)
 QGridLayout *BCountComb::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
-    (* pName) = names[zn].court;
+    (* pName) = names[zn].abv;
 
     QTableView *qtv_tmp = new QTableView;
 
@@ -450,7 +450,7 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
 QGridLayout *BCountComb::Compter_euro(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
-    (* pName) = names[zn].court;
+    (* pName) = names[zn].abv;
 
     QTableView *qtv_tmp = new QTableView;
 

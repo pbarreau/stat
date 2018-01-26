@@ -10,6 +10,8 @@
 #include <QGridLayout>
 #include <QSqlQueryModel>
 
+#include "game.h"
+
 #define CEL2_H  55
 #define CEL2_L  40
 #define BMAX_2(a,b) (((a)>(b))?(a):(b))
@@ -38,18 +40,8 @@
 /// https://fr.wikipedia.org/wiki/Fonction_virtuelle
 /// https://openclassrooms.com/courses/programmez-avec-le-langage-c/le-polymorphisme-1
 /// http://apais.developpez.com/tutoriels/c++/fonctions-virtuelles-en-cpp/?page=page_1
-typedef struct _cZonesNames {
-    QString complet;    /// nom long de la zone
-    QString court;      /// nom abreg de la zone
-    QString selection;  /// nom correspondant à la selection en cours
-}cZonesNames;
 
-typedef struct _cZonesLimits{
-    int len;    /// nombre d'elements composant la zone
-    int min;    /// valeur mini possible pour un element
-    int max;    /// valeur maxi possible pour un element
-    int neg;    /// nb elements a avoir pour jackpot
-}cZonesLimits;
+/// -------ENUM---------
 
 typedef struct _B_RequeteFromTbv
 {
@@ -83,13 +75,13 @@ public :
     B_RequeteFromTbv a;
 
 protected:
-    int nbZone; /// nombre de zone calculer par la la requete a la base
+    int znCount; /// nombre de zone calculer par la la requete a la base
     int *memo;  /// A deplacer :
     QString unNom;  /// Pour Tracer les requetes sql
     QString db_data;    /// information de tous les tirages
     QString db_jours;   /// information des jours de tirages
-    cZonesNames *names; /// nom a utiliser avec les zones
-    cZonesLimits *limites;  /// limites a utiliser sur les zones
+    stParam_2 *names; /// nom a utiliser avec les zones
+    stParam_1 *limites;  /// limites a utiliser sur les zones
     QModelIndexList *lesSelections; /// liste des selections dans les tableaux
     QString *sqlSelection;  /// code sql generee pour un tableau
     QSqlQueryModel *sqmZones; /// pour mettre a jour le tableau des resultats

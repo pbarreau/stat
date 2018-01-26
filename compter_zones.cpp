@@ -35,7 +35,7 @@ BCountElem::BCountElem(QString in, QSqlDatabase fromDb,QWidget *LeParent):BCount
     QTabWidget *tab_Top = new QTabWidget(this);
     unNom = "'Compter Zones'";
 
-    int nb_zones = nbZone;
+    int nb_zones = znCount;
 
 
     QGridLayout *(BCountElem::*ptrFunc[])(QString *, int) =
@@ -138,7 +138,7 @@ void BCountElem::slot_ClicDeSelectionTableau(const QModelIndex &index)
     if(nb_items > limites[tab_index].len)
     {
         //un message d'information
-        QMessageBox::warning(0, names[tab_index].complet, "Attention, maximum element atteind !",QMessageBox::Yes);
+        QMessageBox::warning(0, names[tab_index].std, "Attention, maximum element atteind !",QMessageBox::Yes);
 
         // deselectionner l'element
         selectionModel->select(index, QItemSelectionModel::Deselect);
@@ -186,7 +186,7 @@ void BCountElem::SqlFromSelection (const QItemSelectionModel *selectionModel, in
 
         // Creation du critere de filtre
         int loop = limites[zn].len;
-        QString tab = "tbz."+names[zn].court;
+        QString tab = "tbz."+names[zn].abv;
         QString scritere = DB_Tools::GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
         if(headName != "T" and headName !="")
         {
@@ -215,7 +215,7 @@ void BCountElem::slot_RequeteFromSelection(const QModelIndex &index)
                     sqlSelection[onglet]+ "/* FIN CRITERE z_"+
                     QString::number(onglet+1)+ "*/)and";
         }
-        st_titre = st_titre + names[onglet].selection;
+        st_titre = st_titre + names[onglet].sel;
     }
 
     /// suppression du dernier 'and'
@@ -257,7 +257,7 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
         }
     }
 
-    boules<< "tbright."+names[zn].court;
+    boules<< "tbright."+names[zn].abv;
     int loop = limites[zn].len;
     st_cri_all= st_cri_all +DB_Tools::GEN_Where_3(loop,"tbleft.boule",false,"=",boules,true,"or");
     boules.clear();
@@ -315,7 +315,7 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     QGridLayout *lay_return = new QGridLayout;
 
     QTableView *qtv_tmp = new QTableView;
-    (* pName) = names[zn].court;
+    (* pName) = names[zn].abv;
 
     QString qtv_name = QString::fromLatin1(TB2_SE) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);

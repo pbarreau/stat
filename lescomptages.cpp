@@ -40,7 +40,7 @@ void BPrevision::slot_changerTitreZone(QString le_titre)
 
 BPrevision::BPrevision(eGame game, eBddUse def)
 {
-    gameInfo.type = game;
+    onGame.type = game;
     if(ouvrirBase(def,game)==true)
     {
         effectuerTraitement(game);
@@ -52,7 +52,7 @@ BPrevision::BPrevision(eGame game, eBddUse def, QString stLesTirages)
 {
     Q_UNUSED(stLesTirages)
 
-    gameInfo.type = game;
+    onGame.type = game;
     if(ouvrirBase(def,game)==true)
     {
         effectuerTraitement(game);
@@ -161,68 +161,74 @@ bool BPrevision::OPtimiseAccesBase(void)
 
 void BPrevision::effectuerTraitement(eGame game)
 {
-    definirConstantesDuJeu(game);
+    BGame *gameDef = NULL;
+
+    gameDef = definirConstantesDuJeu(game);
     creerTablesDeLaBase();
-    effectuerComptage();
+    analyserTirages(C_TBL_3, gameDef);
+
 }
 
-void BPrevision::definirConstantesDuJeu(eGame game)
+BGame * BPrevision::definirConstantesDuJeu(eGame game)
 {
     /// Pour l'instant en loto ou en euro il y a 2 'zones'
     /// une pour les boules
     /// une pour les etoiles
-    gameInfo.nbDef = 2; /// boules + etoiles
+    onGame.znCount = 2; /// boules + etoiles
 
     switch(game)
     {
     case eGameLoto:
-        gameInfo.limites = new stParam_1 [gameInfo.nbDef];
-        gameInfo.nom = new stParam_2 [gameInfo.nbDef];
+        onGame.limites = new stParam_1 [onGame.znCount];
+        onGame.names = new stParam_2 [onGame.znCount];
 
         /// boules
-        gameInfo.limites[0].min=1;
-        gameInfo.limites[0].max=49;
-        gameInfo.limites[0].len=5;
-        gameInfo.limites[0].win=5;
-        gameInfo.nom[0].std = "Boules";
-        gameInfo.nom[0].abv = "b";
+        onGame.limites[0].min=1;
+        onGame.limites[0].max=49;
+        onGame.limites[0].len=5;
+        onGame.limites[0].win=5;
+        onGame.names[0].std = "Boules";
+        onGame.names[0].abv = "b";
 
         /// etoiles
-        gameInfo.limites[1].min=1;
-        gameInfo.limites[1].max=10;
-        gameInfo.limites[1].len=1;
-        gameInfo.limites[1].win=1;
-        gameInfo.nom[1].std = "Etoiles";
-        gameInfo.nom[1].abv = "e";
+        onGame.limites[1].min=1;
+        onGame.limites[1].max=10;
+        onGame.limites[1].len=1;
+        onGame.limites[1].win=1;
+        onGame.names[1].std = "Etoiles";
+        onGame.names[1].abv = "e";
         break;
 
     case eGameEuro:
-        gameInfo.limites = new stParam_1 [gameInfo.nbDef];
-        gameInfo.nom = new stParam_2 [gameInfo.nbDef];
+        onGame.limites = new stParam_1 [onGame.znCount];
+        onGame.names = new stParam_2 [onGame.znCount];
 
         /// boules
-        gameInfo.limites[0].min=1;
-        gameInfo.limites[0].max=50;
-        gameInfo.limites[0].len=5;
-        gameInfo.limites[0].win=5;
-        gameInfo.nom[0].std = "Boules";
-        gameInfo.nom[0].abv = "b";
+        onGame.limites[0].min=1;
+        onGame.limites[0].max=50;
+        onGame.limites[0].len=5;
+        onGame.limites[0].win=5;
+        onGame.names[0].std = "Boules";
+        onGame.names[0].abv = "b";
 
         /// etoiles
-        gameInfo.limites[1].min=1;
-        gameInfo.limites[1].max=12;
-        gameInfo.limites[1].len=2;
-        gameInfo.limites[1].win=2;
-        gameInfo.nom[1].std = "Etoiles";
-        gameInfo.nom[1].abv = "e";
+        onGame.limites[1].min=1;
+        onGame.limites[1].max=12;
+        onGame.limites[1].len=2;
+        onGame.limites[1].win=2;
+        onGame.names[1].std = "Etoiles";
+        onGame.names[1].abv = "e";
         break;
 
     default:
-        gameInfo.nbDef = 0; /// boules + etoiles
-        gameInfo.limites = NULL;
-        gameInfo.nom = NULL;
+        onGame.znCount = 0; /// boules + etoiles
+        onGame.limites = NULL;
+        onGame.names = NULL;
         break;
     }
+
+    /// config effectuee
+    return(&onGame);
 }
 
 bool BPrevision::creerTablesDeLaBase(void)
@@ -292,14 +298,14 @@ bool BPrevision::f1(QString tbName,QSqlQuery *query)
     if(isOk)
     {
         /// Parcourir toutes les definition
-        for(int def = 0; (def<gameInfo.nbDef) && isOk;def++)
+        for(int def = 0; (def<onGame.znCount) && isOk;def++)
         {
-            query->bindValue(":arg1",gameInfo.limites[def].min);
-            query->bindValue(":arg2",gameInfo.limites[def].max);
-            query->bindValue(":arg3",gameInfo.limites[def].len);
-            query->bindValue(":arg4",gameInfo.limites[def].win);
-            query->bindValue(":arg5",gameInfo.nom[def].abv);
-            query->bindValue(":arg6",gameInfo.nom[def].std);
+            query->bindValue(":arg1",onGame.limites[def].min);
+            query->bindValue(":arg2",onGame.limites[def].max);
+            query->bindValue(":arg3",onGame.limites[def].len);
+            query->bindValue(":arg4",onGame.limites[def].win);
+            query->bindValue(":arg5",onGame.names[def].abv);
+            query->bindValue(":arg6",onGame.names[def].std);
 
             /// executer la commande sql
             isOk = query->exec();
@@ -327,7 +333,7 @@ bool BPrevision::f2(QString tbName,QSqlQuery *query)
     QString def_1 = "z%1 int, tz%1 int";
     QString def_2 = ":arg%1, :arg%2";
 
-    int totDef=gameInfo.nbDef;
+    int totDef=onGame.znCount;
     int maxElemts = 0;
     for(int def = 0; (def<totDef) && isOk;def++)
     {
@@ -343,8 +349,8 @@ bool BPrevision::f2(QString tbName,QSqlQuery *query)
             argsDef = argsDef + ",";
 
             /// Maximum d'element
-            maxElemts = BMAX_2(gameInfo.limites[def].max,
-                               gameInfo.limites[def+1].max);
+            maxElemts = BMAX_2(onGame.limites[def].max,
+                               onGame.limites[def+1].max);
         }
     }
 
@@ -370,7 +376,7 @@ bool BPrevision::f2(QString tbName,QSqlQuery *query)
             QString stValues="";
             for(int def = 0; (def<totDef) ;def++)
             {
-                int maxItems = gameInfo.limites[def].max;
+                int maxItems = onGame.limites[def].max;
                 //int nbDizaine = floor(maxItems/10)+1;
 
                 /// Boules
@@ -383,7 +389,7 @@ bool BPrevision::f2(QString tbName,QSqlQuery *query)
                 stValues = stValues + ",";
 
                 /// Nb boules pour gagner
-                if(line<=gameInfo.limites[def].win+1){
+                if(line<=onGame.limites[def].win+1){
                     stValues = stValues + QString::number(line-1);
                 }
                 else{
@@ -420,12 +426,12 @@ bool BPrevision::f3(QString tbName,QSqlQuery *query)
     /// Cette table contient tous les tirages
     tblTirages =  tbName;
 
-    int totDef=gameInfo.nbDef;
+    int totDef=onGame.znCount;
     for(int def = 0; (def<totDef) && isOk;def++)
     {
-        QString ref = gameInfo.nom[def].abv+"%1 int";
-        QString ref_2 = "printf('%02d',"+gameInfo.nom[def].abv+"%1)as "+gameInfo.nom[def].abv+"%1";
-        int totElm = gameInfo.limites[def].len;
+        QString ref = onGame.names[def].abv+"%1 int";
+        QString ref_2 = "printf('%02d',"+onGame.names[def].abv+"%1)as "+onGame.names[def].abv+"%1";
+        int totElm = onGame.limites[def].len;
         for(int elm=0;elm<totElm;elm++){
             colsDef=colsDef + ref.arg(elm+1);
             cAsDef = cAsDef + ref_2.arg(elm+1);
@@ -520,11 +526,11 @@ bool BPrevision::f4(QString tb, QSqlQuery *query)
     Q_UNUSED(query)
 
     bool isOk = true;
-    int nbZone = gameInfo.nbDef;
+    int nbZone = onGame.znCount;
 
     for (int zn=0;(zn < nbZone) && isOk;zn++ )
     {
-        if(gameInfo.limites[zn].win>2){
+        if(onGame.limites[zn].win>2){
             isOk = TraitementCodeVueCombi(zn);
 
             if(isOk)
@@ -532,14 +538,16 @@ bool BPrevision::f4(QString tb, QSqlQuery *query)
         }
         else
         {
-            int n = gameInfo.limites[zn].max;
-            int p = gameInfo.limites[zn].win;
+            int n = onGame.limites[zn].max;
+            int p = onGame.limites[zn].win;
             QString tbName = C_TBL_4"_z"+QString::number(zn+1);
             // calculer les combinaisons avec repetition
             BCnp *a = new BCnp(n,p,dbInUse,tbName);
-
+#if 0
             tbName = tbName + "_Cnp_" + QString::number(n) +"_" +
                     QString::number(p);
+#endif
+            tbName = a->getDbTblName();
             isOk = TraitementCodeTblCombi_2(tb,tbName,zn);
         }
     }
@@ -558,7 +566,7 @@ bool BPrevision::f5(QString tb, QSqlQuery *query)
     Q_UNUSED(query)
 
     bool isOk = true;
-    int nbZone = gameInfo.nbDef;
+    int nbZone = onGame.znCount;
     slFlt = new  QStringList* [nbZone] ;
 
     for (int zn=0;(zn < nbZone) && isOk;zn++ )
@@ -588,7 +596,7 @@ bool BPrevision::f6(QString tb, QSqlQuery *query)
 
     // Creation des tables permettant la sauvegarde des selections
     // pour creation de filtres
-    int nb_zone = gameInfo.nbDef;
+    int nb_zone = onGame.znCount;
 
     for(int zone=0;(zone<nb_zone)&& isOk;zone++)
     {
@@ -653,16 +661,6 @@ bool BPrevision::FaireTableauSynthese(QString InputTable, int zn)
             isOk = query.exec(msg);
             if(loop<nbCols-1)
                 curName ="vt_"+QString::number(loop+2);
-#if 0
-            if(loop<nbCols-2){
-                curName ="vt_"+QString::number(loop+2);
-            }
-            else
-            {
-                curName = "TblCompact_z"+ QString::number(zn+1) ;
-                stGenre = "table";
-            }
-#endif
         }
         /// Rajouter a la fin une colonne pour fitrage
         if(isOk){
@@ -674,6 +672,11 @@ bool BPrevision::FaireTableauSynthese(QString InputTable, int zn)
 #endif
 
             isOk = query.exec(msg);
+
+            /// Supprimer vues intermediaire
+            if(isOk){
+                isOk = SupprimerVueIntermediaires();
+            }
         }
     }
 
@@ -696,7 +699,7 @@ bool BPrevision::TraitementCodeVueCombi(int zn)
     {
         "drop view if exists tbr%1;",
         "create view if not exists tbr%1 as select tbChoix.tz%1 as "
-        +gameInfo.nom[zn].abv+ " "
+        +onGame.names[zn].abv+ " "
         "from (%2 as tbChoix)where(tbChoix.tz%1 is not null);"
     };
     int argViewCount[]={1,2};
@@ -746,7 +749,7 @@ bool BPrevision::TraitementCodeTblCombi(QString tbName,int zn)
         "drop table if exists "+tbName+"_z%1;",
         "create table if not exists "+tbName+"_z%1 (id integer primary key,%2);",
         "insert into "+tbName+"_z%1 select NULL,%2 from (%3) where(%4="
-        +QString::number(+gameInfo.limites[zn].win)+");"
+        +QString::number(+onGame.limites[zn].win)+");"
     };
     int argTblCount[]={1,2,4};
 
@@ -759,8 +762,8 @@ bool BPrevision::TraitementCodeTblCombi(QString tbName,int zn)
 
 
     /// traitement creation table en fonction 10zaine
-    int lenZn = floor(gameInfo.limites[zn].max/10)+1;
-    ref_1="t%1."+gameInfo.nom[zn].abv+" as "+gameInfo.nom[zn].abv+"%1";
+    int lenZn = floor(onGame.limites[zn].max/10)+1;
+    ref_1="t%1."+onGame.names[zn].abv+" as "+onGame.names[zn].abv+"%1";
     QString msg1 = "";
     for(int pos=0;pos<lenZn;pos++){
         msg1 = msg1 + ref_1.arg(pos+1);
@@ -778,7 +781,7 @@ bool BPrevision::TraitementCodeTblCombi(QString tbName,int zn)
         case 2:{
             ref_1=msg1+",";
             ref_1.replace(QRegExp("t\\d\."
-                                  +gameInfo.nom[zn].abv
+                                  +onGame.names[zn].abv
                                   +"\\s+as\\s+"),"");
             ref_1.replace(",", " int,");
             ref_1=ref_1 + "tip text, poids real";
@@ -787,10 +790,10 @@ bool BPrevision::TraitementCodeTblCombi(QString tbName,int zn)
             break;
         case 4:{
             ref_1="%d";
-            ref_2="t%1."+gameInfo.nom[zn].abv;
-            ref_3="(%1*t%2."+gameInfo.nom[zn].abv+")";
+            ref_2="t%1."+onGame.names[zn].abv;
+            ref_3="(%1*t%2."+onGame.names[zn].abv+")";
             ref_4="tbr%1 as t%2";
-            ref_5=gameInfo.nom[zn].abv+"%1";
+            ref_5=onGame.names[zn].abv+"%1";
             QString msg2 = "";
             QString msg3 = "";
             QString msg4 = "";
@@ -853,7 +856,7 @@ bool BPrevision::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn)
 
     if(isOk){
         /// traitement creation table
-        int lenZn = gameInfo.limites[zn].len;
+        int lenZn = onGame.limites[zn].len;
         QString ref_1="c%1 int";
         QString ref_2="(%1*c%2)";//"+gameInfo.nom[zn].abv+"
         QString msg1 = "";
@@ -868,7 +871,7 @@ bool BPrevision::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn)
         }
 
         ref_1 = msg1;
-        ref_1 = ref_1.replace("c",gameInfo.nom[zn].abv) + +",tip text, poids real" ;
+        ref_1 = ref_1.replace("c",onGame.names[zn].abv) + +",tip text, poids real" ;
         msg = "create table if not exists "
                 +tbName+"_z"+QString::number(zn+1)
                 +"(id integer primary key,"
@@ -987,7 +990,7 @@ bool BPrevision::chargerDonneesFdjeux(QString destTable)
         }
     };
 
-    if(gameInfo.type == eGameEuro){
+    if(onGame.type == eGameEuro){
         nbelemt = sizeof(euroMillions)/sizeof(stFdjData);
         LesFichiers = euroMillions;
     }
@@ -1076,7 +1079,7 @@ bool BPrevision::LireLesTirages(QString tblName, stFdjData *def)
         reqValues = reqValues + "'"+data + "',";
 
         // Recuperation des boules
-        int max_zone = gameInfo.nbDef;
+        int max_zone = onGame.znCount;
         for(int zone=0;zone< max_zone;zone++)
         {
             int maxValZone = def->param.pZn[zone].max;
@@ -1094,7 +1097,7 @@ bool BPrevision::LireLesTirages(QString tblName, stFdjData *def)
                         (val1 <=def->param.pZn[zone].max))
                 {
                     /// On rajoute a Req values
-                    reqCols = reqCols+gameInfo.nom[zone].abv+QString::number(ElmZone+1);
+                    reqCols = reqCols+onGame.names[zone].abv+QString::number(ElmZone+1);
                     reqValues = reqValues + QString::number(val1);
                 }
                 else
@@ -1220,17 +1223,16 @@ QString BPrevision::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
     return retval;
 }
 
-void BPrevision::effectuerComptage()
+void BPrevision::analyserTirages(QString source,const BGame *config)
 {
     QWidget * Resultats = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
-    QString stLesTirages = C_TBL_3;
 
-    BCountElem *c1 = new BCountElem(stLesTirages,dbInUse,Resultats);
+    BCountElem *c1 = new BCountElem(source,dbInUse,Resultats);
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
 
-    BCountComb *c2 = new BCountComb(stLesTirages,dbInUse);
-    BCountGroup *c3 = new BCountGroup(stLesTirages,slFlt,dbInUse);
+    BCountComb *c2 = new BCountComb(source,dbInUse);
+    BCountGroup *c3 = new BCountGroup(source,slFlt,dbInUse);
 
     QGridLayout **pConteneur = new QGridLayout *[3];
     QWidget **pMonTmpWidget = new QWidget * [3];
@@ -1294,7 +1296,7 @@ void BPrevision::slot_AppliquerFiltres()
     {
         query.first();
         n = query.value("T").toInt();
-        p = gameInfo.limites[0].win;
+        p = onGame.limites[0].win;
         if(n < p){
             return; /// pas assez d'info pour calcul Cnp
         }
@@ -1427,10 +1429,10 @@ bool BPrevision::AnalyserEnsembleTirage(QString InputTable, QString OutputTable,
 
     /// sur quel nom des elements de la zone
     st_OnDef=""; /// remettre a zero pour chacune des zones
-    int znLen = gameInfo.limites[zn].len;
+    int znLen = onGame.limites[zn].len;
     for(int j=0;j<znLen;j++)
     {
-        st_OnDef = st_OnDef + ref.arg(gameInfo.nom[zn].abv).arg(j+1);
+        st_OnDef = st_OnDef + ref.arg(onGame.names[zn].abv).arg(j+1);
         if(j<znLen-1)
             st_OnDef = st_OnDef + " or ";
     }
@@ -1461,7 +1463,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString InputTable, QString OutputTable,
                 colId++;
                 msg = "create " + curTarget
                         +" as select "+curTitle+", tbRight."
-                        +gameInfo.nom[zn].abv+QString::number(colId)+" as "
+                        +onGame.names[zn].abv+QString::number(colId)+" as "
                         + slst[1].at(loop)
                         +" from("+curName+")as tbLeft "
                         +"left join ( "
@@ -1507,19 +1509,19 @@ bool BPrevision::AnalyserEnsembleTirage(QString InputTable, QString OutputTable,
             QString stCombi = "";
             QString stLien = "";
 
-            ref_1 = "(tbLeft.U%1 = tbRight."+gameInfo.nom[zn].abv+"%2)";
+            ref_1 = "(tbLeft.U%1 = tbRight."+onGame.names[zn].abv+"%2)";
             stLien = " and ";
 
-            if(gameInfo.type == eGameEuro && zn == 1){
-                ref_1 = "((tbLeft.U%3 = tbRight."+gameInfo.nom[zn].abv+"%1)"
+            if(onGame.type == eGameEuro && zn == 1){
+                ref_1 = "((tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%1)"
                         +"or"+
-                        "(tbLeft.U%3 = tbRight."+gameInfo.nom[zn].abv+"%2))";
+                        "(tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%2))";
                 stLien = " and ";
             }
 
-            int znLen = gameInfo.limites[zn].len;
+            int znLen = onGame.limites[zn].len;
             for(int pos=0;pos<znLen;pos++){
-                if(gameInfo.type == eGameEuro && zn == 1){
+                if(onGame.type == eGameEuro && zn == 1){
                     stCombi = stCombi
                             + ref_1.arg((pos%2)+1).arg(((pos+1)%2)+1).arg(pos);
 
@@ -1607,7 +1609,7 @@ QStringList * BPrevision::CreateFilterForData(int zn)
     QString fields = "z"+QString::number(zn+1);
 
     ///int maxElems = limites[zn].max;
-    int maxElems = gameInfo.limites[zn].max;
+    int maxElems = onGame.limites[zn].max;
     int nbBoules = floor(maxElems/10)+1;
 
 

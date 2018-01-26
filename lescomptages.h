@@ -17,10 +17,12 @@ class BPrevision;
 
 /// -------ENUM---------
 /// Type de jeu possible d'etudier
+#if 0
 typedef enum _eGame{
     eGameLoto, /// Loto
     eGameEuro  /// Euro million
 }eGame;
+#endif
 
 /// Localisation de la base de donnees
 typedef enum _eBddDest{
@@ -65,6 +67,7 @@ typedef struct
     bool (BPrevision::*pFuncInit)(QString tbName,QSqlQuery *query); /// fonction traitant la creation
 }stCreateTable;
 
+#if 0
 /// Renseignement sur les bornes de la zone a etudier
 typedef struct _stParam_1{
     int min; /// plus petite valeur possible
@@ -79,14 +82,8 @@ typedef struct _stParam_2
     QString abv;    /// abbreviation du nom de la zone
     QString std;    /// nom standard
 }stParam_2;
+#endif
 
-/// Definition d'un jeu
-typedef struct _stGameConf{
-    eGame type; /// type du jeu
-    int nbDef; /// nombre de zones a regarder
-    stParam_1 *limites; /// bornes sur la zone
-    stParam_2 *nom; /// nom de la zone
-}stGameConf;
 
 
 /// -------CLASS---------
@@ -107,7 +104,7 @@ private:
     void effectuerTraitement(eGame game);
 
     bool creerTablesDeLaBase(void);
-    void definirConstantesDuJeu(eGame game);
+    BGame *definirConstantesDuJeu(eGame game);
     bool f1(QString tbName,QSqlQuery *query);
     bool f2(QString tbName,QSqlQuery *query);
     bool f3(QString tbName,QSqlQuery *query);
@@ -129,7 +126,7 @@ private:
     QString DateAnormer(QString input);
     QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
-    void effectuerComptage();
+    void analyserTirages(QString source, const BGame *config);
     bool isTableCnpinDb(int n, int p);
 
 
@@ -141,7 +138,7 @@ private:
     static int total;       /// compteur des objets de cette classe
     QSqlDatabase dbInUse;   /// base de donnees associee a cet objets
     QString dbUseName;      /// nom de la connection
-    stGameConf gameInfo;    /// parametres du jeu
+    BGame onGame;    /// parametres du jeu
     QStringList **slFlt;    /// zn_filters
     QString tblTirages;
     LabelClickable selection[3];

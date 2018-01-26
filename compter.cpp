@@ -80,17 +80,17 @@ void BCount::RecupererConfiguration(void)
         isOk = query.first();
         if (query.isValid())
         {
-            nbZone = query.value(0).toInt();
+            znCount = query.value(0).toInt();
             // J'assume que si la requete retourne qq chose
             // alors il y a au moins une zone existante
-            lesSelections = new QModelIndexList [nbZone];
-            sqlSelection = new QString [nbZone];
-            memo = new int [nbZone];
-            memset(memo,-1, sizeof(int)*nbZone);
+            lesSelections = new QModelIndexList [znCount];
+            sqlSelection = new QString [znCount];
+            memo = new int [znCount];
+            memset(memo,-1, sizeof(int)*znCount);
 
-            names  = new cZonesNames [nbZone];
-            limites = new cZonesLimits [nbZone];
-            sqmZones = new QSqlQueryModel [nbZone];
+            names  = new stParam_2 [znCount];
+            limites = new stParam_1 [znCount];
+            sqmZones = new QSqlQueryModel [znCount];
 
 
             // remplir les infos
@@ -103,17 +103,17 @@ void BCount::RecupererConfiguration(void)
                 isOk = query.first();
                 if (query.isValid())
                 {
-                    for(int i = 0; (i< nbZone) && isOk; i++)
+                    for(int i = 0; (i< znCount) && isOk; i++)
                     {
-                        names[i].selection = "";
-                        names[i].complet = query.value(1).toString();
-                        names[i].court = query.value(2).toString();
+                        names[i].sel = "";
+                        names[i].std = query.value(1).toString();
+                        names[i].abv = query.value(2).toString();
                         limites[i].len = query.value(3).toInt();
                         limites[i].min = query.value(4).toInt();
                         limites[i].max = query.value(5).toInt();
-                        limites[i].neg = query.value(6).toInt();
+                        limites[i].win = query.value(6).toInt();
 
-                        if(i<nbZone-1)
+                        if(i<znCount-1)
                             isOk = query.next();
                     }
                 }
@@ -138,7 +138,7 @@ BCount::BCount(QString *in,QSqlDatabase useDb):BCount(in,useDb,NULL)
 BCount::BCount(QString *in, QSqlDatabase fromDb, QWidget *unParent=0)
     :QWidget(unParent), db_data(*in),dbToUse(fromDb)
 {
-    nbZone = 0;
+    znCount = 0;
     db_jours = "";
     lesSelections = NULL;
     sqlSelection = NULL;
@@ -194,7 +194,7 @@ QString BCount::CriteresCreer(QString critere , QString operateur, int zone)
     int totElements = limites[zone].len;
     for(int i = 0; i<totElements;i++)
     {
-        QString zName = names[zone].court;
+        QString zName = names[zone].abv;
         ret_msg = ret_msg +"tb2.B "+ critere +" tb1."
                 + zName+QString::number(i+1)
                 + " " + operateur+ " ";
@@ -215,7 +215,7 @@ QString BCount::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
 void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
 {
     QModelIndexList indexes = selectionModel->selectedIndexes();
-    QString str_titre = names[zn].court + "[";
+    QString str_titre = names[zn].abv + "[";
 
     int nb_items = indexes.size();
     if(nb_items)
@@ -255,15 +255,15 @@ void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int z
     }
 
     // On sauvegarde la selection en cours
-    names[zn].selection = str_titre;
+    names[zn].sel = str_titre;
 
     // on construit le nouveau titre
     str_titre = "";
     int isVide = 0;
-    for(int i=0; i< nbZone; i++)
+    for(int i=0; i< znCount; i++)
     {
-        if(names[i].selection != ""){
-            str_titre = str_titre + names[i].selection+",";
+        if(names[i].sel != ""){
+            str_titre = str_titre + names[i].sel+",";
         }
         else
         {
@@ -274,7 +274,7 @@ void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int z
     str_titre.remove(str_titre.length()-1,1);
 
     // Tout est deselectionné ?
-    if(isVide == nbZone)
+    if(isVide == znCount)
     {
         str_titre = "Aucun";
     }

@@ -20,7 +20,8 @@ BCnp::BCnp(int n_in, int p_in,QSqlDatabase destBdd, QString Name="My")
     n = n_in;
     p = p_in;
     dbToUse = destBdd;
-    tbName = Name;
+    tbName = Name+"Cnp_"+QString::number(n)
+            + "_" + QString::number(p);
 
     int cnp_v1 = Cardinal_np();
     int cnp_v2 = CalculerCnp_v2();
@@ -69,18 +70,11 @@ int BCnp::BP_count(void)
     return cnp;
 }
 
-#if 0
-bool BP_Cnp::CalculerPascal(void)
+QString BCnp::getDbTblName(void)
 {
-    bool isOK = false;
-
-    if(tab==NULL){
-        isOK = FaireTableauPascal();
-    }
-
-    return isOK;
+    return(tbName);
 }
-#endif
+
 
 void BCnp::BP_ShowPascal(void)
 {
@@ -265,8 +259,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
             && (skipInsert == false))
     {
         /// nom de la table
-        st_table = tbName+"Cnp_"+QString::number(n)
-                + "_" + QString::number(p);
+        st_table = tbName;
 
         /// Verifier si la table existe deja
         msg = "SELECT name FROM sqlite_master "

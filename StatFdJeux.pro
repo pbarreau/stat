@@ -105,7 +105,8 @@ HEADERS  += \
     db_tools.h \
     cnp_AvecRepetition.h \
     cnp_SansRepetition.h \
-    etudierjeux.h
+    etudierjeux.h \
+    game.h
 
 
 FORMS    += mainwindow.ui \

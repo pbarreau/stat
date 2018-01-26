@@ -29,7 +29,7 @@ BCountGroup::BCountGroup(QString in,QStringList** lstCri, QSqlDatabase fromDb):B
     demande = 0;
 
 
-    int nb_zones = nbZone;
+    int nb_zones = znCount;
     //maRef = new  QStringList* [nb_zones] ;
     maRef = lstCri;
     p_qsim_3 = new QStandardItemModel *[nb_zones];
@@ -105,7 +105,7 @@ bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable
     st_OnDef=""; /// remettre a zero pour chacune des zones
     for(int j=0;j<limites[zn].len;j++)
     {
-        st_OnDef = st_OnDef + ref.arg(names[zn].court).arg(j+1);
+        st_OnDef = st_OnDef + ref.arg(names[zn].abv).arg(j+1);
         if(j<(limites[zn].len)-1)
             st_OnDef = st_OnDef + " or ";
     }
@@ -248,7 +248,7 @@ QTableView *BCountGroup::CompterLigne(QString * pName, int zn)
 QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
-    (* pName) = names[zn].court;
+    (* pName) = names[zn].abv;
 
     QString qtv_name = QString::fromLatin1(TB2_SG) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
@@ -518,7 +518,7 @@ void BCountGroup::slot_DecodeTirage(const QModelIndex & index)
 
     QSqlQuery query;
 
-    for(int zn = 0; zn < nbZone;zn ++)
+    for(int zn = 0; zn < znCount;zn ++)
     {
         QStandardItemModel *sqm_tmp = p_qsim_3[zn];
         int nbCol = maRef[zn][0].size();
@@ -747,7 +747,7 @@ void BCountGroup::SqlFromSelection (const QItemSelectionModel *selectionModel, i
 
         // Creation du critere de filtre
         int loop = limites[zn].len;
-        QString tab = "tbz."+names[zn].court;
+        QString tab = "tbz."+names[zn].abv;
         QString scritere = DB_Tools::GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
         if(headName != "T" and headName !="")
         {
@@ -814,7 +814,7 @@ void BCountGroup::slot_RequeteFromSelection(const QModelIndex &index)
 
         if(indexes.size())
         {
-            st_titre = st_titre + names[onglet].selection + "-";
+            st_titre = st_titre + names[onglet].sel + "-";
 
             QModelIndex un_index;
             int curCol = 0;

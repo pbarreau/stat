@@ -36,6 +36,7 @@ public:
     BCnp(int n, int p, QSqlDatabase destBdd);
     BCnp(int n_in, int p_in, QSqlDatabase destBdd, QString Name);
     BCnp(int n_in, int p_in);
+    QString getDbTblName(void);
     ~BCnp();
     int BP_count(void);
     int * BP_getPascalLine(int lineId);
