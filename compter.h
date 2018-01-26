@@ -17,22 +17,21 @@
 #define BMAX_2(a,b) (((a)>(b))?(a):(b))
 #define BMIN_2(a,b) (((a)<(b))?(a):(b))
 
-#define TB2_RZBN    "RZBN"
-#define TB2_RZVA    "RZVA"
-#define TB2_RZ      "RZ"
-#define TB2_BASE    "BASE"
-#define TB2_SE      "SelElemt"  /// Choix de boules dans zone
-#define TB2_SC      "SelComb"  /// Choix de combinaison dans zone
-#define TB2_SG      "SelGrp"  /// Choix de criteres groupement dans zone
+#if 0
+#define C_TBL_6      "SelElemt"  /// Choix de boules dans zone
+#define C_TBL_7      "SelComb"  /// Choix de combinaison dans zone
+#define C_TBL_8      "SelGrp"  /// Choix de criteres groupement dans zone
+#endif
 
-#define C_TBL_1     "Def_zones"
-#define C_TBL_2     "Def_elemt"
-#define C_TBL_3     "Def_fdjeu"
-#define C_TBL_4     "Def_comb"
-#define C_TBL_5     "Cal_def"
-#define C_TBL_6     "SelElemt"
-#define C_TBL_7     "SelComb"
-#define C_TBL_8     "SelGrp"
+#define C_TBL_1     "B_def" /// config du jeu
+#define C_TBL_2     "B_elm" /// constituant des boules
+#define C_TBL_3     "B_fdj" /// Base de tous les tirages
+#define C_TBL_4     "B_cmb" /// Combinaison a appliquer sur zone
+#define C_TBL_5     "ana" /// Resultat analyse des sones de la fdj
+#define C_TBL_6     "U_e"   /// User choice on element
+#define C_TBL_7     "U_c"   /// ..on combinaison
+#define C_TBL_8     "U_g"   /// ..on regroupement
+#define C_TBL_9     "B_grp"   /// ..on regroupement
 
 #define MAX_CHOIX_BOULES    20
 
@@ -53,8 +52,8 @@ class BCount:public QWidget
 {
     Q_OBJECT
 public:
-    BCount(QString *in,QSqlDatabase useDb);
-    BCount(QString *in, QSqlDatabase fromDb, QWidget *unParent);
+    BCount(const BGame &pDef, QString *in, QSqlDatabase useDb);
+    BCount(const BGame &pDef, QString *in, QSqlDatabase fromDb, QWidget *unParent);
 
 protected:
     virtual QGridLayout *Compter(QString * pName, int zn)=0;
@@ -75,17 +74,15 @@ public :
     B_RequeteFromTbv a;
 
 protected:
-    int znCount; /// nombre de zone calculer par la la requete a la base
+    QString db_data;    /// information de tous les tirages
+    QSqlDatabase dbToUse;
+    BGame myGame;
     int *memo;  /// A deplacer :
     QString unNom;  /// Pour Tracer les requetes sql
-    QString db_data;    /// information de tous les tirages
     QString db_jours;   /// information des jours de tirages
-    stParam_2 *names; /// nom a utiliser avec les zones
-    stParam_1 *limites;  /// limites a utiliser sur les zones
     QModelIndexList *lesSelections; /// liste des selections dans les tableaux
     QString *sqlSelection;  /// code sql generee pour un tableau
     QSqlQueryModel *sqmZones; /// pour mettre a jour le tableau des resultats
-    QSqlDatabase dbToUse;
 
 
 public slots:

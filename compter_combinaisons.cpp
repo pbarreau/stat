@@ -24,7 +24,7 @@ BCountComb::~BCountComb()
     total --;
 }
 
-BCountComb::BCountComb(QString in,QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
+BCountComb::BCountComb(const BGame &pDef, QString in, QSqlDatabase fromDb):BCount(pDef,&in,fromDb,NULL)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
@@ -36,13 +36,12 @@ BCountComb::BCountComb(QString in,QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
             &BCountComb::Compter
 
 };
-    ///    &BCountComb::Compter_euro
 
-    int nb_zones = znCount;
+    int nb_zones = myGame.znCount;
     for(int i = 0; i< nb_zones; i++)
     {
         if(i<nb_zones-1)
-            hCommon = CEL2_H * BMAX_2((floor(limites[i].max/10)+1),(floor(limites[i+1].max/10)+1));
+            hCommon = CEL2_H * BMAX_2((floor(myGame.limites[i].max/10)+1),(floor(myGame.limites[i+1].max/10)+1));
 
         QString *name = new QString;
         QWidget *tmpw = new QWidget;
@@ -125,7 +124,7 @@ void BCountComb::LabelFromSelection(const QItemSelectionModel *selectionModel, i
     str_titre = str_titre +"]";
 
     // informer disponibilité
-    names[zn].sel = str_titre;
+    myGame.names[zn].sel = str_titre;
     emit sig_TitleReady(str_titre);
 }
 
@@ -193,7 +192,7 @@ void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
                     sqlSelection[onglet]+ "/* FIN CRITERE z_"+
                     QString::number(onglet+1)+ "*/)and";
         }
-        st_titre = st_titre + names[onglet].sel;
+        st_titre = st_titre + myGame.names[onglet].sel;
     }
 
     /// suppression du dernier 'and'
@@ -212,14 +211,25 @@ void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
 
 QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int dst)
 {
-    QString stTbAnalyse = "Ref"
-            +QString::number(zn+1)
-            +"_Cal_def_"
-            +QString::number(zn+1);
-    QString arg1 = "tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T, "
+    QString stTbAnalyse = C_TBL_5;
+    QString Def_comb = C_TBL_4;
+    QString SelComb = C_TBL_7;
+    QString prefix = "";
+
+    if(myGame.from == eFdj)
+    {
+      prefix = "B_";
+    }
+    else
+    {
+      prefix = st_baseUse+"_";
+    }
+    stTbAnalyse = prefix+stTbAnalyse + "_z"+QString::number(zn+1);
+
+    QString arg1 = "tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T "
             + db_jours+
             ",count(CASE when tbRight.id == 1 then 1 end) as L";
-    QString arg2 = "select id,tip from Def_comb_z"+QString::number(zn+1);
+    QString arg2 = "select id,tip from "+Def_comb+"_z"+QString::number(zn+1);
 
     QString arg3 = "select tb2.*,tb3.idComb from "
                    "("
@@ -251,7 +261,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
 
     arg1 = "tbLeft.*,(tbLeft.L | (case when (tbRight.f==1) then 0x2 else tbLeft.L end))as F ";
     arg2 = st_msg1;
-    arg3 = " select * from SelComb_z"+QString::number(zn+1);
+    arg3 = " select * from "+SelComb+"_z"+QString::number(zn+1);
     arg4 = "tbLeft.id = tbRight.val";
 
     args.arg1 = arg1;
@@ -266,6 +276,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
     return    st_msg1 ;
 }
 
+#if 0
 QString BCountComb::RequetePourTrouverTotal_z2(QString st_baseUse,int zn)
 {
     QString st_criteres = ConstruireCriteres(zn);
@@ -276,7 +287,7 @@ QString BCountComb::RequetePourTrouverTotal_z2(QString st_baseUse,int zn)
             " "
             "from  "
             "("
-            +"MyCnp_"+QString::number(limites[zn].max)+"_"+QString::number(limites[zn].len)+
+            +"MyCnp_"+QString::number(myGame.limites[zn].max)+"_"+QString::number(myGame.limites[zn].len)+
             ") as tb1 "
             "left join "
             "("
@@ -313,6 +324,7 @@ QString BCountComb::RequetePourTrouverTotal_z2(QString st_baseUse,int zn)
 
     return    st_msg1 ;
 }
+#endif
 
 QString BCountComb::ConstruireCriteres(int zn)
 {
@@ -320,7 +332,7 @@ QString BCountComb::ConstruireCriteres(int zn)
     QString msg = "";
 
     /// recuperer le nombre de boules constituant la zone
-    int lenZn = limites[zn].len;
+    int lenZn = myGame.limites[zn].len;
 
     /// caculer le nombre de maniere distincte
     /// de prendre 1 dans l'ensemble
@@ -344,7 +356,7 @@ QString BCountComb::ConstruireCriteres(int zn)
         /// construire la requete sur ce champs
         int loop = lenZn;
         QStringList lstChamps;
-        lstChamps << "tb2."+names[zn].abv;
+        lstChamps << "tb2."+myGame.names[zn].abv;
         msg = msg + DB_Tools::GEN_Where_3(loop,tab1,false,"=",lstChamps,true,"or");
         if(i<lenZn-1)
             msg = msg + "and";
@@ -358,11 +370,11 @@ QString BCountComb::ConstruireCriteres(int zn)
 QGridLayout *BCountComb::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
-    (* pName) = names[zn].abv;
+    (* pName) = myGame.names[zn].abv;
 
     QTableView *qtv_tmp = new QTableView;
 
-    QString qtv_name = QString::fromLatin1(TB2_SC) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(C_TBL_7) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];
@@ -447,10 +459,11 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
     return lay_return;
 }
 
+#if 0
 QGridLayout *BCountComb::Compter_euro(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
-    (* pName) = names[zn].abv;
+    (* pName) = myGame.names[zn].abv;
 
     QTableView *qtv_tmp = new QTableView;
 
@@ -512,7 +525,7 @@ QGridLayout *BCountComb::Compter_euro(QString * pName, int zn)
     QFormLayout *FiltreLayout = new QFormLayout;
     FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
     QList<qint32> colid;
-    for(int i=0; i<limites[zn].len; i++)
+    for(int i=0; i<myGame.limites[zn].len; i++)
     {
         colid << i+2;
     }
@@ -525,3 +538,4 @@ QGridLayout *BCountComb::Compter_euro(QString * pName, int zn)
 
     return lay_return;
 }
+#endif

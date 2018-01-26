@@ -569,7 +569,7 @@ void SyntheseGenerale::DoTirages(void)
     cLesComptages *tous = new cLesComptages(st_table);
 
     /// -------------------------------------
- #endif
+#endif
 
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
@@ -731,7 +731,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
 
     int zn = 1;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(TB2_SE) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     //tbv_bloc1_2 = new QTableView;
@@ -845,7 +845,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 
     int zn = 0;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(TB2_SC) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(C_TBL_7) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
@@ -1005,7 +1005,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
     int zn = 0;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(TB2_SE) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     //tbv_bloc1_1 = new QTableView;
@@ -1418,7 +1418,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 
     QTableView *qtv_tmp = new QTableView;
     QString qtv_name = "";
-    qtv_name = QString::fromLatin1(TB2_SG) +
+    qtv_name = QString::fromLatin1(C_TBL_8) +
             QString::fromLatin1("_z")
             +QString::number(zone+1);
     qtv_tmp->setObjectName(qtv_name);

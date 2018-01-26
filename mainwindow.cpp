@@ -79,8 +79,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         ///
         ///
         QString st_table = REF_BASE;
-        //tous = new BPrevision(eGameLoto,eBddUseDisk);
-        tous = new BPrevision(eGameEuro,eBddUseDisk);
+        //tous = new BPrevision(eGameLoto,eFdj,eBddUseDisk);
+        tous = new BPrevision(eGameEuro,eFdj,eBddUseDisk);
         connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_AppliquerFiltres()));
 
 

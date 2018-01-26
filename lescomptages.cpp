@@ -38,9 +38,10 @@ void BPrevision::slot_changerTitreZone(QString le_titre)
     selection[0].setText("Z:"+le_titre);
 }
 
-BPrevision::BPrevision(eGame game, eBddUse def)
+BPrevision::BPrevision(eGame game, eFrom from, eBddUse def)
 {
     onGame.type = game;
+    onGame.from = from;
     if(ouvrirBase(def,game)==true)
     {
         effectuerTraitement(game);
@@ -48,6 +49,7 @@ BPrevision::BPrevision(eGame game, eBddUse def)
     }
 }
 
+#if 0
 BPrevision::BPrevision(eGame game, eBddUse def, QString stLesTirages)
 {
     Q_UNUSED(stLesTirages)
@@ -59,6 +61,7 @@ BPrevision::BPrevision(eGame game, eBddUse def, QString stLesTirages)
         //dbInUse.close(); /// Autrement les requetes donnent base fermee
     }
 }
+#endif
 
 /// Cette fonction ouvre la base en memoire ou sur disque
 /// sur disque l'on nomme le fichier de maniere unique selon
@@ -161,11 +164,9 @@ bool BPrevision::OPtimiseAccesBase(void)
 
 void BPrevision::effectuerTraitement(eGame game)
 {
-    BGame *gameDef = NULL;
-
-    gameDef = definirConstantesDuJeu(game);
+    definirConstantesDuJeu(game);
     creerTablesDeLaBase();
-    analyserTirages(C_TBL_3, gameDef);
+    analyserTirages(C_TBL_3, onGame);
 
 }
 
@@ -175,6 +176,8 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
     /// une pour les boules
     /// une pour les etoiles
     onGame.znCount = 2; /// boules + etoiles
+    //onGame.type = game;
+    //onGame.from = eFdj;
 
     switch(game)
     {
@@ -568,11 +571,20 @@ bool BPrevision::f5(QString tb, QSqlQuery *query)
     bool isOk = true;
     int nbZone = onGame.znCount;
     slFlt = new  QStringList* [nbZone] ;
+    QString tbUse = "";
+
+    if(onGame.from == eFdj){
+        tbUse = "B_"+tb;
+    }
+    else
+    {
+        tbUse = "U_"+tb;
+    }
 
     for (int zn=0;(zn < nbZone) && isOk;zn++ )
     {
         slFlt[zn] = CreateFilterForData(zn);
-        QString tbReponses = tb + "_" + QString::number(zn+1);
+        QString tbReponses = tbUse + "_z" + QString::number(zn+1);
         isOk = AnalyserEnsembleTirage(tblTirages,tbReponses,zn);
         if(isOk)
             isOk = FaireTableauSynthese(tbReponses,zn);
@@ -620,9 +632,11 @@ bool BPrevision::FaireTableauSynthese(QString InputTable, int zn)
     QString msg = "";
     QSqlQuery query(dbInUse);
     QString stDefBoules = C_TBL_2;
-    QString stCurTable = "Ref"+QString::number(zn+1)+"_"+InputTable;
+    //QString stCurTable = "Ref"+QString::number(zn+1)+"_"+InputTable;
+    QString stCurTable = InputTable;
     QString prvName = "";
     QString curName  ="";
+    QString TblCompact = C_TBL_9;
 
     /// Verifier si des tables existent deja
     if(SupprimerVueIntermediaires())
@@ -664,7 +678,7 @@ bool BPrevision::FaireTableauSynthese(QString InputTable, int zn)
         }
         /// Rajouter a la fin une colonne pour fitrage
         if(isOk){
-            msg = "create table if not exists TblCompact_z"
+            msg = "create table if not exists "+TblCompact+"_z"
                     + QString::number(zn+1)
                     +" as select tb1.*, NULL as F from ("+curName+") as tb1";
 #ifndef QT_NO_DEBUG
@@ -842,6 +856,8 @@ bool BPrevision::TraitementCodeTblCombi(QString tbName,int zn)
     return isOk;
 }
 
+/// Creer une table intermediaire
+/// Def_comb_z2Cnp_12_2
 bool BPrevision::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn)
 {
     bool isOk = true;
@@ -901,7 +917,7 @@ bool BPrevision::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn)
             if(isOk){
                 /// Supprimer la table Cnp
                 msg = "drop table if exists "+tbCnp;
-                //isOk = query.exec(msg);
+                isOk = query.exec(msg);
             }
         }
 
@@ -1223,16 +1239,16 @@ QString BPrevision::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
     return retval;
 }
 
-void BPrevision::analyserTirages(QString source,const BGame *config)
+void BPrevision::analyserTirages(QString source,const BGame &config)
 {
     QWidget * Resultats = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
 
-    BCountElem *c1 = new BCountElem(source,dbInUse,Resultats);
+    BCountElem *c1 = new BCountElem(config,source,dbInUse,Resultats);
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
 
-    BCountComb *c2 = new BCountComb(source,dbInUse);
-    BCountGroup *c3 = new BCountGroup(source,slFlt,dbInUse);
+    BCountComb *c2 = new BCountComb(config,source,dbInUse);
+    BCountGroup *c3 = new BCountGroup(config,source,slFlt,dbInUse);
 
     QGridLayout **pConteneur = new QGridLayout *[3];
     QWidget **pMonTmpWidget = new QWidget * [3];
@@ -1283,6 +1299,7 @@ void BPrevision::slot_AppliquerFiltres()
     QSqlQuery query(dbInUse);
     bool isOk = true;
     QString msg = "";
+    QString SelElemt = C_TBL_6;
     BCnp *a = NULL;
     int n = 0;
     int p = 0;
@@ -1290,7 +1307,7 @@ void BPrevision::slot_AppliquerFiltres()
     /// Selectionner les boules choisi par l'utilisateur pour en faire
     /// un ensemble d'etude
     ///
-    msg = "select count(choix.p)  as T from SelElemt_z1 as Choix where(choix.p=1);";
+    msg = "select count(choix.p)  as T from "+SelElemt+"_z1 as Choix where(choix.p=1);";
     isOk = query.exec(msg);
     if(isOk)
     {
@@ -1313,26 +1330,46 @@ void BPrevision::slot_AppliquerFiltres()
                 isOk = query.exec(msg);
                 if(isOk){
                     /// Creer une liste de jeux possibles
-                    ///  en fonction selection ulitisteur
-                    msg = ListeDesJeux(0,n,p);
-                    msg = "create view if not exists E1 as "
-                            +msg;
-                    isOk = query.exec(msg);
+                    creerJeuxUtilisateur(n,p);
                 }
             }
         }
 
     }
 
-
-    ///msg = "Select tb1.val from tt where (f not null and p=1) desc;";
-    ///CREATE TABLE equipments_backup AS SELECT * FROM  Cnp_7_5
-    /// https://stackoverflow.com/questions/2361921/select-into-statement-in-sqlite
-
 #ifndef QT_NO_DEBUG
     qDebug() <<msg;
 #endif
+}
 
+void BPrevision::creerJeuxUtilisateur(int n, int p)
+{
+    bool isOk = false;
+    QSqlQuery query(dbInUse);
+    QString msg = "";
+    QString source = "E1";
+
+    BGame monJeu;
+
+    monJeu.type = onGame.type;
+    monJeu.from = eUsr;
+    monJeu.znCount = 1;
+    monJeu.limites = &(onGame.limites[0]);
+    monJeu.names = &(onGame.names[0]);
+
+
+    msg = ListeDesJeux(0,n,p);
+#ifndef QT_NO_DEBUG
+    qDebug() << "msg: " <<msg;
+#endif
+
+    msg = "create view if not exists "+source+" as "
+            +msg;
+    isOk = query.exec(msg);
+
+    analyserTirages(source,monJeu);
+
+    isOk = true;
 
 }
 
@@ -1365,7 +1402,7 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
     /// clause left
     QString msg2 = "";
     loop = len;
-    QString tbSel = "SelElemt";
+    QString tbSel = C_TBL_6;
     ref = "(select tbChoix.id, tbChoix.val from "
             +tbSel
             +"_z"+QString::number(zn+1)
@@ -1495,7 +1532,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString InputTable, QString OutputTable,
             }
             else
             {
-                curTarget = "table vrz"+QString::number(zn+1)+"_"+OutputTable;
+                curTarget = "view vrz"+QString::number(zn+1)+"_"+OutputTable;
                 curTitle = lastTitle;
             }
         }while(loop < nbTot && isOk);
@@ -1533,9 +1570,9 @@ bool BPrevision::AnalyserEnsembleTirage(QString InputTable, QString OutputTable,
                     stCombi = stCombi + stLien;
             }
 
-            curTarget = curTarget.remove("table");
-            msg = "create table Ref"
-                    +QString::number(zn+1)+"_"+OutputTable
+            //curTarget = curTarget.remove("table");
+            curTarget = curTarget.remove("view");
+            msg = "create table "+OutputTable
                     +" as select tbLeft.*,tbRight.id as idComb  from ("
                     +curTarget+")as tbLeft left join ("
                     + C_TBL_4 "_z"+QString::number(zn+1)
@@ -1543,15 +1580,25 @@ bool BPrevision::AnalyserEnsembleTirage(QString InputTable, QString OutputTable,
                     + stCombi
                     +")"
                     ;
-#ifndef QT_NO_DEBUG
-            qDebug() << "msg:"<<msg;
+#if 0
+            Ref"
+                    +QString::number(zn+1)+"_
+        #endif
+
+        #ifndef QT_NO_DEBUG
+                    qDebug() << "msg:"<<msg;
 #endif
             isOk = query.exec(msg);
         }
 
         /// supression tables intermediaires
-        if(isOk)
-            isOk = SupprimerVueIntermediaires();
+        if(isOk){
+            msg = "drop view if exists " + curTarget;
+            isOk= query.exec(msg);
+
+            if(isOk)
+                isOk = SupprimerVueIntermediaires();
+        }
     }
 
     if(!isOk)

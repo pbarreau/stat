@@ -93,8 +93,8 @@ class BPrevision:public QGridLayout
 
     /// in : infos representant les tirages
 public:
-    BPrevision(eGame game, eBddUse def);
-    BPrevision(eGame game, eBddUse def, QString stLesTirages);
+    BPrevision(eGame game, eFrom from, eBddUse def);
+    //BPrevision(eGame game, eBddUse def, QString stLesTirages);
     ~BPrevision();
 
 private:
@@ -126,8 +126,9 @@ private:
     QString DateAnormer(QString input);
     QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
-    void analyserTirages(QString source, const BGame *config);
+    void analyserTirages(QString source, const BGame &config);
     bool isTableCnpinDb(int n, int p);
+    void creerJeuxUtilisateur(int n, int p);
 
 
 public slots:

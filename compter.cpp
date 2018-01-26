@@ -23,15 +23,11 @@ void BCount::CreerCritereJours(void)
     QString st_table = "J";
     bool status = false;
 
-#if 0
-    if(db_data == TB2_BASE){
-        st_table =  "jour_tirage";
+    if(myGame.from == eUsr){
+        db_jours = "";
+        return;
     }
-    else
-    {
-        st_table = "J";
-    }
-#endif
+
     msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
             db_data+") as tb1 order by J asc;";
 
@@ -63,7 +59,7 @@ void BCount::CreerCritereJours(void)
 #endif
 
     query.finish();
-    db_jours = st_tmp;
+    db_jours = ","+st_tmp;
 }
 
 void BCount::RecupererConfiguration(void)
@@ -80,17 +76,17 @@ void BCount::RecupererConfiguration(void)
         isOk = query.first();
         if (query.isValid())
         {
-            znCount = query.value(0).toInt();
+            myGame.znCount = query.value(0).toInt();
             // J'assume que si la requete retourne qq chose
             // alors il y a au moins une zone existante
-            lesSelections = new QModelIndexList [znCount];
-            sqlSelection = new QString [znCount];
-            memo = new int [znCount];
-            memset(memo,-1, sizeof(int)*znCount);
+            lesSelections = new QModelIndexList [myGame.znCount];
+            sqlSelection = new QString [myGame.znCount];
+            memo = new int [myGame.znCount];
+            memset(memo,-1, sizeof(int)*myGame.znCount);
 
-            names  = new stParam_2 [znCount];
-            limites = new stParam_1 [znCount];
-            sqmZones = new QSqlQueryModel [znCount];
+            myGame.names  = new stParam_2 [myGame.znCount];
+            myGame.limites = new stParam_1 [myGame.znCount];
+            sqmZones = new QSqlQueryModel [myGame.znCount];
 
 
             // remplir les infos
@@ -103,17 +99,17 @@ void BCount::RecupererConfiguration(void)
                 isOk = query.first();
                 if (query.isValid())
                 {
-                    for(int i = 0; (i< znCount) && isOk; i++)
+                    for(int i = 0; (i< myGame.znCount) && isOk; i++)
                     {
-                        names[i].sel = "";
-                        names[i].std = query.value(1).toString();
-                        names[i].abv = query.value(2).toString();
-                        limites[i].len = query.value(3).toInt();
-                        limites[i].min = query.value(4).toInt();
-                        limites[i].max = query.value(5).toInt();
-                        limites[i].win = query.value(6).toInt();
+                        myGame.names[i].sel = "";
+                        myGame.names[i].std = query.value(1).toString();
+                        myGame.names[i].abv = query.value(2).toString();
+                        myGame.limites[i].len = query.value(3).toInt();
+                        myGame.limites[i].min = query.value(4).toInt();
+                        myGame.limites[i].max = query.value(5).toInt();
+                        myGame.limites[i].win = query.value(6).toInt();
 
-                        if(i<znCount-1)
+                        if(i<myGame.znCount-1)
                             isOk = query.next();
                     }
                 }
@@ -131,23 +127,34 @@ void BCount::RecupererConfiguration(void)
 
 }
 
-BCount::BCount(QString *in,QSqlDatabase useDb):BCount(in,useDb,NULL)
+BCount::BCount(const BGame &pDef, QString *in, QSqlDatabase useDb):BCount(pDef,in,useDb,NULL)
 {
 }
 
-BCount::BCount(QString *in, QSqlDatabase fromDb, QWidget *unParent=0)
+BCount::BCount(const BGame &pDef,QString *in, QSqlDatabase fromDb, QWidget *unParent=0)
     :QWidget(unParent), db_data(*in),dbToUse(fromDb)
 {
-    znCount = 0;
+    bool useRequete = false;
     db_jours = "";
     lesSelections = NULL;
     sqlSelection = NULL;
     memo = NULL;
-    names = NULL;
-    limites = NULL;
     sqmZones = NULL;
+    myGame = pDef;
 
-    RecupererConfiguration();
+
+    if(useRequete){
+        RecupererConfiguration();
+    }
+    else{
+        memo = new int [myGame.znCount];
+        memset(memo,-1, sizeof(int)*myGame.znCount);
+
+        lesSelections = new QModelIndexList [myGame.znCount];
+        sqlSelection = new QString [myGame.znCount];
+        sqmZones = new QSqlQueryModel [myGame.znCount];
+
+    }
     CreerCritereJours();
 }
 
@@ -191,10 +198,10 @@ QString BCount::CriteresCreer(QString critere , QString operateur, int zone)
 
     // Operateur : or | and
     // critere : = | <>
-    int totElements = limites[zone].len;
+    int totElements = myGame.limites[zone].len;
     for(int i = 0; i<totElements;i++)
     {
-        QString zName = names[zone].abv;
+        QString zName = myGame.names[zone].abv;
         ret_msg = ret_msg +"tb2.B "+ critere +" tb1."
                 + zName+QString::number(i+1)
                 + " " + operateur+ " ";
@@ -215,7 +222,7 @@ QString BCount::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
 void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
 {
     QModelIndexList indexes = selectionModel->selectedIndexes();
-    QString str_titre = names[zn].abv + "[";
+    QString str_titre = myGame.names[zn].abv + "[";
 
     int nb_items = indexes.size();
     if(nb_items)
@@ -255,15 +262,15 @@ void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int z
     }
 
     // On sauvegarde la selection en cours
-    names[zn].sel = str_titre;
+    myGame.names[zn].sel = str_titre;
 
     // on construit le nouveau titre
     str_titre = "";
     int isVide = 0;
-    for(int i=0; i< znCount; i++)
+    for(int i=0; i< myGame.znCount; i++)
     {
-        if(names[i].sel != ""){
-            str_titre = str_titre + names[i].sel+",";
+        if(myGame.names[i].sel != ""){
+            str_titre = str_titre + myGame.names[i].sel+",";
         }
         else
         {
@@ -274,7 +281,7 @@ void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int z
     str_titre.remove(str_titre.length()-1,1);
 
     // Tout est deselectionné ?
-    if(isVide == znCount)
+    if(isVide == myGame.znCount)
     {
         str_titre = "Aucun";
     }

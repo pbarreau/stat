@@ -7,6 +7,11 @@ typedef enum _eGame{
     eGameEuro  /// Euro million
 }eGame;
 
+typedef enum _eGoal{
+    eFdj, /// le jeu e
+    eUsr
+}eFrom;
+
 typedef struct _stParam_2 {
     QString std;    /// nom long de la zone
     QString abv;    /// nom abreg de la zone
@@ -23,6 +28,7 @@ typedef struct _stParam_1{
 /// Definition d'un jeu
 typedef struct _stGameConf{
     eGame type; /// type du jeu
+    eFrom from; /// origine
     int znCount; /// nombre de zones a regarder
     stParam_1 *limites; /// bornes sur la zone
     stParam_2 *names; /// nom de la zone

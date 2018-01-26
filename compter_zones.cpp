@@ -29,13 +29,13 @@ BCountElem::~BCountElem()
     total --;
 }
 
-BCountElem::BCountElem(QString in, QSqlDatabase fromDb,QWidget *LeParent):BCount(&in,fromDb,LeParent)
+BCountElem::BCountElem(const BGame &pDef, QString in, QSqlDatabase fromDb, QWidget *LeParent):BCount(pDef,&in,fromDb,LeParent)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
     unNom = "'Compter Zones'";
 
-    int nb_zones = znCount;
+    int nb_zones = myGame.znCount;
 
 
     QGridLayout *(BCountElem::*ptrFunc[])(QString *, int) =
@@ -48,7 +48,7 @@ BCountElem::BCountElem(QString in, QSqlDatabase fromDb,QWidget *LeParent):BCount
     for(int i = 0; i< nb_zones; i++)
     {
         if(i<nb_zones-1)
-            hCommon = CEL2_H * BMAX_2((floor(limites[i].max/10)+1),(floor(limites[i+1].max/10)+1));
+            hCommon = CEL2_H * BMAX_2((floor(myGame.limites[i].max/10)+1),(floor(myGame.limites[i+1].max/10)+1));
 
         QString *name = new QString;
         QWidget *tmpw = new QWidget;
@@ -135,10 +135,10 @@ void BCountElem::slot_ClicDeSelectionTableau(const QModelIndex &index)
 
     //  choix Maxi atteind ?
     int nb_items = selectionModel->selectedIndexes().size();
-    if(nb_items > limites[tab_index].len)
+    if(nb_items > myGame.limites[tab_index].len)
     {
         //un message d'information
-        QMessageBox::warning(0, names[tab_index].std, "Attention, maximum element atteind !",QMessageBox::Yes);
+        QMessageBox::warning(0, myGame.names[tab_index].std, "Attention, maximum element atteind !",QMessageBox::Yes);
 
         // deselectionner l'element
         selectionModel->select(index, QItemSelectionModel::Deselect);
@@ -185,8 +185,8 @@ void BCountElem::SqlFromSelection (const QItemSelectionModel *selectionModel, in
         }
 
         // Creation du critere de filtre
-        int loop = limites[zn].len;
-        QString tab = "tbz."+names[zn].abv;
+        int loop = myGame.limites[zn].len;
+        QString tab = "tbz."+myGame.names[zn].abv;
         QString scritere = DB_Tools::GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
         if(headName != "T" and headName !="")
         {
@@ -215,7 +215,7 @@ void BCountElem::slot_RequeteFromSelection(const QModelIndex &index)
                     sqlSelection[onglet]+ "/* FIN CRITERE z_"+
                     QString::number(onglet+1)+ "*/)and";
         }
-        st_titre = st_titre + names[onglet].sel;
+        st_titre = st_titre + myGame.names[onglet].sel;
     }
 
     /// suppression du dernier 'and'
@@ -238,7 +238,7 @@ void BCountElem::slot_RequeteFromSelection(const QModelIndex &index)
 QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 {
     QString msg = "";
-
+    QString SelElemt = C_TBL_6;
     QString st_cri_all = "";
     QStringList boules;
 
@@ -257,12 +257,12 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
         }
     }
 
-    boules<< "tbright."+names[zn].abv;
-    int loop = limites[zn].len;
+    boules<< "tbright."+myGame.names[zn].abv;
+    int loop = myGame.limites[zn].len;
     st_cri_all= st_cri_all +DB_Tools::GEN_Where_3(loop,"tbleft.boule",false,"=",boules,true,"or");
     boules.clear();
 
-    QString arg1 = "tbleft.boule as B, count(tbright.id) as T, "
+    QString arg1 = "tbleft.boule as B, count(tbright.id) as T "
             +db_jours;
     QString arg2 ="select id as boule from "
             +QString::fromLatin1(C_TBL_2)+" where (z"
@@ -294,7 +294,7 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     /// on rajoute une colone pour la couleur
     arg1 = "tbLeft.*,(case when (tbRight.f==1) then 0x2 end)as F ";
     arg2 = msg;
-    arg3 = " select * from SelElemt_z"+QString::number(zn+1);
+    arg3 = " select * from "+SelElemt+"_z"+QString::number(zn+1);
     arg4 = "tbLeft.B = tbRight.val";
 
     args.arg1 = arg1;
@@ -315,9 +315,9 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     QGridLayout *lay_return = new QGridLayout;
 
     QTableView *qtv_tmp = new QTableView;
-    (* pName) = names[zn].abv;
+    (* pName) = myGame.names[zn].abv;
 
-    QString qtv_name = QString::fromLatin1(TB2_SE) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];

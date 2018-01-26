@@ -21,7 +21,7 @@ BCountGroup::~BCountGroup()
     total --;
 }
 
-BCountGroup::BCountGroup(QString in,QStringList** lstCri, QSqlDatabase fromDb):BCount(&in,fromDb,NULL)
+BCountGroup::BCountGroup(const BGame &pDef, QString in, QStringList** lstCri, QSqlDatabase fromDb):BCount(pDef,&in,fromDb,NULL)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
@@ -29,8 +29,7 @@ BCountGroup::BCountGroup(QString in,QStringList** lstCri, QSqlDatabase fromDb):B
     demande = 0;
 
 
-    int nb_zones = znCount;
-    //maRef = new  QStringList* [nb_zones] ;
+    int nb_zones = myGame.znCount;
     maRef = lstCri;
     p_qsim_3 = new QStandardItemModel *[nb_zones];
 
@@ -103,10 +102,10 @@ bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable
 
     /// sur quel nom des elements de la zone
     st_OnDef=""; /// remettre a zero pour chacune des zones
-    for(int j=0;j<limites[zn].len;j++)
+    for(int j=0;j<myGame.limites[zn].len;j++)
     {
-        st_OnDef = st_OnDef + ref.arg(names[zn].abv).arg(j+1);
-        if(j<(limites[zn].len)-1)
+        st_OnDef = st_OnDef + ref.arg(myGame.names[zn].abv).arg(j+1);
+        if(j<(myGame.limites[zn].len)-1)
             st_OnDef = st_OnDef + " or ";
     }
 
@@ -248,16 +247,17 @@ QTableView *BCountGroup::CompterLigne(QString * pName, int zn)
 QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
-    (* pName) = names[zn].abv;
+    (* pName) = myGame.names[zn].abv;
+    QString TblCompact = C_TBL_9;
 
-    QString qtv_name = QString::fromLatin1(TB2_SG) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(C_TBL_8) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];
 
 
 
-    QString sql_msgRef = "select * from TblCompact_z"+QString::number(zn+1);
+    QString sql_msgRef = "select * from "+TblCompact+"_z"+QString::number(zn+1);
 #ifndef QT_NO_DEBUG
     qDebug() << "SQL:"<<sql_msgRef;
 #endif
@@ -294,7 +294,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     qtv_tmp->setFixedWidth(L);
 
 
-    int h = ((limites[zn].len+2)*(qtv_tmp->rowHeight(1)))+(CEL2_H/2);
+    int h = ((myGame.limites[zn].len+2)*(qtv_tmp->rowHeight(1)))+(CEL2_H/2);
     qtv_tmp->setFixedHeight(h);
 
     // positionner le tableau
@@ -420,7 +420,7 @@ void BCountGroup::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tm
     for(int j=0; (j< nbCol) && (status == true);j++)
     {
         //Effacer calcul precedent
-        for(int k=0; k<limites[zn].len+1;k++)
+        for(int k=0; k<myGame.limites[zn].len+1;k++)
         {
             QStandardItem * item_1 = sqm_tmp->item(k,j+1);
             item_1->setData("",Qt::DisplayRole);
@@ -518,7 +518,7 @@ void BCountGroup::slot_DecodeTirage(const QModelIndex & index)
 
     QSqlQuery query;
 
-    for(int zn = 0; zn < znCount;zn ++)
+    for(int zn = 0; zn < myGame.znCount;zn ++)
     {
         QStandardItemModel *sqm_tmp = p_qsim_3[zn];
         int nbCol = maRef[zn][0].size();
@@ -564,7 +564,7 @@ QStringList * BCountGroup::CreateFilterForData(int zn)
     QString fields = "z"+QString::number(zn+1);
 
     //int maxElems = pConf->limites[zn].max;
-    int maxElems = limites[zn].max;
+    int maxElems = myGame.limites[zn].max;
     int nbBoules = floor(maxElems/10)+1;
 
 
@@ -746,8 +746,8 @@ void BCountGroup::SqlFromSelection (const QItemSelectionModel *selectionModel, i
         }
 
         // Creation du critere de filtre
-        int loop = limites[zn].len;
-        QString tab = "tbz."+names[zn].abv;
+        int loop = myGame.limites[zn].len;
+        QString tab = "tbz."+myGame.names[zn].abv;
         QString scritere = DB_Tools::GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
         if(headName != "T" and headName !="")
         {
@@ -814,7 +814,7 @@ void BCountGroup::slot_RequeteFromSelection(const QModelIndex &index)
 
         if(indexes.size())
         {
-            st_titre = st_titre + names[onglet].sel + "-";
+            st_titre = st_titre + myGame.names[onglet].sel + "-";
 
             QModelIndex un_index;
             int curCol = 0;

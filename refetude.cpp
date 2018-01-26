@@ -624,7 +624,7 @@ bool VerifierValeur(int item, QString table,int idColValue,int *lev)
 QTableView *RefEtude::tbForBaseEcart(int zn)
 {
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(TB2_SE) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(C_TBL_6) + "_z"+ QString::number(zn+1);
 
     int nb_lgn = p_conf->limites[zn].max;
     QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,5);
