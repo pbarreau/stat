@@ -164,9 +164,12 @@ bool BPrevision::OPtimiseAccesBase(void)
 
 void BPrevision::effectuerTraitement(eGame game)
 {
+    QString source = C_TBL_3;
+    source = "B_" + source;
+
     definirConstantesDuJeu(game);
     creerTablesDeLaBase();
-    analyserTirages(C_TBL_3, onGame);
+    analyserTirages(source, onGame);
 
 }
 
@@ -419,7 +422,7 @@ bool BPrevision::f2(QString tbName,QSqlQuery *query)
     return isOk;
 }
 
-bool BPrevision::f3(QString tbName,QSqlQuery *query)
+bool BPrevision::f3(QString tb,QSqlQuery *query)
 {
     bool isOk= true;
     QString msg = "";
@@ -427,6 +430,7 @@ bool BPrevision::f3(QString tbName,QSqlQuery *query)
     QString cAsDef = ""; /// column as def
 
     /// Cette table contient tous les tirages
+    QString tbName = "B_" + tb;
     tblTirages =  tbName;
 
     int totDef=onGame.znCount;
@@ -572,22 +576,18 @@ bool BPrevision::f5(QString tb, QSqlQuery *query)
     int nbZone = onGame.znCount;
     slFlt = new  QStringList* [nbZone] ;
     QString tbUse = "";
+    QString source = "";
+    QString destination ="";
 
-    if(onGame.from == eFdj){
-        tbUse = "B_"+tb;
-    }
-    else
-    {
-        tbUse = "U_"+tb;
-    }
+    destination = "B_"+tb;
+    source = tblTirages;
 
     for (int zn=0;(zn < nbZone) && isOk;zn++ )
     {
         slFlt[zn] = CreateFilterForData(zn);
-        QString tbReponses = tbUse + "_z" + QString::number(zn+1);
-        isOk = AnalyserEnsembleTirage(tblTirages,tbReponses,zn);
+        isOk = AnalyserEnsembleTirage(source,zn);
         if(isOk)
-            isOk = FaireTableauSynthese(tbReponses,zn);
+            isOk = FaireTableauSynthese(destination,zn);
     }
 
     if(!isOk)
@@ -626,18 +626,18 @@ bool BPrevision::f6(QString tb, QSqlQuery *query)
     return isOk;
 }
 
-bool BPrevision::FaireTableauSynthese(QString InputTable, int zn)
+bool BPrevision::FaireTableauSynthese(QString tblIn, int zn)
 {
     bool isOk = true;
     QString msg = "";
     QSqlQuery query(dbInUse);
     QString stDefBoules = C_TBL_2;
-    //QString stCurTable = "Ref"+QString::number(zn+1)+"_"+InputTable;
-    QString stCurTable = InputTable;
     QString prvName = "";
     QString curName  ="";
     QString TblCompact = C_TBL_9;
 
+    QString tblToUse = tblIn + "_z"+QString::number(zn+1);
+    QString stCurTable = tblToUse;
     /// Verifier si des tables existent deja
     if(SupprimerVueIntermediaires())
     {
@@ -1348,6 +1348,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     QSqlQuery query(dbInUse);
     QString msg = "";
     QString source = "E1";
+    QString tbUse = "U_"+source;
 
     BGame monJeu;
 
@@ -1367,7 +1368,13 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
             +msg;
     isOk = query.exec(msg);
 
-    analyserTirages(source,monJeu);
+    int zn=0;
+    QString tbReponses = source + "_z" + QString::number(zn+1);
+    isOk = AnalyserEnsembleTirage(source,zn);
+    if(isOk)
+        isOk = FaireTableauSynthese(tbUse,zn);
+
+    //analyserTirages(source,monJeu);
 
     isOk = true;
 
@@ -1446,7 +1453,7 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
     return msg;
 }
 
-bool BPrevision::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
+bool BPrevision::AnalyserEnsembleTirage(QString tblIn, int zn)
 {
     /// Verifier si des vues temporaires precedentes sont encore presentes
     /// Si oui les effacer
@@ -1461,6 +1468,19 @@ bool BPrevision::AnalyserEnsembleTirage(QString InputTable, QString OutputTable,
     QSqlQuery query(dbInUse);
     QString stDefBoules = C_TBL_2;
     QString st_OnDef = "";
+    QString OutputTable = "";
+    QString tblToUse = "";
+
+    if(onGame.from == eFdj){
+        OutputTable = C_TBL_5;
+        OutputTable = "B_" + OutputTable;
+        tblToUse = tblTirages;
+    }
+    else{
+        tblToUse = tblIn;
+        OutputTable = "U_" + tblToUse;
+    }
+    OutputTable =OutputTable+"_z"+QString::number(zn+1);
 
     QString ref="(tbleft.%1%2=tbRight.B)";
 
@@ -1488,7 +1508,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString InputTable, QString OutputTable,
         int loop = 0;
         int nbTot = slst[0].size();
         int colId = 0;
-        QString curName = InputTable;
+        QString curName = tblToUse;
         QString curTarget = "view vt_0";
         QString lastTitle = "tbLeft.id  as Id,";
         QString curTitle = "tbLeft.*";
@@ -1504,7 +1524,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString InputTable, QString OutputTable,
                         + slst[1].at(loop)
                         +" from("+curName+")as tbLeft "
                         +"left join ( "
-                        +C_TBL_3+") as tbRight  on (tbRight.id = tbLeft.id)";
+                        +tblToUse+") as tbRight  on (tbRight.id = tbLeft.id)";
 
             }
             else{

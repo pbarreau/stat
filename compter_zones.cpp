@@ -47,8 +47,13 @@ BCountElem::BCountElem(const BGame &pDef, QString in, QSqlDatabase fromDb, QWidg
 
     for(int i = 0; i< nb_zones; i++)
     {
+        if(nb_zones == 1){
+            hCommon = CEL2_H *(floor(myGame.limites[i].max/10)+1);
+        }
+        else{
         if(i<nb_zones-1)
             hCommon = CEL2_H * BMAX_2((floor(myGame.limites[i].max/10)+1),(floor(myGame.limites[i+1].max/10)+1));
+        }
 
         QString *name = new QString;
         QWidget *tmpw = new QWidget;
