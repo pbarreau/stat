@@ -11,22 +11,35 @@
 #include "db_tools.h"
 #include "cnp_SansRepetition.h"
 
-BCnp::BCnp(int n, int p,QSqlDatabase destBdd, QString tbName="My"):n(n),p(p),dbToUse(destBdd),tbName(tbName)
+BCnp::BCnp(int n, int p,QSqlDatabase destBdd):BCnp(n,p,destBdd,"")
 {
+}
+//BCnp::BCnp(int n, int p,QSqlDatabase destBdd, QString tbName="My"):n(n),p(p),dbToUse(destBdd),tbName(tbName)
+BCnp::BCnp(int n_in, int p_in,QSqlDatabase destBdd, QString Name="My")
+{
+    n = n_in;
+    p = p_in;
+    dbToUse = destBdd;
+    tbName = Name;
+
     int cnp_v1 = Cardinal_np();
     int cnp_v2 = CalculerCnp_v2();
 
     cnp = cnp_v1;
     pos = 0;
     tab = NULL;
+
 
     if(CalculerPascal()==false)
     {
         delete (this);
     }
 }
-BCnp::BCnp(int n, int p):n(n),p(p),tbName("My")
+BCnp::BCnp(int n_in, int p_in)
 {
+    QSqlDatabase db = QSqlDatabase::database();
+    BCnp(n_in,p_in,db,"test");
+#if 0
     int cnp_v1 = Cardinal_np();
     int cnp_v2 = CalculerCnp_v2();
 
@@ -38,6 +51,7 @@ BCnp::BCnp(int n, int p):n(n),p(p),tbName("My")
     {
         delete (this);
     }
+#endif
 }
 
 BCnp::~BCnp()
@@ -251,7 +265,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
             && (skipInsert == false))
     {
         /// nom de la table
-        st_table = tbName+"_Cnp_"+QString::number(n)
+        st_table = tbName+"Cnp_"+QString::number(n)
                 + "_" + QString::number(p);
 
         /// Verifier si la table existe deja

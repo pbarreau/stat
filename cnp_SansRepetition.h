@@ -33,8 +33,9 @@ class BCnp:public QObject
     Q_OBJECT
 
 public:
-    BCnp(int n, int p, QSqlDatabase destBdd, QString tbName);
-    BCnp(int n, int p);
+    BCnp(int n, int p, QSqlDatabase destBdd);
+    BCnp(int n_in, int p_in, QSqlDatabase destBdd, QString Name);
+    BCnp(int n_in, int p_in);
     ~BCnp();
     int BP_count(void);
     int * BP_getPascalLine(int lineId);

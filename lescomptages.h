@@ -101,7 +101,7 @@ public:
     ~BPrevision();
 
 private:
-    QString ListeDesJeux(int zn);
+    QString ListeDesJeux(int zn, int n, int p);
     bool ouvrirBase(eBddUse cible, eGame game);
     bool OPtimiseAccesBase(void);
     void effectuerTraitement(eGame game);
@@ -130,6 +130,7 @@ private:
     QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
     void effectuerComptage();
+    bool isTableCnpinDb(int n, int p);
 
 
 public slots:

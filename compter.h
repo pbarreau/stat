@@ -32,6 +32,8 @@
 #define C_TBL_7     "SelComb"
 #define C_TBL_8     "SelGrp"
 
+#define MAX_CHOIX_BOULES    20
+
 /// https://fr.wikibooks.org/wiki/Programmation_C%2B%2B/Les_classes
 /// https://fr.wikipedia.org/wiki/Fonction_virtuelle
 /// https://openclassrooms.com/courses/programmez-avec-le-langage-c/le-polymorphisme-1
