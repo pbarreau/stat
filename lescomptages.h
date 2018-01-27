@@ -115,8 +115,8 @@ private:
     bool TraitementCodeTblCombi(QString tbName,int zn);
     bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
 
-    bool AnalyserEnsembleTirage(QString InputTable, int zn);
-    bool FaireTableauSynthese(QString InputTable, int zn);
+    bool AnalyserEnsembleTirage(QString InputTable,const BGame &onGame, int zn);
+    bool FaireTableauSynthese(QString InputTable,const BGame &onGame, int zn);
     bool SupprimerVueIntermediaires(void);
     QStringList * CreateFilterForData(int zn);
 

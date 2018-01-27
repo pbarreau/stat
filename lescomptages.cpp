@@ -585,9 +585,9 @@ bool BPrevision::f5(QString tb, QSqlQuery *query)
     for (int zn=0;(zn < nbZone) && isOk;zn++ )
     {
         slFlt[zn] = CreateFilterForData(zn);
-        isOk = AnalyserEnsembleTirage(source,zn);
+        isOk = AnalyserEnsembleTirage(source,onGame, zn);
         if(isOk)
-            isOk = FaireTableauSynthese(destination,zn);
+            isOk = FaireTableauSynthese(destination,onGame,zn);
     }
 
     if(!isOk)
@@ -626,7 +626,7 @@ bool BPrevision::f6(QString tb, QSqlQuery *query)
     return isOk;
 }
 
-bool BPrevision::FaireTableauSynthese(QString tblIn, int zn)
+bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
 {
     bool isOk = true;
     QString msg = "";
@@ -1304,10 +1304,34 @@ void BPrevision::slot_AppliquerFiltres()
     int n = 0;
     int p = 0;
 
+    /// ----------- test
+    msg = "delete from "
+            +SelElemt+"_z1";
+    isOk= query.exec(msg);
+
+    msg = "insert into "
+            +SelElemt+"_z1"
+            +" (val,p) values "
+             "(10,1),"
+             "(11,1),"
+             "(12,1),"
+             "(13,1),"
+             "(14,1),"
+             "(15,1),"
+             "(16,1),"
+             "(17,1)"
+             ;
+#ifndef QT_NO_DEBUG
+    qDebug() <<msg;
+#endif
+
+    isOk= query.exec(msg);
+
+    /// ----------- fin test
     /// Selectionner les boules choisi par l'utilisateur pour en faire
     /// un ensemble d'etude
     ///
-    msg = "select count(choix.p)  as T from "+SelElemt+"_z1 as Choix where(choix.p=1);";
+    msg = "select distinct count(Choix.p)  as T from "+SelElemt+"_z1 as Choix where(choix.p=1);";
     isOk = query.exec(msg);
     if(isOk)
     {
@@ -1369,12 +1393,11 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     isOk = query.exec(msg);
 
     int zn=0;
-    QString tbReponses = source + "_z" + QString::number(zn+1);
-    isOk = AnalyserEnsembleTirage(source,zn);
-    if(isOk)
-        isOk = FaireTableauSynthese(tbUse,zn);
 
-    //analyserTirages(source,monJeu);
+    isOk = AnalyserEnsembleTirage(source,monJeu, zn);
+    if(isOk)
+        isOk = FaireTableauSynthese(tbUse,monJeu,zn);
+    analyserTirages(source,monJeu);
 
     isOk = true;
 
@@ -1453,7 +1476,7 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
     return msg;
 }
 
-bool BPrevision::AnalyserEnsembleTirage(QString tblIn, int zn)
+bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int zn)
 {
     /// Verifier si des vues temporaires precedentes sont encore presentes
     /// Si oui les effacer
