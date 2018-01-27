@@ -19,7 +19,7 @@ class BCountElem:public BCount
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    BCountElem(const BGame &pDef, QString in, QSqlDatabase fromDb, QWidget *LeParent);
+    BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent);
     ~BCountElem();
 
 public slots:

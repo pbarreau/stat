@@ -52,8 +52,8 @@ class BCount:public QWidget
 {
     Q_OBJECT
 public:
-    BCount(const BGame &pDef, QString *in, QSqlDatabase useDb);
-    BCount(const BGame &pDef, QString *in, QSqlDatabase fromDb, QWidget *unParent);
+    BCount(const BGame &pDef, const QString &in, QSqlDatabase useDb);
+    BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb, QWidget *unParent);
 
 protected:
     virtual QGridLayout *Compter(QString * pName, int zn)=0;

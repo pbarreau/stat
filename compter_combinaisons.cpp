@@ -24,7 +24,7 @@ BCountComb::~BCountComb()
     total --;
 }
 
-BCountComb::BCountComb(const BGame &pDef, QString in, QSqlDatabase fromDb):BCount(pDef,&in,fromDb,NULL)
+BCountComb::BCountComb(const BGame &pDef, const QString &in, QSqlDatabase fromDb):BCount(pDef,in,fromDb,NULL)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);

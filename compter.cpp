@@ -127,12 +127,12 @@ void BCount::RecupererConfiguration(void)
 
 }
 
-BCount::BCount(const BGame &pDef, QString *in, QSqlDatabase useDb):BCount(pDef,in,useDb,NULL)
+BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase useDb):BCount(pDef,in,useDb,NULL)
 {
 }
 
-BCount::BCount(const BGame &pDef,QString *in, QSqlDatabase fromDb, QWidget *unParent=0)
-    :QWidget(unParent), db_data(*in),dbToUse(fromDb)
+BCount::BCount(const BGame &pDef,const QString &in, QSqlDatabase fromDb, QWidget *unParent=0)
+    :QWidget(unParent), db_data(in),dbToUse(fromDb)
 {
     bool useRequete = false;
     db_jours = "";

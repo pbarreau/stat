@@ -21,7 +21,7 @@ BCountGroup::~BCountGroup()
     total --;
 }
 
-BCountGroup::BCountGroup(const BGame &pDef, QString in, QStringList** lstCri, QSqlDatabase fromDb):BCount(pDef,&in,fromDb,NULL)
+BCountGroup::BCountGroup(const BGame &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb):BCount(pDef,in,fromDb,NULL)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
@@ -42,14 +42,8 @@ BCountGroup::BCountGroup(const BGame &pDef, QString in, QStringList** lstCri, QS
 
     for(int zn = 0; zn< nb_zones; zn++)
     {
-        QString *name = &db_data;
+        QString *name = new QString; /// &db_data;
         QWidget *tmpw = new QWidget;
-#if 0
-        maRef[zn] = CreateFilterForData(zn);
-
-        QString tblSynthese = "Montest";
-        bool isOK = AnalyserEnsembleTirage(db_data,tblSynthese,zn);
-#endif
         QGridLayout *calcul = (this->*ptrFunc[zn])(name, zn);
         tmpw->setLayout(calcul);
         tab_Top->addTab(tmpw,tr((*name).toUtf8()));
@@ -247,7 +241,8 @@ QTableView *BCountGroup::CompterLigne(QString * pName, int zn)
 QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
-    (* pName) = myGame.names[zn].abv;
+    (* pName) = myGame.names[zn].abv; /// BUG sur db_data
+
     QString TblCompact = C_TBL_9;
 
     if(myGame.from == eFdj)

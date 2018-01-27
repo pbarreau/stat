@@ -29,7 +29,7 @@ BCountElem::~BCountElem()
     total --;
 }
 
-BCountElem::BCountElem(const BGame &pDef, QString in, QSqlDatabase fromDb, QWidget *LeParent):BCount(pDef,&in,fromDb,LeParent)
+BCountElem::BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent):BCount(pDef,in,fromDb,LeParent)
 {
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
