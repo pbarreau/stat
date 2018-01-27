@@ -31,7 +31,7 @@
 #define C_TBL_6     "U_e"   /// User choice on element
 #define C_TBL_7     "U_c"   /// ..on combinaison
 #define C_TBL_8     "U_g"   /// ..on regroupement
-#define C_TBL_9     "B_grp"   /// ..on regroupement
+#define C_TBL_9     "grp"   /// synthese on regroupement
 
 #define MAX_CHOIX_BOULES    20
 

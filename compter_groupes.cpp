@@ -159,7 +159,7 @@ bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable
 
     if(!isOk)
     {
-        QString ErrLoc = "AnalyserEnsembleTirage:";
+        QString ErrLoc = "BCountGroup::AnalyserEnsembleTirage:";
         DB_Tools::DisplayError(ErrLoc,&query,msg);
     }
     return isOk;
@@ -249,6 +249,14 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     QTableView *qtv_tmp = new QTableView;
     (* pName) = myGame.names[zn].abv;
     QString TblCompact = C_TBL_9;
+
+    if(myGame.from == eFdj)
+    {
+        TblCompact = "B_"+TblCompact;
+    }
+    else{
+        TblCompact = "U_"+db_data+ "_"+TblCompact ;
+    }
 
     QString qtv_name = QString::fromLatin1(C_TBL_8) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);

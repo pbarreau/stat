@@ -638,6 +638,15 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
 
     QString tblToUse = tblIn + "_z"+QString::number(zn+1);
     QString stCurTable = tblToUse;
+
+    if(onGame.from == eFdj){
+        TblCompact = "B_"+TblCompact;
+    }
+    else{
+        TblCompact = tblIn + "_"+TblCompact ;
+    }
+    //TblCompact =TblCompact + "_z"+QString::number(zn+1);
+
     /// Verifier si des tables existent deja
     if(SupprimerVueIntermediaires())
     {
@@ -662,7 +671,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
             prvName ="vt_"+QString::number(loop);
             msg = "create "+stGenre+" if not exists "
                     + curName
-                    +" as select tbleft.*, count(tbRight.id)as "
+                    +" as select tbleft.*, (case when count(tbRight.id)!=0 then count(tbRight.id) end)as "
                     +slst[1].at(loop)
                     + " from("+prvName+") as tbLeft "
                     +"left join ("
@@ -1320,7 +1329,7 @@ void BPrevision::slot_AppliquerFiltres()
              "(15,1),"
              "(16,1),"
              "(17,1)"
-             ;
+            ;
 #ifndef QT_NO_DEBUG
     qDebug() <<msg;
 #endif
@@ -1646,7 +1655,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
 
     if(!isOk)
     {
-        QString ErrLoc = "AnalyserEnsembleTirage:";
+        QString ErrLoc = "BPrevision::AnalyserEnsembleTirage:";
         DB_Tools::DisplayError(ErrLoc,&query,msg);
     }
     return isOk;
