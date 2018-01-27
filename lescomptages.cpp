@@ -535,27 +535,25 @@ bool BPrevision::f4(QString tb, QSqlQuery *query)
     bool isOk = true;
     int nbZone = onGame.znCount;
 
+    QString tblUse = "B_" + tb;
+
     for (int zn=0;(zn < nbZone) && isOk;zn++ )
     {
         if(onGame.limites[zn].win>2){
             isOk = TraitementCodeVueCombi(zn);
 
             if(isOk)
-                isOk = TraitementCodeTblCombi(tb,zn);
+                isOk = TraitementCodeTblCombi(tblUse,zn);
         }
         else
         {
             int n = onGame.limites[zn].max;
             int p = onGame.limites[zn].win;
-            QString tbName = C_TBL_4"_z"+QString::number(zn+1);
+            QString tbName = tblUse+ "_z"+QString::number(zn+1);
             // calculer les combinaisons avec repetition
             BCnp *a = new BCnp(n,p,dbInUse,tbName);
-#if 0
-            tbName = tbName + "_Cnp_" + QString::number(n) +"_" +
-                    QString::number(p);
-#endif
             tbName = a->getDbTblName();
-            isOk = TraitementCodeTblCombi_2(tb,tbName,zn);
+            isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn);
         }
     }
 
@@ -637,15 +635,15 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
     QString TblCompact = C_TBL_9;
 
     QString tblToUse = tblIn + "_z"+QString::number(zn+1);
-    QString stCurTable = tblToUse;
 
     if(onGame.from == eFdj){
         TblCompact = "B_"+TblCompact;
     }
     else{
+        tblToUse = tblIn +"_"C_TBL_5 "_z"+QString::number(zn+1);
         TblCompact = tblIn + "_"+TblCompact ;
     }
-    //TblCompact =TblCompact + "_z"+QString::number(zn+1);
+    QString stCurTable = tblToUse;
 
     /// Verifier si des tables existent deja
     if(SupprimerVueIntermediaires())
@@ -1299,7 +1297,7 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 
     /// ----------------
     Resultats->setLayout(tmp_layout);
-    Resultats->setWindowTitle("ALL");
+    Resultats->setWindowTitle(source);
     Resultats->show();
 }
 
@@ -1500,19 +1498,21 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
     QSqlQuery query(dbInUse);
     QString stDefBoules = C_TBL_2;
     QString st_OnDef = "";
-    QString OutputTable = "";
+    QString tbLabAna = C_TBL_5;
     QString tblToUse = "";
+    QString tbLabCmb = C_TBL_4;
 
+    tbLabCmb = "B_" + tbLabCmb;
     if(onGame.from == eFdj){
-        OutputTable = C_TBL_5;
-        OutputTable = "B_" + OutputTable;
+        tbLabAna = "B_" + tbLabAna;
         tblToUse = tblTirages;
     }
     else{
-        tblToUse = tblIn;
-        OutputTable = "U_" + tblToUse;
+        tblToUse = tblIn ;
+        tbLabAna = "U_" + tblToUse + "_" +tbLabAna;
+        //tbLabCmb = "U_" + tblToUse + "_" +tbLabCmb;
     }
-    OutputTable =OutputTable+"_z"+QString::number(zn+1);
+    tbLabAna =tbLabAna+"_z"+QString::number(zn+1);
 
     QString ref="(tbleft.%1%2=tbRight.B)";
 
@@ -1584,14 +1584,12 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
             }
             else
             {
-                curTarget = "view vrz"+QString::number(zn+1)+"_"+OutputTable;
+                curTarget = "view vrz"+QString::number(zn+1)+"_"+tbLabAna;
                 curTitle = lastTitle;
             }
         }while(loop < nbTot && isOk);
 
         if(isOk){
-            ///msg=AssocierClefCombi(zn);
-            ///isOk = query.exec(msg);
             /// mise en correspondance de la reference combinaison
             QString msg = "";
             QString ref_1 = "";
@@ -1624,21 +1622,16 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
 
             //curTarget = curTarget.remove("table");
             curTarget = curTarget.remove("view");
-            msg = "create table "+OutputTable
+            msg = "create table if not exists "+tbLabAna
                     +" as select tbLeft.*,tbRight.id as idComb  from ("
                     +curTarget+")as tbLeft left join ("
-                    + C_TBL_4 "_z"+QString::number(zn+1)
+                    + tbLabCmb+"_z"+QString::number(zn+1)
                     +")as tbRight on("
                     + stCombi
                     +")"
                     ;
-#if 0
-            Ref"
-                    +QString::number(zn+1)+"_
-        #endif
-
-        #ifndef QT_NO_DEBUG
-                    qDebug() << "msg:"<<msg;
+#ifndef QT_NO_DEBUG
+            qDebug() << "msg:"<<msg;
 #endif
             isOk = query.exec(msg);
         }

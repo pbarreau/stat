@@ -26,7 +26,7 @@
 #define C_TBL_1     "B_def" /// config du jeu
 #define C_TBL_2     "B_elm" /// constituant des boules
 #define C_TBL_3     "fdj" /// Base de tous les tirages
-#define C_TBL_4     "B_cmb" /// Combinaison a appliquer sur zone
+#define C_TBL_4     "cmb" /// Combinaison a appliquer sur zone
 #define C_TBL_5     "ana" /// Resultat analyse des sones de la fdj
 #define C_TBL_6     "U_e"   /// User choice on element
 #define C_TBL_7     "U_c"   /// ..on combinaison

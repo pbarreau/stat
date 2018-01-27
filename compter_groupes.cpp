@@ -42,7 +42,7 @@ BCountGroup::BCountGroup(const BGame &pDef, const QString &in, QStringList** lst
 
     for(int zn = 0; zn< nb_zones; zn++)
     {
-        QString *name = new QString; /// &db_data;
+        QString *name = new QString;
         QWidget *tmpw = new QWidget;
         QGridLayout *calcul = (this->*ptrFunc[zn])(name, zn);
         tmpw->setLayout(calcul);

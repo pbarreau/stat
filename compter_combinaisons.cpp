@@ -224,6 +224,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
     {
       prefix = st_baseUse+"_";
     }
+    Def_comb = prefix + Def_comb;
     stTbAnalyse = prefix+stTbAnalyse + "_z"+QString::number(zn+1);
 
     QString arg1 = "tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T "
