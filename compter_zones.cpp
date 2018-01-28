@@ -24,6 +24,11 @@
 
 int BCountElem::total = 0;
 
+int BCountElem::getCounter(void)
+{
+    return total;
+}
+
 BCountElem::~BCountElem()
 {
     total --;
@@ -31,9 +36,11 @@ BCountElem::~BCountElem()
 
 BCountElem::BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent):BCount(pDef,in,fromDb,LeParent)
 {
+    type=eCountElm;
+    countId = total;
+    unNom = "'Compter Zones'";
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
-    unNom = "'Compter Zones'";
 
     int nb_zones = myGame.znCount;
 
@@ -51,8 +58,8 @@ BCountElem::BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb
             hCommon = CEL2_H *(floor(myGame.limites[i].max/10)+1);
         }
         else{
-        if(i<nb_zones-1)
-            hCommon = CEL2_H * BMAX_2((floor(myGame.limites[i].max/10)+1),(floor(myGame.limites[i+1].max/10)+1));
+            if(i<nb_zones-1)
+                hCommon = CEL2_H * BMAX_2((floor(myGame.limites[i].max/10)+1),(floor(myGame.limites[i+1].max/10)+1));
         }
 
         QString *name = new QString;
@@ -242,7 +249,10 @@ void BCountElem::slot_RequeteFromSelection(const QModelIndex &index)
 ///
 QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 {
+    QSqlQuery query(dbToUse);
+    bool isOk = true;
     QString msg = "";
+
     QString SelElemt = C_TBL_6;
     QString st_cri_all = "";
     QStringList boules;
@@ -312,6 +322,20 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     qDebug()<< msg;
 #endif
 
+    /// creation d'une vue pour ce resultat
+    QString viewName = "r_"
+            +db_data+ "_"+ QString::number(total-1)
+            +"_"+label[type]
+            +"_z"+QString::number(zn+1);
+    msg = "create table if not exists "
+            +viewName
+            +" as select * from ("
+            +msg
+            +")";
+
+    isOk = query.exec(msg);
+    /// optimisation ?
+    msg = "select * from ("+viewName+")";
     return msg;
 }
 

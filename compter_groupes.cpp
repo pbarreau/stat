@@ -23,9 +23,11 @@ BCountGroup::~BCountGroup()
 
 BCountGroup::BCountGroup(const BGame &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb):BCount(pDef,in,fromDb,NULL)
 {
+    type=eCountGrp;
+    countId = total;
+    unNom = "'Compter Groupes'";
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
-    unNom = "'Compter Groupes'";
     demande = 0;
 
 

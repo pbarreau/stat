@@ -42,6 +42,12 @@
 
 /// -------ENUM---------
 
+typedef enum{
+    eCountToSet,    /// Pas de definition
+    eCountElm,      /// Comptage des boules de zones
+    eCountCmb,      /// ... des combinaisons
+    eCountGrp       /// ... des regroupements
+}eCountingType;
 typedef struct _B_RequeteFromTbv
 {
     QString db_data;    /// requete pour la base de donnees
@@ -78,6 +84,10 @@ protected:
     QSqlDatabase dbToUse;
     BGame myGame;
     int *memo;  /// A deplacer :
+    eCountingType type; /// type de comptage en cours
+    static QString label[]; /// nom associe aux types
+    int countId;
+    int curZn;          /// zone en cours
     QString unNom;  /// Pour Tracer les requetes sql
     QString db_jours;   /// information des jours de tirages
     QModelIndexList *lesSelections; /// liste des selections dans les tableaux

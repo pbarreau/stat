@@ -248,6 +248,7 @@ private:
     QAction *saveAsAct;
     QAction *exitAct;
     QAction *runAct;
+    QAction *FiltrerAct;
     QAction *aboutAct;
 
     LabelClickable **G_lab_nbSorties;

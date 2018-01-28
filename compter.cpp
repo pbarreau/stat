@@ -14,6 +14,8 @@
 #include "compter.h"
 #include "db_tools.h"
 
+QString BCount::label[]={"err","elm",C_TBL_4,C_TBL_9};
+
 void BCount::CreerCritereJours(void)
 {
     QString st_tmp = "";
@@ -498,6 +500,22 @@ void BCount::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
 void BCount::slot_wdaFilter(bool val)
 {
     QAction *chkFrom = qobject_cast<QAction *>(sender());
+    bool isOk = true;
+
+    QString tmp = chkFrom->objectName();
+    tmp = (tmp.split("z")).at(1);
+    /// reconstruction table cible
+    int zn = tmp.toInt()-1;
+    int counter = this->countId;
+
+    QString tblDest = this->db_data;
+    tblDest = "r_"
+            +tblDest
+            +"_"+QString::number(counter)
+            +"_"+label[type]
+            +"_z"
+            +QString::number(zn+1);
+
 
 #ifndef QT_NO_DEBUG
     qDebug() << "Boule :("<< chkFrom->objectName()<<") check:"<< val;
@@ -536,27 +554,48 @@ void BCount::slot_wdaFilter(bool val)
                 "where (val="+def[3]+");";
     }
 
-    bool rep = query.exec(msg);
+    isOk = query.exec(msg);
+    if(isOk){
+        QString filtre = "";
+        QString key2use= "";
 
-    if(!rep)
-    {
-        trv = false;
-#ifndef QT_NO_DEBUG
-        qDebug() << "select: " <<def[3]<<"->"<< query.lastError();
-        qDebug() << "Bad code:\n"<<msg<<"\n-------";
-#endif
-    }
-    else
-    {
-        trv = true;
-#ifndef QT_NO_DEBUG
-        qDebug() << "Fn :\n"<<msg<<"\n-------";
-#endif
+        if(type=eCountElm){
+            key2use = "b";
+        }
 
+        if(type=eCountCmb){
+            key2use = "id";
+        }
+
+        if(type=eCountGrp){
+            key2use = "Nb";
+        }
+
+        /// Mettre dans la table calculee
+        if(val){
+            filtre = "(case when f is null then 0x2 else (f|0x2) end)";
+        }
+        else{
+            filtre = "(case when f is null then null else (f&~0x2) end)";
+        }
+
+        msg = "update " + tblDest
+                + " set f="+filtre+" where ("+key2use+"="+def[3]+");";
+#ifndef QT_NO_DEBUG
+    qDebug() <<msg;
+#endif
+        isOk = query.exec(msg);
     }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "BCount::slot_wdaFilter";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
+
 
     /// Recharger les reponses dans le tableau
-    int zn = tbl.split("z").at(1).toInt() - 1;
     QString Montest = sqmZones[zn].query().executedQuery();
     qDebug() << Montest;
     sqmZones[zn].setQuery(Montest,dbToUse);

@@ -60,7 +60,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     input.destination =dest_bdd;
     input.typeChargement = load;
     input.typeJeu = leJeu;
-
+    eGame unJeu = eGameToSet;
     stErr NoErrors;
     NoErrors.status = true;
     NoErrors.msg = "None";
@@ -75,13 +75,20 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     }
     else
     {
-        ///
-        ///
-        ///
-        QString st_table = REF_BASE;
-        //tous = new BPrevision(eGameLoto,eFdj,eBddUseDisk);
-        tous = new BPrevision(eGameEuro,eFdj,eBddUseDisk);
-        connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_AppliquerFiltres()));
+        switch(leJeu){
+        case NE_FDJ::fdj_loto:
+            unJeu = eGameLoto;
+            break;
+        case NE_FDJ::fdj_euro:
+            unJeu = eGameEuro;
+            break;
+        default:
+            unJeu = eGameToSet;
+            break;
+        }
+        tous = new BPrevision(unJeu,eFdj,eBddUseDisk);
+        connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_makeUserGamesList()));
+        connect(FiltrerAct, SIGNAL(triggered()), tous, SLOT(slot_filterUserGamesList()));
 
 
         RechercheProgressionBoules(&configJeu);
@@ -332,10 +339,10 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
             count (case when t1.J like 'sam%' then 1 end)as SAM
             from (
                 SELECT lstcombi.id,lstcombi.tip,analyses.fk_idCombi_z1,analyses.id as id2, (case when analyses.id is null then null else
-                                                                                       (
-                                                                                           select tirages.jour_tirage from tirages where (tirages.id = analyses.id)
-                                                                                           )
-                                                                                       end) as J
+                                                                                            (
+                                                                                                select tirages.jour_tirage from tirages where (tirages.id = analyses.id)
+                                                                                                )
+                                                                                            end) as J
                 FROM lstcombi
                 LEFT JOIN analyses
                 ON
@@ -5002,8 +5009,8 @@ void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
                 //double poids = sql_1.value(lastcol-1).toDouble();
 #if 0
                 update analyses set fk_idCombi_z1=14 where(id in
-                                                      (select id from analyses where (bd0=1 and bd1=1 and bd2=2 and bd3=1 and bd4=0 and bd5=0)
-                                                       ));
+                                                           (select id from analyses where (bd0=1 and bd1=1 and bd2=2 and bd3=1 and bd4=0 and bd5=0)
+                                                            ));
 #endif
                 msg_2.remove(msg_2.length()-5,5);
                 msg_2 = "Update analyses set fk_idCombi_z1="

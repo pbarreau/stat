@@ -20,13 +20,14 @@ class BCountElem:public BCount
     /// in : infos representant les tirages
 public:
     BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent);
+    int getCounter(void);
     ~BCountElem();
 
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
     void slot_RequeteFromSelection(const QModelIndex &index);
 
-private:
+public:
     static int total;
     int hCommon; // taille des tableaux
 

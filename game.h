@@ -3,8 +3,9 @@
 
 /// Type de jeu possible d'etudier
 typedef enum _eGame{
-    eGameLoto, /// Loto
-    eGameEuro  /// Euro million
+    eGameToSet, /// Jeu pas encore configure
+    eGameLoto,  /// Loto
+    eGameEuro   /// Euro million
 }eGame;
 
 typedef enum _eGoal{

@@ -1300,8 +1300,59 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     Resultats->setWindowTitle(source);
     Resultats->show();
 }
+void BPrevision::slot_filterUserGamesList()
+{
+    QSqlQuery query(dbInUse);
+    bool isOk = true;
+    QString msg = "";
+    QString ensemble = "E1";
+    QString tblFilters [] =
+    {
+        "U_e_z1",
+        "U_c_z1",
+        "U_g_z1",
+    };
+    int tblCount = sizeof(tblFilters)/sizeof(QString);
 
-void BPrevision::slot_AppliquerFiltres()
+    /// Table des jeux utilisateur presente ?
+    msg = "select count(name) from sqlite_master "
+          "WHERE type='view' AND name='"+ensemble+"';";
+    isOk = query.exec(msg);
+
+    if(isOk)
+    {
+        query.first();
+        int val = query.value(0).toInt();
+        if(val){
+            /// Parcourir toute les tables de filtres
+            for(int tbl=0; (tbl < tblCount) && isOk;tbl++){
+                msg = "select group_concat(tb1.val) from ("
+                        +tblFilters[tbl]+" as tb1) where (tb1.f=1)";
+                isOk=query.exec(msg);
+                if(isOk){
+                    query.first();
+                    QString filters = query.value(0).toString();
+                    int taille = filters.size();
+                    if(!taille)
+                        continue;
+                    QStringList items = filters.split(",");
+                    int total = items.size();
+                    int v = 12;
+                    if(total){
+                        /// Appliquer la filtration
+
+                        v=1;
+                    }
+                    else{
+                        v=0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void BPrevision::slot_makeUserGamesList()
 {
     QSqlQuery query(dbInUse);
     bool isOk = true;
@@ -1319,14 +1370,19 @@ void BPrevision::slot_AppliquerFiltres()
     msg = "insert into "
             +SelElemt+"_z1"
             +" (val,p) values "
-             "(10,1),"
-             "(11,1),"
+             "(34,1),"
+             "(43,1),"
+             "(22,1),"
              "(12,1),"
-             "(13,1),"
-             "(14,1),"
-             "(15,1),"
+             "(08,1),"
+             "(42,1),"
+             "(10,1),"
+             "(27,1),"
+             "(17,1),"
              "(16,1),"
-             "(17,1)"
+             "(03,1),"
+             "(40,1),"
+             "(06,1)"
             ;
 #ifndef QT_NO_DEBUG
     qDebug() <<msg;
@@ -1381,7 +1437,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     QString source = "E1";
     QString tbUse = "U_"+source;
 
-    BGame monJeu;
+    monJeu;
 
     monJeu.type = onGame.type;
     monJeu.from = eUsr;
@@ -1404,8 +1460,28 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     isOk = AnalyserEnsembleTirage(source,monJeu, zn);
     if(isOk)
         isOk = FaireTableauSynthese(tbUse,monJeu,zn);
+
     analyserTirages(source,monJeu);
 
+    static bool OneShot = false;
+    if(OneShot==false){
+        OneShot = true;
+        /// Montrer resultats
+        msg="select * from ("+source+")";
+        QTableView *qtv_tmp = new QTableView;
+        sqm_resu = new QSqlQueryModel;
+
+        sqm_resu->setQuery(msg,dbInUse);
+        qtv_tmp->setModel(sqm_resu);
+
+        int nbCol = sqm_resu->columnCount();
+        for(int col=0;col<nbCol;col++)
+        {
+            qtv_tmp->setColumnWidth(col,CEL2_L);
+        }
+        qtv_tmp->setWindowTitle("Ensemble:"+ source);
+        qtv_tmp->show();
+    }
     isOk = true;
 
 }

@@ -26,9 +26,11 @@ BCountComb::~BCountComb()
 
 BCountComb::BCountComb(const BGame &pDef, const QString &in, QSqlDatabase fromDb):BCount(pDef,in,fromDb,NULL)
 {
+    type=eCountCmb;
+    countId = total;
+    unNom = "'Compter Combinaisons'";
     total++;
     QTabWidget *tab_Top = new QTabWidget(this);
-    unNom = "'Compter Combinaisons'";
 
     QGridLayout *(BCountComb::*ptrFunc[])(QString *, int) =
     {
@@ -44,8 +46,8 @@ BCountComb::BCountComb(const BGame &pDef, const QString &in, QSqlDatabase fromDb
             hCommon = CEL2_H *(floor(myGame.limites[i].max/10)+1);
         }
         else{
-        if(i<nb_zones-1)
-            hCommon = CEL2_H * BMAX_2((floor(myGame.limites[i].max/10)+1),(floor(myGame.limites[i+1].max/10)+1));
+            if(i<nb_zones-1)
+                hCommon = CEL2_H * BMAX_2((floor(myGame.limites[i].max/10)+1),(floor(myGame.limites[i+1].max/10)+1));
         }
 
         QString *name = new QString;
@@ -216,6 +218,10 @@ void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
 
 QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int dst)
 {
+    QSqlQuery query(dbToUse) ;
+    QString msg = "";
+    bool isOk = true;
+
     QString stTbAnalyse = C_TBL_5;
     QString Def_comb = C_TBL_4;
     QString SelComb = C_TBL_7;
@@ -256,15 +262,15 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
     args.arg3 = arg3;
     args.arg4 = arg4;
 
-    QString st_msg1 = DB_Tools::leftJoin(args);
-    st_msg1 = st_msg1 + "group by tbLeft.id order by T desc";
+    msg = DB_Tools::leftJoin(args);
+    msg = msg + "group by tbLeft.id order by T desc";
 #ifndef QT_NO_DEBUG
-    qDebug()<< st_msg1;
+    qDebug()<< msg;
 #endif
 
 
     arg1 = "tbLeft.*,(tbLeft.L | (case when (tbRight.f==1) then 0x2 else tbLeft.L end))as F ";
-    arg2 = st_msg1;
+    arg2 = msg;
     arg3 = " select * from "+SelComb+"_z"+QString::number(zn+1);
     arg4 = "tbLeft.id = tbRight.val";
 
@@ -273,11 +279,27 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
     args.arg3 = arg3;
     args.arg4 = arg4;
 
-    st_msg1 = DB_Tools::leftJoin(args);
+    msg = DB_Tools::leftJoin(args);
 #ifndef QT_NO_DEBUG
-    qDebug()<< st_msg1;
+    qDebug()<< msg;
 #endif
-    return    st_msg1 ;
+
+    /// creation d'une vue pour ce resultat
+    QString viewName = "r_"
+            +db_data+ "_"+ QString::number(total-1)
+            +"_"+label[type]
+            +"_z"+QString::number(zn+1);
+    msg = "create table if not exists "
+            +viewName
+            +" as select * from ("
+            +msg
+            +")";
+
+    isOk = query.exec(msg);
+    /// optimisation ?
+    msg = "select * from ("+viewName+")";
+
+    return    msg ;
 }
 
 #if 0
