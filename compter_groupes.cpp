@@ -21,9 +21,10 @@ BCountGroup::~BCountGroup()
     total --;
 }
 
-BCountGroup::BCountGroup(const BGame &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb):BCount(pDef,in,fromDb,NULL)
+BCountGroup::BCountGroup(const BGame &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb)
+    :BCount(pDef,in,fromDb,NULL,eCountGrp)
 {
-    type=eCountGrp;
+    //type=eCountGrp;
     countId = total;
     unNom = "'Compter Groupes'";
     total++;

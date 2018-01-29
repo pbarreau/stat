@@ -9,6 +9,7 @@
 #include <QStringList>
 #include <QGridLayout>
 #include <QSqlQueryModel>
+#include <QList>
 
 #include "game.h"
 
@@ -54,12 +55,21 @@ typedef struct _B_RequeteFromTbv
     QString tb_data;    /// titre de cette requete
 }B_RequeteFromTbv;
 
+typedef struct _BRunningQuery
+{
+    eCountingType key;  /// type element de la liste
+    int pos;            /// id dans la fille
+    int size;           /// nb de zone
+    QSqlQueryModel *sqmDef; /// info sur requete de zone
+}BRunningQuery;
+
 class BCount:public QWidget
 {
     Q_OBJECT
 public:
     BCount(const BGame &pDef, const QString &in, QSqlDatabase useDb);
-    BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb, QWidget *unParent);
+    BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
+           QWidget *unParent, eCountingType genre);
 
 protected:
     virtual QGridLayout *Compter(QString * pName, int zn)=0;
@@ -92,8 +102,11 @@ protected:
     QString db_jours;   /// information des jours de tirages
     QModelIndexList *lesSelections; /// liste des selections dans les tableaux
     QString *sqlSelection;  /// code sql generee pour un tableau
+    static QList<BRunningQuery *> sqmActive[3];
     QSqlQueryModel *sqmZones; /// pour mettre a jour le tableau des resultats
 
+private:
+    static int nbChild;
 
 public slots:
     void slot_AideToolTip(const QModelIndex & index);

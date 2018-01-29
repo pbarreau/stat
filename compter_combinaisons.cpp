@@ -24,9 +24,10 @@ BCountComb::~BCountComb()
     total --;
 }
 
-BCountComb::BCountComb(const BGame &pDef, const QString &in, QSqlDatabase fromDb):BCount(pDef,in,fromDb,NULL)
+BCountComb::BCountComb(const BGame &pDef, const QString &in, QSqlDatabase fromDb)
+    :BCount(pDef,in,fromDb,NULL,eCountCmb)
 {
-    type=eCountCmb;
+    //type=eCountCmb;
     countId = total;
     unNom = "'Compter Combinaisons'";
     total++;

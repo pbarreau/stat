@@ -1413,7 +1413,7 @@ void BPrevision::slot_makeUserGamesList()
                 }
 
                 /// supprimer la vue resultat
-                msg = "drop view if exists E1";
+                msg = "drop table if exists E1";
                 isOk = query.exec(msg);
                 if(isOk){
                     /// Creer une liste de jeux possibles
@@ -1427,6 +1427,7 @@ void BPrevision::slot_makeUserGamesList()
 #ifndef QT_NO_DEBUG
     qDebug() <<msg;
 #endif
+    query.finish();
 }
 
 void BPrevision::creerJeuxUtilisateur(int n, int p)
@@ -1451,9 +1452,12 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     qDebug() << "msg: " <<msg;
 #endif
 
-    msg = "create view if not exists "+source+" as "
+    isOk = query.exec("begin transaction");
+    msg = "create table if not exists "+source+" as "
             +msg;
-    isOk = query.exec(msg);
+    if(isOk) isOk = query.exec(msg);
+
+    if (isOk)isOk = query.exec("commit transaction");
 
     int zn=0;
 
@@ -1482,6 +1486,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
         qtv_tmp->setWindowTitle("Ensemble:"+ source);
         qtv_tmp->show();
     }
+
     isOk = true;
 
 }

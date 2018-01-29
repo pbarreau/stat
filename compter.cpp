@@ -15,6 +15,8 @@
 #include "db_tools.h"
 
 QString BCount::label[]={"err","elm",C_TBL_4,C_TBL_9};
+QList<BRunningQuery *> BCount::sqmActive[3];
+int BCount::nbChild = 0;
 
 void BCount::CreerCritereJours(void)
 {
@@ -66,6 +68,7 @@ void BCount::CreerCritereJours(void)
 
 void BCount::RecupererConfiguration(void)
 {
+#if 0
     QSqlQuery query(dbToUse) ;
     QString msg = "";
     bool isOk = false;
@@ -126,15 +129,17 @@ void BCount::RecupererConfiguration(void)
     }
 
     query.finish();
-
+#endif
 }
 
-BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase useDb):BCount(pDef,in,useDb,NULL)
+BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase useDb)
+    :BCount(pDef,in,useDb,NULL,eCountToSet)
 {
 }
 
-BCount::BCount(const BGame &pDef,const QString &in, QSqlDatabase fromDb, QWidget *unParent=0)
-    :QWidget(unParent), db_data(in),dbToUse(fromDb)
+BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
+               QWidget *unParent=0, eCountingType genre=eCountToSet)
+    :QWidget(unParent), db_data(in),dbToUse(fromDb),type(genre)
 {
     bool useRequete = false;
     db_jours = "";
@@ -154,8 +159,19 @@ BCount::BCount(const BGame &pDef,const QString &in, QSqlDatabase fromDb, QWidget
 
         lesSelections = new QModelIndexList [myGame.znCount];
         sqlSelection = new QString [myGame.znCount];
-        sqmZones = new QSqlQueryModel [myGame.znCount];
 
+        sqmZones = new QSqlQueryModel [myGame.znCount];
+        BRunningQuery * tmp = new BRunningQuery;
+        tmp->size = myGame.znCount;
+        tmp->sqmDef = sqmZones;
+        tmp->key = type;
+        nbChild++; /// Nombre total d'enfants A SUPPRIMER ?
+        /// Rajouter cet element à la liste des requetes actives
+        int pos = -1;
+        if(type==eCountElm) pos = 0;
+        if(type==eCountCmb) pos = 1;
+        if(type==eCountGrp) pos = 2;
+        sqmActive[pos].append(tmp);
     }
     CreerCritereJours();
 }
@@ -509,12 +525,14 @@ void BCount::slot_wdaFilter(bool val)
     int counter = this->countId;
 
     QString tblDest = this->db_data;
+    QString endName = "_"+label[type]
+            +"_z"
+            +QString::number(zn+1);
+
     tblDest = "r_"
             +tblDest
             +"_"+QString::number(counter)
-            +"_"+label[type]
-            +"_z"
-            +QString::number(zn+1);
+            +endName;
 
 
 #ifndef QT_NO_DEBUG
@@ -535,9 +553,9 @@ void BCount::slot_wdaFilter(bool val)
         return;
 
     int trv = def[0].toInt();
-    int v_1 = def[1].toInt();
-    int v_2 = def[2].toInt();
-    int elm = def[3].toInt();
+    //int v_1 = def[1].toInt();
+    //int v_2 = def[2].toInt();
+    //int elm = def[3].toInt();
     QString tbl = def[4];
 
     // faut il inserer une nouvelle ligne CREER UNE VARIABLE POUR LES COLONNES
@@ -559,19 +577,16 @@ void BCount::slot_wdaFilter(bool val)
         QString filtre = "";
         QString key2use= "";
 
-        if(type=eCountElm){
-            key2use = "b";
-        }
+        if(type==eCountElm)key2use = "b";
+        if(type==eCountCmb)key2use = "id";
+        if(type==eCountGrp)key2use = "Nb";
 
-        if(type=eCountCmb){
-            key2use = "id";
-        }
+        msg = "SELECT name FROM sqlite_master "
+              "WHERE type='table' and name like 'r_%"+endName+"'";
 
-        if(type=eCountGrp){
-            key2use = "Nb";
-        }
+        isOk = query.exec(msg);
+        if(isOk)query.first();
 
-        /// Mettre dans la table calculee
         if(val){
             filtre = "(case when f is null then 0x2 else (f|0x2) end)";
         }
@@ -579,12 +594,19 @@ void BCount::slot_wdaFilter(bool val)
             filtre = "(case when f is null then null else (f&~0x2) end)";
         }
 
-        msg = "update " + tblDest
-                + " set f="+filtre+" where ("+key2use+"="+def[3]+");";
+        if(isOk)isOk = query.first();
+        bool next =true;
+        QSqlQuery update(dbToUse);
+        do{
+            QString tblName = query.value(0).toString();
+            msg = "update " + tblName
+                    + " set f="+filtre+" where ("+key2use+"="+def[3]+");";
 #ifndef QT_NO_DEBUG
-    qDebug() <<msg;
+            qDebug() <<msg;
 #endif
-        isOk = query.exec(msg);
+            isOk = update.exec(msg);
+            next = query.next();
+        }while(isOk && next);
     }
 
     if(!isOk)
@@ -594,11 +616,22 @@ void BCount::slot_wdaFilter(bool val)
     }
 
 
+    /// Recharger les reponses dans les tableaux
+    int useType = (this->type)-1;
 
-    /// Recharger les reponses dans le tableau
-    QString Montest = sqmZones[zn].query().executedQuery();
-    qDebug() << Montest;
-    sqmZones[zn].setQuery(Montest,dbToUse);
+    int nbCalcul = sqmActive[useType].size();
+    /// optimisation possible par saut de 3 (elm, cmb,grp)
+    /// une fois que l'on sait ou commencer
+    for(int item=0;item<nbCalcul;item++){
+        BRunningQuery *tmp = sqmActive[useType].at(item);
+
+        int nb = tmp->size;
+        if(zn<nb){
+            QString Montest = tmp->sqmDef[zn].query().executedQuery();
+            qDebug() << Montest;
+            tmp->sqmDef[zn].setQuery(Montest,dbToUse);
+        }
+    }
 
     delete chkFrom;
 }
