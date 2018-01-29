@@ -7,6 +7,8 @@
 #include <QStringList>
 #include <QGridLayout>
 #include <QStandardItemModel>
+#include <QPoint>
+
 #include "compter.h"
 
 
@@ -36,6 +38,8 @@ private slots:
 private:
     static int total;
     int demande;
+    QPoint save_pos;
+    QTableView * save_view;
     QStringList **maRef; //zn_filter
     QStandardItemModel ** p_qsim_3;
 

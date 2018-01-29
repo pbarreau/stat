@@ -635,6 +635,11 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
     QString TblCompact = C_TBL_9;
 
     QString tblToUse = tblIn + "_z"+QString::number(zn+1);
+#if 0
+    QString viewName = "r_"
+            +db_data+ "_"+ QString::number(total-1)
+            +"_"+label[type]
+            +"_z"+QString::number(zn+1);
 
     if(onGame.from == eFdj){
         TblCompact = "B_"+TblCompact;
@@ -643,6 +648,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
         tblToUse = tblIn +"_"C_TBL_5 "_z"+QString::number(zn+1);
         TblCompact = tblIn + "_"+TblCompact ;
     }
+#endif
     QString stCurTable = tblToUse;
 
     /// Verifier si des tables existent deja

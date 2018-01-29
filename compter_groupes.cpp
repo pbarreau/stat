@@ -331,10 +331,17 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 
 void BCountGroup::slot_wdaFilter(bool val)
 {
+#if 0
     QAction *chkFrom = qobject_cast<QAction *>(sender());
     bool isOk = true;
-
     QString tmp = chkFrom->objectName();
+    int v = sizeof(int);
+#endif
+    int col = save_view->columnAt(save_pos.x());
+    int lgn = save_view->rowAt(save_pos.y());
+
+    /// table destination a mettre a jour
+    QString endName = "_grp_z1";
 }
 
 
@@ -349,14 +356,19 @@ void BCountGroup::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 
     if(col > 0)
     {
+        /// Sauvegarde de la position et table
+        save_pos = pos;
+        save_view = view;
+
         QString tbl = view->objectName();
 
-        int val = 0;
+        int val = index.model()->index(index.row(),0).data().toInt();
+#if 0
         if(index.model()->index(index.row(),col).data().canConvert(QMetaType::Int))
         {
-            val =  index.model()->index(index.row(),col).data().toInt();
+            val =
         }
-
+#endif
         QMenu *MonMenu = new QMenu(this);
         QMenu *subMenu= ContruireMenu(tbl,val);
         MonMenu->addMenu(subMenu);
