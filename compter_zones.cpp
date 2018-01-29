@@ -413,7 +413,7 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     /// Selection & priorite
     qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
-            SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
+            SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 
     return lay_return;
 }

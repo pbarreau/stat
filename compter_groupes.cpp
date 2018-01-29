@@ -9,6 +9,7 @@
 #include <QToolTip>
 #include <QStackedWidget>
 #include <QSortFilterProxyModel>
+#include <QMenu>
 
 #include "compter_groupes.h"
 #include "db_tools.h"
@@ -322,101 +323,49 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     /// Selection & priorite
     qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
-            SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
+            SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 
     return qtv_tmp;
 
 }
 
-#if 0
-QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
+void BCountGroup::slot_wdaFilter(bool val)
 {
-    QTableView *qtv_tmp = new QTableView;
-    int nbLgn = limites[zn].len + 1;
+    QAction *chkFrom = qobject_cast<QAction *>(sender());
+    bool isOk = true;
 
-    QStandardItemModel * sqm_tmp = NULL;
-    QSqlQuery query ;
-
-    int nbCol = maRef[zn][0].size();
-
-    /// QString st_msg1 = "select * from TblCompact_z"+QString::number(zn+1);
-    //Creer un tableau d'element standard
-    if(nbCol)
-    {
-        sqm_tmp =  new QStandardItemModel(nbLgn,nbCol);
-        qtv_tmp->setModel(sqm_tmp);
-
-        QStringList tmp=maRef[zn][1];
-        tmp.insert(0,"Nb");
-        sqm_tmp->setHorizontalHeaderLabels(tmp);
-
-        QStringList tooltips=maRef[zn][2];
-        tooltips.insert(0,"Total");
-        for(int pos=0;pos <=nbCol;pos++)
-        {
-            QStandardItem *item = sqm_tmp->horizontalHeaderItem(pos);
-            item->setToolTip(tooltips.at(pos));
-        }
-
-        for(int lgn=0;lgn<nbLgn;lgn++)
-        {
-            for(int pos=0;pos <=nbCol;pos++)
-            {
-                QStandardItem *item = new QStandardItem();
-
-                if(pos == 0){
-                    item->setData(lgn,Qt::DisplayRole);
-                }
-                sqm_tmp->setItem(lgn,pos,item);
-                //qtv_tmp->setColumnWidth(pos,LCELL);
-            }
-        }
-        // Gestion du QTableView
-        qtv_tmp->setSelectionMode(QAbstractItemView::MultiSelection);
-        qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-        qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-
-        qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        qtv_tmp->setAlternatingRowColors(true);
-
-        qtv_tmp->setSortingEnabled(true);
-        qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
-        qtv_tmp->verticalHeader()->hide();
-
-        //largeur des colonnes
-        qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-        qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-        int b = qtv_tmp->columnWidth(0);
-        int n = sqm_tmp->columnCount();
-        qtv_tmp->setFixedWidth((b*n)+5);
-
-        //n = (qtv_tmp->horizontalHeader()->height()) * (nbLgn+1.2);
-        b = qtv_tmp->rowHeight(0);
-        n =nbLgn+1;
-        qtv_tmp->setFixedHeight((b*n)+5);
-        //qtv_tmp->setFixedSize(CLargeur1*1.8,CHauteur1);
-
-        // simple click dans fenetre  pour selectionner boules
-        connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-                 this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
-
-        // Double click dans fenetre  pour creer requete
-        connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-                 this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
-
-        qtv_tmp->setMouseTracking(true);
-
-        connect(qtv_tmp,
-                SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
-
-        ///------------------------------
-        RecalculGroupement(zn,nbCol,sqm_tmp);
-    }
-
-    return qtv_tmp;
+    QString tmp = chkFrom->objectName();
 }
-#endif
+
+
+void BCountGroup::slot_ccmr_SetPriorityAndFilters(QPoint pos)
+{
+    /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
+    /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
+
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QModelIndex index = view->indexAt(pos);
+    int col = view->columnAt(pos.x());
+
+    if(col > 0)
+    {
+        QString tbl = view->objectName();
+
+        int val = 0;
+        if(index.model()->index(index.row(),col).data().canConvert(QMetaType::Int))
+        {
+            val =  index.model()->index(index.row(),col).data().toInt();
+        }
+
+        QMenu *MonMenu = new QMenu(this);
+        QMenu *subMenu= ContruireMenu(tbl,val);
+        MonMenu->addMenu(subMenu);
+        CompleteMenu(MonMenu, tbl, val);
+
+
+        MonMenu->exec(view->viewport()->mapToGlobal(pos));
+    }
+}
 
 void BCountGroup::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp)
 {

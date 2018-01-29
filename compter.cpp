@@ -350,7 +350,9 @@ bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
     return ret;
 }
 
-void BCount::slot_ccmr_tbForBaseEcart(QPoint pos)
+
+
+void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 {
     /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
     /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered

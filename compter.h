@@ -111,7 +111,7 @@ private:
 public slots:
     void slot_AideToolTip(const QModelIndex & index);
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
-    void slot_ccmr_tbForBaseEcart(QPoint pos);
+    void slot_ccmr_SetPriorityAndFilters(QPoint pos);
     void slot_ChoosePriority(QAction *cmd);
     void slot_wdaFilter(bool val);
 

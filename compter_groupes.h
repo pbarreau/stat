@@ -27,6 +27,12 @@ public slots:
     void slot_DecodeTirage(const QModelIndex & index);
 
 
+private slots:
+    void slot_ccmr_SetPriorityAndFilters(QPoint pos);
+    void slot_wdaFilter(bool val);
+
+
+
 private:
     static int total;
     int demande;
