@@ -947,3 +947,48 @@ void BCountGroup::slot_RequeteFromSelection(const QModelIndex &index)
     }
 
 }
+
+QString BCountGroup::getFilteringData(int zn)
+{
+    QSqlQuery query(dbToUse);
+    bool isOk = true;
+    QString msg = "";
+    QString useJonction = "and";
+
+    QString userFiltringTableData = "U_g_z"+QString::number(zn+1);
+
+    msg = "select tb1.val from ("+userFiltringTableData+")as tb1 where(tb1.f = 1)";
+    isOk = query.exec(msg);
+
+    if(isOk){
+        msg="";
+        /// requete a ete execute
+
+        isOk = query.first();
+        if(isOk){
+            /// requete a au moins une reponse
+            int nbCol = maRef[zn][1].size();
+            do{
+                int value = query.value(0).toInt();
+
+                /// trouver la colonne correspondante
+                int col = (value % nbCol);
+                int lgn = value / nbCol;
+                if(col){
+                    col = col-1;
+                }
+                else{
+                 col = nbCol -1;
+                 lgn = lgn-1;
+                }
+
+                QString colName = maRef[zn][1].at(col);
+                QString tmp = "("+ colName + "=" +QString::number(lgn)+")";
+                msg = msg + tmp+useJonction;
+            }while(query.next());
+            /// supression du dernier useJonction
+            msg=msg.remove(msg.length()-useJonction.length(),useJonction.length());
+        }
+    }
+    return msg;
+}

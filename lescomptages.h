@@ -5,6 +5,10 @@
 #include <QGridLayout>
 #include <QSqlDatabase>
 
+#include "compter_zones.h"
+#include "compter_combinaisons.h"
+#include "compter_groupes.h"
+
 #include "compter.h"
 #include "db_tools.h"
 #include "labelclickable.h"
@@ -17,12 +21,6 @@ class BPrevision;
 
 /// -------ENUM---------
 /// Type de jeu possible d'etudier
-#if 0
-typedef enum _eGame{
-    eGameLoto, /// Loto
-    eGameEuro  /// Euro million
-}eGame;
-#endif
 
 /// Localisation de la base de donnees
 typedef enum _eBddDest{
@@ -67,24 +65,6 @@ typedef struct
     bool (BPrevision::*pFuncInit)(QString tbName,QSqlQuery *query); /// fonction traitant la creation
 }stCreateTable;
 
-#if 0
-/// Renseignement sur les bornes de la zone a etudier
-typedef struct _stParam_1{
-    int min; /// plus petite valeur possible
-    int max; /// plus gande valeur possible
-    int len; /// nb d'elements pouvant etre choisi entre min et max
-    int win; /// nb d'element dans len assurant le jackpot
-}stParam_1;
-
-/// Renseignement sur le nom de la zone a etudier
-typedef struct _stParam_2
-{
-    QString abv;    /// abbreviation du nom de la zone
-    QString std;    /// nom standard
-}stParam_2;
-#endif
-
-
 
 /// -------CLASS---------
 class BPrevision:public QGridLayout
@@ -94,7 +74,6 @@ class BPrevision:public QGridLayout
     /// in : infos representant les tirages
 public:
     BPrevision(eGame game, eFrom from, eBddUse def);
-    //BPrevision(eGame game, eBddUse def, QString stLesTirages);
     ~BPrevision();
 
 private:
@@ -143,6 +122,9 @@ private:
     BGame onGame;           /// parametres du jeu pour statistique globale
     BGame monJeu;           /// parametres pour filtration
     QStringList **slFlt;    /// zn_filters
+    BCountElem *c1;
+    BCountComb *c2;
+    BCountGroup *c3;
     QString tblTirages;
     QSqlQueryModel *sqm_resu;
     LabelClickable selection[3];

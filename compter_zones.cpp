@@ -418,5 +418,41 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     return lay_return;
 }
 
+QString BCountElem::getFilteringData(int zn)
+{
+    QSqlQuery query(dbToUse);
+    bool isOk = true;
+    QString msg = "";
+    QString useJonction = "and";
 
+    QString userFiltringTableData = "U_e_z"+QString::number(zn+1);
 
+    msg = "select tb1.val from ("+userFiltringTableData+")as tb1 where(tb1.f = 1)";
+    isOk = query.exec(msg);
+
+    if(isOk){
+        msg="";
+        /// requete a ete execute
+        QString ref = "("+myGame.names[zn].abv+"%1=%2)";
+        int nb_items = myGame.limites[zn].len;
+
+        isOk = query.first();
+        if(isOk){
+            /// requete a au moins une reponse
+            do{
+                int value = query.value(0).toInt();
+                QString tmp = "";
+                for(int item=0;item<nb_items;item++){
+                    tmp = tmp + ref.arg(item+1).arg(value);
+                    if(item < nb_items -1){
+                        tmp = tmp + "or";
+                    }
+                }
+                msg = msg + "("+tmp+")"+useJonction;
+            }while(query.next());
+            /// supression du dernier useJonction
+            msg=msg.remove(msg.length()-useJonction.length(),useJonction.length());
+        }
+    }
+    return msg;
+}

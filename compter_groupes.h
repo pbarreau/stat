@@ -22,6 +22,8 @@ public:
     ~BCountGroup();
     bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
     bool SupprimerVueIntermediaires(void);
+    QString getFilteringData(int zn);
+
 
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);

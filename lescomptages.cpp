@@ -1257,11 +1257,11 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     QWidget * Resultats = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
 
-    BCountElem *c1 = new BCountElem(config,source,dbInUse,Resultats);
+    c1 = new BCountElem(config,source,dbInUse,Resultats);
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
 
-    BCountComb *c2 = new BCountComb(config,source,dbInUse);
-    BCountGroup *c3 = new BCountGroup(config,source,slFlt,dbInUse);
+    c2 = new BCountComb(config,source,dbInUse);
+    c3 = new BCountGroup(config,source,slFlt,dbInUse);
 
     QGridLayout **pConteneur = new QGridLayout *[3];
     QWidget **pMonTmpWidget = new QWidget * [3];
@@ -1308,54 +1308,43 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 }
 void BPrevision::slot_filterUserGamesList()
 {
-    QSqlQuery query(dbInUse);
-    bool isOk = true;
     QString msg = "";
-    QString ensemble = "E1";
-    QString tblFilters [] =
-    {
-        "U_e_z1",
-        "U_c_z1",
-        "U_g_z1",
-    };
-    int tblCount = sizeof(tblFilters)/sizeof(QString);
+    QString source = "B_fdj";
+    QString analys = "B_ana_z1";
 
-    /// Table des jeux utilisateur presente ?
-    msg = "select count(name) from sqlite_master "
-          "WHERE type='view' AND name='"+ensemble+"';";
-    isOk = query.exec(msg);
+    /// recuperation des criteres de filtre
+    QString flt_elm = c1->getFilteringData(0);
+    QString flt_cmb = c2->getFilteringData(0);
+    QString flt_grp = c3->getFilteringData(0);
+    QString otherCriteria = "";
 
-    if(isOk)
-    {
-        query.first();
-        int val = query.value(0).toInt();
-        if(val){
-            /// Parcourir toute les tables de filtres
-            for(int tbl=0; (tbl < tblCount) && isOk;tbl++){
-                msg = "select group_concat(tb1.val) from ("
-                        +tblFilters[tbl]+" as tb1) where (tb1.f=1)";
-                isOk=query.exec(msg);
-                if(isOk){
-                    query.first();
-                    QString filters = query.value(0).toString();
-                    int taille = filters.size();
-                    if(!taille)
-                        continue;
-                    QStringList items = filters.split(",");
-                    int total = items.size();
-                    int v = 12;
-                    if(total){
-                        /// Appliquer la filtration
-
-                        v=1;
-                    }
-                    else{
-                        v=0;
-                    }
-                }
-            }
-        }
+    if(flt_elm.size()){
+        otherCriteria = "and("+flt_elm+")";
     }
+
+    if(flt_cmb.size()){
+        otherCriteria = otherCriteria+"and("+flt_cmb+")";
+    }
+
+    if(flt_grp.size()){
+        otherCriteria = otherCriteria+"and("+flt_grp+")";
+    }
+
+    msg = "select tb1.b1 as b1, tb1.b2 as b2, tb1.b3 as b3, tb1.b4 as b4, tb1.b5 as b5 from ("
+            +source
+            +") as tb1,("
+            +analys
+            +") as tb2 where ((tb1.id=tb2.id)"
+            +otherCriteria
+            +")";
+
+#ifndef QT_NO_DEBUG
+    qDebug() <<flt_elm;
+    qDebug() <<flt_cmb;
+    qDebug() <<flt_grp;
+    qDebug() <<msg;
+#endif
+
 }
 
 void BPrevision::slot_makeUserGamesList()

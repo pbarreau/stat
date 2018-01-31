@@ -20,8 +20,9 @@ class BCountElem:public BCount
     /// in : infos representant les tirages
 public:
     BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent);
-    int getCounter(void);
     ~BCountElem();
+    int getCounter(void);
+    QString getFilteringData(int zn);
 
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
@@ -38,6 +39,7 @@ private:
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
     QString PBAR_ReqComptage(QString ReqTirages, int zn,int distance);
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
+
 
 #if 0
     bool VerifierValeur(int item, QString table,int idColValue,int *lev);

@@ -486,83 +486,34 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
     return lay_return;
 }
 
-#if 0
-QGridLayout *BCountComb::Compter_euro(QString * pName, int zn)
+QString BCountComb::getFilteringData(int zn)
 {
-    QGridLayout *lay_return = new QGridLayout;
-    (* pName) = myGame.names[zn].abv;
+    QSqlQuery query(dbToUse);
+    bool isOk = true;
+    QString msg = "";
+    QString useJonction = "or";
 
-    QTableView *qtv_tmp = new QTableView;
+    QString userFiltringTableData = "U_c_z"+QString::number(zn+1);
 
-    QString qtv_name = QString::fromLatin1(TB2_SC) + "_z"+QString::number(zn+1);
-    qtv_tmp->setObjectName(qtv_name);
+    msg = "select tb1.val from ("+userFiltringTableData+")as tb1 where(tb1.f = 1)";
+    isOk = query.exec(msg);
 
-    QSqlQueryModel *sqm_tmp = &sqmZones[zn];
+    if(isOk){
+        msg="";
+        /// requete a ete execute
+        QString ref = "(idComb=%1)";
 
-
-    QString st_baseUse = db_data;
-    QString st_cr1 = "tb1.id=tb2.pid";
-    QString st_msg1 = RequetePourTrouverTotal_z2(db_data,zn);
-
-    sqm_tmp->setQuery(st_msg1,dbToUse);
-    int nbcol = sqm_tmp->columnCount();
-
-    qtv_tmp->setSortingEnabled(true);
-    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
-    qtv_tmp->setAlternatingRowColors(true);
-    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-
-    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
-
-    //qtv_tmp->setFixedSize(250,CHauteur1);
-
-    QSortFilterProxyModel *m=new QSortFilterProxyModel();
-    m->setDynamicSortFilter(true);
-    m->setSourceModel(sqm_tmp);
-    qtv_tmp->setModel(m);
-    qtv_tmp->setItemDelegate(new Dlgt_Combi); /// Delegation
-
-    qtv_tmp->verticalHeader()->hide();
-    //qtv_tmp->hideColumn(0);
-
-    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-    // simple click dans fenetre  pour selectionner boules
-    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
-
-    // Double click dans fenetre  pour creer requete
-    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-             this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
-
-    qtv_tmp->setMouseTracking(true);
-    connect(qtv_tmp,
-            SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
-
-
-    /// Selection & priorite
-    qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
-            SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
-
-    // Filtre
-    QFormLayout *FiltreLayout = new QFormLayout;
-    FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
-    QList<qint32> colid;
-    for(int i=0; i<myGame.limites[zn].len; i++)
-    {
-        colid << i+2;
+        isOk = query.first();
+        if(isOk){
+            /// requete a au moins une reponse
+            do{
+                int value = query.value(0).toInt();
+                QString tmp = ref.arg(value);
+                msg = msg + tmp+useJonction;
+            }while(query.next());
+            /// supression du dernier useJonction
+            msg=msg.remove(msg.length()-useJonction.length(),useJonction.length());
+        }
     }
-    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
-
-    FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
-
-    lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
-    lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
-
-    return lay_return;
+    return msg;
 }
-#endif
