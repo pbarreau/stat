@@ -6,12 +6,14 @@
 #include <QAbstractTextDocumentLayout>
 #include <QLineF>
 
+#include <QSqlQueryModel>
+
 #include "delegate.h"
 
 
 //---------------------------------------------------
-void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
-                     const QModelIndex &index) const
+void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                             const QModelIndex &index) const
 {
     QStyleOptionViewItem maModif(option);
     //QPainter MonPainter(painter->device());
@@ -127,8 +129,8 @@ void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
 
 }
 
-void Dlgt_Combi::paint(QPainter *painter, const QStyleOptionViewItem &option,
-                       const QModelIndex &index) const
+void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                              const QModelIndex &index) const
 {
     int col = index.column();
     int row = index.row();
@@ -174,8 +176,8 @@ void Dlgt_Combi::paint(QPainter *painter, const QStyleOptionViewItem &option,
 }
 
 
-void Dlgt_grp::paint(QPainter *painter, const QStyleOptionViewItem &option,
-                       const QModelIndex &index) const
+void BDelegateFilterGrp::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                               const QModelIndex &index) const
 {
     int col = index.column();
     int row = index.row();
@@ -201,3 +203,38 @@ void Dlgt_grp::paint(QPainter *painter, const QStyleOptionViewItem &option,
     }
     QItemDelegate::paint(painter, maModif, index);
 }
+
+BSqmColorizePriority::BSqmColorizePriority(QObject *parent):QSqlQueryModel(parent)
+{
+
+}
+
+QVariant BSqmColorizePriority::data(const QModelIndex &index, int role) const
+{
+    QColor u[]= {
+        Qt::black,
+        Qt::red,
+        Qt::green,
+        QColor(255,216,0,255),
+        QColor(255,106,0,255),
+        QColor(178,0,255,255)};
+
+    if(index.column()== 0 )
+    {
+        int nbCol=index.model()->columnCount();
+
+        /// recuperation de l'info donnant la couleur
+        QModelIndex priority = index.sibling(index.row(),nbCol-2);
+
+
+        /// Choix de la couleur a appliquer
+        if(priority.data().canConvert(QMetaType::Int)){
+            int val = priority.data().toInt();
+            if (role == Qt::TextColorRole){
+                return (u[val]);
+            }
+        }
+    }
+    return QSqlQueryModel::data(index,role);
+}
+

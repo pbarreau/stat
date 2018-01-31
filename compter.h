@@ -11,6 +11,7 @@
 #include <QSqlQueryModel>
 #include <QList>
 
+#include "delegate.h"
 #include "game.h"
 
 #define CEL2_H  55
@@ -103,12 +104,12 @@ protected:
     QModelIndexList *lesSelections; /// liste des selections dans les tableaux
     QString *sqlSelection;  /// code sql generee pour un tableau
     static QList<BRunningQuery *> sqmActive[3];
-    QSqlQueryModel *sqmZones; /// pour mettre a jour le tableau des resultats
+    BSqmColorizePriority *sqmZones; /// pour mettre a jour le tableau des resultats
 
 private:
     static int nbChild;
 
-public slots:
+protected slots:
     void slot_AideToolTip(const QModelIndex & index);
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
     void slot_ccmr_SetPriorityAndFilters(QPoint pos);

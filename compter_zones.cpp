@@ -308,8 +308,8 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 #endif
 
 
-    /// on rajoute une colone pour la couleur
-    arg1 = "tbLeft.*,(case when (tbRight.f==1) then 0x2 end)as F ";
+    /// on rajoute une colone pour la priorité et une pour la couleur
+    arg1 = "tbLeft.*,tbRight.p as P,(case when (tbRight.f==1) then 0x2 end)as F ";
     arg2 = msg;
     arg3 = " select * from "+SelElemt+"_z"+QString::number(zn+1);
     arg4 = "tbLeft.B = tbRight.val";
@@ -351,7 +351,7 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     QString qtv_name = QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
-    QSqlQueryModel *sqm_tmp = &sqmZones[zn];
+    BSqmColorizePriority *sqm_tmp = &sqmZones[zn];
 
 
     QString ReqTirages = db_data;
@@ -373,7 +373,7 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
 
 
     qtv_tmp->setModel(m);
-    qtv_tmp->setItemDelegate(new Dlgt_Combi); /// Delegation
+    qtv_tmp->setItemDelegate(new BDelegateElmOrCmb); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
     //qtv_tmp->hideColumn(0);

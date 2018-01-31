@@ -11,6 +11,7 @@
 #include <QStackedWidget>
 #include <QMenu>
 
+#include "delegate.h"
 #include "compter.h"
 #include "db_tools.h"
 
@@ -160,7 +161,7 @@ BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
         lesSelections = new QModelIndexList [myGame.znCount];
         sqlSelection = new QString [myGame.znCount];
 
-        sqmZones = new QSqlQueryModel [myGame.znCount];
+        sqmZones = new BSqmColorizePriority [myGame.znCount];
         BRunningQuery * tmp = new BRunningQuery;
         tmp->size = myGame.znCount;
         tmp->sqmDef = sqmZones;
@@ -425,6 +426,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
 {
     QSqlQuery query(dbToUse);
     QString msg = "";
+    QString msg_2 = "";
 
     QString st_from = cmd->objectName();
     QStringList def = st_from.split(":");
@@ -441,7 +443,9 @@ void BCount::slot_ChoosePriority(QAction *cmd)
     int v_1 = def[1].toInt();
     int v_2 = def[2].toInt();
     int elm = def[3].toInt();
+    int zn = ((st_from.split("z")).at(1)).toInt()-1;
     QString tbl = def[4];
+    QString tbl2 = "r_B_fdj_0_elm_z"+QString::number(zn+1);
 
     // faut il inserer une nouvelle ligne
     /// TB_SE
@@ -450,12 +454,16 @@ void BCount::slot_ChoosePriority(QAction *cmd)
         msg = "insert into " + tbl + " (id, val, p, f) values(NULL,"
                 +def[3]+","+ def[2]+",0);";
 
+        msg_2 = "update " + tbl2 + " set p="+def[2]+" "+
+                "where (b="+def[3]+");";
     }
     // Verifier si if faut supprimer la priorite
     if(v_1 == v_2)
     {
         msg = "update " + tbl + " set p=0 "+
                 "where (val="+def[3]+");";
+        msg_2 = "update " + tbl2 + " set p=null "+
+                "where (b="+def[3]+");";
         trv = 0;
     }
 
@@ -465,11 +473,21 @@ void BCount::slot_ChoosePriority(QAction *cmd)
         msg = "update " + tbl + " set p="+def[2]+" "+
                 "where (val="+def[3]+");";
 
+        msg_2 = "update " + tbl2 + " set p="+def[2]+" "+
+                "where (b="+def[3]+");";
     }
 
-    bool rep = query.exec(msg);
+    bool isOk = query.exec(msg);
+    if(isOk){
+        isOk = query.exec(msg_2);
+        if(isOk){
+            /// Relancer les requetes pour voir les modifs
+            msg = sqmZones[zn].query().executedQuery();
+            sqmZones[zn].setQuery(msg,dbToUse);
+        }
+    }
 
-    if(!rep)
+    if(!isOk)
     {
         trv = false;
 #ifndef QT_NO_DEBUG
@@ -486,6 +504,11 @@ void BCount::slot_ChoosePriority(QAction *cmd)
 
     }
 
+    /// Mettre le flag priority dans les tables concernees
+    msg = "update "
+            +tbl
+            +" set p="
+            ;
     /// montrer que l'on a compris
     /// la demande utilisateur
     cmd->setChecked(true);

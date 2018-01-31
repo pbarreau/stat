@@ -658,7 +658,7 @@ QSplitter *ShowStepper::SetDataSplitter_1(int col, int cid, int tid)
 
     my_model = new QSqlQueryModel [col];
     QTableView *view = new QTableView[col];
-    Delegate *MaGestion = new Delegate  [col];
+    BDelegateStepper *MaGestion = new BDelegateStepper  [col];
     for(int i = 0; i< col; i++)
     {
         ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
@@ -696,7 +696,7 @@ QSplitter *ShowStepper::SetDataSplitter_3(int col, int cid, int tid)
 
     my_model_2 = new QSqlQueryModel [col-1];
     QTableView *view = new QTableView[col-1];
-    Delegate *MaGestion = new Delegate  [col-1];
+    BDelegateStepper *MaGestion = new BDelegateStepper  [col-1];
 #if 0
     select r1.b as y, r1.c from
             (
@@ -765,7 +765,7 @@ QSplitter *ShowStepper::SetDataSplitter_2(int col, int cid, int tid)
 
     my_model_3 = new QSqlQueryModel [col+1];
     QTableView *view = new QTableView[col+1];
-    Delegate *MaGestion = new Delegate  [col+1];
+    BDelegateStepper *MaGestion = new BDelegateStepper  [col+1];
 #if 0
 select r1.b as d0,r1.c,r1.bgc
         from stepper_4 as r1

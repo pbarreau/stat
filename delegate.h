@@ -3,32 +3,42 @@
 
 #include <QObject>
 #include <QItemDelegate>
+#include <QSqlQueryModel>
 
-class Delegate : public QItemDelegate
+class BDelegateStepper : public QItemDelegate
 {
     Q_OBJECT
 public:
-    Delegate(QWidget *parent = 0) : QItemDelegate(parent) {}
+    BDelegateStepper(QWidget *parent = 0) : QItemDelegate(parent) {}
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const;
 };
 
-class Dlgt_Combi : public QItemDelegate
+class BDelegateElmOrCmb : public QItemDelegate
 {
     Q_OBJECT
 public:
-    Dlgt_Combi(QWidget *parent = 0) : QItemDelegate(parent) {}
+    BDelegateElmOrCmb(QWidget *parent = 0) : QItemDelegate(parent) {}
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const;
 };
 
-class Dlgt_grp : public QItemDelegate
+class BDelegateFilterGrp : public QItemDelegate
 {
     Q_OBJECT
 public:
-    Dlgt_grp(QWidget *parent = 0) : QItemDelegate(parent) {}
+    BDelegateFilterGrp(QWidget *parent = 0) : QItemDelegate(parent) {}
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const;
+};
+
+class BSqmColorizePriority:public QSqlQueryModel
+{
+    Q_OBJECT
+
+public: ///
+    explicit BSqmColorizePriority(QObject *parent = 0);
+    QVariant data(const QModelIndex &index, int role) const;
 };
 
 #endif // DELEGATE_H
