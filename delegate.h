@@ -22,4 +22,13 @@ public:
                const QModelIndex &index) const;
 };
 
+class Dlgt_grp : public QItemDelegate
+{
+    Q_OBJECT
+public:
+    Dlgt_grp(QWidget *parent = 0) : QItemDelegate(parent) {}
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,
+               const QModelIndex &index) const;
+};
+
 #endif // DELEGATE_H

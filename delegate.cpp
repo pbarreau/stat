@@ -143,10 +143,6 @@ void Dlgt_Combi::paint(QPainter *painter, const QStyleOptionViewItem &option,
     if(index.model()->index(index.row(),nbCol-1).data().canConvert(QMetaType::Int))
     {
         val =  index.model()->index(index.row(),nbCol-1).data().toInt();
-        if(col ==1 && row ==102)
-        {
-            val =val;
-        }
     }
 
 
@@ -174,5 +170,34 @@ void Dlgt_Combi::paint(QPainter *painter, const QStyleOptionViewItem &option,
     }
 
 
+    QItemDelegate::paint(painter, maModif, index);
+}
+
+
+void Dlgt_grp::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                       const QModelIndex &index) const
+{
+    int col = index.column();
+    int row = index.row();
+    int nbCol = index.model()->columnCount();
+    int val = 0;
+    QStyleOptionViewItem maModif(option);
+    QColor u[]= {QColor(201,230,255,255),QColor(200,170,100,140)};
+
+
+    /// Regarder la valeur de la derniere colonne
+    /// Elle indique que mettre comme couleur
+    if(index.model()->index(index.row(),nbCol-1).data().canConvert(QMetaType::Int))
+    {
+        val =  index.model()->index(index.row(),nbCol-1).data().toInt();
+    }
+
+
+    if(col>0 && col<(nbCol-1)){
+        /// bit actif
+        if(val & (1<<col-1)){
+            painter->fillRect(option.rect, u[0]);
+        }
+    }
     QItemDelegate::paint(painter, maModif, index);
 }

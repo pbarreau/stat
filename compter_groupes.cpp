@@ -283,7 +283,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     m->setSourceModel(sqm_tmp);
 
     qtv_tmp->setModel(m);
-    qtv_tmp->setItemDelegate(new Dlgt_Combi); /// Delegation
+    qtv_tmp->setItemDelegate(new Dlgt_grp); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
     //qtv_tmp->hideColumn(0);
