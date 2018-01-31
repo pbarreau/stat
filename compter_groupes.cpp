@@ -249,6 +249,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 
     QString TblCompact = C_TBL_9;
 
+#if 0
     if(myGame.from == eFdj)
     {
         TblCompact = "B_"+TblCompact;
@@ -256,6 +257,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     else{
         TblCompact = "U_"+db_data+ "_"+TblCompact ;
     }
+#endif
 
     QString qtv_name = QString::fromLatin1(C_TBL_8) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
@@ -329,21 +331,136 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 
 }
 
-void BCountGroup::slot_wdaFilter(bool val)
+void BCountGroup::slot_wdaFilter(bool isChecked)
 {
-#if 0
     QAction *chkFrom = qobject_cast<QAction *>(sender());
-    bool isOk = true;
     QString tmp = chkFrom->objectName();
-    int v = sizeof(int);
-#endif
-    int col = save_view->columnAt(save_pos.x());
-    int lgn = save_view->rowAt(save_pos.y());
+    bool isOk = true;
 
-    /// table destination a mettre a jour
-    QString endName = "_grp_z1";
+    int zn = ((tmp.split("z")).at(1)).toInt()-1;
+    bool isPresent = tmp.split(":").at(0).toInt();
+
+    int d_col = save_view->columnAt(save_pos.x());
+    int d_lgn = save_view->rowAt(save_pos.y());
+    int nbCol = maRef[zn][0].size();
+    int d_cell_id = (d_lgn*nbCol)+d_col;
+
+    /// Mise a jour table pour menu contextuel
+    isOk = updateOrInsertGrpSelection(d_cell_id,isPresent,isChecked,zn);
+
+    /// Mise a jour tableau des syntheses
+    if(isOk)
+        isOk = updateGrpTable(d_lgn,d_col,isChecked,zn);
+
+
+    if(!isOk)
+    {
+        QString ErrLoc = "BCountGroup::slot_wdaFilter:";
+        DB_Tools::DisplayError(ErrLoc,NULL,"");
+    }
+
 }
 
+bool BCountGroup::updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool isChecked, int zn)
+{
+    bool isOk = true;
+    QSqlQuery query(dbToUse);
+    QString msg = "";
+
+    QString tbl_1 = "U_g_z1";
+
+    /// +QString::number(setSelected)+
+    ///
+
+    if(isPresent == false){
+        msg = "insert into "+ tbl_1 + " (id, val, p, f)values(NULL,"
+                +QString::number(d_cell_id)
+                +",0,1);";
+    }
+    else{
+        msg = "update "
+                + tbl_1
+                + " set f="+QString::number(isChecked)
+                +" where (val="
+                +QString::number(d_cell_id)
+                +");";
+    }
+
+    isOk = query.exec(msg);
+
+    if(!isOk)
+    {
+        QString ErrLoc = "BCountGroup::updateOrInsertGrpSelection:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
+    return isOk;
+}
+
+bool BCountGroup::updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn)
+{
+    bool isOk = true;
+    QSqlQuery query(dbToUse);
+    QString msg = "";
+
+
+    QString tbl_2 = "grp_z1";
+
+    int setSelected = 0;
+    int setUnSelected = 0;
+
+
+    /// un entier contient 32 bits
+    /// on les utilise comme indicateur de colonne
+    if(d_col > 0 && d_col <=32){
+        setSelected = 1<<(d_col-1);
+        setUnSelected = ~setSelected;
+    }
+    else{
+        return false;
+    }
+
+    /// recuperer la valeur actuelle
+    msg = "select tb1.f from("+tbl_2+") as tb1 where(tb1.Nb="
+            +QString::number(d_lgn)
+            +")";
+    isOk= query.exec(msg);
+    if(isOk){
+        query.first();
+        int curValue = query.value(0).toInt();
+
+        /// mettre la nouvelle valeur
+        /// en fonction de l'etat checked
+        if(isChecked){
+            curValue = curValue | setSelected;
+        }
+        else{
+            curValue = curValue & setUnSelected;
+        }
+
+        /// mettre la modification dans la table
+        msg = "update " + tbl_2 + " set f="+QString::number(curValue)+" "+
+                "where (Nb="
+                +QString::number(d_lgn)
+                +");";
+
+        isOk= query.exec(msg);
+    }
+
+    if(isOk){
+        /// Relancer les requetes pour voir les modifs
+        msg = sqmZones[zn].query().executedQuery();
+        sqmZones[zn].setQuery(msg,dbToUse);
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "BCountGroup::updateGrpTable:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+
+    return isOk;
+}
 
 void BCountGroup::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 {
@@ -352,27 +469,41 @@ void BCountGroup::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 
     QTableView *view = qobject_cast<QTableView *>(sender());
     QModelIndex index = view->indexAt(pos);
-    int col = view->columnAt(pos.x());
+    QString tbl = view->objectName();
 
-    if(col > 0)
+    int zn = ((tbl.split("z")).at(1)).toInt()-1;
+    int d_col = view->columnAt(pos.x());
+    int d_lgn = view->rowAt(pos.y());
+
+    int nbCol = maRef[zn][0].size();
+
+    int val = 0;
+    if(index.model()->
+            index(index.row(),index.column())
+            .data()
+            .canConvert(QMetaType::Int)
+            )
+    {
+        val =  index.model()->index(index.row(),index.column()).data().toInt();
+    }
+
+    if((d_col > 0) && (d_col <= nbCol) && (val !=0))
     {
         /// Sauvegarde de la position et table
         save_pos = pos;
         save_view = view;
 
-        QString tbl = view->objectName();
 
-        int val = index.model()->index(index.row(),0).data().toInt();
-#if 0
-        if(index.model()->index(index.row(),col).data().canConvert(QMetaType::Int))
-        {
-            val =
-        }
-#endif
+
+        //int val = index.model()->index(index.row(),0).data().toInt();
+
+        int d_nbCol = maRef[zn][0].size();
+        int d_cell_id = (d_lgn*d_nbCol)+d_col;
+
         QMenu *MonMenu = new QMenu(this);
-        QMenu *subMenu= ContruireMenu(tbl,val);
+        QMenu *subMenu= ContruireMenu(tbl,d_cell_id);
         MonMenu->addMenu(subMenu);
-        CompleteMenu(MonMenu, tbl, val);
+        CompleteMenu(MonMenu, tbl, d_cell_id);
 
 
         MonMenu->exec(view->viewport()->mapToGlobal(pos));

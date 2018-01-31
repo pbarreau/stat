@@ -31,7 +31,7 @@ public slots:
 
 private slots:
     void slot_ccmr_SetPriorityAndFilters(QPoint pos);
-    void slot_wdaFilter(bool val);
+    void slot_wdaFilter(bool isChecked);
 
 
 
@@ -54,6 +54,8 @@ private:
     void RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp);
     QString sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri, int zn);
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
+    bool updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool isChecked, int zn);
+    bool updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn);
 
 
 
