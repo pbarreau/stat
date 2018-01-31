@@ -641,6 +641,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
             +"_"+label[type]
             +"_z"+QString::number(zn+1);
 
+
     if(onGame.from == eFdj){
         TblCompact = "B_"+TblCompact;
     }
@@ -649,6 +650,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
         TblCompact = tblIn + "_"+TblCompact ;
     }
 #endif
+
     QString stCurTable = tblToUse;
 
     /// Verifier si des tables existent deja
@@ -1308,9 +1310,24 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 }
 void BPrevision::slot_filterUserGamesList()
 {
+    QSqlQuery query(dbInUse);
+    bool isOk = true;
     QString msg = "";
-    QString source = "B_fdj";
-    QString analys = "B_ana_z1";
+    QString source = "E1";
+    QString analys = "U_E1_ana_z1";
+
+    /// Verifier si existance table resultat utilisateur
+    msg = "SELECT name FROM sqlite_master "
+          "WHERE type='table' AND name='"+source+"';";
+    isOk = query.exec(msg);
+
+    if(isOk)
+    {
+        /// A t'on une reponse
+        isOk = query.first();
+        if(!isOk)
+            return;
+    }
 
     /// recuperation des criteres de filtre
     QString flt_elm = c1->getFilteringData(0);
@@ -1345,6 +1362,9 @@ void BPrevision::slot_filterUserGamesList()
     qDebug() <<msg;
 #endif
 
+    /// Mettre la vue a jour
+    sqm_resu->setQuery(msg,dbInUse);
+
 }
 
 void BPrevision::slot_makeUserGamesList()
@@ -1357,6 +1377,7 @@ void BPrevision::slot_makeUserGamesList()
     int n = 0;
     int p = 0;
 
+#if 0
     /// ----------- test
     msg = "delete from "
             +SelElemt+"_z1";
@@ -1386,6 +1407,8 @@ void BPrevision::slot_makeUserGamesList()
     isOk= query.exec(msg);
 
     /// ----------- fin test
+#endif
+
     /// Selectionner les boules choisi par l'utilisateur pour en faire
     /// un ensemble d'etude
     ///
@@ -1431,7 +1454,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     QSqlQuery query(dbInUse);
     QString msg = "";
     QString source = "E1";
-    QString tbUse = "U_"+source;
+    QString tbUse = "U_"+source+"_ana";
 
     monJeu;
 
@@ -1472,6 +1495,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 
         sqm_resu->setQuery(msg,dbInUse);
         qtv_tmp->setModel(sqm_resu);
+        int nbLignes = sqm_resu->rowCount();
 
         int nbCol = sqm_resu->columnCount();
         for(int col=0;col<nbCol;col++)
@@ -1586,7 +1610,6 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
     else{
         tblToUse = tblIn ;
         tbLabAna = "U_" + tblToUse + "_" +tbLabAna;
-        //tbLabCmb = "U_" + tblToUse + "_" +tbLabCmb;
     }
     tbLabAna =tbLabAna+"_z"+QString::number(zn+1);
 
