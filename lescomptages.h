@@ -4,6 +4,7 @@
 #include <QString>
 #include <QGridLayout>
 #include <QSqlDatabase>
+#include <QLabel>
 
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
@@ -128,6 +129,7 @@ private:
     QString tblTirages;
     QSqlQueryModel *sqm_resu;
     LabelClickable selection[3];
+    QLabel *lignes;
     QString titre[3];
     QString sql[3];
 };

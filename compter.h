@@ -35,7 +35,7 @@
 #define C_TBL_8     "U_g"   /// ..on regroupement
 #define C_TBL_9     "grp"   /// synthese on regroupement
 
-#define MAX_CHOIX_BOULES    20
+#define MAX_CHOIX_BOULES    30
 
 /// https://fr.wikibooks.org/wiki/Programmation_C%2B%2B/Les_classes
 /// https://fr.wikipedia.org/wiki/Fonction_virtuelle

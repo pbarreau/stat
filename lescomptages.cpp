@@ -10,6 +10,9 @@
 #include <QTabWidget>
 #include <QSqlQuery>
 #include <QSqlResult>
+#include <QTextStream>
+#include <QVBoxLayout>
+#include <QLabel>
 
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
@@ -1364,6 +1367,9 @@ void BPrevision::slot_filterUserGamesList()
 
     /// Mettre la vue a jour
     sqm_resu->setQuery(msg,dbInUse);
+    int nbLignes = sqm_resu->rowCount();
+    QString tot = "Total : " + QString::number(nbLignes);
+    lignes->setText(tot);
 
 }
 
@@ -1376,38 +1382,6 @@ void BPrevision::slot_makeUserGamesList()
     BCnp *a = NULL;
     int n = 0;
     int p = 0;
-
-#if 0
-    /// ----------- test
-    msg = "delete from "
-            +SelElemt+"_z1";
-    isOk= query.exec(msg);
-
-    msg = "insert into "
-            +SelElemt+"_z1"
-            +" (val,p) values "
-             "(34,1),"
-             "(43,1),"
-             "(22,1),"
-             "(12,1),"
-             "(08,1),"
-             "(42,1),"
-             "(10,1),"
-             "(27,1),"
-             "(17,1),"
-             "(16,1),"
-             "(03,1),"
-             "(40,1),"
-             "(06,1)"
-            ;
-#ifndef QT_NO_DEBUG
-    qDebug() <<msg;
-#endif
-
-    isOk= query.exec(msg);
-
-    /// ----------- fin test
-#endif
 
     /// Selectionner les boules choisi par l'utilisateur pour en faire
     /// un ensemble d'etude
@@ -1488,6 +1462,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     static bool OneShot = false;
     if(OneShot==false){
         OneShot = true;
+
         /// Montrer resultats
         msg="select * from ("+source+")";
         QTableView *qtv_tmp = new QTableView;
@@ -1495,15 +1470,29 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 
         sqm_resu->setQuery(msg,dbInUse);
         qtv_tmp->setModel(sqm_resu);
+
+        lignes =new QLabel;
         int nbLignes = sqm_resu->rowCount();
+        QString tot = "Total : " + QString::number(nbLignes);
+        lignes->setText(tot);
+
+        QWidget *Affiche = new QWidget;
+        QVBoxLayout *layout = new QVBoxLayout;
+        layout->addWidget(lignes,0,Qt::AlignLeft|Qt::AlignTop);
+        layout->addWidget(qtv_tmp,1,Qt::AlignLeft|Qt::AlignTop);
+
 
         int nbCol = sqm_resu->columnCount();
         for(int col=0;col<nbCol;col++)
         {
             qtv_tmp->setColumnWidth(col,CEL2_L);
         }
-        qtv_tmp->setWindowTitle("Ensemble:"+ source);
-        qtv_tmp->show();
+        qtv_tmp->setFixedHeight(700);
+        qtv_tmp->setFixedWidth((nbCol+1)*CEL2_L);
+
+        Affiche->setLayout(layout);
+        Affiche->setWindowTitle("Ensemble:"+ source);
+        Affiche->show();
     }
 
     isOk = true;

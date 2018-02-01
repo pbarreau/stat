@@ -653,7 +653,9 @@ void BCount::slot_wdaFilter(bool val)
         int nb = tmp->size;
         if(zn<nb){
             QString Montest = tmp->sqmDef[zn].query().executedQuery();
+#ifndef QT_NO_DEBUG
             qDebug() << Montest;
+#endif
             tmp->sqmDef[zn].setQuery(Montest,dbToUse);
         }
     }
