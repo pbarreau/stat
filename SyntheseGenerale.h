@@ -137,7 +137,8 @@ public slots:
     void slot_wdaFilter(int val);
 
 
-
+private slots:
+    void slot_ShowBouleForNewDesign(const QModelIndex & index);
 
 private:
     //QString OrganiseChampsDesTirages(QString st_base_reference);

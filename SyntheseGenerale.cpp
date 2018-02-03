@@ -148,6 +148,18 @@ void SyntheseGenerale::slot_ShowTotalBoule(const QModelIndex &index)
     }
 }
 
+void SyntheseGenerale::slot_ShowBouleForNewDesign(const QModelIndex & index)
+{
+   /// Pas de test sur la colonne ici
+   /// se mettre sur le bon onglet
+    ptabComptage->setCurrentIndex(0);///(boules)
+
+    // recuperer la valeur a la colone de la table
+    int val = index.model()->index(index.row(),0).data().toInt();
+    mysortModel->sort(0);
+    tbv_bloc1_1->scrollTo(mysortModel->index(val-1,0));
+}
+
 void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
 {
     int val = 0;

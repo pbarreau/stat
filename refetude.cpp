@@ -1288,11 +1288,13 @@ void RefEtude::slot_ShowBoule(const QModelIndex & index)
 void RefEtude::slot_ShowBoule_2(const QModelIndex & index)
 {
     int val = 0;
-
+    int zn = 0;
 
     // recuperer la valeur de la colonne
     int col = index.column();
     val = index.model()->index(index.row(),0).data().toInt();
+    p_simResu[zn]->sort(0);
+    p_tbv_4[zn]->scrollTo(p_simResu[zn]->index(val-1,1));
 
 
     col = 0;

@@ -100,6 +100,12 @@ void BCountElem::slot_ClicDeSelectionTableau(const QModelIndex &index)
     {
         /// oui alors deselectionner l'element
         selectionModel->select(index, QItemSelectionModel::Deselect);
+
+        /// si on est sur la partie boule indiquer a synthese generale
+        if(tab_index==0){
+            emit sig_isClickedOnBall(index);
+        }
+
         return;
     }
 

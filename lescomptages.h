@@ -110,6 +110,10 @@ private:
     bool isTableCnpinDb(int n, int p);
     void creerJeuxUtilisateur(int n, int p);
 
+Q_SIGNALS:
+    void sig_isClickedOnBall(const QModelIndex &index);
+private slots:
+    void slot_emitThatClickedBall(const QModelIndex &index);
 
 public slots:
     void slot_changerTitreZone(QString le_titre);
@@ -133,5 +137,6 @@ private:
     QString titre[3];
     QString sql[3];
 };
+
 
 #endif // LESCOMPTAGES_H

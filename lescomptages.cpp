@@ -1264,6 +1264,11 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 
     c1 = new BCountElem(config,source,dbInUse,Resultats);
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
+    /// transfert vers SyntheseGenerale
+    connect(c1,
+            SIGNAL(sig_isClickedOnBall(QModelIndex)),
+            this,
+            SLOT(slot_emitThatClickedBall(QModelIndex)));
 
     c2 = new BCountComb(config,source,dbInUse);
     c3 = new BCountGroup(config,source,slFlt,dbInUse);
@@ -1371,6 +1376,12 @@ void BPrevision::slot_filterUserGamesList()
     QString tot = "Total : " + QString::number(nbLignes);
     lignes->setText(tot);
 
+}
+
+/// slot de reemission de la boule selectionnee
+void BPrevision::slot_emitThatClickedBall(const QModelIndex &index)
+{
+    emit sig_isClickedOnBall(index);
 }
 
 void BPrevision::slot_makeUserGamesList()

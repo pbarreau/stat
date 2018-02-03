@@ -75,6 +75,23 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     }
     else
     {
+
+        /// Debut traitement
+        RechercheProgressionBoules(&configJeu);
+
+
+        w_FenetreDetails = new QWidget;
+        gtab_Top = new QTabWidget;
+        gtab_Top->setTabsClosable(true);
+        QFormLayout *mainLayout = new QFormLayout;
+        mainLayout->addWidget(gtab_Top);
+        connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
+
+        TST_EtoileCombi(&configJeu);
+        FEN_NewTirages(&configJeu);
+
+
+        //// Reecriture sous forme objet
         switch(leJeu){
         case NE_FDJ::fdj_loto:
             unJeu = eGameLoto;
@@ -89,22 +106,15 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         tous = new BPrevision(unJeu,eFdj,eBddUseDisk);
         connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_makeUserGamesList()));
         connect(FiltrerAct, SIGNAL(triggered()), tous, SLOT(slot_filterUserGamesList()));
+        connect(tous,
+                SIGNAL(sig_isClickedOnBall(QModelIndex)),
+                syntheses,
+                SLOT(slot_ShowBouleForNewDesign(QModelIndex)));
+        connect(tous,
+                SIGNAL(sig_isClickedOnBall(QModelIndex)),
+                syntheses->GetTabEcarts(),
+                SLOT(slot_ShowBoule_2(QModelIndex)));
 
-
-        RechercheProgressionBoules(&configJeu);
-
-
-        w_FenetreDetails = new QWidget;
-        gtab_Top = new QTabWidget;
-        gtab_Top->setTabsClosable(true);
-        QFormLayout *mainLayout = new QFormLayout;
-        mainLayout->addWidget(gtab_Top);
-        connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
-
-
-        TST_EtoileCombi(&configJeu);
-
-        FEN_NewTirages(&configJeu);
     }
 }
 
