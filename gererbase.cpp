@@ -89,8 +89,10 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
         // Creer les tables initiales de la base
         CreationTablesDeLaBDD_v2();
 
+
         // Charger les fichiers de donnees
         LireFichiersDesTirages(autoLoad, retErr);
+
 
     }
     else

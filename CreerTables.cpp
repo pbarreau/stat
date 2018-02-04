@@ -88,11 +88,12 @@ bool GererBase::CreerTableCnp(QString tb, QString *data)
                 this,SLOT(slot_UseCnpLine(sigData,QString)));
 #endif
     }
-
+/* BUG ???
     /// Pour Voir les resultats
     /// A verifier incidence double creation
     BCnp *a = new BCnp(12,2);
     BCnp *b = new BCnp(10,1);
+    */
     return(isOk);
 }
 
@@ -204,15 +205,16 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     {
         "TablesList:tbName text,usage int,description text",
         "ExplAvecData:name text, abv text",
+        "TbNomCreeDansLaFonctionAppelee:2",
+        "TbNomCreeDansLaFonctionAppelee:4",
         "TbNomCreeDansLaFonctionAppelee:CNP",
         "TbNomCreeDansLaFonctionAppelee:Gamma_NP",
         "TbNomCreeDansLaFonctionAppelee:1",
-        "TbNomCreeDansLaFonctionAppelee:2",
         "TbNomCreeDansLaFonctionAppelee:3",
-        "TbNomCreeDansLaFonctionAppelee:4",
         "TbNomCreeDansLaFonctionAppelee:5",
         "TbNomCreeDansLaFonctionAppelee:6",
         "TbNomCreeDansLaFonctionAppelee:7"
+           /* */
     };
 
     QString data_1[]=
@@ -226,15 +228,16 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     {
         {aCreer[position++],NULL,0,NULL},
         {aCreer[position++],&data_1[0],sizeof(data_1)/sizeof(QString*),NULL},
+        {aCreer[position++],NULL,0,f2}, /// nom des boules
+        {aCreer[position],NULL,0,f4}, /// table des combinaisons
         {aCreer[position++],NULL,0,CreerTableCnp},
         {aCreer[position++],NULL,0,CreerTableGnp},
         {aCreer[position++],NULL,0,f1}, ///tirages
         {aCreer[position++],NULL,0,f1_1}, ///noms des zones
         {aCreer[position++],NULL,0,f1_2}, /// limites
-        {aCreer[position++],NULL,0,f2}, /// nom des boules
         {aCreer[position++],NULL,0,f2_2}, /// selections utilisateur
-        {aCreer[position++],NULL,0,f3}, /// analyse des boules
-        {aCreer[position],NULL,0,f4} /// table des combinaisons
+        {aCreer[position++],NULL,0,f3} /// analyse des boules
+        /**/
     };
 
     int total_1 = sizeof(aCreer)/sizeof(QString);

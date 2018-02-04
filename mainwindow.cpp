@@ -75,7 +75,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     }
     else
     {
-
         /// Debut traitement
         RechercheProgressionBoules(&configJeu);
 
@@ -90,7 +89,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         TST_EtoileCombi(&configJeu);
         FEN_NewTirages(&configJeu);
 
-
         //// Reecriture sous forme objet
         switch(leJeu){
         case NE_FDJ::fdj_loto:
@@ -104,6 +102,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
             break;
         }
         tous = new BPrevision(unJeu,eFdj,eBddUseDisk);
+//#if 0
         connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_makeUserGamesList()));
         connect(FiltrerAct, SIGNAL(triggered()), tous, SLOT(slot_filterUserGamesList()));
         connect(tous,
@@ -114,6 +113,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
                 SIGNAL(sig_isClickedOnBall(QModelIndex)),
                 syntheses->GetTabEcarts(),
                 SLOT(slot_ShowBoule_2(QModelIndex)));
+//#endif
 
     }
 }

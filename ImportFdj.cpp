@@ -3,6 +3,7 @@
 #endif
 
 #include <QFile>
+#include <QDir>
 #include <QString>
 #include <QStringList>
 #include <math.h>
@@ -28,11 +29,14 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
 {
     QString fileName_2 = def->fname;
     QFile fichier(fileName_2);
+    QDir d;
+    QString ceRep = d.absolutePath();
 
     // On ouvre notre fichier en lecture seule et on verifie l'ouverture
     if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        retErr->msg = "Auto chargement : " + fileName_2 + "\nEchec!!";
+
+        retErr->msg = "Auto Surchargement : " + ceRep+fileName_2 + "\nEchec!!";
         retErr->status = false;
         return false;
     }

@@ -245,11 +245,19 @@ bool BPrevision::creerTablesDeLaBase(void)
     bool isOk= true;
     QSqlQuery q(dbInUse);
 
+#if 0
+    {C_TBL_1,f1},   /// Table des nom des zones et abregees
+    {C_TBL_6,f6},    /// Selection utilisateur
+    {C_TBL_7,f6},    /// Selection utilisateur
+    {C_TBL_8,f6}    /// Selection utilisateur
+
+#endif
+
     stCreateTable creerTables[]={
-        {C_TBL_3,f3},   /// Table des tirages
         {C_TBL_1,f1},   /// Table des nom des zones et abregees
         {C_TBL_2,f2},   /// Liste des boules par zone
         {C_TBL_4,f4},    /// Table des combinaisons
+        {C_TBL_3,f3},   /// Table des tirages
         {C_TBL_5,f5},    /// Table des Analyses
         {C_TBL_6,f6},    /// Selection utilisateur
         {C_TBL_7,f6},    /// Selection utilisateur
@@ -557,6 +565,7 @@ bool BPrevision::f4(QString tb, QSqlQuery *query)
             BCnp *a = new BCnp(n,p,dbInUse,tbName);
             tbName = a->getDbTblName();
             isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn);
+
         }
     }
 
@@ -1259,9 +1268,10 @@ QString BPrevision::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
 
 void BPrevision::analyserTirages(QString source,const BGame &config)
 {
-    QWidget * Resultats = new QWidget;
+    QWidget * Resultats = new QWidget(0,Qt::Window);
     QTabWidget *tab_Top = new QTabWidget;
 
+//#if 0
     c1 = new BCountElem(config,source,dbInUse,Resultats);
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
     /// transfert vers SyntheseGenerale
@@ -1314,6 +1324,7 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     /// ----------------
     Resultats->setLayout(tmp_layout);
     Resultats->setWindowTitle(source);
+//#endif
     Resultats->show();
 }
 void BPrevision::slot_filterUserGamesList()

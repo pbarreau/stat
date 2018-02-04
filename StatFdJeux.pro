@@ -24,7 +24,9 @@ TEMPLATE = app
 
 message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
 
-
+#QMAKE_CXXFLAGS_RELEASE += -g
+#QMAKE_CFLAGS_RELEASE += -g
+#QMAKE_LFLAGS_RELEASE =
 
 SOURCES += \
 		main.cpp\
