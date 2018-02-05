@@ -102,7 +102,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
             break;
         }
         tous = new BPrevision(unJeu,eFdj,eBddUseDisk);
-//#if 0
         connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_makeUserGamesList()));
         connect(FiltrerAct, SIGNAL(triggered()), tous, SLOT(slot_filterUserGamesList()));
         connect(tous,
@@ -113,7 +112,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
                 SIGNAL(sig_isClickedOnBall(QModelIndex)),
                 syntheses->GetTabEcarts(),
                 SLOT(slot_ShowBoule_2(QModelIndex)));
-//#endif
 
     }
 }
@@ -149,6 +147,7 @@ QGridLayout *MainWindow::MonLayout_OldTbvCouverture(int x, int y)
     tmpGrid->addWidget(G_tbv_CouvTirages);
     return tmpGrid;
 }
+
 #if 1
 void MainWindow::FEN_Old_Tirages(void)
 {

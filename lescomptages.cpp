@@ -1271,7 +1271,6 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     QWidget * Resultats = new QWidget(0,Qt::Window);
     QTabWidget *tab_Top = new QTabWidget;
 
-//#if 0
     c1 = new BCountElem(config,source,dbInUse,Resultats);
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
     /// transfert vers SyntheseGenerale
@@ -1324,7 +1323,6 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     /// ----------------
     Resultats->setLayout(tmp_layout);
     Resultats->setWindowTitle(source);
-//#endif
     Resultats->show();
 }
 void BPrevision::slot_filterUserGamesList()

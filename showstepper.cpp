@@ -679,10 +679,10 @@ QSplitter *ShowStepper::SetDataSplitter_1(int col, int cid, int tid)
         view[i].setItemDelegate(&MaGestion[i]);
         view[i].setSortingEnabled(false);
         view[i].setEditTriggers(QAbstractItemView::NoEditTriggers);
-        view[i].setColumnWidth(0,LCELL);
+        view[i].setColumnWidth(0,LCELL*2);
         view[i].horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
         view[i].verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-        view[i].setFixedWidth(LCELL+45);
+        view[i].setFixedWidth((LCELL*2)+45);
 
     }
 

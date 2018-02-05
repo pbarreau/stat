@@ -16,8 +16,6 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
                              const QModelIndex &index) const
 {
     QStyleOptionViewItem maModif(option);
-    //QPainter MonPainter(painter->device());
-    //MonPainter.setPen(QPen(Qt::black,1));
     QLineF angleline;
 
     int val = 0;
@@ -27,15 +25,14 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
                  QColor(224,255,147,255),QColor(231,181,255,255),QColor(73,179,255,255),
                  Qt::red,Qt::white};
     QColor p[]= {Qt::gray,Qt::red,Qt::black,Qt::black};
-
     QPalette t(u[1]);
-    if (option.state & QStyle::State_Selected)
-    {
-        painter->fillRect(option.rect, t.highlight());
-    }
 
+    int cx = maModif.rect.width()/4;
+    int cy = maModif.rect.height()/2;
+    int refx = maModif.rect.topLeft().x();
+    QPoint c(refx +cx*3,maModif.rect.topLeft().y()+cy);
 
-    // A t on un chiffre (boule)?
+    /// Mettre une couleur en fonction du groupe u,dizaine,v,...
     if(index.model()->index(index.row(),0).data().canConvert(QMetaType::Int))
     {
         val =  index.model()->index(index.row(),0).data().toInt();
@@ -60,6 +57,29 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
     }
 
 
+    if (option.state & QStyle::State_Selected)
+    {
+        painter->fillRect(option.rect, t.highlight());
+
+        /// test
+        /*        gradient.setCenter(0, 0);
+        gradient.setFocalPoint(3, 3);
+        gradient.setColorAt(1, QColor(Qt::red).light(120));
+        gradient.setColorAt(0, QColor(Qt::darkYellow).light(120));
+*/
+        //QRadialGradient gradient(cx, cy, maModif.rect.bottomRight().rx());
+
+        //painter->setBrush(gradient);
+        //painter->setPen(QPen(Qt::black, 0));
+        painter->save();
+        painter->setBrush(Qt::red);
+        painter->drawEllipse(c,cx/2,cy/2);
+        painter->restore();
+    }
+
+    // A t on un chiffre (boule)?
+
+
 
     if(index.model()->index(index.row(),1).data().canConvert(QMetaType::Int))
     {
@@ -74,6 +94,12 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
                 //test diagonale
                 angleline.setPoints(maModif.rect.topLeft(), maModif.rect.bottomRight());
                 painter->drawLine(angleline);
+                painter->save();
+                painter->setBrush(Qt::green);
+                painter->drawEllipse(c,cx/2,cy/2);
+                painter->restore();
+
+
             case 2:
             {
 
@@ -92,16 +118,24 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
                 ctx.clip = clip;
                 doc.documentLayout()->draw(painter, ctx);
 
+                painter->setBrush(Qt::yellow);
+                painter->drawEllipse(c,cx/2,cy/2);
 
                 painter->restore();
             }
                 break;
+
             case 3:
                 //test diagonale
                 angleline.setPoints(maModif.rect.topLeft(), maModif.rect.bottomRight());
                 painter->drawLine(angleline);
                 maModif.palette.setColor(QPalette::Text,p[pen]);
                 QItemDelegate::paint(painter, maModif, index);
+                painter->save();
+                painter->setBrush(Qt::magenta);
+                painter->drawEllipse(c,cx/2,cy/2);
+                painter->restore();
+
                 break;
 
             default:
@@ -112,9 +146,14 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
 
                 maModif.palette.setColor(QPalette::Text,p[pen]);
                 QItemDelegate::paint(painter, maModif, index);
+
+                painter->save();
+                painter->setBrush(Qt::blue);
+                painter->drawEllipse(c,cx/2,cy/2);
+                painter->restore();
+
                 break;
             }
-
         }
     }
 
