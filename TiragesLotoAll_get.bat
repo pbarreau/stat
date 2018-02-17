@@ -1,3 +1,4 @@
+del D_ZIP\*.*
 wget -S -P D_ZIP https://media.fdj.fr/generated/game/loto/loto2017.zip  --no-check-certificate
 wget -S -P D_ZIP https://media.fdj.fr/generated/game/loto/nouveau_loto.zip  --no-check-certificate
 wget -S -P D_ZIP https://media.fdj.fr/generated/game/loto/loto.zip  --no-check-certificate
