@@ -16,7 +16,7 @@ class BCountComb:public BCount
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    BCountComb(const BGame &pDef, const QString &in, QSqlDatabase fromDb);
+    BCountComb(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb);
     ~BCountComb();
     QString getFilteringData(int zn);
 
@@ -31,7 +31,7 @@ private:
 
 
 private:
-    QGridLayout *Compter(QString * pName, int zn);
+    QTableView *Compter(QString * pName, int zn);
     QString RequetePourTrouverTotal_z1(QString st_baseUse, int zn, int dst);
     void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);

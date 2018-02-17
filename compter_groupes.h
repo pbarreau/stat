@@ -18,7 +18,7 @@ class BCountGroup:public BCount
     /// in : infos representant les tirages
     /// tb : nom de la table decrivant les zones
 public:
-    BCountGroup(const BGame &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb);
+    BCountGroup(const QString &in, const int ze, const BGame &pDef, QStringList** lstCri, QSqlDatabase fromDb);
     ~BCountGroup();
     bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
     bool SupprimerVueIntermediaires(void);
@@ -47,7 +47,7 @@ private:
 
 
 private:
-    QGridLayout *Compter(QString * pName, int zn);
+    QTableView *Compter(QString * pName, int zn);
     QTableView *CompterLigne(QString * pName, int zn);
     QTableView *CompterEnsemble(QString * pName, int zn);
     QStringList * CreateFilterForData(int zn);

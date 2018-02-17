@@ -140,7 +140,7 @@ BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase useDb)
 
 BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
                QWidget *unParent=0, eCountingType genre=eCountToSet)
-    :QWidget(unParent), db_data(in),dbToUse(fromDb),type(genre)
+    :QTableView(unParent), db_data(in),dbToUse(fromDb),type(genre)
 {
     bool useRequete = false;
     db_jours = "";

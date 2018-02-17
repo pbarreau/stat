@@ -34,7 +34,7 @@ BCountElem::~BCountElem()
     total --;
 }
 
-BCountElem::BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent)
+BCountElem::BCountElem(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb, QWidget *LeParent)
     :BCount(pDef,in,fromDb,LeParent,eCountElm)
 {
     //type=eCountElm;
@@ -42,44 +42,37 @@ BCountElem::BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb
     unNom = "'Compter Zones'";
 
     total++;
-    QTabWidget *tab_Top = new QTabWidget(this);
+    //QTabWidget *tab_Top = new QTabWidget(this);
 
     int nb_zones = myGame.znCount;
 
 
-    QGridLayout *(BCountElem::*ptrFunc[])(QString *, int) =
+    QTableView *(BCountElem::*ptrFunc[])(QString *, int) =
     {
             &BCountElem::Compter,
             &BCountElem::Compter
 
 };
 
-    for(int i = 0; i< nb_zones; i++)
+    if (ze< nb_zones && ze >=0)
     {
         if(nb_zones == 1){
-            hCommon = CEL2_H *(floor(myGame.limites[i].max/10)+1);
+            hCommon = CEL2_H *(floor(myGame.limites[ze].max/10)+1);
         }
         else{
-            if(i<nb_zones-1)
-                hCommon = CEL2_H * BMAX_2((floor(myGame.limites[i].max/10)+1),(floor(myGame.limites[i+1].max/10)+1));
+            if(ze<nb_zones-1)
+                hCommon = CEL2_H * BMAX_2((floor(myGame.limites[ze].max/10)+1),(floor(myGame.limites[ze+1].max/10)+1));
         }
 
         QString *name = new QString;
-        QWidget *tmpw = new QWidget;
-        QGridLayout *calcul = (this->*ptrFunc[i])(name, i);
-        tmpw->setLayout(calcul);
-        tab_Top->addTab(tmpw,tr((*name).toUtf8()));
+        //QWidget *tmpw = new QWidget;
+        QTableView *calcul = (this->*ptrFunc[ze])(name, ze);
+        calcul->setParent(this);
+        //tmpw->setLayout(calcul);
+        //tab_Top->addTab(calcul,tr((*name).toUtf8()));
     }
 
-    tab_Top->setWindowTitle("Test2-"+QString::number(total));
-#if 0
-    QWidget * Resultats = new QWidget;
-    QGridLayout *layout = new QGridLayout();
-    layout->addWidget(tab_Top);
-    Resultats->setLayout(layout);
-    Resultats->setWindowTitle("Test2-"+QString::number(total));
-    Resultats->show();
-#endif
+    //tab_Top->setWindowTitle("Test2-"+QString::number(total));
 }
 
 
@@ -347,9 +340,9 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     return msg;
 }
 
-QGridLayout *BCountElem::Compter(QString * pName, int zn)
+QTableView *BCountElem::Compter(QString * pName, int zn)
 {
-    QGridLayout *lay_return = new QGridLayout;
+    //QGridLayout *lay_return = new QGridLayout;
 
     QTableView *qtv_tmp = new QTableView;
     (* pName) = myGame.names[zn].abv;
@@ -401,7 +394,7 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // positionner le tableau
-    lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+    //lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
 
 
     // simple click dans fenetre  pour selectionner boules
@@ -421,7 +414,7 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 
-    return lay_return;
+    return qtv_tmp;
 }
 
 QString BCountElem::getFilteringData(int zn)

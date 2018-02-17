@@ -64,7 +64,7 @@ typedef struct _BRunningQuery
     QSqlQueryModel *sqmDef; /// info sur requete de zone
 }BRunningQuery;
 
-class BCount:public QWidget
+class BCount:public QTableView
 {
     Q_OBJECT
 public:
@@ -73,7 +73,7 @@ public:
            QWidget *unParent, eCountingType genre);
 
 protected:
-    virtual QGridLayout *Compter(QString * pName, int zn)=0;
+    virtual QTableView *Compter(QString * pName, int zn)=0; //virtual
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString CriteresCreer(QString operateur, QString critere,int zone);
     void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);

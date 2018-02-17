@@ -11,6 +11,7 @@
 #include <QObject>
 #include <QSortFilterProxyModel>
 #include <QSqlQueryModel>
+#include <QTableView>
 
 #include "compter.h"
 
@@ -19,7 +20,7 @@ class BCountElem:public BCount
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent);
+    BCountElem(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb, QWidget *LeParent);
     ~BCountElem();
     int getCounter(void);
     QString getFilteringData(int zn);
@@ -33,7 +34,7 @@ public:
     int hCommon; // taille des tableaux
 
 private:
-    QGridLayout *Compter(QString * pName, int zn);
+    QTableView *Compter(QString * pName, int zn);
     QStringList * CreateFilterForData(int zn);
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);

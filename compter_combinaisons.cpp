@@ -24,16 +24,16 @@ BCountComb::~BCountComb()
     total --;
 }
 
-BCountComb::BCountComb(const BGame &pDef, const QString &in, QSqlDatabase fromDb)
+BCountComb::BCountComb(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountCmb)
 {
     //type=eCountCmb;
     countId = total;
     unNom = "'Compter Combinaisons'";
     total++;
-    QTabWidget *tab_Top = new QTabWidget(this);
+    //QTabWidget *tab_Top = new QTabWidget(this);
 
-    QGridLayout *(BCountComb::*ptrFunc[])(QString *, int) =
+    QTableView *(BCountComb::*ptrFunc[])(QString *, int) =
     {
             &BCountComb::Compter,
             &BCountComb::Compter
@@ -41,21 +41,23 @@ BCountComb::BCountComb(const BGame &pDef, const QString &in, QSqlDatabase fromDb
 };
 
     int nb_zones = myGame.znCount;
-    for(int i = 0; i< nb_zones; i++)
+    if (ze< nb_zones && ze >=0)
     {
         if(nb_zones == 1){
-            hCommon = CEL2_H *(floor(myGame.limites[i].max/10)+1);
+            hCommon = CEL2_H *(floor(myGame.limites[ze].max/10)+1);
         }
         else{
-            if(i<nb_zones-1)
-                hCommon = CEL2_H * BMAX_2((floor(myGame.limites[i].max/10)+1),(floor(myGame.limites[i+1].max/10)+1));
+            if(ze<nb_zones-1)
+                hCommon = CEL2_H * BMAX_2((floor(myGame.limites[ze].max/10)+1),(floor(myGame.limites[ze+1].max/10)+1));
         }
 
         QString *name = new QString;
-        QWidget *tmpw = new QWidget;
-        QGridLayout *calcul = (this->*ptrFunc[i])(name, i);
-        tmpw->setLayout(calcul);
-        tab_Top->addTab(tmpw,tr((*name).toUtf8()));
+        //QWidget *tmpw = new QWidget;
+        QTableView *calcul = (this->*ptrFunc[ze])(name, ze);
+        calcul->setParent(this);
+        //tmpw->setLayout(calcul);
+        //tab_Top->addTab(tmpw,tr((*name).toUtf8()));
+        //tab_Top->addTab(calcul,tr((*name).toUtf8()));
     }
 
 #if 0
@@ -394,7 +396,7 @@ QString BCountComb::ConstruireCriteres(int zn)
     return msg;
 }
 
-QGridLayout *BCountComb::Compter(QString * pName, int zn)
+QTableView *BCountComb::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
     (* pName) = myGame.names[zn].abv;
@@ -483,7 +485,7 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
     lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
 
 
-    return lay_return;
+    return qtv_tmp;
 }
 
 QString BCountComb::getFilteringData(int zn)

@@ -22,14 +22,14 @@ BCountGroup::~BCountGroup()
     total --;
 }
 
-BCountGroup::BCountGroup(const BGame &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb)
+BCountGroup::BCountGroup(const QString &in, const int ze, const BGame &pDef, QStringList** lstCri, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountGrp)
 {
     //type=eCountGrp;
     countId = total;
     unNom = "'Compter Groupes'";
     total++;
-    QTabWidget *tab_Top = new QTabWidget(this);
+    //QTabWidget *tab_Top = new QTabWidget(this);
     demande = 0;
 
 
@@ -37,20 +37,21 @@ BCountGroup::BCountGroup(const BGame &pDef, const QString &in, QStringList** lst
     maRef = lstCri;
     p_qsim_3 = new QStandardItemModel *[nb_zones];
 
-    QGridLayout *(BCountGroup::*ptrFunc[])(QString *, int) =
+    QTableView *(BCountGroup::*ptrFunc[])(QString *, int) =
     {
             &BCountGroup::Compter,
             &BCountGroup::Compter
 
 };
 
-    for(int zn = 0; zn< nb_zones; zn++)
+    if (ze< nb_zones && ze >=0)
     {
         QString *name = new QString;
-        QWidget *tmpw = new QWidget;
-        QGridLayout *calcul = (this->*ptrFunc[zn])(name, zn);
-        tmpw->setLayout(calcul);
-        tab_Top->addTab(tmpw,tr((*name).toUtf8()));
+        //QWidget *tmpw = new QWidget;
+        QTableView *calcul = (this->*ptrFunc[ze])(name, ze);
+        calcul->setParent(this);
+        //tmpw->setLayout(calcul);
+        //tab_Top->addTab(calcul,tr((*name).toUtf8()));
     }
 
 #if 0
@@ -63,7 +64,7 @@ BCountGroup::BCountGroup(const BGame &pDef, const QString &in, QStringList** lst
 #endif
 }
 
-QGridLayout *BCountGroup::Compter(QString * pName, int zn)
+QTableView *BCountGroup::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
 
@@ -76,7 +77,7 @@ QGridLayout *BCountGroup::Compter(QString * pName, int zn)
     lay_return->addWidget(qtv_tmp_2,1,0,Qt::AlignLeft|Qt::AlignTop);
 
 
-    return lay_return;
+    return qtv_tmp_2;
 }
 
 bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
