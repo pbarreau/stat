@@ -19,6 +19,8 @@
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
+#include "compter_ecart.h"
+
 #include "labelclickable.h"
 
 #include "lescomptages.h"
@@ -1272,9 +1274,10 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 {
     QWidget * Resultats = new QWidget(0,Qt::Window);
     QTabWidget *tab_L1 = new QTabWidget;
-    QTabWidget *tab_L2 = new QTabWidget;
 
     int nb_zones = config.znCount;
+
+    BCountEcart *ici= new BCountEcart(source,0,config,dbInUse);
 
     c1 = new BCountElem(source,0,config,dbInUse,Resultats);
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
@@ -1292,47 +1295,30 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     E1.append(c2);
     E1.append(c3);
 
-    QGridLayout **pL1Gdl = new QGridLayout *[nb_zones];
-    QWidget **pL1Wdg = new QWidget * [nb_zones];
 
-    for(int zn = 0; zn< nb_zones;zn++)
+    QString title_lab1[]={"Boules","Etoiles"};
+    QString title_lab2[]={"Totaux","Combinaisons","Groupements"};
+    int items_lab2 = sizeof(title_lab2)/sizeof(QString);
+    for(int zn = 0; zn< nb_zones-1;zn++)
     {
-        QGridLayout * gdl_tmp = new QGridLayout;
-        pL1Gdl[zn] = gdl_tmp;
+        QGridLayout * gdl_tmp1 = new QGridLayout;
+        QWidget * wdg_tmp1 = new QWidget;
+        QTabWidget *tab_L2 = new QTabWidget;
 
-        QWidget * wdg_tmp = new QWidget;
-        pL1Wdg [zn] = wdg_tmp;
+        for(int calc_id = 0; calc_id< items_lab2;calc_id++)
+        {
+            QGridLayout * gdl_tmp = new QGridLayout;
+            QWidget * wdg_tmp = new QWidget;
+
+            gdl_tmp->addWidget(E1.at(calc_id),1,0);
+            wdg_tmp->setLayout(gdl_tmp);
+            tab_L2->addTab(wdg_tmp,title_lab2[calc_id]);
+        }
+        gdl_tmp1->addWidget(tab_L2,1,0);
+        wdg_tmp1->setLayout(gdl_tmp1);
+        tab_L1->addTab(wdg_tmp1,title_lab1[zn]);
     }
 
-
-
-    //QGridLayout **pL2Gdl = new QGridLayout *[3];
-    //QWidget **pL2Wdg = new QWidget * [3];
-
-    QString lab_2[]={"Totaux","Combinaisons","Groupements"};
-    int nb_items = sizeof(lab_2)/sizeof(QString);
-    for(int calc_id = 0; calc_id< nb_items;calc_id++)
-    {
-        QGridLayout * gdl_tmp = new QGridLayout;
-        QWidget * wdg_tmp = new QWidget;
-
-        gdl_tmp->addWidget(E1.at(calc_id),1,0);
-        wdg_tmp->setLayout(gdl_tmp);
-        tab_L2->addTab(wdg_tmp,lab_2[calc_id]);
-    }
-#if 0
-    pL2Gdl[0]->addWidget(c1,1,0);
-    pL2Gdl[1]->addWidget(c2,1,0);
-    pL2Gdl[2]->addWidget(c3,1,0);
-
-    pL2Wdg[0]->setLayout(pL2Gdl[0]);
-    pL2Wdg[1]->setLayout(pL2Gdl[1]);
-    pL2Wdg[2]->setLayout(pL2Gdl[2]);
-
-    tab_L2->addTab(pL2Wdg[0],tr("Totaux"));
-    tab_L2->addTab(pL2Wdg[1],tr("Combinaisons"));
-    tab_L2->addTab(pL2Wdg[2],tr("Groupements"));
-#endif
 
     QGridLayout *tmp_layout = new QGridLayout;
     QString clef[]={"Z:","C:","G:"};
@@ -1342,7 +1328,7 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
         selection[i].setText(clef[i]+"aucun");
         tmp_layout->addWidget(&selection[i],i,0);
     }
-    tmp_layout->addWidget(tab_L2,i,0);
+    tmp_layout->addWidget(tab_L1,i,0);
 
 #if 0
     connect( selection, SIGNAL( clicked(QString)) ,

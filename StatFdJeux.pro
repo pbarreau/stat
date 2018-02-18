@@ -72,7 +72,8 @@ SOURCES += \
     db_tools.cpp \
     cnp_SansRepetition.cpp \
     cnp_AvecRepetition.cpp \
-    etudierjeux.cpp
+    etudierjeux.cpp \
+    compter_ecart.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -108,7 +109,8 @@ HEADERS  += \
     cnp_AvecRepetition.h \
     cnp_SansRepetition.h \
     etudierjeux.h \
-    game.h
+    game.h \
+    compter_ecart.h
 
 
 FORMS    += mainwindow.ui \

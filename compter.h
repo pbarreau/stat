@@ -34,6 +34,7 @@
 #define C_TBL_7     "U_c"   /// ..on combinaison
 #define C_TBL_8     "U_g"   /// ..on regroupement
 #define C_TBL_9     "grp"   /// synthese on regroupement
+#define cTbl_A      "eca"   /// Table ecart
 
 #define MAX_CHOIX_BOULES    30
 
