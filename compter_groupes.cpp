@@ -93,7 +93,7 @@ bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable
     bool isOk = true;
     QString msg = "";
     QSqlQuery query(dbToUse);
-    QString stDefBoules = C_TBL_2;
+    QString stDefBoules = cRef_elm;
     QString st_OnDef = "";
 
     //int nbZone = nbZone;
@@ -248,7 +248,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     QTableView *qtv_tmp = new QTableView;
     (* pName) = myGame.names[zn].abv; /// BUG sur db_data
 
-    QString TblCompact = C_TBL_9;
+    QString TblCompact = cClc_grp;
 
 #if 0
     if(myGame.from == eFdj)
@@ -260,7 +260,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     }
 #endif
 
-    QString qtv_name = QString::fromLatin1(C_TBL_8) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(cUsr_grp) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];

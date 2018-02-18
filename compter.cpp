@@ -15,7 +15,7 @@
 #include "compter.h"
 #include "db_tools.h"
 
-QString BCount::label[]={"err","elm",C_TBL_4,C_TBL_9};
+const QString BCount::cLabCount[]={"err",cClc_elm,cClc_cmb,cClc_grp};
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
 
@@ -550,7 +550,7 @@ void BCount::slot_wdaFilter(bool val)
     int counter = this->countId;
 
     QString tblDest = this->db_data;
-    QString endName = "_"+label[type]
+    QString endName = "_"+cLabCount[type]
             +"_z"
             +QString::number(zn+1);
 

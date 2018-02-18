@@ -26,15 +26,17 @@
 #endif
 
 #define C_TBL_1     "B_def" /// config du jeu
-#define C_TBL_2     "B_elm" /// constituant des boules
-#define C_TBL_3     "fdj" /// Base de tous les tirages
-#define C_TBL_4     "cmb" /// Combinaison a appliquer sur zone
-#define C_TBL_5     "ana" /// Resultat analyse des sones de la fdj
-#define C_TBL_6     "U_e"   /// User choice on element
-#define C_TBL_7     "U_c"   /// ..on combinaison
-#define C_TBL_8     "U_g"   /// ..on regroupement
-#define C_TBL_9     "grp"   /// synthese on regroupement
-#define cTbl_A      "eca"   /// Table ecart
+#define cRef_elm    "B_elm" /// constituant des boules
+#define cRef_fdj    "fdj"   /// Base de tous les tirages
+#define cRef_ana    "ana"   /// Resultat analyse des sommes de la fdj
+#define cUsr_elm    "U_e"   /// User choice on element
+#define cUsr_cmb    "U_c"   /// ..on combinaison
+#define cUsr_grp    "U_g"   /// ..on regroupement
+
+#define cClc_elm    "elm"   /// Boules
+#define cClc_cmb    "cmb"   /// Combinaison
+#define cClc_grp    "grp"   /// Regroupement
+#define cClc_eca    "eca"   /// Ecart
 
 #define MAX_CHOIX_BOULES    30
 
@@ -97,7 +99,7 @@ protected:
     BGame myGame;
     int *memo;  /// A deplacer :
     eCountingType type; /// type de comptage en cours
-    static QString label[]; /// nom associe aux types
+    static const QString cLabCount[]; /// nom associe aux types
     int countId;
     int curZn;          /// zone en cours
     QString unNom;  /// Pour Tracer les requetes sql

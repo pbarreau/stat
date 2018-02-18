@@ -254,7 +254,7 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     bool isOk = true;
     QString msg = "";
 
-    QString SelElemt = C_TBL_6;
+    QString SelElemt = cUsr_elm;
     QString st_cri_all = "";
     QStringList boules;
 
@@ -281,7 +281,7 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     QString arg1 = "tbleft.boule as B, count(tbright.id) as T "
             +db_jours;
     QString arg2 ="select id as boule from "
-            +QString::fromLatin1(C_TBL_2)+" where (z"
+            +QString::fromLatin1(cRef_elm)+" where (z"
             +QString::number(zn+1)
             +" not null )";
 
@@ -326,7 +326,7 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     /// creation d'une vue pour ce resultat
     QString viewName = "r_"
             +db_data+ "_"+ QString::number(total-1)
-            +"_"+label[type]
+            +"_"+cLabCount[type]
             +"_z"+QString::number(zn+1);
     msg = "create table if not exists "
             +viewName
@@ -347,7 +347,7 @@ QTableView *BCountElem::Compter(QString * pName, int zn)
     QTableView *qtv_tmp = new QTableView;
     (* pName) = myGame.names[zn].abv;
 
-    QString qtv_name = QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(cUsr_elm) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     BSqmColorizePriority *sqm_tmp = &sqmZones[zn];

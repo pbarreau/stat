@@ -14,6 +14,7 @@ private:
 
 private:
     static int total;
+    int hCommon; // taille des tableaux
 
 };
 

@@ -23,15 +23,30 @@ BCountEcart::BCountEcart(const QString &in, const int ze, const BGame &pDef,  QS
     :BCount(pDef,in,fromDb,NULL,eCountElm)
 {
     QString name = "";
-    QTableView *qtv_tmp = Compter(&name,ze);
+    QTableView *qtv_tmp = NULL;
+    int nb_zones = myGame.znCount;
+
+    if (ze< nb_zones && ze >=0)
+    {
+        if(nb_zones == 1){
+            hCommon = CEL2_H *(floor(myGame.limites[ze].max/10)+1);
+        }
+        else{
+            if(ze<nb_zones-1)
+                hCommon = CEL2_H * BMAX_2((floor(myGame.limites[ze].max/10)+1),(floor(myGame.limites[ze+1].max/10)+1));
+        }
+    }
+
+    qtv_tmp = Compter(&name,ze);
 
     qtv_tmp->setParent(this);
+    total++;
 }
 
 QTableView * BCountEcart::Compter(QString *pname, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(cTbl_A)
+    QString qtv_name = QString::fromLatin1(cClc_eca)
             +"_"+ QString::number(total).rightJustified(3,'0')
             + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
@@ -73,6 +88,16 @@ QTableView * BCountEcart::Compter(QString *pname, int zn)
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
 
+    //largeur des colonnes
+    int nbCol = sqm_tmp->columnCount();
+    for(int pos=0;pos<nbCol;pos++)
+    {
+        qtv_tmp->setColumnWidth(pos,CEL2_L);
+    }
+    int l = CEL2_L * (nbCol+1);
+    qtv_tmp->setFixedWidth(l);
+
+    qtv_tmp->setFixedHeight(hCommon);
 
     return   qtv_tmp;
 }
@@ -171,6 +196,10 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
 #endif
                 }
             }
+        }
+        /// suppression derniere table
+        if(isOk){
+            isOk = query.exec(doSql[0]);
         }
     }
 

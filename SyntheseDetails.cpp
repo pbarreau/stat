@@ -1342,7 +1342,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
 
     int zone = 0;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(C_TBL_7) + "_z"+QString::number(zone+1);
+    QString qtv_name = QString::fromLatin1(cUsr_cmb) + "_z"+QString::number(zone+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QString sql_msgRef = "";
@@ -1426,7 +1426,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
     int zn=0;
     QTableView *qtv_tmp = new QTableView;
     QString qtv_name = "";
-    qtv_name = QString::fromLatin1(C_TBL_8) + "_z"+QString::number(zn+1);
+    qtv_name = QString::fromLatin1(cUsr_grp) + "_z"+QString::number(zn+1);
 
     int maxElems = pEtude->ref->limites[zn].max;
 
@@ -1819,7 +1819,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
     QGridLayout *lay_return = new QGridLayout;
 
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(C_TBL_6) + "_z"+QString::number(curOng+1);
+    QString qtv_name = QString::fromLatin1(cUsr_elm) + "_z"+QString::number(curOng+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;

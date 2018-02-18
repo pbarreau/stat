@@ -225,9 +225,9 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
     QString msg = "";
     bool isOk = true;
 
-    QString stTbAnalyse = C_TBL_5;
-    QString Def_comb = C_TBL_4;
-    QString SelComb = C_TBL_7;
+    QString stTbAnalyse = cRef_ana;
+    QString Def_comb = cClc_cmb;
+    QString SelComb = cUsr_cmb;
     QString prefix = "B_";
 
 
@@ -290,7 +290,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
     /// creation d'une vue pour ce resultat
     QString viewName = "r_"
             +db_data+ "_"+ QString::number(total-1)
-            +"_"+label[type]
+            +"_"+cLabCount[type]
             +"_z"+QString::number(zn+1);
     msg = "create table if not exists "
             +viewName
@@ -403,7 +403,7 @@ QTableView *BCountComb::Compter(QString * pName, int zn)
 
     QTableView *qtv_tmp = new QTableView;
 
-    QString qtv_name = QString::fromLatin1(C_TBL_7) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(cUsr_cmb) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];

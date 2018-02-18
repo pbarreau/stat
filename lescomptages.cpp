@@ -171,7 +171,7 @@ bool BPrevision::OPtimiseAccesBase(void)
 
 void BPrevision::effectuerTraitement(eGame game)
 {
-    QString source = C_TBL_3;
+    QString source = cRef_fdj;
     source = "B_" + source;
 
     definirConstantesDuJeu(game);
@@ -259,13 +259,13 @@ bool BPrevision::creerTablesDeLaBase(void)
 
     stCreateTable creerTables[]={
         {C_TBL_1,f1},   /// Table des nom des zones et abregees
-        {C_TBL_2,f2},   /// Liste des boules par zone
-        {C_TBL_4,f4},    /// Table des combinaisons
-        {C_TBL_3,f3},   /// Table des tirages
-        {C_TBL_5,f5},    /// Table des Analyses
-        {C_TBL_6,f6},    /// Selection utilisateur
-        {C_TBL_7,f6},    /// Selection utilisateur
-        {C_TBL_8,f6}    /// Selection utilisateur
+        {cRef_elm,f2},   /// Liste des boules par zone
+        {cClc_cmb,f4},    /// Table des combinaisons
+        {cRef_fdj,f3},   /// Table des tirages
+        {cRef_ana,f5},    /// Table des Analyses
+        {cUsr_elm,f6},    /// Selection utilisateur
+        {cUsr_cmb,f6},    /// Selection utilisateur
+        {cUsr_grp,f6}    /// Selection utilisateur
     };
 
     int nbACreer = sizeof(creerTables)/sizeof(stCreateTable);
@@ -645,10 +645,10 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
     bool isOk = true;
     QString msg = "";
     QSqlQuery query(dbInUse);
-    QString stDefBoules = C_TBL_2;
+    QString stDefBoules = cRef_elm;
     QString prvName = "";
     QString curName  ="";
-    QString TblCompact = C_TBL_9;
+    QString TblCompact = cClc_grp;
 
     QString tblToUse = tblIn + "_z"+QString::number(zn+1);
 #if 0
@@ -758,7 +758,7 @@ bool BPrevision::TraitementCodeVueCombi(int zn)
             msg = msg + viewCode[lgnCode].arg(zn+1);
             break;
         case 2:
-            ref_1 = C_TBL_2;
+            ref_1 = cRef_elm;
             msg = msg + viewCode[lgnCode].arg(zn+1).arg(ref_1);
             break;
         default:
@@ -1274,9 +1274,10 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 {
     QWidget * Resultats = new QWidget(0,Qt::Window);
     QTabWidget *tab_L1 = new QTabWidget;
-
+    BCount *B_item = NULL;
     int nb_zones = config.znCount;
 
+#if 0
     BCountEcart *ici= new BCountEcart(source,0,config,dbInUse);
 
     c1 = new BCountElem(source,0,config,dbInUse,Resultats);
@@ -1295,28 +1296,57 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     E1.append(c2);
     E1.append(c3);
 
-
+#endif
     QString title_lab1[]={"Boules","Etoiles"};
     QString title_lab2[]={"Totaux","Combinaisons","Groupements"};
     int items_lab2 = sizeof(title_lab2)/sizeof(QString);
-    for(int zn = 0; zn< nb_zones-1;zn++)
+
+    for(int zn = 0; zn< nb_zones;zn++)
     {
-        QGridLayout * gdl_tmp1 = new QGridLayout;
-        QWidget * wdg_tmp1 = new QWidget;
+        QGridLayout * gdl_tmp = new QGridLayout;
+        QWidget * wdg_tmp = new QWidget;
         QTabWidget *tab_L2 = new QTabWidget;
 
         for(int calc_id = 0; calc_id< items_lab2;calc_id++)
         {
             QGridLayout * gdl_tmp = new QGridLayout;
             QWidget * wdg_tmp = new QWidget;
+            B_item = NULL;
 
-            gdl_tmp->addWidget(E1.at(calc_id),1,0);
+            /// onglet element
+            if(calc_id==0){
+                /// ecart
+                B_item = new BCountEcart(source,zn,config,dbInUse);
+                gdl_tmp->addWidget(B_item,1,2);
+
+                /// repartition
+                B_item = new BCountElem(source,zn,config,dbInUse,Resultats);
+            }
+
+            /// onglet combinaison
+            if(calc_id==1){
+                /// repartition
+                B_item = new BCountComb(source,zn,config,dbInUse);
+            }
+
+            /// onglet groupement
+            if(calc_id==2){
+                /// repartition
+                B_item = new BCountGroup(source,zn,config,slFlt,dbInUse);
+            }
+
+            if(B_item)
+                gdl_tmp->addWidget(B_item,1,0);
+
+            /// Mettre a jour le widget
             wdg_tmp->setLayout(gdl_tmp);
+
+            /// Rajouter l'onglet
             tab_L2->addTab(wdg_tmp,title_lab2[calc_id]);
         }
-        gdl_tmp1->addWidget(tab_L2,1,0);
-        wdg_tmp1->setLayout(gdl_tmp1);
-        tab_L1->addTab(wdg_tmp1,title_lab1[zn]);
+        gdl_tmp->addWidget(tab_L2,1,0);
+        wdg_tmp->setLayout(gdl_tmp);
+        tab_L1->addTab(wdg_tmp,title_lab1[zn]);
     }
 
 
@@ -1413,7 +1443,7 @@ void BPrevision::slot_makeUserGamesList()
     QSqlQuery query(dbInUse);
     bool isOk = true;
     QString msg = "";
-    QString SelElemt = C_TBL_6;
+    QString SelElemt = cUsr_elm;
     BCnp *a = NULL;
     int n = 0;
     int p = 0;
@@ -1563,7 +1593,7 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
     /// clause left
     QString msg2 = "";
     loop = len;
-    QString tbSel = C_TBL_6;
+    QString tbSel = cUsr_elm;
     ref = "(select tbChoix.id, tbChoix.val from "
             +tbSel
             +"_z"+QString::number(zn+1)
@@ -1620,11 +1650,11 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
     bool isOk = true;
     QString msg = "";
     QSqlQuery query(dbInUse);
-    QString stDefBoules = C_TBL_2;
+    QString stDefBoules = cRef_elm;
     QString st_OnDef = "";
-    QString tbLabAna = C_TBL_5;
+    QString tbLabAna = cRef_ana;
     QString tblToUse = "";
-    QString tbLabCmb = C_TBL_4;
+    QString tbLabCmb = cClc_cmb;
 
     tbLabCmb = "B_" + tbLabCmb;
     if(onGame.from == eFdj){
