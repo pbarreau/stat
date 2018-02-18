@@ -14,8 +14,8 @@
 #include "delegate.h"
 #include "game.h"
 
-#define CEL2_H  55
-#define CEL2_L  40
+#define CEL2_H  35
+#define CEL2_L  35
 #define BMAX_2(a,b) (((a)>(b))?(a):(b))
 #define BMIN_2(a,b) (((a)<(b))?(a):(b))
 

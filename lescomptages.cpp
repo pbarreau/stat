@@ -649,6 +649,10 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
     QString prvName = "";
     QString curName  ="";
     QString TblCompact = cClc_grp;
+     /*TblCompact = TblCompact+"_"
+            + QString::number(total-1).rightJustified(3,'0')
+            +"_B_fdj"
+            +"_z"+QString::number(zn+1);*/
 
     QString tblToUse = tblIn + "_z"+QString::number(zn+1);
 #if 0
@@ -1315,22 +1319,35 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 
             /// onglet element
             if(calc_id==0){
+                QLabel *l1 = new QLabel("Ecarts");
+                QLabel *l2 = new QLabel("Repartitions");
                 /// ecart
                 B_item = new BCountEcart(source,zn,config,dbInUse);
+                gdl_tmp->addWidget(l1,0,2);
                 gdl_tmp->addWidget(B_item,1,2);
 
                 /// repartition
                 B_item = new BCountElem(source,zn,config,dbInUse,Resultats);
+                gdl_tmp->addWidget(l2,0,0);
             }
 
             /// onglet combinaison
             if(calc_id==1){
+                QLabel *l1 = new QLabel("Ecarts");
+                QLabel *l2 = new QLabel("Distributions");
+                gdl_tmp->addWidget(l1,0,2);
+
                 /// repartition
                 B_item = new BCountComb(source,zn,config,dbInUse);
+                gdl_tmp->addWidget(l2,0,0);
+
             }
 
             /// onglet groupement
             if(calc_id==2){
+                QLabel *l1 = new QLabel("Distributions");
+                gdl_tmp->addWidget(l1,0,0);
+
                 /// repartition
                 B_item = new BCountGroup(source,zn,config,slFlt,dbInUse);
             }
@@ -1495,7 +1512,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     QString source = "E1";
     QString tbUse = "U_"+source+"_ana";
 
-    monJeu;
+    //monJeu;
 
     monJeu.type = onGame.type;
     monJeu.from = eUsr;

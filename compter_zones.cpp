@@ -56,23 +56,19 @@ BCountElem::BCountElem(const QString &in, const int ze, const BGame &pDef,  QSql
 
     if (ze< nb_zones && ze >=0)
     {
-        if(nb_zones == 1){
+       /* if(nb_zones == 1){
             hCommon = CEL2_H *(floor(myGame.limites[ze].max/10)+1);
         }
         else{
-            if(ze<nb_zones-1)
+            if(ze<nb_zones)
                 hCommon = CEL2_H * BMAX_2((floor(myGame.limites[ze].max/10)+1),(floor(myGame.limites[ze+1].max/10)+1));
         }
-
+*/
         QString *name = new QString;
-        //QWidget *tmpw = new QWidget;
         QTableView *calcul = (this->*ptrFunc[ze])(name, ze);
         calcul->setParent(this);
-        //tmpw->setLayout(calcul);
-        //tab_Top->addTab(calcul,tr((*name).toUtf8()));
     }
 
-    //tab_Top->setWindowTitle("Test2-"+QString::number(total));
 }
 
 
@@ -324,10 +320,11 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 #endif
 
     /// creation d'une vue pour ce resultat
-    QString viewName = "r_"
-            +db_data+ "_"+ QString::number(total-1)
-            +"_"+cLabCount[type]
+    QString viewName = cLabCount[type]+"_"
+            + QString::number(total-1).rightJustified(3,'0')
+            +"_"+db_data
             +"_z"+QString::number(zn+1);
+
     msg = "create table if not exists "
             +viewName
             +" as select * from ("
@@ -342,13 +339,17 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 
 QTableView *BCountElem::Compter(QString * pName, int zn)
 {
-    //QGridLayout *lay_return = new QGridLayout;
-
     QTableView *qtv_tmp = new QTableView;
+    QString qtv_name = QString::fromLatin1(cUsr_elm)
+            +"_"+ QString::number(total).rightJustified(3,'0')
+            + "_z"+QString::number(zn+1);
+    qtv_tmp->setObjectName(qtv_name);
+/*
     (* pName) = myGame.names[zn].abv;
 
     QString qtv_name = QString::fromLatin1(cUsr_elm) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
+*/
 
     BSqmColorizePriority *sqm_tmp = &sqmZones[zn];
 
@@ -389,7 +390,7 @@ QTableView *BCountElem::Compter(QString * pName, int zn)
     int l = CEL2_L * (nbCol+1);
     qtv_tmp->setFixedWidth(l);
 
-    qtv_tmp->setFixedHeight(hCommon);
+    qtv_tmp->setFixedHeight(CEL2_H*7);
     //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 

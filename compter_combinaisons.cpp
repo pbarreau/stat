@@ -43,6 +43,7 @@ BCountComb::BCountComb(const QString &in, const int ze, const BGame &pDef, QSqlD
     int nb_zones = myGame.znCount;
     if (ze< nb_zones && ze >=0)
     {
+        /*
         if(nb_zones == 1){
             hCommon = CEL2_H *(floor(myGame.limites[ze].max/10)+1);
         }
@@ -50,7 +51,7 @@ BCountComb::BCountComb(const QString &in, const int ze, const BGame &pDef, QSqlD
             if(ze<nb_zones-1)
                 hCommon = CEL2_H * BMAX_2((floor(myGame.limites[ze].max/10)+1),(floor(myGame.limites[ze+1].max/10)+1));
         }
-
+*/
         QString *name = new QString;
         //QWidget *tmpw = new QWidget;
         QTableView *calcul = (this->*ptrFunc[ze])(name, ze);
@@ -288,11 +289,12 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
 #endif
 
     /// creation d'une vue pour ce resultat
-    QString viewName = "r_"
-            +db_data+ "_"+ QString::number(total-1)
-            +"_"+cLabCount[type]
+    QString viewName = cLabCount[type]+"_"
+            + QString::number(total-1).rightJustified(3,'0')
+            +"_"+db_data
             +"_z"+QString::number(zn+1);
-    msg = "create table if not exists "
+
+     msg = "create table if not exists "
             +viewName
             +" as select * from ("
             +msg
@@ -441,7 +443,8 @@ QTableView *BCountComb::Compter(QString * pName, int zn)
     }
     int L = CEL2_L*nbCol;
     qtv_tmp->setFixedWidth(L);;
-    qtv_tmp->setFixedHeight(hCommon);
+    //qtv_tmp->setFixedHeight(hCommon);
+    qtv_tmp->setFixedHeight(CEL2_H*7);
 #if 0
     qtv_tmp->setColumnWidth(1,30);
     qtv_tmp->setColumnWidth(2,70);

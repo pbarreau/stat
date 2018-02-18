@@ -9,6 +9,8 @@
 #include <QSqlQuery>
 #include <QSortFilterProxyModel>
 #include <QHeaderView>
+#include <QItemDelegate>
+#include <cmath>
 
 #include "compter_ecart.h"
 
@@ -47,6 +49,7 @@ QTableView * BCountEcart::Compter(QString *pname, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
     QString qtv_name = QString::fromLatin1(cClc_eca)
+            +"_"+ QString::fromLatin1(cClc_elm)
             +"_"+ QString::number(total).rightJustified(3,'0')
             + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
@@ -60,7 +63,7 @@ QTableView * BCountEcart::Compter(QString *pname, int zn)
     }
 
     /// suite du traitement
-    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    BSqmColorizeEcart *sqm_tmp = new BSqmColorizeEcart;
     QString st_msg1 = "select * from ("
             + qtv_name
             +") order by B desc;";
@@ -81,7 +84,7 @@ QTableView * BCountEcart::Compter(QString *pname, int zn)
     m->setSourceModel(sqm_tmp);
     qtv_tmp->setModel(m);
 
-    //qtv_tmp->setItemDelegate(new BDelegateElmOrCmb); /// Delegation
+    qtv_tmp->setItemDelegate(new BDlgEcart); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
     //qtv_tmp->hideColumn(0);
@@ -97,7 +100,8 @@ QTableView * BCountEcart::Compter(QString *pname, int zn)
     int l = CEL2_L * (nbCol+1);
     qtv_tmp->setFixedWidth(l);
 
-    qtv_tmp->setFixedHeight(hCommon);
+    //qtv_tmp->setFixedHeight(hCommon);
+    qtv_tmp->setFixedHeight(CEL2_H*7);
 
     return   qtv_tmp;
 }
@@ -204,4 +208,120 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
     }
 
     return isOk;
+}
+
+///-----------------------------
+/// Delegation couleur sur tableau ecart
+void BDlgEcart::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                      const QModelIndex &index) const
+{
+    int col = index.column();
+    int row = index.row();
+    int nbCol = index.model()->columnCount();
+    int valCel = 0;
+    int valAna = 0;
+    double radix = 1.5;
+    int calc = 0;
+    //int ecart = 0;
+    QStyleOptionViewItem maModif(option);
+    QColor u[]= {QColor(255,106,0,255),
+                 QColor(255,191,0,255),
+                 QColor(101,148,255,255)};
+
+    //index.data().ca
+    //if(index.data().canConvert(QMetaType::Int))
+    {
+        valCel = index.data().toInt();
+    }
+    valAna = index.model()->index(index.row(),1).data().toInt();
+
+    if(valCel)
+        calc = abs(valAna-valCel)% valCel;
+
+    if(col==1){
+        calc = index.model()->index(index.row(),2).data().toInt();
+        valAna = index.model()->index(index.row(),3).data().toInt();
+        calc = abs(valAna-calc)% valAna;
+        if(valAna && calc<=radix){
+            painter->fillRect(option.rect, u[2]);
+        }
+    }
+
+    if(col==2){
+        /// colonne Ep
+        if(valAna && calc<=radix){
+            painter->fillRect(option.rect, u[0]);
+        }
+    }
+    if(col==3){
+        /// colonne Em
+        if(valAna && calc<=radix){
+            painter->fillRect(option.rect, u[1]);
+        }
+    }
+    if(col==4){
+        /// colonne Em
+        if(valAna && calc<=radix){
+            painter->fillRect(option.rect, u[2]);
+        }
+    }
+
+    /*
+
+    /// Regarder la valeur de la derniere colonne
+    /// Elle indique que mettre comme couleur
+    if(index.model()->index(index.row(),nbCol-1).data().canConvert(QMetaType::Int))
+    {
+        val =  index.model()->index(index.row(),nbCol-1).data().toInt();
+    }
+
+
+    if(col>0 && col<(nbCol-1)){
+        /// bit actif
+        if(val & (1<<col-1)){
+            painter->fillRect(option.rect, u[0]);
+        }
+    }
+    */
+    QItemDelegate::paint(painter, maModif, index);
+}
+
+
+QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
+{
+    QColor u[]= {
+        Qt::black,
+        Qt::red,
+        Qt::green,
+        QColor(255,216,0,255),
+        QColor(255,106,0,255),
+        QColor(178,0,255,255)};
+
+    if(index.column()== 0 )
+    {
+        //int nbCol=index.model()->columnCount();
+        double radix = 1.5;
+        /// recuperation des l'info de la ligne
+        QModelIndex Ec = index.sibling(index.row(),1);
+        QModelIndex Ep = index.sibling(index.row(),2);
+        QModelIndex Em = index.sibling(index.row(),3);
+        QModelIndex ET = index.sibling(index.row(),4);
+
+
+        int ec = Ec.data().toInt();
+        int ep = Ep.data().toInt();
+        int em = Em.data().toInt();
+        int et = ET.data().toInt();
+
+        if(ec &&((abs(ec-ep)%ep<=radix)||
+                (abs(ec-em)%em<=radix)||
+                (abs(ec-et)%et<=radix)
+                )){
+            if (role == Qt::TextColorRole){
+                return (u[1]);
+            }
+        }
+    }
+
+    return QSqlQueryModel::data(index,role);
 }
