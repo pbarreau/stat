@@ -456,6 +456,7 @@ QTableView *BCountComb::Compter(QString * pName, int zn)
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 #endif
 
+#if 0
     // simple click dans fenetre  pour selectionner boules
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
@@ -473,7 +474,7 @@ QTableView *BCountComb::Compter(QString * pName, int zn)
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 
-
+#endif
 
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;

@@ -113,9 +113,16 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
     QSqlQuery query(dbToUse);
     QString tmpTbl = "tmp_"+ tblName;
 
+    /// B   : boule
+    /// Ec  : ecart courant
+    /// Ep  : ecart precedent
+    /// Em  : ecart moyen
+    /// E   : ecart maxi
+    /// T   : total
+    /// A   : apparition (deja sortie ?)
     msg = "create table if not exists "
             +tblName
-            +"(B int, Ec int, Ep int, Em real, E int)";
+            +"(B int, Ec int, Ep int, Em real, E int, T int, A int)";
     isOk = query.exec(msg);
 
     if(isOk){
@@ -182,7 +189,8 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
                     sql = "insert into "
                             + tblName
                             +" select max(B)as B, max(Ec) as Ec, max(Ep) as Ep,"
-                             "printf(\"%.1f\",avg(E))as Em,max(E) as E from "
+                             "printf(\"%.1f\",avg(E))as Em,max(E) as E,"
+                             "count(B) as T from "
                              "("
                              "select "
                             +QString::number(boule+1)
@@ -224,9 +232,15 @@ void BDlgEcart::paint(QPainter *painter, const QStyleOptionViewItem &option,
     int calc = 0;
     //int ecart = 0;
     QStyleOptionViewItem maModif(option);
-    QColor u[]= {QColor(255,106,0,255),
+    /*QColor fond[]= {QColor(255,106,0,255),
                  QColor(255,191,0,255),
-                 QColor(101,148,255,255)};
+                 QColor(101,148,255,255)};*/
+    const QColor fond[4]={QColor(255,156,86,190),
+                          QColor(140,255,124,190),
+                          QColor(70,160,220,190),
+                          QColor(255,40,180,190)
+                         };
+
 
     //index.data().ca
     //if(index.data().canConvert(QMetaType::Int))
@@ -243,26 +257,26 @@ void BDlgEcart::paint(QPainter *painter, const QStyleOptionViewItem &option,
         valAna = index.model()->index(index.row(),3).data().toInt();
         calc = abs(valAna-calc)% valAna;
         if(valAna && calc<=radix){
-            painter->fillRect(option.rect, u[2]);
+            painter->fillRect(option.rect, fond[2]);
         }
     }
 
     if(col==2){
         /// colonne Ep
         if(valAna && calc<=radix){
-            painter->fillRect(option.rect, u[0]);
+            painter->fillRect(option.rect, fond[0]);
         }
     }
     if(col==3){
         /// colonne Em
         if(valAna && calc<=radix){
-            painter->fillRect(option.rect, u[1]);
+            painter->fillRect(option.rect, fond[1]);
         }
     }
     if(col==4){
         /// colonne Em
         if(valAna && calc<=radix){
-            painter->fillRect(option.rect, u[2]);
+            painter->fillRect(option.rect, fond[2]);
         }
     }
 
@@ -314,9 +328,9 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
         int et = ET.data().toInt();
 
         if(ec &&((abs(ec-ep)%ep<=radix)||
-                (abs(ec-em)%em<=radix)||
-                (abs(ec-et)%et<=radix)
-                )){
+                 (abs(ec-em)%em<=radix)||
+                 (abs(ec-et)%et<=radix)
+                 )){
             if (role == Qt::TextColorRole){
                 return (u[1]);
             }

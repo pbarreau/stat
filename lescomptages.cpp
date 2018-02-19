@@ -13,7 +13,8 @@
 #include <QTextStream>
 #include <QVBoxLayout>
 #include <QLabel>
-
+#include <QSqlDatabase>
+#include <QSqlDriver>
 #include <QVector>
 
 #include "compter_zones.h"
@@ -26,6 +27,8 @@
 #include "lescomptages.h"
 #include "cnp_AvecRepetition.h"
 #include "db_tools.h"
+#include "sqlExtensions/sqlite3.h"
+#include "sqlExtensions/sqlite3ext.h"
 
 int BPrevision::total = 0;
 
@@ -132,10 +135,48 @@ bool BPrevision::ouvrirBase(eBddUse cible, eGame game)
     // Open database
     isOk = dbInUse.open();
 
-    if(isOk)
+    if(isOk){
         isOk = OPtimiseAccesBase();
+        if(isOk){
+            isOk = AuthoriseChargementExtension();
+        }
+    }
 
+    return isOk;
+}
 
+bool BPrevision::AuthoriseChargementExtension(void)
+{
+    bool isOk = true;
+    QSqlQuery query(dbInUse);
+    QString msg = "";
+
+    /// http://sqlite.1065341.n5.nabble.com/Using-loadable-extension-with-Qt-td24872.html
+    /// https://arstechnica.com/civis/viewtopic.php?f=20&t=64150
+    QVariant v = dbInUse.driver()->handle();
+
+    if (v.isValid() && qstrcmp(v.typeName(), "sqlite3*")==0)
+
+    {
+
+        // v.data() returns a pointer to the handle
+
+        sqlite3 *handle = *static_cast<sqlite3 **>(v.data());
+
+        if (handle != 0) { // check that it is not NULL
+
+            sqlite3_enable_load_extension(handle,1);
+
+            /// Lancer la requete
+            QString msg = "SELECT load_extension('sqlExt_math.dll')";
+            isOk = query.exec(msg);
+        }
+
+    }
+    else
+    {
+        isOk = false;
+    }
     return isOk;
 }
 
@@ -649,7 +690,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
     QString prvName = "";
     QString curName  ="";
     QString TblCompact = cClc_grp;
-     /*TblCompact = TblCompact+"_"
+    /*TblCompact = TblCompact+"_"
             + QString::number(total-1).rightJustified(3,'0')
             +"_B_fdj"
             +"_z"+QString::number(zn+1);*/

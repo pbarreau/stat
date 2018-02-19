@@ -81,6 +81,7 @@ private:
     QString ListeDesJeux(int zn, int n, int p);
     bool ouvrirBase(eBddUse cible, eGame game);
     bool OPtimiseAccesBase(void);
+    bool AuthoriseChargementExtension(void);
     void effectuerTraitement(eGame game);
 
     bool creerTablesDeLaBase(void);

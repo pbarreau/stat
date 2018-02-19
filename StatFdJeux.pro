@@ -11,7 +11,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = StatFdJeux
 TEMPLATE = app
 
-
+#INCLUDEPATH +="./sqlExtensions"
+#-LC:/Devel/Qt5.6.0/Tools/mingw492_32/opt/lib
+LIBS +=  -llibsqlite3
 
 #include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
 

@@ -397,7 +397,7 @@ QTableView *BCountElem::Compter(QString * pName, int zn)
     // positionner le tableau
     //lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
 
-
+#if 0
     // simple click dans fenetre  pour selectionner boules
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
@@ -414,7 +414,7 @@ QTableView *BCountElem::Compter(QString * pName, int zn)
     qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
-
+#endif
     return qtv_tmp;
 }
 
