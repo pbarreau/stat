@@ -11,7 +11,6 @@
 
 #include "compter.h"
 
-
 class BCountGroup:public BCount
 {
     Q_OBJECT

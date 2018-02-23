@@ -20,7 +20,7 @@ class BCountElem:public BCount
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    BCountElem(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb, QWidget *LeParent);
+    BCountElem(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb);
     ~BCountElem();
     int getCounter(void);
     QString getFilteringData(int zn);
@@ -35,7 +35,7 @@ public:
 
 private:
     QTableView *Compter(QString * pName, int zn);
-    QStringList * CreateFilterForData(int zn);
+    //QStringList * CreateFilterForData(int zn);
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
     QString PBAR_ReqComptage(QString ReqTirages, int zn,int distance);

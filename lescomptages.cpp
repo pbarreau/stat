@@ -1,6 +1,7 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #include <QSqlError>
+#include <QCoreApplication>
 #endif
 
 #include <QFile>
@@ -13,8 +14,12 @@
 #include <QTextStream>
 #include <QVBoxLayout>
 #include <QLabel>
+
+//#include <sqlite3.h>
 #include <QSqlDatabase>
 #include <QSqlDriver>
+#include <QSqlError>
+
 #include <QVector>
 
 #include "compter_zones.h"
@@ -28,7 +33,7 @@
 #include "cnp_AvecRepetition.h"
 #include "db_tools.h"
 #include "sqlExtensions/sqlite3.h"
-#include "sqlExtensions/sqlite3ext.h"
+//#include "sqlExtensions/sqlite3ext.h"
 
 int BPrevision::total = 0;
 
@@ -151,6 +156,13 @@ bool BPrevision::AuthoriseChargementExtension(void)
     QSqlQuery query(dbInUse);
     QString msg = "";
 
+    QString cur_rep = QCoreApplication::applicationDirPath();
+    QString MonDirLib = cur_rep + "/sqlExtensions";
+    QStringList mesLibs = QCoreApplication::libraryPaths();
+    mesLibs<<MonDirLib;
+    //QCoreApplication::addLibraryPath(MonDirLib);
+    QCoreApplication::setLibraryPaths(mesLibs);
+
     /// http://sqlite.1065341.n5.nabble.com/Using-loadable-extension-with-Qt-td24872.html
     /// https://arstechnica.com/civis/viewtopic.php?f=20&t=64150
     QVariant v = dbInUse.driver()->handle();
@@ -160,16 +172,28 @@ bool BPrevision::AuthoriseChargementExtension(void)
     {
 
         // v.data() returns a pointer to the handle
-
+        sqlite3_initialize();
         sqlite3 *handle = *static_cast<sqlite3 **>(v.data());
 
         if (handle != 0) { // check that it is not NULL
 
-            sqlite3_enable_load_extension(handle,1);
+            int ret = sqlite3_enable_load_extension(handle,1);
+            //int ret = loadExt(handle,1);
 
             /// Lancer la requete
-            QString msg = "SELECT load_extension('sqlExt_math.dll')";
-            isOk = query.exec(msg);
+            QString msg = "SELECT load_extension('sqlExt_math')";
+            //isOk = query.exec(msg);
+#ifndef QT_NO_DEBUG
+            if (query.lastError() .isValid())
+            {
+                foreach (const QString &path, QCoreApplication::libraryPaths())
+                    qDebug() << path;
+
+                qDebug() << "Error: cannot load extension (" << query.lastError().text()<<")";
+                isOk = false;
+            }
+#endif
+
         }
 
     }
@@ -302,8 +326,8 @@ bool BPrevision::creerTablesDeLaBase(void)
         {C_TBL_1,f1},   /// Table des nom des zones et abregees
         {cRef_elm,f2},   /// Liste des boules par zone
         {cClc_cmb,f4},    /// Table des combinaisons
-        {cRef_fdj,f3},   /// Table des tirages
-        {cRef_ana,f5},    /// Table des Analyses
+        {cRef_fdj,importerFdjDansTable},   /// Table des tirages
+        {cRef_ana,f5},    /// A supprimer
         {cUsr_elm,f6},    /// Selection utilisateur
         {cUsr_cmb,f6},    /// Selection utilisateur
         {cUsr_grp,f6}    /// Selection utilisateur
@@ -478,7 +502,7 @@ bool BPrevision::f2(QString tbName,QSqlQuery *query)
     return isOk;
 }
 
-bool BPrevision::f3(QString tb,QSqlQuery *query)
+bool BPrevision::importerFdjDansTable(QString tb,QSqlQuery *query)
 {
     bool isOk= true;
     QString msg = "";
@@ -625,21 +649,28 @@ bool BPrevision::f4(QString tb, QSqlQuery *query)
 
 bool BPrevision::f5(QString tb, QSqlQuery *query)
 {
-    Q_UNUSED(query)
+    Q_UNUSED(tb);
+    Q_UNUSED(query);
+    return true;
+}
+
+bool BPrevision::analyserDonneesSource(QString source, QString resultat)
+{
+
 
     bool isOk = true;
     int nbZone = onGame.znCount;
     slFlt = new  QStringList* [nbZone] ;
     QString tbUse = "";
-    QString source = "";
-    QString destination ="";
+    //QString source = "";
+    //QString destination ="";
 
-    destination = "B_"+tb;
-    source = tblTirages;
+    QString destination = "B_"+resultat;
+    //source = tblTirages;
 
     for (int zn=0;(zn < nbZone) && isOk;zn++ )
     {
-        slFlt[zn] = CreateFilterForData(zn);
+        //slFlt[zn] = CreateFilterForData(zn);
         isOk = AnalyserEnsembleTirage(source,onGame, zn);
         if(isOk)
             isOk = FaireTableauSynthese(destination,onGame,zn);
@@ -1368,7 +1399,8 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
                 gdl_tmp->addWidget(B_item,1,2);
 
                 /// repartition
-                B_item = new BCountElem(source,zn,config,dbInUse,Resultats);
+                B_item = new BCountElem(source,zn,config,dbInUse);
+                //B_item->setParent(Resultats);
                 gdl_tmp->addWidget(l2,0,0);
             }
 
@@ -1900,6 +1932,7 @@ bool BPrevision::SupprimerVueIntermediaires(void)
     return isOk;
 }
 
+#if 0
 // Cette fonction retourne un pointeur sur un tableau de QStringList
 // Ce tableau comporte 2 elements
 // Element 0 liste des requetes construites
@@ -1943,3 +1976,4 @@ QStringList * BPrevision::CreateFilterForData(int zn)
 
     return sl_filter;
 }
+#endif

@@ -34,8 +34,8 @@ BCountElem::~BCountElem()
     total --;
 }
 
-BCountElem::BCountElem(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb, QWidget *LeParent)
-    :BCount(pDef,in,fromDb,LeParent,eCountElm)
+BCountElem::BCountElem(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb)
+    :BCount(pDef,in,fromDb,NULL,eCountElm)
 {
     //type=eCountElm;
     countId = total;

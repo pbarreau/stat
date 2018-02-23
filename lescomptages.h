@@ -16,6 +16,7 @@
 
 /// informer de la prochaine definition de la classe
 class BPrevision;
+//class BCountGroup;
 
 /// -------DEFINE---------
 #define CTXT_LABEL  "selection Z:aucun - C:aucun - G:aucun"
@@ -88,7 +89,7 @@ private:
     BGame *definirConstantesDuJeu(eGame game);
     bool f1(QString tbName,QSqlQuery *query);
     bool f2(QString tbName,QSqlQuery *query);
-    bool f3(QString tbName,QSqlQuery *query);
+    bool importerFdjDansTable(QString tbName,QSqlQuery *query);
     bool f4(QString tbName,QSqlQuery *query);
     bool f5(QString tbName,QSqlQuery *query);
     bool f6(QString tbName,QSqlQuery *query);
@@ -97,9 +98,11 @@ private:
     bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
 
     bool AnalyserEnsembleTirage(QString InputTable,const BGame &onGame, int zn);
+    bool analyserDonneesSource(QString source, QString resultat);
+
     bool FaireTableauSynthese(QString InputTable,const BGame &onGame, int zn);
     bool SupprimerVueIntermediaires(void);
-    QStringList * CreateFilterForData(int zn);
+    //QStringList * CreateFilterForData(int zn);
 
     /// TBD
     bool chargerDonneesFdjeux(QString tbName);

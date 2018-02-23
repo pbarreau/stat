@@ -7,11 +7,6 @@
 #include <QTabWidget>
 #include <QSortFilterProxyModel>
 
-#if 0
-#include "tirages.h"
-#include "gererbase.h"
-#endif
-
 #include "gererbase.h"
 #include "compter_groupes.h"
 

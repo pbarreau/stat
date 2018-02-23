@@ -190,7 +190,7 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
                             + tblName
                             +" select max(B)as B, max(Ec) as Ec, max(Ep) as Ep,"
                              "printf(\"%.1f\",avg(E))as Em,max(E) as E,"
-                             "count(B) as T from "
+                             "count(B) as T, null from "
                              "("
                              "select "
                             +QString::number(boule+1)
