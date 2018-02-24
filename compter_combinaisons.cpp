@@ -24,14 +24,21 @@ BCountComb::~BCountComb()
     total --;
 }
 
-BCountComb::BCountComb(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb)
+QTableView *BCountComb::getTblAllData(int zn)
+{
+    return(tbvEnsemble_zn[zn]);
+}
+
+BCountComb::BCountComb(const QString &in,  const BGame &pDef, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountCmb)
 {
     //type=eCountCmb;
     countId = total;
     unNom = "'Compter Combinaisons'";
     total++;
-    //QTabWidget *tab_Top = new QTabWidget(this);
+
+    int nb_zones = myGame.znCount;
+    tbvEnsemble_zn = new QTableView *[nb_zones];
 
     QTableView *(BCountComb::*ptrFunc[])(QString *, int) =
     {
@@ -40,8 +47,8 @@ BCountComb::BCountComb(const QString &in, const int ze, const BGame &pDef, QSqlD
 
 };
 
-    int nb_zones = myGame.znCount;
-    if (ze< nb_zones && ze >=0)
+
+    for (int zn = 0; zn< nb_zones ;zn++)
     {
         /*
         if(nb_zones == 1){
@@ -54,8 +61,10 @@ BCountComb::BCountComb(const QString &in, const int ze, const BGame &pDef, QSqlD
 */
         QString *name = new QString;
         //QWidget *tmpw = new QWidget;
-        QTableView *calcul = (this->*ptrFunc[ze])(name, ze);
+        QTableView *calcul = (this->*ptrFunc[zn])(name, zn);
         calcul->setParent(this);
+        tbvEnsemble_zn[zn]=calcul;
+
         //tmpw->setLayout(calcul);
         //tab_Top->addTab(tmpw,tr((*name).toUtf8()));
         //tab_Top->addTab(calcul,tr((*name).toUtf8()));

@@ -17,11 +17,11 @@ class BCountGroup:public BCount
     /// in : infos representant les tirages
     /// tb : nom de la table decrivant les zones
 public:
-    BCountGroup(const QString &in, const int ze, const BGame &pDef, QStringList** lstCri, QSqlDatabase fromDb);
+    BCountGroup(const QString &in,  const BGame &pDef,  QSqlDatabase fromDb);
     ~BCountGroup();
-    bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
-    bool SupprimerVueIntermediaires(void);
     QString getFilteringData(int zn);
+    QTableView *getTblAllData(int zn);
+    QTableView *getTblOneData(int zn);
 
 
 public slots:
@@ -43,6 +43,9 @@ private:
     QTableView * save_view;
     QStringList **maRef; //zn_filter
     QStandardItemModel ** p_qsim_3;
+    QTableView ** tbvEnsemble_zn; /// Table view contenant resultat de zone
+    QTableView ** tbvLigne_zn;
+
 
 
 private:
@@ -57,6 +60,13 @@ private:
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
     bool updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool isChecked, int zn);
     bool updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn);
+    bool FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn);
+
+
+    bool OLD_AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int zn);
+    bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
+    bool SupprimerVueIntermediaires(void);
+
 
 
 

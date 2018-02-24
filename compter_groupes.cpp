@@ -22,20 +22,29 @@ BCountGroup::~BCountGroup()
     total --;
 }
 
-BCountGroup::BCountGroup(const QString &in, const int ze, const BGame &pDef, QStringList** lstCri, QSqlDatabase fromDb)
+BCountGroup::BCountGroup(const QString &in,  const BGame &pDef, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountGrp)
 {
-    //type=eCountGrp;
+    QString source = in;
+    QString destination = "";
+
     countId = total;
     unNom = "'Compter Groupes'";
-    total++;
     //QTabWidget *tab_Top = new QTabWidget(this);
     demande = 0;
+    if(!total)
+    {
+        destination = "B_ana";
 
+    }
+    total++;
 
     int nb_zones = myGame.znCount;
-    maRef = lstCri;
+
     p_qsim_3 = new QStandardItemModel *[nb_zones];
+    tbvEnsemble_zn = new QTableView *[nb_zones];
+    tbvLigne_zn = new QTableView *[nb_zones];
+    maRef = new QStringList * [nb_zones];
 
     QTableView *(BCountGroup::*ptrFunc[])(QString *, int) =
     {
@@ -44,38 +53,295 @@ BCountGroup::BCountGroup(const QString &in, const int ze, const BGame &pDef, QSt
 
 };
 
-    if (ze< nb_zones && ze >=0)
+    for (int zn = 0; zn< nb_zones ;zn++)
     {
         QString *name = new QString;
-        //QWidget *tmpw = new QWidget;
-        QTableView *calcul = (this->*ptrFunc[ze])(name, ze);
-        calcul->setParent(this);
-        //tmpw->setLayout(calcul);
-        //tab_Top->addTab(calcul,tr((*name).toUtf8()));
+        maRef[zn] = CreateFilterForData(zn);
+
+        //bool isOk = AnalyserEnsembleTirage(source,destination, zn);
+        bool isOk = OLD_AnalyserEnsembleTirage(source,myGame,zn);
+
+        if(isOk)
+            isOk = FaireTableauSynthese(destination,myGame,zn);
+
+        QTableView *calcul = (this->*ptrFunc[zn])(name, zn);
     }
 
-#if 0
-    QWidget * Resultats = new QWidget;
-    QGridLayout *layout = new QGridLayout();
-    layout->addWidget(tab_Top);
-    Resultats->setLayout(layout);
-    Resultats->setWindowTitle("Test1-"+QString::number(total));
-    Resultats->show();
+}
+/// ----------------------
+bool BCountGroup::OLD_AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int zn)
+{
+    /// Verifier si des vues temporaires precedentes sont encore presentes
+    /// Si oui les effacer
+    /// Si non prendre la liste des criteres a appliquer sur l'ensemble
+    /// puis faire tant qu'il existe un critere
+    /// effectuer la selection comptage vers une nouvelle vu temporaire i
+    /// quand on arrive a nombre de criteres total -1 la vue destination
+    /// sera OutputTable.
+
+    bool isOk = true;
+    QString msg = "";
+    QSqlQuery query(dbToUse);
+    QString stDefBoules = cRef_elm;
+    QString st_OnDef = "";
+    QString tbLabAna = cRef_ana;
+    QString tblToUse = "";
+    QString tbLabCmb = cClc_cmb;
+
+    tbLabCmb = "B_" + tbLabCmb;
+    if(onGame.from == eFdj){
+        tbLabAna = "B_" + tbLabAna;
+        tblToUse = tblIn;
+    }
+    else{
+        tblToUse = tblIn ;
+        tbLabAna = "U_" + tblToUse + "_" +tbLabAna;
+    }
+    tbLabAna =tbLabAna+"_z"+QString::number(zn+1);
+
+    QString ref="(tbleft.%1%2=tbRight.B)";
+
+    /// sur quel nom des elements de la zone
+    st_OnDef=""; /// remettre a zero pour chacune des zones
+    int znLen = onGame.limites[zn].len;
+    for(int j=0;j<znLen;j++)
+    {
+        st_OnDef = st_OnDef + ref.arg(onGame.names[zn].abv).arg(j+1);
+        if(j<znLen-1)
+            st_OnDef = st_OnDef + " or ";
+    }
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "on definition:"<<st_OnDef;
 #endif
+
+    QStringList *slst=&maRef[zn][0];
+
+    /// Verifier si des tables existent deja
+    if(SupprimerVueIntermediaires())
+    {
+        /// les anciennes vues ne sont pas presentes
+        ///  on peut faire les calculs
+        int loop = 0;
+        int nbTot = slst[0].size();
+        int colId = 0;
+        QString curName = tblToUse;
+        QString curTarget = "view vt_0";
+        QString lastTitle = "tbLeft.id  as Id,";
+        QString curTitle = "tbLeft.*";
+        do
+        {
+            /// Dans le cas zone etoiles prendre la valeur directe
+            QString colName = slst[1].at(loop);
+            if(zn==1 && colName.contains("U")&&colId<znLen){
+                colId++;
+                msg = "create " + curTarget
+                        +" as select "+curTitle+", tbRight."
+                        +onGame.names[zn].abv+QString::number(colId)+" as "
+                        + slst[1].at(loop)
+                        +" from("+curName+")as tbLeft "
+                        +"left join ( "
+                        +tblToUse+") as tbRight  on (tbRight.id = tbLeft.id)";
+
+            }
+            else{
+                msg = "create " + curTarget
+                        +" as select "+curTitle+", count(tbRight.B) as "
+                        + slst[1].at(loop)
+                        +" from("+curName+")as tbLeft "
+                        +"left join (select c1.id as B from "
+                        +stDefBoules+" as c1 where (c1.z"
+                        +QString::number(zn+1)+" not null and (c1."
+                        +slst[0].at(loop)+"))) as tbRight on ("
+                        +st_OnDef+") group by tbLeft.id";
+            }
+            isOk = query.exec(msg);
+
+            curName = "vt_" +  QString::number(loop);
+            lastTitle = lastTitle
+                    + "tbLeft."+slst[1].at(loop)
+                    +" as "+slst[1].at(loop);
+            loop++;
+            if(loop <  nbTot-1)
+            {
+                curTarget = "view vt_"+QString::number(loop);
+                lastTitle = lastTitle + ",";
+            }
+            else
+            {
+                curTarget = "view vrz"+QString::number(zn+1)+"_"+tbLabAna;
+                curTitle = lastTitle;
+            }
+        }while(loop < nbTot && isOk);
+
+        if(isOk){
+            /// mise en correspondance de la reference combinaison
+            QString msg = "";
+            QString ref_1 = "";
+            QString stCombi = "";
+            QString stLien = "";
+
+            ref_1 = "(tbLeft.U%1 = tbRight."+onGame.names[zn].abv+"%2)";
+            stLien = " and ";
+
+            if(onGame.type == eGameEuro && zn == 1){
+                ref_1 = "((tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%1)"
+                        +"or"+
+                        "(tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%2))";
+                stLien = " and ";
+            }
+
+            int znLen = onGame.limites[zn].len;
+            for(int pos=0;pos<znLen;pos++){
+                if(onGame.type == eGameEuro && zn == 1){
+                    stCombi = stCombi
+                            + ref_1.arg((pos%2)+1).arg(((pos+1)%2)+1).arg(pos);
+
+                }else{
+                    stCombi = stCombi + ref_1.arg(pos).arg(pos+1);
+                }
+
+                if(pos<znLen-1)
+                    stCombi = stCombi + stLien;
+            }
+
+            //curTarget = curTarget.remove("table");
+            curTarget = curTarget.remove("view");
+            msg = "create table if not exists "+tbLabAna
+                    +" as select tbLeft.*,tbRight.id as idComb  from ("
+                    +curTarget+")as tbLeft left join ("
+                    + tbLabCmb+"_z"+QString::number(zn+1)
+                    +")as tbRight on("
+                    + stCombi
+                    +")"
+                    ;
+#ifndef QT_NO_DEBUG
+            qDebug() << "msg:"<<msg;
+#endif
+            isOk = query.exec(msg);
+        }
+
+        /// supression tables intermediaires
+        if(isOk){
+            msg = "drop view if exists " + curTarget;
+            isOk= query.exec(msg);
+
+            if(isOk)
+                isOk = SupprimerVueIntermediaires();
+        }
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "BPrevision::AnalyserEnsembleTirage:";
+        DB_Tools::DisplayError(ErrLoc,&query,msg);
+    }
+    return isOk;
+}
+
+/// ---------------------
+bool BCountGroup::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
+{
+    bool isOk = true;
+    QString msg = "";
+    QSqlQuery query(dbToUse);
+    QString stDefBoules = cRef_elm;
+    QString prvName = "";
+    QString curName  ="";
+    QString TblCompact = cClc_grp;
+    /*TblCompact = TblCompact+"_"
+            + QString::number(total-1).rightJustified(3,'0')
+            +"_B_fdj"
+            +"_z"+QString::number(zn+1);*/
+
+    QString tblToUse = tblIn + "_z"+QString::number(zn+1);
+
+    QString stCurTable = tblToUse;
+
+    /// Verifier si des tables existent deja
+    if(SupprimerVueIntermediaires())
+    {
+        /// Plus de table intermediaire commencer
+        curName = "vt_0";
+        msg = "create view if not exists "
+                +curName+" as select Choix.tz"
+                +QString::number(zn+1)+ " as Nb"
+                +" from("+stDefBoules+")as Choix where(Choix.tz"
+                +QString::number(zn+1)+ " is not null)";
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+
+        isOk = query.exec(msg);
+        QStringList *slst=&maRef[zn][0];
+
+        int nbCols = slst[1].size();
+        curName = "vt_1";
+        QString stGenre = "view";
+        for(int loop = 0; (loop < nbCols)&& isOk; loop ++){
+            prvName ="vt_"+QString::number(loop);
+            msg = "create "+stGenre+" if not exists "
+                    + curName
+                    +" as select tbleft.*, (case when count(tbRight.id)!=0 then count(tbRight.id) end)as "
+                    +slst[1].at(loop)
+                    + " from("+prvName+") as tbLeft "
+                    +"left join ("
+                    +stCurTable
+                    +") as tbRight on (tbLeft.Nb = tbRight."
+                    +slst[1].at(loop)+")group by tbLeft.Nb";
+#ifndef QT_NO_DEBUG
+            qDebug() << msg;
+#endif
+            isOk = query.exec(msg);
+            if(loop<nbCols-1)
+                curName ="vt_"+QString::number(loop+2);
+        }
+        /// Rajouter a la fin une colonne pour fitrage
+        if(isOk){
+            msg = "create table if not exists "+TblCompact+"_z"
+                    + QString::number(zn+1)
+                    +" as select tb1.*, NULL as F from ("+curName+") as tb1";
+#ifndef QT_NO_DEBUG
+            qDebug() << msg;
+#endif
+
+            isOk = query.exec(msg);
+
+            /// Supprimer vues intermediaire
+            if(isOk){
+                isOk = SupprimerVueIntermediaires();
+            }
+        }
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "FaireTableauSynthese:";
+        DB_Tools::DisplayError(ErrLoc,&query,"");
+    }
+
+    return isOk;
 }
 
 QTableView *BCountGroup::Compter(QString * pName, int zn)
 {
-    QGridLayout *lay_return = new QGridLayout;
+    //QGridLayout *lay_return = new QGridLayout;
 
 
     QTableView *qtv_tmp_1 = CompterLigne (pName, zn);
     QTableView *qtv_tmp_2 = CompterEnsemble (pName, zn);
 
+    qtv_tmp_1->setParent(this);
+    qtv_tmp_2->setParent(this);
+
+    tbvLigne_zn[zn]=qtv_tmp_1;
+    tbvEnsemble_zn[zn]=qtv_tmp_2;
+
+#if 0
     // positionner les tableaux
     lay_return->addWidget(qtv_tmp_1,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp_2,1,0,Qt::AlignLeft|Qt::AlignTop);
-
+#endif
 
     return qtv_tmp_2;
 }
@@ -146,7 +412,9 @@ bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable
             }
             else
             {
-                curTarget = "table vrz"+QString::number(zn+1)+"_"+OutputTable;
+                curTarget = "table "
+                        +OutputTable
+                        +"_z"+QString::number(zn+1);
             }
         }while(loop < nbTot && isOk);
 
@@ -168,8 +436,8 @@ bool BCountGroup::SupprimerVueIntermediaires(void)
 {
     bool isOk = true;
     QString msg = "";
-    QSqlQuery query;
-    QSqlQuery qDel;
+    QSqlQuery query(dbToUse);
+    QSqlQuery qDel(dbToUse);
 
     msg = "SELECT name FROM sqlite_master "
           "WHERE type='view' AND name like'vt_%';";
@@ -233,11 +501,11 @@ QTableView *BCountGroup::CompterLigne(QString * pName, int zn)
     //int b = qtv_tmp->columnWidth(0);
     //int n = sqm_tmp->columnCount();
     //qtv_tmp->setFixedWidth((b*n)+5);
-    int L = (nbCol * CEL2_L)/2;
+    int L = ((nbCol+1) * CEL2_L);
     qtv_tmp->setFixedWidth(L);
 
     int b = CEL2_H;
-    double n = 1.5;
+    double n = 2;
     qtv_tmp->setFixedHeight(b*n);
 
     return qtv_tmp;
@@ -306,7 +574,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     {
         qtv_tmp->setColumnWidth(pos,CEL2_L);
     }
-    int L = (nbCol * CEL2_L)/2;
+    int L = (nbCol * CEL2_L);
     qtv_tmp->setFixedWidth(L);
 
 
@@ -955,6 +1223,16 @@ void BCountGroup::slot_RequeteFromSelection(const QModelIndex &index)
 
 }
 
+QTableView *BCountGroup::getTblAllData(int zn)
+{
+    return(tbvEnsemble_zn[zn]);
+}
+
+QTableView *BCountGroup::getTblOneData(int zn)
+{
+    return(tbvLigne_zn[zn]);
+}
+
 QString BCountGroup::getFilteringData(int zn)
 {
     QSqlQuery query(dbToUse);
@@ -985,8 +1263,8 @@ QString BCountGroup::getFilteringData(int zn)
                     col = col-1;
                 }
                 else{
-                 col = nbCol -1;
-                 lgn = lgn-1;
+                    col = nbCol -1;
+                    lgn = lgn-1;
                 }
 
                 QString colName = maRef[zn][1].at(col);

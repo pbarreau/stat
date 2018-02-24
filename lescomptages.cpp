@@ -1353,35 +1353,23 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     BCount *B_item = NULL;
     int nb_zones = config.znCount;
 
-#if 0
-    BCountEcart *ici= new BCountEcart(source,0,config,dbInUse);
+    BCountGroup *item_grp = new BCountGroup(source,config,dbInUse);
+    BCountComb *item_cmb = new BCountComb(source,config,dbInUse);
 
-    c1 = new BCountElem(source,0,config,dbInUse,Resultats);
-    connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
-    /// transfert vers SyntheseGenerale
-    connect(c1,
-            SIGNAL(sig_isClickedOnBall(QModelIndex)),
-            this,
-            SLOT(slot_emitThatClickedBall(QModelIndex)));
+    QTableView * tmp_tbv_1 = NULL;
+    QTableView * tmp_tbv = NULL;
 
-    c2 = new BCountComb(source,0,config,dbInUse);
-    c3 = new BCountGroup(source,0,config,slFlt,dbInUse);
-
-    QVector <BCount*> E1;
-    E1.append(c1);
-    E1.append(c2);
-    E1.append(c3);
-
-#endif
     QString title_lab1[]={"Boules","Etoiles"};
     QString title_lab2[]={"Totaux","Combinaisons","Groupements"};
     int items_lab2 = sizeof(title_lab2)/sizeof(QString);
+
 
     for(int zn = 0; zn< nb_zones;zn++)
     {
         QGridLayout * gdl_tmp = new QGridLayout;
         QWidget * wdg_tmp = new QWidget;
         QTabWidget *tab_L2 = new QTabWidget;
+        tmp_tbv_1 = item_grp->getTblOneData(zn);
 
         for(int calc_id = 0; calc_id< items_lab2;calc_id++)
         {
@@ -1391,42 +1379,45 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 
             /// onglet element
             if(calc_id==0){
-                QLabel *l1 = new QLabel("Ecarts");
-                QLabel *l2 = new QLabel("Repartitions");
-                /// ecart
-                B_item = new BCountEcart(source,zn,config,dbInUse);
-                gdl_tmp->addWidget(l1,0,2);
-                gdl_tmp->addWidget(B_item,1,2);
+                QLabel *lab_ecart = new QLabel("Ecarts");
+                QLabel *lab_details = new QLabel("Details");
 
                 /// repartition
                 B_item = new BCountElem(source,zn,config,dbInUse);
-                //B_item->setParent(Resultats);
-                gdl_tmp->addWidget(l2,0,0);
+                gdl_tmp->addWidget(lab_details,0,2);
+                gdl_tmp->addWidget(B_item,1,2);
+
+                /// ecart
+                B_item = new BCountEcart(source,zn,config,dbInUse);
+                gdl_tmp->addWidget(lab_ecart,0,0);
+                gdl_tmp->addWidget(B_item,1,0);
             }
 
             /// onglet combinaison
             if(calc_id==1){
-                QLabel *l1 = new QLabel("Ecarts");
-                QLabel *l2 = new QLabel("Distributions");
-                gdl_tmp->addWidget(l1,0,2);
+                QLabel *lab_ecart = new QLabel("Ecarts");
+                QLabel *lab_details = new QLabel("Details");
 
                 /// repartition
-                B_item = new BCountComb(source,zn,config,dbInUse);
-                gdl_tmp->addWidget(l2,0,0);
+                gdl_tmp->addWidget(lab_details,0,2);
+                tmp_tbv = item_cmb->getTblAllData(zn);
+                gdl_tmp->addWidget(tmp_tbv,1,2);
 
+                gdl_tmp->addWidget(lab_ecart,0,0);
             }
 
             /// onglet groupement
             if(calc_id==2){
-                QLabel *l1 = new QLabel("Distributions");
-                gdl_tmp->addWidget(l1,0,0);
+                QLabel *lab_details = new QLabel("Details");
+                gdl_tmp->addWidget(lab_details,0,0,0);
 
                 /// repartition
-                B_item = new BCountGroup(source,zn,config,slFlt,dbInUse);
+                tmp_tbv = item_grp->getTblAllData(zn);
+                gdl_tmp->addWidget(tmp_tbv,1,0);
             }
 
-            if(B_item)
-                gdl_tmp->addWidget(B_item,1,0);
+            //if(B_item)
+                //gdl_tmp->addWidget(B_item,1,0);
 
             /// Mettre a jour le widget
             wdg_tmp->setLayout(gdl_tmp);
@@ -1434,7 +1425,9 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
             /// Rajouter l'onglet
             tab_L2->addTab(wdg_tmp,title_lab2[calc_id]);
         }
-        gdl_tmp->addWidget(tab_L2,1,0);
+        /// Niveau 1
+        gdl_tmp->addWidget(tmp_tbv_1,1,0);
+        gdl_tmp->addWidget(tab_L2,2,0);
         wdg_tmp->setLayout(gdl_tmp);
         tab_L1->addTab(wdg_tmp,title_lab1[zn]);
     }

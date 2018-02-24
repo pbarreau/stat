@@ -16,9 +16,11 @@ class BCountComb:public BCount
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    BCountComb(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb);
+    BCountComb(const QString &in, const BGame &pDef, QSqlDatabase fromDb);
     ~BCountComb();
     QString getFilteringData(int zn);
+    QTableView *getTblAllData(int zn);
+
 
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
@@ -27,6 +29,7 @@ public slots:
 
 private:
     static int total;
+    QTableView ** tbvEnsemble_zn; /// Table view contenant resultat de zone
     int hCommon;
 
 
