@@ -1350,28 +1350,57 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 {
     QWidget * Resultats = new QWidget(0,Qt::Window);
     QTabWidget *tab_L1 = new QTabWidget;
+
     BCount *B_item = NULL;
     int nb_zones = config.znCount;
 
     BCountGroup *item_grp = new BCountGroup(source,config,dbInUse);
     BCountComb *item_cmb = new BCountComb(source,config,dbInUse);
 
-    QTableView * tmp_tbv_1 = NULL;
-    QTableView * tmp_tbv = NULL;
+    QTableView * tbv_n2_1_1 = NULL;
+    QTableView * tbv_n2_1_2 = NULL;
 
-    QString title_lab1[]={"Boules","Etoiles"};
-    QString title_lab2[]={"Totaux","Combinaisons","Groupements"};
-    int items_lab2 = sizeof(title_lab2)/sizeof(QString);
+    QString title_lab0_2[]={"Calculs","Graphiques"};
+    int items_lab0_2 = sizeof(title_lab0_2)/sizeof(QString);
+
+    QString title_lab0_1[]={"Boules","Etoiles"};
+
+    QString title_lab0_3[]={
+        "Totaux","Combinaisons","Groupements",
+        "Couvertures","Mois"};
+    int items_lab0_3 = sizeof(title_lab0_3)/sizeof(QString);
 
 
+    /// Feuille a afficher
+    QGridLayout *tmp_layout = new QGridLayout;
+
+    /// Tirages
+    QLabel *lab_tirages = new QLabel("Tirages");
+    tmp_layout->addWidget(lab_tirages,0,0);
+
+    /// Label sur la feuille
+    QString clef[]={"Z:","C:","G:"};
+    int i = 0;
+    QString msg = "Selection -> ";
+    for(i; i< 3; i++)
+    {
+        msg= msg + clef[i]+"aucun";
+        if(i<2)
+            msg=msg+"-";
+    }
+    selection[0].setText(msg);
+    tmp_layout->addWidget(&selection[0],0,1);
+
+    /// Onglets Boules /etoiles
     for(int zn = 0; zn< nb_zones;zn++)
     {
-        QGridLayout * gdl_tmp = new QGridLayout;
-        QWidget * wdg_tmp = new QWidget;
-        QTabWidget *tab_L2 = new QTabWidget;
-        tmp_tbv_1 = item_grp->getTblOneData(zn);
+        QGridLayout * gdl_n2_1 = new QGridLayout;
+        QWidget * wdg_n2_1 = new QWidget;
+        QTabWidget *tab0_3 = new QTabWidget;
 
-        for(int calc_id = 0; calc_id< items_lab2;calc_id++)
+        tbv_n2_1_1 = item_grp->getTblOneData(zn);
+
+        for(int calc_id = 0; calc_id< items_lab0_3;calc_id++)
         {
             QGridLayout * gdl_tmp = new QGridLayout;
             QWidget * wdg_tmp = new QWidget;
@@ -1400,8 +1429,8 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 
                 /// repartition
                 gdl_tmp->addWidget(lab_details,0,2);
-                tmp_tbv = item_cmb->getTblAllData(zn);
-                gdl_tmp->addWidget(tmp_tbv,1,2);
+                tbv_n2_1_2 = item_cmb->getTblAllData(zn);
+                gdl_tmp->addWidget(tbv_n2_1_2,1,2);
 
                 gdl_tmp->addWidget(lab_ecart,0,0);
             }
@@ -1412,36 +1441,40 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
                 gdl_tmp->addWidget(lab_details,0,0,0);
 
                 /// repartition
-                tmp_tbv = item_grp->getTblAllData(zn);
-                gdl_tmp->addWidget(tmp_tbv,1,0);
+                tbv_n2_1_2 = item_grp->getTblAllData(zn);
+                gdl_tmp->addWidget(tbv_n2_1_2,1,0);
             }
 
-            //if(B_item)
-                //gdl_tmp->addWidget(B_item,1,0);
 
             /// Mettre a jour le widget
             wdg_tmp->setLayout(gdl_tmp);
 
             /// Rajouter l'onglet
-            tab_L2->addTab(wdg_tmp,title_lab2[calc_id]);
+            tab0_3->addTab(wdg_tmp,title_lab0_3[calc_id]);
         }
-        /// Niveau 1
-        gdl_tmp->addWidget(tmp_tbv_1,1,0);
-        gdl_tmp->addWidget(tab_L2,2,0);
-        wdg_tmp->setLayout(gdl_tmp);
-        tab_L1->addTab(wdg_tmp,title_lab1[zn]);
-    }
 
+        /// Tableau a une ligne
+        gdl_n2_1->addWidget(tbv_n2_1_1,1,0);
 
-    QGridLayout *tmp_layout = new QGridLayout;
-    QString clef[]={"Z:","C:","G:"};
-    int i = 0;
-    for(i; i< 3; i++)
-    {
-        selection[i].setText(clef[i]+"aucun");
-        tmp_layout->addWidget(&selection[i],i,0);
+        // Onglets
+        QTabWidget *tab0_2 = new QTabWidget;
+        tab0_2->addTab(tab0_3,title_lab0_2[0]);
+        QWidget * wdg_tmp_2 = new QWidget;
+        tab0_2->addTab(wdg_tmp_2,title_lab0_2[1]);
+
+        gdl_n2_1->addWidget(tab0_2,2,0);
+        wdg_n2_1->setLayout(gdl_n2_1);
+        tab_L1->addTab(wdg_n2_1,title_lab0_1[zn]);
     }
-    tmp_layout->addWidget(tab_L1,i,0);
+    tmp_layout->addWidget(tab_L1,1,1);
+
+    /// Calcul
+    QLabel *lab_calcul = new QLabel("Calculs");
+    tmp_layout->addWidget(lab_calcul,2,1);
+
+    /// Reponses
+    QTabWidget *tab_reponses = new QTabWidget;
+    tmp_layout->addWidget(tab_reponses,3,1);
 
 #if 0
     connect( selection, SIGNAL( clicked(QString)) ,

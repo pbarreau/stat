@@ -28,6 +28,7 @@ public:
     int **p_val;
 };
 
+
 class RefEtude: public QObject
 {
     Q_OBJECT

@@ -67,6 +67,24 @@ typedef struct _BRunningQuery
     QSqlQueryModel *sqmDef; /// info sur requete de zone
 }BRunningQuery;
 
+/// classe pour trouver les couvertures
+class BCouv
+{
+public:
+    BCouv(int zn,BGame *pDef);
+    ~BCouv();
+
+private:
+    int zoneEtudie;
+
+public:
+    BGame *p_conf;
+    int **p_TotalMois;
+    int p_deb;
+    int p_fin;
+    int **p_val;
+};
+
 class BCount:public QTableView
 {
     Q_OBJECT
