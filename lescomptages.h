@@ -102,12 +102,14 @@ private:
 
     bool FaireTableauSynthese(QString InputTable,const BGame &onGame, int zn);
     bool SupprimerVueIntermediaires(void);
-    //QStringList * CreateFilterForData(int zn);
+
+    QWidget *Visuel_1(QString source,const BGame &config);
+    QWidget *Visuel_2(QString source,const BGame &config);
 
     /// TBD
     bool chargerDonneesFdjeux(QString tbName);
     bool LireLesTirages(QString tblName, stFdjData *def);
-    QString DateAnormer(QString input);
+    QString normaliserDate(QString input);
     QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
     void analyserTirages(QString source, const BGame &config);

@@ -1177,7 +1177,7 @@ bool BPrevision::LireLesTirages(QString tblName, stFdjData *def)
         list1 = ligne.split(";");
 
         // Recuperation du date_tirage (D)
-        data = DateAnormer(list1.at(2));
+        data = normaliserDate(list1.at(2));
         // Presentation de la date
         reqCols = reqCols + "D,";
         reqValues = reqValues + "'"
@@ -1269,7 +1269,7 @@ bool BPrevision::LireLesTirages(QString tblName, stFdjData *def)
     return isOk;
 }
 
-QString BPrevision::DateAnormer(QString input)
+QString BPrevision::normaliserDate(QString input)
 {
     // La fonction doit retourner une date au format  AAAA-MM-JJ
     // http://fr.wikipedia.org/wiki/ISO_8601
@@ -1351,32 +1351,16 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     QWidget * Resultats = new QWidget(0,Qt::Window);
     QTabWidget *tab_L1 = new QTabWidget;
 
-    BCount *B_item = NULL;
-    int nb_zones = config.znCount;
-
-    BCountGroup *item_grp = new BCountGroup(source,config,dbInUse);
-    BCountComb *item_cmb = new BCountComb(source,config,dbInUse);
-
-    QTableView * tbv_n2_1_1 = NULL;
-    QTableView * tbv_n2_1_2 = NULL;
-
-    QString title_lab0_2[]={"Calculs","Graphiques"};
-    int items_lab0_2 = sizeof(title_lab0_2)/sizeof(QString);
-
-    QString title_lab0_1[]={"Boules","Etoiles"};
-
-    QString title_lab0_3[]={
-        "Totaux","Combinaisons","Groupements",
-        "Couvertures","Mois"};
-    int items_lab0_3 = sizeof(title_lab0_3)/sizeof(QString);
-
-
     /// Feuille a afficher
     QGridLayout *tmp_layout = new QGridLayout;
 
     /// Tirages
     QLabel *lab_tirages = new QLabel("Tirages");
     tmp_layout->addWidget(lab_tirages,0,0);
+
+    QWidget * resu_1 = Visuel_1(source,config);
+    tmp_layout->addWidget(resu_1,1,0);
+
 
     /// Label sur la feuille
     QString clef[]={"Z:","C:","G:"};
@@ -1391,6 +1375,168 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     selection[0].setText(msg);
     tmp_layout->addWidget(&selection[0],0,1);
 
+    //
+    QWidget * resu_2 = Visuel_2(source,config);
+    tmp_layout->addWidget(resu_2,1,1);
+
+    /// Calcul
+    QLabel *lab_calcul = new QLabel("Calculs");
+    tmp_layout->addWidget(lab_calcul,2,0);
+
+    /// Reponses
+    QTabWidget *tab_reponses = new QTabWidget;
+    tmp_layout->addWidget(tab_reponses,3,0,1,2);
+
+#if 0
+    connect( selection, SIGNAL( clicked(QString)) ,
+             this, SLOT( slot_RazSelection(QString) ) );
+#endif
+
+    /// ----------------
+    Resultats->setLayout(tmp_layout);
+    Resultats->setWindowTitle(source);
+    Resultats->show();
+}
+
+QWidget *BPrevision::Visuel_1(QString source,const BGame &config)
+{
+    QTableView *qtv_tmp = new QTableView;
+
+    QString qtv_name = "LesTirages";
+    qtv_tmp->setObjectName(qtv_name);
+
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+
+    QString st_msg1 =
+            "select t1.J as J, t1.D as D,"
+            "t2.tip as C1, t3.tip as C2,"
+            "t1.b1, t1.b2,t1.b3,t1.b4,t1.b5,"
+            "t1.e1 from B_fdj as t1, B_cmb_z1 as t2,"
+            "B_cmb_z2 as t3, B_ana_z1 as t4, B_ana_z2 as t5 "
+            "where"
+            "("
+            "t4.id=t1.id and t2.id=t4.idcomb "
+            "and "
+            "t5.id=t1.id and t3.id=t5.idcomb"
+            ")";
+#ifndef QT_NO_DEBUG
+    qDebug() <<st_msg1;
+#endif
+
+    sqm_tmp->setQuery(st_msg1,dbInUse);
+    qtv_tmp->setModel(sqm_tmp);
+
+#if 0
+    qtv_tmp->setSortingEnabled(true);
+    //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+
+#if 0
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
+    qtv_tmp->setModel(m);
+    qtv_tmp->setItemDelegate(new BDelegateElmOrCmb); /// Delegation
+#endif
+    //qtv_tmp->verticalHeader()->hide();
+    //qtv_tmp->hideColumn(0);
+
+    //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    int nbCol = sqm_tmp->columnCount();
+
+    /*
+    qtv_tmp->setColumnWidth(0,CEL2_L);
+    for(int pos=2;pos<nbCol;pos++)
+    {
+        qtv_tmp->setColumnWidth(pos,CEL2_L);
+    }
+    */
+
+    int L = CEL2_L*nbCol;
+    qtv_tmp->setFixedWidth(L);;
+    //qtv_tmp->setFixedHeight(hCommon);
+    //qtv_tmp->setFixedHeight(CEL2_H*7);
+#if 0
+    qtv_tmp->setColumnWidth(1,30);
+    qtv_tmp->setColumnWidth(2,70);
+
+    for(int j=2;j<=sqm_tmp->columnCount();j++)
+        qtv_tmp->setColumnWidth(j,LCELL);
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+#endif
+
+#if 0
+    // simple click dans fenetre  pour selectionner boules
+    connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+             this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
+    // Double click dans fenetre  pour creer requete
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
+
+    qtv_tmp->setMouseTracking(true);
+    connect(qtv_tmp,
+            SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
+
+    /// Selection & priorite
+    qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+            SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
+
+#endif
+
+#if 0
+    // Filtre
+    QFormLayout *FiltreLayout = new QFormLayout;
+    FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
+    QList<qint32> colid;
+    colid << 1; /// colonne Repartition
+    fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
+
+    FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
+
+    lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
+#endif
+
+#endif
+
+    return qtv_tmp;
+}
+
+QWidget *BPrevision::Visuel_2(QString source,const BGame &config)
+{
+    QTabWidget *tab_L1 = new QTabWidget;
+
+    BCount *B_item = NULL;
+    BCountGroup *item_grp = new BCountGroup(source,config,dbInUse);
+    BCountComb *item_cmb = new BCountComb(source,config,dbInUse);
+
+    QTableView * tbv_n2_1_1 = NULL;
+    QTableView * tbv_n2_1_2 = NULL;
+
+    QString title_lab0_2[]={"Calculs","Graphiques"};
+    int items_lab0_2 = sizeof(title_lab0_2)/sizeof(QString);
+
+    /// Correspond aux zones a etudier
+    QString title_lab0_1[]={"Boules","Etoiles"};
+
+    QString title_lab0_3[]={
+        "Totaux","Combinaisons","Groupements",
+        "Couvertures","Mois"};
+    int items_lab0_3 = sizeof(title_lab0_3)/sizeof(QString);
+
+
+
+    int nb_zones = config.znCount;
     /// Onglets Boules /etoiles
     for(int zn = 0; zn< nb_zones;zn++)
     {
@@ -1466,26 +1612,10 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
         wdg_n2_1->setLayout(gdl_n2_1);
         tab_L1->addTab(wdg_n2_1,title_lab0_1[zn]);
     }
-    tmp_layout->addWidget(tab_L1,1,1);
 
-    /// Calcul
-    QLabel *lab_calcul = new QLabel("Calculs");
-    tmp_layout->addWidget(lab_calcul,2,1);
-
-    /// Reponses
-    QTabWidget *tab_reponses = new QTabWidget;
-    tmp_layout->addWidget(tab_reponses,3,1);
-
-#if 0
-    connect( selection, SIGNAL( clicked(QString)) ,
-             this, SLOT( slot_RazSelection(QString) ) );
-#endif
-
-    /// ----------------
-    Resultats->setLayout(tmp_layout);
-    Resultats->setWindowTitle(source);
-    Resultats->show();
+    return tab_L1;
 }
+
 void BPrevision::slot_filterUserGamesList()
 {
     QSqlQuery query(dbInUse);
