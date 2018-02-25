@@ -78,7 +78,8 @@ SOURCES += \
     cnp_AvecRepetition.cpp \
     etudierjeux.cpp \
     compter_ecart.cpp \
-    compter_une_repartition.cpp
+    compter_une_repartition.cpp \
+    montrer_tirages.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -116,7 +117,8 @@ HEADERS  += \
     etudierjeux.h \
     game.h \
     compter_ecart.h \
-    compter_une_repartition.h
+    compter_une_repartition.h \
+    montrer_tirages.h
 
 
 FORMS    += mainwindow.ui \

@@ -103,7 +103,7 @@ private:
     bool FaireTableauSynthese(QString InputTable,const BGame &onGame, int zn);
     bool SupprimerVueIntermediaires(void);
 
-    QWidget *Visuel_1(QString source,const BGame &config);
+    //QTableView *Visuel_1(QString source,const BGame &config);
     QWidget *Visuel_2(QString source,const BGame &config);
 
     /// TBD
