@@ -6,10 +6,40 @@
 #include <QWidget>
 #include <QHeaderView>
 #include <QSqlQueryModel>
+#include <QPainter>
 
 #include "montrer_tirages.h"
 
 int BTirages::total = 0;
+
+void BdgtTirages::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                        const QModelIndex &index) const
+{
+    //QStyleOptionViewItem maModif(option);
+    int val = 0;
+
+    QColor u[]= {QColor(201,230,255,255), QColor(255,195,155,255), QColor(170,255,255,255),
+                 QColor(224,255,147,255),QColor(231,181,255,255),QColor(73,179,255,255),
+                 Qt::red,Qt::white};
+
+    /// Mettre une couleur en fonction du groupe u,dizaine,v,...
+    if(index.column()>3 && index.column()<8)
+    {
+        val =  index.data().toInt();
+        val = (int)floor(val/10);
+
+        if(val < 0 || val >6){
+            val = (sizeof(u)/sizeof(QColor))-2;
+        }
+        else{
+            val = (sizeof(u)/sizeof(QColor))-1;
+        }
+
+        painter->fillRect(option.rect, u[val]);
+    }
+
+    QItemDelegate::paint(painter, option, index);
+}
 
 BsqmTirages::BsqmTirages(const BGame &pDef,QObject *parent)
     :QSqlQueryModel(parent),leJeu(pDef)
@@ -89,7 +119,7 @@ QTableView *BTirages::Visuel_1(const QString &source,const BGame &config)
 
     sqm_tmp->setQuery(st_msg1,dbDesTirages);
     qtv_tmp->setModel(sqm_tmp);
-
+    qtv_tmp->setItemDelegate(new BdgtTirages);
     qtv_tmp->setSortingEnabled(false);
     qtv_tmp->setAlternatingRowColors(true);
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);

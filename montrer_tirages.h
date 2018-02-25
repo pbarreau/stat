@@ -4,11 +4,23 @@
 #include <QVBoxLayout>
 #include <QString>
 
+#include <QItemDelegate>
+
 #include <QSqlQueryModel>
 #include <QSqlDatabase>
 #include <QTableView>
 
 #include "game.h"
+
+
+class BdgtTirages : public QItemDelegate
+{
+    Q_OBJECT
+public:
+    BdgtTirages(QWidget *parent = 0) : QItemDelegate(parent) {}
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,
+               const QModelIndex &index) const;
+};
 
 class BsqmTirages:public QSqlQueryModel
 {
