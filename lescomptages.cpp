@@ -1433,6 +1433,9 @@ QWidget *BPrevision::Visuel_2(QString source,const BGame &config)
         QWidget * wdg_n2_1 = new QWidget;
         QTabWidget *tab0_3 = new QTabWidget;
 
+        //// bug
+        ///BCouv*item_couv = new BCouv(source, zn, config, dbInUse);
+
         tbv_n2_1_1 = item_grp->getTblOneData(zn);
 
         for(int calc_id = 0; calc_id< items_lab0_3;calc_id++)

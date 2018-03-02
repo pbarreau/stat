@@ -4,12 +4,18 @@
 
 #include <QGridLayout>
 #include <QTableView>
+
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QSqlRecord>
+
 #include <QHeaderView>
 #include <QToolTip>
 #include <QStackedWidget>
+
 #include <QMenu>
+#include <QMessageBox>
+#include <QApplication>
 
 #include "delegate.h"
 #include "compter.h"
@@ -18,7 +24,170 @@
 const QString BCount::cLabCount[]={"err",cClc_elm,cClc_cmb,cClc_grp};
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
+/// --------------------------
+BCouv::BCouv(QString surEnsemble, int zn, const BGame &pDef, QSqlDatabase fromDb):
+    ensemble(surEnsemble),zoneEtudie(zn),p_conf(pDef),db(fromDb)
+{
+    bool isOk = true;
+    isOk = rechercherCouverture(surEnsemble,zn);
 
+}
+
+stCouvData *BCouv::newCouvData(stCouvData*prev,int zn,int line, int pos)
+{
+    stCouvData *tmpcouv = new stCouvData;
+
+    tmpcouv->p_deb=line;
+    tmpcouv->b_deb=pos;
+
+    int maxItems = p_conf.limites[zn].max;
+    bool isOk = true;
+
+    tmpcouv->p_val = new int *[maxItems];
+    if(!tmpcouv->p_val) return false;
+
+    tmpcouv->p_TotalMois = new int *[maxItems];
+    if(!tmpcouv->p_TotalMois) return false;
+
+
+    /// initialisation de tout a 0
+    for(int i=0;(i<maxItems) && isOk;i++)
+    {
+        tmpcouv->p_val[i]=new int[4]; // Colonne (D)ispo,(A)rrivee), (B)oule), (T)otal
+        if(tmpcouv->p_val[i]&& isOk) {// Allocation memoire OK
+            memset(tmpcouv->p_val[i],0,4*sizeof(int));
+        }
+        else{
+            isOk = false;
+        }
+
+
+        //mettre a zero compteur des mois
+        tmpcouv->p_TotalMois[i] = new int[12];
+        if(tmpcouv->p_TotalMois[i]&& isOk){
+            memset(tmpcouv->p_TotalMois[i],0,12*sizeof(int));
+        }
+        else{
+            isOk = false;
+        }
+    }
+
+    /// peut on continuer ?
+    if(!isOk){
+        QMessageBox::critical(0,"Couverture","Memory unavailable !!",QMessageBox::Yes);
+        QApplication::quit();
+        tmpcouv = NULL; /// a faire liberation de la memoire
+    }
+
+    return tmpcouv;
+}
+
+BCouv::~BCouv()
+{
+#if 0
+    for(int i=0;i<4;i++)
+    {
+        delete p_val[i];
+    }
+    delete p_val;
+
+    for(int i=0;i<12;i++)
+    {
+        delete p_TotalMois[i];
+    }
+    delete p_TotalMois;
+#endif
+}
+
+bool BCouv::rechercherCouverture(QString surEnsemble, int zn){
+    QSqlQuery query(db);
+    bool isOk = true;
+    QString msg = "select * from ("+surEnsemble+")";
+    int nb_items = p_conf.limites[zn].len;
+    int val_item_max = p_conf.limites[zn].max;
+
+    bool *bIsThere = new bool[val_item_max];
+    if(!bIsThere){
+        isOk = false;
+        return isOk;
+    }
+
+    isOk = query.exec(msg);
+    if(isOk){
+        stCouvData *cur_couv = NULL;
+
+        /// se mettre sur le plus ancien tirage
+        if(query.last()){
+            /// prendre chaque tirage un a un et l'analyser
+            int t_start = 0; /// ref tirage depart
+            int t_stop = -1;
+            int b_start = 0;
+            int b_stop = -1;
+            int total_vue = 0;
+            do{
+                /// A chaque couverture on cree un element
+                t_start = query.value("id").toInt();
+
+                if(total_vue==0){
+                    memset(bIsThere,false,val_item_max*sizeof(bool));
+                    cur_couv = newCouvData(cur_couv,zn,t_start, b_start);
+                    qldata.append(cur_couv);
+                }
+                QSqlRecord un_tirage = query.record();
+                QString ref= p_conf.names[zn].abv+"%1";
+                /// prendre chacun des elements
+                for(int elm = b_start; (elm < nb_items) && isOk;elm ++){
+                    /// une couverture faite ?
+                    if(total_vue < p_conf.limites[zn].max){
+                        /// valeur boule ?
+                        int val = un_tirage.value(ref.arg(elm+1)).toInt();
+                        if((val < p_conf.limites[zn].min)
+                                || (val>p_conf.limites[zn].max)){
+                            /// erreur possible
+                            isOk = false;
+                            break;
+                        }
+                        /// deja arrivee ?
+                        if(cur_couv->p_val[0][val-1]==0){
+                            /// indiquer a ete vue
+                            cur_couv->p_val[0][val-1]=total_vue;
+
+                            /// sauver position arrivee
+                            cur_couv->p_val[1][total_vue]=total_vue+1;
+
+                            /// sauver id boule
+                            cur_couv->p_val[2][total_vue]= val;
+
+                            /// init compteur
+                            cur_couv->p_val[3][total_vue]= 1;
+
+                            /// non
+                            total_vue++;
+                        }
+                        else{
+                            /// boule deja connue incrementer
+                            int cur_val = cur_couv->p_val[0][val-1];
+                            cur_couv->p_val[3][cur_val]++; /// A verifier
+                        }
+                    }
+                    else{
+                        /// toutes les boules ont ete vues
+                        /// effectuer nouvelle recherche de couverture
+                        cur_couv->p_fin = t_start;
+                        if(int r = elm-1<0){
+                            cur_couv->b_fin = p_conf.limites[zn].len-1;
+                        }
+                        b_start = elm;
+                        total_vue=0;
+                    }
+                } /// fin for
+            }while(query.previous()&& isOk);
+        }
+    }
+    return (isOk);
+}
+
+/// --------------------------
 void BCount::CreerCritereJours(void)
 {
     QString st_tmp = "";
@@ -33,7 +202,8 @@ void BCount::CreerCritereJours(void)
         return;
     }
 
-    msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
+    /// Recuperer les noms des jours sur 2 caracteres
+    msg = "select distinct substr(tb1."+st_table+",1,2) as J from ("+
             db_data+") as tb1 order by J asc;";
 
     status = query.exec(msg);

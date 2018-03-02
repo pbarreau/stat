@@ -249,7 +249,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
     Def_comb = "B_" + Def_comb;
     stTbAnalyse = prefix+stTbAnalyse + "_z"+QString::number(zn+1);
 
-    QString arg1 = "tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T "
+    QString arg1 = "tbLeft.id as Id, tbLeft.tip as C, count(tbRight.id) as T "
             + db_jours+
             ",count(CASE when tbRight.id == 1 then 1 end) as L";
     QString arg2 = "select id,tip from "+Def_comb+"_z"+QString::number(zn+1);
@@ -443,7 +443,7 @@ QTableView *BCountComb::Compter(QString * pName, int zn)
     //qtv_tmp->hideColumn(0);
 
     //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     int nbCol = sqm_tmp->columnCount();
     qtv_tmp->setColumnWidth(0,CEL2_L);
     for(int pos=2;pos<nbCol;pos++)

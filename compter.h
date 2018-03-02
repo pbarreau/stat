@@ -68,21 +68,35 @@ typedef struct _BRunningQuery
 }BRunningQuery;
 
 /// classe pour trouver les couvertures
+typedef struct _stCouvData
+{
+    int **p_TotalMois;
+    int **p_val;
+    int p_deb;
+    int p_fin;
+    int b_deb;
+    int b_fin;
+}stCouvData;
+
 class BCouv
 {
 public:
-    BCouv(int zn,BGame *pDef);
+    BCouv(QString surEnsemble, int zn, const BGame &pDef, QSqlDatabase fromDb);
     ~BCouv();
 
 private:
+    bool rechercherCouverture(QString surEnsemble, int zn);
+    stCouvData *newCouvData(stCouvData *prev, int zn, int line, int pos);
+
+private:
     int zoneEtudie;
+    QString ensemble;
+    BGame p_conf;
+    QSqlDatabase db;
+    stCouvData *couv;
 
 public:
-    BGame *p_conf;
-    int **p_TotalMois;
-    int p_deb;
-    int p_fin;
-    int **p_val;
+    QList<stCouvData *> qldata;
 };
 
 class BCount:public QTableView
