@@ -87,12 +87,12 @@ BTirages::BTirages(const QString &in,  const BGame &pDef, QSqlDatabase fromDb, Q
 
 {
     QVBoxLayout *conteneur = new QVBoxLayout;
-    QTableView * item = Visuel_1(in,pDef);
+    QTableView * item = ConstruireTbvDesTirages(in,pDef);
     conteneur->addWidget(item);
     this->addLayout(conteneur);
 }
 
-QTableView *BTirages::Visuel_1(const QString &source,const BGame &config)
+QTableView *BTirages::ConstruireTbvDesTirages(const QString &source,const BGame &config)
 {
     QTableView *qtv_tmp = new QTableView;
 
@@ -185,5 +185,9 @@ QTableView *BTirages::Visuel_1(const QString &source,const BGame &config)
     // Taille tableau
     qtv_tmp->setFixedWidth(taille_L);
 
+    /// click dans le tableau -> se mettre sur bon onglet
+/*    connect( qtv_tmp, SIGNAL( clicked(QModelIndex)) ,
+             this, SLOT( slot_PreciserTirage( QModelIndex) ) );
+*/
     return qtv_tmp;
 }

@@ -1401,9 +1401,11 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 }
 
 
+#ifdef USE_PREVIOUS
 QWidget *BPrevision::Visuel_2(QString source,const BGame &config)
 {
-    QTabWidget *tab_L1 = new QTabWidget;
+    /// Boules ou Etoiles
+    QTabWidget *tabNiv_1 = new QTabWidget;
 
     BCount *B_item = NULL;
     BCountGroup *item_grp = new BCountGroup(source,config,dbInUse);
@@ -1412,33 +1414,30 @@ QWidget *BPrevision::Visuel_2(QString source,const BGame &config)
     QTableView * tbv_n2_1_1 = NULL;
     QTableView * tbv_n2_1_2 = NULL;
 
-    QString title_lab0_2[]={"Calculs","Graphiques"};
-    int items_lab0_2 = sizeof(title_lab0_2)/sizeof(QString);
-
     /// Correspond aux zones a etudier
-    QString title_lab0_1[]={"Boules","Etoiles"};
-
-    QString title_lab0_3[]={
+    QString itmNiv_1[]={"Boules","Etoiles"};
+    QString itmNiv_2[]={"Calculs","Graphiques"};
+    QString itmNiv_3[]={
         "Totaux","Combinaisons","Groupements",
         "Couvertures","Mois"};
-    int items_lab0_3 = sizeof(title_lab0_3)/sizeof(QString);
 
+    int totItmNiv_1 = config.znCount;
+    int totItmNiv_2 = sizeof(itmNiv_2)/sizeof(QString);
+    int totItmNiv_3 = sizeof(itmNiv_3)/sizeof(QString);
 
-
-    int nb_zones = config.znCount;
-    /// Onglets Boules /etoiles
-    for(int zn = 0; zn< nb_zones;zn++)
+    for(int zn = 0; zn< totItmNiv_1;zn++)
     {
         QGridLayout * gdl_n2_1 = new QGridLayout;
         QWidget * wdg_n2_1 = new QWidget;
-        QTabWidget *tab0_3 = new QTabWidget;
+
+        QTabWidget *tabNiv_3 = new QTabWidget;
 
         //// bug
         ///BCouv*item_couv = new BCouv(source, zn, config, dbInUse);
 
         tbv_n2_1_1 = item_grp->getTblOneData(zn);
 
-        for(int calc_id = 0; calc_id< items_lab0_3;calc_id++)
+        for(int calc_id = 0; calc_id< totItmNiv_3;calc_id++)
         {
             QGridLayout * gdl_tmp = new QGridLayout;
             QWidget * wdg_tmp = new QWidget;
@@ -1488,25 +1487,98 @@ QWidget *BPrevision::Visuel_2(QString source,const BGame &config)
             wdg_tmp->setLayout(gdl_tmp);
 
             /// Rajouter l'onglet
-            tab0_3->addTab(wdg_tmp,title_lab0_3[calc_id]);
+            tabNiv_3->addTab(wdg_tmp,itmNiv_3[calc_id]);
         }
 
         /// Tableau a une ligne
         gdl_n2_1->addWidget(tbv_n2_1_1,1,0);
 
         // Onglets
-        QTabWidget *tab0_2 = new QTabWidget;
-        tab0_2->addTab(tab0_3,title_lab0_2[0]);
+        QTabWidget *tabNiv_2 = new QTabWidget;
+        tabNiv_2->addTab(tabNiv_3,itmNiv_2[0]);
         QWidget * wdg_tmp_2 = new QWidget;
-        tab0_2->addTab(wdg_tmp_2,title_lab0_2[1]);
+        tabNiv_2->addTab(wdg_tmp_2,itmNiv_2[1]);
 
-        gdl_n2_1->addWidget(tab0_2,2,0);
+        gdl_n2_1->addWidget(tabNiv_2,2,0);
         wdg_n2_1->setLayout(gdl_n2_1);
-        tab_L1->addTab(wdg_n2_1,title_lab0_1[zn]);
+        tabNiv_1->addTab(wdg_n2_1,itmNiv_1[zn]);
     }
 
-    return tab_L1;
+    return tabNiv_1;
 }
+#else
+QWidget *BPrevision::Visuel_2(QString source,const BGame &config)
+{
+    /// Boules ou Etoiles
+    QTabWidget *tabNiv_1 = new QTabWidget;
+    QString itmNiv_1[]={"Boules","Etoiles"};
+    int totItmNiv_1 = config.znCount;
+
+    stUsePrm data;
+    data.src = source;
+    data.cnf = config;
+    data.niv = tabNiv_1;
+
+    data.grp = new BCountGroup(data.src,data.cnf,dbInUse);
+    data.cmb = new BCountComb(data.src,data.cnf,dbInUse);
+
+    for(int itm = 0; itm< totItmNiv_1;itm++)
+    {
+        QWidget * wdgNiv_1 = NULL;
+        data.zn = itm;
+        data.id = itm;
+        wdgNiv_1 = ConstruireElementNiv_2(data);
+        tabNiv_1->addTab(wdgNiv_1,itmNiv_1[itm]);
+    }
+    return tabNiv_1;
+}
+
+QWidget *BPrevision::ConstruireElementNiv_2(const stUsePrm &data)
+{
+    QWidget *wdg_tmp = new  QWidget;
+    QGridLayout * gdl_tmp = new QGridLayout;
+
+    QTableView * tbv_tmp = data.grp->getTblOneData(data.zn);
+    //QTableView * tbv_tmp = new QTableView;
+    gdl_tmp->addWidget(tbv_tmp,1,0);
+
+    stUsePrm data2 = data;
+    QTabWidget *tabNiv_2 = new QTabWidget;
+    QString itmNiv_2[]={"Calculs","Graphiques"};
+    int totItmNiv_2 = sizeof(itmNiv_2)/sizeof(QString);
+    for(int itm = 0; itm< totItmNiv_2;itm++)
+    {
+        QWidget * wdgNiv_2 = NULL;
+        data2.id = itm;
+        wdgNiv_2 = ConstruireElementNiv_3(data2);
+        tabNiv_2->addTab(wdgNiv_2,itmNiv_2[itm]);
+    }
+
+    gdl_tmp->addWidget(tabNiv_2,2,0);
+
+    wdg_tmp->setLayout(gdl_tmp);
+    return wdg_tmp;
+}
+
+QWidget *BPrevision::ConstruireElementNiv_3(const stUsePrm &data)
+{
+    QWidget *wdg_tmp = new  QWidget;
+    QGridLayout * gdl_tmp = new QGridLayout;
+    QString itmNiv_3[]={
+        "Totaux","Combinaisons","Groupements",
+        "Couvertures","Mois"};
+
+    QTabWidget *tabNiv_3 = new QTabWidget;
+    int totItmNiv_3 = sizeof(itmNiv_3)/sizeof(QString);
+    for(int itm = 0; itm< totItmNiv_3;itm++)
+    {
+        QWidget * wdgNiv_1 = new QWidget;
+        //wdgNiv_1 = ConstruireElementNiv_2(tabNiv_1,itm);
+        tabNiv_3->addTab(wdgNiv_1,itmNiv_3[itm]);
+    }
+    return tabNiv_3;
+}
+#endif
 
 void BPrevision::slot_filterUserGamesList()
 {

@@ -43,7 +43,7 @@ public:
     ~BTirages();
 
 private:
-    QTableView *Visuel_1(const QString &source,const BGame &config);
+    QTableView *ConstruireTbvDesTirages(const QString &source,const BGame &config);
 
 private:
     static int total;

@@ -67,6 +67,16 @@ typedef struct
     bool (BPrevision::*pFuncInit)(QString tbName,QSqlQuery *query); /// fonction traitant la creation
 }stCreateTable;
 
+typedef struct
+{
+     QString src;
+     BGame cnf;
+     BCountGroup *grp;
+     BCountComb *cmb;
+     QTabWidget *niv;
+     int zn;
+     int id;
+}stUsePrm; /// Parametre a utiliser
 
 /// -------CLASS---------
 class BPrevision:public QGridLayout
@@ -105,6 +115,9 @@ private:
 
     //QTableView *Visuel_1(QString source,const BGame &config);
     QWidget *Visuel_2(QString source,const BGame &config);
+    QWidget *ConstruireElementNiv_2(const stUsePrm &data);
+    QWidget *ConstruireElementNiv_3(const stUsePrm &data);
+
 
     /// TBD
     bool chargerDonneesFdjeux(QString tbName);
