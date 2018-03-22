@@ -117,6 +117,8 @@ private:
     QWidget *Visuel_2(QString source,const BGame &config);
     QWidget *ConstruireElementNiv_2(const stUsePrm &data);
     QWidget *ConstruireElementNiv_3(const stUsePrm &data);
+    QWidget *gdlFormTotaux(const stUsePrm &data);
+    QWidget *gdlFormStub(const stUsePrm &data);
 
 
     /// TBD

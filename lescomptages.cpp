@@ -1539,7 +1539,6 @@ QWidget *BPrevision::ConstruireElementNiv_2(const stUsePrm &data)
     QGridLayout * gdl_tmp = new QGridLayout;
 
     QTableView * tbv_tmp = data.grp->getTblOneData(data.zn);
-    //QTableView * tbv_tmp = new QTableView;
     gdl_tmp->addWidget(tbv_tmp,1,0);
 
     stUsePrm data2 = data;
@@ -1555,8 +1554,8 @@ QWidget *BPrevision::ConstruireElementNiv_2(const stUsePrm &data)
     }
 
     gdl_tmp->addWidget(tabNiv_2,2,0);
-
     wdg_tmp->setLayout(gdl_tmp);
+
     return wdg_tmp;
 }
 
@@ -1568,16 +1567,79 @@ QWidget *BPrevision::ConstruireElementNiv_3(const stUsePrm &data)
         "Totaux","Combinaisons","Groupements",
         "Couvertures","Mois"};
 
+    QWidget *(BPrevision::**ptrFunc)(const stUsePrm &data)= NULL;
+
+    QWidget *(BPrevision::*ptrFunc_1[])(const stUsePrm &data)={
+            &BPrevision::gdlFormTotaux,
+            &BPrevision::gdlFormStub,
+            &BPrevision::gdlFormStub,
+            &BPrevision::gdlFormStub,
+            &BPrevision::gdlFormStub
+};
+    QWidget *(BPrevision::*ptrFunc_2[])(const stUsePrm &data)={
+            &BPrevision::gdlFormStub,
+            &BPrevision::gdlFormStub,
+            &BPrevision::gdlFormStub,
+            &BPrevision::gdlFormStub,
+            &BPrevision::gdlFormStub
+};
+    if(data.id==0){
+        ptrFunc = ptrFunc_1;
+    }
+    else
+    {
+        ptrFunc = ptrFunc_2;
+    }
+
+    stUsePrm data3 = data;
     QTabWidget *tabNiv_3 = new QTabWidget;
     int totItmNiv_3 = sizeof(itmNiv_3)/sizeof(QString);
     for(int itm = 0; itm< totItmNiv_3;itm++)
     {
-        QWidget * wdgNiv_1 = new QWidget;
-        //wdgNiv_1 = ConstruireElementNiv_2(tabNiv_1,itm);
-        tabNiv_3->addTab(wdgNiv_1,itmNiv_3[itm]);
+        QWidget * wdg_cal = NULL;
+        data3.id = itm;
+        wdg_cal = (this->*ptrFunc[itm])(data3);
+        tabNiv_3->addTab(wdg_cal,itmNiv_3[itm]);
     }
-    return tabNiv_3;
+
+    gdl_tmp->addWidget(tabNiv_3,1,0);
+    wdg_tmp->setLayout(gdl_tmp);
+
+    return wdg_tmp;
 }
+QWidget *BPrevision::gdlFormTotaux(const stUsePrm &data)
+{
+    QWidget *wdg_tmp = new QWidget;
+
+    QGridLayout * gdl_tmp = new QGridLayout;
+    BCount *B_item = NULL;
+
+    QLabel *lab_ecart = new QLabel("Ecarts");
+    QLabel *lab_details = new QLabel("Details");
+
+    /// repartition
+    B_item = new BCountElem(data.src,data.zn,data.cnf,dbInUse);
+    gdl_tmp->addWidget(lab_details,0,2);
+    gdl_tmp->addWidget(B_item,1,2);
+
+    /// ecart
+    B_item = new BCountEcart(data.src,data.zn,data.cnf,dbInUse);
+    gdl_tmp->addWidget(lab_ecart,0,0);
+    gdl_tmp->addWidget(B_item,1,0);
+
+    wdg_tmp->setLayout(gdl_tmp);
+    return  wdg_tmp;
+}
+
+QWidget *BPrevision::gdlFormStub(const stUsePrm &data)
+{
+    QWidget *wdg_tmp = new QWidget;
+    QGridLayout * gdl_tmp = new QGridLayout;
+
+    wdg_tmp->setLayout(gdl_tmp);
+    return  wdg_tmp;
+}
+
 #endif
 
 void BPrevision::slot_filterUserGamesList()
