@@ -12,6 +12,8 @@ class BCountEcart : public BCount
 public:
     BCountEcart(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb);
     ~BCountEcart();
+    QTableView * getTbv(int zn);
+
 
 private:
     QTableView *Compter(QString *pname, int zn);
@@ -20,6 +22,7 @@ private:
 private:
     static int total;
     int hCommon; // taille des tableaux
+    QTableView *tbv_memo[2];
 
 };
 

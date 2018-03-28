@@ -21,6 +21,11 @@ BCountEcart::~BCountEcart()
     total --;
 }
 
+QTableView * BCountEcart::getTbv(int zn)
+{
+    return(tbv_memo[zn]);
+}
+
 BCountEcart::BCountEcart(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountElm)
 {
@@ -70,26 +75,22 @@ QTableView * BCountEcart::Compter(QString *pname, int zn)
 
     sqm_tmp->setQuery(st_msg1,dbToUse);
 
-    qtv_tmp->setSortingEnabled(true);
-    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
-    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-
-    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_tmp);
-    qtv_tmp->setModel(m);
 
+    qtv_tmp->setModel(m);
     qtv_tmp->setItemDelegate(new BDlgEcart); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
-    //qtv_tmp->hideColumn(0);
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
     //largeur des colonnes
     int nbCol = sqm_tmp->columnCount();
@@ -103,6 +104,7 @@ QTableView * BCountEcart::Compter(QString *pname, int zn)
     //qtv_tmp->setFixedHeight(hCommon);
     qtv_tmp->setFixedHeight(CEL2_H*7);
 
+    tbv_memo[zn] = qtv_tmp;
     return   qtv_tmp;
 }
 

@@ -168,6 +168,7 @@ void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
 
     // recuperer la valeur de la colonne
     int col = index.column();
+QTableView *view = qobject_cast<QTableView *>(sender());
 
     if(col > 4 && col <= 4 + pMaConf->nbElmZone[0])
     {
@@ -176,6 +177,7 @@ void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
 
         // recuperer la valeur a la colone de la table
         val = index.model()->index(index.row(),index.column()).data().toInt();
+        //view->model()->sort(0);
         mysortModel->sort(0);
         tbv_bloc1_1->scrollTo(mysortModel->index(val-1,0));
     }

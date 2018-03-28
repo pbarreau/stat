@@ -185,9 +185,14 @@ QTableView *BTirages::ConstruireTbvDesTirages(const QString &source,const BGame 
     // Taille tableau
     qtv_tmp->setFixedWidth(taille_L);
 
-    /// click dans le tableau -> se mettre sur bon onglet
-/*    connect( qtv_tmp, SIGNAL( clicked(QModelIndex)) ,
+    /// click dans le tableau
+   connect( qtv_tmp, SIGNAL( clicked(QModelIndex)) ,
              this, SLOT( slot_PreciserTirage( QModelIndex) ) );
-*/
+
     return qtv_tmp;
+}
+
+void BTirages::slot_PreciserTirage(const QModelIndex &index)
+{
+   emit sig_TiragesClick (index);
 }

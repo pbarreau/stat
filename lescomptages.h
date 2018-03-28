@@ -117,8 +117,10 @@ private:
     QWidget *Visuel_2(QString source,const BGame &config);
     QWidget *ConstruireElementNiv_2(const stUsePrm &data);
     QWidget *ConstruireElementNiv_3(const stUsePrm &data);
-    QWidget *gdlFormTotaux(const stUsePrm &data);
-    QWidget *gdlFormStub(const stUsePrm &data);
+    QWidget *FormElm(const stUsePrm &data);
+    QWidget *FormCmb(const stUsePrm &data);
+    QWidget *FormGrp(const stUsePrm &data);
+    QWidget *FormStb(const stUsePrm &data);
 
 
     /// TBD
@@ -135,6 +137,7 @@ Q_SIGNALS:
     void sig_isClickedOnBall(const QModelIndex &index);
 private slots:
     void slot_emitThatClickedBall(const QModelIndex &index);
+    void slot_whereOnFormElm(const QModelIndex &index);
 
 public slots:
     void slot_changerTitreZone(QString le_titre);
@@ -157,6 +160,9 @@ private:
     QLabel *lignes;
     QString titre[3];
     QString sql[3];
+    //QList<QSortFilterProxyModel *>lstTab;
+    QList<QTableView *>qtvDetails;
+    QList<QTableView *>qtvEcarts;
 };
 
 

@@ -45,6 +45,11 @@ public:
 private:
     QTableView *ConstruireTbvDesTirages(const QString &source,const BGame &config);
 
+Q_SIGNALS:
+    void sig_TiragesClick(const QModelIndex &index);
+private slots:
+    void slot_PreciserTirage(const QModelIndex &index);
+
 private:
     static int total;
     QString sqlSource;

@@ -1379,6 +1379,8 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     tmp_layout->addWidget(resu_2,1,1);
 
     BTirages * resu_1 = new BTirages(source,config,dbInUse);
+    connect(resu_1,SIGNAL(sig_TiragesClick(QModelIndex)),
+            this,SLOT(slot_whereOnFormElm(QModelIndex)));
     tmp_layout->addLayout(resu_1,1,0);
 
     /// Calcul
@@ -1399,114 +1401,108 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     Resultats->setWindowTitle(source);
     Resultats->show();
 }
-
-
-#ifdef USE_PREVIOUS
-QWidget *BPrevision::Visuel_2(QString source,const BGame &config)
+void BPrevision::slot_whereOnFormElm(const QModelIndex &index)
 {
-    /// Boules ou Etoiles
-    QTabWidget *tabNiv_1 = new QTabWidget;
+    // recuperer la valeur de la colonne
+    int col = index.column();
+    int totLen = 0;
 
-    BCount *B_item = NULL;
-    BCountGroup *item_grp = new BCountGroup(source,config,dbInUse);
-    BCountComb *item_cmb = new BCountComb(source,config,dbInUse);
-
-    QTableView * tbv_n2_1_1 = NULL;
-    QTableView * tbv_n2_1_2 = NULL;
-
-    /// Correspond aux zones a etudier
-    QString itmNiv_1[]={"Boules","Etoiles"};
-    QString itmNiv_2[]={"Calculs","Graphiques"};
-    QString itmNiv_3[]={
-        "Totaux","Combinaisons","Groupements",
-        "Couvertures","Mois"};
-
-    int totItmNiv_1 = config.znCount;
-    int totItmNiv_2 = sizeof(itmNiv_2)/sizeof(QString);
-    int totItmNiv_3 = sizeof(itmNiv_3)/sizeof(QString);
-
-    for(int zn = 0; zn< totItmNiv_1;zn++)
+    for(int i=0; i<onGame.znCount;i++)
     {
-        QGridLayout * gdl_n2_1 = new QGridLayout;
-        QWidget * wdg_n2_1 = new QWidget;
-
-        QTabWidget *tabNiv_3 = new QTabWidget;
-
-        //// bug
-        ///BCouv*item_couv = new BCouv(source, zn, config, dbInUse);
-
-        tbv_n2_1_1 = item_grp->getTblOneData(zn);
-
-        for(int calc_id = 0; calc_id< totItmNiv_3;calc_id++)
-        {
-            QGridLayout * gdl_tmp = new QGridLayout;
-            QWidget * wdg_tmp = new QWidget;
-            B_item = NULL;
-
-            /// onglet element
-            if(calc_id==0){
-                QLabel *lab_ecart = new QLabel("Ecarts");
-                QLabel *lab_details = new QLabel("Details");
-
-                /// repartition
-                B_item = new BCountElem(source,zn,config,dbInUse);
-                gdl_tmp->addWidget(lab_details,0,2);
-                gdl_tmp->addWidget(B_item,1,2);
-
-                /// ecart
-                B_item = new BCountEcart(source,zn,config,dbInUse);
-                gdl_tmp->addWidget(lab_ecart,0,0);
-                gdl_tmp->addWidget(B_item,1,0);
-            }
-
-            /// onglet combinaison
-            if(calc_id==1){
-                QLabel *lab_ecart = new QLabel("Ecarts");
-                QLabel *lab_details = new QLabel("Details");
-
-                /// repartition
-                gdl_tmp->addWidget(lab_details,0,2);
-                tbv_n2_1_2 = item_cmb->getTblAllData(zn);
-                gdl_tmp->addWidget(tbv_n2_1_2,1,2);
-
-                gdl_tmp->addWidget(lab_ecart,0,0);
-            }
-
-            /// onglet groupement
-            if(calc_id==2){
-                QLabel *lab_details = new QLabel("Details");
-                gdl_tmp->addWidget(lab_details,0,0,0);
-
-                /// repartition
-                tbv_n2_1_2 = item_grp->getTblAllData(zn);
-                gdl_tmp->addWidget(tbv_n2_1_2,1,0);
-            }
-
-
-            /// Mettre a jour le widget
-            wdg_tmp->setLayout(gdl_tmp);
-
-            /// Rajouter l'onglet
-            tabNiv_3->addTab(wdg_tmp,itmNiv_3[calc_id]);
-        }
-
-        /// Tableau a une ligne
-        gdl_n2_1->addWidget(tbv_n2_1_1,1,0);
-
-        // Onglets
-        QTabWidget *tabNiv_2 = new QTabWidget;
-        tabNiv_2->addTab(tabNiv_3,itmNiv_2[0]);
-        QWidget * wdg_tmp_2 = new QWidget;
-        tabNiv_2->addTab(wdg_tmp_2,itmNiv_2[1]);
-
-        gdl_n2_1->addWidget(tabNiv_2,2,0);
-        wdg_n2_1->setLayout(gdl_n2_1);
-        tabNiv_1->addTab(wdg_n2_1,itmNiv_1[zn]);
+        totLen = totLen + onGame.limites[i].len;
     }
 
-    return tabNiv_1;
-}
+    int start = 3;
+    if(col > start && col <= start + totLen )
+    {
+        // se mettre sur le bon onglet
+
+        // recuperer la valeur a la colonne de la table
+        int value = index.model()->index(index.row(),index.column()).data().toInt();
+
+        // parcourir les tables view
+        QTableView *tabDetails = NULL;
+        QTableView *tabEcarts = NULL;
+        int onglet_1 = 0;
+        int onglet_2 = 0;
+        int onglet_3 = 0;
+
+        if(col <= start+onGame.limites[0].len){
+            tabDetails = qtvDetails[0];
+            tabEcarts = qtvEcarts[0];
+        }
+        else{
+            /// pour l'instant il n'y a que 2 zones
+            /// autrement modifier le code
+            tabDetails = qtvDetails[1];
+            tabEcarts = qtvEcarts[1];
+            onglet_1 = 1;
+        }
+        QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(tabDetails->model());
+        QSortFilterProxyModel *n= qobject_cast<QSortFilterProxyModel *>(tabEcarts->model());
+        int laLigne = 0;
+
+#if 1
+        /// Remettre les boule dans l'ordre
+        /// Ecart
+        n->sort(0);
+        tabEcarts->horizontalHeader()->setSortIndicator(0,Qt::AscendingOrder);
+        tabEcarts->scrollTo(n->index(value-1,0));
+
+        /// Details
+        m->sort(0);
+        tabDetails->horizontalHeader()->setSortIndicator(0,Qt::AscendingOrder);
+        tabDetails->scrollTo(m->index(value-1,0));
+
+        /// Clef
+        laLigne = value-1;
 #else
+        QModelIndexList b = m->match(m->index(0,0),Qt::DisplayRole,QString::number(value-1));
+        QModelIndex item;
+        if(b.size()==1){
+            item = b.at(0);
+            tab->scrollTo(item);
+            laLigne = item.row();
+        }
+#endif
+
+        /// Mettre un visuel sur la ligne
+        tabDetails->selectRow(laLigne);
+
+        tabEcarts->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        tabEcarts->selectRow(laLigne);
+        tabEcarts->setSelectionMode(QAbstractItemView::SingleSelection);
+
+        /// Montrer le bon onglet
+        QObject *curParent = NULL;
+        QTabWidget *ptab= NULL;
+
+        /// Onglet Totaux/Combi...
+        curParent = tabDetails;
+        for(int i=0; i<=3;i++){
+            curParent = curParent->parent();
+        }
+        ptab= qobject_cast<QTabWidget *>(curParent);
+        ptab->setCurrentIndex(onglet_3);
+
+        /// Onglet Calcul Graphique
+        curParent = tabDetails;
+        for(int i=0; i<=6;i++){
+            curParent = curParent->parent();
+        }
+        ptab= qobject_cast<QTabWidget *>(curParent);
+        ptab->setCurrentIndex(onglet_2);
+
+        /// Onglet Boules/Etoiles
+        curParent = tabDetails;
+        for(int i=0; i<=9;i++){
+            curParent = curParent->parent();
+        }
+        ptab= qobject_cast<QTabWidget *>(curParent);
+        ptab->setCurrentIndex(onglet_1);
+    }
+}
+
 QWidget *BPrevision::Visuel_2(QString source,const BGame &config)
 {
     /// Boules ou Etoiles
@@ -1570,18 +1566,18 @@ QWidget *BPrevision::ConstruireElementNiv_3(const stUsePrm &data)
     QWidget *(BPrevision::**ptrFunc)(const stUsePrm &data)= NULL;
 
     QWidget *(BPrevision::*ptrFunc_1[])(const stUsePrm &data)={
-            &BPrevision::gdlFormTotaux,
-            &BPrevision::gdlFormStub,
-            &BPrevision::gdlFormStub,
-            &BPrevision::gdlFormStub,
-            &BPrevision::gdlFormStub
+            &BPrevision::FormElm,
+            &BPrevision::FormCmb,
+            &BPrevision::FormGrp,
+            &BPrevision::FormStb,
+            &BPrevision::FormStb
 };
     QWidget *(BPrevision::*ptrFunc_2[])(const stUsePrm &data)={
-            &BPrevision::gdlFormStub,
-            &BPrevision::gdlFormStub,
-            &BPrevision::gdlFormStub,
-            &BPrevision::gdlFormStub,
-            &BPrevision::gdlFormStub
+            &BPrevision::FormStb,
+            &BPrevision::FormStb,
+            &BPrevision::FormStb,
+            &BPrevision::FormStb,
+            &BPrevision::FormStb
 };
     if(data.id==0){
         ptrFunc = ptrFunc_1;
@@ -1607,7 +1603,7 @@ QWidget *BPrevision::ConstruireElementNiv_3(const stUsePrm &data)
 
     return wdg_tmp;
 }
-QWidget *BPrevision::gdlFormTotaux(const stUsePrm &data)
+QWidget *BPrevision::FormElm(const stUsePrm &data)
 {
     QWidget *wdg_tmp = new QWidget;
 
@@ -1618,20 +1614,55 @@ QWidget *BPrevision::gdlFormTotaux(const stUsePrm &data)
     QLabel *lab_details = new QLabel("Details");
 
     /// repartition
-    B_item = new BCountElem(data.src,data.zn,data.cnf,dbInUse);
+    BCountElem *tmp_elm = new BCountElem(data.src,data.zn,data.cnf,dbInUse);
     gdl_tmp->addWidget(lab_details,0,2);
-    gdl_tmp->addWidget(B_item,1,2);
+    gdl_tmp->addWidget(tmp_elm,1,2);
+    qtvDetails.append(tmp_elm->getTbv(data.zn));
+
 
     /// ecart
-    B_item = new BCountEcart(data.src,data.zn,data.cnf,dbInUse);
+    BCountEcart *tmp_ect = new BCountEcart(data.src,data.zn,data.cnf,dbInUse);
     gdl_tmp->addWidget(lab_ecart,0,0);
-    gdl_tmp->addWidget(B_item,1,0);
+    gdl_tmp->addWidget(tmp_ect,1,0);
+    qtvEcarts.append(tmp_ect->getTbv(data.zn));
 
     wdg_tmp->setLayout(gdl_tmp);
     return  wdg_tmp;
 }
 
-QWidget *BPrevision::gdlFormStub(const stUsePrm &data)
+QWidget *BPrevision::FormCmb(const stUsePrm &data)
+{
+    QWidget *wdg_tmp = new QWidget;
+    QGridLayout * gdl_tmp = new QGridLayout;
+    QLabel *lab_ecart = new QLabel("Ecarts");
+    QLabel *lab_details = new QLabel("Details");
+
+    /// repartition
+    gdl_tmp->addWidget(lab_details,0,2);
+    QTableView * tbv_tmp = data.cmb->getTblAllData(data.zn);
+    gdl_tmp->addWidget(tbv_tmp,1,2);
+
+    gdl_tmp->addWidget(lab_ecart,0,0);
+
+    wdg_tmp->setLayout(gdl_tmp);
+    return  wdg_tmp;
+}
+QWidget *BPrevision::FormGrp(const stUsePrm &data)
+{
+    QWidget *wdg_tmp = new QWidget;
+    QGridLayout * gdl_tmp = new QGridLayout;
+    QLabel *lab_details = new QLabel("Details");
+    gdl_tmp->addWidget(lab_details,0,0,0);
+
+    /// repartition
+    QTableView * tbv_tmp = data.grp->getTblAllData(data.zn);
+    gdl_tmp->addWidget(tbv_tmp,1,0);
+
+    wdg_tmp->setLayout(gdl_tmp);
+    return  wdg_tmp;
+}
+
+QWidget *BPrevision::FormStb(const stUsePrm &data)
 {
     QWidget *wdg_tmp = new QWidget;
     QGridLayout * gdl_tmp = new QGridLayout;
@@ -1639,8 +1670,6 @@ QWidget *BPrevision::gdlFormStub(const stUsePrm &data)
     wdg_tmp->setLayout(gdl_tmp);
     return  wdg_tmp;
 }
-
-#endif
 
 void BPrevision::slot_filterUserGamesList()
 {

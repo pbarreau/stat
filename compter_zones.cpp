@@ -337,6 +337,11 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     return msg;
 }
 
+QTableView * BCountElem::getTbv(int zn)
+{
+    return(tbv_memo[zn]);
+}
+
 QTableView *BCountElem::Compter(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
@@ -367,18 +372,17 @@ QTableView *BCountElem::Compter(QString * pName, int zn)
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    QSortFilterProxyModel *m=new QSortFilterProxyModel(this);
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_tmp);
-
 
     qtv_tmp->setModel(m);
     qtv_tmp->setItemDelegate(new BDelegateElmOrCmb); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
-    //qtv_tmp->hideColumn(0);
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
 
     //largeur des colonnes
@@ -391,11 +395,6 @@ QTableView *BCountElem::Compter(QString * pName, int zn)
     qtv_tmp->setFixedWidth(l);
 
     qtv_tmp->setFixedHeight(CEL2_H*7);
-    //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-    // positionner le tableau
-    //lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
 
 #if 0
     // simple click dans fenetre  pour selectionner boules
@@ -415,6 +414,7 @@ QTableView *BCountElem::Compter(QString * pName, int zn)
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 #endif
+    tbv_memo[zn] = qtv_tmp;
     return qtv_tmp;
 }
 

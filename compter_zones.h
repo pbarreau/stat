@@ -24,6 +24,7 @@ public:
     ~BCountElem();
     int getCounter(void);
     QString getFilteringData(int zn);
+    QTableView * getTbv(int zn);
 
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
@@ -32,10 +33,10 @@ public slots:
 public:
     static int total;
     int hCommon; // taille des tableaux
+    QTableView *tbv_memo[2];
 
 private:
     QTableView *Compter(QString * pName, int zn);
-    //QStringList * CreateFilterForData(int zn);
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
     QString PBAR_ReqComptage(QString ReqTirages, int zn,int distance);
