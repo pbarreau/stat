@@ -9,6 +9,8 @@
 #include "compter.h"
 class BCountEcart : public BCount
 {
+    Q_OBJECT
+
 public:
     BCountEcart(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb);
     ~BCountEcart();
@@ -24,6 +26,8 @@ private:
     int hCommon; // taille des tableaux
     QTableView *tbv_memo[2];
 
+private slots:
+    void slot_AideToolTip(const QModelIndex & index);
 };
 
 class BDlgEcart : public QItemDelegate
@@ -42,6 +46,8 @@ class BSqmColorizeEcart:public QSqlQueryModel
 public:
     BSqmColorizeEcart(QObject *parent=0):QSqlQueryModel(parent){}
     QVariant data(const QModelIndex &index, int role) const;
+    //Qt::ItemFlags flags(const QModelIndex &index) const;
+    //bool setData(const QModelIndex &index, const QVariant &value, int role);
 };
 
 #endif // COMPTER_ECART_H
