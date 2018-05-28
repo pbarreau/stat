@@ -47,8 +47,11 @@ private:
 
 Q_SIGNALS:
     void sig_TiragesClick(const QModelIndex &index);
+    void sig_ShowMenu (QPoint pos,QTableView *view);
 private slots:
     void slot_PreciserTirage(const QModelIndex &index);
+    void slot_ccmr_AfficherMenu(const QPoint pos);
+
 
 private:
     static int total;

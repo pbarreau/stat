@@ -29,6 +29,7 @@ public:
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
     void slot_RequeteFromSelection(const QModelIndex &index);
+    void slot_AideToolTip(const QModelIndex & index);
 
 public:
     static int total;

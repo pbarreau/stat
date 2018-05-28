@@ -56,7 +56,7 @@ BCountElem::BCountElem(const QString &in, const int ze, const BGame &pDef,  QSql
 
     if (ze< nb_zones && ze >=0)
     {
-       /* if(nb_zones == 1){
+        /* if(nb_zones == 1){
             hCommon = CEL2_H *(floor(myGame.limites[ze].max/10)+1);
         }
         else{
@@ -349,7 +349,7 @@ QTableView *BCountElem::Compter(QString * pName, int zn)
             +"_"+ QString::number(total).rightJustified(3,'0')
             + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
-/*
+    /*
     (* pName) = myGame.names[zn].abv;
 
     QString qtv_name = QString::fromLatin1(cUsr_elm) + "_z"+QString::number(zn+1);
@@ -405,17 +405,39 @@ QTableView *BCountElem::Compter(QString * pName, int zn)
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
 
-    qtv_tmp->setMouseTracking(true);
-    connect(qtv_tmp,
-            SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 
     /// Selection & priorite
     qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 #endif
+    qtv_tmp->setMouseTracking(true);
+    connect(qtv_tmp,
+            SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
+
     tbv_memo[zn] = qtv_tmp;
     return qtv_tmp;
+}
+void BCountElem::slot_AideToolTip(const QModelIndex & index)
+{
+    QString msg = "";
+    QString msgAdd = "";
+    int val = index.model()->index(index.row(),0).data().toInt();
+    int cln = index.column();
+
+    msg = "Boule " + QString::number(val)+"\n";
+
+    const QAbstractItemModel * pModel = index.model();
+    QVariant cellVal = index.data();
+    QVariant vCol = pModel->headerData(cln,Qt::Horizontal);
+    QString colName = vCol.toString();
+
+    if(cln>0){
+    msgAdd = colName + " = " + cellVal.toString();
+    }
+
+    msg = msg + msgAdd;
+    QToolTip::showText (QCursor::pos(), msg);
 }
 
 QString BCountElem::getFilteringData(int zn)

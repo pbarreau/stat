@@ -90,6 +90,7 @@ BTirages::BTirages(const QString &in,  const BGame &pDef, QSqlDatabase fromDb, Q
     QTableView * item = ConstruireTbvDesTirages(in,pDef);
     conteneur->addWidget(item);
     this->addLayout(conteneur);
+    item->show();
 }
 
 QTableView *BTirages::ConstruireTbvDesTirages(const QString &source,const BGame &config)
@@ -189,10 +190,21 @@ QTableView *BTirages::ConstruireTbvDesTirages(const QString &source,const BGame 
    connect( qtv_tmp, SIGNAL( clicked(QModelIndex)) ,
              this, SLOT( slot_PreciserTirage( QModelIndex) ) );
 
+   qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+   connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+           SLOT(slot_ccmr_AfficherMenu(QPoint)));
+
     return qtv_tmp;
 }
 
 void BTirages::slot_PreciserTirage(const QModelIndex &index)
 {
    emit sig_TiragesClick (index);
+}
+
+void BTirages::slot_ccmr_AfficherMenu(const QPoint pos)
+{
+    QTableView *view = qobject_cast<QTableView *>(sender());
+
+   emit sig_ShowMenu (pos, view);
 }

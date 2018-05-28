@@ -512,7 +512,7 @@ void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
     ShowStepper *UnDetail = new ShowStepper(pMaConf);
     // QModelIndex index = tbv_LesTirages->indexAt(pos);
 
-    MonTraitement = new B_ActFrMdlIndex(index,msg);
+    MonTraitement = new bar_action(index,msg);
     MonMenu->addAction(MonTraitement);
 
     connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex,int)),

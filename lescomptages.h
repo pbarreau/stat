@@ -69,13 +69,13 @@ typedef struct
 
 typedef struct
 {
-     QString src;
-     BGame cnf;
-     BCountGroup *grp;
-     BCountComb *cmb;
-     QTabWidget *niv;
-     int zn;
-     int id;
+    QString src;
+    BGame cnf;
+    BCountGroup *grp;
+    BCountComb *cmb;
+    QTabWidget *niv;
+    int zn;
+    int id;
 }stUsePrm; /// Parametre a utiliser
 
 /// -------CLASS---------
@@ -114,7 +114,7 @@ private:
     bool SupprimerVueIntermediaires(void);
 
     //QTableView *Visuel_1(QString source,const BGame &config);
-    QWidget *Visuel_2(QString source,const BGame &config);
+    QWidget *partieDroite(QString source,const BGame &config);
     QWidget *ConstruireElementNiv_2(const stUsePrm &data);
     QWidget *ConstruireElementNiv_3(const stUsePrm &data);
     QWidget *FormElm(const stUsePrm &data);
@@ -129,7 +129,7 @@ private:
     QString normaliserDate(QString input);
     QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
-    void analyserTirages(QString source, const BGame &config);
+    void showAll(QString source, const BGame &config);
     bool isTableCnpinDb(int n, int p);
     void creerJeuxUtilisateur(int n, int p);
 
@@ -138,6 +138,8 @@ Q_SIGNALS:
 private slots:
     void slot_emitThatClickedBall(const QModelIndex &index);
     void slot_whereOnFormElm(const QModelIndex &index);
+    void slot_ccmrTirages(QPoint pos, QTableView *view);
+    void slot_CalculSurTirage(const QModelIndex & index);
 
 public slots:
     void slot_changerTitreZone(QString le_titre);
@@ -160,7 +162,7 @@ private:
     QLabel *lignes;
     QString titre[3];
     QString sql[3];
-    //QList<QSortFilterProxyModel *>lstTab;
+    stUsePrm stBdata;
     QList<QTableView *>qtvDetails;
     QList<QTableView *>qtvEcarts;
 };

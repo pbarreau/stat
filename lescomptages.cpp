@@ -29,10 +29,13 @@
 #include "compter_groupes.h"
 #include "compter_ecart.h"
 #include "montrer_tirages.h"
-
+#include "bcouv.h"
 #include "labelclickable.h"
 
 #include "lescomptages.h"
+#include "bar_action.h"
+#include "barcalculprevision.h"
+
 #include "cnp_AvecRepetition.h"
 #include "db_tools.h"
 #include "sqlExtensions/sqlite3.h"
@@ -243,7 +246,7 @@ void BPrevision::effectuerTraitement(eGame game)
 
     definirConstantesDuJeu(game);
     creerTablesDeLaBase();
-    analyserTirages(source, onGame);
+    showAll(source, onGame);
 
 }
 
@@ -1348,8 +1351,12 @@ QString BPrevision::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
     return retval;
 }
 
-void BPrevision::analyserTirages(QString source,const BGame &config)
+void BPrevision::showAll(QString source,const BGame &config)
 {
+    /// --------------Test-------------
+    BCouv2 *test = new BCouv2(source,config,dbInUse);
+
+    /// -------------------------------
     QWidget * Resultats = new QWidget(0,Qt::Window);
     QTabWidget *tab_L1 = new QTabWidget;
 
@@ -1374,14 +1381,27 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     selection[0].setText(msg);
     tmp_layout->addWidget(&selection[0],0,1);
 
-    //
-    QWidget * resu_2 = Visuel_2(source,config);
-    tmp_layout->addWidget(resu_2,1,1);
+    /// Effectuer les calculs permettant de
+    /// determiner la combinaison
+    QWidget * Etape_1 = partieDroite(source,config);
+    tmp_layout->addWidget(Etape_1,1,1);
 
-    BTirages * resu_1 = new BTirages(source,config,dbInUse);
-    connect(resu_1,SIGNAL(sig_TiragesClick(QModelIndex)),
+    /// Montrer les tirages correctements formattes
+    BTirages * Etape_2 = new BTirages(source,config,dbInUse);
+
+    /// pour montrer dans ecarts et detail
+    connect(Etape_2,SIGNAL(sig_TiragesClick(QModelIndex)),
             this,SLOT(slot_whereOnFormElm(QModelIndex)));
-    tmp_layout->addLayout(resu_1,1,0);
+    /// pour montrer dans ecarts et detail
+    connect(Etape_2,SIGNAL(sig_TiragesClick(QModelIndex)),
+            stBdata.grp,SLOT(slot_DecodeTirage(QModelIndex)));
+
+
+    connect(Etape_2,SIGNAL(sig_ShowMenu(QPoint,QTableView *)),
+            this,SLOT(slot_ccmrTirages(QPoint,QTableView *)));
+
+    tmp_layout->addLayout(Etape_2,1,0);
+
 
     /// Calcul
     QLabel *lab_calcul = new QLabel("Calculs");
@@ -1401,6 +1421,35 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     Resultats->setWindowTitle(source);
     Resultats->show();
 }
+
+void BPrevision::slot_ccmrTirages(QPoint pos,QTableView *view)
+{
+    //QTableView *view = qobject_cast<QTableView *>(sender());
+    QModelIndex index = view->indexAt(pos);
+    //int lgn = index.row();
+
+    QMenu *MonMenu=new QMenu();
+    QString msg = "Prevision";
+    //MonMenu->addAction(new QAction(msg, this));
+
+    bar_action *MonTraitement = new bar_action(index,msg);
+    MonMenu->addAction(MonTraitement);
+
+    connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex)),
+            this, SLOT(slot_CalculSurTirage(const QModelIndex)) );
+
+    //MonMenu->exec(view->viewport()->mapToGlobal(pos));
+    MonMenu->popup(view->viewport()->mapToGlobal(pos));
+
+
+}
+
+void BPrevision::slot_CalculSurTirage(const QModelIndex & index)
+{
+    BarCalculPrevision *tmp = new BarCalculPrevision(index,dbInUse,onGame);
+    tmp->show();
+}
+
 void BPrevision::slot_whereOnFormElm(const QModelIndex &index)
 {
     // recuperer la valeur de la colonne
@@ -1503,27 +1552,27 @@ void BPrevision::slot_whereOnFormElm(const QModelIndex &index)
     }
 }
 
-QWidget *BPrevision::Visuel_2(QString source,const BGame &config)
+QWidget *BPrevision::partieDroite(QString source,const BGame &config)
 {
     /// Boules ou Etoiles
     QTabWidget *tabNiv_1 = new QTabWidget;
     QString itmNiv_1[]={"Boules","Etoiles"};
     int totItmNiv_1 = config.znCount;
 
-    stUsePrm data;
-    data.src = source;
-    data.cnf = config;
-    data.niv = tabNiv_1;
+    stBdata;
+    stBdata.src = source;
+    stBdata.cnf = config;
+    stBdata.niv = tabNiv_1;
 
-    data.grp = new BCountGroup(data.src,data.cnf,dbInUse);
-    data.cmb = new BCountComb(data.src,data.cnf,dbInUse);
+    stBdata.grp = new BCountGroup(stBdata.src,stBdata.cnf,dbInUse);
+    stBdata.cmb = new BCountComb(stBdata.src,stBdata.cnf,dbInUse);
 
     for(int itm = 0; itm< totItmNiv_1;itm++)
     {
         QWidget * wdgNiv_1 = NULL;
-        data.zn = itm;
-        data.id = itm;
-        wdgNiv_1 = ConstruireElementNiv_2(data);
+        stBdata.zn = itm;
+        stBdata.id = itm;
+        wdgNiv_1 = ConstruireElementNiv_2(stBdata);
         tabNiv_1->addTab(wdgNiv_1,itmNiv_1[itm]);
     }
     return tabNiv_1;
@@ -1823,7 +1872,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     if(isOk)
         isOk = FaireTableauSynthese(tbUse,monJeu,zn);
 
-    analyserTirages(source,monJeu);
+    showAll(source,monJeu);
 
     static bool OneShot = false;
     if(OneShot==false){

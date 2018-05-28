@@ -862,7 +862,9 @@ QString BCountGroup::sql_ComptePourUnTirage(int id,QString st_tirages, QString s
              ") as tb1 "
              "left join "
              "("
-             "select id as B from Bnrz where (z"+QString::number(zn+1)+
+             "select id as B from "
+            +QString(cRef_elm)
+            +" where (z"+QString::number(zn+1)+
             " not null  and ("+st_cri+")) ) as tb2 " +
             "on "
             "("
@@ -889,7 +891,7 @@ void BCountGroup::slot_DecodeTirage(const QModelIndex & index)
         return;
     }
 
-    QSqlQuery query;
+    QSqlQuery query(dbToUse);
 
     for(int zn = 0; zn < myGame.znCount;zn ++)
     {

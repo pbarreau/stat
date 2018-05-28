@@ -60,9 +60,7 @@ SOURCES += \
 		monSqlEditable.cpp \
 		monfiltreproxymodel.cpp \
 		mygraphicsview.cpp \
-		myqabstractitemviewofqtable.cpp \
 		myqtableview.cpp \
-		newdetails.cpp \
 		pointtirage.cpp \
 		prevision.cpp \
 		progression.cpp \
@@ -71,15 +69,16 @@ SOURCES += \
 		showstepper.cpp \
 		sqlbackup.cpp \
 		tirages.cpp \
-    cappliquerfiltres.cpp \
-    cassemble.cpp \
     db_tools.cpp \
     cnp_SansRepetition.cpp \
     cnp_AvecRepetition.cpp \
     etudierjeux.cpp \
     compter_ecart.cpp \
     compter_une_repartition.cpp \
-    montrer_tirages.cpp
+    montrer_tirages.cpp \
+    bcouv.cpp \
+    bar_action.cpp \
+    barcalculprevision.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -101,7 +100,6 @@ HEADERS  += \
 		monSqlEditable.h \
 		monfiltreproxymodel.h \
 		mygraphicsview.h \
-		myqabstractitemviewofqtable.h \
 		myqtableview.h \
 		pointtirage.h \
 		refetude.h \
@@ -109,8 +107,6 @@ HEADERS  += \
 		sqlbackup.h \
 		tirages.h \
 		types_jeux.h \
-    cappliquerfiltres.h \
-    cassemble.h \
     db_tools.h \
     cnp_AvecRepetition.h \
     cnp_SansRepetition.h \
@@ -118,7 +114,10 @@ HEADERS  += \
     game.h \
     compter_ecart.h \
     compter_une_repartition.h \
-    montrer_tirages.h
+    montrer_tirages.h \
+    bcouv.h \
+    bar_action.h \
+    barcalculprevision.h
 
 
 FORMS    += mainwindow.ui \

@@ -124,11 +124,16 @@ void BCountEcart::slot_AideToolTip(const QModelIndex & index)
     QTableView *view = qobject_cast<QTableView *>(sender());
 
     QBrush C = index.data(Qt::BackgroundRole).value<QBrush>();
+    QBrush vide;
 
     QString msg = "";
     QString msgAdd = "";
     int val = index.model()->index(index.row(),0).data().toInt();
+    int cln = index.column();
+
     msg = "Boule " + QString::number(val)+"\n";
+
+    //qDebug()<<"Brush:"<<C<<",col:"<<index.column();
 
     if(C == QBrush(Qt::green))
     {
@@ -154,6 +159,17 @@ void BCountEcart::slot_AideToolTip(const QModelIndex & index)
     {
         msgAdd = QString("Ep proche Em");
     }
+
+    if(C==vide && cln > 0)
+    {
+        const QAbstractItemModel * pModel = index.model();
+        QVariant cellVal = index.data();
+        QVariant vCol = pModel->headerData(cln,Qt::Horizontal);
+        QString colName = vCol.toString();
+
+        msgAdd = colName + " = " + cellVal.toString();
+    }
+
     msg = msg + msgAdd;
     QToolTip::showText (QCursor::pos(), msg);
 }
@@ -357,75 +373,11 @@ void BDlgEcart::paint(QPainter *painter, const QStyleOptionViewItem &option,
     QItemDelegate::paint(painter, option, index);
 }
 
-#if 0
-Qt::ItemFlags BSqmColorizeEcart::flags(const QModelIndex &index) const
-{
-    Qt::ItemFlags flags = QSqlQueryModel::flags(index);
-    flags |= Qt::ItemIsEditable;
-    return flags;
-}
-bool BSqmColorizeEcart::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-    ///--------------------------------------
-    int col = index.column();
-
-    const QColor fond[4]={QColor(255,156,86,190),
-                          QColor(140,255,124,190),
-                          QColor(70,160,220,190),
-                          QColor(255,40,180,190)
-                         };
-
-    int valCel = 0;
-    int valAna = 0;
-    double radix = 1.5;
-    int calc = 0;
-
-    valCel = index.data().toInt();
-    valAna = index.model()->index(index.row(),1).data().toInt();
-
-    if(valCel)
-        calc = abs(valAna-valCel)% valCel;
-
-    if(col==1){
-        calc = index.model()->index(index.row(),2).data().toInt();
-        valAna = index.model()->index(index.row(),3).data().toInt();
-        calc = abs(valAna-calc)% valAna;
-        if(valAna && calc<=radix){
-            //painter->fillRect(option.rect, fond[2]);
-        }
-    }
-
-    if(col==2){
-        /// colonne Ep
-        if(valAna && calc<=radix){
-            QSqlQueryModel::setData(index,QBrush(fond[0],Qt::SolidPattern),Qt::BackgroundRole);
-            //painter->fillRect(option.rect, fond[0]);
-        }
-    }
-    if(col==3){
-        /// colonne Em
-        if(valAna && calc<=radix){
-            //painter->fillRect(option.rect, fond[1]);
-        }
-    }
-    if(col==4){
-        /// colonne EM
-        if(valAna && calc<=radix){
-            //painter->fillRect(option.rect, fond[2]);
-        }
-    }
-    bool isOk = false;
-
-    isOk = QSqlQueryModel::setData(index,QBrush(fond[0],Qt::SolidPattern),Qt::BackgroundRole);
-
-    return true;
-}
-#endif
 
 QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
 {
     /// Mettre les couleurs ??
-    //setData(index,index.data(Qt::BackgroundRole),Qt::BackgroundRole);
+    ///setData(index,index.data(Qt::BackgroundRole),Qt::BackgroundRole);
 
     int col = index.column();
 
@@ -461,19 +413,15 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
             if (role == Qt::TextColorRole){
                 return (u[1]);
             }
+            if (role == Qt::DecorationRole){
+                return (QIcon(":/images/flag_1s.png"));
+            }
         }
     }
 
 
     ///--------------------------------------
     if(role==Qt::BackgroundRole){
-#if 0
-        const QColor fond[4]={QColor(255,156,86,190),
-                              QColor(140,255,124,190),
-                              QColor(70,160,220,190),
-                              QColor(255,40,180,190)
-                             };
-#endif
         int valCel = 0;
         int valAna = 0;
         double radix = 1.5;
