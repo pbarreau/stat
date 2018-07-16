@@ -509,14 +509,17 @@ void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
 
     QMenu *MonMenu=new QMenu(pEcran);
     QString msg = "Recherche";
-    ShowStepper *UnDetail = new ShowStepper(pMaConf);
-    // QModelIndex index = tbv_LesTirages->indexAt(pos);
-
     MonTraitement = new bar_action(index,msg);
     MonMenu->addAction(MonTraitement);
 
-    connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex,int)),
-            UnDetail, SLOT(slot_MaFonctionDeCalcul(const QModelIndex,int)) );
+    stStepperNeeds *stNeeds = new stStepperNeeds;
+    stNeeds->nbElmZone = pMaConf->nbElmZone;
+    stNeeds->nomZone = pMaConf->nomZone;
+    stNeeds->limites = pMaConf->limites;
+    ShowStepper *UnDetail = new ShowStepper(stNeeds);
+    //ShowStepper *UnDetail = new ShowStepper(pMaConf);
+    connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex)),
+            UnDetail, SLOT(slot_MaFonctionDeCalcul(const QModelIndex)) );
 
     MonMenu->exec(tbv_LesTirages->viewport()->mapToGlobal(pos));
 

@@ -54,7 +54,7 @@ bool GererBase::CreerTableGnp(QString tb, QString *data)
     for(int i = 0; (i< nbZone) && isOk; i++)
     {
         int maxNz = floor(conf.limites[i].max/10)+1;
-        int maxPz = conf.limites[i].neg;
+        int maxPz = conf.limites[i].win;
         maxNz = BMIN(GNP_N_MAX,maxNz);
         maxPz = BMIN(GNP_P_MAX,maxPz);
 
@@ -360,7 +360,7 @@ bool GererBase::f1_2(QString tb, QString *data)
                     "(NULL,"+QString::number(ref.nbElmZone[i])+","+
                     QString::number(ref.limites[i].min)+","+
                     QString::number(ref.limites[i].max)+ "," +
-                    QString::number(ref.limites[i].neg)+
+                    QString::number(ref.limites[i].win)+
                     ");";
             status = query.exec(requete);
         }
@@ -434,7 +434,7 @@ bool GererBase::f2(QString tb, QString *data)
         for(int zone=0;(zone<ref.nb_zone);zone++)
         {
             //int nbDizaine = floor(ref.limites[zone].max/10)+1;
-            int nbDizaine = ref.limites[zone].neg + 1;
+            int nbDizaine = ref.limites[zone].win + 1;
 
             /// symbole ligne j colone z
             /// champs zx
@@ -623,7 +623,7 @@ bool GererBase::TraitementCodeTblCombi(int zn)
         "drop table if exists lstCombi_z%1;",
         "create table if not exists lstCombi_z%1 (id integer primary key,%2);",
         "insert into lstCombi_z%1 select NULL,%2 from (%3) where(%4="
-        +QString::number(+conf.limites[zn].neg)+");"
+        +QString::number(+conf.limites[zn].win)+");"
     };
     int argTblCount[]={1,2,4};
 

@@ -57,6 +57,7 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
     }
 
 
+    // Selection d'une cellule
     if (option.state & QStyle::State_Selected)
     {
         painter->fillRect(option.rect, t.highlight());
@@ -72,19 +73,117 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
         //painter->setBrush(gradient);
         //painter->setPen(QPen(Qt::black, 0));
         painter->save();
-        painter->setBrush(Qt::red);
+        painter->setBrush(Qt::white);
         painter->drawEllipse(c,cx/2,cy/2);
         painter->restore();
     }
 
-    // A t on un chiffre (boule)?
+    // Recuperer le chiffre en colonne 1
+    // 1 : cette boule sort au tirage suivant
+    // 3 : cette boule est sortie au tirage precedent.
+    // Pour ecrire pas en gras : QItemDelegate::paint(painter, maModif, index);
 
-
-
+    QString lab = "";
+    QTextDocument doc;
+    QAbstractTextDocumentLayout::PaintContext ctx;
     if(index.model()->index(index.row(),1).data().canConvert(QMetaType::Int))
     {
 
         int pen = index.model()->index(index.row(),1).data().toInt();
+
+        // speudo gras
+        lab = index.model()->data(index,Qt::DisplayRole).toString();
+        doc.setHtml(QString("<html><strong>%1</strong></html>").arg(lab));
+
+        if(pen == 0)
+        {
+            // cette boule pas encore sortie
+            // mettre numero boule en gras gris
+
+            // test diagonale
+            /* angleline.setPoints(maModif.rect.topLeft(), maModif.rect.bottomRight());
+            painter->drawLine(angleline);
+            angleline.setPoints(maModif.rect.topRight(), maModif.rect.bottomLeft());
+            painter->drawLine(angleline); */
+
+
+            painter->save();
+            painter->translate(maModif.rect.left(), maModif.rect.top());
+            QRect clip(0, 0, maModif.rect.width(), maModif.rect.height());
+            painter->setClipRect(clip);
+
+            ctx.palette.setColor(QPalette::Text, Qt::gray);
+            ctx.clip = clip;
+            doc.documentLayout()->draw(painter, ctx);
+            painter->restore();
+        }
+        else
+        {
+            // boule sortie entre -1 + n <n< n+1
+            // dernier tirage ?
+            if (pen & 0x1){
+                // oui mettre numero boule en gras rouge
+                painter->save();
+                painter->translate(maModif.rect.left(), maModif.rect.top());
+                QRect clip(0, 0, maModif.rect.width(), maModif.rect.height());
+                painter->setClipRect(clip);
+
+                ctx.palette.setColor(QPalette::Text, Qt::red);
+                ctx.clip = clip;
+                doc.documentLayout()->draw(painter, ctx);
+                painter->restore();
+
+                // montrer un cercle
+                painter->save();
+                painter->setBrush(Qt::green);
+                painter->drawEllipse(c,cx/2,cy/2);
+                painter->restore();
+            }
+
+            // boule va sortir au prochain tirage
+            if ((pen & 0x2)||(pen & 0x4)){
+                painter->save();
+                painter->translate(maModif.rect.left(), maModif.rect.top());
+                QRect clip(0, 0, maModif.rect.width(), maModif.rect.height());
+                painter->setClipRect(clip);
+
+                // mais est elle actuellement sortie ?
+                if(pen & 0x1){
+                    //oui
+                    ctx.palette.setColor(QPalette::Text, Qt::red);
+                }
+                else
+                {
+                    //non
+                    ctx.palette.setColor(QPalette::Text, Qt::black);
+                }
+                ctx.clip = clip;
+                doc.documentLayout()->draw(painter, ctx);
+                painter->restore();
+
+                // montrer un cercle
+                painter->save();
+                if((pen &0x1) && (pen & 0x2) &&(pen & 0x4)){
+                    painter->setBrush(Qt::black);
+                }
+                else if((pen & 0x2) &&(pen & 0x4)){
+                    painter->setBrush(Qt::magenta);
+                }
+                else if(pen & 0x2){
+                    painter->setBrush(Qt::red);
+                }
+                else if(pen & 0x4)
+                {
+                    painter->setBrush(Qt::yellow);
+                }
+                painter->drawEllipse(c,cx/2,cy/2);
+                painter->restore();
+            }
+
+            // la boule etait deja sortie
+
+        }
+#if 0
         if (pen >=0 && pen < 4)
         {
             switch(pen)
@@ -92,8 +191,8 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
 
             case 1:
                 //test diagonale
-                angleline.setPoints(maModif.rect.topLeft(), maModif.rect.bottomRight());
-                painter->drawLine(angleline);
+                //angleline.setPoints(maModif.rect.topLeft(), maModif.rect.bottomRight());
+                //painter->drawLine(angleline);
                 painter->save();
                 painter->setBrush(Qt::green);
                 painter->drawEllipse(c,cx/2,cy/2);
@@ -103,8 +202,7 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
             case 2:
             {
 
-                QString lab = index.model()->data(index,Qt::DisplayRole).toString();
-                QTextDocument doc;
+                lab = index.model()->data(index,Qt::DisplayRole).toString();
                 doc.setHtml(QString("<html><strong>%1</strong></html>").arg(lab));
                 //doc.setTextWidth(maModif.rect.width());
 
@@ -113,29 +211,51 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
                 QRect clip(0, 0, maModif.rect.width(), maModif.rect.height());
                 painter->setClipRect(clip);
 
-                QAbstractTextDocumentLayout::PaintContext ctx;
-                ctx.palette.setColor(QPalette::Text, p[pen]);
+                ctx.palette.setColor(QPalette::Text, Qt::black);
                 ctx.clip = clip;
                 doc.documentLayout()->draw(painter, ctx);
+                painter->restore();
 
+                painter->save();
                 painter->setBrush(Qt::yellow);
                 painter->drawEllipse(c,cx/2,cy/2);
-
                 painter->restore();
             }
                 break;
 
-            case 3:
+            case 3:{
+
                 //test diagonale
-                angleline.setPoints(maModif.rect.topLeft(), maModif.rect.bottomRight());
-                painter->drawLine(angleline);
-                maModif.palette.setColor(QPalette::Text,p[pen]);
-                QItemDelegate::paint(painter, maModif, index);
+                //angleline.setPoints(maModif.rect.topLeft(), maModif.rect.bottomRight());
+                //painter->drawLine(angleline);
+
+                // test mise en gras + couleur jaune
+                lab = index.model()->data(index,Qt::DisplayRole).toString();
+                doc.setHtml(QString("<html><strong>%1</strong></html>").arg(lab));
+                //doc.setTextWidth(maModif.rect.width());
+
+                painter->save();
+                painter->translate(maModif.rect.left(), maModif.rect.top());
+                QRect clip(0, 0, maModif.rect.width(), maModif.rect.height());
+                painter->setClipRect(clip);
+
+                //QAbstractTextDocumentLayout::PaintContext ctx;
+                ctx.palette.setColor(QPalette::Text, Qt::yellow);
+                ctx.clip = clip;
+                doc.documentLayout()->draw(painter, ctx);
+                painter->restore();
+
+                // test modif coleur texte
+                //maModif.palette.setColor(QPalette::Text,p[pen]);
+                //maModif.palette.setColor(QPalette::Text,Qt::yellow);
+                //QItemDelegate::paint(painter, maModif, index);
+
+                // test cercle magenta
                 painter->save();
                 painter->setBrush(Qt::magenta);
                 painter->drawEllipse(c,cx/2,cy/2);
                 painter->restore();
-
+            }
                 break;
 
             default:
@@ -144,7 +264,7 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
                 //angleline.setLine();
                 painter->drawLine(angleline);
 
-                maModif.palette.setColor(QPalette::Text,p[pen]);
+                maModif.palette.setColor(QPalette::Text,Qt::magenta);
                 QItemDelegate::paint(painter, maModif, index);
 
                 painter->save();
@@ -155,6 +275,7 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
                 break;
             }
         }
+#endif
     }
 
     //maModif.text = "";

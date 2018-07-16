@@ -72,8 +72,8 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
       conf.limites[0].max = 49;
       conf.limites[1].min = 1;
       conf.limites[1].max = 10;
-      conf.limites[0].neg = 5;
-      conf.limites[1].neg = 1;
+      conf.limites[0].win = 5;
+      conf.limites[1].win = 1;
       conf.jour_tir=new QString[conf.nb_tir_semaine];
       conf.jour_tir[0]="LUNDI";
       conf.jour_tir[1]="MERCREDI";
@@ -104,8 +104,8 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.limites[0].max = 50;
         conf.limites[1].min = 1;
         conf.limites[1].max = 12;
-        conf.limites[0].neg = 5;
-        conf.limites[1].neg = 2;
+        conf.limites[0].win = 5;
+        conf.limites[1].win = 2;
         conf.jour_tir=new QString[conf.nb_tir_semaine];
         conf.jour_tir[0]="MARDI";
         conf.jour_tir[1]="VENDREDI";

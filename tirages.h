@@ -79,7 +79,7 @@ typedef struct _stBornes
     int len;    /// nb element composant la zone
     int min;    /// val min de la zone
     int max;    /// val max de la zone
-    int neg;    /// nb element a avoir sur la zone pour gagner
+    int win;    /// nb element a avoir sur la zone pour gagner
 }stBornes;
 
 typedef struct _stParam

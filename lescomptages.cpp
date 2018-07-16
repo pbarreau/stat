@@ -35,6 +35,7 @@
 #include "lescomptages.h"
 #include "bar_action.h"
 #include "barcalculprevision.h"
+#include "showstepper.h"
 
 #include "cnp_AvecRepetition.h"
 #include "db_tools.h"
@@ -263,7 +264,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
     {
     case eGameLoto:
         onGame.limites = new stParam_1 [onGame.znCount];
-        onGame.names = new stParam_2 [onGame.znCount];
+        onGame.names = new stNamesZones [onGame.znCount];
 
         /// boules
         onGame.limites[0].min=1;
@@ -284,7 +285,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
 
     case eGameEuro:
         onGame.limites = new stParam_1 [onGame.znCount];
-        onGame.names = new stParam_2 [onGame.znCount];
+        onGame.names = new stNamesZones [onGame.znCount];
 
         /// boules
         onGame.limites[0].min=1;
@@ -1429,19 +1430,31 @@ void BPrevision::slot_ccmrTirages(QPoint pos,QTableView *view)
     //int lgn = index.row();
 
     QMenu *MonMenu=new QMenu();
-    QString msg = "Prevision";
-    //MonMenu->addAction(new QAction(msg, this));
+    QString msg = "";
+    bar_action *MonTraitement = NULL;
 
-    bar_action *MonTraitement = new bar_action(index,msg);
+    msg = "Prevision";
+    MonTraitement = new bar_action(index,msg);
     MonMenu->addAction(MonTraitement);
-
     connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex)),
             this, SLOT(slot_CalculSurTirage(const QModelIndex)) );
 
-    //MonMenu->exec(view->viewport()->mapToGlobal(pos));
+
+    msg = "Recherche";
+    MonTraitement = new bar_action(index,msg);
+    MonMenu->addAction(MonTraitement);
+    /*
+     *     stStepperNeeds *stNeeds = new stStepperNeeds;
+    stNeeds->nbElmZone = pMaConf->nbElmZone;
+    stNeeds->nomZone = pMaConf->nomZone;
+    stNeeds->limites = pMaConf->limites;
+    ShowStepper *UnDetail = new ShowStepper(stNeeds);
+
+    ShowStepper *UnDetail = new ShowStepper(pGlobConf);
+    connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex)),
+            UnDetail, SLOT(slot_MaFonctionDeCalcul(const QModelIndex)) );
+*/
     MonMenu->popup(view->viewport()->mapToGlobal(pos));
-
-
 }
 
 void BPrevision::slot_CalculSurTirage(const QModelIndex & index)
