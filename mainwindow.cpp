@@ -1,3 +1,5 @@
+// Page code ISO 8859-15
+
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #endif

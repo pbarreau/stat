@@ -14,6 +14,8 @@
 #include <QTabWidget>
 #include <QMdiArea>
 
+#include "game.h"
+
 #define CHauteur1   225
 #define CLargeur1   200
 #define XLenTir     520
@@ -74,13 +76,6 @@ typedef struct _ordreArrivee
     int p;  /// precedent
 }stMyLinkedList;
 
-typedef struct _stBornes
-{
-    int len;    /// nb element composant la zone
-    int min;    /// val min de la zone
-    int max;    /// val max de la zone
-    int win;    /// nb element a avoir sur la zone pour gagner
-}stBornes;
 
 typedef struct _stParam
 {

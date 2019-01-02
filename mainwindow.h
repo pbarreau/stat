@@ -17,6 +17,8 @@
 #include <QGraphicsView>
 #include <QFormLayout>
 
+#include <QNetworkAccessManager>
+#include <QFile>
 
 #include "tirages.h"
 #include "gererbase.h"
@@ -94,6 +96,8 @@ private slots:
     void pslot_close();
     bool pslot_save();
     bool pslot_saveAs();
+    void pslot_GetFromFdj();
+    void slot_replyFinished(QNetworkReply *resp);
     void pslot_about();
     void pslot_closeTabDetails(int index);
 
@@ -240,6 +244,7 @@ private:
     QLabel * lab_critere;
 
     QMenu *fileMenu;
+    QMenu *fdjMenu;
     QMenu *helpMenu;
     QToolBar *fileToolBar;
     QAction *newAct;
@@ -249,6 +254,7 @@ private:
     QAction *exitAct;
     QAction *runAct;
     QAction *FiltrerAct;
+    QAction *actGetFromUrlsFdj;
     QAction *aboutAct;
 
     LabelClickable **G_lab_nbSorties;
@@ -319,6 +325,20 @@ private:
     int G_CombiKey;
 
     bool closewindows;
+
+    // Reseau
+    QNetworkAccessManager *manager;
+    QVector<QNetworkReply *> currentDownloads;
+    QFile *file;
+
+public:
+    QString saveFileName(const QUrl &url);
+    void doDownload(const QUrl &url);
+    bool saveToDisk(const QString &filename, QIODevice *data);
+    bool isHttpRedirect(QNetworkReply *reply);
+
+public slots:
+    //void slot_sslErrors(const QList<QSslError> &sslErrors);
 };
 
 #endif // MAINWINDOW_H

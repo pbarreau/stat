@@ -15,10 +15,10 @@
 #include <cmath>
 
 #include "compter_ecart.h"
-const QColor fond[4]={QColor(255,156,86,190),
-                      QColor(140,255,124,190),
-                      QColor(70,160,220,190),
-                      QColor(255,40,180,190)
+const QColor fond[4]={QColor(255,156,86,190),//Orange
+                      QColor(140,255,124,190), //Vert
+                      QColor(70,160,220,190),//bleu
+                      QColor(255,40,180,190)//Violet
                      };
 
 int BCountEcart::total = 0;
@@ -79,6 +79,10 @@ QTableView * BCountEcart::Compter(QString *pname, int zn)
     QString st_msg1 = "select * from ("
             + qtv_name
             +") order by B desc;";
+
+#ifndef QT_NO_DEBUG
+                qDebug() <<st_msg1;
+#endif
 
     sqm_tmp->setQuery(st_msg1,dbToUse);
 
@@ -157,7 +161,7 @@ void BCountEcart::slot_AideToolTip(const QModelIndex & index)
 
     if(C==QBrush(fond[3]))
     {
-        msgAdd = QString("Ep proche Em");
+        msgAdd = QString("Ep2 proche Em");
     }
 
     if(C==vide && cln > 0)
@@ -407,8 +411,7 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
         int et = ET.data().toInt();
 
         if(ec &&((abs(ec-ep)%ep<=radix)||
-                 (abs(ec-em)%em<=radix)||
-                 (abs(ec-et)%et<=radix)
+                 (abs(ec-em)%em<=radix)
                  )){
             if (role == Qt::TextColorRole){
                 return (u[1]);
@@ -421,45 +424,61 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
 
 
     ///--------------------------------------
+    /// On va mettre une couleur de fond
+    /// pour la cellule en fonction
+    /// de la valeur de l'ecart courant
     if(role==Qt::BackgroundRole){
         int valCel = 0;
         int valAna = 0;
         double radix = 1.5;
         int calc = 0;
 
+        /// Valeur presente dans la cellule
         valCel = index.data().toInt();
+
+        /// Valeur de l'ecart courant pour cette ligne
         valAna = index.model()->index(index.row(),1).data().toInt();
 
         if(valCel)
             calc = abs(valAna-valCel)% valCel;
 
         if(col==1){
+            // Montrer si Ec proche de Ep
+            calc = index.model()->index(index.row(),2).data().toInt();
+            if(valAna){
+            calc = abs(valAna-calc)% valAna;
+            }
+            if(valAna && calc<=radix){
+                return(QBrush(fond[0],Qt::SolidPattern));
+                //painter->fillRect(option.rect, fond[0]);
+            }
+        }
+        if(col==2){
+            // Montrer si Ep proche Em
+            // Colonne Ep:Ecart precedent
             calc = index.model()->index(index.row(),2).data().toInt();
             valAna = index.model()->index(index.row(),3).data().toInt();
+            if(valAna){
             calc = abs(valAna-calc)% valAna;
+            }
             if(valAna && calc<=radix){
                 return(QBrush(fond[2],Qt::SolidPattern));
                 //painter->fillRect(option.rect, fond[2]);
             }
         }
 
-        if(col==2){
-            /// colonne Ep
-            if(valAna && calc<=radix){
-                return(QBrush(fond[0],Qt::SolidPattern));
-                //painter->fillRect(option.rect, fond[0]);
-            }
-        }
         if(col==3){
-            /// colonne Em
+            // Montrer si Ec proche Em
+            // colonne Em:Ecart moyen
             if(valAna && calc<=radix){
                 return(QBrush(fond[1],Qt::SolidPattern));
                 //painter->fillRect(option.rect, fond[1]);
             }
         }
         if(col==4){
-            /// colonne EM
-            if(valAna && calc<=radix){
+            // Montrer si Ec proche ou superieur a EM
+            // colonne EM: Ecart maximun
+            if(valAna && ((valAna+radix)>=valCel)){
                 return(QBrush(fond[3],Qt::SolidPattern));
                 //painter->fillRect(option.rect, fond[2]);
             }

@@ -263,7 +263,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
     switch(game)
     {
     case eGameLoto:
-        onGame.limites = new stParam_1 [onGame.znCount];
+        onGame.limites = new stBornes [onGame.znCount];
         onGame.names = new stNamesZones [onGame.znCount];
 
         /// boules
@@ -284,7 +284,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
         break;
 
     case eGameEuro:
-        onGame.limites = new stParam_1 [onGame.znCount];
+        onGame.limites = new stBornes [onGame.znCount];
         onGame.names = new stNamesZones [onGame.znCount];
 
         /// boules
@@ -1443,17 +1443,22 @@ void BPrevision::slot_ccmrTirages(QPoint pos,QTableView *view)
     msg = "Recherche";
     MonTraitement = new bar_action(index,msg);
     MonMenu->addAction(MonTraitement);
-    /*
-     *     stStepperNeeds *stNeeds = new stStepperNeeds;
+
+    stStepperNeeds *stNeeds = new stStepperNeeds;
+#if 0
     stNeeds->nbElmZone = pMaConf->nbElmZone;
     stNeeds->nomZone = pMaConf->nomZone;
     stNeeds->limites = pMaConf->limites;
+#endif
+    stNeeds->nbElmZone = NULL;//onGame.limites[0].len;
+    stNeeds->nomZone = NULL;//onGame.names[0].abv;
+    stNeeds->limites = onGame.limites;
     ShowStepper *UnDetail = new ShowStepper(stNeeds);
 
-    ShowStepper *UnDetail = new ShowStepper(pGlobConf);
+    //ShowStepper *UnDetail = new ShowStepper(pGlobConf);
     connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex)),
             UnDetail, SLOT(slot_MaFonctionDeCalcul(const QModelIndex)) );
-*/
+
     MonMenu->popup(view->viewport()->mapToGlobal(pos));
 }
 
