@@ -55,13 +55,15 @@ void MainWindow::pslot_close()
     close();
 }
 
+// Demande utilisateur du telechargement des bases
+// depuis le site de la Francaise des jeux
 void MainWindow::pslot_GetFromFdj()
 {
-    manager = new QNetworkAccessManager(this);
-    //QNetworkRequest urlCible;
-    //QNetworkReply *reply;
+    QStringList urlFdJeux;
 
-    QStringList urlFdJeux = {
+    manager = new QNetworkAccessManager(this);
+
+    QString urlLoto []= {
         "https://www.fdj.fr/generated/game/loto/loto2017.zip",
         "https://www.fdj.fr/generated/game/loto/nouveau_loto.zip",
         "https://www.fdj.fr/generated/game/loto/loto.zip",
@@ -70,13 +72,20 @@ void MainWindow::pslot_GetFromFdj()
         "https://www.fdj.fr/generated/game/loto/superloto.zip",
         "https://www.fdj.fr/generated/game/loto/lotonoel2017.zip"
     };
+    for (const QString &arg : urlLoto) {
+        urlFdJeux << arg;
+    }
 
-    QStringList urlFdJeux_euro = {
+    QString urlEuro[] = {
         "https://www.fdj.fr/generated/game/euromillions/euromillions_4.zip",
         "https://www.fdj.fr/generated/game/euromillions/euromillions_3.zip",
         "https://www.fdj.fr/generated/game/euromillions/euromillions_2.zip",
         "https://www.fdj.fr/generated/game/euromillions/euromillions.zip"
     };
+    for (const QString &arg : urlEuro) {
+        urlFdJeux << arg;
+    }
+
 
     connect(manager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(slot_replyFinished(QNetworkReply*)));
@@ -87,30 +96,85 @@ void MainWindow::pslot_GetFromFdj()
     }
 }
 
+// Debut de demande de telechargement
 void MainWindow::doDownload(const QUrl &url)
 {
     QNetworkRequest request(url);
-    QNetworkReply *reply = manager->get(request);
+    QNetworkReply *reply;
 
+    QString localFile = QFileInfo(url.path()).fileName();
 
-    currentDownloads.append(reply);
+    // Si fichier deja present telecharger le plus recent
+    if (QFile::exists(localFile)) {
+        // faire une demande head au serveur
+        reply = manager->head(request);
+        currentDownloads.append(reply);
+    }
+    else
+    {
+        // recuperer fichier
+        reply = manager->get(request);
+        currentDownloads.append(reply);
+    }
+
+    /// Traitement asynchrone
 }
 
+// Analyse de la reponse a la demande de telechargement
 void MainWindow::slot_replyFinished(QNetworkReply *reply)
 {
     QUrl url = reply->url();
+    QString msg = "";
+
     if (reply->error()) {
+        msg = url.toEncoded().constData()
+                + QString(" echec ") + qPrintable(reply->errorString());
+
+        QMessageBox::information(this, "slot_replyFinished", msg,QMessageBox::Yes);
         fprintf(stderr, "Download of %s failed: %s\n",
                 url.toEncoded().constData(),
                 qPrintable(reply->errorString()));
     } else {
         if (isHttpRedirect(reply)) {
-            fputs("Request was redirected.\n", stderr);
-        } else {
-            QString filename = saveFileName(url);
-            if (saveToDisk(filename, reply)) {
-                printf("Download of %s succeeded (saved to %s)\n",
-                       url.toEncoded().constData(), qPrintable(filename));
+            // https://www.meetingcpp.com/blog/items/http-and-https-in-qt.html
+            QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+
+            if(redirect.isValid() && reply->url() != redirect)
+            {
+                if(redirect.isRelative())
+                    redirect = reply->url().resolved(redirect);
+                QNetworkRequest req(redirect);
+                QNetworkReply* reply = manager->get(req);
+                currentDownloads.append(reply);
+            }
+            msg = "Request was redirected.\n";
+            QMessageBox::information(this, "slot_replyFinished", msg,QMessageBox::Yes);
+        } else {// info fichier
+
+
+            // C'est une demande HEAD
+            if (reply->operation() == QNetworkAccessManager::HeadOperation){
+                QString filename = QFileInfo(url.path()).fileName();
+                int content_length = reply->header(QNetworkRequest::ContentLengthHeader).toInt();
+                QDateTime remoteDate = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+                QDateTime localDate = QFileInfo(filename).lastModified();
+                // effectuer get si serveur plus recent
+                if(remoteDate > localDate){
+                    //QNetworkRequest request_2(url);
+                    QNetworkReply *reply_2 = manager->get(QNetworkRequest(url));
+                    //reply_2 = manager->get(request_2);
+                    currentDownloads.append(reply_2);
+                }
+            }else{
+                // C'est une demande GET
+                if (reply->operation() == QNetworkAccessManager::GetOperation){
+                    QString filename = saveFileName(url);
+
+                    if (saveToDisk(filename, reply)) {
+                        printf("Download of %s succeeded (saved to %s)\n",
+                               url.toEncoded().constData(), qPrintable(filename));
+                    }
+                }
             }
         }
     }
@@ -120,11 +184,11 @@ void MainWindow::slot_replyFinished(QNetworkReply *reply)
 
     if (currentDownloads.isEmpty()) {
         // all downloads finished
-        QCoreApplication::instance()->quit();
+        msg = "Telechargement completement termine\n";
+        QMessageBox::information(NULL, "slot_replyFinished", msg,QMessageBox::Yes);
+        return;
+        //QCoreApplication::instance()->quit();
     }
-
-
-
 }
 
 #if 0
@@ -148,7 +212,7 @@ QString MainWindow::saveFileName(const QUrl &url)
         basename = "download.zip";
 
     if (QFile::exists(basename)) {
-        // already exists
+
         if (QMessageBox::question(this, tr("HTTP"),
                                   tr("There already exists a file called %1 in "
                                      "the current directory. Overwrite?").arg(basename),
