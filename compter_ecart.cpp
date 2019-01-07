@@ -211,6 +211,10 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
                 +"(lgn integer primary key, id int,"
                 + msg
                 +")";
+
+#ifndef QT_NO_DEBUG
+                qDebug() <<msg;
+#endif
         QString doSql[]={"drop table if exists " +tmpTbl,
                          msg
                         };
@@ -238,8 +242,14 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
                 +") as t1 where";
 
         int nb_boule = myGame.limites[zn].max;
+
         for(int boule=0;(boule<nb_boule)&&isOk;boule++){
             for(int sql_id=0;(sql_id<nb_sql)&&isOk;sql_id++){
+
+#ifndef QT_NO_DEBUG
+                qDebug() <<doSql[sql_id];
+#endif
+
                 isOk = query.exec(doSql[sql_id]);
             }
             ///remplir la table
@@ -287,6 +297,8 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
         }
     }
 
+    // On a la table resultat, on parcour toute la base de nouveau
+    // pour determiner boule pas encore sorties.
     return isOk;
 }
 

@@ -11,11 +11,11 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = StatFdJeux
 TEMPLATE = app
 
-#include(H:/Backup/fdj_v2/sqlExtensions/sqlite.pri)
+##include(C:/Devel/Workspaces/stat/sqlExtensions/sqlite.pri)
 
-#INCLUDEPATH +="./sqlExtensions"
+INCLUDEPATH +="./sqlExtensions"
 #-LC:/Devel/Qt5.6.0/Tools/mingw492_32/opt/lib
-LIBS += -LC:/Devel/Qt5.6.0/Tools/mingw492_32/opt/bin -lsqlite3-0
+LIBS += -LC:/Devel/Qt5.6.0/Tools/mingw492_32/opt/bin -LC:/Devel/Workspaces/stat/sqlExtensions -lsqlite3-0
 
 #include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
 
