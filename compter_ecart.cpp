@@ -192,9 +192,10 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
     /// E   : ecart maxi
     /// T   : total
     /// A   : apparition (deja sortie ?)
+    /// V   : Variance
     msg = "create table if not exists "
             +tblName
-            +"(B int, Ec int, Ep int, Em real, E int, T int, A int)";
+            +"(B int, Ec int, Ep int, Em real, E int, T int, A int, V real)";
     isOk = query.exec(msg);
 
     if(isOk){
@@ -262,7 +263,12 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
                             + tblName
                             +" select max(B)as B, max(Ec) as Ec, max(Ep) as Ep,"
                              "printf(\"%.1f\",avg(E))as Em,max(E) as E,"
-                             "count(B) as T, null from "
+                             "count(B) as T, 0,"
+                             "printf(\"%.1f\","
+                             "(SUM(Em)/COUNT(Em)) -((SUM(Em)/COUNT(Em))*(SUM(Em)/COUNT(Em)))"
+                             ")"
+                             " as V"
+                             " from "
                              "("
                              "select "
                             +QString::number(boule+1)
@@ -288,6 +294,25 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
     }
 
     return isOk;
+    /// insert into eca_elm_000_z1 select max(B)as B,
+    /// max(Ec) as Ec, max(Ep) as Ep,
+    /// printf("%.1f",avg(E))as Em,max(E) as E,count(B) as T, 0,
+    /// printf("%.1f",(SUM(avg(E))/COUNT(*)) -((SUM(avg(E))/COUNT(*))*(SUM(avg(E))/COUNT(*)))) as V
+    /// from (select 1 as B,(case when t1.lgn=1 then t1.id -1 end)as Ec,
+    /// (case when t1.lgn=1 then (t2.id-t1.id)  end)as Ep,
+    /// (t2.id-t1.id) as E from tmp_eca_elm_000_z1 as t1,
+    /// tmp_eca_elm_000_z1 as t2 where(t2.lgn=t1.lgn+1))
+
+    /// https://www.nikrou.net/post/2010/01/26/Calcul-d-%C3%A9cart-type-avec-sqlite
+    /// https://www.developpez.net/forums/d426898/bases-donnees/firebird/calcul-variance-d-ecart-type/
+    /// Variance = carré de l'écart type = Sx² / n - (Sx / n)²
+    /// i.e : (SUM(x*x)/COUNT(*)) -((SUM(x)/COUNT(*))*(SUM(x)/COUNT(*)))
+    ///
+    /// UPDATE B_elm
+    /// SET tz2 =
+    /// (
+    /// select ven  from r_B_fdj_0_elm_z1 where (B_elm.id=r_B_fdj_0_elm_z1.B)
+    /// )
 }
 
 ///-----------------------------
@@ -391,7 +416,9 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
         Qt::green,
         QColor(255,216,0,255),
         QColor(255,106,0,255),
-        QColor(178,0,255,255)};
+        QColor(178,0,255,255),
+        QColor(211,255,204,255)
+    };
 
 
     if(col== 0 )
@@ -403,12 +430,22 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
         QModelIndex Ep = index.sibling(index.row(),2);
         QModelIndex Em = index.sibling(index.row(),3);
         QModelIndex ET = index.sibling(index.row(),4);
+        QModelIndex Ab = index.sibling(index.row(),6);
 
 
         int ec = Ec.data().toInt();
         int ep = Ep.data().toInt();
         int em = Em.data().toInt();
         int et = ET.data().toInt();
+        int ab = Ab.data().toInt();
+
+        // Boule deja sortie ?
+        if(ab == 0){
+            if (role == Qt::BackgroundRole){
+                return (u[6]);
+            }
+
+        }
 
         if(ec &&((abs(ec-ep)%ep<=radix)||
                  (abs(ec-em)%em<=radix)
