@@ -234,6 +234,9 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
                 clause = clause+"or";
             }
         }
+#ifndef QT_NO_DEBUG
+                qDebug() <<msg;
+#endif
         msg = "insert into "
                 + tmpTbl
                 +" select null, t1.id,"
@@ -274,17 +277,15 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
                             +" select max(B)as B, max(Ec) as Ec, max(Ep) as Ep,"
                              "printf(\"%.1f\",avg(E))as Em,max(E) as E,"
                              "count(B) as T, 0,"
-                             "printf(\"%.1f\","
-                             "(SUM(Em)/COUNT(Em)) -((SUM(Em)/COUNT(Em))*(SUM(Em)/COUNT(Em)))"
-                             ")"
-                             " as V"
+                             "44 as V"
                              " from "
                              "("
                              "select "
                             +QString::number(boule+1)
                             +" as B,(case when t1.lgn=1 then t1.id -1 end)as Ec,"
                              "(case when t1.lgn=1 then (t2.id-t1.id)  end)as Ep,"
-                             "(t2.id-t1.id) as E from "
+                             "(t2.id-t1.id) as E "
+                            " from "
                             +tmpTbl+" as t1, "
                             +tmpTbl+" as t2 "
                                     "where"
@@ -303,6 +304,32 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
         }
     }
 
+#if 0
+    select lgn,id,Em from maTable left join
+     ( select
+     printf("%.1f",avg(t2.id-t1.id))as Em
+    from maTable as t1, maTable as t2 where (t2.lgn = t1.lgn+1))
+#endif
+
+#if 0
+    select (
+    printf("%.1f",
+    sum (((t2.id-t1.id) - t1.Em) * ((t2.id-t1.id) - t1.Em))/count(*)
+    )) as V
+    from
+    (
+    select lgn,id,Em from tmp_eca_elm_000_z1 left join
+     ( select
+     printf("%.1f",avg(t2.id-t1.id))as Em
+    from tmp_eca_elm_000_z1 as t1, tmp_eca_elm_000_z1 as t2 where (t2.lgn = t1.lgn+1))) as t1,
+    (
+    select lgn,id,Em from tmp_eca_elm_000_z1 left join
+     ( select
+     printf("%.1f",avg(t2.id-t1.id))as Em
+    from tmp_eca_elm_000_z1 as t1, tmp_eca_elm_000_z1 as t2 where (t2.lgn = t1.lgn+1))) as t2
+    where
+    (t2.lgn = t1.lgn +1)
+#endif
     // On a la table resultat, on parcour toute la base de nouveau
     // pour determiner boule pas encore sorties.
     return isOk;
