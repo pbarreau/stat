@@ -312,6 +312,7 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
 #endif
 
 #if 0
+
     select (
     printf("%.1f",
     sum (((t2.id-t1.id) - t1.Em) * ((t2.id-t1.id) - t1.Em))/count(*)
