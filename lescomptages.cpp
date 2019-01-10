@@ -28,7 +28,7 @@
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
 #include "compter_ecart.h"
-#include "montrer_tirages.h"
+#include "ihm_tirages.h"
 #include "bcouv.h"
 #include "labelclickable.h"
 
@@ -1382,17 +1382,19 @@ void BPrevision::showAll(QString source,const BGame &config)
     selection[0].setText(msg);
     tmp_layout->addWidget(&selection[0],0,1);
 
+
     /// Effectuer les calculs permettant de
     /// determiner la combinaison
     QWidget * Etape_1 = partieDroite(source,config);
     tmp_layout->addWidget(Etape_1,1,1);
 
     /// Montrer les tirages correctements formattes
-    BTirages * Etape_2 = new BTirages(source,config,dbInUse);
+    Etape_2 = new IHM_Tirages(source,config,dbInUse);
+
 
     /// pour montrer dans ecarts et detail
     connect(Etape_2,SIGNAL(sig_TiragesClick(QModelIndex)),
-            this,SLOT(slot_whereOnFormElm(QModelIndex)));
+            this,SLOT(slot_SurligneEcartEtDetails(QModelIndex)));
     /// pour montrer dans ecarts et detail
     connect(Etape_2,SIGNAL(sig_TiragesClick(QModelIndex)),
             stBdata.grp,SLOT(slot_DecodeTirage(QModelIndex)));
@@ -1468,7 +1470,7 @@ void BPrevision::slot_CalculSurTirage(const QModelIndex & index)
     tmp->show();
 }
 
-void BPrevision::slot_whereOnFormElm(const QModelIndex &index)
+void BPrevision::slot_SurligneEcartEtDetails(const QModelIndex &index)
 {
     // recuperer la valeur de la colonne
     int col = index.column();

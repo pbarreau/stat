@@ -119,8 +119,22 @@ QTableView * BCountEcart::Compter(QString *pname, int zn)
     connect(qtv_tmp,
             SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 
+    /// Montrer le tirage quand click sur Ec ou Ep
+    connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
+             this, SLOT( slot_SurligneTirage( QModelIndex) ) );
+
     tbv_memo[zn] = qtv_tmp;
     return   qtv_tmp;
+}
+
+void BCountEcart::slot_SurligneTirage(const QModelIndex &index)
+{
+ int col=index.column();
+
+ if( (col >0) && (col<3) )
+ {
+     emit(sig_TotEcart(index));
+ }
 }
 
 void BCountEcart::slot_AideToolTip(const QModelIndex & index)
@@ -272,20 +286,43 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
                 /// faire le calcul sur ecart
                 /// et mettre dans table resultat
                 if(isOk){
+                    QString msg_var = " select ("
+                                      " printf(\"%.1f\","
+                                      " sum (((t2.id-t1.id) - t1.Em) * ((t2.id-t1.id) - t1.Em))/count(*)"
+                                      " )) as V"
+                                      " from"
+                                      " ("
+                                      " select lgn,id,Em from "+tmpTbl+" left join"
+                                      " ( select"
+                                      " printf(\"%.1f\",avg(t2.id-t1.id))as Em"
+                                      " from "+tmpTbl+" as t1, "+tmpTbl+" as t2 where (t2.lgn = t1.lgn+1))) as t1,"
+                                      " ("
+                                      " select lgn,id,Em from "+tmpTbl+" left join"
+                                      " ( select"
+                                      " printf(\"%.1f\",avg(t2.id-t1.id))as Em"
+                                      " from "+tmpTbl+" as t1, "+tmpTbl+" as t2 where (t2.lgn = t1.lgn+1))) as t2"
+                                      " where"
+                                      " (t2.lgn = t1.lgn +1)";
+
+#ifndef QT_NO_DEBUG
+                    qDebug() <<msg_var;
+#endif
+
                     sql = "insert into "
                             + tblName
                             +" select max(B)as B, max(Ec) as Ec, max(Ep) as Ep,"
                              "printf(\"%.1f\",avg(E))as Em,max(E) as E,"
                              "count(B) as T, 0,"
-                             "44 as V"
+                             " V "
                              " from "
                              "("
                              "select "
                             +QString::number(boule+1)
                             +" as B,(case when t1.lgn=1 then t1.id -1 end)as Ec,"
                              "(case when t1.lgn=1 then (t2.id-t1.id)  end)as Ep,"
-                             "(t2.id-t1.id) as E "
-                            " from "
+                             "(t2.id-t1.id) as E, ("
+                            + msg_var +
+                            ") as V from "
                             +tmpTbl+" as t1, "
                             +tmpTbl+" as t2 "
                                     "where"
@@ -442,6 +479,22 @@ void BDlgEcart::paint(QPainter *painter, const QStyleOptionViewItem &option,
     QItemDelegate::paint(painter, option, index);
 }
 
+
+bool BSqmColorizeEcart::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    int col = index.column();
+
+    if(col== 7 )
+    {
+        QModelIndex V = index.sibling(index.row(),7);
+        float variance = sqrt(V.data().toFloat());
+
+
+        //this->setData(V,variance,Qt::DisplayRole);
+        this->setData(V,"2.0",Qt::DisplayRole);
+    }
+    return true;
+}
 
 QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
 {

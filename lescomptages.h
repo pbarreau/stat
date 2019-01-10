@@ -6,6 +6,7 @@
 #include <QSqlDatabase>
 #include <QLabel>
 
+#include "ihm_tirages.h"
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
@@ -137,7 +138,7 @@ Q_SIGNALS:
     void sig_isClickedOnBall(const QModelIndex &index);
 private slots:
     void slot_emitThatClickedBall(const QModelIndex &index);
-    void slot_whereOnFormElm(const QModelIndex &index);
+    void slot_SurligneEcartEtDetails(const QModelIndex &index);
     void slot_ccmrTirages(QPoint pos, QTableView *view);
     void slot_CalculSurTirage(const QModelIndex & index);
 
@@ -153,6 +154,7 @@ private:
     BGame onGame;           /// parametres du jeu pour statistique globale
     BGame monJeu;           /// parametres pour filtration
     QStringList **slFlt;    /// zn_filters
+    IHM_Tirages * Etape_2;
     BCountElem *c1;
     BCountComb *c2;
     BCountGroup *c3;

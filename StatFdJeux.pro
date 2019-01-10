@@ -78,7 +78,10 @@ SOURCES += \
     montrer_tirages.cpp \
     bcouv.cpp \
     bar_action.cpp \
-    barcalculprevision.cpp
+    barcalculprevision.cpp \
+    ihm_tirages.cpp \
+    sqlqmtirages.cpp \
+    idlgttirages.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -117,7 +120,10 @@ HEADERS  += \
     montrer_tirages.h \
     bcouv.h \
     bar_action.h \
-    barcalculprevision.h
+    barcalculprevision.h \
+    ihm_tirages.h \
+    sqlqmtirages.h \
+    idlgttirages.h
 
 
 FORMS    += mainwindow.ui \
