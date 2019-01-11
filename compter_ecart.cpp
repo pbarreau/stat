@@ -133,6 +133,7 @@ void BCountEcart::slot_SurligneTirage(const QModelIndex &index)
 
  if( (col >0) && (col<3) )
  {
+     /// CODE A SUPPRIMER
      emit(sig_TotEcart(index));
  }
 }

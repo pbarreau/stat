@@ -8,6 +8,7 @@
 #include "ihm_tirages.h"
 #include "sqlqmtirages.h"
 #include "idlgttirages.h"
+#include "compter_combinaisons.h"
 
 int IHM_Tirages::total = 0;
 
@@ -20,6 +21,7 @@ IHM_Tirages::IHM_Tirages(const QString &in,  const BGame &pDef, QSqlDatabase fro
     :sqlSource(in),ceJeu(pDef),dbDesTirages(fromDb)
 
 {
+
     QVBoxLayout *conteneur = new QVBoxLayout;
 
     lesTirages = ConstruireTbvDesTirages(in,pDef);
@@ -110,46 +112,72 @@ QTableView *IHM_Tirages::ConstruireTbvDesTirages(const QString &source,const BGa
     qtv_tmp->setFixedWidth(taille_L);
 
     /// click dans le tableau
-   connect( qtv_tmp, SIGNAL( clicked(QModelIndex)) ,
+    connect( qtv_tmp, SIGNAL( clicked(QModelIndex)) ,
              this, SLOT( slot_PreciserTirage( QModelIndex) ) );
+    connect( qtv_tmp, SIGNAL(pressed(QModelIndex)) ,
+             this, SLOT( slot_MettreSelectionCouleur( QModelIndex) ) );
 
-   qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
-           SLOT(slot_ccmr_AfficherMenu(QPoint)));
+    qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+            SLOT(slot_ccmr_AfficherMenu(QPoint)));
 
     return qtv_tmp;
 }
 
+void IHM_Tirages::slot_MettreSelectionCouleur(const QModelIndex &index)
+{
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    view->setStyleSheet("QTableView {selection-background-color: red;}");
+}
 void IHM_Tirages::slot_PreciserTirage(const QModelIndex &index)
 {
-   emit sig_TiragesClick (index);
+    emit sig_TiragesClick (index);
 }
 
 void IHM_Tirages::slot_SurlignerTirage(const QModelIndex &index)
 {
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QString tbvName = view->objectName();
+    int zn = ((tbvName.split("z")).at(1)).toInt()-1;
     int col = index.column();
 
     if(col > 0 && col <3 )
     {
-        // recuperer la valeur a la colonne de la table
+        // recuperer les 2 valeurs a la colonne de la table
+        int v1 = index.model()->index(index.row(),1).data().toInt();
+        int v2 = index.model()->index(index.row(),2).data().toInt();
         int laLigne = 0;
-        int value = index.model()->index(index.row(),index.column()).data().toInt();
+        int value = 0;//index.model()->index(index.row(),index.column()).data().toInt();
 
         // parcourir les tables view
         QTableView *tabDetails = lesTirages;
-        QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(tabDetails->model());
+        //QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(tabDetails->model());
 
         if(col==1){
-
+            value = v1;
+        }
+        else
+        {
+            value = v1+v2;
         }
 
-        tabDetails->scrollTo(m->index(value-1,0));
+        QModelIndex nextIndex = tabDetails->model()->index(value,0);
+        tabDetails->scrollTo(nextIndex);
 
         /// Clef
-        laLigne = value-1;
+        laLigne = value;
 
         /// Mettre un visuel sur la ligne
         tabDetails->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+        /// Changer la couleur de ligne de selection selon la zone
+        if(zn == 0){
+            tabDetails->setStyleSheet("QTableView {selection-background-color: green;}");
+        }
+        else
+        {
+            tabDetails->setStyleSheet("QTableView {selection-background-color: #5EB6FF;}");
+        }
         tabDetails->selectRow(laLigne);
         tabDetails->setSelectionMode(QAbstractItemView::SingleSelection);
     }
@@ -160,5 +188,5 @@ void IHM_Tirages::slot_ccmr_AfficherMenu(const QPoint pos)
 {
     QTableView *view = qobject_cast<QTableView *>(sender());
 
-   emit sig_ShowMenu (pos, view);
+    emit sig_ShowMenu (pos, view);
 }

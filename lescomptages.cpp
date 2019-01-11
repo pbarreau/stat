@@ -1354,6 +1354,12 @@ QString BPrevision::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
 
 void BPrevision::showAll(QString source,const BGame &config)
 {
+    stBdata;
+    stBdata.src = source;
+    stBdata.cnf = config;
+    stBdata.cmb = new BCountComb(stBdata.src,stBdata.cnf,dbInUse);
+    stBdata.grp = new BCountGroup(stBdata.src,stBdata.cnf,dbInUse);
+
     /// --------------Test-------------
     BCouv2 *test = new BCouv2(source,config,dbInUse);
 
@@ -1395,6 +1401,7 @@ void BPrevision::showAll(QString source,const BGame &config)
     /// pour montrer dans ecarts et detail
     connect(Etape_2,SIGNAL(sig_TiragesClick(QModelIndex)),
             this,SLOT(slot_SurligneEcartEtDetails(QModelIndex)));
+
     /// pour montrer dans ecarts et detail
     connect(Etape_2,SIGNAL(sig_TiragesClick(QModelIndex)),
             stBdata.grp,SLOT(slot_DecodeTirage(QModelIndex)));
@@ -1404,6 +1411,13 @@ void BPrevision::showAll(QString source,const BGame &config)
             this,SLOT(slot_ccmrTirages(QPoint,QTableView *)));
 
     tmp_layout->addLayout(Etape_2,1,0);
+
+
+    /// Connection aux tables view
+    for(int i=0; i< qtvEcarts.size();i++){
+    connect(qtvEcarts[i],SIGNAL(clicked(QModelIndex)),
+            Etape_2,SLOT(slot_SurlignerTirage(QModelIndex)));
+    }
 
 
     /// Calcul
@@ -1579,13 +1593,12 @@ QWidget *BPrevision::partieDroite(QString source,const BGame &config)
     QString itmNiv_1[]={"Boules","Etoiles"};
     int totItmNiv_1 = config.znCount;
 
-    stBdata;
+    //stBdata;
     stBdata.src = source;
     stBdata.cnf = config;
     stBdata.niv = tabNiv_1;
 
-    stBdata.grp = new BCountGroup(stBdata.src,stBdata.cnf,dbInUse);
-    stBdata.cmb = new BCountComb(stBdata.src,stBdata.cnf,dbInUse);
+    //stBdata.grp = new BCountGroup(stBdata.src,stBdata.cnf,dbInUse);
 
     for(int itm = 0; itm< totItmNiv_1;itm++)
     {
@@ -1595,6 +1608,7 @@ QWidget *BPrevision::partieDroite(QString source,const BGame &config)
         wdgNiv_1 = ConstruireElementNiv_2(stBdata);
         tabNiv_1->addTab(wdgNiv_1,itmNiv_1[itm]);
     }
+
     return tabNiv_1;
 }
 
