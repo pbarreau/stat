@@ -227,7 +227,10 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
     }
 
     if(isOk){
-        isOk = CalculerSqrt(tblName, "V");
+        msg = "drop table if exists " +tableBoule + ";";
+        if( isOk = query.exec(msg)){
+            isOk = CalculerSqrt(tblName, "V");
+        }
     }
 
     return isOk;
@@ -468,12 +471,15 @@ QString BCountEcart::RechercherLesTirages(int boule, int zn)
     QString msg = "";
     bool isOk = true;
     QSqlQuery query(dbToUse);
+    QString tmpTbl = "tmp_rch";
+
+#if 0
     QString tmpTbl = "tmp_rch_z"
             +QString::number(zn+1)
             +QString("_")
             +QString::number(boule+1);
+#endif
 
-#if 0
     msg = "drop table if exists " +tmpTbl + ";";
 
 #ifndef QT_NO_DEBUG
@@ -482,7 +488,7 @@ QString BCountEcart::RechercherLesTirages(int boule, int zn)
     if( !(isOk = query.exec(msg))){
         return "";
     }
-#endif
+
     QString ref_1 = myGame.names[zn].abv+"%1 int";
     QString ref_2 = "";
     int tot_items = myGame.limites[zn].len;

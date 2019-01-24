@@ -103,7 +103,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.limites[0].len = 5;
         conf.limites[0].win = 5;
         conf.limites[0].min = 1;
-        conf.limites[0].max = 49;
+        conf.limites[0].max = 50;
         conf.limites[1].len = 2;
         conf.limites[1].win = 2;
         conf.limites[1].min = 1;
