@@ -20,6 +20,9 @@ public:
 private:
     QTableView *Compter(QString *pname, int zn);
     bool createThatTable(QString tblName, int zn);
+    bool CalculerSqrt(QString tblName, QString colVariance);
+    QString RechercherLesTirages(int boule, int zn);
+    bool SauverCalculs(int boule,QString ToTbl, QString fromTbl);
 
 private:
     static int total;
