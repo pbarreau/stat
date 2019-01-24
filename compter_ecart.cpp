@@ -223,9 +223,11 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
         ///  faire les calculs necessaires
         tableBoule = RechercherLesTirages(boule,zn);
         ///  sauvegarder les resultats
-        if(isOk = SauverCalculs(boule, tblName, tableBoule)){
-            //isOk = CalculerSqrt(tblName, "V");
-        }
+        isOk = SauverCalculs(boule, tblName, tableBoule);
+    }
+
+    if(isOk){
+        isOk = CalculerSqrt(tblName, "V");
     }
 
     return isOk;
@@ -624,9 +626,11 @@ bool BCountEcart::CalculerSqrt(QString tblName, QString colVariance)
 
     msg= "select B, "+colVariance+" from "+tblName+";";
 
-    isOk = query.exec(msg);
+#ifndef QT_NO_DEBUG
+    qDebug() <<msg;
+#endif
 
-    if (isOk)
+    if (isOk = query.exec(msg))
     {
         query.first();
         if(query.isValid())
@@ -644,10 +648,12 @@ bool BCountEcart::CalculerSqrt(QString tblName, QString colVariance)
                         +strSqrt
                         + " "
                           "where "+tblName+".B="+QString::number(bId)+";";
+#ifndef QT_NO_DEBUG
+                qDebug() <<msg2;
+#endif
                 isOk = req_2.exec(msg2);
 
             }while(query.next() && isOk);
-
         }
     }
     return isOk;
