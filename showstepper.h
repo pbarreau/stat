@@ -13,7 +13,7 @@
 typedef struct _stStepperNeeds
 {
     int *nbElmZone;
-    QString *nomZone;
+    stNamesZones *TT_Zn;
     stBornes *limites;
     //QString *FullNameZone;
     //unsigned char nb_zone;

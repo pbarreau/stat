@@ -1274,7 +1274,7 @@ void RefEtude::slot_ShowBoule(const QModelIndex & index)
     // recuperer la valeur de la colonne
     int col = index.column();
 
-    if(col > 4 && col <= 4 + p_conf->nbElmZone[0])
+    if(col > 4 && col <= 4 + p_conf->limites[0].len)
     {
         // recuperer la valeur a la colone de la table
         val = index.model()->index(index.row(),index.column()).data().toInt();
@@ -1460,11 +1460,11 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, bool *depart, int *tot
     for(int i = 0; i<= zn; i++)
     {
         if(i){
-            delta = delta + p_conf->nbElmZone[zn-1];
+            delta = delta + p_conf->limites[zn-1].len;
         }
     }
 
-    for(bId=(*bIdStart);bId<memo->p_conf->nbElmZone[zn];bId++)
+    for(bId=(*bIdStart);bId<memo->p_conf->limites[zn].len;bId++)
     {
         // recuperer la boule
         b_val = unTirage.value(5+delta+bId).toInt();
@@ -1535,7 +1535,7 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, bool *depart, int *tot
         memo->p_fin=id;
 
         // Quelle position dans le tirage termine la couverture
-        if((bId + 1)<memo->p_conf->nbElmZone[zn]-1)
+        if((bId + 1)<memo->p_conf->limites[zn].len-1)
         {
             *bIdStart = bId+1;
         }

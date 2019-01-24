@@ -153,8 +153,8 @@ QStringList BP_Gnp::GenereCombinaison(int n, int k)
 QString BP_Gnp::MakeSqlFromGamma(stTiragesDef *pTirDef, int step, int k)
 {
     int zone = 0;
-    int n = pTirDef->nbElmZone[zone];
-    QString name = pTirDef->nomZone[zone];
+    int n = pTirDef->limites[zone].len;
+    QString name = pTirDef->TT_Zn[zone].abv;
     QString tmp1 = "";
     QString tmp2 = "";
     BP_Gnp a(n,k);

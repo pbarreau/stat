@@ -132,7 +132,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
                     pRef->value.valBoules[zone][ElmZone]= val1;
 
                     // Preparation pour affectation variable sql (tirages)
-                    clef_1 = ":"+ref.nomZone[zone]+QString::number(ElmZone+1);
+                    clef_1 = ":"+ref.TT_Zn[zone].abv+QString::number(ElmZone+1);
                     clef_1.replace(QRegExp("\\s+"),"");
                     sql_1.bindValue(clef_1,val1);
                 }
@@ -158,11 +158,11 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
             // Calcul perso a mettre dans la base
             // Automatisation possible ?????
             nbPair = pRef->RechercheNbBoulesPairs(zone);
-            clef_1 = " :" + ref.nomZone[zone]+ CL_PAIR;
+            clef_1 = " :" + ref.TT_Zn[zone].abv+ CL_PAIR;
             sql_1.bindValue(clef_1.replace(QRegExp("\\s+"),""),nbPair);
 
             nbE1 = pRef->RechercheNbBoulesDansGrp1(zone);
-            clef_1 = " :" + ref.nomZone[zone]+ CL_SGRP ;
+            clef_1 = " :" + ref.TT_Zn[zone].abv+ CL_SGRP ;
             sql_1.bindValue(clef_1.replace(QRegExp("\\s+"),""),nbE1);
         }
 
@@ -309,11 +309,11 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
             for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
                 pRZone[zone][j]=0;
 
-            int maxElmZone = ref.nbElmZone[zone];
-            // recuperer chaque tirage pour compter unité, dizaine,...
+            int maxElmZone = ref.limites[zone].len;
+            // recuperer chaque tirage pour compter unitï¿½, dizaine,...
             for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
             {
-                QString champ = ref.nomZone[zone]+QString::number(ElmZone+1);
+                QString champ = ref.TT_Zn[zone].abv+QString::number(ElmZone+1);
 
                 // La valeur a deja ete verifie dans chargement des donnees
                 int val1 = ligne.value(champ).toInt();
@@ -327,7 +327,7 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
             {
                 int val2 = pRZone[zone][j];
                 // Preparation pour affectation variable sql (analyses)
-                clef_1 = ":"+ref.nomZone[zone]+"d"+QString::number(j);
+                clef_1 = ":"+ref.TT_Zn[zone].abv+"d"+QString::number(j);
                 clef_1.replace(QRegExp("\\s+"),"");
                 sql_1.bindValue(clef_1,val2);
             }

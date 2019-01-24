@@ -95,11 +95,11 @@ typedef struct _stTiragesDef
 {
     class tirages *pTir;
     NE_FDJ::E_typeJeux choixJeu;
-    int *nbElmZone;
+    //int *nbElmZone;
     int *offsetFichier;
     QString *jour_tir;
-    QString *nomZone;
-    QString *FullNameZone;
+    stNamesZones *TT_Zn;
+    //QString *FullNameZone;
     stBornes *limites;
     unsigned char nb_tir_semaine;
     unsigned char nb_zone;

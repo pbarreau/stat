@@ -103,8 +103,8 @@ void MemoriserChoixUtilisateur(const QModelIndex & index,
     }
     else
     {
-        nb_element_max_zone = pTiragesConf->nbElmZone[idOnglet];
-        stNomZone = pTiragesConf->nomZone[idOnglet];
+        nb_element_max_zone = pTiragesConf->limites[idOnglet].len;
+        stNomZone = pTiragesConf->TT_Zn[idOnglet].abv;
     }
 
     // Maxi choix atteind
@@ -182,7 +182,7 @@ void MemoriserChoixUtilisateur(const QModelIndex & index,
         foreach(un_index, indexes)
         {
 #ifndef QT_NO_DEBUG
-            //QString stNomZone = pMaConf->nomZone[zn];
+            //QString stNomZone = pMaConf->TT_Zn[zn].abv;
             qDebug() << stNomZone
                      <<" -> Nb items:"<<nb_items
                     <<"Col:" << un_index.column()
@@ -364,8 +364,8 @@ QString FiltreLesTirages(stCurDemande *pEtude)
 
         // onglets b-e
         if(i<2){
-            max = pEtude->ref->nbElmZone[i];
-            champ = pEtude->ref->nomZone[i];
+            max = pEtude->ref->limites[i].len;
+            champ = pEtude->ref->TT_Zn[i].abv;
         }
 
         //onglet c
@@ -464,7 +464,7 @@ void SyntheseDetails::RecalculGroupement(QString st_tirages,int nbCol,QStandardI
     for(int j=0; (j< nbCol-1) && (status == true);j++)
     {
         //Effacer calcul precedent
-        for(int k =0;k<(pLaDemande->ref->nbElmZone[zn])+1;k++)
+        for(int k =0;k<(pLaDemande->ref->limites[zn].len)+1;k++)
         {
             QStandardItem * item_1 = tmpStdItem->item(k,j+1);
             item_1->setData("",Qt::DisplayRole);
@@ -1227,8 +1227,8 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
 
 void SyntheseDetails::slot_FiltreSurNewCol(int colNum)
 {
-    int z1 = pLaDemande->ref->nbElmZone[0];
-    int z2 = pLaDemande->ref->nbElmZone[1];
+    int z1 = pLaDemande->ref->limites[0].len;
+    int z2 = pLaDemande->ref->limites[1].len;
     int ConfZn[5][2]={
         {2,1},
         {3,1},
@@ -1434,7 +1434,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
     //QStringList *maRef[0] = LstCritereGroupement(zn,pEtude->ref);
     maRef[zn] = LstCritereGroupement(zn,pEtude->ref);
     int nbCol = maRef[zn][0].size();
-    int nbLgn = pEtude->ref->nbElmZone[zn] + 1;
+    int nbLgn = pEtude->ref->limites[zn].len + 1;
 
 
     QStandardItemModel * sqm_tmp = NULL;
@@ -1780,8 +1780,8 @@ QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn,int di
         }
     }
 
-    boules<< "tbright."+pEtude->ref->nomZone[zn];
-    int loop = pEtude->ref->nbElmZone[zn];
+    boules<< "tbright."+pEtude->ref->TT_Zn[zn].abv;
+    int loop = pEtude->ref->limites[zn].len;
     st_cri_all= st_cri_all +GEN_Where_3(loop,"tbleft.boule",false,"=",boules,true,"or");
     boules.clear();
 
@@ -1883,7 +1883,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
              this, SLOT(slot_detailsDetails( QModelIndex) ) );
 
 
-    QLabel *titre_1 = new QLabel(pEtude->ref->FullNameZone[curOng]);
+    QLabel *titre_1 = new QLabel(pEtude->ref->TT_Zn[curOng].std);
     //lay_return->addWidget(titre_1,0,0,Qt::AlignCenter|Qt::AlignTop);
     lay_return->addWidget(titre_1,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
@@ -2650,7 +2650,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
     QString st_cri1 = "";
     QString st_cri2 = "";
 
-    int loop = 5;//pMaConf->nbElmZone[curzn];
+    int loop = 5;//pMaConf->limites[curzn].len;
     st_cri1= GEN_Where_3(loop,"tb1.b",true,"=",boules,false,"or");
 
     if(pLaDemande->col[0]>1)
@@ -2743,8 +2743,8 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
     QString sId = QString::number(monId);
 
     // Requete filtre sur la colonne
-    int loop = pRef->ref->nbElmZone[zn];
-    QString tbname1 = "tb1." + pRef->ref->nomZone[zn];
+    int loop = pRef->ref->limites[zn].len;
+    QString tbname1 = "tb1." + pRef->ref->TT_Zn[zn].abv;
     QStringList Malst;
     Malst << "tb2.B";
     st_cri2 = GEN_Where_3(loop,tbname1,true,"=",Malst,false,"or");
@@ -2754,8 +2754,8 @@ QString PBAR_Req2(stCurDemande *pRef,QString baseFiltre,QModelIndex cellule,int 
     QStringList lstVide;
     lstVide << "";
     st_col = st_col + GEN_Where_3(loop,tbname1,true,"",lstVide,false,",");
-    loop = pRef->ref->nbElmZone[1];
-    tbname1 = "tb1." + pRef->ref->nomZone[1];
+    loop = pRef->ref->limites[1].len;
+    tbname1 = "tb1." + pRef->ref->TT_Zn[1].abv;
     st_col = st_col +","+ GEN_Where_3(loop,tbname1,true,"",lstVide,false,",");
     st_col.remove("(");
     st_col.remove(")");

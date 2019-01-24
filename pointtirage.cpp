@@ -143,7 +143,7 @@ QString PointTirage::TST_GetTirageFromPoint(int x_val)
         req = req + "\r\nT:";
       }
 
-      if(i==tirDef.nbElmZone[0]+1)
+      if(i==tirDef.limites[0].len+1)
       {
         req = req + "[";
       }

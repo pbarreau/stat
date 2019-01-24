@@ -175,7 +175,7 @@ QString MainWindow::NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBou
 
 QString MainWindow::NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules)
 {
-    //QString col(QString::fromLocal8Bit(CL_TOARR) + pConf->nomZone[zn]);
+    //QString col(QString::fromLocal8Bit(CL_TOARR) + pConf->TT_Zn[zn].abv);
     QString msg= "" ;
     QString flag = " and ";
 

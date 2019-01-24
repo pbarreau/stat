@@ -243,7 +243,7 @@ bool MainWindow::NEW_AnalyserCeTirage(int idTirage,  QString stTblRef,int zone, 
     // Creation de la table des analyses pour ce tirage
     QString nomTable = stTblRef
             + "_"
-            + pConf->nomZone[zone]
+            + pConf->TT_Zn[zone].abv
             +"_D" + QString::number(idTirage);
 
     msg1 =  "create table "+nomTable+" (id Integer primary key, d int,";
@@ -252,7 +252,7 @@ bool MainWindow::NEW_AnalyserCeTirage(int idTirage,  QString stTblRef,int zone, 
     msg1 = msg1 + NEW_ColHeaderName(idTirage,zone,pConf);
 #else
 
-    int nb_elem = pConf->nbElmZone[zone];
+    int nb_elem = pConf->limites[zone].len;
     for(int bpos=1;bpos<= nb_elem;bpos++)
     {
         msg1 = msg1 +
@@ -351,7 +351,7 @@ bool MainWindow::NEW_FaireBilan(int idTirage, QString stTblRef,int zone, stTirag
     // Lecture table des analyses pour ce tirage
     QString nomTable = stTblRef
             + "_"
-            + pConf->nomZone[zone]
+            + pConf->TT_Zn[zone].abv
             +"_D" + QString::number(idTirage);
     for(int i = 1; (i<=nbRang) && status == true;i++)
     {

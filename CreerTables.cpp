@@ -75,7 +75,7 @@ bool GererBase::CreerTableCnp(QString tb, QString *data)
 
     for(int i = 0; (i< nbZone) && isOk; i++)
     {
-        int maxPz = conf.nbElmZone[i];
+        int maxPz = conf.limites[i].len;
         int maxNz = conf.limites[i].max;
         maxNz = BMIN(CNP_N_MAX,maxNz);
         maxPz = BMIN(CNP_P_MAX,maxPz);
@@ -311,8 +311,8 @@ bool GererBase::f1_1(QString tb, QString *data)
         for(int i = 0; (i<totZone) && status;i++)
         {
             requete = "insert into "+st_table+" (id,name,abv) values "+
-                    "(NULL,'"+ref.FullNameZone[i]+"','"+
-                    ref.nomZone[i]+"');";
+                    "(NULL,'"+ref.TT_Zn[i].std+"','"+
+                    ref.TT_Zn[i].abv+"');";
             status = query.exec(requete);
         }
     }
@@ -357,7 +357,7 @@ bool GererBase::f1_2(QString tb, QString *data)
         for(int i = 0; (i<totZone) && status;i++)
         {
             requete = "insert into "+st_table+" (id,len,min,max,neg) values "+
-                    "(NULL,"+QString::number(ref.nbElmZone[i])+","+
+                    "(NULL,"+QString::number(ref.limites[i].len)+","+
                     QString::number(ref.limites[i].min)+","+
                     QString::number(ref.limites[i].max)+ "," +
                     QString::number(ref.limites[i].win)+
@@ -637,7 +637,7 @@ bool GererBase::TraitementCodeTblCombi(int zn)
 
     /// traitement creation table en fonction 10zaine
     int lenZn = floor(conf.limites[zn].max/10)+1;
-    ref_1="t%1."+conf.nomZone[zn]+" as "+conf.nomZone[zn]+"%1";
+    ref_1="t%1."+conf.TT_Zn[zn].abv+" as "+conf.TT_Zn[zn].abv+"%1";
     QString msg1 = "";
     for(int pos=0;pos<lenZn;pos++){
         msg1 = msg1 + ref_1.arg(pos+1);
@@ -662,8 +662,8 @@ bool GererBase::TraitementCodeTblCombi(int zn)
             break;
         case 4:{
             ref_1="%d";
-            ref_2="t%1."+conf.nomZone[zn];
-            ref_3="(%1*t%2."+conf.nomZone[zn]+")";
+            ref_2="t%1."+conf.TT_Zn[zn].abv;
+            ref_3="(%1*t%2."+conf.TT_Zn[zn].abv+")";
             ref_4="tbr%1 as t%2";
             ref_5="b%1";
             QString msg2 = "";
@@ -746,7 +746,7 @@ bool GererBase::GrouperCombi(int zn)
 
     QString st_critere = "";
     QString msg_1 = "";
-    int max= typeTirages->conf.nbElmZone[0];
+    int max= typeTirages->conf.limites[0].len;
 
     for(int i = 5; i>1 && status;i--)
     {
@@ -828,8 +828,8 @@ QString ContruireRechercheCombi(int i,int zn,stTiragesDef *pRef)
     bool putIndice = true;
     int max = 0;
 
-    max = pRef->nbElmZone[zn];
-    champ = pRef->nomZone[zn];
+    max = pRef->limites[zn].len;
+    champ = pRef->TT_Zn[zn].abv;
 
     lstBoules << QString::number(i);
     if(i>2){
@@ -860,8 +860,8 @@ QString DetailsSomme(int zn,stTiragesDef *pRef)
     QString champ = "";
     int max = 0;
 
-    max = pRef->nbElmZone[zn];
-    champ = pRef->nomZone[zn];
+    max = pRef->limites[zn].len;
+    champ = pRef->TT_Zn[zn].abv;
 
 
     for(int i=1;i<max;i++)
@@ -1078,7 +1078,7 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
     // Creation table pour la couverture
     for(zone=0;(zone<ref.nb_zone && status == true);zone++)
     {
-        requete =  "create table " + QString::fromLocal8Bit(CL_TCOUV) + ref.nomZone[zone] +
+        requete =  "create table " + QString::fromLocal8Bit(CL_TCOUV) + ref.TT_Zn[zone].abv +
                 " (id INTEGER PRIMARY KEY, depart int, fin int, taille int);";
         status = query.exec(requete);
         query.finish();
@@ -1089,13 +1089,13 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
     {
         //    msg1 =  "create table " + CL_TCOUV + "%1 (id INTEGER PRIMARY KEY)";
         //    msg1 = msg1.arg(zone+1);
-        requete =  "create table " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zone] +
+        requete =  "create table " + QString::fromLocal8Bit(CL_TOARR) + ref.TT_Zn[zone].abv +
                 " (id INTEGER PRIMARY KEY, boule int);";
         status = query.exec(requete);
 
         // Preparer les boules de la zone
         if(status){
-            requete = "insert into " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zone] +
+            requete = "insert into " + QString::fromLocal8Bit(CL_TOARR) + ref.TT_Zn[zone].abv +
                     " (id, boule) values (:id, :boule)";
             status = query.prepare(requete);
 

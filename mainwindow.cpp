@@ -490,18 +490,18 @@ void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf
 
     for(int zn = 0;zn<nb_zn;zn++)
     {
-        nbcol[zn] = (pConf.limites[zn].max)%pConf.nbElmZone[zn]?
-                    (pConf.limites[zn].max/pConf.nbElmZone[zn])+1:
-                    (pConf.limites[zn].max/pConf.nbElmZone[zn]);
+        nbcol[zn] = (pConf.limites[zn].max)%pConf.limites[zn].len?
+                    (pConf.limites[zn].max/pConf.limites[zn].len)+1:
+                    (pConf.limites[zn].max/pConf.limites[zn].len);
 
-        gsim_SelectionBoulesDeZone[zn]= new QStandardItemModel(pConf.nbElmZone[zn],nbcol[zn]);
+        gsim_SelectionBoulesDeZone[zn]= new QStandardItemModel(pConf.limites[zn].len,nbcol[zn]);
         gtbv_SelectionBoulesDeZone[zn] = new QTableView;
         tmpT_Widget[zn] = new QWidget;
         gtbv_SelectionBoulesDeZone[zn]->setFixedSize(320,175);
         gtbv_SelectionBoulesDeZone[zn]->verticalHeader()->hide();
         gtbv_SelectionBoulesDeZone[zn]->horizontalHeader()->hide();
 
-        for(i=1;i<=pConf.nbElmZone[zn];i++)/// Code a verifier en fonction bornes max
+        for(i=1;i<=pConf.limites[zn].len;i++)/// Code a verifier en fonction bornes max
         { // Dans le cas max > 50
             for(j=1;j<=nbcol[zn];j++)
             {
@@ -527,7 +527,7 @@ void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf
         }
 
         tmpT_Widget[zn]->setLayout(layT_MaSelection[zn]);
-        tabN1->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tabN1->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         QString st_objName = "";
         st_objName = gtbv_SelectionBoulesDeZone[zn]->objectName();
@@ -621,7 +621,7 @@ QGridLayout *MainWindow::MonLayout_VoisinsPresent()
 
         tmpT_Widget[zn]->setLayout(layT_Voisin[zn]);
         //tmpT_Widget[zn]->setMaximumWidth(420);
-        tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
         connect( G_tbv_Voisins[zn], SIGNAL( clicked(QModelIndex)) ,
@@ -946,7 +946,7 @@ QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
 
         tmpT_Widget[zn]->setLayout(layT_Absents[zn]);
         //tmpT_Widget[zn]->setMaximumWidth(420);
-        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
         connect( G_tbv_Absents[zn], SIGNAL( clicked(QModelIndex)) ,
@@ -1100,7 +1100,7 @@ void MainWindow::fen_Voisins(void)
 
         tmpT_Widget[zn]->setLayout(layT_Voisin[zn]);
         //tmpT_Widget[zn]->setMaximumWidth(420);
-        tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
         connect( G_tbv_Voisins[zn], SIGNAL( clicked(QModelIndex)) ,
@@ -1743,7 +1743,7 @@ QGridLayout * MainWindow::MonLayout_Parite()
         fn_refSim[zn]->setHeaderData(2,Qt::Horizontal,"V:+2");
 
         // Ecriture du numero de boule et reservation item position
-        for(int i=1;i<=configJeu.nbElmZone[zn]+1;i++)
+        for(int i=1;i<=configJeu.limites[zn].len+1;i++)
         {
             QStandardItem *item = new QStandardItem();
             item->setData(i-1,Qt::DisplayRole);
@@ -1776,7 +1776,7 @@ QGridLayout * MainWindow::MonLayout_Parite()
         layT_Tmp_1[zn]->addWidget(fn_refTbv[zn]);
 
         tmpT_Widget[zn]->setLayout(layT_Tmp_1[zn]);
-        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
         //connect( fn_refTbv[zn], SIGNAL( clicked(QModelIndex)) ,
@@ -1831,7 +1831,7 @@ QGridLayout *MainWindow::MonLayout_Nsur2()
         fn_refSim[zn]->setHeaderData(2,Qt::Horizontal,"V:+2");
 
         // Ecriture du numero de boule et reservation item position
-        for(int i=1;i<=configJeu.nbElmZone[zn]+1;i++)
+        for(int i=1;i<=configJeu.limites[zn].len+1;i++)
         {
             QStandardItem *item = new QStandardItem();
             item->setData(i-1,Qt::DisplayRole);
@@ -1864,7 +1864,7 @@ QGridLayout *MainWindow::MonLayout_Nsur2()
         layT_Tmp_1[zn]->addWidget(fn_refTbv[zn]);
 
         tmpT_Widget[zn]->setLayout(layT_Tmp_1[zn]);
-        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
         //connect( fn_refTbv[zn], SIGNAL( clicked(QModelIndex)) ,
@@ -2146,7 +2146,7 @@ void MainWindow::fen_Parites(void)
 
     int zn = 0;
 
-    G_sim_Parites = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
+    G_sim_Parites = new QStandardItemModel(configJeu.limites[zn].len,configJeu.nb_zone+1);
 
     G_sim_Parites->setHeaderData(0,Qt::Horizontal,"Nb");
     G_sim_Parites->setHeaderData(1,Qt::Horizontal,"B");
@@ -2163,7 +2163,7 @@ void MainWindow::fen_Parites(void)
     G_tbv_Parites->setEditTriggers(QAbstractItemView::NoEditTriggers);
     G_tbv_Parites->setMinimumHeight(220);
 
-    G_sim_Ensemble_1 = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
+    G_sim_Ensemble_1 = new QStandardItemModel(configJeu.limites[zn].len,configJeu.nb_zone+1);
 
     G_sim_Ensemble_1->setHeaderData(0,Qt::Horizontal,"N(E/2)");
     G_sim_Ensemble_1->setHeaderData(1,Qt::Horizontal,"B");
@@ -2185,7 +2185,7 @@ void MainWindow::fen_Parites(void)
     G_sim_ud->setHeaderData(0,Qt::Horizontal,"Nb");
     for(int j=0; j< v;j++)
     {
-        QString name = configJeu.nomZone[zn] + "d" + QString::number(j);
+        QString name = configJeu.TT_Zn[zn].abv + "d" + QString::number(j);
         G_sim_ud->setHeaderData(j+1,Qt::Horizontal,name);
     }
 
@@ -2281,7 +2281,7 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
         VUE_MontreLeTirage(index.row()+1);
         for(zn=0;zn<nb_zone;zn++)
         {
-            for(int b_pos=0; b_pos<configJeu.nbElmZone[zn];b_pos++)
+            for(int b_pos=0; b_pos<configJeu.limites[zn].len;b_pos++)
             {
                 col_bpos += 1;
                 val=index.model()->index(index.row(),col_bpos).data().toInt();
@@ -2303,7 +2303,7 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
         }
 
         // Recherche voisin des etoiles
-        for (i=6;i<6+configJeu.nbElmZone[1];i++)
+        for (i=6;i<6+configJeu.limites[1].len;i++)
         {
             val = index.model()->index(index.row(),i).data().toInt();
             DB_tirages->RechercheVoisin(val,1,&configJeu,qlT_nbSorties[1],qsimT_Voisins[1]);
@@ -2477,9 +2477,9 @@ void MainWindow::MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModel
     }
     else
     {
-        nb_element_max_zone = configJeu.nbElmZone[zn];
+        nb_element_max_zone = configJeu.limites[zn].len;
         Zone=zn+1;
-        stNomZone = configJeu.nomZone[zn];
+        stNomZone = configJeu.TT_Zn[zn].abv;
     }
 
 
@@ -2811,13 +2811,13 @@ void MainWindow::slot_F3_RechercherLesTirages(const QModelIndex & index)
 
             QString msg = "select *  from "   TB_BASE
                     " inner join  ( select *  from "   TB_BASE
-                    " where ( "+ configJeu.nomZone[zn] +
+                    " where ( "+ configJeu.TT_Zn[zn].abv +
                     CL_PAIR + "=" + list.at(0) ;
 
             msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
             msg = (msg).arg(dist);
 
-            QString msg_2 = configJeu.nomZone[zn] +CL_PAIR
+            QString msg_2 = configJeu.TT_Zn[zn].abv +CL_PAIR
                     + "=" + QString::number(rch) ;
             msg_2= "select  *  from (" +msg+ " where (" +msg_2+ " );" ;
 
@@ -2871,13 +2871,13 @@ void MainWindow::slot_F4_RechercherLesTirages(const QModelIndex & index)
 
             QString msg = "select *  from "   TB_BASE
                     " inner join  ( select *  from "   TB_BASE
-                    " where ( "+ configJeu.nomZone[zn] +
+                    " where ( "+ configJeu.TT_Zn[zn].abv +
                     CL_SGRP + "=" + list.at(0) ;
 
             msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
             msg = (msg).arg(dist);
 
-            QString msg_2 = configJeu.nomZone[zn] +CL_SGRP
+            QString msg_2 = configJeu.TT_Zn[zn].abv +CL_SGRP
                     + "=" + QString::number(rch) ;
             msg_2= "select  *  from (" +msg+ " where (" +msg_2+ " );" ;
 
@@ -3420,7 +3420,7 @@ void MainWindow::TST_EtoileCombi(stTiragesDef *ref)
         sl_Lev0 << QString::number(i);
 
     // Recuperation des combinaisons C(2,11)
-    TST_CombiRec(ref->nbElmZone[1], sl_Lev0, "" , sl_etoiles);
+    TST_CombiRec(ref->limites[1].len, sl_Lev0, "" , sl_etoiles);
     TST_EtoilesVersTable(sl_etoiles,ref,150);
 
 }
@@ -3443,7 +3443,7 @@ void MainWindow::TST_EtoilesVersTable (QStringList &combi,stTiragesDef *ref, dou
 
     msg_1 = "CREATE table if not exists "
             TB_COMBI "_"
-            + ref->nomZone[zn]
+            + ref->TT_Zn[zn].abv
             + "(id INTEGER PRIMARY KEY,";
 
     msg_1 = msg_1 + msg_2 + " int,poids real);";
@@ -3463,7 +3463,7 @@ void MainWindow::TST_EtoilesVersTable (QStringList &combi,stTiragesDef *ref, dou
                 for(int k =0; k< nbitems;k++)
                 {
                     st_cols = st_cols
-                            +ref->nomZone[zn]+QString::number(k+1)
+                            +ref->TT_Zn[zn].abv+QString::number(k+1)
                             +",";
                     st_vals = st_vals+item.at((j+k)%nbitems)
                             +",";
@@ -3472,7 +3472,7 @@ void MainWindow::TST_EtoilesVersTable (QStringList &combi,stTiragesDef *ref, dou
                 st_vals.remove(st_vals.length()-1,1);
                 msg_1 = "insert into "
                         TB_COMBI "_"
-                        + ref->nomZone[zn]
+                        + ref->TT_Zn[zn].abv
                         + " (id,"+ st_cols + ",poids)"
                                              "Values (NULL," + st_vals + "," + QString::number(pon_step)+");";
                 status = sql_1.exec(msg_1);
@@ -4512,10 +4512,10 @@ void MainWindow::TST_MontreTirageAyantCritere(NE_FDJ::E_typeCritere lecritere,in
         w_msg = DB_tirages->TST_ConstruireWhereData(zn,pConf,boules);
         break;
     case NE_FDJ::critere_parite:
-        w_msg = pConf->nomZone[zn]+CL_PAIR+"="+boules.at(0);
+        w_msg = pConf->TT_Zn[zn].abv+CL_PAIR+"="+boules.at(0);
         break;
     case NE_FDJ::critere_enemble:
-        w_msg =pConf->nomZone[zn]+CL_SGRP+"="+boules.at(0);
+        w_msg =pConf->TT_Zn[zn].abv+CL_SGRP+"="+boules.at(0);
         //QString::number(j)
         break;
 
@@ -5112,10 +5112,10 @@ UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
 
     // Courbes des etoiles
     int zn=1;
-    for(int i =0; i<pConf->nbElmZone[zn];i++)
+    for(int i =0; i<pConf->limites[zn].len;i++)
     {
-        msg_3 = msg_3 + TB_COMBI "_" + pConf->nomZone[zn] + "." + pConf->nomZone[zn] + QString::number(i+1)
-                +"=" + TB_BASE + "." + pConf->nomZone[zn] + QString::number(i+1) + " and ";
+        msg_3 = msg_3 + TB_COMBI "_" + pConf->TT_Zn[zn].abv + "." + pConf->TT_Zn[zn].abv + QString::number(i+1)
+                +"=" + TB_BASE + "." + pConf->TT_Zn[zn].abv + QString::number(i+1) + " and ";
     }
     msg_3.remove(msg_3.length()-5,5);
     msg_2 = msg_2 + msg_3 + ";";
@@ -5406,17 +5406,17 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
         {
             modele = gsim_DernierTirageDetail;
             label = G_lab_PariteVoisin;
-            cri_col = pConf->nomZone[zone]+ CL_PAIR;
+            cri_col = pConf->TT_Zn[zone].abv+ CL_PAIR;
         }
             break;
 
         case NE_FDJ::critere_enemble:
         default:
         {
-            cri_col = pConf->nomZone[zone]+ CL_SGRP;
+            cri_col = pConf->TT_Zn[zone].abv+ CL_SGRP;
             modele = G_sim_Nsur2;
             label = G_lab_Nsur2;
-            cri_col = pConf->nomZone[zone]+ CL_SGRP;
+            cri_col = pConf->TT_Zn[zone].abv+ CL_SGRP;
         }
             break;
         }
@@ -5435,7 +5435,7 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
                 int v = sizeof(d)/sizeof(int);
                 for(int j=0;j<v;j++)
                 {
-                    for(int cible= 0; cible < pConf->nbElmZone[zone]+1;cible ++)
+                    for(int cible= 0; cible < pConf->limites[zone].len+1;cible ++)
                     {
                         // Recuperer pointeur de cellule
                         QStandardItem *item1 = modele[zone]->item(cible,col[j]);

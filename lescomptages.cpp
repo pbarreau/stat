@@ -1467,7 +1467,7 @@ void BPrevision::slot_ccmrTirages(QPoint pos,QTableView *view)
     stNeeds->limites = pMaConf->limites;
 #endif
     stNeeds->nbElmZone = NULL;//onGame.limites[0].len;
-    stNeeds->nomZone = NULL;//onGame.names[0].abv;
+    stNeeds->TT_Zn = NULL;//onGame.names[0].abv;
     stNeeds->limites = onGame.limites;
     ShowStepper *UnDetail = new ShowStepper(stNeeds);
 

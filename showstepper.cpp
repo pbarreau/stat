@@ -90,14 +90,14 @@ void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index)
     int maVerif = 0;
     if(requete.isValid())
     {
-        int nb = pGlobConf->nbElmZone[zone];
+        int nb = pGlobConf->limites[zone].len;
         do{
             QSqlRecord record = requete.record();
             tid = record.value(0).toInt();
             maVerif++;
             for (i=1;i<=nb;i++)
             {
-                QString champ = pGlobConf->nomZone[zone]+QString::number(i);
+                QString champ = pGlobConf->TT_Zn[zone].abv+QString::number(i);
                 boule = record.value(champ).toInt();
 
                 linksInfo[links[boule].y].total--;///nbtot[links[boule].y]--;
