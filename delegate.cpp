@@ -339,12 +339,13 @@ void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &opt
 void BDelegateFilterGrp::paint(QPainter *painter, const QStyleOptionViewItem &option,
                                const QModelIndex &index) const
 {
+    QStyleOptionViewItem maModif(option);
+#if 0
+    QColor u[]= {QColor(201,230,255,255),QColor(200,170,100,140)};
     int col = index.column();
     int row = index.row();
     int nbCol = index.model()->columnCount();
     int val = 0;
-    QStyleOptionViewItem maModif(option);
-    QColor u[]= {QColor(201,230,255,255),QColor(200,170,100,140)};
 
 
     /// Regarder la valeur de la derniere colonne
@@ -361,6 +362,7 @@ void BDelegateFilterGrp::paint(QPainter *painter, const QStyleOptionViewItem &op
             painter->fillRect(option.rect, u[0]);
         }
     }
+#endif
     QItemDelegate::paint(painter, maModif, index);
 }
 
@@ -371,6 +373,7 @@ BSqmColorizePriority::BSqmColorizePriority(QObject *parent):QSqlQueryModel(paren
 
 QVariant BSqmColorizePriority::data(const QModelIndex &index, int role) const
 {
+#if 0
     QColor u[]= {
         Qt::black,
         Qt::red,
@@ -395,6 +398,7 @@ QVariant BSqmColorizePriority::data(const QModelIndex &index, int role) const
             }
         }
     }
+#endif
     return QSqlQueryModel::data(index,role);
 }
 
