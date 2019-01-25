@@ -346,7 +346,7 @@ QTableView *BCountGroup::Compter(QString * pName, int zn)
     return qtv_tmp_2;
 }
 
-bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
+bool BCountGroup::AnalyserEnsembleTirage(QString tblToUse, QString OutputTable, int zn)
 {
     /// Verifier si des vues temporaires precedentes sont encore presentes
     /// Si oui les effacer
@@ -387,7 +387,7 @@ bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable
         ///  on peut faire les calculs
         int loop = 0;
         int nbTot = slst[0].size();
-        QString curName = InputTable;
+        QString curName = tblToUse;
         QString curTarget = "view vt_0";
         do
         {

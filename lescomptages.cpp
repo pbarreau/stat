@@ -65,6 +65,8 @@ BPrevision::BPrevision(eGame game, eFrom from, eBddUse def)
     onGame.from = from;
     if(ouvrirBase(def,game)==true)
     {
+        definirConstantesDuJeu(game);
+        creerTablesDeLaBase();
         effectuerTraitement(game);
         //dbInUse.close();
     }
@@ -240,13 +242,60 @@ bool BPrevision::OPtimiseAccesBase(void)
     return isOk;
 }
 
+QStringList **BPrevision::PreparerCriteresAnalyse(void)
+{
+    int maxZn = onGame.znCount;
+    QString source = QString("B_")+ QString(cRef_fdj);
+    QStringList **criteres = new  QStringList*[maxZn] ;
+    bool isOk = true;
+
+    for(int zn=0;(zn<maxZn) && isOk;zn++){
+        QStringList *slt = new  QStringList[3] ;
+        criteres[zn]=&slt[0];
+
+        QString fields = "z"+QString::number(zn+1);
+
+        int maxElems = onGame.limites[zn].max;
+        int nbBoules = floor(maxElems/10)+1;
+
+        // Nombre de 10zaine
+        for(int j=0;j<nbBoules;j++)
+        {
+            criteres[zn][0]<< fields+" >="+QString::number(10*j)+
+                              " and "+fields+"<="+QString::number((10*j)+9);
+            criteres[zn][1] << "U"+ QString::number(j);
+            criteres[zn][2] << "Entre:"+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
+        }
+
+        // Boule finissant par [0..9]
+        for(int j=0;j<=9;j++)
+        {
+            criteres[zn][0]<< fields+" like '%" + QString::number(j) + "'";
+            criteres[zn][1] << "F"+ QString::number(j);
+            criteres[zn][2] << "Finissant par: "+ QString::number(j);
+        }
+
+        // Parite & nb elment dans groupe
+        criteres[zn][0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
+        criteres[zn][1] << "P" << "G";
+        criteres[zn][2] << "Pair" << "< E/2";
+    }
+
+    return criteres;
+}
+
 void BPrevision::effectuerTraitement(eGame game)
 {
-    QString source = cRef_fdj;
-    source = "B_" + source;
+    int maxZn = onGame.znCount;
+    QString source = QString("B_")+ QString(cRef_fdj);
+    QStringList **criteres = PreparerCriteresAnalyse() ;
+    bool isOk = true;
 
-    definirConstantesDuJeu(game);
-    creerTablesDeLaBase();
+
+    for(int zn=0;(zn<maxZn) && isOk;zn++){
+        isOk = AnalyserEnsembleTirage(source, criteres, onGame,zn);
+    }
+
     showAll(source, onGame);
 
 }
@@ -666,7 +715,7 @@ bool BPrevision::analyserDonneesSource(QString source, QString resultat)
 
     bool isOk = true;
     int nbZone = onGame.znCount;
-    slFlt = new  QStringList* [nbZone] ;
+    QStringList *monSlt = new  QStringList [nbZone] ;
     QString tbUse = "";
     //QString source = "";
     //QString destination ="";
@@ -677,7 +726,7 @@ bool BPrevision::analyserDonneesSource(QString source, QString resultat)
     for (int zn=0;(zn < nbZone) && isOk;zn++ )
     {
         //slFlt[zn] = CreateFilterForData(zn);
-        isOk = AnalyserEnsembleTirage(source,onGame, zn);
+        isOk = AnalyserEnsembleTirage(source,&monSlt,onGame, zn);
         if(isOk)
             isOk = FaireTableauSynthese(destination,onGame,zn);
     }
@@ -1878,6 +1927,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     QString msg = "";
     QString source = "E1";
     QString tbUse = "U_"+source+"_ana";
+    QStringList *monSlt = new QStringList[1];
 
     //monJeu;
 
@@ -1902,7 +1952,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 
     int zn=0;
 
-    isOk = AnalyserEnsembleTirage(source,monJeu, zn);
+    isOk = AnalyserEnsembleTirage(source,&monSlt,monJeu, zn);
     if(isOk)
         isOk = FaireTableauSynthese(tbUse,monJeu,zn);
 
@@ -2021,7 +2071,10 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
     return msg;
 }
 
-bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int zn)
+bool BPrevision::AnalyserEnsembleTirage(QString tblIn,
+                                        QStringList **pCri,
+                                        const BGame &onGame,
+                                        int zn)
 {
     /// Verifier si des vues temporaires precedentes sont encore presentes
     /// Si oui les effacer
@@ -2067,7 +2120,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
     qDebug() << "on definition:"<<st_OnDef;
 #endif
 
-    QStringList *slst=&slFlt[zn][0];
+    QStringList *slst= pCri[zn];
 
     /// Verifier si des tables existent deja
     if(SupprimerVueIntermediaires())
@@ -2076,6 +2129,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
         ///  on peut faire les calculs
         int loop = 0;
         int nbTot = slst[0].size();
+        int nbTut = slst[1].size();
         int colId = 0;
         QString curName = tblToUse;
         QString curTarget = "view vt_0";

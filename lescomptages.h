@@ -95,6 +95,8 @@ private:
     bool OPtimiseAccesBase(void);
     bool AuthoriseChargementExtension(void);
     void effectuerTraitement(eGame game);
+    QStringList **PreparerCriteresAnalyse(void);
+
 
     bool creerTablesDeLaBase(void);
     BGame *definirConstantesDuJeu(eGame game);
@@ -108,7 +110,8 @@ private:
     bool TraitementCodeTblCombi(QString tbName,int zn);
     bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
 
-    bool AnalyserEnsembleTirage(QString InputTable,const BGame &onGame, int zn);
+    bool AnalyserEnsembleTirage(QString tblIn,QStringList **pCri,const BGame &onGame,int zn);
+
     bool analyserDonneesSource(QString source, QString resultat);
 
     bool FaireTableauSynthese(QString InputTable,const BGame &onGame, int zn);
