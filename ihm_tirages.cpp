@@ -23,11 +23,15 @@ IHM_Tirages::IHM_Tirages(const QString &in,  const BGame &pDef, QSqlDatabase fro
 {
 
     QVBoxLayout *conteneur = new QVBoxLayout;
+    QLabel *lab_tirages = new QLabel("Tirages");
 
     lesTirages = ConstruireTbvDesTirages(in,pDef);
+
+    conteneur->addWidget(lab_tirages);
     conteneur->addWidget(lesTirages);
+
     this->addLayout(conteneur);
-    lesTirages->show();
+    //lesTirages->show();
 
 }
 

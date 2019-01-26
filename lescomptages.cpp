@@ -1404,6 +1404,8 @@ QString BPrevision::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
 
 void BPrevision::showAll(QString source,const BGame &config)
 {
+    QWidget * Resultats = new QWidget(0,Qt::Window);
+    QGridLayout *tmp_layout = new QGridLayout;
 
     stBdata;
     stBdata.src = source;
@@ -1413,16 +1415,27 @@ void BPrevision::showAll(QString source,const BGame &config)
     stBdata.d_grp = new C_GrpDetails(stBdata.src,stBdata.cnf,dbInUse);
     stBdata.e_elm = new C_ElmEcarts(stBdata.src,stBdata.cnf,dbInUse);
     stBdata.e_cmb = new C_CmbEcarts(stBdata.src,stBdata.cnf,dbInUse);
+
+    /// Montrer les tirages correctements formattes
+    Etape_2 = new IHM_Tirages(source,config,dbInUse);
+    tmp_layout->addLayout(Etape_2,1,0);
+
+    QWidget * Etape_1 = partieDroite(source,config);
+    tmp_layout->addWidget(Etape_1,1,1);
+
+    /// ----------------
+    Resultats->setLayout(tmp_layout);
+    Resultats->setWindowTitle(source);
+    Resultats->show();
+
     return;
+#if 0
     /// --------------Test-------------
     //BCouv2 *test = new BCouv2(source,config,dbInUse);
 
     /// -------------------------------
-    QWidget * Resultats = new QWidget(0,Qt::Window);
-    QTabWidget *tab_L1 = new QTabWidget;
 
-    /// Feuille a afficher
-    QGridLayout *tmp_layout = new QGridLayout;
+    QTabWidget *tab_L1 = new QTabWidget;
 
     /// Tirages
     QLabel *lab_tirages = new QLabel("Tirages");
@@ -1469,8 +1482,8 @@ void BPrevision::showAll(QString source,const BGame &config)
 
     /// Connection aux tables view
     for(int i=0; i< qtvElmEcarts.size();i++){
-    connect(qtvElmEcarts[i],SIGNAL(clicked(QModelIndex)),
-            Etape_2,SLOT(slot_SurlignerTirage(QModelIndex)));
+        connect(qtvElmEcarts[i],SIGNAL(clicked(QModelIndex)),
+                Etape_2,SLOT(slot_SurlignerTirage(QModelIndex)));
     }
 
     /// Calcul
@@ -1490,6 +1503,7 @@ void BPrevision::showAll(QString source,const BGame &config)
     Resultats->setLayout(tmp_layout);
     Resultats->setWindowTitle(source);
     Resultats->show();
+#endif
 }
 
 void BPrevision::slot_ccmrTirages(QPoint pos,QTableView *view)
@@ -1641,6 +1655,13 @@ void BPrevision::slot_SurligneEcartEtDetails(const QModelIndex &index)
 
 QWidget *BPrevision::partieDroite(QString source,const BGame &config)
 {
+    QWidget *uneAnalyse = new QWidget;
+    QVBoxLayout *conteneur = new QVBoxLayout;
+    QLabel *label = new QLabel("Analyses");
+
+    conteneur->addWidget(label);
+
+
     /// Boules ou Etoiles
     QTabWidget *tabNiv_1 = new QTabWidget;
     QString itmNiv_1[]={"Boules","Etoiles"};
@@ -1650,7 +1671,6 @@ QWidget *BPrevision::partieDroite(QString source,const BGame &config)
     stBdata.cnf = config;
     stBdata.niv = tabNiv_1;
 
-    //stBdata.grp = new BCountGroup(stBdata.src,stBdata.cnf,dbInUse);
 
     for(int itm = 0; itm< totItmNiv_1;itm++)
     {
@@ -1661,7 +1681,10 @@ QWidget *BPrevision::partieDroite(QString source,const BGame &config)
         tabNiv_1->addTab(wdgNiv_1,itmNiv_1[itm]);
     }
 
-    return tabNiv_1;
+    conteneur->addWidget(tabNiv_1);
+    uneAnalyse->setLayout(conteneur);
+
+    return uneAnalyse;
 }
 
 QWidget *BPrevision::ConstruireElementNiv_2(const stUsePrm &data)
@@ -1742,21 +1765,19 @@ QWidget *BPrevision::FormElm(const stUsePrm &data)
 {
     QWidget *wdg_tmp = new QWidget;
     QGridLayout * gdl_tmp = new QGridLayout;
-    QLabel *lab_ecart = new QLabel("Ecarts");
-    QLabel *lab_details = new QLabel("Details");
 
     /// repartition
+    QLabel *lab_details = new QLabel("Details");
     gdl_tmp->addWidget(lab_details,0,2);
-    //C_ElmDetails *tmp_elm = new C_ElmDetails(data.src,data.cnf,dbInUse);
-    //gdl_tmp->addWidget(tmp_elm,1,2);
+    gdl_tmp->addWidget(data.d_elm->getTbv(data.zn),1,2);
     //qtvElmDetails.append(tmp_elm->getTbv(data.zn));
 
 
     /// ecart
-    C_ElmEcarts *tmp_ect = new C_ElmEcarts(data.src,data.cnf,dbInUse);
+    QLabel *lab_ecart = new QLabel("Ecarts");
     gdl_tmp->addWidget(lab_ecart,0,0);
-    gdl_tmp->addWidget(tmp_ect,1,0);
-    qtvElmEcarts.append(tmp_ect->getTbv(data.zn));
+    gdl_tmp->addWidget(data.e_elm->getTbv(data.zn),1,0);
+    //qtvElmEcarts.append(tmp_ect->getTbv(data.zn));
 
     wdg_tmp->setLayout(gdl_tmp);
     return  wdg_tmp;
@@ -1766,42 +1787,34 @@ QWidget *BPrevision::FormCmb(const stUsePrm &data)
 {
     QWidget *wdg_tmp = new QWidget;
     QGridLayout * gdl_tmp = new QGridLayout;
-    QTableView * tbv_tmp = NULL;
-
-    QLabel *lab_ecart = new QLabel("Ecarts");
-    QLabel *lab_details = new QLabel("Details");
 
     /// repartition
+    QLabel *lab_details = new QLabel("Details");
     gdl_tmp->addWidget(lab_details,0,2);
-    tbv_tmp = data.d_cmb->getTbv(data.zn);
-    gdl_tmp->addWidget(tbv_tmp,1,2);
-    qtvCmbDetails.append(tbv_tmp);
+    gdl_tmp->addWidget(data.d_cmb->getTbv(data.zn),1,2);
+    //qtvCmbDetails.append(tmp_elm->getTbv(data.zn));
 
-    /// Ecart
-    C_CmbEcarts *tmp_ect = new C_CmbEcarts(data.src,data.cnf,dbInUse);
+
+    /// ecart
+    QLabel *lab_ecart = new QLabel("Ecarts");
     gdl_tmp->addWidget(lab_ecart,0,0);
-    tbv_tmp = tmp_ect->getTbv(data.zn);
-    gdl_tmp->addWidget(tmp_ect,1,0);
-    qtvCmbEcarts.append(tbv_tmp);
-    //gdl_tmp->addWidget(tmp_ect,1,0);
+    gdl_tmp->addWidget(data.e_cmb->getTbv(data.zn),1,0);
+    //qtvCmbEcarts.append(tmp_ect->getTbv(data.zn));
 
     wdg_tmp->setLayout(gdl_tmp);
     return  wdg_tmp;
 }
+
 QWidget *BPrevision::FormGrp(const stUsePrm &data)
 {
     QWidget *wdg_tmp = new QWidget;
     QGridLayout * gdl_tmp = new QGridLayout;
-    QTableView * tbv_tmp = NULL;
-
-    QLabel *lab_details = new QLabel("Details");
-
 
     /// repartition
-    gdl_tmp->addWidget(lab_details,0,0,0);
-    tbv_tmp = data.d_grp->getTbv(data.zn);
-    gdl_tmp->addWidget(tbv_tmp,1,0);
-    qtvGrpDetails.append(tbv_tmp);
+    QLabel *lab_details = new QLabel("Details");
+    gdl_tmp->addWidget(lab_details,0,2);
+    gdl_tmp->addWidget(data.d_grp->getTbv(data.zn),1,2);
+    //qtvGrpDetails.append(tmp_elm->getTbv(data.zn));
 
     wdg_tmp->setLayout(gdl_tmp);
     return  wdg_tmp;
