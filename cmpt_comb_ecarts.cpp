@@ -28,7 +28,7 @@ QTableView * C_CmbEcarts::getTbv(int zn)
     return(tbvCalculs[zn]);
 }
 
-C_CmbEcarts::C_CmbEcarts(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb)
+C_CmbEcarts::C_CmbEcarts(const QString &in, const BGame &pDef,  QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountElm)
 {
     countId = total;
@@ -46,12 +46,11 @@ C_CmbEcarts::C_CmbEcarts(const QString &in, const int ze, const BGame &pDef,  QS
 };
 
 
-    for (int zn = 0; zn< nb_zones ;zn++)
-    {
-        QString *name = new QString;
-        QTableView *calcul = (this->*ptrFunc[zn])(name, zn);
+    for(int ze=0;ze<nb_zones;ze++){
+        QString name; //= new QString;
+        QTableView *calcul = (this->*ptrFunc[ze])(&name, ze);
         calcul->setParent(this);
-        tbvCalculs[zn]=calcul;
+        tbvCalculs[ze]=calcul;
     }
 
 }

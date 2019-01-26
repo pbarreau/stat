@@ -25,17 +25,16 @@ C_CmbDetails::~C_CmbDetails()
     total --;
 }
 
-QTableView *C_CmbDetails::getTblAllData(int zn)
+QTableView *C_CmbDetails::getTbv(int zn)
 {
     return(tbvCalculs[zn]);
 }
 
-C_CmbDetails::C_CmbDetails(const QString &in,  const BGame &pDef, QSqlDatabase fromDb)
+C_CmbDetails::C_CmbDetails(const QString &in, const BGame &pDef, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountCmb)
 {
-    //type=eCountCmb;
     countId = total;
-    unNom = "'Compter Combinaisons'";
+    unNom = "'Compter Combinaisons Details'";
     total++;
 
     int nb_zones = myGame.znCount;
@@ -48,37 +47,12 @@ C_CmbDetails::C_CmbDetails(const QString &in,  const BGame &pDef, QSqlDatabase f
 
 };
 
-
-    for (int zn = 0; zn< nb_zones ;zn++)
-    {
-        /*
-        if(nb_zones == 1){
-            hCommon = CEL2_H *(floor(myGame.limites[ze].max/10)+1);
-        }
-        else{
-            if(ze<nb_zones-1)
-                hCommon = CEL2_H * BMAX_2((floor(myGame.limites[ze].max/10)+1),(floor(myGame.limites[ze+1].max/10)+1));
-        }
-*/
-        QString *name = new QString;
-        //QWidget *tmpw = new QWidget;
-        QTableView *calcul = (this->*ptrFunc[zn])(name, zn);
+    for(int ze=0;ze<nb_zones;ze++){
+        QString name; //= new QString;
+        QTableView *calcul = (this->*ptrFunc[ze])(&name, ze);
         calcul->setParent(this);
-        tbvCalculs[zn]=calcul;
-
-        //tmpw->setLayout(calcul);
-        //tab_Top->addTab(tmpw,tr((*name).toUtf8()));
-        //tab_Top->addTab(calcul,tr((*name).toUtf8()));
+        tbvCalculs[ze]=calcul;
     }
-
-#if 0
-    QWidget * Resultats = new QWidget;
-    QGridLayout *layout = new QGridLayout();
-    layout->addWidget(tab_Top);
-    Resultats->setLayout(layout);
-    Resultats->setWindowTitle("Test3-"+QString::number(total));
-    Resultats->show();
-#endif
 }
 
 void C_CmbDetails::slot_ClicDeSelectionTableau(const QModelIndex &index)
@@ -310,6 +284,10 @@ QString C_CmbDetails::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int 
             +msg
             +")";
 
+#ifndef QT_NO_DEBUG
+    qDebug()<< msg;
+#endif
+
     isOk = query.exec(msg);
     /// optimisation ?
     msg = "select * from ("+viewName+")";
@@ -422,6 +400,9 @@ QTableView *C_CmbDetails::Compter(QString * pName, int zn)
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];
 
     QString st_msg1 = RequetePourTrouverTotal_z1(db_data,zn,0);
+#ifndef QT_NO_DEBUG
+    qDebug() << "SQL:"<<st_msg1;
+#endif
 
     sqm_tmp->setQuery(st_msg1,dbToUse);
 

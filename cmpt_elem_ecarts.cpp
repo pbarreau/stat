@@ -32,30 +32,36 @@ C_ElmEcarts::~C_ElmEcarts()
 
 QTableView * C_ElmEcarts::getTbv(int zn)
 {
-    return(tbv_memo[zn]);
+    return(tbvCalculs[zn]);
 }
 
-C_ElmEcarts::C_ElmEcarts(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb)
+C_ElmEcarts::C_ElmEcarts(const QString &in,const BGame &pDef,  QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountElm)
 {
-    QString name = "";
-    QTableView *qtv_tmp = NULL;
+    countId = total;
+    unNom = "'Compter Element Ecarts'";
+    total++;
+
     int nb_zones = myGame.znCount;
+    tbvCalculs = new QTableView *[nb_zones];
 
-    if (ze< nb_zones && ze >=0)
+
+    /// Pour chacune des zones existantes
+    /// on peut avoir une maniere
+    /// particuliere de faire le comptage
+    QTableView *(C_ElmEcarts::*ptrFunc[])(QString *, int) =
     {
-        if(nb_zones == 1){
-            hCommon = CEL2_H *(floor(myGame.limites[ze].max/10)+1);
-        }
-        else{
-            if(ze<nb_zones-1)
-                hCommon = CEL2_H * BMAX_2((floor(myGame.limites[ze].max/10)+1),(floor(myGame.limites[ze+1].max/10)+1));
-        }
+            &C_ElmEcarts::Compter,
+            &C_ElmEcarts::Compter
+
+};
+
+    for(int ze=0;ze<nb_zones;ze++){
+        QString name; //= new QString;
+        QTableView *calcul = (this->*ptrFunc[ze])(&name, ze);
+        calcul->setParent(this);
+        tbvCalculs[ze]=calcul;
     }
-
-    qtv_tmp = Compter(&name,ze);
-
-    qtv_tmp->setParent(this);
     total++;
 }
 
@@ -126,7 +132,7 @@ QTableView * C_ElmEcarts::Compter(QString *pname, int zn)
     connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
              this, SLOT( slot_SurligneTirage( QModelIndex) ) );
 
-    tbv_memo[zn] = qtv_tmp;
+    tbvCalculs[zn] = qtv_tmp;
     return   qtv_tmp;
 }
 

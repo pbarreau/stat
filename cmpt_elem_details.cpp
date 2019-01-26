@@ -34,19 +34,20 @@ C_ElmDetails::~C_ElmDetails()
     total --;
 }
 
-C_ElmDetails::C_ElmDetails(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb)
+C_ElmDetails::C_ElmDetails(const QString &in, const BGame &pDef,  QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountElm)
 {
-    //type=eCountElm;
     countId = total;
-    unNom = "'Compter Zones'";
-
+    unNom = "'Compter Element Details'";
     total++;
-    //QTabWidget *tab_Top = new QTabWidget(this);
 
     int nb_zones = myGame.znCount;
+    tbvCalculs = new QTableView *[nb_zones];
 
 
+    /// Pour chacune des zones existantes
+    /// on peut avoir une maniere
+    /// particuliere de faire le comptage
     QTableView *(C_ElmDetails::*ptrFunc[])(QString *, int) =
     {
             &C_ElmDetails::Compter,
@@ -54,21 +55,12 @@ C_ElmDetails::C_ElmDetails(const QString &in, const int ze, const BGame &pDef,  
 
 };
 
-    if (ze< nb_zones && ze >=0)
-    {
-        /* if(nb_zones == 1){
-            hCommon = CEL2_H *(floor(myGame.limites[ze].max/10)+1);
-        }
-        else{
-            if(ze<nb_zones)
-                hCommon = CEL2_H * BMAX_2((floor(myGame.limites[ze].max/10)+1),(floor(myGame.limites[ze+1].max/10)+1));
-        }
-*/
-        QString *name = new QString;
-        QTableView *calcul = (this->*ptrFunc[ze])(name, ze);
+    for(int ze=0;ze<nb_zones;ze++){
+        QString name; //= new QString;
+        QTableView *calcul = (this->*ptrFunc[ze])(&name, ze);
         calcul->setParent(this);
+        tbvCalculs[ze]=calcul;
     }
-
 }
 
 
@@ -339,7 +331,7 @@ QString C_ElmDetails::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 
 QTableView * C_ElmDetails::getTbv(int zn)
 {
-    return(tbv_memo[zn]);
+    return(tbvCalculs[zn]);
 }
 
 QTableView *C_ElmDetails::Compter(QString * pName, int zn)
@@ -415,7 +407,7 @@ QTableView *C_ElmDetails::Compter(QString * pName, int zn)
     connect(qtv_tmp,
             SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 
-    tbv_memo[zn] = qtv_tmp;
+    tbvCalculs[zn] = qtv_tmp;
     return qtv_tmp;
 }
 void C_ElmDetails::slot_AideToolTip(const QModelIndex & index)
@@ -433,7 +425,7 @@ void C_ElmDetails::slot_AideToolTip(const QModelIndex & index)
     QString colName = vCol.toString();
 
     if(cln>0){
-    msgAdd = colName + " = " + cellVal.toString();
+        msgAdd = colName + " = " + cellVal.toString();
     }
 
     msg = msg + msgAdd;

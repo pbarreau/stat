@@ -30,7 +30,6 @@ C_GrpDetails::C_GrpDetails(const QString &in,  const BGame &pDef, QSqlDatabase f
 
     countId = total;
     unNom = "'Compter Groupes'";
-    //QTabWidget *tab_Top = new QTabWidget(this);
     demande = 0;
     if(!total)
     {
@@ -517,11 +516,11 @@ QTableView *C_GrpDetails::CompterEnsemble(QString * pName, int zn)
     (* pName) = myGame.names[zn].abv; /// BUG sur db_data
 
     QString TblCompact = cClc_grp;
-    /*QString TblCompact = cLabCount[type]+"_"
-            + QString::number(total-1).rightJustified(3,'0')
-            +"_"+db_data
-            +"_z"+QString::number(zn+1);
-*/
+    QString qtv_name = QString::fromLatin1(cClc_grp)
+            +"_"+ QString::fromLatin1(cClc_elm)
+            +"_"+ QString::number(total).rightJustified(3,'0')
+            + "_z"+QString::number(zn+1);
+    qtv_tmp->setObjectName(qtv_name);
 
 
 #if 0
@@ -534,8 +533,8 @@ QTableView *C_GrpDetails::CompterEnsemble(QString * pName, int zn)
     }
 #endif
 
-    QString qtv_name = QString::fromLatin1(cUsr_grp) + "_z"+QString::number(zn+1);
-    qtv_tmp->setObjectName(qtv_name);
+    //QString qtv_name = QString::fromLatin1(cUsr_grp) + "_z"+QString::number(zn+1);
+    //qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];
 
@@ -1225,7 +1224,7 @@ void C_GrpDetails::slot_RequeteFromSelection(const QModelIndex &index)
 
 }
 
-QTableView *C_GrpDetails::getTblAllData(int zn)
+QTableView *C_GrpDetails::getTbv(int zn)
 {
     return(tbvEnsemble_zn[zn]);
 }

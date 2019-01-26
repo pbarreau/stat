@@ -12,7 +12,7 @@ class C_ElmEcarts : public BCount
     Q_OBJECT
 
 public:
-    C_ElmEcarts(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb);
+    C_ElmEcarts(const QString &in, const BGame &pDef, QSqlDatabase fromDb);
     ~C_ElmEcarts();
     QTableView * getTbv(int zn);
 
@@ -27,7 +27,7 @@ private:
 private:
     static int total;
     int hCommon; // taille des tableaux
-    QTableView *tbv_memo[2];
+    QTableView **tbvCalculs;
 
 Q_SIGNALS:
     void sig_TotEcart(const QModelIndex &index);

@@ -20,7 +20,7 @@ public:
     C_GrpDetails(const QString &in,  const BGame &pDef,  QSqlDatabase fromDb);
     ~C_GrpDetails();
     QString getFilteringData(int zn);
-    QTableView *getTblAllData(int zn);
+    QTableView *getTbv(int zn);
     QTableView *getTblOneData(int zn);
 
 

@@ -1404,14 +1404,18 @@ QString BPrevision::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
 
 void BPrevision::showAll(QString source,const BGame &config)
 {
+
     stBdata;
     stBdata.src = source;
     stBdata.cnf = config;
-    stBdata.cmb = new C_CmbDetails(stBdata.src,stBdata.cnf,dbInUse);
-    stBdata.grp = new C_GrpDetails(stBdata.src,stBdata.cnf,dbInUse);
-
+    stBdata.d_elm = new C_ElmDetails(stBdata.src,stBdata.cnf,dbInUse);
+    stBdata.d_cmb = new C_CmbDetails(stBdata.src,stBdata.cnf,dbInUse);
+    stBdata.d_grp = new C_GrpDetails(stBdata.src,stBdata.cnf,dbInUse);
+    stBdata.e_elm = new C_ElmEcarts(stBdata.src,stBdata.cnf,dbInUse);
+    stBdata.e_cmb = new C_CmbEcarts(stBdata.src,stBdata.cnf,dbInUse);
+    return;
     /// --------------Test-------------
-    BCouv2 *test = new BCouv2(source,config,dbInUse);
+    //BCouv2 *test = new BCouv2(source,config,dbInUse);
 
     /// -------------------------------
     QWidget * Resultats = new QWidget(0,Qt::Window);
@@ -1454,7 +1458,7 @@ void BPrevision::showAll(QString source,const BGame &config)
 
     /// pour montrer dans ecarts et detail
     connect(Etape_2,SIGNAL(sig_TiragesClick(QModelIndex)),
-            stBdata.grp,SLOT(slot_DecodeTirage(QModelIndex)));
+            stBdata.d_grp,SLOT(slot_DecodeTirage(QModelIndex)));
 
 
     connect(Etape_2,SIGNAL(sig_ShowMenu(QPoint,QTableView *)),
@@ -1464,8 +1468,8 @@ void BPrevision::showAll(QString source,const BGame &config)
 
 
     /// Connection aux tables view
-    for(int i=0; i< qtvEcarts.size();i++){
-    connect(qtvEcarts[i],SIGNAL(clicked(QModelIndex)),
+    for(int i=0; i< qtvElmEcarts.size();i++){
+    connect(qtvElmEcarts[i],SIGNAL(clicked(QModelIndex)),
             Etape_2,SLOT(slot_SurlignerTirage(QModelIndex)));
     }
 
@@ -1560,14 +1564,14 @@ void BPrevision::slot_SurligneEcartEtDetails(const QModelIndex &index)
         int onglet_3 = 0;
 
         if(col <= start+onGame.limites[0].len){
-            tabDetails = qtvDetails[0];
-            tabEcarts = qtvEcarts[0];
+            tabDetails = qtvElmDetails[0];
+            tabEcarts = qtvElmEcarts[0];
         }
         else{
             /// pour l'instant il n'y a que 2 zones
             /// autrement modifier le code
-            tabDetails = qtvDetails[1];
-            tabEcarts = qtvEcarts[1];
+            tabDetails = qtvElmDetails[1];
+            tabEcarts = qtvElmEcarts[1];
             onglet_1 = 1;
         }
         QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(tabDetails->model());
@@ -1642,7 +1646,6 @@ QWidget *BPrevision::partieDroite(QString source,const BGame &config)
     QString itmNiv_1[]={"Boules","Etoiles"};
     int totItmNiv_1 = config.znCount;
 
-    //stBdata;
     stBdata.src = source;
     stBdata.cnf = config;
     stBdata.niv = tabNiv_1;
@@ -1666,7 +1669,7 @@ QWidget *BPrevision::ConstruireElementNiv_2(const stUsePrm &data)
     QWidget *wdg_tmp = new  QWidget;
     QGridLayout * gdl_tmp = new QGridLayout;
 
-    QTableView * tbv_tmp = data.grp->getTblOneData(data.zn);
+    QTableView * tbv_tmp = data.d_grp->getTblOneData(data.zn);
     gdl_tmp->addWidget(tbv_tmp,1,0);
 
     stUsePrm data2 = data;
@@ -1744,16 +1747,16 @@ QWidget *BPrevision::FormElm(const stUsePrm &data)
 
     /// repartition
     gdl_tmp->addWidget(lab_details,0,2);
-    C_ElmDetails *tmp_elm = new C_ElmDetails(data.src,data.zn,data.cnf,dbInUse);
-    gdl_tmp->addWidget(tmp_elm,1,2);
-    qtvDetails.append(tmp_elm->getTbv(data.zn));
+    //C_ElmDetails *tmp_elm = new C_ElmDetails(data.src,data.cnf,dbInUse);
+    //gdl_tmp->addWidget(tmp_elm,1,2);
+    //qtvElmDetails.append(tmp_elm->getTbv(data.zn));
 
 
     /// ecart
-    C_ElmEcarts *tmp_ect = new C_ElmEcarts(data.src,data.zn,data.cnf,dbInUse);
+    C_ElmEcarts *tmp_ect = new C_ElmEcarts(data.src,data.cnf,dbInUse);
     gdl_tmp->addWidget(lab_ecart,0,0);
     gdl_tmp->addWidget(tmp_ect,1,0);
-    qtvEcarts.append(tmp_ect->getTbv(data.zn));
+    qtvElmEcarts.append(tmp_ect->getTbv(data.zn));
 
     wdg_tmp->setLayout(gdl_tmp);
     return  wdg_tmp;
@@ -1763,19 +1766,24 @@ QWidget *BPrevision::FormCmb(const stUsePrm &data)
 {
     QWidget *wdg_tmp = new QWidget;
     QGridLayout * gdl_tmp = new QGridLayout;
+    QTableView * tbv_tmp = NULL;
+
     QLabel *lab_ecart = new QLabel("Ecarts");
     QLabel *lab_details = new QLabel("Details");
 
     /// repartition
     gdl_tmp->addWidget(lab_details,0,2);
-    QTableView * tbv_tmp = data.cmb->getTblAllData(data.zn);
+    tbv_tmp = data.d_cmb->getTbv(data.zn);
     gdl_tmp->addWidget(tbv_tmp,1,2);
+    qtvCmbDetails.append(tbv_tmp);
 
     /// Ecart
-    C_CmbEcarts *tmp_ect = new C_CmbEcarts(data.src,data.zn,data.cnf,dbInUse);
+    C_CmbEcarts *tmp_ect = new C_CmbEcarts(data.src,data.cnf,dbInUse);
     gdl_tmp->addWidget(lab_ecart,0,0);
+    tbv_tmp = tmp_ect->getTbv(data.zn);
     gdl_tmp->addWidget(tmp_ect,1,0);
-    //qtvEcarts.append(tmp_ect->getTbv(data.zn));
+    qtvCmbEcarts.append(tbv_tmp);
+    //gdl_tmp->addWidget(tmp_ect,1,0);
 
     wdg_tmp->setLayout(gdl_tmp);
     return  wdg_tmp;
@@ -1784,12 +1792,16 @@ QWidget *BPrevision::FormGrp(const stUsePrm &data)
 {
     QWidget *wdg_tmp = new QWidget;
     QGridLayout * gdl_tmp = new QGridLayout;
+    QTableView * tbv_tmp = NULL;
+
     QLabel *lab_details = new QLabel("Details");
-    gdl_tmp->addWidget(lab_details,0,0,0);
+
 
     /// repartition
-    QTableView * tbv_tmp = data.grp->getTblAllData(data.zn);
+    gdl_tmp->addWidget(lab_details,0,0,0);
+    tbv_tmp = data.d_grp->getTbv(data.zn);
     gdl_tmp->addWidget(tbv_tmp,1,0);
+    qtvGrpDetails.append(tbv_tmp);
 
     wdg_tmp->setLayout(gdl_tmp);
     return  wdg_tmp;
@@ -1826,9 +1838,9 @@ void BPrevision::slot_filterUserGamesList()
     }
 
     /// recuperation des criteres de filtre
-    QString flt_elm = c1->getFilteringData(0);
-    QString flt_cmb = c2->getFilteringData(0);
-    QString flt_grp = c3->getFilteringData(0);
+    QString flt_elm = eld_1->getFilteringData(0);
+    QString flt_cmb = cmd_1->getFilteringData(0);
+    QString flt_grp = grd_1->getFilteringData(0);
     QString otherCriteria = "";
 
     if(flt_elm.size()){

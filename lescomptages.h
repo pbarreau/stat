@@ -11,6 +11,9 @@
 #include "cmpt_comb_details.h"
 #include "cmpt_grou_details.h"
 
+#include "cmpt_elem_ecarts.h"
+#include "cmpt_comb_ecarts.h"
+
 #include "compter.h"
 #include "db_tools.h"
 #include "labelclickable.h"
@@ -72,8 +75,11 @@ typedef struct
 {
     QString src;
     BGame cnf;
-    C_GrpDetails *grp;
-    C_CmbDetails *cmb;
+    C_ElmDetails *d_elm;
+    C_GrpDetails *d_grp;
+    C_CmbDetails *d_cmb;
+    C_ElmEcarts *e_elm;
+    C_CmbEcarts *e_cmb;
     QTabWidget *niv;
     int zn;
     int id;
@@ -158,9 +164,6 @@ private:
     BGame monJeu;           /// parametres pour filtration
     QStringList **slFlt;    /// zn_filters
     IHM_Tirages * Etape_2;
-    C_ElmDetails *c1;
-    C_CmbDetails *c2;
-    C_GrpDetails *c3;
     QString tblTirages;
     QSqlQueryModel *sqm_resu;
     LabelClickable selection[3];
@@ -168,8 +171,17 @@ private:
     QString titre[3];
     QString sql[3];
     stUsePrm stBdata;
-    QList<QTableView *>qtvDetails;
-    QList<QTableView *>qtvEcarts;
+    C_ElmDetails *eld_1;
+    C_ElmEcarts *ele_1;
+    C_CmbDetails *cmd_1;
+    C_CmbEcarts *cme_1;
+    C_GrpDetails *grd_1;
+    QList<QTableView *>qtvElmDetails;
+    QList<QTableView *>qtvElmEcarts;
+    QList<QTableView *>qtvCmbDetails;
+    QList<QTableView *>qtvCmbEcarts;
+    QList<QTableView *>qtvGrpDetails;
+    QList<QTableView *>qtvGrpEcarts;
 };
 
 

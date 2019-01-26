@@ -19,7 +19,7 @@ public:
     C_CmbDetails(const QString &in, const BGame &pDef, QSqlDatabase fromDb);
     ~C_CmbDetails();
     QString getFilteringData(int zn);
-    QTableView *getTblAllData(int zn);
+    QTableView *getTbv(int zn);
 
 
 public slots:

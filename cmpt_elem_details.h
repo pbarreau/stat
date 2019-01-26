@@ -20,7 +20,7 @@ class C_ElmDetails:public BCount
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    C_ElmDetails(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb);
+    C_ElmDetails(const QString &in, const BGame &pDef, QSqlDatabase fromDb);
     ~C_ElmDetails();
     int getCounter(void);
     QString getFilteringData(int zn);
@@ -31,10 +31,10 @@ public slots:
     void slot_RequeteFromSelection(const QModelIndex &index);
     void slot_AideToolTip(const QModelIndex & index);
 
-public:
+private:
     static int total;
     int hCommon; // taille des tableaux
-    QTableView *tbv_memo[2];
+    QTableView **tbvCalculs;
 
 private:
     QTableView *Compter(QString * pName, int zn);
