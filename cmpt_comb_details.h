@@ -29,7 +29,7 @@ public slots:
 
 private:
     static int total;
-    QTableView ** tbvEnsemble_zn; /// Table view contenant resultat de zone
+    QTableView ** tbvCalculs; /// Table view contenant resultat de zone
     int hCommon;
 
 

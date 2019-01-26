@@ -22,12 +22,12 @@ private:
     QTableView *Compter(QString *pname, int zn);
     bool createThatTable(QString tblName, int zn);
     QString RechercherLesTirages(int boule, int zn);
-    bool SauverCalculs(int boule,QString ToTbl, QString fromTbl);
+    bool SauverCalculs(int zn,int boule,QString ToTbl, QString fromTbl);
 
 private:
     static int total;
     int hCommon; // taille des tableaux
-    QTableView *tbv_memo[2];
+    QTableView **tbvCalculs;
 
 #if 0
 Q_SIGNALS:

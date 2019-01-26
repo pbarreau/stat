@@ -25,35 +25,40 @@ C_CmbEcarts::~C_CmbEcarts()
 
 QTableView * C_CmbEcarts::getTbv(int zn)
 {
-    return(tbv_memo[zn]);
+    return(tbvCalculs[zn]);
 }
 
 C_CmbEcarts::C_CmbEcarts(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountElm)
 {
-    QString name = "";
-    QTableView *qtv_tmp = NULL;
-    int nb_zones = myGame.znCount;
+    countId = total;
+    unNom = "'Ecart Combinaisons'";
+    total++;
 
-    if (ze< nb_zones && ze >=0)
+    int nb_zones = myGame.znCount;
+    tbvCalculs = new QTableView *[nb_zones];
+
+    QTableView *(C_CmbEcarts::*ptrFunc[])(QString *, int) =
     {
-        if(nb_zones == 1){
-            hCommon = CEL2_H *(floor(myGame.limites[ze].max/10)+1);
-        }
-        else{
-            if(ze<nb_zones-1)
-                hCommon = CEL2_H * BMAX_2((floor(myGame.limites[ze].max/10)+1),(floor(myGame.limites[ze+1].max/10)+1));
-        }
+            &C_CmbEcarts::Compter,
+            &C_CmbEcarts::Compter
+
+};
+
+
+    for (int zn = 0; zn< nb_zones ;zn++)
+    {
+        QString *name = new QString;
+        QTableView *calcul = (this->*ptrFunc[zn])(name, zn);
+        calcul->setParent(this);
+        tbvCalculs[zn]=calcul;
     }
 
-    qtv_tmp = Compter(&name,ze);
-
-    qtv_tmp->setParent(this);
-    total++;
 }
 
 QTableView * C_CmbEcarts::Compter(QString *pname, int zn)
 {
+    bool isOk = true;
     QTableView *qtv_tmp = new QTableView;
     QString qtv_name = QString::fromLatin1(cClc_eca)
             +"_"+ QString::fromLatin1(cClc_cmb)
@@ -64,14 +69,14 @@ QTableView * C_CmbEcarts::Compter(QString *pname, int zn)
 
     /// Creation de la table dans la base
     /// pour garder les resultat
-    if(!createThatTable(qtv_name,zn)){
+    if(!(isOk = createThatTable(qtv_name,zn))){
         /// stopper les calculs
 
         return   qtv_tmp;
     }
 
     /// suite du traitement
-    BSqmColorizeEcart *sqm_tmp = new BSqmColorizeEcart;
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QString st_msg1 = "select * from ("
             + qtv_name
             +") order by B desc;";
@@ -119,7 +124,7 @@ QTableView * C_CmbEcarts::Compter(QString *pname, int zn)
     connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
              this, SLOT( slot_SurligneTirage( QModelIndex) ) );
 
-    tbv_memo[zn] = qtv_tmp;
+    //tbvCalculs[zn] = qtv_tmp;
     return   qtv_tmp;
 }
 
@@ -136,9 +141,13 @@ bool C_CmbEcarts::createThatTable(QString tblEcartcombi, int zn)
             +QString(cClc_cmb)
             +"_z"+QString::number(zn+1)+";";
 
-    if(isOk = query.exec(msg)){
+#ifndef QT_NO_DEBUG
+    qDebug() <<msg;
+#endif
+
+    if((isOk = query.exec(msg))){
         query.first();
-        if(isOk = query.isValid())
+        if((isOk = query.isValid()))
         {
             QSqlRecord rec  = query.record();
             max_combi = rec.value(0).toInt();
@@ -148,7 +157,7 @@ bool C_CmbEcarts::createThatTable(QString tblEcartcombi, int zn)
     ///  creer la table
     msg = "create table if not exists "
             +tblEcartcombi
-            +"(Id int, C text, Ec int, Ep int, Em real, M int, Es float, T int, A int);";
+            +"(B int, C text, Ec int, Ep int, Em real, M int, Es float, T int, A int);";
 #ifndef QT_NO_DEBUG
     qDebug() <<msg;
 #endif
@@ -158,16 +167,16 @@ bool C_CmbEcarts::createThatTable(QString tblEcartcombi, int zn)
     }
 
     ///  Rechercher chaque boule
-    for(int combi = 0; (combi < max_combi) & isOk ; combi++){
+    for(int combi = 1; (combi <= max_combi) & isOk ; combi++){
         ///  faire les calculs necessaires
         tblTempo = RechercherLesTirages(combi,zn);
         ///  sauvegarder les resultats
-        isOk = SauverCalculs(combi, tblEcartcombi, tblTempo);
+        isOk = SauverCalculs(zn, combi, tblEcartcombi, tblTempo);
     }
 
     if(isOk){
         msg = "drop table if exists " +tblTempo + ";";
-        if( isOk = query.exec(msg)){
+        if( (isOk = query.exec(msg))){
             /// Calculer l'esperance de chaque tirage
             ///  grace a la variance
             isOk = CalculerSqrt(tblEcartcombi, "Es");
@@ -210,7 +219,7 @@ QString C_CmbEcarts::RechercherLesTirages(int combi, int zn)
             +" select null, t1.id"
             +" from(B_"
             +cRef_ana+"_z"
-            +QString::number(zn+1)+";"
+            +QString::number(zn+1)
             +") as t1 where(t1.idComb="+
             QString::number(combi)+")";
 
@@ -228,12 +237,14 @@ QString C_CmbEcarts::RechercherLesTirages(int combi, int zn)
     return tmpTbl;
 }
 
-bool C_CmbEcarts::SauverCalculs(int combi, QString tblName, QString tmpTbl)
+bool C_CmbEcarts::SauverCalculs(int zn, int combi, QString tblName, QString tmpTbl)
 {
     QString msg = "";
     bool isOk = true;
     QSqlQuery query(dbToUse);
     QString colVariance = "Es";
+    QString tblCombi = "B_"+QString(cClc_cmb)+"_z"+QString::number(zn+1);
+    QString tblAna = "B_"+QString(cRef_ana)+"_z"+QString::number(zn+1);
 
     if(tmpTbl == ""){
         return false;
@@ -242,7 +253,9 @@ bool C_CmbEcarts::SauverCalculs(int combi, QString tblName, QString tmpTbl)
     msg ="insert into "
             +tblName
             +" select (B)as B, "
-             "(select t1.tip from (B_cmb_z1)as t1 where(t1.id=B)) as C,"
+             "(select t1.tip from ("
+            +tblCombi
+            +")as t1 where(t1.id=B)) as C,"
              "(case when count(Ec)=0 then 0 else max(Ec) end) as Ec, "
              "(case when count(Ep)=0 then 0 else max(Ep) end) as Ep,"
              "printf(\"%.1f\",avg(E))as Em,"
@@ -251,10 +264,12 @@ bool C_CmbEcarts::SauverCalculs(int combi, QString tblName, QString tmpTbl)
             +" as Es,"
              "count(B) as T, "
              "0 "
-             "from (B_ana_z1) as t1, "
+             "from ("
+            +tblAna
+            +") as t1, "
              "("
              "select "
-            +combi
+            +QString::number(combi)
             +" as B,"
              "(case when t1.lgn=1 then t1.id -1 end)as Ec,"
              "(case when t1.lgn=1 then (t2.id-t1.id)  end)as Ep,"
@@ -294,8 +309,8 @@ bool C_CmbEcarts::SauverCalculs(int combi, QString tblName, QString tmpTbl)
 #ifndef QT_NO_DEBUG
     qDebug() <<msg;
 #endif
-    if(isOk = query.exec(msg)){
-        if(isOk = query.isActive()){
+    if((isOk = query.exec(msg))){
+        if((isOk = query.isActive())){
             query.finish();
         }
     }

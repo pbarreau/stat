@@ -25,9 +25,10 @@
 #include <QVector>
 
 #include "cmpt_elem_details.h"
-#include "cmpt_comb_details.h"
-#include "cmpt_grou_details.h"
 #include "cmpt_elem_ecarts.h"
+#include "cmpt_comb_details.h"
+#include "cmpt_comb_ecarts.h"
+#include "cmpt_grou_details.h"
 #include "ihm_tirages.h"
 #include "bcouv.h"
 #include "labelclickable.h"
@@ -1737,16 +1738,13 @@ QWidget *BPrevision::ConstruireElementNiv_3(const stUsePrm &data)
 QWidget *BPrevision::FormElm(const stUsePrm &data)
 {
     QWidget *wdg_tmp = new QWidget;
-
     QGridLayout * gdl_tmp = new QGridLayout;
-    BCount *B_item = NULL;
-
     QLabel *lab_ecart = new QLabel("Ecarts");
     QLabel *lab_details = new QLabel("Details");
 
     /// repartition
-    C_ElmDetails *tmp_elm = new C_ElmDetails(data.src,data.zn,data.cnf,dbInUse);
     gdl_tmp->addWidget(lab_details,0,2);
+    C_ElmDetails *tmp_elm = new C_ElmDetails(data.src,data.zn,data.cnf,dbInUse);
     gdl_tmp->addWidget(tmp_elm,1,2);
     qtvDetails.append(tmp_elm->getTbv(data.zn));
 
@@ -1773,7 +1771,11 @@ QWidget *BPrevision::FormCmb(const stUsePrm &data)
     QTableView * tbv_tmp = data.cmb->getTblAllData(data.zn);
     gdl_tmp->addWidget(tbv_tmp,1,2);
 
+    /// Ecart
+    C_CmbEcarts *tmp_ect = new C_CmbEcarts(data.src,data.zn,data.cnf,dbInUse);
     gdl_tmp->addWidget(lab_ecart,0,0);
+    gdl_tmp->addWidget(tmp_ect,1,0);
+    //qtvEcarts.append(tmp_ect->getTbv(data.zn));
 
     wdg_tmp->setLayout(gdl_tmp);
     return  wdg_tmp;

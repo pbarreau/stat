@@ -27,7 +27,7 @@ C_CmbDetails::~C_CmbDetails()
 
 QTableView *C_CmbDetails::getTblAllData(int zn)
 {
-    return(tbvEnsemble_zn[zn]);
+    return(tbvCalculs[zn]);
 }
 
 C_CmbDetails::C_CmbDetails(const QString &in,  const BGame &pDef, QSqlDatabase fromDb)
@@ -39,7 +39,7 @@ C_CmbDetails::C_CmbDetails(const QString &in,  const BGame &pDef, QSqlDatabase f
     total++;
 
     int nb_zones = myGame.znCount;
-    tbvEnsemble_zn = new QTableView *[nb_zones];
+    tbvCalculs = new QTableView *[nb_zones];
 
     QTableView *(C_CmbDetails::*ptrFunc[])(QString *, int) =
     {
@@ -64,7 +64,7 @@ C_CmbDetails::C_CmbDetails(const QString &in,  const BGame &pDef, QSqlDatabase f
         //QWidget *tmpw = new QWidget;
         QTableView *calcul = (this->*ptrFunc[zn])(name, zn);
         calcul->setParent(this);
-        tbvEnsemble_zn[zn]=calcul;
+        tbvCalculs[zn]=calcul;
 
         //tmpw->setLayout(calcul);
         //tab_Top->addTab(tmpw,tr((*name).toUtf8()));

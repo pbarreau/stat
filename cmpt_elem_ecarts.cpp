@@ -587,6 +587,9 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
         int et = ET.data().toInt();
         int ab = Ab.data().toInt();
 
+        if(!ep) ep=1;
+        if(!em) em=1;
+
         // Boule deja sortie ?
         if(ab == 0){
             if (role == Qt::BackgroundRole){
