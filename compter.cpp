@@ -237,6 +237,47 @@ void BCount::CreerCritereJours(void)
     db_jours = ","+st_tmp;
 }
 
+bool BCount::CalculerSqrt(QString tblName, QString colVariance)
+{
+    bool isOk = true;
+    QString msg = "";
+    QSqlQuery query(dbToUse);
+
+    msg= "select B, "+colVariance+" from "+tblName+";";
+
+#ifndef QT_NO_DEBUG
+    qDebug() <<msg;
+#endif
+
+    if (isOk = query.exec(msg))
+    {
+        query.first();
+        if(query.isValid())
+        {
+            QSqlQuery req_2(dbToUse);
+            QString msg2 = "";
+            do
+            {
+                int bId = query.value(0).toInt();
+                float variance = query.value(1).toFloat();
+
+                QString strSqrt = QString::number((float)sqrt(variance),'f',1);
+
+                msg2 = "update "+tblName+" set "+colVariance+"="
+                        +strSqrt
+                        + " "
+                          "where "+tblName+".B="+QString::number(bId)+";";
+#ifndef QT_NO_DEBUG
+                qDebug() <<msg2;
+#endif
+                isOk = req_2.exec(msg2);
+
+            }while(query.next() && isOk);
+        }
+    }
+    return isOk;
+}
+
 void BCount::RecupererConfiguration(void)
 {
 #if 0

@@ -39,8 +39,9 @@ private:
     void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
     QString ConstruireCriteres(int zn);
-
-
+    bool SauverCalculs(int combi, QString tblName, QString tmpTbl);
+    QString RechercherLesTirages(int combi, int zn);
+    bool createThatTable(QString tblEcartcombi, int zn);
 };
 
 #endif // CCOMPTERCOMBINAISONS_H

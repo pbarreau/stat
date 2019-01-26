@@ -212,7 +212,7 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
     ///  creer la table
     msg = "create table if not exists "
             +tblName
-            +"(B int, Ec int, Ep int, Em real, E int, T int, A int, V float)";
+            +"(B int, Ec int, Ep int, Em real, M int, Es float, T int, A int);";
 #ifndef QT_NO_DEBUG
     qDebug() <<msg;
 #endif
@@ -229,241 +229,11 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
     if(isOk){
         msg = "drop table if exists " +tableBoule + ";";
         if( isOk = query.exec(msg)){
-            isOk = CalculerSqrt(tblName, "V");
+            isOk = CalculerSqrt(tblName, "Es");
         }
     }
 
     return isOk;
-#if 0
-    bool isOk = true;
-    QString msg = "";
-    QSqlQuery sql_q1(dbToUse);
-    QString tmpTbl = "tmp_"+ tblName;
-
-    /// B   : boule
-    /// Ec  : ecart courant
-    /// Ep  : ecart precedent
-    /// Em  : ecart moyen
-    /// E   : ecart maxi
-    /// T   : total
-    /// A   : apparition (deja sortie ?)
-    /// V   : Variance
-
-    if(isOk){
-        QString ref_1 = myGame.names[zn].abv+"%1 int";
-        QString ref_2 = "";
-        int tot_items = myGame.limites[zn].len;
-        msg="";
-        for(int items=0;items<tot_items;items++){
-            msg = msg+ref_1.arg(items+1);
-            if(items<tot_items-1) msg = msg+",";
-        }
-        msg = "create table if not exists "
-                + tmpTbl
-                +"(lgn integer primary key, id int,"
-                + msg
-                +")";
-
-#ifndef QT_NO_DEBUG
-        qDebug() <<msg;
-#endif
-        QString doSql[]={"drop table if exists " +tmpTbl,
-                         msg
-                        };
-        int nb_sql = sizeof(doSql)/sizeof(QString);
-        /// pour chaque boule de l'ensemble
-        /// executer le code de traitement de la table temporaire
-        msg="";
-        QString clause="";
-        ref_1 = "t1."+myGame.names[zn].abv+"%1";
-        ref_2 = "(t1."+myGame.names[zn].abv+"%1=%2)";
-        for(int items=0;items<tot_items;items++){
-            msg = msg+ref_1.arg(items+1);
-            clause = clause + ref_2.arg(items+1).arg("%1");
-            if(items<tot_items-1){
-                msg = msg+",";
-                clause = clause+"or";
-            }
-        }
-#ifndef QT_NO_DEBUG
-        qDebug() <<msg;
-#endif
-        msg = "insert into "
-                + tmpTbl
-                +" select null, t1.id,"
-                + msg
-                +" from("
-                +db_data
-                +") as t1 where";
-
-        int nb_boule = myGame.limites[zn].max;
-        QString colVariance = "V";
-
-        for(int boule=0;(boule<nb_boule)&&isOk;boule++){
-            for(int sql_id=0;(sql_id<nb_sql)&&isOk;sql_id++){
-
-#ifndef QT_NO_DEBUG
-                qDebug() <<doSql[sql_id];
-#endif
-
-                isOk = sql_q1.exec(doSql[sql_id]);
-                if(!isOk)
-                {
-                    QString ErrLoc = "BCountEcart::ici";
-                    DB_Tools::DisplayError(ErrLoc,&sql_q1,msg);
-                }
-            }
-            ///remplir la table
-            if(isOk){
-                QString sql = clause.arg(boule+1);
-                sql = msg
-                        +"("
-                        + sql
-                        +")";
-#ifndef QT_NO_DEBUG
-                qDebug() <<sql;
-#endif
-                isOk = sql_q1.exec(sql);
-
-                /// si la table est remplie
-                /// faire le calcul sur ecart
-                /// et mettre dans table resultat
-                if(isOk){
-                    QString msg_var = " select ("
-                                      " printf(\"%.1f\","
-                                      " sum (((t2.id-t1.id) - t1.Em) * ((t2.id-t1.id) - t1.Em))/count(*)"
-                                      " )) as "
-                            +colVariance+
-                            " from"
-                            " ("
-                            " select lgn,id,Em from "
-                            +tmpTbl+" left join"
-                                    " ( select"
-                                    " printf(\"%.1f\",avg(t2.id-t1.id))as Em"
-                                    " from "
-                            +tmpTbl+" as t1, "
-                            +tmpTbl+" as t2 where (t2.lgn = t1.lgn+1))) as t1,"
-                                    " ("
-                                    " select lgn,id,Em from "
-                            +tmpTbl+" left join"
-                                    " ( select"
-                                    " printf(\"%.1f\",avg(t2.id-t1.id))as Em"
-                                    " from "
-                            +tmpTbl+" as t1, "
-                            +tmpTbl+" as t2 where (t2.lgn = t1.lgn+1))) as t2"
-                                    " where"
-                                    " (t2.lgn = t1.lgn +1)";
-
-#ifndef QT_NO_DEBUG
-                    qDebug() <<msg_var;
-#endif
-
-                    sql = "insert into "
-                            + tblName
-                            +" select max(B)as B, max(Ec) as Ec, max(Ep) as Ep,"
-                             "printf(\"%.1f\",avg(E))as Em,max(E) as E,"
-                             "count(B) as T, 0, V"
-                             " from "
-                             "("
-                             "select "
-                            +QString::number(boule+1)
-                            +" as B,(case when t1.lgn=1 then t1.id -1 end)as Ec,"
-                             "(case when t1.lgn=1 then (t2.id-t1.id)  end)as Ep,"
-                             "(t2.id-t1.id) as E, ("
-                            + msg_var +
-                            ") as V from "
-                            +tmpTbl+" as t1, "
-                            +tmpTbl+" as t2 "
-                                    "where"
-                                    "(t2.lgn=t1.lgn+1)"
-                                    ")";
-#ifndef QT_NO_DEBUG
-                    qDebug() <<sql;
-#endif
-                    isOk = sql_q1.exec(sql);
-
-                    if(isOk){
-                        if(sql_q1.isActive()){
-                            sql_q1.finish();
-                        }
-                        if(sql_q1.isActive()){
-                            sql_q1.finish();
-                        }
-                    }
-
-                }
-            }
-        }
-
-        // On a notre table Ecart complete avec la variance
-        // calculer le sqrt de la variance
-        if(isOk){
-            isOk = CalculerSqrt(tblName, colVariance);
-        }
-
-        /// suppression derniere table temporaire cree
-        if(isOk){
-            msg = doSql[0];
-            isOk = sql_q1.exec(msg);
-        }
-    }
-    /// Traitement affichage erreur
-    if(!isOk)
-    {
-        QString ErrLoc = "BCountEcart::createThatTable";
-        DB_Tools::DisplayError(ErrLoc,&sql_q1,msg);
-    }
-
-#endif
-#if 0
-    select lgn,id,Em from maTable left join
-            ( select
-              printf("%.1f",avg(t2.id-t1.id))as Em
-              from maTable as t1, maTable as t2 where (t2.lgn = t1.lgn+1))
-        #endif
-
-        #if 0
-
-            select (
-                printf("%.1f",
-                       sum (((t2.id-t1.id) - t1.Em) * ((t2.id-t1.id) - t1.Em))/count(*)
-                       )) as V
-            from
-            (
-                select lgn,id,Em from tmp_eca_elm_000_z1 left join
-                ( select
-                  printf("%.1f",avg(t2.id-t1.id))as Em
-                  from tmp_eca_elm_000_z1 as t1, tmp_eca_elm_000_z1 as t2 where (t2.lgn = t1.lgn+1))) as t1,
-            (
-                select lgn,id,Em from tmp_eca_elm_000_z1 left join
-                ( select
-                  printf("%.1f",avg(t2.id-t1.id))as Em
-                  from tmp_eca_elm_000_z1 as t1, tmp_eca_elm_000_z1 as t2 where (t2.lgn = t1.lgn+1))) as t2
-            where
-            (t2.lgn = t1.lgn +1)
-        #endif
-            // On a la table resultat, on parcour toute la base de nouveau
-            // pour determiner boule pas encore sorties.
-            return isOk;
-    /// insert into eca_elm_000_z1 select max(B)as B,
-    /// max(Ec) as Ec, max(Ep) as Ep,
-    /// printf("%.1f",avg(E))as Em,max(E) as E,count(B) as T, 0,
-    /// printf("%.1f",(SUM(avg(E))/COUNT(*)) -((SUM(avg(E))/COUNT(*))*(SUM(avg(E))/COUNT(*)))) as V
-    /// from (select 1 as B,(case when t1.lgn=1 then t1.id -1 end)as Ec,
-    /// (case when t1.lgn=1 then (t2.id-t1.id)  end)as Ep,
-    /// (t2.id-t1.id) as E from tmp_eca_elm_000_z1 as t1,
-    /// tmp_eca_elm_000_z1 as t2 where(t2.lgn=t1.lgn+1))
-
-    /// https://www.nikrou.net/post/2010/01/26/Calcul-d-%C3%A9cart-type-avec-sqlite
-    /// https://www.developpez.net/forums/d426898/bases-donnees/firebird/calcul-variance-d-ecart-type/
-    /// Variance = carré de l'écart type = Sx² / n - (Sx / n)²
-    /// i.e : (SUM(x*x)/COUNT(*)) -((SUM(x)/COUNT(*))*(SUM(x)/COUNT(*)))
-    ///
-    /// UPDATE B_elm
-    /// SET tz2 =
-    /// (
-    /// select ven  from r_B_fdj_0_elm_z1 where (B_elm.id=r_B_fdj_0_elm_z1.B)
-    /// )
 }
 
 QString BCountEcart::RechercherLesTirages(int boule, int zn)
@@ -556,7 +326,7 @@ bool BCountEcart::SauverCalculs(int boule, QString tblName, QString tmpTbl)
     QString msg = "";
     bool isOk = true;
     QSqlQuery query(dbToUse);
-    QString colVariance = "V";
+    QString colVariance = "Es";
 
     if(tmpTbl == ""){
         return false;
@@ -566,26 +336,33 @@ bool BCountEcart::SauverCalculs(int boule, QString tblName, QString tmpTbl)
                       " printf(\"%.1f\","
                       " sum (((t2.id-t1.id) - t1.Em) * ((t2.id-t1.id) - t1.Em))/count(*)"
                       " )) as "
-            +colVariance+
+            +colVariance
+            +
             " from"
             " ("
             " select lgn,id,Em from "
-            +tmpTbl+" left join"
-                    " ( select"
-                    " printf(\"%.1f\",avg(t2.id-t1.id))as Em"
-                    " from "
-            +tmpTbl+" as t1, "
-            +tmpTbl+" as t2 where (t2.lgn = t1.lgn+1))) as t1,"
-                    " ("
-                    " select lgn,id,Em from "
-            +tmpTbl+" left join"
-                    " ( select"
-                    " printf(\"%.1f\",avg(t2.id-t1.id))as Em"
-                    " from "
-            +tmpTbl+" as t1, "
-            +tmpTbl+" as t2 where (t2.lgn = t1.lgn+1))) as t2"
-                    " where"
-                    " (t2.lgn = t1.lgn +1)";
+            +tmpTbl
+            +" left join"
+             " ( select"
+             " printf(\"%.1f\",avg(t2.id-t1.id))as Em"
+             " from "
+            +tmpTbl
+            +" as t1, "
+            +tmpTbl
+            +" as t2 where (t2.lgn = t1.lgn+1))) as t1,"
+             " ("
+             " select lgn,id,Em from "
+            +tmpTbl
+            +" left join"
+             " ( select"
+             " printf(\"%.1f\",avg(t2.id-t1.id))as Em"
+             " from "
+            +tmpTbl
+            +" as t1, "
+            +tmpTbl
+            +" as t2 where (t2.lgn = t1.lgn+1))) as t2"
+             " where"
+             " (t2.lgn = t1.lgn +1)";
 
 #ifndef QT_NO_DEBUG
     qDebug() <<msg_var;
@@ -594,8 +371,10 @@ bool BCountEcart::SauverCalculs(int boule, QString tblName, QString tmpTbl)
     QString sql = "insert into "
             + tblName
             +" select max(B)as B, max(Ec) as Ec, max(Ep) as Ep,"
-             "printf(\"%.1f\",avg(E))as Em,max(E) as E,"
-             "count(B) as T, 0, V"
+             "printf(\"%.1f\",avg(E))as Em,max(E) as M, "
+            +colVariance
+            +" as Es, "
+             "count(B) as T, 0"
              " from "
              "("
              "select "
@@ -604,26 +383,29 @@ bool BCountEcart::SauverCalculs(int boule, QString tblName, QString tmpTbl)
              "(case when t1.lgn=1 then (t2.id-t1.id)  end)as Ep,"
              "(t2.id-t1.id) as E, ("
             + msg_var +
-            ") as V from "
-            +tmpTbl+" as t1, "
-            +tmpTbl+" as t2 "
-                    "where"
-                    "(t2.lgn=t1.lgn+1)"
-                    ")";
+            ") as "
+            +colVariance
+            +" from "
+            +tmpTbl
+            +" as t1, "
+            +tmpTbl
+            +" as t2 "
+             "where"
+             "(t2.lgn=t1.lgn+1)"
+             ")";
 #ifndef QT_NO_DEBUG
     qDebug() <<sql;
 #endif
-    if(isOk = query.exec(sql)){
+    if((isOk = query.exec(sql))){
         if(isOk = query.isActive()){
             query.finish();
         }
     }
 
-
-
     return isOk;
 }
 
+#if 0
 bool BCountEcart::CalculerSqrt(QString tblName, QString colVariance)
 {
     bool isOk = true;
@@ -664,7 +446,7 @@ bool BCountEcart::CalculerSqrt(QString tblName, QString colVariance)
     }
     return isOk;
 }
-
+#endif
 ///-----------------------------
 /// Delegation couleur sur tableau ecart
 void BDlgEcart::paint(QPainter *painter, const QStyleOptionViewItem &option,

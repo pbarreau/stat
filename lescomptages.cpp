@@ -1462,12 +1462,13 @@ void BPrevision::showAll(QString source,const BGame &config)
     tmp_layout->addLayout(Etape_2,1,0);
 
 
+#if 0
     /// Connection aux tables view
     for(int i=0; i< qtvEcarts.size();i++){
     connect(qtvEcarts[i],SIGNAL(clicked(QModelIndex)),
             Etape_2,SLOT(slot_SurlignerTirage(QModelIndex)));
     }
-
+#endif
 
     /// Calcul
     QLabel *lab_calcul = new QLabel("Calculs");

@@ -115,6 +115,7 @@ protected:
     bool VerifierValeur(int item, QString table,int idColValue,int *lev);
     QMenu *ContruireMenu(QString tbl, int val);
     void CompleteMenu(QMenu *LeMenu,QString tbl, int clef);
+    bool CalculerSqrt(QString tblName, QString colVariance);
 
 private:
     void RecupererConfiguration(void);
