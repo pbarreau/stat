@@ -11,13 +11,13 @@
 
 #define HCELL       55
 
-class BCountComb:public BCount
+class C_CmbDetails:public BCount
 {
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    BCountComb(const QString &in, const BGame &pDef, QSqlDatabase fromDb);
-    ~BCountComb();
+    C_CmbDetails(const QString &in, const BGame &pDef, QSqlDatabase fromDb);
+    ~C_CmbDetails();
     QString getFilteringData(int zn);
     QTableView *getTblAllData(int zn);
 

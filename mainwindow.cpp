@@ -38,8 +38,8 @@
 #include "chartwidget.h"
 
 
-#include "compter_groupes.h"
-#include "compter_zones.h"
+#include "cmpt_grou_details.h"
+#include "cmpt_elem_details.h"
 
 
 

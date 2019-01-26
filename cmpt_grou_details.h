@@ -11,14 +11,14 @@
 
 #include "compter.h"
 
-class BCountGroup:public BCount
+class C_GrpDetails:public BCount
 {
     Q_OBJECT
     /// in : infos representant les tirages
     /// tb : nom de la table decrivant les zones
 public:
-    BCountGroup(const QString &in,  const BGame &pDef,  QSqlDatabase fromDb);
-    ~BCountGroup();
+    C_GrpDetails(const QString &in,  const BGame &pDef,  QSqlDatabase fromDb);
+    ~C_GrpDetails();
     QString getFilteringData(int zn);
     QTableView *getTblAllData(int zn);
     QTableView *getTblOneData(int zn);

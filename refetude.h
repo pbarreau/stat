@@ -8,7 +8,7 @@
 #include <QSortFilterProxyModel>
 
 #include "gererbase.h"
-#include "compter_groupes.h"
+#include "cmpt_grou_details.h"
 
 class sCouv
 {
@@ -118,7 +118,7 @@ private:
     QMdiArea *p_affiche;
     QTabWidget *p_reponse;
     QTabWidget *tabTrackCouverture;
-    BCountGroup *unTest;
+    C_GrpDetails *unTest;
 
 };
 

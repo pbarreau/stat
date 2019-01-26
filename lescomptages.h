@@ -7,9 +7,9 @@
 #include <QLabel>
 
 #include "ihm_tirages.h"
-#include "compter_zones.h"
-#include "compter_combinaisons.h"
-#include "compter_groupes.h"
+#include "cmpt_elem_details.h"
+#include "cmpt_comb_details.h"
+#include "cmpt_grou_details.h"
 
 #include "compter.h"
 #include "db_tools.h"
@@ -72,8 +72,8 @@ typedef struct
 {
     QString src;
     BGame cnf;
-    BCountGroup *grp;
-    BCountComb *cmb;
+    C_GrpDetails *grp;
+    C_CmbDetails *cmb;
     QTabWidget *niv;
     int zn;
     int id;
@@ -158,9 +158,9 @@ private:
     BGame monJeu;           /// parametres pour filtration
     QStringList **slFlt;    /// zn_filters
     IHM_Tirages * Etape_2;
-    BCountElem *c1;
-    BCountComb *c2;
-    BCountGroup *c3;
+    C_ElmDetails *c1;
+    C_CmbDetails *c2;
+    C_GrpDetails *c3;
     QString tblTirages;
     QSqlQueryModel *sqm_resu;
     LabelClickable selection[3];

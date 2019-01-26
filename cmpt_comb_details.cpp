@@ -14,23 +14,23 @@
 
 #include "delegate.h"
 #include "filtrecombinaisons.h"
-#include "compter_combinaisons.h"
+#include "cmpt_comb_details.h"
 #include "cnp_SansRepetition.h"
 #include "db_tools.h"
 
-int BCountComb::total = 0;
+int C_CmbDetails::total = 0;
 
-BCountComb::~BCountComb()
+C_CmbDetails::~C_CmbDetails()
 {
     total --;
 }
 
-QTableView *BCountComb::getTblAllData(int zn)
+QTableView *C_CmbDetails::getTblAllData(int zn)
 {
     return(tbvEnsemble_zn[zn]);
 }
 
-BCountComb::BCountComb(const QString &in,  const BGame &pDef, QSqlDatabase fromDb)
+C_CmbDetails::C_CmbDetails(const QString &in,  const BGame &pDef, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountCmb)
 {
     //type=eCountCmb;
@@ -41,10 +41,10 @@ BCountComb::BCountComb(const QString &in,  const BGame &pDef, QSqlDatabase fromD
     int nb_zones = myGame.znCount;
     tbvEnsemble_zn = new QTableView *[nb_zones];
 
-    QTableView *(BCountComb::*ptrFunc[])(QString *, int) =
+    QTableView *(C_CmbDetails::*ptrFunc[])(QString *, int) =
     {
-            &BCountComb::Compter,
-            &BCountComb::Compter
+            &C_CmbDetails::Compter,
+            &C_CmbDetails::Compter
 
 };
 
@@ -81,7 +81,7 @@ BCountComb::BCountComb(const QString &in,  const BGame &pDef, QSqlDatabase fromD
 #endif
 }
 
-void BCountComb::slot_ClicDeSelectionTableau(const QModelIndex &index)
+void C_CmbDetails::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
     int tab_index = 0;
@@ -106,7 +106,7 @@ void BCountComb::slot_ClicDeSelectionTableau(const QModelIndex &index)
     SqlFromSelection(selectionModel,tab_index);
 }
 
-void BCountComb::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
+void C_CmbDetails::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
 {
     QString str_titre =  "c[";
 
@@ -149,7 +149,7 @@ void BCountComb::LabelFromSelection(const QItemSelectionModel *selectionModel, i
     emit sig_TitleReady(str_titre);
 }
 
-void BCountComb::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
+void C_CmbDetails::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
 {
     QModelIndexList indexes = selectionModel->selectedIndexes();
 
@@ -194,7 +194,7 @@ void BCountComb::SqlFromSelection (const QItemSelectionModel *selectionModel, in
     }
 }
 
-void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
+void C_CmbDetails::slot_RequeteFromSelection(const QModelIndex &index)
 {
     QString st_critere = "";
     QString sqlReq ="";
@@ -230,7 +230,7 @@ void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
     emit sig_ComptageReady(a);
 }
 
-QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int dst)
+QString C_CmbDetails::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int dst)
 {
     QSqlQuery query(dbToUse) ;
     QString msg = "";
@@ -317,185 +317,6 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
     return    msg ;
 }
 
-bool BCountComb::createThatTable(QString tblEcartcombi, int zn)
-{
-    QString tblTempo = "";
-    bool isOk = true;
-    QString msg = "";
-    QSqlQuery query(dbToUse);
-    int max_combi = 0;
-
-    /// Nombre de combinaison de la zone
-    msg = "select count(*) from B_"
-            +QString(cClc_cmb)
-            +"_z"+QString::number(zn+1)+";";
-
-    if(isOk = query.exec(msg)){
-        query.first();
-        if(isOk = query.isValid())
-        {
-            QSqlRecord rec  = query.record();
-            max_combi = rec.value(0).toInt();
-        }
-    }
-
-    ///  creer la table
-    msg = "create table if not exists "
-            +tblEcartcombi
-            +"(Id int, C text, Ec int, Ep int, Em real, M int, Es float, T int, A int);";
-#ifndef QT_NO_DEBUG
-    qDebug() <<msg;
-#endif
-
-    if(isOk){
-        isOk = query.exec(msg);
-    }
-
-    ///  Rechercher chaque boule
-    for(int combi = 0; (combi < max_combi) & isOk ; combi++){
-        ///  faire les calculs necessaires
-        tblTempo = RechercherLesTirages(combi,zn);
-        ///  sauvegarder les resultats
-        isOk = SauverCalculs(combi, tblEcartcombi, tblTempo);
-    }
-
-    if(isOk){
-        msg = "drop table if exists " +tblTempo + ";";
-        if( isOk = query.exec(msg)){
-            /// Calculer l'esperance de chaque tirage
-            ///  grace a la variance
-            isOk = CalculerSqrt(tblEcartcombi, "Es");
-        }
-    }
-
-    return isOk;
-}
-
-QString BCountComb::RechercherLesTirages(int combi, int zn)
-{
-    QString msg = "";
-    bool isOk = true;
-    QSqlQuery query(dbToUse);
-    QString tmpTbl = "tmp_rch";
-
-
-    msg = "drop table if exists " +tmpTbl + ";";
-
-#ifndef QT_NO_DEBUG
-    qDebug() <<msg;
-#endif
-    if( !(isOk = query.exec(msg))){
-        return "";
-    }
-
-    msg = "create table if not exists "
-            + tmpTbl
-            +"(lgn integer primary key, id int);";
-
-#ifndef QT_NO_DEBUG
-    qDebug() <<msg;
-#endif
-    if( !(isOk = query.exec(msg))){
-        return "";
-    }
-
-    msg = "insert into "
-            + tmpTbl
-            +" select null, t1.id"
-            +" from(B_"
-            +cRef_ana+"_z"
-            +QString::number(zn+1)+";"
-            +") as t1 where(t1.idComb="+
-            QString::number(combi)+")";
-
-    ///remplir la table
-
-#ifndef QT_NO_DEBUG
-    qDebug() <<msg;
-#endif
-    if( !(isOk = query.exec(msg))){
-        return "";
-    }
-
-    query.finish();
-
-    return tmpTbl;
-}
-
-bool BCountComb::SauverCalculs(int combi, QString tblName, QString tmpTbl)
-{
-    QString msg = "";
-    bool isOk = true;
-    QSqlQuery query(dbToUse);
-    QString colVariance = "Es";
-
-    if(tmpTbl == ""){
-        return false;
-    }
-
-    msg ="insert into "
-            +tblName
-            +" select (B)as B, "
-             "(select t1.tip from (B_cmb_z1)as t1 where(t1.id=B)) as C,"
-             "(case when count(Ec)=0 then 0 else max(Ec) end) as Ec, "
-             "(case when count(Ep)=0 then 0 else max(Ep) end) as Ep,"
-             "printf(\"%.1f\",avg(E))as Em,"
-             "(case when count(E)=0 then 0 else max(E) end) as M,"
-            +colVariance
-            +" as Es,"
-             "count(B) as T, "
-             "0 "
-             "from (B_ana_z1) as t1, "
-             "("
-             "select "
-            +combi
-            +" as B,"
-             "(case when t1.lgn=1 then t1.id -1 end)as Ec,"
-             "(case when t1.lgn=1 then (t2.id-t1.id)  end)as Ep,"
-             "(t2.id-t1.id) as E, "
-             "( select ( printf(\"%.1f\", sum (((t2.id-t1.id) - t1.Em) * ((t2.id-t1.id) - t1.Em))/count(*) )) as "
-            +colVariance
-            +" from ( "
-             "select lgn,id,Em "
-             "from "
-            +tmpTbl+
-            " left join ( "
-            " select printf(\"%.1f\",avg(t2.id-t1.id))as Em "
-            " from "
-            +tmpTbl
-            +" as t1, "
-            +tmpTbl
-            +" as t2 "
-             " where (t2.lgn = t1.lgn+1))) as t1, "
-             " ( "
-             " select lgn,"
-             " id,"
-             " Em from "+tmpTbl+
-            " left join "
-            " ( "
-            " select printf(\"%.1f\",avg(t2.id-t1.id))as Em "
-            " from "+tmpTbl+" as t1, "
-            +tmpTbl
-            +" as t2 where (t2.lgn = t1.lgn+1))) as t2 "
-             " where (t2.lgn = t1.lgn +1)) as "
-            +colVariance
-            +" from "
-            +tmpTbl
-            +" as t1, "
-            +tmpTbl
-            +" as t2 where(t2.lgn=t1.lgn+1))"
-             " where (t1.id = B)";
-#ifndef QT_NO_DEBUG
-    qDebug() <<msg;
-#endif
-    if(isOk = query.exec(msg)){
-        if(isOk = query.isActive()){
-            query.finish();
-        }
-    }
-    return isOk;
-}
-
 ///------------------
 #if 0
 QString BCountComb::RequetePourTrouverTotal_z2(QString st_baseUse,int zn)
@@ -547,7 +368,7 @@ QString BCountComb::RequetePourTrouverTotal_z2(QString st_baseUse,int zn)
 }
 #endif
 
-QString BCountComb::ConstruireCriteres(int zn)
+QString C_CmbDetails::ConstruireCriteres(int zn)
 {
     /// critere a construire
     QString msg = "";
@@ -588,7 +409,7 @@ QString BCountComb::ConstruireCriteres(int zn)
     return msg;
 }
 
-QTableView *BCountComb::Compter(QString * pName, int zn)
+QTableView *C_CmbDetails::Compter(QString * pName, int zn)
 {
     QGridLayout *lay_return = new QGridLayout;
     (* pName) = myGame.names[zn].abv;
@@ -682,7 +503,7 @@ QTableView *BCountComb::Compter(QString * pName, int zn)
     return qtv_tmp;
 }
 
-QString BCountComb::getFilteringData(int zn)
+QString C_CmbDetails::getFilteringData(int zn)
 {
     QSqlQuery query(dbToUse);
     bool isOk = true;

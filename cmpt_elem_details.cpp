@@ -18,23 +18,23 @@
 #include <QAction>
 #include <QMenu>
 
-#include "compter_zones.h"
+#include "cmpt_elem_details.h"
 #include "db_tools.h"
 #include "delegate.h"
 
-int BCountElem::total = 0;
+int C_ElmDetails::total = 0;
 
-int BCountElem::getCounter(void)
+int C_ElmDetails::getCounter(void)
 {
     return total;
 }
 
-BCountElem::~BCountElem()
+C_ElmDetails::~C_ElmDetails()
 {
     total --;
 }
 
-BCountElem::BCountElem(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb)
+C_ElmDetails::C_ElmDetails(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountElm)
 {
     //type=eCountElm;
@@ -47,10 +47,10 @@ BCountElem::BCountElem(const QString &in, const int ze, const BGame &pDef,  QSql
     int nb_zones = myGame.znCount;
 
 
-    QTableView *(BCountElem::*ptrFunc[])(QString *, int) =
+    QTableView *(C_ElmDetails::*ptrFunc[])(QString *, int) =
     {
-            &BCountElem::Compter,
-            &BCountElem::Compter
+            &C_ElmDetails::Compter,
+            &C_ElmDetails::Compter
 
 };
 
@@ -72,7 +72,7 @@ BCountElem::BCountElem(const QString &in, const int ze, const BGame &pDef,  QSql
 }
 
 
-void BCountElem::slot_ClicDeSelectionTableau(const QModelIndex &index)
+void C_ElmDetails::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     // L'onglet implique le tableau...
     int tab_index = 0;
@@ -159,7 +159,7 @@ void BCountElem::slot_ClicDeSelectionTableau(const QModelIndex &index)
     SqlFromSelection(selectionModel,tab_index);
 }
 
-void BCountElem::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
+void C_ElmDetails::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
 {
     QModelIndexList indexes = selectionModel->selectedIndexes();
 
@@ -205,7 +205,7 @@ void BCountElem::SqlFromSelection (const QItemSelectionModel *selectionModel, in
     }
 }
 
-void BCountElem::slot_RequeteFromSelection(const QModelIndex &index)
+void C_ElmDetails::slot_RequeteFromSelection(const QModelIndex &index)
 {
     QString st_critere = "";
     QString sqlReq ="";
@@ -244,7 +244,7 @@ void BCountElem::slot_RequeteFromSelection(const QModelIndex &index)
 
 /// Requete permettant de remplir le tableau
 ///
-QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
+QString C_ElmDetails::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 {
     QSqlQuery query(dbToUse);
     bool isOk = true;
@@ -337,12 +337,12 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     return msg;
 }
 
-QTableView * BCountElem::getTbv(int zn)
+QTableView * C_ElmDetails::getTbv(int zn)
 {
     return(tbv_memo[zn]);
 }
 
-QTableView *BCountElem::Compter(QString * pName, int zn)
+QTableView *C_ElmDetails::Compter(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
     QString qtv_name = QString::fromLatin1(cUsr_elm)
@@ -418,7 +418,7 @@ QTableView *BCountElem::Compter(QString * pName, int zn)
     tbv_memo[zn] = qtv_tmp;
     return qtv_tmp;
 }
-void BCountElem::slot_AideToolTip(const QModelIndex & index)
+void C_ElmDetails::slot_AideToolTip(const QModelIndex & index)
 {
     QString msg = "";
     QString msgAdd = "";
@@ -440,7 +440,7 @@ void BCountElem::slot_AideToolTip(const QModelIndex & index)
     QToolTip::showText (QCursor::pos(), msg);
 }
 
-QString BCountElem::getFilteringData(int zn)
+QString C_ElmDetails::getFilteringData(int zn)
 {
     QSqlQuery query(dbToUse);
     bool isOk = true;

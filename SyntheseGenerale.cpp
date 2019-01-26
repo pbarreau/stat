@@ -24,9 +24,9 @@
 #include "SyntheseDetails.h"
 #include "showstepper.h"
 
-#include "compter_groupes.h"
-#include "compter_zones.h"
-#include "compter_combinaisons.h"
+#include "cmpt_grou_details.h"
+#include "cmpt_elem_details.h"
+#include "cmpt_comb_details.h"
 #include "lescomptages.h"
 #include "compter.h"
 

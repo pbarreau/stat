@@ -24,10 +24,10 @@
 
 #include <QVector>
 
-#include "compter_zones.h"
-#include "compter_combinaisons.h"
-#include "compter_groupes.h"
-#include "compter_ecart.h"
+#include "cmpt_elem_details.h"
+#include "cmpt_comb_details.h"
+#include "cmpt_grou_details.h"
+#include "cmpt_elem_ecarts.h"
 #include "ihm_tirages.h"
 #include "bcouv.h"
 #include "labelclickable.h"
@@ -1406,8 +1406,8 @@ void BPrevision::showAll(QString source,const BGame &config)
     stBdata;
     stBdata.src = source;
     stBdata.cnf = config;
-    stBdata.cmb = new BCountComb(stBdata.src,stBdata.cnf,dbInUse);
-    stBdata.grp = new BCountGroup(stBdata.src,stBdata.cnf,dbInUse);
+    stBdata.cmb = new C_CmbDetails(stBdata.src,stBdata.cnf,dbInUse);
+    stBdata.grp = new C_GrpDetails(stBdata.src,stBdata.cnf,dbInUse);
 
     /// --------------Test-------------
     BCouv2 *test = new BCouv2(source,config,dbInUse);
@@ -1462,13 +1462,11 @@ void BPrevision::showAll(QString source,const BGame &config)
     tmp_layout->addLayout(Etape_2,1,0);
 
 
-#if 0
     /// Connection aux tables view
     for(int i=0; i< qtvEcarts.size();i++){
     connect(qtvEcarts[i],SIGNAL(clicked(QModelIndex)),
             Etape_2,SLOT(slot_SurlignerTirage(QModelIndex)));
     }
-#endif
 
     /// Calcul
     QLabel *lab_calcul = new QLabel("Calculs");
@@ -1747,14 +1745,14 @@ QWidget *BPrevision::FormElm(const stUsePrm &data)
     QLabel *lab_details = new QLabel("Details");
 
     /// repartition
-    BCountElem *tmp_elm = new BCountElem(data.src,data.zn,data.cnf,dbInUse);
+    C_ElmDetails *tmp_elm = new C_ElmDetails(data.src,data.zn,data.cnf,dbInUse);
     gdl_tmp->addWidget(lab_details,0,2);
     gdl_tmp->addWidget(tmp_elm,1,2);
     qtvDetails.append(tmp_elm->getTbv(data.zn));
 
 
     /// ecart
-    BCountEcart *tmp_ect = new BCountEcart(data.src,data.zn,data.cnf,dbInUse);
+    C_ElmEcarts *tmp_ect = new C_ElmEcarts(data.src,data.zn,data.cnf,dbInUse);
     gdl_tmp->addWidget(lab_ecart,0,0);
     gdl_tmp->addWidget(tmp_ect,1,0);
     qtvEcarts.append(tmp_ect->getTbv(data.zn));

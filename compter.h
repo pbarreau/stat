@@ -9,6 +9,7 @@
 #include <QStringList>
 #include <QGridLayout>
 #include <QSqlQueryModel>
+#include <QItemDelegate>
 #include <QList>
 
 #include "delegate.h"
@@ -158,6 +159,26 @@ Q_SIGNALS:
     void sig_TitleReady(const QString &title);
     void sig_ComptageReady(const B_RequeteFromTbv &my_answer);
 
+};
+
+class BSqmColorizeEcart:public QSqlQueryModel
+{
+    Q_OBJECT
+
+public:
+    BSqmColorizeEcart(QObject *parent=0):QSqlQueryModel(parent){}
+    QVariant data(const QModelIndex &index, int role) const;
+    //Qt::ItemFlags flags(const QModelIndex &index) const;
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
+};
+
+class BDlgEcart : public QItemDelegate
+{
+    Q_OBJECT
+public:
+    BDlgEcart(QWidget *parent = 0) : QItemDelegate(parent) {}
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,
+               const QModelIndex &index) const;
 };
 
 #endif // COMPTER_H

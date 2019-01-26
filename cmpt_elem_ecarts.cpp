@@ -14,7 +14,7 @@
 #include <QItemDelegate>
 #include <cmath>
 
-#include "compter_ecart.h"
+#include "cmpt_elem_ecarts.h"
 #include "db_tools.h"
 
 const QColor fond[4]={QColor(255,156,86,190),//Orange
@@ -23,19 +23,19 @@ const QColor fond[4]={QColor(255,156,86,190),//Orange
                       QColor(255,40,180,190)//Violet
                      };
 
-int BCountEcart::total = 0;
+int C_ElmEcarts::total = 0;
 
-BCountEcart::~BCountEcart()
+C_ElmEcarts::~C_ElmEcarts()
 {
     total --;
 }
 
-QTableView * BCountEcart::getTbv(int zn)
+QTableView * C_ElmEcarts::getTbv(int zn)
 {
     return(tbv_memo[zn]);
 }
 
-BCountEcart::BCountEcart(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb)
+C_ElmEcarts::C_ElmEcarts(const QString &in, const int ze, const BGame &pDef,  QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountElm)
 {
     QString name = "";
@@ -59,7 +59,7 @@ BCountEcart::BCountEcart(const QString &in, const int ze, const BGame &pDef,  QS
     total++;
 }
 
-QTableView * BCountEcart::Compter(QString *pname, int zn)
+QTableView * C_ElmEcarts::Compter(QString *pname, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
     QString qtv_name = QString::fromLatin1(cClc_eca)
@@ -130,7 +130,7 @@ QTableView * BCountEcart::Compter(QString *pname, int zn)
     return   qtv_tmp;
 }
 
-void BCountEcart::slot_SurligneTirage(const QModelIndex &index)
+void C_ElmEcarts::slot_SurligneTirage(const QModelIndex &index)
 {
     int col=index.column();
 
@@ -141,7 +141,7 @@ void BCountEcart::slot_SurligneTirage(const QModelIndex &index)
     }
 }
 
-void BCountEcart::slot_AideToolTip(const QModelIndex & index)
+void C_ElmEcarts::slot_AideToolTip(const QModelIndex & index)
 {
     QTableView *view = qobject_cast<QTableView *>(sender());
 
@@ -157,7 +157,7 @@ void BCountEcart::slot_AideToolTip(const QModelIndex & index)
     QVariant vCol = pModel->headerData(cln,Qt::Horizontal);
     QString colName = vCol.toString();
 
-    if(colName == "V"){
+    if(colName == "Es"){
         msg = "Ecart à la moyenne\n";
     }
 
@@ -201,7 +201,7 @@ void BCountEcart::slot_AideToolTip(const QModelIndex & index)
     QToolTip::showText (QCursor::pos(), msg);
 }
 
-bool BCountEcart::createThatTable(QString tblName, int zn)
+bool C_ElmEcarts::createThatTable(QString tblName, int zn)
 {
     QString tableBoule = "";
     bool isOk = true;
@@ -236,7 +236,7 @@ bool BCountEcart::createThatTable(QString tblName, int zn)
     return isOk;
 }
 
-QString BCountEcart::RechercherLesTirages(int boule, int zn)
+QString C_ElmEcarts::RechercherLesTirages(int boule, int zn)
 {
     QString msg = "";
     bool isOk = true;
@@ -321,7 +321,7 @@ QString BCountEcart::RechercherLesTirages(int boule, int zn)
     return tmpTbl;
 }
 
-bool BCountEcart::SauverCalculs(int boule, QString tblName, QString tmpTbl)
+bool C_ElmEcarts::SauverCalculs(int boule, QString tblName, QString tmpTbl)
 {
     QString msg = "";
     bool isOk = true;

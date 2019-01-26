@@ -15,13 +15,13 @@
 
 #include "compter.h"
 
-class BCountElem:public BCount
+class C_ElmDetails:public BCount
 {
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    BCountElem(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb);
-    ~BCountElem();
+    C_ElmDetails(const QString &in, const int ze, const BGame &pDef, QSqlDatabase fromDb);
+    ~C_ElmDetails();
     int getCounter(void);
     QString getFilteringData(int zn);
     QTableView * getTbv(int zn);

@@ -46,9 +46,6 @@ SOURCES += \
 		choixjeux.cpp \
 		combinaison.cpp \
 		compter.cpp \
-		compter_combinaisons.cpp \
-		compter_groupes.cpp \
-		compter_zones.cpp \
 		delegate.cpp \
 		distancepourtirage.cpp \
 		filtrecombinaisons.cpp \
@@ -73,7 +70,6 @@ SOURCES += \
     cnp_SansRepetition.cpp \
     cnp_AvecRepetition.cpp \
     etudierjeux.cpp \
-    compter_ecart.cpp \
     compter_une_repartition.cpp \
     montrer_tirages.cpp \
     bcouv.cpp \
@@ -81,7 +77,12 @@ SOURCES += \
     barcalculprevision.cpp \
     ihm_tirages.cpp \
     sqlqmtirages.cpp \
-    idlgttirages.cpp
+    idlgttirages.cpp \
+    cmpt_elem_ecarts.cpp \
+    cmpt_comb_details.cpp \
+    cmpt_elem_details.cpp \
+    cmpt_grou_details.cpp \
+    cmpt_comb_ecarts.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -90,9 +91,6 @@ HEADERS  += \
 		chartwidget.h \
 		choixjeux.h \
 		compter.h \
-		compter_combinaisons.h \
-		compter_groupes.h \
-		compter_zones.h \
 		delegate.h \
 		distancepourtirage.h \
 		filtrecombinaisons.h \
@@ -115,7 +113,6 @@ HEADERS  += \
     cnp_SansRepetition.h \
     etudierjeux.h \
     game.h \
-    compter_ecart.h \
     compter_une_repartition.h \
     montrer_tirages.h \
     bcouv.h \
@@ -123,7 +120,12 @@ HEADERS  += \
     barcalculprevision.h \
     ihm_tirages.h \
     sqlqmtirages.h \
-    idlgttirages.h
+    idlgttirages.h \
+    cmpt_comb_ecarts.h \
+    cmpt_elem_ecarts.h \
+    cmpt_elem_details.h \
+    cmpt_comb_details.h \
+    cmpt_grou_details.h
 
 
 FORMS    += mainwindow.ui \

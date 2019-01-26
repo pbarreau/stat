@@ -8,7 +8,7 @@
 #include "ihm_tirages.h"
 #include "sqlqmtirages.h"
 #include "idlgttirages.h"
-#include "compter_combinaisons.h"
+#include "cmpt_comb_details.h"
 
 int IHM_Tirages::total = 0;
 
