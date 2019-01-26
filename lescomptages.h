@@ -102,6 +102,8 @@ private:
     bool AuthoriseChargementExtension(void);
     void effectuerTraitement(eGame game);
     QStringList **PreparerCriteresAnalyse(void);
+    int getIdCmbFromText(QString cmbText);
+    void ActiveOnglet(QTableView *tbv, int value, QString path);
 
 
     bool creerTablesDeLaBase(void);

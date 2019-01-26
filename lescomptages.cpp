@@ -1416,6 +1416,16 @@ void BPrevision::showAll(QString source,const BGame &config)
     stBdata.e_elm = new C_ElmEcarts(stBdata.src,stBdata.cnf,dbInUse);
     stBdata.e_cmb = new C_CmbEcarts(stBdata.src,stBdata.cnf,dbInUse);
 
+    /// Memoriser les tableaux
+    for(int zn=0; zn< config.znCount;zn++){
+        qtvElmDetails.append(stBdata.d_elm->getTbv(zn));
+        qtvElmEcarts.append(stBdata.e_elm->getTbv(zn));
+        qtvCmbDetails.append(stBdata.d_cmb->getTbv(zn));
+        qtvCmbEcarts.append(stBdata.e_cmb->getTbv(zn));
+        qtvGrpDetails.append(stBdata.d_grp->getTbv(zn));
+        //qtvGrpEcarts.append(stBdata.d_elm->getTbv(zn));
+    }
+
     /// Montrer les tirages correctements formattes
     Etape_2 = new IHM_Tirages(source,config,dbInUse);
     tmp_layout->addLayout(Etape_2,1,0);
@@ -1423,6 +1433,29 @@ void BPrevision::showAll(QString source,const BGame &config)
     QWidget * Etape_1 = partieDroite(source,config);
     tmp_layout->addWidget(Etape_1,1,1);
 
+    /// ----------------
+    /// pour montrer dans ecarts et detail
+    connect(Etape_2,SIGNAL(sig_TiragesClick(QModelIndex)),
+            this,SLOT(slot_SurligneEcartEtDetails(QModelIndex)));
+
+    /// pour montrer dans ecarts et detail
+    connect(Etape_2,SIGNAL(sig_TiragesClick(QModelIndex)),
+            stBdata.d_grp,SLOT(slot_DecodeTirage(QModelIndex)));
+
+
+    connect(Etape_2,SIGNAL(sig_ShowMenu(QPoint,QTableView *)),
+            this,SLOT(slot_ccmrTirages(QPoint,QTableView *)));
+
+
+    /// Connection aux tables view
+    for(int i=0; i< qtvElmEcarts.size();i++){
+        connect(qtvElmEcarts[i],SIGNAL(clicked(QModelIndex)),
+                Etape_2,SLOT(slot_SurlignerTirage(QModelIndex)));
+    }
+    for(int i=0; i< qtvCmbEcarts.size();i++){
+        connect(qtvCmbEcarts[i],SIGNAL(clicked(QModelIndex)),
+                Etape_2,SLOT(slot_SurlignerTirage(QModelIndex)));
+    }
     /// ----------------
     Resultats->setLayout(tmp_layout);
     Resultats->setWindowTitle(source);
@@ -1436,10 +1469,6 @@ void BPrevision::showAll(QString source,const BGame &config)
     /// -------------------------------
 
     QTabWidget *tab_L1 = new QTabWidget;
-
-    /// Tirages
-    QLabel *lab_tirages = new QLabel("Tirages");
-    tmp_layout->addWidget(lab_tirages,0,0);
 
 
     /// Label sur la feuille
@@ -1456,35 +1485,7 @@ void BPrevision::showAll(QString source,const BGame &config)
     tmp_layout->addWidget(&selection[0],0,1);
 
 
-    /// Effectuer les calculs permettant de
-    /// determiner la combinaison
-    QWidget * Etape_1 = partieDroite(source,config);
-    tmp_layout->addWidget(Etape_1,1,1);
 
-    /// Montrer les tirages correctements formattes
-    Etape_2 = new IHM_Tirages(source,config,dbInUse);
-
-
-    /// pour montrer dans ecarts et detail
-    connect(Etape_2,SIGNAL(sig_TiragesClick(QModelIndex)),
-            this,SLOT(slot_SurligneEcartEtDetails(QModelIndex)));
-
-    /// pour montrer dans ecarts et detail
-    connect(Etape_2,SIGNAL(sig_TiragesClick(QModelIndex)),
-            stBdata.d_grp,SLOT(slot_DecodeTirage(QModelIndex)));
-
-
-    connect(Etape_2,SIGNAL(sig_ShowMenu(QPoint,QTableView *)),
-            this,SLOT(slot_ccmrTirages(QPoint,QTableView *)));
-
-    tmp_layout->addLayout(Etape_2,1,0);
-
-
-    /// Connection aux tables view
-    for(int i=0; i< qtvElmEcarts.size();i++){
-        connect(qtvElmEcarts[i],SIGNAL(clicked(QModelIndex)),
-                Etape_2,SLOT(slot_SurlignerTirage(QModelIndex)));
-    }
 
     /// Calcul
     QLabel *lab_calcul = new QLabel("Calculs");
@@ -1551,6 +1552,105 @@ void BPrevision::slot_CalculSurTirage(const QModelIndex & index)
     tmp->show();
 }
 
+void BPrevision::slot_SurligneEcartEtDetails(const QModelIndex &index){
+    /// determiner le type de recherche en fonction de la postion du click
+    int col = index.column();
+    int recherche = -1; /// not set
+    int value = -1; /// not set
+    QString combi = "";
+    QString active = "";
+    QTableView *tbvRef = NULL;
+
+    if (col == 3){
+        /// Combinaison
+        recherche = 0;
+        combi = index.model()->index(index.row(),index.column()).data().toString();
+        value = getIdCmbFromText(combi);
+        active = "0,0,1";
+        tbvRef = qtvCmbDetails.at(0);
+        ActiveOnglet(tbvRef,value,active);
+        tbvRef = qtvCmbEcarts.at(0);
+        ActiveOnglet(tbvRef,value,active);
+    }
+
+    if (col > 3 && (col<3+onGame.limites[0].len)){
+        /// Boules
+        recherche = 1;
+        // recuperer la valeur a la colonne de la table
+        value = index.model()->index(index.row(),index.column()).data().toInt();
+        active = "0,0,0";
+        tbvRef = qtvElmDetails.at(0);
+        ActiveOnglet(tbvRef,value,active);
+        tbvRef = qtvElmEcarts.at(0);
+        ActiveOnglet(tbvRef,value,active);
+    }
+
+    if (col > (3+onGame.limites[0].len)){
+        /// Etoile
+        recherche = 2;
+        // recuperer la valeur a la colonne de la table
+        value = index.model()->index(index.row(),index.column()).data().toInt();
+        active = "1,0,0";
+        tbvRef = qtvElmDetails.at(1);
+        ActiveOnglet(tbvRef,value,active);
+        tbvRef = qtvElmEcarts.at(1);
+        ActiveOnglet(tbvRef,value,active);
+    }
+
+
+}
+
+void BPrevision::ActiveOnglet(QTableView *tbv, int value, QString path)
+{
+    QObject *curParent = tbv;
+
+    int laLigne = value-1;
+    QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(tbv->model());
+    m->sort(0);
+    tbv->horizontalHeader()->setSortIndicator(0,Qt::AscendingOrder);
+    tbv->scrollTo(m->index(laLigne,0));
+
+    /// Mettre un visuel sur la ligne
+    tbv->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    tbv->selectRow(laLigne);
+    tbv->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    /// Montrer le bon onglet
+    QTabWidget *ptab= NULL;
+    int ong_id = -1;
+
+    /// Onglets
+    for(int j=2;j>=0;j--){
+        for(int i=0; i<3;i++){
+            curParent = curParent->parent();
+        }
+        ptab= qobject_cast<QTabWidget *>(curParent);
+        ong_id = path.split(",").at(j).toInt();
+        ptab->setCurrentIndex(ong_id);
+        curParent = ptab;
+    }
+
+}
+
+int BPrevision::getIdCmbFromText(QString cmbText)
+{
+    QSqlQuery query(dbInUse);
+    QString msg = "";
+    bool isOk = true;
+    int key = 0;
+
+    msg ="select id from B_cmb_z1 where (tip = '"+cmbText+"');";
+    if((isOk = query.exec(msg))){
+        query.first();
+        if((isOk = query.isValid())){
+            /// Recuperer la clef
+            key = query.value(0).toInt();
+        }
+    }
+    return key;
+}
+
+#if 0
 void BPrevision::slot_SurligneEcartEtDetails(const QModelIndex &index)
 {
     // recuperer la valeur de la colonne
@@ -1629,7 +1729,7 @@ void BPrevision::slot_SurligneEcartEtDetails(const QModelIndex &index)
 
         /// Onglet Totaux/Combi...
         curParent = tabDetails;
-        for(int i=0; i<=3;i++){
+        for(int i=0; i<3;i++){
             curParent = curParent->parent();
         }
         ptab= qobject_cast<QTabWidget *>(curParent);
@@ -1637,7 +1737,7 @@ void BPrevision::slot_SurligneEcartEtDetails(const QModelIndex &index)
 
         /// Onglet Calcul Graphique
         curParent = tabDetails;
-        for(int i=0; i<=6;i++){
+        for(int i=0; i<3;i++){
             curParent = curParent->parent();
         }
         ptab= qobject_cast<QTabWidget *>(curParent);
@@ -1645,13 +1745,14 @@ void BPrevision::slot_SurligneEcartEtDetails(const QModelIndex &index)
 
         /// Onglet Boules/Etoiles
         curParent = tabDetails;
-        for(int i=0; i<=9;i++){
+        for(int i=0; i<3;i++){
             curParent = curParent->parent();
         }
         ptab= qobject_cast<QTabWidget *>(curParent);
         ptab->setCurrentIndex(onglet_1);
     }
 }
+#endif
 
 QWidget *BPrevision::partieDroite(QString source,const BGame &config)
 {

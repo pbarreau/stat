@@ -144,47 +144,94 @@ void IHM_Tirages::slot_SurlignerTirage(const QModelIndex &index)
     QString tbvName = view->objectName();
     int zn = ((tbvName.split("z")).at(1)).toInt()-1;
     int col = index.column();
+    int origine = 0;
+    int v1 = 0;
+    int v2 = 0;
+    int laLigne = 0;
+    int value = 0;//index.model()->index(index.row(),index.column()).data().toInt();
 
-    if(col > 0 && col <3 )
-    {
-        // recuperer les 2 valeurs a la colonne de la table
-        int v1 = index.model()->index(index.row(),1).data().toInt();
-        int v2 = index.model()->index(index.row(),2).data().toInt();
-        int laLigne = 0;
-        int value = 0;//index.model()->index(index.row(),index.column()).data().toInt();
+    if(tbvName.contains(cClc_eca)){
+        /// C'est bien un tableau ecart
+        if(tbvName.contains(cClc_elm)){
+            origine = 0;
+            if(col > 0 && col <3 )
+            {
 
-        // parcourir les tables view
-        QTableView *tabDetails = lesTirages;
-        //QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(tabDetails->model());
-
-        if(col==1){
-            value = v1;
+                /// Tableau elements
+                /// recuperer les 2 valeurs a la colonne de la table
+                v1 = index.model()->index(index.row(),1).data().toInt();
+                v2 = index.model()->index(index.row(),2).data().toInt();
+                if(col==1){
+                    value = v1;
+                }
+                else
+                {
+                    value = v1+v2;
+                }
+            }
         }
-        else
-        {
-            value = v1+v2;
+
+        if(tbvName.contains(cClc_cmb)){
+            origine = 1;
+
+            if(col > 1 && col <4 )
+            {
+                /// Tableau combinaison
+                /// recuperer les 2 valeurs a la colonne de la table
+                v1 = index.model()->index(index.row(),2).data().toInt();
+                v2 = index.model()->index(index.row(),3).data().toInt();
+                if(col==2){
+                    value = v1;
+                }
+                else
+                {
+                    value = v1+v2;
+                }
+            }
         }
-
-        QModelIndex nextIndex = tabDetails->model()->index(value,0);
-        tabDetails->scrollTo(nextIndex);
-
-        /// Clef
-        laLigne = value;
-
-        /// Mettre un visuel sur la ligne
-        tabDetails->setSelectionMode(QAbstractItemView::ExtendedSelection);
-
-        /// Changer la couleur de ligne de selection selon la zone
-        if(zn == 0){
-            tabDetails->setStyleSheet("QTableView {selection-background-color: green;}");
-        }
-        else
-        {
-            tabDetails->setStyleSheet("QTableView {selection-background-color: #5EB6FF;}");
-        }
-        tabDetails->selectRow(laLigne);
-        tabDetails->setSelectionMode(QAbstractItemView::SingleSelection);
     }
+
+    // parcourir les tables view
+    QTableView *tabDetails = lesTirages;
+    //QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(tabDetails->model());
+
+
+    QModelIndex nextIndex = tabDetails->model()->index(value,0);
+    tabDetails->scrollTo(nextIndex);
+
+    /// Clef
+    laLigne = value;
+
+    /// Mettre un visuel sur la ligne
+    tabDetails->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+    /// Changer la couleur de ligne de selection selon la demande
+    QString myStyleSheet = "";
+
+    if(origine ==0){
+        if(zn == 0){
+            myStyleSheet="QTableView {selection-background-color: #70FF44;}";
+        }
+        else
+        {
+            myStyleSheet="QTableView {selection-background-color: #5EB6FF;}";
+        }
+    }
+    else{
+        if(zn == 0){
+            myStyleSheet="QTableView {selection-background-color: #FFBE3D;}";
+        }
+        else
+        {
+            myStyleSheet="QTableView {selection-background-color: #91B4FF;}";
+        }
+
+    }
+
+    tabDetails->setStyleSheet(myStyleSheet);
+    tabDetails->selectRow(laLigne);
+    tabDetails->setSelectionMode(QAbstractItemView::SingleSelection);
+
 
 }
 
