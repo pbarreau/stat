@@ -560,9 +560,9 @@ bool BSqmColorizeEcart::setData(const QModelIndex &index, const QVariant &value,
 QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
 {
     /// Mettre les couleurs ??
-    ///setData(index,index.data(Qt::BackgroundRole),Qt::BackgroundRole);
+    QColor ma_couleur;
+    bool isOk = false;
 
-    int col = index.column();
 
     QColor u[]= {
         Qt::black,
@@ -574,6 +574,8 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
         QColor(211,255,204,255)
     };
 
+
+    int col = index.column();
 
     if(col== 0 )
     {
@@ -593,8 +595,8 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
         int et = ET.data().toInt();
         int ab = Ab.data().toInt();
 
-        if(!ep) ep=1;
-        if(!em) em=1;
+        //if(!ep) ep=1;
+        //if(!em) em=1;
 
         // Boule deja sortie ?
         if(ab == 0){
@@ -603,17 +605,24 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
             }
 
         }
-
-        if(ec &&((abs(ec-ep)%ep<=radix)||
-                 (abs(ec-em)%em<=radix)
-                 )){
-            if (role == Qt::TextColorRole){
-                return (u[1]);
+#if 0
+        if(ec && (ep !=1) && (em !=1)
+                && (abs((abs(ec-ep)%ep) - ep)<=radix)||
+                (abs(ec-em)%em<=radix)
+                )
+#endif
+            if(isNeedSpotLight(ep,ec,radix) ||
+                    isNeedSpotLight(em,ec,radix) ||
+                    isNeedSpotLight(et,ec,radix)
+                    )
+            {
+                if (role == Qt::TextColorRole){
+                    return (u[1]);
+                }
+                if (role == Qt::DecorationRole){
+                    return (QIcon(":/images/flag_1s.png"));
+                }
             }
-            if (role == Qt::DecorationRole){
-                return (QIcon(":/images/flag_1s.png"));
-            }
-        }
     }
 
 
@@ -622,62 +631,114 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
     /// pour la cellule en fonction
     /// de la valeur de l'ecart courant
     if(role==Qt::BackgroundRole){
-        int valCel = 0;
-        int valAna = 0;
+        int r0 = 0;
+        int r1 = 0;
+        int d1 = 0;
+        int d2 = 0 ;
         double radix = 1.5;
-        int calc = 0;
-
-        /// Valeur presente dans la cellule
-        valCel = index.data().toInt();
 
         /// Valeur de l'ecart courant pour cette ligne
-        valAna = index.model()->index(index.row(),1).data().toInt();
+        r0 = index.model()->index(index.row(),1).data().toInt();
 
-        if(valCel)
-            calc = abs(valAna-valCel)% valCel;
+        /// Valeur presente dans la cellule
+        r1 = index.data().toInt();
+
 
         if(col==1){
             // Montrer si Ec proche de Ep
-            calc = index.model()->index(index.row(),2).data().toInt();
-            if(valAna){
-                calc = abs(valAna-calc)% valAna;
-            }
-            if(valAna && calc<=radix){
-                return(QBrush(fond[0],Qt::SolidPattern));
-                //painter->fillRect(option.rect, fond[0]);
+            d1 = index.model()->index(index.row(),2).data().toInt();
+            if(isNeedSpotLight(d1,r0,radix)){
+                ma_couleur = fond[0];
+                return(QBrush(ma_couleur,Qt::SolidPattern));
             }
         }
         if(col==2){
-            // Montrer si Ep proche Em
+            // Montrer si Ep proche Em(centre)
             // Colonne Ep:Ecart precedent
-            calc = index.model()->index(index.row(),2).data().toInt();
-            valAna = index.model()->index(index.row(),3).data().toInt();
-            if(valAna){
-                calc = abs(valAna-calc)% valAna;
-            }
-            if(valAna && calc<=radix){
-                return(QBrush(fond[2],Qt::SolidPattern));
-                //painter->fillRect(option.rect, fond[2]);
+            d1 = index.model()->index(index.row(),3).data().toInt();
+            d2 = index.model()->index(index.row(),2).data().toInt();
+            if(isNeedSpotLight(d1,d2,radix)){
+                ma_couleur = fond[2];
+                return(QBrush(ma_couleur,Qt::SolidPattern));
             }
         }
 
         if(col==3){
             // Montrer si Ec proche Em
             // colonne Em:Ecart moyen
-            if(valAna && calc<=radix){
-                return(QBrush(fond[1],Qt::SolidPattern));
-                //painter->fillRect(option.rect, fond[1]);
+            if(isNeedSpotLight(r1,r0,radix)){
+                ma_couleur = fond[1];
+                return(QBrush(ma_couleur,Qt::SolidPattern));
             }
         }
         if(col==4){
             // Montrer si Ec proche ou superieur a EM
             // colonne EM: Ecart maximun
-            if(valAna && ((valAna+radix)>=valCel)){
-                return(QBrush(fond[3],Qt::SolidPattern));
-                //painter->fillRect(option.rect, fond[2]);
+            if(isNeedSpotLight(r1,r0,radix)){
+                ma_couleur = fond[3];
+                return(QBrush(ma_couleur,Qt::SolidPattern));
             }
         }
+        /// renvoyer la couleur
+
     }
 
     return QSqlQueryModel::data(index,role);
 }
+
+bool BSqmColorizeEcart::isNeedSpotLight(int v1, int v2, float r)const{
+    bool retVal = false;
+
+    /// v1 centre du cercle
+    if(!v1) return retVal;
+
+    /// Calcul de la distance entre les valeurs
+    int d = abs(v1-v2);
+    float k = abs(r);
+    int m = v2%v1;
+
+
+    /// la distance est comprise dans le rayon
+    /// acceptable ?
+    if(d < k){
+        /// oui
+        retVal = true;
+    }
+    else{
+        /// Non, alors regarder si v1 est a un multiple possible
+        if(m > k){
+            /// partie v1 - k
+            if(abs(v1-m)> k){
+                retVal = false;
+            }
+            else{
+                retVal = true;
+            }
+        }
+        else if (m == 0){
+            if( (v1==1)||(v2 == 0)){
+                if(d<k){
+                    retVal = true;
+                }
+                else{
+                    retVal = false;
+                }
+            }
+            else{ /// c'est un multiple de v1
+                retVal = true;
+            }
+        }
+        else{
+            /// m < k
+            if(d<k){
+                retVal = true;
+            }
+            else{
+                retVal = false;
+            }
+        }
+    }
+
+return retVal;
+}
+

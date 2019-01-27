@@ -170,6 +170,9 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
     //Qt::ItemFlags flags(const QModelIndex &index) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role);
+
+private:
+    bool isNeedSpotLight(int v1, int v2, float r)const;
 };
 
 class BDlgEcart : public QItemDelegate
