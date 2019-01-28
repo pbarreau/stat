@@ -670,7 +670,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
     int zn = ((st_from.split("z")).at(1)).toInt()-1;
     QString tbl = def[4];
     QStringList tmp = tbl.split("_");
-    QString tbl2 = "";//"r_B_fdj_0_elm_z"+QString::number(zn+1);
+    QString tbl2 = "";
 
     tbl= tmp[0]+"_"+tmp[1]+"_"+tmp[3];
 
@@ -684,8 +684,8 @@ void BCount::slot_ChoosePriority(QAction *cmd)
         tbl2 = QString(cClc_grp)+"_z"+QString::number(zn+1);
     }
     else{
-    tbl2 = tbl2
-            +"_000_B_fdj_z"+QString::number(zn+1);
+        tbl2 = tbl2
+                +"_000_B_fdj_z"+QString::number(zn+1);
     }
 
     // faut il inserer une nouvelle ligne
@@ -784,21 +784,15 @@ void BCount::slot_wdaFilter(bool val)
     QAction *chkFrom = qobject_cast<QAction *>(sender());
     bool isOk = true;
 
-    QString tmp = chkFrom->objectName();
-    tmp = (tmp.split("z")).at(1);
+    QString tmp_obj = chkFrom->objectName();
+    tmp_obj = (tmp_obj.split("z")).at(1);
     /// reconstruction table cible
-    int zn = tmp.toInt()-1;
+    int zn = tmp_obj.toInt()-1;
     int counter = this->countId;
 
-    QString tblDest = this->db_data;
-    QString endName = "_"+cLabCount[type]
-            +"_z"
-            +QString::number(zn+1);
-
-    tblDest = "r_"
-            +tblDest
-            +"_"+QString::number(counter)
-            +endName;
+    QString tblDest = cLabCount[type]
+            +"00"+QString::number(zn)
+            +"_B_fdj_z"+QString::number(zn+1);
 
 
 #ifndef QT_NO_DEBUG
@@ -823,6 +817,25 @@ void BCount::slot_wdaFilter(bool val)
     //int v_2 = def[2].toInt();
     //int elm = def[3].toInt();
     QString tbl = def[4];
+    QStringList tmp = tbl.split("_");
+    QString tbl2 = "";
+
+    tbl= tmp[0]+"_"+tmp[1]+"_"+tmp[3];
+
+    if(tmp[1] == "e"){
+        tbl2 = QString(cClc_elm);
+    }
+    if(tmp[1] == "c"){
+        tbl2 = QString(cClc_cmb);
+    }
+    if(tmp[1] == "g"){
+        tbl2 = QString(cClc_grp)+"_z"+QString::number(zn+1);
+    }
+    else{
+        tbl2 = tbl2
+                +"_000_B_fdj_z"+QString::number(zn+1);
+    }
+
 
     // faut il inserer une nouvelle ligne CREER UNE VARIABLE POUR LES COLONNES
     /// TB_SE
@@ -838,8 +851,8 @@ void BCount::slot_wdaFilter(bool val)
                 "where (val="+def[3]+");";
     }
 
-    isOk = query.exec(msg);
-    if(isOk){
+    ;
+    if((isOk = query.exec(msg))){
         QString filtre = "";
         QString key2use= "";
 
@@ -848,8 +861,11 @@ void BCount::slot_wdaFilter(bool val)
         if(type==eCountGrp)key2use = "Nb";
 
         msg = "SELECT name FROM sqlite_master "
-              "WHERE type='table' and name like 'r_%"+endName+"'";
+              "WHERE type='table' and name like '%"+tbl2+"'";
 
+#ifndef QT_NO_DEBUG
+        qDebug() <<msg;
+#endif
         isOk = query.exec(msg);
         if(isOk)query.first();
 
@@ -866,7 +882,7 @@ void BCount::slot_wdaFilter(bool val)
         do{
             QString tblName = query.value(0).toString();
             msg = "update " + tblName
-                    + " set f="+filtre+" where ("+key2use+"="+def[3]+");";
+                    + " set f="+filtre+" where ("+key2use+" ="+def[3]+");";
 #ifndef QT_NO_DEBUG
             qDebug() <<msg;
 #endif
@@ -875,13 +891,23 @@ void BCount::slot_wdaFilter(bool val)
         }while(isOk && next);
     }
 
+    if(isOk){
+
+        /// Relancer les requetes pour voir les modifs
+        msg = sqmZones[zn].query().executedQuery();
+#ifndef QT_NO_DEBUG
+        qDebug() <<msg;
+#endif
+        sqmZones[zn].setQuery(msg,dbToUse);
+    }
+
     if(!isOk)
     {
         QString ErrLoc = "BCount::slot_wdaFilter";
         DB_Tools::DisplayError(ErrLoc,&query,msg);
     }
 
-
+#if 0
     /// Recharger les reponses dans les tableaux
     int useType = (this->type)-1;
 
@@ -900,6 +926,7 @@ void BCount::slot_wdaFilter(bool val)
             tmp->sqmDef[zn].setQuery(Montest,dbToUse);
         }
     }
+#endif
 
     delete chkFrom;
 }
