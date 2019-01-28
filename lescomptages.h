@@ -96,7 +96,8 @@ public:
     ~BPrevision();
 
 private:
-    QString ListeDesJeux(int zn, int n, int p);
+    QString ListeDesJeux(int sel_id, int zn, int n, int p);
+    QString lstUserBoule(QString tbl, int priorite);
     bool ouvrirBase(eBddUse cible, eGame game);
     bool OPtimiseAccesBase(void);
     bool AuthoriseChargementExtension(void);
@@ -144,7 +145,7 @@ private:
 
     void showAll(QString source, const BGame &config);
     bool isTableCnpinDb(int n, int p);
-    void creerJeuxUtilisateur(int n, int p);
+    void creerJeuxUtilisateur(int sel_prio, int n, int p);
 
 Q_SIGNALS:
     void sig_isClickedOnBall(const QModelIndex &index);

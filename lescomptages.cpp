@@ -67,7 +67,11 @@ BPrevision::BPrevision(eGame game, eFrom from, eBddUse def)
     if(ouvrirBase(def,game)==true)
     {
         definirConstantesDuJeu(game);
+
+        /// A mettre code pour ne pas effacer la base
+        /// avec choix utilisateur
         creerTablesDeLaBase();
+
         effectuerTraitement(game);
         //dbInUse.close();
     }
@@ -788,7 +792,7 @@ bool BPrevision::f6(QString tb, QSqlQuery *query)
 
         if (isOk = query->exec(st_sqldf)){
             /// Marqueur de ces boules
-          isOk = marquerBoules(st_table,query);
+            isOk = marquerBoules(st_table,query);
         }
     }
 
@@ -2062,11 +2066,15 @@ void BPrevision::slot_makeUserGamesList()
     BCnp *a = NULL;
     int n = 0;
     int p = 0;
+    int sel_prio = 1;
 
     /// Selectionner les boules choisi par l'utilisateur pour en faire
     /// un ensemble d'etude
     ///
-    msg = "select distinct count(Choix.p)  as T from "+SelElemt+"_z1 as Choix where(choix.p=1);";
+    msg = "select distinct count(Choix.p)  as T from "
+            +SelElemt
+            +"_z1 as Choix where(choix.p="
+            +QString::number(sel_prio)+");";
     isOk = query.exec(msg);
     if(isOk)
     {
@@ -2089,7 +2097,7 @@ void BPrevision::slot_makeUserGamesList()
                 isOk = query.exec(msg);
                 if(isOk){
                     /// Creer une liste de jeux possibles
-                    creerJeuxUtilisateur(n,p);
+                    creerJeuxUtilisateur(sel_prio,n,p);
                 }
             }
         }
@@ -2102,7 +2110,7 @@ void BPrevision::slot_makeUserGamesList()
     query.finish();
 }
 
-void BPrevision::creerJeuxUtilisateur(int n, int p)
+void BPrevision::creerJeuxUtilisateur(int sel_prio,int n, int p)
 {
     bool isOk = false;
     QSqlQuery query(dbInUse);
@@ -2121,23 +2129,31 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     monJeu.names = &(onGame.names[0]);
 
 
-    msg = ListeDesJeux(0,n,p);
+    msg = ListeDesJeux(sel_prio,0,n,p);
 #ifndef QT_NO_DEBUG
     qDebug() << "msg: " <<msg;
 #endif
 
-    isOk = query.exec("begin transaction");
-    msg = "create table if not exists "+source+" as "
-            +msg;
-    if(isOk) isOk = query.exec(msg);
-
-    if (isOk)isOk = query.exec("commit transaction");
+    if((isOk = query.exec("begin transaction"))){
+        msg = "create table if not exists "+source+" as "
+                +msg;
+        if((isOk = query.exec(msg))){
+            isOk = query.exec("commit transaction");
+        }
+    }
 
     int zn=0;
 
-    isOk = AnalyserEnsembleTirage(source,monSlt,monJeu, zn);
+    if(isOk)
+        isOk = AnalyserEnsembleTirage(source,monSlt,monJeu, zn);
+
+#if 0
     if(isOk)
         isOk = FaireTableauSynthese(tbUse,monJeu,zn);
+#endif
+
+    if(!isOk)
+        return;
 
     showAll(source,monJeu);
 
@@ -2189,7 +2205,56 @@ bool BPrevision::isTableCnpinDb(int n, int p)
     return isOk;
 }
 
-QString BPrevision::ListeDesJeux(int zn, int n, int p)
+
+QString BPrevision::lstUserBoule(QString tbl, int priorite)
+{
+    bool isOk = false;
+    QSqlQuery query(dbInUse);
+    QString msg = "";
+
+    msg = "drop table if exists U_e_z1_1;";
+    if((isOk = query.exec(msg))){
+        /// creer la table
+        msg = "create table if not exists U_e_z1_1"
+              "(id integer primary key, val int);";
+        if((isOk = query.exec(msg))){
+            /// recuperer les boules choisies
+            msg = "select tbChoix.id, tbChoix.val from"
+                  "(U_e_z1)as tbChoix where (p="
+                    + QString::number(priorite)
+                    +");";
+            if((isOk = query.exec(msg))){
+                /// Les mettre dans la table
+                query.first();
+                if((isOk=query.isValid())){
+                    QSqlQuery tmp_query(dbInUse);
+                    do{
+                        int boule = query.value(1).toInt();
+                        msg="insert into U_e_z1_1 values(NULL,"
+                                + QString::number(boule)+");";
+#ifndef QT_NO_DEBUG
+                        qDebug() << "Selection: " <<msg;
+#endif
+
+                        isOk = tmp_query.exec(msg);
+                    }while(query.next() && isOk);
+                }
+            }
+        }
+    }
+
+    if(isOk){
+        msg = "U_e_z1_1";
+    }
+    else{
+        msg = "";
+    }
+
+    return msg;
+}
+
+
+QString BPrevision::ListeDesJeux(int sel_id,int zn, int n, int p)
 {
     ///----------------------
     int loop = 0;
@@ -2211,10 +2276,18 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
     QString msg2 = "";
     loop = len;
     QString tbSel = cUsr_elm;
-    ref = "(select tbChoix.id, tbChoix.val from "
+    /// Slection des boule en fonction des priorites
+    /// construction table intermediaire
+    tbSel = lstUserBoule(tbSel,sel_id);
+    // ANCIENNE DEF : +"_z"+QString::number(zn+1)
+
+    ref = "(select tbChoix.id, tbChoix.val from ("
             +tbSel
-            +"_z"+QString::number(zn+1)
-            +" as tbChoix)as tb%1";
+            +") as tbChoix as tb%1";
+#ifndef QT_NO_DEBUG
+    qDebug() << "selection boules prioritaire: " <<ref;
+#endif
+
     for(int i = 0; i< len; i++)
     {
         msg2 = msg2 + ref.arg(i+1);
@@ -2276,13 +2349,14 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn,
     QString tblToUse = "";
     QString tbLabCmb = cClc_cmb;
 
-    tbLabCmb = "B_" + tbLabCmb;
     if(onGame.from == eFdj){
-        tbLabAna = "B_" + tbLabAna;
         tblToUse = tblTirages;
+        tbLabCmb = "B_" + tbLabCmb;
+        tbLabAna = "B_" + tbLabAna;
     }
     else{
         tblToUse = tblIn ;
+        tbLabCmb = tbLabCmb+"_001_E1";
         tbLabAna = "U_" + tblToUse + "_" +tbLabAna;
     }
     tbLabAna =tbLabAna+"_z"+QString::number(zn+1);

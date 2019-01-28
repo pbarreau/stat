@@ -110,9 +110,17 @@ QString DB_Tools::leftJoin(stJoinArgs ja)
     QString arg4 = ja.arg4;
     QString msg = "";
 
-    msg = "select " + arg1 + " from ("+arg2+")as tbLeft "
-                                            "left join ("+arg3+")as tbRight "
-                                                               "on ("+arg4+")";
+    msg = "select "
+            + arg1
+            + " from ("
+            +arg2
+            +")as tbLeft "
+             "left join ("
+            +arg3
+            +")as tbRight "
+             "on ("
+            +arg4
+            +")";
 
 #ifndef QT_NO_DEBUG
     qDebug() << "DB_Tools::leftJoin";

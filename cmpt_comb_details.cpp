@@ -493,7 +493,9 @@ QString C_CmbDetails::getFilteringData(int zn)
 
     QString userFiltringTableData = "U_c_z"+QString::number(zn+1);
 
-    msg = "select tb1.val from ("+userFiltringTableData+")as tb1 where(tb1.f = 1)";
+    msg = "select tb1.val from ("
+            +userFiltringTableData
+            +")as tb1 where(tb1.f = (case when f is null then 0x0 else (f|0x2) end))";
     isOk = query.exec(msg);
 
     if(isOk){

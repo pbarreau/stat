@@ -26,15 +26,18 @@ C_GrpDetails::C_GrpDetails(const QString &in,  const BGame &pDef, QSqlDatabase f
     :BCount(pDef,in,fromDb,NULL,eCountGrp)
 {
     QString source = in;
-    QString destination = "";
+    QString reference_ana = "";
 
     countId = total;
     unNom = "'Compter Groupes'";
     demande = 0;
     if(!total)
     {
-        destination = "B_ana";
+        reference_ana = "B_ana";
 
+    }
+    else{
+       reference_ana = "E1";
     }
     total++;
 
@@ -61,7 +64,7 @@ C_GrpDetails::C_GrpDetails(const QString &in,  const BGame &pDef, QSqlDatabase f
         bool isOk = OLD_AnalyserEnsembleTirage(source,myGame,zn);
 
         if(isOk)
-            isOk = FaireTableauSynthese(destination,myGame,zn);
+            isOk = FaireTableauSynthese(reference_ana,myGame,zn);
 
         QTableView *calcul = (this->*ptrFunc[zn])(name, zn);
     }
@@ -87,13 +90,13 @@ bool C_GrpDetails::OLD_AnalyserEnsembleTirage(QString tblIn, const BGame &onGame
     QString tblToUse = "";
     QString tbLabCmb = cClc_cmb;
 
-    tbLabCmb = "B_" + tbLabCmb;
+    tblToUse = tblIn;
     if(onGame.from == eFdj){
+        tbLabCmb = "B_" + tbLabCmb;
         tbLabAna = "B_" + tbLabAna;
-        tblToUse = tblIn;
     }
     else{
-        tblToUse = tblIn ;
+        tbLabCmb = tbLabCmb + "_001_E1";
         tbLabAna = "U_" + tblToUse + "_" +tbLabAna;
     }
     tbLabAna =tbLabAna+"_z"+QString::number(zn+1);
@@ -253,7 +256,16 @@ bool C_GrpDetails::FaireTableauSynthese(QString tblIn, const BGame &onGame,int z
             +"_B_fdj"
             +"_z"+QString::number(zn+1);*/
 
-    QString tblToUse = tblIn + "_z"+QString::number(zn+1);
+    QString tblToUse ="";
+    if(tblIn == "E1"){
+        tblToUse = "U_"+tblIn+"_ana";;
+    }
+    else{
+        tblToUse = tblIn;
+    }
+    tblToUse = tblToUse + "_z"+QString::number(zn+1);
+
+
 
     QString stCurTable = tblToUse;
 
@@ -1243,7 +1255,9 @@ QString C_GrpDetails::getFilteringData(int zn)
 
     QString userFiltringTableData = "U_g_z"+QString::number(zn+1);
 
-    msg = "select tb1.val from ("+userFiltringTableData+")as tb1 where(tb1.f = 1)";
+    msg = "select tb1.val from ("
+            +userFiltringTableData
+            +")as tb1 where(tb1.f = (case when f is null then 0x0 else (f|0x2) end))";
     isOk = query.exec(msg);
 
     if(isOk){

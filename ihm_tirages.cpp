@@ -45,6 +45,21 @@ QTableView *IHM_Tirages::ConstruireTbvDesTirages(const QString &source,const BGa
     sqlqmTirages *sqm_tmp = new sqlqmTirages(config);
     QString st_msg1 = "";
 
+    QString ref_ana = "";
+    QString ref_cmb = "";
+
+    if(source == "E1"){
+        ref_ana = "U_E1_ana_z1";
+        ref_cmb = "cmb_001_E1_z1";
+        st_msg1 = "t2.C as C,";
+    }
+    else{
+        ref_ana = "B_ana_z1";
+        ref_cmb = "B_cmb_z1";
+        st_msg1 = "t1.J as J, t1.D as D, "
+                  "t2.tip as C,";
+    }
+
     /// creation de :
     /// t1.b1, t1.b2,t1.b3,t1.b4,t1.b5,t1.e1
     QString zn_elements = "";
@@ -66,13 +81,16 @@ QTableView *IHM_Tirages::ConstruireTbvDesTirages(const QString &source,const BGa
     qDebug() <<zn_elements;
 #endif
 
-    st_msg1="select t1.id as id, t1.J as J, t1.D as D, "
-            "t2.tip as C, "
+    st_msg1="select t1.id as id,"
+            + st_msg1
             + zn_elements
             + " from ("
             +source
-            +") as t1, B_cmb_z1 as t2, "
-             "B_ana_z1 as t4 "
+            +") as t1, ("
+            + ref_cmb
+            +") as t2, "
+            + ref_ana
+            +" as t4 "
              "where "
              "( "
              "t4.id=t1.id and t2.id=t4.idcomb "
