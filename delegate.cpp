@@ -347,13 +347,19 @@ void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &opt
         }
     }
         break;
-    case 1: /// C'est le dernier tirage
+    case 1:
     {
+        /// Marquer le dernier tirage
         if (val & 0x1)
         {
             painter->fillRect(option.rect, u[1]);
         }
 
+        /// Marquer tirages non sorti
+        if (val & 0x4)
+        {
+            painter->fillRect(option.rect, v[2]);
+        }
     }
         break;
     default:

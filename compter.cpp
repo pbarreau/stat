@@ -758,9 +758,9 @@ void BCount::slot_ChoosePriority(QAction *cmd)
 void BCount::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
 {
     int col = 3; /// dans la table colonne "f"
-    int niveau = 0;
+    int ischk = 0;
     bool existe = false;
-    existe = VerifierValeur(clef, tbl,col,&niveau);
+    existe = VerifierValeur(clef, tbl,col,&ischk);
 
     QAction *filtrer = LeMenu->addAction("Filtrer");
     filtrer->setCheckable(true);
@@ -768,12 +768,15 @@ void BCount::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
     int i = 0;
     QString name = QString::number(i);
     name = QString::number(existe)+
-            ":"+QString::number(niveau)+
+            ":"+QString::number(ischk)+
             ":"+name+":"+QString::number(clef)+
             ":"+tbl;
 
+#ifndef QT_NO_DEBUG
+    qDebug() << name;
+#endif
     filtrer->setObjectName(name);
-    filtrer->setChecked(niveau);
+    filtrer->setChecked(ischk);
     connect(filtrer,SIGNAL(triggered(bool)),
             this,SLOT(slot_wdaFilter(bool)));
 }
@@ -819,6 +822,7 @@ void BCount::slot_wdaFilter(bool val)
     QString tbl = def[4];
     QStringList tmp = tbl.split("_");
     QString tbl2 = "";
+    QString filtre = "";
 
     tbl= tmp[0]+"_"+tmp[1]+"_"+tmp[3];
 
@@ -837,23 +841,33 @@ void BCount::slot_wdaFilter(bool val)
     }
 
 
+    if(val){
+        filtre = "(case when f is null then 0x2 else (f|0x2) end)";
+    }
+    else{
+        filtre = "(case when f is null then null else (f&~0x2) end)";
+    }
+
+
     // faut il inserer une nouvelle ligne CREER UNE VARIABLE POUR LES COLONNES
     /// TB_SE
     if(trv ==0)
     {
         msg = "insert into " + tbl + " (id, val, p, f) values(NULL,"
-                +def[3]+",0,"+QString::number(val)+");";
+                +def[3]+",0,"+QString::number(val<<1)+");";
 
     }
     else
     {
-        msg = "update " + tbl + " set f="+QString::number(val)+" "+
+        msg = "update " + tbl + " set f="+filtre+" "+
                 "where (val="+def[3]+");";
+#ifndef QT_NO_DEBUG
+        qDebug() <<msg;
+#endif
+
     }
 
-    ;
     if((isOk = query.exec(msg))){
-        QString filtre = "";
         QString key2use= "";
 
         if(type==eCountElm)key2use = "b";
@@ -869,12 +883,6 @@ void BCount::slot_wdaFilter(bool val)
         isOk = query.exec(msg);
         if(isOk)query.first();
 
-        if(val){
-            filtre = "(case when f is null then 0x2 else (f|0x2) end)";
-        }
-        else{
-            filtre = "(case when f is null then null else (f&~0x2) end)";
-        }
 
         if(isOk)isOk = query.first();
         bool next =true;

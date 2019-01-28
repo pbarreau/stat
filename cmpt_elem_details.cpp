@@ -296,7 +296,7 @@ QString C_ElmDetails::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 
 
     /// on rajoute une colone pour la priorité et une pour la couleur
-    arg1 = "tbLeft.*,tbRight.p as P,(case when (tbRight.f==1) then 0x2 end)as F ";
+    arg1 = "tbLeft.*,tbRight.p as P,(tbRight.f)as F ";
     arg2 = msg;
     arg3 = " select * from "+SelElemt+"_z"+QString::number(zn+1);
     arg4 = "tbLeft.B = tbRight.val";

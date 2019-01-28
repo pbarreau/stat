@@ -747,6 +747,8 @@ bool BPrevision::f6(QString tb, QSqlQuery *query)
 
     QString st_sqldf = ""; /// sql definition
     QString st_table = "";
+    QStringList lst;
+    QString clause_1 = "";
 
     // Creation des tables permettant la sauvegarde des selections
     // pour creation de filtres
@@ -759,12 +761,65 @@ bool BPrevision::f6(QString tb, QSqlQuery *query)
         isOk = query->exec(st_sqldf);
     }
 
+    /// La table est cree
+    /// la remplir pour indiquer dernieres boules arrivees
+    for(int zone=0;(zone<nb_zone)&& isOk;zone++)
+    {
+        QString tbl = "t2."+onGame.names[zone].abv;
+        int loop = onGame.limites[zone].len;
+        lst.clear();
+        lst << "t1.z" +QString::number(zone+1);
+        clause_1 = DB_Tools::GEN_Where_3(loop, tbl,true,"=",lst,false,"or");
+
+        st_table = tb + "_z"+QString::number(zone+1);
+
+        st_sqldf = "select t1.z"
+                +QString::number(zone+1)
+                +" from (B_elm)as t1, (B_fdj) as t2 "
+                 "where("
+                 "("
+                + clause_1+
+                ") and (t2.id=1)"
+                ")";
+
+#ifndef QT_NO_DEBUG
+        qDebug() << st_sqldf;
+#endif
+
+        if (isOk = query->exec(st_sqldf)){
+            /// Marqueur de ces boules
+          isOk = marquerBoules(st_table,query);
+        }
+    }
+
     if(!isOk)
     {
         QString ErrLoc = "f6:";
         DB_Tools::DisplayError(ErrLoc,NULL,"");
     }
 
+    return isOk;
+}
+
+bool BPrevision::marquerBoules(QString table, QSqlQuery *query)
+{
+    bool isOk = true;
+    QString msg = "";
+    QSqlQuery sqlInsert(dbInUse);
+
+    if((isOk = query->first())){
+        if((isOk = query->isValid())){
+            do{
+                int val = query->value(0).toInt();
+                msg = "insert into "
+                        + table
+                        + " (id, val, p, f) values(NULL,"
+                        + QString::number(val)
+                        + ",NULL,1);";
+                isOk = sqlInsert.exec(msg);
+            }while((query->next())&& isOk);
+        }
+    }
     return isOk;
 }
 
