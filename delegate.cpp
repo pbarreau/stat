@@ -293,25 +293,54 @@ void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &opt
                               const QModelIndex &index) const
 {
     int col = index.column();
-    int row = index.row();
+    int pri = -1;
     int nbCol = index.model()->columnCount();
     int val = 0;
     QStyleOptionViewItem maModif(option);
+    int cx = maModif.rect.width()/4;
+    int cy = maModif.rect.height()/2;
+    int refx = maModif.rect.topLeft().x();
+    QPoint c(refx +cx*3,maModif.rect.topLeft().y()+cy);
+
     QColor u[]= {QColor(201,230,255,255),QColor(200,170,100,140)};
+    QColor v[]= {
+        Qt::black,
+        Qt::red,
+        Qt::green,
+        QColor(255,216,0,255),
+        QColor(255,106,0,255),
+        QColor(178,0,255,255),
+        QColor(211,255,204,255)
+    };
 
 
-    /// Regarder la valeur de la derniere colonne
+    /// Regarder la valeur de la derniere colonne pour activer info filtre
     /// Elle indique que mettre comme couleur
     if(index.model()->index(index.row(),nbCol-1).data().canConvert(QMetaType::Int))
     {
         val =  index.model()->index(index.row(),nbCol-1).data().toInt();
     }
 
+    /// Regarder la valeur de l'avant derniere colonne pour activer info priorite
+    /// Elle indique que mettre comme couleur
+    if(index.model()->index(index.row(),nbCol-2).data().canConvert(QMetaType::Int))
+    {
+        pri =  index.model()->index(index.row(),nbCol-2).data().toInt();
+    }
 
     switch(col)
     {
-    case 0: /// Filtre active sur le cas
+    case 0:
     {
+        /// Mettre un cercle colore
+        if (pri > 0){
+            painter->save();
+            painter->setBrush(v[pri]);
+            painter->drawEllipse(c,cx/2,cy/2);
+            painter->restore();
+        }
+
+        /// Filtre active sur le cas
         if (val & 0x2)
         {
             painter->fillRect(option.rect, u[0]);
@@ -373,14 +402,16 @@ BSqmColorizePriority::BSqmColorizePriority(QObject *parent):QSqlQueryModel(paren
 
 QVariant BSqmColorizePriority::data(const QModelIndex &index, int role) const
 {
-#if 0
+
     QColor u[]= {
         Qt::black,
         Qt::red,
         Qt::green,
         QColor(255,216,0,255),
         QColor(255,106,0,255),
-        QColor(178,0,255,255)};
+        QColor(178,0,255,255),
+        QColor(211,255,204,255)
+    };
 
     if(index.column()== 0 )
     {
@@ -394,11 +425,12 @@ QVariant BSqmColorizePriority::data(const QModelIndex &index, int role) const
         if(priority.data().canConvert(QMetaType::Int)){
             int val = priority.data().toInt();
             if (role == Qt::TextColorRole){
+                if(val) val = 1; // On garde une seule couleur
                 return (u[val]);
             }
         }
     }
-#endif
+
     return QSqlQueryModel::data(index,role);
 }
 

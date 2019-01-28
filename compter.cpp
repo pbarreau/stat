@@ -527,11 +527,24 @@ void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int z
 /// table : nom de la table dans laquelle il faut chercher
 /// idColValue colonne de la table ou se trouve la valeur
 /// *lev : valeur de priorité trouvé
-bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
+bool BCount::VerifierValeur(int item,QString table_usr,int idColValue,int *lev)
 {
     bool ret = false;
     QSqlQuery query(dbToUse) ;
     QString msg = "";
+
+    QStringList tbName=table_usr.split("_");
+    QString table = "";
+    if(tbName.size()==4){
+        table = tbName.at(0)
+                + "_"
+                + tbName.at(1)
+                + "_"
+                + tbName.at(3);
+    }
+    else{
+        table =  table_usr;
+    }
 
     /// La colonne val sert de foreign key
     msg = "select * from " + table + " " +
@@ -656,7 +669,24 @@ void BCount::slot_ChoosePriority(QAction *cmd)
     int elm = def[3].toInt();
     int zn = ((st_from.split("z")).at(1)).toInt()-1;
     QString tbl = def[4];
-    QString tbl2 = "r_B_fdj_0_elm_z"+QString::number(zn+1);
+    QStringList tmp = tbl.split("_");
+    QString tbl2 = "";//"r_B_fdj_0_elm_z"+QString::number(zn+1);
+
+    tbl= tmp[0]+"_"+tmp[1]+"_"+tmp[3];
+
+    if(tmp[1] == "e"){
+        tbl2 = QString(cClc_elm);
+    }
+    if(tmp[1] == "c"){
+        tbl2 = QString(cClc_cmb);
+    }
+    if(tmp[1] == "g"){
+        tbl2 = QString(cClc_grp)+"_z"+QString::number(zn+1);
+    }
+    else{
+    tbl2 = tbl2
+            +"_000_B_fdj_z"+QString::number(zn+1);
+    }
 
     // faut il inserer une nouvelle ligne
     /// TB_SE

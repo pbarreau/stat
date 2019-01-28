@@ -398,11 +398,12 @@ QTableView *C_ElmDetails::Compter(QString * pName, int zn)
              this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
 
 
+#endif
     /// Selection & priorite
     qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
-#endif
+
     qtv_tmp->setMouseTracking(true);
     connect(qtv_tmp,
             SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));

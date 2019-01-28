@@ -561,7 +561,7 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
 {
     /// Mettre les couleurs ??
     QColor ma_couleur;
-    bool isOk = false;
+    double radix = 2.5;
 
 
     QColor u[]= {
@@ -579,8 +579,6 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
 
     if(col== 0 )
     {
-        //int nbCol=index.model()->columnCount();
-        double radix = 1.5;
         /// recuperation des l'info de la ligne
         QModelIndex Ec = index.sibling(index.row(),1);
         QModelIndex Ep = index.sibling(index.row(),2);
@@ -595,8 +593,6 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
         int et = ET.data().toInt();
         int ab = Ab.data().toInt();
 
-        //if(!ep) ep=1;
-        //if(!em) em=1;
 
         // Boule deja sortie ?
         if(ab == 0){
@@ -605,24 +601,19 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
             }
 
         }
-#if 0
-        if(ec && (ep !=1) && (em !=1)
-                && (abs((abs(ec-ep)%ep) - ep)<=radix)||
-                (abs(ec-em)%em<=radix)
+
+        if(isNeedSpotLight(ep,ec,radix) ||
+                isNeedSpotLight(em,ec,radix) ||
+                isNeedSpotLight(et,ec,radix)
                 )
-#endif
-            if(isNeedSpotLight(ep,ec,radix) ||
-                    isNeedSpotLight(em,ec,radix) ||
-                    isNeedSpotLight(et,ec,radix)
-                    )
-            {
-                if (role == Qt::TextColorRole){
-                    return (u[1]);
-                }
-                if (role == Qt::DecorationRole){
-                    return (QIcon(":/images/flag_1s.png"));
-                }
+        {
+            if (role == Qt::TextColorRole){
+                return (u[1]);
             }
+            if (role == Qt::DecorationRole){
+                return (QIcon(":/images/flag_1s.png"));
+            }
+        }
     }
 
 
@@ -635,7 +626,6 @@ QVariant BSqmColorizeEcart::data(const QModelIndex &index, int role) const
         int r1 = 0;
         int d1 = 0;
         int d2 = 0 ;
-        double radix = 1.5;
 
         /// Valeur de l'ecart courant pour cette ligne
         r0 = index.model()->index(index.row(),1).data().toInt();
@@ -700,45 +690,21 @@ bool BSqmColorizeEcart::isNeedSpotLight(int v1, int v2, float r)const{
 
     /// la distance est comprise dans le rayon
     /// acceptable ?
-    if(d < k){
+    if(d <= k){
         /// oui
         retVal = true;
     }
     else{
-        /// Non, alors regarder si v1 est a un multiple possible
-        if(m > k){
-            /// partie v1 - k
-            if(abs(v1-m)> k){
-                retVal = false;
-            }
-            else{
-                retVal = true;
-            }
+        if(m<k && m && (v2 > k)){
+            retVal = true;
         }
-        else if (m == 0){
-            if( (v1==1)||(v2 == 0)){
-                if(d<k){
-                    retVal = true;
-                }
-                else{
-                    retVal = false;
-                }
-            }
-            else{ /// c'est un multiple de v1
+        if(m>k && m){
+            if(abs(m-v1)<k){
                 retVal = true;
-            }
-        }
-        else{
-            /// m < k
-            if(d<k){
-                retVal = true;
-            }
-            else{
-                retVal = false;
             }
         }
     }
 
-return retVal;
+    return retVal;
 }
 
