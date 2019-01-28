@@ -871,9 +871,9 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
 #endif
 
         isOk = query.exec(msg);
-        QStringList *slst=&slFlt[zn][0];
+        QStringList **slst=slFlt;
 
-        int nbCols = slst[1].size();
+        int nbCols = slst[zn][1].size();
         curName = "vt_1";
         QString stGenre = "view";
         for(int loop = 0; (loop < nbCols)&& isOk; loop ++){
@@ -881,12 +881,12 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
             msg = "create "+stGenre+" if not exists "
                     + curName
                     +" as select tbleft.*, (case when count(tbRight.id)!=0 then count(tbRight.id) end)as "
-                    +slst[1].at(loop)
+                    +slst[zn][1].at(loop)
                     + " from("+prvName+") as tbLeft "
                     +"left join ("
                     +stCurTable
                     +") as tbRight on (tbLeft.Nb = tbRight."
-                    +slst[1].at(loop)+")group by tbLeft.Nb";
+                    +slst[zn][1].at(loop)+")group by tbLeft.Nb";
 #ifndef QT_NO_DEBUG
             qDebug() << msg;
 #endif
@@ -2109,7 +2109,8 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     QString msg = "";
     QString source = "E1";
     QString tbUse = "U_"+source+"_ana";
-    QStringList *monSlt = new QStringList[1];
+    QStringList **monSlt = PreparerCriteresAnalyse() ;
+
 
     //monJeu;
 
@@ -2134,7 +2135,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 
     int zn=0;
 
-    isOk = AnalyserEnsembleTirage(source,&monSlt,monJeu, zn);
+    isOk = AnalyserEnsembleTirage(source,monSlt,monJeu, zn);
     if(isOk)
         isOk = FaireTableauSynthese(tbUse,monJeu,zn);
 
