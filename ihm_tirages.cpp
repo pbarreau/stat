@@ -17,7 +17,7 @@ IHM_Tirages::~IHM_Tirages()
     total --;
 }
 
-IHM_Tirages::IHM_Tirages(const QString &in,  const BGame &pDef, QSqlDatabase fromDb, QWidget *parent)
+IHM_Tirages::IHM_Tirages(const QString &in,  const B_Game &pDef, QSqlDatabase fromDb, QWidget *parent)
     :sqlSource(in),ceJeu(pDef),dbDesTirages(fromDb)
 
 {
@@ -35,7 +35,7 @@ IHM_Tirages::IHM_Tirages(const QString &in,  const BGame &pDef, QSqlDatabase fro
 
 }
 
-QTableView *IHM_Tirages::ConstruireTbvDesTirages(const QString &source,const BGame &config)
+QTableView *IHM_Tirages::ConstruireTbvDesTirages(const QString &source,const B_Game &config)
 {
     QTableView *qtv_tmp = new QTableView;
 

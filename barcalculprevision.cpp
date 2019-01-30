@@ -18,7 +18,7 @@
 #include "barcalculprevision.h"
 #include "game.h"
 
-BarCalculPrevision::BarCalculPrevision(QModelIndex index, QSqlDatabase db, BGame game)
+BarCalculPrevision::BarCalculPrevision(QModelIndex index, QSqlDatabase db, B_Game game)
 {
     m_index = index;
     dbInUse = db;

@@ -34,7 +34,7 @@ C_ElmDetails::~C_ElmDetails()
     total --;
 }
 
-C_ElmDetails::C_ElmDetails(const QString &in, const BGame &pDef,  QSqlDatabase fromDb)
+C_ElmDetails::C_ElmDetails(const QString &in, const B_Game &pDef,  QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountElm)
 {
     countId = total;

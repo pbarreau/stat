@@ -74,7 +74,7 @@ typedef struct
 typedef struct
 {
     QString src;
-    BGame cnf;
+    B_Game cnf;
     C_ElmDetails *d_elm;
     C_GrpDetails *d_grp;
     C_CmbDetails *d_cmb;
@@ -92,23 +92,23 @@ class BPrevision:public QGridLayout
 
     /// in : infos representant les tirages
 public:
-    BPrevision(eGame game, eFrom from, eBddUse def);
+    BPrevision(eGames game, bool setClean, eBddUse def);
     ~BPrevision();
 
 private:
     QString ListeDesJeux(int sel_id, int zn, int n, int p);
     QString lstUserBoule(QString tbl, int priorite);
-    bool ouvrirBase(eBddUse cible, eGame game);
+    bool ouvrirBase(eBddUse cible, eGames game);
     bool OPtimiseAccesBase(void);
     bool AuthoriseChargementExtension(void);
-    void effectuerTraitement(eGame game);
+    void effectuerTraitement(eGames game);
     QStringList **PreparerCriteresAnalyse(void);
     int getIdCmbFromText(QString cmbText);
     void ActiveOnglet(QTableView *tbv, int value, QString path);
 
 
     bool creerTablesDeLaBase(void);
-    BGame *definirConstantesDuJeu(eGame game);
+    B_Game *definirConstantesDuJeu(eGames game);
     bool f1(QString tbName,QSqlQuery *query);
     bool f2(QString tbName,QSqlQuery *query);
     bool importerFdjDansTable(QString tbName,QSqlQuery *query);
@@ -120,15 +120,15 @@ private:
     bool TraitementCodeTblCombi(QString tbName,int zn);
     bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
 
-    bool AnalyserEnsembleTirage(QString tblIn,QStringList **pCri,const BGame &onGame,int zn);
+    bool AnalyserEnsembleTirage(QString tblIn,QStringList **pCri,const B_Game &onGame,int zn);
 
     bool analyserDonneesSource(QString source, QString resultat);
 
-    bool FaireTableauSynthese(QString InputTable,const BGame &onGame, int zn);
+    bool FaireTableauSynthese(QString InputTable,const B_Game &onGame, int zn);
     bool SupprimerVueIntermediaires(void);
 
     //QTableView *Visuel_1(QString source,const BGame &config);
-    QWidget *partieDroite(QString source,const BGame &config);
+    QWidget *partieDroite(QString source,const B_Game &config);
     QWidget *ConstruireElementNiv_2(const stUsePrm &data);
     QWidget *ConstruireElementNiv_3(const stUsePrm &data);
     QWidget *FormElm(const stUsePrm &data);
@@ -143,7 +143,7 @@ private:
     QString normaliserDate(QString input);
     QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
-    void showAll(QString source, const BGame &config);
+    void showAll(QString source, const B_Game &config);
     bool isTableCnpinDb(int n, int p);
     void creerJeuxUtilisateur(int sel_prio, int n, int p);
 
@@ -162,12 +162,13 @@ public slots:
 
 private:
     static int total;       /// compteur des objets de cette classe
+    int cur_id;             /// identite de cet objet
     QSqlDatabase dbInUse;   /// base de donnees associee a cet objets
-    QString dbUseName;      /// nom de la connection
-    BGame onGame;           /// parametres du jeu pour statistique globale
-    BGame monJeu;           /// parametres pour filtration
+    //QString dbUseName;      /// nom de la connection
+    B_Game onGame;           /// parametres du jeu pour statistique globale
+    //B_Game monJeu;           /// parametres pour filtration
     QStringList **slFlt;    /// zn_filters
-    IHM_Tirages * Etape_2;
+    //IHM_Tirages * Etape_2;
     QString tblTirages;
     QSqlQueryModel *sqm_resu;
     LabelClickable selection[3];

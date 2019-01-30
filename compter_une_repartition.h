@@ -9,7 +9,7 @@
 class BCountLine:public BCount
 {
 public:
-    BCountLine(const QString &in, const int ze, const BGame &pDef, QStringList** lstCri, QSqlDatabase fromDb);
+    BCountLine(const QString &in, const int ze, const B_Game &pDef, QStringList** lstCri, QSqlDatabase fromDb);
     ~BCountLine();
 
 private:

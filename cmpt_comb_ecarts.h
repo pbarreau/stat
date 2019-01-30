@@ -13,7 +13,7 @@ class C_CmbEcarts: public BCount
     Q_OBJECT
 
 public:
-    C_CmbEcarts(const QString &in, const BGame &pDef, QSqlDatabase fromDb);
+    C_CmbEcarts(const QString &in, const B_Game &pDef, QSqlDatabase fromDb);
     ~C_CmbEcarts();
     QTableView * getTbv(int zn);
 

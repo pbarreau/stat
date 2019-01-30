@@ -46,7 +46,12 @@ int BPrevision::total = 0;
 
 BPrevision::~BPrevision()
 {
+    if(total > 0){
     total --;
+    }
+    else{
+        dbInUse.close();
+    }
 }
 
 void BPrevision::slot_changerTitreZone(QString le_titre)
@@ -60,20 +65,26 @@ void BPrevision::slot_changerTitreZone(QString le_titre)
     selection[0].setText("Z:"+le_titre);
 }
 
-BPrevision::BPrevision(eGame game, eFrom from, eBddUse def)
+BPrevision::BPrevision(eGames game, bool setClean, eBddUse def)
 {
+    cur_id = total;
+    total++;
+
     onGame.type = game;
-    onGame.from = from;
+    onGame.from = eGoalOff;
+    onGame.prevision_id = cur_id;
     if(ouvrirBase(def,game)==true)
     {
-        definirConstantesDuJeu(game);
+        /// Premier lancement du programme
+        if(cur_id == 0){
+            definirConstantesDuJeu(game);
 
-        /// A mettre code pour ne pas effacer la base
-        /// avec choix utilisateur
-        creerTablesDeLaBase();
-
+            /// Remettre tout a zero ?
+            if(setClean){
+                creerTablesDeLaBase();
+            }
+        }
         effectuerTraitement(game);
-        //dbInUse.close();
     }
 }
 
@@ -100,11 +111,12 @@ BPrevision::BPrevision(eGame game, eBddUse def, QString stLesTirages)
 /// - cible memoire ou disque
 /// - game loto ou euro
 ///
-bool BPrevision::ouvrirBase(eBddUse cible, eGame game)
+bool BPrevision::ouvrirBase(eBddUse cible, eGames game)
 {
     bool isOk = true;
+    QString dbUseName;
 
-    dbUseName = "Game_"+QString::number(total);
+    //dbUseName = "Game_"+QString::number(total);
     dbInUse = QSqlDatabase::addDatabase("QSQLITE",dbUseName);
 
     QString mabase = "";
@@ -116,15 +128,16 @@ bool BPrevision::ouvrirBase(eBddUse cible, eGame game)
         break;
     case eBddUseDisk:
     {
+        QString title = "";
         QString ext="sqlite";
 
         switch(game)
         {
         case eGameLoto:
-            mabase = "Loto"+dbUseName+"."+ext;
+            title = "Loto";
             break;
         case eGameEuro:
-            mabase = "Euro"+dbUseName+"."+ext;
+            title = "Euro";
             break;
         }
 #ifdef Q_OS_LINUX
@@ -133,6 +146,7 @@ bool BPrevision::ouvrirBase(eBddUse cible, eGame game)
         path.append(QDir::separator()).append(mabase);
         mabase = QDir::toNativeSeparators(path);
 #endif
+        mabase = "DB_v2_"+title+"."+ext;
         QFile fichier(mabase);
 
         if(fichier.exists())
@@ -289,7 +303,7 @@ QStringList **BPrevision::PreparerCriteresAnalyse(void)
     return criteres;
 }
 
-void BPrevision::effectuerTraitement(eGame game)
+void BPrevision::effectuerTraitement(eGames game)
 {
     int maxZn = onGame.znCount;
     QString source = QString("B_")+ QString(cRef_fdj);
@@ -305,7 +319,7 @@ void BPrevision::effectuerTraitement(eGame game)
 
 }
 
-BGame * BPrevision::definirConstantesDuJeu(eGame game)
+B_Game * BPrevision::definirConstantesDuJeu(eGames game)
 {
     /// Pour l'instant en loto ou en euro il y a 2 'zones'
     /// une pour les boules
@@ -317,8 +331,8 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
     switch(game)
     {
     case eGameLoto:
-        onGame.limites = new stBornes [onGame.znCount];
-        onGame.names = new stNamesZones [onGame.znCount];
+        onGame.limites = new stZnLimites [onGame.znCount];
+        onGame.names = new stZnNames [onGame.znCount];
 
         /// boules
         onGame.limites[0].min=1;
@@ -338,8 +352,8 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
         break;
 
     case eGameEuro:
-        onGame.limites = new stBornes [onGame.znCount];
-        onGame.names = new stNamesZones [onGame.znCount];
+        onGame.limites = new stZnLimites [onGame.znCount];
+        onGame.names = new stZnNames [onGame.znCount];
 
         /// boules
         onGame.limites[0].min=1;
@@ -827,7 +841,7 @@ bool BPrevision::marquerBoules(QString table, QSqlQuery *query)
     return isOk;
 }
 
-bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
+bool BPrevision::FaireTableauSynthese(QString tblIn, const B_Game &onGame,int zn)
 {
     bool isOk = true;
     QString msg = "";
@@ -1461,10 +1475,11 @@ QString BPrevision::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
     return retval;
 }
 
-void BPrevision::showAll(QString source,const BGame &config)
+void BPrevision::showAll(QString source,const B_Game &config)
 {
     QWidget * Resultats = new QWidget(0,Qt::Window);
     QGridLayout *tmp_layout = new QGridLayout;
+    IHM_Tirages * Etape_2;
 
     stBdata;
     stBdata.src = source;
@@ -1813,7 +1828,7 @@ void BPrevision::slot_SurligneEcartEtDetails(const QModelIndex &index)
 }
 #endif
 
-QWidget *BPrevision::partieDroite(QString source,const BGame &config)
+QWidget *BPrevision::partieDroite(QString source,const B_Game &config)
 {
     QWidget *uneAnalyse = new QWidget;
     QVBoxLayout *conteneur = new QVBoxLayout;
@@ -2121,13 +2136,13 @@ void BPrevision::creerJeuxUtilisateur(int sel_prio,int n, int p)
 
 
     //monJeu;
-
+    B_Game monJeu;
     monJeu.type = onGame.type;
     monJeu.from = eUsr;
     monJeu.znCount = 1;
     monJeu.limites = &(onGame.limites[0]);
     monJeu.names = &(onGame.names[0]);
-
+    monJeu.limites->sel = n;
 
     msg = ListeDesJeux(sel_prio,0,n,p);
 #ifndef QT_NO_DEBUG
@@ -2247,7 +2262,7 @@ QString BPrevision::lstUserBoule(QString tbl, int priorite)
         msg = "U_e_z1_1";
     }
     else{
-        msg = "";
+        msg = tbl;
     }
 
     return msg;
@@ -2283,7 +2298,7 @@ QString BPrevision::ListeDesJeux(int sel_id,int zn, int n, int p)
 
     ref = "(select tbChoix.id, tbChoix.val from ("
             +tbSel
-            +") as tbChoix as tb%1";
+            +") as tbChoix) as tb%1";
 #ifndef QT_NO_DEBUG
     qDebug() << "selection boules prioritaire: " <<ref;
 #endif
@@ -2329,7 +2344,7 @@ QString BPrevision::ListeDesJeux(int sel_id,int zn, int n, int p)
 
 bool BPrevision::AnalyserEnsembleTirage(QString tblIn,
                                         QStringList **pCri,
-                                        const BGame &onGame,
+                                        const B_Game &onGame,
                                         int zn)
 {
     /// Verifier si des vues temporaires precedentes sont encore presentes
@@ -2348,16 +2363,28 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn,
     QString tbLabAna = cRef_ana;
     QString tblToUse = "";
     QString tbLabCmb = cClc_cmb;
+    QString st_key = "";
+    QString st_CNP = "";
 
-    if(onGame.from == eFdj){
+
+    st_key = onGame.names[zn].abv;
+    if(cur_id == 0){
         tblToUse = tblTirages;
         tbLabCmb = "B_" + tbLabCmb;
         tbLabAna = "B_" + tbLabAna;
+        st_CNP = tbLabCmb+"_z"+QString::number(zn+1);
     }
     else{
         tblToUse = tblIn ;
         tbLabCmb = tbLabCmb+"_001_E1";
         tbLabAna = "U_" + tblToUse + "_" +tbLabAna;
+#if 0
+        st_key = "c";
+        st_CNP = "Cnp_"+QString::number(onGame.limites[zn].sel)
+                +"_"
+                +QString::number(onGame.limites[zn].win);
+#endif
+        st_CNP = "B_"+QString(cClc_cmb)+"_z"+QString::number(zn+1);;
     }
     tbLabAna =tbLabAna+"_z"+QString::number(zn+1);
 
@@ -2444,13 +2471,13 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn,
             QString stCombi = "";
             QString stLien = "";
 
-            ref_1 = "(tbLeft.U%1 = tbRight."+onGame.names[zn].abv+"%2)";
+            ref_1 = "(tbLeft.U%1 = tbRight."+st_key+"%2)";
             stLien = " and ";
 
             if(onGame.type == eGameEuro && zn == 1){
-                ref_1 = "((tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%1)"
+                ref_1 = "((tbLeft.U%3 = tbRight."+st_key+"%1)"
                         +"or"+
-                        "(tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%2))";
+                        "(tbLeft.U%3 = tbRight."+st_key+"%2))";
                 stLien = " and ";
             }
 
@@ -2473,7 +2500,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn,
             msg = "create table if not exists "+tbLabAna
                     +" as select tbLeft.*,tbRight.id as idComb  from ("
                     +curTarget+")as tbLeft left join ("
-                    + tbLabCmb+"_z"+QString::number(zn+1)
+                    + st_CNP
                     +")as tbRight on("
                     + stCombi
                     +")"

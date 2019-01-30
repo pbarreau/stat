@@ -25,7 +25,7 @@ const QString BCount::cLabCount[]={"err",cClc_elm,cClc_cmb,cClc_grp};
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
 /// --------------------------
-BCouv::BCouv(QString surEnsemble, int zn, const BGame &pDef, QSqlDatabase fromDb):
+BCouv::BCouv(QString surEnsemble, int zn, const B_Game &pDef, QSqlDatabase fromDb):
     ensemble(surEnsemble),zoneEtudie(zn),p_conf(pDef),db(fromDb)
 {
     bool isOk = true;
@@ -197,7 +197,7 @@ void BCount::CreerCritereJours(void)
     QString st_table = "J";
     bool status = false;
 
-    if(myGame.from == eUsr){
+    if(myGame.prevision_id){
         db_jours = "";
         return;
     }
@@ -344,12 +344,12 @@ void BCount::RecupererConfiguration(void)
 #endif
 }
 
-BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase useDb)
+BCount::BCount(const B_Game &pDef, const QString &in, QSqlDatabase useDb)
     :BCount(pDef,in,useDb,NULL,eCountToSet)
 {
 }
 
-BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
+BCount::BCount(const B_Game &pDef, const QString &in, QSqlDatabase fromDb,
                QWidget *unParent=0, eCountingType genre=eCountToSet)
     :QTableView(unParent), db_data(in),dbToUse(fromDb),type(genre)
 {

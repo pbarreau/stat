@@ -62,7 +62,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     input.destination =dest_bdd;
     input.typeChargement = load;
     input.typeJeu = leJeu;
-    eGame unJeu = eGameToSet;
+    eGames unJeu = eGameToSet;
     stErr NoErrors;
     NoErrors.status = true;
     NoErrors.msg = "None";
@@ -103,7 +103,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
             unJeu = eGameToSet;
             break;
         }
-        tous = new BPrevision(unJeu,eFdj,eBddUseDisk);
+        tous = new BPrevision(unJeu,true,eBddUseDisk);
         connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_makeUserGamesList()));
         connect(FiltrerAct, SIGNAL(triggered()), tous, SLOT(slot_filterUserGamesList()));
         connect(tous,
@@ -631,7 +631,7 @@ QGridLayout *MainWindow::MonLayout_VoisinsPresent()
         connect( G_tbv_Voisins[zn], SIGNAL( doubleClicked(QModelIndex)) ,
                  this, SLOT( slot_RechercherLesTirages( QModelIndex) ) );
 
-        // Double click sur libellé recherche boule
+        // Double click sur libellï¿½ recherche boule
         connect( G_lab_nbSorties[zn], SIGNAL( clicked(QString)) ,
                  this, SLOT( slot_RepererLesTirages(QString) ) );
 

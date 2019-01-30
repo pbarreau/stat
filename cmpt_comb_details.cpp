@@ -30,7 +30,7 @@ QTableView *C_CmbDetails::getTbv(int zn)
     return(tbvCalculs[zn]);
 }
 
-C_CmbDetails::C_CmbDetails(const QString &in, const BGame &pDef, QSqlDatabase fromDb)
+C_CmbDetails::C_CmbDetails(const QString &in, const B_Game &pDef, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountCmb)
 {
     countId = total;
@@ -216,7 +216,7 @@ QString C_CmbDetails::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int 
     QString prefix = "B_";
 
 
-    if(myGame.from == eUsr)
+    if(myGame.prevision_id) // > 0
     {
         prefix = "U_"+st_baseUse+"_";
     }

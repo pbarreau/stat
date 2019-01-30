@@ -17,11 +17,11 @@ class IHM_Tirages:public QVBoxLayout
 {
     Q_OBJECT
 public:
-    explicit IHM_Tirages(const QString &in, const BGame &pDef, QSqlDatabase fromDb,QWidget *parent = Q_NULLPTR);
+    explicit IHM_Tirages(const QString &in, const B_Game &pDef, QSqlDatabase fromDb,QWidget *parent = Q_NULLPTR);
     ~IHM_Tirages();
 
 private:
-    QTableView *ConstruireTbvDesTirages(const QString &source,const BGame &config);
+    QTableView *ConstruireTbvDesTirages(const QString &source,const B_Game &config);
 
 Q_SIGNALS:
     void sig_TiragesClick(const QModelIndex &index);
@@ -37,7 +37,7 @@ private:
     static int total;
     QLabel titre;
     QString sqlSource;
-    BGame ceJeu;
+    B_Game ceJeu;
     QSqlDatabase dbDesTirages;
     QTableView *lesTirages;
 };

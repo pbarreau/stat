@@ -9,7 +9,7 @@
 
 #include "bcouv.h"
 
-BCouv2::BCouv2(const QString &in, const BGame &pDef, QSqlDatabase fromDb)
+BCouv2::BCouv2(const QString &in, const B_Game &pDef, QSqlDatabase fromDb)
     :dataIn(in),gameIn(pDef),dbIn(fromDb)
 {
     int nbZone = pDef.znCount;

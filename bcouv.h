@@ -28,7 +28,7 @@ typedef struct _infoCouv
 class BCouv2
 {
 public:
-    BCouv2(const QString &in, const BGame &pDef, QSqlDatabase fromDb);
+    BCouv2(const QString &in, const B_Game &pDef, QSqlDatabase fromDb);
 
 private:
     void rechercherCouv(int zn);
@@ -38,7 +38,7 @@ private:
     bool *isKnown;
     QList<BPstInfoCouv*> *couv;
     QString dataIn;
-    BGame   gameIn;
+    B_Game   gameIn;
     QSqlDatabase dbIn;
 };
 

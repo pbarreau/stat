@@ -20,7 +20,7 @@ class C_ElmDetails:public BCount
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    C_ElmDetails(const QString &in, const BGame &pDef, QSqlDatabase fromDb);
+    C_ElmDetails(const QString &in, const B_Game &pDef, QSqlDatabase fromDb);
     ~C_ElmDetails();
     int getCounter(void);
     QString getFilteringData(int zn);

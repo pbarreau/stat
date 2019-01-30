@@ -82,7 +82,7 @@ typedef struct _stCouvData
 class BCouv
 {
 public:
-    BCouv(QString surEnsemble, int zn, const BGame &pDef, QSqlDatabase fromDb);
+    BCouv(QString surEnsemble, int zn, const B_Game &pDef, QSqlDatabase fromDb);
     ~BCouv();
 
 private:
@@ -92,7 +92,7 @@ private:
 private:
     int zoneEtudie;
     QString ensemble;
-    BGame p_conf;
+    B_Game p_conf;
     QSqlDatabase db;
     stCouvData *couv;
 
@@ -104,8 +104,8 @@ class BCount:public QTableView
 {
     Q_OBJECT
 public:
-    BCount(const BGame &pDef, const QString &in, QSqlDatabase useDb);
-    BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
+    BCount(const B_Game &pDef, const QString &in, QSqlDatabase useDb);
+    BCount(const B_Game &pDef, const QString &in, QSqlDatabase fromDb,
            QWidget *unParent, eCountingType genre);
 
 protected:
@@ -130,7 +130,7 @@ public :
 protected:
     QString db_data;    /// information de tous les tirages
     QSqlDatabase dbToUse;
-    BGame myGame;
+    B_Game myGame;
     int *memo;  /// A deplacer :
     eCountingType type; /// type de comptage en cours
     static const QString cLabCount[]; /// nom associe aux types

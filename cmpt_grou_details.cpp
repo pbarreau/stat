@@ -22,7 +22,7 @@ C_GrpDetails::~C_GrpDetails()
     total --;
 }
 
-C_GrpDetails::C_GrpDetails(const QString &in,  const BGame &pDef, QSqlDatabase fromDb)
+C_GrpDetails::C_GrpDetails(const QString &in,  const B_Game &pDef, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountGrp)
 {
     QString source = in;
@@ -71,7 +71,7 @@ C_GrpDetails::C_GrpDetails(const QString &in,  const BGame &pDef, QSqlDatabase f
 
 }
 /// ----------------------
-bool C_GrpDetails::OLD_AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int zn)
+bool C_GrpDetails::OLD_AnalyserEnsembleTirage(QString tblIn, const B_Game &onGame, int zn)
 {
     /// Verifier si des vues temporaires precedentes sont encore presentes
     /// Si oui les effacer
@@ -91,7 +91,7 @@ bool C_GrpDetails::OLD_AnalyserEnsembleTirage(QString tblIn, const BGame &onGame
     QString tbLabCmb = cClc_cmb;
 
     tblToUse = tblIn;
-    if(onGame.from == eFdj){
+    if(onGame.prevision_id == 0){
         tbLabCmb = "B_" + tbLabCmb;
         tbLabAna = "B_" + tbLabAna;
     }
@@ -242,7 +242,7 @@ bool C_GrpDetails::OLD_AnalyserEnsembleTirage(QString tblIn, const BGame &onGame
 }
 
 /// ---------------------
-bool C_GrpDetails::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
+bool C_GrpDetails::FaireTableauSynthese(QString tblIn, const B_Game &onGame,int zn)
 {
     bool isOk = true;
     QString msg = "";

@@ -34,7 +34,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.nb_zone = 2;
 
         conf.nb_zone = 2;
-        conf.limites = new stBornes [conf.nb_zone];
+        conf.limites = new stZnLimites [conf.nb_zone];
         conf.limites[0].len = 5;
         conf.limites[0].min = 1;
         conf.limites[0].max = 49;
@@ -51,7 +51,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.jour_tir[2]="SAMEDI";
         conf.jour_tir[3]="VENDREDI";
 
-        conf.TT_Zn = new stNamesZones [conf.nb_zone];
+        conf.TT_Zn = new stZnNames [conf.nb_zone];
         conf.TT_Zn[0].std="Boules";
         conf.TT_Zn[0].abv="b";
         conf.TT_Zn[1].std="Etoiles";
@@ -67,7 +67,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
     {
         conf.nb_zone = 2;
 
-        conf.limites = new stBornes [conf.nb_zone];
+        conf.limites = new stZnLimites [conf.nb_zone];
         conf.limites[0].len = 5;
         conf.limites[0].min = 1;
         conf.limites[0].max = 49;
@@ -77,7 +77,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.limites[1].max = 10;
         conf.limites[1].win = 1;
 
-        conf.TT_Zn = new stNamesZones [conf.nb_zone];
+        conf.TT_Zn = new stZnNames [conf.nb_zone];
         conf.TT_Zn[0].std="Boules";
         conf.TT_Zn[0].abv="b";
         conf.TT_Zn[1].std="Etoiles";
@@ -99,7 +99,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
     {
         conf.nb_zone = 2;
 
-        conf.limites = new stBornes [conf.nb_zone];
+        conf.limites = new stZnLimites [conf.nb_zone];
         conf.limites[0].len = 5;
         conf.limites[0].win = 5;
         conf.limites[0].min = 1;
@@ -109,7 +109,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
         conf.limites[1].min = 1;
         conf.limites[1].max = 12;
 
-        conf.TT_Zn = new stNamesZones [conf.nb_zone];
+        conf.TT_Zn = new stZnNames [conf.nb_zone];
         conf.TT_Zn[0].std="Boules";
         conf.TT_Zn[0].abv="b";
         conf.TT_Zn[1].std="Etoiles";
@@ -149,15 +149,15 @@ void tirages::getConfigFor(stTiragesDef *priv_conf)
     int *nbElmZone = NULL;
     int *offsetFichier = NULL;
     QString *jour_tir = NULL;
-    stNamesZones *TT_Zn = NULL;
+    stZnNames *TT_Zn = NULL;
     QString *Fullzn = NULL;
-    stBornes *limites = NULL;
+    stZnLimites *limites = NULL;
 
     priv_conf->choixJeu = conf.choixJeu;
     priv_conf->nb_zone = conf.nb_zone;
     nbElmZone = new int [conf.nb_zone];
-    limites = new stBornes [conf.nb_zone];
-    TT_Zn = new stNamesZones [conf.nb_zone];
+    limites = new stZnLimites [conf.nb_zone];
+    TT_Zn = new stZnNames [conf.nb_zone];
     Fullzn = new QString [conf.nb_zone];
     offsetFichier = new int [conf.nb_zone];
 
@@ -240,8 +240,8 @@ QString tirages::s_LibColBase(stTiragesDef *ref)
 {
     int zone, elem, j;
     int nbZn = ref->nb_zone ;
-    stBornes *zn_conf=ref->limites;
-    stNamesZones *tab = ref->TT_Zn;
+    stZnLimites *zn_conf=ref->limites;
+    stZnNames *tab = ref->TT_Zn;
     QString msg1 = "";
 
 

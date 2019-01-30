@@ -11,7 +11,7 @@ class BarCalculPrevision:public QWidget
     Q_OBJECT
 
 public:
-    BarCalculPrevision(QModelIndex index, QSqlDatabase db, BGame game);
+    BarCalculPrevision(QModelIndex index, QSqlDatabase db, B_Game game);
 
 private:
     void demareRecherche(void);
@@ -23,7 +23,7 @@ private slots:
 
 private:
     QSqlDatabase dbInUse;   /// base de donnees associee a cet objets
-    BGame onGame;           /// parametres du jeu pour statistique globale
+    B_Game onGame;           /// parametres du jeu pour statistique globale
 
     QModelIndex m_index;
     int tirId;

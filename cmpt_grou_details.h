@@ -17,7 +17,7 @@ class C_GrpDetails:public BCount
     /// in : infos representant les tirages
     /// tb : nom de la table decrivant les zones
 public:
-    C_GrpDetails(const QString &in,  const BGame &pDef,  QSqlDatabase fromDb);
+    C_GrpDetails(const QString &in,  const B_Game &pDef,  QSqlDatabase fromDb);
     ~C_GrpDetails();
     QString getFilteringData(int zn);
     QTableView *getTbv(int zn);
@@ -60,10 +60,10 @@ private:
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
     bool updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool isChecked, int zn);
     bool updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn);
-    bool FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn);
+    bool FaireTableauSynthese(QString tblIn, const B_Game &onGame,int zn);
 
 
-    bool OLD_AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int zn);
+    bool OLD_AnalyserEnsembleTirage(QString tblIn, const B_Game &onGame, int zn);
     bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
     bool SupprimerVueIntermediaires(void);
 

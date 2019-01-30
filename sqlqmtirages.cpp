@@ -2,7 +2,7 @@
 
 #include "sqlqmtirages.h"
 
-sqlqmTirages::sqlqmTirages(const BGame &pDef,QObject *parent)
+sqlqmTirages::sqlqmTirages(const B_Game &pDef,QObject *parent)
     :QSqlQueryModel(parent),leJeu(pDef)
 {
     debzone=3;

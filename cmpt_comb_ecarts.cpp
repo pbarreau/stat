@@ -28,7 +28,7 @@ QTableView * C_CmbEcarts::getTbv(int zn)
     return(tbvCalculs[zn]);
 }
 
-C_CmbEcarts::C_CmbEcarts(const QString &in, const BGame &pDef,  QSqlDatabase fromDb)
+C_CmbEcarts::C_CmbEcarts(const QString &in, const B_Game &pDef,  QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountElm)
 {
     countId = total;

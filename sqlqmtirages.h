@@ -9,11 +9,11 @@ class sqlqmTirages:public QSqlQueryModel
     Q_OBJECT
 
 public:
-    explicit sqlqmTirages(const BGame &pDef,QObject *parent = 0);
+    explicit sqlqmTirages(const B_Game &pDef,QObject *parent = 0);
     QVariant data(const QModelIndex &index, int role) const;
 
 private:
-    BGame leJeu;
+    B_Game leJeu;
     int debzone;
 };
 

@@ -12,7 +12,7 @@ class C_ElmEcarts : public BCount
     Q_OBJECT
 
 public:
-    C_ElmEcarts(const QString &in, const BGame &pDef, QSqlDatabase fromDb);
+    C_ElmEcarts(const QString &in, const B_Game &pDef, QSqlDatabase fromDb);
     ~C_ElmEcarts();
     QTableView * getTbv(int zn);
 
