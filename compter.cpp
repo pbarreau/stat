@@ -761,6 +761,7 @@ void BCount::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
     int ischk = 0;
     bool existe = false;
     existe = VerifierValeur(clef, tbl,col,&ischk);
+    ischk = ischk & 0x2;
 
     QAction *filtrer = LeMenu->addAction("Filtrer");
     filtrer->setCheckable(true);

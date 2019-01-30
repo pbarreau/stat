@@ -47,7 +47,7 @@ int BPrevision::total = 0;
 BPrevision::~BPrevision()
 {
     if(total > 0){
-    total --;
+        total --;
     }
     else{
         dbInUse.close();
@@ -65,27 +65,32 @@ void BPrevision::slot_changerTitreZone(QString le_titre)
     selection[0].setText("Z:"+le_titre);
 }
 
-BPrevision::BPrevision(eGames game, bool setClean, eBddUse def)
+BPrevision::BPrevision(B_Game *game, bool setClean, eBddUse def)
 {
     cur_id = total;
     total++;
 
-    onGame.type = game;
-    onGame.from = eGoalOff;
-    onGame.prevision_id = cur_id;
-    if(ouvrirBase(def,game)==true)
-    {
+    onGame = *game; /// on recopie tout
+    onGame.prevision_id = cur_id; // on ajuste
+
+    if(cur_id == 0){
         /// Premier lancement du programme
-        if(cur_id == 0){
-            definirConstantesDuJeu(game);
+
+        if(ouvrirBase(def,game->type)==true)
+        {
+            definirConstantesDuJeu(game->type);
 
             /// Remettre tout a zero ?
             if(setClean){
                 creerTablesDeLaBase();
             }
+            effectuerTraitement(game->type);
         }
-        effectuerTraitement(game);
     }
+    else{
+        effectuerTraitement(game->type);
+    }
+
 }
 
 #if 0
@@ -264,7 +269,7 @@ bool BPrevision::OPtimiseAccesBase(void)
 QStringList **BPrevision::PreparerCriteresAnalyse(void)
 {
     int maxZn = onGame.znCount;
-    QString source = QString("B_")+ QString(cRef_fdj);
+    //QString source = QString("B_")+ QString(cRef_fdj);
     QStringList **criteres = new  QStringList*[maxZn] ;
     bool isOk = true;
 
@@ -306,7 +311,15 @@ QStringList **BPrevision::PreparerCriteresAnalyse(void)
 void BPrevision::effectuerTraitement(eGames game)
 {
     int maxZn = onGame.znCount;
-    QString source = QString("B_")+ QString(cRef_fdj);
+    QString source ="";
+    if(onGame.prevision_id ==0){
+        source = QString("B_")+ QString(cRef_fdj);
+    }
+    else
+    {
+        source = "E1"  ;
+
+    }
     QStringList **criteres = PreparerCriteresAnalyse() ;
     bool isOk = true;
 
@@ -2143,6 +2156,7 @@ void BPrevision::creerJeuxUtilisateur(int sel_prio,int n, int p)
     monJeu.limites = &(onGame.limites[0]);
     monJeu.names = &(onGame.names[0]);
     monJeu.limites->sel = n;
+    monJeu.znCount = 1;
 
     msg = ListeDesJeux(sel_prio,0,n,p);
 #ifndef QT_NO_DEBUG
@@ -2157,8 +2171,11 @@ void BPrevision::creerJeuxUtilisateur(int sel_prio,int n, int p)
         }
     }
 
-    int zn=0;
+    new BPrevision(&monJeu,true,eBddUseDisk);
 
+    return;
+
+    int zn=0;
     if(isOk)
         isOk = AnalyserEnsembleTirage(source,monSlt,monJeu, zn);
 
@@ -2167,8 +2184,6 @@ void BPrevision::creerJeuxUtilisateur(int sel_prio,int n, int p)
         isOk = FaireTableauSynthese(tbUse,monJeu,zn);
 #endif
 
-    if(!isOk)
-        return;
 
     showAll(source,monJeu);
 
@@ -2445,6 +2460,9 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn,
                         +slst[0].at(loop)+"))) as tbRight on ("
                         +st_OnDef+") group by tbLeft.id";
             }
+#ifndef QT_NO_DEBUG
+            qDebug() << "msg_1:"<<msg;
+#endif
             isOk = query.exec(msg);
 
             curName = "vt_" +  QString::number(loop);
@@ -2506,7 +2524,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn,
                     +")"
                     ;
 #ifndef QT_NO_DEBUG
-            qDebug() << "msg:"<<msg;
+            qDebug() << "msg_2:"<<msg;
 #endif
             isOk = query.exec(msg);
         }

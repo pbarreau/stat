@@ -92,7 +92,7 @@ class BPrevision:public QGridLayout
 
     /// in : infos representant les tirages
 public:
-    BPrevision(eGames game, bool setClean, eBddUse def);
+    BPrevision(B_Game *game, bool setClean, eBddUse def);
     ~BPrevision();
 
 private:

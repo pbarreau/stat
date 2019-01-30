@@ -103,7 +103,10 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
             unJeu = eGameToSet;
             break;
         }
-        tous = new BPrevision(unJeu,true,eBddUseDisk);
+
+        B_Game Thegame;
+        Thegame.type = unJeu;
+        tous = new BPrevision(&Thegame,true,eBddUseDisk);
         connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_makeUserGamesList()));
         connect(FiltrerAct, SIGNAL(triggered()), tous, SLOT(slot_filterUserGamesList()));
         connect(tous,
