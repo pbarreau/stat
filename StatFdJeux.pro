@@ -12,6 +12,9 @@ TARGET = StatFdJeux
 TEMPLATE = app
 
 
+INCLUDEPATH +="./sqlExtensions"
+#-LC:/Devel/Qt5.6.0/Tools/mingw492_32/opt/lib
+LIBS +=  -L./sqlExtensions -lsqlite3-0
 
 include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
 
