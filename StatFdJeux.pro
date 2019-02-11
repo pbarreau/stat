@@ -15,11 +15,7 @@ TEMPLATE = app
 
 INCLUDEPATH +="./sqlExtensions"
 #-LC:/Devel/Qt5.6.0/Tools/mingw492_32/opt/lib
-<<<<<<< HEAD
 LIBS +=  -L./sqlExtensions -lsqlite3-0
-=======
-LIBS += -LC:/Devel/Qt5.6.0/Tools/mingw492_32/opt/bin -LC:/Devel/Workspaces/stat/sqlExtensions -lsqlite3-0
->>>>>>> b5
 
 #include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
 
