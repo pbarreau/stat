@@ -22,11 +22,12 @@ QString GetTirageInfo(int id);
 #ifndef USE_SG_CODE
 QString GetBoulesOfTirage(int tir);
 
-void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid)
+void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index)
 {
     QSqlQuery requete;
     bool status = false;
     int val = my_index.model()->index(my_index.row(),0).data().toInt();
+    int cid = 0;
     QString table = "stepper_"+QString::number(val);
 
     QString msg = "";
@@ -89,14 +90,14 @@ void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid)
     int maVerif = 0;
     if(requete.isValid())
     {
-        int nb = pGlobConf->nbElmZone[zone];
+        int nb = pGlobConf->limites[zone].len;
         do{
             QSqlRecord record = requete.record();
             tid = record.value(0).toInt();
             maVerif++;
             for (i=1;i<=nb;i++)
             {
-                QString champ = pGlobConf->nomZone[zone]+QString::number(i);
+                QString champ = pGlobConf->TT_Zn[zone].abv+QString::number(i);
                 boule = record.value(champ).toInt();
 
                 linksInfo[links[boule].y].total--;///nbtot[links[boule].y]--;
@@ -263,26 +264,10 @@ void ShowStepper::MettreCouleur(int start, int cur)
     QString val = "";
     QString table = "stepper_"+QString::number(start);
 
-    //Mise en place tirage precedent
-    if(start - cur > 0)
-    {
-        val = GetBoulesOfTirage(cur + 1);
-        // preparer la requete mise a jour
-        msg = "update " + table + " set c=3 where (" + table
-                + ".tid = " + QString::number(cur)
-                + " and (" + table +".b in ("+val+")));";
-
-        // lancer la requete
-#ifndef QT_NO_DEBUG
-        qDebug() << msg;
-#endif
-        sta = sql.exec(msg);
-    }
-
     // Couleur pour tirage courant
     val = GetBoulesOfTirage(cur);
     // preparer la requete mise a jour
-    msg = "update " + table + " set c=1 where (" + table
+    msg = "update " + table + " set c=0x1 where (" + table
             + ".tid = " + QString::number(cur)
             + " and (" + table +".b in ("+val+")));";
 
@@ -299,7 +284,7 @@ void ShowStepper::MettreCouleur(int start, int cur)
 
         val = GetBoulesOfTirage(cur - 1);
         // preparer la requete mise a jour
-        msg = "update " + table + " set c=2 where (" + table
+        msg = "update " + table + " set c=c|0x2 where (" + table
                 + ".tid = " + QString::number(cur)
                 + " and (" + table +".b in ("+val+")));";
 
@@ -310,6 +295,22 @@ void ShowStepper::MettreCouleur(int start, int cur)
         sta = sql.exec(msg);
 
     }
+    //Mise en place tirage precedent
+    if(start - cur > 0)
+    {
+        val = GetBoulesOfTirage(cur + 1);
+        // preparer la requete mise a jour
+        msg = "update " + table + " set c=c|0x4 where (" + table
+                + ".tid = " + QString::number(cur)
+                + " and (" + table +".b in ("+val+")));";
+
+        // lancer la requete
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+        sta = sql.exec(msg);
+    }
+
 
 }
 #endif
@@ -406,7 +407,7 @@ void ShowStepper::ExecSql_3(int cid, int tid)
 
     for(int i = 0; i<= col; i++)
     {
-         msg = "select r1.b as d" + QString::number(i)+
+        msg = "select r1.b as d" + QString::number(i)+
                 ",r1.c,r1.bgc from "+useTable+" as r1 " +
                 "where ( (r1.b between "+
                 QString::number(i*10)+" and "+QString::number(((i+1)*10)-1)+") "+
@@ -450,7 +451,7 @@ void ShowStepper::setLabel(int tid)
     }
     dNext->setText(msg3);
 }
-ShowStepper::ShowStepper(stTiragesDef *pdef)
+ShowStepper::ShowStepper(stStepperNeeds *pdef)
 {
     tid_start = 0;
     cid_start = 0;
@@ -658,7 +659,7 @@ QSplitter *ShowStepper::SetDataSplitter_1(int col, int cid, int tid)
 
     my_model = new QSqlQueryModel [col];
     QTableView *view = new QTableView[col];
-    Delegate *MaGestion = new Delegate  [col];
+    BDelegateStepper *MaGestion = new BDelegateStepper  [col];
     for(int i = 0; i< col; i++)
     {
         ///select b as y1 from stepper where (cid = 0 and tid =40 and y=1) order by id;
@@ -679,10 +680,10 @@ QSplitter *ShowStepper::SetDataSplitter_1(int col, int cid, int tid)
         view[i].setItemDelegate(&MaGestion[i]);
         view[i].setSortingEnabled(false);
         view[i].setEditTriggers(QAbstractItemView::NoEditTriggers);
-        view[i].setColumnWidth(0,LCELL);
+        view[i].setColumnWidth(0,LCELL*2);
         view[i].horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
         view[i].verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-        view[i].setFixedWidth(LCELL+45);
+        view[i].setFixedWidth((LCELL*2)+45);
 
     }
 
@@ -696,7 +697,7 @@ QSplitter *ShowStepper::SetDataSplitter_3(int col, int cid, int tid)
 
     my_model_2 = new QSqlQueryModel [col-1];
     QTableView *view = new QTableView[col-1];
-    Delegate *MaGestion = new Delegate  [col-1];
+    BDelegateStepper *MaGestion = new BDelegateStepper  [col-1];
 #if 0
     select r1.b as y, r1.c from
             (
@@ -765,17 +766,17 @@ QSplitter *ShowStepper::SetDataSplitter_2(int col, int cid, int tid)
 
     my_model_3 = new QSqlQueryModel [col+1];
     QTableView *view = new QTableView[col+1];
-    Delegate *MaGestion = new Delegate  [col+1];
+    BDelegateStepper *MaGestion = new BDelegateStepper  [col+1];
 #if 0
-select r1.b as d0,r1.c,r1.bgc
-        from stepper_4 as r1
-        where (
-            (r1.b beteween 0 and 9)
-            and
-            (r1.cid =0)
-            and
-            (r1.tid =4)
-            )order by r1.b;
+    select r1.b as d0,r1.c,r1.bgc
+            from stepper_4 as r1
+            where (
+                (r1.b beteween 0 and 9)
+                and
+                (r1.cid =0)
+                and
+                (r1.tid =4)
+                )order by r1.b;
 #endif
     for(int i = 0; i<= col; i++)
     {

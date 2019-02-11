@@ -4,91 +4,132 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql
+QT       += core gui sql network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = StatFdJeux
 TEMPLATE = app
 
+##include(C:/Devel/Workspaces/stat/sqlExtensions/sqlite.pri)
 
 INCLUDEPATH +="./sqlExtensions"
 #-LC:/Devel/Qt5.6.0/Tools/mingw492_32/opt/lib
+<<<<<<< HEAD
 LIBS +=  -L./sqlExtensions -lsqlite3-0
+=======
+LIBS += -LC:/Devel/Qt5.6.0/Tools/mingw492_32/opt/bin -LC:/Devel/Workspaces/stat/sqlExtensions -lsqlite3-0
+>>>>>>> b5
 
-include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
+#include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
 
-win32:CONFIG(release, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchart2
-else:win32:CONFIG(debug, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchartd2
-win32: LIBS += -LC:/Devel/kdchart-2.5.1-source/lib/ -ltesttools2
+#win32:CONFIG(release, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchart2
+#else:win32:CONFIG(debug, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchartd2
+#win32: LIBS += -LC:/Devel/kdchart-2.5.1-source/lib/ -ltesttools2
 
-INCLUDEPATH += "C:/Devel/kdchart-2.5.1-source/include"
-DEPENDPATH += "C:/Devel/kdchart-2.5.1-source/include"
+#INCLUDEPATH += "C:/Devel/kdchart-2.5.1-source/include"
+#DEPENDPATH += "C:/Devel/kdchart-2.5.1-source/include"
 
 message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
 
+#QMAKE_CXXFLAGS_RELEASE += -g
+#QMAKE_CFLAGS_RELEASE += -g
+#QMAKE_LFLAGS_RELEASE =
 
+SOURCES += \
+		main.cpp\
+		mainwindow.cpp \
+		CreerTables.cpp \
+		ImportFdj.cpp \
+		OuvrirBase.cpp \
+		ReEcriture.cpp \
+		RemplirBase.cpp \
+		SyntheseDetails.cpp \
+		SyntheseGenerale.cpp \
+		chartwidget.cpp \
+		choixjeux.cpp \
+		combinaison.cpp \
+		compter.cpp \
+		delegate.cpp \
+		distancepourtirage.cpp \
+		filtrecombinaisons.cpp \
+		gererbase.cpp \
+		ihm.cpp \
+		labelclickable.cpp \
+		lescomptages.cpp \
+		monQview.cpp \
+		monSqlEditable.cpp \
+		monfiltreproxymodel.cpp \
+		mygraphicsview.cpp \
+		myqtableview.cpp \
+		pointtirage.cpp \
+		prevision.cpp \
+		progression.cpp \
+		pslot.cpp \
+		refetude.cpp \
+		showstepper.cpp \
+		sqlbackup.cpp \
+		tirages.cpp \
+    db_tools.cpp \
+    cnp_SansRepetition.cpp \
+    cnp_AvecRepetition.cpp \
+    etudierjeux.cpp \
+    compter_une_repartition.cpp \
+    montrer_tirages.cpp \
+    bcouv.cpp \
+    bar_action.cpp \
+    barcalculprevision.cpp \
+    ihm_tirages.cpp \
+    sqlqmtirages.cpp \
+    idlgttirages.cpp \
+    cmpt_elem_ecarts.cpp \
+    cmpt_comb_details.cpp \
+    cmpt_elem_details.cpp \
+    cmpt_grou_details.cpp \
+    cmpt_comb_ecarts.cpp
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    choixjeux.cpp \
-    CreerTables.cpp \
-    gererbase.cpp \
-    ihm.cpp \
-    ImportFdj.cpp \
-    mygraphicsview.cpp \
-    OuvrirBase.cpp \
-    pointtirage.cpp \
-    pslot.cpp \
-    RemplirBase.cpp \
-    tirages.cpp \
-    labelclickable.cpp \
-    ReEcriture.cpp \
-    prevision.cpp \
-    monQview.cpp \
-    monSqlEditable.cpp \
-    filtrecombinaisons.cpp \
-    SyntheseDetails.cpp \
-    newdetails.cpp \
-    distancepourtirage.cpp \
-    monfiltreproxymodel.cpp \
-    refetude.cpp \
-    chartwidget.cpp \
-    myqabstractitemviewofqtable.cpp \
-    myqtableview.cpp \
-    SyntheseGenerale.cpp \
-    progression.cpp \
-    showstepper.cpp \
-    delegate.cpp \
-    combinaison.cpp \
-    car.cpp \
-    ctabfilterzncount.cpp \
-    sqlbackup.cpp
-
-HEADERS  += mainwindow.h \
-    choixjeux.h \
-    gererbase.h \
-    mygraphicsview.h \
-    pointtirage.h \
-    tirages.h \
-    types_jeux.h \
-    labelclickable.h \
-    filtrecombinaisons.h \
-    SyntheseDetails.h \
-    monQview.h \
-    monSqlEditable.h \
-    distancepourtirage.h \
-    monfiltreproxymodel.h \
-    refetude.h \
-    chartwidget.h \
-    myqabstractitemviewofqtable.h \
-    myqtableview.h \
-    showstepper.h \
-    delegate.h \
-    car.h \
-    ctabfilterzncount.h \
-    SyntheseGenerale.h \
-    sqlbackup.h
+HEADERS  += \
+		mainwindow.h \
+		SyntheseDetails.h \
+		SyntheseGenerale.h \
+		chartwidget.h \
+		choixjeux.h \
+		compter.h \
+		delegate.h \
+		distancepourtirage.h \
+		filtrecombinaisons.h \
+		gererbase.h \
+		labelclickable.h \
+		lescomptages.h \
+		monQview.h \
+		monSqlEditable.h \
+		monfiltreproxymodel.h \
+		mygraphicsview.h \
+		myqtableview.h \
+		pointtirage.h \
+		refetude.h \
+		showstepper.h \
+		sqlbackup.h \
+		tirages.h \
+		types_jeux.h \
+    db_tools.h \
+    cnp_AvecRepetition.h \
+    cnp_SansRepetition.h \
+    etudierjeux.h \
+    game.h \
+    compter_une_repartition.h \
+    montrer_tirages.h \
+    bcouv.h \
+    bar_action.h \
+    barcalculprevision.h \
+    ihm_tirages.h \
+    sqlqmtirages.h \
+    idlgttirages.h \
+    cmpt_comb_ecarts.h \
+    cmpt_elem_ecarts.h \
+    cmpt_elem_details.h \
+    cmpt_comb_details.h \
+    cmpt_grou_details.h
 
 
 FORMS    += mainwindow.ui \

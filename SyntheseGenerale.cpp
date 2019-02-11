@@ -17,13 +17,19 @@
 #include <QDataWidgetMapper>
 #include <QSqlRelationalDelegate>
 #include <QStackedWidget>
+#include <QWidgetAction>
 
 #include "refetude.h"
 #include "SyntheseGenerale.h"
 #include "SyntheseDetails.h"
 #include "showstepper.h"
 
-//
+#include "cmpt_grou_details.h"
+#include "cmpt_elem_details.h"
+#include "cmpt_comb_details.h"
+#include "lescomptages.h"
+#include "compter.h"
+
 #include "mainwindow.h"
 
 //extern MainWindow w;
@@ -142,6 +148,18 @@ void SyntheseGenerale::slot_ShowTotalBoule(const QModelIndex &index)
     }
 }
 
+void SyntheseGenerale::slot_ShowBouleForNewDesign(const QModelIndex & index)
+{
+   /// Pas de test sur la colonne ici
+   /// se mettre sur le bon onglet
+    ptabComptage->setCurrentIndex(0);///(boules)
+
+    // recuperer la valeur a la colone de la table
+    int val = index.model()->index(index.row(),0).data().toInt();
+    mysortModel->sort(0);
+    tbv_bloc1_1->scrollTo(mysortModel->index(val-1,0));
+}
+
 void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
 {
     int val = 0;
@@ -150,14 +168,16 @@ void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
 
     // recuperer la valeur de la colonne
     int col = index.column();
+QTableView *view = qobject_cast<QTableView *>(sender());
 
-    if(col > 4 && col <= 4 + pMaConf->nbElmZone[0])
+    if(col > 4 && col <= 4 + pMaConf->limites[0].len)
     {
         // se mettre sur le bon onglet
         ptabComptage->setCurrentIndex(0);
 
         // recuperer la valeur a la colone de la table
         val = index.model()->index(index.row(),index.column()).data().toInt();
+        //view->model()->sort(0);
         mysortModel->sort(0);
         tbv_bloc1_1->scrollTo(mysortModel->index(val-1,0));
     }
@@ -258,14 +278,14 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int 
     int maVerif = 0;
     if(requete.isValid())
     {
-        int nb = pMaConf->nbElmZone[zone];
+        int nb = pMaConf->limites[zone].len;
         do{
             QSqlRecord record = requete.record();
             tid = record.value(0).toInt();
             maVerif++;
             for (i=1;i<=nb;i++)
             {
-                QString champ = pMaConf->nomZone[zone]+QString::number(i);
+                QString champ = pMaConf->TT_Zn[zone].abv+QString::number(i);
                 boule = record.value(champ).toInt();
 
                 linksInfo[links[boule].y].total--;///nbtot[links[boule].y]--;
@@ -489,14 +509,17 @@ void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
 
     QMenu *MonMenu=new QMenu(pEcran);
     QString msg = "Recherche";
-    ShowStepper *UnDetail = new ShowStepper(pMaConf);
-    // QModelIndex index = tbv_LesTirages->indexAt(pos);
-
-    MonTraitement = new B_ActFrMdlIndex(index,msg);
+    MonTraitement = new bar_action(index,msg);
     MonMenu->addAction(MonTraitement);
 
-    connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex,int)),
-            UnDetail, SLOT(slot_MaFonctionDeCalcul(const QModelIndex,int)) );
+    stStepperNeeds *stNeeds = new stStepperNeeds;
+    //stNeeds->nbElmZone = pMaConf->nbElmZone;
+    stNeeds->TT_Zn = pMaConf->TT_Zn;
+    stNeeds->limites = pMaConf->limites;
+    ShowStepper *UnDetail = new ShowStepper(stNeeds);
+    //ShowStepper *UnDetail = new ShowStepper(pMaConf);
+    connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex)),
+            UnDetail, SLOT(slot_MaFonctionDeCalcul(const QModelIndex)) );
 
     MonMenu->exec(tbv_LesTirages->viewport()->mapToGlobal(pos));
 
@@ -508,7 +531,7 @@ void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
     // recuperer la valeur de la colonne
     int col = index.column();
 
-    if(col > 4 && col <= 4 + pMaConf->nbElmZone[0])
+    if(col > 4 && col <= 4 + pMaConf->limites[0].len)
     {
         // se mettre sur le bon onglet
         ptabComptage->setCurrentIndex(0);
@@ -543,6 +566,27 @@ void SyntheseGenerale::DoTirages(void)
     tbv_LesEcarts = unTest->GetLesEcarts();
 
     disposition->addWidget(uneReponse,0,0,Qt::AlignLeft|Qt::AlignTop);
+#if 0
+    /// ------------------------------
+    QString st_table = REF_BASE;
+    cCompterGroupes *test = new cCompterGroupes(st_table);
+    connect(test,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),
+            pEcran->parent(),SLOT(slot_NOUVEAU_Ensemble(B_RequeteFromTbv)));
+    connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
+             test, SLOT( slot_DecodeTirage( QModelIndex) ) );
+
+    cCompterZoneElmts *test2 = new cCompterZoneElmts(st_table,NULL);
+    connect(test2,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),
+            pEcran->parent(),SLOT(slot_NOUVEAU_Ensemble(B_RequeteFromTbv)));
+
+    cCompterCombinaisons *test3 = new cCompterCombinaisons(st_table);
+    connect(test3,SIGNAL(sig_ComptageReady(B_RequeteFromTbv)),
+            pEcran->parent(),SLOT(slot_NOUVEAU_Ensemble(B_RequeteFromTbv)));
+
+    cLesComptages *tous = new cLesComptages(st_table);
+
+    /// -------------------------------------
+#endif
 
     connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
              pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
@@ -704,7 +748,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
 
     int zn = 1;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(cUsr_elm) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     //tbv_bloc1_2 = new QTableView;
@@ -716,7 +760,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     QString st_cr1 = "";
     QStringList lst_tmp;
     lst_tmp << "tb2.e";
-    int loop = pMaConf->nbElmZone[1];
+    int loop = pMaConf->limites[1].len;
     st_cr1 =  GEN_Where_3(loop,"tb1.boule",false,"=",lst_tmp,true,"or");
     QString st_msg1 =
             "select tb1.boule as B, count(tb2.id) as T, "
@@ -818,7 +862,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 
     int zn = 0;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(TB_SC) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(cUsr_cmb) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
@@ -835,7 +879,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     QString st_cr1 = "";
     QStringList lst_tmp;
     lst_tmp << "tb2.e";
-    int loop = pMaConf->nbElmZone[1];
+    int loop = pMaConf->limites[1].len;
     st_cr1 =  "tb1.id=tb2.pid";
     QString st_msg1 =
             "select tb1.id as Id, tb1.tip as Repartition, count(tb2.id) as T, "
@@ -843,7 +887,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
             " "
             "from  "
             "("
-            "select id,tip from lstcombi"
+            "select id,tip from lstCombi_z1"
             ") as tb1 "
             "left join "
             "("
@@ -929,7 +973,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     QSqlQuery selection;
     bool status = false;
 
-    st_msg1 = "select analyses.id, analyses.id_poids from analyses limit 1;";
+    st_msg1 = "select analyses.id, analyses.fk_idCombi_z1 from analyses limit 1;";
     status = selection.exec(st_msg1);
     status = selection.first();
     if(selection.isValid())
@@ -978,7 +1022,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
     int zn = 0;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(cUsr_elm) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     //tbv_bloc1_1 = new QTableView;
@@ -1118,8 +1162,47 @@ void SyntheseGenerale::slot_ccmr_tbForBaseEcart(QPoint pos)
         QMenu *MonMenu = new QMenu(pEcran);
         QMenu *subMenu= ContruireMenu(tbl,val);
         MonMenu->addMenu(subMenu);
+        CompleteMenu(MonMenu, tbl, val);
+
+
         MonMenu->exec(view->viewport()->mapToGlobal(pos));
     }
+}
+
+void SyntheseGenerale::slot_wdaFilter(int val)
+{
+    //QWidgetAction *wdaFrom = qobject_cast<QWidgetAction *>(sender());
+    QCheckBox *chkFrom = qobject_cast<QCheckBox *>(sender());
+
+#ifndef QT_NO_DEBUG
+    //qDebug() << "Boule :("<< wdaFrom->objectName()<<") check:"<< wdaFrom->isChecked();
+    qDebug() << "Boule :("<< chkFrom->objectName()<<") check:"<< chkFrom->isChecked();
+#endif
+}
+
+void SyntheseGenerale::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
+{
+    int col = 3;
+    int niveau = 0;
+    bool existe = false;
+    existe = VerifierValeur(clef, tbl,col,&niveau);
+
+    QCheckBox *chkb_1 = new QCheckBox;
+    chkb_1->setText("Filtrer");
+    QWidgetAction *chk_act_1 = new QWidgetAction(LeMenu);
+    chk_act_1->setDefaultWidget(chkb_1);
+    connect(chkb_1,SIGNAL(stateChanged(int)),this,SLOT(slot_wdaFilter(int)));
+
+    if((!existe) || (!niveau))
+    {
+        chkb_1->setChecked(false);
+    }
+    else
+    {
+        chkb_1->setChecked(true);
+    }
+
+    LeMenu->addAction(chk_act_1);
 }
 
 QMenu *SyntheseGenerale::ContruireMenu(QString tbl, int val)
@@ -1130,9 +1213,10 @@ QMenu *SyntheseGenerale::ContruireMenu(QString tbl, int val)
     //menu->setTitle(msg2);
     QActionGroup *grpPri = new  QActionGroup(menu);
 
+    int col = 2;
     int niveau = 0;
     bool existe = false;
-    existe = VerifierValeur(val,&niveau, tbl);
+    existe = VerifierValeur(val, tbl, col, &niveau);
 
 
 
@@ -1347,11 +1431,11 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
     //QStringList *maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
     maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
     int nbCol = maRef[zone][0].size();
-    int nbLgn = uneDemande.ref->nbElmZone[zone] + 1;
+    int nbLgn = uneDemande.ref->limites[zone].len + 1;
 
     QTableView *qtv_tmp = new QTableView;
     QString qtv_name = "";
-    qtv_name = QString::fromLatin1(TB_SG) +
+    qtv_name = QString::fromLatin1(cUsr_grp) +
             QString::fromLatin1("_z")
             +QString::number(zone+1);
     qtv_tmp->setObjectName(qtv_name);
@@ -1583,6 +1667,9 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
     origine =curOnglet->currentIndex();
     totOngl = curOnglet->count();
 
+    QString name1 = view->objectName();
+    QString name2 = selectionModel->objectName();
+
     switch (origine) {
     case 0:
     case 1:
@@ -1631,7 +1718,7 @@ QString CreatreTitle(stCurDemande *pConf)
         if(indexes.size())
         {
             if (i<2)
-                titre = titre + pConf->ref->nomZone[i];
+                titre = titre + pConf->ref->TT_Zn[i].abv;
             if(i==2)
                 titre = titre + "c";
             if(i==3)
@@ -1694,10 +1781,10 @@ QString SyntheseGenerale::ActionElmZone(QString critere , QString operateur, int
 
     // Operateur : or | and
     // critere : = | <>
-    for(int i = 0; i<pConf->nbElmZone[zone];i++)
+    for(int i = 0; i<pConf->limites[zone].len;i++)
     {
         ret_msg = ret_msg +"tb2.B "+ critere +" tb1."
-                + pConf->nomZone[zone]+QString::number(i+1)
+                + pConf->TT_Zn[zone].abv+QString::number(i+1)
                 + " " + operateur+ " ";
     }
     int len_flag = operateur.length();
@@ -1817,8 +1904,8 @@ QString SyntheseGenerale::SqlCreateCodeBoule(int onglet, QString table)
     sqlReq = table;
     if(indexes.size())
     {
-        int max = uneDemande.ref->nbElmZone[onglet];
-        QString champ = uneDemande.ref->nomZone[onglet];
+        int max = uneDemande.ref->limites[onglet].len;
+        QString champ = uneDemande.ref->TT_Zn[onglet].abv;
 
         sqlReq = FiltreLaBaseSelonSelectionUtilisateur(indexes,onglet,max,champ,table);
 
@@ -1997,7 +2084,7 @@ tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
 tb3.e1 as e1,
 tb3.bp as P,
 tb3.bg as G
-from tirages as tb3, analyses as tb4, lstcombi as tb5
+from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
 inner join
 (
         select *  from tirages as tb1
@@ -2017,7 +2104,7 @@ on (
         and
         (tb4.id = tb3.id)
         and
-        (tb4.id_poids = tb5.id)
+        (tb4.fk_idCombi_z1 = tb5.id)
         )
 ;
 --Fin requete tb3
@@ -2041,7 +2128,7 @@ left join
         tb3.e1 as e1,
         tb3.bp as P,
         tb3.bg as G
-        from tirages as tb3, analyses as tb4, lstcombi as tb5
+        from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
         inner join
         (
             select *  from tirages as tb1
@@ -2061,7 +2148,7 @@ left join
             and
             (tb4.id = tb3.id)
             and
-            (tb4.id_poids = tb5.id)
+            (tb4.fk_idCombi_z1 = tb5.id)
             )
         --Fin requete tb3
         ) as tbright
@@ -2121,12 +2208,12 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             tb3.e1 as e1
             from tirages as tb3,
             analyses as tb4,
-            lstcombi as tb5
+            lstCombi_z1 as tb5
             where
             (
                 tb4.id = tb3.id
             and
-            tb5.id = tb4.id_poids
+            tb5.id = tb4.fk_idCombi_z1
             );
 #endif
 
@@ -2138,9 +2225,9 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
 
     for(int i =0 ; i< pMaConf->nb_zone; i++)
     {
-        lst_tmp <<   pMaConf->nomZone[i];
-        st_tmp = "tb3."+pMaConf->nomZone[i];
-        loop =  pMaConf->nbElmZone[i];
+        lst_tmp <<   pMaConf->TT_Zn[i].abv;
+        st_tmp = "tb3."+pMaConf->TT_Zn[i].abv;
+        loop =  pMaConf->limites[i].len;
         st_tmp =  GEN_Where_3(loop,st_tmp,true," as ",lst_tmp,true,",");
         st_cr1 = st_cr1 + st_tmp + ",";
         lst_tmp.clear();
@@ -2161,12 +2248,12 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             +st_base_reference+
             ") as tb3,  "
             "analyses as tb4,  "
-            "lstcombi as tb5 "
+            "lstCombi_z1 as tb5 "
             "where "
             "( "
             "tb4.id = tb3.id "
             "and "
-            "tb5.id = tb4.id_poids "
+            "tb5.id = tb4.fk_idCombi_z1 "
             "); ";
 
 #ifndef QT_NO_DEBUG
@@ -2252,7 +2339,7 @@ QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pCo
     //exemple dst = 1; loop=5; boules <<1 <<2;
     // st_cr1 => ((tb1.b1=1 or tb1.b2=1 or tb1.b3=1 or tb1.b4=1 or tb1.b5=1 )
     // and (tb1.b1=2 or tb1.b2=2 or tb1.b3=2 or tb1.b4=2 or tb1.b5=2 ))
-    int loop = pConf->nbElmZone[zn];
+    int loop = pConf->limites[zn].len;
     st_cr1 =  GEN_Where_3(loop,"tb1.b",true,"=",boules,false,"or");
 #ifndef QT_NO_DEBUG
     qDebug() << st_cr1;
@@ -2324,10 +2411,10 @@ QString GEN_Where_2(stTiragesDef *pConf, int zone, QString operateur, int boule,
     // Operateur : or | and
     // critere : = | <>
     // b1=0 or b2=0 or ..
-    for(int i = 0; i<pConf->nbElmZone[zone];i++)
+    for(int i = 0; i<pConf->limites[zone].len;i++)
     {
         ret_msg = ret_msg
-                + alias + "." + pConf->nomZone[zone]+QString::number(i+1)
+                + alias + "." + pConf->TT_Zn[zone].abv+QString::number(i+1)
                 + critere + QString::number(boule)
                 + " " + operateur+ " ";
     }
@@ -2350,7 +2437,7 @@ QString GEN_Where_1(int zn, stTiragesDef *pConf, QStringList &boules, QString op
         int val_boule = boules.at(i).toInt();
         //QString msg1 = GEN_Where_2(pConf, zn,op1,val_boule,op2,alias);
         //        QString msg1 = GEN_Where_2(pConf, zn,"or",val_boule,"=");
-        int loop = pConf->nbElmZone[zn];
+        int loop = pConf->limites[zn].len;
         QString msg1 = GEN_Where_3(loop, "tb1.b",true,"=",boules,false,"or");
 
         msg = msg + "(" +msg1+ ")"
@@ -2365,7 +2452,7 @@ QString GEN_Where_1(int zn, stTiragesDef *pConf, QStringList &boules, QString op
 
 QString NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules)
 {
-    //QString col(QString::fromLocal8Bit(CL_TOARR) + pConf->nomZone[zn]);
+    //QString col(QString::fromLocal8Bit(CL_TOARR) + pConf->TT_Zn[zn].abv);
     QString msg= "" ;
     QString flag = " and ";
 

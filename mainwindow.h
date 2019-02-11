@@ -17,13 +17,16 @@
 #include <QGraphicsView>
 #include <QFormLayout>
 
-#include "MyGraphicsView.h"
-#include "gererbase.h"
+#include <QNetworkAccessManager>
+#include <QFile>
+
 #include "tirages.h"
-#include "pointtirage.h"
+#include "gererbase.h"
+
 #include "SyntheseGenerale.h"
-#include "filtrecombinaisons.h"
-#include "refetude.h"
+#include "lescomptages.h"
+
+#include "pointtirage.h"
 
 
 namespace Ui {
@@ -93,6 +96,8 @@ private slots:
     void pslot_close();
     bool pslot_save();
     bool pslot_saveAs();
+    void pslot_GetFromFdj();
+    void slot_replyFinished(QNetworkReply *resp);
     void pslot_about();
     void pslot_closeTabDetails(int index);
 
@@ -134,6 +139,8 @@ public slots:
     void slot_MontreTirageDansGraph(const QModelIndex & index);
     void slot_MontreTirageAnalyse(const QModelIndex & index);
     void slot_PresenteLaBoule(const QModelIndex & index);
+    void slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul);
+
 
 
 private:
@@ -226,6 +233,8 @@ private:
 private:
     GererBase *DB_tirages;
     QMdiArea *zoneCentrale;
+    BPrevision *tous;
+
     QWidget *w_FenetreDetails;
     QTabWidget *gtab_Top;
     SyntheseGenerale *syntheses;
@@ -235,6 +244,7 @@ private:
     QLabel * lab_critere;
 
     QMenu *fileMenu;
+    QMenu *fdjMenu;
     QMenu *helpMenu;
     QToolBar *fileToolBar;
     QAction *newAct;
@@ -242,6 +252,9 @@ private:
     QAction *saveAct;
     QAction *saveAsAct;
     QAction *exitAct;
+    QAction *runAct;
+    QAction *FiltrerAct;
+    QAction *actGetFromUrlsFdj;
     QAction *aboutAct;
 
     LabelClickable **G_lab_nbSorties;
@@ -268,7 +281,7 @@ private:
     QTableView *G_tbv_MesPossibles;
     QTableView *G_tbv_TabPrevision;
     QTableView *G_tbv_TabPrevision_v2;
-    QTableView *G_tbv_Lstcombi;
+    //QTableView *G_tbv_lstCombi_z1_z1;
     QTableView *G_tbv_LesAbsents;
     QTableView *G_tbv_Parites;
     QTableView **gtbv_DernierTirageDetail;
@@ -312,6 +325,20 @@ private:
     int G_CombiKey;
 
     bool closewindows;
+
+    // Reseau
+    QNetworkAccessManager *manager;
+    QVector<QNetworkReply *> currentDownloads;
+    QFile *file;
+
+public:
+    QString saveFileName(const QUrl &url);
+    void doDownload(const QUrl &url);
+    bool saveToDisk(const QString &filename, QIODevice *data);
+    bool isHttpRedirect(QNetworkReply *reply);
+
+public slots:
+    //void slot_sslErrors(const QList<QSslError> &sslErrors);
 };
 
 #endif // MAINWINDOW_H

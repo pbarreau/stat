@@ -3,6 +3,8 @@
 
 #include "chartwidget.h"
 
+#ifdef CHARTWIDGET_H
+
 ChartWidget::ChartWidget(QStandardItemModel *pdata)
 {
     int nbLgn = pdata->rowCount();
@@ -265,3 +267,4 @@ ChartWidget::ChartWidget(QWidget *parent) :
     }
 
 }
+#endif

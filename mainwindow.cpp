@@ -1,3 +1,5 @@
+// Page code ISO 8859-15
+
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #endif
@@ -15,20 +17,6 @@
 #include <QSplitter>
 #include <QTreeView>
 
-#include "labelclickable.h"
-#include "pointtirage.h"
-#include "SyntheseGenerale.h"
-#include "refetude.h"
-#include "filtrecombinaisons.h"
-#include "SyntheseDetails.h"
-#include "ctabfilterzncount.h"
-
-//#include "refetude.h"
-
-//#include <QtPlugin>
-//Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
-
-
 #include <math.h>
 
 #include "mygraphicsview.h"
@@ -37,8 +25,23 @@
 #include "choixjeux.h"
 #include "tirages.h"
 #include "gererbase.h"
+#include "labelclickable.h"
+#include "pointtirage.h"
+#include "SyntheseGenerale.h"
+#include "refetude.h"
+#include "filtrecombinaisons.h"
+#include "SyntheseDetails.h"
+#include "lescomptages.h"
+
+
 
 #include "chartwidget.h"
+
+
+#include "cmpt_grou_details.h"
+#include "cmpt_elem_details.h"
+
+
 
 static stTiragesDef configJeu;
 
@@ -47,20 +50,25 @@ void MainWindow::pslot_closeTabDetails(int index)
     gtab_Top->removeTab(index);
 }
 
+void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
+{
+    qDebug()<<calcul.db_data;
+    qDebug()<<calcul.tb_data;
+}
+
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
     stParam input;
     input.destination =dest_bdd;
     input.typeChargement = load;
     input.typeJeu = leJeu;
-
+    eGames unJeu = eGameToSet;
     stErr NoErrors;
     NoErrors.status = true;
     NoErrors.msg = "None";
 
     DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
 
-    QTabWidget *test = new cTabFilterZnCount("tirages",&configJeu);
 
     if(NoErrors.status == false)
     {
@@ -69,6 +77,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     }
     else
     {
+        /// Debut traitement
         RechercheProgressionBoules(&configJeu);
 
 
@@ -79,10 +88,36 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         mainLayout->addWidget(gtab_Top);
         connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
 
-
         TST_EtoileCombi(&configJeu);
-
         FEN_NewTirages(&configJeu);
+
+        //// Reecriture sous forme objet
+        switch(leJeu){
+        case NE_FDJ::fdj_loto:
+            unJeu = eGameLoto;
+            break;
+        case NE_FDJ::fdj_euro:
+            unJeu = eGameEuro;
+            break;
+        default:
+            unJeu = eGameToSet;
+            break;
+        }
+
+        B_Game Thegame;
+        Thegame.type = unJeu;
+        tous = new BPrevision(&Thegame,true,eBddUseDisk);
+        connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_makeUserGamesList()));
+        connect(FiltrerAct, SIGNAL(triggered()), tous, SLOT(slot_filterUserGamesList()));
+        connect(tous,
+                SIGNAL(sig_isClickedOnBall(QModelIndex)),
+                syntheses,
+                SLOT(slot_ShowBouleForNewDesign(QModelIndex)));
+        connect(tous,
+                SIGNAL(sig_isClickedOnBall(QModelIndex)),
+                syntheses->GetTabEcarts(),
+                SLOT(slot_ShowBoule_2(QModelIndex)));
+
     }
 }
 
@@ -117,6 +152,7 @@ QGridLayout *MainWindow::MonLayout_OldTbvCouverture(int x, int y)
     tmpGrid->addWidget(G_tbv_CouvTirages);
     return tmpGrid;
 }
+
 #if 1
 void MainWindow::FEN_Old_Tirages(void)
 {
@@ -311,24 +347,24 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 {
     bool status = false;
 #if 0
-    select t1.id as id, t1.tip as Repartition, count(t1.id_poids)as T,
+    select t1.id as id, t1.tip as Repartition, count(t1.fk_idCombi_z1)as T,
             count (case when t1.J like 'lun%' then 1 end)as LUN,
             count (case when t1.J like 'mer%' then 1 end)as MER ,
             count (case when t1.J like 'sam%' then 1 end)as SAM
             from (
-                SELECT lstcombi.id,lstcombi.tip,analyses.id_poids,analyses.id as id2, (case when analyses.id is null then null else
-                                                                                       (
-                                                                                           select tirages.jour_tirage from tirages where (tirages.id = analyses.id)
-                                                                                           )
-                                                                                       end) as J
+                SELECT lstcombi.id,lstcombi.tip,analyses.fk_idCombi_z1,analyses.id as id2, (case when analyses.id is null then null else
+                                                                                            (
+                                                                                                select tirages.jour_tirage from tirages where (tirages.id = analyses.id)
+                                                                                                )
+                                                                                            end) as J
                 FROM lstcombi
                 LEFT JOIN analyses
                 ON
                 (
-                    (lstcombi.id = analyses.id_poids)
+                    (lstcombi.id = analyses.fk_idCombi_z1)
                     )
                 )as t1
-            GROUP BY tip having (((t1.id=t1.id_poids) or (t1.id_poids is null)))
+            GROUP BY tip having (((t1.id=t1.fk_idCombi_z1) or (t1.fk_idCombi_z1 is null)))
             order by id asc;
 #endif
 
@@ -344,12 +380,12 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     QString st_msg ="";
 
 
-    st_msg = "select t1.id as id, t1.tip as Repartition, count(t1.id_poids)as T, "
+    st_msg = "select t1.id as id, t1.tip as Repartition, count(t1.fk_idCombi_z1)as T, "
              "count (case when t1.J like 'lun%' then 1 end)as LUN, "
              "count (case when t1.J like 'mer%' then 1 end)as MER , "
              "count (case when t1.J like 'sam%' then 1 end)as SAM  "
              " from ( "
-             "SELECT lstcombi.id,lstcombi.tip,analyses.id_poids,analyses.id as id2, "
+             "SELECT lstcombi.id,lstcombi.tip,analyses.fk_idCombi_z1,analyses.id as id2, "
              "(case when analyses.id is null then null else  "
              "( "
              " select tirages.jour_tirage from tirages where (tirages.id = analyses.id) "
@@ -359,10 +395,10 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
              "LEFT JOIN analyses "
              "ON  "
              "( "
-             " (lstcombi.id = analyses.id_poids)  "
+             " (lstcombi.id = analyses.fk_idCombi_z1)  "
              ") "
              " )as t1 "
-             " GROUP BY tip having (((t1.id=t1.id_poids) or (t1.id_poids is null)))  "
+             " GROUP BY tip having (((t1.id=t1.fk_idCombi_z1) or (t1.fk_idCombi_z1 is null)))  "
              " order by id asc; ";
 
 
@@ -410,7 +446,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     // Mettre le dernier tirage en evidence
     QSqlQuery selection;
 
-    st_msg = "select analyses.id, analyses.id_poids from analyses limit 1;";
+    st_msg = "select analyses.id, analyses.fk_idCombi_z1 from analyses limit 1;";
     status = selection.exec(st_msg);
     status = selection.first();
     if(selection.isValid())
@@ -457,18 +493,18 @@ void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf
 
     for(int zn = 0;zn<nb_zn;zn++)
     {
-        nbcol[zn] = (pConf.limites[zn].max)%pConf.nbElmZone[zn]?
-                    (pConf.limites[zn].max/pConf.nbElmZone[zn])+1:
-                    (pConf.limites[zn].max/pConf.nbElmZone[zn]);
+        nbcol[zn] = (pConf.limites[zn].max)%pConf.limites[zn].len?
+                    (pConf.limites[zn].max/pConf.limites[zn].len)+1:
+                    (pConf.limites[zn].max/pConf.limites[zn].len);
 
-        gsim_SelectionBoulesDeZone[zn]= new QStandardItemModel(pConf.nbElmZone[zn],nbcol[zn]);
+        gsim_SelectionBoulesDeZone[zn]= new QStandardItemModel(pConf.limites[zn].len,nbcol[zn]);
         gtbv_SelectionBoulesDeZone[zn] = new QTableView;
         tmpT_Widget[zn] = new QWidget;
         gtbv_SelectionBoulesDeZone[zn]->setFixedSize(320,175);
         gtbv_SelectionBoulesDeZone[zn]->verticalHeader()->hide();
         gtbv_SelectionBoulesDeZone[zn]->horizontalHeader()->hide();
 
-        for(i=1;i<=pConf.nbElmZone[zn];i++)/// Code a verifier en fonction bornes max
+        for(i=1;i<=pConf.limites[zn].len;i++)/// Code a verifier en fonction bornes max
         { // Dans le cas max > 50
             for(j=1;j<=nbcol[zn];j++)
             {
@@ -494,7 +530,7 @@ void MainWindow::MonLayout_SelectionBoules(QTabWidget *tabN1,stTiragesDef &pConf
         }
 
         tmpT_Widget[zn]->setLayout(layT_MaSelection[zn]);
-        tabN1->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tabN1->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         QString st_objName = "";
         st_objName = gtbv_SelectionBoulesDeZone[zn]->objectName();
@@ -588,7 +624,7 @@ QGridLayout *MainWindow::MonLayout_VoisinsPresent()
 
         tmpT_Widget[zn]->setLayout(layT_Voisin[zn]);
         //tmpT_Widget[zn]->setMaximumWidth(420);
-        tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
         connect( G_tbv_Voisins[zn], SIGNAL( clicked(QModelIndex)) ,
@@ -598,7 +634,7 @@ QGridLayout *MainWindow::MonLayout_VoisinsPresent()
         connect( G_tbv_Voisins[zn], SIGNAL( doubleClicked(QModelIndex)) ,
                  this, SLOT( slot_RechercherLesTirages( QModelIndex) ) );
 
-        // Double click sur libellé recherche boule
+        // Double click sur libellï¿½ recherche boule
         connect( G_lab_nbSorties[zn], SIGNAL( clicked(QString)) ,
                  this, SLOT( slot_RepererLesTirages(QString) ) );
 
@@ -733,18 +769,18 @@ void MainWindow::TST_NbRepartionCombi(int ecart,int key)
     int d[4]={1,2,-1,-2};
     bool status = false;
 
-    msg =   "select id, count(id_poids) as T  from (SELECT lstcombi.id,t2.id_poids "
+    msg =   "select id, count(fk_idCombi_z1) as T  from (SELECT lstcombi.id,t2.fk_idCombi_z1 "
             "FROM lstcombi "
             "LEFT JOIN (select * "
             "from (select analyses.id "
-            "from analyses where analyses.id_poids = "
+            "from analyses where analyses.fk_idCombi_z1 = "
             +QString::number(key)+
             ") as t1 "
             "left join analyses on t1.id = analyses.id + "
             +QString::number(d[ecart])+
             ") as t2 "
-            "ON lstcombi.id = t2.id_poids)as t1 "
-            "GROUP BY id having ((t1.id=t1.id_poids)or (t1.id_poids is null)) "
+            "ON lstcombi.id = t2.fk_idCombi_z1)as t1 "
+            "GROUP BY id having ((t1.id=t1.fk_idCombi_z1)or (t1.fk_idCombi_z1 is null)) "
             "order by t1.id asc;";
 
 #ifndef QT_NO_DEBUG
@@ -913,7 +949,7 @@ QFormLayout * MainWindow::MonLayout_VoisinsAbsent()
 
         tmpT_Widget[zn]->setLayout(layT_Absents[zn]);
         //tmpT_Widget[zn]->setMaximumWidth(420);
-        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
         connect( G_tbv_Absents[zn], SIGNAL( clicked(QModelIndex)) ,
@@ -1067,7 +1103,7 @@ void MainWindow::fen_Voisins(void)
 
         tmpT_Widget[zn]->setLayout(layT_Voisin[zn]);
         //tmpT_Widget[zn]->setMaximumWidth(420);
-        tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tabWidget->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
         connect( G_tbv_Voisins[zn], SIGNAL( clicked(QModelIndex)) ,
@@ -1641,7 +1677,7 @@ int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *ref)
              "and"
              "(tb4.id = tb3.id)"
              "and"
-             "(tb4.id_poids = tb5.id)"
+             "(tb4.fk_idCombi_z1 = tb5.id)"
              "and"
              "(tb2.id="
             +QString::number(idTirage)+
@@ -1710,7 +1746,7 @@ QGridLayout * MainWindow::MonLayout_Parite()
         fn_refSim[zn]->setHeaderData(2,Qt::Horizontal,"V:+2");
 
         // Ecriture du numero de boule et reservation item position
-        for(int i=1;i<=configJeu.nbElmZone[zn]+1;i++)
+        for(int i=1;i<=configJeu.limites[zn].len+1;i++)
         {
             QStandardItem *item = new QStandardItem();
             item->setData(i-1,Qt::DisplayRole);
@@ -1743,7 +1779,7 @@ QGridLayout * MainWindow::MonLayout_Parite()
         layT_Tmp_1[zn]->addWidget(fn_refTbv[zn]);
 
         tmpT_Widget[zn]->setLayout(layT_Tmp_1[zn]);
-        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
         //connect( fn_refTbv[zn], SIGNAL( clicked(QModelIndex)) ,
@@ -1798,7 +1834,7 @@ QGridLayout *MainWindow::MonLayout_Nsur2()
         fn_refSim[zn]->setHeaderData(2,Qt::Horizontal,"V:+2");
 
         // Ecriture du numero de boule et reservation item position
-        for(int i=1;i<=configJeu.nbElmZone[zn]+1;i++)
+        for(int i=1;i<=configJeu.limites[zn].len+1;i++)
         {
             QStandardItem *item = new QStandardItem();
             item->setData(i-1,Qt::DisplayRole);
@@ -1831,7 +1867,7 @@ QGridLayout *MainWindow::MonLayout_Nsur2()
         layT_Tmp_1[zn]->addWidget(fn_refTbv[zn]);
 
         tmpT_Widget[zn]->setLayout(layT_Tmp_1[zn]);
-        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.nomZone[zn].toLocal8Bit()));
+        tab_conteneur->addTab(tmpT_Widget[zn],tr(configJeu.TT_Zn[zn].abv.toLocal8Bit()));
 
         // click dans fenetre voisin pour afficher boule
         //connect( fn_refTbv[zn], SIGNAL( clicked(QModelIndex)) ,
@@ -2011,11 +2047,12 @@ QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
     QTabWidget *tabWidget = new QTabWidget;
     UnConteneurDessin *dessin;
 
+#ifdef CHARTWIDGET_H
     ChartWidget *test = new ChartWidget;
     //test->show();
 
     tabWidget->addTab(test,"Spirale");
-
+#endif
     dessin = TST_Graphe_1(pConf);
     tabWidget->addTab(dessin,"Tirages");
 
@@ -2083,12 +2120,9 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
     // Les deux onglets sont crees faire une nouvelle spirale
     //QStandardItemModel *pSimEcart = new QStandardItemModel;
     //QStandardItemModel **pSimEcart = new QStandardItemModel *;
-    RefEtude *tmpEtude = new RefEtude();
-    QStandardItemModel * pSimEcart = tmpEtude->GetPtrToModel();
+    //RefEtude *tmpEtude = new RefEtude();
+    //QStandardItemModel * pSimEcart = tmpEtude->GetPtrToModel();
 
-    //int nb1 = (*pSimEcart)->rowCount();
-    //int nb2 = (*pSimEcart)->columnCount();
-    //int nb1 = pSimEcart->rowCount();
 
     //ChartWidget *test = new ChartWidget(pSimEcart);
     //test->show();
@@ -2115,7 +2149,7 @@ void MainWindow::fen_Parites(void)
 
     int zn = 0;
 
-    G_sim_Parites = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
+    G_sim_Parites = new QStandardItemModel(configJeu.limites[zn].len,configJeu.nb_zone+1);
 
     G_sim_Parites->setHeaderData(0,Qt::Horizontal,"Nb");
     G_sim_Parites->setHeaderData(1,Qt::Horizontal,"B");
@@ -2132,7 +2166,7 @@ void MainWindow::fen_Parites(void)
     G_tbv_Parites->setEditTriggers(QAbstractItemView::NoEditTriggers);
     G_tbv_Parites->setMinimumHeight(220);
 
-    G_sim_Ensemble_1 = new QStandardItemModel(configJeu.nbElmZone[zn],configJeu.nb_zone+1);
+    G_sim_Ensemble_1 = new QStandardItemModel(configJeu.limites[zn].len,configJeu.nb_zone+1);
 
     G_sim_Ensemble_1->setHeaderData(0,Qt::Horizontal,"N(E/2)");
     G_sim_Ensemble_1->setHeaderData(1,Qt::Horizontal,"B");
@@ -2154,7 +2188,7 @@ void MainWindow::fen_Parites(void)
     G_sim_ud->setHeaderData(0,Qt::Horizontal,"Nb");
     for(int j=0; j< v;j++)
     {
-        QString name = configJeu.nomZone[zn] + "d" + QString::number(j);
+        QString name = configJeu.TT_Zn[zn].abv + "d" + QString::number(j);
         G_sim_ud->setHeaderData(j+1,Qt::Horizontal,name);
     }
 
@@ -2250,7 +2284,7 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
         VUE_MontreLeTirage(index.row()+1);
         for(zn=0;zn<nb_zone;zn++)
         {
-            for(int b_pos=0; b_pos<configJeu.nbElmZone[zn];b_pos++)
+            for(int b_pos=0; b_pos<configJeu.limites[zn].len;b_pos++)
             {
                 col_bpos += 1;
                 val=index.model()->index(index.row(),col_bpos).data().toInt();
@@ -2272,7 +2306,7 @@ void MainWindow::slot_ChercheVoisins(const QModelIndex & index)
         }
 
         // Recherche voisin des etoiles
-        for (i=6;i<6+configJeu.nbElmZone[1];i++)
+        for (i=6;i<6+configJeu.limites[1].len;i++)
         {
             val = index.model()->index(index.row(),i).data().toInt();
             DB_tirages->RechercheVoisin(val,1,&configJeu,qlT_nbSorties[1],qsimT_Voisins[1]);
@@ -2446,9 +2480,9 @@ void MainWindow::MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModel
     }
     else
     {
-        nb_element_max_zone = configJeu.nbElmZone[zn];
+        nb_element_max_zone = configJeu.limites[zn].len;
         Zone=zn+1;
-        stNomZone = configJeu.nomZone[zn];
+        stNomZone = configJeu.TT_Zn[zn].abv;
     }
 
 
@@ -2780,13 +2814,13 @@ void MainWindow::slot_F3_RechercherLesTirages(const QModelIndex & index)
 
             QString msg = "select *  from "   TB_BASE
                     " inner join  ( select *  from "   TB_BASE
-                    " where ( "+ configJeu.nomZone[zn] +
+                    " where ( "+ configJeu.TT_Zn[zn].abv +
                     CL_PAIR + "=" + list.at(0) ;
 
             msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
             msg = (msg).arg(dist);
 
-            QString msg_2 = configJeu.nomZone[zn] +CL_PAIR
+            QString msg_2 = configJeu.TT_Zn[zn].abv +CL_PAIR
                     + "=" + QString::number(rch) ;
             msg_2= "select  *  from (" +msg+ " where (" +msg_2+ " );" ;
 
@@ -2840,13 +2874,13 @@ void MainWindow::slot_F4_RechercherLesTirages(const QModelIndex & index)
 
             QString msg = "select *  from "   TB_BASE
                     " inner join  ( select *  from "   TB_BASE
-                    " where ( "+ configJeu.nomZone[zn] +
+                    " where ( "+ configJeu.TT_Zn[zn].abv +
                     CL_SGRP + "=" + list.at(0) ;
 
             msg = msg + ")) as r1 on tirages.id = r1.id + %1 ) as r2";
             msg = (msg).arg(dist);
 
-            QString msg_2 = configJeu.nomZone[zn] +CL_SGRP
+            QString msg_2 = configJeu.TT_Zn[zn].abv +CL_SGRP
                     + "=" + QString::number(rch) ;
             msg_2= "select  *  from (" +msg+ " where (" +msg_2+ " );" ;
 
@@ -3389,7 +3423,7 @@ void MainWindow::TST_EtoileCombi(stTiragesDef *ref)
         sl_Lev0 << QString::number(i);
 
     // Recuperation des combinaisons C(2,11)
-    TST_CombiRec(ref->nbElmZone[1], sl_Lev0, "" , sl_etoiles);
+    TST_CombiRec(ref->limites[1].len, sl_Lev0, "" , sl_etoiles);
     TST_EtoilesVersTable(sl_etoiles,ref,150);
 
 }
@@ -3412,7 +3446,7 @@ void MainWindow::TST_EtoilesVersTable (QStringList &combi,stTiragesDef *ref, dou
 
     msg_1 = "CREATE table if not exists "
             TB_COMBI "_"
-            + ref->nomZone[zn]
+            + ref->TT_Zn[zn].abv
             + "(id INTEGER PRIMARY KEY,";
 
     msg_1 = msg_1 + msg_2 + " int,poids real);";
@@ -3432,7 +3466,7 @@ void MainWindow::TST_EtoilesVersTable (QStringList &combi,stTiragesDef *ref, dou
                 for(int k =0; k< nbitems;k++)
                 {
                     st_cols = st_cols
-                            +ref->nomZone[zn]+QString::number(k+1)
+                            +ref->TT_Zn[zn].abv+QString::number(k+1)
                             +",";
                     st_vals = st_vals+item.at((j+k)%nbitems)
                             +",";
@@ -3441,7 +3475,7 @@ void MainWindow::TST_EtoilesVersTable (QStringList &combi,stTiragesDef *ref, dou
                 st_vals.remove(st_vals.length()-1,1);
                 msg_1 = "insert into "
                         TB_COMBI "_"
-                        + ref->nomZone[zn]
+                        + ref->TT_Zn[zn].abv
                         + " (id,"+ st_cols + ",poids)"
                                              "Values (NULL," + st_vals + "," + QString::number(pon_step)+");";
                 status = sql_1.exec(msg_1);
@@ -4130,17 +4164,17 @@ void MainWindow::slot_TST_DetailsCombinaison( const QModelIndex & index)
 void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, int choix)
 {
 #if 0
-    select * from (select id, id_poids from analyses where analyses.id_poids = 107);
+    select * from (select id, fk_idCombi_z1 from analyses where analyses.fk_idCombi_z1 = 107);
 
-    select  analyses.id, analyses.id_poids from
-            (select id, id_poids from analyses where analyses.id_poids = 107) as t1
+    select  analyses.id, analyses.fk_idCombi_z1 from
+            (select id, fk_idCombi_z1 from analyses where analyses.fk_idCombi_z1 = 107) as t1
             left join analyses on t1.id = analyses.id+1;
 
-    select t2.id_poids,tirages.* from
-            (select  analyses.id, analyses.id_poids from
-             (select id, id_poids from analyses where analyses.id_poids = 107) as t1
+    select t2.fk_idCombi_z1,tirages.* from
+            (select  analyses.id, analyses.fk_idCombi_z1 from
+             (select id, fk_idCombi_z1 from analyses where analyses.fk_idCombi_z1 = 107) as t1
              left join analyses on t1.id = analyses.id+1) as t2
-            left join tirages on t2.id=tirages.id where(t2.id_poids = 57);
+            left join tirages on t2.id=tirages.id where(t2.fk_idCombi_z1 = 57);
 #endif
     QWidget *qw_fenResu = new QWidget;
     QTabWidget *tw_resu = new QTabWidget;
@@ -4158,14 +4192,14 @@ void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, in
 
     if(choix != 0)
     {
-        st_where =   "where(t2.id_poids = "+QString::number(choix)+")" ;
+        st_where =   "where(t2.fk_idCombi_z1 = "+QString::number(choix)+")" ;
     }
 
-    //t2.id_poids,
+    //t2.fk_idCombi_z1,
     // "+QString::number(d[distance])+"
     st_msg = "select tirages.* from "
-             "(select  analyses.id, analyses.id_poids from "
-             "(select id, id_poids from analyses where analyses.id_poids = "
+             "(select  analyses.id, analyses.fk_idCombi_z1 from "
+             "(select id, fk_idCombi_z1 from analyses where analyses.fk_idCombi_z1 = "
             +QString::number(critere)
             +") as t1 "
              "left join analyses on t1.id = analyses.id + %1 ) as t2 "
@@ -4481,10 +4515,10 @@ void MainWindow::TST_MontreTirageAyantCritere(NE_FDJ::E_typeCritere lecritere,in
         w_msg = DB_tirages->TST_ConstruireWhereData(zn,pConf,boules);
         break;
     case NE_FDJ::critere_parite:
-        w_msg = pConf->nomZone[zn]+CL_PAIR+"="+boules.at(0);
+        w_msg = pConf->TT_Zn[zn].abv+CL_PAIR+"="+boules.at(0);
         break;
     case NE_FDJ::critere_enemble:
-        w_msg =pConf->nomZone[zn]+CL_SGRP+"="+boules.at(0);
+        w_msg =pConf->TT_Zn[zn].abv+CL_SGRP+"="+boules.at(0);
         //QString::number(j)
         break;
 
@@ -4976,7 +5010,7 @@ void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
             do{
                 int coef[6]={0};
                 QString msg_2 = "";
-                int id_poids = sql_1.value(0).toInt();
+                int fk_idCombi_z1 = sql_1.value(0).toInt();
 
                 for(int i = 0; i<= nbBoules;i++)
                 {
@@ -4988,13 +5022,13 @@ void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
                 // creation d'une requete mise a jour des poids
                 //double poids = sql_1.value(lastcol-1).toDouble();
 #if 0
-                update analyses set id_poids=14 where(id in
-                                                      (select id from analyses where (bd0=1 and bd1=1 and bd2=2 and bd3=1 and bd4=0 and bd5=0)
-                                                       ));
+                update analyses set fk_idCombi_z1=14 where(id in
+                                                           (select id from analyses where (bd0=1 and bd1=1 and bd2=2 and bd3=1 and bd4=0 and bd5=0)
+                                                            ));
 #endif
                 msg_2.remove(msg_2.length()-5,5);
-                msg_2 = "Update analyses set id_poids="
-                        +QString::number(id_poids)
+                msg_2 = "Update analyses set fk_idCombi_z1="
+                        +QString::number(fk_idCombi_z1)
                         +" where(id in (select id from analyses where("
                         +msg_2+")"
                         +"));";
@@ -5010,11 +5044,11 @@ void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
 void MainWindow::TST_MettrePonderationSurTirages(void)
 {
 #if 0
-    select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;
+    select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;
 #endif
     bool status = false;
     QSqlQuery sql_1;
-    QString msg_1 = "select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
+    QString msg_1 = "select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;";
 
     QFile fichier("ponder.txt");
     fichier.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -5072,7 +5106,8 @@ UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
 
     myview[0] = new MyGraphicsView(eRepartition,une_vue[0], "Tirages",Qt::white);
 
-    msg_2="select analyses.id, lstcombi.poids, lstcombi.pos from analyses inner join lstcombi on analyses.id_poids = lstcombi.id;";
+    //msg_2="select analyses.id, lstcombi.poids, lstcombi.pos from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;";
+    msg_2="select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;";
     myview[0]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::red,2,20);
 
     // select tirages.id, comb_e.poids from tirages inner join comb_e on comb_e.e1=tirages.e1 and comb_e.e2 = tirages.e2
@@ -5080,10 +5115,10 @@ UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
 
     // Courbes des etoiles
     int zn=1;
-    for(int i =0; i<pConf->nbElmZone[zn];i++)
+    for(int i =0; i<pConf->limites[zn].len;i++)
     {
-        msg_3 = msg_3 + TB_COMBI "_" + pConf->nomZone[zn] + "." + pConf->nomZone[zn] + QString::number(i+1)
-                +"=" + TB_BASE + "." + pConf->nomZone[zn] + QString::number(i+1) + " and ";
+        msg_3 = msg_3 + TB_COMBI "_" + pConf->TT_Zn[zn].abv + "." + pConf->TT_Zn[zn].abv + QString::number(i+1)
+                +"=" + TB_BASE + "." + pConf->TT_Zn[zn].abv + QString::number(i+1) + " and ";
     }
     msg_3.remove(msg_3.length()-5,5);
     msg_2 = msg_2 + msg_3 + ";";
@@ -5374,17 +5409,17 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
         {
             modele = gsim_DernierTirageDetail;
             label = G_lab_PariteVoisin;
-            cri_col = pConf->nomZone[zone]+ CL_PAIR;
+            cri_col = pConf->TT_Zn[zone].abv+ CL_PAIR;
         }
             break;
 
         case NE_FDJ::critere_enemble:
         default:
         {
-            cri_col = pConf->nomZone[zone]+ CL_SGRP;
+            cri_col = pConf->TT_Zn[zone].abv+ CL_SGRP;
             modele = G_sim_Nsur2;
             label = G_lab_Nsur2;
-            cri_col = pConf->nomZone[zone]+ CL_SGRP;
+            cri_col = pConf->TT_Zn[zone].abv+ CL_SGRP;
         }
             break;
         }
@@ -5403,7 +5438,7 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
                 int v = sizeof(d)/sizeof(int);
                 for(int j=0;j<v;j++)
                 {
-                    for(int cible= 0; cible < pConf->nbElmZone[zone]+1;cible ++)
+                    for(int cible= 0; cible < pConf->limites[zone].len+1;cible ++)
                     {
                         // Recuperer pointeur de cellule
                         QStandardItem *item1 = modele[zone]->item(cible,col[j]);
@@ -5433,7 +5468,7 @@ void MainWindow::VUE_MontreLeTirage(double x)
     int delta[3]={0,0,0};
 
     st_msg[0] = "select pos from lstcombi inner  join "
-                "(select id_poids as clef from analyses where id = "
+                "(select fk_idCombi_z1 as clef from analyses where id = "
             +QString::number(x)+
             ") as t2 on t2.clef = lstcombi.id ;";
 

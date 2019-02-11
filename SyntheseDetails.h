@@ -171,7 +171,6 @@ private:
     QString SD_Tb2_2(QStringList &boules, QString &sqlTblRef, int dst);
     QString SD_Tb2_3(QStringList &boules, QString &sqlTblRef, int dst);
 
-    void NewSqlGenerique(int dst);
     void RecalculGroupement(QString st_tirages, int nbCol, QStandardItemModel *tmpStdItem);
 
 

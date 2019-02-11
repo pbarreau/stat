@@ -6,7 +6,9 @@
 #include <QGridLayout>
 #include <QTabWidget>
 #include <QSortFilterProxyModel>
-#include "tirages.h"
+
+#include "gererbase.h"
+#include "cmpt_grou_details.h"
 
 class sCouv
 {
@@ -25,6 +27,7 @@ public:
     int p_fin;
     int **p_val;
 };
+
 
 class RefEtude: public QObject
 {
@@ -73,6 +76,7 @@ private:
     void CouvMontrerProbable_v3(int i,double Emg, QStandardItemModel *dest);
 
     QMenu *ContruireMenu(QString tbl, int val);
+    void CompleteMenu(QMenu *LeMenu, QString tbl, int clef);
 
 
 public slots:
@@ -87,6 +91,11 @@ public slots:
     void slot_ccmr_tbForBaseEcart(QPoint pos);
     void slot_SetPriority(int val);
     void slot_ChoosePriority(QAction *cmd);
+#ifdef CHKB_VERSION_1
+    void slot_wdaFilter(int val);
+#else
+    void slot_wdaFilter(bool val);
+#endif
 
 private:
     static QStandardItemModel **p_simResu;
@@ -109,6 +118,7 @@ private:
     QMdiArea *p_affiche;
     QTabWidget *p_reponse;
     QTabWidget *tabTrackCouverture;
+    C_GrpDetails *unTest;
 
 };
 

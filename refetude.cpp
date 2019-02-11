@@ -25,6 +25,7 @@
 #include "refetude.h"
 #include "SyntheseDetails.h"
 #include "tirages.h"
+#include "compter.h"
 
 // declaration de variable de classe
 QStandardItemModel **RefEtude::p_simResu = new QStandardItemModel*[2];
@@ -282,6 +283,11 @@ QTableView *RefEtude::tbForBaseRef()
     connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
              this, SLOT( slot_ShowDetails( QModelIndex) ) );
 
+#if 0
+    connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
+             this, SLOT( slot_DecodeTirage( QModelIndex) ) );
+#endif
+
     // click sur la zone reservee au boules du tirage
     connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
              this, SLOT( slot_ShowBoule( QModelIndex) ) );
@@ -388,28 +394,96 @@ void RefEtude::slot_ccmr_tbForBaseEcart(QPoint pos)
         QMenu *MonMenu = new QMenu(p_affiche);
         QMenu *subMenu= ContruireMenu(tbl,val);
         MonMenu->addMenu(subMenu);
+        CompleteMenu(MonMenu, tbl, val);
+
+
         MonMenu->exec(view->viewport()->mapToGlobal(pos));
     }
 }
 
+#ifdef CHKB_VERSION_1
+void RefEtude::slot_wdaFilter(int val)
+{
+    //QWidgetAction *wdaFrom = qobject_cast<QWidgetAction *>(sender());
+    QCheckBox *chkFrom = qobject_cast<QCheckBox *>(sender());
+
+#ifndef QT_NO_DEBUG
+    //qDebug() << "Boule :("<< wdaFrom->objectName()<<") check:"<< wdaFrom->isChecked();
+    qDebug() << "Boule :("<< chkFrom->objectName()<<") check:"<< chkFrom->isChecked();
+#endif
+}
+#else
+/// https://openclassrooms.com/forum/sujet/qt-inclure-check-box-dans-un-menu-deroulant-67907
+void RefEtude::slot_wdaFilter(bool val)
+{
+    QAction *chkFrom = qobject_cast<QAction *>(sender());
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "Boule :("<< chkFrom->objectName()<<") check:"<< val;
+#endif
+}
+#endif
+
+void RefEtude::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
+{
+    int col = 3;
+    int niveau = 0;
+    bool existe = false;
+    existe = VerifierValeur(clef, tbl,col,&niveau);
+
+#ifdef CHKB_VERSION_1
+    QCheckBox *chkb_1 = new QCheckBox;
+    chkb_1->setText("Filtrer");
+    QWidgetAction *chk_act_1 = new QWidgetAction(LeMenu);
+    chk_act_1->setDefaultWidget(chkb_1);
+    connect(chkb_1,SIGNAL(stateChanged(int)),this,SLOT(slot_wdaFilter(int)));
+
+    if((!existe) || (!niveau))
+    {
+        chkb_1->setChecked(false);
+    }
+    else
+    {
+        chkb_1->setChecked(true);
+    }
+
+    LeMenu->addAction(chk_act_1);
+#else
+    QAction *filtrer = LeMenu->addAction("Filtrer");
+    filtrer->setCheckable(true);
+    filtrer->setChecked(true);
+    connect(filtrer,SIGNAL(triggered(bool)),
+            this,SLOT(slot_wdaFilter(bool)));
+#endif
+
+
+
+}
+
+/// cette fonction construit un menu
+/// et montre quel item mettre en valeur
+/// en interrogeant la table d'une base de donnees
 QMenu *RefEtude::ContruireMenu(QString tbl, int val)
 {
     QString msg2 = "Priorite";
     QMenu *menu =new QMenu(msg2, p_affiche);
-    //menu->setWindowFlags(Qt::Tool);
-    //menu->setTitle(msg2);
     QActionGroup *grpPri = new  QActionGroup(menu);
 
+    int col = 2;
     int niveau = 0;
     bool existe = false;
-    existe = VerifierValeur(val,&niveau, tbl);
+    existe = VerifierValeur(val, tbl,col,&niveau);
 
 
 
+    /// Nombre d'item a mettre
     for(int i =1; i<=5;i++)
     {
         QString name = QString::number(i);
         QAction *radio = new QAction(name,grpPri);
+
+        /// contruction d'un message a decoder
+        /// dans le slot de reception
         name = QString::number(existe)+
                 ":"+QString::number(niveau)+
                 ":"+name+":"+QString::number(val)+
@@ -419,6 +493,7 @@ QMenu *RefEtude::ContruireMenu(QString tbl, int val)
         menu->addAction(radio);
     }
 
+    /// la variable contient la valeur recuperee de la base
     QAction *uneAction;
     if(niveau)
     {
@@ -506,7 +581,7 @@ void RefEtude::slot_ChoosePriority(QAction *cmd)
 /// item : valeur a rechercher
 /// *lev : valeur de priorité trouvé
 /// table : nom de la table dans laquelle il faut chercher
-bool VerifierValeur(int item,int *lev, QString table)
+bool VerifierValeur(int item, QString table,int idColValue,int *lev)
 {
     bool ret = false;
     QSqlQuery query ;
@@ -533,7 +608,7 @@ bool VerifierValeur(int item,int *lev, QString table)
         ret = query.first();
         if(query.isValid())
         {
-            int val = query.value(2).toInt();
+            int val = query.value(idColValue).toInt();
 
             if(val >0 && val <=5)
             {
@@ -549,7 +624,7 @@ bool VerifierValeur(int item,int *lev, QString table)
 QTableView *RefEtude::tbForBaseEcart(int zn)
 {
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(TB_SE) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(cUsr_elm) + "_z"+ QString::number(zn+1);
 
     int nb_lgn = p_conf->limites[zn].max;
     QStandardItemModel * tmpStdItem =  new QStandardItemModel(nb_lgn,5);
@@ -1199,7 +1274,7 @@ void RefEtude::slot_ShowBoule(const QModelIndex & index)
     // recuperer la valeur de la colonne
     int col = index.column();
 
-    if(col > 4 && col <= 4 + p_conf->nbElmZone[0])
+    if(col > 4 && col <= 4 + p_conf->limites[0].len)
     {
         // recuperer la valeur a la colone de la table
         val = index.model()->index(index.row(),index.column()).data().toInt();
@@ -1213,11 +1288,13 @@ void RefEtude::slot_ShowBoule(const QModelIndex & index)
 void RefEtude::slot_ShowBoule_2(const QModelIndex & index)
 {
     int val = 0;
-
+    int zn = 0;
 
     // recuperer la valeur de la colonne
     int col = index.column();
     val = index.model()->index(index.row(),0).data().toInt();
+    p_simResu[zn]->sort(0);
+    p_tbv_4[zn]->scrollTo(p_simResu[zn]->index(val-1,1));
 
 
     col = 0;
@@ -1275,7 +1352,6 @@ void RefEtude::slot_ShowDetails(const QModelIndex & index)
             }while(query.next() && status);
         }
     }
-
 }
 
 bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
@@ -1384,11 +1460,11 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, bool *depart, int *tot
     for(int i = 0; i<= zn; i++)
     {
         if(i){
-            delta = delta + p_conf->nbElmZone[zn-1];
+            delta = delta + p_conf->limites[zn-1].len;
         }
     }
 
-    for(bId=(*bIdStart);bId<memo->p_conf->nbElmZone[zn];bId++)
+    for(bId=(*bIdStart);bId<memo->p_conf->limites[zn].len;bId++)
     {
         // recuperer la boule
         b_val = unTirage.value(5+delta+bId).toInt();
@@ -1459,7 +1535,7 @@ bool RefEtude::AnalysePourCouverture(QSqlRecord unTirage, bool *depart, int *tot
         memo->p_fin=id;
 
         // Quelle position dans le tirage termine la couverture
-        if((bId + 1)<memo->p_conf->nbElmZone[zn]-1)
+        if((bId + 1)<memo->p_conf->limites[zn].len-1)
         {
             *bIdStart = bId+1;
         }

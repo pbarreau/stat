@@ -3,6 +3,7 @@
 #endif
 
 #include <QFile>
+#include <QDir>
 #include <QString>
 #include <QStringList>
 #include <math.h>
@@ -16,6 +17,7 @@
 #include <QSqlRecord>
 
 #include "tirages.h"
+#include "gererbase.h"
 
 QString DateAnormer(QString input);
 QString JourFromDate(QString LaDate, QString verif, stErr *retErr);
@@ -27,11 +29,14 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
 {
     QString fileName_2 = def->fname;
     QFile fichier(fileName_2);
+    QDir d;
+    QString ceRep = d.absolutePath();
 
     // On ouvre notre fichier en lecture seule et on verifie l'ouverture
     if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        retErr->msg = "Auto chargement : " + fileName_2 + "\nEchec!!";
+
+        retErr->msg = "Auto Surchargement : " + ceRep+fileName_2 + "\nEchec!!";
         retErr->status = false;
         return false;
     }
@@ -72,6 +77,9 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
     str_1.replace(",",", :");
     str_1 = "INSERT INTO v_tirages (" + str_2 + ",file) VALUES (:" + str_1 + ", :file);";
     sql_1.prepare(str_1);
+#ifndef QT_NO_DEBUG
+    qDebug() <<str_1;
+#endif
 
     // --- DEBUT ANALYSE DU FICHIER
     // Passer la premiere ligne
@@ -124,7 +132,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
                     pRef->value.valBoules[zone][ElmZone]= val1;
 
                     // Preparation pour affectation variable sql (tirages)
-                    clef_1 = ":"+ref.nomZone[zone]+QString::number(ElmZone+1);
+                    clef_1 = ":"+ref.TT_Zn[zone].abv+QString::number(ElmZone+1);
                     clef_1.replace(QRegExp("\\s+"),"");
                     sql_1.bindValue(clef_1,val1);
                 }
@@ -150,11 +158,11 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
             // Calcul perso a mettre dans la base
             // Automatisation possible ?????
             nbPair = pRef->RechercheNbBoulesPairs(zone);
-            clef_1 = " :" + ref.nomZone[zone]+ CL_PAIR;
+            clef_1 = " :" + ref.TT_Zn[zone].abv+ CL_PAIR;
             sql_1.bindValue(clef_1.replace(QRegExp("\\s+"),""),nbPair);
 
             nbE1 = pRef->RechercheNbBoulesDansGrp1(zone);
-            clef_1 = " :" + ref.nomZone[zone]+ CL_SGRP ;
+            clef_1 = " :" + ref.TT_Zn[zone].abv+ CL_SGRP ;
             sql_1.bindValue(clef_1.replace(QRegExp("\\s+"),""),nbE1);
         }
 
@@ -301,11 +309,11 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
             for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
                 pRZone[zone][j]=0;
 
-            int maxElmZone = ref.nbElmZone[zone];
-            // recuperer chaque tirage pour compter unité, dizaine,...
+            int maxElmZone = ref.limites[zone].len;
+            // recuperer chaque tirage pour compter unitï¿½, dizaine,...
             for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
             {
-                QString champ = ref.nomZone[zone]+QString::number(ElmZone+1);
+                QString champ = ref.TT_Zn[zone].abv+QString::number(ElmZone+1);
 
                 // La valeur a deja ete verifie dans chargement des donnees
                 int val1 = ligne.value(champ).toInt();
@@ -319,7 +327,7 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
             {
                 int val2 = pRZone[zone][j];
                 // Preparation pour affectation variable sql (analyses)
-                clef_1 = ":"+ref.nomZone[zone]+"d"+QString::number(j);
+                clef_1 = ":"+ref.TT_Zn[zone].abv+"d"+QString::number(j);
                 clef_1.replace(QRegExp("\\s+"),"");
                 sql_1.bindValue(clef_1,val2);
             }

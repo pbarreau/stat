@@ -17,10 +17,10 @@
 
 #include "filtrecombinaisons.h"
 #include "SyntheseDetails.h"
+
+
 #include "refetude.h"
-
-#include "tirages.h"
-
+#include "bar_action.h"
 
 namespace NE_Analyses{
 typedef enum _les_tableaux
@@ -32,27 +32,6 @@ typedef enum _les_tableaux
 
 #define CTXT_SELECTION  "selection b:aucun - e:aucun - c:aucun - g:aucun"
 
-class B_ActFrMdlIndex:public QAction //Barreau_ActionFromModelIndex
-{
-    Q_OBJECT
-public:
-    B_ActFrMdlIndex(const QModelIndex &index,const QString &label,QObject * parent =0,...)
-        :QAction(label,parent), m_index(index)
-    {connect(this, SIGNAL(triggered()), this, SLOT(onTriggered()));}
-
-protected Q_SLOTS:
-    void onTriggered()
-    {
-        emit sig_SelectionTirage(m_index,0);
-    }
-
-Q_SIGNALS:
-    void sig_SelectionTirage(const QModelIndex &my_index, int val);
-
-private:
-    QModelIndex m_index;
-};
-
 class SyntheseGenerale : public QObject
 {
     Q_OBJECT
@@ -60,7 +39,7 @@ class SyntheseGenerale : public QObject
 private:
 
     //stCurDemande *pLaDemande;
-    B_ActFrMdlIndex *MonTraitement;
+    bar_action *MonTraitement;
     GererBase *bdd;
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
@@ -134,8 +113,11 @@ public slots:
     void slot_ccmr_tbForBaseEcart(QPoint pos);
     QMenu *ContruireMenu(QString tbl, int val);
     void slot_ChoosePriority(QAction *cmd);
+    void slot_wdaFilter(int val);
 
 
+private slots:
+    void slot_ShowBouleForNewDesign(const QModelIndex & index);
 
 private:
     //QString OrganiseChampsDesTirages(QString st_base_reference);
@@ -159,6 +141,7 @@ private:
     QGridLayout *MonLayout_TabAuguste(int col, int lgn);
 
     QString SD_Tb1(QStringList boules, QString sqlTblRef, int dst);
+    void CompleteMenu(QMenu *LeMenu,QString tbl, int clef);
 
     //QString SD_Tb2(QStringList boules, QString sqlTblRef, int dst);
 
