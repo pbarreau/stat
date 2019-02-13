@@ -11,27 +11,11 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = StatFdJeux
 TEMPLATE = app
 
-##include(C:/Devel/Workspaces/stat/sqlExtensions/sqlite.pri)
 
 INCLUDEPATH +="./sqlExtensions"
-#-LC:/Devel/Qt5.6.0/Tools/mingw492_32/opt/lib
 LIBS +=  -L./sqlExtensions -lsqlite3-0
-
-#include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
-
-#win32:CONFIG(release, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchart2
-#else:win32:CONFIG(debug, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchartd2
-#win32: LIBS += -LC:/Devel/kdchart-2.5.1-source/lib/ -ltesttools2
-
-#INCLUDEPATH += "C:/Devel/kdchart-2.5.1-source/include"
-#DEPENDPATH += "C:/Devel/kdchart-2.5.1-source/include"
-
 message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
-
 #QMAKE_CXXFLAGS_RELEASE += -g
-#QMAKE_CFLAGS_RELEASE += -g
-#QMAKE_LFLAGS_RELEASE =
-
 SOURCES += \
 		main.cpp\
 		mainwindow.cpp \
