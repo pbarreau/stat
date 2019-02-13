@@ -516,6 +516,7 @@ void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
     //stNeeds->nbElmZone = pMaConf->nbElmZone;
     stNeeds->TT_Zn = pMaConf->TT_Zn;
     stNeeds->limites = pMaConf->limites;
+    stNeeds->origine = NULL;
     ShowStepper *UnDetail = new ShowStepper(stNeeds);
     //ShowStepper *UnDetail = new ShowStepper(pMaConf);
     connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex)),

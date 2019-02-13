@@ -60,7 +60,7 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
     // Selection d'une cellule
     if (option.state & QStyle::State_Selected)
     {
-        painter->fillRect(option.rect, t.highlight());
+        ////painter->fillRect(option.rect, t.highlight());
 
         /// test
         /*        gradient.setCenter(0, 0);
@@ -74,7 +74,7 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
         //painter->setPen(QPen(Qt::black, 0));
         painter->save();
         painter->setBrush(Qt::white);
-        painter->drawEllipse(c,cx/2,cy/2);
+        //painter->drawEllipse(c,cx/2,cy/2);
         painter->restore();
     }
 

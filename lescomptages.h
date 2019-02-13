@@ -154,6 +154,8 @@ private slots:
     void slot_SurligneEcartEtDetails(const QModelIndex &index);
     void slot_ccmrTirages(QPoint pos, QTableView *view);
     void slot_CalculSurTirage(const QModelIndex & index);
+    void slot_LoopElmVisual(const QModelIndex &index);
+    void slot_helpStepper(const QModelIndex &index);
 
 public slots:
     void slot_changerTitreZone(QString le_titre);

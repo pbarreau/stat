@@ -12,8 +12,9 @@ TARGET = StatFdJeux
 TEMPLATE = app
 
 
+## https://indy.fulgan.com/SSL/
 INCLUDEPATH +="./sqlExtensions"
-LIBS +=  -L./sqlExtensions -lsqlite3-0
+LIBS +=  -L./sqlExtensions -lsqlite3-0 -leay32 -lssleay32
 message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
 #QMAKE_CXXFLAGS_RELEASE += -g
 SOURCES += \

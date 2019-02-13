@@ -167,6 +167,7 @@ void IHM_Tirages::slot_SurlignerTirage(const QModelIndex &index)
     int v2 = 0;
     int laLigne = 0;
     int value = 0;//index.model()->index(index.row(),index.column()).data().toInt();
+    bool lineIsShowable = false;
 
     if(tbvName.contains(cClc_eca)){
         /// C'est bien un tableau ecart
@@ -174,6 +175,7 @@ void IHM_Tirages::slot_SurlignerTirage(const QModelIndex &index)
             origine = 0;
             if(col > 0 && col <3 )
             {
+                lineIsShowable = true;
 
                 /// Tableau elements
                 /// recuperer les 2 valeurs a la colonne de la table
@@ -194,6 +196,8 @@ void IHM_Tirages::slot_SurlignerTirage(const QModelIndex &index)
 
             if(col > 1 && col <4 )
             {
+                lineIsShowable = true;
+
                 /// Tableau combinaison
                 /// recuperer les 2 valeurs a la colonne de la table
                 v1 = index.model()->index(index.row(),2).data().toInt();
@@ -209,46 +213,48 @@ void IHM_Tirages::slot_SurlignerTirage(const QModelIndex &index)
         }
     }
 
-    // parcourir les tables view
-    QTableView *tabDetails = lesTirages;
-    //QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(tabDetails->model());
+    if(lineIsShowable){
+        // parcourir les tables view
+        QTableView *tabDetails = lesTirages;
+        //QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(tabDetails->model());
 
 
-    QModelIndex nextIndex = tabDetails->model()->index(value,0);
-    tabDetails->scrollTo(nextIndex);
+        QModelIndex nextIndex = tabDetails->model()->index(value,0);
+        tabDetails->scrollTo(nextIndex);
 
-    /// Clef
-    laLigne = value;
+        /// Clef
+        laLigne = value;
 
-    /// Mettre un visuel sur la ligne
-    tabDetails->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        /// Mettre un visuel sur la ligne
+        tabDetails->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-    /// Changer la couleur de ligne de selection selon la demande
-    QString myStyleSheet = "";
+        /// Changer la couleur de ligne de selection selon la demande
+        QString myStyleSheet = "";
 
-    if(origine ==0){
-        if(zn == 0){
-            myStyleSheet="QTableView {selection-background-color: #70FF44;}";
+        if(origine ==0){
+            if(zn == 0){
+                myStyleSheet="QTableView {selection-background-color: #70FF44;}";
+            }
+            else
+            {
+                myStyleSheet="QTableView {selection-background-color: #5EB6FF;}";
+            }
         }
-        else
-        {
-            myStyleSheet="QTableView {selection-background-color: #5EB6FF;}";
+        else{
+            if(zn == 0){
+                myStyleSheet="QTableView {selection-background-color: #FFBE3D;}";
+            }
+            else
+            {
+                myStyleSheet="QTableView {selection-background-color: #91B4FF;}";
+            }
+
         }
+
+        tabDetails->setStyleSheet(myStyleSheet);
+        tabDetails->selectRow(laLigne);
+        tabDetails->setSelectionMode(QAbstractItemView::SingleSelection);
     }
-    else{
-        if(zn == 0){
-            myStyleSheet="QTableView {selection-background-color: #FFBE3D;}";
-        }
-        else
-        {
-            myStyleSheet="QTableView {selection-background-color: #91B4FF;}";
-        }
-
-    }
-
-    tabDetails->setStyleSheet(myStyleSheet);
-    tabDetails->selectRow(laLigne);
-    tabDetails->setSelectionMode(QAbstractItemView::SingleSelection);
 
 
 }

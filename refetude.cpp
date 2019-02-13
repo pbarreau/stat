@@ -624,6 +624,8 @@ bool VerifierValeur(int item, QString table,int idColValue,int *lev)
 QTableView *RefEtude::tbForBaseEcart(int zn)
 {
     QTableView *qtv_tmp = new QTableView;
+    p_tbv_4[zn] = qtv_tmp;
+
     QString qtv_name = QString::fromLatin1(cUsr_elm) + "_z"+ QString::number(zn+1);
 
     int nb_lgn = p_conf->limites[zn].max;
@@ -638,6 +640,8 @@ QTableView *RefEtude::tbForBaseEcart(int zn)
     QStandardItem **headerItem = new QStandardItem*[nbcol];
     for(int i=0;i<nbcol;i++)
     {
+        qtv_tmp->setColumnWidth(i,LCELL);
+
         headerItem [i] = new QStandardItem(colName[i]);
         tmpStdItem->setHorizontalHeaderItem(i,headerItem [i]);
         headerItem [i]->setToolTip(colTip[i]);
@@ -651,7 +655,6 @@ QTableView *RefEtude::tbForBaseEcart(int zn)
                 item->setData(pos+1,Qt::DisplayRole);
             }
             tmpStdItem->setItem(pos,i,item);
-            qtv_tmp->setColumnWidth(i,LCELL);
         }
     }
 
@@ -681,7 +684,6 @@ QTableView *RefEtude::tbForBaseEcart(int zn)
     col = p_simResu[zn]->columnCount();
     lgn = p_simResu[zn]->rowCount();
 
-    p_tbv_4[zn] = qtv_tmp;
 
     // click sur la zone reservee au boules du tirage
     connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,

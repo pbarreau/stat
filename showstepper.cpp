@@ -460,7 +460,7 @@ ShowStepper::ShowStepper(stStepperNeeds *pdef)
     pGlobConf =  pdef;
 }
 
-ShowStepper::RunStepper(int cid, int tid)
+void ShowStepper::RunStepper(int cid, int tid)
 {
     tid_start = tid;
     cid_start = cid;
@@ -684,6 +684,12 @@ QSplitter *ShowStepper::SetDataSplitter_1(int col, int cid, int tid)
         view[i].horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
         view[i].verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
         view[i].setFixedWidth((LCELL*2)+45);
+
+        if(pGlobConf->origine != NULL){
+            connect(&view[i],SIGNAL(pressed(QModelIndex)),
+                    pGlobConf->origine,SLOT(slot_helpStepper(QModelIndex)));
+
+        }
 
     }
 

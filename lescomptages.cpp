@@ -1624,6 +1624,7 @@ void BPrevision::slot_ccmrTirages(QPoint pos,QTableView *view)
     //stNeeds->nbElmZone = NULL;//onGame.limites[0].len;
     stNeeds->TT_Zn = onGame.names;//onGame.names[0].abv;
     stNeeds->limites = onGame.limites;
+    stNeeds->origine = this;
     ShowStepper *UnDetail = new ShowStepper(stNeeds);
 
     //ShowStepper *UnDetail = new ShowStepper(pGlobConf);
@@ -1637,6 +1638,18 @@ void BPrevision::slot_CalculSurTirage(const QModelIndex & index)
 {
     BarCalculPrevision *tmp = new BarCalculPrevision(index,dbInUse,onGame);
     tmp->show();
+}
+
+void BPrevision::slot_helpStepper(const QModelIndex &index)
+{
+    QTableView *tbvRef = qobject_cast<QTableView *>(sender());
+    // recuperer la valeur a la colonne de la table
+    int value = index.model()->index(index.row(),index.column()).data().toInt();
+    QString active = "0,0,0";
+    tbvRef = qtvElmDetails.at(0);
+    ActiveOnglet(tbvRef,value,active);
+    tbvRef = qtvElmEcarts.at(0);
+    ActiveOnglet(tbvRef,value,active);
 }
 
 void BPrevision::slot_SurligneEcartEtDetails(const QModelIndex &index){
@@ -1953,24 +1966,47 @@ QWidget *BPrevision::FormElm(const stUsePrm &data)
 {
     QWidget *wdg_tmp = new QWidget;
     QGridLayout * gdl_tmp = new QGridLayout;
+    QTableView *tbv_tmp = NULL;
 
     /// repartition
     QLabel *lab_details = new QLabel("Details");
     gdl_tmp->addWidget(lab_details,0,2);
-    gdl_tmp->addWidget(data.d_elm->getTbv(data.zn),1,2);
-    //qtvElmDetails.append(tmp_elm->getTbv(data.zn));
-
+    tbv_tmp = data.d_elm->getTbv(data.zn);
+    gdl_tmp->addWidget(tbv_tmp,1,2);
+    connect(tbv_tmp,SIGNAL(clicked(QModelIndex)),
+            this,SLOT(slot_LoopElmVisual(QModelIndex)));
 
     /// ecart
     QLabel *lab_ecart = new QLabel("Ecarts");
     gdl_tmp->addWidget(lab_ecart,0,0);
-    gdl_tmp->addWidget(data.e_elm->getTbv(data.zn),1,0);
-    //qtvElmEcarts.append(tmp_ect->getTbv(data.zn));
+    tbv_tmp = data.e_elm->getTbv(data.zn);
+    gdl_tmp->addWidget(tbv_tmp,1,0);
+    connect(tbv_tmp,SIGNAL(clicked(QModelIndex)),
+            this,SLOT(slot_LoopElmVisual(QModelIndex)));
 
     wdg_tmp->setLayout(gdl_tmp);
     return  wdg_tmp;
 }
 
+void BPrevision::slot_LoopElmVisual(const QModelIndex &index)
+{
+    QTableView *tbvRef = qobject_cast<QTableView *>(sender());
+    QString objName = tbvRef->objectName();
+    int curZn = ((objName.split("z")).at(1)).toInt() -1;
+
+    // recuperer la valeur a la colonne de la table
+    int col = index.column();
+    if (col == 0){
+        int value = index.model()->index(index.row(),col).data().toInt();
+
+        QString active = QString::number(curZn)+QString(",0,0");
+        tbvRef = qtvElmDetails.at(curZn);
+        ActiveOnglet(tbvRef,value,active);
+        tbvRef = qtvElmEcarts.at(curZn);
+        ActiveOnglet(tbvRef,value,active);
+    }
+
+}
 QWidget *BPrevision::FormCmb(const stUsePrm &data)
 {
     QWidget *wdg_tmp = new QWidget;

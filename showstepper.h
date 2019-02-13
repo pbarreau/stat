@@ -8,11 +8,12 @@
 #include <QSplitter>
 #include <QCheckBox>
 
+#include "lescomptages.h"
 #include "tirages.h"
 
 typedef struct _stStepperNeeds
 {
-    //int *nbElmZone;
+    BPrevision *origine;
     stZnNames *TT_Zn;
     stZnLimites *limites;
     //QString *FullNameZone;
@@ -26,7 +27,7 @@ public:
     ~ShowStepper();
     ShowStepper(stStepperNeeds *pdef);
     //ShowStepper(stTiragesDef *pdef);
-    RunStepper(int cid, int tid);
+    void RunStepper(int cid, int tid);
 
 private:
     void ExecSql(int cid,int tid);
