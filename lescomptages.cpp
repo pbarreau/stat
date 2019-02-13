@@ -1660,7 +1660,7 @@ void BPrevision::slot_SurligneEcartEtDetails(const QModelIndex &index){
         ActiveOnglet(tbvRef,value,active);
     }
 
-    if (col > 3 && (col<3+onGame.limites[0].len)){
+    if (col > 3 && (col<=3+onGame.limites[0].len)){
         /// Boules
         recherche = 1;
         // recuperer la valeur a la colonne de la table
