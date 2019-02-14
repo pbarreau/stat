@@ -38,8 +38,8 @@ void MainWindow::createActions()
     saveAct->setStatusTip(tr("Sauver jeu sur disque"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(pslot_save()));
 
-    runAct = new QAction(QIcon(":/images/run_32px.png"), tr("&Run"), this);
-    runAct->setStatusTip(tr("Creer liste de jeux"));
+    act_mkUsrGame = new QAction(QIcon(":/images/run_32px.png"), tr("&Run"), this);
+    act_mkUsrGame->setStatusTip(tr("Creer liste de jeux"));
     /// La connection s'effectue a la creation de l'objet.
 
     FiltrerAct = new QAction(QIcon(":/images/filtre_1_32px.png"), tr("&Filtrer"), this);
@@ -92,7 +92,7 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(newAct);
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
-    fileToolBar->addAction(runAct);
+    fileToolBar->addAction(act_mkUsrGame);
     fileToolBar->addAction(FiltrerAct);
 }
 

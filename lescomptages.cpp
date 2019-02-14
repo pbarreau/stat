@@ -902,7 +902,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const B_Game &onGame,int zn
 #endif
 
         isOk = query.exec(msg);
-        QStringList **slst=slFlt;
+        QStringList **slst=PreparerCriteresAnalyse() ;
 
         int nbCols = slst[zn][1].size();
         curName = "vt_1";
@@ -2121,7 +2121,7 @@ void BPrevision::slot_emitThatClickedBall(const QModelIndex &index)
     emit sig_isClickedOnBall(index);
 }
 
-void BPrevision::slot_makeUserGamesList()
+void BPrevision::slotAct_mkUsrGame()
 {
     QSqlQuery query(dbInUse);
     bool isOk = true;
@@ -2139,8 +2139,10 @@ void BPrevision::slot_makeUserGamesList()
             +SelElemt
             +"_z1 as Choix where(choix.p="
             +QString::number(sel_prio)+");";
-    isOk = query.exec(msg);
-    if(isOk)
+#ifndef QT_NO_DEBUG
+    qDebug() <<msg;
+#endif
+    if((isOk = query.exec(msg)))
     {
         query.first();
         n = query.value("T").toInt();
@@ -2158,8 +2160,7 @@ void BPrevision::slot_makeUserGamesList()
 
                 /// supprimer la vue resultat
                 msg = "drop table if exists E1";
-                isOk = query.exec(msg);
-                if(isOk){
+                if((isOk = query.exec(msg))){
                     /// Creer une liste de jeux possibles
                     creerJeuxUtilisateur(sel_prio,n,p);
                 }
@@ -2202,11 +2203,15 @@ void BPrevision::creerJeuxUtilisateur(int sel_prio,int n, int p)
     if((isOk = query.exec("begin transaction"))){
         msg = "create table if not exists "+source+" as "
                 +msg;
+#ifndef QT_NO_DEBUG
+    qDebug() << "msg: " <<msg;
+#endif
         if((isOk = query.exec(msg))){
             isOk = query.exec("commit transaction");
         }
     }
 
+#if 0
     new BPrevision(&monJeu,true,eBddUseDisk);
 
     return;
@@ -2222,6 +2227,14 @@ void BPrevision::creerJeuxUtilisateur(int sel_prio,int n, int p)
 
 
     showAll(source,monJeu);
+#endif
+
+    int zn=0;
+    if(isOk)
+        isOk = AnalyserEnsembleTirage(source,monSlt,monJeu, zn);
+
+    if(isOk)
+        isOk = FaireTableauSynthese(tbUse,monJeu,zn);
 
     static bool OneShot = false;
     if(OneShot==false){

@@ -107,7 +107,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         B_Game Thegame;
         Thegame.type = unJeu;
         tous = new BPrevision(&Thegame,true,eBddUseDisk);
-        connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_makeUserGamesList()));
+        connect(act_mkUsrGame, SIGNAL(triggered()), tous, SLOT(slotAct_mkUsrGame()));
         connect(FiltrerAct, SIGNAL(triggered()), tous, SLOT(slot_filterUserGamesList()));
         connect(tous,
                 SIGNAL(sig_isClickedOnBall(QModelIndex)),

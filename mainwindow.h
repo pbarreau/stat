@@ -252,7 +252,7 @@ private:
     QAction *saveAct;
     QAction *saveAsAct;
     QAction *exitAct;
-    QAction *runAct;
+    QAction *act_mkUsrGame;
     QAction *FiltrerAct;
     QAction *actGetFromUrlsFdj;
     QAction *aboutAct;

@@ -159,7 +159,7 @@ private slots:
 
 public slots:
     void slot_changerTitreZone(QString le_titre);
-    void slot_makeUserGamesList();
+    void slotAct_mkUsrGame();
     void slot_filterUserGamesList();
 
 private:
