@@ -150,8 +150,8 @@ void SyntheseGenerale::slot_ShowTotalBoule(const QModelIndex &index)
 
 void SyntheseGenerale::slot_ShowBouleForNewDesign(const QModelIndex & index)
 {
-   /// Pas de test sur la colonne ici
-   /// se mettre sur le bon onglet
+    /// Pas de test sur la colonne ici
+    /// se mettre sur le bon onglet
     ptabComptage->setCurrentIndex(0);///(boules)
 
     // recuperer la valeur a la colone de la table
@@ -168,7 +168,7 @@ void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
 
     // recuperer la valeur de la colonne
     int col = index.column();
-QTableView *view = qobject_cast<QTableView *>(sender());
+    QTableView *view = qobject_cast<QTableView *>(sender());
 
     if(col > 4 && col <= 4 + pMaConf->limites[0].len)
     {
@@ -1798,7 +1798,7 @@ QString SyntheseGenerale::ActionElmZone(QString critere , QString operateur, int
     return ret_msg;
 }
 
-QString SyntheseGenerale::TrouverTirages(int col, int nb, QString st_tirages, QString st_cri,int zn, stTiragesDef *pConf)
+QString SyntheseGenerale::TrouverTirages(int col, QString str_nb, QString st_tirages, QString st_cri, int zn, stTiragesDef *pConf)
 {
     QString st_tmp =  ActionElmZone("=","or",zn,pConf);
     QString st_return =
@@ -1819,8 +1819,8 @@ QString SyntheseGenerale::TrouverTirages(int col, int nb, QString st_tirages, QS
 #endif
     st_return ="select * from("+
             st_return+
-            ")as tb1 where(tb1.N"+QString::number(col)+ "="+
-            QString::number(nb)+");";
+            ")as tb1 where(tb1.N"+QString::number(col)+ " in "+
+            str_nb+");";
 
 #ifndef QT_NO_DEBUG
     qDebug() << st_return;
@@ -1960,9 +1960,12 @@ QString SyntheseGenerale::SqlCreateCodeCombi(int onglet, QString table)
 QString SyntheseGenerale::SqlCreateCodeGroupe(int onglet, QString table)
 {
     QString st_critere = "";
+    QString st_occure = "";
     QString sqlReq ="";
 
     QModelIndexList indexes =  uneDemande.selection[onglet];
+
+    int nbChoix = maRef[0][0].size();
 
     /// il y a t'il une selection
     sqlReq = table;
@@ -1971,16 +1974,35 @@ QString SyntheseGenerale::SqlCreateCodeGroupe(int onglet, QString table)
         QModelIndex un_index;
         int curCol = 0;
         int occure = 0;
+        QString *Selection = new QString[nbChoix];
 
-        /// Parcourir les selections
         foreach(un_index, indexes)
         {
             curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
             occure = un_index.model()->index(un_index.row(), 0).data().toInt();
-            if(curCol)
-            {
-                st_critere = "("+maRef[0][0].at(curCol-1)+")";
-                sqlReq =TrouverTirages(curCol,occure,sqlReq,st_critere,0,uneDemande.ref);
+
+            if(Selection[curCol-1]==""){
+                Selection[curCol-1] = QString::number(occure);
+            }
+            else{
+                Selection[curCol-1] = Selection[curCol-1]+tr(",")+QString::number(occure);
+            }
+#ifndef QT_NO_DEBUG
+            qDebug() << Selection[curCol-1];
+#endif
+
+        }
+        ; ///Pause
+        /// Parcourir les selections
+        for(int col = 0; col<nbChoix; col++)
+        {
+            if(Selection[col]==""){
+                continue;
+            }
+            else{
+                st_critere = "("+maRef[0][0].at(col)+")";
+                st_occure = "("+Selection[col]+")";
+                sqlReq =TrouverTirages(col,st_occure,sqlReq,st_critere,0,uneDemande.ref);
             }
         }
 
