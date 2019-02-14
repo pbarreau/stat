@@ -658,6 +658,14 @@ QTableView *RefEtude::tbForBaseEcart(int zn)
         }
     }
 
+    // Remplir le tableau
+    RemplirTableauEcart(zn,tmpStdItem);
+
+    for(int i=0;i<nbcol;i++)
+    {
+        qtv_tmp->setColumnWidth(i,LCELL);
+    }
+
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
@@ -673,18 +681,17 @@ QTableView *RefEtude::tbForBaseEcart(int zn)
     // Taille tableau
     qtv_tmp->setFixedSize(XLenTir/3,CHauteur2);
 
-    // Remplir le tableau
-    RemplirTableauEcart(zn,tmpStdItem);
 
     // Memoriser addresse du tableau
     p_simResu[zn] = tmpStdItem;
+#if 0
     int col = tmpStdItem->columnCount();
     int lgn = tmpStdItem->rowCount();
 
     col = p_simResu[zn]->columnCount();
     lgn = p_simResu[zn]->rowCount();
 
-
+#endif
     // click sur la zone reservee au boules du tirage
     connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
              this, SLOT( slot_ShowBoule( QModelIndex) ) );
