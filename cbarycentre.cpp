@@ -44,7 +44,8 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
             qDebug() << "str_data:"<<str_data;
 #endif
             /// 2: Calcul du barycentre si calcul toltal de chaque boule
-            QString tbl_totalBoule = "r_"+tbl_in+"_0_elm_z1";
+            ///  de la base complete
+            QString tbl_totalBoule = "r_B_fdj_0_elm_z1";
             if(isTableTotalBoulleReady(tbl_totalBoule)){
                 str_data = "Select c1.id as Id, sum(c2.t)/5 as BC From ("
                         +str_data
@@ -70,7 +71,13 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 #endif
                 if((isOk = query.exec(str_tblData))){
                     /// mettre dans la table analyse le barycentre de chaque tirage
-                    QString str_tblAnalyse = "B_ana_z1";
+                    QString str_tblAnalyse = "";
+                    if(tbl_in=="E1"){
+                       str_tblAnalyse = "U_E1_ana_z1";
+                    }
+                    else{
+                        str_tblAnalyse = "B_ana_z1";
+                    }
                     isOk = mettreBarycentre(str_tblAnalyse, str_data);
                 }
             }
