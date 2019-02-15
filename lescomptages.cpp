@@ -1320,7 +1320,7 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     stNeedsOfBary param;
     param.db = dbInUse;
     param.ncx = dbInUse.connectionName();
-    param.tbl_in="B_fdj";
+    param.tbl_in=source;///"B_fdj";
     CBaryCentre c(param);
 
 

@@ -22,7 +22,7 @@
 #include "db_tools.h"
 #include "delegate.h"
 
-int BCountElem::total = 0;
+int BCountElem::total = 1;
 
 int BCountElem::getCounter(void)
 {
@@ -41,7 +41,7 @@ BCountElem::BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb
     countId = total;
     unNom = "'Compter Zones'";
 
-    total++;
+    //total++;
     QTabWidget *tab_Top = new QTabWidget(this);
 
     int nb_zones = myGame.znCount;
