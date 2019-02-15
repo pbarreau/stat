@@ -17,7 +17,7 @@ class ShowStepper: public QObject
 public:
     ~ShowStepper();
     ShowStepper(stTiragesDef *pdef);
-    RunStepper(int cid, int tid);
+    void RunStepper(int cid, int tid);
 
 private:
     void ExecSql(int cid,int tid);

@@ -1441,7 +1441,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
     QString source = "E1";
     QString tbUse = "U_"+source+"_ana";
 
-    monJeu;
+    //monJeu;
 
     monJeu.type = onGame.type;
     monJeu.from = eUsr;
@@ -1521,8 +1521,62 @@ bool BPrevision::isTableCnpinDb(int n, int p)
 QString BPrevision::ListeDesJeux(int zn, int n, int p)
 {
     ///----------------------
+    QString tbSel = C_TBL_6;
+    bool isOk = true;
+    QSqlQuery query(dbInUse);
+
     int loop = 0;
     int len = p;
+
+    /// Creation d'une table temporaire pour sauver choix utilisateur
+    int selprio = 1;
+    QString src_usr =tbSel
+            +"_z"+QString::number(zn+1);
+
+    QString tmp_tbl =src_usr
+            +"_p"+QString::number(selprio);
+
+    QString str_req[] ={
+        {"drop table if exists "
+         +tmp_tbl
+         +";"
+        },
+        {"create table if not exists "
+         +tmp_tbl
+         +" (Id integer primary key, val integer);"
+        },
+        {
+            "insert into "
+            +tmp_tbl
+            +" select NULL,choix.val from ("
+            +src_usr+
+            ") as choix where(choix.p="
+            +QString::number(selprio)
+            +");"
+        }
+
+    };
+
+    /// Faire en sequence les requetes
+    int nbSqlmsg = sizeof(str_req)/sizeof(QString);
+    for(int un_msg = 0; (un_msg< nbSqlmsg) && isOk ;un_msg++){
+#ifndef QT_NO_DEBUG
+        qDebug() << str_req[un_msg];
+#endif
+       isOk = query.exec(str_req[un_msg]);
+    }
+
+    if(!isOk){
+        QString err_msg = query.lastError().text();
+        //un message d'information
+        QMessageBox::critical(0, this->objectName(), err_msg,QMessageBox::Yes);
+#ifndef QT_NO_DEBUG
+        qDebug() << err_msg;
+#endif
+        QApplication::quit();
+    }
+
+    ///-------------------------
     QString msg1 = "";
     QString ref = "tb%1.val as b%2 ";
     for(int i = 0; i< len; i++)
@@ -1539,11 +1593,9 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
     /// clause left
     QString msg2 = "";
     loop = len;
-    QString tbSel = C_TBL_6;
-    ref = "(select tbChoix.id, tbChoix.val from "
-            +tbSel
-            +"_z"+QString::number(zn+1)
-            +" as tbChoix)as tb%1";
+    ref = "(select tbChoix.id, tbChoix.val from ("
+            +tmp_tbl
+            +") as tbChoix )as tb%1";
     for(int i = 0; i< len; i++)
     {
         msg2 = msg2 + ref.arg(i+1);

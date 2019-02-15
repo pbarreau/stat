@@ -459,7 +459,7 @@ ShowStepper::ShowStepper(stTiragesDef *pdef)
     pGlobConf =  pdef;
 }
 
-ShowStepper::RunStepper(int cid, int tid)
+void ShowStepper::RunStepper(int cid, int tid)
 {
     tid_start = tid;
     cid_start = cid;
