@@ -79,6 +79,7 @@ BPrevision::BPrevision(B_Game *game, bool setClean, eBddUse def)
         if(ouvrirBase(def,game->type)==true)
         {
             definirConstantesDuJeu(game->type);
+            slFlt = PreparerCriteresAnalyse() ;
 
             /// Remettre tout a zero ?
             if(setClean){
@@ -320,7 +321,7 @@ void BPrevision::effectuerTraitement(eGames game)
         source = "E1"  ;
 
     }
-    QStringList **criteres = PreparerCriteresAnalyse() ;
+    QStringList **criteres = slFlt;///PreparerCriteresAnalyse() ;
     bool isOk = true;
 
 
@@ -902,7 +903,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const B_Game &onGame,int zn
 #endif
 
         isOk = query.exec(msg);
-        QStringList **slst=PreparerCriteresAnalyse() ;
+        QStringList **slst=slFlt;///PreparerCriteresAnalyse() ;
 
         int nbCols = slst[zn][1].size();
         curName = "vt_1";
@@ -2182,7 +2183,7 @@ void BPrevision::creerJeuxUtilisateur(int sel_prio,int n, int p)
     QString msg = "";
     QString source = "E1";
     QString tbUse = "U_"+source+"_ana";
-    QStringList **monSlt = PreparerCriteresAnalyse() ;
+    QStringList **monSlt = slFlt;///PreparerCriteresAnalyse() ;
 
 
     //monJeu;
