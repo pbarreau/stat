@@ -17,6 +17,8 @@
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
+#include "cbarycentre.h"
+
 #include "labelclickable.h"
 
 #include "lescomptages.h"
@@ -38,6 +40,8 @@ void BPrevision::slot_changerTitreZone(QString le_titre)
 
     cur_titre = "Z:"+titre[0]+"C:"+titre[1]+"G:"+titre[2];
 #endif
+
+
     selection[0].setText("Z:"+le_titre);
 }
 
@@ -173,6 +177,7 @@ void BPrevision::effectuerTraitement(eGame game)
     definirConstantesDuJeu(game);
     creerTablesDeLaBase();
     analyserTirages(source, onGame);
+
 
 }
 
@@ -1310,6 +1315,14 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     connect( selection, SIGNAL( clicked(QString)) ,
              this, SLOT( slot_RazSelection(QString) ) );
 #endif
+
+    /// greffon pour calculer barycentre des tirages
+    stNeedsOfBary param;
+    param.db = dbInUse;
+    param.ncx = dbInUse.connectionName();
+    param.tbl_in="B_fdj";
+    CBaryCentre c(param);
+
 
     /// ----------------
     Resultats->setLayout(tmp_layout);

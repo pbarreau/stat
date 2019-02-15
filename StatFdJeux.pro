@@ -70,7 +70,8 @@ SOURCES += \
     db_tools.cpp \
     cnp_SansRepetition.cpp \
     cnp_AvecRepetition.cpp \
-    etudierjeux.cpp
+    etudierjeux.cpp \
+    cbarycentre.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -106,7 +107,8 @@ HEADERS  += \
     cnp_AvecRepetition.h \
     cnp_SansRepetition.h \
     etudierjeux.h \
-    game.h
+    game.h \
+    cbarycentre.h
 
 
 FORMS    += mainwindow.ui \

@@ -32,6 +32,7 @@ public:
 
 
 public:
+    QSqlDatabase getMyDb(void);
     QVariant data(const QModelIndex &index, int role) const;
     bool CreerBasePourEtude(bool action, NE_FDJ::E_typeJeux type);
 

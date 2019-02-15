@@ -71,7 +71,10 @@ BCountElem::BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb
         tab_Top->addTab(tmpw,tr((*name).toUtf8()));
     }
 
+
+
     tab_Top->setWindowTitle("Test2-"+QString::number(total));
+    emit(sig_TitleReady("Pascal"));
 #if 0
     QWidget * Resultats = new QWidget;
     QGridLayout *layout = new QGridLayout();

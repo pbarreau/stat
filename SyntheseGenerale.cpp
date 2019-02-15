@@ -29,6 +29,7 @@
 #include "compter_combinaisons.h"
 #include "lescomptages.h"
 #include "compter.h"
+#include "cbarycentre.h"
 
 #include "mainwindow.h"
 
@@ -214,6 +215,14 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     uneDemande.ref = pConf;
     DoTirages();
     DoComptageTotal();
+#if 0
+    /// greffon pour calculer barycentre des tirages
+    stNeedsOfBary param;
+    param.db = bdd->getMyDb();
+    param.ncx = bdd->getMyDb().connectionName();
+    param.tbl_in="B_fdj";
+    CBaryCentre c(param);
+#endif
 
 
     disposition->addWidget(ptabTop,1,0,1,2,Qt::AlignLeft|Qt::AlignTop);

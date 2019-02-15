@@ -400,6 +400,11 @@ bool GererBase::AffectePoidsATirage_v2()
     return status;
 }
 
+QSqlDatabase GererBase::getMyDb(void)
+{
+    return db;
+}
+
 bool GererBase::CreerBasePourEtude(bool action,NE_FDJ::E_typeJeux type)
 {
     // http://developer.nokia.com/community/wiki/Creating_an_SQLite_database_in_Qt
