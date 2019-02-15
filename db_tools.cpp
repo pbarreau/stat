@@ -82,6 +82,85 @@ QString DB_Tools::GEN_Where_3(int loop,
     return ret_msg;
 }
 
+/// http://www.sqlitetutorial.net/sqlite-primary-key/
+bool DB_Tools::myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QString asCode)
+{
+    bool isOk=false;
+    QSqlQuery q_atom(query);
+    QString msg = "select sql from sqlite_master where (type = 'table' and tbl_name='"+
+            tblName+"'); ";
+    //QString msg_s = "";
+#if 0
+    QString atomic[]=
+    {
+        {"PRAGMA foreign_keys=off;"},
+        {"BEGIN TRANSACTION;"},
+        {"ALTER TABLE "+tblName+" RENAME TO old_"+tblName+";"},
+        {msg+";"},
+        {"INSERT INTO "+tblName+" SELECT * FROM old_"+tblName+";"},
+        {"drop table if exists old_"+tblName+";"},
+        {"COMMIT;"},
+        {"PRAGMA foreign_keys=on;"}
+    };
+
+#endif
+
+    if((isOk=q_atom.exec(asCode))){
+        if((isOk=q_atom.exec(msg))){
+            q_atom.first();
+            if((isOk=q_atom.isValid())){
+                msg=q_atom.value(0).toString();
+                msg = msg.simplified();
+                msg = msg.replace("\"","'");
+                msg = msg.remove("INT");
+                msg = msg.replace(","," integer,");
+                msg = msg.replace(")"," integer, primary key ("+pid+"))");
+                QString atomic[]=
+                {
+                    {"PRAGMA foreign_keys=off;"},
+                    {"BEGIN TRANSACTION;"},
+                    {"ALTER TABLE "+tblName+" RENAME TO old_"+tblName+";"},
+                    {msg+";"},
+                    {"INSERT INTO "+tblName+" SELECT * FROM old_"+tblName+";"},
+                    {"drop table if exists old_"+tblName+";"},
+                    {"COMMIT;"},
+                    {"PRAGMA foreign_keys=on;"}
+                };
+                int items = sizeof(atomic)/sizeof(QString);
+                for(int item=0; (item<items) && isOk; item++){
+                    msg = atomic[item];
+#ifndef QT_NO_DEBUG
+                    qDebug() << atomic[item];
+#endif
+                    isOk = q_atom.exec(msg);
+
+                }
+            }
+        }
+    }
+#ifndef QT_NO_DEBUG
+    qDebug() << "SQL msg:\n"<<msg<<"\n-------";
+#endif
+    if(!isOk){
+        QString ErrLoc = "DB_Tools::myCreateTableAs";
+        DB_Tools::DisplayError(ErrLoc,&q_atom,msg);
+    }
+
+    return isOk;
+}
+
+#if 0
+QString DB_Tools::makeTableFromSelect(QString select)
+{
+    QString msg = "";
+    msg = select.simplified();
+    msg = msg.remove("INT");
+    msg = msg.replace(","," integer,");
+    msg = msg + tr(",primary key (id)");
+    return msg;
+}
+#endif
+
 QString DB_Tools::innerJoin(stJoinArgs ja)
 {
     QString arg1 = ja.arg1;

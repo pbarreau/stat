@@ -2264,6 +2264,7 @@ void BPrevision::creerJeuxUtilisateur(int sel_prio,int n, int p)
         {
             qtv_tmp->setColumnWidth(col,CEL2_L);
         }
+        qtv_tmp->hideColumn(0);
         qtv_tmp->setFixedHeight(700);
         qtv_tmp->setFixedWidth((nbCol+1)*CEL2_L);
 

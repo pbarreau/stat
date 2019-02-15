@@ -19,6 +19,7 @@ QString GEN_Where_3(int loop,
                     QString tb1,bool inc1,QString op1,
                     QStringList &tb2,bool inc2,QString op2
                     );
+bool myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QString asCode);
 QString innerJoin(stJoinArgs ja);
 QString leftJoin(stJoinArgs ja);
 QString innerJoinFiltered(stJoinArgs ja,QString arg5);
