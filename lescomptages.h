@@ -109,6 +109,7 @@ private:
     void analyserTirages(QString source, const BGame &config);
     bool isTableCnpinDb(int n, int p);
     void creerJeuxUtilisateur(int n, int p);
+    bool isPreviousDestroyed(void);
 
 Q_SIGNALS:
     void sig_isClickedOnBall(const QModelIndex &index);

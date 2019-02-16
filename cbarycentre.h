@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QSqlDatabase>
+#include <QGridLayout>
+
 #include "game.h"
 
 typedef struct _prmbary{
@@ -11,8 +13,9 @@ typedef struct _prmbary{
     QString tbl_in; /// Nom de la table avec les infos
 }stNeedsOfBary;
 
-class CBaryCentre
+class CBaryCentre:public QWidget
 {
+    Q_OBJECT
 public:
     CBaryCentre(const stNeedsOfBary &param);
 
@@ -20,6 +23,7 @@ private:
     void hc_RechercheBarycentre(QString tbl_in);
     bool isTableTotalBoulleReady(QString tbl_total);
     bool mettreBarycentre(QString tbl_dst, QString src_data);
+    QGridLayout *AssocierTableau(QString src_tbl);
 
 private:
     QSqlDatabase db;

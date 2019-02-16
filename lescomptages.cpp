@@ -14,6 +14,8 @@
 #include <QVBoxLayout>
 #include <QLabel>
 
+#include <QMessageBox>
+
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
@@ -1275,13 +1277,21 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
             this,
             SLOT(slot_emitThatClickedBall(QModelIndex)));
 
+    /// greffon pour calculer barycentre des tirages
+    stNeedsOfBary param;
+    param.db = dbInUse;
+    param.ncx = dbInUse.connectionName();
+    param.tbl_in=source;
+    CBaryCentre *c= new CBaryCentre(param);
+
+
     c2 = new BCountComb(config,source,dbInUse);
     c3 = new BCountGroup(config,source,slFlt,dbInUse);
 
-    QGridLayout **pConteneur = new QGridLayout *[3];
-    QWidget **pMonTmpWidget = new QWidget * [3];
+    QGridLayout **pConteneur = new QGridLayout *[4];
+    QWidget **pMonTmpWidget = new QWidget * [4];
 
-    for(int i = 0; i< 3;i++)
+    for(int i = 0; i< 4;i++)
     {
         QGridLayout * grd_tmp = new QGridLayout;
         pConteneur[i] = grd_tmp;
@@ -1290,16 +1300,19 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
         pMonTmpWidget [i] = wid_tmp;
     }
     pConteneur[0]->addWidget(c1,1,0);
-    pConteneur[1]->addWidget(c2,1,0);
-    pConteneur[2]->addWidget(c3,1,0);
+    pConteneur[1]->addWidget(c,1,0);
+    pConteneur[2]->addWidget(c2,1,0);
+    pConteneur[3]->addWidget(c3,1,0);
 
     pMonTmpWidget[0]->setLayout(pConteneur[0]);
     pMonTmpWidget[1]->setLayout(pConteneur[1]);
     pMonTmpWidget[2]->setLayout(pConteneur[2]);
+    pMonTmpWidget[3]->setLayout(pConteneur[3]);
 
     tab_Top->addTab(pMonTmpWidget[0],tr("Zones"));
-    tab_Top->addTab(pMonTmpWidget[1],tr("Combinaisons"));
-    tab_Top->addTab(pMonTmpWidget[2],tr("Groupes"));
+    tab_Top->addTab(pMonTmpWidget[1],tr("Barycentre"));
+    tab_Top->addTab(pMonTmpWidget[2],tr("Combinaisons"));
+    tab_Top->addTab(pMonTmpWidget[3],tr("Groupes"));
 
     QGridLayout *tmp_layout = new QGridLayout;
     QString clef[]={"Z:","C:","G:"};
@@ -1316,12 +1329,6 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
              this, SLOT( slot_RazSelection(QString) ) );
 #endif
 
-    /// greffon pour calculer barycentre des tirages
-    stNeedsOfBary param;
-    param.db = dbInUse;
-    param.ncx = dbInUse.connectionName();
-    param.tbl_in=source;///"B_fdj";
-    CBaryCentre c(param);
 
 
     /// ----------------
@@ -1411,8 +1418,7 @@ void BPrevision::slot_makeUserGamesList()
     /// un ensemble d'etude
     ///
     msg = "select distinct count(Choix.p)  as T from "+SelElemt+"_z1 as Choix where(choix.p=1);";
-    isOk = query.exec(msg);
-    if(isOk)
+    if((isOk = query.exec(msg)))
     {
         query.first();
         n = query.value("T").toInt();
@@ -1422,7 +1428,6 @@ void BPrevision::slot_makeUserGamesList()
         }
         else{
             if(n<=MAX_CHOIX_BOULES){
-                /// Verifier si la table Cnp existe Deja
                 if(isTableCnpinDb(n,p)==false)
                 {
                     a= new BCnp(n,p,dbInUse);
@@ -1435,6 +1440,7 @@ void BPrevision::slot_makeUserGamesList()
                     /// Creer une liste de jeux possibles
                     creerJeuxUtilisateur(n,p);
                 }
+
             }
         }
 
@@ -1443,9 +1449,38 @@ void BPrevision::slot_makeUserGamesList()
 #ifndef QT_NO_DEBUG
     qDebug() <<msg;
 #endif
-    query.finish();
 }
 
+bool BPrevision::isPreviousDestroyed(void)
+{
+    bool isOk = true;
+    QSqlQuery query(dbInUse);
+    QString msg = "SELECT name FROM sqlite_master WHERE type='table' AND name like '%E1%';";
+
+    if((isOk=query.exec(msg))){
+        query.first();
+        if(query.isValid()){
+            /// supprimer fenetres precedente
+            //delete Affiche_E1;
+            //delete Resulta_E1;
+
+            int ret = QMessageBox::question(NULL,"Calcul","Continuer (supprime precedent) ?",
+                                            QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Ok);
+            if(ret == QMessageBox::Cancel){
+                return false;
+            }
+            /// on a des tables a detruire
+            QString tbl_tmp;
+            QSqlQuery qdel(dbInUse);
+            do{
+                tbl_tmp = query.value(0).toString();
+                msg = "drop table "+tbl_tmp+";";
+                isOk = qdel.exec(msg);
+            }while(isOk && query.next());
+        }
+    }
+    return isOk;
+}
 void BPrevision::creerJeuxUtilisateur(int n, int p)
 {
     bool isOk = false;
@@ -1576,7 +1611,7 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
 #ifndef QT_NO_DEBUG
         qDebug() << str_req[un_msg];
 #endif
-       isOk = query.exec(str_req[un_msg]);
+        isOk = query.exec(str_req[un_msg]);
     }
 
     if(!isOk){

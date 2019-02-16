@@ -7,18 +7,94 @@
 #include <QApplication>
 
 #include <QSqlQuery>
+#include <QSqlQueryModel>
+#include <QSortFilterProxyModel>
+
 #include <QString>
+
+
+#include <QTabWidget>
+#include <QGridLayout>
+#include <QTableView>
+#include <QHeaderView>
 
 #include "db_tools.h"
 #include "cbarycentre.h"
 
 CBaryCentre::CBaryCentre(const stNeedsOfBary &param)
 {
+    QTabWidget *tab_Top = new QTabWidget(this);
+
     db= QSqlDatabase::database(param.ncx);
     //src_tbl = param.tbl_in;
+    QString src_data = param.tbl_in;
+
     hc_RechercheBarycentre(param.tbl_in);
+
+    QGridLayout *(CBaryCentre::*ptrFunc[])(QString) ={
+            &CBaryCentre::AssocierTableau,
+            &CBaryCentre::AssocierTableau,
+            &CBaryCentre::AssocierTableau
+};
+    int calc = sizeof ((*ptrFunc))/sizeof(QGridLayout *);
+
+    int nb_zones = 1;
+    for(int i = 0; i< nb_zones; i++)
+    {
+        QWidget *tmpw = new QWidget;
+        QGridLayout *calcul = (this->*ptrFunc[i])(src_data);
+        tmpw->setLayout(calcul);
+        tab_Top->addTab(tmpw,tr("b"));
+    }
+
 }
 
+QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
+{
+    QGridLayout *lay_return = new QGridLayout;
+    QTableView *qtv_tmp = new QTableView;
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    QString src_data="";
+
+    qtv_tmp->setObjectName("MonBarycentre");
+
+
+    if(src_tbl == "E1"){
+        src_data = "select * from E1_brc_z1;";
+    }
+    else{
+        src_data = "select * from B_fdj_brc_z1;";
+    }
+    sqm_tmp->setQuery(src_data,db);
+
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
+
+
+    qtv_tmp->setModel(m);
+    ///qtv_tmp->setItemDelegate(new BDelegateElmOrCmb); /// Delegation
+
+    qtv_tmp->verticalHeader()->hide();
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(1,Qt::DescendingOrder);
+
+    int nbCol = sqm_tmp->columnCount();
+    for(int pos=0;pos<nbCol;pos++)
+    {
+        qtv_tmp->setColumnWidth(pos,30);
+    }
+
+    lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+    return lay_return;
+
+}
 void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 {
     QSqlQuery query(db);
@@ -73,7 +149,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
                     /// mettre dans la table analyse le barycentre de chaque tirage
                     QString str_tblAnalyse = "";
                     if(tbl_in=="E1"){
-                       str_tblAnalyse = "U_E1_ana_z1";
+                        str_tblAnalyse = "U_E1_ana_z1";
                     }
                     else{
                         str_tblAnalyse = "B_ana_z1";
@@ -129,7 +205,8 @@ bool CBaryCentre::mettreBarycentre(QString tbl_dst, QString src_data)
 #ifndef QT_NO_DEBUG
         qDebug() << msg;
 #endif
-        msg = "create table if not exists " + tbl_dst + " as " + msg;
+        //if not exists
+        msg = "create table  " + tbl_dst + " as " + msg;
 
         if((isOK = query.exec(msg))){
             /// Supprimer table old
