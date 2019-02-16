@@ -23,14 +23,21 @@
 #include "cbarycentre.h"
 #include "delegate.h"
 
+int CBaryCentre::total = 0;
+
 CBaryCentre::CBaryCentre(const stNeedsOfBary &param)
     :BCount(param)
 {
+    type = eCountBrc;
+    countId = total;
+
     QTabWidget *tab_Top = new QTabWidget(this);
 
     db= QSqlDatabase::database(param.ncx);
+    dbToUse = db;
     //src_tbl = param.tbl_in;
     QString src_data = param.tbl_in;
+    db_data = src_data;
 
     hc_RechercheBarycentre(param.tbl_in);
 
@@ -68,17 +75,19 @@ QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
 {
     QGridLayout *lay_return = new QGridLayout;
     QTableView *qtv_tmp = new QTableView;
-    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+    BSqmColorizePriority *sqm_tmp = new BSqmColorizePriority;
     QString src_data="";
 
-    qtv_tmp->setObjectName("MonBarycentre");
+    int zn = 0;
+    QString qtv_name = QString::fromLatin1("U_b") + "_z"+QString::number(zn+1);
+    qtv_tmp->setObjectName(qtv_name);
 
 
     if(src_tbl == "E1"){
-        src_data = "select * from E1_brc_z1;";
+        src_data = "select * from r_E1_0_brc_z1;";
     }
     else{
-        src_data = "select * from B_fdj_brc_z1;";
+        src_data = "select * from r_B_fdj_0_brc_z1;";
     }
     sqm_tmp->setQuery(src_data,db);
 
@@ -156,7 +165,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 #endif
                 /// 3: Creation d'une table regroupant les barycentres
                 QString str_tblData = "";
-                QString str_tblName = tbl_in+"_brc_z1";
+                QString str_tblName = "r_"+tbl_in+"_0_brc_z1";
                 str_tblData = "select BC, count(BC) as T, NULL as P, NULL as F from ("
                         + str_data
                         + ") as c1 group by BC order by T desc";

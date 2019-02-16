@@ -253,14 +253,15 @@ bool BPrevision::creerTablesDeLaBase(void)
     QSqlQuery q(dbInUse);
 
     stCreateTable creerTables[]={
-        {C_TBL_3,f3},   /// Table des tirages
-        {C_TBL_1,f1},   /// Table des nom des zones et abregees
-        {C_TBL_2,f2},   /// Liste des boules par zone
-        {C_TBL_4,f4},    /// Table des combinaisons
-        {C_TBL_5,f5},    /// Table des Analyses
-        {C_TBL_6,f6},    /// Selection utilisateur
-        {C_TBL_7,f6},    /// Selection utilisateur
-        {C_TBL_8,f6}    /// Selection utilisateur
+        {C_TBL_3,&BPrevision::f3},   /// Table des tirages
+        {C_TBL_1,&BPrevision::f1},   /// Table des nom des zones et abregees
+        {C_TBL_2,&BPrevision::f2},   /// Liste des boules par zone
+        {C_TBL_4,&BPrevision::f4},    /// Table des combinaisons
+        {C_TBL_5,&BPrevision::f5},    /// Table des Analyses
+        {C_TBL_6,&BPrevision::f6},    /// Selection utilisateur
+        {C_TBL_7,&BPrevision::f6},    /// Selection utilisateur
+        {C_TBL_8,&BPrevision::f6},    /// Selection utilisateur
+        {C_TBL_A,&BPrevision::f6}    /// Selection utilisateur
     };
 
     int nbACreer = sizeof(creerTables)/sizeof(stCreateTable);

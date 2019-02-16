@@ -36,6 +36,7 @@ private:
     QGridLayout *Compter(QString * pName, int zn);
 
 private:
+    static int total;
     QSqlDatabase db;
     QString src_tbl;
     BGame gameDef;

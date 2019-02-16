@@ -501,9 +501,9 @@ void BCountGroup::slot_ccmr_SetPriorityAndFilters(QPoint pos)
         int d_cell_id = (d_lgn*d_nbCol)+d_col;
 
         QMenu *MonMenu = new QMenu(this);
-        QMenu *subMenu= ContruireMenu(tbl,d_cell_id);
+        QMenu *subMenu= ContruireMenu(view,d_cell_id);
         MonMenu->addMenu(subMenu);
-        CompleteMenu(MonMenu, tbl, d_cell_id);
+        CompleteMenu(MonMenu, view, d_cell_id);
 
 
         MonMenu->exec(view->viewport()->mapToGlobal(pos));

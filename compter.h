@@ -35,6 +35,9 @@
 #define C_TBL_7     "U_c"   /// ..on combinaison
 #define C_TBL_8     "U_g"   /// ..on regroupement
 #define C_TBL_9     "grp"   /// synthese on regroupement
+#define C_TBL_A     "U_b"   /// ..on regroupement
+#define C_TBL_B     "brc"   /// ..on regroupement
+#define C_TBL_C     "elm"   /// ..on regroupement
 
 #define MAX_CHOIX_BOULES    30
 
@@ -49,8 +52,11 @@ typedef enum{
     eCountToSet,    /// Pas de definition
     eCountElm,      /// Comptage des boules de zones
     eCountCmb,      /// ... des combinaisons
-    eCountGrp       /// ... des regroupements
+    eCountGrp,       /// ... des regroupements
+    eCountBrc,      /// ... des barycentres
+    eCountEnd
 }eCountingType;
+
 typedef struct _B_RequeteFromTbv
 {
     QString db_data;    /// requete pour la base de donnees
@@ -82,8 +88,8 @@ protected:
     QString CriteresCreer(QString operateur, QString critere,int zone);
     void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
     bool VerifierValeur(int item, QString table,int idColValue,int *lev);
-    QMenu *ContruireMenu(QString tbl, int val);
-    void CompleteMenu(QMenu *LeMenu,QString tbl, int clef);
+    QMenu *ContruireMenu(QTableView *view, int val);
+    void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
 
 private:
     void RecupererConfiguration(void);

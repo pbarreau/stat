@@ -10,12 +10,13 @@
 #include <QToolTip>
 #include <QStackedWidget>
 #include <QMenu>
+#include <QSortFilterProxyModel>
 
 #include "delegate.h"
 #include "compter.h"
 #include "db_tools.h"
 
-QString BCount::label[]={"err","elm",C_TBL_4,C_TBL_9};
+QString BCount::label[]={"err",C_TBL_C,C_TBL_4,C_TBL_9,C_TBL_B,"laFin"};
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
 
@@ -362,6 +363,7 @@ void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
     QModelIndex index = view->indexAt(pos);
     int col = view->columnAt(pos.x());
 
+    /// Dans object name on a les tables data:action
     if(col == 0)
     {
         QString tbl = view->objectName();
@@ -373,19 +375,20 @@ void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
         }
 
         QMenu *MonMenu = new QMenu(this);
-        QMenu *subMenu= ContruireMenu(tbl,val);
+        QMenu *subMenu= ContruireMenu(view,val);
         MonMenu->addMenu(subMenu);
-        CompleteMenu(MonMenu, tbl, val);
+        CompleteMenu(MonMenu, view, val);
 
 
         MonMenu->exec(view->viewport()->mapToGlobal(pos));
     }
 }
 
-QMenu *BCount::ContruireMenu(QString tbl, int val)
+QMenu *BCount::ContruireMenu(QTableView *view, int val)
 {
+    QString tbl = view->objectName();
     QString msg2 = "Priorite";
-    QMenu *menu =new QMenu(msg2, this);
+    QMenu *menu =new QMenu(msg2, view); ///this
     QActionGroup *grpPri = new  QActionGroup(menu);
 
     int col = 2; /// dans la table colonne p
@@ -477,13 +480,37 @@ void BCount::slot_ChoosePriority(QAction *cmd)
                 "where (b="+def[3]+");";
     }
 
+    /// https://forum.qt.io/topic/1168/solved-the-best-way-to-programmatically-refresh-a-qsqlquerymodel-when-the-content-of-the-query-changes/11
+
     bool isOk = query.exec(msg);
     if(isOk){
         isOk = query.exec(msg_2);
         if(isOk){
             /// Relancer les requetes pour voir les modifs
-            msg = sqmZones[zn].query().executedQuery();
-            sqmZones[zn].setQuery(msg,dbToUse);
+            //msg = sqmZones[zn].query().executedQuery();
+            //sqmZones[zn].setQuery(msg,dbToUse);
+            QTableView *view = qobject_cast<QTableView *>(cmd->parent()->parent()->parent());
+            QAbstractItemModel *qtv_model = view->model();
+            QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
+            BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
+            QString queryStr = A2->query().executedQuery();
+            A2->query().clear();
+            A2->setQuery(queryStr, dbToUse);
+
+#ifndef QT_NO_DEBUG
+            qDebug() << "ms1:" <<msg;
+            qDebug() << "ms2:" <<queryStr;
+#endif
+#if 0
+            QItemSelectionModel *selectionModel = view->selectionModel();
+            QModelIndexList indexes = selectionModel->selectedIndexes();
+            int nb_items = indexes.size();
+
+            qtv_model->query().executedQuery();
+            qtv_model->clear();
+            qtv_model->query().clear();
+            qtv_model->setQuery(queryStr);
+#endif
         }
     }
 
@@ -514,8 +541,9 @@ void BCount::slot_ChoosePriority(QAction *cmd)
     cmd->setChecked(true);
 }
 
-void BCount::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
+void BCount::CompleteMenu(QMenu *LeMenu,QTableView *view, int clef)
 {
+    QString tbl = view->objectName();
     int col = 3; /// dans la table colonne "f"
     int niveau = 0;
     bool existe = false;
@@ -523,6 +551,7 @@ void BCount::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
 
     QAction *filtrer = LeMenu->addAction("Filtrer");
     filtrer->setCheckable(true);
+    filtrer->setParent(view);
 
     int i = 0;
     QString name = QString::number(i);
@@ -597,41 +626,52 @@ void BCount::slot_wdaFilter(bool val)
                 "where (val="+def[3]+");";
     }
 
-    isOk = query.exec(msg);
-    if(isOk){
+
+#ifndef QT_NO_DEBUG
+    qDebug() <<msg;
+#endif
+    if((isOk = query.exec(msg))){
         QString filtre = "";
         QString key2use= "";
 
         if(type==eCountElm)key2use = "b";
+        if(type==eCountBrc)key2use = "Bc";
         if(type==eCountCmb)key2use = "id";
         if(type==eCountGrp)key2use = "Nb";
 
         msg = "SELECT name FROM sqlite_master "
               "WHERE type='table' and name like 'r_%"+endName+"'";
 
-        isOk = query.exec(msg);
-        if(isOk)query.first();
-
-        if(val){
-            filtre = "(case when f is null then 0x2 else (f|0x2) end)";
-        }
-        else{
-            filtre = "(case when f is null then null else (f&~0x2) end)";
-        }
-
-        if(isOk)isOk = query.first();
-        bool next =true;
-        QSqlQuery update(dbToUse);
-        do{
-            QString tblName = query.value(0).toString();
-            msg = "update " + tblName
-                    + " set f="+filtre+" where ("+key2use+"="+def[3]+");";
 #ifndef QT_NO_DEBUG
-            qDebug() <<msg;
+        qDebug() <<msg;
 #endif
-            isOk = update.exec(msg);
-            next = query.next();
-        }while(isOk && next);
+
+        if((isOk = query.exec(msg)))
+        {
+            query.first();
+            if(query.isValid()){
+                // On a des infos
+                if(val){
+                    filtre = "(case when f is null then 0x2 else (f|0x2) end)";
+                }
+                else{
+                    filtre = "(case when f is null then null else (f&~0x2) end)";
+                }
+
+                bool next =true;
+                QSqlQuery update(dbToUse);
+                do{
+                    QString tblName = query.value(0).toString();
+                    msg = "update " + tblName
+                            + " set f="+filtre+" where ("+key2use+"="+def[3]+");";
+#ifndef QT_NO_DEBUG
+                    qDebug() <<msg;
+#endif
+                    isOk = update.exec(msg);
+                    next = query.next();
+                }while(isOk && next);
+            }
+        }
     }
 
     if(!isOk)
@@ -640,7 +680,16 @@ void BCount::slot_wdaFilter(bool val)
         DB_Tools::DisplayError(ErrLoc,&query,msg);
     }
 
+#if 1
+    QTableView *view = qobject_cast<QTableView *>(chkFrom->parent());
+    QAbstractItemModel *qtv_model = view->model();
+    QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
+    BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
+    QString queryStr = A2->query().executedQuery();
+    A2->query().clear();
+    A2->setQuery(queryStr, dbToUse);
 
+#else
     /// Recharger les reponses dans les tableaux
     int useType = (this->type)-1;
 
@@ -659,6 +708,7 @@ void BCount::slot_wdaFilter(bool val)
             tmp->sqmDef[zn].setQuery(Montest,dbToUse);
         }
     }
+#endif
 
     delete chkFrom;
 }

@@ -410,6 +410,8 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
 
     sqm_tmp->setQuery(st_msg1,dbToUse);
 
+
+
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
@@ -424,6 +426,7 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_tmp);
     qtv_tmp->setModel(m);
+
     qtv_tmp->setItemDelegate(new BDelegateElmOrCmb); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
