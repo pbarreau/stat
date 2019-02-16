@@ -19,9 +19,12 @@
 #include <QHeaderView>
 
 #include "db_tools.h"
+#include "compter.h"
 #include "cbarycentre.h"
+#include "delegate.h"
 
 CBaryCentre::CBaryCentre(const stNeedsOfBary &param)
+    :BCount(param)
 {
     QTabWidget *tab_Top = new QTabWidget(this);
 
@@ -36,7 +39,7 @@ CBaryCentre::CBaryCentre(const stNeedsOfBary &param)
             &CBaryCentre::AssocierTableau,
             &CBaryCentre::AssocierTableau
 };
-    int calc = sizeof ((*ptrFunc))/sizeof(QGridLayout *);
+    //int calc = sizeof (ptrFunc)/sizeof(void *);
 
     int nb_zones = 1;
     for(int i = 0; i< nb_zones; i++)
@@ -47,6 +50,18 @@ CBaryCentre::CBaryCentre(const stNeedsOfBary &param)
         tab_Top->addTab(tmpw,tr("b"));
     }
 
+}
+
+QGridLayout *CBaryCentre::Compter(QString * pName, int zn)
+{
+    Q_UNUSED(pName);
+    Q_UNUSED(zn);
+
+    /// Juste pour satisfaire presence fonction virtuel du parent
+    /// le code execute est celui de associer tableau
+
+    QGridLayout *lay_return = new QGridLayout;
+    return lay_return;
 }
 
 QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
@@ -78,7 +93,7 @@ QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
 
 
     qtv_tmp->setModel(m);
-    ///qtv_tmp->setItemDelegate(new BDelegateElmOrCmb); /// Delegation
+    qtv_tmp->setItemDelegate(new BDelegateElmOrCmb); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
     qtv_tmp->setSortingEnabled(true);
@@ -92,9 +107,16 @@ QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
 
     lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
 
+    /// Connecteurs
+    /// Selection & priorite
+    qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+            SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
+
     return lay_return;
 
 }
+
 void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 {
     QSqlQuery query(db);
@@ -135,7 +157,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
                 /// 3: Creation d'une table regroupant les barycentres
                 QString str_tblData = "";
                 QString str_tblName = tbl_in+"_brc_z1";
-                str_tblData = "select BC, count(BC) as T from ("
+                str_tblData = "select BC, count(BC) as T, NULL as P, NULL as F from ("
                         + str_data
                         + ") as c1 group by BC order by T desc";
                 str_tblData = "create table if not exists "
@@ -154,7 +176,11 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
                     else{
                         str_tblAnalyse = "B_ana_z1";
                     }
-                    isOk = mettreBarycentre(str_tblAnalyse, str_data);
+
+                    if((isOk = mettreBarycentre(str_tblAnalyse, str_data))){
+                        /// indiquer le dernier barycentre des tirages fdj
+                        isOk = repereDernier(str_tblName);
+                    }
                 }
             }
             else{
@@ -178,6 +204,38 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 #endif
         QApplication::quit();
     }
+}
+
+bool CBaryCentre::repereDernier(QString tbl_bary)
+{
+    bool isOK = true;
+    QSqlQuery query(db);
+#if 0
+    QString msg = "UPDATE "
+            +tbl_bary
+            +" set F = (case when F is NULL then 0x1 else (F|0x1) end) "
+             "where (bc =(select BC from B_ana_z1 LIMIT 1));";
+#endif
+
+
+    QString msg = "select BC from B_ana_z1 LIMIT 1;";
+
+    if((isOK = query.exec(msg))){
+        query.first();
+        if(query.isValid()){
+            QString value = query.value(0).toString();
+            msg="UPDATE "
+                    +tbl_bary
+                    +" set F = (case when F is NULL then 0x1 else (F|0x1) end) "
+                     "where (bc ="+value+");";
+#ifndef QT_NO_DEBUG
+    qDebug() << "Update bary:"<<msg;
+#endif
+            isOK = query.exec(msg);
+        }
+    }
+
+    return isOK;
 }
 
 bool CBaryCentre::isTableTotalBoulleReady(QString tbl_total)

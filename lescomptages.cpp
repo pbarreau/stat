@@ -1282,6 +1282,8 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     param.db = dbInUse;
     param.ncx = dbInUse.connectionName();
     param.tbl_in=source;
+    param.pDef = onGame;
+    param.origine = this;
     CBaryCentre *c= new CBaryCentre(param);
 
 

@@ -197,7 +197,7 @@ void BDelegateFilterGrp::paint(QPainter *painter, const QStyleOptionViewItem &op
 
     if(col>0 && col<(nbCol-1)){
         /// bit actif
-        if(val & (1<<col-1)){
+        if(val & (1<<(col-1))){
             painter->fillRect(option.rect, u[0]);
         }
     }

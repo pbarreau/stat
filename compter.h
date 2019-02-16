@@ -12,6 +12,7 @@
 #include <QList>
 
 #include "delegate.h"
+//#include "cbarycentre.h"
 #include "game.h"
 
 #define CEL2_H  55
@@ -64,6 +65,8 @@ typedef struct _BRunningQuery
     QSqlQueryModel *sqmDef; /// info sur requete de zone
 }BRunningQuery;
 
+typedef struct _prmbary stNeedsOfBary;
+
 class BCount:public QWidget
 {
     Q_OBJECT
@@ -71,6 +74,7 @@ public:
     BCount(const BGame &pDef, const QString &in, QSqlDatabase useDb);
     BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
            QWidget *unParent, eCountingType genre);
+    BCount(const stNeedsOfBary &param){Q_UNUSED(param)}
 
 protected:
     virtual QGridLayout *Compter(QString * pName, int zn)=0;
