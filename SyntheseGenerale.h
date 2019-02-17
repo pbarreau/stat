@@ -146,7 +146,7 @@ private:
     void DoTirages(void);
     void DoComptageTotal(void);
     void DoBloc3(void);
-    QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri,int zn, stTiragesDef *pConf);
+    QString TrouverTirages(int col, QString str_nb, QString st_tirages, QString st_cri, int zn, stTiragesDef *pConf);
     QString ActionElmZone(QString critere , QString operateur, int zone, stTiragesDef *pConf);
     QString SqlCreateCodeBoule(int onglet, QString table);
     QString SqlCreateCodeEtoile(int onglet, QString table);
