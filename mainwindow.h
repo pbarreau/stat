@@ -16,6 +16,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QFormLayout>
+#include <QStringList>
 
 
 #include "tirages.h"
@@ -87,6 +88,7 @@ public:
     void Prev_MainWindow(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false, bool dest_bdd=false);
     ~MainWindow();
     void closeEvent(QCloseEvent *event);
+    void getPgmVersion(void);
 
 private slots:
     void pslot_newGame();
@@ -227,6 +229,7 @@ private:
     QStandardItemModel * TST_SetTblViewVal(int nbLigne, QTableView *qtv_r);
 
 private:
+    static QStringList L1;
     GererBase *DB_tirages;
     QMdiArea *zoneCentrale;
     BPrevision *tous;
