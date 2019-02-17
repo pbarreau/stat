@@ -39,6 +39,10 @@ CBaryCentre::CBaryCentre(const stNeedsOfBary &param)
     QString src_data = param.tbl_in;
     db_data = src_data;
 
+    tbl_src = src_data;
+    tbl_ana = param.tbl_ana;
+    tbl_flt = param.tbl_flt;
+
     hc_RechercheBarycentre(param.tbl_in);
 
     QGridLayout *(CBaryCentre::*ptrFunc[])(QString) ={
@@ -238,7 +242,7 @@ bool CBaryCentre::repereDernier(QString tbl_bary)
                     +" set F = (case when F is NULL then 0x1 else (F|0x1) end) "
                      "where (bc ="+value+");";
 #ifndef QT_NO_DEBUG
-    qDebug() << "Update bary:"<<msg;
+            qDebug() << "Update bary:"<<msg;
 #endif
             isOK = query.exec(msg);
         }
@@ -282,4 +286,35 @@ bool CBaryCentre::mettreBarycentre(QString tbl_dst, QString src_data)
         }
     }
     return isOK;
+}
+
+QString CBaryCentre::getFilteringData(int zn)
+{
+#if 0
+    QString msg = "select tbLeft.* from ("+tbl_src+") as tbLeft "
+                                                   "inner join "
+                                                   "( "
+                                                   "  select t1.id, t1.bc  "
+                                                   "  from "+tbl_ana+" as t1, "
+                                                                     "  (select val from "+tbl_flt+" where (f=1)) as t2  "
+                                                                                                   "  where(t2.val=t1.bc)  "
+                                                                                                   ") as tbRight "
+                                                                                                   "on "
+                                                                                                   "( "
+                                                                                                   "tbLeft.id=tbRight.id "
+                                                                                                   ") ";
+#endif
+    QSqlQuery query(dbToUse);
+    bool isOk = true;
+
+    QString flt = "select val from U_b_z1 where (f=1)";
+
+    QString msg = "tb2.bc in ("+flt+")";
+    if((isOk=query.exec(flt))){
+        query.first();
+        if(!query.isValid()){
+            msg="";
+        }
+    }
+    return msg;
 }

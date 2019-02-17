@@ -446,7 +446,7 @@ QString BCountElem::getFilteringData(int zn)
         int nb_items = myGame.limites[zn].len;
 
         isOk = query.first();
-        if(isOk){
+        if(query.isValid()){
             /// requete a au moins une reponse
             do{
                 int value = query.value(0).toInt();

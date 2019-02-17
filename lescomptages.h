@@ -9,6 +9,7 @@
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
+#include "cbarycentre.h"
 
 #include "compter.h"
 #include "db_tools.h"
@@ -131,6 +132,7 @@ private:
     BCountElem *c1;
     BCountComb *c2;
     BCountGroup *c3;
+    CBaryCentre *c;
     QString tblTirages;
     QSqlQueryModel *sqm_resu;
     LabelClickable selection[3];

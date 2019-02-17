@@ -1283,9 +1283,16 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     param.db = dbInUse;
     param.ncx = dbInUse.connectionName();
     param.tbl_in=source;
+    if(source=="E1"){
+        param.tbl_ana = tr("U_E1_ana_z1");
+    }else
+    {
+        param.tbl_ana = source+tr("_ana_z1");
+    }
+    param.tbl_flt = tr("U_b_z1"); /// source+tr("_flt_z1");
     param.pDef = onGame;
     param.origine = this;
-    CBaryCentre *c= new CBaryCentre(param);
+    c= new CBaryCentre(param);
 
 
     c2 = new BCountComb(config,source,dbInUse);
@@ -1350,9 +1357,8 @@ void BPrevision::slot_filterUserGamesList()
     /// Verifier si existance table resultat utilisateur
     msg = "SELECT name FROM sqlite_master "
           "WHERE type='table' AND name='"+source+"';";
-    isOk = query.exec(msg);
 
-    if(isOk)
+    if((isOk = query.exec(msg)))
     {
         /// A t'on une reponse
         isOk = query.first();
@@ -1364,6 +1370,7 @@ void BPrevision::slot_filterUserGamesList()
     QString flt_elm = c1->getFilteringData(0);
     QString flt_cmb = c2->getFilteringData(0);
     QString flt_grp = c3->getFilteringData(0);
+    QString flt_brc = c->getFilteringData(0);
     QString otherCriteria = "";
 
     if(flt_elm.size()){
@@ -1378,6 +1385,9 @@ void BPrevision::slot_filterUserGamesList()
         otherCriteria = otherCriteria+"and("+flt_grp+")";
     }
 
+    if(flt_brc.size()){
+        otherCriteria = otherCriteria+"and("+flt_brc+")";
+    }
     msg = "select tb1.b1 as b1, tb1.b2 as b2, tb1.b3 as b3, tb1.b4 as b4, tb1.b5 as b5 from ("
             +source
             +") as tb1,("
@@ -1394,6 +1404,7 @@ void BPrevision::slot_filterUserGamesList()
 #endif
 
     /// Mettre la vue a jour
+    //sqm_resu->clear();
     sqm_resu->setQuery(msg,dbInUse);
     int nbLignes = sqm_resu->rowCount();
     QString tot = "Total : " + QString::number(nbLignes);
