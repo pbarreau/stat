@@ -14,6 +14,8 @@
 # https://www.gaia-gis.it/spatialite-2.3.1/binaries.html
 # https://stackoverflow.com/questions/6663124/how-to-load-extensions-into-sqlite#
 
+# generation executable windows : 
+# windeployqt .  -sql --compiler-runtime -no-webkit2 --libdir .\mylibs --plugindir .\myplugins 
 
 # git for-each-ref --count=3 --sort='-*objecttype' \
 # --format='From: %(*authorname) %(*authoremail)
