@@ -67,7 +67,8 @@ SOURCES += \
     cmpt_comb_details.cpp \
     cmpt_elem_details.cpp \
     cmpt_grou_details.cpp \
-    cmpt_comb_ecarts.cpp
+    cmpt_comb_ecarts.cpp \
+    version.cpp
 
 HEADERS  += \
 		mainwindow.h \

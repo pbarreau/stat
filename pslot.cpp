@@ -261,8 +261,9 @@ bool MainWindow::isHttpRedirect(QNetworkReply *reply)
 
 void MainWindow::pslot_about()
 {
-    QMessageBox::about(this, tr("A propos de Prevision"),
-                       tr("L'application <b>Prevision</b> charge une base loto/euro de la FDJ, "
-                          "et cherche une interaction entres les boules des divers tirages ! "));
+    QString msg = tr("Version : ") + (L1.at(0).split(",")).at(0)
+            + tr("\nDate : ") + (L1.at(0).split(",")).at(1)
+            + tr("\nRef : ") + (L1.at(0).split(",")).at(4);
+    QMessageBox::about(this, tr("A propos de Prevision"),msg);
 }
 

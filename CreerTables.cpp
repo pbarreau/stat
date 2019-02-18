@@ -45,6 +45,7 @@ bool GererBase::CreerTableDistriCombi(void)
 bool GererBase::CreerTableGnp(QString tb, QString *data)
 {
     bool isOk=true;
+    return isOk;
 
     int nbZone = conf.nb_zone;
 #ifndef QT_NO_DEBUG
@@ -70,6 +71,7 @@ bool GererBase::CreerTableGnp(QString tb, QString *data)
 bool GererBase::CreerTableCnp(QString tb, QString *data)
 {
     bool isOk=true;
+    return isOk;
 
     int nbZone = conf.nb_zone;
 

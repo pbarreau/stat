@@ -9,6 +9,8 @@
 
 MainWindow::MainWindow()
 {
+    getPgmVersion();
+
     zoneCentrale = new QMdiArea();
     zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     zoneCentrale->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
