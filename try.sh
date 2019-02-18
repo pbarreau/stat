@@ -14,7 +14,18 @@
 # https://www.gaia-gis.it/spatialite-2.3.1/binaries.html
 # https://stackoverflow.com/questions/6663124/how-to-load-extensions-into-sqlite#
 
-destFile="version.cpp"
+
+# git for-each-ref --count=3 --sort='-*objecttype' \
+# --format='From: %(*authorname) %(*authoremail)
+# Subject: %(*subject)
+# Date: %(*authordate)
+# Ref: %(*refname)
+
+# %(*body)
+# ' 'refs/tags'
+# ------------------------------
+set_new_version(){
+	local destFile=$1
 echo "/// Fichier auto genenere..."> ${destFile}
 echo "/// etape 1 de la compilation ">> ${destFile}
 echo "/// cmd C:\Program Files\Git\git-bash.exe  --cd=%{sourceDir} -c ./try.sh " >> ${destFile}
@@ -26,14 +37,24 @@ echo "#include \"mainwindow.h\"" >> ${destFile}
 echo "QStringList MainWindow::L1;" >>${destFile}
 echo "void MainWindow::getPgmVersion()">>${destFile}
 echo "{">>${destFile}
-git for-each-ref  --points-at=HEAD --sort='-version:refname' --format='L1.append("%(objectname:short),%(authordate:format:%c),%(authorname),%(authoremail),%(refname)");' >> ${destFile}
+git for-each-ref  --points-at=HEAD --sort='-version:refname' --format='L1.append("%(objectname:short),%(authordate:format:%c),%(authorname),%(authoremail),%(refname)");'  >> ${destFile} 
 echo "}">>${destFile}
+}
 
-# git for-each-ref --count=3 --sort='-*objecttype' \
-# --format='From: %(*authorname) %(*authoremail)
-# Subject: %(*subject)
-# Date: %(*authordate)
-# Ref: %(*refname)
+chk_version(){
+current=`git for-each-ref  --count 1 --points-at=HEAD --sort='-version:refname' --format='%(objectname:short)'`
+echo Version actuelle $current
+grep -s ${current} $1  &> /dev/null
+result=$?
+if [ ${result} -ne 0 ];then
+	echo differente de celle dans $1
+	echo mise a jour
+	set_new_version $1
 
-# %(*body)
-# ' 'refs/tags'
+else
+	echo "Fichier $1 Version identique"
+fi
+}
+clear
+version_file="version.cpp"
+chk_version ${version_file}

@@ -133,6 +133,9 @@ bool BPrevision::ouvrirBase(eBddUse cible, eGame game)
 
     // Open database
     isOk = dbInUse.open();
+#ifdef RELEASE_TRACK
+    QMessageBox::information(NULL, "Open", "step 1->"+QString::number(isOk),QMessageBox::Yes);
+#endif
 
     if(isOk)
         isOk = OPtimiseAccesBase();
@@ -175,9 +178,19 @@ void BPrevision::effectuerTraitement(eGame game)
 {
     QString source = C_TBL_3;
     source = "B_" + source;
-
+#ifdef RELEASE_TRACK
+    QMessageBox::information(NULL, "Pgm", "step 1!",QMessageBox::Yes);
+#endif
     definirConstantesDuJeu(game);
+
+#ifdef RELEASE_TRACK
+    QMessageBox::information(NULL, "Pgm", "step 2!",QMessageBox::Yes);
+#endif
     creerTablesDeLaBase();
+
+#ifdef RELEASE_TRACK
+    QMessageBox::information(NULL, "Pgm", "step 3!",QMessageBox::Yes);
+#endif
     analyserTirages(source, onGame);
 
 

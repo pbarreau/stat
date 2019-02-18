@@ -77,6 +77,9 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     {
 
         /// Debut traitement
+#ifdef RELEASE_TRACK
+        QMessageBox::information(NULL, "Pgm", "Old 8!",QMessageBox::Yes);
+#endif
         RechercheProgressionBoules(&configJeu);
 
 
@@ -86,8 +89,15 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         QFormLayout *mainLayout = new QFormLayout;
         mainLayout->addWidget(gtab_Top);
         connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
+#ifdef RELEASE_TRACK
+        QMessageBox::information(NULL, "Pgm", "Old 9!",QMessageBox::Yes);
+#endif
 
         TST_EtoileCombi(&configJeu);
+#ifdef RELEASE_TRACK
+        QMessageBox::information(NULL, "Pgm", "Old 10!",QMessageBox::Yes);
+#endif
+
         FEN_NewTirages(&configJeu);
 
 
@@ -103,6 +113,10 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
             unJeu = eGameToSet;
             break;
         }
+#ifdef RELEASE_TRACK
+        QMessageBox::information(NULL, "Open", "Prevision 1->"+QString::number(1),QMessageBox::Yes);
+#endif
+
         tous = new BPrevision(unJeu,eFdj,eBddUseDisk);
         connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_makeUserGamesList()));
         connect(FiltrerAct, SIGNAL(triggered()), tous, SLOT(slot_filterUserGamesList()));

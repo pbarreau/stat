@@ -638,6 +638,8 @@ QTableView *RefEtude::tbForBaseEcart(int zn)
     QStandardItem **headerItem = new QStandardItem*[nbcol];
     for(int i=0;i<nbcol;i++)
     {
+        qtv_tmp->setColumnWidth(i,LCELL);
+
         headerItem [i] = new QStandardItem(colName[i]);
         tmpStdItem->setHorizontalHeaderItem(i,headerItem [i]);
         headerItem [i]->setToolTip(colTip[i]);
@@ -651,8 +653,15 @@ QTableView *RefEtude::tbForBaseEcart(int zn)
                 item->setData(pos+1,Qt::DisplayRole);
             }
             tmpStdItem->setItem(pos,i,item);
-            qtv_tmp->setColumnWidth(i,LCELL);
         }
+    }
+
+    // Remplir le tableau
+    RemplirTableauEcart(zn,tmpStdItem);
+
+    for(int i=0;i<nbcol;i++)
+    {
+        qtv_tmp->setColumnWidth(i,LCELL);
     }
 
     qtv_tmp->setSortingEnabled(true);
@@ -670,16 +679,16 @@ QTableView *RefEtude::tbForBaseEcart(int zn)
     // Taille tableau
     qtv_tmp->setFixedSize(XLenTir/3,CHauteur2);
 
-    // Remplir le tableau
-    RemplirTableauEcart(zn,tmpStdItem);
 
     // Memoriser addresse du tableau
     p_simResu[zn] = tmpStdItem;
+#if 0
     int col = tmpStdItem->columnCount();
     int lgn = tmpStdItem->rowCount();
 
     col = p_simResu[zn]->columnCount();
     lgn = p_simResu[zn]->rowCount();
+#endif
 
     p_tbv_4[zn] = qtv_tmp;
 

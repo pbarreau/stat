@@ -45,6 +45,7 @@ bool GererBase::CreerTableDistriCombi(void)
 bool GererBase::CreerTableGnp(QString tb, QString *data)
 {
     bool isOk=true;
+    return isOk;
 
     int nbZone = conf.nb_zone;
 #ifndef QT_NO_DEBUG
@@ -70,6 +71,7 @@ bool GererBase::CreerTableGnp(QString tb, QString *data)
 bool GererBase::CreerTableCnp(QString tb, QString *data)
 {
     bool isOk=true;
+    return isOk;
 
     int nbZone = conf.nb_zone;
 
@@ -106,6 +108,10 @@ bool GererBase::RajouterTable(stTbToCreate des)
     // A t on une fonction de traitement
     if(des.pFuncInit != NULL)
     {
+        msg = des.tbDef;
+#ifdef RELEASE_TRACK
+        QMessageBox::information(NULL, "Pgm", msg,QMessageBox::Yes);
+#endif
         // faire avec la fonction
         isOk=(this->*(des.pFuncInit))(des.tbDef,des.tbData);
     }
@@ -226,15 +232,15 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     {
         {aCreer[position++],NULL,0,NULL},
         {aCreer[position++],&data_1[0],sizeof(data_1)/sizeof(QString*),NULL},
-        {aCreer[position++],NULL,0,CreerTableCnp},
-        {aCreer[position++],NULL,0,CreerTableGnp},
-        {aCreer[position++],NULL,0,f1}, ///tirages
-        {aCreer[position++],NULL,0,f1_1}, ///noms des zones
-        {aCreer[position++],NULL,0,f1_2}, /// limites
-        {aCreer[position++],NULL,0,f2}, /// nom des boules
-        {aCreer[position++],NULL,0,f2_2}, /// selections utilisateur
-        {aCreer[position++],NULL,0,f3}, /// analyse des boules
-        {aCreer[position],NULL,0,f4} /// table des combinaisons
+        {aCreer[position++],NULL,0,&GererBase::CreerTableCnp},
+        {aCreer[position++],NULL,0,&GererBase::CreerTableGnp},
+        {aCreer[position++],NULL,0,&GererBase::f1}, ///tirages
+        {aCreer[position++],NULL,0,&GererBase::f1_1}, ///noms des zones
+        {aCreer[position++],NULL,0,&GererBase::f1_2}, /// limites
+        {aCreer[position++],NULL,0,&GererBase::f2}, /// nom des boules
+        {aCreer[position++],NULL,0,&GererBase::f2_2}, /// selections utilisateur
+        {aCreer[position++],NULL,0,&GererBase::f3}, /// analyse des boules
+        {aCreer[position],NULL,0,&GererBase::f4} /// table des combinaisons
     };
 
     int total_1 = sizeof(aCreer)/sizeof(QString);
@@ -248,9 +254,18 @@ bool GererBase::CreationTablesDeLaBDD_v2()
 
     for(int i=0;(i<total_2) && status;i++)
     {
+
         status = RajouterTable(depart[i]);
+        QString tbName = (depart[i].tbDef.split(":")).at(0);
+        QString msg = "Old 4 end ! i="
+                +QString::number(i)
+                +tr("\nRajout de ")
+                +tbName + "\nstatus ="
+                +QString::number(status);
+#ifdef RELEASE_TRACK
+        QMessageBox::information(NULL, "Pgm", msg,QMessageBox::Yes);
+#endif
         if(!status){
-            QString tbName = (depart[i].tbDef.split(":")).at(0);
             //un message d'information
             QMessageBox::critical(0, tbName, "Erreur traitement !",QMessageBox::Yes);
             QApplication::quit();
