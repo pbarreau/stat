@@ -161,6 +161,10 @@ private:
     QGridLayout * MonLayout_SyntheseTotalRepartitions(int dst);
     QGridLayout * MonLayout_SyntheseTotalBarycentre(int dst);
 
+    bool isTableTotalBoulleReady(QString tbl_total);
+    bool mettreBarycentre(QString tbl_dst, QString src_data);
+    bool CreateTable_Barycentre(QString tbl_dest, QString tbl_poids_boules);
+
 
     QTableView *tbForPrincipeAuguste(int nbcol, int nblgn);
     QGridLayout *MonLayout_TabAuguste(int col, int lgn);
