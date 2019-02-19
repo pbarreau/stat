@@ -459,7 +459,7 @@ QString sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri)
 
 void SyntheseDetails::RecalculGroupement(QString st_tirages,int nbCol,QStandardItemModel *tmpStdItem)
 {
-    QSqlQuery query(db_sd) ;
+    QSqlQuery query(db_0) ;
     //int nbCol = tab->horizontalHeader()->count();
     bool status = true;
     int zn = 0;
@@ -575,7 +575,7 @@ SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidg
     QString stRequete = "";
     int nb_zones = pEtude->ref->nb_zone;
     maRef = new  QStringList* [nb_zones] ;
-    db_sd = QSqlDatabase::database(pEtude->db_cnx);
+    db_0 = QSqlDatabase::database(pEtude->db_cnx);
 
     if((*pEtude->st_LDT_Filtre).size()!=0)
     {
@@ -691,7 +691,7 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
     QWidget * qw_retour = new QWidget;
     QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
-    QSqlQuery sq_count(db_sd);
+    QSqlQuery sq_count(db_0);
     bool status = false;
 
     onglets = tab_Top;
@@ -718,7 +718,7 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
         titre->setText(pEtude->st_titre);
 
 
-    QSqlQuery query(db_sd);
+    QSqlQuery query(db_0);
     QString req_vue = "";
     QString vueRefName = "";
     for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
@@ -1007,7 +1007,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref,
 
     sql_msgRef = (this->*ptrFunc[0])(dst);
 
-    sqm_tmp->setQuery(sql_msgRef,db_sd);
+    sqm_tmp->setQuery(sql_msgRef,db_0);
 
     qtv_tmp->setSortingEnabled(false);
     //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
@@ -1143,7 +1143,7 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
     MaSQlModel *sqm_tmp = new MaSQlModel;
     QTableView *qtv_tmp = new QTableView;
 
-    sqm_tmp->setQuery(sql_msgRef,db_sd);
+    sqm_tmp->setQuery(sql_msgRef,db_0);
     qtv_tmp->setModel(sqm_tmp);
 
     qtv_tmp->setSortingEnabled(false);
@@ -1269,7 +1269,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
 
 
     // recalcul
-    sqlmodel->setQuery(msg,db_sd);
+    sqlmodel->setQuery(msg,db_0);
     tab->setModel(sqlmodel);
 
     // Aplication pour les onglets de comptage
@@ -1294,7 +1294,7 @@ void SyntheseDetails::slot_NouvelleDistance(void)
         QSortFilterProxyModel *m = dist->GetProxyModel(id);
 
         // recalcul
-        sqlmodel->setQuery(compte,db_sd);
+        sqlmodel->setQuery(compte,db_0);
         if(m !=NULL)
         {
             m->setDynamicSortFilter(true);
@@ -1372,7 +1372,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
 
     sql_msgRef = PBAR_ReqNbCombi(pEtude,ReqTirages);
 
-    sqm_tmp->setQuery(sql_msgRef,db_sd);
+    sqm_tmp->setQuery(sql_msgRef,db_0);
 
     // Mettre le nom des colonnes sur 2 lettres
     int nbcol = sqm_tmp->columnCount();
@@ -1441,7 +1441,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
 
 
     QStandardItemModel * sqm_tmp = NULL;
-    QSqlQuery query(db_sd) ;
+    QSqlQuery query(db_0) ;
 
     //Creer un tableau d'element standard
     if(nbCol)
@@ -1687,7 +1687,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, i
     qDebug() << sql_msgRef;
 #endif
 
-    sqm_tmp->setQuery(sql_msgRef,db_sd);
+    sqm_tmp->setQuery(sql_msgRef,db_0);
 
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;
@@ -1829,7 +1829,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
 
     QString sql_msgRef = PBAR_ReqComptage(pEtude, ReqTirages, curOng, ongPere);
 
-    sqm_tmp->setQuery(sql_msgRef,db_sd);
+    sqm_tmp->setQuery(sql_msgRef,db_0);
 
     // Renommer le nom des colonnes
     int nbcol = sqm_tmp->columnCount();
@@ -1953,7 +1953,7 @@ QGridLayout * SyntheseDetails::Synthese_1(int onglet, int distance)
 #endif
 
 
-    sqm_tmp->setQuery(sql_msgRef,db_sd);
+    sqm_tmp->setQuery(sql_msgRef,db_0);
 
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
@@ -2058,7 +2058,7 @@ QGridLayout *  SyntheseDetails::Synthese_2(int onglet, int distance)
 #endif
 
 
-    sqm_tmp->setQuery(sql_msgRef,db_sd);
+    sqm_tmp->setQuery(sql_msgRef,db_0);
 
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);

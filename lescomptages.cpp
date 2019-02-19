@@ -4,6 +4,8 @@
 #endif
 
 #include <QFile>
+#include <QDate>
+
 #include <QApplication>
 #include <QString>
 #include <QFormLayout>
@@ -27,11 +29,11 @@
 #include "cnp_AvecRepetition.h"
 #include "db_tools.h"
 
-int BPrevision::total = 0;
+int BPrevision::total_items = 0;
 
 BPrevision::~BPrevision()
 {
-    total --;
+    total_items --;
 }
 
 void BPrevision::slot_changerTitreZone(QString le_titre)
@@ -49,6 +51,9 @@ void BPrevision::slot_changerTitreZone(QString le_titre)
 
 BPrevision::BPrevision(eGame game, eFrom from, eBddUse def)
 {
+    cur_item = total_items;
+    total_items++;
+
     onGame.type = game;
     onGame.from = from;
     if(ouvrirBase(def,game)==true)
@@ -72,21 +77,44 @@ BPrevision::BPrevision(eGame game, eBddUse def, QString stLesTirages)
 }
 #endif
 
-/// Cette fonction ouvre la base en memoire ou sur disque
-/// sur disque l'on nomme le fichier de maniere unique selon
-/// la nature du jeu
-/// la fonction retourne true si ouverture est realisee
-/// false autrement
-/// input :
-/// - cible memoire ou disque
-/// - game loto ou euro
-///
+QString BPrevision::mk_IdDsk(eGame type)
+{
+    QDate myDate = QDate::currentDate();
+    QString toDay = myDate.toString("dd-MM-yyyy");
+    QString game = "";
+
+    QFile myFileName;
+    QString testName = "";
+
+    game = gameLabel[type] + QString("_V1_")+toDay+QString("_");
+
+    int counter = 0;
+    do{
+        testName = game + QString::number(counter).rightJustified(3,'0')+QString("-");
+        testName = testName + QString::number(cur_item).rightJustified(2,'0')+QString(".sqlite");
+        myFileName.setFileName(testName);
+        counter = (counter + 1)%999;
+    }while(myFileName.exists());
+
+    return testName;
+}
+
+QString BPrevision::mk_IdCnx(eGame type)
+{
+    if((type <= eGameToSet) || (type>=eGameDefEnd)){
+        eGame err = eGameToSet;
+        QMessageBox::warning(NULL,"Prevision","Jeu "+gameLabel[err]+" inconnu !!",QMessageBox::Ok);
+        QApplication::quit();
+    }
+    return (QString("cnx_V1_")+gameLabel[type]+QString("-")+QString::number(cur_item).rightJustified(2,'0'));
+}
+
 bool BPrevision::ouvrirBase(eBddUse cible, eGame game)
 {
     bool isOk = true;
 
-    dbUseName = "Game_"+QString::number(total);
-    dbInUse = QSqlDatabase::addDatabase("QSQLITE",dbUseName);
+    cnx_db_1 = mk_IdCnx(game);
+    db_1 = QSqlDatabase::addDatabase("QSQLITE",cnx_db_1);
 
     QString mabase = "";
 
@@ -95,44 +123,18 @@ bool BPrevision::ouvrirBase(eBddUse cible, eGame game)
     case eBddUseRam:
         mabase = ":memory:";
         break;
+
     case eBddUseDisk:
-    {
-        QString ext="sqlite";
-
-        switch(game)
-        {
-        case eGameLoto:
-            mabase = "Loto"+dbUseName+"."+ext;
-            break;
-        case eGameEuro:
-            mabase = "Euro"+dbUseName+"."+ext;
-            break;
-        }
-#ifdef Q_OS_LINUX
-        // NOTE: We have to store database file into user home folder in Linux
-        QString path(QDir::home().path());
-        path.append(QDir::separator()).append(mabase);
-        mabase = QDir::toNativeSeparators(path);
-#endif
-        QFile fichier(mabase);
-
-        if(fichier.exists())
-        {
-            fichier.remove();
-        }
-
-    }
-        break;
     default:
-        mabase = ":memory:";
+        mabase = mk_IdDsk(game);
         break;
     }
 
     /// definition de la base pour ce calcul
-    dbInUse.setDatabaseName(mabase);
+    db_1.setDatabaseName(mabase);
 
     // Open database
-    isOk = dbInUse.open();
+    isOk = db_1.open();
 #ifdef RELEASE_TRACK
     QMessageBox::information(NULL, "Open", "step 1->"+QString::number(isOk),QMessageBox::Yes);
 #endif
@@ -147,7 +149,7 @@ bool BPrevision::ouvrirBase(eBddUse cible, eGame game)
 bool BPrevision::OPtimiseAccesBase(void)
 {
     bool isOk = true;
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
     QString msg = "";
 
     QString stRequete[]={
@@ -263,7 +265,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
 bool BPrevision::creerTablesDeLaBase(void)
 {
     bool isOk= true;
-    QSqlQuery q(dbInUse);
+    QSqlQuery q(db_1);
 
     stCreateTable creerTables[]={
         {C_TBL_3,&BPrevision::f3},   /// Table des tirages
@@ -575,7 +577,8 @@ bool BPrevision::f4(QString tb, QSqlQuery *query)
             int p = onGame.limites[zn].win;
             QString tbName = tblUse+ "_z"+QString::number(zn+1);
             // calculer les combinaisons avec repetition
-            BCnp *a = new BCnp(n,p,dbInUse,tbName);
+//            BCnp *a = new BCnp(n,p,db_1.connectionName(),tbName);
+            BCnp *a = new BCnp(n,p,db_1.connectionName());
             tbName = a->getDbTblName();
             isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn);
         }
@@ -652,7 +655,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
 {
     bool isOk = true;
     QString msg = "";
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
     QString stDefBoules = C_TBL_2;
     QString prvName = "";
     QString curName  ="";
@@ -744,7 +747,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
 bool BPrevision::TraitementCodeVueCombi(int zn)
 {
     bool isOk = true;
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
     QString msg = "";
     QString ref_1 = "";
 
@@ -794,7 +797,7 @@ bool BPrevision::TraitementCodeVueCombi(int zn)
 bool BPrevision::TraitementCodeTblCombi(QString tbName,int zn)
 {
     bool isOk = true;
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
     QString msg = "";
 
     QString tblCode[]=
@@ -900,7 +903,7 @@ bool BPrevision::TraitementCodeTblCombi(QString tbName,int zn)
 bool BPrevision::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn)
 {
     bool isOk = true;
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
     QString msg = "";
 
     msg = "drop table if exists "+tbName+"_z"+QString::number(zn+1);
@@ -1070,7 +1073,7 @@ bool BPrevision::chargerDonneesFdjeux(QString destTable)
 bool BPrevision::LireLesTirages(QString tblName, stFdjData *def)
 {
     bool isOk= true;
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
 
     QString fileName_2 = def->fname;
     QFile fichier(fileName_2);
@@ -1283,7 +1286,7 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     QWidget * Resultats = new QWidget;
     QTabWidget *tab_Top = new QTabWidget;
 
-    c1 = new BCountElem(config,source,dbInUse,Resultats);
+    c1 = new BCountElem(config,source,db_1,Resultats);
     connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
     /// transfert vers SyntheseGenerale
     connect(c1,
@@ -1293,8 +1296,8 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 
     /// greffon pour calculer barycentre des tirages
     stNeedsOfBary param;
-    param.db = dbInUse;
-    param.ncx = dbInUse.connectionName();
+    param.db = db_1;
+    param.ncx = db_1.connectionName();
     param.tbl_in=source;
     if(source=="E1"){
         param.tbl_ana = tr("U_E1_ana_z1");
@@ -1308,8 +1311,8 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     c= new CBaryCentre(param);
 
 
-    c2 = new BCountComb(config,source,dbInUse);
-    c3 = new BCountGroup(config,source,slFlt,dbInUse);
+    c2 = new BCountComb(config,source,db_1);
+    c3 = new BCountGroup(config,source,slFlt,db_1);
 
     QGridLayout **pConteneur = new QGridLayout *[4];
     QWidget **pMonTmpWidget = new QWidget * [4];
@@ -1361,7 +1364,7 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
 }
 void BPrevision::slot_filterUserGamesList()
 {
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
     bool isOk = true;
     QString msg = "";
     QString source = "E1";
@@ -1418,7 +1421,7 @@ void BPrevision::slot_filterUserGamesList()
 
     /// Mettre la vue a jour
     //sqm_resu->clear();
-    sqm_resu->setQuery(msg,dbInUse);
+    sqm_resu->setQuery(msg,db_1);
     int nbLignes = sqm_resu->rowCount();
     QString tot = "Total : " + QString::number(nbLignes);
     lignes->setText(tot);
@@ -1431,9 +1434,9 @@ void BPrevision::slot_emitThatClickedBall(const QModelIndex &index)
     emit sig_isClickedOnBall(index);
 }
 
-void BPrevision::slot_makeUserGamesList()
+void BPrevision::slot_make_UserGamesList()
 {
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
     bool isOk = true;
     QString msg = "";
     QString SelElemt = C_TBL_6;
@@ -1457,7 +1460,7 @@ void BPrevision::slot_makeUserGamesList()
             if(n<=MAX_CHOIX_BOULES){
                 if(isTableCnpinDb(n,p)==false)
                 {
-                    a= new BCnp(n,p,dbInUse);
+                    a= new BCnp(n,p,db_1.connectionName());
                 }
 
                 /// supprimer la vue resultat
@@ -1481,7 +1484,7 @@ void BPrevision::slot_makeUserGamesList()
 bool BPrevision::isPreviousDestroyed(void)
 {
     bool isOk = true;
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
     QString msg = "SELECT name FROM sqlite_master WHERE type='table' AND name like '%E1%';";
 
     if((isOk=query.exec(msg))){
@@ -1498,7 +1501,7 @@ bool BPrevision::isPreviousDestroyed(void)
             }
             /// on a des tables a detruire
             QString tbl_tmp;
-            QSqlQuery qdel(dbInUse);
+            QSqlQuery qdel(db_1);
             do{
                 tbl_tmp = query.value(0).toString();
                 msg = "drop table "+tbl_tmp+";";
@@ -1511,7 +1514,7 @@ bool BPrevision::isPreviousDestroyed(void)
 void BPrevision::creerJeuxUtilisateur(int n, int p)
 {
     bool isOk = false;
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
     QString msg = "";
     QString source = "E1";
     QString tbUse = "U_"+source+"_ana";
@@ -1554,7 +1557,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
         QTableView *qtv_tmp = new QTableView;
         sqm_resu = new QSqlQueryModel;
 
-        sqm_resu->setQuery(msg,dbInUse);
+        sqm_resu->setQuery(msg,db_1);
         qtv_tmp->setModel(sqm_resu);
 
         lignes =new QLabel;
@@ -1588,7 +1591,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 bool BPrevision::isTableCnpinDb(int n, int p)
 {
     bool isOk = false;
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
 
     return isOk;
 }
@@ -1598,7 +1601,7 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
     ///----------------------
     QString tbSel = C_TBL_6;
     bool isOk = true;
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
 
     int loop = 0;
     int len = p;
@@ -1722,7 +1725,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
 
     bool isOk = true;
     QString msg = "";
-    QSqlQuery query(dbInUse);
+    QSqlQuery query(db_1);
     QString stDefBoules = C_TBL_2;
     QString st_OnDef = "";
     QString tbLabAna = C_TBL_5;
@@ -1884,8 +1887,8 @@ bool BPrevision::SupprimerVueIntermediaires(void)
 {
     bool isOk = true;
     QString msg = "";
-    QSqlQuery query(dbInUse);
-    QSqlQuery qDel(dbInUse);
+    QSqlQuery query(db_1);
+    QSqlQuery qDel(db_1);
 
     msg = "SELECT name FROM sqlite_master "
           "WHERE type='view' AND name like'vt_%';";

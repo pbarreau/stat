@@ -81,6 +81,8 @@ public:
 private:
     QString ListeDesJeux(int zn, int n, int p);
     bool ouvrirBase(eBddUse cible, eGame game);
+    QString mk_IdDsk(eGame type);
+    QString mk_IdCnx(eGame type);
     bool OPtimiseAccesBase(void);
     void effectuerTraitement(eGame game);
 
@@ -119,13 +121,16 @@ private slots:
 
 public slots:
     void slot_changerTitreZone(QString le_titre);
-    void slot_makeUserGamesList();
+    void slot_make_UserGamesList();
     void slot_filterUserGamesList();
 
 private:
-    static int total;       /// compteur des objets de cette classe
-    QSqlDatabase dbInUse;   /// base de donnees associee a cet objets
-    QString dbUseName;      /// nom de la connection
+    static int total_items;
+    int cur_item;
+
+    /// compteur des objets de cette classe
+    QSqlDatabase db_1;   /// base de donnees associee a cet objets
+    QString cnx_db_1;      /// nom de la connection
     BGame onGame;           /// parametres du jeu pour statistique globale
     BGame monJeu;           /// parametres pour filtration
     QStringList **slFlt;    /// zn_filters

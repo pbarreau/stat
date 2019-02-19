@@ -20,7 +20,7 @@ QList<QGraphicsLineItem *> PointTirage::lst_lignes;
 PointTirage::PointTirage(QString db_cnx, NE_FDJ::E_typeJeux leJeu, eGType sceneType) :
     QGraphicsItem()
 {
-    db_ici = QSqlDatabase::database(db_cnx);
+    db_0 = QSqlDatabase::database(db_cnx);
 
     tirRef = new tirages(leJeu);
 
@@ -111,7 +111,7 @@ void PointTirage::TST_ShowPointFromTirage()
 QString PointTirage::TST_GetTirageFromPoint(int x_val)
 {
     bool status = false;
-    QSqlQuery sql_1(db_ici);
+    QSqlQuery sql_1(db_0);
     QString msg = "";
     QString req = "";
 
@@ -165,7 +165,7 @@ QString PointTirage::TST_GetTirageFromPoint(int x_val)
 QString PointTirage::TST_GetTiragePariteFromPoint(int x_val)
 {
     bool status = false;
-    QSqlQuery sql_1(db_ici);
+    QSqlQuery sql_1(db_0);
     QString msg = "";
 
     msg = "select bp,ep from tirages where (tirages.id ="
@@ -188,7 +188,7 @@ QString PointTirage::TST_GetTiragePariteFromPoint(int x_val)
 QString PointTirage::TST_GetTirageOrdreFromPoint(int x_val)
 {
     bool status = false;
-    QSqlQuery sql_1(db_ici);
+    QSqlQuery sql_1(db_0);
     QString msg = "";
 
     msg = tirRef->s_LibColAnalyse(&tirDef);
@@ -235,7 +235,7 @@ QString PointTirage::TST_GetTirageOrdreFromPoint(int x_val)
 QString PointTirage::TST_GetTirageGroupeFromPoint(int x_val)
 {
     bool status = false;
-    QSqlQuery sql_1(db_ici);
+    QSqlQuery sql_1(db_0);
     QString msg = "";
 
     msg = "select bg,eg from tirages where (tirages.id ="

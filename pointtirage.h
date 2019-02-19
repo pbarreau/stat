@@ -43,7 +43,7 @@ private:
   static tirages *tirRef;
   static stTiragesDef tirDef;
   static QList<QGraphicsLineItem *> lst_lignes;
-  QSqlDatabase db_ici;
+  QSqlDatabase db_0;
   QString (PointTirage::*ptrFunc)(int val);
 };
 

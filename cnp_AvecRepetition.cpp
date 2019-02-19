@@ -8,10 +8,13 @@
 
 #include "cnp_AvecRepetition.h"
 
-BGnp::BGnp(int n, int p,QSqlDatabase destBdd,QString tab="My"):BCnp((n+p-1),p, destBdd,tab)
+BGnp::BGnp(int n, int p):BCnp((n+p-1),p)
 {
 }
-BGnp::BGnp(int n, int p):BCnp((n+p-1),p)
+BGnp::BGnp(int n, int p, QString cnx_bdd):BCnp((n+p-1),p, cnx_bdd,"")
+{
+}
+BGnp::BGnp(int n, int p, QString cnx_bdd, QString tab="My"):BCnp((n+p-1),p, cnx_bdd,tab)
 {
 }
 BGnp::~BGnp()

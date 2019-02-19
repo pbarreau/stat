@@ -72,7 +72,8 @@ SOURCES += \
     cnp_AvecRepetition.cpp \
     etudierjeux.cpp \
     cbarycentre.cpp \
-    version.cpp
+    version.cpp \
+    game.cpp
 
 HEADERS  += \
 		mainwindow.h \

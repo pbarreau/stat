@@ -8,8 +8,9 @@
 class BGnp:public BCnp
 {
 public:
-    BGnp(int n, int p, QSqlDatabase destBdd, QString tab);
     BGnp(int n, int p);
+    BGnp(int n, int p, QString destBdd);
+    BGnp(int n, int p, QString destBdd, QString tab);
     ~BGnp();
 };
 

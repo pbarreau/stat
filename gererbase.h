@@ -127,7 +127,7 @@ private:
 private:
     static int total_items;
     int cur_item;
-    QSqlDatabase db;
+    QSqlDatabase db_0;
     stTiragesDef conf;
     tirages *typeTirages;
     QSqlTableModel *tbl_model;

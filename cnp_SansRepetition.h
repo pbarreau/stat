@@ -33,9 +33,9 @@ class BCnp:public QObject
     Q_OBJECT
 
 public:
-    BCnp(int n, int p, QSqlDatabase destBdd);
-    BCnp(int n_in, int p_in, QSqlDatabase destBdd, QString Name);
     BCnp(int n_in, int p_in);
+    BCnp(int n, int p, QString cnx_bdd);
+    BCnp(int n_in, int p_in, QString cnx_bdd, QString Name);
     QString getDbTblName(void);
     ~BCnp();
     int BP_count(void);
@@ -51,7 +51,7 @@ private:
     int **tab;  /// tableau de Cnp lignes contenant chacune une combinaison
     /// sous la forme de p entiers (de 1 au moins à n au plus)
     QString tbName; /// prefix table dans la base
-    QSqlDatabase dbToUse;
+    QSqlDatabase dbCnp;
 
 
 #if USE_CNP_SLOT_LINE
@@ -72,6 +72,12 @@ private:
     void MontrerTableau_v1(void);
     void BP_ShowPascal(void);
     void insertLineInDbTable(const QString &Laligne);
+
+    bool creerCnpBdd(QString cnx_name);
+    bool combinaisons(int n, int p, int k, int *L, int *t, int r);
+    bool effectueCalculCnp(int n, int p);
+    bool isNotPresentCnp(int n, int p);
+    bool isCnpTableReady(int n, int p);
 };
 
 #endif // CNP_H

@@ -40,7 +40,7 @@ private:
 
 private:
     static int total;
-    QSqlDatabase db;
+    QSqlDatabase db_1;
     QString tbl_src;
     QString tbl_ana;
     QString tbl_flt;

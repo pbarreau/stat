@@ -1,12 +1,16 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <QString>
+
 /// Type de jeu possible d'etudier
 typedef enum _eGame{
     eGameToSet, /// Jeu pas encore configure
     eGameLoto,  /// Loto
-    eGameEuro   /// Euro million
+    eGameEuro,   /// Euro million
+    eGameDefEnd
 }eGame;
+extern const QString gameLabel [eGameDefEnd];
 
 typedef enum _eGoal{
     eFdj, /// le jeu e

@@ -33,8 +33,8 @@ CBaryCentre::CBaryCentre(const stNeedsOfBary &param)
 
     QTabWidget *tab_Top = new QTabWidget(this);
 
-    db= QSqlDatabase::database(param.ncx);
-    dbToUse = db;
+    db_1= QSqlDatabase::database(param.ncx);
+    dbToUse = db_1;
     //src_tbl = param.tbl_in;
     QString src_data = param.tbl_in;
     db_data = src_data;
@@ -93,7 +93,7 @@ QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
     else{
         src_data = "select * from r_B_fdj_0_brc_z1;";
     }
-    sqm_tmp->setQuery(src_data,db);
+    sqm_tmp->setQuery(src_data,db_1);
 
     qtv_tmp->setAlternatingRowColors(true);
     qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -132,7 +132,7 @@ QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
 
 void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_1);
     bool isOk = true;
 
     /// prendre dans les tirages les boules de la zone
@@ -222,7 +222,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 bool CBaryCentre::repereDernier(QString tbl_bary)
 {
     bool isOK = true;
-    QSqlQuery query(db);
+    QSqlQuery query(db_1);
 #if 0
     QString msg = "UPDATE "
             +tbl_bary
@@ -259,7 +259,7 @@ bool CBaryCentre::isTableTotalBoulleReady(QString tbl_total)
 bool CBaryCentre::mettreBarycentre(QString tbl_dst, QString src_data)
 {
     bool isOK = true;
-    QSqlQuery query(db);
+    QSqlQuery query(db_1);
     QString msg = "";
 
     /// 1 : Renommer la table resultat
@@ -304,7 +304,7 @@ QString CBaryCentre::getFilteringData(int zn)
                                                                                                    "tbLeft.id=tbRight.id "
                                                                                                    ") ";
 #endif
-    QSqlQuery query(db);
+    QSqlQuery query(db_1);
     bool isOk = true;
 
     QString flt = "select val from U_b_z1 where (f=1)";

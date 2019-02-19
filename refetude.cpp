@@ -79,7 +79,7 @@ RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
                    stTiragesDef *pDef,QMdiArea *visuel, QTabWidget *tab_Top):p_db(db),
     p_stRefTirages(stFiltreTirages),p_conf(pDef),p_affiche(visuel),p_reponse(tab_Top)
 {
-    db_ici = QSqlDatabase::database(db->get_IdCnx());
+    db_0 = QSqlDatabase::database(db->get_IdCnx());
 
     // Nombre de zone composant un tirage (2: 1 zone boules + 1 zone etoiles)
     int nb_zones = p_conf->nb_zone;
@@ -243,7 +243,7 @@ QTableView *RefEtude::tbForBaseRef()
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     //p_qsim_3=sqm_tmp;
 
-    sqm_tmp->setQuery(p_stRefTirages,db_ici);
+    sqm_tmp->setQuery(p_stRefTirages,db_0);
     tbv_tmp->setModel(sqm_tmp);
 
     tbv_tmp->setSortingEnabled(false);
@@ -433,7 +433,7 @@ void RefEtude::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
     int col = 3;
     int niveau = 0;
     bool existe = false;
-    existe = VerifierValeur(db_ici, clef, tbl,col,&niveau);
+    existe = VerifierValeur(db_0, clef, tbl,col,&niveau);
 
 #ifdef CHKB_VERSION_1
     QCheckBox *chkb_1 = new QCheckBox;
@@ -476,7 +476,7 @@ QMenu *RefEtude::ContruireMenu(QString tbl, int val)
     int col = 2;
     int niveau = 0;
     bool existe = false;
-    existe = VerifierValeur(db_ici,val, tbl,col,&niveau);
+    existe = VerifierValeur(db_0,val, tbl,col,&niveau);
 
 
 
@@ -514,7 +514,7 @@ void RefEtude::slot_SetPriority(int val)
 
 void RefEtude::slot_ChoosePriority(QAction *cmd)
 {
-    QSqlQuery query(db_ici);
+    QSqlQuery query(db_0);
     QString msg = "";
 
     QString st_from = cmd->objectName();
@@ -1119,7 +1119,7 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
     int col = index.column();
     QVariant vCol = pModel->headerData(col,Qt::Horizontal);
     QString headName = vCol.toString();
-    QSqlQuery sql(db_ici);
+    QSqlQuery sql(db_0);
     bool status = false;
 
     QTableView *view = qobject_cast<QTableView *>(sender());
@@ -1332,7 +1332,7 @@ void RefEtude::slot_ShowDetails(const QModelIndex & index)
         return;
     }
 
-    QSqlQuery query(db_ici);
+    QSqlQuery query(db_0);
     QStandardItemModel *tmpStdItem = p_qsim_3;
 
     int nbCol = codeSqlDeRegroupementSurZnId[zn][0].size();
@@ -1371,7 +1371,7 @@ void RefEtude::slot_ShowDetails(const QModelIndex & index)
 
 bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
 {
-    QSqlQuery query(db_ici);
+    QSqlQuery query(db_0);
     bool status = false;
     bool uneCouvDePlus = false;
     int max_boule = p_conf->limites[zn].max;
@@ -1722,8 +1722,8 @@ double  RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemMo
 {
     bool status = false;
 
-    QSqlQuery query(db_ici);
-    QSqlQuery selection(db_ici);
+    QSqlQuery query(db_0);
+    QSqlQuery selection(db_0);
     QString msg="";
     QString msg_ligne="";
 

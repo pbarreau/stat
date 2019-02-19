@@ -7,7 +7,7 @@
 
 void MainWindow::NEW_ChercherTotalBoules(QStringList choix, stTiragesDef *pConf)
 {
-    QSqlQuery sql_1(db_main);
+    QSqlQuery sql_1(db_0);
     QString msg = "";
     bool status = true;
     QString ColNames[4]={"r0","r1","rn1","tot"};
@@ -32,7 +32,7 @@ void MainWindow::NEW_ChercherTotalBoules(QStringList choix, stTiragesDef *pConf)
             {
                 do
                 {
-                    QSqlQuery req_2(db_main);
+                    QSqlQuery req_2(db_0);
                     int bId = sql_1.value(0).toInt();
                     int tot = sql_1.value(1).toInt();
 
@@ -126,7 +126,7 @@ QString MainWindow::NEW_ChercherTotalBoulesAUneDistance(QStringList selectionBou
 
 
     bool status = false;
-    QSqlQuery sql_req(db_main);
+    QSqlQuery sql_req(db_0);
     int zn =0;
 
 

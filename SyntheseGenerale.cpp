@@ -189,10 +189,11 @@ void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
 
 SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int zn, stTiragesDef *pConf, QMdiArea *visuel)
 {
-    QString chk = origine->get_IdCnx();
-    disposition = new QGridLayout;
     origine=pLaBase;
-    db_sg = QSqlDatabase::database(chk);
+    QString chk = origine->get_IdCnx();
+    db_0 = QSqlDatabase::database(chk);
+
+    disposition = new QGridLayout;
 
     pEcran = visuel;
     pMaConf = pConf;
@@ -807,7 +808,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     qDebug()<< st_msg1;
 #endif
 
-    sqm_bloc1_2->setQuery(st_msg1,db_sg);
+    sqm_bloc1_2->setQuery(st_msg1,db_0);
     // Renommer le nom des colonnes
     QSqlQueryModel *sqm_tmp=sqm_bloc1_2;
     int nbcol = sqm_tmp->columnCount();
@@ -926,7 +927,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     qDebug()<< st_msg1;
 #endif
 
-    sqm_tmp->setQuery(st_msg1,db_sg);
+    sqm_tmp->setQuery(st_msg1,db_0);
     int nbcol = sqm_tmp->columnCount();
     for(int i = 0; i<nbcol;i++)
     {
@@ -982,7 +983,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
 
 
     // Mettre le dernier tirage en evidence
-    QSqlQuery selection(db_sg);
+    QSqlQuery selection(db_0);
     bool status = false;
 
     st_msg1 = "select analyses.id, analyses.fk_idCombi_z1 from analyses limit 1;";
@@ -1080,7 +1081,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     qDebug()<< st_msg1;
 #endif
 
-    sqm_bloc1_1->setQuery(st_msg1,db_sg);
+    sqm_bloc1_1->setQuery(st_msg1,db_0);
 
     // Renommer le nom des colonnes
     QSqlQueryModel *sqm_tmp=sqm_bloc1_1;
@@ -1197,7 +1198,7 @@ void SyntheseGenerale::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
     int col = 3;
     int niveau = 0;
     bool existe = false;
-    existe = VerifierValeur(db_sg, clef, tbl,col,&niveau);
+    existe = VerifierValeur(db_0, clef, tbl,col,&niveau);
 
     QCheckBox *chkb_1 = new QCheckBox;
     chkb_1->setText("Filtrer");
@@ -1228,7 +1229,7 @@ QMenu *SyntheseGenerale::ContruireMenu(QString tbl, int val)
     int col = 2;
     int niveau = 0;
     bool existe = false;
-    existe = VerifierValeur(db_sg, val, tbl, col, &niveau);
+    existe = VerifierValeur(db_0, val, tbl, col, &niveau);
 
 
 
@@ -1258,7 +1259,7 @@ QMenu *SyntheseGenerale::ContruireMenu(QString tbl, int val)
 
 void SyntheseGenerale::slot_ChoosePriority(QAction *cmd)
 {
-    QSqlQuery query(db_sg);
+    QSqlQuery query(db_0);
     QString msg = "";
 
     QString st_from = cmd->objectName();
@@ -1457,7 +1458,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
     tbv_bloc2 = qtv_tmp;
 
     QStandardItemModel * tmpStdItem = NULL;
-    QSqlQuery query(db_sg) ;
+    QSqlQuery query(db_0) ;
 
     //Creer un tableau d'element standard
     if(nbCol)
@@ -1876,7 +1877,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
 
     etude->origine = Tableau2;
-    etude->db_cnx = db_sg.connectionName();
+    etude->db_cnx = db_0.connectionName();
 
     etude->st_titre = CreatreTitle(&uneDemande);
     etude->st_TablePere = REF_BASE;

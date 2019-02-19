@@ -44,7 +44,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
     QString str_1 = "";
     QString str_2 = "";
 
-    QSqlQuery sql_1(db);
+    QSqlQuery sql_1(db_0);
     int nbPair = 0;
     int nbE1 = 0;
 
@@ -248,8 +248,8 @@ QString JourFromDate(QString LaDate, QString verif, stErr *retErr)
 bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
 {
     bool status = false;
-    QSqlQuery sql_1(db);
-    QSqlQuery sql_all(db);
+    QSqlQuery sql_1(db_0);
+    QSqlQuery sql_all(db_0);
     QString clef_1= "";
     QString sAllTirages = "";
 

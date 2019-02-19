@@ -70,7 +70,7 @@ void GererBase::TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, Q
         {
             bool status = false;
 
-            QSqlQuery query(db);
+            QSqlQuery query(db_0);
             QString msg="";
 
             // Recherche du maximum pour cette boule
@@ -106,11 +106,11 @@ void GererBase::DistributionSortieDeBoule(int boule, QStandardItemModel *modele)
 {
     bool status = false;
 
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg;
 
 
-    QSqlQuery selection(db);
+    QSqlQuery selection(db_0);
     QString msg1;
     QStringList tmp;
     double EcartMoyen = 0.0;
@@ -258,7 +258,7 @@ QString GererBase::TST_ZoneRequete(stTiragesDef *pConf, int zone, QString operat
 
 void GererBase::AfficherMaxOccurenceBoule(int boule, int zn, stTiragesDef *pConf, LabelClickable *l_nb)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg;
     int value = 0;
     bool status = false;
@@ -320,7 +320,7 @@ void GererBase::AfficherMaxOccurenceBoule(int boule, int zn, stTiragesDef *pConf
 
 void GererBase::MontrerResultatRechercheVoisins(QStandardItemModel *modele,int zone, stTiragesDef *pConf,int b_id)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg;
     bool status = true;
 
@@ -376,7 +376,7 @@ void GererBase::MontrerResultatRechercheVoisins(QStandardItemModel *modele,int z
 //------------
 void GererBase::MontrerResultatRechercheAbsent(QStandardItemModel *modele,int zone, stTiragesDef *pConf,int b_id)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg;
     bool status = true;
 
@@ -434,7 +434,7 @@ void GererBase::MontrerResultatRechercheAbsent(QStandardItemModel *modele,int zo
 //-----
 void GererBase::RechercherAbsentDeLaBoule(int b_id, int zone, stTiragesDef *pConf, int max_absents)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg;
     bool status = true;
     int r0 =0, rn1=0,rn2=0,rp1=0,rp2=0;
@@ -472,7 +472,7 @@ void GererBase::RechercherAbsentDeLaBoule(int b_id, int zone, stTiragesDef *pCon
 //------
 void GererBase::RechercherVoisinDeLaBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg;
     bool status = true;
     int r0 =0, rn1=0,rn2=0,rp1=0,rp2=0;
@@ -509,7 +509,7 @@ void GererBase::RechercherVoisinDeLaBoule(int b_id, int zone, stTiragesDef *pCon
 //-----
 bool GererBase::CreerTableAbsentDeBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg;
     bool status = false;
 
@@ -554,7 +554,7 @@ bool GererBase::CreerTableAbsentDeBoule(int b_id, int zone, stTiragesDef *pConf,
 //______
 void GererBase::CreerTablePonderationAbsentDeBoule(int b_id, int zn, stTiragesDef *pConf)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg;
     bool status = true;
     QString names[5]={"r0","rp1","rp2","rn1","rn2"};
@@ -618,7 +618,7 @@ void GererBase::CreerTablePonderationAbsentDeBoule(int b_id, int zn, stTiragesDe
                             //qDebug()<< msg;
 #endif
 
-                            QSqlQuery query_2(db);
+                            QSqlQuery query_2(db_0);
                             status = query_2.exec(msg);
                             if(status)
                             {
@@ -650,7 +650,7 @@ void GererBase::CreerTablePonderationAbsentDeBoule(int b_id, int zn, stTiragesDe
 //-----
 bool GererBase::CreerTableVoisinsDeBoule(int b_id, int zone, stTiragesDef *pConf, int max_voisins)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg;
     bool status = false;
 
@@ -696,7 +696,7 @@ bool GererBase::CreerTableVoisinsDeBoule(int b_id, int zone, stTiragesDef *pConf
 void GererBase::TST_RechercheVoisin(QStringList &boules, int zn,stTiragesDef *pConf,
                                     LabelClickable *l_nb, QStandardItemModel *modele)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg = "select count (*)  from tirages where (";
     bool status = false;
     QString lstBoules =  boules.join(",");
@@ -770,7 +770,7 @@ void GererBase::TST_RechercheVoisin(QStringList &boules, int zn,stTiragesDef *pC
 QString GererBase::TST_GetIntervalCouverture(int etendue)
 {
     QString msg= "" ;
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     bool status = false;
     int nb_couverture = 0;
     int id = 0;
@@ -832,7 +832,7 @@ QString GererBase::TST_ConstruireWhereData(int zn, stTiragesDef *pConf, QStringL
 void GererBase::RechercheAbsent(int boule, int zn, stTiragesDef *pConf,
                                 QLabel *l_nb, QStandardItemModel *modele)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg;
     bool status = false;
     int max_absent = pConf->limites[zn].max;
@@ -857,7 +857,7 @@ void GererBase::RechercheAbsent(int boule, int zn, stTiragesDef *pConf,
 void GererBase::RechercheVoisin(int boule, int zn, stTiragesDef *pConf,
                                 LabelClickable *l_nb, QStandardItemModel *modele)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg;
     bool status = false;
     //int calcul = 0, voisin = 0;
@@ -975,7 +975,7 @@ int GererBase::TST_TotalRechercheVoisinADistanceDe(int zn,stTiragesDef *pConf,in
         return ret_val;
 
 
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     bool status = false;
     QString msg = "select *  from tirages inner join  ( select *  from tirages where (";
 
@@ -1025,7 +1025,7 @@ int GererBase::TST_TotalRechercheADistance_F2(int dist, QString col, int bp_ref,
         return ret_val;
 #endif
     int ret_val = 0;
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     bool status = false;
     QString msg = "select *  from "   TB_BASE
             " inner join  ( select *  from "   TB_BASE
@@ -1071,7 +1071,7 @@ void GererBase::TST_LBcDistBr(int zn,stTiragesDef *pConf,int dist, int br,int bc
             where (b1 = 1 or b2 = 1 or b3 = 1 or b4 = 1 or b5 = 1 );
 #endif
 
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     bool status = false;
     QStringList boules;
     QString msg = "select *  from tirages inner join  ( select *  from tirages where (";
@@ -1108,7 +1108,7 @@ bool GererBase::RechercheAbsentADistanceDe(int dist, int boule, int zn,stTirages
     QString msg = "";
     QString msg2 = "";
     QString msg_limite = "";
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     bool bEstAbsent = false;
     bool status;
 
@@ -1161,7 +1161,7 @@ int GererBase::TotalRechercheVoisinADistanceDe(int dist, int boule, int zn,stTir
 {
     QString msg = "";
     QString msg2 = "";
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     int calcul = 0;
     bool status;
 
@@ -1217,9 +1217,9 @@ int GererBase::TotalRechercheVoisinADistanceDe(int dist, int boule, int zn,stTir
 
 void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
 {
-    QSqlQuery query(db);
-    QSqlQuery sauve(db);
-    QSqlQuery position(db);
+    QSqlQuery query(db_0);
+    QSqlQuery sauve(db_0);
+    QSqlQuery position(db_0);
     QString msg = "";
     bool depart_couverture = false;
     int lgndeb=0, lgnfin=0;
@@ -1468,7 +1468,7 @@ QString req_msg(QString base, int zone, int boule, stTiragesDef *ref)
 
 bool GererBase::CreerColonneOrdreArrivee(int id, stTiragesDef *pConf)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     QString msg = "";
     stTiragesDef ref = *pConf;
     bool status = false;
@@ -1498,7 +1498,7 @@ bool GererBase::CreerColonneOrdreArrivee(int id, stTiragesDef *pConf)
 void GererBase::PopulateCellMenu(int b_id, int v_id,int zone, stTiragesDef *pConf, QMenu *menu,QObject * receiver)
 {
     QString msg;
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     bool status = false;
     int somme = 0;
 
@@ -1537,7 +1537,7 @@ void GererBase::PopulateCellMenu(int b_id, int v_id,int zone, stTiragesDef *pCon
 
 bool GererBase::TST_Requete(int &totCln,QString &sql_msg, int lgn, QString &col, QStandardItemModel *&qsim_ptr)
 {
-    QSqlQuery query(db);
+    QSqlQuery query(db_0);
     bool status = false;
 
     status = query.exec(sql_msg);

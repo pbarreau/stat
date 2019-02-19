@@ -59,7 +59,7 @@ private:
     int tid_start;
     int cid_start;
     stTiragesDef *pGlobConf;
-    QSqlDatabase db_ici;
+    QSqlDatabase db_0;
     QSqlQueryModel *my_model;
     QSqlQueryModel *my_model_2;
     QSqlQueryModel *my_model_3;

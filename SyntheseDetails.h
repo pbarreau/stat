@@ -134,7 +134,7 @@ private:
     int cur_niv;
     QString view_id;
     stCurDemande *pLaDemande;
-    QSqlDatabase db_sd;
+    QSqlDatabase db_0;
 
     QMdiArea *pEcran;
     QTabWidget *gMemoTab;

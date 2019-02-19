@@ -29,7 +29,7 @@ protected:
     virtual void wheelEvent(QWheelEvent* event);
 
 private:
-    QSqlDatabase db_ici;
+    QSqlDatabase db_0;
     QGraphicsScene *Scene;
     eGType scene_type;
 

@@ -231,7 +231,7 @@ private:
 private:
     static QStringList L1;
     GererBase *DB_tirages;
-    QSqlDatabase db_main;
+    QSqlDatabase db_0;
     QMdiArea *zoneCentrale;
     BPrevision *tous;
 
