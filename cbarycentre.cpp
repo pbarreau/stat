@@ -304,7 +304,7 @@ QString CBaryCentre::getFilteringData(int zn)
                                                                                                    "tbLeft.id=tbRight.id "
                                                                                                    ") ";
 #endif
-    QSqlQuery query(dbToUse);
+    QSqlQuery query(db);
     bool isOk = true;
 
     QString flt = "select val from U_b_z1 where (f=1)";

@@ -30,6 +30,8 @@ private:
     QSplitter *SetDataSplitter_2(int col, int cid, int tid);
     QSplitter *SetDataSplitter_3(int col, int cid, int tid);
     void SetBgColorCell(int tbl, int cid, int tid, int bid);
+    QString GetBoulesOfTirage(int tir);
+    QString GetTirageInfo(int id);
 #ifndef USE_CODE_IN_SG
     void MemoriserProgression(QString table, stMyHeadedList *h, stMyLinkedList *l, int start, int y, int cid, int tid);
     void MettreCouleur(int start, int cur);
@@ -57,6 +59,7 @@ private:
     int tid_start;
     int cid_start;
     stTiragesDef *pGlobConf;
+    QSqlDatabase db_ici;
     QSqlQueryModel *my_model;
     QSqlQueryModel *my_model_2;
     QSqlQueryModel *my_model_3;

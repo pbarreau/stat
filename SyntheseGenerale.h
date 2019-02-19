@@ -61,7 +61,8 @@ private:
 
     //stCurDemande *pLaDemande;
     B_ActFrMdlIndex *MonTraitement;
-    GererBase *bdd;
+    GererBase *origine;
+    QSqlDatabase db_sg;
     stTiragesDef *pMaConf;
     QMdiArea *pEcran;
     QTabWidget *ptabTop;

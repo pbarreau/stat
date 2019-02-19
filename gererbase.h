@@ -22,7 +22,7 @@ typedef struct
 }stTbToCreate;
 
 
-class GererBase : public QObject,tirages
+class GererBase : public QWidget,tirages
 {
     Q_OBJECT
 public:
@@ -32,9 +32,12 @@ public:
 
 
 public:
-    QSqlDatabase getMyDb(void);
+    QString get_IdCnx(void);
     QVariant data(const QModelIndex &index, int role) const;
+
     bool CreerBasePourEtude(bool action, NE_FDJ::E_typeJeux type);
+    QString mk_IdDsk(NE_FDJ::E_typeJeux type);
+    QString mk_IdCnx(NE_FDJ::E_typeJeux type);
 
     bool CreationTablesDeLaBDD(tirages *pRref);
     bool CTB_Table1(QString nomTable, tirages *pRef);
@@ -99,7 +102,6 @@ private:
     bool OPtimiseAccesBase(void);
     bool CreationTablesDeLaBDD_v2();
     bool RajouterTable(stTbToCreate des);
-    bool TraitementPerso(QString tb, QString *data);
     bool CreerTableCnp(QString tb, QString *data);
     bool CreerTableGnp(QString tb, QString *data);
 
@@ -123,6 +125,8 @@ private:
 
 
 private:
+    static int total_items;
+    int cur_item;
     QSqlDatabase db;
     stTiragesDef conf;
     tirages *typeTirages;

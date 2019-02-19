@@ -6,6 +6,7 @@
 #include <QApplication>
 
 #include <QString>
+#include <QObject>
 #include <QStringList>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -30,7 +31,7 @@ bool GererBase::CreerTableDistriCombi(void)
 {
     bool ret = true;
     QString st_sqlMsg = "";
-    QSqlQuery query;
+    QSqlQuery query(db);
 
     st_sqlMsg =  "create table DistriCombi "
                  "(id INTEGER PRIMARY KEY,"
@@ -102,7 +103,7 @@ bool GererBase::RajouterTable(stTbToCreate des)
 {
     bool isOk = true;
     QString msg = "";
-    QSqlQuery query;
+    QSqlQuery query(db);
     QStringList input;
 
     // A t on une fonction de traitement
@@ -190,19 +191,10 @@ bool GererBase::RajouterTable(stTbToCreate des)
     return isOk;
 }
 
-bool GererBase::TraitementPerso(QString def, QString *data)
-{
-    bool isOk = true;
-    QSqlQuery query;
-    QString msg = "";
-
-    return isOk;
-}
-
 bool GererBase::CreationTablesDeLaBDD_v2()
 {
     bool status = true;
-    QSqlQuery query;
+    QSqlQuery query(db);
     QString requete = "";
 
 
@@ -259,7 +251,7 @@ bool GererBase::CreationTablesDeLaBDD_v2()
         QString tbName = (depart[i].tbDef.split(":")).at(0);
         QString msg = "Old 4 end ! i="
                 +QString::number(i)
-                +tr("\nRajout de ")
+                +QString("\nRajout de ")
                 +tbName + "\nstatus ="
                 +QString::number(status);
 #ifdef RELEASE_TRACK
@@ -279,7 +271,7 @@ bool GererBase::f1(QString tb, QString *data)
 {
     bool status = true;
 
-    QSqlQuery query;
+    QSqlQuery query(db);
     QString requete = "";
 
     stTiragesDef ref = typeTirages->conf;
@@ -305,7 +297,7 @@ bool GererBase::f1_1(QString tb, QString *data)
 {
     bool status = true;
 
-    QSqlQuery query;
+    QSqlQuery query(db);
     QString requete = "";
     QString st_table = TB_RZ;
 
@@ -346,7 +338,7 @@ bool GererBase::f1_2(QString tb, QString *data)
 {
     bool status = true;
 
-    QSqlQuery query;
+    QSqlQuery query(db);
     QString requete = "";
     QString st_table = TB_RZVA;
 
@@ -393,7 +385,7 @@ bool GererBase::f2(QString tb, QString *data)
 {
     bool status = true;
 
-    QSqlQuery query;
+    QSqlQuery query(db);
     QString requete = "";
     QString st_table = TB_RZBN;
 
@@ -490,7 +482,7 @@ bool GererBase::f2_2(QString tb, QString *data)
 {
     bool status = true;
 
-    QSqlQuery q_create;
+    QSqlQuery q_create(db);
     QString st_refTbl[] = {C_TBL_6,C_TBL_7,C_TBL_8,C_TBL_A};
     QString st_sqldf = ""; /// sql definition
     QString st_table = "";
@@ -533,7 +525,7 @@ bool GererBase::f3(QString tb, QString *data)
 {
     bool status = true;
 
-    QSqlQuery query;
+    QSqlQuery query(db);
     QString requete = "";
 
     stTiragesDef ref = typeTirages->conf;
@@ -578,7 +570,7 @@ bool GererBase::f4(QString tb, QString *data)
 bool GererBase::TraitementCodeVueCombi(int zn)
 {
     bool isOk = true;
-    QSqlQuery query;
+    QSqlQuery query(db);
     QString msg = "";
     QString ref_1 = "";
 
@@ -627,7 +619,7 @@ bool GererBase::TraitementCodeVueCombi(int zn)
 bool GererBase::TraitementCodeTblCombi(int zn)
 {
     bool isOk = true;
-    QSqlQuery query;
+    QSqlQuery query(db);
     QString msg = "";
 
     QString tblCode[]=
@@ -754,7 +746,7 @@ bool GererBase::GrouperCombi(int zn)
 {
     bool status = true;
 
-    QSqlQuery sql_1;
+    QSqlQuery sql_1(db);
 
     QString st_critere = "";
     QString msg_1 = "";
@@ -895,8 +887,8 @@ QString DetailsSomme(int zn,stTiragesDef *pRef)
 bool  GererBase::MettrePonderationCombi(int delta)
 {
     bool status = false;
-    QSqlQuery sql_1;
-    QSqlQuery sql_2;
+    QSqlQuery sql_1(db);
+    QSqlQuery sql_2(db);
     QString msg_1 = "select pos, count(pos)as T from lstCombi_z1 group by pos;";
 
 
@@ -950,7 +942,7 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
     stTiragesDef ref=typeTirages->conf;
     int nbBoules = floor(ref.limites[zn].max/10);
 
-    QSqlQuery sql_1;
+    QSqlQuery sql_1(db);
     QString st_cols = "";
     QString st_vals = "";
     QString st_valtips = "";
@@ -1072,7 +1064,7 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
 
 bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
 {
-    QSqlQuery query;
+    QSqlQuery query(db);
     QString requete;
     stTiragesDef ref;
     bool status = true;
@@ -1152,7 +1144,7 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
 // CTB_T1 : Creation table de base :Table1
 bool GererBase:: CTB_Table1(QString nomTable, tirages *pRef)
 {
-    QSqlQuery query;
+    QSqlQuery query(db);
     QString msg1;
     stTiragesDef ref;
     bool ret = true;

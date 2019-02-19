@@ -110,6 +110,7 @@ typedef struct _stTiragesDef
     unsigned char nb_zone;
     QStringList sl_Lev0;
     QStringList sl_Lev1[5];
+    QString db_cnx;
 }stTiragesDef;
 
 typedef struct _stUnTirage
@@ -201,7 +202,7 @@ extern QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf);
 extern QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri);
 extern QString sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri);
 extern QString CompteJourTirage(stTiragesDef *pMaConf);
-extern bool VerifierValeur(int item, QString table,int idColValue,int *lev);
+extern bool VerifierValeur(QSqlDatabase la_db, int item, QString table, int idColValue, int *lev);
 
 
 #endif // TIRAGES_H

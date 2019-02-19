@@ -104,6 +104,7 @@ public slots:
 private:
     static QStandardItemModel **p_simResu;
     GererBase *p_db;
+    QSqlDatabase db_ici;
     QString p_stRefTirages;
     stTiragesDef *p_conf;
     QList<sCouv *> p_ListeDesCouverturesSurZnId[2];

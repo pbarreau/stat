@@ -28,9 +28,10 @@ QGraphicsScene * MyGraphicsView::GetScene(void)
     return Scene;
 }
 
-MyGraphicsView::MyGraphicsView(eGType gtype, QGraphicsView *ptr_view, QString titre, QColor coul_fond)
+MyGraphicsView::MyGraphicsView(QString db_cnx, eGType gtype, QGraphicsView *ptr_view, QString titre, QColor coul_fond)
 {
 
+    db_ici = QSqlDatabase::database(db_cnx);
     setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
     //Set-up the scene
@@ -50,7 +51,7 @@ MyGraphicsView::MyGraphicsView(eGType gtype, QGraphicsView *ptr_view, QString ti
 
 void MyGraphicsView::DessineCourbeSql(QString msg_2, NE_FDJ::E_typeJeux leJeu, QColor cpen, int sqlIdY, int scale_y, int delta_y)
 {
-    QSqlQuery sql_2;
+    QSqlQuery sql_2(db_ici);
     bool status = false;
 #ifndef QT_NO_DEBUG
     qDebug() << msg_2;
@@ -75,7 +76,7 @@ void MyGraphicsView::DessineCourbeSql(QString msg_2, NE_FDJ::E_typeJeux leJeu, Q
                y -=delta_y;
 
                 // Ajout d'une boule representant un tirage
-                PointTirage *ptir = new PointTirage(leJeu,scene_type);
+                PointTirage *ptir = new PointTirage(db_ici.connectionName() ,leJeu,scene_type);
 
                 ptir->setPos(x,y);
 

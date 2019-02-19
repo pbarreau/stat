@@ -248,8 +248,8 @@ QString JourFromDate(QString LaDate, QString verif, stErr *retErr)
 bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
 {
     bool status = false;
-    QSqlQuery sql_1;
-    QSqlQuery sql_all;
+    QSqlQuery sql_1(db);
+    QSqlQuery sql_all(db);
     QString clef_1= "";
     QString sAllTirages = "";
 

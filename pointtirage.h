@@ -16,7 +16,7 @@ class PointTirage : public QGraphicsItem
   //Q_OBJECT
 public:
   //explicit PointTirage();
-  PointTirage(NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_euro, eGType sceneType = eNoGraph);
+  PointTirage(QString db_cnx, NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_euro, eGType sceneType = eNoGraph);
   QRectF boundingRect() const;
   QPainterPath shape() const;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
@@ -43,6 +43,7 @@ private:
   static tirages *tirRef;
   static stTiragesDef tirDef;
   static QList<QGraphicsLineItem *> lst_lignes;
+  QSqlDatabase db_ici;
   QString (PointTirage::*ptrFunc)(int val);
 };
 

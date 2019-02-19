@@ -58,7 +58,7 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
 {
     bool status = true;
     QString msg1 = "";
-    QSqlQuery query ;
+    QSqlQuery query(db_main) ;
     int zone = 0;
 
     QStringList *maRef = LstCritereGroupement(zone,pConf);
@@ -196,7 +196,7 @@ void MainWindow::NEW_ChoixPourTiragesSuivant(QString tb_reponse, int nbTirPreced
 {
     bool status = true;
     QString msg1 = "";
-    QSqlQuery query ;
+    QSqlQuery query(db_main) ;
     int zone = 0;
 
     // selectionner les derniers tirages
@@ -232,7 +232,7 @@ bool MainWindow::NEW_AnalyserCeTirage(int idTirage,  QString stTblRef,int zone, 
 {
     bool status = false;
     QString msg1 = "";
-    QSqlQuery query ;
+    QSqlQuery query(db_main) ;
 
 #ifndef QT_NO_DEBUG
     qDebug() << msg1;
@@ -338,7 +338,7 @@ bool MainWindow::NEW_FaireBilan(int idTirage, QString stTblRef,int zone, stTirag
 {
     bool status = false;
     QString msg1 = "";
-    QSqlQuery query ;
+    QSqlQuery query(db_main) ;
 
     // Creation table pour synthese des recherches
     // d: distance, r: rang dans la distance,
@@ -395,7 +395,7 @@ QString MainWindow::NEW_ColHeaderName(int idTirage,int zone, stTiragesDef *pConf
 {
     bool status = false;
     QString msg1 = "";
-    QSqlQuery query ;
+    QSqlQuery query(db_main) ;
 
 
     // Recuperer les boules du tirage
@@ -436,7 +436,7 @@ QString MainWindow::NEW_ColHeaderName(int idTirage,int zone, stTiragesDef *pConf
             //int nb_elem = query.size();
 
             // Pb size as sqlite :int nb_elem = query.size();
-            QSqlQuery sql2;
+            QSqlQuery sql2(db_main);
             msg1 = "select count("+st_tb+") " + st_msg2;
             status = sql2.exec(msg1);
             sql2.first();
@@ -471,7 +471,7 @@ bool MainWindow::NEW_SyntheseDeBoule(int uneBoule, int colId, int loop, QString 
 
     QStringList demande;
     QString msg1 = "";
-    QSqlQuery query ;
+    QSqlQuery query(db_main) ;
 
     demande << QString::number(uneBoule);
     msg1 = NEW_ChercherTotalBoulesAUneDistance(demande,loop,pConf,1);
@@ -486,7 +486,7 @@ bool MainWindow::NEW_SyntheseDeBoule(int uneBoule, int colId, int loop, QString 
         {
             int boule = 0;
             do{
-                QSqlQuery req_2;
+                QSqlQuery req_2(db_main);
                 int id=query.value(0).toInt();
                 int nb=query.value(1).toInt(); // val a mettre dans a table
 

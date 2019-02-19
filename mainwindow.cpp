@@ -66,6 +66,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     NoErrors.msg = "None";
 
     DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
+    configJeu.db_cnx = DB_tirages->get_IdCnx();
+    db_main = QSqlDatabase::database(configJeu.db_cnx);
 
 
     if(NoErrors.status == false)
@@ -412,7 +414,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
              " order by id asc; ";
 
 
-    sqm_r1->setQuery(st_msg);
+    sqm_r1->setQuery(st_msg,db_main);
     //sqm_r1->setHeaderData(1,Qt::Horizontal,"Combinaison");
 
 #if 0
@@ -454,7 +456,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
     tabN1->addTab(wTop_1,"c");;
 
     // Mettre le dernier tirage en evidence
-    QSqlQuery selection;
+    QSqlQuery selection(db_main);
 
     st_msg = "select analyses.id, analyses.fk_idCombi_z1 from analyses limit 1;";
     status = selection.exec(st_msg);
@@ -662,7 +664,7 @@ QGridLayout *MainWindow::MonLayout_VoisinsPresent_v2()
 {
     QGridLayout *lay_return = new QGridLayout;
     bool ret = false;
-    QSqlQuery query;
+    QSqlQuery query(db_main);
     QString msg1;
     int maxBoules = 49;
 
@@ -732,7 +734,7 @@ QGridLayout *MainWindow::MonLayout_VoisinsPresent_v2()
 //__________
 void MainWindow::TST_CombiVoisin(int key)
 {
-    QSqlQuery query;
+    QSqlQuery query(db_main);
     QString msg = "";
     bool status = false;
 
@@ -772,8 +774,8 @@ void MainWindow::TST_CombiVoisin(int key)
 
 void MainWindow::TST_NbRepartionCombi(int ecart,int key)
 {
-    QSqlQuery query;
-    QSqlQuery sq_modif;
+    QSqlQuery query(db_main);
+    QSqlQuery sq_modif(db_main);
     QString msg = "";
     QString colNames[4]={"s1","s2","p1","p2"};
     int d[4]={1,2,-1,-2};
@@ -1556,7 +1558,7 @@ QGridLayout * MainWindow::MonLayout_Details()
 
     // Compter le nombre de colonne a creer
     QString sqlReq = "";
-    QSqlQuery sql_req;
+    QSqlQuery sql_req(db_main);
     bool status = false;
 
     sqlReq = "select * from repartition_bh limit 1;";
@@ -1624,11 +1626,11 @@ QGridLayout * MainWindow::MonLayout_Details()
     return(lay_return);
 }
 
-int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *ref)
+int MainWindow::RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *ref)
 {
     int retval = -1;
     QString sql_req;
-    QSqlQuery req;
+    QSqlQuery req(db_main);
     bool status = false;
 
     QStringList cri_msg;
@@ -2385,6 +2387,8 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
         //stl_tmp << QString::number(ligne+1);
 
         etude->origine = Tableau3;
+        etude->db_cnx = DB_tirages->get_IdCnx();
+
         etude->lgn[3] = index.model()->index(index.row(),0).data().toInt();;
         etude->col[3] = colon;
         etude->val[3] = val;
@@ -2409,9 +2413,12 @@ void MainWindow::slot_CriteresTiragesAppliquer()
 
 
 
+
     // recopie de la config courante
     critereTirages.cur_dst = 0;
     *etude = critereTirages;
+    etude->db_cnx = DB_tirages->get_IdCnx();
+
 
     // Nouvelle de fenetre de detail de cette boule
     SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale,gtab_Top);
@@ -3019,7 +3026,7 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
         G_tbv_Tirages->clearFocus();
 
         /// Montrer dans les courbes
-        ptir = new PointTirage(configJeu.choixJeu,eTirage);
+        ptir = new PointTirage(db_main.connectionName() ,configJeu.choixJeu,eTirage);
         //QGraphicsItem *unPoint = new QGraphicsItem;
         //unPoint->setPos(10);
         //ptir->setPos(10,69.8);
@@ -3444,7 +3451,7 @@ void MainWindow::TST_EtoilesVersTable (QStringList &combi,stTiragesDef *ref, dou
     int zn = 1;
 
 
-    QSqlQuery sql_1;
+    QSqlQuery sql_1(db_main);
     QString st_cols = "";
     QString st_vals = "";
     QString msg_1 = "";
@@ -4103,7 +4110,7 @@ void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemMode
                 +SqlReq + ");";
 
         bool status = false;
-        QSqlQuery sql_1;
+        QSqlQuery sql_1(db_main);
         status = sql_1.exec(st_ut);
 
         // Compter le nombre de ligne du tableau union
@@ -4195,7 +4202,7 @@ void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, in
     // ---
     QTableView *tv_r1 = new QTableView;
     QSqlQueryModel *sqm_r1 = new QSqlQueryModel;
-    QSqlQuery query;
+    QSqlQuery query(db_main);
     QString st_msg ="";
     QString st_titre="";
     QString st_where = "";
@@ -4218,7 +4225,7 @@ void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, in
     st_msg=st_msg.arg(d[distance]);
     //qDebug()<< st_msg;
 
-    sqm_r1->setQuery(st_msg);
+    sqm_r1->setQuery(st_msg,db_main);
     tv_r1->setModel(sqm_r1);
     tw_resu->addTab(tv_r1,tr("Details"));
 
@@ -4330,7 +4337,7 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg, stTiragesDef *pTDef)
 
 
 
-    sqm_r1->setQuery(st_msg);
+    sqm_r1->setQuery(st_msg,db_main);
     tv_r1->setModel(sqm_r1);
     tw_resu->addTab(tv_r1,tr("Details"));
 
@@ -4444,7 +4451,7 @@ void MainWindow::TST_LBcDistBr(int zn,stTiragesDef *pConf,int dist, QStringList 
 
 
 
-    sqm_r1->setQuery(msg_2);
+    sqm_r1->setQuery(msg_2,db_main);
     tv_r1->setModel(sqm_r1);
     //view->setSortingEnabled(true);
 
@@ -4566,7 +4573,7 @@ void MainWindow::TST_FenetreReponses(QString fen_titre, int zn, QString req_msg,
         fenetre_titre =  fen_titre;
     }
 
-    sqm_r1->setQuery(msg);
+    sqm_r1->setQuery(msg,db_main);
 
 
     tv_r1->setModel(sqm_r1);
@@ -4745,7 +4752,7 @@ int MainWindow::TST_TotBidDansGroupememnt(int bId, QString &st_grp)
 {
     int ret_val = 0;
     bool status = false;
-    QSqlQuery sql_1;
+    QSqlQuery sql_1(db_main);
 
     QString msg_2 = "select count (*) from (" +st_grp+ ") where (" +
             "b1 = " +QString::number(bId) + " or " +
@@ -4831,7 +4838,7 @@ void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
     int zn = 0;
     int nbBoules = floor(ref->limites[zn].max/10);
 
-    QSqlQuery sql_1;
+    QSqlQuery sql_1(db_main);
     QString st_cols = "";
     QString st_vals = "";
     QString st_valtips = "";
@@ -4954,8 +4961,8 @@ void MainWindow::TST_CombiVersTable (QStringList &combi,stTiragesDef *ref)
 void MainWindow::TST_PonderationCombi(int delta)
 {
     bool status = false;
-    QSqlQuery sql_1;
-    QSqlQuery sql_2;
+    QSqlQuery sql_1(db_main);
+    QSqlQuery sql_2(db_main);
     QString msg_1 = "select pos, count(pos)as T from lstcombi group by pos;";
 
 
@@ -5002,8 +5009,8 @@ void MainWindow::TST_PonderationCombi(int delta)
 void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
 {
     bool status = false;
-    QSqlQuery sql_1;
-    QSqlQuery sql_2;
+    QSqlQuery sql_1(db_main);
+    QSqlQuery sql_2(db_main);
     QString msg_1 = "select * from lstcombi;";
     int zn = 0;
     int nbBoules = floor(ref->limites[zn].max/10);
@@ -5057,7 +5064,7 @@ void MainWindow::TST_MettrePonderationSurTirages(void)
     select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;
 #endif
     bool status = false;
-    QSqlQuery sql_1;
+    QSqlQuery sql_1(db_main);
     QString msg_1 = "select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;";
 
     QFile fichier("ponder.txt");
@@ -5114,7 +5121,7 @@ UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
     QString msg_2="";
     QString msg_3 = "";
 
-    myview[0] = new MyGraphicsView(eRepartition,une_vue[0], "Tirages",Qt::white);
+    myview[0] = new MyGraphicsView(pConf->db_cnx, eRepartition,une_vue[0], "Tirages",Qt::white);
 
     //msg_2="select analyses.id, lstcombi.poids, lstcombi.pos from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;";
     msg_2="select analyses.id, lstcombi.poids from analyses inner join lstcombi on analyses.fk_idCombi_z1 = lstcombi.id;";
@@ -5147,7 +5154,7 @@ UnConteneurDessin * MainWindow::TST_Graphe_2(stTiragesDef *pConf)
     QString msg_2="";
     QString msg_3 = "";
 
-    myview[1] = new MyGraphicsView(eParite,une_vue[1], "Parites",Qt::gray );//QColor(200,170,100,140));
+    myview[1] = new MyGraphicsView(pConf->db_cnx,eParite,une_vue[1], "Parites",Qt::gray );//QColor(200,170,100,140));
     msg_2 = "select tirages.id, tirages.bp from tirages";
     myview[1]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::red,1,20);
 
@@ -5170,7 +5177,7 @@ UnConteneurDessin * MainWindow::TST_Graphe_3(stTiragesDef *pConf)
     QString msg_2="";
     QString msg_3 = "";
 
-    myview[2] = new MyGraphicsView(eGroupe,une_vue[2], "b<N/2", Qt::lightGray );// QColor(230,200,130,170));
+    myview[2] = new MyGraphicsView(pConf->db_cnx,eGroupe,une_vue[2], "b<N/2", Qt::lightGray );// QColor(230,200,130,170));
     msg_2 = "select tirages.id, tirages.bg from tirages";
     myview[2]->DessineCourbeSql(msg_2,pConf->choixJeu,Qt::red,1,20);
 
@@ -5186,7 +5193,7 @@ UnConteneurDessin * MainWindow::TST_Graphe_3(stTiragesDef *pConf)
 
 void MainWindow::TST_PrevisionNew(stTiragesDef *pConf)
 {
-    QSqlQuery query;
+    QSqlQuery query(db_main);
     QString msg1 = "";
     bool ret = false;
 
@@ -5261,7 +5268,7 @@ void MainWindow::TST_PrevisionNew(stTiragesDef *pConf)
 
                 // Chercher les 10 premiers tirages ayant cette boule
                 // Cela permettra de calculer des distances de references
-                QSqlQuery req_2;
+                QSqlQuery req_2(db_main);
                 bool ret2 = false;
 
                 msg1 = "select tirages.id from tirages "
@@ -5310,7 +5317,7 @@ void MainWindow::TST_PrevisionNew(stTiragesDef *pConf)
 bool MainWindow::TST_MettreLesTotaux(int idBoule, int vBoule, int dBoule)
 {
     bool status = false;
-    QSqlQuery query;
+    QSqlQuery query(db_main);
     QString msg1 = "";
 
     msg1 = "select MaPrevision.id,MaPrevision.b1, t2.T1, (MaPrevision.b1+ t2.T1) as Somme "
@@ -5371,7 +5378,7 @@ bool MainWindow::TST_MettreLesTotaux(int idBoule, int vBoule, int dBoule)
         if(query.isValid())
         {
             do{
-                QSqlQuery req_2;
+                QSqlQuery req_2(db_main);
                 int id=query.value(0).toInt();
                 //int bt=query.value(1).toInt(); // val dans table de total
                 //int rt=query.value(2).toInt(); // Val de nouvelle recherche
@@ -5393,7 +5400,7 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
 {
     QStandardItemModel **modele;
     QLabel **label;
-    QSqlQuery query;
+    QSqlQuery query(db_main);
     bool status;
 
     int cri_val = 0;
@@ -5471,8 +5478,8 @@ void MainWindow::TST_PrevisionType(NE_FDJ::E_typeCritere cri_type, stTiragesDef 
 
 void MainWindow::VUE_MontreLeTirage(double x)
 {
-    QSqlQuery query;
-    QString st_msg[3] = "";
+    QSqlQuery query(db_main);
+    QString st_msg[3] = {""};
     bool status = false;
     int scale[3]={20,20,20};
     int delta[3]={0,0,0};
@@ -5504,7 +5511,7 @@ void MainWindow::VUE_MontreLeTirage(double x)
                 double y = query.value(0).toInt();
                 int pos_x = x * C_COEF_X;
                 QGraphicsScene *lavue = une_vue[graph]->scene();
-                PointTirage *un_test = new PointTirage(NE_FDJ::fdj_loto,eTirage);
+                PointTirage *un_test = new PointTirage(db_main.connectionName() ,NE_FDJ::fdj_loto,eTirage);
 
 
                 double pos_y = myview[graph]->height();

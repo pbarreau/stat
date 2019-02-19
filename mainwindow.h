@@ -33,7 +33,6 @@ class MainWindow;
 }
 
 extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf);
-extern int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *pMaConf);
 
 #if 0
 class MonToolTips:public QStandardItemModel
@@ -227,10 +226,12 @@ private:
     QString TST_PartitionEntierAdd(int p[], int n);
     QStandardItemModel * TST_SetTblViewCombi(int nbLigne, QTableView *qtv_r);
     QStandardItemModel * TST_SetTblViewVal(int nbLigne, QTableView *qtv_r);
+    int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *pMaConf);;
 
 private:
     static QStringList L1;
     GererBase *DB_tirages;
+    QSqlDatabase db_main;
     QMdiArea *zoneCentrale;
     BPrevision *tous;
 

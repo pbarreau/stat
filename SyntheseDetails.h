@@ -37,6 +37,7 @@ typedef struct _demande
     int col[3];
     int val[3];
     QString st_titre;
+    QString db_cnx;
     QString stc[3];
     QStringList lst_boules[3];
     QString *st_LDT_Depart;
@@ -84,31 +85,6 @@ class SyntheseDetails: public QWidget
 {
     Q_OBJECT
 
-private:
-    static int detail_id;
-    static int vue_id;
-    static int niv_id;
-    static int d[4];
-    static QStringList tabNames;
-    int cur_vue;
-    int cur_niv;
-    QString view_id;
-    stCurDemande *pLaDemande;
-    QMdiArea *pEcran;
-    QTabWidget *gMemoTab;
-
-    QTabWidget *onglets;
-    QTabWidget *tab_Top;
-
-    DistancePourTirage *dist;
-    QGridLayout **G_design_onglet_2;
-    QStringList bSelection;
-    QTableView * qtv_local[4][3];
-
-    QComboBox * pCritere[4];
-    FiltreCombinaisons *pFiltre[4];
-    QStringList **maRef;
-    //int d[4]={0,-1,1,-2};
 
 public:
     SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel, QTabWidget *tab_Top);
@@ -149,11 +125,40 @@ public slots:
 
 
 private:
+    static int detail_id;
+    static int vue_id;
+    static int niv_id;
+    static int d[4];
+    static QStringList tabNames;
+    int cur_vue;
+    int cur_niv;
+    QString view_id;
+    stCurDemande *pLaDemande;
+    QSqlDatabase db_sd;
+
+    QMdiArea *pEcran;
+    QTabWidget *gMemoTab;
+
+    QTabWidget *onglets;
+    QTabWidget *tab_Top;
+
+    DistancePourTirage *dist;
+    QGridLayout **G_design_onglet_2;
+    QStringList bSelection;
+    QTableView * qtv_local[4][3];
+
+    QComboBox * pCritere[4];
+    FiltreCombinaisons *pFiltre[4];
+    QStringList **maRef;
+
     int dst[4];
     QString ong[4];
     QTabWidget **gtab_splitter_2;
     QTabWidget *gtab_tirages;
 
+    //int d[4]={0,-1,1,-2};
+
+private:
     QString DoSqlMsgRefGenerique(int dst);
     QString DoSqlMsgRef_Tb1(QStringList &boules, int dst);
     QString DoSqlMsgRef_Tb3(QStringList &boules, int dst);

@@ -79,6 +79,8 @@ RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
                    stTiragesDef *pDef,QMdiArea *visuel, QTabWidget *tab_Top):p_db(db),
     p_stRefTirages(stFiltreTirages),p_conf(pDef),p_affiche(visuel),p_reponse(tab_Top)
 {
+    db_ici = QSqlDatabase::database(db->get_IdCnx());
+
     // Nombre de zone composant un tirage (2: 1 zone boules + 1 zone etoiles)
     int nb_zones = p_conf->nb_zone;
 
@@ -214,6 +216,8 @@ void RefEtude::slot_Type_G(const QModelIndex & index)
     QString *st_tmp1 = new QString;
     *st_tmp1 = C_TousLesTirages;
     etude->origine = Tableau1;
+    etude->db_cnx = p_db->get_IdCnx();
+
     QItemSelectionModel *selectionModel = p_tbv_3->selectionModel();
     etude->selection[3] = selectionModel->selectedIndexes();
     etude->st_titre = titre;
@@ -239,7 +243,7 @@ QTableView *RefEtude::tbForBaseRef()
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     //p_qsim_3=sqm_tmp;
 
-    sqm_tmp->setQuery(p_stRefTirages);
+    sqm_tmp->setQuery(p_stRefTirages,db_ici);
     tbv_tmp->setModel(sqm_tmp);
 
     tbv_tmp->setSortingEnabled(false);
@@ -429,7 +433,7 @@ void RefEtude::CompleteMenu(QMenu *LeMenu,QString tbl, int clef)
     int col = 3;
     int niveau = 0;
     bool existe = false;
-    existe = VerifierValeur(clef, tbl,col,&niveau);
+    existe = VerifierValeur(db_ici, clef, tbl,col,&niveau);
 
 #ifdef CHKB_VERSION_1
     QCheckBox *chkb_1 = new QCheckBox;
@@ -472,7 +476,7 @@ QMenu *RefEtude::ContruireMenu(QString tbl, int val)
     int col = 2;
     int niveau = 0;
     bool existe = false;
-    existe = VerifierValeur(val, tbl,col,&niveau);
+    existe = VerifierValeur(db_ici,val, tbl,col,&niveau);
 
 
 
@@ -510,7 +514,7 @@ void RefEtude::slot_SetPriority(int val)
 
 void RefEtude::slot_ChoosePriority(QAction *cmd)
 {
-    QSqlQuery query;
+    QSqlQuery query(db_ici);
     QString msg = "";
 
     QString st_from = cmd->objectName();
@@ -581,10 +585,10 @@ void RefEtude::slot_ChoosePriority(QAction *cmd)
 /// item : valeur a rechercher
 /// *lev : valeur de priorité trouvé
 /// table : nom de la table dans laquelle il faut chercher
-bool VerifierValeur(int item, QString table,int idColValue,int *lev)
+bool VerifierValeur(QSqlDatabase la_db, int item, QString table,int idColValue,int *lev)
 {
     bool ret = false;
-    QSqlQuery query ;
+    QSqlQuery query (la_db);
     QString msg = "";
 
     msg = "select * from " + table + " " +
@@ -1115,7 +1119,7 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
     int col = index.column();
     QVariant vCol = pModel->headerData(col,Qt::Horizontal);
     QString headName = vCol.toString();
-    QSqlQuery sql;
+    QSqlQuery sql(db_ici);
     bool status = false;
 
     QTableView *view = qobject_cast<QTableView *>(sender());
@@ -1160,6 +1164,8 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
 
     stCurDemande *etude = new stCurDemande;
     etude->origine = Tableau3;
+    etude->db_cnx = p_db->get_IdCnx();
+
     etude->st_titre = titre;
     etude->cur_dst = 0;
     etude->ref = p_conf;
@@ -1326,7 +1332,7 @@ void RefEtude::slot_ShowDetails(const QModelIndex & index)
         return;
     }
 
-    QSqlQuery query;
+    QSqlQuery query(db_ici);
     QStandardItemModel *tmpStdItem = p_qsim_3;
 
     int nbCol = codeSqlDeRegroupementSurZnId[zn][0].size();
@@ -1365,7 +1371,7 @@ void RefEtude::slot_ShowDetails(const QModelIndex & index)
 
 bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
 {
-    QSqlQuery query;
+    QSqlQuery query(db_ici);
     bool status = false;
     bool uneCouvDePlus = false;
     int max_boule = p_conf->limites[zn].max;
@@ -1716,8 +1722,8 @@ double  RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemMo
 {
     bool status = false;
 
-    QSqlQuery query;
-    QSqlQuery selection;
+    QSqlQuery query(db_ici);
+    QSqlQuery selection(db_ici);
     QString msg="";
     QString msg_ligne="";
 

@@ -167,8 +167,8 @@ bool BCountGroup::SupprimerVueIntermediaires(void)
 {
     bool isOk = true;
     QString msg = "";
-    QSqlQuery query;
-    QSqlQuery qDel;
+    QSqlQuery query(dbToUse);
+    QSqlQuery qDel(dbToUse);
 
     msg = "SELECT name FROM sqlite_master "
           "WHERE type='view' AND name like'vt_%';";
@@ -513,7 +513,7 @@ void BCountGroup::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 void BCountGroup::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp)
 {
     bool status = true;
-    QSqlQuery query ;
+    QSqlQuery query(dbToUse) ;
 
     for(int j=0; (j< nbCol) && (status == true);j++)
     {
@@ -614,7 +614,7 @@ void BCountGroup::slot_DecodeTirage(const QModelIndex & index)
         return;
     }
 
-    QSqlQuery query;
+    QSqlQuery query(dbToUse);
 
     for(int zn = 0; zn < myGame.znCount;zn ++)
     {

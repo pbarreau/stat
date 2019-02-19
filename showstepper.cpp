@@ -7,7 +7,10 @@
 #include <QPushButton>
 #include <QCheckBox>
 #include <QSplitter>
+
 #include <QSqlQueryModel>
+#include <QSqlDatabase>
+
 #include <QTableView>
 #include <QSqlRecord>
 #include <QHeaderView>
@@ -20,11 +23,11 @@
 QString GetTirageInfo(int id);
 
 #ifndef USE_SG_CODE
-QString GetBoulesOfTirage(int tir);
+//QString GetBoulesOfTirage(int tir);
 
 void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid)
 {
-    QSqlQuery requete;
+    QSqlQuery requete(db_ici);
     bool status = false;
     int val = my_index.model()->index(my_index.row(),0).data().toInt();
     QString table = "stepper_"+QString::number(val);
@@ -191,7 +194,7 @@ void ShowStepper::PresenterResultat(int cid,int tid)
 
 void ShowStepper::MemoriserProgression(QString table,stMyHeadedList *h,stMyLinkedList *l, int start, int y, int cid, int tid)
 {
-    QSqlQuery sql;
+    QSqlQuery sql(db_ici);
     bool sta = false;
 
     QString msg = "insert into "+
@@ -225,10 +228,10 @@ void ShowStepper::MemoriserProgression(QString table,stMyHeadedList *h,stMyLinke
     MettreCouleur(start, tid);
 }
 
-QString GetBoulesOfTirage(int tir)
+QString ShowStepper::GetBoulesOfTirage(int tir)
 {
     bool sta = false;
-    QSqlQuery sql;
+    QSqlQuery sql(db_ici);
     QString msg = "";
 
     msg="select b1,b2,b3,b4,b5 from reftirages where(id =" +
@@ -258,7 +261,7 @@ QString GetBoulesOfTirage(int tir)
 void ShowStepper::MettreCouleur(int start, int cur)
 {
     bool sta = false;
-    QSqlQuery sql;
+    QSqlQuery sql(db_ici);
     QString msg = "";
     QString val = "";
     QString table = "stepper_"+QString::number(start);
@@ -330,7 +333,7 @@ void ShowStepper::slot_BtnPrev(void)
 
 void  ShowStepper::slot_EndResultat(QObject*)
 {
-    QSqlQuery requete;
+    QSqlQuery requete(db_ici);
     bool status = false;
 
     QString msg = "drop table "+useTable+";";
@@ -375,7 +378,7 @@ void ShowStepper::ExecSql(int cid, int tid)
                 QString::number(tid)+ " and y="+
                 QString::number(i)+ ") order by id;";
 
-        my_model[i].setQuery(msg);
+        my_model[i].setQuery(msg,db_ici);
     }
 
 }
@@ -393,7 +396,7 @@ void ShowStepper::ExecSql_2(int cid, int tid)
                 "and(r2.cid ="+QString::number(cid)+ ")and (r2.tid ="+QString::number(tid)+"))" +
                 "order by r2.id desc limit 3)as r1 order by r1.id;";
 
-        my_model_2[i-1].setQuery(msg);
+        my_model_2[i-1].setQuery(msg,db_ici);
     }
 
 }
@@ -413,7 +416,7 @@ void ShowStepper::ExecSql_3(int cid, int tid)
                 "and(r1.cid ="+QString::number(cid)+ ") and (r1.tid ="+QString::number(tid)+"))" +
                 "order by r1.b;";
 
-        my_model_3[i].setQuery(msg);    }
+        my_model_3[i].setQuery(msg,db_ici);    }
 
 }
 
@@ -455,6 +458,7 @@ ShowStepper::ShowStepper(stTiragesDef *pdef)
     tid_start = 0;
     cid_start = 0;
     tid_cur = 0;
+    db_ici = QSqlDatabase::database(pdef->db_cnx);
 
     pGlobConf =  pdef;
 }
@@ -468,7 +472,7 @@ void ShowStepper::RunStepper(int cid, int tid)
     int zn = 0;
     int nbBoules = floor(pGlobConf->limites[zn].max/10);
 
-    QSqlQuery requete;
+    QSqlQuery requete(db_ici);
     bool status = false;
     QString msg = "";
     useTable = "stepper_"+QString::number(tid_start);
@@ -569,7 +573,7 @@ void ShowStepper::slot_chkAdd(int state)
 void ShowStepper::SetBgColorCell(int tbl, int cid, int tid, int bid)
 {
     bool sta = false;
-    QSqlQuery sql;
+    QSqlQuery sql(db_ici);
     QString msg = "";
     QString val = "";
     QString table = "stepper_"+QString::number(tbl);
@@ -669,7 +673,7 @@ QSplitter *ShowStepper::SetDataSplitter_1(int col, int cid, int tid)
                 QString::number(tid)+ " and y="+
                 QString::number(i)+ ") order by id;";
 
-        my_model[i].setQuery(msg);
+        my_model[i].setQuery(msg,db_ici);
 
 
         view[i].setModel(&my_model[i]);
@@ -731,7 +735,7 @@ QSplitter *ShowStepper::SetDataSplitter_3(int col, int cid, int tid)
         qDebug() << msg;
 #endif
 
-        my_model_2[i-1].setQuery(msg);
+        my_model_2[i-1].setQuery(msg,db_ici);
 
 
         view[i-1].setModel(&my_model_2[i-1]);
@@ -791,7 +795,7 @@ select r1.b as d0,r1.c,r1.bgc
         qDebug() << msg;
 #endif
 
-        my_model_3[i].setQuery(msg);
+        my_model_3[i].setQuery(msg,db_ici);
 
 
         view[i].setModel(&my_model_3[i]);
@@ -856,9 +860,9 @@ void ShowStepper::slot_MontrerBoule(QModelIndex index)
 
 }
 
-QString GetTirageInfo(int id)
+QString ShowStepper::GetTirageInfo(int id)
 {
-    QSqlQuery requete;
+    QSqlQuery requete(db_ici);
     QString tmp = "";
     bool status = false;
 
