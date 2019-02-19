@@ -1458,17 +1458,42 @@ void BPrevision::slot_make_UserGamesList()
         }
         else{
             if(n<=MAX_CHOIX_BOULES){
+                QTime r;
+                QTime t;
+                QString t_human = "";
+
                 if(isTableCnpinDb(n,p)==false)
                 {
+                    r.setHMS(0,0,0,0);
+                    t.start();
                     a= new BCnp(n,p,db_1.connectionName());
+                    r = r.addMSecs(t.elapsed());
+                    t_human = r.toString("hh:mm:ss:zzz");
+                    msg = "Creation Cnp("
+                            +QString::number(n)
+                            +QString(",")
+                            +QString::number(p)
+                            +QString(") en : ")
+                            +t_human
+                            +QString (" (hh:mm:ss:ms)");
+                    QMessageBox::information(NULL,"UsrGame",msg,QMessageBox::Ok);
                 }
 
                 /// supprimer la vue resultat
                 msg = "drop table if exists E1";
                 isOk = query.exec(msg);
                 if(isOk){
+                    r.setHMS(0,0,0,0);
+                    t.restart();
                     /// Creer une liste de jeux possibles
                     creerJeuxUtilisateur(n,p);
+                    r = r.addMSecs(t.elapsed());
+                    t_human = r.toString("hh:mm:ss:zzz");
+                    msg = QString("Creation Liste de jeux en : ")
+                            +t_human
+                            +QString (" (hh:mm:ss:ms)");
+                    QMessageBox::information(NULL,"UsrGame",msg,QMessageBox::Ok);
+
                 }
 
             }

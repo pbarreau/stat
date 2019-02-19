@@ -9,11 +9,14 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 
+#include <QTime>
 #include <QMessageBox>
 #include <QApplication>
 
 #include "db_tools.h"
 #include "cnp_SansRepetition.h"
+
+#undef CNP_SHOW_MSG
 
 BCnp::BCnp(int n_in, int p_in)
 {
@@ -65,8 +68,18 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
             msg = "Echec creation table " + str_cnp;
         }
         else{
+            QTime t;
+            t.start();
             isOk = effectueCalculCnp(n_in,p_in);
-            msg = str_cnp+ QString(" termine\nEtat ->")
+#ifndef QT_NO_DEBUG
+            qDebug("Time elapsed: %d ms", t.elapsed());
+#endif
+            QString t_human = t.toString("hh:mm:ss:zzz");
+            //QString::number(t.elapsed())
+            msg = str_cnp
+                    +QString(" termine en :)")
+                    +t_human
+                    +QString(" ms\nEtat ->")
                     +QString::number(isOk);
         }
     }
@@ -74,7 +87,9 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
         msg = str_cnp+ QString(" deja en base..");
     }
 
+#ifdef CNP_SHOW_MSG
     QMessageBox::information(NULL,"BddCnp",msg,QMessageBox::Ok);
+#endif
 
 #if 0
     if(CalculerPascal()==false)
@@ -181,9 +196,6 @@ bool BCnp::combinaisons(int n, int p, int k, int *L, int *t, int r) {
                 + col
                 + QString(" values ")
                 +msg;
-#ifndef QT_NO_DEBUG
-        qDebug()<< msg;
-#endif
 
         /// Mettre les valeurs
         isOk = query.exec(msg);
