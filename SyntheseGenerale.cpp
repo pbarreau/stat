@@ -697,10 +697,12 @@ void SyntheseGenerale::DoComptageTotal(void)
 
     // Onglet pere
     QTabWidget *tab_Top = new QTabWidget;
-    QWidget **wid_ForTop = new QWidget*[4];
 
-    QString stNames[]={"b","e","c","g"};
-    QGridLayout *design_onglet[4];
+    QString stNames[]={"b","e","c","g","ba"};
+    int items = sizeof(stNames)/sizeof(QString);
+
+    QWidget **wid_ForTop = new QWidget*[items];
+    QGridLayout *design_onglet[items];
 
     ptabComptage = tab_Top;
     // Tableau de pointeur de fonction
@@ -709,12 +711,13 @@ void SyntheseGenerale::DoComptageTotal(void)
             &SyntheseGenerale::MonLayout_SyntheseTotalBoules,
             &SyntheseGenerale::MonLayout_SyntheseTotalEtoiles,
             &SyntheseGenerale::MonLayout_SyntheseTotalRepartitions,
-            &SyntheseGenerale::MonLayout_SyntheseTotalGroupement
+            &SyntheseGenerale::MonLayout_SyntheseTotalGroupement,
+            &SyntheseGenerale::MonLayout_SyntheseTotalBarycentre
 };
 
     stTiragesDef *pConf = pMaConf;
 
-    for(int i =0; i<4;i++)
+    for(int i =0; i<items;i++)
     {
         wid_ForTop[i]=new QWidget;
         tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
@@ -1024,6 +1027,12 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     connect( tbv_bloc1_3, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
+    return lay_return;
+}
+
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBarycentre(int dst)
+{
+    QGridLayout *lay_return = new QGridLayout;
     return lay_return;
 }
 
@@ -1857,7 +1866,8 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
             &SyntheseGenerale::SqlCreateCodeBoule,
             &SyntheseGenerale::SqlCreateCodeBoule,
             &SyntheseGenerale::SqlCreateCodeCombi,
-            &SyntheseGenerale::SqlCreateCodeGroupe
+            &SyntheseGenerale::SqlCreateCodeGroupe,
+            &SyntheseGenerale::SqlCreateCodeBary
 };
 
     ///parcourir tous les onglets
@@ -1907,6 +1917,12 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
 
 }
+QString SyntheseGenerale::SqlCreateCodeBary(int onglet, QString table)
+{
+    QString sqlReq ="";
+    return sqlReq;
+}
+
 QString SyntheseGenerale::SqlCreateCodeBoule(int onglet, QString table)
 {
     QString st_critere = "";

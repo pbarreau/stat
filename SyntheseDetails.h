@@ -108,6 +108,8 @@ public:
     QGridLayout * MonLayout_CompteCombi(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
     QGridLayout * MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int curOng, int ongPere);
     QGridLayout * MonLayout_CompteDistribution(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
+    QGridLayout * MonLayout_CompteBarycentre(stCurDemande *pEtude, QString ReqTirages, int zn, int ongPere);
+
 
     // penser au destructeur pour chaque pointeur
     QString ReponsesOrigine_1(int dst);

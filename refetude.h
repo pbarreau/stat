@@ -50,9 +50,12 @@ private:
     QGridLayout *MonLayout_TabCouvertures();
     QGridLayout *MonLayout_TabCouverturesZnId(int zn);
     QGridLayout *MonLayout_TabCouvertures_etoiles();
+
     QGridLayout *MonLayout_TabEcarts();
     QGridLayout *MonLayout_TabEcart_2();
     QGridLayout *MonLayout_TabEcart_3();
+    QGridLayout *MonLayout_TabEcart_4();
+
     QGridLayout *MonLayout_TabMois();
     QGridLayout *MonLayout_TabMois_boules();
     QGridLayout *MonLayout_TabMois_etoiles();

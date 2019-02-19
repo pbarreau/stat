@@ -329,7 +329,7 @@ QWidget *RefEtude::EcartOnglets()
     QGridLayout *frm_tmp = new QGridLayout;
     QTabWidget *tab_Top = new QTabWidget;
 
-    QString ongNames[]={"b","e"};
+    QString ongNames[]={"b","e","ba"};
     int maxOnglets = sizeof(ongNames)/sizeof(QString);
 
     QWidget **wid_ForTop = new QWidget*[maxOnglets];
@@ -337,7 +337,9 @@ QWidget *RefEtude::EcartOnglets()
 
     QGridLayout * (RefEtude::*ptrFunc[])()={
             &RefEtude::MonLayout_TabEcart_2,
-            &RefEtude::MonLayout_TabEcart_3};
+            &RefEtude::MonLayout_TabEcart_3,
+            &RefEtude::MonLayout_TabEcart_4
+};
 
     for(int id_Onglet = 0; id_Onglet<maxOnglets; id_Onglet++)
     {
@@ -372,6 +374,16 @@ QGridLayout *RefEtude::MonLayout_TabEcart_3()
     // Association recherche avec qttable !
     QTableView *tbv_tmp1 = tbForBaseEcart(1);
     returnLayout->addWidget(tbv_tmp1,0,0);
+
+    return returnLayout;
+}
+QGridLayout *RefEtude::MonLayout_TabEcart_4()
+{
+    QGridLayout *returnLayout = new QGridLayout;
+
+    // Association recherche avec qttable !
+    //QTableView *tbv_tmp1 = tbForBaseEcart(1);
+    //returnLayout->addWidget(tbv_tmp1,0,0);
 
     return returnLayout;
 }

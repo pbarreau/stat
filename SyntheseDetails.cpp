@@ -605,7 +605,7 @@ QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString Req
 
     //QLabel * titre = new QLabel;
 
-    QString ongNames[]={"b","e","c","g"};
+    QString ongNames[]={"b","e","c","g","ba"};
     int maxOnglets = sizeof(ongNames)/sizeof(QString);
 
     tab_Top = new QTabWidget;
@@ -619,7 +619,8 @@ QWidget * SyntheseDetails::PBAR_ComptageFiltre(stCurDemande *pEtude, QString Req
             &SyntheseDetails::MonLayout_CompteBoulesZone,
             &SyntheseDetails::MonLayout_CompteBoulesZone,
             &SyntheseDetails::MonLayout_CompteCombi,
-            &SyntheseDetails::MonLayout_CompteDistribution
+            &SyntheseDetails::MonLayout_CompteDistribution,
+            &SyntheseDetails::MonLayout_CompteBarycentre
 };
 
     //titre->setText("Position "+labNames[i]);
@@ -1512,7 +1513,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
     }
 
 #ifndef QT_NO_DEBUG
-        qDebug() << ReqTirages;
+    qDebug() << ReqTirages;
 #endif
 
     bool status = true;
@@ -1815,6 +1816,12 @@ QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn,int di
 
     return msg;
 
+}
+
+QGridLayout * SyntheseDetails::MonLayout_CompteBarycentre(stCurDemande *pEtude, QString ReqTirages, int curOng,int ongPere)
+{
+    QGridLayout *lay_return = new QGridLayout;
+    return lay_return;
 }
 
 QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, QString ReqTirages, int curOng,int ongPere)

@@ -30,7 +30,7 @@ typedef enum _les_tableaux
 }E_Syntese;
 }
 
-#define CTXT_SELECTION  "selection b:aucun - e:aucun - c:aucun - g:aucun"
+#define CTXT_SELECTION  "selection b:aucun - e:aucun - c:aucun - g:aucun - ba:aucun"
 
 class B_ActFrMdlIndex:public QAction //Barreau_ActionFromModelIndex
 {
@@ -153,11 +153,14 @@ private:
     QString SqlCreateCodeEtoile(int onglet, QString table);
     QString SqlCreateCodeCombi(int onglet, QString table);
     QString SqlCreateCodeGroupe(int onglet, QString table);
+    QString SqlCreateCodeBary(int onglet, QString table);
 
     QGridLayout * MonLayout_SyntheseTotalGroupement(int fake);
     QGridLayout * MonLayout_SyntheseTotalBoules(int dst);
     QGridLayout * MonLayout_SyntheseTotalEtoiles(int dst);
     QGridLayout * MonLayout_SyntheseTotalRepartitions(int dst);
+    QGridLayout * MonLayout_SyntheseTotalBarycentre(int dst);
+
 
     QTableView *tbForPrincipeAuguste(int nbcol, int nblgn);
     QGridLayout *MonLayout_TabAuguste(int col, int lgn);
