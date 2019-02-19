@@ -1688,7 +1688,7 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
         if(i<len-1)
             msg1 = msg1 + ",";
     }
-    msg1 = "tbLeft.id, " + msg1;
+    msg1 = "tbLeft.id, 'DAY_tbd' as J," + msg1;
 #ifndef QT_NO_DEBUG
     qDebug() << "msg1: " <<msg1;
 #endif

@@ -227,7 +227,7 @@ void RefEtude::slot_Type_G(const QModelIndex & index)
     etude->st_LDT_Filtre = new QString;
     etude->st_LDT_Depart = st_tmp1;
     etude->st_jourDef = new QString;
-    *(etude->st_jourDef) = CompteJourTirage(p_conf);
+    *(etude->st_jourDef) = CompteJourTirage(db_0.connectionName());
 
     etude->st_TablePere = REF_BASE;
     // Nouvelle de fenetre de detail de cette selection
@@ -1179,7 +1179,7 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
     *(etude->st_LDT_Depart) = C_TousLesTirages;
 
     etude->st_jourDef = new QString;
-    *(etude->st_jourDef) = CompteJourTirage(p_conf);
+    *(etude->st_jourDef) = CompteJourTirage(db_0.connectionName());
 
     // Nouvelle de fenetre de detail de cette selection
     SyntheseDetails *unDetail = new SyntheseDetails(etude,p_affiche,p_reponse);

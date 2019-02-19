@@ -20,22 +20,27 @@ QString BCount::label[]={"err",C_TBL_C,C_TBL_4,C_TBL_9,C_TBL_B,"laFin"};
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
 
-void BCount::CreerCritereJours(void)
+QString BCount::CreerCritereJours(QString cnx_db_name, QString tbl_ref)
 {
     QString st_tmp = "";
 
-    QSqlQuery query(dbToUse) ;
-    QString msg = "";
-    QString st_table = "J";
     bool status = false;
 
+    QSqlDatabase cur_db = QSqlDatabase::database(cnx_db_name);
+    QSqlQuery query(cur_db) ;
+    QString msg = "";
+
+    QString st_table = "J";
+
+#if 0
     if(myGame.from == eUsr){
-        db_jours = "";
-        return;
+        //db_jours = "";
+        return st_tmp;
     }
+#endif
 
     msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
-            db_data+") as tb1 order by J asc;";
+            tbl_ref+") as tb1 order by J asc;";
 
     status = query.exec(msg);
 
@@ -50,7 +55,7 @@ void BCount::CreerCritereJours(void)
                 st_tmp = st_tmp + "count(CASE WHEN  J like '"+
                         query.value(0).toString()+"%' then 1 end) as "+
                         query.value(0).toString()+",";
-            }while(status = query.next());
+            }while((status = query.next()));
 
             //supprimer derniere ','
             st_tmp.remove(st_tmp.length()-1,1);
@@ -65,7 +70,9 @@ void BCount::CreerCritereJours(void)
 #endif
 
     query.finish();
-    db_jours = ","+st_tmp;
+    //db_jours = ","+st_tmp;
+
+    return st_tmp;
 }
 
 void BCount::RecupererConfiguration(void)
@@ -175,7 +182,10 @@ BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
         if(type==eCountGrp) pos = 2;
         sqmActive[pos].append(tmp);
     }
-    CreerCritereJours();
+
+    QString st_tmp = CreerCritereJours(fromDb.connectionName(),in);
+    db_jours = ","+st_tmp;
+
 }
 
 void BCount::slot_AideToolTip(const QModelIndex & index)

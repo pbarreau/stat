@@ -153,8 +153,8 @@ void SyntheseGenerale::slot_ShowTotalBoule(const QModelIndex &index)
 
 void SyntheseGenerale::slot_ShowBouleForNewDesign(const QModelIndex & index)
 {
-   /// Pas de test sur la colonne ici
-   /// se mettre sur le bon onglet
+    /// Pas de test sur la colonne ici
+    /// se mettre sur le bon onglet
     ptabComptage->setCurrentIndex(0);///(boules)
 
     // recuperer la valeur a la colone de la table
@@ -215,7 +215,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
     *st_tmp2 = *st_bdTirages;
 
     st_JourTirageDef = new QString;
-    *st_JourTirageDef = CompteJourTirage(pConf);
+    *st_JourTirageDef = CompteJourTirage(db_0.connectionName());
 
     uneDemande.st_Ensemble_1 = st_bdTirages;
     uneDemande.st_LDT_Depart = st_tmp2;
@@ -1887,7 +1887,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     etude->ref = uneDemande.ref;
     etude->st_LDT_Filtre = new QString;
     etude->st_jourDef = new QString;
-    *(etude->st_jourDef) = CompteJourTirage(uneDemande.ref);
+    *(etude->st_jourDef) = CompteJourTirage(db_0.connectionName());
     *(etude->st_LDT_Filtre) = sqlReq;
 
 #ifndef QT_NO_DEBUG
@@ -2205,6 +2205,51 @@ on
         ) group by tbleft.boule;
 #endif
 
+#if 1
+QString CompteJourTirage(QString cnx_name)
+{
+    bool status = false;
+    QString msg = "";
+
+    QSqlDatabase use_db = QSqlDatabase::database(cnx_name);
+    QSqlQuery query(use_db) ;
+
+    QString st_tmp = "";
+    QString st_table = "J";
+
+
+    msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
+            REF_BASE+") as tb1 order by J asc;";
+
+    if((status = query.exec(msg)))
+    {
+        status = query.first();
+        if (query.isValid())
+        {
+            do
+            {
+                //count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,
+                st_tmp = st_tmp + "count(CASE WHEN  J like '"+
+                        query.value(0).toString()+"%' then 1 end) as "+
+                        query.value(0).toString()+",";
+            }while((status = query.next()));
+
+            //supprimer derniere ','
+            st_tmp.remove(st_tmp.length()-1,1);
+            st_tmp = st_tmp + " ";
+        }
+    }
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "CreerCritereJours ->"<< query.lastError();
+    qDebug() << "SQL 1:\n"<<msg<<"\n-------";
+    qDebug() << "SQL 2:\n"<<st_tmp<<"\n-------";
+#endif
+
+    return st_tmp;
+}
+
+#else
 QString CompteJourTirage(stTiragesDef *pMaConf)
 {
     QString st_msg = "";
@@ -2229,6 +2274,7 @@ QString CompteJourTirage(stTiragesDef *pMaConf)
 
     return st_msg;
 }
+#endif
 
 
 QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf)

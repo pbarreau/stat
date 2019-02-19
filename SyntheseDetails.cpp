@@ -1623,7 +1623,7 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
 #endif
 
     etude->st_jourDef = new QString;
-    *(etude->st_jourDef) = CompteJourTirage(pLaDemande->ref);
+    *(etude->st_jourDef) = CompteJourTirage(db_0.connectionName());
 
 #if 0
     QString vueId = "v_R"+QString::number(useId)

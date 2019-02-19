@@ -115,8 +115,12 @@ QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
     int nbCol = sqm_tmp->columnCount();
     for(int pos=0;pos<nbCol;pos++)
     {
-        qtv_tmp->setColumnWidth(pos,30);
+        qtv_tmp->setColumnWidth(pos,35);
     }
+    int l = CEL2_L * (nbCol+1);
+    qtv_tmp->setFixedWidth(l);
+
+    qtv_tmp->setFixedHeight(CEL2_H*6);
 
     lay_return->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
 
@@ -135,9 +139,19 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
     QSqlQuery query(db_1);
     bool isOk = true;
 
-    /// prendre dans les tirages les boules de la zone
-    QString str_data = "select id,b1,b2,b3,b4,b5 from ("
+    QString filterDays = CreerCritereJours(db_1.connectionName(),tbl_in);
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "filterDays:"<<filterDays;
+#endif
+
+    /// prendre dans les tirages les jours, les boules de la zone
+    QString str_data = "select id,J,b1,b2,b3,b4,b5 from ("
             +tbl_in+")";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "str_data:"<<str_data;
+#endif
 
     if((isOk = query.exec(str_data))){
         //Verifier si on a des donnees
@@ -146,7 +160,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
             /// Poursuivre les calculs
             /// 1 : Transformation de lignes vers 1 colonne
             QString tbl_refBoules = QStringLiteral("B_elm");
-            str_data = "select c1.id as Id, r1.z1 as b  FROM ("
+            str_data = "select c1.id as Id, c1.J as J, r1.z1 as b  FROM ("
                     +tbl_refBoules
                     +") as r1, ("
                     +str_data
@@ -158,7 +172,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
             ///  de la base complete
             QString tbl_totalBoule = "r_B_fdj_0_elm_z1";
             if(isTableTotalBoulleReady(tbl_totalBoule)){
-                str_data = "Select c1.id as Id, sum(c2.t)/5 as BC From ("
+                str_data = "Select c1.id as Id, sum(c2.t)/5 as BC, J From ("
                         +str_data
                         +") as c1, ("
                         +tbl_totalBoule
@@ -170,7 +184,9 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
                 /// 3: Creation d'une table regroupant les barycentres
                 QString str_tblData = "";
                 QString str_tblName = "r_"+tbl_in+"_0_brc_z1";
-                str_tblData = "select BC, count(BC) as T, NULL as P, NULL as F from ("
+                str_tblData = "select BC, count(BC) as T, "
+                        +filterDays
+                        +QString(",NULL as P, NULL as F from (")
                         + str_data
                         + ") as c1 group by BC order by T desc";
                 str_tblData = "create table if not exists "

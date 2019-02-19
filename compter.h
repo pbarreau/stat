@@ -90,10 +90,11 @@ protected:
     bool VerifierValeur(int item, QString table,int idColValue,int *lev);
     QMenu *ContruireMenu(QTableView *view, int val);
     void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
+    QString CreerCritereJours(QString cnx_db_name, QString tbl_ref);
+
 
 private:
     void RecupererConfiguration(void);
-    void CreerCritereJours(void);
 
 
 

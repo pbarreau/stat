@@ -2099,7 +2099,7 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
     *st_tmp1 = C_TousLesTirages;
     *st_tmp2 = *st_tmp1 ;
     *st_tmp3 = *st_tmp1 ;
-    *st_tmp4 =CompteJourTirage(pConf);
+    *st_tmp4 =CompteJourTirage(db_0.connectionName());
 
     //---------------------------------------------------------------
     //
