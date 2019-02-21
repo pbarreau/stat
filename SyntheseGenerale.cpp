@@ -2301,6 +2301,141 @@ QString SyntheseGenerale::SqlCreateCodeCombi(int onglet, QString table)
     return sqlReq;
 }
 
+#ifdef EXEMPLE_SQL
+-- Remarque il faut utiliser sqlite V3.26 au minimum
+
+-- Selection tirages selon criteres
+select t1.z1 as B,t2.* from Bnrz as t1, RefTirages as t2 where(t1.z1 in (t2.b1,t2.b2,t2.b3,T2.b4,t2.b5))
+
+-- Calcul des ecarts dans la selection precendente pour chaque ligne
+select t1.B as B,
+ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
+lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
+(t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
+ t1.id,t1.J,t1.D,t1.C,t1.b1,t1.b2,t1.b3,t1.b4,t1.b5,t1.e1
+from
+(
+select t1.z1 as B,t2.* from Bnrz as t1, RefTirages as t2 where(t1.z1 in (t2.b1,t2.b2,t2.b3,T2.b4,t2.b5))
+) as t1
+
+-- Ecart Boules
+select B,
+count(*)  as T,
+(select(min (Id)-1 ))as Ec,
+max((CASE WHEN lid=2 then E END)) as Ep,
+printf("%.1f",avg(E))as Em,
+max(E) as M
+FROM
+(
+select t1.B as B,
+ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
+lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
+(t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
+ t1.id,t1.J,t1.D,t1.C,t1.b1,t1.b2,t1.b3,t1.b4,t1.b5,t1.e1
+from
+(
+select t1.z1 as B,t2.* from Bnrz as t1, RefTirages as t2 where(t1.z1 in (t2.b1,t2.b2,t2.b3,T2.b4,t2.b5))
+) as t1
+)as r1 group by b
+
+-- Ecart Barycentre
+select
+B,
+count(*)  as T,
+(case WHEN
+(select(min (Id)-1 ))as Ec,
+max((CASE WHEN lid=2 then E END)) as Ep,
+printf("%.1f",avg(E))as Em,
+max(E) as M
+FROM
+(
+select ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
+t1.B as B,
+lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
+(t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
+t1.*
+from
+(
+select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, analyses as t2 where(t1.bc in (t2.bc))
+) as t1
+)as r1 GROUP by B order by T DESC
+
+-- Autre Selection tirages avec presence J,D,tip
+ select t1.bc as B,t3.J,t3.D,t4.tip,t2.id
+ from r_RefTirages_0_brc_z1 as t1,
+  analyses as t2,
+  RefTirages as t3,
+ lstCombi_z1 as t4
+  where(
+  (t1.bc in (t2.bc))
+   and
+   (t2.id=t3.id)
+   AND
+   (t4.id=t2.fk_idCombi_z1)
+  )
+
+ -- Regroupement des barycentres de tous les tirages
+ select ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
+ t1.B as B,
+ lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
+ (t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
+ t1.*
+ from
+ (
+ select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, analyses as t2 where(t1.bc in (t2.bc))
+ ) as t1
+
+ -- Version compacte des calculs...
+ select B,
+ count(*)  as T,
+ count(CASE WHEN  J like 'lun%' then 1 end) as LUN,
+ (select(min (Id)-1 ))as Ec,
+ max((CASE WHEN lid=2 then E END)) as Ep,
+ printf("%.1f",avg(E))as Em,
+ max(E) as M
+ FROM
+ (
+ select ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
+ t1.B as B,
+ lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
+ (t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
+ t1.*
+ from
+ (
+ select t1.bc as B,t3.J,t3.D,t4.tip,t2.id
+ from r_RefTirages_0_brc_z1 as t1,
+  analyses as t2,
+  RefTirages as t3,
+ lstCombi_z1 as t4
+  where(
+  (t1.bc in (t2.bc))
+   and
+   (t2.id=t3.id)
+   AND
+   (t4.id=t2.fk_idCombi_z1)
+  )) as t1
+ )as r1 GROUP by B order by T DESC
+
+#endif
+QString SyntheseGenerale::Step_1_TrouverTirageSelonCriteres(int zn, QString tbl_reference, QString tbl_data)
+{
+    QString tmp = "";
+    int len_zn = pMaConf->limites[zn].len;
+    QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
+    QString msg = "";
+
+    for(int i=0;i<len_zn;i++){
+        msg = msg + ref.arg(i+1);
+        if(i<(len_zn-1)){
+            msg=msg+QString(",");
+        }
+    }
+    msg = msg+QString(")");
+
+
+    return tmp;
+}
+
 QString SyntheseGenerale::SqlCreateCodeGroupe(int onglet, QString table)
 {
     QString st_critere = "";

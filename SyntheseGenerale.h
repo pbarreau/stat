@@ -142,6 +142,7 @@ private slots:
     void slot_ShowBouleForNewDesign(const QModelIndex & index);
 
 private:
+    QString Step_1_TrouverTirageSelonCriteres(int zn, QString tbl_reference, QString tbl_data);
     //QString OrganiseChampsDesTirages(QString st_base_reference);
     //QString CompteJourTirage();
     void DoTirages(void);
