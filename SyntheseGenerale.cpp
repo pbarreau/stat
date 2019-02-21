@@ -1404,6 +1404,9 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
     if((isOk= query.exec(st_msg2))){
         st_msg1 = "select * from view_total_boule;";
+
+        QString key = "z"+QString::number(zn+1);
+        isOk = Boules_Details(zn,"toto","Bnrz",key,"RefTirages");
     }
     sqm_bloc1_1->setQuery(st_msg1,db_0);
 
@@ -2312,11 +2315,11 @@ select t1.B as B,
 ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
 lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
 (t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
- t1.id,t1.J,t1.D,t1.C,t1.b1,t1.b2,t1.b3,t1.b4,t1.b5,t1.e1
+t1.id,t1.J,t1.D,t1.C,t1.b1,t1.b2,t1.b3,t1.b4,t1.b5,t1.e1
 from
 (
-select t1.z1 as B,t2.* from Bnrz as t1, RefTirages as t2 where(t1.z1 in (t2.b1,t2.b2,t2.b3,T2.b4,t2.b5))
-) as t1
+        select t1.z1 as B,t2.* from Bnrz as t1, RefTirages as t2 where(t1.z1 in (t2.b1,t2.b2,t2.b3,T2.b4,t2.b5))
+        ) as t1
 
 -- Ecart Boules
 select B,
@@ -2327,52 +2330,52 @@ printf("%.1f",avg(E))as Em,
 max(E) as M
 FROM
 (
-select t1.B as B,
-ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
-lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
-(t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
- t1.id,t1.J,t1.D,t1.C,t1.b1,t1.b2,t1.b3,t1.b4,t1.b5,t1.e1
-from
-(
-select t1.z1 as B,t2.* from Bnrz as t1, RefTirages as t2 where(t1.z1 in (t2.b1,t2.b2,t2.b3,T2.b4,t2.b5))
-) as t1
-)as r1 group by b
+        select t1.B as B,
+        ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
+        lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
+        (t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
+        t1.id,t1.J,t1.D,t1.C,t1.b1,t1.b2,t1.b3,t1.b4,t1.b5,t1.e1
+        from
+        (
+            select t1.z1 as B,t2.* from Bnrz as t1, RefTirages as t2 where(t1.z1 in (t2.b1,t2.b2,t2.b3,T2.b4,t2.b5))
+            ) as t1
+        )as r1 group by b
 
 -- Ecart Barycentre
 select
 B,
 count(*)  as T,
 (case WHEN
-(select(min (Id)-1 ))as Ec,
-max((CASE WHEN lid=2 then E END)) as Ep,
-printf("%.1f",avg(E))as Em,
-max(E) as M
-FROM
-(
-select ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
-t1.B as B,
-lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
-(t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
-t1.*
-from
-(
-select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, analyses as t2 where(t1.bc in (t2.bc))
-) as t1
-)as r1 GROUP by B order by T DESC
+ (select(min (Id)-1 ))as Ec,
+ max((CASE WHEN lid=2 then E END)) as Ep,
+ printf("%.1f",avg(E))as Em,
+ max(E) as M
+ FROM
+ (
+     select ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
+     t1.B as B,
+     lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
+     (t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
+     t1.*
+     from
+     (
+         select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, analyses as t2 where(t1.bc in (t2.bc))
+         ) as t1
+     )as r1 GROUP by B order by T DESC
 
--- Autre Selection tirages avec presence J,D,tip
+ -- Autre Selection tirages avec presence J,D,tip
  select t1.bc as B,t3.J,t3.D,t4.tip,t2.id
  from r_RefTirages_0_brc_z1 as t1,
-  analyses as t2,
-  RefTirages as t3,
+ analyses as t2,
+ RefTirages as t3,
  lstCombi_z1 as t4
-  where(
-  (t1.bc in (t2.bc))
-   and
-   (t2.id=t3.id)
-   AND
-   (t4.id=t2.fk_idCombi_z1)
-  )
+ where(
+     (t1.bc in (t2.bc))
+     and
+     (t2.id=t3.id)
+     AND
+     (t4.id=t2.fk_idCombi_z1)
+     )
 
  -- Regroupement des barycentres de tous les tirages
  select ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
@@ -2382,8 +2385,8 @@ select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, analyses as t2 where(t1
  t1.*
  from
  (
- select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, analyses as t2 where(t1.bc in (t2.bc))
- ) as t1
+     select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, analyses as t2 where(t1.bc in (t2.bc))
+     ) as t1
 
  -- Version compacte des calculs...
  select B,
@@ -2395,221 +2398,422 @@ select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, analyses as t2 where(t1
  max(E) as M
  FROM
  (
- select ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
- t1.B as B,
- lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
- (t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
- t1.*
- from
+     select ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
+     t1.B as B,
+     lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
+     (t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
+     t1.*
+     from
+     (
+         select t1.bc as B,t3.J,t3.D,t4.tip,t2.id
+         from r_RefTirages_0_brc_z1 as t1,
+         analyses as t2,
+         RefTirages as t3,
+         lstCombi_z1 as t4
+         where(
+             (t1.bc in (t2.bc))
+             and
+             (t2.id=t3.id)
+             AND
+             (t4.id=t2.fk_idCombi_z1)
+             )) as t1
+     )as r1 GROUP by B order by T DESC
+
+ #endif
+
+
+ QString SyntheseGenerale::Step_1_TrouverTirageSelonCriteres(int zn, QString tbl_reference, QString key, QString tbl_data)
+{
+     #if 0
+     // exemple attendu
+     select t1.z1 as B,
+     t2.id,t2.J,t2.D,t2.C
+     from Bnrz as t1,
+     RefTirages as t2
+     where
+     (
+     t1.z1 in (t2.b1,t2.b2,t2.b3,T2.b4,t2.b5)
+     )
+     #endif
+     QString st_query = "";
+     int len_zn = pMaConf->limites[zn].len;
+     QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
+     QString st_critere = "(";
+
+     for(int i=0;i<len_zn;i++){
+         st_critere = st_critere + ref.arg(i+1);
+         if(i<(len_zn-1)){
+             st_critere=st_critere+QString(",");
+         }
+     }
+     st_critere = st_critere+QString(")");
+
+     QString dbg_more = "";
+     #ifndef QT_NO_DEBUG
+     dbg_more = ",t2.* ";
+     #endif
+     //key =z1
+
+     st_query = "select t1."+key+" as B, "
+     "t2.id,t2.J,t2.D,t2.C "
+     +dbg_more
+     +"from "+tbl_reference+" as t1, "
+     +tbl_data+" as t2 "
+     "where "
+     "( "
+     "t1."+key+" in "+st_critere+" "
+     ") ";
+
+     #ifndef QT_NO_DEBUG
+     qDebug() << st_query;
+     #endif
+
+     return st_query;
+ }
+
+ QString SyntheseGenerale::Step_2_CalulerEcartDesReponses(QString str_reponses)
+{
+     #if 0
+     select t1.B as B,
+     ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
+     lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
+     (t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
+     t1.id,t1.J,t1.D,t1.C,t1.b1,t1.b2,t1.b3,t1.b4,t1.b5,t1.e1
+     from
+     (
+     select t1.z1 as B,
+     t2.*
+     from Bnrz as t1,
+     RefTirages as t2
+     where
+     (
+     t1.z1 in (t2.b1,t2.b2,t2.b3,T2.b4,t2.b5)
+     )
+     ) as t1
+
+     #endif
+
+     QString st_query = "select t1.B as B, "
+     "ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID, "
+     "lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id, "
+     "(t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E, t1.* "
+     "from "
+     "( "
+     +str_reponses+
+     ") as t1 ";
+
+
+     #ifndef QT_NO_DEBUG
+     qDebug() << st_query;
+     #endif
+
+     return st_query;
+
+ }
+
+ QString SyntheseGenerale::Step_3_RegrouperEcartDesReponses(QString str_reponses)
+{
+     #if 0
+     select B,
+     (select NULL) as C,
+     count(*)  as T,
+     count(CASE WHEN  J like 'lun%' then 1 end) as LUN,
+     (select(min (Id)-1 ))as Ec,
+     max((CASE WHEN lid=2 then E END)) as Ep,
+     printf("%.1f",avg(E))as Em,
+     max(E) as M,
+     (Select NULL) as Es,
+     (select NULL) as P, (select NULL) as F
+     FROM
+     (
+     select t1.B as B,
+     ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
+     lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
+     (t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E,
+     t1.id,t1.J,t1.D,t1.C,t1.b1,t1.b2,t1.b3,t1.b4,t1.b5,t1.e1
+     from
+     (
+     select t1.z1 as B,
+     t2.*
+     from Bnrz as t1,
+     RefTirages as t2
+     where
+     (
+     t1.z1 in (t2.b1,t2.b2,t2.b3,T2.b4,t2.b5)
+     )
+     ) as t1
+     )as r1 group by b
+
+     #endif
+
+     QString str_count_days = *st_JourTirageDef+"," ;
+     QString st_query = "select "
+     "(Select NULL) as Id,"
+     "B,"
+     "(select NULL) as C, "
+     "count(*)  as T, "
+     +str_count_days+
+     "(select(min (Id)-1 ))as Ec, "
+     "max((CASE WHEN lid=2 then E END)) as Ep, "
+     "printf(\"%.1f\",avg(E))as Em, "
+     "max(E) as M, "
+     "(Select NULL) as Es, "
+     "(select NULL) as P, (select NULL) as F "
+     "FROM "
+     "( "
+     +str_reponses+
+     ")as r1 group by b ";
+
+     #ifndef QT_NO_DEBUG
+     qDebug() << st_query;
+     #endif
+
+     return st_query;
+ }
+
+ bool SyntheseGenerale::Boules_Details(int zn, QString tbl_dst, QString ref, QString key, QString data){
+     bool isOk = true;
+     QSqlQuery query(db_0);
+
+     QString st_requete = Step_1_TrouverTirageSelonCriteres(zn,  ref,  key,  data);
+
+     st_requete = Step_2_CalulerEcartDesReponses(st_requete);
+     st_requete = Step_3_RegrouperEcartDesReponses(st_requete);
+
+     #if 0
+     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+
+     QString sql_msgRef = PBAR_ReqComptage(pEtude, ReqTirages, curOng, ongPere);
+
+     sqm_tmp->setQuery(sql_msgRef,db_0);
+
+     // Renommer le nom des colonnes
+     int nbcol = sqm_tmp->columnCount();
+     for(int i = 0; i<nbcol;i++)
+     {
+         QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+         if(headName.size()>2)
+         {
+             sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+         }
+     }
+
+     #endif
+     /// Lancement de la requete pour trouver le nom des colonnes
+     if((isOk=query.exec(st_requete))){
+         QString st_header = "(";
+         int nbCol = query.record().count();
+         for (int i = 0; i < nbCol; i++){
+             QString name = query.record().fieldName(i);
+             if(i == 0){
+                 st_header = st_header + name + " integer primary key";
+             }
+             else{
+                 if(i<nbCol-1){
+                     st_header = st_header + ",int ";
+                 }
+                 st_header = st_header + name;
+             }
+         }
+         st_header = st_header +")";
+         #ifndef QT_NO_DEBUG
+         qDebug() << st_header;
+         #endif
+
+         /// Creation de la table
+         st_header = "create table if not exists "+tbl_dst+" " + st_header;
+         if((isOk = query.exec(st_header))){
+             /// mettre les donnees precedentes
+             st_header = "insert into "+tbl_dst+" select * from ("+st_requete+")";
+             #ifndef QT_NO_DEBUG
+             qDebug() << st_header;
+             #endif
+             isOk = query.exec(st_header);
+         }
+
+     }
+
+     if(!isOk){
+         qDebug()<< query.lastError().text();
+         qDebug()<< query.executedQuery();
+     }
+     return(isOk);
+ }
+
+ QString SyntheseGenerale::SqlCreateCodeGroupe(int onglet, QString table)
+{
+     QString st_critere = "";
+     QString st_occure = "";
+     QString sqlReq ="";
+
+     QModelIndexList indexes =  uneDemande.selection[onglet];
+
+     int nbChoix = maRef[0][0].size();
+
+     /// il y a t'il une selection
+     sqlReq = table;
+     if(indexes.size())
+     {
+         QModelIndex un_index;
+         int curCol = 0;
+         int occure = 0;
+         QString *Selection = new QString[nbChoix];
+
+         /// Parcourir les selections
+         foreach(un_index, indexes)
+         {
+             curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
+             occure = un_index.model()->index(un_index.row(), 0).data().toInt();
+
+             if(Selection[curCol-1]==""){
+                 Selection[curCol-1] = QString::number(occure);
+             }
+             else{
+                 Selection[curCol-1] = Selection[curCol-1]+tr(",")+QString::number(occure);
+             }
+             #ifndef QT_NO_DEBUG
+             qDebug() << Selection[curCol-1];
+             #endif
+
+         }
+         ; ///Pause
+         /// Parcourir les selections
+         for(int col = 0; col<nbChoix; col++)
+         {
+             if(Selection[col]==""){
+                 continue;
+             }
+             else{
+                 st_critere = "("+maRef[0][0].at(col)+")";
+                 st_occure = "("+Selection[col]+")";
+                 sqlReq =TrouverTirages(col,st_occure,sqlReq,st_critere,0,uneDemande.ref);
+             }
+         }
+
+         #ifndef QT_NO_DEBUG
+         qDebug() << sqlReq;
+         #endif
+
+     }
+     return sqlReq;
+ }
+
+ #if 0
+ void SyntheseGenerale::FillRegroupement(int nbCol,stTiragesDef *conf)
+{
+     QSqlQuery query ;
+
+     ///------------------------------
+     bool status = true;
+     int zn = 0;
+     for(int j=0; (j< nbCol) && (status == true);j++)
+     {
+         // Creer Requete pour compter items
+         QString msg1 = maRef[zn][0].at(j);
+         QString sqlReq = "";
+         QString db_data = ;
+         sqlReq = ApplayFilters(db_data,msg1,zn,conf);
+         //sqlReq = sql_RegroupeSelonCritere()
+
+         #ifndef QT_NO_DEBUG
+         qDebug() << sqlReq;
+         #endif
+
+         status = query.exec(sqlReq);
+
+         // Mise a jour de la tables des resultats
+         if(status)
+         {
+             query.first();
+             do
+             {
+                 int nb = query.value(0).toInt();
+                 int tot = query.value(1).toInt();
+
+                 QStandardItem * item_1 = tmpStdItem->item(nb,j+1);
+                 item_1->setData(tot,Qt::DisplayRole);
+                 tmpStdItem->setItem(nb,j+1,item_1);
+             }while(query.next() && status);
+         }
+     }
+ }
+ #endif
+
+ #if 0
+ void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,const QTableView *pTab,const QModelIndex & index)
+{
+     QWidget *qw_main = new QWidget;
+     QTabWidget *tab_Top = new QTabWidget;
+     QWidget **wid_ForTop = new QWidget*[2];
+     QString stNames[2]={"Tirages","Repartition"};
+     QGridLayout *design_onglet[2];
+
+     // Tableau de pointeur de fonction
+     QGridLayout *(RefResultat::*ptrFunc[2])(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index)=
+     {&RefResultat::MonLayout_pFnDetailsTirages,&RefResultat::MonLayout_pFnSyntheseDetails};
+
+
+     for(int i =0; i<2;i++)
+     {
+         wid_ForTop[i]=new QWidget;
+         tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
+
+         //
+         design_onglet[i] = (this->*ptrFunc[i])(typeAnalyse,pTab, index);
+         wid_ForTop[i]->setLayout(design_onglet[i]);
+     }
+
+     int boule = index.row()+1;
+     QFormLayout *mainLayout = new QFormLayout;
+     QString st_titre = "Details Boule : " + QString::number(boule);
+     mainLayout->addWidget(tab_Top);
+     qw_main->setWindowTitle(st_titre);
+     qw_main->setLayout(mainLayout);
+
+
+     QMdiSubWindow *subWindow = pEcran->addSubWindow(qw_main);
+     //subWindow->resize(493,329);
+     //subWindow->move(737,560);
+     qw_main->setVisible(true);
+     qw_main->show();
+ }
+
+ #endif
+
+
+ #if EXEMPLE_SQL
+ --debut requete tb3
+ select tb3.id as Tid, tb5.id as Pid,
+ tb3.jour_tirage as J,
+ substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+ tb5.tip as C,
+ tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+ tb3.e1 as e1,
+ tb3.bp as P,
+ tb3.bg as G
+ from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
+ inner join
  (
- select t1.bc as B,t3.J,t3.D,t4.tip,t2.id
- from r_RefTirages_0_brc_z1 as t1,
-  analyses as t2,
-  RefTirages as t3,
- lstCombi_z1 as t4
-  where(
-  (t1.bc in (t2.bc))
-   and
-   (t2.id=t3.id)
-   AND
-   (t4.id=t2.fk_idCombi_z1)
-  )) as t1
- )as r1 GROUP by B order by T DESC
-
-#endif
-QString SyntheseGenerale::Step_1_TrouverTirageSelonCriteres(int zn, QString tbl_reference, QString tbl_data)
-{
-    QString tmp = "";
-    int len_zn = pMaConf->limites[zn].len;
-    QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
-    QString msg = "";
-
-    for(int i=0;i<len_zn;i++){
-        msg = msg + ref.arg(i+1);
-        if(i<(len_zn-1)){
-            msg=msg+QString(",");
-        }
-    }
-    msg = msg+QString(")");
-
-
-    return tmp;
-}
-
-QString SyntheseGenerale::SqlCreateCodeGroupe(int onglet, QString table)
-{
-    QString st_critere = "";
-    QString st_occure = "";
-    QString sqlReq ="";
-
-    QModelIndexList indexes =  uneDemande.selection[onglet];
-
-    int nbChoix = maRef[0][0].size();
-
-    /// il y a t'il une selection
-    sqlReq = table;
-    if(indexes.size())
-    {
-        QModelIndex un_index;
-        int curCol = 0;
-        int occure = 0;
-        QString *Selection = new QString[nbChoix];
-
-        /// Parcourir les selections
-        foreach(un_index, indexes)
-        {
-            curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
-            occure = un_index.model()->index(un_index.row(), 0).data().toInt();
-
-            if(Selection[curCol-1]==""){
-                Selection[curCol-1] = QString::number(occure);
-            }
-            else{
-                Selection[curCol-1] = Selection[curCol-1]+tr(",")+QString::number(occure);
-            }
-#ifndef QT_NO_DEBUG
-            qDebug() << Selection[curCol-1];
-#endif
-
-        }
-        ; ///Pause
-        /// Parcourir les selections
-        for(int col = 0; col<nbChoix; col++)
-        {
-            if(Selection[col]==""){
-                continue;
-            }
-            else{
-                st_critere = "("+maRef[0][0].at(col)+")";
-                st_occure = "("+Selection[col]+")";
-                sqlReq =TrouverTirages(col,st_occure,sqlReq,st_critere,0,uneDemande.ref);
-            }
-        }
-
-#ifndef QT_NO_DEBUG
-        qDebug() << sqlReq;
-#endif
-
-    }
-    return sqlReq;
-}
-
-#if 0
-void SyntheseGenerale::FillRegroupement(int nbCol,stTiragesDef *conf)
-{
-    QSqlQuery query ;
-
-    ///------------------------------
-    bool status = true;
-    int zn = 0;
-    for(int j=0; (j< nbCol) && (status == true);j++)
-    {
-        // Creer Requete pour compter items
-        QString msg1 = maRef[zn][0].at(j);
-        QString sqlReq = "";
-        QString db_data = ;
-        sqlReq = ApplayFilters(db_data,msg1,zn,conf);
-        //sqlReq = sql_RegroupeSelonCritere()
-
-#ifndef QT_NO_DEBUG
-        qDebug() << sqlReq;
-#endif
-
-        status = query.exec(sqlReq);
-
-        // Mise a jour de la tables des resultats
-        if(status)
-        {
-            query.first();
-            do
-            {
-                int nb = query.value(0).toInt();
-                int tot = query.value(1).toInt();
-
-                QStandardItem * item_1 = tmpStdItem->item(nb,j+1);
-                item_1->setData(tot,Qt::DisplayRole);
-                tmpStdItem->setItem(nb,j+1,item_1);
-            }while(query.next() && status);
-        }
-    }
-}
-#endif
-
-#if 0
-void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,const QTableView *pTab,const QModelIndex & index)
-{
-    QWidget *qw_main = new QWidget;
-    QTabWidget *tab_Top = new QTabWidget;
-    QWidget **wid_ForTop = new QWidget*[2];
-    QString stNames[2]={"Tirages","Repartition"};
-    QGridLayout *design_onglet[2];
-
-    // Tableau de pointeur de fonction
-    QGridLayout *(RefResultat::*ptrFunc[2])(NE_Analyses::E_Syntese table,const QTableView *ptab,const QModelIndex & index)=
-    {&RefResultat::MonLayout_pFnDetailsTirages,&RefResultat::MonLayout_pFnSyntheseDetails};
-
-
-    for(int i =0; i<2;i++)
-    {
-        wid_ForTop[i]=new QWidget;
-        tab_Top->addTab(wid_ForTop[i],tr(stNames[i].toUtf8()));
-
-        //
-        design_onglet[i] = (this->*ptrFunc[i])(typeAnalyse,pTab, index);
-        wid_ForTop[i]->setLayout(design_onglet[i]);
-    }
-
-    int boule = index.row()+1;
-    QFormLayout *mainLayout = new QFormLayout;
-    QString st_titre = "Details Boule : " + QString::number(boule);
-    mainLayout->addWidget(tab_Top);
-    qw_main->setWindowTitle(st_titre);
-    qw_main->setLayout(mainLayout);
-
-
-    QMdiSubWindow *subWindow = pEcran->addSubWindow(qw_main);
-    //subWindow->resize(493,329);
-    //subWindow->move(737,560);
-    qw_main->setVisible(true);
-    qw_main->show();
-}
-
-#endif
-
-
-#if EXEMPLE_SQL
---debut requete tb3
-select tb3.id as Tid, tb5.id as Pid,
-tb3.jour_tirage as J,
-substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
-tb5.tip as C,
-tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
-tb3.e1 as e1,
-tb3.bp as P,
-tb3.bg as G
-from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
-inner join
-(
-        select *  from tirages as tb1
-        where
-        (
-            (
-                tb1.b1=27 or
+     select *  from tirages as tb1
+     where
+     (
+         (
+             tb1.b1=27 or
         tb1.b2=27 or
         tb1.b3=27 or
         tb1.b4=27 or
         tb1.b5=27
         )
-            )
-        ) as tb2
-on (
-        (tb3.id = tb2.id + 0)
-        and
-        (tb4.id = tb3.id)
-        and
-        (tb4.fk_idCombi_z1 = tb5.id)
-        )
-;
+         )
+     ) as tb2
+ on (
+     (tb3.id = tb2.id + 0)
+     and
+     (tb4.id = tb3.id)
+     and
+     (tb4.fk_idCombi_z1 = tb5.id)
+     )
+ ;
 --Fin requete tb3
 
 

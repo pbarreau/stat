@@ -10,6 +10,7 @@
 #include <QToolTip>
 
 #include <QHeaderView>
+#include <QSqlRecord>
 
 #include <QSortFilterProxyModel>
 #include <QLineEdit>
