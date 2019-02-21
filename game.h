@@ -1,6 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <QString>
+
 /// Type de jeu possible d'etudier
 typedef enum _eGames{
     eGameToSet, /// Jeu pas encore configure

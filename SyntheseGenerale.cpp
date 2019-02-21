@@ -1957,6 +1957,14 @@ QString SyntheseGenerale::SqlCreateCodeCombi(int onglet, QString table)
     return sqlReq;
 }
 
+QString SyntheseGenerale::Step_1_TrouverTirageSelonCriteres(int zn, QString tbl_reference, QString tbl_data)
+{
+    QString tmp = "";
+    int len_zn = pMaConf->limites[zn].len;
+
+    return tmp;
+}
+
 QString SyntheseGenerale::SqlCreateCodeGroupe(int onglet, QString table)
 {
     QString st_critere = "";
@@ -2491,3 +2499,4 @@ QString NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules)
     return msg;
 }
 #endif
+
