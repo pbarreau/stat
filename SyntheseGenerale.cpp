@@ -2568,7 +2568,7 @@ count(*)  as T,
      +str_count_days+
      "(select(min (Id)-1 ))as Ec, "
      "max((CASE WHEN lid=2 then E END)) as Ep, "
-     "avg(E)as Em, "
+     "(printf(\"%.1f\",avg(E)))as Em, "
      "max(E) as M, "
      "(Select NULL) as Es, "
      "(select NULL) as P, (select NULL) as F "
@@ -2584,6 +2584,11 @@ count(*)  as T,
      bool isOk = true;
      QSqlQuery query(db_0);
      isOk = query.exec(st_query);
+
+     if(!isOk){
+         qDebug()<< query.lastError().text();
+         qDebug()<< query.executedQuery();
+     }
 
      return st_query;
  }
@@ -2616,8 +2621,11 @@ count(*)  as T,
      }
 
      #endif
+
+
      /// Lancement de la requete pour trouver le nom des colonnes
      if((isOk=query.exec(st_requete))){
+         QString type = "";
          QString st_header = "(";
          int nbCol = query.record().count();
          for (int i = 0; i < nbCol; i++){
@@ -2626,10 +2634,19 @@ count(*)  as T,
                  st_header = st_header + name + " integer primary key";
              }
              else{
-                 if(i<nbCol-1){
-                     st_header = st_header + ",int ";
+                 if(i<nbCol){
+                     st_header = st_header + ",";
                  }
-                 st_header = st_header + name;
+
+                 if(i==11 || i==13){
+                     type = " float";
+                 }
+                 else
+                 {
+                     type = " int";
+                 }
+
+                 st_header = st_header + name + type;
              }
          }
          st_header = st_header +")";

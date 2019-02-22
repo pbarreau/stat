@@ -21,8 +21,9 @@ TEMPLATE = app
 
 #INCLUDEPATH += "C:/Devel/kdchart-2.5.1-source/include"
 #DEPENDPATH += "C:/Devel/kdchart-2.5.1-source/include"
+# -lsqlite
 
-LIBS = -L.\sqlExtensions\lib -lStatPgm-sqlite -lStatPgm-dl
+##LIBS = -L.\sqlExtensions\lib   -lStatPgm-sqlite -lStatPgm-dl
 message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
 
 

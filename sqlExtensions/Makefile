@@ -8,13 +8,16 @@
 CC            = gcc
 CXX           = g++
 INCPATH       = -I./inc 
-DEFINES       = -DUNICODE -D_UNICODE -DWIN32 -DCOMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE
+#DEFINES       = -DUNICODE -D_UNICODE -DWIN32 -DCOMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE
+#DEFINES       = -DSQLITE_ENABLE_COLUMN_METADATA -DCOMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE
+DEFINES       = -DSQLITE_ENABLE_LOAD_EXTENSION -DSQLITE_ENABLE_COLUMN_METADATA
 CFLAGS        = $(INCPATH) -fomit-frame-pointer -O2 -Wall -W -Wextra $(DEFINES)
 LIBS_1        += -lpsapi
 
 LINKER        = g++
 LFLAGS        = -Wl,-s -Wl,-subsystem,windows -mthreads 
-LIBS          = -lmingw32 -LC:/Devel/Qt5.10.1/5.10.1/mingw53_32/lib -lStatPgm-dl -L./lib
+#LIBS          = -lmingw32 -LC:/Devel/Qt5.10.1/5.10.1/mingw53_32/lib -lStatPgm-dl -L./lib
+LIBS          = -lStatPgm-dl -L./lib
 LIBS_2        += $(LIBS) -lpthread -lStatPgm-sqlite -lStatPgm-sqMath
 
 VPAT          = ./src:./inc
@@ -31,6 +34,7 @@ DLL_DIR   = ./lib/
 EXE_DIR   = ./out/
 
 ####### Files
+	#$(CC) $(CFLAGS) $(INCPATH) -shared -o $@ $^ $(LIBS)
 SRC_1	      =	dlfcn.c
 SRC_2	      =	sqlite3.c 
 SRC_3	      =	extension-functions.c
@@ -48,8 +52,8 @@ $(OBJ_DIR)%.o:$(SRC_DIR)%.c
 $(DLL_DIR)$(DLL_FIRST):$(OBJ_DIR)$(SRC_1:.c=.o)
 	$(CC) $(CFLAGS) $(INCPATH) -shared -o $@ $^ $(LIBS_1)
 
-$(DLL_DIR)$(DLL_SQL):$(OBJ_DIR)$(SRC_2:.c=.o)
-	$(CC) $(CFLAGS) $(INCPATH) -shared -o $@ $^ $(LIBS)
+$(DLL_DIR)$(DLL_SQL):
+	gcc $(CFLAGS) -shared -o $@ $(SRC_DIR)$(SRC_2)
 
 $(DLL_DIR)$(DLL_MATH):$(OBJ_DIR)$(SRC_3:.c=.o)
 	$(CC) $(CFLAGS) $(INCPATH) -shared -o $@ $^ $(LIBS)
