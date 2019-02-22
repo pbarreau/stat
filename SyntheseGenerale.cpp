@@ -2468,6 +2468,10 @@ count(*)  as T,
      qDebug() << st_query;
      #endif
 
+     bool isOk = true;
+     QSqlQuery query(db_0);
+     isOk = query.exec(st_query);
+
      return st_query;
  }
 
@@ -2506,6 +2510,10 @@ count(*)  as T,
      #ifndef QT_NO_DEBUG
      qDebug() << st_query;
      #endif
+
+     bool isOk = true;
+     QSqlQuery query(db_0);
+     isOk = query.exec(st_query);
 
      return st_query;
 
@@ -2555,7 +2563,7 @@ count(*)  as T,
      +str_count_days+
      "(select(min (Id)-1 ))as Ec, "
      "max((CASE WHEN lid=2 then E END)) as Ep, "
-     "printf(\"%.1f\",avg(E))as Em, "
+     "avg(E)as Em, "
      "max(E) as M, "
      "(Select NULL) as Es, "
      "(select NULL) as P, (select NULL) as F "
@@ -2567,6 +2575,10 @@ count(*)  as T,
      #ifndef QT_NO_DEBUG
      qDebug() << st_query;
      #endif
+
+     bool isOk = true;
+     QSqlQuery query(db_0);
+     isOk = query.exec(st_query);
 
      return st_query;
  }
