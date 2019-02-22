@@ -36,6 +36,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
 
     bool CreerBasePourEtude(bool action, NE_FDJ::E_typeJeux type);
+    bool AuthoriseChargementExtension(void);
     QString mk_IdDsk(NE_FDJ::E_typeJeux type);
     QString mk_IdCnx(NE_FDJ::E_typeJeux type);
 

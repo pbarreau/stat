@@ -2570,7 +2570,7 @@ count(*)  as T,
      "max((CASE WHEN lid=2 then E END)) as Ep, "
      "(printf(\"%.1f\",avg(E)))as Em, "
      "max(E) as M, "
-     "(Select NULL) as Es, "
+     "(printf(\"%.1f\",sqrt(variance(E)))) as Es, "
      "(select NULL) as P, (select NULL) as F "
      "FROM "
      "( "

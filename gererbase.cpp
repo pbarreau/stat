@@ -21,6 +21,10 @@
 #include <QDate>
 #include <QDateTime>
 
+#include <QSqlDriver>
+#include "sqlExtensions/inc/sqlite3.h"
+#include "sqlExtensions/inc/sqlite3ext.h"
+
 #include "tirages.h"
 #include "gererbase.h"
 #include "SyntheseDetails.h"
@@ -489,6 +493,13 @@ bool GererBase::CreerBasePourEtude(bool action,NE_FDJ::E_typeJeux type)
                 QMessageBox::critical(NULL,"Stat",st_query,QMessageBox::Ok);
                 isOk = false;
             }
+            else{
+                /// Chargement librairie math
+                if(!(isOk=AuthoriseChargementExtension())){
+                    st_query = QString("Chargement sqMath echec !!\n");
+                    QMessageBox::critical(NULL,"Stat",st_query,QMessageBox::Ok);
+                }
+            }
         }
     }
 
@@ -500,6 +511,63 @@ QSqlError GererBase::lastError()
     // If opening database has failed user can ask
     // error description by QSqlError::text()
     return db_0.lastError();
+}
+
+bool GererBase::AuthoriseChargementExtension(void)
+{
+    bool isOk = true;
+    QSqlQuery query(db_0);
+    QString msg = "";
+
+    QString cur_rep = QCoreApplication::applicationDirPath();
+    QString MonDirLib = cur_rep + ".\\sqlExtensions\\lib";
+    QStringList mesLibs = QCoreApplication::libraryPaths();
+    mesLibs<<MonDirLib;
+    //QCoreApplication::addLibraryPath(MonDirLib);
+    QCoreApplication::setLibraryPaths(mesLibs);
+
+    /// http://sqlite.1065341.n5.nabble.com/Using-loadable-extension-with-Qt-td24872.html
+    /// https://arstechnica.com/civis/viewtopic.php?f=20&t=64150
+    QVariant v = db_0.driver()->handle();
+
+    if (v.isValid() && qstrcmp(v.typeName(), "sqlite3*")==0)
+
+    {
+
+        // v.data() returns a pointer to the handle
+        sqlite3_initialize();
+        sqlite3 *handle = *static_cast<sqlite3 **>(v.data());
+
+        if (handle != 0) { // check that it is not NULL
+
+            //const char *loc = NULL;
+            //loc = sqlite_version();
+
+            int ret = sqlite3_enable_load_extension(handle,1);
+            //int ret = loadExt(handle,1);
+
+            /// Lancer la requete
+            QString msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-sqMath.dll')";
+            isOk = query.exec(msg);
+#ifndef QT_NO_DEBUG
+            if (query.lastError() .isValid())
+            {
+                foreach (const QString &path, QCoreApplication::libraryPaths())
+                    qDebug() << path;
+
+                qDebug() << "Error: cannot load extension (" << query.lastError().text()<<")";
+                isOk = false;
+            }
+#endif
+
+        }
+
+    }
+    else
+    {
+        isOk = false;
+    }
+    return isOk;
 }
 
 bool GererBase::SupprimerBase()
