@@ -3,6 +3,8 @@
 #endif
 
 #include <QApplication>
+#include <QMessageBox>
+
 #include <math.h>
 #include <iomanip>
 #include <iostream>
@@ -15,7 +17,6 @@
 
 #include <QTableView>
 #include <QTableWidget>
-#include <QMessageBox>
 
 #include <QDate>
 #include <QDateTime>
@@ -474,8 +475,22 @@ bool GererBase::CreerBasePourEtude(bool action,NE_FDJ::E_typeJeux type)
     db_0 = QSqlDatabase::addDatabase("QSQLITE", db_cnx_name);
     db_0.setDatabaseName(db_dsk_name);
 
+
     // Open databasee
-    isOk = db_0.open();
+    if((isOk = db_0.open())){
+        QSqlQuery query(db_0);
+        QString st_query = "select sqlite_version();";
+        if((isOk = query.exec(st_query))){
+            query.first();
+            QString version =query.value(0).toString();
+
+            if(version < "3.25"){
+                st_query = QString("Version sqlite :") + version +QString(" < 3.25\n");
+                QMessageBox::critical(NULL,"Stat",st_query,QMessageBox::Ok);
+                isOk = false;
+            }
+        }
+    }
 
     return isOk;
 }

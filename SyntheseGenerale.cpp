@@ -2515,6 +2515,11 @@ count(*)  as T,
      QSqlQuery query(db_0);
      isOk = query.exec(st_query);
 
+     if(!isOk){
+         qDebug()<< query.lastError().text();
+         qDebug()<< query.executedQuery();
+     }
+
      return st_query;
 
  }

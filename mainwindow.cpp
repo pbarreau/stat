@@ -72,7 +72,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
     if(NoErrors.status == false)
     {
-        QMessageBox::critical(this,tr("Glob"),NoErrors.msg,QMessageBox::Yes,QMessageBox::NoButton);
+        QMessageBox::critical(this,tr("Glob"),NoErrors.msg,QMessageBox::Ok,QMessageBox::NoButton);
         QApplication::quit();
     }
     else
