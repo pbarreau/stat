@@ -4,6 +4,7 @@
 #include <QSqlQueryModel>
 #include <QString>
 #include <QTableView>
+#include <QItemDelegate>
 
 typedef struct _st_sqlmqDetailsNeeds
 {
@@ -29,6 +30,25 @@ private:
     int b_min;
     int b_max;
     st_sqlmqDetailsNeeds a;
+};
+
+class BDelegateCouleurFond : public QItemDelegate
+{
+    Q_OBJECT
+public:
+    BDelegateCouleurFond(int b_min, int b_max, int len, QWidget *parent = 0) :
+        b_min(b_min),b_max(b_max),len(len),QItemDelegate(parent) {}
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,
+               const QModelIndex &index) const;
+
+private:
+    QColor MonSetColor(const QModelIndex &index) const;
+
+private:
+    int b_min;
+    int b_max;
+    int len;
 };
 
 #endif // SQLQMDETAILS_H

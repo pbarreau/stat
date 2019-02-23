@@ -12,25 +12,6 @@
 
 
 //---------------------------------------------------
-void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &option,
-                              const QModelIndex &index) const
-{
-    int col = index.column();
-    //int row = index.row();
-    //int nbCol = index.model()->columnCount();
-    //int val = 0;
-    QStyleOptionViewItem maModif(option);
-
-    if(col >= b_min && col < b_max){
-        painter->fillRect(option.rect, COULEUR_FOND_DETAILS);
-    }
-
-    if(col >= b_max && col < b_max+len){
-        painter->fillRect(option.rect, COULEUR_FOND_ECARTS);
-    }
-
-    QItemDelegate::paint(painter, maModif, index);
-}
 
 
 void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &option,
