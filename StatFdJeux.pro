@@ -75,7 +75,8 @@ SOURCES += \
     etudierjeux.cpp \
     cbarycentre.cpp \
     version.cpp \
-    game.cpp
+    game.cpp \
+    sqlqmdetails.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -112,7 +113,9 @@ HEADERS  += \
     cnp_SansRepetition.h \
     etudierjeux.h \
     game.h \
-    cbarycentre.h
+    cbarycentre.h \
+    colors.h \
+    sqlqmdetails.h
 
 
 FORMS    += mainwindow.ui \

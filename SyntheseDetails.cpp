@@ -317,7 +317,7 @@ QString FiltreLaBaseSelonSelectionUtilisateur(QModelIndexList indexes, int nivea
         scritere = GEN_Where_3(maxElem,tab,putIndice,"=",lstBoules,false,"or");
         if(headName != "T" and headName !="")
         {
-            scritere = scritere + " and (J like '%" + headName +"%')";
+            scritere = scritere + " and (J like '" + headName +"%')";
         }
 
 

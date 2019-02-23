@@ -36,6 +36,8 @@
 
 #include "mainwindow.h"
 
+#include "sqlqmdetails.h"
+
 //extern MainWindow w;
 #ifdef USE_SG_CODE
 QString GetBoulesOfTirage(int tir);
@@ -1346,7 +1348,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
     int zn = 0;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString("new")+QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     //tbv_bloc1_1 = new QTableView;
@@ -1402,6 +1404,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     qDebug()<< st_msg2;
 #endif
 #endif
+
     QSqlQuery query(db_0);
     bool isOk = true;
     QString st_msg1 = "";
@@ -1413,16 +1416,17 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     sqm_bloc1_1->setQuery(st_msg1,db_0);
 
     // Renommer le nom des colonnes
-    QSqlQueryModel *sqm_tmp=sqm_bloc1_1;
+
+    st_sqlmqDetailsNeeds val;
+    int b_min=-1;
+    int b_max=-1;
+    val.cnx = db_0.connectionName();
+    val.sql = st_msg1;
+    val.view = qtv_tmp;
+    val.b_max = &b_max;
+    val.b_min = &b_min;
+    sqlqmDetails *sqm_tmp= new sqlqmDetails(val,sqm_bloc1_1);
     int nbcol = sqm_tmp->columnCount();
-    for(int i = 0; i<nbcol;i++)
-    {
-        QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
-        if(headName.size()>2)
-        {
-            sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
-        }
-    }
 
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
@@ -1437,15 +1441,18 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
-    m->setSourceModel(sqm_bloc1_1);
+    m->setSourceModel(sqm_tmp);
 
     mysortModel = m;
 
     qtv_tmp->setModel(m);
+    //BDelegateCouleurFond *color = new BDelegateCouleurFond(3,6,6,qtv_tmp);
+    //qtv_tmp->setItemDelegate(color);
+
     qtv_tmp->verticalHeader()->hide();
     for(int j=0;j<2;j++)
         qtv_tmp->setColumnWidth(j,30);
-    for(int j=2;j<=sqm_bloc1_1->columnCount();j++)
+    for(int j=2;j<=sqm_tmp->columnCount();j++)
         qtv_tmp->setColumnWidth(j,28);
 
 
@@ -2179,7 +2186,14 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     QTableView *view = qobject_cast<QTableView *>(sender());
 
     QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
-    QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+    QAbstractTableModel *sqm_tmp = NULL;
+
+    if(view->objectName().contains("new")){
+       sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
+    }
+    else{
+       sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+    }
 
     int nbcol = sqm_tmp->columnCount();
     int b_min = 0;
