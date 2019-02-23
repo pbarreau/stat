@@ -1351,8 +1351,8 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
     //tbv_bloc1_1 = new QTableView;
     //qtv_tmp=tbv_bloc1_1;
-    tbv_bloc1_1 = qtv_tmp;
 
+#if 0
     QString st_baseUse = "";
     st_baseUse = st_bdTirages->remove(";");
     QString st_cr1 = "";
@@ -1401,12 +1401,14 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 #ifndef QT_NO_DEBUG
     qDebug()<< st_msg2;
 #endif
+#endif
+    QSqlQuery query(db_0);
+    bool isOk = true;
+    QString st_msg1 = "";
+    QString key = "z"+QString::number(zn+1);
 
-    if((isOk= query.exec(st_msg2))){
+    if((isOk = Boules_Details(zn,"view_total_boule","Bnrz",key,"RefTirages"))){
         st_msg1 = "select * from view_total_boule;";
-
-        QString key = "z"+QString::number(zn+1);
-        isOk = Boules_Details(zn,"toto","Bnrz",key,"RefTirages");
     }
     sqm_bloc1_1->setQuery(st_msg1,db_0);
 
@@ -1444,12 +1446,15 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     for(int j=0;j<2;j++)
         qtv_tmp->setColumnWidth(j,30);
     for(int j=2;j<=sqm_bloc1_1->columnCount();j++)
-        qtv_tmp->setColumnWidth(j,LCELL);
+        qtv_tmp->setColumnWidth(j,28);
 
 
     // Ne pas modifier largeur des colonnes
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    qtv_tmp->hideColumn(0);
+    tbv_bloc1_1 = qtv_tmp;
 
     QVBoxLayout *vb_tmp = new QVBoxLayout;
     QLabel * lab_tmp = new QLabel;
@@ -1472,8 +1477,9 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_tbForBaseEcart(QPoint)));
 
+    // tbv_bloc1_1
     // double click dans fenetre  pour afficher details boule
-    connect( tbv_bloc1_1, SIGNAL(doubleClicked(QModelIndex)) ,
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
     return lay_return;
@@ -2170,11 +2176,32 @@ QString SyntheseGenerale::TrouverTirages(int col, QString str_nb, QString st_tir
 
 void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 {
-#ifndef QT_NO_DEBUG
-    qDebug()<<"Fenetre RefResultats.";
-#endif
-
     QTableView *view = qobject_cast<QTableView *>(sender());
+
+    QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
+    QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+    int nbcol = sqm_tmp->columnCount();
+    int b_min = 0;
+    int b_max = 0;
+    for(int i = 0; i<nbcol;i++)
+    {
+        QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+        if(headName == "T")
+        {
+            b_min = i;
+        }
+
+        if(headName == "Ec")
+        {
+            b_max = i;
+        }
+    }
+
+    int col = index.column();
+    if(col <b_min || col >= b_max){
+        return;
+    }
     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
     int nb_item = curOnglet->count();
 
@@ -2571,6 +2598,7 @@ count(*)  as T,
      "(printf(\"%.1f\",avg(E)))as Em, "
      "max(E) as M, "
      "(printf(\"%.1f\",sqrt(variance(E)))) as Es, "
+     "(printf(\"%.1f\",median(E))) as Me, "
      "(select NULL) as P, (select NULL) as F "
      "FROM "
      "( "
@@ -2638,7 +2666,7 @@ count(*)  as T,
                      st_header = st_header + ",";
                  }
 
-                 if(i==11 || i==13){
+                 if(i==11 || i==13 || i== 14){
                      type = " float";
                  }
                  else

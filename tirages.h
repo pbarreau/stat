@@ -40,6 +40,7 @@
 #define CL_IHM_TOT_2    7
 #define CL_IHM_TOT_1    6
 
+//#define RELEASE_TRACK   1
 
 namespace NE_FDJ{
 typedef enum _les_jeux_a_tirages

@@ -3,6 +3,8 @@
 
 #include <QString>
 
+//#define RELEASE_TRACK
+
 /// Type de jeu possible d'etudier
 typedef enum _eGame{
     eGameToSet, /// Jeu pas encore configure
