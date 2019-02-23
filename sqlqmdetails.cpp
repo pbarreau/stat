@@ -73,7 +73,7 @@ QVariant sqlqmDetails::data(const QModelIndex &index, int role)const
 }
 
 void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &option,
-                              const QModelIndex &index) const
+                                 const QModelIndex &index) const
 {
     int col = index.column();
     //int row = index.row();
@@ -96,109 +96,88 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
     QItemDelegate::paint(painter, maModif, index);
 }
 
+bool BDelegateCouleurFond::calcul(int centre, int pos)const
+{
+    bool ret_val;
+    int distance = abs(centre-pos);
+
+    if(distance<= centre){
+        ret_val = true;
+    }
+    else{
+        ret_val = false;
+    }
+
+    return ret_val;
+}
+
+BDelegateCouleurFond::BDelegateCouleurFond(int b_min, int b_max, int len, QWidget *parent)
+     :QItemDelegate(parent),b_min(b_min),b_max(b_max)
+{
+
+    /// creation d'un tableau des couleurs
+    nb_colors = pow(2,len-1);
+    int step_colors = nb_colors/2;
+    val_color = new int[step_colors];
+
+    int j=0;
+    for(int i = 1; i<= step_colors; i++){
+        val_color[i-1]=j;
+        j = j + (255/step_colors);
+    }
+}
+
 QColor BDelegateCouleurFond::MonSetColor(const QModelIndex &index) const
 {
-   QColor color;
+    QColor color;
 
-   float r = 2;
-   float Ec = (index.sibling(index.row(),b_max)).data().toFloat();
-   int Ep = (index.sibling(index.row(),b_max+1)).data().toInt();
-   float Em = (index.sibling(index.row(),b_max+2)).data().toFloat();
-   float EM = (index.sibling(index.row(),b_max+3)).data().toFloat();
-   float Es = (index.sibling(index.row(),b_max+4)).data().toFloat();
-   float Me = (index.sibling(index.row(),b_max+5)).data().toFloat();
+    int val = 0;
+    int alp = 0;
+    int r = 2;
 
-   int val = 0;
-   int lgt = 0;
-   // Disque Ep
-   if((abs(Ep-Ec)%Ep)<= Ep){
-       val = val | (0x1<<0);
-       // Chaud - Froid
-       if(abs(Ep-Ec)<=r){
-          lgt = lgt | (0x1<<0);
-       }
-       else{
-         lgt = lgt & ~(0x1<<0);
-       }
-   }
-   else{
-       val = val & ~(0x1<<0);
-   }
+    int tab_pri[5]={3,4,1,2,5};
 
-   // Disque Em
-   if(abs(Em-Ec)<Em){
-       val = val | (0x1<<1);
-       // Chaud - Froid
-       if(abs(Em-Ec)<=r){
-          lgt = lgt | (0x1<<1);
-       }
-       else{
-         lgt = lgt & ~(0x1<<1);
-       }
-   }
-   else{
-       val = val & ~(0x1<<1);
-   }
+    int Ec = (index.sibling(index.row(),b_max)).data().toInt();
+    for(int i=1;i<=5;i++){
+        int centre = (index.sibling(index.row(),b_max+i)).data().toInt();
+        int pri = tab_pri[i-1]-1;
 
-   // Disque EM
-   if(abs(EM-Ec)<EM){
-       val = val | (0x1<<2);
-       // Chaud - Froid
-       if(abs(EM-Ec)<=r){
-          lgt = lgt | (0x1<<2);
-       }
-       else{
-         lgt = lgt & ~(0x1<<2);
-       }
-   }
-   else{
-       val = val & ~(0x1<<2);
-   }
+        int item_couleur = calcul(centre,Ec);
+        val = val + pow(2,pri) * item_couleur;
 
+        int item_alpha = calcul(r,centre);
+        alp = alp + item_alpha;
+    }
 
-   // Disque Es
-   if(abs(Es-Ec)<Es){
-       val = val | (0x1<<3);
-       // Chaud - Froid
-       if(abs(Es-Ec)<=r){
-          lgt = lgt | (0x1<<3);
-       }
-       else{
-         lgt = lgt & ~(0x1<<3);
-       }
-   }
-   else{
-       val = val & ~(0x1<<3);
-   }
+    /// ----------------
+    if(val == 0){
+        color.setRgb(255,255,255,255);
+    }
+    else{
+        if(val<nb_colors){
+            if(val<(nb_colors/2)){
+                /// Partir du vert vers le Jaune
+                color.setRed(val_color[val]);
+                color.setGreen(255);
+                color.setBlue(0);
+            }
+            else{
+                color.setRed(0);
+                color.setGreen(val_color[val%(nb_colors/2)]);
+                color.setBlue(0);
+            }
+        }
+        else{
+            /// Erreur de calcul !!
+            color.setRed(39);
+            color.setGreen(93);
+            color.setBlue(219);
+        }
 
+        // proche du centre ?
+        color.setAlpha((255-(5*val_color[1])) + val_color[alp]);
 
-   // Disque Me
-   if(abs(Me-Ec)<Me){
-       val = val | (0x1<<4);
-       // Chaud - Froid
-       if(abs(Me-Ec)<=r){
-          lgt = lgt | (0x1<<4);
-       }
-       else{
-         lgt = lgt & ~(0x1<<4);
-       }
-   }
-   else{
-       val = val & ~(0x1<<4);
-   }
+    }
 
-   /// ----------------
-   if(val == 0){
-       color.setRgb(255,255,255,255);
-   }
-   else{
-       //color.setRgb((val*8),255-(val*8),(val*8),lgt*8);
-       color.setRed(val*8);
-       color.setGreen(255-(val*8));
-       color.setBlue(255-(val*8));
-       color.setAlpha(lgt*8);
-
-   }
-
-   return color;
+    return color;
 }

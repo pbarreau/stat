@@ -36,19 +36,23 @@ class BDelegateCouleurFond : public QItemDelegate
 {
     Q_OBJECT
 public:
-    BDelegateCouleurFond(int b_min, int b_max, int len, QWidget *parent = 0) :
-        b_min(b_min),b_max(b_max),len(len),QItemDelegate(parent) {}
+     BDelegateCouleurFond(int b_min, int b_max, int len, QWidget *parent = 0);
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const;
 
 private:
     QColor MonSetColor(const QModelIndex &index) const;
+    bool  calcul(int centre, int pos)const;
 
 private:
     int b_min;
     int b_max;
     int len;
+    int nb_colors;
+    int *val_color;
+    //int val_v;
+    //int val_r;
 };
 
 #endif // SQLQMDETAILS_H
