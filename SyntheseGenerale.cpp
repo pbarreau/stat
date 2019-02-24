@@ -1502,14 +1502,14 @@ void SyntheseGenerale::slot_ccmr_tbForBaseEcart(QPoint pos)
     QModelIndex index = view->indexAt(pos);
     int col = view->columnAt(pos.x());
 
-    if(col == 0)
+    if(col == 1)
     {
         QString tbl = view->objectName();
 
         int val = 0;
-        if(index.model()->index(index.row(),0).data().canConvert(QMetaType::Int))
+        if(index.model()->index(index.row(),1).data().canConvert(QMetaType::Int))
         {
-            val =  index.model()->index(index.row(),0).data().toInt();
+            val =  index.model()->index(index.row(),1).data().toInt();
         }
 
         QMenu *MonMenu = new QMenu(pEcran);
