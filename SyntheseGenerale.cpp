@@ -1340,78 +1340,21 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBarycentre(int dst)
     return lay_return;
 }
 
-QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
+QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString source, QString definition, QString key, QString tb_resultat)
 {
-    QGridLayout *lay_return = new QGridLayout;
-
     sqm_bloc1_1 = new QSqlQueryModel;
 
-    int zn = 0;
     QTableView *qtv_tmp = new QTableView;
     QString qtv_name = QString("new")+QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
-    //tbv_bloc1_1 = new QTableView;
-    //qtv_tmp=tbv_bloc1_1;
-
-#if 0
-    QString st_baseUse = "";
-    st_baseUse = st_bdTirages->remove(";");
-    QString st_cr1 = "";
-    QStringList lst_tmp;
-    lst_tmp << "tb2.b";
-    st_cr1 =  GEN_Where_3(5,"tb1.boule",false,"=",lst_tmp,true,"or");
-    QString st_msg1 =
-            "select tb1.boule as B, count(tb2.id) as T, "
-            + *st_JourTirageDef +
-            " "
-            "from  "
-            "("
-            "select id as boule from Bnrz where (z1 not null ) "
-            ") as tb1 "
-            "left join "
-            "("
-            "select tb2.* from "
-            "("
-            +st_baseUse+
-            " )as tb1"
-            ","
-            "("
-            +st_baseUse+
-            ")as tb2 "
-            "where"
-            "("
-            "tb2.id=tb1.id + "
-            +QString::number(dst) +
-            ")"
-            ") as tb2 "
-            "on "
-            "("
-            +st_cr1+
-            ") group by tb1.boule;";
-
-#ifndef QT_NO_DEBUG
-    qDebug()<< st_msg1;
-#endif
-
-    /// Mettre le resultat de la requete dans une vue
-    QSqlQuery query(db_0);
-    bool isOk = true;
-    QString st_msg2 = "create view if not exists view_total_boule as "
-            + st_msg1;
-
-#ifndef QT_NO_DEBUG
-    qDebug()<< st_msg2;
-#endif
-#endif
 
     QSqlQuery query(db_0);
     bool isOk = true;
     QString st_msg1 = "";
-    QString key = "z"+QString::number(zn+1);
-    QString tb_resultat = "view_total_boule";
 
-    if((isOk = Boules_Details(zn,tb_resultat,"Bnrz",key,"RefTirages"))){
+
+    if((isOk = Boules_Details(zn,tb_resultat,definition,key,source))){
         st_msg1 = "select * from "+tb_resultat+";";
     }
     sqm_bloc1_1->setQuery(st_msg1,db_0);
@@ -1444,8 +1387,6 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
 
-    //BDelegateCouleurFond *color = new BDelegateCouleurFond(3,6,6,qtv_tmp);
-    //qtv_tmp->setItemDelegate(color);
 
     qtv_tmp->verticalHeader()->hide();
     for(int j=0;j<2;j++)
@@ -1460,14 +1401,6 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
     qtv_tmp->hideColumn(0);
     tbv_bloc1_1 = qtv_tmp;
-
-    QVBoxLayout *vb_tmp = new QVBoxLayout;
-    QLabel * lab_tmp = new QLabel;
-    lab_tmp->setText("Repartitions");
-    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-    vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-
-    lay_return->addLayout(vb_tmp,0,0);
 
     // simple click dans fenetre  pour selectionner boule
 #if 0
@@ -1486,6 +1419,27 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     // double click dans fenetre  pour afficher details boule
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+
+    return qtv_tmp;
+}
+
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
+{
+    QGridLayout *lay_return = new QGridLayout;
+
+    int zn = 0;
+    QString key = "z"+QString::number(zn+1);
+
+    QTableView * qtv_tmp_1 = ConstruireTbvAnalyseBoules(zn,"RefTirages","Bnrz",key,"view_total_boule");
+
+    QVBoxLayout *vb_tmp = new QVBoxLayout;
+    QLabel * lab_tmp = new QLabel;
+    lab_tmp->setText("Repartitions");
+    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    vb_tmp->addWidget(qtv_tmp_1,0,Qt::AlignLeft|Qt::AlignTop);
+
+    lay_return->addLayout(vb_tmp,0,0);
+
 
     return lay_return;
 
@@ -2187,10 +2141,10 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     QAbstractTableModel *sqm_tmp = NULL;
 
     if(view->objectName().contains("new")){
-       sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
+        sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
     }
     else{
-       sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+        sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
     }
 
     int nbcol = sqm_tmp->columnCount();

@@ -166,6 +166,8 @@ private:
     QGridLayout * MonLayout_SyntheseTotalRepartitions(int dst);
     QGridLayout * MonLayout_SyntheseTotalBarycentre(int dst);
 
+    QTableView * ConstruireTbvAnalyseBoules(int zn, QString source, QString definition, QString key, QString tb_resultat);
+
     bool isTableTotalBoulleReady(QString tbl_total);
     bool mettreBarycentre(QString tbl_dst, QString src_data);
     bool CreateTable_Barycentre(QString tbl_dest, QString tbl_poids_boules);

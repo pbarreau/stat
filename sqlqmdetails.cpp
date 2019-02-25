@@ -448,6 +448,7 @@ bool BDelegateCouleurFond::setData(const QModelIndex &index, const QVariant &val
 
 bool BOrdColor::operator<(const BOrdColor  &b)const
 {
+    /// https://www.developpez.net/forums/d1298928/c-cpp/bibliotheques/qt/qmap-operator-qpoint/
     bool isOk = (this->red()<b.red()) ||
             (this->red()==b.red() && this->green()<b.green())||
             (this->green()==b.green() && this->blue()<b.blue())||
