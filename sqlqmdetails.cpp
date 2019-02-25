@@ -155,13 +155,14 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
     QString boule = (index.sibling(index.row(),1)).data().toString();
 
     QString msg = "";
+    QString msg2 = "";
     if(index.column()==COL_VISU){
         QColor a = resu_color[index.row()];
         BOrdColor b(a);
-        QMap <BOrdColor,int> color_brush;
-        int ligne = color_brush.value(b);
+        //QMap <BOrdColor,int> color_brush;
+        int ligne = map_FromColor.value(b,-1);
 
-        if(1){
+        if(map_FromColor.contains(b)){
             msg = "Critere ecart : "+ QString::number(ligne).rightJustified(2,'0')
                     +" sur "
                     + QString::number(nb_colors).rightJustified(2,'0')
@@ -171,6 +172,12 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
                     + ","+QString::number(a.blue()).rightJustified(3,'0')
                     + ","+QString::number(a.alpha()).rightJustified(3,'0')
                     +")\n";
+
+            msg2 = "("+QString::number(b.red()).rightJustified(3,'0')
+                    + ","+QString::number(b.green()).rightJustified(3,'0')
+                    + ","+QString::number(b.blue()).rightJustified(3,'0')
+                    + ","+QString::number(b.alpha()).rightJustified(3,'0')
+                    +")\n";
         }
     }
 
@@ -178,6 +185,7 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
 
 #ifndef QT_NO_DEBUG
     qDebug() << "Tooltips :" << msg;
+    qDebug() << "msg2 :" << msg2;
 #endif
 
     QToolTip::showText (QCursor::pos(), msg);
@@ -229,7 +237,8 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
     for(int i = 1; i<= nb_colors; i++){
         QColor tmp_color;
 
-        if(i<nb_colors/2){
+
+        if(i<=nb_colors/2){
             tmp_color.setRed(i*step_colors);
             tmp_color.setGreen(255);
         }
@@ -238,6 +247,11 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
             tmp_color.setGreen((i%(mid_color))*step_colors);
         }
         tmp_color.setBlue(0);
+
+#ifndef QT_NO_DEBUG
+        if(i == (nb_colors/2)+1)
+            qDebug() << "\n\n---------\n\n";
+#endif
 
 #ifndef QT_NO_DEBUG
         qDebug() << "tmp_color : "<< QString::number(i-1).rightJustified(2,'0')
@@ -254,15 +268,23 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
         /// deja comme clef
         if(map_FromColor.contains(a)){
 #ifndef QT_NO_DEBUG
-            qDebug() << "Cette couleur comme clef existe deja\n";
+            qDebug() << "Cette couleur comme clef existe deja\n\n";
 #endif
             ///QMessageBox::critical(NULL, "Pgm", "Clef Couleur deja presente\n",QMessageBox::Ok);
         }
         else{
-            ;//map_FromColor.insert(a,i-1);
+            map_FromColor.insert(a,i-1);
         }
-        map_FromColor.insert(a,i-1);
     }
+
+#ifndef QT_NO_DEBUG
+    QMapIterator<BOrdColor, int>  val (map_FromColor);
+    while (val.hasNext()) {
+        val.next();
+        qDebug() << val.key() << ": " << val.value() << endl;
+    }
+#endif
+    ;
 
 }
 
@@ -320,6 +342,13 @@ bool BDelegateCouleurFond::setData(const QModelIndex &index, const QVariant &val
 bool BOrdColor::operator<(const BOrdColor  &b)const
 {
     bool isOk = true;
+    //return true;
+    return (this->red()<b.red()) ||
+            (this->red()==b.red() && this->green()<b.green())||
+            (this->green()==b.green() && this->blue()<b.blue())||
+            (this->blue()==b.blue() && this->alpha() < b.alpha());
+
+#if 0
     /// Pour comparer 2 Couleurs
     /// a < b ? (ici a c'est this)
     /// on regarde chacune des composantes R,V,B,A
@@ -364,6 +393,6 @@ bool BOrdColor::operator<(const BOrdColor  &b)const
             +QString::number(isOk);
     qDebug()<< msg;
 #endif
-
+#endif
     return isOk;
 }
