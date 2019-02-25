@@ -1409,9 +1409,10 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     bool isOk = true;
     QString st_msg1 = "";
     QString key = "z"+QString::number(zn+1);
+    QString tb_resultat = "view_total_boule";
 
-    if((isOk = Boules_Details(zn,"view_total_boule","Bnrz",key,"RefTirages"))){
-        st_msg1 = "select * from view_total_boule;";
+    if((isOk = Boules_Details(zn,tb_resultat,"Bnrz",key,"RefTirages"))){
+        st_msg1 = "select * from "+tb_resultat+";";
     }
     sqm_bloc1_1->setQuery(st_msg1,db_0);
 
@@ -1422,6 +1423,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     int b_max=-1;
     val.cnx = db_0.connectionName();
     val.sql = st_msg1;
+    val.wko = tb_resultat;
     val.view = qtv_tmp;
     val.b_max = &b_max;
     val.b_min = &b_min;

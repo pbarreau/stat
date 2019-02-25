@@ -16,6 +16,7 @@ typedef struct _st_sqlmqDetailsNeeds
 {
     QString cnx;
     QString sql;
+    QString wko; /// Working on Table
     QTableView *view;
     int *b_min;
     int *b_max;
@@ -52,6 +53,7 @@ public:
 
 typedef struct _st_ColorNeeds{
     QString cnx;
+    QString wko;
     sqlqmDetails *parent;
     int b_min;
     int b_max;
@@ -80,8 +82,9 @@ private slots:
 
 
 private:
-    sqlqmDetails *origine;
     QSqlDatabase db_0;
+    sqlqmDetails *origine;
+    QString working_on;
     int b_min;
     int b_max;
     int len;

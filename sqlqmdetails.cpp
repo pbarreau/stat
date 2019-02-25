@@ -16,6 +16,7 @@
 
 #include "sqlqmdetails.h"
 #include "delegate.h"
+#include "db_tools.h"
 
 QColor *BDelegateCouleurFond::val_colors = NULL;
 QMap<BOrdColor,int> BDelegateCouleurFond::map_FromColor;
@@ -35,6 +36,7 @@ sqlqmDetails::sqlqmDetails(st_sqlmqDetailsNeeds param,QObject *parent):QSqlQuery
     st_ColorNeeds a;
     a.parent = this;
     a.cnx = param.cnx;
+    a.wko = param.wko;
     a.b_min = b_min;
     a.b_max = b_max;
     a.len =6;
@@ -166,8 +168,7 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
     if(index.column()==COL_VISU){
         QColor a = resu_color[index.row()];
         BOrdColor b(a);
-        //QMap <BOrdColor,int> color_brush;
-        int ligne = map_FromColor.value(b,-1);
+        int ligne = map_FromColor.value(a,-1);
 
         if(map_FromColor.contains(b)){
             msg = "Critere ecart : "+ QString::number(ligne).rightJustified(2,'0')
@@ -203,6 +204,7 @@ BDelegateCouleurFond::BDelegateCouleurFond(st_ColorNeeds param, QTableView *pare
     :QItemDelegate(parent),b_min(param.b_min),b_max(param.b_max),len(param.len),origine(param.parent)
 {
     db_0 = QSqlDatabase::database(param.cnx);
+    working_on = param.wko;
 
     /// Mise en place d'un toolstips
     parent->setMouseTracking(true);
@@ -220,14 +222,42 @@ BDelegateCouleurFond::BDelegateCouleurFond(st_ColorNeeds param, QTableView *pare
 
 void BDelegateCouleurFond::AffectationCouleurResultat(QTableView *tbv_cible)
 {
+    bool isOk = true;
+    QSqlQuery query(db_0);
+
     sqlqmDetails *sqm_tmp= qobject_cast<sqlqmDetails*>((this->origine));
 
     int nb_row = sqm_tmp->rowCount();
     resu_color = new QColor[nb_row];
     for(int row=0; row < nb_row;row++){
+
+        // Pour le table view
         QModelIndex Ec = sqm_tmp->index(row,0);
         QColor leFond = CalculerCouleur(Ec);
         resu_color[row]=leFond;
+    }
+
+    // Pour la base
+    for(int row=0; (row < nb_row) && isOk;row++){
+        int prio = map_FromColor.value(resu_color[row],-1);
+        /// update tb_name set C=prio where id=row
+        QString st_update = "update "
+                +working_on
+                +" set C='"
+                +QString::number(prio)
+                +QString("' where id = '")
+                +QString::number(row+1)+ "'";
+        isOk = query.exec(st_update);
+    }
+
+    if(query.lastError().isValid()){
+        DB_Tools::DisplayError("BDelegateCouleurFond::",&query," na ");
+    }
+    else{
+        // refresh query
+        QString st_old_query = sqm_tmp->query().executedQuery();
+        sqm_tmp->query().clear();
+        sqm_tmp->setQuery(st_old_query,db_0);
     }
 
 }
@@ -236,19 +266,27 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
     /// creation d'un tableau des couleurs
     /// pour chacun des calculs d'ecart
     ///  + la couche alpha
-    nb_colors = pow(2,len-1)*2;
+    nb_colors = 1+pow(2,len-1)*2;/// Cas case blanche
+
     int mid_color = nb_colors/2;
     int step_colors = 255/mid_color;
     int alpha_start = 90;
-    int step_alpha = (255-alpha_start)/mid_color;
+    int step_alpha = (255-alpha_start)/nb_colors;
     val_colors = new QColor[nb_colors];
-
 
 #ifndef QT_NO_DEBUG
     qDebug() << "Couleur : id (R,V,B,A)\n";
 #endif
+
+    QColor tmp_color;
+    tmp_color.setRed(255);
+    tmp_color.setGreen(255);
+    tmp_color.setBlue(255);
+    tmp_color.setAlpha(255);
+    val_colors[0]=tmp_color;
+    map_FromColor.insert(tmp_color,0);
+
     for(int i = 1; i<= nb_colors; i++){
-        QColor tmp_color;
 
 
         if(i<=nb_colors/2){
@@ -267,26 +305,26 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
             qDebug() << "\n\n---------\n\n";
         }
 
-        qDebug() << "tmp_color : "<< QString::number(i-1).rightJustified(2,'0')
+        qDebug() << "tmp_color : "<< QString::number(i).rightJustified(2,'0')
                  << "("<<QString::number(tmp_color.red()).rightJustified(3,'0')
                  << ","<<QString::number(tmp_color.green()).rightJustified(3,'0')
                  << ","<<QString::number(tmp_color.blue()).rightJustified(3,'0')
                  << ","<<QString::number(tmp_color.alpha()).rightJustified(3,'0')
                  <<")\n";
 #endif
-        val_colors[i-1]=tmp_color;
-        BOrdColor a(tmp_color);
+        val_colors[i]=tmp_color;
+        //BOrdColor a(tmp_color);
 
         /// Rechercher si cette couleur existe
         /// deja comme clef
-        if(map_FromColor.contains(a)){
+        if(map_FromColor.contains(tmp_color)){
 #ifndef QT_NO_DEBUG
             qDebug() << "Cette couleur comme clef existe deja\n\n";
 #endif
             ///QMessageBox::critical(NULL, "Pgm", "Clef Couleur deja presente\n",QMessageBox::Ok);
         }
         else{
-            map_FromColor.insert(a,i-1);
+            map_FromColor.insert(tmp_color,i);
         }
     }
 
@@ -330,11 +368,11 @@ bool BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
         else{
             /// il faut la creer et la remplir
             if((isOk = query.exec(msg[1]))){
-                for(int i =nb_colors; (i > 0) && isOk ;i--){
+                for(int i =nb_colors; (i >= 0) && isOk ;i--){
                     QString str_insert = QString(" insert into ")
                             + tb_name
                             + QString(" values(NULL,'")
-                            + val_colors[i-1].name(QColor::HexArgb)
+                            + val_colors[i].name(QColor::HexArgb)
                             +QString("')");
                     isOk = query.exec(str_insert);
                 }
@@ -343,12 +381,7 @@ bool BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
     }
 
     if(query.lastError().isValid()){
-#ifndef QT_NO_DEBUG
-        qDebug()<< "Erreur Table Priorite couleurs " << endl;
-        qDebug()<< "Derniere bonne requete :" << query.executedQuery();
-        qDebug()<< "Requete fautive : " << query.lastQuery();
-        qDebug()<< "Erreur :"<<query.lastError().text();
-#endif
+        DB_Tools::DisplayError("BDelegateCouleurFond::",&query," na ");
     }
 
     return isOk;
@@ -383,11 +416,14 @@ QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
     }
 
     /// ----------------
+
     if(val == 0){
         color.setRgb(255,255,255,255);
     }
-    else{
-        if(val<nb_colors){
+    else
+
+    {
+        if(val<nb_colors+1){
             color = val_colors[val];
         }
         else{
