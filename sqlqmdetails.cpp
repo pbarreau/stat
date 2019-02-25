@@ -8,6 +8,8 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItem>
 
+#include <QMessageBox>
+
 #include "sqlqmdetails.h"
 #include "delegate.h"
 
@@ -92,22 +94,29 @@ QVariant sqlqmDetails::data(const QModelIndex &index, int role)const
     return QSqlQueryModel::data(index,role);
 }
 
+QColor sqlqmDetails::getColor(void)
+{
+    return maCouleur;
+}
+
 bool sqlqmDetails::setData(const QModelIndex &index, const QVariant &value, int role )
 {
     bool isOk = true;
 
     if(role == Qt::BackgroundRole){
-        maCouleur = value.value<QColor>();
+        if(index.column() == COL_VISU){
+            maCouleur = value.value<QColor>();
 #ifndef QT_NO_DEBUG
-        QString msg = "Couleur : "+ QString::number(4).rightJustified(2,'0')
-                + "("+QString::number(maCouleur.red()).rightJustified(3,'0')
-                + ","+QString::number(maCouleur.green()).rightJustified(3,'0')
-                + ","+QString::number(maCouleur.blue()).rightJustified(3,'0')
-                + ","+QString::number(maCouleur.alpha()).rightJustified(3,'0')
-                +")\n";
-        qDebug()<< msg;
+            QString msg = "Couleur : "+ QString::number(4).rightJustified(2,'0')
+                    + "("+QString::number(maCouleur.red()).rightJustified(3,'0')
+                    + ","+QString::number(maCouleur.green()).rightJustified(3,'0')
+                    + ","+QString::number(maCouleur.blue()).rightJustified(3,'0')
+                    + ","+QString::number(maCouleur.alpha()).rightJustified(3,'0')
+                    +")\n";
+            qDebug()<< msg;
 #endif
-        //emit(dataChanged(index, index));
+            emit(dataChanged(index, index));
+        }
     }
     else{
         //isOk = QSqlQueryModel::setData(index, value, role );
@@ -127,6 +136,8 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
     if(col == COL_VISU ){
         QColor leFond = CalculerCouleur(index);
         painter->fillRect(option.rect, leFond);
+        //QMap <BOrdColor,int>::const_iterator item = map_FromColor.find(leFond);
+
         this->setData(index,leFond,Qt::BackgroundRole);
     }
 
@@ -141,15 +152,20 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
     QItemDelegate::paint(painter, maModif, index);
 }
 
-bool BDelegateCouleurFond::posSurDisque(int centre, int pos)const
+bool BDelegateCouleurFond::isOnDisk(int centre, int pos)const
 {
+    /// On regarde si sur disque de rayon centre
+
     bool ret_val;
+
     int distance = abs(centre-pos);
 
     if(distance<= centre){
+        // oui
         ret_val = true;
     }
     else{
+        // non
         ret_val = false;
     }
 
@@ -168,10 +184,20 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
 
     QString msg = "";
     if(index.column()==COL_VISU){
-        QColor color_brush = sqm_tmp->data(index,Qt::BackgroundRole).value<QColor>();
+        //QMap <BOrdColor,int> color_brush = sqm_tmp->data(index,Qt::BackgroundRole).value<QMap<BOrdColor,int>>();
+        //QColor a = sqm_tmp->data(index,Qt::BackgroundRole).value<QColor>();
+        QColor a = origine->getColor();
+        BOrdColor b(a);
+        QMap <BOrdColor,int> color_brush;
+        int ligne = color_brush.value(b);
 
+
+#if 0
+        QMap<int,QColor *> color_brush = sqm_tmp->data(index,Qt::BackgroundRole).value<QMap<int,QColor *>>();
         int i;
         bool trouve = false;
+
+
         for(i=0;i<nb_colors;i++){
             if(val_color[i]!=color_brush){
                 continue;
@@ -181,21 +207,27 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
                 break;
             }
         }
-        if(trouve){
-            msg = "Critere ecart : "+ QString::number(i).rightJustified(2,'0')
+
+#endif
+        if(col == 2){
+            msg = "Critere ecart : "+ QString::number(ligne).rightJustified(2,'0')
                     +" sur "
                     + QString::number(nb_colors).rightJustified(2,'0')
                     + " -> "
-                    + "("+QString::number(color_brush.red()).rightJustified(3,'0')
-                    + ","+QString::number(color_brush.green()).rightJustified(3,'0')
-                    + ","+QString::number(color_brush.blue()).rightJustified(3,'0')
-                    + ","+QString::number(color_brush.alpha()).rightJustified(3,'0')
+                    + "("+QString::number(a.red()).rightJustified(3,'0')
+                    + ","+QString::number(a.green()).rightJustified(3,'0')
+                    + ","+QString::number(a.blue()).rightJustified(3,'0')
+                    + ","+QString::number(a.alpha()).rightJustified(3,'0')
                     +")\n";
         }
-
     }
 
     msg = QString("Boule ") + boule +QString("\n")+msg;
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "Tooltips :" << msg;
+#endif
+
     QToolTip::showText (QCursor::pos(), msg);
 
 }
@@ -214,31 +246,47 @@ BDelegateCouleurFond::BDelegateCouleurFond(st_ColorNeeds param, QWidget *parent)
     nb_colors = pow(2,len-1);
     int mid_color = nb_colors/2;
     int step_colors = 255/mid_color;
-    val_color = new QColor[nb_colors];
+    val_colors = new QColor[nb_colors];
+
 
 #ifndef QT_NO_DEBUG
     qDebug() << "Couleur : id (R,V,B,A)\n";
 #endif
     for(int i = 1; i<= nb_colors; i++){
+        QColor tmp_color;
 
         if(i<nb_colors/2){
-            val_color[i-1].setRed(i*step_colors);
-            val_color[i-1].setGreen(255);
+            tmp_color.setRed(i*step_colors);
+            tmp_color.setGreen(255);
         }
         else{
-            val_color[i-1].setRed(255);
-            val_color[i-1].setGreen((i%(mid_color))*step_colors);
+            tmp_color.setRed(255);
+            tmp_color.setGreen((i%(mid_color))*step_colors);
         }
-        val_color[i].setBlue(0);
+        tmp_color.setBlue(0);
 
 #ifndef QT_NO_DEBUG
-        qDebug() << "Couleur : "<< QString::number(i).rightJustified(2,'0')
-                 << "("<<QString::number(val_color[i].red()).rightJustified(3,'0')
-                 << ","<<QString::number(val_color[i].green()).rightJustified(3,'0')
-                 << ","<<QString::number(val_color[i].blue()).rightJustified(3,'0')
-                 << ","<<QString::number(val_color[i].alpha()).rightJustified(3,'0')
+        qDebug() << "tmp_color : "<< QString::number(i-1).rightJustified(2,'0')
+                 << "("<<QString::number(tmp_color.red()).rightJustified(3,'0')
+                 << ","<<QString::number(tmp_color.green()).rightJustified(3,'0')
+                 << ","<<QString::number(tmp_color.blue()).rightJustified(3,'0')
+                 << ","<<QString::number(tmp_color.alpha()).rightJustified(3,'0')
                  <<")\n";
 #endif
+        val_colors[i-1]=tmp_color;
+        BOrdColor a(tmp_color);
+
+        /// Rechercher si cette couleur existe
+        /// deja comme clef
+        if(map_FromColor.contains(a)){
+#ifndef QT_NO_DEBUG
+            qDebug() << "Cette couleur comme clef existe deja\n";
+#endif
+            ///QMessageBox::critical(NULL, "Pgm", "Clef Couleur deja presente\n",QMessageBox::Ok);
+        }
+        else{
+            map_FromColor.insert(a,i-1);
+        }
 
     }
 }
@@ -258,10 +306,10 @@ QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
         int centre = (index.sibling(index.row(),b_max+i)).data().toInt();
         int pri = tab_pri[i-1]-1;
 
-        int item_couleur = posSurDisque(centre,Ec);
+        int item_couleur = isOnDisk(centre,Ec);
         val = val + pow(2,pri) * item_couleur;
 
-        int item_alpha = posSurDisque(r,centre);
+        int item_alpha = isOnDisk(r,centre);
         alp = alp + item_alpha;
     }
 
@@ -271,7 +319,7 @@ QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
     }
     else{
         if(val<nb_colors){
-            color = val_color[val];
+            color = val_colors[val];
         }
         else{
             /// Erreur de calcul !!
@@ -290,5 +338,57 @@ QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
 
 bool BDelegateCouleurFond::setData(const QModelIndex &index, const QVariant &value, int role) const
 {
+
     return(origine->setData(index,value,Qt::BackgroundRole));
+}
+
+bool BOrdColor::operator<(const BOrdColor  &b)const
+{
+    bool isOk = true;
+    /// Pour comparer 2 Couleurs
+    /// a < b ? (ici a c'est this)
+    /// on regarde chacune des composantes R,V,B,A
+
+    if(this->red()<=b.red()){
+        if(this->green()<=b.green()){
+            if(this->blue()<=b.blue()){
+                if(this->alpha()<=b.alpha()){
+                    isOk = true;
+                }
+                else {
+                    isOk =false;
+                }
+            }
+            else{
+                isOk = false;
+            }
+
+        }
+        else{
+            isOk = false;
+        }
+
+    }
+    else{
+        isOk = false;
+    }
+
+#ifndef QT_NO_DEBUG
+    QString msg_1 =  "("+QString::number(this->red()).rightJustified(3,'0')
+            + ","+QString::number(this->green()).rightJustified(3,'0')
+            + ","+QString::number(this->blue()).rightJustified(3,'0')
+            + ","+QString::number(this->alpha()).rightJustified(3,'0')
+            +")";
+    QString msg_2 = "("+QString::number(b.red()).rightJustified(3,'0')
+            + ","+QString::number(b.green()).rightJustified(3,'0')
+            + ","+QString::number(b.blue()).rightJustified(3,'0')
+            + ","+QString::number(b.alpha()).rightJustified(3,'0')
+            +")";
+
+    QString msg = msg_1 + QString(" < ") + msg_2 + QString(" ? -> ")
+            +QString::number(isOk);
+    qDebug()<< msg;
+#endif
+
+    return isOk;
 }
