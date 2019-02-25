@@ -10,7 +10,7 @@
 #include <QMap>
 
 
-#define COL_VISU    2
+#define COL_VISU    1
 
 typedef struct _st_sqlmqDetailsNeeds
 {
@@ -28,13 +28,11 @@ class sqlqmDetails : public QSqlQueryModel
 public:
     explicit sqlqmDetails(st_sqlmqDetailsNeeds param,QObject *parent = 0);
     QVariant data(const QModelIndex &index, int role) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    //bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
     void PreparerTableau(void);
-    QColor getColor();
 
 
 private:
-    QColor maCouleur;
     QSqlDatabase db_0;
     int b_min;
     int b_max;
@@ -63,8 +61,7 @@ class BDelegateCouleurFond : public QItemDelegate
 {
     Q_OBJECT
 public:
-     BDelegateCouleurFond(st_ColorNeeds param, QWidget *parent = 0);
-
+    BDelegateCouleurFond(st_ColorNeeds param, QTableView *parent = 0);
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const;
 
@@ -73,6 +70,8 @@ private:
     QColor CalculerCouleur(const QModelIndex &index) const;
     bool  isOnDisk(int centre, int pos)const;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)const;
+    void CreationTableauClefDeCouleurs(void);
+    void AffectationCouleurResultat(QTableView *tbv_cible);
 
 private slots:
     void slot_AideToolTip(const QModelIndex & index);
@@ -84,9 +83,10 @@ private:
     int b_max;
     int len;
     int nb_colors;
-    QColor *val_colors;
+    static QColor *val_colors;
+    QColor *resu_color;
     //QMap<int,QColor> map_color;
-    QMap<BOrdColor,int> map_FromColor;
+    static QMap<BOrdColor,int> map_FromColor;
 };
 
 

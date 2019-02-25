@@ -13,11 +13,20 @@
 #include "sqlqmdetails.h"
 #include "delegate.h"
 
+QColor *BDelegateCouleurFond::val_colors = NULL;
+QMap<BOrdColor,int> BDelegateCouleurFond::map_FromColor;
+
 sqlqmDetails::sqlqmDetails(st_sqlmqDetailsNeeds param,QObject *parent):QSqlQueryModel(parent)
 {
     db_0 = QSqlDatabase::database(param.cnx);
     this->setQuery(param.sql,db_0);
     PreparerTableau();
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(this);
+    param.view->setModel(m);
+
 
     st_ColorNeeds a;
     a.b_min = b_min;
@@ -60,12 +69,6 @@ QVariant sqlqmDetails::data(const QModelIndex &index, int role)const
 {
     int col = index.column();
 
-    if(col==2){
-        if(role == Qt::BackgroundRole){
-            return maCouleur;
-        }
-    }
-
     if(col >= b_min && col < b_max  )
     {
         //if(index.data().canConvert(QMetaType::Int))
@@ -94,35 +97,7 @@ QVariant sqlqmDetails::data(const QModelIndex &index, int role)const
     return QSqlQueryModel::data(index,role);
 }
 
-QColor sqlqmDetails::getColor(void)
-{
-    return maCouleur;
-}
 
-bool sqlqmDetails::setData(const QModelIndex &index, const QVariant &value, int role )
-{
-    bool isOk = true;
-
-    if(role == Qt::BackgroundRole){
-        if(index.column() == COL_VISU){
-            maCouleur = value.value<QColor>();
-#ifndef QT_NO_DEBUG
-            QString msg = "Couleur : "+ QString::number(4).rightJustified(2,'0')
-                    + "("+QString::number(maCouleur.red()).rightJustified(3,'0')
-                    + ","+QString::number(maCouleur.green()).rightJustified(3,'0')
-                    + ","+QString::number(maCouleur.blue()).rightJustified(3,'0')
-                    + ","+QString::number(maCouleur.alpha()).rightJustified(3,'0')
-                    +")\n";
-            qDebug()<< msg;
-#endif
-            emit(dataChanged(index, index));
-        }
-    }
-    else{
-        //isOk = QSqlQueryModel::setData(index, value, role );
-    }
-    return isOk;
-}
 
 /// -------------------
 void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &option,
@@ -130,15 +105,12 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
 {
     int col = index.column();
 
-    QStyleOptionViewItem maModif(option);
+    ///QStyleOptionViewItem maModif(option);
 
 
-    if(col == COL_VISU ){
-        QColor leFond = CalculerCouleur(index);
+    if(col == 1 ){
+        QColor leFond = resu_color[index.row()];
         painter->fillRect(option.rect, leFond);
-        //QMap <BOrdColor,int>::const_iterator item = map_FromColor.find(leFond);
-
-        this->setData(index,leFond,Qt::BackgroundRole);
     }
 
     if(col >= b_min && col < b_max){
@@ -149,7 +121,7 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
         painter->fillRect(option.rect, COULEUR_FOND_ECARTS);
     }
 
-    QItemDelegate::paint(painter, maModif, index);
+    QItemDelegate::paint(painter, option, index);
 }
 
 bool BDelegateCouleurFond::isOnDisk(int centre, int pos)const
@@ -184,32 +156,12 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
 
     QString msg = "";
     if(index.column()==COL_VISU){
-        //QMap <BOrdColor,int> color_brush = sqm_tmp->data(index,Qt::BackgroundRole).value<QMap<BOrdColor,int>>();
-        //QColor a = sqm_tmp->data(index,Qt::BackgroundRole).value<QColor>();
-        QColor a = origine->getColor();
+        QColor a = resu_color[index.row()];
         BOrdColor b(a);
         QMap <BOrdColor,int> color_brush;
         int ligne = color_brush.value(b);
 
-
-#if 0
-        QMap<int,QColor *> color_brush = sqm_tmp->data(index,Qt::BackgroundRole).value<QMap<int,QColor *>>();
-        int i;
-        bool trouve = false;
-
-
-        for(i=0;i<nb_colors;i++){
-            if(val_color[i]!=color_brush){
-                continue;
-            }
-            else{
-                trouve = true;
-                break;
-            }
-        }
-
-#endif
-        if(col == 2){
+        if(1){
             msg = "Critere ecart : "+ QString::number(ligne).rightJustified(2,'0')
                     +" sur "
                     + QString::number(nb_colors).rightJustified(2,'0')
@@ -232,7 +184,7 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
 
 }
 
-BDelegateCouleurFond::BDelegateCouleurFond(st_ColorNeeds param, QWidget *parent)
+BDelegateCouleurFond::BDelegateCouleurFond(st_ColorNeeds param, QTableView *parent)
     :QItemDelegate(parent),b_min(param.b_min),b_max(param.b_max),len(param.len),origine(param.parent)
 {
     /// Mise en place d'un toolstips
@@ -242,6 +194,28 @@ BDelegateCouleurFond::BDelegateCouleurFond(st_ColorNeeds param, QWidget *parent)
             this,SLOT(slot_AideToolTip(QModelIndex)));
 
 
+    CreationTableauClefDeCouleurs();
+
+    AffectationCouleurResultat(parent);
+
+
+}
+
+void BDelegateCouleurFond::AffectationCouleurResultat(QTableView *tbv_cible)
+{
+    sqlqmDetails *sqm_tmp= qobject_cast<sqlqmDetails*>((this->origine));
+
+    int nb_row = sqm_tmp->rowCount();
+    resu_color = new QColor[nb_row];
+    for(int row=0; row < nb_row;row++){
+        QModelIndex Ec = sqm_tmp->index(row,0);
+        QColor leFond = CalculerCouleur(Ec);
+        resu_color[row]=leFond;
+    }
+
+}
+void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
+{
     /// creation d'un tableau des couleurs
     nb_colors = pow(2,len-1);
     int mid_color = nb_colors/2;
@@ -285,10 +259,11 @@ BDelegateCouleurFond::BDelegateCouleurFond(st_ColorNeeds param, QWidget *parent)
             ///QMessageBox::critical(NULL, "Pgm", "Clef Couleur deja presente\n",QMessageBox::Ok);
         }
         else{
-            map_FromColor.insert(a,i-1);
+            ;//map_FromColor.insert(a,i-1);
         }
-
+        map_FromColor.insert(a,i-1);
     }
+
 }
 
 QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const

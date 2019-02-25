@@ -1426,6 +1426,9 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     val.b_max = &b_max;
     val.b_min = &b_min;
     sqlqmDetails *sqm_tmp= new sqlqmDetails(val,sqm_bloc1_1);
+
+    mysortModel = qobject_cast<QSortFilterProxyModel *>( qtv_tmp->model());
+
     int nbcol = sqm_tmp->columnCount();
 
     qtv_tmp->setSortingEnabled(true);
@@ -1439,13 +1442,6 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
 
-    QSortFilterProxyModel *m=new QSortFilterProxyModel();
-    m->setDynamicSortFilter(true);
-    m->setSourceModel(sqm_tmp);
-
-    mysortModel = m;
-
-    qtv_tmp->setModel(m);
     //BDelegateCouleurFond *color = new BDelegateCouleurFond(3,6,6,qtv_tmp);
     //qtv_tmp->setItemDelegate(color);
 
