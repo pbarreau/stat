@@ -116,7 +116,10 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
 
 
     if(col == 1 ){
-        QColor leFond = resu_color[index.row()];
+        //int val_col_2 = index.row();
+        //QColor leFond = resu_color[val_col_2];
+        int val_col_2 = (index.sibling(index.row(),2)).data().toInt();
+        QColor leFond = map_FromColor.key(val_col_2);
         painter->fillRect(option.rect, leFond);
     }
 
@@ -166,25 +169,23 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
     QString msg = "";
     QString msg2 = "";
     if(index.column()==COL_VISU){
-        QColor a = resu_color[index.row()];
-        BOrdColor b(a);
-        int ligne = map_FromColor.value(a,-1);
 
-        if(map_FromColor.contains(b)){
+        //int val_col_2 = (index.sibling(index.row(),2)).data().toInt();
+        //QColor leFond = resu_color[val_col_2];
+
+        int val_col_2 = (index.sibling(index.row(),2)).data().toInt();
+        QColor leFond = map_FromColor.key(val_col_2);
+        int ligne = map_FromColor.value(leFond,-1);
+
+        if(map_FromColor.contains(leFond)){
             msg = "Critere ecart : "+ QString::number(ligne).rightJustified(2,'0')
                     +" sur "
                     + QString::number(nb_colors).rightJustified(2,'0')
                     + " -> "
-                    + "("+QString::number(a.red()).rightJustified(3,'0')
-                    + ","+QString::number(a.green()).rightJustified(3,'0')
-                    + ","+QString::number(a.blue()).rightJustified(3,'0')
-                    + ","+QString::number(a.alpha()).rightJustified(3,'0')
-                    +")\n";
-
-            msg2 = "("+QString::number(b.red()).rightJustified(3,'0')
-                    + ","+QString::number(b.green()).rightJustified(3,'0')
-                    + ","+QString::number(b.blue()).rightJustified(3,'0')
-                    + ","+QString::number(b.alpha()).rightJustified(3,'0')
+                    + "("+QString::number(leFond.red()).rightJustified(3,'0')
+                    + ","+QString::number(leFond.green()).rightJustified(3,'0')
+                    + ","+QString::number(leFond.blue()).rightJustified(3,'0')
+                    + ","+QString::number(leFond.alpha()).rightJustified(3,'0')
                     +")\n";
         }
     }
@@ -193,7 +194,6 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
 
 #ifndef QT_NO_DEBUG
     qDebug() << "Tooltips :" << msg;
-    qDebug() << "msg2 :" << msg2;
 #endif
 
     QToolTip::showText (QCursor::pos(), msg);
@@ -372,7 +372,7 @@ bool BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
                     QString str_insert = QString(" insert into ")
                             + tb_name
                             + QString(" values(NULL,'")
-                            + val_colors[i].name(QColor::HexArgb)
+                            + val_colors[i].name(QColor::HexRgb)
                             +QString("')");
                     isOk = query.exec(str_insert);
                 }
@@ -405,7 +405,7 @@ QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
         int item_couleur = isOnDisk(centre,Ec);
         int item_alpha = isOnDisk(r,(centre-Ec));
 
-        if(i==2){
+        if(i==3){
             /// Retirer cas R=Max Ecart
             /// sauf si vraiment tout proche
             item_couleur = item_alpha * item_couleur;
@@ -416,12 +416,12 @@ QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
     }
 
     /// ----------------
-
+#if 0
     if(val == 0){
         color.setRgb(255,255,255,255);
     }
     else
-
+#endif
     {
         if(val<nb_colors+1){
             color = val_colors[val];
