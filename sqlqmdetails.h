@@ -51,6 +51,7 @@ public:
 };
 
 typedef struct _st_ColorNeeds{
+    QString cnx;
     sqlqmDetails *parent;
     int b_min;
     int b_max;
@@ -72,6 +73,7 @@ private:
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)const;
     void CreationTableauClefDeCouleurs(void);
     void AffectationCouleurResultat(QTableView *tbv_cible);
+    bool SauverTableauPriotiteCouleurs();
 
 private slots:
     void slot_AideToolTip(const QModelIndex & index);
@@ -79,13 +81,13 @@ private slots:
 
 private:
     sqlqmDetails *origine;
+    QSqlDatabase db_0;
     int b_min;
     int b_max;
     int len;
     int nb_colors;
     static QColor *val_colors;
     QColor *resu_color;
-    //QMap<int,QColor> map_color;
     static QMap<BOrdColor,int> map_FromColor;
 };
 

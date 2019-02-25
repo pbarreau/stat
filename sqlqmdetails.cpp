@@ -8,6 +8,10 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItem>
 
+#include <QSqlQuery>
+#include <QSqlResult>
+#include <QSqlError>
+
 #include <QMessageBox>
 
 #include "sqlqmdetails.h"
@@ -29,10 +33,11 @@ sqlqmDetails::sqlqmDetails(st_sqlmqDetailsNeeds param,QObject *parent):QSqlQuery
 
 
     st_ColorNeeds a;
+    a.parent = this;
+    a.cnx = param.cnx;
     a.b_min = b_min;
     a.b_max = b_max;
     a.len =6;
-    a.parent = this;
     BDelegateCouleurFond *color = new BDelegateCouleurFond(a,param.view);
 
     param.view->setItemDelegate(color);
@@ -197,6 +202,8 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
 BDelegateCouleurFond::BDelegateCouleurFond(st_ColorNeeds param, QTableView *parent)
     :QItemDelegate(parent),b_min(param.b_min),b_max(param.b_max),len(param.len),origine(param.parent)
 {
+    db_0 = QSqlDatabase::database(param.cnx);
+
     /// Mise en place d'un toolstips
     parent->setMouseTracking(true);
     connect(parent,
@@ -293,8 +300,59 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
 #endif
 
 
+    /// Le tableau est cree, le sauver dans la base de donnees
+    SauverTableauPriotiteCouleurs();
 }
 
+bool BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
+{
+    bool isOk = true;
+    QSqlQuery query(db_0);
+    QString tb_name = QString("pCouleurs_")
+            + QString::number(nb_colors);
+
+    QString msg []= {
+        {"SELECT name FROM sqlite_master "
+         "WHERE type='table' AND name='"+tb_name+"';"},
+        {"create table if not exists "
+         + tb_name
+         +"(id integer primary key, color text)"}
+    };
+
+    if((isOk = query.exec(msg[0])))
+    {
+        query.first();
+        if(query.isValid())
+        {
+            /// La table existe
+            isOk = true;
+        }
+        else{
+            /// il faut la creer et la remplir
+            if((isOk = query.exec(msg[1]))){
+                for(int i =nb_colors; (i > 0) && isOk ;i--){
+                    QString str_insert = QString(" insert into ")
+                            + tb_name
+                            + QString(" values(NULL,'")
+                            + val_colors[i-1].name(QColor::HexArgb)
+                            +QString("')");
+                    isOk = query.exec(str_insert);
+                }
+            }
+        }
+    }
+
+    if(query.lastError().isValid()){
+#ifndef QT_NO_DEBUG
+        qDebug()<< "Erreur Table Priorite couleurs " << endl;
+        qDebug()<< "Derniere bonne requete :" << query.executedQuery();
+        qDebug()<< "Requete fautive : " << query.lastQuery();
+        qDebug()<< "Erreur :"<<query.lastError().text();
+#endif
+    }
+
+    return isOk;
+}
 QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
 {
     QColor color;

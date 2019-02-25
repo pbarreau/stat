@@ -234,9 +234,11 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
 #ifndef QT_NO_DEBUG
     QString sqlError = "";
     QString sqlText = "";
+    QString sqlGood = "";
 
     if(pCurrent !=NULL)
     {
+        sqlGood = pCurrent->executedQuery();
         sqlError = pCurrent->lastError().text();
         sqlText = pCurrent->lastQuery();
     }
@@ -246,8 +248,9 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
         sqlText = "Can not say";
     }
     qDebug() << "Fonction:"<<fnName;
-    qDebug() << "Error from Query:"<<sqlError;
-    qDebug() << "Code of Query:"<<sqlText;
+    qDebug() << "Derniere bonne requete : "<<sqlGood;
+    qDebug() << "Requete fautive : "<<sqlText;
+    qDebug() << "Erreur :"<<sqlError;
     qDebug() << "Code wanted:"<<sqlCode<<"\n--------------";
 #endif
     QApplication::exit();
