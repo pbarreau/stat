@@ -127,19 +127,21 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
 bool BDelegateCouleurFond::isOnDisk(int centre, int pos)const
 {
     /// On regarde si sur disque de rayon centre
-
-    bool ret_val;
-
+    bool ret_val = false;
     int distance = abs(centre-pos);
 
-    if(distance<= centre){
-        // oui
-        ret_val = true;
+    if(distance <= 12){
+
+        if(distance<= abs(centre)){
+            // oui
+            ret_val = true;
+        }
+        else{
+            // non
+            ret_val = false;
+        }
     }
-    else{
-        // non
-        ret_val = false;
-    }
+
 
     return ret_val;
 }
@@ -225,9 +227,13 @@ void BDelegateCouleurFond::AffectationCouleurResultat(QTableView *tbv_cible)
 void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
 {
     /// creation d'un tableau des couleurs
-    nb_colors = pow(2,len-1);
+    /// pour chacun des calculs d'ecart
+    ///  + la couche alpha
+    nb_colors = pow(2,len-1)*2;
     int mid_color = nb_colors/2;
     int step_colors = 255/mid_color;
+    int alpha_start = 90;
+    int step_alpha = (255-alpha_start)/mid_color;
     val_colors = new QColor[nb_colors];
 
 
@@ -239,21 +245,21 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
 
 
         if(i<=nb_colors/2){
-            tmp_color.setRed(i*step_colors);
-            tmp_color.setGreen(255);
+            tmp_color.setGreen(i*step_colors);
+            tmp_color.setRed(255);
         }
         else{
-            tmp_color.setRed(255);
-            tmp_color.setGreen((i%(mid_color))*step_colors);
+            tmp_color.setGreen(255);
+            tmp_color.setRed((i%(mid_color))*step_colors);
         }
         tmp_color.setBlue(0);
+        tmp_color.setAlpha(alpha_start+((i-1)*step_alpha));
 
 #ifndef QT_NO_DEBUG
-        if(i == (nb_colors/2)+1)
+        if(i == (nb_colors/2)+1){
             qDebug() << "\n\n---------\n\n";
-#endif
+        }
 
-#ifndef QT_NO_DEBUG
         qDebug() << "tmp_color : "<< QString::number(i-1).rightJustified(2,'0')
                  << "("<<QString::number(tmp_color.red()).rightJustified(3,'0')
                  << ","<<QString::number(tmp_color.green()).rightJustified(3,'0')
@@ -283,8 +289,9 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
         val.next();
         qDebug() << val.key() << ": " << val.value() << endl;
     }
-#endif
     ;
+#endif
+
 
 }
 
@@ -293,21 +300,28 @@ QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
     QColor color;
 
     int val = 0;
-    int alp = 0;
     int r = 2;
 
+    /// Ep,Em,M,Es,Me
     int tab_pri[5]={3,4,1,2,5};
+    int nb_pri = sizeof (tab_pri)/sizeof (int);
 
     int Ec = (index.sibling(index.row(),b_max)).data().toInt();
-    for(int i=1;i<=5;i++){
+    for(int i=1;i<=nb_pri;i++){
         int centre = (index.sibling(index.row(),b_max+i)).data().toInt();
         int pri = tab_pri[i-1]-1;
 
         int item_couleur = isOnDisk(centre,Ec);
-        val = val + pow(2,pri) * item_couleur;
+        int item_alpha = isOnDisk(r,(centre-Ec));
 
-        int item_alpha = isOnDisk(r,centre);
-        alp = alp + item_alpha;
+        if(i==2){
+            /// Retirer cas R=Max Ecart
+            /// sauf si vraiment tout proche
+            item_couleur = item_alpha * item_couleur;
+        }
+
+        val = val + pow(2,pri) * (item_couleur*pow(2,item_alpha));
+
     }
 
     /// ----------------
@@ -323,10 +337,9 @@ QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
             color.setRed(39);
             color.setGreen(93);
             color.setBlue(219);
+            color.setAlpha(255);
         }
 
-        // proche du centre ?
-        color.setAlpha(255);
 
     }
 
@@ -341,41 +354,12 @@ bool BDelegateCouleurFond::setData(const QModelIndex &index, const QVariant &val
 
 bool BOrdColor::operator<(const BOrdColor  &b)const
 {
-    bool isOk = true;
-    //return true;
-    return (this->red()<b.red()) ||
+    bool isOk = (this->red()<b.red()) ||
             (this->red()==b.red() && this->green()<b.green())||
             (this->green()==b.green() && this->blue()<b.blue())||
-            (this->blue()==b.blue() && this->alpha() < b.alpha());
+            (this->blue()==b.blue() && this->alpha() < b.alpha());;
 
-#if 0
-    /// Pour comparer 2 Couleurs
-    /// a < b ? (ici a c'est this)
-    /// on regarde chacune des composantes R,V,B,A
-
-    if(this->red()<=b.red()){
-        if(this->green()<=b.green()){
-            if(this->blue()<=b.blue()){
-                if(this->alpha()<=b.alpha()){
-                    isOk = true;
-                }
-                else {
-                    isOk =false;
-                }
-            }
-            else{
-                isOk = false;
-            }
-
-        }
-        else{
-            isOk = false;
-        }
-
-    }
-    else{
-        isOk = false;
-    }
+    return isOk;
 
 #ifndef QT_NO_DEBUG
     QString msg_1 =  "("+QString::number(this->red()).rightJustified(3,'0')
@@ -393,6 +377,5 @@ bool BOrdColor::operator<(const BOrdColor  &b)const
             +QString::number(isOk);
     qDebug()<< msg;
 #endif
-#endif
-    return isOk;
+
 }
