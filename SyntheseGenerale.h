@@ -142,10 +142,10 @@ private slots:
     void slot_ShowBouleForNewDesign(const QModelIndex & index);
 
 private:
-    QString A1_TrouverLignesTirages(int zn, QString tb_src, QString tb_ref, QString key);
-    QString A2_CalulerEcartDesReponses(QString str_reponses);
-    QString A3_RegrouperEcartDesReponses(QString str_reponses);
-    bool Boules_Details(int zn, QString tbl_dst, QString ref, QString key, QString data);
+    QString A1_0_TrouverLignes(int zn, QString tb_src, QString tb_ref, QString key);
+    QString A1_1_CalculerEcart(QString str_reponses);
+    QString A1_2_RegrouperEcart(QString str_reponses);
+    bool Contruire_Tbl_tot(int zn, QString tbl_dst, QString ref, QString key, QString data);
 
     //QString OrganiseChampsDesTirages(QString st_base_reference);
     //QString CompteJourTirage();
@@ -170,9 +170,10 @@ private:
     QTableView * ResumeTbvAnalyseBoules(int zn, QString tb_read);
     void mettreEnConformiteVisuel(QTableView *qtv_tmp);
 
-    bool isTableTotalBoulleReady(QString tbl_total);
+    //bool isTableTotalBoulleReady(QString tbl_total);
     bool mettreBarycentre(QString tbl_dst, QString src_data);
-    bool CreateTable_Barycentre(QString tbl_dest, QString tbl_poids_boules);
+    bool Contruire_Tbl_brc(int zn, QString tbl_poids_boules, QString tb_ref, QString key, QString tbl_out);
+    bool A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poids_boules);
 
 
     QTableView *tbForPrincipeAuguste(int nbcol, int nblgn);

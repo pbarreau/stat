@@ -27,6 +27,7 @@ QString leftJoin(stJoinArgs ja);
 QString innerJoinFiltered(stJoinArgs ja,QString arg5);
 QString leftJoinFiltered(stJoinArgs ja,QString arg5);
 void DisplayError(QString fnName, QSqlQuery *pCurrent, QString sqlCode);
+bool checkHavingTableAndKey(QString tbl, QString key, QString cnx);
 
 }
 
