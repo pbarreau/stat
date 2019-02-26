@@ -8,6 +8,8 @@
 
 #include "sqlqmdetails.h"
 
+#define COL_VISU_RESUME 1
+
 typedef struct _prmBVisuResume{
     QString cnx;
     QString wko;
@@ -24,9 +26,13 @@ public:
 private:
     bool recupereMapColor(QString tbl_def);
 
+private slots:
+    void slot_AideToolTip(const QModelIndex & index);
+
 private:
     QSqlDatabase db_0;
     QString tColorDefs;
+    int nb_colors;
     QMap<BOrdColor,int> map_colors;
 
 };

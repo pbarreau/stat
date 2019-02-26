@@ -1394,6 +1394,8 @@ QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString source
 
 
     qtv_tmp->verticalHeader()->hide();
+    qtv_tmp->hideColumn(0);
+    qtv_tmp->hideColumn(1);
     for(int j=0;j<2;j++)
         qtv_tmp->setColumnWidth(j,30);
     for(int j=2;j<=sqm_tmp->columnCount();j++)
@@ -1404,7 +1406,6 @@ QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString source
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    qtv_tmp->hideColumn(0);
     tbv_bloc1_1 = qtv_tmp;
 
     // simple click dans fenetre  pour selectionner boule
@@ -1445,7 +1446,7 @@ QTableView * SyntheseGenerale::ResumeTbvAnalyseBoules(int zn, QString tb_in)
          +" as "
          "select t1.C as C_id,"
          " row_number() over(order by t1.C DESC) as id,"
-         "  NULL as C,"
+         "  NULL as I,"
          " count(t1.C) as T,"
          " group_concat(t1.B, ', ') as Boules "
          " from ("+tb_source+") as t1 GROUP by t1.C order by t1.C DESC"
@@ -1499,6 +1500,12 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp)
 
     BVisuResume *color = new BVisuResume(a,qtv_tmp);
     qtv_tmp->setItemDelegate(color);
+    /// Mise en place d'un toolstips
+    qtv_tmp->setMouseTracking(true);
+    connect(qtv_tmp,
+            SIGNAL(entered(QModelIndex)),
+            color,SLOT(slot_AideToolTip(QModelIndex)));
+
 
     qtv_tmp->setSortingEnabled(true);
     qtv_tmp->sortByColumn(1,Qt::AscendingOrder);
@@ -2528,7 +2535,7 @@ count(*)  as T,
  #endif
 
 
- QString SyntheseGenerale::Step_1_TrouverTirageSelonCriteres(int zn, QString tbl_reference, QString key, QString tbl_data)
+ QString SyntheseGenerale::A1_TrouverTirageSelonCriteres(int zn, QString tbl_reference, QString key, QString tbl_data)
 {
      #if 0
      // exemple attendu
@@ -2572,16 +2579,16 @@ count(*)  as T,
 
      #ifndef QT_NO_DEBUG
      qDebug() << st_query;
-     #endif
 
      bool isOk = true;
      QSqlQuery query(db_0);
      isOk = query.exec(st_query);
+     #endif
 
      return st_query;
  }
 
- QString SyntheseGenerale::Step_2_CalulerEcartDesReponses(QString str_reponses)
+ QString SyntheseGenerale::A2_CalulerEcartDesReponses(QString str_reponses)
 {
      #if 0
      select t1.B as B,
@@ -2630,7 +2637,7 @@ count(*)  as T,
 
  }
 
- QString SyntheseGenerale::Step_3_RegrouperEcartDesReponses(QString str_reponses)
+ QString SyntheseGenerale::A3_RegrouperEcartDesReponses(QString str_reponses)
 {
      #if 0
      select B,
@@ -2665,11 +2672,14 @@ count(*)  as T,
 
      #endif
 
+     /// C : Couleur fonction des ecarts
+     /// I : Couleur dernier arrive, pas encore sortie, filtre utilisateur
      QString str_count_days = *st_JourTirageDef+"," ;
      QString st_query = "select "
      "(Select NULL) as Id,"
-     "B,"
      "(select NULL) as C, "
+     "B,"
+     "(select NULL) as I, "
      "count(*)  as T, "
      +str_count_days+
      "(select(min (Id)-1 ))as Ec, "
@@ -2704,31 +2714,10 @@ count(*)  as T,
      bool isOk = true;
      QSqlQuery query(db_0);
 
-     QString st_requete = Step_1_TrouverTirageSelonCriteres(zn,  ref,  key,  data);
+     QString st_requete = A1_TrouverTirageSelonCriteres(zn,  ref,  key,  data);
 
-     st_requete = Step_2_CalulerEcartDesReponses(st_requete);
-     st_requete = Step_3_RegrouperEcartDesReponses(st_requete);
-
-     #if 0
-     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-
-     QString sql_msgRef = PBAR_ReqComptage(pEtude, ReqTirages, curOng, ongPere);
-
-     sqm_tmp->setQuery(sql_msgRef,db_0);
-
-     // Renommer le nom des colonnes
-     int nbcol = sqm_tmp->columnCount();
-     for(int i = 0; i<nbcol;i++)
-     {
-         QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
-         if(headName.size()>2)
-         {
-             sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
-         }
-     }
-
-     #endif
-
+     st_requete = A2_CalulerEcartDesReponses(st_requete);
+     st_requete = A3_RegrouperEcartDesReponses(st_requete);
 
      /// Lancement de la requete pour trouver le nom des colonnes
      if((isOk=query.exec(st_requete))){

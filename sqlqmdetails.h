@@ -11,7 +11,7 @@
 
 #include "SyntheseGenerale.h"
 
-#define COL_VISU    1
+#define COL_VISU_ECART    2
 
 typedef struct _st_sqlmqDetailsNeeds
 {

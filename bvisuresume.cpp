@@ -2,6 +2,8 @@
 #include <QDebug>
 #endif
 
+#include <QToolTip>
+
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QColor>
@@ -21,8 +23,8 @@ void BVisuResume::paint(QPainter *painter, const QStyleOptionViewItem &option,
 {
     int col = index.column();
 
-    if(col == COL_VISU ){
-        int val_col_2 = (index.sibling(index.row(),0)).data().toInt();
+    if(col == COL_VISU_RESUME ){
+        int val_col_2 = (index.sibling(index.row(),COL_VISU_RESUME-1)).data().toInt();
         QColor leFond = map_colors.key(val_col_2);
         painter->fillRect(option.rect, leFond);
     }
@@ -53,6 +55,7 @@ bool BVisuResume::recupereMapColor(QString tbl_def)
                     map_colors.insert(a,key-1);
                 }
             }while(query.next()&& (isOk==false));
+            nb_colors = map_colors.size();
             if(isOk){
 #ifndef QT_NO_DEBUG
                 qDebug()<<"Erreur : presence couleur deja la pour clef "<<key;
@@ -76,6 +79,63 @@ bool BVisuResume::recupereMapColor(QString tbl_def)
 
     return isOk;
 }
+
+void BVisuResume::slot_AideToolTip(const QModelIndex & index)
+{
+    const QAbstractItemModel * pModel = index.model();
+    int col = index.column();
+
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
+
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QSortFilterProxyModel *m=qobject_cast<QSortFilterProxyModel*>(view->model());
+    BVisuResume_sql *sqm_tmp= qobject_cast<BVisuResume_sql*>(m->sourceModel());
+    QVariant item1 = sqm_tmp->data(index,Qt::BackgroundRole);
+
+    QString msg1="";
+    QString s_nb = index.model()->index(index.row(),COL_VISU_RESUME).data().toString();
+    msg1 = QString("Regroupement %1").arg(s_nb);
+    if (col == COL_VISU_RESUME+2)
+    {
+        QString s_va = index.model()->index(index.row(),col).data().toString();
+        QString s_hd = headName;
+        msg1 = msg1 + QString("\n%1 = %2").arg(s_hd).arg(s_va);
+    }
+
+    QString msg2 = "";
+    if(index.column()==COL_VISU_RESUME){
+        int val_col_2 = (index.sibling(index.row(),COL_VISU_RESUME-1)).data().toInt();
+        QColor leFond = map_colors.key(val_col_2);
+        int ligne = map_colors.value(leFond,-1);
+        double p = (ligne*100)/nb_colors;
+        if(map_colors.contains(leFond)){
+            msg2 = "Critere ecart : "+ QString::number(ligne).rightJustified(2,'0')
+                    +" sur "
+                    + QString::number(nb_colors).rightJustified(2,'0')
+                    + " ("+QString::number(p)+"%)\nRVBA"
+                    + "("+QString::number(leFond.red()).rightJustified(3,'0')
+                    + ","+QString::number(leFond.green()).rightJustified(3,'0')
+                    + ","+QString::number(leFond.blue()).rightJustified(3,'0')
+                    + ","+QString::number(leFond.alpha()).rightJustified(3,'0')
+                    +")";
+        }
+        else{
+            msg2 = "Error !!";
+        }
+    }
+
+    QString msg = msg1+QString("\n")+msg2;
+
+#ifndef QT_NO_DEBUG
+    qDebug() << "Tooltips :" << msg;
+#endif
+
+    if(msg.length())
+        QToolTip::showText (QCursor::pos(), msg);
+
+}
+
 /// ----------------------------
 BVisuResume_sql::BVisuResume_sql(stBVisuResume_sql param,QObject *parent):QSqlQueryModel(parent)
 {

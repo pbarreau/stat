@@ -116,8 +116,8 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
     ///QStyleOptionViewItem maModif(option);
 
 
-    if(col == COL_VISU ){
-        int val_col_2 = (index.sibling(index.row(),2)).data().toInt();
+    if(col == COL_VISU_ECART ){
+        int val_col_2 = (index.sibling(index.row(),COL_VISU_ECART-1)).data().toInt();
         QColor leFond = map_FromColor.key(val_col_2);
 #ifndef QT_NO_DEBUG
         QString msg = "Lecture couleur : "+ QString::number(val_col_2).rightJustified(2,'0')
@@ -169,27 +169,35 @@ bool BDelegateCouleurFond::isOnDisk(int centre, int pos)const
 
 void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
 {
+    const QAbstractItemModel * pModel = index.model();
     int col = index.column();
+
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
+
     QTableView *view = qobject_cast<QTableView *>(sender());
     QSortFilterProxyModel *m=qobject_cast<QSortFilterProxyModel*>(view->model());
     sqlqmDetails *sqm_tmp= qobject_cast<sqlqmDetails*>(m->sourceModel());
     QVariant item1 = sqm_tmp->data(index,Qt::BackgroundRole);
 
-    QString boule = (index.sibling(index.row(),1)).data().toString();
+    QString msg1="";
+    QString s_nb = index.model()->index(index.row(),COL_VISU_ECART).data().toString();
+    msg1 = QString("Boule %1").arg(s_nb);
+    if (col >=b_min && col <=b_max+6)
+    {
+        QString s_va = index.model()->index(index.row(),col).data().toString();
+        QString s_hd = headName;
+        msg1 = msg1 + QString("\n%1 = %2").arg(s_hd).arg(s_va);
+    }
 
-    QString msg = "";
     QString msg2 = "";
-    if(index.column()==COL_VISU){
-
-        //int val_col_2 = (index.sibling(index.row(),2)).data().toInt();
-        //QColor leFond = resu_color[val_col_2];
-
-        int val_col_2 = (index.sibling(index.row(),2)).data().toInt();
+    if(index.column()==COL_VISU_ECART){
+        int val_col_2 = (index.sibling(index.row(),COL_VISU_ECART-1)).data().toInt();
         QColor leFond = map_FromColor.key(val_col_2);
         int ligne = map_FromColor.value(leFond,-1);
         double p = (ligne*100)/nb_colors;
         if(map_FromColor.contains(leFond)){
-            msg = "Critere ecart : "+ QString::number(ligne).rightJustified(2,'0')
+            msg2 = "Critere ecart : "+ QString::number(ligne).rightJustified(2,'0')
                     +" sur "
                     + QString::number(nb_colors).rightJustified(2,'0')
                     + " ("+QString::number(p)+"%)\nRVBA"
@@ -197,20 +205,21 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
                     + ","+QString::number(leFond.green()).rightJustified(3,'0')
                     + ","+QString::number(leFond.blue()).rightJustified(3,'0')
                     + ","+QString::number(leFond.alpha()).rightJustified(3,'0')
-                    +")\n";
+                    +")";
         }
         else{
-            msg = "Error !!";
+            msg2 = "Error !!";
         }
     }
 
-    msg = QString("Boule ") + boule +QString("\n")+msg;
+    QString msg = msg1+QString("\n")+msg2;
 
 #ifndef QT_NO_DEBUG
     qDebug() << "Tooltips :" << msg;
 #endif
 
-    QToolTip::showText (QCursor::pos(), msg);
+    if(msg.length())
+        QToolTip::showText (QCursor::pos(), msg);
 
 }
 

@@ -142,9 +142,9 @@ private slots:
     void slot_ShowBouleForNewDesign(const QModelIndex & index);
 
 private:
-    QString Step_1_TrouverTirageSelonCriteres(int zn, QString tbl_reference, QString key, QString tbl_data);
-    QString Step_2_CalulerEcartDesReponses(QString str_reponses);
-    QString Step_3_RegrouperEcartDesReponses(QString str_reponses);
+    QString A1_TrouverTirageSelonCriteres(int zn, QString tbl_reference, QString key, QString tbl_data);
+    QString A2_CalulerEcartDesReponses(QString str_reponses);
+    QString A3_RegrouperEcartDesReponses(QString str_reponses);
     bool Boules_Details(int zn, QString tbl_dst, QString ref, QString key, QString data);
 
     //QString OrganiseChampsDesTirages(QString st_base_reference);
