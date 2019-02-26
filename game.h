@@ -2,8 +2,7 @@
 #define GAME_H
 
 #include <QString>
-
-//#define RELEASE_TRACK
+#include "properties.h"
 
 /// Type de jeu possible d'etudier
 typedef enum _eGame{

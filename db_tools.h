@@ -7,6 +7,8 @@
 #include <QSqlError>
 #include <QSqlQuery>
 
+#include "properties.h"
+
 typedef struct _stJoinArgs{
     QString arg1;
     QString arg2;

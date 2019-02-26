@@ -14,6 +14,8 @@
 #include <QTabWidget>
 #include <QMdiArea>
 
+#include "properties.h"
+
 #define CHauteur1   225
 #define CLargeur1   200
 #define XLenTir     520

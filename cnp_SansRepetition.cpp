@@ -87,7 +87,7 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
         msg = str_cnp+ QString(" deja en base..");
     }
 
-#ifdef CNP_SHOW_MSG
+#if (CNP_SHOW_MSG)
     QMessageBox::information(NULL,"BddCnp",msg,QMessageBox::Ok);
 #endif
 

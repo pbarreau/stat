@@ -117,7 +117,8 @@ HEADERS  += \
     cbarycentre.h \
     colors.h \
     sqlqmdetails.h \
-    bvisuresume.h
+    bvisuresume.h \
+    properties.h
 
 
 FORMS    += mainwindow.ui \

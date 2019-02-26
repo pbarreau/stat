@@ -231,7 +231,6 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
     //un message d'information
     QMessageBox::critical(NULL, fnName, "Erreur traitement !",QMessageBox::Yes);
 
-#ifndef QT_NO_DEBUG
     QString sqlError = "";
     QString sqlText = "";
     QString sqlGood = "";
@@ -247,12 +246,23 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
         sqlError = "Not in query";
         sqlText = "Can not say";
     }
+#ifndef QT_NO_DEBUG
     qDebug() << "Fonction:"<<fnName;
     qDebug() << "Derniere bonne requete : "<<sqlGood;
     qDebug() << "Requete fautive : "<<sqlText;
     qDebug() << "Erreur :"<<sqlError;
     qDebug() << "Code wanted:"<<sqlCode<<"\n--------------";
 #endif
+
+#if SET_DBG_TOOL
+    QString msg = QString("Fn:")+fnName + "\n"
+            +QString("Gr:")+sqlGood + "\n"
+            +QString("Rf:")+sqlText + "\n"
+            +QString("Er:")+sqlError + "\n"
+            +QString("Cw:")+sqlCode + "\n";
+        QMessageBox::information(NULL, "Pgm", msg,QMessageBox::Yes);
+#endif
+
     QApplication::exit();
 
 }

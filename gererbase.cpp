@@ -50,18 +50,18 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
     NE_FDJ::E_typeJeux leJeu = param->typeJeu;
 
     // Creation de la base
-#ifdef RELEASE_TRACK
+#if (SET_DBG_TOOL&&SET_DBG_LEV1)
     QMessageBox::information(NULL, "Pgm", "Old 1!",QMessageBox::Yes);
 #endif
 
     if(CreerBasePourEtude(enMemoire,leJeu)==true)
     {
-#ifdef RELEASE_TRACK
+#if (SET_DBG_TOOL&&SET_DBG_LEV1)
         QMessageBox::information(NULL, "Pgm", "Old 2!",QMessageBox::Yes);
 #endif
         /// Optimisation acces de la base
         OPtimiseAccesBase();
-#ifdef RELEASE_TRACK
+#if (SET_DBG_TOOL&&SET_DBG_LEV1)
         QMessageBox::information(NULL, "Pgm", "Old 3!",QMessageBox::Yes);
 #endif
         // Creeer la configuration de lecture
@@ -74,18 +74,18 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
         typeTirages->ListeCombinaison(pConf);
 
 
-#ifdef RELEASE_TRACK
+#if (SET_DBG_TOOL&&SET_DBG_LEV1)
         QMessageBox::information(NULL, "Pgm", "Old 4!",QMessageBox::Yes);
 #endif
         // Creer les tables initiales de la base
         CreationTablesDeLaBDD_v2();
 
         // Charger les fichiers de donnees
-#ifdef RELEASE_TRACK
+#if (SET_DBG_TOOL&&SET_DBG_LEV1)
         QMessageBox::information(NULL, "Pgm", "Old 5!",QMessageBox::Yes);
 #endif
         LireFichiersDesTirages(autoLoad, retErr);
-#ifdef RELEASE_TRACK
+#if (SET_DBG_TOOL&&SET_DBG_LEV1)
         QMessageBox::information(NULL, "Pgm", "Old 6!",QMessageBox::Yes);
 #endif
 
