@@ -76,7 +76,8 @@ SOURCES += \
     cbarycentre.cpp \
     version.cpp \
     game.cpp \
-    sqlqmdetails.cpp
+    sqlqmdetails.cpp \
+    bvisuresume.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -115,7 +116,8 @@ HEADERS  += \
     game.h \
     cbarycentre.h \
     colors.h \
-    sqlqmdetails.h
+    sqlqmdetails.h \
+    bvisuresume.h
 
 
 FORMS    += mainwindow.ui \

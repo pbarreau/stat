@@ -9,6 +9,7 @@
 #include <QColor>
 #include <QMap>
 
+#include "SyntheseGenerale.h"
 
 #define COL_VISU    1
 
@@ -18,6 +19,7 @@ typedef struct _st_sqlmqDetailsNeeds
     QString sql;
     QString wko; /// Working on Table
     QTableView *view;
+    SyntheseGenerale *ori; /// origine
     int *b_min;
     int *b_max;
 
@@ -54,7 +56,7 @@ public:
 typedef struct _st_ColorNeeds{
     QString cnx;
     QString wko;
-    sqlqmDetails *parent;
+    sqlqmDetails *ori;
     int b_min;
     int b_max;
     int len;
@@ -81,17 +83,20 @@ private slots:
     void slot_AideToolTip(const QModelIndex & index);
 
 
+Q_SIGNALS:
+    void sig_TableDesCouleurs(const QString &my_table);
+
 private:
     QSqlDatabase db_0;
-    sqlqmDetails *origine;
+    sqlqmDetails *origine; //sqlqmDetails
     QString working_on;
     int b_min;
     int b_max;
     int len;
     int nb_colors;
-    static QColor *val_colors;
+    QColor *val_colors; // static
     QColor *resu_color;
-    static QMap<BOrdColor,int> map_FromColor;
+    QMap<BOrdColor,int> map_FromColor; // static
 };
 
 

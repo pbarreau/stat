@@ -167,6 +167,8 @@ private:
     QGridLayout * MonLayout_SyntheseTotalBarycentre(int dst);
 
     QTableView * ConstruireTbvAnalyseBoules(int zn, QString source, QString definition, QString key, QString tb_resultat);
+    QTableView * ResumeTbvAnalyseBoules(int zn, QString tb_read);
+    void mettreEnConformiteVisuel(QTableView *qtv_tmp);
 
     bool isTableTotalBoulleReady(QString tbl_total);
     bool mettreBarycentre(QString tbl_dst, QString src_data);

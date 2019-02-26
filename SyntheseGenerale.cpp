@@ -32,11 +32,12 @@
 #include "compter_combinaisons.h"
 #include "lescomptages.h"
 #include "compter.h"
-#include "cbarycentre.h"
 
 #include "mainwindow.h"
 
+#include "cbarycentre.h"
 #include "sqlqmdetails.h"
+#include "bvisuresume.h"
 
 //extern MainWindow w;
 #ifdef USE_SG_CODE
@@ -1364,6 +1365,7 @@ QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString source
     st_sqlmqDetailsNeeds val;
     int b_min=-1;
     int b_max=-1;
+    val.ori = this;
     val.cnx = db_0.connectionName();
     val.sql = st_msg1;
     val.wko = tb_resultat;
@@ -1423,20 +1425,121 @@ QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString source
     return qtv_tmp;
 }
 
+QTableView * SyntheseGenerale::ResumeTbvAnalyseBoules(int zn, QString tb_read)
+{
+    QTableView * qtv_tmp = new QTableView;
+    QString tb_write = tb_read + QString("_rsm_z")+QString::number(zn+1);
+
+    QSqlQuery query(db_0);
+    QSqlQueryModel a;
+    bool isOk = true;
+    QString msg[]={
+        {"SELECT name FROM sqlite_master "
+         "WHERE type='table' AND name='"+tb_read+"';"},
+        {"create table if not exists "
+         + tb_write
+         +" as "
+         "select t1.C as C_id,"
+         " row_number() over(order by t1.C DESC) as id,"
+         "  NULL as C,"
+         " count(t1.C) as T,"
+         " group_concat(t1.B, ', ') as Boules "
+         " from ("+tb_read+") as t1 GROUP by t1.C order by t1.C DESC"
+        },
+        {"select * from " + tb_write}
+    };
+
+
+    if((isOk = query.exec(msg[0])))
+    {
+        query.first();
+        if(query.isValid())
+        {
+            /// La table existe faire le resume
+            if((isOk = query.exec(msg[1]))){
+                QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+                sqm_tmp->setQuery(msg[2],db_0);
+
+                QSortFilterProxyModel *m=new QSortFilterProxyModel();
+                m->setDynamicSortFilter(true);
+                m->setSourceModel(sqm_tmp);
+
+                qtv_tmp->setModel(m);
+                mettreEnConformiteVisuel(qtv_tmp);
+            }
+        }
+        else{
+            QMessageBox::critical(NULL,"Table",tb_read+QString(" absente\n"),QMessageBox::Ok);
+        }
+    }
+
+    if(query.lastError().isValid()){
+        DB_Tools::DisplayError("SyntheseGenerale::",&query," ResumeTbvAnalyseBoules ");
+    }
+
+    return qtv_tmp;
+}
+
+void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp)
+{
+    QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(qtv_tmp->model()) ;
+    QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel*>(m->sourceModel());
+
+    prmBVisuResume a;
+    a.cnx = db_0.connectionName();
+    /// TBD comment remonter le nom de la table cree
+    /// BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
+    a.cld = "pCouleurs_65";
+
+    BVisuResume *color = new BVisuResume(a,qtv_tmp);
+    qtv_tmp->setItemDelegate(color);
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(1,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+    qtv_tmp->verticalHeader()->hide();
+    qtv_tmp->hideColumn(0);
+    int nb_col = sqm_tmp->columnCount();
+    for(int i = 0; i< nb_col-1;i++){
+        qtv_tmp->setColumnWidth(i,28);
+    }
+
+    qtv_tmp->setFixedWidth((nb_col*LCELL)+150);
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(nb_col-1,QHeaderView::ResizeToContents);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+}
+
 QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 {
     QGridLayout *lay_return = new QGridLayout;
 
     int zn = 0;
     QString key = "z"+QString::number(zn+1);
+    QString cible = "view_total_boule";
 
-    QTableView * qtv_tmp_1 = ConstruireTbvAnalyseBoules(zn,"RefTirages","Bnrz",key,"view_total_boule");
+    QTableView * qtv_tmp_1 = ConstruireTbvAnalyseBoules(zn,"RefTirages","Bnrz",key,cible);
+    QTableView * qtv_tmp_2 = ResumeTbvAnalyseBoules(zn,cible);
 
     QVBoxLayout *vb_tmp = new QVBoxLayout;
-    QLabel * lab_tmp = new QLabel;
-    lab_tmp->setText("Repartitions");
-    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    QLabel * lab_tmp_1 = new QLabel;
+    QLabel * lab_tmp_2 = new QLabel;
+
+    lab_tmp_1->setText("Repartitions");
+    vb_tmp->addWidget(lab_tmp_1,0,Qt::AlignLeft|Qt::AlignTop);
     vb_tmp->addWidget(qtv_tmp_1,0,Qt::AlignLeft|Qt::AlignTop);
+
+    lab_tmp_2->setText("Selections Possible");
+    vb_tmp->addWidget(lab_tmp_2,0,Qt::AlignLeft|Qt::AlignTop);
+    vb_tmp->addWidget(qtv_tmp_2,0,Qt::AlignLeft|Qt::AlignTop);
 
     lay_return->addLayout(vb_tmp,0,0);
 
