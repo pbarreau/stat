@@ -1135,15 +1135,6 @@ if(!isOk){
 
 #endif
 
-#if 0
-bool SyntheseGenerale::isTableTotalBoulleReady(QString tbl_total)
-{
-  bool isOk = true;
-
-  return(isOk);
-}
-#endif
-
 bool SyntheseGenerale::mettreBarycentre(QString tbl_dst, QString src_data)
 {
   bool isOK = true;
@@ -1173,38 +1164,177 @@ bool SyntheseGenerale::mettreBarycentre(QString tbl_dst, QString src_data)
 		isOK = query.exec(msg);
 	 }
   }
+
+  if(query.lastError().isValid()){
+    DB_Tools::DisplayError("SyntheseGenerale::",&query,"mettreBarycentre");
+  }
+
   return isOK;
 }
 
 bool SyntheseGenerale::Contruire_Tbl_brc(int zn,
                                          QString tb_src ,
-                                         QString tb_ref,
-                                         QString key,
+                                         QString tb_ana,
+                                         QString key_brc,
                                          QString tbl_out )
 {
   bool isOk = true;
 
-  QString tb_read_2 = QString("r_")+tb_src + QString("_tot_z")+QString::number(zn+1);
   //QString tb_ana = QString("r_")+tb_src + QString("_ana_z")+QString::number(zn+1);
-  QString tb_ana = "analyses";
-  QString key_brc = "BC";
+  //QString tb_ana = "analyses";
+  //QString key_brc = "BC";
 
   if(!DB_Tools::checkHavingTableAndKey(tb_ana, key_brc, db_0.connectionName())){
     /// La table "analyses (tirages)"
     ///  n'a pas l'info barycentre pour les lignes
-#if 0
-    RajouterCalculBarycentreDansAnalyses(int zn,
-                                         QString tb_src ,
-                                         QString tb_ref ,
-                                         QString key);
-#endif
+    QString tb_ref ="Bnrz";
+    RajouterCalculBarycentreDansAnalyses(zn,tb_src ,tb_ana,tb_ref ,key_brc);
+
   }
 
-  A4_0_CalculerBarycentre(tbl_out, tb_read_2);
+  QString st_requete;
+
+  st_requete = A4_0_TrouverLignes(zn,  tb_src, tb_ana ,  key_brc);
+  st_requete = A4_1_CalculerEcart(st_requete);
+  st_requete = A4_2_RegrouperEcart(st_requete);
+
+  isOk = Contruire_Executer(tbl_out, st_requete);
+
 
   return isOk;
 }
 
+//bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poids_boules)
+#if 1
+bool SyntheseGenerale::RajouterCalculBarycentreDansAnalyses(int zn,
+                                                            QString tb_src ,
+                                                            QString tb_ana,
+                                                            QString tb_ref ,
+                                                            QString key_brc)
+{
+
+  //int zn = 0;
+  //QString key_brc = "BC";
+  //QString tb_ref ="Bnrz";
+  QString ky_ref = "z"+QString::number(zn+1);
+  QString tbl_poids_boules =  QString("r_")+tb_src + QString("_tot_z")+QString::number(zn+1);
+
+
+  QSqlQuery query(db_0);
+  bool isOk = true;
+  QString filterDays = *st_JourTirageDef;
+
+  QString st_query = "";
+
+  int len_zn = pMaConf->limites[zn].len;
+  QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
+  QString st_items = "";
+  for(int i=0;i<len_zn;i++){
+    st_items = st_items + ref.arg(i+1);
+    if(i<(len_zn-1)){
+      st_items=st_items+QString(",");
+    }
+  }
+  //st_critere = st_critere+QString(")");
+
+  QString dbg_more = "";
+#ifndef QT_NO_DEBUG
+  dbg_more = ",t2.* ";
+#endif
+
+
+  /// prendre dans les tirages les jours, les boules de la zone
+  QString tbl_in = tb_src;
+  QString str_data = "select id,J,"
+                     +st_items
+                     +dbg_more
+                     +" from ("
+                     +tbl_in+") as t2";
+
+#ifndef QT_NO_DEBUG
+  qDebug() << "str_data:"<<str_data;
+#endif
+
+  if((isOk = query.exec(str_data))){
+    //Verifier si on a des donnees
+    query.first();
+    if((isOk=query.isValid())){
+      /// Poursuivre les calculs
+      /// 1 : Transformation de lignes vers 1 colonne
+      QString tbl_refBoules = tb_ref;
+      str_data = "select t2.id as Id, t2.J as J, r1."+ky_ref+" as b  FROM ("
+                 +tbl_refBoules
+                 +") as r1, ("
+                 +str_data
+                 +" ) as t2 where (b in("+st_items
+                 +")) order by t2.id ";
+#ifndef QT_NO_DEBUG
+      qDebug() << "str_data:"<<str_data;
+#endif
+		/// 2: Calcul du barycentre si calcul toltal de chaque boule
+		///  de la base complete
+		QString tbl_totalBoule = tbl_poids_boules;
+		if(DB_Tools::checkHavingTableAndKey(tbl_totalBoule, "T", db_0.connectionName())){
+		  str_data = "Select c1.id as Id, sum(c2.t)/"
+						 +QString::number(len_zn)
+						 +" as "+key_brc+", J From ("
+						 +str_data
+						 +") as c1, ("
+						 +tbl_totalBoule
+						 +") as c2 WHERE (c1.b = c2.b) GROUP by c1.id";
+
+#ifndef QT_NO_DEBUG
+		  qDebug() << "str_data:"<<str_data;
+#endif
+		  /// 3: Creation d'une table regroupant les barycentres
+		  QString str_tblData = "";
+		  QString str_tblName = "view_tmp";
+		  str_tblData = "select "+key_brc+", count("+key_brc+") as T, "
+							 +filterDays
+							 +QString(",NULL as P, NULL as F from (")
+							 + str_data
+							 + ") as c1 group by "+key_brc+" order by T desc";
+		  str_tblData = "create view if not exists "
+							 +str_tblName
+							 +" as "
+							 +str_tblData;
+#ifndef QT_NO_DEBUG
+		  qDebug() << "str_tblData:"<<str_tblData;
+#endif
+		  if((isOk = query.exec(str_tblData))){
+			 /// mettre dans la table analyse le barycentre de chaque tirage
+			 QString str_tblAnalyse = tb_ana;
+
+			 if((isOk = mettreBarycentre(str_tblAnalyse, str_data))){
+				/// Supprimer table old
+				/// A verifier blocage base si select direct !!!
+				///
+				/// ------------------------------------------------
+				QString msg = "drop view if exists "+str_tblName+";";
+				isOk = query.exec(msg);
+			 }
+			 else{
+				;
+			 }
+		  }
+		}
+		else{
+		  /// Appeller la fonction des sommes de chaque boule
+		  ;
+		}
+	 }
+	 else{
+		/// On a aucune valeur pour faire les calculs
+		;
+	 }
+  }
+
+  if(query.lastError().isValid()){
+    DB_Tools::DisplayError("SyntheseGenerale::",&query,"A4_0_CalculerBarycentre");
+  }
+  return isOk;
+}
+#else
 bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poids_boules)
 {
 
@@ -1301,6 +1431,10 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
 			 if((isOk = mettreBarycentre(str_tblAnalyse, str_data))){
 				/// indiquer le dernier barycentre des tirages fdj
 				//isOk = repereDernier(str_tblName);
+				;
+			 }
+			 else{
+				;
 			 }
 		  }
 		}
@@ -1315,18 +1449,13 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
 	 }
   }
 
-  if(!isOk){
-    /// analyser erreur
-    QString err_msg = query.lastError().text();
-    //un message d'information
-    QMessageBox::critical(NULL, "Barycentre", err_msg,QMessageBox::Yes);
-#ifndef QT_NO_DEBUG
-    qDebug() << err_msg;
-#endif
-    QApplication::quit();
+  if(query.lastError().isValid()){
+    DB_Tools::DisplayError("SyntheseGenerale::",&query,"A4_0_CalculerBarycentre");
   }
   return isOk;
 }
+#endif
+
 
 QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(int dst)
 {
@@ -1335,10 +1464,12 @@ QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(int dst)
 
   int zn = 0;
   QString tb_src = REF_BASE;
-  QString tb_ref = "Bnrz";
+  QString tb_ref = "analyses";
+  QString key = "BC";
   QString tb_out = QString("r_")+tb_src + QString("_brc_z")+QString::number(zn+1);
 
-  if((isOk = Contruire_Tbl_brc(zn,tb_src,tb_ref,"z1",tb_out))){
+
+  if((isOk = Contruire_Tbl_brc(zn,tb_src,tb_ref,key,tb_out))){
     QTableView *qtv_tmp = new QTableView;
     QSqlQueryModel *sqm_tmp =new QSqlQueryModel;
     QString msg = "select * from "+tb_out+";";
@@ -1999,7 +2130,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(int fake)
     sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_Ensemble_1),msg1);
 
 #ifndef QT_NO_DEBUG
-    qDebug() << sqlReq;
+	 qDebug() << sqlReq;
 #endif
 
 	 status = query.exec(sqlReq);
@@ -2246,7 +2377,7 @@ QString CreatreTitle(stCurDemande *pConf)
     {
 
 #ifndef QT_NO_DEBUG
-      qDebug()<< "Aucune selection active pour i="<<i;
+		qDebug()<< "Aucune selection active pour i="<<i;
 #endif
 
 	 }
@@ -2603,6 +2734,19 @@ count(*)  as T,
  }
  #endif
 
+
+ QString SyntheseGenerale::A4_0_TrouverLignes(int zn,
+                                              QString tb_src ,
+                                              QString tb_ref ,
+                                              QString key)
+{
+   QString msg = "select t1."+key+" as B, t2.id,t2.J,t2.D,t2.C ,t2.* "
+   " from ("+tb_ref+") as t1, ("+tb_src+") as t2 "
+   " where ((t1.id=t2.id))";
+
+   return msg;
+ }
+
  QString SyntheseGenerale::A1_0_TrouverLignes(int zn,
                                               QString tb_src ,
                                               QString tb_ref ,
@@ -2669,6 +2813,11 @@ count(*)  as T,
    return st_query;
  }
 
+ QString SyntheseGenerale::A4_1_CalculerEcart(QString str_reponses)
+{
+   return(A1_1_CalculerEcart(str_reponses));
+ }
+
  QString SyntheseGenerale::A1_1_CalculerEcart(QString str_reponses)
 {
 	#if 0
@@ -2713,8 +2862,13 @@ count(*)  as T,
 	#endif
 
 
-   return st_query;
+	return st_query;
 
+ }
+
+ QString SyntheseGenerale::A4_2_RegrouperEcart(QString str_reponses)
+{
+   return(A1_2_RegrouperEcart(str_reponses));
  }
 
  QString SyntheseGenerale::A1_2_RegrouperEcart(QString str_reponses)
@@ -2792,14 +2946,22 @@ count(*)  as T,
 
  bool SyntheseGenerale::Contruire_Tbl_tot(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
 {
+   bool isOk = true;
+   QString st_requete;
+
+   st_requete = A1_0_TrouverLignes(zn,  tb_src, tb_ref ,  key);
+   st_requete = A1_1_CalculerEcart(st_requete);
+   st_requete = A1_2_RegrouperEcart(st_requete);
+
+   isOk = Contruire_Executer(tbl_dst,st_requete);
+
+   return isOk;
+ }
+
+ bool SyntheseGenerale::Contruire_Executer(QString tbl_dst, QString st_requete)
+{
 	bool isOk = true;
 	QSqlQuery query(db_0);
-
-	QString st_requete ="";
-
-	st_requete = A1_0_TrouverLignes(zn,  tb_src, tb_ref ,  key);
-	st_requete = A1_1_CalculerEcart(st_requete);
-	st_requete = A1_2_RegrouperEcart(st_requete);
 
 	/// Lancement de la requete pour trouver le nom des colonnes
 	if((isOk=query.exec(st_requete))){
@@ -2846,11 +3008,11 @@ count(*)  as T,
 
 	}
 
-	if(!isOk){
-	  qDebug()<< query.lastError().text();
-	  qDebug()<< query.executedQuery();
+	if(query.lastError().isValid()){
+	  DB_Tools::DisplayError("SyntheseGenerale::",&query,"A1_2_RegrouperEcart");
 	}
-	return(isOk);
+
+   return(isOk);
  }
 
  QString SyntheseGenerale::SqlCreateCodeGroupe(int onglet, QString table)

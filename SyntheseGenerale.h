@@ -147,6 +147,12 @@ private:
     QString A1_2_RegrouperEcart(QString str_reponses);
     bool Contruire_Tbl_tot(int zn, QString tbl_dst, QString ref, QString key, QString data);
 
+    QString A4_0_TrouverLignes(int zn, QString tb_src, QString tb_ref, QString key);
+    QString A4_1_CalculerEcart(QString str_reponses);
+    QString A4_2_RegrouperEcart(QString str_reponses);
+
+    bool Contruire_Executer(QString tbl_dst, QString st_requete);
+
     //QString OrganiseChampsDesTirages(QString st_base_reference);
     //QString CompteJourTirage();
     void DoTirages(void);
@@ -174,6 +180,12 @@ private:
     bool mettreBarycentre(QString tbl_dst, QString src_data);
     bool Contruire_Tbl_brc(int zn, QString tbl_poids_boules, QString tb_ref, QString key, QString tbl_out);
     bool A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poids_boules);
+    bool RajouterCalculBarycentreDansAnalyses(int zn,
+                                                  QString tb_src ,
+                                                  QString tb_ana,
+                                                  QString tb_ref ,
+                                                  QString ky_brc);
+
 
 
     QTableView *tbForPrincipeAuguste(int nbcol, int nblgn);
