@@ -79,7 +79,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     {
 
         /// Debut traitement
-#if (SET_DBG_TOOL&&SET_DBG_LEV1)
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
         QMessageBox::information(NULL, "Pgm", "Old 8!",QMessageBox::Yes);
 #endif
         RechercheProgressionBoules(&configJeu);
@@ -92,12 +92,12 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         mainLayout->addWidget(gtab_Top);
         connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
 
-#if (SET_DBG_TOOL&&SET_DBG_LEV1)
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
         QMessageBox::information(NULL, "Pgm", "Old 9!",QMessageBox::Yes);
 #endif
 
         TST_EtoileCombi(&configJeu);
-#if (SET_DBG_TOOL&&SET_DBG_LEV1)
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
         QMessageBox::information(NULL, "Pgm", "Old 10!",QMessageBox::Yes);
 #endif
 
@@ -116,7 +116,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
             unJeu = eGameToSet;
             break;
         }
-#if (SET_DBG_TOOL&&SET_DBG_LEV2)
+#if (SET_DBG_LIVE&&SET_DBG_LEV2)
         QMessageBox::information(NULL, "Open", "Prevision 1->"+QString::number(1),QMessageBox::Yes);
 #endif
 

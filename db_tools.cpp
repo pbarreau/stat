@@ -254,7 +254,7 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
     qDebug() << "Code wanted:"<<sqlCode<<"\n--------------";
 #endif
 
-#if SET_DBG_TOOL
+#if SET_DBG_LIVE
     QString msg = QString("Fn:")+fnName + "\n"
             +QString("Gr:")+sqlGood + "\n"
             +QString("Rf:")+sqlText + "\n"

@@ -135,7 +135,7 @@ bool BPrevision::ouvrirBase(eBddUse cible, eGame game)
 
     // Open database
     isOk = db_1.open();
-#if (SET_DBG_TOOL&&SET_DBG_LEV1)
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
     QMessageBox::information(NULL, "Open", "step 1->"+QString::number(isOk),QMessageBox::Yes);
 #endif
 
@@ -180,17 +180,17 @@ void BPrevision::effectuerTraitement(eGame game)
 {
     QString source = C_TBL_3;
     source = "B_" + source;
-#if (SET_DBG_TOOL&&SET_DBG_LEV1)
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
     QMessageBox::information(NULL, "Pgm", "step 1!",QMessageBox::Yes);
 #endif
     definirConstantesDuJeu(game);
 
-#if (SET_DBG_TOOL&&SET_DBG_LEV1)
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
     QMessageBox::information(NULL, "Pgm", "step 2!",QMessageBox::Yes);
 #endif
     creerTablesDeLaBase();
 
-#if (SET_DBG_TOOL&&SET_DBG_LEV1)
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
     QMessageBox::information(NULL, "Pgm", "step 3!",QMessageBox::Yes);
 #endif
     analyserTirages(source, onGame);

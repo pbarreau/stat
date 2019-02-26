@@ -142,7 +142,7 @@ private slots:
     void slot_ShowBouleForNewDesign(const QModelIndex & index);
 
 private:
-    QString A1_TrouverTirageSelonCriteres(int zn, QString tbl_reference, QString key, QString tbl_data);
+    QString A1_TrouverLignesTirages(int zn, QString tb_src, QString tb_ref, QString key);
     QString A2_CalulerEcartDesReponses(QString str_reponses);
     QString A3_RegrouperEcartDesReponses(QString str_reponses);
     bool Boules_Details(int zn, QString tbl_dst, QString ref, QString key, QString data);
@@ -160,11 +160,11 @@ private:
     QString SqlCreateCodeGroupe(int onglet, QString table);
     QString SqlCreateCodeBary(int onglet, QString table);
 
-    QGridLayout * MonLayout_SyntheseTotalGroupement(int fake);
-    QGridLayout * MonLayout_SyntheseTotalBoules(int dst);
-    QGridLayout * MonLayout_SyntheseTotalEtoiles(int dst);
-    QGridLayout * MonLayout_SyntheseTotalRepartitions(int dst);
-    QGridLayout * MonLayout_SyntheseTotalBarycentre(int dst);
+    QGridLayout * MonLayout_R3_grp_z1(int fake);
+    QGridLayout * MonLayout_R1_tot_zn(int dst);
+    QGridLayout * MonLayout_R1_tot_z2(int dst);
+    QGridLayout * MonLayout_R2_cmb_z1(int dst);
+    QGridLayout * MonLayout_R4_brc_z1(int dst);
 
     QTableView * ConstruireTbvAnalyseBoules(int zn, QString source, QString definition, QString key);
     QTableView * ResumeTbvAnalyseBoules(int zn, QString tb_read);

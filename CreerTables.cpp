@@ -110,7 +110,7 @@ bool GererBase::RajouterTable(stTbToCreate des)
     if(des.pFuncInit != NULL)
     {
         msg = des.tbDef;
-#if (SET_DBG_TOOL&&SET_DBG_LEV1)
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
         QMessageBox::information(NULL, "Pgm", msg,QMessageBox::Yes);
 #endif
         // faire avec la fonction
@@ -254,7 +254,7 @@ bool GererBase::CreationTablesDeLaBDD_v2()
                 +QString("\nRajout de ")
                 +tbName + "\nstatus ="
                 +QString::number(status);
-#if (SET_DBG_TOOL&&SET_DBG_LEV1)
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
         QMessageBox::information(NULL, "Pgm", msg,QMessageBox::Yes);
 #endif
         if(!status){
