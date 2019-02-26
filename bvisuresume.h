@@ -31,4 +31,27 @@ private:
 
 };
 
+typedef struct _stBVisuResume_sql
+{
+    QString cnx;
+    QString sql;
+    QString wko; /// Working on Table
+    QTableView *view;
+    SyntheseGenerale *ori; /// origine
+    int *b_min;
+    int *b_max;
+}stBVisuResume_sql;
+
+class BVisuResume_sql : public QSqlQueryModel
+{
+    Q_OBJECT
+public:
+    explicit BVisuResume_sql(stBVisuResume_sql param,QObject *parent = 0);
+    QVariant data(const QModelIndex &index, int role) const;
+
+
+private:
+    QSqlDatabase db_0;
+};
+
 #endif // BVISURESUME_H

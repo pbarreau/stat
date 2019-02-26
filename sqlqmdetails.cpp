@@ -78,12 +78,11 @@ QVariant sqlqmDetails::data(const QModelIndex &index, int role)const
 {
     int col = index.column();
 
-    if(col >= b_min && col < b_max  )
+    if(col >= b_min && col <= b_max  )
     {
         //if(index.data().canConvert(QMetaType::Int))
         {
             int val = QSqlQueryModel::data(index,role).toInt();
-            //int val = index.data().toInt();
             if(role == Qt::DisplayRole)
             {
                 if(val <=9){

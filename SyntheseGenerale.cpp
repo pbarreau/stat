@@ -1277,14 +1277,15 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBarycentre(int dst)
     QGridLayout *lay_return = new QGridLayout;
     bool isOk = true;
 
-    QString tbl_in = REF_BASE;
-    QString str_tblName = "r_"+tbl_in+"_0_brc_z1";
-    QString tbl_totalBoule = "view_total_boule";
+    int zn = 0;
+    QString tb_read = REF_BASE;
+    QString tb_write = QString("r_")+tb_read + QString("_brc_z")+QString::number(zn+1);
+    QString tb_read_2 = QString("r_")+tb_read + QString("_tot_z")+QString::number(zn+1);;
 
-    if((isOk = CreateTable_Barycentre(str_tblName,tbl_totalBoule))){
+    if((isOk = CreateTable_Barycentre(tb_write,tb_read_2))){
         QTableView *qtv_tmp = new QTableView;
         QSqlQueryModel *sqm_tmp =new QSqlQueryModel;
-        QString msg = "select * from "+str_tblName+";";
+        QString msg = "select * from "+tb_write+";";
 
         sqm_tmp->setQuery(msg,db_0);
 
@@ -1341,8 +1342,10 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBarycentre(int dst)
     return lay_return;
 }
 
-QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString source, QString definition, QString key, QString tb_resultat)
+QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString source, QString definition, QString key)
 {
+    QString tb_write = QString("r_")+source + QString("_tot_z")+QString::number(zn+1);
+
     sqm_bloc1_1 = new QSqlQueryModel;
 
     QTableView *qtv_tmp = new QTableView;
@@ -1355,8 +1358,8 @@ QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString source
     QString st_msg1 = "";
 
 
-    if((isOk = Boules_Details(zn,tb_resultat,definition,key,source))){
-        st_msg1 = "select * from "+tb_resultat+";";
+    if((isOk = Boules_Details(zn,tb_write,definition,key,source))){
+        st_msg1 = "select * from "+tb_write+";";
     }
     sqm_bloc1_1->setQuery(st_msg1,db_0);
 
@@ -1368,7 +1371,7 @@ QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString source
     val.ori = this;
     val.cnx = db_0.connectionName();
     val.sql = st_msg1;
-    val.wko = tb_resultat;
+    val.wko = tb_write;
     val.view = qtv_tmp;
     val.b_max = &b_max;
     val.b_min = &b_min;
@@ -1425,17 +1428,18 @@ QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString source
     return qtv_tmp;
 }
 
-QTableView * SyntheseGenerale::ResumeTbvAnalyseBoules(int zn, QString tb_read)
+QTableView * SyntheseGenerale::ResumeTbvAnalyseBoules(int zn, QString tb_in)
 {
     QTableView * qtv_tmp = new QTableView;
-    QString tb_write = tb_read + QString("_rsm_z")+QString::number(zn+1);
+    QString tb_write = QString("r_")+tb_in + QString("_rsm_z")+QString::number(zn+1);
+    QString tb_source = QString("r_")+tb_in + QString("_tot_z")+QString::number(zn+1);
 
     QSqlQuery query(db_0);
     QSqlQueryModel a;
     bool isOk = true;
     QString msg[]={
         {"SELECT name FROM sqlite_master "
-         "WHERE type='table' AND name='"+tb_read+"';"},
+         "WHERE type='table' AND name='"+tb_source+"';"},
         {"create table if not exists "
          + tb_write
          +" as "
@@ -1444,7 +1448,7 @@ QTableView * SyntheseGenerale::ResumeTbvAnalyseBoules(int zn, QString tb_read)
          "  NULL as C,"
          " count(t1.C) as T,"
          " group_concat(t1.B, ', ') as Boules "
-         " from ("+tb_read+") as t1 GROUP by t1.C order by t1.C DESC"
+         " from ("+tb_source+") as t1 GROUP by t1.C order by t1.C DESC"
         },
         {"select * from " + tb_write}
     };
@@ -1457,7 +1461,9 @@ QTableView * SyntheseGenerale::ResumeTbvAnalyseBoules(int zn, QString tb_read)
         {
             /// La table existe faire le resume
             if((isOk = query.exec(msg[1]))){
-                QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+                stBVisuResume_sql a;
+                a.cnx = db_0.connectionName();
+                BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
                 sqm_tmp->setQuery(msg[2],db_0);
 
                 QSortFilterProxyModel *m=new QSortFilterProxyModel();
@@ -1469,7 +1475,7 @@ QTableView * SyntheseGenerale::ResumeTbvAnalyseBoules(int zn, QString tb_read)
             }
         }
         else{
-            QMessageBox::critical(NULL,"Table",tb_read+QString(" absente\n"),QMessageBox::Ok);
+            QMessageBox::critical(NULL,"Table",tb_source+QString(" absente\n"),QMessageBox::Ok);
         }
     }
 
@@ -1483,7 +1489,7 @@ QTableView * SyntheseGenerale::ResumeTbvAnalyseBoules(int zn, QString tb_read)
 void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp)
 {
     QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(qtv_tmp->model()) ;
-    QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel*>(m->sourceModel());
+    BVisuResume_sql *sqm_tmp = qobject_cast<BVisuResume_sql*>(m->sourceModel());
 
     prmBVisuResume a;
     a.cnx = db_0.connectionName();
@@ -1522,12 +1528,16 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 {
     QGridLayout *lay_return = new QGridLayout;
 
-    int zn = 0;
-    QString key = "z"+QString::number(zn+1);
-    QString cible = "view_total_boule";
+    int tot_zn = 2;
+    QString tbl_source = "RefTirages";
 
-    QTableView * qtv_tmp_1 = ConstruireTbvAnalyseBoules(zn,"RefTirages","Bnrz",key,cible);
-    QTableView * qtv_tmp_2 = ResumeTbvAnalyseBoules(zn,cible);
+    QTableView ** qtv_tmp_1 = new QTableView *[tot_zn];
+    QTableView ** qtv_tmp_2 = new QTableView *[tot_zn];
+    for(int zn=0;zn<tot_zn;zn++){
+        QString key = "z"+QString::number(zn+1);
+        qtv_tmp_1[zn] = ConstruireTbvAnalyseBoules(zn,tbl_source,"Bnrz",key);
+        qtv_tmp_2[zn] = ResumeTbvAnalyseBoules(zn,tbl_source);
+    }
 
     QVBoxLayout *vb_tmp = new QVBoxLayout;
     QLabel * lab_tmp_1 = new QLabel;
@@ -1535,11 +1545,11 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalBoules(int dst)
 
     lab_tmp_1->setText("Repartitions");
     vb_tmp->addWidget(lab_tmp_1,0,Qt::AlignLeft|Qt::AlignTop);
-    vb_tmp->addWidget(qtv_tmp_1,0,Qt::AlignLeft|Qt::AlignTop);
+    vb_tmp->addWidget(qtv_tmp_1[0],0,Qt::AlignLeft|Qt::AlignTop);
 
     lab_tmp_2->setText("Selections Possible");
     vb_tmp->addWidget(lab_tmp_2,0,Qt::AlignLeft|Qt::AlignTop);
-    vb_tmp->addWidget(qtv_tmp_2,0,Qt::AlignLeft|Qt::AlignTop);
+    vb_tmp->addWidget(qtv_tmp_2[0],0,Qt::AlignLeft|Qt::AlignTop);
 
     lay_return->addLayout(vb_tmp,0,0);
 

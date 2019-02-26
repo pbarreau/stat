@@ -17,9 +17,9 @@ BVisuResume::BVisuResume(prmBVisuResume param, QTableView *parent):QItemDelegate
 }
 
 void BVisuResume::paint(QPainter *painter, const QStyleOptionViewItem &option,
-           const QModelIndex &index) const
+                        const QModelIndex &index) const
 {
-int col = index.column();
+    int col = index.column();
 
     if(col == COL_VISU ){
         int val_col_2 = (index.sibling(index.row(),0)).data().toInt();
@@ -75,4 +75,34 @@ bool BVisuResume::recupereMapColor(QString tbl_def)
 #endif
 
     return isOk;
+}
+/// ----------------------------
+BVisuResume_sql::BVisuResume_sql(stBVisuResume_sql param,QObject *parent):QSqlQueryModel(parent)
+{
+    db_0 = QSqlDatabase::database(param.cnx);
+
+}
+
+QVariant BVisuResume_sql::data(const QModelIndex &index, int role)const
+{
+    int col = index.column();
+
+    if(col == 3  )
+    {
+        int val = QSqlQueryModel::data(index,role).toInt();
+        if(role == Qt::TextColorRole)
+        {
+            return QColor(Qt::red);
+        }
+
+        if(role == Qt::DisplayRole)
+        {
+            if(val <=9){
+                QString sval = QString::number(val).rightJustified(3,'0');
+                return sval;
+            }
+        }
+    }
+    /// Par defaut retourner contenu initial
+    return QSqlQueryModel::data(index,role);
 }

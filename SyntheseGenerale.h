@@ -166,7 +166,7 @@ private:
     QGridLayout * MonLayout_SyntheseTotalRepartitions(int dst);
     QGridLayout * MonLayout_SyntheseTotalBarycentre(int dst);
 
-    QTableView * ConstruireTbvAnalyseBoules(int zn, QString source, QString definition, QString key, QString tb_resultat);
+    QTableView * ConstruireTbvAnalyseBoules(int zn, QString source, QString definition, QString key);
     QTableView * ResumeTbvAnalyseBoules(int zn, QString tb_read);
     void mettreEnConformiteVisuel(QTableView *qtv_tmp);
 
