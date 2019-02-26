@@ -188,12 +188,12 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
         int val_col_2 = (index.sibling(index.row(),2)).data().toInt();
         QColor leFond = map_FromColor.key(val_col_2);
         int ligne = map_FromColor.value(leFond,-1);
-
+        double p = (ligne*100)/nb_colors;
         if(map_FromColor.contains(leFond)){
             msg = "Critere ecart : "+ QString::number(ligne).rightJustified(2,'0')
                     +" sur "
                     + QString::number(nb_colors).rightJustified(2,'0')
-                    + " -> "
+                    + " ("+QString::number(p)+"%)\nRVBA"
                     + "("+QString::number(leFond.red()).rightJustified(3,'0')
                     + ","+QString::number(leFond.green()).rightJustified(3,'0')
                     + ","+QString::number(leFond.blue()).rightJustified(3,'0')
