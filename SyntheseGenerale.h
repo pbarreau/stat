@@ -176,6 +176,8 @@ private:
     QTableView * ResumeTbvAnalyseBoules(int zn, QString tb_read);
     void mettreEnConformiteVisuel(QTableView *qtv_tmp);
 
+    QTableView * ResumeTbvAnalyse_brc(int zn, QString tb_in);
+
     //bool isTableTotalBoulleReady(QString tbl_total);
     bool mettreBarycentre(QString tbl_dst, QString src_data);
     bool Contruire_Tbl_brc(int zn, QString tbl_poids_boules, QString tb_ref, QString key, QString tbl_out);

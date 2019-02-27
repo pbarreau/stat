@@ -1470,6 +1470,9 @@ QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(int dst)
 
 
   if((isOk = Contruire_Tbl_brc(zn,tb_src,tb_ref,key,tb_out))){
+    /// en base ..
+    ResumeTbvAnalyse_brc(zn,tb_src);
+
     QTableView *qtv_tmp = new QTableView;
     QSqlQueryModel *sqm_tmp =new QSqlQueryModel;
     QString msg = "select * from "+tb_out+";";
@@ -1487,8 +1490,6 @@ QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(int dst)
       }
     }
 
-    qtv_tmp->setSortingEnabled(true);
-    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
     qtv_tmp->setAlternatingRowColors(true);
     //qtv_tmp->setStyleSheet("QTableView {selection-background-color: rgba(100, 100, 100, 150);}");
     qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
@@ -1503,11 +1504,18 @@ QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(int dst)
     m->setSourceModel(sqm_tmp);
     qtv_tmp->setModel(m);
 
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(4,Qt::DescendingOrder);
+
     qtv_tmp->verticalHeader()->hide();
-    for(int j=0;j<2;j++)
-      qtv_tmp->setColumnWidth(j,30);
-    for(int j=2;j<=sqm_tmp->columnCount();j++)
-      qtv_tmp->setColumnWidth(j,LCELL);
+    int j=0;
+    for(j=0;j<=4;j++){
+      qtv_tmp->setColumnWidth(j,28);
+    }
+
+    for(j=j;j<=sqm_tmp->columnCount()-2;j++){
+      qtv_tmp->resizeColumnToContents(j);
+    }
 
 
     // Ne pas modifier largeur des colonnes
@@ -1612,6 +1620,160 @@ QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString tb_src
   // double click dans fenetre  pour afficher details boule
   connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
            this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+
+  return qtv_tmp;
+}
+
+QTableView * SyntheseGenerale::ResumeTbvAnalyse_brc(int zn, QString tb_in)
+{
+  QTableView * qtv_tmp = new QTableView;
+
+  QString ref_tbl = "Bnrz";
+  QString ref_ana = "analyses";
+  QString ref_key = QString("z")+QString::number(zn+1);
+  QString tb_write = QString("r_")+tb_in + QString("_brc_rsm_")+ref_key;
+  QString tb_source = QString("r_")+tb_in + QString("_brc_")+ref_key;
+
+  QString st_bzn = "t1.b1,t1.b2,t1.b3,t1.b4,t1.b5";
+  QSqlQuery query(db_0);
+  QSqlQueryModel a;
+  bool isOk = true;
+  QString msg[]={
+    {"SELECT name FROM sqlite_master "
+     "WHERE type='table' AND name='"+tb_source+"';"},
+    {"create table if not exists "
+     + tb_write
+     +" as "
+     "select t1.C as C_id,"
+     " row_number() over(order by t1.C DESC) as id,"
+     "  NULL as I,"
+     " count(t1.C) as T,"
+     " group_concat(t1.B, ', ') as Boules "
+     " from ("+tb_source+") as t1 GROUP by t1.C order by t1.C DESC"
+    },
+    {"select * from " + tb_write}
+  };
+
+
+  /// Creation de la table resume par etape
+  QString st_key = "bc";
+  QString st_requetes []={
+    {
+      "/* dn1 */"
+      "select t1.id, t1."+st_key+", t1.* from ("+ref_ana+") as t1"
+      "/* fn1 */"
+    },
+    {
+      "/* dn2 */"
+      "select t1.bc,t2.id,t2.* from"
+      "("
+      +st_requetes[0]+
+      ")as t1, ("+tb_in+") as t2 where(t1.id=t2.id)"
+      "/* fn2 */"
+    },
+    {
+      "/* dn3 */"
+      "select row_number() over(order by t1.bc) as rid, t1.bc,"
+      "ROW_NUMBER() OVER (PARTITION by t1.bc order by t1.bc) as LID,"
+      "t2."+ref_key+" as B "
+      "FROM"
+      "("
+      +st_requetes[1]+
+      ") as t1, ("+ref_tbl+") as t2 where(b in ( "+st_bzn+" ))"
+      "/* fn3 */"
+    },
+    {
+      "/* dn4 */"
+      "SELECT row_number() over(order by t1.bc) as rid,t1.bc, t1.b,"
+      "count (*) over "
+      "(PARTITION by t1.bc order by t1.bc "
+      "RANGE BETWEEN UNBOUNDED PRECEDING and UNBOUNDED FOLLOWING) as T "
+      "FROM("
+      +st_requetes[2]+
+      ")as t1 "
+      "/* fn4 */"
+    },
+    {
+      "/* dn5 */"
+      "SELECT row_number() over(ORDER by t1.bc) as rid,"
+      "t1.bc,t1.b,count(t1.rid) as Tb,T "
+      "FROM("
+      +st_requetes[3]+
+      ")as t1 group by t1.bc, t1.b"
+      "/* fn5 */"
+    },
+    {
+      "/* dn6 */"
+      "select row_number() over(order by t1.bc DESC) as id_n6,"
+      "t1.bc,NULL as I,t1.T,t1.*,"
+      "printf(\"%02d:([%03d] -> %d%%)\",t1.b,t1.Tb,((t1.tb*100)/t1.t)) as details "
+      "FROM"
+      "("
+      +st_requetes[4]+
+      ")as t1 ORDER by t1.bc ASC, t1.tb DESC"
+      "/* fn6 */"
+    },
+    {
+      "/* dn7 */"
+      "select row_number() over(order by t1.bc DESC) as Id,"
+      "NULL as C,"
+      "t1.bc as B,"
+      "NULL as I,"
+      "t1.T,"
+      "group_concat(t1.details, ', ') as Boules,"
+      "NULL as P,"
+      "NULL AS F "
+      "FROM("
+      +st_requetes[5]+
+      ")as t1 GROUP by t1.bc ORDER by t1.t DESC"
+      "/* df7 */"
+    },
+    {"create table if not exists "
+     + tb_write
+     +" as "
+     + st_requetes[6]
+    },
+    {"select * from " + tb_write}
+  };
+
+
+  int taille = sizeof(st_requetes)/sizeof(QString);
+
+#ifndef QT_NO_DEBUG
+  for(int i = 0; i< taille;i++){
+    qDebug() << "st_requetes ["<<i<<"]: "<<st_requetes[i];
+  }
+#endif
+  ///-------------------
+
+  if((isOk = query.exec(msg[0])))
+  {
+    query.first();
+    if(query.isValid())
+    {
+      /// La table existe faire le resume
+      if((isOk = query.exec(st_requetes[taille-2]))){
+        stBVisuResume_sql a;
+        a.cnx = db_0.connectionName();
+        BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
+        sqm_tmp->setQuery(st_requetes[taille-1],db_0);
+
+        QSortFilterProxyModel *m=new QSortFilterProxyModel();
+        m->setDynamicSortFilter(true);
+        m->setSourceModel(sqm_tmp);
+
+        qtv_tmp->setModel(m);
+        mettreEnConformiteVisuel(qtv_tmp);
+      }
+    }
+    else{
+      QMessageBox::critical(NULL,"Table",tb_source+QString(" absente\n"),QMessageBox::Ok);
+    }
+  }
+
+  if(query.lastError().isValid()){
+    DB_Tools::DisplayError("SyntheseGenerale::",&query," ResumeTbvAnalyse_brc ");
+  }
 
   return qtv_tmp;
 }
@@ -2130,7 +2292,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(int fake)
     sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_Ensemble_1),msg1);
 
 #ifndef QT_NO_DEBUG
-	 qDebug() << sqlReq;
+    qDebug() << sqlReq;
 #endif
 
 	 status = query.exec(sqlReq);
@@ -2377,7 +2539,7 @@ QString CreatreTitle(stCurDemande *pConf)
     {
 
 #ifndef QT_NO_DEBUG
-		qDebug()<< "Aucune selection active pour i="<<i;
+      qDebug()<< "Aucune selection active pour i="<<i;
 #endif
 
 	 }
@@ -2862,7 +3024,7 @@ count(*)  as T,
 	#endif
 
 
-	return st_query;
+   return st_query;
 
  }
 
