@@ -8,7 +8,7 @@
 
 #include "sqlqmdetails.h"
 
-#define COL_VISU_RESUME 1
+#define COL_VISU_RESUME 2
 
 typedef struct _prmBVisuResume{
     QString cnx;

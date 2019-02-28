@@ -172,11 +172,12 @@ private:
     QGridLayout * MonLayout_R2_cmb_z1(int dst);
     QGridLayout * MonLayout_R4_brc_z1(int dst);
 
-    QTableView * ConstruireTbvAnalyseBoules(int zn, QString source, QString definition, QString key);
-    QTableView * ResumeTbvAnalyseBoules(int zn, QString tb_read);
+    QTableView * TbvAnalyse_tot(int zn, QString source, QString definition, QString key);
+    QTableView * TbvResume_tot(int zn, QString tb_read);
     void mettreEnConformiteVisuel(QTableView *qtv_tmp);
 
-    QTableView * ResumeTbvAnalyse_brc(int zn, QString tb_in);
+    QTableView * TbvAnalyse_brc(int zn, QString source, QString definition, QString key);
+    QTableView * TbvResume_brc(int zn, QString tb_in);
 
     //bool isTableTotalBoulleReady(QString tbl_total);
     bool mettreBarycentre(QString tbl_dst, QString src_data);

@@ -147,7 +147,7 @@ QVariant BVisuResume_sql::data(const QModelIndex &index, int role)const
 {
     int col = index.column();
 
-    if(col == 3  )
+    if(col == COL_VISU_RESUME +2  )
     {
         int val = QSqlQueryModel::data(index,role).toInt();
         if(role == Qt::TextColorRole)
@@ -157,7 +157,7 @@ QVariant BVisuResume_sql::data(const QModelIndex &index, int role)const
 
         if(role == Qt::DisplayRole)
         {
-            if(val <=9){
+            if(val <=99){
                 QString sval = QString::number(val).rightJustified(3,'0');
                 return sval;
             }

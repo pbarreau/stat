@@ -829,7 +829,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_z2(int dst)
   }
 
   qtv_tmp->setSortingEnabled(true);
-  qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+  //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
   qtv_tmp->setAlternatingRowColors(true);
   qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
@@ -947,7 +947,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R2_cmb_z1(int dst)
 
   qtv_tmp->hideColumn(0);
   qtv_tmp->setSortingEnabled(true);
-  qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+  //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
   qtv_tmp->setAlternatingRowColors(true);
   qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
   qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -1469,13 +1469,63 @@ QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(int dst)
   QString tb_out = QString("r_")+tb_src + QString("_brc_z")+QString::number(zn+1);
 
 
-  if((isOk = Contruire_Tbl_brc(zn,tb_src,tb_ref,key,tb_out))){
-    /// en base ..
-    ResumeTbvAnalyse_brc(zn,tb_src);
+  int tot_zn = 1;
 
-    QTableView *qtv_tmp = new QTableView;
-    QSqlQueryModel *sqm_tmp =new QSqlQueryModel;
+  QTableView ** qtv_tmp_1 = new QTableView *[tot_zn];
+  QTableView ** qtv_tmp_2 = new QTableView *[tot_zn];
+  for(int zn=0;zn<tot_zn;zn++){
+    qtv_tmp_1[zn] = TbvAnalyse_brc(zn,tb_src,tb_ref,key);
+    qtv_tmp_2[zn] = TbvResume_brc(zn,tb_src);
+  }
+
+
+  QVBoxLayout *vb_tmp = new QVBoxLayout;
+  QLabel * lab_tmp_1 = new QLabel;
+  QLabel * lab_tmp_2 = new QLabel;
+
+  lab_tmp_1->setText("Repartitions");
+  vb_tmp->addWidget(lab_tmp_1,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addWidget(qtv_tmp_1[0],0,Qt::AlignLeft|Qt::AlignTop);
+
+  lab_tmp_2->setText("Selections Possible");
+  vb_tmp->addWidget(lab_tmp_2,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addWidget(qtv_tmp_2[0],0,Qt::AlignLeft|Qt::AlignTop);
+
+  lay_return->addLayout(vb_tmp,0,0);
+
+  return lay_return;
+}
+
+QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb_ref, QString key)
+{
+  QString tb_out = QString("r_")+tb_src + QString("_brc_z")+QString::number(zn+1);
+
+  QTableView *qtv_tmp = new QTableView;
+  QString qtv_name = QString("new")+QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
+  qtv_tmp->setObjectName(qtv_name);
+
+
+  QSqlQuery query(db_0);
+  bool isOk = true;
+  QString st_msg1 = "";
+
+
+  if((isOk = Contruire_Tbl_brc(zn,tb_src,tb_ref,key,tb_out))){
+
+    //QSqlQueryModel *sqm_tmp =new QSqlQueryModel;
     QString msg = "select * from "+tb_out+";";
+
+    st_sqlmqDetailsNeeds val;
+    int b_min=-1;
+    int b_max=-1;
+    val.ori = this;
+    val.cnx = db_0.connectionName();
+    val.sql = msg;
+    val.wko = tb_out;
+    val.view = qtv_tmp;
+    val.b_max = &b_max;
+    val.b_min = &b_min;
+    sqlqmDetails *sqm_tmp= new sqlqmDetails(val);
 
     sqm_tmp->setQuery(msg,db_0);
 
@@ -1505,11 +1555,11 @@ QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(int dst)
     qtv_tmp->setModel(m);
 
     qtv_tmp->setSortingEnabled(true);
-    qtv_tmp->sortByColumn(4,Qt::DescendingOrder);
+    qtv_tmp->sortByColumn(COL_VISU_ECART+2,Qt::DescendingOrder);
 
     qtv_tmp->verticalHeader()->hide();
     int j=0;
-    for(j=0;j<=4;j++){
+    for(j=0;j<=COL_VISU_ECART;j++){
       qtv_tmp->setColumnWidth(j,28);
     }
 
@@ -1522,22 +1572,12 @@ QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(int dst)
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    QVBoxLayout *vb_tmp = new QVBoxLayout;
-    QLabel * lab_tmp = new QLabel;
-    lab_tmp->setText("Barycentres");
-    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-    vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-
-    lay_return->addLayout(vb_tmp,0,0);
-
   }
 
-
-
-  return lay_return;
+  return qtv_tmp;
 }
 
-QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString tb_src, QString tb_ref, QString key)
+QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb_ref, QString key)
 {
   QString tb_out = QString("r_")+tb_src + QString("_tot_z")+QString::number(zn+1);
 
@@ -1577,7 +1617,7 @@ QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString tb_src
   int nbcol = sqm_tmp->columnCount();
 
   qtv_tmp->setSortingEnabled(true);
-  qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+  qtv_tmp->sortByColumn(COL_VISU_ECART-1,Qt::DescendingOrder);
   qtv_tmp->setAlternatingRowColors(true);
   //qtv_tmp->setStyleSheet("QTableView {selection-background-color: rgba(100, 100, 100, 150);}");
   qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
@@ -1589,12 +1629,16 @@ QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString tb_src
 
 
   qtv_tmp->verticalHeader()->hide();
-  qtv_tmp->hideColumn(0);
-  qtv_tmp->hideColumn(1);
-  for(int j=0;j<2;j++)
-    qtv_tmp->setColumnWidth(j,30);
-  for(int j=2;j<=sqm_tmp->columnCount();j++)
+  //qtv_tmp->hideColumn(0);
+  //qtv_tmp->hideColumn(1);
+#if 0
+  for(int i = 0; i<= COL_VISU_RESUME+2;i++){
+    qtv_tmp->setColumnWidth(i,28);
+  }
+#endif
+  for(int j=0;j<sqm_tmp->columnCount();j++){
     qtv_tmp->setColumnWidth(j,28);
+  }
 
 
   // Ne pas modifier largeur des colonnes
@@ -1624,7 +1668,7 @@ QTableView * SyntheseGenerale::ConstruireTbvAnalyseBoules(int zn, QString tb_src
   return qtv_tmp;
 }
 
-QTableView * SyntheseGenerale::ResumeTbvAnalyse_brc(int zn, QString tb_in)
+QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
 {
   QTableView * qtv_tmp = new QTableView;
 
@@ -1634,24 +1678,25 @@ QTableView * SyntheseGenerale::ResumeTbvAnalyse_brc(int zn, QString tb_in)
   QString tb_write = QString("r_")+tb_in + QString("_brc_rsm_")+ref_key;
   QString tb_source = QString("r_")+tb_in + QString("_brc_")+ref_key;
 
-  QString st_bzn = "t1.b1,t1.b2,t1.b3,t1.b4,t1.b5";
+  /// --------------------
+  /// Numerotation des boules de la zone
+  int len_zn = pMaConf->limites[zn].len;
+  QString ref = "t1."+pMaConf->nomZone[zn]+"%1";
+  QString st_bzn = "";
+  for(int i=0;i<len_zn;i++){
+    st_bzn = st_bzn + ref.arg(i+1);
+    if(i<(len_zn-1)){
+      st_bzn=st_bzn+QString(",");
+    }
+  }
+  /// ----------------------
+
   QSqlQuery query(db_0);
   QSqlQueryModel a;
   bool isOk = true;
   QString msg[]={
     {"SELECT name FROM sqlite_master "
-     "WHERE type='table' AND name='"+tb_source+"';"},
-    {"create table if not exists "
-     + tb_write
-     +" as "
-     "select t1.C as C_id,"
-     " row_number() over(order by t1.C DESC) as id,"
-     "  NULL as I,"
-     " count(t1.C) as T,"
-     " group_concat(t1.B, ', ') as Boules "
-     " from ("+tb_source+") as t1 GROUP by t1.C order by t1.C DESC"
-    },
-    {"select * from " + tb_write}
+     "WHERE type='table' AND name='"+tb_source+"';"}
   };
 
 
@@ -1753,17 +1798,24 @@ QTableView * SyntheseGenerale::ResumeTbvAnalyse_brc(int zn, QString tb_in)
     {
       /// La table existe faire le resume
       if((isOk = query.exec(st_requetes[taille-2]))){
-        stBVisuResume_sql a;
-        a.cnx = db_0.connectionName();
-        BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
-        sqm_tmp->setQuery(st_requetes[taille-1],db_0);
+        /// mettre a jour la colonne C en fonction de la B
+        QString msg =  "UPDATE "+tb_write+" set "
+                       "C=(select C FROM "+tb_source+" "
+                       " where "+tb_write+".B="+tb_source+".B)";
+        if((isOk = query.exec(msg))){
+          stBVisuResume_sql a;
+          a.cnx = db_0.connectionName();
+          a.wko = tb_write;
+          BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
+          sqm_tmp->setQuery(st_requetes[taille-1],db_0);
 
-        QSortFilterProxyModel *m=new QSortFilterProxyModel();
-        m->setDynamicSortFilter(true);
-        m->setSourceModel(sqm_tmp);
+          QSortFilterProxyModel *m=new QSortFilterProxyModel();
+          m->setDynamicSortFilter(true);
+          m->setSourceModel(sqm_tmp);
 
-        qtv_tmp->setModel(m);
-        mettreEnConformiteVisuel(qtv_tmp);
+          qtv_tmp->setModel(m);
+          mettreEnConformiteVisuel(qtv_tmp);
+        }
       }
     }
     else{
@@ -1778,10 +1830,10 @@ QTableView * SyntheseGenerale::ResumeTbvAnalyse_brc(int zn, QString tb_in)
   return qtv_tmp;
 }
 
-QTableView * SyntheseGenerale::ResumeTbvAnalyseBoules(int zn, QString tb_in)
+QTableView * SyntheseGenerale::TbvResume_tot(int zn, QString tb_in)
 {
   QTableView * qtv_tmp = new QTableView;
-  QString tb_write = QString("r_")+tb_in + QString("_rsm_z")+QString::number(zn+1);
+  QString tb_write = QString("r_")+tb_in + QString("_tot_rsm_z")+QString::number(zn+1);
   QString tb_source = QString("r_")+tb_in + QString("_tot_z")+QString::number(zn+1);
 
   QSqlQuery query(db_0);
@@ -1793,8 +1845,10 @@ QTableView * SyntheseGenerale::ResumeTbvAnalyseBoules(int zn, QString tb_in)
     {"create table if not exists "
      + tb_write
      +" as "
-     "select t1.C as C_id,"
-     " row_number() over(order by t1.C DESC) as id,"
+     "select "
+     "row_number() over(order by t1.C DESC) as Id,"
+     "t1.C as C,"
+     " row_number() over(order by t1.C DESC) as B,"
      "  NULL as I,"
      " count(t1.C) as T,"
      " group_concat(t1.B, ', ') as Boules "
@@ -1857,7 +1911,8 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp)
 
 
   qtv_tmp->setSortingEnabled(true);
-  qtv_tmp->sortByColumn(1,Qt::AscendingOrder);
+
+  qtv_tmp->sortByColumn(COL_VISU_RESUME -1,Qt::DescendingOrder);
   qtv_tmp->setAlternatingRowColors(true);
 
   qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -1866,16 +1921,18 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp)
   qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
   qtv_tmp->verticalHeader()->hide();
-  qtv_tmp->hideColumn(0);
+  //qtv_tmp->hideColumn(0);
+  //qtv_tmp->hideColumn(1);
   int nb_col = sqm_tmp->columnCount();
-  for(int i = 0; i< nb_col-1;i++){
+  for(int i = 0; i<= COL_VISU_RESUME+2;i++){
     qtv_tmp->setColumnWidth(i,28);
   }
-
-  qtv_tmp->setFixedWidth((nb_col*LCELL)+150);
+  qtv_tmp->setColumnWidth(COL_VISU_RESUME+3,400);
+  qtv_tmp->resizeRowsToContents();
+  qtv_tmp->setFixedWidth((nb_col*LCELL)+400);
   // Ne pas modifier largeur des colonnes
-  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-  qtv_tmp->horizontalHeader()->setSectionResizeMode(nb_col-1,QHeaderView::ResizeToContents);
+  //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  //qtv_tmp->horizontalHeader()->setSectionResizeMode(nb_col-1,QHeaderView::ResizeToContents);
   qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
 }
@@ -1892,8 +1949,8 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_zn(int dst)
   QTableView ** qtv_tmp_2 = new QTableView *[tot_zn];
   for(int zn=0;zn<tot_zn;zn++){
     QString key = "z"+QString::number(zn+1);
-    qtv_tmp_1[zn] = ConstruireTbvAnalyseBoules(zn,tb_src,tb_ref,key);
-    qtv_tmp_2[zn] = ResumeTbvAnalyseBoules(zn,tb_src);
+    qtv_tmp_1[zn] = TbvAnalyse_tot(zn,tb_src,tb_ref,key);
+    qtv_tmp_2[zn] = TbvResume_tot(zn,tb_src);
   }
 
   QVBoxLayout *vb_tmp = new QVBoxLayout;

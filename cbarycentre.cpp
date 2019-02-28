@@ -110,7 +110,7 @@ QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
 
     qtv_tmp->verticalHeader()->hide();
     qtv_tmp->setSortingEnabled(true);
-    qtv_tmp->sortByColumn(1,Qt::DescendingOrder);
+    //qtv_tmp->sortByColumn(1,Qt::DescendingOrder);
 
     int nbCol = sqm_tmp->columnCount();
     for(int pos=0;pos<nbCol;pos++)
