@@ -1703,7 +1703,7 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
   /// --------------------
   /// Numerotation des boules de la zone
   int len_zn = pMaConf->limites[zn].len;
-  QString ref = "t1."+pMaConf->nomZone[zn]+"%1";
+  QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
   QString st_bzn = "";
   for(int i=0;i<len_zn;i++){
     st_bzn = st_bzn + ref.arg(i+1);
@@ -1724,64 +1724,75 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
 
   /// Creation de la table resume par etape
   QString st_key = "bc";
+  QString st_dbg = "";
+
+#if (SET_RUN_QLV1 && SET_QRY_ACT1)
+  st_dbg = ", t1.*";
+#endif
+
+#define D(a)  "/* D_"+QString::number(a).rightJustified(2,'0')+" */"
+#define F(a)  "/* F_"+QString::number(a+1).rightJustified(2,'0')+" */"
+
+  int req_id = 0;
   QString st_requetes []={
     {
-      "/* dn1 */"
-      "select t1.id, t1."+st_key+", t1.* from ("+ref_ana+") as t1"
-      "/* fn1 */"
+      D(req_id)
+      "select t1.id, t1."+st_key+" from ("+ref_ana+") as t1"
+      F(req_id)
     },
     {
-      "/* dn2 */"
-      "select t1.bc,t2.id,t2.* from"
+      D(req_id)
+      "select t1.*,"+ st_bzn+ " from"
       "("
-      +st_requetes[0]+
+      +st_requetes[req_id++]+
       ")as t1, ("+tb_in+") as t2 where(t1.id=t2.id)"
-      "/* fn2 */"
+      F(req_id)
     },
     {
-      "/* dn3 */"
-      "select row_number() over(order by t1.bc) as rid, t1.bc,"
-      "ROW_NUMBER() OVER (PARTITION by t1.bc order by t1.bc) as LID,"
-      "t2."+ref_key+" as B "
+      D(req_id)
+      "select row_number() over(order by t2.bc) as rid, t2.bc,"
+      "ROW_NUMBER() OVER (PARTITION by t2.bc order by t2.bc) as LID,"
+      "t1."+ref_key+" as B "
       "FROM"
       "("
-      +st_requetes[1]+
-      ") as t1, ("+ref_tbl+") as t2 where(b in ( "+st_bzn+" ))"
-      "/* fn3 */"
+      +ref_tbl+
+      ") as t1, ("+st_requetes[req_id++]+") as t2 where(t1."+ref_key+" in ( "+st_bzn+" ))"
+      F(req_id)
     },
     {
-      "/* dn4 */"
+      D(req_id)
       "SELECT row_number() over(order by t1.bc) as rid,t1.bc, t1.b,"
       "count (*) over "
       "(PARTITION by t1.bc order by t1.bc "
       "RANGE BETWEEN UNBOUNDED PRECEDING and UNBOUNDED FOLLOWING) as T "
       "FROM("
-      +st_requetes[2]+
+      +st_requetes[req_id++]+
       ")as t1 "
-      "/* fn4 */"
+      F(req_id)
     },
     {
-      "/* dn5 */"
+      D(req_id)
       "SELECT row_number() over(ORDER by t1.bc) as rid,"
       "t1.bc,t1.b,count(t1.rid) as Tb,T "
       "FROM("
-      +st_requetes[3]+
+      +st_requetes[req_id++]+
       ")as t1 group by t1.bc, t1.b"
-      "/* fn5 */"
+      F(req_id)
     },
+  #if SET_QRY_ACT1
     {
-      "/* dn6 */"
+      D(req_id)
       "select row_number() over(order by t1.bc DESC) as id_n6,"
       "t1.bc,NULL as I,t1.T,t1.*,"
       "printf(\"%02d:([%03d] -> %d%%)\",t1.b,t1.Tb,((t1.tb*100)/t1.t)) as details "
       "FROM"
       "("
-      +st_requetes[4]+
+      +st_requetes[req_id++]+
       ")as t1 ORDER by t1.bc ASC, t1.tb DESC"
-      "/* fn6 */"
+      F(req_id)
     },
     {
-      "/* dn7 */"
+      D(req_id)
       "select row_number() over(order by t1.bc DESC) as Id,"
       "NULL as C,"
       "t1.bc as B,"
@@ -1791,16 +1802,41 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
       "NULL as P,"
       "NULL AS F "
       "FROM("
-      +st_requetes[5]+
+      +st_requetes[req_id++]+
       ")as t1 GROUP by t1.bc ORDER by t1.t DESC"
-      "/* df7 */"
+      F(req_id)
     },
-    {"create table if not exists "
-     + tb_write
-     +" as "
-     + st_requetes[6]
+  #else
+    {
+      D(req_id)
+      "select row_number() over(order by t1.bc DESC) as Id,"
+      "NULL as C,"
+      "t1.bc,"
+      "NULL as I,"
+      "t1.b,"
+      "t1.Tb,"
+      "t1.T,"
+      "NULL as P,"
+      "NULL AS F "
+      "FROM("
+      +st_requetes[req_id++]+
+      ")as t1"
+      F(req_id)
     },
-    {"select * from " + tb_write}
+  #endif
+    {
+      D(req_id)
+      "create table if not exists "
+      + tb_write
+      +" as "
+      + st_requetes[req_id++]
+      +F(req_id)
+    },
+    {
+      D(req_id)
+      "select * from " + tb_write
+      +F(req_id)
+    }
   };
 
 
@@ -1821,10 +1857,17 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
       /// La table existe faire le resume
       if((isOk = query.exec(st_requetes[taille-2]))){
         /// mettre a jour la colonne C en fonction de la B
-        QString msg =  "UPDATE "+tb_write+" set "
-                       "C=(select C FROM "+tb_source+" "
-                       " where "+tb_write+".B="+tb_source+".B)";
+        QString msg =  "UPDATE "
+                       +tb_write
+                       +" set "
+                        "C=(select C FROM "
+                       +tb_source
+                       +" where "
+                       +tb_write
+                       +".B="
+                       +tb_source+".B)";
         if((isOk = query.exec(msg))){
+          //GROUP by t1.bc ORDER by t1.t DESC
           stBVisuResume_sql a;
           a.cnx = db_0.connectionName();
           a.wko = tb_write;
@@ -1837,7 +1880,7 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
           m->setSourceModel(sqm_tmp);
 
           qtv_tmp->setModel(m);
-          qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked);
+          qtv_tmp->setEditTriggers(QAbstractItemView::SelectedClicked);
           mettreEnConformiteVisuel(qtv_tmp);
         }
       }
@@ -1854,6 +1897,12 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
   return qtv_tmp;
 }
 
+/*
+void a::r()
+{
+  GROUP by t1.bc ORDER by t1.t DESC
+}
+*/
 QTableView * SyntheseGenerale::TbvResume_tot(int zn, QString tb_in)
 {
   QTableView * qtv_tmp = new QTableView;
@@ -1960,9 +2009,9 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp)
   qtv_tmp->resizeRowsToContents();
   qtv_tmp->setFixedWidth((nb_col*LCELL)+400);
   // Ne pas modifier largeur des colonnes
-  //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
   //qtv_tmp->horizontalHeader()->setSectionResizeMode(nb_col-1,QHeaderView::ResizeToContents);
-  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
 }
 
@@ -3048,11 +3097,11 @@ count(*)  as T,
 	#ifndef QT_NO_DEBUG
 	qDebug() << st_query;
 
-	#if SET_QRY_LEV1
+	#if (SET_DBG_QLV1 && SET_QRY_DBG1)
 	QSqlQuery query_dbg(db_0);
 	query_dbg.exec(st_query);
 	if(query_dbg.lastError().isValid()){
-	  DB_Tools::DisplayError("SyntheseGenerale::",&query,"A1_0_TrouverLignes");
+	  DB_Tools::DisplayError("SyntheseGenerale::",&query_dbg,"A1_0_TrouverLignes");
 	}
 
 	#endif
@@ -3100,11 +3149,11 @@ count(*)  as T,
 
 	#ifndef QT_NO_DEBUG
 	qDebug() << st_query;
-	#if SET_QRY_LEV1
+	#if (SET_DBG_QLV1 && SET_QRY_DBG1)
 	QSqlQuery query_dbg(db_0);
 	query_dbg.exec(st_query);
 	if(query_dbg.lastError().isValid()){
-	  DB_Tools::DisplayError("SyntheseGenerale::",&query,"A1_1_CalculerEcart");
+	  DB_Tools::DisplayError("SyntheseGenerale::",&query_dbg,"A1_1_CalculerEcart");
 	}
 	#endif
 	#endif
@@ -3179,11 +3228,11 @@ count(*)  as T,
 	#ifndef QT_NO_DEBUG
 	qDebug() << st_query;
 
-	#if SET_QRY_LEV1
+	#if (SET_DBG_QLV1 && SET_QRY_DBG1)
 	QSqlQuery query_dbg(db_0);
 	query_dbg.exec(st_query);
 	if(query_dbg.lastError().isValid()){
-	  DB_Tools::DisplayError("SyntheseGenerale::",&query,"A1_2_RegrouperEcart");
+	  DB_Tools::DisplayError("SyntheseGenerale::",&query_dbg,"A1_2_RegrouperEcart");
 	}
 	#endif
 	#endif

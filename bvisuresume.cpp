@@ -9,7 +9,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QColor>
-
+# include <QComboBox>
 
 #include "bvisuresume.h"
 #include "btablevieweditor.h"
@@ -218,7 +218,7 @@ QWidget *BVisuResume::createEditor(QWidget *parent, const QStyleOptionViewItem &
     sqm_tmp->setQuery(msg,db_0);
     editor->setModel(sqm_tmp);
 #endif
-    QTableWidget *editor = new QTableWidget(1,10);
+    QComboBox *editor = new QComboBox(parent);
     editor->show();
     return editor;
   }
@@ -228,14 +228,14 @@ QWidget *BVisuResume::createEditor(QWidget *parent, const QStyleOptionViewItem &
 void BVisuResume::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
   if(index.column() == 6){
-#if 0
-    //QTableView *qtv_tmp = qobject_cast<QTableView *>(editor);
+
+    QComboBox *qtv_tmp = qobject_cast<QComboBox *>(editor);
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QString msg = "select  C from " + tb_test;
 
     sqm_tmp->setQuery(msg,db_0);
-    a.setModel(sqm_tmp);
-#endif
+    qtv_tmp->setModel(sqm_tmp);
+
   }
 
 }
