@@ -178,6 +178,7 @@ private:
 
     QTableView * TbvAnalyse_brc(int zn, QString source, QString definition, QString key);
     QTableView * TbvResume_brc(int zn, QString tb_in);
+    void FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete);
 
     //bool isTableTotalBoulleReady(QString tbl_total);
     bool mettreBarycentre(QString tbl_dst, QString src_data);

@@ -1834,7 +1834,8 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
     },
     {
       D(req_id)
-      "select * from " + tb_write
+      "select id, c, bc as B, I,T, NULL as Boules, P, F FROM "
+      + tb_write +" as t1 GROUP by t1.bc ORDER by t1.t DESC"
       +F(req_id)
     }
   };
@@ -1854,35 +1855,9 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
     query.first();
     if(query.isValid())
     {
-      /// La table existe faire le resume
+      /// La table de base existe faire le resume
       if((isOk = query.exec(st_requetes[taille-2]))){
-        /// mettre a jour la colonne C en fonction de la B
-        QString msg =  "UPDATE "
-                       +tb_write
-                       +" set "
-                        "C=(select C FROM "
-                       +tb_source
-                       +" where "
-                       +tb_write
-                       +".B="
-                       +tb_source+".B)";
-        if((isOk = query.exec(msg))){
-          //GROUP by t1.bc ORDER by t1.t DESC
-          stBVisuResume_sql a;
-          a.cnx = db_0.connectionName();
-          a.wko = tb_write;
-          qtv_tmp->setObjectName(tb_write);
-          BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
-          sqm_tmp->setQuery(st_requetes[taille-1],db_0);
-
-          QSortFilterProxyModel *m=new QSortFilterProxyModel();
-          m->setDynamicSortFilter(true);
-          m->setSourceModel(sqm_tmp);
-
-          qtv_tmp->setModel(m);
-          qtv_tmp->setEditTriggers(QAbstractItemView::SelectedClicked);
-          mettreEnConformiteVisuel(qtv_tmp);
-        }
+        FaireResume(qtv_tmp,tb_source,tb_write,st_requetes[taille-1]);
       }
     }
     else{
@@ -1897,12 +1872,41 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
   return qtv_tmp;
 }
 
-/*
-void a::r()
+
+void SyntheseGenerale::FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete)
 {
-  GROUP by t1.bc ORDER by t1.t DESC
+  QSqlQuery query(db_0);
+  bool isOk = true;
+
+  /// mettre a jour la colonne C en fonction de la B
+  QString msg =  "UPDATE "
+                 +tb_write
+                 +" set "
+                  "C=(select C FROM "
+                 +tb_source
+                 +" where "
+                 +tb_write
+                 +".BC="
+                 +tb_source+".B)";
+  if((isOk = query.exec(msg))){
+    stBVisuResume_sql a;
+    a.cnx = db_0.connectionName();
+    a.wko = tb_write;
+    qtv_tmp->setObjectName(tb_write);
+    BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
+    sqm_tmp->setQuery(st_requete,db_0);
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
+
+    qtv_tmp->setModel(m);
+    qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked);
+    mettreEnConformiteVisuel(qtv_tmp);
+  }
 }
-*/
+
+
 QTableView * SyntheseGenerale::TbvResume_tot(int zn, QString tb_in)
 {
   QTableView * qtv_tmp = new QTableView;
