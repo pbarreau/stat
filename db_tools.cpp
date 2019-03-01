@@ -251,7 +251,7 @@ bool DB_Tools::checkHavingTableAndKey(QString tbl, QString key, QString cnx)
       }
       else{
         msg_err = QString("Inconnu \"")+key+QString("\"\ndans table ") +tbl;
-        QMessageBox::critical(NULL,"Test",msg_err,QMessageBox::Ok);
+        QMessageBox::information(NULL,"Test",msg_err,QMessageBox::Ok);
       }
     }
     else{

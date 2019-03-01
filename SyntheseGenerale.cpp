@@ -5,6 +5,10 @@
 #include <QApplication>
 #include <QMessageBox>
 
+#include <QItemEditorFactory>
+#include <QItemEditorCreatorBase>
+#include <QStandardItemEditorCreator>
+
 #include <QtGui>
 #include <QSqlRecord>
 #include <QMenu>
@@ -696,8 +700,26 @@ void SyntheseGenerale::DoTirages(void)
 }
 #endif
 
+
+#if 0
+void SyntheseGenerale::setMyOwnFactory(void)
+{
+  QItemEditorFactory *factory = new QItemEditorFactory;
+
+  QItemEditorCreatorBase *colorListCreator =
+      new QStandardItemEditorCreator<BTableViewEditor>();
+
+  factory->registerEditor(QMetaType::Q, BTableViewEditor);
+
+  QItemEditorFactory::setDefaultFactory(factory);
+
+}
+#endif
+
 void SyntheseGenerale::DoComptageTotal(void)
 {
+
+  //setMyOwnFactory();
 
   // Onglet pere
   QTabWidget *tab_Top = new QTabWidget;
@@ -1624,7 +1646,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
 
   qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
   qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked);
   qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
 
 
@@ -1806,6 +1828,7 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
           stBVisuResume_sql a;
           a.cnx = db_0.connectionName();
           a.wko = tb_write;
+          qtv_tmp->setObjectName(tb_write);
           BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
           sqm_tmp->setQuery(st_requetes[taille-1],db_0);
 
@@ -1814,6 +1837,7 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
           m->setSourceModel(sqm_tmp);
 
           qtv_tmp->setModel(m);
+          qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked);
           mettreEnConformiteVisuel(qtv_tmp);
         }
       }
@@ -1867,6 +1891,8 @@ QTableView * SyntheseGenerale::TbvResume_tot(int zn, QString tb_in)
       if((isOk = query.exec(msg[1]))){
         stBVisuResume_sql a;
         a.cnx = db_0.connectionName();
+        a.wko =tb_write;
+        qtv_tmp->setObjectName(tb_write);
         BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
         sqm_tmp->setQuery(msg[2],db_0);
 
@@ -1897,12 +1923,15 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp)
 
   prmBVisuResume a;
   a.cnx = db_0.connectionName();
+  a.wko = qtv_tmp->objectName();
   /// TBD comment remonter le nom de la table cree
   /// BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
   a.cld = "pCouleurs_65";
 
   BVisuResume *color = new BVisuResume(a,qtv_tmp);
+  //qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
   qtv_tmp->setItemDelegate(color);
+
   /// Mise en place d'un toolstips
   qtv_tmp->setMouseTracking(true);
   connect(qtv_tmp,
@@ -1910,6 +1939,7 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp)
           color,SLOT(slot_AideToolTip(QModelIndex)));
 
 
+  qtv_tmp->horizontalHeader()->setStretchLastSection(true);
   qtv_tmp->setSortingEnabled(true);
 
   qtv_tmp->sortByColumn(COL_VISU_RESUME -1,Qt::DescendingOrder);
@@ -1917,7 +1947,6 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp)
 
   qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
   qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
   qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
   qtv_tmp->verticalHeader()->hide();
