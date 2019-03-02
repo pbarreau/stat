@@ -106,6 +106,7 @@ void MemoriserChoixUtilisateur(const QModelIndex & index,
     }
     else
     {
+      idOnglet = 0; /// A Debugger plus tard
         nb_element_max_zone = pTiragesConf->nbElmZone[idOnglet];
         stNomZone = pTiragesConf->nomZone[idOnglet];
     }

@@ -38,15 +38,15 @@ typedef struct _demande
     int val[3];
     QString st_titre;
     QString db_cnx;
-    QString stc[3];
-    QStringList lst_boules[3];
+    QString stc[5];
+    QStringList lst_boules[5];
     QString *st_LDT_Depart;
     QString *st_Ensemble_1;
     QString *st_LDT_Filtre;
     QString *st_jourDef;
     QString st_TablePere;
-    QString st_viewName[4];
-    QModelIndexList selection[4];
+    QString st_viewName[5];
+    QModelIndexList selection[5];
     stTiragesDef *ref;
 }stCurDemande;
 //-----------------------------

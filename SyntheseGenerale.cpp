@@ -8,6 +8,7 @@
 #include <QItemEditorFactory>
 #include <QItemEditorCreatorBase>
 #include <QStandardItemEditorCreator>
+#include <QStandardItemModel>
 
 #include <QtGui>
 #include <QSqlRecord>
@@ -2565,7 +2566,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(int fake)
     sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_Ensemble_1),msg1);
 
 #ifndef QT_NO_DEBUG
-	 qDebug() << sqlReq;
+    qDebug() << sqlReq;
 #endif
 
 	 status = query.exec(sqlReq);
@@ -2592,6 +2593,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(int fake)
   connect(qtv_tmp,
           SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 
+
   connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
            this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
@@ -2599,10 +2601,12 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(int fake)
   connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
            this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
+
   return (lay_return);
 
 }
 #endif
+
 // ------------------------------
 void SyntheseGenerale::slot_AideToolTip(const QModelIndex & index)
 {
@@ -2812,7 +2816,7 @@ QString CreatreTitle(stCurDemande *pConf)
     {
 
 #ifndef QT_NO_DEBUG
-		qDebug()<< "Aucune selection active pour i="<<i;
+      qDebug()<< "Aucune selection active pour i="<<i;
 #endif
 
 	 }
@@ -2881,15 +2885,22 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
   QTableView *view = qobject_cast<QTableView *>(sender());
   bool getLimites = false;
 
-  QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
-  QAbstractTableModel *sqm_tmp = NULL;
+  QSortFilterProxyModel *m = NULL;//qobject_cast<QSortFilterProxyModel *>(view->model());
+  QAbstractItemModel *sqm_tmp = NULL;
 
   if(view->objectName().contains("new")){
+    m= qobject_cast<QSortFilterProxyModel *>(view->model());
     sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
     getLimites = true;
   }
   else{
-    sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+    if(view->objectName().contains(C_TBL_8)){
+      sqm_tmp = qobject_cast<QStandardItemModel *>(view->model());
+    }
+    else{
+      m= qobject_cast<QSortFilterProxyModel *>(view->model());
+      sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+    }
   }
 
   int nbcol = sqm_tmp->columnCount();
@@ -3302,7 +3313,7 @@ count(*)  as T,
 	#endif
 
 
-	return st_query;
+   return st_query;
 
  }
 
