@@ -865,7 +865,10 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_z2(int dst)
   m->setDynamicSortFilter(true);
   m->setSourceModel(sqm_bloc1_2);
   qtv_tmp->setModel(m);
+
   qtv_tmp->verticalHeader()->hide();
+  qtv_tmp->hideColumn(0);
+
   for(int j=0;j<2;j++)
     qtv_tmp->setColumnWidth(j,28);
   for(int j=2;j<=sqm_bloc1_2->columnCount();j++)
@@ -1580,6 +1583,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb
     qtv_tmp->sortByColumn(COL_VISU_ECART+2,Qt::DescendingOrder);
 
     qtv_tmp->verticalHeader()->hide();
+    qtv_tmp->hideColumn(0);
     int j=0;
     for(j=0;j<=COL_VISU_ECART;j++){
       qtv_tmp->setColumnWidth(j,28);
@@ -2008,15 +2012,15 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_
   qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
   qtv_tmp->verticalHeader()->hide();
-  //qtv_tmp->hideColumn(0);
+  qtv_tmp->hideColumn(0);
   //qtv_tmp->hideColumn(1);
   int nb_col = sqm_tmp->columnCount();
   for(int i = 0; i<= COL_VISU_RESUME+2;i++){
     qtv_tmp->setColumnWidth(i,28);
   }
-  qtv_tmp->setColumnWidth(COL_VISU_COMBO,300);
+  qtv_tmp->setColumnWidth(COL_VISU_COMBO,200);
   qtv_tmp->resizeRowsToContents();
-  qtv_tmp->setFixedWidth((nb_col*LCELL)+300);
+  qtv_tmp->setFixedWidth((nb_col*LCELL)+200);
   // Ne pas modifier largeur des colonnes
   qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
   //qtv_tmp->horizontalHeader()->setSectionResizeMode(nb_col-1,QHeaderView::ResizeToContents);

@@ -79,7 +79,8 @@ SOURCES += \
     sqlqmdetails.cpp \
     bvisuresume.cpp \
     btablevieweditor.cpp \
-    bnewcombo.cpp
+    bnewcombo.cpp \
+    bpopupcolor.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -122,7 +123,8 @@ HEADERS  += \
     bvisuresume.h \
     properties.h \
     btablevieweditor.h \
-    bnewcombo.h
+    bnewcombo.h \
+    bpopupcolor.h
 
 
 FORMS    += mainwindow.ui \

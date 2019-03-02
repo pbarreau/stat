@@ -15,6 +15,7 @@
 
 #include "bvisuresume.h"
 #include "btablevieweditor.h"
+#include "bpopupcolor.h"
 
 #include "db_tools.h"
 
@@ -241,7 +242,7 @@ QWidget *BVisuResume::createEditor(QWidget *parent, const QStyleOptionViewItem &
 {
 
   if(index.column() == COL_VISU_COMBO){
-    myCombo * tmp_combo = new myCombo(parent);
+    myCombo * tmp_combo = new myCombo(db_0.connectionName(),parent);
 
     return  tmp_combo;
   }
@@ -333,13 +334,20 @@ void myCombo::showPopup() {
 
 
   QTableView *popup = this->findChild<QTableView*>();
-  for(int i = 0; i<= COL_VISU_RESUME+1;i++){
+  for(int i = 0; i< BPopupColor::ValB;i++){
     popup->hideColumn(i);
   }
   popup->verticalHeader()->hide();
   popup->resizeColumnsToContents();
   popup->setSortingEnabled(true);
 
+
+  BPopupColor::PopParam a;
+  a.cnx = db_0.connectionName();
+  a.tb_cld = "pCouleurs_65";
+
+  BPopupColor *color = new BPopupColor(a,popup);
+  this->setItemDelegate(color);
 
 
   QSortFilterProxyModel *m=new QSortFilterProxyModel();
