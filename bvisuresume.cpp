@@ -241,7 +241,7 @@ QWidget *BVisuResume::createEditor(QWidget *parent, const QStyleOptionViewItem &
 {
 
   if(index.column() == COL_VISU_COMBO){
-    QComboBox * tmp_combo = new QComboBox(parent);
+    myCombo * tmp_combo = new myCombo(parent);
 
     return  tmp_combo;
   }
@@ -251,11 +251,11 @@ QWidget *BVisuResume::createEditor(QWidget *parent, const QStyleOptionViewItem &
 void BVisuResume::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
   if(index.column() == COL_VISU_COMBO){
-    QComboBox * tmp_combo = qobject_cast<QComboBox *>(editor);
+    myCombo * tmp_combo = qobject_cast<myCombo *>(editor);
     QTableView *sourceView = new QTableView(); // QTreeview
+    tmp_combo->setView(sourceView);
 
     //sourceView->setRootIsDecorated(false);
-    tmp_combo->setView(sourceView);
     sourceView->setAlternatingRowColors(true);
 
     sourceView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded); //fine tuning of some options
@@ -263,7 +263,6 @@ void BVisuResume::setEditorData(QWidget *editor, const QModelIndex &index) const
     sourceView->setSelectionBehavior(QAbstractItemView::SelectRows);
     //sourceView->setAutoScroll(false);
 
-    //sourceView->hideColumn(0);
     QString sval = (index.sibling(index.row(),COL_VISU_RESUME)).data().toString();
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
     QString msg = "select t1.c,t2.c as Cb,t1.bc, t1.T, t1.b,T1.tb,"
@@ -315,4 +314,16 @@ void BVisuResume::updateEditorGeometry(QWidget *editor,
   if(index.column() == COL_VISU_COMBO){
     editor->setGeometry(option.rect);
   }
+}
+
+/// -----------------------------
+void myCombo::showPopup() {
+  QComboBox::showPopup();
+
+  QTableView *popup = this->findChild<QTableView*>();
+  for(int i = 0; i<= COL_VISU_RESUME+1;i++){
+    popup->hideColumn(i);
+  }
+  popup->verticalHeader()->hide();
+  popup->resizeColumnsToContents();
 }

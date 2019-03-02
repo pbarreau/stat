@@ -95,4 +95,10 @@ private:
     QString tb_rsm_src;
 };
 
+class myCombo:public QComboBox{
+    Q_OBJECT
+public:
+    explicit myCombo(QWidget *parent = Q_NULLPTR):QComboBox (parent) {}
+    void showPopup();
+};
 #endif // BVISURESUME_H
