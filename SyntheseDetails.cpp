@@ -45,16 +45,16 @@ QComboBox *ComboPerso(int id);
 QComboBox *ComboPerso(int id)
 {
     QComboBox * tmp_combo = new QComboBox;
-
     QTreeView *sourceView = new QTreeView;
+
     sourceView->setRootIsDecorated(false);
     sourceView->setAlternatingRowColors(true);
     tmp_combo->setView(sourceView);
 
-    //sourceView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded); //fine tuning of some options
+    sourceView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded); //fine tuning of some options
     sourceView->setSelectionMode(QAbstractItemView::SingleSelection);
     sourceView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    sourceView->setAutoScroll(false);
+    //sourceView->setAutoScroll(false);
 
     QStandardItemModel *model = new QStandardItemModel(0, 2);
     model->setHeaderData(0, Qt::Horizontal, QObject::tr("Filtre"));

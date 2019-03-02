@@ -78,7 +78,8 @@ SOURCES += \
     game.cpp \
     sqlqmdetails.cpp \
     bvisuresume.cpp \
-    btablevieweditor.cpp
+    btablevieweditor.cpp \
+    bnewcombo.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -120,7 +121,8 @@ HEADERS  += \
     sqlqmdetails.h \
     bvisuresume.h \
     properties.h \
-    btablevieweditor.h
+    btablevieweditor.h \
+    bnewcombo.h
 
 
 FORMS    += mainwindow.ui \

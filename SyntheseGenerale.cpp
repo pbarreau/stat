@@ -1699,6 +1699,7 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
   QString ref_key = QString("z")+QString::number(zn+1);
   QString tb_write = QString("r_")+tb_in + QString("_brc_rsm_")+ref_key;
   QString tb_source = QString("r_")+tb_in + QString("_brc_")+ref_key;
+  QString tb_total = QString("r_")+tb_in + QString("_tot_")+ref_key;
 
   /// --------------------
   /// Numerotation des boules de la zone
@@ -1857,7 +1858,7 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
     {
       /// La table de base existe faire le resume
       if((isOk = query.exec(st_requetes[taille-2]))){
-        FaireResume(qtv_tmp,tb_source,tb_write,st_requetes[taille-1]);
+        FaireResume(qtv_tmp,tb_source,tb_write,st_requetes[taille-1],tb_total);
       }
     }
     else{
@@ -1873,7 +1874,7 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
 }
 
 
-void SyntheseGenerale::FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete)
+void SyntheseGenerale::FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete, QString tb_total)
 {
   QSqlQuery query(db_0);
   bool isOk = true;
@@ -1891,7 +1892,8 @@ void SyntheseGenerale::FaireResume(QTableView * qtv_tmp, QString tb_source, QStr
   if((isOk = query.exec(msg))){
     stBVisuResume_sql a;
     a.cnx = db_0.connectionName();
-    a.wko = tb_write;
+    a.tb_rsm = tb_write;
+    a.tb_tot = tb_total;
     qtv_tmp->setObjectName(tb_write);
     BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
     sqm_tmp->setQuery(st_requete,db_0);
@@ -1901,8 +1903,8 @@ void SyntheseGenerale::FaireResume(QTableView * qtv_tmp, QString tb_source, QStr
     m->setSourceModel(sqm_tmp);
 
     qtv_tmp->setModel(m);
-    qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked);
-    mettreEnConformiteVisuel(qtv_tmp);
+    //qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked);
+    mettreEnConformiteVisuel(qtv_tmp,tb_total);
   }
 }
 
@@ -1944,7 +1946,8 @@ QTableView * SyntheseGenerale::TbvResume_tot(int zn, QString tb_in)
       if((isOk = query.exec(msg[1]))){
         stBVisuResume_sql a;
         a.cnx = db_0.connectionName();
-        a.wko =tb_write;
+        a.tb_rsm =tb_write;
+        a.tb_tot = tb_source;
         qtv_tmp->setObjectName(tb_write);
         BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
         sqm_tmp->setQuery(msg[2],db_0);
@@ -1954,7 +1957,7 @@ QTableView * SyntheseGenerale::TbvResume_tot(int zn, QString tb_in)
         m->setSourceModel(sqm_tmp);
 
         qtv_tmp->setModel(m);
-        mettreEnConformiteVisuel(qtv_tmp);
+        mettreEnConformiteVisuel(qtv_tmp, tb_source);
       }
     }
     else{
@@ -1969,21 +1972,23 @@ QTableView * SyntheseGenerale::TbvResume_tot(int zn, QString tb_in)
   return qtv_tmp;
 }
 
-void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp)
+void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_total)
 {
   QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(qtv_tmp->model()) ;
   BVisuResume_sql *sqm_tmp = qobject_cast<BVisuResume_sql*>(m->sourceModel());
 
   prmBVisuResume a;
   a.cnx = db_0.connectionName();
-  a.wko = qtv_tmp->objectName();
+  a.tb_rsm = qtv_tmp->objectName();
+  a.tb_tot = tb_total;
   /// TBD comment remonter le nom de la table cree
   /// BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
-  a.cld = "pCouleurs_65";
+  a.tb_cld = "pCouleurs_65";
 
+  qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
   BVisuResume *color = new BVisuResume(a,qtv_tmp);
-  //qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
   qtv_tmp->setItemDelegate(color);
+
 
   /// Mise en place d'un toolstips
   qtv_tmp->setMouseTracking(true);
@@ -2002,20 +2007,20 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp)
   qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
   qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
-  qtv_tmp->verticalHeader()->hide();
+  //qtv_tmp->verticalHeader()->hide();
   //qtv_tmp->hideColumn(0);
   //qtv_tmp->hideColumn(1);
   int nb_col = sqm_tmp->columnCount();
   for(int i = 0; i<= COL_VISU_RESUME+2;i++){
     qtv_tmp->setColumnWidth(i,28);
   }
-  qtv_tmp->setColumnWidth(COL_VISU_RESUME+3,400);
+  qtv_tmp->setColumnWidth(COL_VISU_COMBO,300);
   qtv_tmp->resizeRowsToContents();
-  qtv_tmp->setFixedWidth((nb_col*LCELL)+400);
+  qtv_tmp->setFixedWidth((nb_col*LCELL)+300);
   // Ne pas modifier largeur des colonnes
   qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
   //qtv_tmp->horizontalHeader()->setSectionResizeMode(nb_col-1,QHeaderView::ResizeToContents);
-  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
 }
 

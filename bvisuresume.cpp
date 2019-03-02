@@ -9,7 +9,9 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QColor>
-# include <QComboBox>
+#include <QComboBox>
+#include <QHeaderView>
+#include <QTreeView>
 
 #include "bvisuresume.h"
 #include "btablevieweditor.h"
@@ -20,9 +22,9 @@ BVisuResume::BVisuResume(prmBVisuResume param, QTableView *parent)
   :QStyledItemDelegate (parent)
 {
   db_0 = QSqlDatabase::database(param.cnx);
-  tb_test = param.wko;
-  a=new QTableWidget(1,10);
-  recupereMapColor(param.cld);
+  tb_rsm_src = param.tb_rsm;
+  tb_tot_src = param.tb_tot;
+  recupereMapColor(param.tb_cld);
 }
 
 void BVisuResume::paint(QPainter *painter, const QStyleOptionViewItem &option,
@@ -38,6 +40,9 @@ void BVisuResume::paint(QPainter *painter, const QStyleOptionViewItem &option,
     int val_col_2 = (index.sibling(index.row(),COL_VISU_RESUME-1)).data().toInt();
     QColor leFond = map_colors.key(val_col_2);
     painter->fillRect(option.rect, leFond);
+  }
+
+  if(col == COL_VISU_COMBO){
   }
 
   QStyledItemDelegate::paint(painter, option, index);
@@ -151,6 +156,8 @@ void BVisuResume::slot_AideToolTip(const QModelIndex & index)
 BVisuResume_sql::BVisuResume_sql(stBVisuResume_sql param,QObject *parent):QSqlQueryModel(parent)
 {
   db_0 = QSqlDatabase::database(param.cnx);
+  tb_tot_src = param.tb_tot;
+  tb_rsm_src = param.tb_rsm;
 
 }
 
@@ -174,6 +181,43 @@ QVariant BVisuResume_sql::data(const QModelIndex &index, int role)const
       }
     }
   }
+
+  if(col == COL_VISU_COMBO){
+    if(role == Qt::DisplayRole)
+    {
+      /*
+      QString sval = (index.sibling(index.row(),COL_VISU_RESUME)).data().toString();
+
+      QComboBox *qcb_tmp = new QComboBox;
+
+      QTableView *qtv_tmp = new QTableView();
+
+
+      QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+      QString msg = "select t1.c,t2.c as Cb,t1.bc, t1.T, t1.b,T1.tb,"
+                    "printf(\"%.2f%%\",((t1.tb*100)/t1.t)) as 'Tb/T %',"
+                    "printf(\"%.2f%%\",((t2.c*100)/65)) as 'Ce %' "
+                    "FROM ("
+                    +tb_rsm_src
+                    +") as t1,("
+                    +tb_tot_src
+                    +") as t2 "
+                     "WHERE (t1.bc ="
+                    +sval
+                    +" AND t1.b = t2.b) ORDER by t1.t DESC , t1.tb DESC";
+#ifndef QT_NO_DEBUG
+      qDebug() << "Combo :" << msg;
+#endif
+
+      sqm_tmp->setQuery(msg,db_0);
+      qcb_tmp->setModel(sqm_tmp);
+      qcb_tmp->setView(qtv_tmp);
+
+
+      return   QVariant::fromValue(qcb_tmp);
+      */
+    }
+  }
   /// Par defaut retourner contenu initial
   return QSqlQueryModel::data(index,role);
 }
@@ -181,20 +225,9 @@ QVariant BVisuResume_sql::data(const QModelIndex &index, int role)const
 /// --- Rendre la requete editable
 Qt::ItemFlags BVisuResume_sql::flags(const QModelIndex &index) const
 {
-  int col = index.column();
-
-
-  if (col==index.model()->columnCount()-2){
-  }
-
-
-  return Qt::ItemIsSelectable|Qt::ItemIsEnabled| Qt::ItemIsEditable;// ItemIsEnabled
+  return Qt::ItemIsSelectable|Qt::ItemIsEnabled| Qt::ItemIsEditable;// ItemIsEnabled| Qt::ItemIsEditable
 }
 
-bool BVisuResume_sql::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-  return true;
-}
 /// -----------------------------------
 
 QSize BVisuResume::sizeHint(const QStyleOptionViewItem &option,
@@ -207,34 +240,62 @@ QWidget *BVisuResume::createEditor(QWidget *parent, const QStyleOptionViewItem &
                                    const QModelIndex &index) const
 {
 
-  if(index.column() == 6){
-#if 0
-    //QTableWidget *editor = new QTableWidget(1,10,parent);
-    QTableView *editor = new QTableView(parent);
-    //QTableView *qtv_tmp = qobject_cast<QTableView *>(editor);
-    //QSqlQuery query(db_0);
-    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    QString msg = "select  C from " + tb_test;
-    sqm_tmp->setQuery(msg,db_0);
-    editor->setModel(sqm_tmp);
-#endif
-    QComboBox *editor = new QComboBox(parent);
-    editor->show();
-    return editor;
+  if(index.column() == COL_VISU_COMBO){
+    QComboBox * tmp_combo = new QComboBox(parent);
+
+    return  tmp_combo;
   }
 
 }
 
 void BVisuResume::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-  if(index.column() == 6){
+  if(index.column() == COL_VISU_COMBO){
+    QComboBox * tmp_combo = qobject_cast<QComboBox *>(editor);
+    QTableView *sourceView = new QTableView(); // QTreeview
 
-    QComboBox *qtv_tmp = qobject_cast<QComboBox *>(editor);
+    //sourceView->setRootIsDecorated(false);
+    tmp_combo->setView(sourceView);
+    sourceView->setAlternatingRowColors(true);
+
+    sourceView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded); //fine tuning of some options
+    sourceView->setSelectionMode(QAbstractItemView::SingleSelection);
+    sourceView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    //sourceView->setAutoScroll(false);
+
+    //sourceView->hideColumn(0);
+    QString sval = (index.sibling(index.row(),COL_VISU_RESUME)).data().toString();
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-    QString msg = "select  C from " + tb_test;
+    QString msg = "select t1.c,t2.c as Cb,t1.bc, t1.T, t1.b,T1.tb,"
+                  "printf(\"%.2f%%\",((t1.tb*100)/t1.t)) as 'Tb/T %',"
+                  "printf(\"%.2f%%\",((t2.c*100)/65)) as 'Ce %' "
+                  "FROM ("
+                  +tb_rsm_src
+                  +") as t1,("
+                  +tb_tot_src
+                  +") as t2 "
+                   "WHERE (t1.bc ="
+                  +sval
+                  +" AND t1.b = t2.b) ORDER by t1.t DESC , t1.tb DESC";
+#ifndef QT_NO_DEBUG
+    qDebug() << "Combo :" << msg;
+#endif
 
     sqm_tmp->setQuery(msg,db_0);
-    qtv_tmp->setModel(sqm_tmp);
+
+    /*
+    //sourceView->resizeColumnsToContents();
+    int nb_col = sqm_tmp->columnCount();
+    for(int i = 0; i< nb_col;i++){
+      //sourceView->setColumnWidth(i,50);
+    }
+    for(int i = 0; i<= COL_VISU_RESUME;i++){
+      sourceView->hideColumn(i);
+    }
+*/
+    //sourceView->header()->hide();
+    //sourceView->resizeColumnToContents(0);
+    tmp_combo->setModel(sqm_tmp);
 
   }
 
@@ -243,12 +304,15 @@ void BVisuResume::setEditorData(QWidget *editor, const QModelIndex &index) const
 void BVisuResume::setModelData(QWidget *editor, QAbstractItemModel *model,
                                const QModelIndex &index) const
 {
+  if(index.column() == COL_VISU_COMBO){
+  }
+
 }
 
 void BVisuResume::updateEditorGeometry(QWidget *editor,
                                        const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-  if(index.column() == 6){
+  if(index.column() == COL_VISU_COMBO){
     editor->setGeometry(option.rect);
   }
 }
