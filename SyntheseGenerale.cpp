@@ -724,7 +724,7 @@ void SyntheseGenerale::DoComptageTotal(void)
   // Onglet pere
   QTabWidget *tab_Top = new QTabWidget;
 
-  QString stNames[]={"b","e","c","g","ba"};
+  QString stNames[]={"tot","e","cmb","grp","brc"};
   int items = sizeof(stNames)/sizeof(QString);
 
   QWidget **wid_ForTop = new QWidget*[items];
@@ -867,7 +867,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_z2(int dst)
   qtv_tmp->setModel(m);
 
   qtv_tmp->verticalHeader()->hide();
-  qtv_tmp->hideColumn(0);
+  //qtv_tmp->hideColumn(0);
 
   for(int j=0;j<2;j++)
     qtv_tmp->setColumnWidth(j,28);
@@ -885,7 +885,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_z2(int dst)
   vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
   vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
 
-  lay_return->addLayout(vb_tmp,0,0);
+  lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
 
   // simple click dans fenetre  pour selectionner boule
   connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
@@ -1010,8 +1010,23 @@ QGridLayout * SyntheseGenerale::MonLayout_R2_cmb_z1(int dst)
   //fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,1);
   FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
 
-  lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
-  lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
+
+  ///------------
+  //lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
+  //lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
+
+  QVBoxLayout *vb_tmp = new QVBoxLayout;
+  QLabel * lab_tmp = new QLabel;
+
+
+  lab_tmp->setText("Combinaisons");
+  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addLayout(FiltreLayout);
+  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+  lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+  /// -----------
 
 
   // Mettre le dernier tirage en evidence
@@ -1603,6 +1618,46 @@ QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb
   return qtv_tmp;
 }
 
+QGridLayout* SyntheseGenerale::Vbox_Resume(int zn, QString tb_src, QString tb_ref, QString key)
+{
+  QGridLayout *lay_tmp = new QGridLayout;
+  QVBoxLayout *vb_tmp = new QVBoxLayout;
+  QLabel * lab_tmp = new QLabel;
+  QTableView *qtv_tmp = NULL;
+
+
+  qtv_tmp = TbvResume_tot(zn, tb_src);
+
+  lab_tmp->setText("Selections Possibles");
+  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+  lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+
+  return lay_tmp;
+}
+
+QGridLayout* SyntheseGenerale::Vbox_Analyse(int zn, QString tb_src, QString tb_ref, QString key)
+{
+
+  QGridLayout *lay_tmp = new QGridLayout;
+  QVBoxLayout *vb_tmp = new QVBoxLayout;
+  QLabel * lab_tmp = new QLabel;
+  QTableView *qtv_tmp = NULL;
+
+  qtv_tmp = TbvAnalyse_tot(zn, tb_src, tb_ref, key);
+
+  lab_tmp->setText("Repartitions");
+  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+  lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+
+  return lay_tmp;
+}
+
 QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb_ref, QString key)
 {
   QString tb_out = QString("r_")+tb_src + QString("_tot_z")+QString::number(zn+1);
@@ -1655,7 +1710,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
 
 
   qtv_tmp->verticalHeader()->hide();
-  //qtv_tmp->hideColumn(0);
+  qtv_tmp->hideColumn(0);
   //qtv_tmp->hideColumn(1);
 #if 0
   for(int i = 0; i<= COL_VISU_RESUME+2;i++){
@@ -2036,6 +2091,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_zn(int dst)
   QString tb_src = "RefTirages";
   QString tb_ref = "Bnrz";
 
+  /*
   QTableView ** qtv_tmp_1 = new QTableView *[tot_zn];
   QTableView ** qtv_tmp_2 = new QTableView *[tot_zn];
   for(int zn=0;zn<tot_zn;zn++){
@@ -2043,6 +2099,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_zn(int dst)
     qtv_tmp_1[zn] = TbvAnalyse_tot(zn,tb_src,tb_ref,key);
     qtv_tmp_2[zn] = TbvResume_tot(zn,tb_src);
   }
+
 
   QVBoxLayout *vb_tmp = new QVBoxLayout;
   QLabel * lab_tmp_1 = new QLabel;
@@ -2057,7 +2114,75 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_zn(int dst)
   vb_tmp->addWidget(qtv_tmp_2[0],0,Qt::AlignLeft|Qt::AlignTop);
 
   lay_return->addLayout(vb_tmp,0,0);
+*/
 
+  // Onglet pere
+  QTabWidget *tab_N0 = new QTabWidget;
+
+  QString names_N1[]={"boules","etoiles"};
+  int items_n1 = sizeof(names_N1)/sizeof(QString);
+
+  QString names_N2[]={"Repartitions","Selections"};
+  int items_n2 = sizeof(names_N2)/sizeof(QString);
+
+  QTabWidget **tab_N1 = new QTabWidget*[items_n1];
+  QGridLayout *design_n1[items_n1];
+
+  QTabWidget **tab_N2 = new QTabWidget*[items_n2];
+  QGridLayout *design_n2[items_n2];
+
+
+  QGridLayout *(SyntheseGenerale::*ptrFunc[])
+      (int zn, QString tb_src, QString tb_ref, QString key)=
+  {
+      &SyntheseGenerale::Vbox_Analyse,
+      &SyntheseGenerale::Vbox_Resume
+};
+
+  /// Creation onglet Boules/Etoiles (N1)
+  for(int i_n1 =0; i_n1<items_n1;i_n1++)
+  {
+    /// Creer un widget pour recevoir
+    /// le resultat d'un des onglets
+    QWidget * wdg_n1 = new QWidget;
+
+    /// Creation du conteneur d'onglets
+    tab_N1[i_n1]=new QTabWidget;
+
+    /// Nommer les Onglets en les rattachant au conteneur
+    tab_N0->addTab(wdg_n1,tr(names_N1[i_n1].toUtf8()));
+
+    /// Chaque onglet a sa disposition de layout
+    design_n1[i_n1] = new QGridLayout;
+
+    QString key = "z"+QString::number(i_n1+1);
+    for(int i_n2 =0; i_n2<items_n1;i_n2++)
+    {
+      /// le resultat d'un des onglets
+      QWidget * wdg_n2 = new QWidget;
+
+      /// cet onglet aura d'autres onglets (N2)
+      ///  Repartitions/Selections
+      tab_N2[i_n2]=new QTabWidget;
+
+      tab_N1[i_n1]->addTab(wdg_n2,tr(names_N2[i_n2].toUtf8()));
+
+      /// Faire le dessin des objets dans l'onglet
+      design_n2[i_n2]=(this->*ptrFunc[i_n2])(i_n1, tb_src, tb_ref, key);
+
+      /// rattacher les objets au widget qui contient
+      /// les resultat de cet onglet
+      wdg_n2->setLayout(design_n2[i_n2]);
+    }
+
+    /// tous les onglets N2 ont ete cree
+    /// Rattacher la reponse au widget conteneur N-1
+    design_n1[i_n1]->addWidget(tab_N1[i_n1],0,0,Qt::AlignLeft|Qt::AlignTop);
+
+    wdg_n1->setLayout(design_n1[i_n1]);
+  }
+
+  lay_return->addWidget(tab_N0,0,0,Qt::AlignLeft|Qt::AlignTop);
 
   return lay_return;
 
@@ -2440,7 +2565,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(int fake)
     sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_Ensemble_1),msg1);
 
 #ifndef QT_NO_DEBUG
-    qDebug() << sqlReq;
+	 qDebug() << sqlReq;
 #endif
 
 	 status = query.exec(sqlReq);
@@ -2687,7 +2812,7 @@ QString CreatreTitle(stCurDemande *pConf)
     {
 
 #ifndef QT_NO_DEBUG
-      qDebug()<< "Aucune selection active pour i="<<i;
+		qDebug()<< "Aucune selection active pour i="<<i;
 #endif
 
 	 }
@@ -2754,12 +2879,14 @@ QString SyntheseGenerale::TrouverTirages(int col, QString str_nb, QString st_tir
 void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 {
   QTableView *view = qobject_cast<QTableView *>(sender());
+  bool getLimites = false;
 
   QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
   QAbstractTableModel *sqm_tmp = NULL;
 
   if(view->objectName().contains("new")){
     sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
+    getLimites = true;
   }
   else{
     sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
@@ -2783,9 +2910,12 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
   }
 
   int col = index.column();
-  if(col <b_min || col >= b_max){
-    return;
+  if(getLimites){
+    if(col <b_min || col >= b_max){
+      return;
+    }
   }
+
   QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
   int nb_item = curOnglet->count();
 
@@ -3172,7 +3302,7 @@ count(*)  as T,
 	#endif
 
 
-   return st_query;
+	return st_query;
 
  }
 

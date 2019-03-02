@@ -176,6 +176,9 @@ private:
     QTableView * TbvResume_tot(int zn, QString tb_read);
     void mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_total);
 
+    QGridLayout* Vbox_Analyse(int zn, QString tb_src, QString tb_ref, QString key);
+    QGridLayout* Vbox_Resume(int zn, QString tb_src, QString tb_ref, QString key);
+
     QTableView * TbvAnalyse_brc(int zn, QString source, QString definition, QString key);
     QTableView * TbvResume_brc(int zn, QString tb_in);
     void FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete, QString tb_total);
