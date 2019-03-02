@@ -867,9 +867,9 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_z2(int dst)
   qtv_tmp->setModel(m);
   qtv_tmp->verticalHeader()->hide();
   for(int j=0;j<2;j++)
-    qtv_tmp->setColumnWidth(j,30);
+    qtv_tmp->setColumnWidth(j,28);
   for(int j=2;j<=sqm_bloc1_2->columnCount();j++)
-    qtv_tmp->setColumnWidth(j,LCELL);
+    qtv_tmp->setColumnWidth(j,28);
 
 
   // Ne pas modifier largeur des colonnes
@@ -2007,7 +2007,7 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_
   qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
   qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
-  //qtv_tmp->verticalHeader()->hide();
+  qtv_tmp->verticalHeader()->hide();
   //qtv_tmp->hideColumn(0);
   //qtv_tmp->hideColumn(1);
   int nb_col = sqm_tmp->columnCount();

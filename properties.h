@@ -1,7 +1,10 @@
 #ifndef PROPERTIES_H
 #define PROPERTIES_H
 
-#define SET_DBG_LIVE    false
+#ifdef QT_NO_DEBUG
+#define SET_DBG_LIVE    true
+#endif
+
 #define SET_DBG_LEV1    false
 #define SET_DBG_LEV2    true
 

@@ -265,6 +265,8 @@ void BVisuResume::setEditorData(QWidget *editor, const QModelIndex &index) const
 
     QString sval = (index.sibling(index.row(),COL_VISU_RESUME)).data().toString();
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+
+
     QString msg = "select t1.c,t2.c as Cb,t1.bc, t1.T, t1.b,T1.tb,"
                   "printf(\"%.2f%%\",((t1.tb*100)/t1.t)) as 'Tb/T %',"
                   "printf(\"%.2f%%\",((t2.c*100)/65)) as 'Ce %' "
@@ -275,12 +277,14 @@ void BVisuResume::setEditorData(QWidget *editor, const QModelIndex &index) const
                   +") as t2 "
                    "WHERE (t1.bc ="
                   +sval
-                  +" AND t1.b = t2.b) ORDER by t1.t DESC , t1.tb DESC";
+                  +" AND t1.b = t2.b)"
+                  "ORDER by t1.t DESC , t1.tb DESC, 'Ce %' DESC";
 #ifndef QT_NO_DEBUG
     qDebug() << "Combo :" << msg;
 #endif
 
     sqm_tmp->setQuery(msg,db_0);
+
 
     /*
     //sourceView->resizeColumnsToContents();
@@ -294,6 +298,13 @@ void BVisuResume::setEditorData(QWidget *editor, const QModelIndex &index) const
 */
     //sourceView->header()->hide();
     //sourceView->resizeColumnToContents(0);
+    /*
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
+    sourceView->setModel(m);
+    */
+
     tmp_combo->setModel(sqm_tmp);
 
   }
@@ -320,10 +331,21 @@ void BVisuResume::updateEditorGeometry(QWidget *editor,
 void myCombo::showPopup() {
   QComboBox::showPopup();
 
+
   QTableView *popup = this->findChild<QTableView*>();
   for(int i = 0; i<= COL_VISU_RESUME+1;i++){
     popup->hideColumn(i);
   }
   popup->verticalHeader()->hide();
   popup->resizeColumnsToContents();
+  popup->setSortingEnabled(true);
+
+
+
+  QSortFilterProxyModel *m=new QSortFilterProxyModel();
+  m->setDynamicSortFilter(true);
+  m->setSourceModel(this->model());
+  popup->setModel(m);
+
+
 }
