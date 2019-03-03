@@ -38,6 +38,9 @@
 #include "lescomptages.h"
 #include "compter.h"
 
+#include "bvisuresume.h"
+#include "bvisuresume_sql.h"
+
 #include "mainwindow.h"
 
 #include "cbarycentre.h"
@@ -1556,7 +1559,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb
     //QSqlQueryModel *sqm_tmp =new QSqlQueryModel;
     QString msg = "select * from "+tb_out+";";
 
-    st_sqlmqDetailsNeeds val;
+    sqlqmDetails::st_sqlmqDetailsNeeds val;
     int b_min=-1;
     int b_max=-1;
     val.ori = this;
@@ -1682,7 +1685,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
 
   // Renommer le nom des colonnes
 
-  st_sqlmqDetailsNeeds val;
+  sqlqmDetails::st_sqlmqDetailsNeeds val;
   int b_min=-1;
   int b_max=-1;
   val.ori = this;
@@ -1696,7 +1699,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
 
   mysortModel = qobject_cast<QSortFilterProxyModel *>( qtv_tmp->model());
 
-  int nbcol = sqm_tmp->columnCount();
+  int nbCol = sqm_tmp->columnCount();
 
   qtv_tmp->setSortingEnabled(true);
   qtv_tmp->sortByColumn(COL_VISU_ECART-1,Qt::DescendingOrder);
@@ -1707,20 +1710,26 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
   qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
   qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
   qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked);
-  qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
 
 
   qtv_tmp->verticalHeader()->hide();
   qtv_tmp->hideColumn(0);
   //qtv_tmp->hideColumn(1);
-#if 0
-  for(int i = 0; i<= COL_VISU_RESUME+2;i++){
-    qtv_tmp->setColumnWidth(i,28);
-  }
-#endif
-  for(int j=0;j<sqm_tmp->columnCount();j++){
+  for(int j=0;j<=nbCol+1;j++){
     qtv_tmp->setColumnWidth(j,28);
   }
+  qtv_tmp->setFixedSize(450,CHauteur1);
+  /*
+  QSize a = qtv_tmp->sizeHint();
+  if(a.isValid()){
+    qtv_tmp->setFixedSize(a.width(),CHauteur1);
+  }
+  else{
+    qtv_tmp->setFixedSize(500,CHauteur1);
+  }
+  */
+  qtv_tmp->horizontalHeader()->setStretchLastSection(true);
+
 
 
   // Ne pas modifier largeur des colonnes
@@ -1950,7 +1959,7 @@ void SyntheseGenerale::FaireResume(QTableView * qtv_tmp, QString tb_source, QStr
                  +".BC="
                  +tb_source+".B)";
   if((isOk = query.exec(msg))){
-    stBVisuResume_sql a;
+    BVisuResume_sql::stBVisuResume_sql a;
     a.cnx = db_0.connectionName();
     a.tb_rsm = tb_write;
     a.tb_tot = tb_total;
@@ -2004,7 +2013,7 @@ QTableView * SyntheseGenerale::TbvResume_tot(int zn, QString tb_in)
     {
       /// La table existe faire le resume
       if((isOk = query.exec(msg[1]))){
-        stBVisuResume_sql a;
+        BVisuResume_sql::stBVisuResume_sql a;
         a.cnx = db_0.connectionName();
         a.tb_rsm =tb_write;
         a.tb_tot = tb_source;
@@ -2037,7 +2046,7 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_
   QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(qtv_tmp->model()) ;
   BVisuResume_sql *sqm_tmp = qobject_cast<BVisuResume_sql*>(m->sourceModel());
 
-  prmBVisuResume a;
+  BVisuResume::prmBVisuResume a;
   a.cnx = db_0.connectionName();
   a.tb_rsm = qtv_tmp->objectName();
   a.tb_tot = tb_total;
@@ -2091,31 +2100,6 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_zn(int dst)
   int tot_zn = 2;
   QString tb_src = "RefTirages";
   QString tb_ref = "Bnrz";
-
-  /*
-  QTableView ** qtv_tmp_1 = new QTableView *[tot_zn];
-  QTableView ** qtv_tmp_2 = new QTableView *[tot_zn];
-  for(int zn=0;zn<tot_zn;zn++){
-    QString key = "z"+QString::number(zn+1);
-    qtv_tmp_1[zn] = TbvAnalyse_tot(zn,tb_src,tb_ref,key);
-    qtv_tmp_2[zn] = TbvResume_tot(zn,tb_src);
-  }
-
-
-  QVBoxLayout *vb_tmp = new QVBoxLayout;
-  QLabel * lab_tmp_1 = new QLabel;
-  QLabel * lab_tmp_2 = new QLabel;
-
-  lab_tmp_1->setText("Repartitions");
-  vb_tmp->addWidget(lab_tmp_1,0,Qt::AlignLeft|Qt::AlignTop);
-  vb_tmp->addWidget(qtv_tmp_1[0],0,Qt::AlignLeft|Qt::AlignTop);
-
-  lab_tmp_2->setText("Selections Possible");
-  vb_tmp->addWidget(lab_tmp_2,0,Qt::AlignLeft|Qt::AlignTop);
-  vb_tmp->addWidget(qtv_tmp_2[0],0,Qt::AlignLeft|Qt::AlignTop);
-
-  lay_return->addLayout(vb_tmp,0,0);
-*/
 
   // Onglet pere
   QTabWidget *tab_N0 = new QTabWidget;

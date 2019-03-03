@@ -13,6 +13,7 @@
 #include <QTableView>
 
 #include "sqlqmdetails.h"
+#include "bordcolor.h"
 
 class BPopupColor : public QStyledItemDelegate
 {

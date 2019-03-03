@@ -23,11 +23,11 @@
 
 
 namespace NE_Analyses{
-typedef enum _les_tableaux
-{
+  typedef enum _les_tableaux
+  {
     bToutes,   /// toutes les boubles
     bFini    /// fin de la liste
-}E_Syntese;
+  }E_Syntese;
 }
 
 #define CTXT_SELECTION  "selection b:aucun - e:aucun - c:aucun - g:aucun - ba:aucun"
@@ -35,21 +35,21 @@ typedef enum _les_tableaux
 class B_ActFrMdlIndex:public QAction //Barreau_ActionFromModelIndex
 {
     Q_OBJECT
-public:
+  public:
     B_ActFrMdlIndex(const QModelIndex &index,const QString &label,QObject * parent =0,...)
-        :QAction(label,parent), m_index(index)
+      :QAction(label,parent), m_index(index)
     {connect(this, SIGNAL(triggered()), this, SLOT(onTriggered()));}
 
-protected Q_SLOTS:
+  protected Q_SLOTS:
     void onTriggered()
     {
-        emit sig_SelectionTirage(m_index,0);
+      emit sig_SelectionTirage(m_index,0);
     }
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void sig_SelectionTirage(const QModelIndex &my_index, int val);
 
-private:
+  private:
     QModelIndex m_index;
 };
 
@@ -57,7 +57,7 @@ class SyntheseGenerale : public QObject
 {
     Q_OBJECT
 
-private:
+  private:
 
     //stCurDemande *pLaDemande;
     B_ActFrMdlIndex *MonTraitement;
@@ -101,7 +101,7 @@ private:
 
     //QStandardItemModel *gsim_AnalyseUnTirage;
 
-public:
+  public:
     SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt, int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetListeTirages(void);
@@ -114,7 +114,7 @@ public:
 #endif
     // penser au destructeur pour chaque pointeur
 
-public slots:
+  public slots:
 #ifdef USE_SG_CODE
     void slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid);
 #endif
@@ -138,10 +138,10 @@ public slots:
     void slot_wdaFilter(int val);
 
 
-private slots:
+  private slots:
     void slot_ShowBouleForNewDesign(const QModelIndex & index);
 
-private:
+  private:
     QString A1_0_TrouverLignes(int zn, QString tb_src, QString tb_ref, QString key);
     QString A1_1_CalculerEcart(QString str_reponses);
     QString A1_2_RegrouperEcart(QString str_reponses);
@@ -188,10 +188,10 @@ private:
     bool Contruire_Tbl_brc(int zn, QString tbl_poids_boules, QString tb_ref, QString key, QString tbl_out);
     bool A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poids_boules);
     bool RajouterCalculBarycentreDansAnalyses(int zn,
-                                                  QString tb_src ,
-                                                  QString tb_ana,
-                                                  QString tb_ref ,
-                                                  QString ky_brc);
+                                              QString tb_src ,
+                                              QString tb_ana,
+                                              QString tb_ref ,
+                                              QString ky_brc);
 
 
 

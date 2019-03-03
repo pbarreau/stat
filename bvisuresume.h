@@ -10,22 +10,23 @@
 #include <QSqlDatabase>
 
 #include "sqlqmdetails.h"
+#include "bordcolor.h"
 
 #define COL_VISU_RESUME 2
 #define COL_VISU_COMBO  5
-
-typedef struct _prmBVisuResume{
-    QString cnx;
-    QString tb_rsm;
-    QString tb_tot;
-    QString tb_cld; /// Table colors def
-
-} prmBVisuResume;
 
 class BVisuResume:public QStyledItemDelegate
 {
     Q_OBJECT
 public:
+    struct prmBVisuResume{
+        QString cnx;
+        QString tb_rsm;
+        QString tb_tot;
+        QString tb_cld; /// Table colors def
+
+    } ;
+
     explicit BVisuResume(prmBVisuResume param, QTableView *parent = 0);
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const override;
@@ -61,39 +62,6 @@ private:
 
 };
 
-typedef struct _stBVisuResume_sql
-{
-    QString cnx;
-    QString sql;
-    QString tb_rsm; /// Working on Table
-    QString tb_tot; /// Working on Table
-    QTableView *view;
-    SyntheseGenerale *ori; /// origine
-    int *b_min;
-    int *b_max;
-}stBVisuResume_sql;
-
-class BVisuResume_sql : public QSqlQueryModel
-{
-    Q_OBJECT
-public:
-    explicit BVisuResume_sql(stBVisuResume_sql param,QObject *parent = 0);
-
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
-    QVariant data(const QModelIndex &index, int role) const override;
-    //int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    //int columnCount(const QModelIndex &parent = QModelIndex()) const;
-
-    //bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-
-
-
-
-private:
-    QSqlDatabase db_0;
-    QString tb_tot_src;
-    QString tb_rsm_src;
-};
 
 class myCombo:public QComboBox{
     Q_OBJECT

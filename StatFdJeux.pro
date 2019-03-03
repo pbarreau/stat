@@ -80,7 +80,11 @@ SOURCES += \
     bvisuresume.cpp \
     btablevieweditor.cpp \
     bnewcombo.cpp \
-    bpopupcolor.cpp
+    bpopupcolor.cpp \
+    btbvrepartition.cpp \
+    bordcolor.cpp \
+    bdelegatecouleurfond.cpp \
+    bvisuresume_sql.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -124,7 +128,11 @@ HEADERS  += \
     properties.h \
     btablevieweditor.h \
     bnewcombo.h \
-    bpopupcolor.h
+    bpopupcolor.h \
+    btbvrepartition.h \
+    bordcolor.h \
+    bdelegatecouleurfond.h \
+    bvisuresume_sql.h
 
 
 FORMS    += mainwindow.ui \
