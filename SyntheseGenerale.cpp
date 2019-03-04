@@ -1220,7 +1220,7 @@ bool SyntheseGenerale::Contruire_Tbl_brc(int zn,
                                          QString tb_src ,
                                          QString tb_ana,
                                          QString key_brc,
-                                         QString tbl_out )
+                                         QString tbl_dst )
 {
   bool isOk = true;
 
@@ -1242,8 +1242,83 @@ bool SyntheseGenerale::Contruire_Tbl_brc(int zn,
   st_requete = A4_1_CalculerEcart(st_requete);
   st_requete = A4_2_RegrouperEcart(st_requete);
 
-  isOk = Contruire_Executer(tbl_out, st_requete);
+  if((isOk = Contruire_Executer(tbl_dst,st_requete))){
+    isOk = MarquerDerniers_brc(zn,  tb_src, tb_ana ,  key_brc,tbl_dst);
+  }
 
+
+  return isOk;
+}
+
+bool SyntheseGenerale::MarquerDerniers_brc(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
+{
+  bool isOk = true;
+  QSqlQuery query(db_0);
+
+  /// Mettre info sur 2 derniers tirages
+  for(int dec=0; (dec <2) && isOk ; dec++){
+    int val = 1<<dec;
+    QString sdec = QString::number(val);
+    QString msg []={
+      {"SELECT "+key+" from ("+tb_ref
+       +") as t2 where(id = "+sdec+")"
+      },
+      {"update " + tbl_dst
+       + " set F=(case when f is (null or 0) then 0x"
+       +sdec+" else(f|0x"+sdec+") end) "
+       "where (B in ("+msg[0]+"))"}
+    };
+
+    int taille = sizeof(msg)/sizeof(QString);
+    #ifndef QT_NO_DEBUG
+    for(int i = 0; i< taille;i++){
+      qDebug() << "msg ["<<i<<"]: "<<msg[i];
+    }
+    #endif
+    isOk = query.exec(msg[taille-1]);
+  }
+
+  /// --------------------------------
+  /// Mettre marqueur sur b+1 et b-1
+  for(int dec=0; (dec <2) && isOk ; dec++){
+    int d[2]={+1,-1}; // voir BDelegateCouleurFond
+
+
+	 QString sdec = QString::number(1<<(4+dec),16);
+	 QString msg []={
+		{"SELECT "+key+" from ("+tb_ref
+		 +") as t1 where(t1.id = 1)"
+		},
+		{
+		  "select t1.id,t1.b from ("+tbl_dst+") as t1,("
+		  +msg[0]+") as t2 where(t2.bc=t1.b)"
+		},
+		{
+		  "select t1.id FROM("
+		  +tbl_dst
+		  +")as t1,("
+		  + msg[1]
+		  +") as t2 where(t1.id=t2.id+"+QString::number(d[dec])+")"
+		},
+		{"update " + tbl_dst
+		 + " set F=(case when f is (null or 0) then 0x"
+		 +sdec+" else(f|0x"+sdec+") end) "
+		 "where (id in ("+msg[2]+"))"}
+	 };
+
+    int taille = sizeof(msg)/sizeof(QString);
+    #ifndef QT_NO_DEBUG
+    for(int i = 0; i< taille;i++){
+      qDebug() << "msg ["<<i<<"]: "<<msg[i];
+    }
+    #endif
+    isOk = query.exec(msg[taille-1]);
+  }
+
+
+  if(query.lastError().isValid()){
+    DB_Tools::DisplayError("SyntheseGenerale::",&query,"MarquerDerniers");
+  }
 
   return isOk;
 }

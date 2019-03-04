@@ -176,7 +176,7 @@ void BDelegateStepper::paint(QPainter *painter, const QStyleOptionViewItem &opti
                 {
                     painter->setBrush(Qt::yellow);
                 }
-                painter->drawEllipse(c,cx/2,cy/2);
+                painter->drawEllipse(c,cx/2,cy/4);
                 painter->restore();
             }
 

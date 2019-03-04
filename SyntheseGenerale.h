@@ -152,6 +152,7 @@ class SyntheseGenerale : public QObject
     QString A4_2_RegrouperEcart(QString str_reponses);
 
     bool MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst);
+    bool MarquerDerniers_brc(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst);
 
 
     bool Contruire_Executer(QString tbl_dst, QString st_requete);
