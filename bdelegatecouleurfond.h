@@ -22,6 +22,7 @@ class BDelegateCouleurFond : public QItemDelegate
     Q_OBJECT
 
 public:
+    enum Columns { CelInfo=3};
     struct st_ColorNeeds{
         QString cnx;
         QString wko;

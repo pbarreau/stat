@@ -151,6 +151,9 @@ class SyntheseGenerale : public QObject
     QString A4_1_CalculerEcart(QString str_reponses);
     QString A4_2_RegrouperEcart(QString str_reponses);
 
+    bool MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst);
+
+
     bool Contruire_Executer(QString tbl_dst, QString st_requete);
 
     //QString OrganiseChampsDesTirages(QString st_base_reference);

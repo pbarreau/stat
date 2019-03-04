@@ -1911,9 +1911,9 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
   };
 
 
-  int taille = sizeof(st_requetes)/sizeof(QString);
 
 #ifndef QT_NO_DEBUG
+  int taille = sizeof(st_requetes)/sizeof(QString);
   for(int i = 0; i< taille;i++){
     qDebug() << "st_requetes ["<<i<<"]: "<<st_requetes[i];
   }
@@ -3388,9 +3388,60 @@ count(*)  as T,
    st_requete = A1_1_CalculerEcart(st_requete);
    st_requete = A1_2_RegrouperEcart(st_requete);
 
-   isOk = Contruire_Executer(tbl_dst,st_requete);
+   if((isOk = Contruire_Executer(tbl_dst,st_requete))){
+     isOk = MarquerDerniers(zn,  tb_src, tb_ref ,  key,tbl_dst);
+   }
 
    return isOk;
+ }
+
+ bool SyntheseGenerale::MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
+{
+	bool isOk = true;
+	QSqlQuery query(db_0);
+
+	int len_zn = pMaConf->limites[zn].len;
+	QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
+	QString st_critere = "";
+	for(int i=0;i<len_zn;i++){
+	  st_critere = st_critere + ref.arg(i+1);
+	  if(i<(len_zn-1)){
+		 st_critere=st_critere+QString(",");
+	  }
+	}
+
+	/// Mettre info sur 2 derniers tirages
+	for(int dec=0; (dec <2) && isOk ; dec++){
+	  int val = 1<<dec;
+	  QString sdec = QString::number(val);
+	  QString msg []={
+		 {"SELECT "+st_critere+" from ("+tb_src
+		  +") as t2 where(id = "+sdec+")"
+		 },
+		 {
+			"select t1."+key+" as B from ("+tb_ref+") as t1,("
+			+msg[0]+") as t2 where(t1."+key+" in ("
+			+st_critere+"))"
+		 },
+		 {"update " + tbl_dst
+		  + " set F=(case when f is (null or 0) then 0x"
+		  +sdec+" else(f|0x"+sdec+") end) "
+		  "where (B in ("+msg[1]+"))"}
+	  };
+
+     int taille = sizeof(msg)/sizeof(QString);
+     #ifndef QT_NO_DEBUG
+     for(int i = 0; i< taille;i++){
+       qDebug() << "msg ["<<i<<"]: "<<msg[i];
+     }
+     #endif
+     isOk = query.exec(msg[taille-1]);
+   }
+
+	if(query.lastError().isValid()){
+	  DB_Tools::DisplayError("SyntheseGenerale::",&query,"MarquerDerniers");
+	}
+	return(isOk);
  }
 
  bool SyntheseGenerale::Contruire_Executer(QString tbl_dst, QString st_requete)

@@ -11,6 +11,17 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
     ///QStyleOptionViewItem maModif(option);
 
 
+    if(col == Columns::CelInfo){
+      int val_f = (index.sibling(
+                     index.row(),
+                     index.model()->columnCount()-1)
+                   ).data().toInt();
+      QColor leFond;
+      if(val_f & 0x1){
+        painter->fillRect(option.rect, COULEUR_FOND_DERNIER);
+      }
+
+    }
     if(col == COL_VISU_ECART ){
         int val_col_2 = (index.sibling(index.row(),COL_VISU_ECART-1)).data().toInt();
         QColor leFond = map_FromColor.key(val_col_2);

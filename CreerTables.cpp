@@ -483,7 +483,7 @@ bool GererBase::f2_2(QString tb, QString *data)
     bool status = true;
 
     QSqlQuery q_create(db_0);
-    QString st_refTbl[] = {C_TBL_6,C_TBL_7,C_TBL_8,C_TBL_A};
+    QString st_refTbl[] = {C_TBL_6,C_TBL_7,C_TBL_8,C_TBL_A,"U_brc"};
     QString st_sqldf = ""; /// sql definition
     QString st_table = "";
 
