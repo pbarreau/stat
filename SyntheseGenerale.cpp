@@ -3438,6 +3438,46 @@ count(*)  as T,
      isOk = query.exec(msg[taille-1]);
    }
 
+   /// --------------------------------
+   /// Mettre marqueur sur b+1 et b-1
+   for(int dec=0; (dec <2) && isOk ; dec++){
+     int d[2]={+1,-1}; // voir BDelegateCouleurFond
+
+     QString ref = "(t2."+pMaConf->nomZone[zn]+"%1+%2)";
+     QString st_critere_2 = "";
+     for(int i=0;i<len_zn;i++){
+       st_critere_2 = st_critere_2 + ref.arg(i+1).arg(d[dec]);
+       if(i<(len_zn-1)){
+         st_critere_2=st_critere_2+QString(",");
+       }
+     }
+
+	  QString sdec = QString::number(1<<(4+dec),16);
+	  QString msg []={
+		 {"SELECT "+st_critere+" from ("+tb_src
+		  +") as t2 where(id = 1)"
+		 },
+		 {
+			"select t1."+key+" as B from ("+tb_ref+") as t1,("
+			+msg[0]+") as t2 where(t1."+key+" in ("
+			+st_critere_2+"))"
+		 },
+		 {"update " + tbl_dst
+		  + " set F=(case when f is (null or 0) then 0x"
+		  +sdec+" else(f|0x"+sdec+") end) "
+		  "where (B in ("+msg[1]+"))"}
+	  };
+
+     int taille = sizeof(msg)/sizeof(QString);
+     #ifndef QT_NO_DEBUG
+     for(int i = 0; i< taille;i++){
+       qDebug() << "msg ["<<i<<"]: "<<msg[i];
+     }
+     #endif
+     isOk = query.exec(msg[taille-1]);
+   }
+
+
 	if(query.lastError().isValid()){
 	  DB_Tools::DisplayError("SyntheseGenerale::",&query,"MarquerDerniers");
 	}

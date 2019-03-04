@@ -19,7 +19,35 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
   int cth = Cellrect.height();
   int cx = ctw/4;
   int cy = cth/2;
-  QPoint c(refx +(ctw/5)*4,refy + (cth/5)*4);
+  QPoint c1(refx +(ctw/5)*4,refy + (cth/6));
+  QPoint c2(refx +(ctw/5)*4,refy + (cth*5/6));
+
+  QRect r1; /// priorite
+  QRect r2; /// Last
+  QRect r3; /// previous
+  QRect r4; /// Selected
+
+  QPoint p1(refx,refy);
+  QPoint p2(refx +(ctw/3),refy+cth);
+  QPoint p3(refx+ctw,refy+(cth*2/3));
+  QPoint p4(refx +(ctw/3),refy+(cth/3));
+  QPoint p5(refx + ctw,refy);
+
+  /// Priorite
+  r1.setTopLeft(p1);
+  r1.setBottomRight(p2);
+
+  /// Last
+  r2.setBottomLeft(p2);
+  r2.setTopRight(p3);
+
+  /// Previous
+  r3.setBottomRight(p3);
+  r3.setTopLeft(p4);
+
+  ///Selected
+  r4.setBottomLeft(p4);
+  r4.setTopRight(p5);
 
   QPolygon triangle;
   QPoint t1(refx,refy);
@@ -34,36 +62,42 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
                    index.model()->columnCount()-1)
                  ).data().toInt();
 
-    if(val_f & Filtre::isLast){
-      painter->save();
-      painter->fillRect(option.rect, COULEUR_FOND_DERNIER);
-      painter->restore();
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing, true);
+
+    if( (val_f & Filtre::isLast)){
+      painter->fillRect(r2, COULEUR_FOND_DERNIER);
     }
 
     if(val_f & Filtre::isPrevious){
-      // montrer un cercle
-      painter->save();
-      painter->setRenderHint(QPainter::Antialiasing, true);
-      painter->setBrush(COULEUR_FOND_AVANTDER);
-      painter->drawEllipse(c,cx/2,cy/4);
-      painter->restore();
+      painter->fillRect(r3, COULEUR_FOND_AVANTDER);
     }
 
     if(val_f & Filtre::isWanted){
-      /// montrer triangle
-      painter->save();
-      painter->setRenderHint(QPainter::Antialiasing, true);
-
-      painter->setBrush(COULEUR_FOND_FILTRE);
-      painter->drawPolygon(triangle);
-      painter->restore();
+      painter->fillRect(r4, COULEUR_FOND_FILTRE);
     }
 
     if(val_f & Filtre::isNever){
-      painter->save();
-      painter->fillRect(option.rect, COULEUR_FOND_JAMSORTI);
-      painter->restore();
+      painter->fillRect(r2, COULEUR_FOND_JAMSORTI);
     }
+
+    /// Mettre les cercles maintenant car les fonds
+    /// snt deja dessinee
+    if(val_f & Filtre::isPlusOne||
+       (val_f & Filtre::isMinusOne)){
+
+      if((val_f & Filtre::isPlusOne)){
+        painter->setBrush(Qt::green);
+        painter->drawEllipse(c1,cx/2,cy/4);
+      }
+
+      if((val_f & Filtre::isMinusOne)){
+        painter->setBrush(Qt::red);
+        painter->drawEllipse(c2,cx/2,cy/4);
+      }
+    }
+
+    painter->restore();
   }
 
   if(col == COL_VISU_ECART ){
@@ -160,6 +194,35 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
     else{
       msg2 = "Error !!";
     }
+  }
+  if(index.column()==Columns::CelInfo){
+    msg2="";
+    int val_f = (index.sibling(
+                   index.row(),
+                   index.model()->columnCount()-1)
+                 ).data().toInt();
+
+    if( (val_f & Filtre::isLast)){
+      msg2 = msg2+ "presente au dernier tirage\n";
+    }
+    if(val_f & Filtre::isPrevious){
+      msg2 = msg2+ "presente a avant dernier tirage\n";
+    }
+    if(val_f & Filtre::isWanted){
+      msg2 = msg2+ "prise comme filtre\n";
+    }
+    if(val_f & Filtre::isNever){
+      msg2 = msg2+ "jamais sortie dans cette couverture\n";
+    }
+    if((val_f & Filtre::isPlusOne)){
+      msg2 = msg2+ "superieure de 1 d'une boule du tirage precedent\n";
+    }
+    if((val_f & Filtre::isMinusOne)){
+      msg2 = msg2+ "inferieure de 1 d'une boule du tirage precedent\n";
+    }
+
+
+
   }
 
   QString msg = msg1+QString("\n")+msg2;
