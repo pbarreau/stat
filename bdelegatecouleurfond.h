@@ -9,13 +9,12 @@
 #include <QString>
 #include <QSqlDatabase>
 
+#include <QPointF>
+#include <QPolygonF>
+#include <QRect>
+
 #include "sqlqmdetails.h"
 #include "bordcolor.h"
-
-
-
-
-
 
 class BDelegateCouleurFond : public QItemDelegate
 {
@@ -23,6 +22,8 @@ class BDelegateCouleurFond : public QItemDelegate
 
 public:
     enum Columns { CelInfo=3};
+    enum Filtre  {isLast=1,isPrevious=1<<1, isWanted=1<<2, isNever=1<<3,
+                 isPlusOne=1<<4, isMinusOne=1<<5};
     struct st_ColorNeeds{
         QString cnx;
         QString wko;
@@ -53,15 +54,16 @@ Q_SIGNALS:
 
 private:
     QSqlDatabase db_0;
-    sqlqmDetails *origine; //sqlqmDetails
+    sqlqmDetails *origine;
     QString working_on;
     int b_min;
     int b_max;
     int len;
     int nb_colors;
-    QColor *val_colors; // static
+    QColor *val_colors;
     QColor *resu_color;
-    QMap<BOrdColor,int> map_FromColor; // static
+    QPolygonF starPolygon;
+    QMap<BOrdColor,int> map_FromColor;
 };
 
 
