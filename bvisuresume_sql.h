@@ -23,8 +23,8 @@ public:
         QString tb_tot; /// Working on Table
         QTableView *view;
         SyntheseGenerale *ori; /// origine
-        int *b_min;
-        int *b_max;
+        //int *b_min;
+        //int *b_max;
     };
 
     explicit BVisuResume_sql(stBVisuResume_sql param,QObject *parent = 0);

@@ -1,5 +1,7 @@
 #include <QToolTip>
 
+#include <QSqlQuery>
+
 #include "bdelegatecouleurfond.h"
 #include "db_tools.h"
 
@@ -56,7 +58,7 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
   triangle << t1<<t2<<t3<<t1;
 
 
-  if(col == Columns::CelInfo){
+  if(col == Columns::vFilters){
     int val_f = (index.sibling(
                    index.row(),
                    index.model()->columnCount()-1)
@@ -100,8 +102,8 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
     painter->restore();
   }
 
-  if(col == COL_VISU_ECART ){
-    int val_col_2 = (index.sibling(index.row(),COL_VISU_ECART-1)).data().toInt();
+  if(col == Columns::vEcart ){
+    int val_col_2 = (index.sibling(index.row(),Columns::keyColors)).data().toInt();
     QColor leFond = map_FromColor.key(val_col_2);
 #ifndef QT_NO_DEBUG
     QString msg = "Lecture couleur : "+ QString::number(val_col_2).rightJustified(2,'0')
@@ -118,18 +120,26 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
     painter->fillRect(option.rect, leFond);
   }
 
-  if(col >= b_min && col < b_max){
-    painter->fillRect(option.rect, COULEUR_FOND_DETAILS);
+  if(col == Columns::TotalElement || col == Columns::EcartCourant){
+    painter->fillRect(option.rect, COULEUR_FOND_TOTAL);
   }
 
-  if(col >= b_max && col < b_max+len){
+  if((col > Columns::TotalElement) && (col <= Columns::TotalElement+nbJ)){
+    //painter->save();
+    painter->fillRect(option.rect, COULEUR_FOND_DETAILS);
+    //painter->restore();
+  }
+
+  if(col > Columns::EcartCourant && col < Columns::TotalElement){
+    //painter->save();
     painter->fillRect(option.rect, COULEUR_FOND_ECARTS);
+    //painter->restore();
   }
 
   QItemDelegate::paint(painter, option, index);
 }
 
-bool BDelegateCouleurFond::isOnDisk(int centre, int pos)const
+bool BDelegateCouleurFond::checkValue(int centre, int pos)const
 {
   /// On regarde si sur disque de rayon centre
   bool ret_val = false;
@@ -165,9 +175,9 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
   QVariant item1 = sqm_tmp->data(index,Qt::BackgroundRole);
 
   QString msg1="";
-  QString s_nb = index.model()->index(index.row(),COL_VISU_ECART).data().toString();
+  QString s_nb = index.model()->index(index.row(),Columns::vEcart).data().toString();
   msg1 = QString("Boule %1").arg(s_nb);
-  if (col >=b_min && col <=b_max+6)
+  if (col >=Columns::EcartCourant && col <=Columns::TotalElement+nbJ)
   {
     QString s_va = index.model()->index(index.row(),col).data().toString();
     QString s_hd = headName;
@@ -175,8 +185,8 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
   }
 
   QString msg2 = "";
-  if(index.column()==COL_VISU_ECART){
-    int val_col_2 = (index.sibling(index.row(),COL_VISU_ECART-1)).data().toInt();
+  if(index.column()==Columns::vEcart){
+    int val_col_2 = (index.sibling(index.row(),Columns::keyColors)).data().toInt();
     QColor leFond = map_FromColor.key(val_col_2);
     int ligne = map_FromColor.value(leFond,-1);
     double p = (ligne*100)/nb_colors;
@@ -195,7 +205,7 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
       msg2 = "Error !!";
     }
   }
-  if(index.column()==Columns::CelInfo){
+  if(index.column()==Columns::vFilters){
     msg2="";
     int val_f = (index.sibling(
                    index.row(),
@@ -237,38 +247,97 @@ void BDelegateCouleurFond::slot_AideToolTip(const QModelIndex & index)
 }
 
 BDelegateCouleurFond::BDelegateCouleurFond(st_ColorNeeds param, QTableView *parent)
-  :QItemDelegate(parent),b_min(param.b_min),b_max(param.b_max),len(param.len),origine(param.ori)
+  :QItemDelegate(parent),origine(param.ori)
 {
   db_0 = QSqlDatabase::database(param.cnx);
   working_on = param.wko;
 
-  /// Mise en place d'un toolstips
-  parent->setMouseTracking(true);
-  connect(parent,
-          SIGNAL(entered(QModelIndex)),
-          this,SLOT(slot_AideToolTip(QModelIndex)));
+  nbE = Columns::TotalElement-Columns::EcartCourant-1;;
+  nbJ = param.ori->columnCount() -Columns::TotalElement -3;
 
+  nb_colors = 1+(pow(2,nbE)*2);/// Cas case blanche
+  QString tbl_def = QString("pCouleurs_")
+                    + QString::number(nb_colors);
 
-  /*
-  /// Deeinition representation
-  starPolygon << QPointF(0.0, 0.0);
-  starPolygon << QPointF(1.0, 0.0);
-  starPolygon << QPointF(0.0, 0.5);
-*/
+  if(isTablePresent(tbl_def)){
+    /// Chargement
+    MapColorRead(tbl_def);
+  }
+  else
+  {
+    MapColorCreate();
+    MapColorWrite(tbl_def);
+  }
 
-  starPolygon << QPointF(1.0, 0.5);
-  for (int i = 1; i < 5; ++i)
-    starPolygon << QPointF(0.5 + 0.5 * std::cos(0.8 * i * 3.14),
-                           0.5 + 0.5 * std::sin(0.8 * i * 3.14));
-
-  CreationTableauClefDeCouleurs();
-
-  AffectationCouleurResultat(parent);
+  MapColorApply(parent);
 
 
 }
 
-void BDelegateCouleurFond::AffectationCouleurResultat(QTableView *tbv_cible)
+bool BDelegateCouleurFond::MapColorRead(QString tbl_def)
+{
+  bool isOk = true;
+  QSqlQuery query(db_0);
+  QString msg = "Select * from "+tbl_def;
+
+  if((isOk = query.exec(msg)))
+  {
+    query.first();
+    if(query.isValid())
+    {
+      int key = -1;
+      /// La table existe
+      do{
+        key = query.value(0).toInt();
+        QString color = query.value(1).toString();
+        QColor a;
+        a.setNamedColor(color);
+        if(!(isOk=map_FromColor.contains(a))){
+          map_FromColor.insert(a,key-1);
+        }
+      }while(query.next()&& (isOk==false));
+      nb_colors = map_FromColor.size();
+      if(isOk){
+#ifndef QT_NO_DEBUG
+        qDebug()<<"Erreur : presence couleur deja la pour clef "<<key;
+#endif
+      }
+    }
+  }
+
+  if(query.lastError().isValid()){
+    DB_Tools::DisplayError("BVisuResume::",&query," recupereMapColor ");
+  }
+
+#ifndef QT_NO_DEBUG
+  QMapIterator<BOrdColor, int>  val (map_FromColor);
+  while (val.hasNext()) {
+    val.next();
+    qDebug() << val.key() << ": " << val.value() << endl;
+  }
+  ;
+#endif
+
+  return isOk;
+}
+
+bool BDelegateCouleurFond::isTablePresent(QString tb_name)
+{
+  bool isOk = true;
+  QSqlQuery query(db_0);
+  QString msg = "SELECT name FROM sqlite_master "
+                "WHERE type='table' AND name='"+tb_name+"';";
+
+  if((isOk = query.exec(msg)))
+  {
+    if((isOk=query.first())){
+      isOk = query.isValid();
+    }
+  }
+  return isOk;
+}
+
+void BDelegateCouleurFond::MapColorApply(QTableView *tbv_cible)
 {
   bool isOk = true;
   QSqlQuery query(db_0);
@@ -281,7 +350,7 @@ void BDelegateCouleurFond::AffectationCouleurResultat(QTableView *tbv_cible)
 
     // Pour le table view
     QModelIndex Ec = sqm_tmp->index(row,0);
-    QColor leFond = CalculerCouleur(Ec);
+    QColor leFond = getColorForValue(Ec);
     resu_color[row]=leFond;
 
 #ifndef QT_NO_DEBUG
@@ -337,18 +406,17 @@ void BDelegateCouleurFond::AffectationCouleurResultat(QTableView *tbv_cible)
   }
 
 }
-void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
+void BDelegateCouleurFond::MapColorCreate(void)
 {
   /// creation d'un tableau des couleurs
   /// pour chacun des calculs d'ecart
   ///  + la couche alpha
-  nb_colors = 1+(pow(2,len-1)*2);/// Cas case blanche
 
   int mid_color = nb_colors/2;
   int step_colors = 255/mid_color;
   int alpha_start = 90;
   int step_alpha = (255-alpha_start)/nb_colors;
-  val_colors = new QColor[nb_colors];
+  //val_colors = new QColor[nb_colors];
 
 #ifndef QT_NO_DEBUG
   qDebug() << "Couleur : id (R,V,B,A)\n";
@@ -359,7 +427,7 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
   tmp_color.setGreen(255);
   tmp_color.setBlue(255);
   tmp_color.setAlpha(255);
-  val_colors[0]=tmp_color;
+  //val_colors[0]=tmp_color;
   map_FromColor.insert(tmp_color,0);
 #ifndef QT_NO_DEBUG
 
@@ -372,7 +440,6 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
 #endif
 
   for(int i = 1; i< nb_colors; i++){
-
 
     if(i<=nb_colors/2){
       tmp_color.setGreen(i*step_colors);
@@ -398,8 +465,7 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
              << ","<<QString::number(tmp_color.alpha()).rightJustified(3,'0')
              <<")\n";
 #endif
-    val_colors[i]=tmp_color;
-    //BOrdColor a(tmp_color);
+    //val_colors[i]=tmp_color;
 
     /// Rechercher si cette couleur existe
     /// deja comme clef
@@ -430,24 +496,18 @@ void BDelegateCouleurFond::CreationTableauClefDeCouleurs(void)
   }
   ;
 #endif
-
-
-  /// Le tableau est cree, le sauver dans la base de donnees
-  SauverTableauPriotiteCouleurs();
 }
 
-bool BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
+bool BDelegateCouleurFond::MapColorWrite(QString tbl_def)
 {
   bool isOk = true;
   QSqlQuery query(db_0);
-  QString tb_name = QString("pCouleurs_")
-                    + QString::number(nb_colors);
 
   QString msg []= {
     {"SELECT name FROM sqlite_master "
-     "WHERE type='table' AND name='"+tb_name+"';"},
+     "WHERE type='table' AND name='"+tbl_def+"';"},
     {"create table if not exists "
-     + tb_name
+     + tbl_def
      +"(id integer primary key, color text)"}
   };
 
@@ -464,9 +524,9 @@ bool BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
       if((isOk = query.exec(msg[1]))){
         for(int i =0; (i < nb_colors) && isOk ;i++){
           QString str_insert = QString(" insert into ")
-                               + tb_name
+                               + tbl_def
                                + QString(" values(NULL,'")
-                               + val_colors[i].name(QColor::HexRgb)
+                               + map_FromColor.key(i).name(QColor::HexRgb)
                                +QString("')");
           isOk = query.exec(str_insert);
         }
@@ -478,13 +538,10 @@ bool BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
     DB_Tools::DisplayError("BDelegateCouleurFond::",&query," na ");
   }
 
-  if(isOk){
-    // emettre le nom du tableau des couleurs
-    emit sig_TableDesCouleurs(tb_name);
-  }
   return isOk;
 }
-QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
+
+QColor BDelegateCouleurFond::getColorForValue(const QModelIndex &index) const
 {
   QColor color;
 
@@ -495,13 +552,14 @@ QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
   int tab_pri[5]={3,4,1,2,5};
   int nb_pri = sizeof (tab_pri)/sizeof (int);
 
-  int Ec = (index.sibling(index.row(),b_max)).data().toInt();
+  int Ec = (index.sibling(index.row(),
+                          Columns::EcartCourant)).data().toInt();
   for(int i=1;i<=nb_pri;i++){
-    int centre = (index.sibling(index.row(),b_max+i)).data().toInt();
+    int centre = (index.sibling(index.row(),Columns::EcartCourant+i)).data().toInt();
     int pri = tab_pri[i-1]-1;
 
-    int item_couleur = isOnDisk(centre,Ec);
-    int item_alpha = isOnDisk(r,(centre-Ec));
+    int item_couleur = checkValue(centre,Ec);
+    int item_alpha = checkValue(r,(centre-Ec));
 
     if(i==3){
       /// Retirer cas R=Max Ecart
@@ -514,25 +572,16 @@ QColor BDelegateCouleurFond::CalculerCouleur(const QModelIndex &index) const
   }
 
   /// ----------------
-#if 0
-  if(val == 0){
-    color.setRgb(255,255,255,255);
+  if(val<nb_colors){
+    //color = val_colors[val];
+    color = map_FromColor.key(val);
   }
-  else
-#endif
-  {
-    if(val<nb_colors){
-      color = val_colors[val];
-    }
-    else{
-      /// Erreur de calcul !!
-      color.setRed(39);
-      color.setGreen(93);
-      color.setBlue(219);
-      color.setAlpha(255);
-    }
-
-
+  else{
+    /// Erreur de calcul !!
+    color.setRed(39);
+    color.setGreen(93);
+    color.setBlue(219);
+    color.setAlpha(255);
   }
 
   return color;

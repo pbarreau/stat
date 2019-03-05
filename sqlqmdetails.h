@@ -39,8 +39,8 @@ class sqlqmDetails : public QSqlQueryModel
         QString wko; /// Working on Table
         QTableView *view;
         SyntheseGenerale *ori; /// origine
-        int *b_min;
-        int *b_max;
+        int b_min;
+        int b_max;
     };
 
 
@@ -54,6 +54,7 @@ private:
     QSqlDatabase db_0;
     int b_min;
     int b_max;
+    int nbJ;
 };
 
 

@@ -41,6 +41,8 @@
 #include "bvisuresume.h"
 #include "bvisuresume_sql.h"
 
+#include "bdelegatecouleurfond.h"
+
 #include "mainwindow.h"
 
 #include "cbarycentre.h"
@@ -1270,11 +1272,11 @@ bool SyntheseGenerale::MarquerDerniers_brc(int zn, QString tb_src, QString tb_re
     };
 
     int taille = sizeof(msg)/sizeof(QString);
-    #ifndef QT_NO_DEBUG
+#ifndef QT_NO_DEBUG
     for(int i = 0; i< taille;i++){
       qDebug() << "msg ["<<i<<"]: "<<msg[i];
     }
-    #endif
+#endif
     isOk = query.exec(msg[taille-1]);
   }
 
@@ -1284,34 +1286,34 @@ bool SyntheseGenerale::MarquerDerniers_brc(int zn, QString tb_src, QString tb_re
     int d[2]={+1,-1}; // voir BDelegateCouleurFond
 
 
-	 QString sdec = QString::number(1<<(4+dec),16);
-	 QString msg []={
-		{"SELECT "+key+" from ("+tb_ref
-		 +") as t1 where(t1.id = 1)"
-		},
-		{
-		  "select t1.id,t1.b from ("+tbl_dst+") as t1,("
-		  +msg[0]+") as t2 where(t2.bc=t1.b)"
-		},
-		{
-		  "select t1.id FROM("
-		  +tbl_dst
-		  +")as t1,("
-		  + msg[1]
-		  +") as t2 where(t1.id=t2.id+"+QString::number(d[dec])+")"
-		},
-		{"update " + tbl_dst
-		 + " set F=(case when f is (null or 0) then 0x"
-		 +sdec+" else(f|0x"+sdec+") end) "
-		 "where (id in ("+msg[2]+"))"}
-	 };
+    QString sdec = QString::number(1<<(4+dec),16);
+    QString msg []={
+      {"SELECT "+key+" from ("+tb_ref
+       +") as t1 where(t1.id = 1)"
+      },
+      {
+        "select t1.id,t1.b from ("+tbl_dst+") as t1,("
+        +msg[0]+") as t2 where(t2.bc=t1.b)"
+      },
+      {
+        "select t1.id FROM("
+        +tbl_dst
+        +")as t1,("
+        + msg[1]
+        +") as t2 where(t1.id=t2.id+"+QString::number(d[dec])+")"
+      },
+      {"update " + tbl_dst
+       + " set F=(case when f is (null or 0) then 0x"
+       +sdec+" else(f|0x"+sdec+") end) "
+       "where (id in ("+msg[2]+"))"}
+    };
 
     int taille = sizeof(msg)/sizeof(QString);
-    #ifndef QT_NO_DEBUG
+#ifndef QT_NO_DEBUG
     for(int i = 0; i< taille;i++){
       qDebug() << "msg ["<<i<<"]: "<<msg[i];
     }
-    #endif
+#endif
     isOk = query.exec(msg[taille-1]);
   }
 
@@ -1631,22 +1633,48 @@ QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb
 
   if((isOk = Contruire_Tbl_brc(zn,tb_src,tb_ref,key,tb_out))){
 
+
     //QSqlQueryModel *sqm_tmp =new QSqlQueryModel;
     QString msg = "select * from "+tb_out+";";
 
     sqlqmDetails::st_sqlmqDetailsNeeds val;
-    int b_min=-1;
-    int b_max=-1;
+    //int b_min=-1;
+    //int b_max=-1;
     val.ori = this;
     val.cnx = db_0.connectionName();
     val.sql = msg;
     val.wko = tb_out;
     val.view = qtv_tmp;
-    val.b_max = &b_max;
-    val.b_min = &b_min;
+    //val.b_min = BDelegateCouleurFond::Columns::EcartCourant;
+    //val.b_max = BDelegateCouleurFond::Columns::TotalElement;
     sqlqmDetails *sqm_tmp= new sqlqmDetails(val);
 
     sqm_tmp->setQuery(msg,db_0);
+
+
+    BDelegateCouleurFond::st_ColorNeeds a;
+    a.ori = sqm_tmp;
+    a.cnx = db_0.connectionName();
+    a.wko = tb_out;
+    //a.b_min = b_min;
+    //a.b_max = b_max;
+    //a.len =6;
+    BDelegateCouleurFond *color = new BDelegateCouleurFond(a,qtv_tmp);
+    qtv_tmp->setItemDelegate(color);
+    /// Mise en place d'un toolstips
+    qtv_tmp->setMouseTracking(true);
+    connect(qtv_tmp,
+            SIGNAL(entered(QModelIndex)),
+            color,SLOT(slot_AideToolTip(QModelIndex)));
+
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
+    qtv_tmp->setModel(m);
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(BDelegateCouleurFond::Columns::TotalElement,Qt::DescendingOrder);
 
     // Renommer le nom des colonnes
     int nbcol = sqm_tmp->columnCount();
@@ -1668,29 +1696,25 @@ QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
 
-    QSortFilterProxyModel *m=new QSortFilterProxyModel();
-    m->setDynamicSortFilter(true);
-    m->setSourceModel(sqm_tmp);
-    qtv_tmp->setModel(m);
 
-    qtv_tmp->setSortingEnabled(true);
-    qtv_tmp->sortByColumn(COL_VISU_ECART+2,Qt::DescendingOrder);
-
+    /// Mettre toutes largeures identiques
     qtv_tmp->verticalHeader()->hide();
     qtv_tmp->hideColumn(0);
-    int j=0;
-    for(j=0;j<=COL_VISU_ECART;j++){
+    for(int j=0;j<=nbcol;j++){
       qtv_tmp->setColumnWidth(j,28);
     }
 
-    for(j=j;j<=sqm_tmp->columnCount()-2;j++){
+    /// Autoriser adaptation pour zone ecart
+    for(int j=BDelegateCouleurFond::Columns::EcartCourant;j<=BDelegateCouleurFond::Columns::TotalElement;j++){
       qtv_tmp->resizeColumnToContents(j);
     }
 
-
-    // Ne pas modifier largeur des colonnes
+    // bloquer modif par utilisateur
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+             this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
   }
 
@@ -1768,16 +1792,49 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
   val.sql = st_msg1;
   val.wko = tb_out;
   val.view = qtv_tmp;
-  val.b_max = &b_max;
-  val.b_min = &b_min;
-  sqlqmDetails *sqm_tmp= new sqlqmDetails(val,sqm_bloc1_1);
+  //val.b_max = &b_max;
+  //val.b_min = &b_min;
+  sqlqmDetails *sqm_tmp= new sqlqmDetails(val);
+
+  BDelegateCouleurFond::st_ColorNeeds a;
+  a.ori = sqm_tmp;
+  a.cnx = db_0.connectionName();
+  a.wko = tb_out;
+  //a.b_min = b_min;
+  //a.b_max = b_max;
+  //a.len =6;
+  BDelegateCouleurFond *color = new BDelegateCouleurFond(a,qtv_tmp);
+  qtv_tmp->setItemDelegate(color);
+
+  /// Mise en place d'un toolstips
+  qtv_tmp->setMouseTracking(true);
+  connect(qtv_tmp,
+          SIGNAL(entered(QModelIndex)),
+          color,SLOT(slot_AideToolTip(QModelIndex)));
+
+
+  QSortFilterProxyModel *m=new QSortFilterProxyModel();
+  m->setDynamicSortFilter(true);
+  m->setSourceModel(sqm_tmp);
+  qtv_tmp->setModel(m);
+
+  qtv_tmp->setSortingEnabled(true);
+  qtv_tmp->sortByColumn(BDelegateCouleurFond::Columns::keyColors,Qt::DescendingOrder);
 
   mysortModel = qobject_cast<QSortFilterProxyModel *>( qtv_tmp->model());
 
   int nbCol = sqm_tmp->columnCount();
+  for(int i = 0; i<nbCol;i++)
+  {
+    QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
 
-  qtv_tmp->setSortingEnabled(true);
-  qtv_tmp->sortByColumn(COL_VISU_ECART-1,Qt::DescendingOrder);
+    if(headName.size()>2)
+    {
+      sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+    }
+  }
+
+
   qtv_tmp->setAlternatingRowColors(true);
   //qtv_tmp->setStyleSheet("QTableView {selection-background-color: rgba(100, 100, 100, 150);}");
   qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
@@ -1794,18 +1851,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
     qtv_tmp->setColumnWidth(j,28);
   }
   qtv_tmp->setFixedSize(450,CHauteur1);
-  /*
-  QSize a = qtv_tmp->sizeHint();
-  if(a.isValid()){
-    qtv_tmp->setFixedSize(a.width(),CHauteur1);
-  }
-  else{
-    qtv_tmp->setFixedSize(500,CHauteur1);
-  }
-  */
   qtv_tmp->horizontalHeader()->setStretchLastSection(true);
-
-
 
   // Ne pas modifier largeur des colonnes
   qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
@@ -2963,25 +3009,12 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
   }
 
   int nbcol = sqm_tmp->columnCount();
-  int b_min = 0;
-  int b_max = 0;
-  for(int i = 0; i<nbcol;i++)
-  {
-    QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
-    if(headName == "T")
-    {
-      b_min = i;
-    }
 
-    if(headName == "Ec")
-    {
-      b_max = i;
-    }
-  }
-
-  int col = index.column();
   if(getLimites){
-    if(col <b_min || col >= b_max){
+    int col = index.column();
+    if(col <BDelegateCouleurFond::Columns::TotalElement
+       ||
+       col >= nbcol-2){
       return;
     }
   }
@@ -3007,6 +3040,10 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
   QString sqlReq = *(uneDemande.st_LDT_Depart);
   for(int onglet = 0; onglet<nb_item;onglet++)
   {
+#ifndef QT_NO_DEBUG
+    qDebug()<< "Onglet["+QString::number(onglet)<<"]:"<<sqlReq<<endl;
+#endif
+
     sqlReq = (this->*ptrFunc[onglet])(onglet,sqlReq);
   }
 
@@ -3051,6 +3088,49 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 QString SyntheseGenerale::SqlCreateCodeBary(int onglet, QString table)
 {
   QString sqlReq ="";
+  int zn = 0;
+  QString tb_src = "RefTirages";
+  QString tb_out = QString("r_")+tb_src + QString("_brc_z")+QString::number(zn+1);
+  QString qtv_name = QString("new")+QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
+
+  /// Trouver le tableau des barycentres
+  QTableView *tb_brc = this->findChild<QTableView*>(qtv_name);
+  if(tb_brc){
+
+    /// Table trouve
+    /// recuperer selection
+    QItemSelectionModel *selectionModel = tb_brc->selectionModel();
+    QModelIndexList indexes =  selectionModel->selectedIndexes();
+
+    QString name1 = tb_brc->objectName();
+    QString name2 = selectionModel->objectName();
+
+    /// il y a t'il une selection
+    if(indexes.size())
+    {
+      QModelIndex un_index;
+
+      foreach(un_index, indexes)
+      {
+        int col = un_index.column();
+        int row = un_index.row();
+        const QAbstractItemModel * pModel = un_index.model();
+        QVariant vCol;
+        QString headName;
+
+
+        vCol = pModel->headerData(col,Qt::Horizontal);
+        headName = vCol.toString();
+
+        headName = headName + "r";
+      }
+    }
+  }
+
+#ifndef QT_NO_DEBUG
+  qDebug() << sqlReq;
+#endif
+
   return sqlReq;
 }
 
@@ -3235,16 +3315,6 @@ count(*)  as T,
 
  #endif
 
- #if 0
- QString SyntheseGenerale::A1_0_TrouverLignesParIntermediaire(int zn,
-                                                              QString tb_src ,
-                                                              QString tb_ref ,
-                                                              QString key)
-{
- }
- #endif
-
-
  QString SyntheseGenerale::A4_0_TrouverLignes(int zn,
                                               QString tb_src ,
                                               QString tb_ref ,
@@ -3424,14 +3494,14 @@ count(*)  as T,
 	"(select NULL) as C, "
 	"B,"
 	"(select NULL) as I, "
-	"count(*)  as T, "
-	+str_count_days+
 	"(select(min (Id)-1 ))as Ec, "
 	"max((CASE WHEN lid=2 then E END)) as Ep, "
 	"(printf(\"%.1f\",avg(E)))as Em, "
 	"max(E) as M, "
 	"(printf(\"%.1f\",sqrt(variance(E)))) as Es, "
 	"(printf(\"%.1f\",median(E))) as Me, "
+	"count(*)  as T, "
+	+str_count_days+
 	"(select NULL) as P, (select NULL) as F "
 	"FROM "
 	"( "
@@ -3504,28 +3574,28 @@ count(*)  as T,
 		  "where (B in ("+msg[1]+"))"}
 	  };
 
-     int taille = sizeof(msg)/sizeof(QString);
-     #ifndef QT_NO_DEBUG
-     for(int i = 0; i< taille;i++){
-       qDebug() << "msg ["<<i<<"]: "<<msg[i];
-     }
-     #endif
-     isOk = query.exec(msg[taille-1]);
-   }
+	  int taille = sizeof(msg)/sizeof(QString);
+	  #ifndef QT_NO_DEBUG
+	  for(int i = 0; i< taille;i++){
+		 qDebug() << "msg ["<<i<<"]: "<<msg[i];
+	  }
+	  #endif
+	  isOk = query.exec(msg[taille-1]);
+	}
 
-   /// --------------------------------
-   /// Mettre marqueur sur b+1 et b-1
-   for(int dec=0; (dec <2) && isOk ; dec++){
-     int d[2]={+1,-1}; // voir BDelegateCouleurFond
+	/// --------------------------------
+	/// Mettre marqueur sur b+1 et b-1
+	for(int dec=0; (dec <2) && isOk ; dec++){
+	  int d[2]={+1,-1}; // voir BDelegateCouleurFond
 
-     QString ref = "(t2."+pMaConf->nomZone[zn]+"%1+%2)";
-     QString st_critere_2 = "";
-     for(int i=0;i<len_zn;i++){
-       st_critere_2 = st_critere_2 + ref.arg(i+1).arg(d[dec]);
-       if(i<(len_zn-1)){
-         st_critere_2=st_critere_2+QString(",");
-       }
-     }
+	  QString ref = "(t2."+pMaConf->nomZone[zn]+"%1+%2)";
+	  QString st_critere_2 = "";
+	  for(int i=0;i<len_zn;i++){
+		 st_critere_2 = st_critere_2 + ref.arg(i+1).arg(d[dec]);
+		 if(i<(len_zn-1)){
+			st_critere_2=st_critere_2+QString(",");
+		 }
+	  }
 
 	  QString sdec = QString::number(1<<(4+dec),16);
 	  QString msg []={
@@ -3543,14 +3613,14 @@ count(*)  as T,
 		  "where (B in ("+msg[1]+"))"}
 	  };
 
-     int taille = sizeof(msg)/sizeof(QString);
-     #ifndef QT_NO_DEBUG
-     for(int i = 0; i< taille;i++){
-       qDebug() << "msg ["<<i<<"]: "<<msg[i];
-     }
-     #endif
-     isOk = query.exec(msg[taille-1]);
-   }
+	  int taille = sizeof(msg)/sizeof(QString);
+	  #ifndef QT_NO_DEBUG
+	  for(int i = 0; i< taille;i++){
+		 qDebug() << "msg ["<<i<<"]: "<<msg[i];
+	  }
+	  #endif
+	  isOk = query.exec(msg[taille-1]);
+	}
 
 
 	if(query.lastError().isValid()){
@@ -3579,7 +3649,9 @@ count(*)  as T,
 			  st_header = st_header + ",";
 			}
 
-			if(i==11 || i==13 || i== 14){
+			if(i== BDelegateCouleurFond::Columns::EcartMedian||
+			i==BDelegateCouleurFond::Columns::EsperanceEcart ||
+			i== BDelegateCouleurFond::Columns::EcartMoyen){
 			  type = " float";
 			}
 			else
