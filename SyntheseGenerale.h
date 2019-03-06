@@ -176,12 +176,14 @@ class SyntheseGenerale : public QObject
         int dst;
         int zn;
     };
+#if TRY_CODE_NEW
+#else
     QGridLayout * MonLayout_R1_tot_zn(prmLay prm);
     QGridLayout * MonLayout_R1_tot_z2(prmLay prm);
     QGridLayout * MonLayout_R2_cmb_z1(prmLay prm);
     QGridLayout * MonLayout_R3_grp_z1(prmLay prm);
     QGridLayout * MonLayout_R4_brc_z1(prmLay prm);
-
+#endif
     QTableView * TbvAnalyse_tot(int zn, QString source, QString definition, QString key);
     QTableView * TbvResume_tot(int zn, QString tb_read);
     void mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_total);

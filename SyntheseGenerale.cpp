@@ -51,6 +51,8 @@
 #include "sqlqmdetails.h"
 #include "bvisuresume.h"
 
+#include "properties.h"
+
 //extern MainWindow w;
 #ifdef USE_SG_CODE
 QString GetBoulesOfTirage(int tir);
@@ -724,6 +726,13 @@ void SyntheseGenerale::setMyOwnFactory(void)
 }
 #endif
 
+#if TRY_CODE_NEW
+void SyntheseGenerale::DoComptageTotal(void)
+{
+  QTabWidget *tab_Top = new QTabWidget;
+}
+
+#else
 void SyntheseGenerale::DoComptageTotal(void)
 {
 
@@ -788,6 +797,7 @@ void SyntheseGenerale::DoComptageTotal(void)
 
 
 }
+#endif
 
 void SyntheseGenerale::slot_RazSelection(QString)
 {
@@ -802,302 +812,6 @@ void SyntheseGenerale::slot_RazSelection(QString)
   }
 
   selection->setText(CTXT_SELECTION);
-}
-
-QGridLayout * SyntheseGenerale::MonLayout_R1_tot_z2(prmLay prm)
-{
-  QGridLayout *lay_return = new QGridLayout;
-
-  int dst = prm.dst;
-  sqm_bloc1_2 = new QSqlQueryModel;
-
-  int zn = 1;
-  QTableView *qtv_tmp = new QTableView;
-  QString qtv_name = QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
-  qtv_tmp->setObjectName(qtv_name);
-
-  //tbv_bloc1_2 = new QTableView;
-  //qtv_tmp=tbv_bloc1_2;
-  tbv_bloc1_2 = qtv_tmp;
-
-  QString st_baseUse = "";
-  st_baseUse = st_bdTirages->remove(";");
-  QString st_cr1 = "";
-  QStringList lst_tmp;
-  lst_tmp << "tb2.e";
-  int loop = pMaConf->nbElmZone[1];
-  st_cr1 =  GEN_Where_3(loop,"tb1.boule",false,"=",lst_tmp,true,"or");
-  QString st_msg1 =
-      "select tb1.boule as B, count(tb2.id) as T, "
-      + *st_JourTirageDef +
-      " "
-      "from  "
-      "("
-      "select id as boule from Bnrz where (z2 not null ) "
-      ") as tb1 "
-      "left join "
-      "("
-      "select tb2.* from "
-      "("
-      +st_baseUse+
-      " )as tb1"
-      ","
-      "("
-      +st_baseUse+
-      ")as tb2 "
-      "where"
-      "("
-      "tb2.id=tb1.id + "
-      +QString::number(dst) +
-      ")"
-      ") as tb2 "
-      "on "
-      "("
-      +st_cr1+
-      ") group by tb1.boule;";
-
-#ifndef QT_NO_DEBUG
-  qDebug()<< st_msg1;
-#endif
-
-  sqm_bloc1_2->setQuery(st_msg1,db_0);
-  // Renommer le nom des colonnes
-  QSqlQueryModel *sqm_tmp=sqm_bloc1_2;
-  int nbcol = sqm_tmp->columnCount();
-  for(int i = 0; i<nbcol;i++)
-  {
-    QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
-    if(headName.size()>2)
-    {
-      sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
-    }
-  }
-
-  qtv_tmp->setSortingEnabled(true);
-  //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
-  qtv_tmp->setAlternatingRowColors(true);
-  qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-
-
-  qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
-  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
-
-  QSortFilterProxyModel *m=new QSortFilterProxyModel();
-  m->setDynamicSortFilter(true);
-  m->setSourceModel(sqm_bloc1_2);
-  qtv_tmp->setModel(m);
-
-  qtv_tmp->verticalHeader()->hide();
-  //qtv_tmp->hideColumn(0);
-
-  for(int j=0;j<2;j++)
-    qtv_tmp->setColumnWidth(j,28);
-  for(int j=2;j<=sqm_bloc1_2->columnCount();j++)
-    qtv_tmp->setColumnWidth(j,28);
-
-
-  // Ne pas modifier largeur des colonnes
-  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-
-  QVBoxLayout *vb_tmp = new QVBoxLayout;
-  QLabel * lab_tmp = new QLabel;
-  lab_tmp->setText("Repartitions");
-  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-
-  lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
-
-  // simple click dans fenetre  pour selectionner boule
-  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-           this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
-
-
-
-  // double click dans fenetre  pour afficher details boule
-  connect( tbv_bloc1_2, SIGNAL(doubleClicked(QModelIndex)) ,
-           this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
-
-  return lay_return;
-
-}
-
-QGridLayout * SyntheseGenerale::MonLayout_R2_cmb_z1(prmLay prm)
-{
-  QGridLayout *lay_return = new QGridLayout;
-
-  int dst = prm.dst;
-  int zn = prm.zn;
-
-  QTableView *qtv_tmp = new QTableView;
-  QString qtv_name = QString::fromLatin1(C_TBL_7) + "_z"+QString::number(zn+1);
-  qtv_tmp->setObjectName(qtv_name);
-  tbv[zn]<< qtv_tmp;
-
-  QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
-
-  //tbv_bloc1_3 = new QTableView;
-  //qtv_tmp=tbv_bloc1_3;
-  tbv_bloc1_3 =qtv_tmp;
-
-  sqm_bloc1_3 = new QSqlQueryModel;
-  sqm_tmp=sqm_bloc1_3;
-
-  QString st_baseUse = "";
-  st_baseUse = st_bdTirages->remove(";");
-  QString st_cr1 = "";
-  QStringList lst_tmp;
-  lst_tmp << "tb2.e";
-  int loop = pMaConf->nbElmZone[1];
-  st_cr1 =  "tb1.id=tb2.pid";
-  QString st_msg1 =
-      "select tb1.id as Id, tb1.tip as Repartition, count(tb2.id) as T, "
-      + *st_JourTirageDef +
-      " "
-      "from  "
-      "("
-      "select id,tip from lstCombi_z1"
-      ") as tb1 "
-      "left join "
-      "("
-      "select tb2.* from "
-      "("
-      +st_baseUse+
-      " )as tb1"
-      ","
-      "("
-      +st_baseUse+
-      ")as tb2 "
-      "where"
-      "("
-      "tb2.id=tb1.id+"
-      +QString::number(dst) +
-      ")"
-      ") as tb2 "
-      "on "
-      "("
-      +st_cr1+
-      ") group by tb1.id;";
-
-#ifndef QT_NO_DEBUG
-  qDebug()<< st_msg1;
-#endif
-
-  sqm_tmp->setQuery(st_msg1,db_0);
-  int nbcol = sqm_tmp->columnCount();
-  for(int i = 0; i<nbcol;i++)
-  {
-    QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
-    if(headName.size()>2)
-    {
-      sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
-    }
-  }
-
-  qtv_tmp->hideColumn(0);
-  qtv_tmp->setSortingEnabled(true);
-  //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
-  qtv_tmp->setAlternatingRowColors(true);
-  qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-
-
-  qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
-  //qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-  //qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  qtv_tmp->setFixedSize(250,CHauteur1);
-
-  QSortFilterProxyModel *m=new QSortFilterProxyModel();
-  m->setDynamicSortFilter(true);
-  m->setSourceModel(sqm_tmp);
-  qtv_tmp->setModel(m);
-  qtv_tmp->verticalHeader()->hide();
-  qtv_tmp->setColumnWidth(0,30);
-  qtv_tmp->setColumnWidth(1,70);
-  for(int j=2;j<=sqm_tmp->columnCount();j++)
-    qtv_tmp->setColumnWidth(j,LCELL);
-
-
-  // Ne pas modifier largeur des colonnes
-  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-
-
-  // Filtre
-  QFormLayout *FiltreLayout = new QFormLayout;
-  FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
-  QList<qint32> colid;
-  colid << 1;
-  fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
-
-  //fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,1);
-  FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
-
-
-  ///------------
-  //lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
-  //lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
-
-  QVBoxLayout *vb_tmp = new QVBoxLayout;
-  QLabel * lab_tmp = new QLabel;
-
-
-  lab_tmp->setText("Combinaisons");
-  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-  vb_tmp->addLayout(FiltreLayout);
-  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-
-  lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
-
-  /// -----------
-
-
-  // Mettre le dernier tirage en evidence
-  QSqlQuery selection(db_0);
-  bool status = false;
-
-  st_msg1 = "select analyses.id, analyses.fk_idCombi_z1 from analyses limit 1;";
-  status = selection.exec(st_msg1);
-  status = selection.first();
-  if(selection.isValid())
-  {
-    int value = selection.value(1).toInt();
-    //tv_r1->setItemDelegate(new MaQtvDelegation(NULL,value-1,1));
-
-    QAbstractItemModel *mon_model = qtv_tmp->model();
-    //QStandardItemModel *dest= (QStandardItemModel*) mon_model;
-    QModelIndex mdi_item1 = mon_model->index(0,0);
-
-    if (mdi_item1.isValid()){
-      //mdi_item1 = mdi_item1.model()->index(value-1,1);
-      mdi_item1 = mon_model->index(value-1,1);
-      QPersistentModelIndex depart(mdi_item1);
-
-      qtv_tmp->selectionModel()->setCurrentIndex(mdi_item1, QItemSelectionModel::NoUpdate);
-      qtv_tmp->scrollTo(mdi_item1);
-      qtv_tmp->setItemDelegate(new MaQtvDelegation(depart));
-    }
-  }
-
-
-  // simple click dans fenetre  pour selectionner boule
-#if 0
-  connect( tbv_bloc1_3, SIGNAL(clicked(QModelIndex)) ,
-           this, SLOT(slot_Select_C( QModelIndex) ) );
-#endif
-  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-           this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
-
-
-
-  // double click dans fenetre  pour afficher details boule
-  connect( tbv_bloc1_3, SIGNAL(doubleClicked(QModelIndex)) ,
-           this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
-
-  return lay_return;
 }
 
 #if 0
@@ -1598,45 +1312,6 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
 #endif
 
 
-QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(prmLay prm)
-{
-  QGridLayout *lay_return = new QGridLayout;
-  bool isOk = true;
-
-  int dst = prm.dst;
-  int zn = prm.zn;
-  QString tb_src = REF_BASE;
-  QString tb_ref = "analyses";
-  QString key = "BC";
-  QString tb_out = QString("r_")+tb_src + QString("_brc_z")+QString::number(zn+1);
-
-
-  int tot_zn = 1;
-
-  QTableView ** qtv_tmp_1 = new QTableView *[tot_zn];
-  QTableView ** qtv_tmp_2 = new QTableView *[tot_zn];
-  for(int zn=0;zn<tot_zn;zn++){
-    qtv_tmp_1[zn] = TbvAnalyse_brc(zn,tb_src,tb_ref,key);
-    qtv_tmp_2[zn] = TbvResume_brc(zn,tb_src);
-  }
-  tbv[zn]<< qtv_tmp_1[zn];
-
-  QVBoxLayout *vb_tmp = new QVBoxLayout;
-  QLabel * lab_tmp_1 = new QLabel;
-  QLabel * lab_tmp_2 = new QLabel;
-
-  lab_tmp_1->setText("Repartitions");
-  vb_tmp->addWidget(lab_tmp_1,0,Qt::AlignLeft|Qt::AlignTop);
-  vb_tmp->addWidget(qtv_tmp_1[0],0,Qt::AlignLeft|Qt::AlignTop);
-
-  lab_tmp_2->setText("Selections Possible");
-  vb_tmp->addWidget(lab_tmp_2,0,Qt::AlignLeft|Qt::AlignTop);
-  vb_tmp->addWidget(qtv_tmp_2[0],0,Qt::AlignLeft|Qt::AlignTop);
-
-  lay_return->addLayout(vb_tmp,0,0);
-
-  return lay_return;
-}
 
 QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb_ref, QString key)
 {
@@ -2247,6 +1922,8 @@ void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_
 
 }
 
+#if TRY_CODE_NEW
+#else
 QGridLayout * SyntheseGenerale::MonLayout_R1_tot_zn(prmLay prm)
 {
   QGridLayout *lay_return = new QGridLayout;
@@ -2336,6 +2013,551 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_zn(prmLay prm)
   return lay_return;
 
 }
+QGridLayout * SyntheseGenerale::MonLayout_R1_tot_z2(prmLay prm)
+{
+  QGridLayout *lay_return = new QGridLayout;
+
+  int dst = prm.dst;
+  sqm_bloc1_2 = new QSqlQueryModel;
+
+  int zn = 1;
+  QTableView *qtv_tmp = new QTableView;
+  QString qtv_name = QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
+  qtv_tmp->setObjectName(qtv_name);
+
+  //tbv_bloc1_2 = new QTableView;
+  //qtv_tmp=tbv_bloc1_2;
+  tbv_bloc1_2 = qtv_tmp;
+
+  QString st_baseUse = "";
+  st_baseUse = st_bdTirages->remove(";");
+  QString st_cr1 = "";
+  QStringList lst_tmp;
+  lst_tmp << "tb2.e";
+  int loop = pMaConf->nbElmZone[1];
+  st_cr1 =  GEN_Where_3(loop,"tb1.boule",false,"=",lst_tmp,true,"or");
+  QString st_msg1 =
+      "select tb1.boule as B, count(tb2.id) as T, "
+      + *st_JourTirageDef +
+      " "
+      "from  "
+      "("
+      "select id as boule from Bnrz where (z2 not null ) "
+      ") as tb1 "
+      "left join "
+      "("
+      "select tb2.* from "
+      "("
+      +st_baseUse+
+      " )as tb1"
+      ","
+      "("
+      +st_baseUse+
+      ")as tb2 "
+      "where"
+      "("
+      "tb2.id=tb1.id + "
+      +QString::number(dst) +
+      ")"
+      ") as tb2 "
+      "on "
+      "("
+      +st_cr1+
+      ") group by tb1.boule;";
+
+#ifndef QT_NO_DEBUG
+  qDebug()<< st_msg1;
+#endif
+
+  sqm_bloc1_2->setQuery(st_msg1,db_0);
+  // Renommer le nom des colonnes
+  QSqlQueryModel *sqm_tmp=sqm_bloc1_2;
+  int nbcol = sqm_tmp->columnCount();
+  for(int i = 0; i<nbcol;i++)
+  {
+    QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+    if(headName.size()>2)
+    {
+      sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+    }
+  }
+
+  qtv_tmp->setSortingEnabled(true);
+  //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+  qtv_tmp->setAlternatingRowColors(true);
+  qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+
+  qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
+
+  QSortFilterProxyModel *m=new QSortFilterProxyModel();
+  m->setDynamicSortFilter(true);
+  m->setSourceModel(sqm_bloc1_2);
+  qtv_tmp->setModel(m);
+
+  qtv_tmp->verticalHeader()->hide();
+  //qtv_tmp->hideColumn(0);
+
+  for(int j=0;j<2;j++)
+    qtv_tmp->setColumnWidth(j,28);
+  for(int j=2;j<=sqm_bloc1_2->columnCount();j++)
+    qtv_tmp->setColumnWidth(j,28);
+
+
+  // Ne pas modifier largeur des colonnes
+  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+  QVBoxLayout *vb_tmp = new QVBoxLayout;
+  QLabel * lab_tmp = new QLabel;
+  lab_tmp->setText("Repartitions");
+  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+  lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+  // simple click dans fenetre  pour selectionner boule
+  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+           this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
+
+
+  // double click dans fenetre  pour afficher details boule
+  connect( tbv_bloc1_2, SIGNAL(doubleClicked(QModelIndex)) ,
+           this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+
+  return lay_return;
+
+}
+
+QGridLayout * SyntheseGenerale::MonLayout_R2_cmb_z1(prmLay prm)
+{
+  QGridLayout *lay_return = new QGridLayout;
+
+  int dst = prm.dst;
+  int zn = prm.zn;
+
+  QTableView *qtv_tmp = new QTableView;
+  QString qtv_name = QString::fromLatin1(C_TBL_7) + "_z"+QString::number(zn+1);
+  qtv_tmp->setObjectName(qtv_name);
+  tbv[zn]<< qtv_tmp;
+
+  QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+
+  //tbv_bloc1_3 = new QTableView;
+  //qtv_tmp=tbv_bloc1_3;
+  tbv_bloc1_3 =qtv_tmp;
+
+  sqm_bloc1_3 = new QSqlQueryModel;
+  sqm_tmp=sqm_bloc1_3;
+
+  QString st_baseUse = "";
+  st_baseUse = st_bdTirages->remove(";");
+  QString st_cr1 = "";
+  QStringList lst_tmp;
+  lst_tmp << "tb2.e";
+  int loop = pMaConf->nbElmZone[1];
+  st_cr1 =  "tb1.id=tb2.pid";
+  QString st_msg1 =
+      "select tb1.id as Id, tb1.tip as Repartition, count(tb2.id) as T, "
+      + *st_JourTirageDef +
+      " "
+      "from  "
+      "("
+      "select id,tip from lstCombi_z1"
+      ") as tb1 "
+      "left join "
+      "("
+      "select tb2.* from "
+      "("
+      +st_baseUse+
+      " )as tb1"
+      ","
+      "("
+      +st_baseUse+
+      ")as tb2 "
+      "where"
+      "("
+      "tb2.id=tb1.id+"
+      +QString::number(dst) +
+      ")"
+      ") as tb2 "
+      "on "
+      "("
+      +st_cr1+
+      ") group by tb1.id;";
+
+#ifndef QT_NO_DEBUG
+  qDebug()<< st_msg1;
+#endif
+
+  sqm_tmp->setQuery(st_msg1,db_0);
+  int nbcol = sqm_tmp->columnCount();
+  for(int i = 0; i<nbcol;i++)
+  {
+    QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+    if(headName.size()>2)
+    {
+      sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+    }
+  }
+
+  qtv_tmp->hideColumn(0);
+  qtv_tmp->setSortingEnabled(true);
+  //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+  qtv_tmp->setAlternatingRowColors(true);
+  qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+
+
+  qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+  //qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+  //qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_tmp->setFixedSize(250,CHauteur1);
+
+  QSortFilterProxyModel *m=new QSortFilterProxyModel();
+  m->setDynamicSortFilter(true);
+  m->setSourceModel(sqm_tmp);
+  qtv_tmp->setModel(m);
+  qtv_tmp->verticalHeader()->hide();
+  qtv_tmp->setColumnWidth(0,30);
+  qtv_tmp->setColumnWidth(1,70);
+  for(int j=2;j<=sqm_tmp->columnCount();j++)
+    qtv_tmp->setColumnWidth(j,LCELL);
+
+
+  // Ne pas modifier largeur des colonnes
+  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+
+  // Filtre
+  QFormLayout *FiltreLayout = new QFormLayout;
+  FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
+  QList<qint32> colid;
+  colid << 1;
+  fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
+
+  //fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,1);
+  FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
+
+
+  ///------------
+  //lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
+  //lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
+
+  QVBoxLayout *vb_tmp = new QVBoxLayout;
+  QLabel * lab_tmp = new QLabel;
+
+
+  lab_tmp->setText("Combinaisons");
+  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addLayout(FiltreLayout);
+  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+  lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+  /// -----------
+
+
+  // Mettre le dernier tirage en evidence
+  QSqlQuery selection(db_0);
+  bool status = false;
+
+  st_msg1 = "select analyses.id, analyses.fk_idCombi_z1 from analyses limit 1;";
+  status = selection.exec(st_msg1);
+  status = selection.first();
+  if(selection.isValid())
+  {
+    int value = selection.value(1).toInt();
+    //tv_r1->setItemDelegate(new MaQtvDelegation(NULL,value-1,1));
+
+    QAbstractItemModel *mon_model = qtv_tmp->model();
+    //QStandardItemModel *dest= (QStandardItemModel*) mon_model;
+    QModelIndex mdi_item1 = mon_model->index(0,0);
+
+    if (mdi_item1.isValid()){
+      //mdi_item1 = mdi_item1.model()->index(value-1,1);
+      mdi_item1 = mon_model->index(value-1,1);
+      QPersistentModelIndex depart(mdi_item1);
+
+      qtv_tmp->selectionModel()->setCurrentIndex(mdi_item1, QItemSelectionModel::NoUpdate);
+      qtv_tmp->scrollTo(mdi_item1);
+      qtv_tmp->setItemDelegate(new MaQtvDelegation(depart));
+    }
+  }
+
+
+  // simple click dans fenetre  pour selectionner boule
+#if 0
+  connect( tbv_bloc1_3, SIGNAL(clicked(QModelIndex)) ,
+           this, SLOT(slot_Select_C( QModelIndex) ) );
+#endif
+  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+           this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
+
+
+  // double click dans fenetre  pour afficher details boule
+  connect( tbv_bloc1_3, SIGNAL(doubleClicked(QModelIndex)) ,
+           this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+
+  return lay_return;
+}
+
+#if USE_repartition_bh
+QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
+{
+  QGridLayout *lay_return = new QGridLayout;
+
+  QSqlTableModel *tblModel = new QSqlTableModel;
+  tblModel->setTable("repartition_bh");
+  tblModel->select();
+  sqtblm_bloc2 = tblModel;
+
+
+  // Associer toutes les valeurs a la vue
+  while (tblModel->canFetchMore())
+  {
+    tblModel->fetchMore();
+  }
+
+  // Attach it to the view
+  QTableView *qtv_tmp ;
+  tbv_bloc2 = new QTableView;
+  qtv_tmp=tbv_bloc2;
+
+  // Gestion du QTableView
+  qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+  //qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
+  qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_tmp->setAlternatingRowColors(true);
+  qtv_tmp->setFixedSize(380,CHauteur1);
+
+  qtv_tmp->setModel(tblModel);
+  qtv_tmp->setSortingEnabled(true);
+  qtv_tmp->hideColumn(0);
+  qtv_tmp->sortByColumn(1,Qt::AscendingOrder);
+  qtv_tmp->verticalHeader()->hide();
+
+  for(int i=0;i<tblModel->columnCount();i++)
+    qtv_tmp->setColumnWidth(i,30);
+
+  QHeaderView *htop = qtv_tmp->horizontalHeader();
+  htop->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+
+  QVBoxLayout *vb_tmp = new QVBoxLayout;
+  QLabel * lab_tmp = new QLabel;
+  lab_tmp->setText("Groupement");
+  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+  lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+  //disposition->addLayout(vb_tmp,2,0,Qt::AlignLeft|Qt::AlignTop);
+
+
+  // simple click dans fenetre  pour selectionner boule
+  connect( tbv_bloc2, SIGNAL(clicked(QModelIndex)) ,
+           this, SLOT(slot_Select_G( QModelIndex) ) );
+
+  // double click dans fenetre  pour afficher details boule
+  connect( tbv_bloc2, SIGNAL(doubleClicked(QModelIndex)) ,
+           this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+
+  return (lay_return);
+
+}
+#else
+QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(prmLay prm)
+{
+  QGridLayout *lay_return = new QGridLayout;
+
+  int dst = prm.dst;
+  int zn = prm.zn;
+ int zone = 0;
+  int maxElems = uneDemande.ref->limites[zn].max;
+  //int nbBoules = floor(maxElems/10)+1;
+
+  //QStringList *maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
+  maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
+  int nbCol = maRef[zone][0].size();
+  int nbLgn = uneDemande.ref->nbElmZone[zone] + 1;
+
+  QTableView *qtv_tmp = new QTableView;
+  QString qtv_name = "";
+  qtv_name = QString::fromLatin1(C_TBL_8) +
+             QString::fromLatin1("_z")
+             +QString::number(zone+1);
+  qtv_tmp->setObjectName(qtv_name);
+  tbv[zn]<< qtv_tmp;
+
+  //tbv_bloc2 = new QTableView;
+  //qtv_tmp=tbv_bloc2;
+  tbv_bloc2 = qtv_tmp;
+
+  QStandardItemModel * tmpStdItem = NULL;
+  QSqlQuery query(db_0) ;
+
+  //Creer un tableau d'element standard
+  if(nbCol)
+  {
+    tmpStdItem =  new QStandardItemModel(nbLgn,nbCol);
+    qtv_tmp->setModel(tmpStdItem);
+
+    QStringList tmp=maRef[zone][1];
+    tmp.insert(0,"Nb");
+    tmpStdItem->setHorizontalHeaderLabels(tmp);
+
+    QStringList tooltips=maRef[zone][2];
+    tooltips.insert(0,"Total");
+    for(int pos=0;pos <=nbCol;pos++)
+    {
+      QStandardItem *item = tmpStdItem->horizontalHeaderItem(pos);
+      item->setToolTip(tooltips.at(pos));
+    }
+
+    for(int lgn=0;lgn<nbLgn;lgn++)
+    {
+      for(int pos=0;pos <=nbCol;pos++)
+      {
+        QStandardItem *item = new QStandardItem();
+
+        if(pos == 0){
+          item->setData(lgn,Qt::DisplayRole);
+        }
+        tmpStdItem->setItem(lgn,pos,item);
+        qtv_tmp->setColumnWidth(pos,LCELL);
+      }
+    }
+    // Gestion du QTableView
+    qtv_tmp->setSelectionMode(QAbstractItemView::MultiSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setFixedSize(CLargeur1*1.8,CHauteur1);
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->verticalHeader()->hide();
+
+    QHeaderView *htop = qtv_tmp->horizontalHeader();
+    htop->setSectionResizeMode(QHeaderView::ResizeToContents);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+
+    QVBoxLayout *vb_tmp = new QVBoxLayout;
+    QLabel * lab_tmp = new QLabel;
+    lab_tmp->setText("Type Regroupement");
+    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+  }
+  else
+  {
+    return lay_return;
+  }
+
+  bool status = true;
+  for(int i=0; (i< nbCol) && (status == true);i++)
+  {
+    // Creer Requete pour compter items
+    QString msg1 = maRef[zone][0].at(i);
+    QString sqlReq = "";
+    sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_Ensemble_1),msg1);
+
+#ifndef QT_NO_DEBUG
+    qDebug() << sqlReq;
+#endif
+
+	 status = query.exec(sqlReq);
+
+	 // Mise a jour de la tables des resultats
+	 if(status)
+	 {
+		query.first();
+		do
+		{
+		  int nb = query.value(0).toInt();
+		  int tot = query.value(1).toInt();
+
+		  QStandardItem * item_1 = tmpStdItem->item(nb,i+1);
+		  item_1->setData(tot,Qt::DisplayRole);
+		  tmpStdItem->setItem(nb,i+1,item_1);
+		}while(query.next() && status);
+	 }
+  }
+
+  // simple click dans fenetre  pour selectionner boule
+
+  qtv_tmp->setMouseTracking(true);
+  connect(qtv_tmp,
+          SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
+
+
+  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+           this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
+  // double click dans fenetre  pour afficher details boule
+  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+           this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+
+
+  return (lay_return);
+
+}
+#endif
+
+QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(prmLay prm)
+{
+  QGridLayout *lay_return = new QGridLayout;
+  bool isOk = true;
+
+  int dst = prm.dst;
+  int zn = prm.zn;
+  QString tb_src = REF_BASE;
+  QString tb_ref = "analyses";
+  QString key = "BC";
+  QString tb_out = QString("r_")+tb_src + QString("_brc_z")+QString::number(zn+1);
+
+
+  int tot_zn = 1;
+
+  QTableView ** qtv_tmp_1 = new QTableView *[tot_zn];
+  QTableView ** qtv_tmp_2 = new QTableView *[tot_zn];
+  for(int zn=0;zn<tot_zn;zn++){
+    qtv_tmp_1[zn] = TbvAnalyse_brc(zn,tb_src,tb_ref,key);
+    qtv_tmp_2[zn] = TbvResume_brc(zn,tb_src);
+  }
+  tbv[zn]<< qtv_tmp_1[zn];
+
+  QVBoxLayout *vb_tmp = new QVBoxLayout;
+  QLabel * lab_tmp_1 = new QLabel;
+  QLabel * lab_tmp_2 = new QLabel;
+
+  lab_tmp_1->setText("Repartitions");
+  vb_tmp->addWidget(lab_tmp_1,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addWidget(qtv_tmp_1[0],0,Qt::AlignLeft|Qt::AlignTop);
+
+  lab_tmp_2->setText("Selections Possible");
+  vb_tmp->addWidget(lab_tmp_2,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addWidget(qtv_tmp_2[0],0,Qt::AlignLeft|Qt::AlignTop);
+
+  lay_return->addLayout(vb_tmp,0,0);
+
+  return lay_return;
+}
+
+#endif
 
 void SyntheseGenerale::slot_ccmr_tbForBaseEcart(QPoint pos)
 {
@@ -2550,213 +2772,6 @@ QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
 }
 
 
-#if USE_repartition_bh
-QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
-{
-  QGridLayout *lay_return = new QGridLayout;
-
-  QSqlTableModel *tblModel = new QSqlTableModel;
-  tblModel->setTable("repartition_bh");
-  tblModel->select();
-  sqtblm_bloc2 = tblModel;
-
-
-  // Associer toutes les valeurs a la vue
-  while (tblModel->canFetchMore())
-  {
-    tblModel->fetchMore();
-  }
-
-  // Attach it to the view
-  QTableView *qtv_tmp ;
-  tbv_bloc2 = new QTableView;
-  qtv_tmp=tbv_bloc2;
-
-  // Gestion du QTableView
-  qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
-  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-  //qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
-  qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-
-  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  qtv_tmp->setAlternatingRowColors(true);
-  qtv_tmp->setFixedSize(380,CHauteur1);
-
-  qtv_tmp->setModel(tblModel);
-  qtv_tmp->setSortingEnabled(true);
-  qtv_tmp->hideColumn(0);
-  qtv_tmp->sortByColumn(1,Qt::AscendingOrder);
-  qtv_tmp->verticalHeader()->hide();
-
-  for(int i=0;i<tblModel->columnCount();i++)
-    qtv_tmp->setColumnWidth(i,30);
-
-  QHeaderView *htop = qtv_tmp->horizontalHeader();
-  htop->setSectionResizeMode(QHeaderView::Fixed);
-  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-
-
-  QVBoxLayout *vb_tmp = new QVBoxLayout;
-  QLabel * lab_tmp = new QLabel;
-  lab_tmp->setText("Groupement");
-  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-  lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
-  //disposition->addLayout(vb_tmp,2,0,Qt::AlignLeft|Qt::AlignTop);
-
-
-  // simple click dans fenetre  pour selectionner boule
-  connect( tbv_bloc2, SIGNAL(clicked(QModelIndex)) ,
-           this, SLOT(slot_Select_G( QModelIndex) ) );
-
-  // double click dans fenetre  pour afficher details boule
-  connect( tbv_bloc2, SIGNAL(doubleClicked(QModelIndex)) ,
-           this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
-
-  return (lay_return);
-
-}
-#else
-QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(prmLay prm)
-{
-  QGridLayout *lay_return = new QGridLayout;
-
-  int dst = prm.dst;
-  int zn = prm.zn;
- int zone = 0;
-  int maxElems = uneDemande.ref->limites[zn].max;
-  //int nbBoules = floor(maxElems/10)+1;
-
-  //QStringList *maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
-  maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
-  int nbCol = maRef[zone][0].size();
-  int nbLgn = uneDemande.ref->nbElmZone[zone] + 1;
-
-  QTableView *qtv_tmp = new QTableView;
-  QString qtv_name = "";
-  qtv_name = QString::fromLatin1(C_TBL_8) +
-             QString::fromLatin1("_z")
-             +QString::number(zone+1);
-  qtv_tmp->setObjectName(qtv_name);
-  tbv[zn]<< qtv_tmp;
-
-  //tbv_bloc2 = new QTableView;
-  //qtv_tmp=tbv_bloc2;
-  tbv_bloc2 = qtv_tmp;
-
-  QStandardItemModel * tmpStdItem = NULL;
-  QSqlQuery query(db_0) ;
-
-  //Creer un tableau d'element standard
-  if(nbCol)
-  {
-    tmpStdItem =  new QStandardItemModel(nbLgn,nbCol);
-    qtv_tmp->setModel(tmpStdItem);
-
-    QStringList tmp=maRef[zone][1];
-    tmp.insert(0,"Nb");
-    tmpStdItem->setHorizontalHeaderLabels(tmp);
-
-    QStringList tooltips=maRef[zone][2];
-    tooltips.insert(0,"Total");
-    for(int pos=0;pos <=nbCol;pos++)
-    {
-      QStandardItem *item = tmpStdItem->horizontalHeaderItem(pos);
-      item->setToolTip(tooltips.at(pos));
-    }
-
-    for(int lgn=0;lgn<nbLgn;lgn++)
-    {
-      for(int pos=0;pos <=nbCol;pos++)
-      {
-        QStandardItem *item = new QStandardItem();
-
-        if(pos == 0){
-          item->setData(lgn,Qt::DisplayRole);
-        }
-        tmpStdItem->setItem(lgn,pos,item);
-        qtv_tmp->setColumnWidth(pos,LCELL);
-      }
-    }
-    // Gestion du QTableView
-    qtv_tmp->setSelectionMode(QAbstractItemView::MultiSelection);
-    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-    qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-
-    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    qtv_tmp->setAlternatingRowColors(true);
-    qtv_tmp->setFixedSize(CLargeur1*1.8,CHauteur1);
-
-    qtv_tmp->setSortingEnabled(true);
-    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
-    qtv_tmp->verticalHeader()->hide();
-
-    QHeaderView *htop = qtv_tmp->horizontalHeader();
-    htop->setSectionResizeMode(QHeaderView::ResizeToContents);
-    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-
-    QVBoxLayout *vb_tmp = new QVBoxLayout;
-    QLabel * lab_tmp = new QLabel;
-    lab_tmp->setText("Type Regroupement");
-    vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-    vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-    lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
-  }
-  else
-  {
-    return lay_return;
-  }
-
-  bool status = true;
-  for(int i=0; (i< nbCol) && (status == true);i++)
-  {
-    // Creer Requete pour compter items
-    QString msg1 = maRef[zone][0].at(i);
-    QString sqlReq = "";
-    sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_Ensemble_1),msg1);
-
-#ifndef QT_NO_DEBUG
-    qDebug() << sqlReq;
-#endif
-
-	 status = query.exec(sqlReq);
-
-	 // Mise a jour de la tables des resultats
-	 if(status)
-	 {
-		query.first();
-		do
-		{
-		  int nb = query.value(0).toInt();
-		  int tot = query.value(1).toInt();
-
-		  QStandardItem * item_1 = tmpStdItem->item(nb,i+1);
-		  item_1->setData(tot,Qt::DisplayRole);
-		  tmpStdItem->setItem(nb,i+1,item_1);
-		}while(query.next() && status);
-	 }
-  }
-
-  // simple click dans fenetre  pour selectionner boule
-
-  qtv_tmp->setMouseTracking(true);
-  connect(qtv_tmp,
-          SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
-
-
-  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-           this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
-
-  // double click dans fenetre  pour afficher details boule
-  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-           this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
-
-
-  return (lay_return);
-
-}
-#endif
 
 // ------------------------------
 void SyntheseGenerale::slot_AideToolTip(const QModelIndex & index)
