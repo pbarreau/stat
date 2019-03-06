@@ -729,12 +729,29 @@ void SyntheseGenerale::setMyOwnFactory(void)
 #if TRY_CODE_NEW
 void SyntheseGenerale::DoComptageTotal(void)
 {
+  /// https://openclassrooms.com/fr/courses/1252476-les-pointeurs-sur-fonctions
   QTabWidget *tab_Top = new QTabWidget;
 
-  QWidget *(SyntheseGenerale::*ptrFunc[])(param_1 prm)=
+  QWidget *(SyntheseGenerale::*ptrFunc[])(param_1,ptrFonction*)=
   {
       &SyntheseGenerale::tot_zn
 };
+
+  Fns mesOnglets[]=
+  {
+    {"tot",{&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2}},
+    {"cmb",{&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2}},
+  };
+
+  int nb_fns = sizeof(mesOnglets)/sizeof (Fns);
+
+
+  QTableView *(SyntheseGenerale::*ptrCalculTbv[])(param_2 prm)=
+  {
+      &SyntheseGenerale::tot_f1,
+      &SyntheseGenerale::tot_f2
+  };
+
 
   int a = sizeof(ptrFunc);
   int b = sizeof(*ptrFunc);
@@ -745,7 +762,9 @@ void SyntheseGenerale::DoComptageTotal(void)
     param_1 prm;
     prm.tab_Top=tab_Top;
     prm.tb_src = "RefTirages";
-    calcul = (this->*ptrFunc[i])(prm);
+
+    param_2 prm_2;
+    calcul = (this->*ptrFunc[i])(prm,&ptrCalculTbv[0]);
   }
 
   QFormLayout *mainLayout = new QFormLayout;
@@ -761,7 +780,7 @@ void SyntheseGenerale::DoComptageTotal(void)
 
 }
 
-QWidget *SyntheseGenerale::tot_zn(param_1 prm)
+QWidget * SyntheseGenerale::tot_zn(param_1 prm,ptrFonction *b)
 {
   QWidget * qw_tmp = new QWidget;
   QGridLayout *qg_tmp = new QGridLayout;
@@ -772,10 +791,61 @@ QWidget *SyntheseGenerale::tot_zn(param_1 prm)
   tab_Top->addTab(qw_tmp,tab_name);
 
   //------------
+  int nb_zn = 2;
+  QString tb_key = "Bnrz";
+  QString vl_key = "z";
+  QString names_N1[]={"boules","etoiles"};
+  QString names_N2[]={"Repartitions","Selections"};
+  int max_tbv = sizeof(names_N2)/sizeof(QString);
+
+  QTabWidget *tab_N1 = new QTabWidget;
+  for(int zn=0;zn<nb_zn;zn++){
+    QString tb_dst = "r_"+prm.tb_src+"_"+tab_name+"_z"+QString::number(zn+1);
+    QWidget * wdg_n1 = new QWidget;
+    QGridLayout * grd_n1 = new QGridLayout;
+    //----------
+    QTabWidget *tab_N2 = new QTabWidget(wdg_n1);
+    for(int calcul=0;calcul<max_tbv;calcul++){
+      QWidget * wdg_n2 = new QWidget;
+      QGridLayout * grd_n2 = new QGridLayout;
+      // ---------
+      param_2 prm;
+      QTableView *un_Qtbview = (this->*b[calcul])(prm);
+      grd_n2->addWidget(un_Qtbview,0,0);
+      // ---------
+      wdg_n2->setLayout(grd_n2);
+      tab_N2->addTab(wdg_n2,names_N2[calcul]);
+    }
+    grd_n1->addWidget(tab_N2,0,0);
+    //----------
+    wdg_n1->setLayout(grd_n1);
+    tab_N1->addTab(wdg_n1,names_N1[zn]);
+  }
+  qg_tmp->addWidget(tab_N1,0,0);
   //------------
   qw_tmp->setLayout(qg_tmp);
   return qw_tmp;
 }
+
+QTableView * SyntheseGenerale::tot_f1(param_2 prm)
+{
+  QTableView * qtv_temp = new QTableView;
+#ifndef QT_NO_DEBUG
+  qDebug() << "tot_f1";
+#endif
+
+  return qtv_temp;
+}
+
+QTableView * SyntheseGenerale::tot_f2(param_2 prm)
+{
+  QTableView * qtv_temp = new QTableView;
+#ifndef QT_NO_DEBUG
+  qDebug() << "tot_f2";
+#endif
+  return qtv_temp;
+}
+
 #else
 void SyntheseGenerale::DoComptageTotal(void)
 {

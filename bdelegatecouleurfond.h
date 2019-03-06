@@ -28,7 +28,11 @@ class BDelegateCouleurFond : public QItemDelegate
     /// Priorite=total-2,Filtre=total-1
     ///
     enum Filtre  {isLast=1,isPrevious=1<<1, isWanted=1<<2, isNever=1<<3,
-                 isPlusOne=1<<4, isMinusOne=1<<5};
+                  isPlusOne=1<<4, isMinusOne=1<<5};
+
+    Q_DECLARE_FLAGS(Filtres, Filtre)
+    Q_FLAG(Filtres)
+
     struct st_ColorNeeds{
         QString cnx;
         QString wko;
@@ -41,7 +45,7 @@ class BDelegateCouleurFond : public QItemDelegate
                const QModelIndex &index) const;
 
 
-private:
+  private:
     QColor getColorForValue(const QModelIndex &index) const;
     bool  checkValue(int centre, int pos)const;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)const;
@@ -52,27 +56,27 @@ private:
     bool MapColorWrite(QString tbl_def);
     bool MapColorRead(QString tbl_def);
 
-private slots:
+  private slots:
     void slot_AideToolTip(const QModelIndex & index);
 
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void sig_TableDesCouleurs(const QString &my_table);
 
   private:
-      QSqlDatabase db_0;
-      sqlqmDetails *origine;
-      QString working_on;
-      //int b_min;
-      //int b_max;
-      int nbE;
-      int nbJ;
-      int nb_colors;
-      //QColor *val_colors;
-      QColor *resu_color;
-      QPolygonF starPolygon;
-      QMap<BOrdColor,int> map_FromColor;
-      //QMap<BOrdColor,int> map_colors;
+    QSqlDatabase db_0;
+    sqlqmDetails *origine;
+    QString working_on;
+    //int b_min;
+    //int b_max;
+    int nbE;
+    int nbJ;
+    int nb_colors;
+    //QColor *val_colors;
+    QColor *resu_color;
+    QPolygonF starPolygon;
+    QMap<BOrdColor,int> map_FromColor;
+    //QMap<BOrdColor,int> map_colors;
 
 
 };
