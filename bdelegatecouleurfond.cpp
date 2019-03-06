@@ -339,6 +339,8 @@ bool BDelegateCouleurFond::isTablePresent(QString tb_name)
 
 void BDelegateCouleurFond::MapColorApply(QTableView *tbv_cible)
 {
+  Q_UNUSED(tbv_cible);
+
   bool isOk = true;
   QSqlQuery query(db_0);
 

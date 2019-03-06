@@ -58,6 +58,8 @@ class SyntheseGenerale : public QObject
     Q_OBJECT
 
   private:
+    QWidget **parentWidget;
+    QList<QTableView *> *tbv;
 
     //stCurDemande *pLaDemande;
     B_ActFrMdlIndex *MonTraitement;
@@ -170,18 +172,29 @@ class SyntheseGenerale : public QObject
     QString SqlCreateCodeGroupe(int onglet, QString table);
     QString SqlCreateCodeBary(int onglet, QString table);
 
-    QGridLayout * MonLayout_R3_grp_z1(int fake);
-    QGridLayout * MonLayout_R1_tot_zn(int dst);
-    QGridLayout * MonLayout_R1_tot_z2(int dst);
-    QGridLayout * MonLayout_R2_cmb_z1(int dst);
-    QGridLayout * MonLayout_R4_brc_z1(int dst);
+    struct prmLay{
+        int dst;
+        int zn;
+    };
+    QGridLayout * MonLayout_R1_tot_zn(prmLay prm);
+    QGridLayout * MonLayout_R1_tot_z2(prmLay prm);
+    QGridLayout * MonLayout_R2_cmb_z1(prmLay prm);
+    QGridLayout * MonLayout_R3_grp_z1(prmLay prm);
+    QGridLayout * MonLayout_R4_brc_z1(prmLay prm);
 
     QTableView * TbvAnalyse_tot(int zn, QString source, QString definition, QString key);
     QTableView * TbvResume_tot(int zn, QString tb_read);
     void mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_total);
 
-    QGridLayout* Vbox_Analyse(int zn, QString tb_src, QString tb_ref, QString key);
-    QGridLayout* Vbox_Resume(int zn, QString tb_src, QString tb_ref, QString key);
+    struct prmVana{
+        QWidget *parent;
+        int zn;
+        QString tb_src;
+        QString tb_ref;
+        QString key;
+    };
+    QGridLayout* Vbox_Analyse(prmVana prm);
+    QGridLayout* Vbox_Resume(prmVana prm);
 
     QTableView * TbvAnalyse_brc(int zn, QString source, QString definition, QString key);
     QTableView * TbvResume_brc(int zn, QString tb_in);
