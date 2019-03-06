@@ -178,27 +178,35 @@ class SyntheseGenerale : public QObject
         QString *names;
         int max;
     };
+    struct keyHelp{
+        QString key;
+        QString tbl;
+    };
     struct param_1{
-     QTabWidget *tab_Top;
-     QString tb_src;
-     ongDef niv[3];
+        QTabWidget *tab_Top;
+        QString tb_src;
+        keyHelp hlp[2];
+        ongDef niv[3];
+        //int p_niv[3];
     };
-
     struct param_2{
-      QString cnx;
+        param_1 prm_1;
+        int zn; /// zone
+        int dst;/// distance
+        QString tb_wrt;///Write
     };
 
 
-    typedef QTableView * (SyntheseGenerale::*ptrFonction)(param_2 a);
+    typedef QGridLayout * (SyntheseGenerale::*ptrFonction)(param_2 a);
     struct Fns{
-       QString name;
-       ptrFonction *pTabFn[2];
+        QString name;
+        ptrFonction *pTabFn[2];
     };
 
     QWidget *tot_debut (param_1 a,Fns *b);
     QWidget *tot_zn (param_1 a,ptrFonction *b);
-    QTableView *tot_f1(param_2);
-    QTableView *tot_f2(param_2);
+    QGridLayout *tot_f1(param_2);
+    QGridLayout *tot_f2(param_2);
 
 
 #else
@@ -216,6 +224,7 @@ class SyntheseGenerale : public QObject
     QTableView * TbvResume_tot(int zn, QString tb_read);
     void mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_total);
 
+    /*
     struct prmVana{
         QWidget *parent;
         int zn;
@@ -223,8 +232,12 @@ class SyntheseGenerale : public QObject
         QString tb_ref;
         QString key;
     };
-    QGridLayout* Vbox_Analyse(prmVana prm);
-    QGridLayout* Vbox_Resume(prmVana prm);
+    */
+    QGridLayout* Vbox_Analyse(param_2 prm);
+    QGridLayout* Vbox_Resume(param_2 prm);
+
+    QGridLayout* Vbox_Analyse_brc(param_2 prm);
+    QGridLayout* Vbox_Resume_brc(param_2 prm);
 
     QTableView * TbvAnalyse_brc(int zn, QString source, QString definition, QString key);
     QTableView * TbvResume_brc(int zn, QString tb_in);

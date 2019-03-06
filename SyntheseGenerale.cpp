@@ -738,20 +738,10 @@ void SyntheseGenerale::DoComptageTotal(void)
 
   QString n2_names[]={"Boules","Etoiles"};
   int nb_n2_names = sizeof(n2_names)/sizeof(QString);
+  tbv= new QList<QTableView *> [nb_n2_names];
 
   QString n3_names[]={"Details","Regroupement"};
   int nb_n3_names = sizeof(n3_names)/sizeof(QString);
-
-  /*
-  typedef struct{
-      int n2;
-      int n3;
-  }stConf;
-  stConf config[]={
-    {nb_n2_names,nb_n3_names},{1,nb_n3_names},
-    {1,nb_n3_names},{1,nb_n3_names}
-  };
-*/
 
   QWidget *(SyntheseGenerale::*ptrFunc[])(param_1,Fns *)=
   {
@@ -759,19 +749,18 @@ void SyntheseGenerale::DoComptageTotal(void)
 };
 
 
-  ptrFonction p_tot[]={&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2};
+  ptrFonction p_tot[]={&SyntheseGenerale::Vbox_Analyse,&SyntheseGenerale::Vbox_Resume};
   ptrFonction p_cmb[]={&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2};
   ptrFonction p_grp[]={&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2};
-  ptrFonction p_brc[]={&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2};
+  ptrFonction p_brc[]={&SyntheseGenerale::Vbox_Analyse_brc,&SyntheseGenerale::Vbox_Resume_brc};
 
   Fns mesOnglets[]=
   {
     {"tot",{p_tot}},
     {"cmb",{p_cmb}},
     {"grp",{p_grp}},
-    {"brc",{p_brc}}
+    {"brc",{p_brc}}//ici seulement pour boules
   };
-
   int nb_fns = sizeof(mesOnglets)/sizeof (Fns);
 
 
@@ -781,14 +770,6 @@ void SyntheseGenerale::DoComptageTotal(void)
     return;
   }
 #endif
-
-  /*
-  QTableView *(SyntheseGenerale::*ptrCalculTbv[])(param_2 prm)=
-  {
-      &SyntheseGenerale::tot_f1,
-      &SyntheseGenerale::tot_f2
-};
-*/
 
   int a = sizeof(ptrFunc);
   int b = sizeof(*ptrFunc);
@@ -800,6 +781,10 @@ void SyntheseGenerale::DoComptageTotal(void)
     param_1 prm;
     prm.tab_Top=tab_Top;
     prm.tb_src = "RefTirages";
+    prm.hlp[0].tbl="Bnrz";
+    prm.hlp[0].key="z";
+    prm.hlp[1].tbl="analyses";
+    prm.hlp[1].key="toBeDefined";
 
     prm.niv[0].names = n1_names;
     prm.niv[0].max = nb_n1_names;
@@ -832,7 +817,6 @@ QWidget * SyntheseGenerale::tot_debut(param_1 prm,Fns *b)
   QWidget * qw_tmp = new QWidget;
   QGridLayout *qg_tmp = new QGridLayout;
 
-  //ptrFonction *c = b[1].pTabFn[0];
   QTabWidget *tab_Top=prm.tab_Top;
   int max_tab = prm.niv[0].max;
   for(int tab=0;tab<max_tab;tab++){
@@ -858,15 +842,15 @@ QWidget * SyntheseGenerale::tot_zn(param_1 prm,ptrFonction *b)
   QWidget * qw_tmp = new QWidget;
   QGridLayout *qg_tmp = new QGridLayout;
 
-  QString tab_name = "tot";
+  //QString tab_name = "tot";
   QTabWidget *tab_Top=prm.tab_Top;
 
   //tab_Top->addTab(qw_tmp,tab_name);
 
   //------------
-  int nb_zn = 2;
-  QString tb_key = "Bnrz";
-  QString vl_key = "z";
+  //int nb_zn = 2;
+  QString tb_key = prm.hlp[0].tbl;//"Bnrz";
+  QString vl_key = prm.hlp[0].key;//"z";
   QString *names_N1=prm.niv[1].names;
   QString *names_N2=prm.niv[2].names;
   int max_zn = prm.niv[1].max;
@@ -878,23 +862,30 @@ QWidget * SyntheseGenerale::tot_zn(param_1 prm,ptrFonction *b)
     qDebug()<< "Traitement onglet : "<<names_N1[zn]<<endl;
 #endif
 
-    QString tb_dst = "r_"+prm.tb_src+"_"+tab_name+"_z"+QString::number(zn+1);
     QWidget * wdg_n1 = new QWidget;
     QGridLayout * grd_n1 = new QGridLayout;
     //----------
     QTabWidget *tab_N2 = new QTabWidget(wdg_n1);
     for(int calcul=0;calcul<max_tbv;calcul++){
 #ifndef QT_NO_DEBUG
-    qDebug()<< "Traitement onglet : "<<names_N2[calcul]<<endl;
+      qDebug()<< "Traitement onglet : "<<names_N2[calcul]<<endl;
 #endif
 
       QWidget * wdg_n2 = new QWidget;
-      QGridLayout * grd_n2 = new QGridLayout;
       // ---------
-      param_2 prm;
+      param_2 prm_2;
+      prm_2.prm_1=prm;
+      prm_2.zn = zn;
+      prm_2.dst = 0;
 
-      QTableView *un_Qtbview = (this->*b[calcul])(prm);
-      grd_n2->addWidget(un_Qtbview,0,0);
+      prm_2.tb_wrt = QString("r_")
+                     + prm.tb_src
+                     +QString("_")
+                     +names_N1[zn]
+                     +QString("_z")
+                     +QString::number(zn+1);
+
+      QGridLayout *grd_n2 = (this->*b[calcul])(prm_2);
       // ---------
       wdg_n2->setLayout(grd_n2);
       tab_N2->addTab(wdg_n2,names_N2[calcul]);
@@ -910,19 +901,18 @@ QWidget * SyntheseGenerale::tot_zn(param_1 prm,ptrFonction *b)
   return qw_tmp;
 }
 
-QTableView * SyntheseGenerale::tot_f1(param_2 prm)
+QGridLayout * SyntheseGenerale::tot_f1(param_2 prm)
 {
-  QTableView * qtv_temp = new QTableView;
+  QGridLayout * qtv_temp = new QGridLayout;
 #ifndef QT_NO_DEBUG
   qDebug() << "tot_f1";
 #endif
-
   return qtv_temp;
 }
 
-QTableView * SyntheseGenerale::tot_f2(param_2 prm)
+QGridLayout * SyntheseGenerale::tot_f2(param_2 prm)
 {
-  QTableView * qtv_temp = new QTableView;
+  QGridLayout * qtv_temp = new QGridLayout;
 #ifndef QT_NO_DEBUG
   qDebug() << "tot_f2";
 #endif
@@ -1508,6 +1498,31 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
 }
 #endif
 
+QGridLayout* SyntheseGenerale::Vbox_Analyse_brc(param_2 prm)
+{
+
+  QGridLayout *lay_tmp = new QGridLayout;
+  QVBoxLayout *vb_tmp = new QVBoxLayout;
+  QLabel * lab_tmp = new QLabel;
+  QTableView *qtv_tmp = NULL;
+
+  int zn =prm.zn;
+  QString tb_src = prm.prm_1.tb_src;
+  QString tb_ref = prm.prm_1.hlp[1].tbl;
+  QString key = "bc";
+
+  qtv_tmp = TbvAnalyse_brc(zn, tb_src, tb_ref, key);
+  tbv[zn]<<qtv_tmp;
+
+  lab_tmp->setText("Repartitions");
+  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+  lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+
+  return lay_tmp;
+}
 
 
 QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb_ref, QString key)
@@ -1614,7 +1629,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb
   return qtv_tmp;
 }
 
-QGridLayout* SyntheseGenerale::Vbox_Resume(prmVana prm)
+QGridLayout* SyntheseGenerale::Vbox_Resume(param_2 prm)
 {
   QGridLayout *lay_tmp = new QGridLayout;
   QVBoxLayout *vb_tmp = new QVBoxLayout;
@@ -1622,9 +1637,9 @@ QGridLayout* SyntheseGenerale::Vbox_Resume(prmVana prm)
   QTableView *qtv_tmp = NULL;
 
   int zn =prm.zn;
-  QString tb_src=prm.tb_src;
-  QString tb_ref=prm.tb_ref;
-  QString key=prm.key;
+  QString tb_src = prm.prm_1.tb_src;
+  QString tb_ref = prm.prm_1.hlp[0].tbl;
+  QString key = prm.prm_1.hlp[0].key;
 
   qtv_tmp = TbvResume_tot(zn, tb_src);
 
@@ -1638,7 +1653,7 @@ QGridLayout* SyntheseGenerale::Vbox_Resume(prmVana prm)
   return lay_tmp;
 }
 
-QGridLayout* SyntheseGenerale::Vbox_Analyse(prmVana prm)
+QGridLayout* SyntheseGenerale::Vbox_Analyse(param_2 prm)
 {
 
   QGridLayout *lay_tmp = new QGridLayout;
@@ -1647,9 +1662,9 @@ QGridLayout* SyntheseGenerale::Vbox_Analyse(prmVana prm)
   QTableView *qtv_tmp = NULL;
 
   int zn =prm.zn;
-  QString tb_src = prm.tb_src;
-  QString tb_ref = prm.tb_ref;
-  QString key = prm.key;
+  QString tb_src = prm.prm_1.tb_src;
+  QString tb_ref = prm.prm_1.hlp[0].tbl;
+  QString key = prm.prm_1.hlp[0].key+QString::number(zn+1);
 
   qtv_tmp = TbvAnalyse_tot(zn, tb_src, tb_ref, key);
   tbv[zn]<<qtv_tmp;
@@ -1670,13 +1685,14 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
 
   sqm_bloc1_1 = new QSqlQueryModel;
 
-  QTableView *qtv_tmp = new QTableView(parentWidget[zn]);
+  QTableView *qtv_tmp = new QTableView;
   QString qtv_name = QString("new")+QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
   qtv_tmp->setObjectName(qtv_name);
 
+  /*
   QList<QTableView *>tb_brc = parentWidget[zn]->findChildren<QTableView*>();
   int totalTbv = tb_brc.size();
-
+*/
   QSqlQuery query(db_0);
   bool isOk = true;
   QString st_msg1 = "";
@@ -1783,6 +1799,30 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
            this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
   return qtv_tmp;
+}
+
+QGridLayout* SyntheseGenerale::Vbox_Resume_brc(param_2 prm)
+{
+  QGridLayout *lay_tmp = new QGridLayout;
+  QVBoxLayout *vb_tmp = new QVBoxLayout;
+  QLabel * lab_tmp = new QLabel;
+  QTableView *qtv_tmp = NULL;
+
+  int zn =prm.zn;
+  QString tb_src = prm.prm_1.tb_src;
+  QString tb_ref = prm.prm_1.hlp[0].tbl;
+  QString key = prm.prm_1.hlp[0].key;
+
+  qtv_tmp = TbvResume_brc(zn, tb_src);
+
+  lab_tmp->setText("Selections Possibles");
+  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+  lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+
+  return lay_tmp;
 }
 
 QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
@@ -2673,7 +2713,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(prmLay prm)
     sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_Ensemble_1),msg1);
 
 #ifndef QT_NO_DEBUG
-	 qDebug() << sqlReq;
+    qDebug() << sqlReq;
 #endif
 
 	 status = query.exec(sqlReq);
@@ -3179,7 +3219,7 @@ QString CreatreTitle(stCurDemande *pConf)
     {
 
 #ifndef QT_NO_DEBUG
-		qDebug()<< "Aucune selection active pour i="<<i;
+      qDebug()<< "Aucune selection active pour i="<<i;
 #endif
 
 	 }
@@ -3364,17 +3404,16 @@ QString SyntheseGenerale::SqlCreateCodeBary(int onglet, QString table)
   QString qtv_name = QString("new")+QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
 
   /// Trouver le tableau des barycentres
-  QList<QTableView *>tb_brc = parentWidget[zn]->findChildren<QTableView*>();
-  int totalTbv = tb_brc.size();
+  int totalTbv = tbv[zn].size();
 
   if(totalTbv){
 
     /// Table trouve
     /// recuperer selection
-    QItemSelectionModel *selectionModel = tb_brc.at(0)->selectionModel();
+    QItemSelectionModel *selectionModel = tbv->at(0)->selectionModel();
     QModelIndexList indexes =  selectionModel->selectedIndexes();
 
-    QString name = tb_brc.at(0)->objectName();
+    QString name = tbv->at(0)->objectName();
     QString name2 = selectionModel->objectName();
 
     /// il y a t'il une selection
@@ -3736,7 +3775,7 @@ count(*)  as T,
 	#endif
 
 
-	return st_query;
+   return st_query;
 
  }
 
