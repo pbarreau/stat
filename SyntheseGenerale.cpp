@@ -756,10 +756,10 @@ void SyntheseGenerale::DoComptageTotal(void)
 
   Fns mesOnglets[]=
   {
-    {"tot",{p_tot}},
-    {"cmb",{p_cmb}},
-    {"grp",{p_grp}},
-    {"brc",{p_brc}}//ici seulement pour boules
+    {"tot",{p_tot},{nb_n1_names,nb_n2_names,nb_n3_names}},
+    {"cmb",{p_cmb},{nb_n1_names,1,1}},
+    {"grp",{p_grp},{nb_n1_names,1,1}},
+    {"brc",{p_brc},{nb_n1_names,1,nb_n3_names}}//ici seulement pour boules
   };
   int nb_fns = sizeof(mesOnglets)/sizeof (Fns);
 
@@ -826,6 +826,7 @@ QWidget * SyntheseGenerale::tot_debut(param_1 prm,Fns *b)
 #ifndef QT_NO_DEBUG
     qDebug()<< "Traitement onglet : "<<tab_name<<endl;
 #endif
+    prm.l_max = b[tab].l_max;
     QWidget * result = tot_zn(prm,(b[tab].pTabFn[0]));
     qg_n1->addWidget(result,0,0);
     qw_n1->setLayout(qg_n1);
@@ -853,8 +854,13 @@ QWidget * SyntheseGenerale::tot_zn(param_1 prm,ptrFonction *b)
   QString vl_key = prm.hlp[0].key;//"z";
   QString *names_N1=prm.niv[1].names;
   QString *names_N2=prm.niv[2].names;
+
+  /*
   int max_zn = prm.niv[1].max;
   int max_tbv = prm.niv[2].max;
+*/
+  int max_zn = prm.l_max[1];
+  int max_tbv = prm.l_max[2];
 
   QTabWidget *tab_N1 = new QTabWidget;
   for(int zn=0;zn<max_zn;zn++){

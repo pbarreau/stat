@@ -187,7 +187,7 @@ class SyntheseGenerale : public QObject
         QString tb_src;
         keyHelp hlp[2];
         ongDef niv[3];
-        //int p_niv[3];
+        int *l_max;
     };
     struct param_2{
         param_1 prm_1;
@@ -201,6 +201,7 @@ class SyntheseGenerale : public QObject
     struct Fns{
         QString name;
         ptrFonction *pTabFn[2];
+        int l_max[3];
     };
 
     QWidget *tot_debut (param_1 a,Fns *b);
