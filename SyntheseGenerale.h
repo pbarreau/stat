@@ -173,26 +173,33 @@ class SyntheseGenerale : public QObject
     QString SqlCreateCodeBary(int onglet, QString table);
 
 #if TRY_CODE_NEW
-  public:
+  private:
+    struct ongDef{
+        QString *names;
+        int max;
+    };
     struct param_1{
      QTabWidget *tab_Top;
      QString tb_src;
+     ongDef niv[3];
     };
 
     struct param_2{
       QString cnx;
     };
 
-  private:
+
     typedef QTableView * (SyntheseGenerale::*ptrFonction)(param_2 a);
+    struct Fns{
+       QString name;
+       ptrFonction *pTabFn[2];
+    };
+
+    QWidget *tot_debut (param_1 a,Fns *b);
     QWidget *tot_zn (param_1 a,ptrFonction *b);
     QTableView *tot_f1(param_2);
     QTableView *tot_f2(param_2);
 
-    struct Fns{
-       QString name;
-       ptrFonction pFn[2];
-    };
 
 #else
     struct prmLay{

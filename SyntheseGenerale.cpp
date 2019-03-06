@@ -732,26 +732,63 @@ void SyntheseGenerale::DoComptageTotal(void)
   /// https://openclassrooms.com/fr/courses/1252476-les-pointeurs-sur-fonctions
   QTabWidget *tab_Top = new QTabWidget;
 
-  QWidget *(SyntheseGenerale::*ptrFunc[])(param_1,ptrFonction*)=
+
+  QString n1_names[]={"tot","cmb","grp","brc"};
+  int nb_n1_names = sizeof(n1_names)/sizeof(QString);
+
+  QString n2_names[]={"Boules","Etoiles"};
+  int nb_n2_names = sizeof(n2_names)/sizeof(QString);
+
+  QString n3_names[]={"Details","Regroupement"};
+  int nb_n3_names = sizeof(n3_names)/sizeof(QString);
+
+  /*
+  typedef struct{
+      int n2;
+      int n3;
+  }stConf;
+  stConf config[]={
+    {nb_n2_names,nb_n3_names},{1,nb_n3_names},
+    {1,nb_n3_names},{1,nb_n3_names}
+  };
+*/
+
+  QWidget *(SyntheseGenerale::*ptrFunc[])(param_1,Fns *)=
   {
-      &SyntheseGenerale::tot_zn
+      &SyntheseGenerale::tot_debut
 };
+
+
+  ptrFonction p_tot[]={&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2};
+  ptrFonction p_cmb[]={&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2};
+  ptrFonction p_grp[]={&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2};
+  ptrFonction p_brc[]={&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2};
 
   Fns mesOnglets[]=
   {
-    {"tot",{&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2}},
-    {"cmb",{&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2}},
+    {"tot",{p_tot}},
+    {"cmb",{p_cmb}},
+    {"grp",{p_grp}},
+    {"brc",{p_brc}}
   };
 
   int nb_fns = sizeof(mesOnglets)/sizeof (Fns);
 
 
+#ifndef QT_NO_DEBUG
+  if (nb_n1_names != nb_fns){
+    QMessageBox::warning(NULL,"Calcul","Taille entre onglet et fn different", QMessageBox::Cancel);
+    return;
+  }
+#endif
+
+  /*
   QTableView *(SyntheseGenerale::*ptrCalculTbv[])(param_2 prm)=
   {
       &SyntheseGenerale::tot_f1,
       &SyntheseGenerale::tot_f2
-  };
-
+};
+*/
 
   int a = sizeof(ptrFunc);
   int b = sizeof(*ptrFunc);
@@ -759,12 +796,22 @@ void SyntheseGenerale::DoComptageTotal(void)
   for(int i =0; i<nb_fn;i++)
   {
     QWidget * calcul;
+
     param_1 prm;
     prm.tab_Top=tab_Top;
     prm.tb_src = "RefTirages";
 
-    param_2 prm_2;
-    calcul = (this->*ptrFunc[i])(prm,&ptrCalculTbv[0]);
+    prm.niv[0].names = n1_names;
+    prm.niv[0].max = nb_n1_names;
+
+    prm.niv[1].names = n2_names;
+    prm.niv[1].max = nb_n2_names;
+
+    prm.niv[2].names = n3_names;
+    prm.niv[2].max = nb_n3_names;
+
+    calcul = (this->*ptrFunc[i])(prm,&mesOnglets[0]);
+
   }
 
   QFormLayout *mainLayout = new QFormLayout;
@@ -780,6 +827,32 @@ void SyntheseGenerale::DoComptageTotal(void)
 
 }
 
+QWidget * SyntheseGenerale::tot_debut(param_1 prm,Fns *b)
+{
+  QWidget * qw_tmp = new QWidget;
+  QGridLayout *qg_tmp = new QGridLayout;
+
+  //ptrFonction *c = b[1].pTabFn[0];
+  QTabWidget *tab_Top=prm.tab_Top;
+  int max_tab = prm.niv[0].max;
+  for(int tab=0;tab<max_tab;tab++){
+    QWidget * qw_n1 = new QWidget;
+    QGridLayout *qg_n1 = new QGridLayout;
+    QString tab_name = prm.niv->names[tab];
+#ifndef QT_NO_DEBUG
+    qDebug()<< "Traitement onglet : "<<tab_name<<endl;
+#endif
+    QWidget * result = tot_zn(prm,(b[tab].pTabFn[0]));
+    qg_n1->addWidget(result,0,0);
+    qw_n1->setLayout(qg_n1);
+    tab_Top->addTab(qw_n1,tab_name);
+  }
+  qg_tmp->addWidget(tab_Top,0,0);
+  //------------
+  qw_tmp->setLayout(qg_tmp);
+  return qw_tmp;
+}
+
 QWidget * SyntheseGenerale::tot_zn(param_1 prm,ptrFonction *b)
 {
   QWidget * qw_tmp = new QWidget;
@@ -788,28 +861,38 @@ QWidget * SyntheseGenerale::tot_zn(param_1 prm,ptrFonction *b)
   QString tab_name = "tot";
   QTabWidget *tab_Top=prm.tab_Top;
 
-  tab_Top->addTab(qw_tmp,tab_name);
+  //tab_Top->addTab(qw_tmp,tab_name);
 
   //------------
   int nb_zn = 2;
   QString tb_key = "Bnrz";
   QString vl_key = "z";
-  QString names_N1[]={"boules","etoiles"};
-  QString names_N2[]={"Repartitions","Selections"};
-  int max_tbv = sizeof(names_N2)/sizeof(QString);
+  QString *names_N1=prm.niv[1].names;
+  QString *names_N2=prm.niv[2].names;
+  int max_zn = prm.niv[1].max;
+  int max_tbv = prm.niv[2].max;
 
   QTabWidget *tab_N1 = new QTabWidget;
-  for(int zn=0;zn<nb_zn;zn++){
+  for(int zn=0;zn<max_zn;zn++){
+#ifndef QT_NO_DEBUG
+    qDebug()<< "Traitement onglet : "<<names_N1[zn]<<endl;
+#endif
+
     QString tb_dst = "r_"+prm.tb_src+"_"+tab_name+"_z"+QString::number(zn+1);
     QWidget * wdg_n1 = new QWidget;
     QGridLayout * grd_n1 = new QGridLayout;
     //----------
     QTabWidget *tab_N2 = new QTabWidget(wdg_n1);
     for(int calcul=0;calcul<max_tbv;calcul++){
+#ifndef QT_NO_DEBUG
+    qDebug()<< "Traitement onglet : "<<names_N2[calcul]<<endl;
+#endif
+
       QWidget * wdg_n2 = new QWidget;
       QGridLayout * grd_n2 = new QGridLayout;
       // ---------
       param_2 prm;
+
       QTableView *un_Qtbview = (this->*b[calcul])(prm);
       grd_n2->addWidget(un_Qtbview,0,0);
       // ---------
@@ -2590,7 +2673,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(prmLay prm)
     sqlReq = sql_RegroupeSelonCritere(*(uneDemande.st_Ensemble_1),msg1);
 
 #ifndef QT_NO_DEBUG
-    qDebug() << sqlReq;
+	 qDebug() << sqlReq;
 #endif
 
 	 status = query.exec(sqlReq);
@@ -3096,7 +3179,7 @@ QString CreatreTitle(stCurDemande *pConf)
     {
 
 #ifndef QT_NO_DEBUG
-      qDebug()<< "Aucune selection active pour i="<<i;
+		qDebug()<< "Aucune selection active pour i="<<i;
 #endif
 
 	 }
@@ -3653,7 +3736,7 @@ count(*)  as T,
 	#endif
 
 
-   return st_query;
+	return st_query;
 
  }
 
