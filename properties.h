@@ -8,7 +8,7 @@
 #define SET_DBG_LEV1    false
 #define SET_DBG_LEV2    true
 
-#define TRY_CODE_NEW    false
+#define TRY_CODE_NEW    true
 
 #define SET_DBG_QLV1    true
 #define SET_RUN_QLV1    true

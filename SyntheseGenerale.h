@@ -172,12 +172,17 @@ class SyntheseGenerale : public QObject
     QString SqlCreateCodeGroupe(int onglet, QString table);
     QString SqlCreateCodeBary(int onglet, QString table);
 
+#if TRY_CODE_NEW
+    struct param_1{
+     QTabWidget *tab_Top;
+     QString tb_src;
+    };
+    QWidget *tot_zn(param_1);
+#else
     struct prmLay{
         int dst;
         int zn;
     };
-#if TRY_CODE_NEW
-#else
     QGridLayout * MonLayout_R1_tot_zn(prmLay prm);
     QGridLayout * MonLayout_R1_tot_z2(prmLay prm);
     QGridLayout * MonLayout_R2_cmb_z1(prmLay prm);

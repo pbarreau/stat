@@ -730,8 +730,52 @@ void SyntheseGenerale::setMyOwnFactory(void)
 void SyntheseGenerale::DoComptageTotal(void)
 {
   QTabWidget *tab_Top = new QTabWidget;
+
+  QWidget *(SyntheseGenerale::*ptrFunc[])(param_1 prm)=
+  {
+      &SyntheseGenerale::tot_zn
+};
+
+  int a = sizeof(ptrFunc);
+  int b = sizeof(*ptrFunc);
+  int nb_fn = a/b;
+  for(int i =0; i<nb_fn;i++)
+  {
+    QWidget * calcul;
+    param_1 prm;
+    prm.tab_Top=tab_Top;
+    prm.tb_src = "RefTirages";
+    calcul = (this->*ptrFunc[i])(prm);
+  }
+
+  QFormLayout *mainLayout = new QFormLayout;
+  selection = new LabelClickable;
+
+  selection->setText(CTXT_SELECTION);
+  connect( selection, SIGNAL( clicked(QString)) ,
+           this, SLOT( slot_RazSelection(QString) ) );
+
+  mainLayout->addWidget(selection);
+  mainLayout->addWidget(tab_Top);
+  disposition->addLayout(mainLayout,0,1,Qt::AlignLeft|Qt::AlignTop);
+
 }
 
+QWidget *SyntheseGenerale::tot_zn(param_1 prm)
+{
+  QWidget * qw_tmp = new QWidget;
+  QGridLayout *qg_tmp = new QGridLayout;
+
+  QString tab_name = "tot";
+  QTabWidget *tab_Top=prm.tab_Top;
+
+  tab_Top->addTab(qw_tmp,tab_name);
+
+  //------------
+  //------------
+  qw_tmp->setLayout(qg_tmp);
+  return qw_tmp;
+}
 #else
 void SyntheseGenerale::DoComptageTotal(void)
 {
@@ -1930,7 +1974,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_zn(prmLay prm)
 
   int dst = prm.dst;
   int zn = prm.zn;
- int tot_zn = 2;
+  int tot_zn = 2;
 
   QString tb_src = "RefTirages";
   QString tb_ref = "Bnrz";
@@ -2382,7 +2426,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(prmLay prm)
 
   int dst = prm.dst;
   int zn = prm.zn;
- int zone = 0;
+  int zone = 0;
   int maxElems = uneDemande.ref->limites[zn].max;
   //int nbBoules = floor(maxElems/10)+1;
 
@@ -3217,23 +3261,23 @@ QString SyntheseGenerale::SqlCreateCodeBoule(int onglet, QString table)
   int zn = 0;
 #if 1
 
-int total_table = tbv[zn].size();
-if(total_table){
+  int total_table = tbv[zn].size();
+  if(total_table){
 
-  for(int i = 0; i<total_table;i++ ){
-    /// recuperer selection
-    QItemSelectionModel *selectionModel = tbv->at(i)->selectionModel();
-    QModelIndexList indexes =  selectionModel->selectedIndexes();
+    for(int i = 0; i<total_table;i++ ){
+      /// recuperer selection
+      QItemSelectionModel *selectionModel = tbv->at(i)->selectionModel();
+      QModelIndexList indexes =  selectionModel->selectedIndexes();
 
-    int nb_selection = indexes.size();
+      int nb_selection = indexes.size();
 
-    QString name = tbv->at(i)->objectName();
-    QString name2 = selectionModel->objectName();
+      QString name = tbv->at(i)->objectName();
+      QString name2 = selectionModel->objectName();
 
-    nb_selection++;
+      nb_selection++;
+    }
+
   }
-
-}
 #else
   QModelIndexList indexes =  uneDemande.selection[onglet];
 
@@ -3250,7 +3294,7 @@ if(total_table){
 #endif
 
 #ifndef QT_NO_DEBUG
-    qDebug() << sqlReq;
+  qDebug() << sqlReq;
 #endif
   return sqlReq;
 }
