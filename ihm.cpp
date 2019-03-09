@@ -58,6 +58,12 @@ void MainWindow::createActions()
     exitAct->setStatusTip(tr("Terminer l'application"));
     connect(exitAct, SIGNAL(triggered()), this, SLOT(pslot_close()));
 
+    //--------- Element du menu Resultats ---------
+    actGetFromUrlsFdj = new QAction(tr("&Telecharger de la Fdj"), this);
+    actGetFromUrlsFdj ->setStatusTip("Telecharger depuis Francais des jeux");
+    connect(actGetFromUrlsFdj, SIGNAL(triggered()), this, SLOT(pslot_GetFromFdj()));
+
+    //--------- Element du menu Aide ---------
     aboutAct = new QAction(tr("&Apropos"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(pslot_about()));
@@ -73,7 +79,10 @@ void MainWindow::createMenus()
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
 
-    menuBar()->addSeparator();
+    fdjMenu = menuBar()->addMenu(tr("&Resultas"));
+    fdjMenu->addAction(actGetFromUrlsFdj);
+
+    //menuBar()->addSeparator();
 
     helpMenu = menuBar()->addMenu(tr("&Aide"));
     helpMenu->addAction(aboutAct);

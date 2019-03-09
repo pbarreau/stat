@@ -172,6 +172,7 @@ class SyntheseGenerale : public QObject
     QString SqlCreateCodeGroupe(int onglet, QString table);
     QString SqlCreateCodeBary(int onglet, QString table);
 
+    QString ChercherSelection(int zn, QModelIndexList sel_wko, QTableView * tbv_wko, QString tb_src);
 #if TRY_CODE_NEW
   private:
     struct ongDef{
