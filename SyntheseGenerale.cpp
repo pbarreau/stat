@@ -719,44 +719,58 @@ void SyntheseGenerale::DoComptageTotal(void)
   QTabWidget *tab_Top = new QTabWidget;
 
 
-  QString n1_names[]={"tot","cmb","grp","brc"};
+  QString n1_names[]={"Boules","Etoiles"};//{"tot","cmb","grp","brc"};
   int nb_n1_names = sizeof(n1_names)/sizeof(QString);
+  tbv= new QList<QTableView *> [nb_n1_names];
 
-  QString n2_names[]={"Boules","Etoiles"};
+  QString n2_names[typeCalc::endCalc]={"tot","brc","cmb","grp"};//{"Boules","Etoiles"};
   int nb_n2_names = sizeof(n2_names)/sizeof(QString);
-  tbv= new QList<QTableView *> [nb_n2_names];
 
   QString n3_names[]={"Details","Regroupement"};
   int nb_n3_names = sizeof(n3_names)/sizeof(QString);
 
   /// https://openclassrooms.com/fr/courses/1252476-les-pointeurs-sur-fonctions
-  QWidget *(SyntheseGenerale::*ptrFunc[])(param_1,Fns *)=
+  QWidget *(SyntheseGenerale::*ptrFunc[])(param_1,CnfFnCalc *)=
   {
-      &SyntheseGenerale::tot_debut
+      &SyntheseGenerale::VbInfoDepart
 };
 
-
-  ptrFonction p_tot[]={&SyntheseGenerale::Vbox_Analyse,&SyntheseGenerale::Vbox_Resume};
-  ptrFonction p_cmb[]={&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2};
-  ptrFonction p_grp[]={&SyntheseGenerale::tot_f1,&SyntheseGenerale::tot_f2};
-  ptrFonction p_brc[]={&SyntheseGenerale::Vbox_Analyse_brc,&SyntheseGenerale::Vbox_Resume_brc};
-
-  Fns mesOnglets[]=
+  /// Pointeur vers les fonctions de calcul a appliquer pour toutes
+  /// les zones (boules,etoiles)
+  ptrFnTbvCalc p_tot[]={
+    {
+      {&SyntheseGenerale::VbInfo_tot,&SyntheseGenerale::VbResu_tot},
+      {&SyntheseGenerale::VbInfo_tot,&SyntheseGenerale::VbResu_tot}
+    },
+    {
+      {&SyntheseGenerale::VbInfo_nop,&SyntheseGenerale::VbResu_tot},
+      {&SyntheseGenerale::VbInfo_tot,&SyntheseGenerale::VbResu_nop}
+    }
+  };
+/*
+  ptrFnTbvCalc p_cmb[]={&SyntheseGenerale::VbInfo_nop,&SyntheseGenerale::VbResu_nop};
+  ptrFnTbvCalc p_grp[]={&SyntheseGenerale::VbInfo_nop,&SyntheseGenerale::VbResu_nop};
+  ptrFnTbvCalc p_brc[]={&SyntheseGenerale::VbInfo_brc,&SyntheseGenerale::VbResu_brc};
+*/
+  CnfFnCalc mesCalculs[]=
   {
-    {"tot",{p_tot},{nb_n1_names,nb_n2_names,nb_n3_names}},
+    {n2_names[typeCalc::tot],{p_tot[0],p_tot[1]},p_tot,{nb_n1_names,nb_n2_names,nb_n3_names}}/*,
     {"cmb",{p_cmb},{nb_n1_names,1,1}},
     {"grp",{p_grp},{nb_n1_names,1,1}},
-    {"brc",{p_brc},{nb_n1_names,1,nb_n3_names}}//ici seulement pour boules
+    {"brc",{p_brc},{1,1,nb_n3_names}}//ici seulement pour boules
+      */
   };
-  int nb_fns = sizeof(mesOnglets)/sizeof (Fns);
+  int nbCalculs = sizeof(mesCalculs)/sizeof (CnfFnCalc);
 
 
+  /*
 #ifndef QT_NO_DEBUG
-  if (nb_n1_names != nb_fns){
+  if (nb_n2_names != nbCalculs){
     QMessageBox::warning(NULL,"Calcul","Taille entre onglet et fn different", QMessageBox::Cancel);
     return;
   }
 #endif
+*/
 
   int a = sizeof(ptrFunc);
   int b = sizeof(*ptrFunc);
@@ -782,7 +796,7 @@ void SyntheseGenerale::DoComptageTotal(void)
     prm.niv[2].names = n3_names;
     prm.niv[2].max = nb_n3_names;
 
-    calcul = (this->*ptrFunc[i])(prm,&mesOnglets[0]);
+    calcul = (this->*ptrFunc[i])(prm,&mesCalculs[0]);
 
   }
 
@@ -799,7 +813,7 @@ void SyntheseGenerale::DoComptageTotal(void)
 
 }
 
-QWidget * SyntheseGenerale::tot_debut(param_1 prm,Fns *b)
+QWidget * SyntheseGenerale::VbInfoDepart(param_1 prm,CnfFnCalc *b)
 {
   QWidget * qw_tmp = new QWidget;
   QGridLayout *qg_tmp = new QGridLayout;
@@ -814,7 +828,7 @@ QWidget * SyntheseGenerale::tot_debut(param_1 prm,Fns *b)
     qDebug()<< "Traitement onglet : "<<tab_name<<endl;
 #endif
     prm.l_max = b[tab].l_max;
-    QWidget * result = tot_zn(prm,(b[tab].pTabFn[0]));
+    QWidget * result = tot_zn(prm,(&b[tab]));
     qg_n1->addWidget(result,0,0);
     qw_n1->setLayout(qg_n1);
     tab_Top->addTab(qw_n1,tab_name);
@@ -825,7 +839,7 @@ QWidget * SyntheseGenerale::tot_debut(param_1 prm,Fns *b)
   return qw_tmp;
 }
 
-QWidget * SyntheseGenerale::tot_zn(param_1 prm,ptrFonction *b)
+QWidget * SyntheseGenerale::tot_zn(param_1 prm,CnfFnCalc *b)
 {
   QWidget * qw_tmp = new QWidget;
   QGridLayout *qg_tmp = new QGridLayout;
@@ -837,7 +851,7 @@ QWidget * SyntheseGenerale::tot_zn(param_1 prm,ptrFonction *b)
   QString *names_N1=prm.niv[1].names;
   QString *names_N2=prm.niv[2].names;
 
-  int max_zn = prm.l_max[1];
+  int max_zn = prm.l_max[0];
   int max_tbv = prm.l_max[2];
 
   QTabWidget *tab_N1 = new QTabWidget;
@@ -869,7 +883,11 @@ QWidget * SyntheseGenerale::tot_zn(param_1 prm,ptrFonction *b)
                      +QString("_z")
                      +QString::number(zn+1);
 
-      QGridLayout *grd_n2 = (this->*b[calcul])(prm_2);
+      ptrFnTbv *a1 = b[calcul].pTabFn[0];
+      ptrFnTbvCalc *a2 = b[calcul].pTestFn;
+
+      QGridLayout *grd_n2 = (this->**a1[0])(prm_2);
+      QGridLayout *grd_n3 = (this->**a2[0][0])(prm_2);
       // ---------
       wdg_n2->setLayout(grd_n2);
       tab_N2->addTab(wdg_n2,names_N2[calcul]);
@@ -885,20 +903,20 @@ QWidget * SyntheseGenerale::tot_zn(param_1 prm,ptrFonction *b)
   return qw_tmp;
 }
 
-QGridLayout * SyntheseGenerale::tot_f1(param_2 prm)
+QGridLayout * SyntheseGenerale::VbInfo_nop(param_2 prm)
 {
   QGridLayout * qtv_temp = new QGridLayout;
 #ifndef QT_NO_DEBUG
-  qDebug() << "tot_f1";
+  qDebug() << "VbInfo_nop";
 #endif
   return qtv_temp;
 }
 
-QGridLayout * SyntheseGenerale::tot_f2(param_2 prm)
+QGridLayout * SyntheseGenerale::VbResu_nop(param_2 prm)
 {
   QGridLayout * qtv_temp = new QGridLayout;
 #ifndef QT_NO_DEBUG
-  qDebug() << "tot_f2";
+  qDebug() << "VbResu_nop";
 #endif
   return qtv_temp;
 }
@@ -1416,7 +1434,7 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
 }
 #endif
 
-QGridLayout* SyntheseGenerale::Vbox_Analyse_brc(param_2 prm)
+QGridLayout* SyntheseGenerale::VbInfo_brc(param_2 prm)
 {
 
   QGridLayout *lay_tmp = new QGridLayout;
@@ -1547,7 +1565,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb
   return qtv_tmp;
 }
 
-QGridLayout* SyntheseGenerale::Vbox_Resume(param_2 prm)
+QGridLayout* SyntheseGenerale::VbResu_tot(param_2 prm)
 {
   QGridLayout *lay_tmp = new QGridLayout;
   QVBoxLayout *vb_tmp = new QVBoxLayout;
@@ -1571,7 +1589,7 @@ QGridLayout* SyntheseGenerale::Vbox_Resume(param_2 prm)
   return lay_tmp;
 }
 
-QGridLayout* SyntheseGenerale::Vbox_Analyse(param_2 prm)
+QGridLayout* SyntheseGenerale::VbInfo_tot(param_2 prm)
 {
 
   QGridLayout *lay_tmp = new QGridLayout;
@@ -1719,7 +1737,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
   return qtv_tmp;
 }
 
-QGridLayout* SyntheseGenerale::Vbox_Resume_brc(param_2 prm)
+QGridLayout* SyntheseGenerale::VbResu_brc(param_2 prm)
 {
   QGridLayout *lay_tmp = new QGridLayout;
   QVBoxLayout *vb_tmp = new QVBoxLayout;
@@ -2109,8 +2127,8 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_zn(prmLay prm)
   QGridLayout *(SyntheseGenerale::*ptrFunc[])
       (prmVana val)=
   {
-      &SyntheseGenerale::Vbox_Analyse,
-      &SyntheseGenerale::Vbox_Resume
+      &SyntheseGenerale::VbInfo_tot,
+      &SyntheseGenerale::VbResu_tot
 };
 
   int calcul=0;

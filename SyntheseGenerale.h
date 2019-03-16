@@ -175,6 +175,8 @@ class SyntheseGenerale : public QObject
     QString ChercherSelection(int zn, QModelIndexList sel_wko, QTableView * tbv_wko, QString tb_src);
 #if TRY_CODE_NEW
   private:
+    enum typeCalc{tot,brc,cmb,grp,endCalc};
+
     struct ongDef{
         QString *names;
         int max;
@@ -198,17 +200,19 @@ class SyntheseGenerale : public QObject
     };
 
 
-    typedef QGridLayout * (SyntheseGenerale::*ptrFonction)(param_2 a);
-    struct Fns{
+    typedef QGridLayout * (SyntheseGenerale::*ptrFnTbvCalc[2][2])(param_2 a);
+    typedef QGridLayout * (SyntheseGenerale::*ptrFnTbv[2])(param_2 a);
+    struct CnfFnCalc{
         QString name;
-        ptrFonction *pTabFn[2];
+        ptrFnTbv *pTabFn[2];
+        ptrFnTbvCalc *pTestFn;
         int l_max[3];
     };
 
-    QWidget *tot_debut (param_1 a,Fns *b);
-    QWidget *tot_zn (param_1 a,ptrFonction *b);
-    QGridLayout *tot_f1(param_2);
-    QGridLayout *tot_f2(param_2);
+    QWidget *VbInfoDepart (param_1 a,CnfFnCalc *b);
+    QWidget *tot_zn (param_1 a,CnfFnCalc *b);
+    QGridLayout *VbInfo_nop(param_2);
+    QGridLayout *VbResu_nop(param_2);
 
 
 #else
@@ -235,11 +239,11 @@ class SyntheseGenerale : public QObject
         QString key;
     };
     */
-    QGridLayout* Vbox_Analyse(param_2 prm);
-    QGridLayout* Vbox_Resume(param_2 prm);
+    QGridLayout* VbInfo_tot(param_2 prm);
+    QGridLayout* VbResu_tot(param_2 prm);
 
-    QGridLayout* Vbox_Analyse_brc(param_2 prm);
-    QGridLayout* Vbox_Resume_brc(param_2 prm);
+    QGridLayout* VbInfo_brc(param_2 prm);
+    QGridLayout* VbResu_brc(param_2 prm);
 
     QTableView * TbvAnalyse_brc(int zn, QString source, QString definition, QString key);
     QTableView * TbvResume_brc(int zn, QString tb_in);

@@ -560,7 +560,7 @@ QString sql_RegroupeSelonCritere(QString st_tirages, QString st_cri)
 
     return(st_return);
 }
-//---------------- Fin Local Fns ------------------------
+//---------------- Fin Local CnfFnCalc ------------------------
 SyntheseDetails::~SyntheseDetails()
 {
 
