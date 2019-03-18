@@ -20,7 +20,7 @@
 
 
 #include "refetude.h"
-
+#include "properties.h"
 
 namespace NE_Analyses{
   typedef enum _les_tableaux
@@ -144,6 +144,7 @@ class SyntheseGenerale : public QObject
     void slot_ShowBouleForNewDesign(const QModelIndex & index);
 
   private:
+
     QString A1_0_TrouverLignes(int zn, QString tb_src, QString tb_ref, QString key);
     QString A1_1_CalculerEcart(QString str_reponses);
     QString A1_2_RegrouperEcart(QString str_reponses);
@@ -173,6 +174,7 @@ class SyntheseGenerale : public QObject
     QString SqlCreateCodeBary(int onglet, QString table);
 
     QString ChercherSelection(int zn, QModelIndexList sel_wko, QTableView * tbv_wko, QString tb_src);
+
 #if TRY_CODE_NEW
   private:
     enum typeCalc{tot,brc,cmb,grp,endCalc};
@@ -190,10 +192,10 @@ class SyntheseGenerale : public QObject
         QTabWidget *tab_Top;
         QString tb_src;
         keyHelp hlp[2];
-        ongDef niv[3];
+        ongDef onglet[3];
         QString **namesNiv;
         QString curName;
-        int curNiv;
+        int niv;
         int maxNiv;
         int zn;
         int *l_max;
@@ -223,6 +225,7 @@ class SyntheseGenerale : public QObject
         ptrFnToto *pTabFn;
         int l_max[3];
     };
+    QWidget * CreerOnglets(param_1 prm);
     QWidget *VbInfoDepart (param_1 a,CnfFnCalc *b[2]);
     QWidget *tot_zn (param_1 a,CnfFnCalc *b);
     QGridLayout *VbInfo_nop(param_2);

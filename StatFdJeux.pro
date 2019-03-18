@@ -23,7 +23,7 @@ TEMPLATE = app
 #DEPENDPATH += "C:/Devel/kdchart-2.5.1-source/include"
 # -lsqlite -lStatPgm-dl
 
-LIBS = -L.\sqlExtensions\lib   -lStatPgm-sqlite
+LIBS = -L.\sqlExtensions  -lStatPgm-sqlite
 message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
 
 
