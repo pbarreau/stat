@@ -868,8 +868,8 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
                 QString useName = nameObj + QString::number(tab);
 
                 QGridLayout *qg_tmp = NULL;
-                ptrFnToto TabFn = conf[prm.zn]->pTabFn[tab];
-                ptrFn fntmp = TabFn[0];
+                ptrFnToto TabFn = conf[prm.zn][prm.path[1]].pTabFn[tab];
+                ptrFn fntmp = TabFn[tab];
 
                 param_2 prm_2;
                 prm_2.prm_1=prm;
@@ -879,7 +879,7 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
                 prm_2.tb_wrt = QString("r_")
                         + prm.tb_src
                         +QString("_")
-                        +prm.namesNiv[1][conf[prm.zn]->calc]
+                        +prm.namesNiv[1][prm.path[1]]
                         +QString("_z")
                         +QString::number(prm.zn+1);
 
