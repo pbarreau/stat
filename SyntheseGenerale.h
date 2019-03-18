@@ -177,7 +177,7 @@ class SyntheseGenerale : public QObject
 
 #if TRY_CODE_NEW
   private:
-    enum typeCalc{tot,brc,cmb,grp,endCalc};
+    enum typeCalc{tot,brc,cmb,grp,endCalc,nop};
     enum typeTab{detail,synthese,endTab};
 
     struct ongDef{
@@ -199,6 +199,7 @@ class SyntheseGenerale : public QObject
         int maxNiv;
         int zn;
         int *l_max;
+        int *path;
     };
     struct param_2{
         param_1 prm_1;
@@ -223,9 +224,9 @@ class SyntheseGenerale : public QObject
         typeCalc calc; /// type de calcul
         //DefFn *pTabFn; /// pointeur vers le tableau des calculs
         ptrFnToto *pTabFn;
-        int l_max[3];
+        //int l_max[3];
     };
-    QWidget * CreerOnglets(param_1 prm);
+    QWidget * CreerOnglets(param_1 prm, CnfFnCalc **conf);
     QWidget *VbInfoDepart (param_1 a,CnfFnCalc *b[2]);
     QWidget *tot_zn (param_1 a,CnfFnCalc *b);
     QGridLayout *VbInfo_nop(param_2);

@@ -719,16 +719,74 @@ void SyntheseGenerale::DoComptageTotal(void)
     QString n3_names[]={"Details","Regroupement"};
     QString *namesNiv[]={n1_names,n2_names,n3_names};
     int ong[]={2,4,2};
+    tbv= new QList<QTableView *> [2];
+
+    /// ----------------------
+    ptrFnTbv Trmt_tot_a={
+        &SyntheseGenerale::VbInfo_tot
+    };
+    ptrFnTbv Trmt_tot_b={
+        &SyntheseGenerale::VbResu_tot
+    };
+
+    ptrFnTbv Trmt_brc_a={
+        &SyntheseGenerale::VbInfo_brc
+    };
+    ptrFnTbv Trmt_brc_b={
+        &SyntheseGenerale::VbResu_brc
+    };
+
+    /// --------
+    ptrFnTbv Trmt_nop={
+        &SyntheseGenerale::VbInfo_nop
+    };
+    /// --------
+
+    /// Tableau contenant les poiteurs vers les tableaux
+    /// contenant les fonctions de traitement de chacune des zones
+    ptrFnToto p_tot[]={Trmt_tot_a,Trmt_tot_b};
+    ptrFnToto p_brc[]={Trmt_brc_a,Trmt_brc_b};
+    ptrFnToto p_nop[]={Trmt_nop,Trmt_nop};
+
+    /// Tableau contenant les calculs a effectuer
+    CnfFnCalc mesCalculs_z1[]=
+    {
+        {typeCalc::tot,p_tot},
+        {typeCalc::brc,p_brc},
+        {typeCalc::nop,p_nop},
+        {typeCalc::nop,p_nop},
+        {typeCalc::endCalc,NULL}
+    };
+    //int nbCalculs = sizeof(mesCalculs_z1)/sizeof (CnfFnCalc);
+    CnfFnCalc mesCalculs_z2[]=
+    {
+        {typeCalc::tot,p_tot},
+        {typeCalc::brc,p_brc},
+        {typeCalc::nop,p_nop},
+        {typeCalc::nop,p_nop},
+        {typeCalc::endCalc,NULL}
+    };
+    CnfFnCalc *pCalZn[]={mesCalculs_z1,mesCalculs_z2};
+
+    /// ----------------------
 
     QWidget *calcul = NULL;
 
     param_1 prm;
+    prm.tb_src = "RefTirages";
+    prm.hlp[0].tbl="Bnrz";
+    prm.hlp[0].key="z";
+    prm.hlp[1].tbl="analyses";
+    prm.hlp[1].key="toBeDefined";
+
     prm.niv = -1;
     prm.maxNiv = 3;
     prm.namesNiv = namesNiv;
     prm.l_max = ong;
+    prm.path = new int [prm.maxNiv];
+    memset(prm.path,-1,prm.maxNiv);
 
-    calcul = CreerOnglets(prm);
+    calcul = CreerOnglets(prm, pCalZn);
 
     QFormLayout *mainLayout = new QFormLayout;
     LabelClickable *la_selection = new LabelClickable;
@@ -743,7 +801,7 @@ void SyntheseGenerale::DoComptageTotal(void)
 
 }
 
-QWidget * SyntheseGenerale::CreerOnglets(param_1 prm)
+QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
 {
     QWidget * qw_tmp = NULL;
     QTabWidget *tab_Top= NULL;
@@ -770,9 +828,18 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm)
         QWidget * qw_n1 = new QWidget;
         QGridLayout *qg_n1 = new QGridLayout;
         QString tab_name = prm.namesNiv[prm.niv][tab];
+
+        /// Memo du chemin
+        prm.path[prm.niv]=tab;
 #ifndef QT_NO_DEBUG
         qDebug()<< "Traitement onglet : "<<tab_name<<endl;
 #endif
+        /// Determination de la zone de travail
+        if(prm.niv == 0){
+            prm.zn = tab;
+            prm.curName = QString::number(tab);
+        }
+
         QWidget * result = NULL;
         if((prm.niv+1)<prm.maxNiv){
             param_1 n_param;
@@ -783,14 +850,45 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm)
             n_param.niv = prm.niv + 1;
 
             /// Creation recursive des noms d'onglets
-            result = CreerOnglets(n_param);
+            result = CreerOnglets(n_param,conf);
         }
         else
         {
             result = new QWidget;
 
+            /// Niveau montrer tableau ?
             if(prm.niv == prm.maxNiv-1){
-                QGridLayout *qg_tmp = new QGridLayout;
+                /// Nom de l'objet
+                QString nameObj = "";
+                for(int i=0;i<prm.maxNiv-1;i++){
+                   nameObj = nameObj
+                           + QString::number(prm.path[i])
+                           +":";
+                }
+                QString useName = nameObj + QString::number(tab);
+
+                QGridLayout *qg_tmp = NULL;
+                ptrFnToto TabFn = conf[prm.zn]->pTabFn[tab];
+                ptrFn fntmp = TabFn[0];
+
+                param_2 prm_2;
+                prm_2.prm_1=prm;
+                prm_2.zn = prm.zn;
+                prm_2.dst = 0;
+
+                prm_2.tb_wrt = QString("r_")
+                        + prm.tb_src
+                        +QString("_")
+                        +prm.namesNiv[1][conf[prm.zn]->calc]
+                        +QString("_z")
+                        +QString::number(prm.zn+1);
+
+#ifndef QT_NO_DEBUG
+        qDebug()<< "Obj name : "<<useName<<endl;
+        qDebug()<< "Tbl name : "<<prm_2.tb_wrt<<endl;
+#endif
+
+                qg_tmp = (this->*fntmp)(prm_2);
                 result->setLayout(qg_tmp);
             }
         }
@@ -919,6 +1017,7 @@ void SyntheseGenerale::DoComptageTotal(void)
 }
 #endif
 
+#if 0
 QWidget * SyntheseGenerale::VbInfoDepart(param_1 prm,CnfFnCalc *b[2])
 {
     QWidget * qw_tmp = new QWidget;
@@ -1002,7 +1101,9 @@ QWidget * SyntheseGenerale::VbInfoDepart(param_1 prm,CnfFnCalc *b[2])
     qw_tmp->setLayout(qg_tmp);
     return qw_tmp;
 }
+#endif
 
+#if 0
 QWidget * SyntheseGenerale::tot_zn(param_1 prm,CnfFnCalc *b)
 {
     QWidget * qw_tmp = new QWidget;
@@ -1068,6 +1169,7 @@ QWidget * SyntheseGenerale::tot_zn(param_1 prm,CnfFnCalc *b)
     qw_tmp->setLayout(qg_tmp);
     return qw_tmp;
 }
+#endif
 
 QGridLayout * SyntheseGenerale::VbInfo_nop(param_2 prm)
 {
