@@ -176,6 +176,7 @@ class SyntheseGenerale : public QObject
 #if TRY_CODE_NEW
   private:
     enum typeCalc{tot,brc,cmb,grp,endCalc};
+    enum typeTab{detail,synthese,endTab};
 
     struct ongDef{
         QString *names;
@@ -190,6 +191,11 @@ class SyntheseGenerale : public QObject
         QString tb_src;
         keyHelp hlp[2];
         ongDef niv[3];
+        QString **namesNiv;
+        QString curName;
+        int curNiv;
+        int maxNiv;
+        int zn;
         int *l_max;
     };
     struct param_2{
@@ -200,15 +206,23 @@ class SyntheseGenerale : public QObject
     };
 
 
-    typedef QGridLayout * (SyntheseGenerale::*ptrFnTbvCalc[2][2])(param_2 a);
-    typedef QGridLayout * (SyntheseGenerale::*ptrFnTbv[2])(param_2 a);
-    struct CnfFnCalc{
-        QString name;
-        ptrFnTbv *pTabFn[2];
-        ptrFnTbvCalc *pTestFn;
-        int l_max[3];
+    typedef QGridLayout * (SyntheseGenerale::**ptrFnTbvCalc[2])(param_2 a);
+    typedef QGridLayout * (SyntheseGenerale::*ptrFnTbv[])(param_2 a);
+    typedef QGridLayout * (SyntheseGenerale::**ptrFnToto)(param_2 a);
+    typedef QGridLayout * (SyntheseGenerale::*ptrFn)(param_2 a);
+
+    struct DefFn{
+        QString *ong;
+        ptrFnToto lst;
+        int tot;
     };
 
+    struct CnfFnCalc{
+        typeCalc calc; /// type de calcul
+        //DefFn *pTabFn; /// pointeur vers le tableau des calculs
+        ptrFnToto *pTabFn;
+        int l_max[3];
+    };
     QWidget *VbInfoDepart (param_1 a,CnfFnCalc *b);
     QWidget *tot_zn (param_1 a,CnfFnCalc *b);
     QGridLayout *VbInfo_nop(param_2);

@@ -719,15 +719,18 @@ void SyntheseGenerale::DoComptageTotal(void)
   QTabWidget *tab_Top = new QTabWidget;
 
 
-  QString n1_names[]={"Boules","Etoiles"};//{"tot","cmb","grp","brc"};
+  QString n1_names[]={"Boules","Etoiles"};
   int nb_n1_names = sizeof(n1_names)/sizeof(QString);
   tbv= new QList<QTableView *> [nb_n1_names];
 
-  QString n2_names[typeCalc::endCalc]={"tot","brc","cmb","grp"};//{"Boules","Etoiles"};
+  QString n2_names[]={"tot","brc","cmb","grp"};
   int nb_n2_names = sizeof(n2_names)/sizeof(QString);
 
   QString n3_names[]={"Details","Regroupement"};
   int nb_n3_names = sizeof(n3_names)/sizeof(QString);
+
+  QString *namesNiv[]={n1_names,n2_names,n3_names};
+  int nb_niv = sizeof(namesNiv)/sizeof(QString *);
 
   /// https://openclassrooms.com/fr/courses/1252476-les-pointeurs-sur-fonctions
   QWidget *(SyntheseGenerale::*ptrFunc[])(param_1,CnfFnCalc *)=
@@ -735,8 +738,39 @@ void SyntheseGenerale::DoComptageTotal(void)
       &SyntheseGenerale::VbInfoDepart
 };
 
+  /// Fonctions creant les tableaux pour le calcul tot dans les
+  /// diverses zone
+  ptrFnTbv Trmt_tot_a={
+    &SyntheseGenerale::VbInfo_tot
+  };
+  ptrFnTbv Trmt_tot_b={
+    &SyntheseGenerale::VbResu_tot
+  };
+
+  ptrFnTbv Trmt_brc_a={
+    &SyntheseGenerale::VbInfo_brc
+  };
+  ptrFnTbv Trmt_brc_b={
+    &SyntheseGenerale::VbResu_brc
+  };
+
   /// Pointeur vers les fonctions de calcul a appliquer pour toutes
   /// les zones (boules,etoiles)
+
+
+
+  /// Tableau contenant les poiteurs vers les tableaux
+  /// contenant les fonctions de traitement de chacune des zones
+  ptrFnToto p_tot[]={Trmt_tot_a,Trmt_tot_b};
+  ptrFnToto p_brc[]={Trmt_brc_a,Trmt_brc_b};
+
+  /*
+  DefFn tot_zx[]={
+    {n3_names,Trmt_tot_a,1},
+    {n3_names,Trmt_tot_a,2}
+  };
+  */
+  /*
   ptrFnTbvCalc p_tot[]={
     {
       {&SyntheseGenerale::VbInfo_tot,&SyntheseGenerale::VbResu_tot},
@@ -747,22 +781,29 @@ void SyntheseGenerale::DoComptageTotal(void)
       {&SyntheseGenerale::VbInfo_tot,&SyntheseGenerale::VbResu_nop}
     }
   };
-/*
+  */
+  /*
   ptrFnTbvCalc p_cmb[]={&SyntheseGenerale::VbInfo_nop,&SyntheseGenerale::VbResu_nop};
   ptrFnTbvCalc p_grp[]={&SyntheseGenerale::VbInfo_nop,&SyntheseGenerale::VbResu_nop};
   ptrFnTbvCalc p_brc[]={&SyntheseGenerale::VbInfo_brc,&SyntheseGenerale::VbResu_brc};
 */
-  CnfFnCalc mesCalculs[]=
+  /// Tableau contenant les calculs a effectuer
+  CnfFnCalc mesCalculs_z1[]=
   {
-    {n2_names[typeCalc::tot],{p_tot[0],p_tot[1]},p_tot,{nb_n1_names,nb_n2_names,nb_n3_names}}/*,
-    {"cmb",{p_cmb},{nb_n1_names,1,1}},
-    {"grp",{p_grp},{nb_n1_names,1,1}},
-    {"brc",{p_brc},{1,1,nb_n3_names}}//ici seulement pour boules
-      */
+    {typeCalc::tot,p_tot,{nb_n1_names,1,nb_n3_names}}, // Boules
+    {typeCalc::brc,p_brc,{nb_n1_names,1,nb_n3_names}}, // Boules
+    {typeCalc::endCalc,NULL,{NULL}}
   };
-  int nbCalculs = sizeof(mesCalculs)/sizeof (CnfFnCalc);
+  //int nbCalculs = sizeof(mesCalculs_z1)/sizeof (CnfFnCalc);
+  CnfFnCalc mesCalculs_z2[]=
+  {
+    {typeCalc::tot,p_tot,{nb_n1_names,1,nb_n3_names}}, // Etoiles
+    {typeCalc::brc,p_brc,{nb_n1_names,1,nb_n3_names}}, // Etoiles
+    {typeCalc::endCalc,NULL,{NULL}}
+  };
 
 
+  CnfFnCalc *pCalZn[]={mesCalculs_z1,mesCalculs_z2};
   /*
 #ifndef QT_NO_DEBUG
   if (nb_n2_names != nbCalculs){
@@ -780,23 +821,19 @@ void SyntheseGenerale::DoComptageTotal(void)
     QWidget * calcul;
 
     param_1 prm;
-    prm.tab_Top=tab_Top;
     prm.tb_src = "RefTirages";
     prm.hlp[0].tbl="Bnrz";
     prm.hlp[0].key="z";
     prm.hlp[1].tbl="analyses";
     prm.hlp[1].key="toBeDefined";
 
-    prm.niv[0].names = n1_names;
-    prm.niv[0].max = nb_n1_names;
+    prm.curNiv = 0;
+    prm.maxNiv = nb_niv;
+    prm.namesNiv = namesNiv;
+    prm.curName = "";
+    prm.tab_Top=tab_Top;
 
-    prm.niv[1].names = n2_names;
-    prm.niv[1].max = nb_n2_names;
-
-    prm.niv[2].names = n3_names;
-    prm.niv[2].max = nb_n3_names;
-
-    calcul = (this->*ptrFunc[i])(prm,&mesCalculs[0]);
+    calcul = (this->*ptrFunc[i])(prm,&mesCalculs_z1[0]);
 
   }
 
@@ -819,19 +856,66 @@ QWidget * SyntheseGenerale::VbInfoDepart(param_1 prm,CnfFnCalc *b)
   QGridLayout *qg_tmp = new QGridLayout;
 
   QTabWidget *tab_Top=prm.tab_Top;
-  int max_tab = prm.niv[0].max;
+
+  if(b->calc == typeCalc::endCalc)
+    return NULL;
+
+
+  int curNiv = prm.curNiv;
+  int max_tab = b->l_max[curNiv];
+
+  /// Parcours tous les onglets a creer
   for(int tab=0;tab<max_tab;tab++){
     QWidget * qw_n1 = new QWidget;
     QGridLayout *qg_n1 = new QGridLayout;
-    QString tab_name = prm.niv->names[tab];
+    QString tab_name = prm.namesNiv[curNiv][tab];
 #ifndef QT_NO_DEBUG
     qDebug()<< "Traitement onglet : "<<tab_name<<endl;
 #endif
-    prm.l_max = b[tab].l_max;
-    QWidget * result = tot_zn(prm,(&b[tab]));
-    qg_n1->addWidget(result,0,0);
-    qw_n1->setLayout(qg_n1);
-    tab_Top->addTab(qw_n1,tab_name);
+    QWidget * result = NULL;
+    if((curNiv+1) < prm.maxNiv){
+      prm.curNiv = curNiv+1;
+
+      /// A chaque sous niveau rajouter un onglet
+      prm.tab_Top = new QTabWidget;
+
+      if(curNiv==0){
+        prm.zn = tab;
+      }
+      /// Creation recursive des noms d'onglets
+      result = VbInfoDepart(prm,(&b[tab]));
+    }
+    else{
+      result = new QWidget;
+
+      if(prm.curNiv == 2){
+        QGridLayout *qg_tmp = NULL;
+
+        /// Appeler la bonne fonction
+        ptrFnToto TabFn = b->pTabFn[tab];
+        ptrFn fntmp = TabFn[0];
+
+        param_2 prm_2;
+        prm_2.prm_1=prm;
+        prm_2.zn = prm.zn;
+        prm_2.dst = 0;
+
+        prm_2.tb_wrt = QString("r_")
+                       + prm.tb_src
+                       +QString("_")
+                       +prm.namesNiv[1][b->calc]
+                       +QString("_z")
+                       +QString::number(prm.zn+1);
+        //qg_tmp = new QGridLayout;
+        qg_tmp = (this->*fntmp)(prm_2);
+        result->setLayout(qg_tmp);
+      }
+    }
+    if(result != NULL){
+      qg_n1->addWidget(result,0,0);
+      qw_n1->setLayout(qg_n1);
+      tab_Top->addTab(qw_n1,tab_name);
+    }
   }
   qg_tmp->addWidget(tab_Top,0,0);
   //------------
@@ -882,14 +966,15 @@ QWidget * SyntheseGenerale::tot_zn(param_1 prm,CnfFnCalc *b)
                      +names_N1[zn]
                      +QString("_z")
                      +QString::number(zn+1);
-
+      /*
       ptrFnTbv *a1 = b[calcul].pTabFn[0];
       ptrFnTbvCalc *a2 = b[calcul].pTestFn;
 
       QGridLayout *grd_n2 = (this->**a1[0])(prm_2);
       QGridLayout *grd_n3 = (this->**a2[0][0])(prm_2);
+      */
       // ---------
-      wdg_n2->setLayout(grd_n2);
+      //wdg_n2->setLayout(grd_n2);
       tab_N2->addTab(wdg_n2,names_N2[calcul]);
     }
     grd_n1->addWidget(tab_N2,0,0);
