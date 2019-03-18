@@ -223,7 +223,7 @@ class SyntheseGenerale : public QObject
         ptrFnToto *pTabFn;
         int l_max[3];
     };
-    QWidget *VbInfoDepart (param_1 a,CnfFnCalc *b);
+    QWidget *VbInfoDepart (param_1 a,CnfFnCalc *b[2]);
     QWidget *tot_zn (param_1 a,CnfFnCalc *b);
     QGridLayout *VbInfo_nop(param_2);
     QGridLayout *VbResu_nop(param_2);
