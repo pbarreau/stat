@@ -50,6 +50,7 @@
 #include "cbarycentre.h"
 #include "sqlqmdetails.h"
 #include "bvisuresume.h"
+#include "btbvrepartition.h"
 
 #include "properties.h"
 
@@ -185,26 +186,51 @@ void SyntheseGenerale::slot_ShowBouleForNewDesign(const QModelIndex & index)
 
 void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
 {
+    int col = index.column();
     int val = 0;
 
-
-
-    // recuperer la valeur de la colonne
-    int col = index.column();
-    QTableView *view = qobject_cast<QTableView *>(sender());
+    int path[]={0,0,0};
 
     if(col > 4 && col <= 4 + pMaConf->nbElmZone[0])
     {
-        // se mettre sur le bon onglet
-        ptabComptage->setCurrentIndex(0);
-
-        // recuperer la valeur a la colone de la table
         val = index.model()->index(index.row(),index.column()).data().toInt();
-        mysortModel->sort(0);
-        tbv_bloc1_1->scrollTo(mysortModel->index(val-1,0));
+        path[2]=0;
     }
 
-    col = 0;
+    if((col > 4 + pMaConf->nbElmZone[0]) && (col <= 4 + pMaConf->nbElmZone[0]+ pMaConf->nbElmZone[1]))
+    {
+        val = index.model()->index(index.row(),index.column()).data().toInt();
+        path[2]=1;
+    }
+    Surligne(path,val);
+
+}
+
+SyntheseGenerale::Surligne(int *path,int val)
+{
+    QTableView *view = tbv[path[2]].at(0);
+
+    /// Trouver les onglets !!!
+    QList < QTabWidget *> tbHead;
+    QObject *unParent = view;
+    do{
+        unParent = unParent->parent();
+        if(unParent->objectName().contains("tbSet")){
+            QTabWidget * tmp = qobject_cast<QTabWidget *>(unParent);
+            tbHead << tmp;
+        }
+    }while(unParent ->objectName() != "tbSet_00");
+
+    /// Positionner les onglets pour voir le tableau
+    for(int i=0; i< tbHead.size();i++){
+        tbHead.at(i)->setCurrentIndex(path[i]);
+    }
+
+    QSortFilterProxyModel * sortModel = qobject_cast<QSortFilterProxyModel *>( view->model());
+    sortModel->sort(BTbvRepartition::Columns::Visual);
+    view->scrollTo(sortModel->index(val-1,BTbvRepartition::Columns::Visual));
+
+
 }
 
 SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int zn, stTiragesDef *pConf, QMdiArea *visuel)
@@ -808,13 +834,14 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
     int curNiv = prm.niv;
 
     if( curNiv == -1){
+        prm.niv = 0;
         tab_Top = new QTabWidget;
         prm.tab_Top = tab_Top;
-        prm.niv = 0;
     }
     else{
         tab_Top = prm.tab_Top;
     }
+    tab_Top->setObjectName("tbSet_"+QString::number(prm.niv).rightJustified(2,'0'));
 
     if(curNiv>=prm.maxNiv){
         return qw_tmp;
@@ -861,15 +888,15 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
                 /// Nom de l'objet
                 QString nameObj = "";
                 for(int i=0;i<prm.maxNiv-1;i++){
-                   nameObj = nameObj
-                           + QString::number(prm.path[i])
-                           +":";
+                    nameObj = nameObj
+                            + QString::number(prm.path[i])
+                            +":";
                 }
                 QString useName = nameObj + QString::number(tab);
 
                 QGridLayout *qg_tmp = NULL;
                 ptrFnToto TabFn = conf[prm.zn][prm.path[1]].pTabFn[tab];
-                ptrFn fntmp = TabFn[tab];
+                ptrFn fntmp = TabFn[0];
 
                 param_2 prm_2;
                 prm_2.prm_1=prm;
@@ -884,8 +911,8 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
                         +QString::number(prm.zn+1);
 
 #ifndef QT_NO_DEBUG
-        qDebug()<< "Obj name : "<<useName<<endl;
-        qDebug()<< "Tbl name : "<<prm_2.tb_wrt<<endl;
+                qDebug()<< "Obj name : "<<useName<<endl;
+                qDebug()<< "Tbl name : "<<prm_2.tb_wrt<<endl;
 #endif
 
                 qg_tmp = (this->*fntmp)(prm_2);
@@ -1989,9 +2016,9 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
 #if 0
     connect( tbv_bloc1_1, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_Select_B( QModelIndex) ) );
-#endif
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+#endif
 
 
     qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -3661,10 +3688,35 @@ QString SyntheseGenerale::ChercherSelection(int zn,
 void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 {
     QTableView *view = qobject_cast<QTableView *>(sender());
+
+#ifndef QT_NO_DEBUG
+    /// https://stackoverflow.com/questions/27476554/how-to-find-out-from-the-slot-which-signal-has-called-this-slot
+    QMetaMethod metaMethod = sender()->metaObject()->method(senderSignalIndex());
+    qDebug() << metaMethod.name();
+    qDebug() << metaMethod.methodSignature();
+#endif
+
+    /// Trouver les onglets !!!
+    QList < QTabWidget *> tbHead;//QStackedWidget
+    QObject *unParent = view;
+    do{
+        unParent = unParent->parent();
+        if(unParent->objectName().contains("tbSet")){
+            QTabWidget * tmp = qobject_cast<QTabWidget *>(unParent);
+            tbHead << tmp;
+        }
+    }while(unParent ->objectName() != "tbSet_00");
+
+    for(int i=0; i< tbHead.size();i++){
+        int nb_item = tbHead.at(i)->count();
+        nb_item++;
+    }
+    return;
+
     bool getLimites = false;
 
-    QSortFilterProxyModel *m = NULL;//qobject_cast<QSortFilterProxyModel *>(view->model());
-    QAbstractItemModel *sqm_tmp = NULL;
+    QSortFilterProxyModel *m = nullptr;//qobject_cast<QSortFilterProxyModel *>(view->model());
+    QAbstractItemModel *sqm_tmp = nullptr;
 
     if(view->objectName().contains("new")){
         m= qobject_cast<QSortFilterProxyModel *>(view->model());

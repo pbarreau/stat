@@ -260,7 +260,7 @@ void BVisuResume::updateEditorGeometry(QWidget *editor,
 void myCombo::showPopup() {
   QComboBox::showPopup();
 
-  https://stackoverflow.com/questions/10057140/how-to-make-qcombobox-popup-upwards
+  ///https://stackoverflow.com/questions/10057140/how-to-make-qcombobox-popup-upwards
 
   QTableView *popup = this->findChild<QTableView*>();
   for(int i = 0; i< BPopupColor::ValB;i++){

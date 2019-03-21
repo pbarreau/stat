@@ -23,11 +23,11 @@
 #include "properties.h"
 
 namespace NE_Analyses{
-  typedef enum _les_tableaux
-  {
+typedef enum _les_tableaux
+{
     bToutes,   /// toutes les boubles
     bFini    /// fin de la liste
-  }E_Syntese;
+}E_Syntese;
 }
 
 #define CTXT_SELECTION  "selection b:aucun - e:aucun - c:aucun - g:aucun - ba:aucun"
@@ -35,21 +35,21 @@ namespace NE_Analyses{
 class B_ActFrMdlIndex:public QAction //Barreau_ActionFromModelIndex
 {
     Q_OBJECT
-  public:
+public:
     B_ActFrMdlIndex(const QModelIndex &index,const QString &label,QObject * parent =0,...)
-      :QAction(label,parent), m_index(index)
+        :QAction(label,parent), m_index(index)
     {connect(this, SIGNAL(triggered()), this, SLOT(onTriggered()));}
 
-  protected Q_SLOTS:
+protected Q_SLOTS:
     void onTriggered()
     {
-      emit sig_SelectionTirage(m_index,0);
+        emit sig_SelectionTirage(m_index,0);
     }
 
-  Q_SIGNALS:
+Q_SIGNALS:
     void sig_SelectionTirage(const QModelIndex &my_index, int val);
 
-  private:
+private:
     QModelIndex m_index;
 };
 
@@ -57,7 +57,7 @@ class SyntheseGenerale : public QObject
 {
     Q_OBJECT
 
-  private:
+private:
     QWidget **parentWidget;
     QList<QTableView *> *tbv;
 
@@ -103,7 +103,7 @@ class SyntheseGenerale : public QObject
 
     //QStandardItemModel *gsim_AnalyseUnTirage;
 
-  public:
+public:
     SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt, int zn, stTiragesDef *pConf, QMdiArea *visuel);
     QGridLayout *GetDisposition(void);
     QTableView *GetListeTirages(void);
@@ -116,7 +116,7 @@ class SyntheseGenerale : public QObject
 #endif
     // penser au destructeur pour chaque pointeur
 
-  public slots:
+public slots:
 #ifdef USE_SG_CODE
     void slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid);
 #endif
@@ -140,10 +140,11 @@ class SyntheseGenerale : public QObject
     void slot_wdaFilter(int val);
 
 
-  private slots:
+private slots:
     void slot_ShowBouleForNewDesign(const QModelIndex & index);
 
-  private:
+private:
+    Surligne(int *path,int val);
 
     QString A1_0_TrouverLignes(int zn, QString tb_src, QString tb_ref, QString key);
     QString A1_1_CalculerEcart(QString str_reponses);
@@ -176,7 +177,7 @@ class SyntheseGenerale : public QObject
     QString ChercherSelection(int zn, QModelIndexList sel_wko, QTableView * tbv_wko, QString tb_src);
 
 #if TRY_CODE_NEW
-  private:
+private:
     enum typeCalc{tot,brc,cmb,grp,endCalc,nop};
     enum typeTab{detail,synthese,endTab};
 
