@@ -240,7 +240,7 @@ bool MainWindow::NEW_AnalyserCeTirage(int idTirage,  QString stTblRef,int zone, 
     status = query.exec(msg1);
     query.finish();
 
-    // Creation de la table des analyses pour ce tirage
+    // Creation de la table des "+tb_ana_zn+" pour ce tirage
     QString nomTable = stTblRef
             + "_"
             + pConf->nomZone[zone]
@@ -348,7 +348,7 @@ bool MainWindow::NEW_FaireBilan(int idTirage, QString stTblRef,int zone, stTirag
     status = query.exec(msg1);
     query.finish();
 
-    // Lecture table des analyses pour ce tirage
+    // Lecture table des "+tb_ana_zn+" pour ce tirage
     QString nomTable = stTblRef
             + "_"
             + pConf->nomZone[zone]

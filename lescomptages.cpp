@@ -1954,10 +1954,8 @@ QStringList * BPrevision::CreateFilterForData(int zn)
     QStringList *sl_filter = new QStringList [3];
     QString fields = "z"+QString::number(zn+1);
 
-    ///int maxElems = limites[zn].max;
     int maxElems = onGame.limites[zn].max;
     int nbBoules = floor(maxElems/10)+1;
-
 
     // Nombre de 10zaine
     for(int j=0;j<nbBoules;j++)
@@ -1980,9 +1978,6 @@ QStringList * BPrevision::CreateFilterForData(int zn)
     sl_filter[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
     sl_filter[1] << "P" << "G";
     sl_filter[2] << "Pair" << "< E/2";
-
-
-
 
     return sl_filter;
 }

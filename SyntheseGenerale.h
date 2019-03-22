@@ -1,4 +1,4 @@
-#ifndef REFRESULTAT_H
+﻿#ifndef REFRESULTAT_H
 #define REFRESULTAT_H
 
 #include <QtGui>
@@ -144,7 +144,8 @@ private slots:
     void slot_ShowBouleForNewDesign(const QModelIndex & index);
 
 private:
-    Surligne(int *path,int val);
+    void Surligne(int *path,int val);
+    int incValue(int *val);
 
     QString A1_0_TrouverLignes(int zn, QString tb_src, QString tb_ref, QString key);
     QString A1_1_CalculerEcart(QString str_reponses);
@@ -210,21 +211,21 @@ private:
     };
 
 
-    typedef QGridLayout * (SyntheseGenerale::**ptrFnTbvCalc[2])(param_2 a);
-    typedef QGridLayout * (SyntheseGenerale::*ptrFnTbv[])(param_2 a);
-    typedef QGridLayout * (SyntheseGenerale::**ptrFnToto)(param_2 a);
-    typedef QGridLayout * (SyntheseGenerale::*ptrFn)(param_2 a);
+    typedef QGridLayout * (SyntheseGenerale::**tptrFnsCalc[2])(param_2 a);
+    typedef QGridLayout * (SyntheseGenerale::*tptrFns[])(param_2 a); /// tableau de pointeur de fonctions
+    typedef QGridLayout * (SyntheseGenerale::**pVtptrFns)(param_2 a); /// pointeur vers un tableau de pointeur de fonctions
+    typedef QGridLayout * (SyntheseGenerale::*ptrFn)(param_2 a); /// pointeur de fonction
 
     struct DefFn{
         QString *ong;
-        ptrFnToto lst;
+        pVtptrFns lst;
         int tot;
     };
 
     struct CnfFnCalc{
         typeCalc calc; /// type de calcul
         //DefFn *pTabFn; /// pointeur vers le tableau des calculs
-        ptrFnToto *pTabFn;
+        pVtptrFns *pTabFn;
         //int l_max[3];
     };
     QWidget * CreerOnglets(param_1 prm, CnfFnCalc **conf);

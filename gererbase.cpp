@@ -373,6 +373,8 @@ bool GererBase::AffectePoidsATirage_v2()
     QString msg_1 = "select * from lstCombi_z1;";
     stTiragesDef ref=typeTirages->conf;
     int zn = 0;
+    QString tb_ana_zn = "analyses";
+
     int nbBoules = floor(ref.limites[zn].max/10);
 
     status = sql_1.exec(msg_1);
@@ -403,9 +405,9 @@ bool GererBase::AffectePoidsATirage_v2()
                 // creation d'une requete mise a jour des poids
                 //double poids = sql_1.value(lastcol-1).toDouble();
                 msg_2.remove(msg_2.length()-5,5);
-                msg_2 = "Update analyses set fk_idCombi_z1="
+                msg_2 = "Update "+tb_ana_zn+" set fk_idCombi_z1="
                         +QString::number(fk_idCombi_z1)
-                        +" where(id in (select id from analyses where("
+                        +" where(id in (select id from "+tb_ana_zn+" where("
                         +msg_2+")"
                         +"));";
 #ifndef QT_NO_DEBUG
@@ -436,7 +438,7 @@ QString GererBase::mk_IdDsk(NE_FDJ::E_typeJeux type)
     QString testName = "";
 
     if(type == NE_FDJ::fdj_euro){
-      game = "Euro";
+        game = "Euro";
     }
     else{
         game = "Loto";
@@ -459,7 +461,7 @@ QString GererBase::mk_IdCnx(NE_FDJ::E_typeJeux type)
     QString game = "";
 
     if(type == NE_FDJ::fdj_euro){
-      game = "Euro";
+        game = "Euro";
     }
     else{
         game = "Loto";
@@ -1223,12 +1225,13 @@ void GererBase::MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen)
     int nb_zone = pConf->nb_zone;
     int i =0;
     bool status = true;
+    QString tb_ana_zn = "analyses";
 
 
 
     for (i=0; i< nb_zone;i++)
     {
-        //select     bd0, count (*) as tot from analyses group by bd0;";
+        //select     bd0, count (*) as tot from "+tb_ana_zn+" group by bd0;";
         int nb_elem = pConf->limites[i].max/10;
         // Fentre pour boule existe et pas pour etoiles
         for (int j=0;(j<= nb_elem) && status && (i == 0);j++)
@@ -1237,7 +1240,7 @@ void GererBase::MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen)
 
             msg = "select " +
                     col_name +
-                    ", count (*) as tot from analyses group by " +
+                    ", count (*) as tot from "+tb_ana_zn+" group by " +
                     col_name + ";";
             status = query.exec(msg);
             query.first();
@@ -1460,7 +1463,7 @@ void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
                 colsel.remove(colsel.length()-5,5);
 
                 // Sql msg
-                msg = "select count (*) from analyses where ("
+                msg = "select count (*) from "+tb_ana_zn+" where ("
                         + colsel + ");";
 
                 status = query.exec(msg);
@@ -1553,13 +1556,14 @@ void GererBase::MontrerDetailCombinaison(QString msg)
     QString st_msg ="";
     QFormLayout *mainLayout = new QFormLayout;
     bool status = true;
+    QString tb_ana_zn = "analyses";
 
     //tv_r1->setWindowTitle(msg);
 
     msg.replace("c","bd");
     msg.replace(",","and");
 
-    st_msg = "Select * from tirages inner join (select * from analyses where("
+    st_msg = "Select * from tirages inner join (select * from "+tb_ana_zn+" where("
             + msg +
             "))as s on tirages.id = s.id;";
 

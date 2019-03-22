@@ -1,4 +1,4 @@
-#ifndef QT_NO_DEBUG
+﻿#ifndef QT_NO_DEBUG
 #include <QDebug>
 #endif
 
@@ -206,7 +206,7 @@ void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
 
 }
 
-SyntheseGenerale::Surligne(int *path,int val)
+void SyntheseGenerale::Surligne(int *path,int val)
 {
     QTableView *view = tbv[path[2]].at(0);
 
@@ -229,6 +229,11 @@ SyntheseGenerale::Surligne(int *path,int val)
     QSortFilterProxyModel * sortModel = qobject_cast<QSortFilterProxyModel *>( view->model());
     sortModel->sort(BTbvRepartition::Columns::Visual);
     view->scrollTo(sortModel->index(val-1,BTbvRepartition::Columns::Visual));
+
+    QAbstractItemView::SelectionBehavior prevBehav = view->selectionBehavior();
+    view->setSelectionBehavior(QAbstractItemView::SelectRows);
+    view->selectRow(val-1);
+    view->setSelectionBehavior(prevBehav);
 
 
 }
@@ -445,7 +450,7 @@ void SyntheseGenerale::MemoriserProgression(QString table,stMyHeadedList *h,stMy
     bool sta = false;
 
     QString msg = "insert into "+
-            table + " (id,cid,tid,y,b,c,bgc) values (null,:cid, :tid, :y, :b, :c, :bgc);";
+            table + " (id,cid,tid,y,b,c,bgc) values (NULL,:cid, :tid, :y, :b, :c, :bgc);";
     sta = sql.prepare(msg);
     ///qDebug() << "Prepare :" << sta;
     sql.bindValue(":cid", cid);
@@ -740,6 +745,8 @@ void SyntheseGenerale::DoTirages(void)
 
 void SyntheseGenerale::DoComptageTotal(void)
 {
+    QString tb_ana_zn = "analyses";
+
     QString n1_names[]={"Boules","Etoiles"};
     QString n2_names[]={"tot","brc","cmb","grp"};
     QString n3_names[]={"Details","Regroupement"};
@@ -748,31 +755,31 @@ void SyntheseGenerale::DoComptageTotal(void)
     tbv= new QList<QTableView *> [2];
 
     /// ----------------------
-    ptrFnTbv Trmt_tot_a={
+    tptrFns Trmt_tot_a={
         &SyntheseGenerale::VbInfo_tot
     };
-    ptrFnTbv Trmt_tot_b={
+    tptrFns Trmt_tot_b={
         &SyntheseGenerale::VbResu_tot
     };
 
-    ptrFnTbv Trmt_brc_a={
+    tptrFns Trmt_brc_a={
         &SyntheseGenerale::VbInfo_brc
     };
-    ptrFnTbv Trmt_brc_b={
+    tptrFns Trmt_brc_b={
         &SyntheseGenerale::VbResu_brc
     };
 
     /// --------
-    ptrFnTbv Trmt_nop={
+    tptrFns Trmt_nop={
         &SyntheseGenerale::VbInfo_nop
     };
     /// --------
 
     /// Tableau contenant les poiteurs vers les tableaux
     /// contenant les fonctions de traitement de chacune des zones
-    ptrFnToto p_tot[]={Trmt_tot_a,Trmt_tot_b};
-    ptrFnToto p_brc[]={Trmt_brc_a,Trmt_brc_b};
-    ptrFnToto p_nop[]={Trmt_nop,Trmt_nop};
+    pVtptrFns p_tot[]={Trmt_tot_a,Trmt_tot_b};
+    pVtptrFns p_brc[]={Trmt_brc_a,Trmt_brc_b};
+    pVtptrFns p_nop[]={Trmt_nop,Trmt_nop};
 
     /// Tableau contenant les calculs a effectuer
     CnfFnCalc mesCalculs_z1[]=
@@ -802,7 +809,7 @@ void SyntheseGenerale::DoComptageTotal(void)
     prm.tb_src = "RefTirages";
     prm.hlp[0].tbl="Bnrz";
     prm.hlp[0].key="z";
-    prm.hlp[1].tbl="analyses";
+    prm.hlp[1].tbl=""+tb_ana_zn+"";
     prm.hlp[1].key="toBeDefined";
 
     prm.niv = -1;
@@ -895,7 +902,7 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
                 QString useName = nameObj + QString::number(tab);
 
                 QGridLayout *qg_tmp = NULL;
-                ptrFnToto TabFn = conf[prm.zn][prm.path[1]].pTabFn[tab];
+                pVtptrFns TabFn = conf[prm.zn][prm.path[1]].pTabFn[tab];
                 ptrFn fntmp = TabFn[0];
 
                 param_2 prm_2;
@@ -961,24 +968,24 @@ void SyntheseGenerale::DoComptageTotal(void)
 
     /// Fonctions creant les tableaux pour le calcul tot dans les
     /// diverses zone
-    ptrFnTbv Trmt_tot_a={
+    tptrFns Trmt_tot_a={
         &SyntheseGenerale::VbInfo_tot
     };
-    ptrFnTbv Trmt_tot_b={
+    tptrFns Trmt_tot_b={
         &SyntheseGenerale::VbResu_tot
     };
 
-    ptrFnTbv Trmt_brc_a={
+    tptrFns Trmt_brc_a={
         &SyntheseGenerale::VbInfo_brc
     };
-    ptrFnTbv Trmt_brc_b={
+    tptrFns Trmt_brc_b={
         &SyntheseGenerale::VbResu_brc
     };
 
     /// Tableau contenant les poiteurs vers les tableaux
     /// contenant les fonctions de traitement de chacune des zones
-    ptrFnToto p_tot[]={Trmt_tot_a,Trmt_tot_b};
-    ptrFnToto p_brc[]={Trmt_brc_a,Trmt_brc_b};
+    pVtptrFns p_tot[]={Trmt_tot_a,Trmt_tot_b};
+    pVtptrFns p_brc[]={Trmt_brc_a,Trmt_brc_b};
 
     /// Tableau contenant les calculs a effectuer
     CnfFnCalc mesCalculs_z1[]=
@@ -1016,7 +1023,7 @@ void SyntheseGenerale::DoComptageTotal(void)
         prm.tb_src = "RefTirages";
         prm.hlp[0].tbl="Bnrz";
         prm.hlp[0].key="z";
-        prm.hlp[1].tbl="analyses";
+        prm.hlp[1].tbl=""+tb_ana_zn+"";
         prm.hlp[1].key="toBeDefined";
 
         prm.curNiv = 0;
@@ -1098,7 +1105,7 @@ QWidget * SyntheseGenerale::VbInfoDepart(param_1 prm,CnfFnCalc *b[2])
                 QGridLayout *qg_tmp = NULL;
 
                 /// Appeler la bonne fonction
-                ptrFnToto TabFn = b[prm.zn]->pTabFn[tab];
+                pVtptrFns TabFn = b[prm.zn]->pTabFn[tab];
                 ptrFn fntmp = TabFn[0];
 
                 param_2 prm_2;
@@ -1176,8 +1183,8 @@ QWidget * SyntheseGenerale::tot_zn(param_1 prm,CnfFnCalc *b)
                     +QString("_z")
                     +QString::number(zn+1);
             /*
-      ptrFnTbv *a1 = b[calcul].pTabFn[0];
-      ptrFnTbvCalc *a2 = b[calcul].pTestFn;
+      tptrFns *a1 = b[calcul].pTabFn[0];
+      tptrFnsCalc *a2 = b[calcul].pTestFn;
 
       QGridLayout *grd_n2 = (this->**a1[0])(prm_2);
       QGridLayout *grd_n3 = (this->**a2[0][0])(prm_2);
@@ -1380,11 +1387,11 @@ bool SyntheseGenerale::Contruire_Tbl_brc(int zn,
     bool isOk = true;
 
     //QString tb_ana = QString("r_")+tb_src + QString("_ana_z")+QString::number(zn+1);
-    //QString tb_ana = "analyses";
+    //QString tb_ana = ""+tb_ana_zn+"";
     //QString key_brc = "BC";
 
     if(!DB_Tools::checkHavingTableAndKey(tb_ana, key_brc, db_0.connectionName())){
-        /// La table "analyses (tirages)"
+        /// La table ""+tb_ana_zn+" (tirages)"
         ///  n'a pas l'info barycentre pour les lignes
         QString tb_ref ="Bnrz";
         RajouterCalculBarycentreDansAnalyses(zn,tb_src ,tb_ana,tb_ref ,key_brc);
@@ -1419,7 +1426,7 @@ bool SyntheseGenerale::MarquerDerniers_brc(int zn, QString tb_src, QString tb_re
              +") as t2 where(id = "+sdec+")"
             },
             {"update " + tbl_dst
-             + " set F=(case when f is (null or 0) then 0x"
+             + " set F=(case when f is (NULL or 0) then 0x"
              +sdec+" else(f|0x"+sdec+") end) "
              "where (B in ("+msg[0]+"))"}
         };
@@ -1456,7 +1463,7 @@ bool SyntheseGenerale::MarquerDerniers_brc(int zn, QString tb_src, QString tb_re
                 +") as t2 where(t1.id=t2.id+"+QString::number(d[dec])+")"
             },
             {"update " + tbl_dst
-             + " set F=(case when f is (null or 0) then 0x"
+             + " set F=(case when f is (NULL or 0) then 0x"
              +sdec+" else(f|0x"+sdec+") end) "
              "where (id in ("+msg[2]+"))"}
         };
@@ -1700,7 +1707,7 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
 #endif
                 if((isOk = query.exec(str_tblData))){
                     /// mettre dans la table analyse le barycentre de chaque tirage
-                    QString str_tblAnalyse = "analyses";
+                    QString str_tblAnalyse = ""+tb_ana_zn+"";
 
                     if((isOk = mettreBarycentre(str_tblAnalyse, str_data))){
                         /// indiquer le dernier barycentre des tirages fdj
@@ -1762,8 +1769,8 @@ QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb
     QString tb_out = QString("r_")+tb_src + QString("_brc_z")+QString::number(zn+1);
 
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString("new")+QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
-    qtv_tmp->setObjectName(qtv_name);
+    //QString qtv_name = QString("new")+QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
+    qtv_tmp->setObjectName(tb_out);
 
 
     QSqlQuery query(db_0);
@@ -1918,8 +1925,8 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
     sqm_bloc1_1 = new QSqlQueryModel;
 
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString("new")+QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
-    qtv_tmp->setObjectName(qtv_name);
+    //QString qtv_name = QString("new")+QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
+    qtv_tmp->setObjectName(tb_out);
 
     /*
   QList<QTableView *>tb_brc = parentWidget[zn]->findChildren<QTableView*>();
@@ -2057,17 +2064,26 @@ QGridLayout* SyntheseGenerale::VbResu_brc(param_2 prm)
     return lay_tmp;
 }
 
+inline int SyntheseGenerale::incValue(int *i)
+{
+    int a=*i;
+    *i=a++;
+    return a;
+}
+
 QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
 {
     QTableView * qtv_tmp = new QTableView;
+    QString tb_ana_zn = "analyses";
 
     QString ref_tbl = "Bnrz";
-    QString ref_ana = "analyses";
+    QString ref_ana = ""+tb_ana_zn+"";
     QString ref_key = QString("z")+QString::number(zn+1);
     QString tb_write = QString("r_")+tb_in + QString("_brc_rsm_")+ref_key;
     QString tb_source = QString("r_")+tb_in + QString("_brc_")+ref_key;
     QString tb_total = QString("r_")+tb_in + QString("_tot_")+ref_key;
 
+    qtv_tmp->setObjectName(tb_write);
     /// --------------------
     /// Numerotation des boules de la zone
     int len_zn = pMaConf->limites[zn].len;
@@ -2099,68 +2115,74 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
 #endif
 
 #define D(a)  "/* D_"+QString::number(a).rightJustified(2,'0')+" */"
-#define F(a)  "/* F_"+QString::number(a+1).rightJustified(2,'0')+" */"
+#define R(a)    (a++)
+#define F(a)  "/* F_"+QString::number(a).rightJustified(2,'0')+" */"
 
-    int req_id = 0;
+#define taille_ici(a)  ((sizeof(a)/sizeof(QString))-1)
+
+    //int req_id = 0;
     QString st_requetes []={
         {
-            D(req_id)
+            D(0)
             "select t1.id, t1."+st_key+" from ("+ref_ana+") as t1"
-            F(req_id)
+            F(0)
         },
         {
-            D(req_id)
+            D(1)
             "select t1.*,"+ st_bzn+ " from"
             "("
-            +st_requetes[req_id++]+
+            +(st_requetes[0])+
             ")as t1, ("+tb_in+") as t2 where(t1.id=t2.id)"
-            F(req_id)
+            F(1)
         },
         {
-            D(req_id)
+            D(2)
             "select row_number() over(order by t2.bc) as rid, t2.bc,"
             "ROW_NUMBER() OVER (PARTITION by t2.bc order by t2.bc) as LID,"
             "t1."+ref_key+" as B "
             "FROM"
             "("
             +ref_tbl+
-            ") as t1, ("+st_requetes[req_id++]+") as t2 where(t1."+ref_key+" in ( "+st_bzn+" ))"
-            F(req_id)
+            ") as t1, ("
+            +st_requetes[1]
+            +") as t2 where(t1."+ref_key+" in ( "+st_bzn+" ))"
+            F(2)
         },
+
         {
-            D(req_id)
+            D(3)
             "SELECT row_number() over(order by t1.bc) as rid,t1.bc, t1.b,"
             "count (*) over "
             "(PARTITION by t1.bc order by t1.bc "
             "RANGE BETWEEN UNBOUNDED PRECEDING and UNBOUNDED FOLLOWING) as T "
             "FROM("
-            +st_requetes[req_id++]+
+            +st_requetes[2]+
             ")as t1 "
-            F(req_id)
+            F(3)
         },
         {
-            D(req_id)
+            D(4)
             "SELECT row_number() over(ORDER by t1.bc) as rid,"
             "t1.bc,t1.b,count(t1.rid) as Tb,T "
             "FROM("
-            +st_requetes[req_id++]+
+            +st_requetes[3]+
             ")as t1 group by t1.bc, t1.b"
-            F(req_id)
+            F(4)
         },
     #if SET_QRY_ACT1
         {
-            D(req_id)
+            D(31)
             "select row_number() over(order by t1.bc DESC) as id_n6,"
             "t1.bc,NULL as I,t1.T,t1.*,"
             "printf(\"%02d:([%03d] -> %d%%)\",t1.b,t1.Tb,((t1.tb*100)/t1.t)) as details "
             "FROM"
             "("
-            +st_requetes[req_id++]+
+            +st_requetes[4]+
             ")as t1 ORDER by t1.bc ASC, t1.tb DESC"
-            F(req_id)
+            F(31)
         },
         {
-            D(req_id)
+            D(32)
             "select row_number() over(order by t1.bc DESC) as Id,"
             "NULL as C,"
             "t1.bc as B,"
@@ -2170,13 +2192,13 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
             "NULL as P,"
             "NULL AS F "
             "FROM("
-            +st_requetes[req_id++]+
+            +st_requetes[5]+
             ")as t1 GROUP by t1.bc ORDER by t1.t DESC"
-            F(req_id)
+            F(32)
         },
     #else
         {
-            D(req_id)
+            D(5)
             "select row_number() over(order by t1.bc DESC) as Id,"
             "NULL as C,"
             "t1.bc,"
@@ -2187,24 +2209,25 @@ QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
             "NULL as P,"
             "NULL AS F "
             "FROM("
-            +st_requetes[req_id++]+
+            +st_requetes[4]+
             ")as t1"
-            F(req_id)
+            F(5)
         },
     #endif
         {
-            D(req_id)
+            D(6)
             "create table if not exists "
             + tb_write
             +" as "
-            + st_requetes[req_id++]
-            +F(req_id)
+            +st_requetes[5]+
+            +F(6)
         },
+
         {
-            D(req_id)
+            D(10)
             "select id, c, bc as B, I,T, NULL as Boules, P, F FROM "
             + tb_write +" as t1 GROUP by t1.bc ORDER by t1.t DESC"
-            +F(req_id)
+            +F(10)
         }
     };
 
@@ -2511,7 +2534,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_z2(prmLay prm)
             " "
             "from  "
             "("
-            "select id as boule from Bnrz where (z2 not null ) "
+            "select id as boule from Bnrz where (z2 not NULL ) "
             ") as tb1 "
             "left join "
             "("
@@ -2737,7 +2760,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R2_cmb_z1(prmLay prm)
     QSqlQuery selection(db_0);
     bool status = false;
 
-    st_msg1 = "select analyses.id, analyses.fk_idCombi_z1 from analyses limit 1;";
+    st_msg1 = "select "+tb_ana_zn+".id, "+tb_ana_zn+".fk_idCombi_z1 from "+tb_ana_zn+" limit 1;";
     status = selection.exec(st_msg1);
     status = selection.first();
     if(selection.isValid())
@@ -2994,7 +3017,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(prmLay prm)
     int dst = prm.dst;
     int zn = prm.zn;
     QString tb_src = REF_BASE;
-    QString tb_ref = "analyses";
+    QString tb_ref = ""+tb_ana_zn+"";
     QString key = "BC";
     QString tb_out = QString("r_")+tb_src + QString("_brc_z")+QString::number(zn+1);
 
@@ -3213,12 +3236,14 @@ QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
     int maxElems = pConf->limites[zn].max;
     int nbBoules = floor(maxElems/10)+1;
 
-
-    // Parite & nb elment dans groupe
-    sl_filter[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
-    sl_filter[1] << "P" << "G";
-    sl_filter[2] << "Pair" << "< E/2";
-
+    // Nombre de 10zaine
+    for(int j=0;j<nbBoules;j++)
+    {
+        sl_filter[0]<< fields+" >="+QString::number(10*j)+
+                       " and "+fields+"<="+QString::number((10*j)+9);
+        sl_filter[1] << "U"+ QString::number(j);
+        sl_filter[2] << "Entre:"+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
+    }
 
     // Boule finissant par [0..9]
     for(int j=0;j<=9;j++)
@@ -3228,14 +3253,10 @@ QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
         sl_filter[2] << "Finissant par: "+ QString::number(j);
     }
 
-    // Nombre de 10zaine
-    for(int j=0;j<nbBoules;j++)
-    {
-        sl_filter[0]<< fields+" >="+QString::number(10*j)+
-                       " and "+fields+"<="+QString::number((10*j)+9);
-        sl_filter[1] << "U"+ QString::number(j);
-        sl_filter[2] << "Entre:"+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
-    }
+    // Parite & nb elment dans groupe
+    sl_filter[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
+    sl_filter[1] << "P" << "G";
+    sl_filter[2] << "Pair" << "< E/2";
 
     return sl_filter;
 }
@@ -3494,7 +3515,7 @@ QString SyntheseGenerale::TrouverTirages(int col, QString str_nb, QString st_tir
             "left join "
             "("
             "select id as B from Bnrz where (z"+QString::number(zn+1)+
-            " not null  and ("+st_cri+")) ) as tb2 " +
+            " not NULL  and ("+st_cri+")) ) as tb2 " +
             "on "+
             "("
             +st_tmp+
@@ -3715,8 +3736,8 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
     bool getLimites = false;
 
-    QSortFilterProxyModel *m = nullptr;//qobject_cast<QSortFilterProxyModel *>(view->model());
-    QAbstractItemModel *sqm_tmp = nullptr;
+    QSortFilterProxyModel *m = NULL;//qobject_cast<QSortFilterProxyModel *>(view->model());
+    QAbstractItemModel *sqm_tmp = NULL;
 
     if(view->objectName().contains("new")){
         m= qobject_cast<QSortFilterProxyModel *>(view->model());
@@ -3993,14 +4014,14 @@ count(*)  as T,
      t1.*
      from
      (
-         select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, analyses as t2 where(t1.bc in (t2.bc))
+         select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, "+tb_ana_zn+" as t2 where(t1.bc in (t2.bc))
          ) as t1
      )as r1 GROUP by B order by T DESC
 
  -- Autre Selection tirages avec presence J,D,tip
  select t1.bc as B,t3.J,t3.D,t4.tip,t2.id
  from r_RefTirages_0_brc_z1 as t1,
- analyses as t2,
+ "+tb_ana_zn+" as t2,
  RefTirages as t3,
  lstCombi_z1 as t4
  where(
@@ -4019,7 +4040,7 @@ count(*)  as T,
  t1.*
  from
  (
-     select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, analyses as t2 where(t1.bc in (t2.bc))
+     select t1.bc as B,t2.* from r_RefTirages_0_brc_z1 as t1, "+tb_ana_zn+" as t2 where(t1.bc in (t2.bc))
      ) as t1
 
  -- Version compacte des calculs...
@@ -4041,7 +4062,7 @@ count(*)  as T,
      (
          select t1.bc as B,t3.J,t3.D,t4.tip,t2.id
          from r_RefTirages_0_brc_z1 as t1,
-         analyses as t2,
+         "+tb_ana_zn+" as t2,
          RefTirages as t3,
          lstCombi_z1 as t4
          where(
@@ -4309,7 +4330,7 @@ count(*)  as T,
                  +st_critere+"))"
              },
              {"update " + tbl_dst
-              + " set F=(case when f is (null or 0) then 0x"
+              + " set F=(case when f is (NULL or 0) then 0x"
               +sdec+" else(f|0x"+sdec+") end) "
               "where (B in ("+msg[1]+"))"}
          };
@@ -4348,7 +4369,7 @@ count(*)  as T,
                  +st_critere_2+"))"
              },
              {"update " + tbl_dst
-              + " set F=(case when f is (null or 0) then 0x"
+              + " set F=(case when f is (NULL or 0) then 0x"
               +sdec+" else(f|0x"+sdec+") end) "
               "where (B in ("+msg[1]+"))"}
          };
@@ -4579,7 +4600,7 @@ count(*)  as T,
  tb3.e1 as e1,
  tb3.bp as P,
  tb3.bg as G
- from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
+ from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
  inner join
  (
      select *  from tirages as tb1
@@ -4610,7 +4631,7 @@ select tbleft.boule as B, count(tbright.Tid) as T,
 count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM
 from
 (
-        select id as boule from Bnrz where (z1 not null )
+        select id as boule from Bnrz where (z1 not NULL )
         ) as tbleft
 left join
 (
@@ -4623,7 +4644,7 @@ left join
         tb3.e1 as e1,
         tb3.bp as P,
         tb3.bg as G
-        from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
+        from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
         inner join
         (
             select *  from tirages as tb1
@@ -4748,7 +4769,7 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             tb3.b5 as b5,
             tb3.e1 as e1
             from tirages as tb3,
-            analyses as tb4,
+            "+tb_ana_zn+" as tb4,
             lstCombi_z1 as tb5
             where
             (
@@ -4757,6 +4778,7 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             tb5.id = tb4.fk_idCombi_z1
             );
 #endif
+    QString tb_ana_zn = "analyses";
 
     QString st_base = "";
     QString st_tmp = "";
@@ -4788,14 +4810,14 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             " from ("
             +st_base_reference+
             ") as tb3,  "
-            "analyses as tb4,  "
-            "lstCombi_z1 as tb5 "
-            "where "
-            "( "
-            "tb4.id = tb3.id "
-            "and "
-            "tb5.id = tb4.fk_idCombi_z1 "
-            "); ";
+            ""+tb_ana_zn+" as tb4,  "
+                         "lstCombi_z1 as tb5 "
+                         "where "
+                         "( "
+                         "tb4.id = tb3.id "
+                         "and "
+                         "tb5.id = tb4.fk_idCombi_z1 "
+                         "); ";
 
 #ifndef QT_NO_DEBUG
     qDebug()<< st_base;
@@ -4832,7 +4854,7 @@ QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pCo
             count(CASE WHEN  jour_tirage like 'lundi%' then 1 end) as LUN, count(CASE WHEN  jour_tirage like 'mercredi%' then 1 end) as MER, count(CASE WHEN  jour_tirage like 'same%' then 1 end) as SAM
             from
             (
-                select id as boule from Bnrz where (z1 not null )
+                select id as boule from Bnrz where (z1 not NULL )
                 ) as tb1
             left join
             (
@@ -4913,7 +4935,7 @@ QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pCo
             "("
             "select id as boule from Bnrz where (z"
             +QString::number(zn+1)
-            +" not null )"
+            +" not NULL )"
              ") as tb1 "
              "left join"
              "("

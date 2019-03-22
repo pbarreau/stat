@@ -106,7 +106,7 @@ void MemoriserChoixUtilisateur(const QModelIndex & index,
     }
     else
     {
-      idOnglet = 0; /// A Debugger plus tard
+        idOnglet = 0; /// A Debugger plus tard
         nb_element_max_zone = pTiragesConf->nbElmZone[idOnglet];
         stNomZone = pTiragesConf->nomZone[idOnglet];
     }
@@ -2130,7 +2130,7 @@ QString SyntheseDetails::SD_Tb1_1(QStringList &boules, QString &sqlTblRef,int ds
                 tb3.e1 as e1,
                 tb3.bp as P,
                 tb3.bg as G
-                from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
+                from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
                 inner join
                 (
                     select *  from tirages as tb1
@@ -2362,7 +2362,7 @@ QString SyntheseDetails::SD_Tb2_3(QStringList &boules, QString &sqlTblRef,int ds
                 ) as tbleft
             left join
             (
-                select tb3.id as Tid1, tb5.id as Pid1, tb3.jour_tirage as J, substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, tb5.tip as C, tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, tb3.e1 as e1 from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5 inner join ( select tirages.*,  analyses.fk_idCombi_z1 from tirages,analyses where ( tirages.id=analyses.id and analyses.fk_idCombi_z1 = 115) ) as tb2 on ( (tb3.id = tb2.id + 0) and (tb4.id = tb3.id) and (tb4.fk_idCombi_z1 = tb5.id) )
+                select tb3.id as Tid1, tb5.id as Pid1, tb3.jour_tirage as J, substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, tb5.tip as C, tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, tb3.e1 as e1 from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5 inner join ( select tirages.*,  "+tb_ana_zn+".fk_idCombi_z1 from tirages,"+tb_ana_zn+" where ( tirages.id="+tb_ana_zn+".id and "+tb_ana_zn+".fk_idCombi_z1 = 115) ) as tb2 on ( (tb3.id = tb2.id + 0) and (tb4.id = tb3.id) and (tb4.fk_idCombi_z1 = tb5.id) )
                 ) as tbright
             on
             (
@@ -2415,19 +2415,19 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
             (
                 -- debuftleft
                 select tg.id as previous_id,tr.id as new_id, tr.npid as new_pid, tg.*,tr.*from
-                (select tirages.*, lstCombi_z1.id as previous_pid from tirages, analyses, lstCombi_z1
+                (select tirages.*, lstCombi_z1.id as previous_pid from tirages, "+tb_ana_zn+", lstCombi_z1
                  where
                  (
                      lstCombi_z1.id = 125
             and
-            tirages.id = analyses.id
+            tirages.id = "+tb_ana_zn+".id
             and
-            analyses.fk_idCombi_z1 = lstCombi_z1.id
+            "+tb_ana_zn+".fk_idCombi_z1 = lstCombi_z1.id
             )
                  ) as tg
                 left join
                 (
-                    select t1.*,t2.id as npid from tirages as t1, lstCombi_z1 as t2, analyses as t3
+                    select t1.*,t2.id as npid from tirages as t1, lstCombi_z1 as t2, "+tb_ana_zn+" as t3
                     where (t1.id=t3.id and t3.fk_idCombi_z1=t2.id)
                     )as tr
                 on
@@ -2441,9 +2441,11 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
                 tg.id = tr.new_pid
             )group by tg.id order by tg.id asc
         #endif
+
             QString st_sqlR = "";
     QString st_cri1 = "";
-    //QString st_cri2 = "";
+    QString tb_ana_zn = "analyses";
+
     int val = pLaDemande->lgn[0];
 
     if(boules.size())
@@ -2460,16 +2462,16 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
             "( "
             "/* debuftleft */"
             "select tg.id as previous_id,tr.id as new_id, tr.npid as new_pid, tg.*,tr.*from "
-            "(select tirages.*, lstCombi_z1.id as previous_pid from tirages, analyses, lstCombi_z1 "
-            "where "
-            "( "
-            "lstCombi_z1.id = "
+            "(select tirages.*, lstCombi_z1.id as previous_pid from tirages, "+tb_ana_zn+", lstCombi_z1 "
+                                                                                         "where "
+                                                                                         "( "
+                                                                                         "lstCombi_z1.id = "
             + QString::number(val) +
             " "
             "and "
-            "tirages.id = analyses.id "
-            "and "
-            "analyses.fk_idCombi_z1 = lstCombi_z1.id "
+            "tirages.id = "+tb_ana_zn+".id "
+                                      "and "
+                                      ""+tb_ana_zn+".fk_idCombi_z1 = lstCombi_z1.id "
             + st_cri1 +
             ") "
             ") as tg "
@@ -2481,12 +2483,12 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
             "t2.tip as C,"
             "t1.b1 as b1, t1.b2 as b2,t1.b3 as b3,t1.b4 as b4,t1.b5 as b5,"
             "t1.e1 as e1,"
-            "t2.id as npid from tirages as t1, lstCombi_z1 as t2, analyses as t3 "
-            "where (t1.id=t3.id and t3.fk_idCombi_z1=t2.id) "
-            ")as tr "
-            "on  "
-            "( "
-            "tr.id = tg.id + "
+            "t2.id as npid from tirages as t1, lstCombi_z1 as t2, "+tb_ana_zn+" as t3 "
+                                                                              "where (t1.id=t3.id and t3.fk_idCombi_z1=t2.id) "
+                                                                              ")as tr "
+                                                                              "on  "
+                                                                              "( "
+                                                                              "tr.id = tg.id + "
             +QString::number(dst)+
             ") "
             "/* fin left */"
@@ -2631,7 +2633,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
             tb3.e1 as e1,
             tb3.bp as P,
             tb3.bg as G
-            from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
+            from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
             inner join
             (
                 select *  from tirages as tb1
@@ -2661,6 +2663,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
             QString st_msg = "";
     QString st_cri1 = "";
     QString st_cri2 = "";
+    QString tb_ana_zn = "analyses";
 
     int loop = 5;//pMaConf->nbElmZone[curzn];
     st_cri1= GEN_Where_3(loop,"tb1.b",true,"=",boules,false,"or");
@@ -2681,12 +2684,12 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
             "tb3.e1 as e1,"
             "tb3.bp as P,"
             "tb3.bg as G "
-            "from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5 "
-            "inner join"
-            "("
-            "select *  from tirages as tb1 "
-            "where"
-            "("
+            "from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5 "
+                                              "inner join"
+                                              "("
+                                              "select *  from tirages as tb1 "
+                                              "where"
+                                              "("
             +st_cri1
             +st_cri2+
             ")"
@@ -2883,7 +2886,7 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
             tb3.e1 as e1,
             tb3.bp as P,
             tb3.bg as G
-            from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
+            from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
             inner join
 
 
@@ -2928,6 +2931,7 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
     QString st_cri3 = ""; // contrainte sur z2 (etoiles)
     QString st_criWhere = ""; // contrainte communes
     QString st_cri1_1 = "";
+    QString tb_ana_zn = "analyses";
 
     int loop[]={5,1,1};
     QString table[]={"tb2.b","tb2.e","tb5.id"};
@@ -2976,15 +2980,15 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
             "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
             "tb3.e1 as e1,"
             "tb2.N as N from tirages as tb3,"
-            "analyses as tb4, lstCombi_z1 as tb5 "
-            "inner join"
-            "("
-            "select *  from "
-            "("
-            "select tb1.*, count(tb2.B) as N from tirages as tb1 "
-            "left join"
-            "("
-            "select id as B from Bnrz where (z1 not null and ("
+            ""+tb_ana_zn+" as tb4, lstCombi_z1 as tb5 "
+                         "inner join"
+                         "("
+                         "select *  from "
+                         "("
+                         "select tb1.*, count(tb2.B) as N from tirages as tb1 "
+                         "left join"
+                         "("
+                         "select id as B from Bnrz where (z1 not null and ("
             +st_cri1_1+
             "))"
             ")as tb2 "
@@ -3070,15 +3074,15 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
             tb5.tip as C,
             tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
             tb3.e1 as e1
-            from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
+            from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
             inner join
             (
-                select tirages.*,  analyses.fk_idCombi_z1 from tirages,analyses
+                select tirages.*,  "+tb_ana_zn+".fk_idCombi_z1 from tirages,"+tb_ana_zn+"
                 where
                 (
-                    tirages.id=analyses.id
+                    tirages.id="+tb_ana_zn+".id
             and
-            analyses.fk_idCombi_z1 = 120
+            "+tb_ana_zn+".fk_idCombi_z1 = 120
             )
                 ) as tb2
             on (
@@ -3102,37 +3106,37 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
             "tb5.tip as C, "
             "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, "
             "tb3.e1 as e1 "
-            "from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5 "
-            "inner join "
-            "( "
-            "select tirages.*, analyses.fk_idCombi_z1 from tirages,analyses "
-            "where "
-            "( "
-            "(tirages.id=analyses.id) "
-            "and "
-            "(analyses.fk_idCombi_z1 = 121) "
-            "and "
-            "(tirages.e1 = 1) "
-            ") "
-            ") as tb2 "
-            "on ( "
-            "(tb3.id = tb2.id + -1) "
-            "and "
-            "(tb4.id = tb3.id) "
-            "and "
-            "(tb4.fk_idCombi_z1 = tb5.id) "
-            ") "
-            "; "
-            " "
-            "--Fin requete tb3 "
-            " "
+            "from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5 "
+                                              "inner join "
+                                              "( "
+                                              "select tirages.*, "+tb_ana_zn+".fk_idCombi_z1 from tirages,"+tb_ana_zn+" "
+                                                                                                                      "where "
+                                                                                                                      "( "
+                                                                                                                      "(tirages.id="+tb_ana_zn+".id) "
+                                                                                                                                               "and "
+                                                                                                                                               "("+tb_ana_zn+".fk_idCombi_z1 = 121) "
+                                                                                                                                                             "and "
+                                                                                                                                                             "(tirages.e1 = 1) "
+                                                                                                                                                             ") "
+                                                                                                                                                             ") as tb2 "
+                                                                                                                                                             "on ( "
+                                                                                                                                                             "(tb3.id = tb2.id + -1) "
+                                                                                                                                                             "and "
+                                                                                                                                                             "(tb4.id = tb3.id) "
+                                                                                                                                                             "and "
+                                                                                                                                                             "(tb4.fk_idCombi_z1 = tb5.id) "
+                                                                                                                                                             ") "
+                                                                                                                                                             "; "
+                                                                                                                                                             " "
+                                                                                                                                                             "--Fin requete tb3 "
+                                                                                                                                                             " "
         #endif
             QString st_sqlR = ""; // Requete complete
     QString st_cri1 = ""; // ensemble de depart
     QString st_cri2 = ""; // contrainte sur z1 (boule)
     QString st_cri3 = ""; // contrainte sur z2 (etoiles)
     QString st_criWhere = ""; // contrainte communes
-
+    QString tb_ana_zn = "analyses";
 
 
     int val = pLaDemande->lgn[0];
@@ -3145,15 +3149,15 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
                           "tb5.tip as C, "
                           "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, "
                           "tb3.e1 as e1 "
-                          "from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5 "
-                          "inner join "
-                          "( "
-                          "select tirages.*,  analyses.fk_idCombi_z1 from tirages,analyses "
-                          "where "
-                          "( "
-                          "tirages.id=analyses.id "
-                          "and "
-                          "analyses.fk_idCombi_z1 = "
+                          "from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5 "
+                                                            "inner join "
+                                                            "( "
+                                                            "select tirages.*,  "+tb_ana_zn+".fk_idCombi_z1 from tirages,"+tb_ana_zn+" "
+                                                                                                                                     "where "
+                                                                                                                                     "( "
+                                                                                                                                     "tirages.id="+tb_ana_zn+".id "
+                                                                                                                                                             "and "
+                                                                                                                                                             ""+tb_ana_zn+".fk_idCombi_z1 = "
             +QString::number(val)+
             ") "
             ") as tb2 "
