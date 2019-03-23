@@ -46,7 +46,7 @@ public:
     bool LireLesTirages(tiragesFileFormat *def,int file_id,stErr *retErr);
     bool NEW_AnalyseLesTirages(tirages *pRef);
     bool SupprimerBase();
-    QSqlError lastError();
+
     void AfficherBase(stTiragesDef *pConf, QTableView *cibleview);
     void AfficherResultatCouverture(stTiragesDef *pConf, QTableView *cibleview);
     void DistributionSortieDeBoule(int boule, QStandardItemModel *modele);
@@ -134,6 +134,7 @@ private:
     QSqlTableModel *tbl_model;
     QSqlTableModel *tbl_couverture;
     int iAffichageVoisinEnCoursDeLaBoule[2];
+    QStringList **myslFlt;
 
 #if USE_CNP_SLOT_LINE
 private:

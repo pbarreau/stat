@@ -16,7 +16,7 @@
 #include "compter.h"
 #include "db_tools.h"
 
-QString BCount::label[]={"err",C_TBL_C,C_TBL_4,C_TBL_9,C_TBL_B,"laFin"};
+QString BCount::label[]={"err",C_TBL_C,T_CMB,T_GRP,T_BRC,"laFin"};
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
 

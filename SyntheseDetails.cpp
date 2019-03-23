@@ -1348,7 +1348,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
 
     int zone = 0;
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(C_TBL_7) + "_z"+QString::number(zone+1);
+    QString qtv_name = QString::fromLatin1(U_CMB) + "_z"+QString::number(zone+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QString sql_msgRef = "";
@@ -1432,7 +1432,7 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
     int zn=0;
     QTableView *qtv_tmp = new QTableView;
     QString qtv_name = "";
-    qtv_name = QString::fromLatin1(C_TBL_8) + "_z"+QString::number(zn+1);
+    qtv_name = QString::fromLatin1(U_GRP) + "_z"+QString::number(zn+1);
 
     int maxElems = pEtude->ref->limites[zn].max;
 
@@ -1673,7 +1673,7 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, i
             + " "
               "from "
               "( "
-              "select id , tip  from lstCombi_z1 "
+              "select id , tip  from Ref_cmb_z1 "
               ") as tbleft "
               "left join "
               "( "
@@ -1744,7 +1744,7 @@ QString PBAR_ReqNbCombi(stCurDemande *pEtude, QString ReqTirages)
             + " "
               "from "
               "( "
-              "select id , tip  from lstCombi_z1 "
+              "select id , tip  from Ref_cmb_z1 "
               ") as tbleft "
               "left join "
               "( "
@@ -2130,7 +2130,7 @@ QString SyntheseDetails::SD_Tb1_1(QStringList &boules, QString &sqlTblRef,int ds
                 tb3.e1 as e1,
                 tb3.bp as P,
                 tb3.bg as G
-                from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
+                from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5
                 inner join
                 (
                     select *  from tirages as tb1
@@ -2362,7 +2362,7 @@ QString SyntheseDetails::SD_Tb2_3(QStringList &boules, QString &sqlTblRef,int ds
                 ) as tbleft
             left join
             (
-                select tb3.id as Tid1, tb5.id as Pid1, tb3.jour_tirage as J, substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, tb5.tip as C, tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, tb3.e1 as e1 from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5 inner join ( select tirages.*,  "+tb_ana_zn+".fk_idCombi_z1 from tirages,"+tb_ana_zn+" where ( tirages.id="+tb_ana_zn+".id and "+tb_ana_zn+".fk_idCombi_z1 = 115) ) as tb2 on ( (tb3.id = tb2.id + 0) and (tb4.id = tb3.id) and (tb4.fk_idCombi_z1 = tb5.id) )
+                select tb3.id as Tid1, tb5.id as Pid1, tb3.jour_tirage as J, substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, tb5.tip as C, tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, tb3.e1 as e1 from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5 inner join ( select tirages.*,  "+tb_ana_zn+".fk_idCombi_z1 from tirages,"+tb_ana_zn+" where ( tirages.id="+tb_ana_zn+".id and "+tb_ana_zn+".fk_idCombi_z1 = 115) ) as tb2 on ( (tb3.id = tb2.id + 0) and (tb4.id = tb3.id) and (tb4.fk_idCombi_z1 = tb5.id) )
                 ) as tbright
             on
             (
@@ -2410,24 +2410,24 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
 #if 0
     select tg.id as cid, tg.tip as Repartition,count(tr.new_pid) as T,
             count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM
-            from lstCombi_z1 as tg
+            from Ref_cmb_z1 as tg
             left join
             (
                 -- debuftleft
                 select tg.id as previous_id,tr.id as new_id, tr.npid as new_pid, tg.*,tr.*from
-                (select tirages.*, lstCombi_z1.id as previous_pid from tirages, "+tb_ana_zn+", lstCombi_z1
+                (select tirages.*, Ref_cmb_z1.id as previous_pid from tirages, "+tb_ana_zn+", Ref_cmb_z1
                  where
                  (
-                     lstCombi_z1.id = 125
+                     Ref_cmb_z1.id = 125
             and
             tirages.id = "+tb_ana_zn+".id
             and
-            "+tb_ana_zn+".fk_idCombi_z1 = lstCombi_z1.id
+            "+tb_ana_zn+".fk_idCombi_z1 = Ref_cmb_z1.id
             )
                  ) as tg
                 left join
                 (
-                    select t1.*,t2.id as npid from tirages as t1, lstCombi_z1 as t2, "+tb_ana_zn+" as t3
+                    select t1.*,t2.id as npid from tirages as t1, Ref_cmb_z1 as t2, "+tb_ana_zn+" as t3
                     where (t1.id=t3.id and t3.fk_idCombi_z1=t2.id)
                     )as tr
                 on
@@ -2444,7 +2444,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
 
             QString st_sqlR = "";
     QString st_cri1 = "";
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     int val = pLaDemande->lgn[0];
 
@@ -2457,21 +2457,21 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
     st_sqlR =
             "select tg.id as cid, tg.tip as Repartition,count(tr.new_pid) as T, "
             "count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM "
-            "from lstCombi_z1 as tg "
+            "from Ref_cmb_z1 as tg "
             "left join "
             "( "
             "/* debuftleft */"
             "select tg.id as previous_id,tr.id as new_id, tr.npid as new_pid, tg.*,tr.*from "
-            "(select tirages.*, lstCombi_z1.id as previous_pid from tirages, "+tb_ana_zn+", lstCombi_z1 "
+            "(select tirages.*, Ref_cmb_z1.id as previous_pid from tirages, "+tb_ana_zn+", Ref_cmb_z1 "
                                                                                          "where "
                                                                                          "( "
-                                                                                         "lstCombi_z1.id = "
+                                                                                         "Ref_cmb_z1.id = "
             + QString::number(val) +
             " "
             "and "
             "tirages.id = "+tb_ana_zn+".id "
                                       "and "
-                                      ""+tb_ana_zn+".fk_idCombi_z1 = lstCombi_z1.id "
+                                      ""+tb_ana_zn+".fk_idCombi_z1 = Ref_cmb_z1.id "
             + st_cri1 +
             ") "
             ") as tg "
@@ -2483,7 +2483,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb4(QStringList &boules, int dst)
             "t2.tip as C,"
             "t1.b1 as b1, t1.b2 as b2,t1.b3 as b3,t1.b4 as b4,t1.b5 as b5,"
             "t1.e1 as e1,"
-            "t2.id as npid from tirages as t1, lstCombi_z1 as t2, "+tb_ana_zn+" as t3 "
+            "t2.id as npid from tirages as t1, Ref_cmb_z1 as t2, "+tb_ana_zn+" as t3 "
                                                                               "where (t1.id=t3.id and t3.fk_idCombi_z1=t2.id) "
                                                                               ")as tr "
                                                                               "on  "
@@ -2633,7 +2633,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
             tb3.e1 as e1,
             tb3.bp as P,
             tb3.bg as G
-            from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
+            from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5
             inner join
             (
                 select *  from tirages as tb1
@@ -2663,7 +2663,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
             QString st_msg = "";
     QString st_cri1 = "";
     QString st_cri2 = "";
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     int loop = 5;//pMaConf->nbElmZone[curzn];
     st_cri1= GEN_Where_3(loop,"tb1.b",true,"=",boules,false,"or");
@@ -2684,7 +2684,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb1(QStringList &boules, int dst)
             "tb3.e1 as e1,"
             "tb3.bp as P,"
             "tb3.bg as G "
-            "from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5 "
+            "from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5 "
                                               "inner join"
                                               "("
                                               "select *  from tirages as tb1 "
@@ -2886,7 +2886,7 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
             tb3.e1 as e1,
             tb3.bp as P,
             tb3.bg as G
-            from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
+            from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5
             inner join
 
 
@@ -2931,7 +2931,7 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
     QString st_cri3 = ""; // contrainte sur z2 (etoiles)
     QString st_criWhere = ""; // contrainte communes
     QString st_cri1_1 = "";
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     int loop[]={5,1,1};
     QString table[]={"tb2.b","tb2.e","tb5.id"};
@@ -2980,7 +2980,7 @@ QString SyntheseDetails::ReponsesOrigine_2(int dst)
             "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,"
             "tb3.e1 as e1,"
             "tb2.N as N from tirages as tb3,"
-            ""+tb_ana_zn+" as tb4, lstCombi_z1 as tb5 "
+            ""+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5 "
                          "inner join"
                          "("
                          "select *  from "
@@ -3074,7 +3074,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
             tb5.tip as C,
             tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
             tb3.e1 as e1
-            from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
+            from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5
             inner join
             (
                 select tirages.*,  "+tb_ana_zn+".fk_idCombi_z1 from tirages,"+tb_ana_zn+"
@@ -3106,7 +3106,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
             "tb5.tip as C, "
             "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, "
             "tb3.e1 as e1 "
-            "from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5 "
+            "from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5 "
                                               "inner join "
                                               "( "
                                               "select tirages.*, "+tb_ana_zn+".fk_idCombi_z1 from tirages,"+tb_ana_zn+" "
@@ -3136,7 +3136,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
     QString st_cri2 = ""; // contrainte sur z1 (boule)
     QString st_cri3 = ""; // contrainte sur z2 (etoiles)
     QString st_criWhere = ""; // contrainte communes
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
 
     int val = pLaDemande->lgn[0];
@@ -3149,7 +3149,7 @@ QString SyntheseDetails::DoSqlMsgRef_Tb3(QStringList &boules, int dst)
                           "tb5.tip as C, "
                           "tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5, "
                           "tb3.e1 as e1 "
-                          "from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5 "
+                          "from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5 "
                                                             "inner join "
                                                             "( "
                                                             "select tirages.*,  "+tb_ana_zn+".fk_idCombi_z1 from tirages,"+tb_ana_zn+" "

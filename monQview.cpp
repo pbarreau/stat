@@ -116,7 +116,7 @@ QString MonQtViewDelegate::SD_Tb2_1(QStringList &boules, int lgn, int dst)const
             tb3.e1 as e1,
             tb3.bp as P,
             tb3.bg as G
-            from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
+            from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5
             inner join
             (
                 select *  from tirages as tb1
@@ -149,7 +149,7 @@ QString MonQtViewDelegate::SD_Tb2_1(QStringList &boules, int lgn, int dst)const
                 tb3.e1 as e1,
                 tb3.bp as P,
                 tb3.bg as G
-                from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
+                from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5
                 inner join
                 (
                     select *  from tirages as tb1
@@ -174,6 +174,7 @@ QString MonQtViewDelegate::SD_Tb2_1(QStringList &boules, int lgn, int dst)const
 
     QString st_msg = "";
     QStringList lst_tmp = boules;
+    QString tb_ana_zn = "Ref_ana_z1";
 
     lst_tmp << QString::number(lgn);
 
@@ -197,7 +198,7 @@ QString MonQtViewDelegate::SD_Tb2_1(QStringList &boules, int lgn, int dst)const
             "tb3.e1 as e1,"
             "tb3.bp as P,"
             "tb3.bg as G "
-            "from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5 "
+            "from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5 "
             "inner join"
             "("
             "select *  from tirages as tb1 "
@@ -243,7 +244,7 @@ QString MonQtViewDelegate::SD_Tb2_2(QStringList &boules, int lgn, int dst) const
     ) as tbleft
     left join
     (
-   select tb3.id as Tid1, tb5.id as Pid,tb3.jour_tirage as J,substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,tb5.tip as C,tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,tb3.e1 as e1,tb3.bp as P,tb3.bg as G from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5 inner join(select * from (select tb1.*, count(tb2.B) as N from tirages as tb1 left join(select id as B from Bnrz where (z1 not null and (z1 like '%1')))as tb2 on(tb1.b1 = tb2.B or tb1.b2 = tb2.B or tb1.b3 = tb2.B or tb1.b4 = tb2.B or tb1.b5 = tb2.B)group by tb1.id) as ensemble_1 where(ensemble_1.N =1)) as tb2 on ((tb3.id = tb2.id + 0) and(tb4.id = tb3.id)and(tb4.fk_idCombi_z1 = tb5.id))
+   select tb3.id as Tid1, tb5.id as Pid,tb3.jour_tirage as J,substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,tb5.tip as C,tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,tb3.e1 as e1,tb3.bp as P,tb3.bg as G from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5 inner join(select * from (select tb1.*, count(tb2.B) as N from tirages as tb1 left join(select id as B from Bnrz where (z1 not null and (z1 like '%1')))as tb2 on(tb1.b1 = tb2.B or tb1.b2 = tb2.B or tb1.b3 = tb2.B or tb1.b4 = tb2.B or tb1.b5 = tb2.B)group by tb1.id) as ensemble_1 where(ensemble_1.N =1)) as tb2 on ((tb3.id = tb2.id + 0) and(tb4.id = tb3.id)and(tb4.fk_idCombi_z1 = tb5.id))
     ) as tbright
     on
     (
@@ -276,7 +277,7 @@ QString MonQtViewDelegate::SD_Tb2_2(QStringList &boules, int lgn, int dst) const
      select tb3.id as Tid1, tb5.id as Pid,tb3.jour_tirage as J,
     substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
     tb5.tip as C,tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,tb3.e1 as e1,tb3.bp as P,tb3.bg as G
-    from tirages as tb3, analyses as tb4, lstCombi_z1 as tb5
+    from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5
     inner join
     (
     -- nb boule dans un tirage se terminant par un 1

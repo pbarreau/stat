@@ -247,7 +247,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     QTableView *qtv_tmp = new QTableView;
     (* pName) = myGame.names[zn].abv; /// BUG sur db_data
 
-    QString TblCompact = C_TBL_9;
+    QString TblCompact = T_GRP;
 
 #if 0
     if(myGame.from == eFdj)
@@ -259,7 +259,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     }
 #endif
 
-    QString qtv_name = QString::fromLatin1(C_TBL_8) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(U_GRP) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];

@@ -223,9 +223,9 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
     QString msg = "";
     bool isOk = true;
 
-    QString stTbAnalyse = C_TBL_5;
-    QString Def_comb = C_TBL_4;
-    QString SelComb = C_TBL_7;
+    QString stTbAnalyse = T_ANA;
+    QString Def_comb = T_CMB;
+    QString SelComb = U_CMB;
     QString prefix = "B_";
 
 
@@ -401,7 +401,7 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
 
     QTableView *qtv_tmp = new QTableView;
 
-    QString qtv_name = QString::fromLatin1(C_TBL_7) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(U_CMB) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
     QSqlQueryModel *sqm_tmp = &sqmZones[zn];

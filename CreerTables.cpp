@@ -483,7 +483,7 @@ bool GererBase::f2_2(QString tb, QString *data)
     bool status = true;
 
     QSqlQuery q_create(db_0);
-    QString st_refTbl[] = {C_TBL_6,C_TBL_7,C_TBL_8,C_TBL_A,"U_brc"};
+    QString st_refTbl[] = {C_TBL_6,U_CMB,U_GRP,C_TBL_A,"U_brc"};
     QString st_sqldf = ""; /// sql definition
     QString st_table = "";
 
@@ -521,28 +521,78 @@ bool GererBase::f2_2(QString tb, QString *data)
 
 }
 
+/*
 bool GererBase::f3(QString tb, QString *data)
 {
-    bool status = true;
+    Q_UNUSED(data)
+
+    bool isOk = true;
+    QSqlQuery query(db_0);
+
+    stTiragesDef ref = typeTirages->conf;
+    int nbZone = conf.nb_zone;
+
+    myslFlt = new  QStringList* [nbZone] ;
+    QString tbUse = "";
+    QString source = "";
+    QString destination ="";
+
+    destination = "B_"+tb;
+    //source = tblTirages;
+
+    for (int zn=0;(zn < nbZone) && isOk;zn++ )
+    {
+        myslFlt[zn] = LstCritereGroupement(zn,&ref);
+        //isOk = AnalyserEnsembleTirage(source,onGame, zn);
+        if(isOk)
+            ;//isOk = FaireTableauSynthese(destination,onGame,zn);
+    }
+
+    if(!isOk)
+    {
+        QString ErrLoc = "f5:";
+        DB_Tools::DisplayError(ErrLoc,NULL,"");
+    }
+
+    return isOk;
+
+}
+*/
+
+
+bool GererBase::f3(QString tb, QString *data)
+{
+    bool isOk = true;
 
     QSqlQuery query(db_0);
     QString requete = "";
 
     stTiragesDef ref = typeTirages->conf;
 
-    requete = typeTirages->s_LibColAnalyse(&ref);
-    if((requete.length() != 0) && status)
-    {
-        requete.replace(",", " int,");
-        requete = "create table analyses (id INTEGER PRIMARY KEY,"+
-                requete + " int, fk_idCombi_z1 int);";
+    int nbZone = conf.nb_zone;
 
-        status = query.exec(requete);
-        query.finish();
+    requete = typeTirages->s_LibColAnalyse(&ref);
+    requete.replace(",", " int,");
+    for (int zn=0;zn < nbZone && isOk;zn++ )
+    {
+        QString tb_ana_zn = "Ref_ana_z"+QString::number(zn+1);
+        if((requete.length() != 0) && isOk)
+        {
+            QString msg = "create table "+tb_ana_zn+" (id INTEGER PRIMARY KEY,"+
+                    requete + " int, fk_idCombi_z"+QString::number(zn+1)+" int);";
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+
+            isOk = query.exec(msg);
+        }
     }
 
-    return status;
+
+    return isOk;
 }
+
+
 
 //#if 0
 bool GererBase::f4(QString tb, QString *data)
@@ -624,9 +674,9 @@ bool GererBase::TraitementCodeTblCombi(int zn)
 
     QString tblCode[]=
     {
-        "drop table if exists lstCombi_z%1;",
-        "create table if not exists lstCombi_z%1 (id integer primary key,%2);",
-        "insert into lstCombi_z%1 select NULL,%2 from (%3) where(%4="
+        "drop table if exists Ref_cmb_z%1;",
+        "create table if not exists Ref_cmb_z%1 (id integer primary key,%2);",
+        "insert into Ref_cmb_z%1 select NULL,%2 from (%3) where(%4="
         +QString::number(+conf.limites[zn].neg)+");"
     };
     int argTblCount[]={1,2,4};
@@ -756,11 +806,11 @@ bool GererBase::GrouperCombi(int zn)
     {
         st_critere = ContruireRechercheCombi(i,zn,&typeTirages->conf);
 
-        st_critere = "select id from lstCombi_z1 where ("
+        st_critere = "select id from Ref_cmb_z1 where ("
                 + st_critere
                 +")";
 
-        msg_1 = "update lstCombi_z1 set pos = "
+        msg_1 = "update Ref_cmb_z1 set pos = "
                 +QString::number(6-i)
                 +" where id in("
                 +st_critere
@@ -779,7 +829,7 @@ bool GererBase::GrouperCombi(int zn)
     st_critere ="";
     for(int i =1; i<=max;i++)
     {
-        st_critere = st_critere + "select * from lstCombi_z1 where b"
+        st_critere = st_critere + "select * from Ref_cmb_z1 where b"
                 +QString::number(i)
                 +"=1 "
                 +str_union;
@@ -789,7 +839,7 @@ bool GererBase::GrouperCombi(int zn)
     st_critere = "select id from(select id, count(id) as T from("
             +st_critere+") as u1 group by id order by T) as r1 where (r1.T=3)";
 
-    msg_1 = "update lstCombi_z1 set pos = 5 where id in("
+    msg_1 = "update Ref_cmb_z1 set pos = 5 where id in("
             +st_critere
             +");";
 
@@ -804,11 +854,11 @@ bool GererBase::GrouperCombi(int zn)
     {
         st_critere = ContruireRechercheCombi(1,zn,&typeTirages->conf);
 
-        st_critere = "select id from lstCombi_z1 where ("
+        st_critere = "select id from Ref_cmb_z1 where ("
                 + st_critere
                 +")";
 
-        msg_1 = "update lstCombi_z1 set pos = 6 where id in("
+        msg_1 = "update Ref_cmb_z1 set pos = 6 where id in("
                 +st_critere
                 +");";
 
@@ -889,7 +939,7 @@ bool  GererBase::MettrePonderationCombi(int delta)
     bool status = false;
     QSqlQuery sql_1(db_0);
     QSqlQuery sql_2(db_0);
-    QString msg_1 = "select pos, count(pos)as T from lstCombi_z1 group by pos;";
+    QString msg_1 = "select pos, count(pos)as T from Ref_cmb_z1 group by pos;";
 
 
     status = sql_1.exec(msg_1);
@@ -909,7 +959,7 @@ bool  GererBase::MettrePonderationCombi(int delta)
 
                 for(int i = depart; (i<(depart+nblgn)) && (status == true);i++)
                 {
-                    msg_1 = "update lstCombi_z1 set poids="
+                    msg_1 = "update Ref_cmb_z1 set poids="
                             +QString::number(val)+" where (id="
                             +QString::number(i)
                             +");";
@@ -946,7 +996,7 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
     QString st_cols = "";
     QString st_vals = "";
     QString st_valtips = "";
-    QString msg_1 = " CREATE table if not exists lstCombi_z1 (id INTEGER PRIMARY KEY, pos int, comb int,rot int, b1 int, b2 int ,b3 int ,b4 int, b5 int, b6 int, poids real, tip text);";
+    QString msg_1 = " CREATE table if not exists Ref_cmb_z1 (id INTEGER PRIMARY KEY, pos int, comb int,rot int, b1 int, b2 int ,b3 int ,b4 int, b5 int, b6 int, poids real, tip text);";
 
 
     int coef[5][2][5] = {
@@ -1010,7 +1060,7 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
                             }
                             st_valtips.remove(st_valtips.length()-1,1);
 
-                            msg_1 = "insert into lstCombi_z1 (id,pos,comb,rot,"
+                            msg_1 = "insert into Ref_cmb_z1 (id,pos,comb,rot,"
                                     + st_cols + ",tip) Values (NULL,"
                                     + QString::number(loop)+","
                                     + QString::number(i)+","
@@ -1044,7 +1094,7 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
                 }
                 st_valtips.remove(st_valtips.length()-1,1);
 
-                msg_1 = "insert into lstCombi_z1 (id,pos,comb,rot,"
+                msg_1 = "insert into Ref_cmb_z1 (id,pos,comb,rot,"
                         + st_cols + ",tip) Values (NULL,"
                         + QString::number(loop)+","
                         + QString::number(i)+",0,"
@@ -1114,10 +1164,11 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
 
     // creation de la table analyse des boules (lors du chargement de la base)
     requete = pRef->s_LibColAnalyse(&ref);
+    QString tb_ana_zn = "Ref_ana_z1";
     if((requete.length() != 0) && status)
     {
         requete.replace(",", " int,");
-        requete = "create table analyses (id INTEGER PRIMARY KEY,"+
+        requete = "create table "+tb_ana_zn+" (id INTEGER PRIMARY KEY,"+
                 requete + " int, fk_idCombi_z1 int);";
 
         status = query.exec(requete);

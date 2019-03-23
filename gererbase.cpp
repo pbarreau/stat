@@ -370,10 +370,10 @@ bool GererBase::AffectePoidsATirage_v2()
     bool status = false;
     QSqlQuery sql_1(db_0);
     QSqlQuery sql_2(db_0);
-    QString msg_1 = "select * from lstCombi_z1;";
+    QString msg_1 = "select * from Ref_cmb_z1;";
     stTiragesDef ref=typeTirages->conf;
     int zn = 0;
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     int nbBoules = floor(ref.limites[zn].max/10);
 
@@ -393,7 +393,7 @@ bool GererBase::AffectePoidsATirage_v2()
                 {
                     // Voir les champs de la table
                     // les unites commence en position 4 (ancienne version)
-                    // 1 vouvelle version de lstCombi_z1
+                    // 1 vouvelle version de Ref_cmb_z1
                     coef[i] = sql_1.value(1+i).toInt();
                     msg_2 = msg_2 + "bd"+QString::number(i)
                             +"="+QString::number(coef[i])+ " and ";
@@ -508,12 +508,6 @@ bool GererBase::CreerBasePourEtude(bool action,NE_FDJ::E_typeJeux type)
     return isOk;
 }
 
-QSqlError GererBase::lastError()
-{
-    // If opening database has failed user can ask
-    // error description by QSqlError::text()
-    return db_0.lastError();
-}
 
 bool GererBase::AuthoriseChargementExtension(void)
 {
@@ -1225,7 +1219,7 @@ void GererBase::MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen)
     int nb_zone = pConf->nb_zone;
     int i =0;
     bool status = true;
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
 
 
@@ -1556,7 +1550,7 @@ void GererBase::MontrerDetailCombinaison(QString msg)
     QString st_msg ="";
     QFormLayout *mainLayout = new QFormLayout;
     bool status = true;
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     //tv_r1->setWindowTitle(msg);
 

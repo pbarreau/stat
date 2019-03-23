@@ -271,11 +271,11 @@ bool BPrevision::creerTablesDeLaBase(void)
         {C_TBL_3,&BPrevision::f3},   /// Table des tirages
         {C_TBL_1,&BPrevision::f1},   /// Table des nom des zones et abregees
         {C_TBL_2,&BPrevision::f2},   /// Liste des boules par zone
-        {C_TBL_4,&BPrevision::f4},    /// Table des combinaisons
-        {C_TBL_5,&BPrevision::f5},    /// Table des Analyses
+        {T_CMB,&BPrevision::f4},    /// Table des combinaisons
+        {T_ANA,&BPrevision::f5},    /// Table des Analyses
         {C_TBL_6,&BPrevision::f6},    /// Selection utilisateur
-        {C_TBL_7,&BPrevision::f6},    /// Selection utilisateur
-        {C_TBL_8,&BPrevision::f6},    /// Selection utilisateur
+        {U_CMB,&BPrevision::f6},    /// Selection utilisateur
+        {U_GRP,&BPrevision::f6},    /// Selection utilisateur
         {C_TBL_A,&BPrevision::f6}    /// Selection utilisateur
     };
 
@@ -659,7 +659,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
     QString stDefBoules = C_TBL_2;
     QString prvName = "";
     QString curName  ="";
-    QString TblCompact = C_TBL_9;
+    QString TblCompact = T_GRP;
 
     QString tblToUse = tblIn + "_z"+QString::number(zn+1);
 #if 0
@@ -673,7 +673,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
         TblCompact = "B_"+TblCompact;
     }
     else{
-        tblToUse = tblIn +"_"C_TBL_5 "_z"+QString::number(zn+1);
+        tblToUse = tblIn +"_"T_ANA "_z"+QString::number(zn+1);
         TblCompact = tblIn + "_"+TblCompact ;
     }
 #endif
@@ -1753,9 +1753,9 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
     QSqlQuery query(db_1);
     QString stDefBoules = C_TBL_2;
     QString st_OnDef = "";
-    QString tbLabAna = C_TBL_5;
+    QString tbLabAna = T_ANA;
     QString tblToUse = "";
-    QString tbLabCmb = C_TBL_4;
+    QString tbLabCmb = T_CMB;
 
     tbLabCmb = "B_" + tbLabCmb;
     if(onGame.from == eFdj){

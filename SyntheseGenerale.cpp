@@ -745,7 +745,7 @@ void SyntheseGenerale::DoTirages(void)
 
 void SyntheseGenerale::DoComptageTotal(void)
 {
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     QString n1_names[]={"Boules","Etoiles"};
     QString n2_names[]={"tot","brc","cmb","grp"};
@@ -2020,12 +2020,8 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
     tbv_bloc1_1 = qtv_tmp;
 
     // simple click dans fenetre  pour selectionner boule
-#if 0
-    connect( tbv_bloc1_1, SIGNAL(clicked(QModelIndex)) ,
-             this, SLOT(slot_Select_B( QModelIndex) ) );
     connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
              this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
-#endif
 
 
     qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -2074,7 +2070,7 @@ inline int SyntheseGenerale::incValue(int *i)
 QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
 {
     QTableView * qtv_tmp = new QTableView;
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     QString ref_tbl = "Bnrz";
     QString ref_ana = ""+tb_ana_zn+"";
@@ -2633,7 +2629,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R2_cmb_z1(prmLay prm)
     int zn = prm.zn;
 
     QTableView *qtv_tmp = new QTableView;
-    QString qtv_name = QString::fromLatin1(C_TBL_7) + "_z"+QString::number(zn+1);
+    QString qtv_name = QString::fromLatin1(U_CMB) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
     tbv[zn]<< qtv_tmp;
 
@@ -2659,7 +2655,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R2_cmb_z1(prmLay prm)
             " "
             "from  "
             "("
-            "select id,tip from lstCombi_z1"
+            "select id,tip from Ref_cmb_z1"
             ") as tb1 "
             "left join "
             "("
@@ -2885,7 +2881,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(prmLay prm)
 
     QTableView *qtv_tmp = new QTableView;
     QString qtv_name = "";
-    qtv_name = QString::fromLatin1(C_TBL_8) +
+    qtv_name = QString::fromLatin1(U_GRP) +
             QString::fromLatin1("_z")
             +QString::number(zone+1);
     qtv_tmp->setObjectName(qtv_name);
@@ -3362,6 +3358,43 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 
 void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QString tbName = view->objectName();
+
+    QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
+    QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
+    int nbcol = sqm_tmp->columnCount();
+    int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
+
+    QItemSelectionModel *selectionModel = view->selectionModel();
+    QModelIndexList indexes =  selectionModel->selectedIndexes();
+    int total = indexes.size();
+
+    /// si le choix utilisateur < col T et > nbJour deselectionner element
+    int cur_col = indexes.last().column();
+    if((cur_col < BDelegateCouleurFond::Columns::TotalElement)
+            ||
+            (cur_col > BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+        // deselectionner l'element
+        selectionModel->select(indexes.last(), QItemSelectionModel::Deselect);
+        return;
+    }
+
+    /// Selection sur jour
+    if((cur_col > BDelegateCouleurFond::Columns::TotalElement)
+            &&
+            (cur_col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+        // Verifier si Total deja selectionne
+        QModelIndex colT = indexes.last().sibling(indexes.last().row(),BDelegateCouleurFond::Columns::TotalElement);
+        if(indexes.contains(colT)){
+            selectionModel->select(indexes.last(), QItemSelectionModel::Deselect);
+            return;
+        }
+    }
+
+    return;
+
+    /*
     // L'onglet implique le tableau...
     //int origine = ptabComptage->currentIndex();
     int origine = 0;
@@ -3369,9 +3402,8 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
     int col = index.column();
     boolean noSelection = false;
 
-    QTableView *view = qobject_cast<QTableView *>(sender());
+
     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
-    QItemSelectionModel *selectionModel = view->selectionModel();
     origine =curOnglet->currentIndex();
     totOngl = curOnglet->count();
 
@@ -3410,8 +3442,12 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
         MemoriserChoixUtilisateur(index,origine,selectionModel,pMaConf,&uneDemande);
 
     ///Memoriser peut modifier contenu de uneDemande !!!!
+    ///
+
+
     QString maselection = CreatreTitle(&uneDemande);
     selection->setText(maselection);
+    */
 
 
 }
@@ -3745,7 +3781,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
         getLimites = true;
     }
     else{
-        if(view->objectName().contains(C_TBL_8)){
+        if(view->objectName().contains(U_GRP)){
             sqm_tmp = qobject_cast<QStandardItemModel *>(view->model());
         }
         else{
@@ -4023,7 +4059,7 @@ count(*)  as T,
  from r_RefTirages_0_brc_z1 as t1,
  "+tb_ana_zn+" as t2,
  RefTirages as t3,
- lstCombi_z1 as t4
+ Ref_cmb_z1 as t4
  where(
      (t1.bc in (t2.bc))
      and
@@ -4064,7 +4100,7 @@ count(*)  as T,
          from r_RefTirages_0_brc_z1 as t1,
          "+tb_ana_zn+" as t2,
          RefTirages as t3,
-         lstCombi_z1 as t4
+         Ref_cmb_z1 as t4
          where(
              (t1.bc in (t2.bc))
              and
@@ -4600,7 +4636,7 @@ count(*)  as T,
  tb3.e1 as e1,
  tb3.bp as P,
  tb3.bg as G
- from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
+ from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5
  inner join
  (
      select *  from tirages as tb1
@@ -4644,7 +4680,7 @@ left join
         tb3.e1 as e1,
         tb3.bp as P,
         tb3.bg as G
-        from tirages as tb3, "+tb_ana_zn+" as tb4, lstCombi_z1 as tb5
+        from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5
         inner join
         (
             select *  from tirages as tb1
@@ -4770,7 +4806,7 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             tb3.e1 as e1
             from tirages as tb3,
             "+tb_ana_zn+" as tb4,
-            lstCombi_z1 as tb5
+            Ref_cmb_z1 as tb5
             where
             (
                 tb4.id = tb3.id
@@ -4778,7 +4814,7 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             tb5.id = tb4.fk_idCombi_z1
             );
 #endif
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     QString st_base = "";
     QString st_tmp = "";
@@ -4811,7 +4847,7 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
             +st_base_reference+
             ") as tb3,  "
             ""+tb_ana_zn+" as tb4,  "
-                         "lstCombi_z1 as tb5 "
+                         "Ref_cmb_z1 as tb5 "
                          "where "
                          "( "
                          "tb4.id = tb3.id "

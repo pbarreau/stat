@@ -22,21 +22,21 @@
 
 #if 0
 #define C_TBL_6      "SelElemt"  /// Choix de boules dans zone
-#define C_TBL_7      "SelComb"  /// Choix de combinaison dans zone
-#define C_TBL_8      "SelGrp"  /// Choix de criteres groupement dans zone
+#define U_CMB      "SelComb"  /// Choix de combinaison dans zone
+#define U_GRP      "SelGrp"  /// Choix de criteres groupement dans zone
 #endif
 
 #define C_TBL_1     "B_def" /// config du jeu
 #define C_TBL_2     "B_elm" /// constituant des boules
 #define C_TBL_3     "fdj" /// Base de tous les tirages
-#define C_TBL_4     "cmb" /// Combinaison a appliquer sur zone
-#define C_TBL_5     "ana" /// Resultat analyse des sones de la fdj
+#define T_CMB     "cmb" /// Combinaison a appliquer sur zone
+#define T_ANA     "ana" /// Resultat analyse des sones de la fdj
 #define C_TBL_6     "U_e"   /// User choice on element
-#define C_TBL_7     "U_c"   /// ..on combinaison
-#define C_TBL_8     "U_g"   /// ..on regroupement
-#define C_TBL_9     "grp"   /// synthese on regroupement
+#define U_CMB     "U_c"   /// ..on combinaison
+#define U_GRP     "U_g"   /// ..on regroupement
+#define T_GRP     "grp"   /// synthese on regroupement
 #define C_TBL_A     "U_b"   /// ..on regroupement
-#define C_TBL_B     "brc"   /// ..on regroupement
+#define T_BRC     "brc"   /// ..on regroupement
 #define C_TBL_C     "elm"   /// ..on regroupement
 
 #define MAX_CHOIX_BOULES    30

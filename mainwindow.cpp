@@ -381,7 +381,7 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
             order by id asc;
 #endif
 
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     QGridLayout *lay_return = new QGridLayout;
     QWidget *wTop_1 = new QWidget;
@@ -784,7 +784,7 @@ void MainWindow::TST_NbRepartionCombi(int ecart,int key)
     int d[4]={1,2,-1,-2};
     bool status = false;
 
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     msg =   "select id, count(fk_idCombi_z1) as T  from (SELECT lstcombi.id,t2.fk_idCombi_z1 "
             "FROM lstcombi "
@@ -1639,7 +1639,7 @@ int MainWindow::RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *r
     bool status = false;
 
     QStringList cri_msg;
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     int nbBoules = floor(ref->limites[0].max/10)+1;
 
@@ -3839,7 +3839,7 @@ QTabWidget *MainWindow::TST_OngletN1(QTabWidget *pere,int pos, QStringList (*lst
     QTableView *qtv_r3 = new QTableView;
     QStandardItemModel * qsim_r3 = TST_SetTblViewVal(50, qtv_r3);;
 
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     //bool status = false;
     int ShowCol = ((ref->limites[0].max)/10)+1;
@@ -4074,7 +4074,7 @@ void MainWindow::TST_SyntheseDesCombinaisons(QTableView *p_in, QStandardItemMode
     int ligne = 0;
     int val = 0;
     QModelIndex modelIndex;
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
     //QAbstractItemModel *theModel = p_in->model();
     //QStandardItemModel *dest= (QStandardItemModel*) theModel;
     QString SqlReq = "";
@@ -4216,7 +4216,7 @@ void MainWindow:: VUE_ListeTiragesFromDistribution(int critere, int distance, in
     QString st_titre="";
     QString st_where = "";
 
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     if(choix != 0)
     {
@@ -4335,7 +4335,7 @@ void MainWindow::TST_MontrerDetailCombinaison(QString msg, stTiragesDef *pTDef)
     QTableView *tv_r1 = new QTableView;
     QString st_msg ="";
     QFormLayout *mainLayout = new QFormLayout;
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
 
     msg.replace("c","bd");
@@ -5023,7 +5023,7 @@ void MainWindow::TST_AffectePoidsATirage(stTiragesDef *ref)
     bool status = false;
     QSqlQuery sql_1(db_0);
     QSqlQuery sql_2(db_0);
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     QString msg_1 = "select * from lstcombi;";
 
@@ -5080,7 +5080,7 @@ void MainWindow::TST_MettrePonderationSurTirages(void)
 #endif
     bool status = false;
     QSqlQuery sql_1(db_0);
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
     QString msg_1 = "select "+tb_ana_zn+".id, lstcombi.poids from "+tb_ana_zn+" inner join lstcombi on "+tb_ana_zn+".fk_idCombi_z1 = lstcombi.id;";
 
     QFile fichier("ponder.txt");
@@ -5136,7 +5136,7 @@ UnConteneurDessin * MainWindow::TST_Graphe_1(stTiragesDef *pConf)
     une_vue[0] = new UnConteneurDessin;
     QString msg_2="";
     QString msg_3 = "";
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     myview[0] = new MyGraphicsView(pConf->db_cnx, eRepartition,une_vue[0], "Tirages",Qt::white);
 
@@ -5500,7 +5500,7 @@ void MainWindow::VUE_MontreLeTirage(double x)
     bool status = false;
     int scale[3]={20,20,20};
     int delta[3]={0,0,0};
-    QString tb_ana_zn = "analyses";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     st_msg[0] = "select pos from lstcombi inner  join "
                 "(select fk_idCombi_z1 as clef from "+tb_ana_zn+" where id = "

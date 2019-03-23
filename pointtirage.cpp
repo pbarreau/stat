@@ -190,11 +190,12 @@ QString PointTirage::TST_GetTirageOrdreFromPoint(int x_val)
     bool status = false;
     QSqlQuery sql_1(db_0);
     QString msg = "";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     msg = tirRef->s_LibColAnalyse(&tirDef);
     msg = "select "
-            + msg + " from analyses "
-                    "where (analyses.id ="
+            + msg + " from "+tb_ana_zn+" "
+                                       "where ("+tb_ana_zn+".id ="
             +QString::number(x_val)+");";
 
     status = sql_1.exec(msg);

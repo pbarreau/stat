@@ -1766,16 +1766,6 @@ double  RefEtude::DistributionSortieDeBoule_v2(int zn,int boule, QStandardItemMo
     msg =  "create table tmp_couv (id integer primary key, depart int, fin int, taille int);";
     status = query.exec(msg);
 
-    if(0){
-        while(query.isActive())
-        {
-#ifndef QT_NO_DEBUG
-            qDebug() << "ERROR:" << query.executedQuery()  << "-" << query.lastError().text();
-            qDebug()<< p_db->lastError();
-#endif
-            ;//rien
-        }
-    }
 
     // recuperation du nombre de tirage total
     //msg= "select count (*)  from ("+useBase+") as r1;";

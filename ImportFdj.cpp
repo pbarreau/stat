@@ -252,11 +252,12 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
     QSqlQuery sql_all(db_0);
     QString clef_1= "";
     QString sAllTirages = "";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     stTiragesDef ref;
     pRef->getConfigFor(&ref);
 
-    // Table des analyses
+    // Table des "+tb_ana_zn+"
     QString str_1 = pRef->s_LibColAnalyse(&ref);
     QString str_2 = str_1;
 #ifndef QT_NO_DEBUG
@@ -270,7 +271,7 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
 #endif
 
 
-    str_1 = "INSERT INTO analyses (" + str_2 + ")VALUES (:" + str_1 + ")";
+    str_1 = "INSERT INTO "+tb_ana_zn+" (" + str_2 + ")VALUES (:" + str_1 + ")";
     sql_1.prepare(str_1);
 #ifndef QT_NO_DEBUG
     qDebug() << str_1;
@@ -322,7 +323,7 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
             for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
             {
                 int val2 = pRZone[zone][j];
-                // Preparation pour affectation variable sql (analyses)
+                // Preparation pour affectation variable sql ("+tb_ana_zn+")
                 clef_1 = ":"+ref.nomZone[zone]+"d"+QString::number(j);
                 clef_1.replace(QRegExp("\\s+"),"");
                 sql_1.bindValue(clef_1,val2);
