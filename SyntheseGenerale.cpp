@@ -2030,6 +2030,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb
 
     // tbv_bloc1_1
     // double click dans fenetre  pour afficher details boule
+
     connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
              this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
@@ -3359,7 +3360,6 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     QTableView *view = qobject_cast<QTableView *>(sender());
-    //QString tbName = view->objectName();
 
     QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
     QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
@@ -3367,6 +3367,11 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
     int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
 
     QItemSelectionModel *selectionModel = view->selectionModel();
+
+    if(!selectionModel->selectedIndexes().size()){
+        return;
+    }
+
     QModelIndexList indexes =  selectionModel->selectedIndexes();
     //int total = indexes.size();
 
@@ -3375,8 +3380,13 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
     if((cur_col < BDelegateCouleurFond::Columns::TotalElement)
             ||
             (cur_col > BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+        //selectionModel->select(indexes.last(), QItemSelectionModel::Deselect | QItemSelectionModel::Current);
+        //selectionModel->clearCurrentIndex();
+
         // deselectionner l'element
         selectionModel->select(indexes.last(), QItemSelectionModel::Deselect);
+        const QModelIndex fake_index;
+        selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
         return;
     }
 
@@ -3387,7 +3397,10 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
         // Verifier si Total deja selectionne
         QModelIndex key = indexes.last().sibling(indexes.last().row(),BDelegateCouleurFond::Columns::TotalElement);
         if(indexes.contains(key)){
-            selectionModel->select(indexes.last(), QItemSelectionModel::Deselect);
+            // deselectionner l'element
+            selectionModel->select(key, QItemSelectionModel::Deselect);
+            const QModelIndex fake_index;
+            selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
             return;
         }
     }
@@ -3399,7 +3412,10 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
             // Verifier si Total deja selectionne
             QModelIndex key = indexes.last().sibling(indexes.last().row(),col);
             if(indexes.contains(key)){
+                // deselectionner l'element
                 selectionModel->select(key, QItemSelectionModel::Deselect);
+                const QModelIndex fake_index;
+                selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
                 continue;
             }
         }
@@ -3772,23 +3788,32 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     int nbcol = sqm_tmp->columnCount();
     int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
 
+
     QItemSelectionModel *selectionModel = view->selectionModel();
+
+
+    if(!selectionModel->selectedIndexes().size()){
+        return;
+    }
+
     QModelIndexList indexes =  selectionModel->selectedIndexes();
     QModelIndex un_index;
 
     /// Creation selection ligne
     QList <QPair<int,QModelIndexList*>*> a;
+
     foreach(un_index, indexes){
-        int cur_row = un_index.row();
+        int cur_key = ((un_index.sibling(un_index.row(),BDelegateCouleurFond::Columns::vEcart)).data()).toInt();
         QPair<int,QModelIndexList *> *p = NULL;
 
         /// Parcourir existant et rajout si necessaire
         bool isPresent = false;
         for(int pos=0; pos< a.size(); pos++){
             p=a.at(pos);
-            if(p->first==cur_row){
+            if(p->first==cur_key){
                 isPresent = true;
                 p->second->append(un_index);
+                break;
             }
         }
 
@@ -3798,7 +3823,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
             /// config
             sel->append(un_index);
-            p->first = cur_row;
+            p->first = cur_key;
             p->second = sel;
 
             /// rajout
@@ -3808,7 +3833,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     }
 
 
-
+#if 0
     return;
 
     bool getLimites = false;
@@ -3915,7 +3940,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
     connect( ptabTop, SIGNAL(tabCloseRequested(int)) ,
              unDetail, SLOT(slot_FermeLaRecherche(int) ) );
-
+#endif
 
 }
 
