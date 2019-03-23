@@ -748,11 +748,21 @@ void SyntheseGenerale::DoComptageTotal(void)
     QString tb_ana_zn = "Ref_ana_z1";
 
     QString n1_names[]={"Boules","Etoiles"};
+    int nb_zone = sizeof(n1_names)/sizeof(QString);
+
     QString n2_names[]={"tot","brc","cmb","grp"};
+    int nb_calc = sizeof(n2_names)/sizeof(QString);
+
     QString n3_names[]={"Details","Regroupement"};
     QString *namesNiv[]={n1_names,n2_names,n3_names};
-    int ong[]={2,4,2};
-    tbv= new QList<QTableView *> [2];
+
+    int ong[]={nb_zone,nb_calc,2};
+
+    tbv= new QList<QTableView *> [nb_zone];
+    qlSel = new QList <QPair<int,QModelIndexList*>*> *[nb_zone];
+    for (int i = 0; i< nb_zone; i++) {
+        qlSel[i]=new  QList <QPair<int,QModelIndexList*>*> [nb_calc];
+    }
 
     /// ----------------------
     tptrFns Trmt_tot_a={
@@ -839,6 +849,7 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
     QWidget * qw_tmp = NULL;
     QTabWidget *tab_Top= NULL;
     int curNiv = prm.niv;
+    int d_row = 0;
 
     if( curNiv == -1){
         prm.niv = 0;
@@ -925,10 +936,19 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
                 qg_tmp = (this->*fntmp)(prm_2);
                 result->setLayout(qg_tmp);
             }
+
+        }
+
+        /// au niveau 0 rajouter un onglet special
+        if(prm.niv == 0){
+         //QTabWidget *tab_info =  new QTabWidget;
+            QLabel *test_text = new QLabel ("Mon texte");
+            qg_n1->addWidget(test_text,0,0);
+            d_row = 1;
         }
 
         if(result != NULL){
-            qg_n1->addWidget(result,0,0);
+            qg_n1->addWidget(result,d_row,0);
             qw_n1->setLayout(qg_n1);
             tab_Top->addTab(qw_n1,tab_name);
         }
@@ -3357,70 +3377,114 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 }
 #endif
 
+int * SyntheseGenerale::getPathToView(QTableView *view, int *deep)
+{
+    /// Trouver les onglets !!!
+    QList < QTabWidget *> tbHead;
+    QObject *unParent = view;
+    do{
+        unParent = unParent->parent();
+        if(unParent->objectName().contains("tbSet")){
+            QTabWidget * tmp = qobject_cast<QTabWidget *>(unParent);
+            tbHead << tmp;
+        }
+    }while(unParent ->objectName() != "tbSet_00");
+
+    /// Recuperer id des onglets
+    int steps = tbHead.size();
+    int *path= new int [steps];
+    memset(path,-1,steps);
+    for(int i=0; i< steps;i++){
+        path[i] = tbHead.at(steps -(i+1))->currentIndex();
+    }
+
+    *deep = steps;
+    return path;
+}
+
+bool SyntheseGenerale::SimplifieSelection(QTableView *view)
+{
+   bool isOk = true;
+
+   QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
+   QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
+   int nbcol = sqm_tmp->columnCount();
+   int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
+
+   QItemSelectionModel *selectionModel = view->selectionModel();
+
+   if(!selectionModel->selectedIndexes().size()){
+       return false;
+   }
+
+
+   /// ------------------
+   QModelIndexList indexes =  selectionModel->selectedIndexes();
+
+   /// si le choix utilisateur < col T et > nbJour deselectionner element
+   int cur_col = indexes.last().column();
+   if((cur_col < BDelegateCouleurFond::Columns::TotalElement)
+           ||
+           (cur_col > BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+       //selectionModel->select(indexes.last(), QItemSelectionModel::Deselect | QItemSelectionModel::Current);
+       //selectionModel->clearCurrentIndex();
+
+       // deselectionner l'element
+       selectionModel->select(indexes.last(), QItemSelectionModel::Deselect);
+       const QModelIndex fake_index;
+       selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
+       //return;
+   }
+
+   /// Selection sur jour
+   if((cur_col > BDelegateCouleurFond::Columns::TotalElement)
+           &&
+           (cur_col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+       // Verifier si Total deja selectionne
+       QModelIndex key = indexes.last().sibling(indexes.last().row(),BDelegateCouleurFond::Columns::TotalElement);
+       if(indexes.contains(key)){
+           // deselectionner l'element
+           selectionModel->select(key, QItemSelectionModel::Deselect);
+           const QModelIndex fake_index;
+           selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
+           //return;
+       }
+   }
+
+   /// Selection colonne T
+   if(cur_col == BDelegateCouleurFond::Columns::TotalElement){
+       /// il faut deselectionner les jours
+       for (int col=cur_col+1;col<=cur_col+nbJ;col++) {
+           // Verifier si Total deja selectionne
+           QModelIndex key = indexes.last().sibling(indexes.last().row(),col);
+           if(indexes.contains(key)){
+               // deselectionner l'element
+               selectionModel->select(key, QItemSelectionModel::Deselect);
+               const QModelIndex fake_index;
+               selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
+               continue;
+           }
+       }
+       //return;
+   }
+
+   return isOk;
+}
 void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     QTableView *view = qobject_cast<QTableView *>(sender());
 
-    QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
-    QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
-    int nbcol = sqm_tmp->columnCount();
-    int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
-
-    QItemSelectionModel *selectionModel = view->selectionModel();
-
-    if(!selectionModel->selectedIndexes().size()){
+    if(!SimplifieSelection(view)){
         return;
     }
 
-    QModelIndexList indexes =  selectionModel->selectedIndexes();
-    //int total = indexes.size();
+    /// ------------------
+    //int zn = view->objectName().split("z").at(1).toInt() -1;
+    int deep = -1;
+    int *path = getPathToView(view, &deep);
+    saveSelection(path[0],path[1],view);
 
-    /// si le choix utilisateur < col T et > nbJour deselectionner element
-    int cur_col = indexes.last().column();
-    if((cur_col < BDelegateCouleurFond::Columns::TotalElement)
-            ||
-            (cur_col > BDelegateCouleurFond::Columns::TotalElement+nbJ)){
-        //selectionModel->select(indexes.last(), QItemSelectionModel::Deselect | QItemSelectionModel::Current);
-        //selectionModel->clearCurrentIndex();
 
-        // deselectionner l'element
-        selectionModel->select(indexes.last(), QItemSelectionModel::Deselect);
-        const QModelIndex fake_index;
-        selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
-        return;
-    }
-
-    /// Selection sur jour
-    if((cur_col > BDelegateCouleurFond::Columns::TotalElement)
-            &&
-            (cur_col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
-        // Verifier si Total deja selectionne
-        QModelIndex key = indexes.last().sibling(indexes.last().row(),BDelegateCouleurFond::Columns::TotalElement);
-        if(indexes.contains(key)){
-            // deselectionner l'element
-            selectionModel->select(key, QItemSelectionModel::Deselect);
-            const QModelIndex fake_index;
-            selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
-            return;
-        }
-    }
-
-    /// Selection colonne T
-    if(cur_col == BDelegateCouleurFond::Columns::TotalElement){
-        /// il faut deselectionner les jours
-        for (int col=cur_col+1;col<=cur_col+nbJ;col++) {
-            // Verifier si Total deja selectionne
-            QModelIndex key = indexes.last().sibling(indexes.last().row(),col);
-            if(indexes.contains(key)){
-                // deselectionner l'element
-                selectionModel->select(key, QItemSelectionModel::Deselect);
-                const QModelIndex fake_index;
-                selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
-                continue;
-            }
-        }
-        return;
-    }
 
     return;
 
@@ -3771,36 +3835,16 @@ QString SyntheseGenerale::ChercherSelection(int zn,
     return msg;
 }
 
-
-void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
+void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view)
 {
-#ifndef QT_NO_DEBUG
-    /// https://stackoverflow.com/questions/27476554/how-to-find-out-from-the-slot-which-signal-has-called-this-slot
-    QMetaMethod metaMethod = sender()->metaObject()->method(senderSignalIndex());
-    qDebug() << metaMethod.name();
-    qDebug() << metaMethod.methodSignature();
-#endif
-
-    QTableView *view = qobject_cast<QTableView *>(sender());
-
-    QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
-    QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
-    int nbcol = sqm_tmp->columnCount();
-    int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
-
-
     QItemSelectionModel *selectionModel = view->selectionModel();
 
-
-    if(!selectionModel->selectedIndexes().size()){
-        return;
-    }
 
     QModelIndexList indexes =  selectionModel->selectedIndexes();
     QModelIndex un_index;
 
     /// Creation selection ligne
-    QList <QPair<int,QModelIndexList*>*> a;
+    QList <QPair<int,QModelIndexList*>*> *a = &qlSel[zn][calc];
 
     foreach(un_index, indexes){
         int cur_key = ((un_index.sibling(un_index.row(),BDelegateCouleurFond::Columns::vEcart)).data()).toInt();
@@ -3808,8 +3852,8 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
         /// Parcourir existant et rajout si necessaire
         bool isPresent = false;
-        for(int pos=0; pos< a.size(); pos++){
-            p=a.at(pos);
+        for(int pos=0; pos< a->size(); pos++){
+            p=a->at(pos);
             if(p->first==cur_key){
                 isPresent = true;
                 p->second->append(un_index);
@@ -3827,10 +3871,28 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
             p->second = sel;
 
             /// rajout
-            a.append(p);
+            a->append(p);
         }
 
     }
+}
+
+void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
+{
+#ifndef QT_NO_DEBUG
+    /// https://stackoverflow.com/questions/27476554/how-to-find-out-from-the-slot-which-signal-has-called-this-slot
+    QMetaMethod metaMethod = sender()->metaObject()->method(senderSignalIndex());
+    qDebug() << metaMethod.name();
+    qDebug() << metaMethod.methodSignature();
+#endif
+
+    QTableView *view = qobject_cast<QTableView *>(sender());
+
+    QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
+    QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
+    int nbcol = sqm_tmp->columnCount();
+    int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
+
 
 
 #if 0

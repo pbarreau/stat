@@ -60,6 +60,7 @@ class SyntheseGenerale : public QObject
 private:
     QWidget **parentWidget;
     QList<QTableView *> *tbv;
+    QList <QPair<int,QModelIndexList*>*> **qlSel;
 
     //stCurDemande *pLaDemande;
     B_ActFrMdlIndex *MonTraitement;
@@ -146,6 +147,9 @@ private slots:
 private:
     void Surligne(int *path,int val);
     int incValue(int *val);
+    bool SimplifieSelection(QTableView *view);
+    int * getPathToView(QTableView *view, int *deep);
+    void saveSelection(int zn, int calc, QTableView *view);
 
     QString A1_0_TrouverLignes(int zn, QString tb_src, QString tb_ref, QString key);
     QString A1_1_CalculerEcart(QString str_reponses);
