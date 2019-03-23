@@ -3359,7 +3359,7 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     QTableView *view = qobject_cast<QTableView *>(sender());
-    QString tbName = view->objectName();
+    //QString tbName = view->objectName();
 
     QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
     QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
@@ -3368,7 +3368,7 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 
     QItemSelectionModel *selectionModel = view->selectionModel();
     QModelIndexList indexes =  selectionModel->selectedIndexes();
-    int total = indexes.size();
+    //int total = indexes.size();
 
     /// si le choix utilisateur < col T et > nbJour deselectionner element
     int cur_col = indexes.last().column();
@@ -3385,11 +3385,25 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
             &&
             (cur_col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
         // Verifier si Total deja selectionne
-        QModelIndex colT = indexes.last().sibling(indexes.last().row(),BDelegateCouleurFond::Columns::TotalElement);
-        if(indexes.contains(colT)){
+        QModelIndex key = indexes.last().sibling(indexes.last().row(),BDelegateCouleurFond::Columns::TotalElement);
+        if(indexes.contains(key)){
             selectionModel->select(indexes.last(), QItemSelectionModel::Deselect);
             return;
         }
+    }
+
+    /// Selection colonne T
+    if(cur_col == BDelegateCouleurFond::Columns::TotalElement){
+        /// il faut deselectionner les jours
+        for (int col=cur_col+1;col<=cur_col+nbJ;col++) {
+            // Verifier si Total deja selectionne
+            QModelIndex key = indexes.last().sibling(indexes.last().row(),col);
+            if(indexes.contains(key)){
+                selectionModel->select(key, QItemSelectionModel::Deselect);
+                continue;
+            }
+        }
+        return;
     }
 
     return;
@@ -3744,8 +3758,6 @@ QString SyntheseGenerale::ChercherSelection(int zn,
 
 void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 {
-    QTableView *view = qobject_cast<QTableView *>(sender());
-
 #ifndef QT_NO_DEBUG
     /// https://stackoverflow.com/questions/27476554/how-to-find-out-from-the-slot-which-signal-has-called-this-slot
     QMetaMethod metaMethod = sender()->metaObject()->method(senderSignalIndex());
@@ -3753,27 +3765,56 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     qDebug() << metaMethod.methodSignature();
 #endif
 
-    /// Trouver les onglets !!!
-    QList < QTabWidget *> tbHead;//QStackedWidget
-    QObject *unParent = view;
-    do{
-        unParent = unParent->parent();
-        if(unParent->objectName().contains("tbSet")){
-            QTabWidget * tmp = qobject_cast<QTabWidget *>(unParent);
-            tbHead << tmp;
-        }
-    }while(unParent ->objectName() != "tbSet_00");
+    QTableView *view = qobject_cast<QTableView *>(sender());
 
-    for(int i=0; i< tbHead.size();i++){
-        int nb_item = tbHead.at(i)->count();
-        nb_item++;
+    QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
+    QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
+    int nbcol = sqm_tmp->columnCount();
+    int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
+
+    QItemSelectionModel *selectionModel = view->selectionModel();
+    QModelIndexList indexes =  selectionModel->selectedIndexes();
+    QModelIndex un_index;
+
+    /// Creation selection ligne
+    QList <QPair<int,QModelIndexList*>*> a;
+    foreach(un_index, indexes){
+        int cur_row = un_index.row();
+        QPair<int,QModelIndexList *> *p = NULL;
+
+        /// Parcourir existant et rajout si necessaire
+        bool isPresent = false;
+        for(int pos=0; pos< a.size(); pos++){
+            p=a.at(pos);
+            if(p->first==cur_row){
+                isPresent = true;
+                p->second->append(un_index);
+            }
+        }
+
+        if(isPresent == false){
+            p = new QPair<int,QModelIndexList *>;
+            QModelIndexList *sel = new QModelIndexList;
+
+            /// config
+            sel->append(un_index);
+            p->first = cur_row;
+            p->second = sel;
+
+            /// rajout
+            a.append(p);
+        }
+
     }
+
+
+
     return;
 
     bool getLimites = false;
 
-    QSortFilterProxyModel *m = NULL;//qobject_cast<QSortFilterProxyModel *>(view->model());
-    QAbstractItemModel *sqm_tmp = NULL;
+    //QSortFilterProxyModel *m = NULL;//qobject_cast<QSortFilterProxyModel *>(view->model());
+    //QAbstractItemModel *sqm_tmp = NULL;
 
     if(view->objectName().contains("new")){
         m= qobject_cast<QSortFilterProxyModel *>(view->model());
@@ -3790,7 +3831,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
         }
     }
 
-    int nbcol = sqm_tmp->columnCount();
+    //int nbcol = sqm_tmp->columnCount();
 
     if(getLimites){
         int col = index.column();
