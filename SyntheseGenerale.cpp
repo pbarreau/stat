@@ -19,6 +19,8 @@
 
 #include <QHeaderView>
 #include <QVBoxLayout>
+#include <QGridLayout>
+
 #include <QSortFilterProxyModel>
 #include <QSplitter>
 #include <QPushButton>
@@ -222,9 +224,19 @@ void SyntheseGenerale::Surligne(int *path,int val)
     }while(unParent ->objectName() != "tbSet_00");
 
     /// Positionner les onglets pour voir le tableau
-    for(int i=0; i< tbHead.size();i++){
+    int nbTab = tbHead.size();
+    for(int i=0; i< nbTab;i++){
         tbHead.at(i)->setCurrentIndex(path[i]);
     }
+
+    /// Chercher le Qtabview
+    QString cible = QString("InfoTab_z")+QString::number(path[nbTab-1]+1);
+    QTabWidget * tmp_tab = tbHead.at(nbTab-1)->findChild<QTabWidget*>(cible);
+
+    if(tmp_tab != NULL){
+        tmp_tab->setCurrentIndex(1);
+    }
+
 
     QSortFilterProxyModel * sortModel = qobject_cast<QSortFilterProxyModel *>( view->model());
     sortModel->sort(BTbvRepartition::Columns::Visual);
@@ -832,6 +844,8 @@ void SyntheseGenerale::DoComptageTotal(void)
     calcul = CreerOnglets(prm, pCalZn);
 
     QFormLayout *mainLayout = new QFormLayout;
+
+    /*
     LabelClickable *la_selection = new LabelClickable;
 
     la_selection->setText(CTXT_SELECTION);
@@ -839,6 +853,8 @@ void SyntheseGenerale::DoComptageTotal(void)
              this, SLOT( slot_RazSelection(QString) ) );
 
     mainLayout->addWidget(la_selection);
+    */
+
     mainLayout->addWidget(calcul);
     disposition->addLayout(mainLayout,0,1,Qt::AlignLeft|Qt::AlignTop);
 
@@ -850,6 +866,8 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
     QTabWidget *tab_Top= NULL;
     int curNiv = prm.niv;
     int d_row = 0;
+    int d_col = 0;
+    bool addResult = true;
 
     if( curNiv == -1){
         prm.niv = 0;
@@ -939,27 +957,145 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
 
         }
 
-        /// au niveau 0 rajouter un onglet special
-        if(prm.niv == 0){
-         //QTabWidget *tab_info =  new QTabWidget;
-            QLabel *test_text = new QLabel ("Mon texte");
-            qg_n1->addWidget(test_text,0,0);
-            d_row = 1;
-        }
-
         if(result != NULL){
-            qg_n1->addWidget(result,d_row,0);
-            qw_n1->setLayout(qg_n1);
-            tab_Top->addTab(qw_n1,tab_name);
+            qg_n1->addWidget(result,d_row,d_col);
         }
-
+        qw_n1->setLayout(qg_n1);
+        tab_Top->addTab(qw_n1,tab_name);
     }
-    qg_tmp->addWidget(tab_Top,0,0);
+
+    /// au niveau 0 rajouter un onglet special
+    if(prm.niv == 1){
+        specialDesign(prm.zn, qg_tmp, tab_Top);
+        addResult = false;
+    }
+    if(addResult){
+        qg_tmp->addWidget(tab_Top,0,0);
+    }
     //------------
     qw_tmp->setLayout(qg_tmp);
     return qw_tmp;
 }
 
+QTableView *SyntheseGenerale::doTabLgnSelection(stDesigConf conf)
+{
+    QTableView *qtv_tmp = new  QTableView();
+    int nbcol = conf.size;
+    QStandardItemModel *model = new QStandardItemModel(1, nbcol);
+
+    qtv_tmp->setModel(model);
+
+    for(int i=0;i<nbcol;i++)
+    {
+        model->setHeaderData(i,Qt::Horizontal,conf.head[i]);
+        QStandardItem *item = new QStandardItem();
+        model->setItem(0,i,item);
+        qtv_tmp->setColumnWidth(i,LCELL);
+    }
+
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    // Bloquer largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->hide();
+
+    // Taille tableau
+    qtv_tmp->setFixedHeight(55);
+
+
+
+    return qtv_tmp;
+}
+
+QTableView *SyntheseGenerale::doTabLgnTirage(stDesigConf conf)
+{
+    QTableView *qtv_tmp = new  QTableView;
+    int nbcol = conf.size;
+    QStandardItemModel *model = new QStandardItemModel(1, nbcol);
+
+    qtv_tmp->setModel(model);
+
+    for(int i=0;i<nbcol;i++)
+    {
+        model->setHeaderData(i,Qt::Horizontal,conf.head[i]);
+        QStandardItem *item = new QStandardItem();
+        model->setItem(0,i,item);
+        qtv_tmp->setColumnWidth(i,LCELL);
+    }
+
+    qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+    qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+
+    // Bloquer largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->hide();
+
+    // Taille tableau
+    qtv_tmp->setFixedHeight(55);
+
+
+
+    return qtv_tmp;
+}
+
+void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
+{
+
+    QTabWidget *tab_info =  new QTabWidget;
+    tab_info->setObjectName("InfoTab_z"+QString::number(niv+1));
+
+
+    QString h1[]={"tot","brc","cmb","grp"};
+    QString h2[]={"A","B","C","D","E","F","G","H"};
+
+    stDesigConf def[]={
+        {"Selection",h1, TAILLE(h1,QString)},
+        {"Tirage",h2, TAILLE(h2,QString)}
+    };
+    int nb_items = TAILLE (def,stDesigConf);
+
+    QTableView * (SyntheseGenerale::*ptrCreaTbv[])(stDesigConf val)={
+            &SyntheseGenerale::doTabLgnSelection,
+            &SyntheseGenerale::doTabLgnTirage
+};
+
+    for(int i = 0; i< nb_items;i++){
+        QTableView *tmp = (this->*ptrCreaTbv[i])(def[i]);
+        QString id = QString("Info")+def[i].name.leftRef(3)+QString("_z")+QString::number(niv+1);
+        tmp->setObjectName(id);
+        tab_info->addTab(tmp,def[i].name);
+    }
+
+    // Qt::AlignLeft|Qt::AlignTop
+    /*
+    QVBoxLayout * vb_tmp = new QVBoxLayout;
+    vb_tmp->addWidget(tab_info);
+    vb_tmp->addWidget(resu,1);
+ */
+    QGridLayout *grid_tmp = new QGridLayout;
+    QWidget * mywid = new QWidget;
+
+    grid_tmp->addWidget(tab_info);
+    grid_tmp->addWidget(resu);
+
+    grid->addLayout(grid_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+    //grid->addItem(tmp_grid,0,0);
+
+
+    //QWidget * wdg_tmp = new QWidget;
+    //wdg_tmp->setLayout(vbox);
+
+    //grid->addWidget(wdg_tmp,0,0,Qt::AlignTop);
+
+}
 #if 0
 void SyntheseGenerale::DoComptageTotal(void)
 {
@@ -3398,77 +3534,85 @@ int * SyntheseGenerale::getPathToView(QTableView *view, int *deep)
         path[i] = tbHead.at(steps -(i+1))->currentIndex();
     }
 
+    /// Chercher le Qtabview pour montrer selection
+    QString cible = QString("InfoTab_z")+QString::number(path[0]+1);
+    QTabWidget * tmp_tab = tbHead.at(steps-1)->findChild<QTabWidget*>(cible);
+
+    if(tmp_tab != NULL){
+        tmp_tab->setCurrentIndex(0);
+    }
+
     *deep = steps;
     return path;
 }
 
 bool SyntheseGenerale::SimplifieSelection(QTableView *view)
 {
-   bool isOk = true;
+    bool isOk = true;
 
-   QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
-   QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
-   int nbcol = sqm_tmp->columnCount();
-   int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
+    QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
+    QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
+    int nbcol = sqm_tmp->columnCount();
+    int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
 
-   QItemSelectionModel *selectionModel = view->selectionModel();
+    QItemSelectionModel *selectionModel = view->selectionModel();
 
-   if(!selectionModel->selectedIndexes().size()){
-       return false;
-   }
+    if(!selectionModel->selectedIndexes().size()){
+        return false;
+    }
 
 
-   /// ------------------
-   QModelIndexList indexes =  selectionModel->selectedIndexes();
+    /// ------------------
+    QModelIndexList indexes =  selectionModel->selectedIndexes();
 
-   /// si le choix utilisateur < col T et > nbJour deselectionner element
-   int cur_col = indexes.last().column();
-   if((cur_col < BDelegateCouleurFond::Columns::TotalElement)
-           ||
-           (cur_col > BDelegateCouleurFond::Columns::TotalElement+nbJ)){
-       //selectionModel->select(indexes.last(), QItemSelectionModel::Deselect | QItemSelectionModel::Current);
-       //selectionModel->clearCurrentIndex();
+    /// si le choix utilisateur < col T et > nbJour deselectionner element
+    int cur_col = indexes.last().column();
+    if((cur_col < BDelegateCouleurFond::Columns::TotalElement)
+            ||
+            (cur_col > BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+        //selectionModel->select(indexes.last(), QItemSelectionModel::Deselect | QItemSelectionModel::Current);
+        //selectionModel->clearCurrentIndex();
 
-       // deselectionner l'element
-       selectionModel->select(indexes.last(), QItemSelectionModel::Deselect);
-       const QModelIndex fake_index;
-       selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
-       //return;
-   }
+        // deselectionner l'element
+        selectionModel->select(indexes.last(), QItemSelectionModel::Deselect);
+        const QModelIndex fake_index;
+        selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
+        //return;
+    }
 
-   /// Selection sur jour
-   if((cur_col > BDelegateCouleurFond::Columns::TotalElement)
-           &&
-           (cur_col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
-       // Verifier si Total deja selectionne
-       QModelIndex key = indexes.last().sibling(indexes.last().row(),BDelegateCouleurFond::Columns::TotalElement);
-       if(indexes.contains(key)){
-           // deselectionner l'element
-           selectionModel->select(key, QItemSelectionModel::Deselect);
-           const QModelIndex fake_index;
-           selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
-           //return;
-       }
-   }
+    /// Selection sur jour
+    if((cur_col > BDelegateCouleurFond::Columns::TotalElement)
+            &&
+            (cur_col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+        // Verifier si Total deja selectionne
+        QModelIndex key = indexes.last().sibling(indexes.last().row(),BDelegateCouleurFond::Columns::TotalElement);
+        if(indexes.contains(key)){
+            // deselectionner l'element
+            selectionModel->select(key, QItemSelectionModel::Deselect);
+            const QModelIndex fake_index;
+            selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
+            //return;
+        }
+    }
 
-   /// Selection colonne T
-   if(cur_col == BDelegateCouleurFond::Columns::TotalElement){
-       /// il faut deselectionner les jours
-       for (int col=cur_col+1;col<=cur_col+nbJ;col++) {
-           // Verifier si Total deja selectionne
-           QModelIndex key = indexes.last().sibling(indexes.last().row(),col);
-           if(indexes.contains(key)){
-               // deselectionner l'element
-               selectionModel->select(key, QItemSelectionModel::Deselect);
-               const QModelIndex fake_index;
-               selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
-               continue;
-           }
-       }
-       //return;
-   }
+    /// Selection colonne T
+    if(cur_col == BDelegateCouleurFond::Columns::TotalElement){
+        /// il faut deselectionner les jours
+        for (int col=cur_col+1;col<=cur_col+nbJ;col++) {
+            // Verifier si Total deja selectionne
+            QModelIndex key = indexes.last().sibling(indexes.last().row(),col);
+            if(indexes.contains(key)){
+                // deselectionner l'element
+                selectionModel->select(key, QItemSelectionModel::Deselect);
+                const QModelIndex fake_index;
+                selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
+                continue;
+            }
+        }
+        //return;
+    }
 
-   return isOk;
+    return isOk;
 }
 void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {

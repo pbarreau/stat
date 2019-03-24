@@ -232,7 +232,19 @@ private:
         pVtptrFns *pTabFn;
         //int l_max[3];
     };
+
+    typedef struct{
+        QString name;
+        QString *head;
+        int size;
+    }stDesigConf;
+#define TAILLE(a,b)  (sizeof(a)/sizeof(b))
+
     QWidget * CreerOnglets(param_1 prm, CnfFnCalc **conf);
+    void specialDesign(int niv, QGridLayout *grid, QWidget *resu);
+    QTableView *doTabLgnSelection(stDesigConf conf);
+    QTableView *doTabLgnTirage(stDesigConf conf);
+
     QWidget *VbInfoDepart (param_1 a,CnfFnCalc *b[2]);
     QWidget *tot_zn (param_1 a,CnfFnCalc *b);
     QGridLayout *VbInfo_nop(param_2);
