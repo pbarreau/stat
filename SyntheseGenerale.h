@@ -148,8 +148,9 @@ private:
     void Surligne(int *path,int val);
     int incValue(int *val);
     bool SimplifieSelection(QTableView *view);
-    int * getPathToView(QTableView *view, int *deep);
-    void saveSelection(int zn, int calc, QTableView *view);
+    int * getPathToView(QTableView *view, int *deep, QTableView **sel_view);
+    void saveSelection(int zn, int calc, QTableView *view, QTableView *ptrSel);
+    void mettreInfoSelection(int calc, QList <QPair<int,QModelIndexList*>*> *a, QTableView *view, QTableView *ptrSel);
 
     QString A1_0_TrouverLignes(int zn, QString tb_src, QString tb_ref, QString key);
     QString A1_1_CalculerEcart(QString str_reponses);

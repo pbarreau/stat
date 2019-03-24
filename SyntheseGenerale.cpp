@@ -997,6 +997,7 @@ QTableView *SyntheseGenerale::doTabLgnSelection(stDesigConf conf)
     qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
     qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
     // Bloquer largeur des colonnes
     qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -1004,7 +1005,7 @@ QTableView *SyntheseGenerale::doTabLgnSelection(stDesigConf conf)
     qtv_tmp->verticalHeader()->hide();
 
     // Taille tableau
-    qtv_tmp->setFixedHeight(55);
+    //qtv_tmp->setFixedHeight(55);
 
 
 
@@ -3513,7 +3514,7 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 }
 #endif
 
-int * SyntheseGenerale::getPathToView(QTableView *view, int *deep)
+int * SyntheseGenerale::getPathToView(QTableView *view, int *deep, QTableView ** sel_view)
 {
     /// Trouver les onglets !!!
     QList < QTabWidget *> tbHead;
@@ -3540,6 +3541,10 @@ int * SyntheseGenerale::getPathToView(QTableView *view, int *deep)
 
     if(tmp_tab != NULL){
         tmp_tab->setCurrentIndex(0);
+
+        // Chercher le Tbv pour messages
+        QString tbv_sel = QString("InfoSel_z")+QString::number(path[0]+1);
+        *sel_view = tmp_tab->findChild<QTableView*>(tbv_sel);
     }
 
     *deep = steps;
@@ -3617,6 +3622,7 @@ bool SyntheseGenerale::SimplifieSelection(QTableView *view)
 void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     QTableView *view = qobject_cast<QTableView *>(sender());
+    QTableView *ptrSel = NULL;
 
     if(!SimplifieSelection(view)){
         return;
@@ -3625,8 +3631,8 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
     /// ------------------
     //int zn = view->objectName().split("z").at(1).toInt() -1;
     int deep = -1;
-    int *path = getPathToView(view, &deep);
-    saveSelection(path[0],path[1],view);
+    int *path = getPathToView(view, &deep, &ptrSel);
+    saveSelection(path[0],path[1],view, ptrSel);
 
 
 
@@ -3979,7 +3985,7 @@ QString SyntheseGenerale::ChercherSelection(int zn,
     return msg;
 }
 
-void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view)
+void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view, QTableView *ptrSel)
 {
     QItemSelectionModel *selectionModel = view->selectionModel();
 
@@ -3989,6 +3995,16 @@ void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view)
 
     /// Creation selection ligne
     QList <QPair<int,QModelIndexList*>*> *a = &qlSel[zn][calc];
+
+    /// Effacer la selection precedente
+    int nb_selLines = a->size();
+    if(nb_selLines){
+        /// liberer la memoire occupee par p
+        qDeleteAll(a->begin(), a->end());
+
+        /// puis detacher de la liste
+        a->clear();
+    }
 
     foreach(un_index, indexes){
         int cur_key = ((un_index.sibling(un_index.row(),BDelegateCouleurFond::Columns::vEcart)).data()).toInt();
@@ -4018,6 +4034,70 @@ void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view)
             a->append(p);
         }
 
+    }
+
+    if(ptrSel){
+        mettreInfoSelection(calc,a,view,ptrSel);
+    }
+}
+
+void SyntheseGenerale::mettreInfoSelection(int calc,QList <QPair<int,QModelIndexList*>*> *a, QTableView *view, QTableView *ptrSel)
+{
+    QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
+    QAbstractItemModel *sqm_view = qobject_cast<sqlqmDetails *>(m->sourceModel());
+
+
+    QStandardItemModel *sqm_tmp = qobject_cast<QStandardItemModel *>(ptrSel->model());
+    int nbcol = sqm_tmp->columnCount();
+
+    if(calc < nbcol){
+        QString s_info = "";
+        int nb_key = a->size();
+        for(int i=0; i< nb_key; i++){
+            QPair<int,QModelIndexList*> *item =  a->at(i);
+            QModelIndexList *indexes = item->second;
+            QModelIndex scan;
+            QString headName = "";
+
+            int b = item->first;
+            s_info = s_info+QString("(")+ QString::number(b)+QString(":");
+
+            int nb_items = indexes->size();
+
+            for(int j = 0; j < nb_items;j++){
+                scan = indexes->at(j);
+
+                int col = scan.column();
+                QVariant vCol = sqm_view->headerData(col,Qt::Horizontal);
+
+                headName = headName + vCol.toString();
+
+                if(j < nb_items -1){
+                    headName = headName + ",";
+                }
+                else {
+                    headName = headName + ")";
+                }
+            }
+
+            s_info = s_info + headName;
+            /// suite ?
+            if(i < nb_key -1){
+                s_info = s_info + " and ";
+            }
+        }
+
+        /// ecrire s_info
+        QStandardItem *cell = sqm_tmp->item(0,calc);
+        cell->setData(s_info,Qt::DisplayRole);
+        cell->setBackground(QBrush(Qt::cyan));
+        sqm_tmp->setItem(0,calc,cell);
+        ptrSel->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+
+    }
+    else{
+        QMessageBox::critical(NULL,"Pgm","bug Selection !\n",QMessageBox::Help);
     }
 }
 
