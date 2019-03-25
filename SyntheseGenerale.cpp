@@ -4130,17 +4130,17 @@ QString SyntheseGenerale::createSelection(void)
     QString (SyntheseGenerale::*ptrFz1[])(int zn, QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
             &SyntheseGenerale::tot_SqlCreateZn/*,
-                                                            &SyntheseGenerale::brc_SqlCreateZn,
-                                                            &SyntheseGenerale::cmb_SqlCreateZ1,
-                                                            &SyntheseGenerale::grp_SqlCreateZ1*/
+                                                                    &SyntheseGenerale::brc_SqlCreateZn,
+                                                                    &SyntheseGenerale::cmb_SqlCreateZ1,
+                                                                    &SyntheseGenerale::grp_SqlCreateZ1*/
 };
 
     QString (SyntheseGenerale::*ptrFz2[])(int zn,QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
             &SyntheseGenerale::tot_SqlCreateZn/*,
-                                                            &SyntheseGenerale::brc_SqlCreateZn,
-                                                            &SyntheseGenerale::stb_SqlCreate,
-                                                            &SyntheseGenerale::stb_SqlCreate*/
+                                                                    &SyntheseGenerale::brc_SqlCreateZn,
+                                                                    &SyntheseGenerale::stb_SqlCreate,
+                                                                    &SyntheseGenerale::stb_SqlCreate*/
 };
 
     typedef  QString (SyntheseGenerale::**ptrFZx)(int zn,QList <QPair<int,stSelInfo*>*> *a);
@@ -4148,10 +4148,11 @@ QString SyntheseGenerale::createSelection(void)
     ptrFZx pMyFnZx[] ={ptrFz1,ptrFz1};
     int max_zn = 2;
     int max_calc = 1;
-    QString st_filters="";
     QString msg = "";
+    QString st_filters="";
     for(int zn = 0; zn < max_zn; zn++){
         static bool and_zn = false;
+        st_filters="";
 
         for (int calc = 0; calc < max_calc; calc++) {
             static bool and_calc = false;
