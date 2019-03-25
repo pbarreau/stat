@@ -4207,7 +4207,7 @@ QString SyntheseGenerale::createSelection(void)
     qDebug()<< "S2:"<<st_filters;
 #endif
 
-    msg = sqlReq + QString(" as t1 where(")+st_filters+QString(")");
+    msg = sqlReq + QString(" as t1 where(")+msg+QString(")");
 
 #ifndef QT_NO_DEBUG
     qDebug()<< "msg:"<<msg;
