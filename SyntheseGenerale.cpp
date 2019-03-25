@@ -1648,6 +1648,26 @@ bool SyntheseGenerale::MarquerDerniers_brc(int zn, QString tb_src, QString tb_re
     return isOk;
 }
 
+QString SyntheseGenerale::getFieldsFromZone(int zn, QString alias)
+{
+    int len_zn = pMaConf->limites[zn].len;
+
+    QString use_alias = "";
+
+    if(alias.size()){
+        use_alias = alias+".";
+    }
+    QString ref = use_alias+pMaConf->nomZone[zn]+"%1";
+    QString st_items = "";
+    for(int i=0;i<len_zn;i++){
+        st_items = st_items + ref.arg(i+1);
+        if(i<(len_zn-1)){
+            st_items=st_items+QString(",");
+        }
+    }
+    return   st_items;
+}
+
 //bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poids_boules)
 #if 1
 bool SyntheseGenerale::RajouterCalculBarycentreDansAnalyses(int zn,
@@ -1671,6 +1691,7 @@ bool SyntheseGenerale::RajouterCalculBarycentreDansAnalyses(int zn,
     QString st_query = "";
 
     int len_zn = pMaConf->limites[zn].len;
+    /*
     QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
     QString st_items = "";
     for(int i=0;i<len_zn;i++){
@@ -1679,7 +1700,9 @@ bool SyntheseGenerale::RajouterCalculBarycentreDansAnalyses(int zn,
             st_items=st_items+QString(",");
         }
     }
+    */
     //st_critere = st_critere+QString(")");
+    QString st_items = getFieldsFromZone(zn, "t2");
 
     QString dbg_more = "";
 #ifndef QT_NO_DEBUG
@@ -4104,50 +4127,92 @@ void SyntheseGenerale::mettreInfoSelection(int calc,QList <QPair<int,stSelInfo*>
 QString SyntheseGenerale::createSelection(void)
 {
     // Tableau de fonction permettant de creer la requete adapte a l'onglet
-    QString (SyntheseGenerale::*ptrFz1[])(QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
+    QString (SyntheseGenerale::*ptrFz1[])(int zn, QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
             &SyntheseGenerale::tot_SqlCreateZn/*,
-                                    &SyntheseGenerale::brc_SqlCreateZn,
-                                    &SyntheseGenerale::cmb_SqlCreateZ1,
-                                    &SyntheseGenerale::grp_SqlCreateZ1*/
+                                                            &SyntheseGenerale::brc_SqlCreateZn,
+                                                            &SyntheseGenerale::cmb_SqlCreateZ1,
+                                                            &SyntheseGenerale::grp_SqlCreateZ1*/
 };
 
-    QString (SyntheseGenerale::*ptrFz2[])(QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
+    QString (SyntheseGenerale::*ptrFz2[])(int zn,QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
             &SyntheseGenerale::tot_SqlCreateZn/*,
-                                    &SyntheseGenerale::brc_SqlCreateZn,
-                                    &SyntheseGenerale::stb_SqlCreate,
-                                    &SyntheseGenerale::stb_SqlCreate*/
+                                                            &SyntheseGenerale::brc_SqlCreateZn,
+                                                            &SyntheseGenerale::stb_SqlCreate,
+                                                            &SyntheseGenerale::stb_SqlCreate*/
 };
 
-    typedef  QString (SyntheseGenerale::**ptrFZx)(QList <QPair<int,stSelInfo*>*> *a);
+    typedef  QString (SyntheseGenerale::**ptrFZx)(int zn,QList <QPair<int,stSelInfo*>*> *a);
 
     ptrFZx pMyFnZx[] ={ptrFz1,ptrFz1};
     int max_zn = 2;
-    int max_calc = 4;
+    int max_calc = 1;
+    QString st_filters="";
+    QString msg = "";
     for(int zn = 0; zn < max_zn; zn++){
+        static bool and_zn = false;
+
         for (int calc = 0; calc < max_calc; calc++) {
+            static bool and_calc = false;
+            QString st_calc = "";
+
+            /// Effectuer creation code selection
             QList <QPair<int,stSelInfo*>*> *a = &qlSel[zn][calc];
+            st_calc = (this->*pMyFnZx[zn][calc])(zn,a);
+
+            /// Regarder la sortie des calc
+            if(st_calc.size() && and_calc == false){
+                st_filters = st_filters + st_calc;
+            }
+
+            if(st_calc.size() && and_calc){
+                st_filters = st_filters+QString(" and ") + st_calc;
+            }
+
+            if(calc < max_calc -1){
+                and_calc = true;
+            }
+            else{
+                and_calc = false;
+            }
+
         }
+
+        /// Regarder la sortie des zn
+        if(st_filters.size() && and_zn == false){
+            msg = st_filters;
+        }
+
+        if(st_filters.size() && and_zn){
+            msg = msg + QString(" and ") + st_filters;
+        }
+
+        if(zn < max_zn -1){
+            and_zn = true;
+        }
+        else{
+            and_zn = false;
+        }
+
     }
 
     // Le simple click a construit la liste des boules
     //----------
     QString sqlReq = *(uneDemande.st_LDT_Depart);
 
-#if 0
-    for(int onglet = 0; onglet<4;onglet++)
-    {
 #ifndef QT_NO_DEBUG
-        qDebug()<< "Onglet["+QString::number(onglet)<<"]:"<<sqlReq<<endl;
+    qDebug()<< "S1:"<<sqlReq;
+    qDebug()<< "S2:"<<st_filters;
 #endif
 
-        sqlReq = (this->*ptrFz1[onglet])(onglet,sqlReq);
-    }
+    msg = sqlReq + QString(" as t1 where(")+st_filters+QString(")");
 
+#ifndef QT_NO_DEBUG
+    qDebug()<< "msg:"<<msg;
 #endif
 
-    return sqlReq;
+    return msg;
 }
 
 void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
@@ -4261,42 +4326,49 @@ QString SyntheseGenerale::brc_SqlCreateZn(int onglet, QString table)
 }
 
 
-QString SyntheseGenerale::tot_SqlCreateZn(QList <QPair<int,stSelInfo*>*> *a)
+QString SyntheseGenerale::tot_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> *a)
 {
     QString st_critere = "";
     QString filter_key = "";
     QString filter_days= "";
-    QString st_fields = "b1,b2";
+
+
+    QString st_fields =  getFieldsFromZone(zn, "t1");
+    QString conjZn[]={" and "," or "};
+
 
     int nb_items = a->size();
     QPair<int,stSelInfo *> *p = NULL;
     for(int pos = 0; pos< nb_items;pos++){
         p=a->at(pos);
         int key = p->first;
-        filter_key = QString("(")+QString::number(key)+QString(" in(")+st_fields+QString(")");
+        filter_key = QString("(")+QString::number(key)+QString(" in(")+st_fields+QString("))");
         int nb_sel = p->second->lstSel->size();
-        filter_days="(";
+        filter_days="";
         for(int sel=0; sel < nb_sel; sel++){
             QModelIndex un_index = p->second->lstSel->at(sel);
             const QAbstractItemModel * pModel = un_index.model();
+            int nbcol = pModel->columnCount();
+            int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
+
             int col = un_index.column();
+            if((col >= BDelegateCouleurFond::Columns::TotalElement)
+                    &&
+                    (col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+                QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+                QString headName = vCol.toString();
 
-            QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-            QString headName = vCol.toString();
-
-            if(col > BDelegateCouleurFond::Columns::TotalElement){
-                filter_days = filter_days + QString("J like'")+headName+QString("%'");
-            }
-            if(sel < nb_sel -1 ){
-                filter_days = filter_days + " or ";
-            }
-            else {
-                filter_days = filter_days + ")";
+                if(col > BDelegateCouleurFond::Columns::TotalElement){
+                    filter_days = filter_days + QString("(J like'")+headName+QString("%')");
+                }
+                if(sel < nb_sel -1 ){
+                    filter_days = filter_days + " or ";
+                }
             }
         }
 
         if(filter_days.size()){
-            st_critere = st_critere + QString("(")+filter_key+QString(") and (")+ filter_days + QString(")");
+            st_critere = st_critere + QString("(")+filter_key+QString(" and (")+ filter_days + QString("))");
         }
         else {
             st_critere = st_critere + QString("(")+filter_key+QString(")");
@@ -4304,7 +4376,7 @@ QString SyntheseGenerale::tot_SqlCreateZn(QList <QPair<int,stSelInfo*>*> *a)
 
         /// Autre clef ?
         if(pos < nb_items -1){
-           st_critere = st_critere + QString(" and ");
+            st_critere = st_critere + conjZn[zn];
         }
 
     }

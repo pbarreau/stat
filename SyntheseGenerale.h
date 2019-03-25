@@ -185,7 +185,7 @@ private:
     QString TrouverTirages(int col, QString str_nb, QString st_tirages, QString st_cri, int zn, stTiragesDef *pConf);
 
     QString ActionElmZone(QString critere , QString operateur, int zone, stTiragesDef *pConf);
-    QString tot_SqlCreateZn(QList<QPair<int, stSelInfo *> *> *a);
+    QString tot_SqlCreateZn(int zn, QList<QPair<int, stSelInfo *> *> *a);
     QString cmb_SqlCreateZ1(int onglet, QString table);
     QString grp_SqlCreateZ1(int onglet, QString table);
     QString brc_SqlCreateZn(int onglet, QString table);
@@ -307,7 +307,7 @@ private:
                                               QString tb_ref ,
                                               QString ky_brc);
 
-
+    QString getFieldsFromZone(int zn, QString alias);
 
     QTableView *tbForPrincipeAuguste(int nbcol, int nblgn);
     QGridLayout *MonLayout_TabAuguste(int col, int lgn);
