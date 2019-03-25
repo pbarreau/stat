@@ -773,11 +773,11 @@ void SyntheseGenerale::DoComptageTotal(void)
     tbv= new QList<QTableView *> [nb_zone];
 
     tbInfo= new QList<QTableView *> [nb_zone];
-    qlSel = new QList <QPair<int,QModelIndexList*>*> *[nb_zone];
+    qlSel = new QList <QPair<int,stSelInfo*>*> *[nb_zone];
 
     id_tab_tmp = new QList < QTabWidget *> * [nb_zone];
     for (int i = 0; i< nb_zone; i++) {
-        qlSel[i]=new  QList <QPair<int,QModelIndexList*>*> [nb_calc];
+        qlSel[i]=new  QList <QPair<int,stSelInfo*>*> [nb_calc];
         id_tab_tmp[i]= new QList < QTabWidget *>;
     }
 
@@ -3988,7 +3988,7 @@ void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view, QTableV
     QModelIndex un_index;
 
     /// Creation selection ligne
-    QList <QPair<int,QModelIndexList*>*> *a = &qlSel[zn][calc];
+    QList <QPair<int,stSelInfo*>*> *a = &qlSel[zn][calc];
 
     /// Effacer la selection precedente
     int nb_selLines = a->size();
@@ -4002,7 +4002,7 @@ void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view, QTableV
 
     foreach(un_index, indexes){
         int cur_key = ((un_index.sibling(un_index.row(),BDelegateCouleurFond::Columns::vEcart)).data()).toInt();
-        QPair<int,QModelIndexList *> *p = NULL;
+        QPair<int,stSelInfo *> *p = NULL;
 
         /// Parcourir existant et rajout si necessaire
         bool isPresent = false;
@@ -4010,19 +4010,23 @@ void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view, QTableV
             p=a->at(pos);
             if(p->first==cur_key){
                 isPresent = true;
-                p->second->append(un_index);
+                p->second->lstSel->append(un_index);
                 break;
             }
         }
 
         if(isPresent == false){
-            p = new QPair<int,QModelIndexList *>;
+            p = new QPair<int,stSelInfo *>;
+            stSelInfo *info = new stSelInfo;
             QModelIndexList *sel = new QModelIndexList;
 
             /// config
             sel->append(un_index);
+            info->qtv = view;
+            info->lstSel = sel;
+
             p->first = cur_key;
-            p->second = sel;
+            p->second = info;
 
             /// rajout
             a->append(p);
@@ -4035,7 +4039,7 @@ void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view, QTableV
     }
 }
 
-void SyntheseGenerale::mettreInfoSelection(int calc,QList <QPair<int,QModelIndexList*>*> *a, QTableView *view, QTableView *ptrSel)
+void SyntheseGenerale::mettreInfoSelection(int calc,QList <QPair<int,stSelInfo*>*> *a, QTableView *view, QTableView *ptrSel)
 {
     QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
     QAbstractItemModel *sqm_view = qobject_cast<sqlqmDetails *>(m->sourceModel());
@@ -4048,8 +4052,8 @@ void SyntheseGenerale::mettreInfoSelection(int calc,QList <QPair<int,QModelIndex
         QString s_info = "";
         int nb_key = a->size();
         for(int i=0; i< nb_key; i++){
-            QPair<int,QModelIndexList*> *item =  a->at(i);
-            QModelIndexList *indexes = item->second;
+            QPair<int,stSelInfo*> *item =  a->at(i);
+            QModelIndexList *indexes = item->second->lstSel;
             QModelIndex scan;
             QString headName = "";
 
@@ -4100,25 +4104,32 @@ void SyntheseGenerale::mettreInfoSelection(int calc,QList <QPair<int,QModelIndex
 QString SyntheseGenerale::createSelection(void)
 {
     // Tableau de fonction permettant de creer la requete adapte a l'onglet
-    QString (SyntheseGenerale::*ptrFz1[])(int,QString)=
+    QString (SyntheseGenerale::*ptrFz1[])(QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
-            &SyntheseGenerale::tot_SqlCreateZn,
-            &SyntheseGenerale::brc_SqlCreateZn,
-            &SyntheseGenerale::cmb_SqlCreateZ1,
-            &SyntheseGenerale::grp_SqlCreateZ1
+            &SyntheseGenerale::tot_SqlCreateZn/*,
+                                    &SyntheseGenerale::brc_SqlCreateZn,
+                                    &SyntheseGenerale::cmb_SqlCreateZ1,
+                                    &SyntheseGenerale::grp_SqlCreateZ1*/
 };
 
-    QString (SyntheseGenerale::*ptrFz2[])(int,QString)=
+    QString (SyntheseGenerale::*ptrFz2[])(QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
-            &SyntheseGenerale::tot_SqlCreateZn,
-            &SyntheseGenerale::brc_SqlCreateZn,
-            &SyntheseGenerale::stb_SqlCreate,
-            &SyntheseGenerale::stb_SqlCreate
+            &SyntheseGenerale::tot_SqlCreateZn/*,
+                                    &SyntheseGenerale::brc_SqlCreateZn,
+                                    &SyntheseGenerale::stb_SqlCreate,
+                                    &SyntheseGenerale::stb_SqlCreate*/
 };
 
-    typedef  QString (SyntheseGenerale::**ptrFZx)(int,QString);
+    typedef  QString (SyntheseGenerale::**ptrFZx)(QList <QPair<int,stSelInfo*>*> *a);
 
     ptrFZx pMyFnZx[] ={ptrFz1,ptrFz1};
+    int max_zn = 2;
+    int max_calc = 4;
+    for(int zn = 0; zn < max_zn; zn++){
+        for (int calc = 0; calc < max_calc; calc++) {
+            QList <QPair<int,stSelInfo*>*> *a = &qlSel[zn][calc];
+        }
+    }
 
     // Le simple click a construit la liste des boules
     //----------
@@ -4250,9 +4261,56 @@ QString SyntheseGenerale::brc_SqlCreateZn(int onglet, QString table)
 }
 
 
-QString SyntheseGenerale::tot_SqlCreateZn(int onglet, QString table)
+QString SyntheseGenerale::tot_SqlCreateZn(QList <QPair<int,stSelInfo*>*> *a)
 {
     QString st_critere = "";
+    QString filter_key = "";
+    QString filter_days= "";
+    QString st_fields = "b1,b2";
+
+    int nb_items = a->size();
+    QPair<int,stSelInfo *> *p = NULL;
+    for(int pos = 0; pos< nb_items;pos++){
+        p=a->at(pos);
+        int key = p->first;
+        filter_key = QString("(")+QString::number(key)+QString(" in(")+st_fields+QString(")");
+        int nb_sel = p->second->lstSel->size();
+        filter_days="(";
+        for(int sel=0; sel < nb_sel; sel++){
+            QModelIndex un_index = p->second->lstSel->at(sel);
+            const QAbstractItemModel * pModel = un_index.model();
+            int col = un_index.column();
+
+            QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+            QString headName = vCol.toString();
+
+            if(col > BDelegateCouleurFond::Columns::TotalElement){
+                filter_days = filter_days + QString("J like'")+headName+QString("%'");
+            }
+            if(sel < nb_sel -1 ){
+                filter_days = filter_days + " or ";
+            }
+            else {
+                filter_days = filter_days + ")";
+            }
+        }
+
+        if(filter_days.size()){
+            st_critere = st_critere + QString("(")+filter_key+QString(") and (")+ filter_days + QString(")");
+        }
+        else {
+            st_critere = st_critere + QString("(")+filter_key+QString(")");
+        }
+
+        /// Autre clef ?
+        if(pos < nb_items -1){
+           st_critere = st_critere + QString(" and ");
+        }
+
+    }
+
+
+#if 0
     QString sqlReq ="";
     int zn = 0;
     QModelIndexList indexes =  uneDemande.selection[onglet];
@@ -4267,11 +4325,12 @@ QString SyntheseGenerale::tot_SqlCreateZn(int onglet, QString table)
         sqlReq = FiltreLaBaseSelonSelectionUtilisateur(indexes,onglet,max,champ,table);
 
     }
+#endif
 
 #ifndef QT_NO_DEBUG
-    qDebug() << sqlReq;
+    qDebug() << st_critere;
 #endif
-    return sqlReq;
+    return st_critere;
 }
 
 QString SyntheseGenerale::SqlCreateCodeEtoile(int onglet, QString table)

@@ -58,11 +58,15 @@ class SyntheseGenerale : public QObject
     Q_OBJECT
 
 private:
-    QWidget **parentWidget;
-    QList<QTableView *> *tbv;
-    QList<QTableView *> *tbInfo;
-    QList <QPair<int,QModelIndexList*>*> **qlSel;
+    struct stSelInfo{
+       QTableView * qtv;        /// id de la Qtable
+       QModelIndexList* lstSel; /// index selection
+    };
     QList < QTabWidget *> **id_tab_tmp;// 2 zones
+    QList <QPair<int,stSelInfo*>*> **qlSel;
+    QList<QTableView *> *tbInfo;
+    QList<QTableView *> *tbv;
+    QWidget **parentWidget;
 
     //stCurDemande *pLaDemande;
     B_ActFrMdlIndex *MonTraitement;
@@ -153,7 +157,7 @@ private:
     bool SimplifieSelection(QTableView *view);
     int * getPathToView(QTableView *view, QList<QTabWidget *> **id_tab, QTableView **sel_view);
     void saveSelection(int zn, int calc, QTableView *view, QTableView *ptrSel);
-    void mettreInfoSelection(int calc, QList <QPair<int,QModelIndexList*>*> *a, QTableView *view, QTableView *ptrSel);
+    void mettreInfoSelection(int calc, QList<QPair<int, stSelInfo *> *> *a, QTableView *view, QTableView *ptrSel);
 
     QString A1_0_TrouverLignes(int zn, QString tb_src, QString tb_ref, QString key);
     QString A1_1_CalculerEcart(QString str_reponses);
@@ -181,7 +185,7 @@ private:
     QString TrouverTirages(int col, QString str_nb, QString st_tirages, QString st_cri, int zn, stTiragesDef *pConf);
 
     QString ActionElmZone(QString critere , QString operateur, int zone, stTiragesDef *pConf);
-    QString tot_SqlCreateZn(int onglet, QString table);
+    QString tot_SqlCreateZn(QList<QPair<int, stSelInfo *> *> *a);
     QString cmb_SqlCreateZ1(int onglet, QString table);
     QString grp_SqlCreateZ1(int onglet, QString table);
     QString brc_SqlCreateZn(int onglet, QString table);
