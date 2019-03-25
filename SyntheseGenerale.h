@@ -60,7 +60,9 @@ class SyntheseGenerale : public QObject
 private:
     QWidget **parentWidget;
     QList<QTableView *> *tbv;
+    QList<QTableView *> *tbInfo;
     QList <QPair<int,QModelIndexList*>*> **qlSel;
+    QList < QTabWidget *> **id_tab_tmp;// 2 zones
 
     //stCurDemande *pLaDemande;
     B_ActFrMdlIndex *MonTraitement;
@@ -145,10 +147,11 @@ private slots:
     void slot_ShowBouleForNewDesign(const QModelIndex & index);
 
 private:
+    QString CreatreTitle(stCurDemande *pConf);
     void Surligne(int *path,int val);
     int incValue(int *val);
     bool SimplifieSelection(QTableView *view);
-    int * getPathToView(QTableView *view, int *deep, QTableView **sel_view);
+    int * getPathToView(QTableView *view, QList<QTabWidget *> **id_tab, QTableView **sel_view);
     void saveSelection(int zn, int calc, QTableView *view, QTableView *ptrSel);
     void mettreInfoSelection(int calc, QList <QPair<int,QModelIndexList*>*> *a, QTableView *view, QTableView *ptrSel);
 
@@ -172,15 +175,19 @@ private:
     void DoTirages(void);
     void DoComptageTotal(void);
     void DoBloc3(void);
-    QString TrouverTirages(int col, QString str_nb, QString st_tirages, QString st_cri, int zn, stTiragesDef *pConf);
-    QString ActionElmZone(QString critere , QString operateur, int zone, stTiragesDef *pConf);
-    QString SqlCreateCodeBoule(int onglet, QString table);
-    QString SqlCreateCodeEtoile(int onglet, QString table);
-    QString SqlCreateCodeCombi(int onglet, QString table);
-    QString SqlCreateCodeGroupe(int onglet, QString table);
-    QString SqlCreateCodeBary(int onglet, QString table);
 
+    QString createSelection(void);
     QString ChercherSelection(int zn, QModelIndexList sel_wko, QTableView * tbv_wko, QString tb_src);
+    QString TrouverTirages(int col, QString str_nb, QString st_tirages, QString st_cri, int zn, stTiragesDef *pConf);
+
+    QString ActionElmZone(QString critere , QString operateur, int zone, stTiragesDef *pConf);
+    QString tot_SqlCreateZn(int onglet, QString table);
+    QString cmb_SqlCreateZ1(int onglet, QString table);
+    QString grp_SqlCreateZ1(int onglet, QString table);
+    QString brc_SqlCreateZn(int onglet, QString table);
+    QString stb_SqlCreate(int onglet, QString table);
+
+    QString SqlCreateCodeEtoile(int onglet, QString table);
 
 #if TRY_CODE_NEW
 private:
@@ -263,7 +270,7 @@ private:
     QGridLayout * MonLayout_R3_grp_z1(prmLay prm);
     QGridLayout * MonLayout_R4_brc_z1(prmLay prm);
 #endif
-    QTableView * TbvAnalyse_tot(int zn, QString source, QString definition, QString key);
+    QTableView * tot_TbvAnalyse(int zn, QString source, QString definition, QString key);
     QTableView * TbvResume_tot(int zn, QString tb_read);
     void mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_total);
 
@@ -276,8 +283,8 @@ private:
         QString key;
     };
     */
-    QGridLayout* VbInfo_tot(param_2 prm);
-    QGridLayout* VbResu_tot(param_2 prm);
+    QGridLayout* tot_VbInfo(param_2 prm);
+    QGridLayout* tot_VbResu(param_2 prm);
 
     QGridLayout* VbInfo_brc(param_2 prm);
     QGridLayout* VbResu_brc(param_2 prm);

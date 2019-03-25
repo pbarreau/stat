@@ -771,17 +771,22 @@ void SyntheseGenerale::DoComptageTotal(void)
     int ong[]={nb_zone,nb_calc,2};
 
     tbv= new QList<QTableView *> [nb_zone];
+
+    tbInfo= new QList<QTableView *> [nb_zone];
     qlSel = new QList <QPair<int,QModelIndexList*>*> *[nb_zone];
+
+    id_tab_tmp = new QList < QTabWidget *> * [nb_zone];
     for (int i = 0; i< nb_zone; i++) {
         qlSel[i]=new  QList <QPair<int,QModelIndexList*>*> [nb_calc];
+        id_tab_tmp[i]= new QList < QTabWidget *>;
     }
 
     /// ----------------------
     tptrFns Trmt_tot_a={
-        &SyntheseGenerale::VbInfo_tot
+        &SyntheseGenerale::tot_VbInfo
     };
     tptrFns Trmt_tot_b={
-        &SyntheseGenerale::VbResu_tot
+        &SyntheseGenerale::tot_VbResu
     };
 
     tptrFns Trmt_brc_a={
@@ -1073,6 +1078,7 @@ void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
         QString id = QString("Info")+def[i].name.leftRef(3)+QString("_z")+QString::number(niv+1);
         tmp->setObjectName(id);
         tab_info->addTab(tmp,def[i].name);
+        tbInfo[niv].append(tmp);
     }
 
     // Qt::AlignLeft|Qt::AlignTop
@@ -2025,7 +2031,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb
     return qtv_tmp;
 }
 
-QGridLayout* SyntheseGenerale::VbResu_tot(param_2 prm)
+QGridLayout* SyntheseGenerale::tot_VbResu(param_2 prm)
 {
     QGridLayout *lay_tmp = new QGridLayout;
     QVBoxLayout *vb_tmp = new QVBoxLayout;
@@ -2049,7 +2055,7 @@ QGridLayout* SyntheseGenerale::VbResu_tot(param_2 prm)
     return lay_tmp;
 }
 
-QGridLayout* SyntheseGenerale::VbInfo_tot(param_2 prm)
+QGridLayout* SyntheseGenerale::tot_VbInfo(param_2 prm)
 {
 
     QGridLayout *lay_tmp = new QGridLayout;
@@ -2062,7 +2068,7 @@ QGridLayout* SyntheseGenerale::VbInfo_tot(param_2 prm)
     QString tb_ref = prm.prm_1.hlp[0].tbl;
     QString key = prm.prm_1.hlp[0].key+QString::number(zn+1);
 
-    qtv_tmp = TbvAnalyse_tot(zn, tb_src, tb_ref, key);
+    qtv_tmp = tot_TbvAnalyse(zn, tb_src, tb_ref, key);
     tbv[zn]<<qtv_tmp;
 
     lab_tmp->setText("Repartitions");
@@ -2075,7 +2081,7 @@ QGridLayout* SyntheseGenerale::VbInfo_tot(param_2 prm)
     return lay_tmp;
 }
 
-QTableView * SyntheseGenerale::TbvAnalyse_tot(int zn, QString tb_src, QString tb_ref, QString key)
+QTableView * SyntheseGenerale::tot_TbvAnalyse(int zn, QString tb_src, QString tb_ref, QString key)
 {
     QString tb_out = QString("r_")+tb_src + QString("_tot_z")+QString::number(zn+1);
 
@@ -3514,7 +3520,7 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 }
 #endif
 
-int * SyntheseGenerale::getPathToView(QTableView *view, int *deep, QTableView ** sel_view)
+int * SyntheseGenerale::getPathToView(QTableView *view, QList < QTabWidget *> **id_tab, QTableView ** sel_view)
 {
     /// Trouver les onglets !!!
     QList < QTabWidget *> tbHead;
@@ -3535,6 +3541,13 @@ int * SyntheseGenerale::getPathToView(QTableView *view, int *deep, QTableView **
         path[i] = tbHead.at(steps -(i+1))->currentIndex();
     }
 
+    /// Memoriser @ des Tabwidget
+    /// Path[0] donne la zone
+    for(int i=0; i< steps;i++){
+        id_tab_tmp[path[0]]->append(tbHead.at(steps -(i+1)));
+    }
+    id_tab[path[0]] = id_tab_tmp[path[0]];
+
     /// Chercher le Qtabview pour montrer selection
     QString cible = QString("InfoTab_z")+QString::number(path[0]+1);
     QTabWidget * tmp_tab = tbHead.at(steps-1)->findChild<QTabWidget*>(cible);
@@ -3547,7 +3560,6 @@ int * SyntheseGenerale::getPathToView(QTableView *view, int *deep, QTableView **
         *sel_view = tmp_tab->findChild<QTableView*>(tbv_sel);
     }
 
-    *deep = steps;
     return path;
 }
 
@@ -3623,83 +3635,64 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
     QTableView *view = qobject_cast<QTableView *>(sender());
     QTableView *ptrSel = NULL;
+    QList < QTabWidget *> *id_tab[2]={NULL};
+
+    int *path = getPathToView(view, &id_tab[0], &ptrSel);
 
     if(!SimplifieSelection(view)){
+        if(ptrSel){
+            /// ecrire s_info
+            QString s_info = "";
+            QStandardItemModel *sqm_tmp = qobject_cast<QStandardItemModel *>(ptrSel->model());
+            QStandardItem *cell = sqm_tmp->item(0,path[1]);
+
+            cell->setData(s_info,Qt::DisplayRole);
+            cell->setBackground(QBrush(Qt::white));
+            sqm_tmp->setItem(0,path[1],cell);
+            ptrSel->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        }
         return;
     }
 
     /// ------------------
-    //int zn = view->objectName().split("z").at(1).toInt() -1;
-    int deep = -1;
-    int *path = getPathToView(view, &deep, &ptrSel);
     saveSelection(path[0],path[1],view, ptrSel);
+}
+QString SyntheseGenerale::CreatreTitle(stCurDemande *pConf)
+{
+    QString titre = "";
 
+    /// Recuperer les infos des tableaux
+    int nbZone = 2;
 
+    for (int i = 0; i < nbZone; ++i) {
+        QStandardItemModel *sqm_tmp = qobject_cast<QStandardItemModel *>(tbInfo[i].at(0)->model());
 
-    return;
+        if(!id_tab_tmp[i]->size()){
+            continue;
+        }
 
-    /*
-    // L'onglet implique le tableau...
-    //int origine = ptabComptage->currentIndex();
-    int origine = 0;
-    int totOngl = 0;
-    int col = index.column();
-    boolean noSelection = false;
+        int nbCalc = id_tab_tmp[i]->at(1)->count();
+        for(int j=0;j<nbCalc;j++){
+            QString msg = "";
+            QStandardItem *cell = sqm_tmp->item(0,j);
 
-
-    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
-    origine =curOnglet->currentIndex();
-    totOngl = curOnglet->count();
-
-    QString name1 = view->objectName();
-    QString name2 = selectionModel->objectName();
-
-    switch (origine) {
-    case 0:
-    case 1:
-    case 3:
-        if(col==0)
-            noSelection = true;
-        break;
-    case 2:
-        if(col<=1)
-            noSelection = true;
-        break;
-    default:
-        noSelection = true;
-        break;
+            if(cell->data(Qt::DisplayRole).isValid()){
+                msg= cell->data(Qt::DisplayRole).toString();
+            }
+            titre = titre + msg;
+        }
     }
 
-    // verifier
-    if(noSelection){
-        // deselectionner l'element
-        selectionModel->select(index, QItemSelectionModel::Deselect);
-
-        return;
-    }
-
-    uneDemande.selection[origine] = selectionModel->selectedIndexes();
-
-    // ne pas memoriser quand onglet des regroupements
-    //if(origine<(ptabComptage->count()-1))
-    if(origine < (totOngl-1))
-        MemoriserChoixUtilisateur(index,origine,selectionModel,pMaConf,&uneDemande);
-
-    ///Memoriser peut modifier contenu de uneDemande !!!!
-    ///
-
-
-    QString maselection = CreatreTitle(&uneDemande);
-    selection->setText(maselection);
-    */
-
+    return titre;
 
 }
 
 QString CreatreTitle(stCurDemande *pConf)
 {
-    QString titre = "";
+    QString titre = "A faire";
 
+
+#if 0
     for (int i = 0; i< 4 ;i++)
     {
         QModelIndexList indexes = pConf->selection[i];
@@ -3759,6 +3752,7 @@ QString CreatreTitle(stCurDemande *pConf)
         titre = titre + " - ";
     }
     titre = titre.remove(titre.length()-3,3);
+#endif
 
     return titre;
 }
@@ -4060,7 +4054,8 @@ void SyntheseGenerale::mettreInfoSelection(int calc,QList <QPair<int,QModelIndex
             QString headName = "";
 
             int b = item->first;
-            s_info = s_info+QString("(")+ QString::number(b)+QString(":");
+            //s_info = s_info+QString("(")+ QString::number(b)+QString(":");
+            s_info = s_info+QString::number(b)+QString(":");
 
             int nb_items = indexes->size();
 
@@ -4076,14 +4071,15 @@ void SyntheseGenerale::mettreInfoSelection(int calc,QList <QPair<int,QModelIndex
                     headName = headName + ",";
                 }
                 else {
-                    headName = headName + ")";
+                    //headName = headName + ")";
                 }
             }
 
             s_info = s_info + headName;
             /// suite ?
             if(i < nb_key -1){
-                s_info = s_info + " and ";
+                //s_info = s_info + " and ";
+                s_info = s_info + "; ";
             }
         }
 
@@ -4101,97 +4097,60 @@ void SyntheseGenerale::mettreInfoSelection(int calc,QList <QPair<int,QModelIndex
     }
 }
 
-void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
+QString SyntheseGenerale::createSelection(void)
 {
-#ifndef QT_NO_DEBUG
-    /// https://stackoverflow.com/questions/27476554/how-to-find-out-from-the-slot-which-signal-has-called-this-slot
-    QMetaMethod metaMethod = sender()->metaObject()->method(senderSignalIndex());
-    qDebug() << metaMethod.name();
-    qDebug() << metaMethod.methodSignature();
-#endif
-
-    QTableView *view = qobject_cast<QTableView *>(sender());
-
-    QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
-    QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
-    int nbcol = sqm_tmp->columnCount();
-    int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
-
-
-
-#if 0
-    return;
-
-    bool getLimites = false;
-
-    //QSortFilterProxyModel *m = NULL;//qobject_cast<QSortFilterProxyModel *>(view->model());
-    //QAbstractItemModel *sqm_tmp = NULL;
-
-    if(view->objectName().contains("new")){
-        m= qobject_cast<QSortFilterProxyModel *>(view->model());
-        sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
-        getLimites = true;
-    }
-    else{
-        if(view->objectName().contains(U_GRP)){
-            sqm_tmp = qobject_cast<QStandardItemModel *>(view->model());
-        }
-        else{
-            m= qobject_cast<QSortFilterProxyModel *>(view->model());
-            sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
-        }
-    }
-
-    //int nbcol = sqm_tmp->columnCount();
-
-    if(getLimites){
-        int col = index.column();
-        if(col <BDelegateCouleurFond::Columns::TotalElement
-                ||
-                col >= nbcol-2){
-            return;
-        }
-    }
-
-    QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
-    int nb_item = curOnglet->count();
-
     // Tableau de fonction permettant de creer la requete adapte a l'onglet
-    QString (SyntheseGenerale::*ptrFunc[])(int,QString)=
+    QString (SyntheseGenerale::*ptrFz1[])(int,QString)=
     {
-            &SyntheseGenerale::SqlCreateCodeBoule,
-            &SyntheseGenerale::SqlCreateCodeBoule,
-            &SyntheseGenerale::SqlCreateCodeCombi,
-            &SyntheseGenerale::SqlCreateCodeGroupe,
-            &SyntheseGenerale::SqlCreateCodeBary
+            &SyntheseGenerale::tot_SqlCreateZn,
+            &SyntheseGenerale::brc_SqlCreateZn,
+            &SyntheseGenerale::cmb_SqlCreateZ1,
+            &SyntheseGenerale::grp_SqlCreateZ1
 };
 
-    ///parcourir tous les onglets
-    /// Trouver le tableau des barycentres
-    int zn=0;
-    QList<QTableView *>tb_brc = view->parent()->findChildren<QTableView*>();
-    int totalTbv = tb_brc.size();
-    if(totalTbv){
-        for(int i=0;i<totalTbv;i++ ){
-            QString name = tb_brc.at(i)->objectName();
-            QItemSelectionModel *selectionModel = tb_brc.at(i)->selectionModel();
-            QModelIndexList indexes =  selectionModel->selectedIndexes();
-            int total = indexes.size();
-            total++;
-        }
-    }
+    QString (SyntheseGenerale::*ptrFz2[])(int,QString)=
+    {
+            &SyntheseGenerale::tot_SqlCreateZn,
+            &SyntheseGenerale::brc_SqlCreateZn,
+            &SyntheseGenerale::stb_SqlCreate,
+            &SyntheseGenerale::stb_SqlCreate
+};
+
+    typedef  QString (SyntheseGenerale::**ptrFZx)(int,QString);
+
+    ptrFZx pMyFnZx[] ={ptrFz1,ptrFz1};
 
     // Le simple click a construit la liste des boules
     //----------
     QString sqlReq = *(uneDemande.st_LDT_Depart);
-    for(int onglet = 0; onglet<nb_item;onglet++)
+
+#if 0
+    for(int onglet = 0; onglet<4;onglet++)
     {
 #ifndef QT_NO_DEBUG
         qDebug()<< "Onglet["+QString::number(onglet)<<"]:"<<sqlReq<<endl;
 #endif
 
-        sqlReq = (this->*ptrFunc[onglet])(onglet,sqlReq);
+        sqlReq = (this->*ptrFz1[onglet])(onglet,sqlReq);
     }
+
+#endif
+
+    return sqlReq;
+}
+
+void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
+{
+    Q_UNUSED(index);
+
+    QTableView *view = qobject_cast<QTableView *>(sender());
+    QTableView *ptrSel = NULL;
+    QList < QTabWidget *> *id_tab[2]={NULL};
+
+    int *path = getPathToView(view, &id_tab[0], &ptrSel);
+
+    QString sqlReq = createSelection();
+
 
     //----------
     stCurDemande *etude = new stCurDemande;
@@ -4226,13 +4185,21 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
     connect( ptabTop, SIGNAL(tabCloseRequested(int)) ,
              unDetail, SLOT(slot_FermeLaRecherche(int) ) );
-#endif
 
 }
 
+QString SyntheseGenerale::stb_SqlCreate(int onglet, QString table)
+{
+    QString sqlReq ="";
+#ifndef QT_NO_DEBUG
+    qDebug() << sqlReq;
+#endif
+
+    return sqlReq;
+}
 
 
-QString SyntheseGenerale::SqlCreateCodeBary(int onglet, QString table)
+QString SyntheseGenerale::brc_SqlCreateZn(int onglet, QString table)
 {
     QString sqlReq ="";
     int zn = 0;
@@ -4283,7 +4250,7 @@ QString SyntheseGenerale::SqlCreateCodeBary(int onglet, QString table)
 }
 
 
-QString SyntheseGenerale::SqlCreateCodeBoule(int onglet, QString table)
+QString SyntheseGenerale::tot_SqlCreateZn(int onglet, QString table)
 {
     QString st_critere = "";
     QString sqlReq ="";
@@ -4306,6 +4273,7 @@ QString SyntheseGenerale::SqlCreateCodeBoule(int onglet, QString table)
 #endif
     return sqlReq;
 }
+
 QString SyntheseGenerale::SqlCreateCodeEtoile(int onglet, QString table)
 {
     QString st_critere = "";
@@ -4323,7 +4291,7 @@ QString SyntheseGenerale::SqlCreateCodeEtoile(int onglet, QString table)
     }
     return sqlReq;
 }
-QString SyntheseGenerale::SqlCreateCodeCombi(int onglet, QString table)
+QString SyntheseGenerale::cmb_SqlCreateZ1(int onglet, QString table)
 {
     QString st_critere = "";
     QString sqlReq ="";
@@ -4837,7 +4805,7 @@ count(*)  as T,
      return(isOk);
  }
 
- QString SyntheseGenerale::SqlCreateCodeGroupe(int onglet, QString table)
+ QString SyntheseGenerale::grp_SqlCreateZ1(int onglet, QString table)
 {
      QString st_critere = "";
      QString st_occure = "";
