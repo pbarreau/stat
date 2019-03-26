@@ -149,6 +149,7 @@ public slots:
 
 private slots:
     void slot_ShowBouleForNewDesign(const QModelIndex & index);
+    void slot_saveNewSelection(const QItemSelection &selected, const QItemSelection &deselected);
 
 private:
     QString CreatreTitle(stCurDemande *pConf);

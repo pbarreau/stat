@@ -5,6 +5,8 @@
 #include <QApplication>
 #include <QMessageBox>
 
+#include <QItemSelection>
+
 #include <QItemEditorFactory>
 #include <QItemEditorCreatorBase>
 #include <QStandardItemEditorCreator>
@@ -3604,6 +3606,9 @@ bool SyntheseGenerale::SimplifieSelection(QTableView *view)
 
     /// ------------------
     QModelIndexList indexes =  selectionModel->selectedIndexes();
+    /// sauver cette selection actuelle
+    connect(selectionModel,SIGNAL(selectionChanged( QItemSelection ,  QItemSelection )),
+            this,SLOT(slot_saveNewSelection(QItemSelection ,  QItemSelection )));
 
     /// si le choix utilisateur < col T et > nbJour deselectionner element
     int cur_col = indexes.last().column();
@@ -3679,6 +3684,7 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 
     /// ------------------
     saveSelection(path[0],path[1],view, ptrSel);
+
 }
 QString SyntheseGenerale::CreatreTitle(stCurDemande *pConf)
 {
@@ -4002,6 +4008,23 @@ QString SyntheseGenerale::ChercherSelection(int zn,
     return msg;
 }
 
+void SyntheseGenerale::slot_saveNewSelection(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    QItemSelectionModel *selectionModel = qobject_cast<QItemSelectionModel *> (sender());
+    QModelIndexList tmp_1 = selected.indexes();
+    QModelIndexList tmp_2 = deselected.indexes();
+
+    int nb_it_1 = tmp_1.size();
+    int nb_it_2 = tmp_2.size();
+
+    if(deselected.indexes().size()){
+        const QModelIndex fake_index;
+        deselected.indexes().at(0).model();
+
+        selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
+
+    }
+}
 void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view, QTableView *ptrSel)
 {
     QItemSelectionModel *selectionModel = view->selectionModel();
@@ -4060,6 +4083,7 @@ void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view, QTableV
     if(ptrSel){
         mettreInfoSelection(calc,a,view,ptrSel);
     }
+
 }
 
 void SyntheseGenerale::mettreInfoSelection(int calc,QList <QPair<int,stSelInfo*>*> *a, QTableView *view, QTableView *ptrSel)
@@ -4130,17 +4154,17 @@ QString SyntheseGenerale::createSelection(void)
     QString (SyntheseGenerale::*ptrFz1[])(int zn, QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
             &SyntheseGenerale::tot_SqlCreateZn/*,
-                                                                    &SyntheseGenerale::brc_SqlCreateZn,
-                                                                    &SyntheseGenerale::cmb_SqlCreateZ1,
-                                                                    &SyntheseGenerale::grp_SqlCreateZ1*/
+                                                                            &SyntheseGenerale::brc_SqlCreateZn,
+                                                                            &SyntheseGenerale::cmb_SqlCreateZ1,
+                                                                            &SyntheseGenerale::grp_SqlCreateZ1*/
 };
 
     QString (SyntheseGenerale::*ptrFz2[])(int zn,QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
             &SyntheseGenerale::tot_SqlCreateZn/*,
-                                                                    &SyntheseGenerale::brc_SqlCreateZn,
-                                                                    &SyntheseGenerale::stb_SqlCreate,
-                                                                    &SyntheseGenerale::stb_SqlCreate*/
+                                                                            &SyntheseGenerale::brc_SqlCreateZn,
+                                                                            &SyntheseGenerale::stb_SqlCreate,
+                                                                            &SyntheseGenerale::stb_SqlCreate*/
 };
 
     typedef  QString (SyntheseGenerale::**ptrFZx)(int zn,QList <QPair<int,stSelInfo*>*> *a);
@@ -4185,8 +4209,12 @@ QString SyntheseGenerale::createSelection(void)
             msg = st_filters;
         }
 
-        if(st_filters.size() && and_zn){
+        if(st_filters.size() && and_zn && msg.size()){
             msg = msg + QString(" and ") + st_filters;
+        }
+
+        if(st_filters.size() && and_zn && (msg.size()==0)){
+            msg = st_filters;
         }
 
         if(zn < max_zn -1){
