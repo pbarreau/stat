@@ -3668,6 +3668,20 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
     int *path = getPathToView(view, &id_tab[0], &ptrSel);
 
     if(!SimplifieSelection(view)){
+        /// la liste est vide mettre la liste de track a vide
+        QList <QPair<int,stSelInfo*>*> *a = &qlSel[path[0]][path[1]];
+
+        /// Effacer la selection precedente
+        int nb_selLines = a->size();
+        if(nb_selLines){
+            /// liberer la memoire occupee par p
+            qDeleteAll(a->begin(), a->end());
+
+            /// puis detacher de la liste
+            a->clear();
+        }
+
+        /// Mettre a jour le champ info
         if(ptrSel){
             /// ecrire s_info
             QString s_info = "";
@@ -4011,15 +4025,16 @@ QString SyntheseGenerale::ChercherSelection(int zn,
 void SyntheseGenerale::slot_saveNewSelection(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QItemSelectionModel *selectionModel = qobject_cast<QItemSelectionModel *> (sender());
-    QModelIndexList tmp_1 = selected.indexes();
-    QModelIndexList tmp_2 = deselected.indexes();
+    //QModelIndexList tmp_1 = selected.indexes();
+    //QModelIndexList tmp_2 = deselected.indexes();
 
-    int nb_it_1 = tmp_1.size();
-    int nb_it_2 = tmp_2.size();
+    //selectionModel->
+    //int nb_it_1 = tmp_1.size();
+    //int nb_it_2 = tmp_2.size();
 
     if(deselected.indexes().size()){
         const QModelIndex fake_index;
-        deselected.indexes().at(0).model();
+        //deselected.indexes().at(0).model();
 
         selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
 
@@ -4154,17 +4169,17 @@ QString SyntheseGenerale::createSelection(void)
     QString (SyntheseGenerale::*ptrFz1[])(int zn, QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
             &SyntheseGenerale::tot_SqlCreateZn/*,
-                                                                            &SyntheseGenerale::brc_SqlCreateZn,
-                                                                            &SyntheseGenerale::cmb_SqlCreateZ1,
-                                                                            &SyntheseGenerale::grp_SqlCreateZ1*/
+                                                                                    &SyntheseGenerale::brc_SqlCreateZn,
+                                                                                    &SyntheseGenerale::cmb_SqlCreateZ1,
+                                                                                    &SyntheseGenerale::grp_SqlCreateZ1*/
 };
 
     QString (SyntheseGenerale::*ptrFz2[])(int zn,QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
             &SyntheseGenerale::tot_SqlCreateZn/*,
-                                                                            &SyntheseGenerale::brc_SqlCreateZn,
-                                                                            &SyntheseGenerale::stb_SqlCreate,
-                                                                            &SyntheseGenerale::stb_SqlCreate*/
+                                                                                    &SyntheseGenerale::brc_SqlCreateZn,
+                                                                                    &SyntheseGenerale::stb_SqlCreate,
+                                                                                    &SyntheseGenerale::stb_SqlCreate*/
 };
 
     typedef  QString (SyntheseGenerale::**ptrFZx)(int zn,QList <QPair<int,stSelInfo*>*> *a);
@@ -4235,7 +4250,9 @@ QString SyntheseGenerale::createSelection(void)
     qDebug()<< "S2:"<<st_filters;
 #endif
 
-    msg = sqlReq + QString(" as t1 where(")+msg+QString(")");
+    if(msg.size()){
+        msg = sqlReq + QString(" as t1 where(")+msg+QString(")");
+    }
 
 #ifndef QT_NO_DEBUG
     qDebug()<< "msg:"<<msg;
@@ -4255,6 +4272,10 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
     int *path = getPathToView(view, &id_tab[0], &ptrSel);
 
     QString sqlReq = createSelection();
+
+    if(!sqlReq.size()){
+        return;
+    }
 
 
     //----------
