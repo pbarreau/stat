@@ -189,7 +189,7 @@ private:
     QString tot_SqlCreateZn(int zn, QList<QPair<int, stSelInfo *> *> *a);
     QString cmb_SqlCreateZ1(int onglet, QString table);
     QString grp_SqlCreateZ1(int onglet, QString table);
-    QString brc_SqlCreateZn(int onglet, QString table);
+    QString brc_SqlCreateZn(int zn, QList<QPair<int, stSelInfo *> *> *a);
     QString stb_SqlCreate(int onglet, QString table);
 
     QString SqlCreateCodeEtoile(int onglet, QString table);
