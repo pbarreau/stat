@@ -3702,31 +3702,56 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 }
 QString SyntheseGenerale::CreatreTitle(stCurDemande *pConf)
 {
-    QString titre = "";
+    QString retTitre = "";
 
     /// Recuperer les infos des tableaux
     int nbZone = 2;
 
     for (int i = 0; i < nbZone; ++i) {
+        QString titre = "";
+
         QStandardItemModel *sqm_tmp = qobject_cast<QStandardItemModel *>(tbInfo[i].at(0)->model());
 
         if(!id_tab_tmp[i]->size()){
             continue;
         }
 
+        QString znName = id_tab_tmp[i]->at(0)->tabText(i).leftRef(1).toString();
+
         int nbCalc = id_tab_tmp[i]->at(1)->count();
         for(int j=0;j<nbCalc;j++){
             QString msg = "";
             QStandardItem *cell = sqm_tmp->item(0,j);
 
+            QVariant vCol = sqm_tmp->headerData(j,Qt::Horizontal);
+            QString  headName =  vCol.toString();
+
+
             if(cell->data(Qt::DisplayRole).isValid()){
-                msg= cell->data(Qt::DisplayRole).toString();
+                msg = cell->data(Qt::DisplayRole).toString().trimmed();
+
+                if(msg.size()){
+                    msg=  QString("(")+msg+ QString(")");
+                }
             }
-            titre = titre + msg;
+
+            if(msg.size()){
+                if(titre.size()){
+                    titre = titre + ", ";
+                }
+                titre = titre + headName + msg;
+            }
+        }
+
+        if(titre.size()){
+            if(retTitre.size()){
+                retTitre = retTitre + ";";
+            }
+            retTitre = retTitre + znName+QString(":")+titre;
         }
     }
 
-    return titre;
+    return retTitre;
 
 }
 
@@ -4169,17 +4194,17 @@ QString SyntheseGenerale::createSelection(void)
     QString (SyntheseGenerale::*ptrFz1[])(int zn, QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
             &SyntheseGenerale::tot_SqlCreateZn/*,
-                                                                                    &SyntheseGenerale::brc_SqlCreateZn,
-                                                                                    &SyntheseGenerale::cmb_SqlCreateZ1,
-                                                                                    &SyntheseGenerale::grp_SqlCreateZ1*/
+                                                                                                            &SyntheseGenerale::brc_SqlCreateZn,
+                                                                                                            &SyntheseGenerale::cmb_SqlCreateZ1,
+                                                                                                            &SyntheseGenerale::grp_SqlCreateZ1*/
 };
 
     QString (SyntheseGenerale::*ptrFz2[])(int zn,QList <QPair<int,stSelInfo*>*> *a)=//(int,QString)=
     {
             &SyntheseGenerale::tot_SqlCreateZn/*,
-                                                                                    &SyntheseGenerale::brc_SqlCreateZn,
-                                                                                    &SyntheseGenerale::stb_SqlCreate,
-                                                                                    &SyntheseGenerale::stb_SqlCreate*/
+                                                                                                            &SyntheseGenerale::brc_SqlCreateZn,
+                                                                                                            &SyntheseGenerale::stb_SqlCreate,
+                                                                                                            &SyntheseGenerale::stb_SqlCreate*/
 };
 
     typedef  QString (SyntheseGenerale::**ptrFZx)(int zn,QList <QPair<int,stSelInfo*>*> *a);
