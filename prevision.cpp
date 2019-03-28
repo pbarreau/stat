@@ -61,7 +61,7 @@ void MainWindow::NEW_RepartionBoules(QString st_base, stTiragesDef *pConf)
     QSqlQuery query(db_0) ;
     int zone = 0;
 
-    QStringList *maRef = LstCritereGroupement(zone,pConf);
+    QStringList *maRef = noClass_CreateFilterForData(zone,pConf);
     int maxElems = pConf->limites[zone].max;
     int nbBoules = floor(maxElems/10)+1;
 

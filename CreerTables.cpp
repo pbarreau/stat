@@ -542,7 +542,7 @@ bool GererBase::f3(QString tb, QString *data)
 
     for (int zn=0;(zn < nbZone) && isOk;zn++ )
     {
-        myslFlt[zn] = LstCritereGroupement(zn,&ref);
+        myslFlt[zn] = noClass_CreateFilterForData(zn,&ref);
         //isOk = AnalyserEnsembleTirage(source,onGame, zn);
         if(isOk)
             ;//isOk = FaireTableauSynthese(destination,onGame,zn);

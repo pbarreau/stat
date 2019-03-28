@@ -1437,8 +1437,8 @@ QGridLayout * SyntheseDetails::MonLayout_CompteDistribution(stCurDemande *pEtude
     int maxElems = pEtude->ref->limites[zn].max;
 
 
-    //QStringList *maRef[0] = LstCritereGroupement(zn,pEtude->ref);
-    maRef[zn] = LstCritereGroupement(zn,pEtude->ref);
+    //QStringList *maRef[0] = noClass_CreateFilterForData(zn,pEtude->ref);
+    maRef[zn] = noClass_CreateFilterForData(zn,pEtude->ref);
     int nbCol = maRef[zn][0].size();
     int nbLgn = pEtude->ref->nbElmZone[zn] + 1;
 

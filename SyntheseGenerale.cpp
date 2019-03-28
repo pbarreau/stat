@@ -3064,8 +3064,8 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(prmLay prm)
  int maxElems = uneDemande.ref->limites[zn].max;
  //int nbBoules = floor(maxElems/10)+1;
 
- //QStringList *maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
- maRef[zone] = LstCritereGroupement(zone,uneDemande.ref);
+ //QStringList *maRef[zone] = noClass_CreateFilterForData(zone,uneDemande.ref);
+ maRef[zone] = noClass_CreateFilterForData(zone,uneDemande.ref);
  int nbCol = maRef[zone][0].size();
  int nbLgn = uneDemande.ref->nbElmZone[zone] + 1;
 
@@ -3414,13 +3414,18 @@ void SyntheseGenerale::slot_ChoosePriority(QAction *cmd)
 // Element 1 Liste des titres assosies a la requete
 // En fonction de la zone a etudier les requetes sont adaptees
 // pour integrer le nombre maxi de boules a prendre en compte
-QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
+QStringList * noClass_CreateFilterForData(int zn, stTiragesDef *pConf)
 {
  QStringList *sl_filter = new QStringList [3];
  QString fields = "z"+QString::number(zn+1);
 
  int maxElems = pConf->limites[zn].max;
  int nbBoules = floor(maxElems/10)+1;
+
+ // Parite & nb elment dans groupe
+ sl_filter[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
+ sl_filter[1] << "P" << "G";
+ sl_filter[2] << "Pair" << "< E/2";
 
  // Nombre de 10zaine
  for(int j=0;j<nbBoules;j++)
@@ -3438,11 +3443,6 @@ QStringList * LstCritereGroupement(int zn, stTiragesDef *pConf)
   sl_filter[1] << "F"+ QString::number(j);
   sl_filter[2] << "Finissant par: "+ QString::number(j);
  }
-
- // Parite & nb elment dans groupe
- sl_filter[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
- sl_filter[1] << "P" << "G";
- sl_filter[2] << "Pair" << "< E/2";
 
  return sl_filter;
 }

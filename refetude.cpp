@@ -57,7 +57,7 @@ RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
  for(int i = 0; i< nb_zones; i++)
  {
   // Pour chacune des zones effectuer un calcul de couverture
-  codeSqlDeRegroupementSurZnId[i] = LstCritereGroupement(i,p_conf);
+  codeSqlDeRegroupementSurZnId[i] = noClass_CreateFilterForData(i,p_conf);
   RechercheCouverture(&p_ListeDesCouverturesSurZnId[i], i);
  }
 
