@@ -281,6 +281,11 @@ QList<sCouv *> RefEtude::getLstCouv(int zn)
  return (p_ListeDesCouverturesSurZnId[zn]);
 }
 
+QStringList ** RefEtude::getSqlGrp(void)
+{
+ return(codeSqlDeRegroupementSurZnId);
+}
+
 void RefEtude::GetInfoTableau(int onglet, QTableView **pTbl, QStandardItemModel **pSim, QSortFilterProxyModel **pSfpm)
 {
  // se mettre sur le bon onglet

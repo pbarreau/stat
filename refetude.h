@@ -28,6 +28,7 @@ public:
     QStandardItemModel *GetPtrToModel(void);
     void GetInfoTableau(int onglet, QTableView **pTbl, QStandardItemModel **pSim, QSortFilterProxyModel **pSfpm);
     QList<sCouv *> getLstCouv(int zn);
+    QStringList ** getSqlGrp(void);
 
 private:
     QGridLayout *MonLayout_TabTirages();

@@ -133,6 +133,7 @@ class SyntheseGenerale : public QObject
   void slot_MontreLesTirages(const QModelIndex & index);
   void slot_ShowTotalBoule(const QModelIndex & index);
   void slot_ShowBoule(const QModelIndex & index);
+  void slot_AnalyseLigne(const QModelIndex & index);
   //void slot_Select_G(const QModelIndex & index);
   //void slot_Select_C(const QModelIndex & index);
   //void slot_Select_E(const QModelIndex & index);
@@ -153,6 +154,7 @@ class SyntheseGenerale : public QObject
   void slot_saveNewSelection(const QItemSelection &selected, const QItemSelection &deselected);
 
  private:
+  QString sql_DigOne(int zn, int lgn, QString key_sql);
   QString CreatreTitle(stCurDemande *pConf);
   void Surligne(int *path,int val);
   int incValue(int *val);
@@ -249,7 +251,7 @@ class SyntheseGenerale : public QObject
 
   typedef struct{
     QString name;
-    QString *head;
+    QStringList *head;
     int size;
   }stDesigConf;
 #define TAILLE(a,b)  (sizeof(a)/sizeof(b))

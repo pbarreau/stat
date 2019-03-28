@@ -188,6 +188,87 @@ void SyntheseGenerale::slot_ShowBouleForNewDesign(const QModelIndex & index)
  tbv_bloc1_1->scrollTo(mysortModel->index(val-1,0));
 }
 
+void SyntheseGenerale::slot_AnalyseLigne(const QModelIndex & index)
+{
+ static int sortir = 0;
+ int lgn = index.model()->index(index.row(),0).data().toInt();
+
+ if(sortir != lgn)
+ {
+  sortir = lgn;
+ }
+ else
+ {
+  return;
+ }
+
+ QStringList **pList = tabEcarts->getSqlGrp();
+
+ for(int zn=0; zn <pMaConf->nb_zone;zn++){
+  int nbAnalyses = pList[zn][0].size();
+
+  bool isOk=true;
+  QSqlQuery query(db_0);
+  for(int i=0; (i< nbAnalyses) && (isOk == true);i++)
+  {
+   QString key_sql = pList[zn][0].at(i);
+   QString sqlReq = sql_DigOne(zn,lgn,key_sql);
+
+#ifndef QT_NO_DEBUG
+   qDebug() << sqlReq;
+#endif
+
+   isOk = query.exec(sqlReq);
+
+   if(isOk)
+   {
+    // Mise a jour de la tables des resultats
+    QStandardItemModel *sqm_tmp = qobject_cast<QStandardItemModel *>(tbInfo[zn].at(1)->model());
+
+    query.first();
+    do
+    {
+     int tot = query.value(1).toInt();
+
+     QStandardItem * item_1 = sqm_tmp->item(0,i);
+     item_1->setData(tot,Qt::DisplayRole);
+     sqm_tmp->setItem(0,i,item_1);
+    }while(query.next() && isOk);
+   }/// if isOk
+  }/// for analyses
+ }/// for zn
+}
+
+QString SyntheseGenerale::sql_DigOne(int zn, int lgn, QString key_sql)
+{
+ QString st_fields = getFieldsFromZone(zn,"tb1");
+ QString st_tirage = *(uneDemande.st_LDT_Depart);
+
+ QString msg =
+   "select tb1.id as Tid, count(tb2.B) as Nb from "
+   "("
+   "select * from (" + st_tirage
+   + " where id = "
+   +QString::number(lgn)
+   +") as r1 "
+    ") as tb1 "
+    "left join "
+    "("
+    "select id as B from Bnrz where (z"+QString::number(zn+1)+" not null  and ("+key_sql
+   +")) "
+    ") as tb2 "
+    "on "
+    "("
+    "tb2.B in ("+st_fields+")"
+                           ") group by tb1.id;";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << msg;
+#endif
+
+ return msg;
+}
+
 void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
 {
  int col = index.column();
@@ -209,6 +290,7 @@ void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
  Surligne(path,val);
 
 }
+
 
 void SyntheseGenerale::Surligne(int *path,int val)
 {
@@ -670,9 +752,11 @@ void SyntheseGenerale::DoTirages(void)
  connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
           pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
 
-
  connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
           this, SLOT( slot_ShowBoule( QModelIndex) ) );
+
+ connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
+          this, SLOT( slot_AnalyseLigne( QModelIndex) ) );
 
  tbv_LesTirages->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(tbv_LesTirages, SIGNAL(customContextMenuRequested(QPoint)),this,
@@ -988,14 +1072,17 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
 QTableView *SyntheseGenerale::doTabLgnSelection(stDesigConf conf)
 {
  QTableView *qtv_tmp = new  QTableView();
- int nbcol = conf.size;
+ int nbcol = conf.head[0].size();
  QStandardItemModel *model = new QStandardItemModel(1, nbcol);
 
  qtv_tmp->setModel(model);
 
  for(int i=0;i<nbcol;i++)
  {
-  model->setHeaderData(i,Qt::Horizontal,conf.head[i]);
+  model->setHeaderData(i,Qt::Horizontal,conf.head[0][i]);
+  QStandardItem *head_i = model->horizontalHeaderItem(i);
+  head_i->setToolTip(conf.head[1][i]);
+
   QStandardItem *item = new QStandardItem();
   model->setItem(0,i,item);
   qtv_tmp->setColumnWidth(i,LCELL);
@@ -1006,6 +1093,7 @@ QTableView *SyntheseGenerale::doTabLgnSelection(stDesigConf conf)
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
  qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
  qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ //qtv_tmp->horizontalHeader()->setStretchLastSection(true);
 
  // Bloquer largeur des colonnes
  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -1016,21 +1104,23 @@ QTableView *SyntheseGenerale::doTabLgnSelection(stDesigConf conf)
  //qtv_tmp->setFixedHeight(55);
 
 
-
  return qtv_tmp;
 }
 
 QTableView *SyntheseGenerale::doTabLgnTirage(stDesigConf conf)
 {
  QTableView *qtv_tmp = new  QTableView;
- int nbcol = conf.size;
+ int nbcol = conf.head[0].size();
  QStandardItemModel *model = new QStandardItemModel(1, nbcol);
 
  qtv_tmp->setModel(model);
 
  for(int i=0;i<nbcol;i++)
  {
-  model->setHeaderData(i,Qt::Horizontal,conf.head[i]);
+  model->setHeaderData(i,Qt::Horizontal,conf.head[0][i]);
+  QStandardItem *head_i = model->horizontalHeaderItem(i);
+  head_i->setToolTip(conf.head[1][i]);
+
   QStandardItem *item = new QStandardItem();
   model->setItem(0,i,item);
   qtv_tmp->setColumnWidth(i,LCELL);
@@ -1040,6 +1130,8 @@ QTableView *SyntheseGenerale::doTabLgnTirage(stDesigConf conf)
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
  qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ //qtv_tmp->horizontalHeader()->setStretchLastSection(true);
 
 
  // Bloquer largeur des colonnes
@@ -1048,7 +1140,7 @@ QTableView *SyntheseGenerale::doTabLgnTirage(stDesigConf conf)
  qtv_tmp->verticalHeader()->hide();
 
  // Taille tableau
- qtv_tmp->setFixedHeight(55);
+ qtv_tmp->setFixedHeight(75);
 
 
 
@@ -1062,8 +1154,11 @@ void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
  tab_info->setObjectName("InfoTab_z"+QString::number(niv+1));
 
 
- QString h1[]={"tot","brc","cmb","grp"};
- QString h2[]={"A","B","C","D","E","F","G","H"};
+ QStringList h1[]={{"tot","brc","cmb","grp"},
+                   {"Total", "Barycentre", "Combinaison", "Groupe"}};
+
+ QStringList **pList = tabEcarts->getSqlGrp();
+ QStringList h2[]={pList[niv][1], pList[niv][2]};
 
  stDesigConf def[]={
   {"Selection",h1, TAILLE(h1,QString)},
@@ -1071,9 +1166,10 @@ void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
  };
  int nb_items = TAILLE (def,stDesigConf);
 
- QTableView * (SyntheseGenerale::*ptrCreaTbv[])(stDesigConf val)={
-                                                                 &SyntheseGenerale::doTabLgnSelection,
-                                                                 &SyntheseGenerale::doTabLgnTirage
+ QTableView * (SyntheseGenerale::*ptrCreaTbv[])(stDesigConf val)
+   ={
+    &SyntheseGenerale::doTabLgnSelection,
+    &SyntheseGenerale::doTabLgnTirage
 };
 
  for(int i = 0; i< nb_items;i++){
@@ -1084,12 +1180,6 @@ void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
   tbInfo[niv].append(tmp);
  }
 
- // Qt::AlignLeft|Qt::AlignTop
- /*
-    QVBoxLayout * vb_tmp = new QVBoxLayout;
-    vb_tmp->addWidget(tab_info);
-    vb_tmp->addWidget(resu,1);
- */
  QGridLayout *grid_tmp = new QGridLayout;
  QWidget * mywid = new QWidget;
 
@@ -1097,15 +1187,10 @@ void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
  grid_tmp->addWidget(resu);
 
  grid->addLayout(grid_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
- //grid->addItem(tmp_grid,0,0);
-
-
- //QWidget * wdg_tmp = new QWidget;
- //wdg_tmp->setLayout(vbox);
-
- //grid->addWidget(wdg_tmp,0,0,Qt::AlignTop);
 
 }
+
+
 #if 0
 void SyntheseGenerale::DoComptageTotal(void)
 {
@@ -3433,7 +3518,7 @@ QStringList * noClass_CreateFilterForData(int zn, stTiragesDef *pConf)
   sl_filter[0]<< fields+" >="+QString::number(10*j)+
                  " and "+fields+"<="+QString::number((10*j)+9);
   sl_filter[1] << "U"+ QString::number(j);
-  sl_filter[2] << "Entre:"+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
+  sl_filter[2] << "Entre : "+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
  }
 
  // Boule finissant par [0..9]
@@ -3441,7 +3526,7 @@ QStringList * noClass_CreateFilterForData(int zn, stTiragesDef *pConf)
  {
   sl_filter[0]<< fields+" like '%" + QString::number(j) + "'";
   sl_filter[1] << "F"+ QString::number(j);
-  sl_filter[2] << "Finissant par: "+ QString::number(j);
+  sl_filter[2] << "Finissant par : "+ QString::number(j);
  }
 
  return sl_filter;
@@ -4198,16 +4283,16 @@ QString SyntheseGenerale::createSelection(void)
  {
    &SyntheseGenerale::tot_SqlCreateZn,
    &SyntheseGenerale::brc_SqlCreateZn/*,
-                                                                                                                                                                                                                                                                                                                  &SyntheseGenerale::cmb_SqlCreateZ1,
-                                                                                                                                                                                                                                                                                                                  &SyntheseGenerale::grp_SqlCreateZ1*/
+                                                                                                                                                                                                                                                                                                                          &SyntheseGenerale::cmb_SqlCreateZ1,
+                                                                                                                                                                                                                                                                                                                          &SyntheseGenerale::grp_SqlCreateZ1*/
 };
 
  QString (SyntheseGenerale::*ptrFz2[])(int zn,QList <QPair<int,stSelInfo*>*> *a)=
  {
    &SyntheseGenerale::tot_SqlCreateZn,
    &SyntheseGenerale::brc_SqlCreateZn/*,
-                                                                                                                                                                                                                                                                                                                                                                                              &SyntheseGenerale::stb_SqlCreate,
-                                                                                                                                                                                                                                                                                                                                                                                              &SyntheseGenerale::stb_SqlCreate*/
+                                                                                                                                                                                                                                                                                                                                                                                                      &SyntheseGenerale::stb_SqlCreate,
+                                                                                                                                                                                                                                                                                                                                                                                                      &SyntheseGenerale::stb_SqlCreate*/
 };
 
  typedef  QString (SyntheseGenerale::**ptrFZx)(int zn,QList <QPair<int,stSelInfo*>*> *a);
@@ -4887,15 +4972,15 @@ count(*)  as T,
 
   int len_zn = pMaConf->limites[zn].len;
   /*
-        QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
-        QString st_critere = "";
-        for(int i=0;i<len_zn;i++){
-         st_critere = st_critere + ref.arg(i+1);
-         if(i<(len_zn-1)){
-          st_critere=st_critere+QString(",");
-         }
-        }
-      */
+                QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
+                QString st_critere = "";
+                for(int i=0;i<len_zn;i++){
+                 st_critere = st_critere + ref.arg(i+1);
+                 if(i<(len_zn-1)){
+                  st_critere=st_critere+QString(",");
+                 }
+                }
+              */
   QString st_critere = getFieldsFromZone(zn, "t2");
 
   /// Mettre info sur 2 derniers tirages
