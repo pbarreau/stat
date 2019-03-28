@@ -14,24 +14,7 @@
 
 #include "gererbase.h"
 #include "compter_groupes.h"
-
-class sCouv
-{
-public:
-    sCouv(int zn,stTiragesDef *pDef);
-    ~sCouv();
-
-private:
-    int zoneEtudie;
-
-public:
-    stTiragesDef *p_conf;
-    int **p_TotalMois;
-    QList<bool> *p_trackingBoule;
-    int p_deb;
-    int p_fin;
-    int **p_val;
-};
+#include "sCouv.h"
 
 class RefEtude: public QObject
 {
@@ -44,6 +27,7 @@ public:
     QTableView *GetLesEcarts(void);
     QStandardItemModel *GetPtrToModel(void);
     void GetInfoTableau(int onglet, QTableView **pTbl, QStandardItemModel **pSim, QSortFilterProxyModel **pSfpm);
+    QList<sCouv *> getLstCouv(int zn);
 
 private:
     QGridLayout *MonLayout_TabTirages();
@@ -60,11 +44,13 @@ private:
     QGridLayout *MonLayout_TabMois_boules();
     QGridLayout *MonLayout_TabMois_etoiles();
     QGridLayout *MonLayout_TabMois_1(int zn);
-    QGridLayout *MonLayout_TabMois_2(QList<sCouv *> *lstCouv,int zn);
 
-    bool RechercheCouverture(QList<sCouv *> *lstCouv, int zn);
-    bool AnalysePourCouverture(QSqlRecord unTirage, bool *depart, int *total, int *bIdStart, int zn, sCouv *memo);
+    QGridLayout *MonLayout_TabMois_2(QList<sCouv *> *lstCouv,int zn);
     QTableView * TablePourLstcouv(QList<sCouv *> *lstCouv,int zn);
+    bool AnalysePourCouverture(QSqlRecord unTirage, bool *depart, int *total, int *bIdStart, int zn, sCouv *memo);
+    void MontrerBoulesNonSorties(int zn, QStandardItemModel *sim_tmp, sCouv *curCouv, int memo_last_boule);
+    bool RechercheCouverture(QList<sCouv *> *lstCouv, int zn);
+
     QTableView * DetailsLstcouv(int zn);
     QTableView * tbForBaseLigne();
     QTableView * tbForBaseRef();
@@ -77,7 +63,6 @@ private:
     QWidget *CouvMois_OglGroup();
 
     void RemplirTableauEcart(int zn,QStandardItemModel *sim_tmp);
-    void MontrerBoulesNonSorties(int zn, QStandardItemModel *sim_tmp, sCouv *curCouv, int memo_last_boule);
     double DistributionSortieDeBoule_v2(int zn, int boule, QStandardItemModel *modele);
     void CouvMontrerProbable_v2(int i, QStandardItemModel *dest);
     void CouvMontrerProbable_v3(int i,double Emg, QStandardItemModel *dest);
@@ -110,7 +95,7 @@ private:
     QSqlDatabase db_0;
     QString p_stRefTirages;
     stTiragesDef *p_conf;
-    QList<sCouv *> p_ListeDesCouverturesSurZnId[2];
+    QList<sCouv *> *p_ListeDesCouverturesSurZnId;
     int ***p_couvBase;
 
     QTableView *p_tbv_0;

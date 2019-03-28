@@ -1823,6 +1823,73 @@ QString PBAR_ReqComptage(stCurDemande *pEtude, QString ReqTirages, int zn,int di
 QGridLayout * SyntheseDetails::MonLayout_CompteBarycentre(stCurDemande *pEtude, QString ReqTirages, int curOng,int ongPere)
 {
     QGridLayout *lay_return = new QGridLayout;
+    QTableView *qtv_tmp = new QTableView;
+
+
+    int bary = pEtude->barycentre;
+    if(!bary){
+     return  lay_return;
+    }
+
+    QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+
+    QString sql_msgRef = "SELECT t4.bc, count(t4.bc) as T, "
+                         "count(CASE WHEN  t2.J like 'LUN%' then 1 end) as LUN,"
+                         "count(CASE WHEN  t2.J like 'MAR%' then 1 end) as MAR,"
+                         "count(CASE WHEN  t2.J like 'MER%' then 1 end) as MER,"
+                         "count(CASE WHEN  t2.J like 'SAM%' then 1 end) as SAM,"
+                         "count(CASE WHEN  t2.J like 'VEN%' then 1 end) as VEN  "
+                         "from RefTirages as t1, RefTirages as t2, "
+                         "Ref_ana_z1 as t3,Ref_ana_z1 as t4  "
+                         "WHERE ( "
+                         "(t3.bc="+QString::number(bary)+") and (t1.id=t3.id)  "
+                         "AND  "
+                         "(t2.id=t1.id+"+QString::number(d[ongPere])+") and(t4.id=t2.id)) GROUP by t4.bc ";
+
+#ifndef QT_NO_DEBUG
+    qDebug() << sql_msgRef;
+#endif
+//couverture
+    sqm_tmp->setQuery(sql_msgRef,db_0);
+
+    // Renommer le nom des colonnes
+    int nbcol = sqm_tmp->columnCount();
+    for(int i = 0; i<nbcol;i++)
+    {
+        QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+        if(headName.size()>2)
+        {
+            sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+        }
+    }
+
+    qtv_tmp->setSortingEnabled(true);
+    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+    //qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    //qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
+    qtv_tmp->setModel(m);
+    qtv_tmp->verticalHeader()->hide();
+
+    for(int j=0;j<=sqm_tmp->columnCount();j++)
+        qtv_tmp->setColumnWidth(j,LCELL);
+    qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
+
+    // Ne pas modifier largeur des colonnes
+    qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+
+    QLabel *titre_1 = new QLabel("Barycentres");
+    lay_return->addWidget(titre_1,0,0,Qt::AlignLeft|Qt::AlignTop);
+    lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
+
     return lay_return;
 }
 

@@ -259,6 +259,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
  db_0 = QSqlDatabase::database(chk);
 
  disposition = new QGridLayout;
+ mon_brc_tmp = 0;
 
  pEcran = visuel;
  pMaConf = pConf;
@@ -1689,6 +1690,10 @@ bool SyntheseGenerale::RajouterCalculBarycentreDansAnalyses(int zn,
  QSqlQuery query(db_0);
  bool isOk = true;
  QString filterDays = *st_JourTirageDef;
+
+#ifndef QT_NO_DEBUG
+ qDebug()<< filterDays;
+#endif
 
  QString st_query = "";
 
@@ -4193,16 +4198,16 @@ QString SyntheseGenerale::createSelection(void)
  {
    &SyntheseGenerale::tot_SqlCreateZn,
    &SyntheseGenerale::brc_SqlCreateZn/*,
-                                                                                                                                                                                                                                                                                                            &SyntheseGenerale::cmb_SqlCreateZ1,
-                                                                                                                                                                                                                                                                                                            &SyntheseGenerale::grp_SqlCreateZ1*/
+                                                                                                                                                                                                                                                                                                                  &SyntheseGenerale::cmb_SqlCreateZ1,
+                                                                                                                                                                                                                                                                                                                  &SyntheseGenerale::grp_SqlCreateZ1*/
 };
 
  QString (SyntheseGenerale::*ptrFz2[])(int zn,QList <QPair<int,stSelInfo*>*> *a)=
  {
    &SyntheseGenerale::tot_SqlCreateZn,
    &SyntheseGenerale::brc_SqlCreateZn/*,
-                                                                                                                                                                                                                                                                                                                                                                                        &SyntheseGenerale::stb_SqlCreate,
-                                                                                                                                                                                                                                                                                                                                                                                        &SyntheseGenerale::stb_SqlCreate*/
+                                                                                                                                                                                                                                                                                                                                                                                              &SyntheseGenerale::stb_SqlCreate,
+                                                                                                                                                                                                                                                                                                                                                                                              &SyntheseGenerale::stb_SqlCreate*/
 };
 
  typedef  QString (SyntheseGenerale::**ptrFZx)(int zn,QList <QPair<int,stSelInfo*>*> *a);
@@ -4331,6 +4336,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
  etude->st_jourDef = new QString;
  *(etude->st_jourDef) = CompteJourTirage(db_0.connectionName());
  *(etude->st_LDT_Filtre) = sqlReq;
+ etude->barycentre = mon_brc_tmp;
 
 #ifndef QT_NO_DEBUG
  qDebug()<<etude->st_titre;
@@ -4374,6 +4380,11 @@ QString SyntheseGenerale::brc_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> 
   p=a->at(pos);
   int key = p->first;
   filter_key = QString("(t"+QString::number(zn+2)+".bc=")+QString::number(key)+QString(")");
+
+
+  mon_brc_tmp = key;
+
+
   int nb_sel = p->second->lstSel->size();
   filter_days="";
   for(int sel=0; sel < nb_sel; sel++){
@@ -4873,15 +4884,19 @@ count(*)  as T,
   bool isOk = true;
   QSqlQuery query(db_0);
 
+
   int len_zn = pMaConf->limites[zn].len;
-  QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
-  QString st_critere = "";
-  for(int i=0;i<len_zn;i++){
-   st_critere = st_critere + ref.arg(i+1);
-   if(i<(len_zn-1)){
-    st_critere=st_critere+QString(",");
-   }
-  }
+  /*
+        QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
+        QString st_critere = "";
+        for(int i=0;i<len_zn;i++){
+         st_critere = st_critere + ref.arg(i+1);
+         if(i<(len_zn-1)){
+          st_critere=st_critere+QString(",");
+         }
+        }
+      */
+  QString st_critere = getFieldsFromZone(zn, "t2");
 
   /// Mettre info sur 2 derniers tirages
   for(int dec=0; (dec <2) && isOk ; dec++){
@@ -4950,6 +4965,38 @@ count(*)  as T,
    isOk = query.exec(msg[taille-1]);
   }
 
+  /// --------------------------------
+  /// Marquer les tirages pas encore sortis
+  QList<sCouv *> lstCouv = tabEcarts->getLstCouv(zn);
+
+  if(lstCouv.size() && isOk){
+   QString sdec = QString::number(BDelegateCouleurFond::Filtre::isNever,16);
+   int items = pMaConf->limites[zn].max;
+   sCouv *curCouv = lstCouv.last();
+
+   QString lst_items = "";
+   for(int i = 0; i< items ;i++)
+   {
+    int isPresent = curCouv->p_val[i][0]; /// col 0 si == 0 pas encore sortie
+
+    if (!isPresent)
+    {
+     QString item = QString::number(i+1);
+     if(!lst_items.size()){
+      lst_items = item;
+     }
+     else {
+      lst_items = lst_items + QString(",") + item;
+     }
+    }
+   }
+   /// On a trouve tous les absents...mettre a jour info filtre
+   QString sql ="update " + tbl_dst
+   + " set F=(case when f is (NULL or 0) then 0x"
+   +sdec+" else(f|0x"+sdec+") end) "
+   "where (B in ("+lst_items+"))";
+   isOk = query.exec(sql);
+  }
 
   if(query.lastError().isValid()){
    DB_Tools::DisplayError("SyntheseGenerale::",&query,"MarquerDerniers");

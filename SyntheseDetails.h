@@ -36,6 +36,7 @@ typedef struct _demande
     int lgn[3];
     int col[3];
     int val[3];
+    int barycentre;
     QString st_titre;
     QString db_cnx;
     QString stc[5];

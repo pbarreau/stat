@@ -84,7 +84,8 @@ SOURCES += \
     btbvrepartition.cpp \
     bordcolor.cpp \
     bdelegatecouleurfond.cpp \
-    bvisuresume_sql.cpp
+    bvisuresume_sql.cpp \
+    sCouv.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -132,7 +133,8 @@ HEADERS  += \
     btbvrepartition.h \
     bordcolor.h \
     bdelegatecouleurfond.h \
-    bvisuresume_sql.h
+    bvisuresume_sql.h \
+    sCouv.h
 
 
 FORMS    += mainwindow.ui \
@@ -140,3 +142,6 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     icones_rsc.qrc
+
+DISTFILES += \
+    test_uml_qt.qmodel
