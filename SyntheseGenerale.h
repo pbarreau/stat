@@ -189,6 +189,7 @@ class SyntheseGenerale : public QObject
   void DoTirages(void);
   void DoComptageTotal(void);
   void do_LinesCheck(void);
+  void do_SetKcmb(void);
   void DoBloc3(void);
 
   QString createSelection(void);

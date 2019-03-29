@@ -476,6 +476,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
  DoTirages();
  do_CmbRef();
  do_LinesCheck();
+ do_SetKcmb();
  DoComptageTotal();
 #if 0
  /// greffon pour calculer barycentre des tirages
