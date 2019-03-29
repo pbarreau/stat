@@ -254,7 +254,7 @@ QString SyntheseGenerale::sql_DigOne(int zn, int lgn, QStringList **pList, int i
  }
 
  QString msg =
-   "select tb1.id as Tid, count(tb2.B) as "+top_sql+" from "
+   "select tb1.id , count(tb2.B) as "+top_sql+" from "
                                                     "("
                                                     "select * from (" + st_tirage
    + st_where
@@ -310,7 +310,7 @@ bool SyntheseGenerale::sql_DigAll(int zn, int lgn, QStringList **pList, int i)
     }
     viewCalc = "select t1.*, t2."
                + st_key
-               + " From tb_view_00 as t1 inner join tb_view_01 as t2 on t1.tid = t2.tid";
+               + " From tb_view_00 as t1 inner join tb_view_01 as t2 on t1.id = t2.id";
    }
    else{
     viewCalc = sql_DigOne(zn,lgn,pList,i);
@@ -350,6 +350,7 @@ bool SyntheseGenerale::sql_DigAll(int zn, int lgn, QStringList **pList, int i)
 
        if(i == tot_items){
         tb_name = "Ana_z"+QString::number(zn+1);
+        /// TODO: code suppression derniere vue
        }
        msg = "alter table "+viewName+" rename to " + tb_name;
        isOk=query.exec(msg);
@@ -963,7 +964,8 @@ void SyntheseGenerale::do_LinesCheck(void)
 
 void SyntheseGenerale::DoComptageTotal(void)
 {
- QString tb_ana_zn = "Ref_ana_z1";
+ //QString tb_ana_zn = "Ref_ana_z1";
+ QString tb_ana_zn = "Ana_z";
 
  QString n1_names[]={"Boules","Etoiles"};
  int nb_zone = sizeof(n1_names)/sizeof(QString);
@@ -1042,7 +1044,7 @@ void SyntheseGenerale::DoComptageTotal(void)
  prm.tb_src = "RefTirages";
  prm.hlp[0].tbl="Bnrz";
  prm.hlp[0].key="z";
- prm.hlp[1].tbl=""+tb_ana_zn+"";
+ prm.hlp[1].tbl=tb_ana_zn;
  prm.hlp[1].key="toBeDefined";
 
  prm.niv = -1;
@@ -2144,7 +2146,7 @@ QGridLayout* SyntheseGenerale::VbInfo_brc(param_2 prm)
 
  int zn =prm.zn;
  QString tb_src = prm.prm_1.tb_src;
- QString tb_ref = prm.prm_1.hlp[1].tbl;
+ QString tb_ref = prm.prm_1.hlp[1].tbl+QString::number(zn+1);
  QString key = "bc";
 
  qtv_tmp = TbvAnalyse_brc(zn, tb_src, tb_ref, key);
@@ -2464,7 +2466,8 @@ inline int SyntheseGenerale::incValue(int *i)
 QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
 {
  QTableView * qtv_tmp = new QTableView;
- QString tb_ana_zn = "Ref_ana_z1";
+ //QString tb_ana_zn = "Ref_ana_z1";
+ QString tb_ana_zn = "Ana_z"+QString::number(zn+1);;
 
  QString ref_tbl = "Bnrz";
  QString ref_ana = ""+tb_ana_zn+"";

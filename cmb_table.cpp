@@ -320,7 +320,7 @@ void SyntheseGenerale::do_SetKcmb(void)
          + tblUse[2]
          + " as t3 inner join "
          + tblUse[0]+QString::number(zn+1)
-         + " as t2 on ((t2.e1=t3.e1) and (t1.tid=t3.id))";
+         + " as t2 on ((t2.e1=t3.e1) and (t1.id=t3.id))";
   }
 
 
