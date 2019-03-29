@@ -154,7 +154,8 @@ class SyntheseGenerale : public QObject
   void slot_saveNewSelection(const QItemSelection &selected, const QItemSelection &deselected);
 
  private:
-  QString sql_DigOne(int zn, int lgn, QString key_sql);
+  QString sql_DigOne(int zn, int lgn, QStringList **pList, int i);
+  bool sql_DigAll(int zn, int lgn, QStringList **pList, int i);
   QString CreatreTitle(stCurDemande *pConf);
   void Surligne(int *path,int val);
   int incValue(int *val);
@@ -182,6 +183,7 @@ class SyntheseGenerale : public QObject
   //QString CompteJourTirage();
   void DoTirages(void);
   void DoComptageTotal(void);
+  void do_LinesCheck(void);
   void DoBloc3(void);
 
   QString createSelection(void);
