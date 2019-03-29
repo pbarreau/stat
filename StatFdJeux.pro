@@ -85,7 +85,8 @@ SOURCES += \
     bordcolor.cpp \
     bdelegatecouleurfond.cpp \
     bvisuresume_sql.cpp \
-    sCouv.cpp
+    sCouv.cpp \
+    cmb_table.cpp
 
 HEADERS  += \
 		mainwindow.h \

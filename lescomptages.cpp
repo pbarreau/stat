@@ -213,7 +213,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
         onGame.limites = new stParam_1 [onGame.znCount];
         onGame.names = new stParam_2 [onGame.znCount];
 
-        /// boules
+        /// z1 : boules
         onGame.limites[0].min=1;
         onGame.limites[0].max=49;
         onGame.limites[0].len=5;
@@ -221,7 +221,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
         onGame.names[0].std = "Boules";
         onGame.names[0].abv = "b";
 
-        /// etoiles
+        /// z2 : etoiles
         onGame.limites[1].min=1;
         onGame.limites[1].max=10;
         onGame.limites[1].len=1;

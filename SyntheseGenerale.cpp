@@ -474,6 +474,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
  uneDemande.st_jourDef = st_JourTirageDef;
  uneDemande.ref = pConf;
  DoTirages();
+ do_CmbRef();
  do_LinesCheck();
  DoComptageTotal();
 #if 0

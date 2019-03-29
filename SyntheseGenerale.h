@@ -154,6 +154,11 @@ class SyntheseGenerale : public QObject
   void slot_saveNewSelection(const QItemSelection &selected, const QItemSelection &deselected);
 
  private:
+  bool do_CmbRef(void);
+  bool TraitementCodeVueCombi(int zn);
+  bool TraitementCodeTblCombi(QString tbName,int zn);
+  bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
+
   QString sql_DigOne(int zn, int lgn, QStringList **pList, int i);
   bool sql_DigAll(int zn, int lgn, QStringList **pList, int i);
   QString CreatreTitle(stCurDemande *pConf);

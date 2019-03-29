@@ -77,12 +77,18 @@ typedef struct _ordreArrivee
     int p;  /// precedent
 }stMyLinkedList;
 
+typedef struct _stNames {
+    QString std;    /// nom long de la zone
+    QString abv;    /// nom abreg de la zone
+    QString sel;    /// nom correspondant à la selection en cours
+}stNames;
+
 typedef struct _stBornes
 {
     int len;    /// nb element composant la zone
     int min;    /// val min de la zone
     int max;    /// val max de la zone
-    int neg;    /// nb element a avoir sur la zone pour gagner
+    int win;    /// nb element a avoir sur la zone pour gagner
 }stBornes;
 
 typedef struct _stParam
@@ -108,6 +114,7 @@ typedef struct _stTiragesDef
     QString *jour_tir;
     QString *nomZone;
     QString *FullNameZone;
+    stNames *names; /// nom de la zone
     stBornes *limites;
     unsigned char nb_tir_semaine;
     unsigned char nb_zone;
