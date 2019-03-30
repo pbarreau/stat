@@ -163,10 +163,14 @@ class SyntheseGenerale : public QObject
 
 
  private slots:
+  void slot_grpSel(const QModelIndex &index);
+
   void slot_ShowBouleForNewDesign(const QModelIndex & index);
   void slot_saveNewSelection(const QItemSelection &selected, const QItemSelection &deselected);
 
  private:
+  QString grp_TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
+
   bool do_CmbRef(void);
   bool TraitementCodeVueCombi(int zn);
   bool TraitementCodeTblCombi(QString tbName,int zn);
@@ -275,6 +279,7 @@ class SyntheseGenerale : public QObject
 
   typedef struct{
     QString name;
+    int zn;
     QStringList *head;
     int size;
   }stDesigConf;
@@ -284,6 +289,7 @@ class SyntheseGenerale : public QObject
   void specialDesign(int niv, QGridLayout *grid, QWidget *resu);
   QTableView *doTabLgnSelection(stDesigConf conf);
   QTableView *doTabLgnTirage(stDesigConf conf);
+  QTableView *doTabGrpTirage(stDesigConf conf);
 
   QWidget *VbInfoDepart (param_1 a,CnfFnCalc *b[2]);
   QWidget *tot_zn (param_1 a,CnfFnCalc *b);

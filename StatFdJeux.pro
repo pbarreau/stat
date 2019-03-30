@@ -86,7 +86,8 @@ SOURCES += \
     bdelegatecouleurfond.cpp \
     bvisuresume_sql.cpp \
     sCouv.cpp \
-    cmb_table.cpp
+    cmb_table.cpp \
+    grp_2tirages.cpp
 
 HEADERS  += \
 		mainwindow.h \

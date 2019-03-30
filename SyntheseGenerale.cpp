@@ -1306,6 +1306,41 @@ QTableView *SyntheseGenerale::doTabLgnSelection(stDesigConf conf)
 
  return qtv_tmp;
 }
+QTableView *SyntheseGenerale::doTabGrpTirage(stDesigConf conf)
+{
+ QTableView *qtv_tmp = new  QTableView;
+
+ //QSqlQuery query(db_0);
+ QSqlQueryModel *sqm_tmp=new QSqlQueryModel;
+ //bool isOk = true;
+
+ QString st_msg1 = "select * from Grp_z"+QString::number(conf.zn+1);
+ sqm_tmp->setQuery(st_msg1,db_0);
+ qtv_tmp->setModel(sqm_tmp);
+
+ qtv_tmp->setSortingEnabled(false);
+ qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ //qtv_tmp->horizontalHeader()->setStretchLastSection(true);
+
+
+ // Bloquer largeur des colonnes
+ qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+ qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ qtv_tmp->verticalHeader()->hide();
+
+ // double click dans fenetre  pour afficher details boule
+ connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+          this, SLOT(slot_grpSel( QModelIndex) ) );
+
+
+
+ return qtv_tmp;
+}
+
 
 QTableView *SyntheseGenerale::doTabLgnTirage(stDesigConf conf)
 {
@@ -1361,18 +1396,21 @@ void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
  QStringList h2[]={pList[niv][1], pList[niv][2]};
 
  stDesigConf def[]={
-  {"Selection",h1, TAILLE(h1,QString)},
-  {"Tirage",h2, TAILLE(h2,QString)}
+  {"Selection",-1,h1, TAILLE(h1,QString)},
+  {"Tirage",-1,h2, TAILLE(h2,QString)},
+  {"Groupement",-1,h2, TAILLE(h2,QString)}
  };
  int nb_items = TAILLE (def,stDesigConf);
 
  QTableView * (SyntheseGenerale::*ptrCreaTbv[])(stDesigConf val)
    ={
     &SyntheseGenerale::doTabLgnSelection,
-    &SyntheseGenerale::doTabLgnTirage
+    &SyntheseGenerale::doTabLgnTirage,
+    &SyntheseGenerale::doTabGrpTirage
 };
 
  for(int i = 0; i< nb_items;i++){
+  def[i].zn = niv;
   QTableView *tmp = (this->*ptrCreaTbv[i])(def[i]);
   QString id = QString("Info")+def[i].name.leftRef(3)+QString("_z")+QString::number(niv+1);
   tmp->setObjectName(id);
@@ -4496,16 +4534,16 @@ QString SyntheseGenerale::createSelection(void)
  {
    &SyntheseGenerale::tot_SqlCreateZn,
    &SyntheseGenerale::brc_SqlCreateZn/*,
-                                                                                                                                                                                                                                                                                                                                                                &SyntheseGenerale::cmb_SqlCreateZ1,
-                                                                                                                                                                                                                                                                                                                                                                &SyntheseGenerale::grp_SqlCreateZ1*/
+                                                                                                                                                                                                                                                                                                                                                                  &SyntheseGenerale::cmb_SqlCreateZ1,
+                                                                                                                                                                                                                                                                                                                                                                  &SyntheseGenerale::grp_SqlCreateZ1*/
 };
 
  QString (SyntheseGenerale::*ptrFz2[])(int zn,QList <QPair<int,stSelInfo*>*> *a)=
  {
    &SyntheseGenerale::tot_SqlCreateZn,
    &SyntheseGenerale::brc_SqlCreateZn/*,
-                                                                                                                                                                                                                                                                                                                                                                                                                                            &SyntheseGenerale::stb_SqlCreate,
-                                                                                                                                                                                                                                                                                                                                                                                                                                            &SyntheseGenerale::stb_SqlCreate*/
+                                                                                                                                                                                                                                                                                                                                                                                                                                              &SyntheseGenerale::stb_SqlCreate,
+                                                                                                                                                                                                                                                                                                                                                                                                                                              &SyntheseGenerale::stb_SqlCreate*/
 };
 
  typedef  QString (SyntheseGenerale::**ptrFZx)(int zn,QList <QPair<int,stSelInfo*>*> *a);
@@ -5185,15 +5223,15 @@ count(*)  as T,
 
   int len_zn = pMaConf->limites[zn].len;
   /*
-                                                              QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
-                                                              QString st_critere = "";
-                                                              for(int i=0;i<len_zn;i++){
-                                                               st_critere = st_critere + ref.arg(i+1);
-                                                               if(i<(len_zn-1)){
-                                                                st_critere=st_critere+QString(",");
-                                                               }
-                                                              }
-                                                            */
+                                                                QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
+                                                                QString st_critere = "";
+                                                                for(int i=0;i<len_zn;i++){
+                                                                 st_critere = st_critere + ref.arg(i+1);
+                                                                 if(i<(len_zn-1)){
+                                                                  st_critere=st_critere+QString(",");
+                                                                 }
+                                                                }
+                                                              */
   QString st_critere = getFieldsFromZone(zn, "t2");
 
   /// Mettre info sur 2 derniers tirages
