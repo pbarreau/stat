@@ -15,6 +15,9 @@ bool SyntheseGenerale::do_CmbRef(void)
 {
 
  bool isOk = true;
+ QString msg = "";
+ QSqlQuery query(db_0);
+
  int nbZone = pMaConf->nb_zone;
 
  QString tblUse = "A_cmb";
@@ -37,12 +40,18 @@ bool SyntheseGenerale::do_CmbRef(void)
    tbName = a->getDbTblName();
    isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn);
   }
+
+  /// Efface table temporaire
+  if(isOk){
+   msg = "drop view if exists tb_view_"+QString::number(zn+1);
+   isOk=query.exec(msg);
+  }
  }
 
  if(!isOk)
  {
-  QString ErrLoc = "f4:";
-  DB_Tools::DisplayError(ErrLoc,NULL,"");
+  QString ErrLoc = "SyntheseGenerale::do_CmbRef";
+  DB_Tools::DisplayError(ErrLoc,&query,"");
  }
 
  return isOk;

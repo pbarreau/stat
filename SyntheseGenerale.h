@@ -63,6 +63,19 @@ class SyntheseGenerale : public QObject
     QTableView * qtv;        /// id de la Qtable
     QModelIndexList* lstSel; /// index selection
   };
+
+  typedef QString (SyntheseGenerale::*pMy_DigOne)(int zn, int lgn, QStringList **pList, int i);
+
+  struct stDigAll{
+    pMy_DigOne fnDig;
+    int zn;
+    int lgn;
+    QStringList **pList;
+    QString target;
+    int i;
+  };
+
+  bool sql_DigAll();
   QList < QTabWidget *> **id_tab_tmp;// 2 zones
   QList <QPair<int,stSelInfo*>*> **qlSel;
   QList<QTableView *> *tbInfo;
@@ -160,7 +173,8 @@ class SyntheseGenerale : public QObject
   bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
 
   QString sql_DigOne(int zn, int lgn, QStringList **pList, int i);
-  bool sql_DigAll(int zn, int lgn, QStringList **pList, int i);
+  bool sql_DigAll(stDigAll prm);
+
   QString CreatreTitle(stCurDemande *pConf);
   void Surligne(int *path,int val);
   int incValue(int *val);
@@ -172,7 +186,7 @@ class SyntheseGenerale : public QObject
   QString A1_0_TrouverLignes(int zn, QString tb_src, QString tb_ref, QString key);
   QString A1_1_CalculerEcart(QString str_reponses);
   QString A1_2_RegrouperEcart(QString str_reponses);
-  bool Contruire_Tbl_tot(int zn, QString tbl_dst, QString ref, QString key, QString data);
+  bool tot_Contruire_Tbl(int zn, QString tbl_dst, QString ref, QString key, QString data);
 
   QString A4_0_TrouverLignes(int zn, QString tb_src, QString tb_ref, QString key);
   QString A4_1_CalculerEcart(QString str_reponses);
@@ -287,7 +301,7 @@ class SyntheseGenerale : public QObject
   QGridLayout * MonLayout_R4_brc_z1(prmLay prm);
 #endif
   QTableView * tot_TbvAnalyse(int zn, QString source, QString definition, QString key);
-  QTableView * TbvResume_tot(int zn, QString tb_read);
+  QTableView * tot_TbvResume(int zn, QString tb_read);
   void mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_total);
 
   /*
@@ -302,16 +316,16 @@ class SyntheseGenerale : public QObject
   QGridLayout* tot_VbInfo(param_2 prm);
   QGridLayout* tot_VbResu(param_2 prm);
 
-  QGridLayout* VbInfo_brc(param_2 prm);
-  QGridLayout* VbResu_brc(param_2 prm);
+  QGridLayout* brc_VbInfo(param_2 prm);
+  QGridLayout* brc_VbResu(param_2 prm);
 
-  QTableView * TbvAnalyse_brc(int zn, QString source, QString definition, QString key);
-  QTableView * TbvResume_brc(int zn, QString tb_in);
+  QTableView * brc_TbvAnalyse(int zn, QString source, QString definition, QString key);
+  QTableView * brc_TbvResume(int zn, QString tb_in);
   void FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete, QString tb_total);
 
   //bool isTableTotalBoulleReady(QString tbl_total);
   bool mettreBarycentre(QString tbl_dst, QString src_data);
-  bool Contruire_Tbl_brc(int zn, QString tbl_poids_boules, QString tb_ref, QString key, QString tbl_out);
+  bool brc_Contruire_Tbl(int zn, QString tbl_poids_boules, QString tb_ref, QString key, QString tbl_out);
   bool A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poids_boules);
   bool RajouterCalculBarycentreDansAnalyses(int zn,
                                             QString tb_src ,

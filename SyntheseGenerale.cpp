@@ -254,15 +254,21 @@ QString SyntheseGenerale::sql_DigOne(int zn, int lgn, QStringList **pList, int i
  }
 
  QString msg =
-   "select tb1.id , count(tb2.B) as "+top_sql+" from "
-                                                    "("
-                                                    "select * from (" + st_tirage
+   "select tb1.id , count(tb2.B) as "
+   +top_sql
+   +" from "
+    "("
+    "select * from ("
+   + st_tirage
    + st_where
    +") as r1 "
     ") as tb1 "
     "left join "
     "("
-    "select id as B from Bnrz where (z"+QString::number(zn+1)+" not null  and ("+key_sql
+    "select id as B from Bnrz where (z"
+   +QString::number(zn+1)
+   +" not null  and ("
+   +key_sql
    +")) "
     ") as tb2 "
     "on "
@@ -279,9 +285,18 @@ QString SyntheseGenerale::sql_DigOne(int zn, int lgn, QStringList **pList, int i
  return msg;
 }
 
-bool SyntheseGenerale::sql_DigAll(int zn, int lgn, QStringList **pList, int i)
+bool SyntheseGenerale::sql_DigAll(stDigAll prm)
 {
  bool isOk = true;
+
+ /// decapsulation structure
+ pMy_DigOne fnDig=prm.fnDig;
+ int zn = prm.zn;
+ int lgn=prm.lgn;
+ QStringList **pList=prm.pList;
+ int i=prm.i;
+ QString target = prm.target;
+ ///-------------
 
  QSqlQuery query(db_0);
  QString viewName = "tb_view_";
@@ -313,7 +328,7 @@ bool SyntheseGenerale::sql_DigAll(int zn, int lgn, QStringList **pList, int i)
                + " From tb_view_00 as t1 inner join tb_view_01 as t2 on t1.id = t2.id";
    }
    else{
-    viewCalc = sql_DigOne(zn,lgn,pList,i);
+    viewCalc = (this->*(fnDig))(zn,lgn,pList,i);
    }
 
 #ifndef QT_NO_DEBUG
@@ -329,15 +344,19 @@ bool SyntheseGenerale::sql_DigAll(int zn, int lgn, QStringList **pList, int i)
    if(isOk && (i<=tot_items)){
     switch (nbCalc) {
      case 0:
+     case 1:
      {
-      isOk = sql_DigAll(zn,lgn,pList,i+1);
+      prm.i = i+1;
+      isOk = sql_DigAll(prm);
      }
       break;
+      /*
      case 1: /// si 1 calcul suivant
      {
       isOk = sql_DigAll(zn,lgn,pList,i+1);
      }
       break;
+      */
      case 2: /// si 2 fusion des premieres vers une troisieme
      {
       for (int view=0;view<2 && isOk;view++) {
@@ -349,15 +368,16 @@ bool SyntheseGenerale::sql_DigAll(int zn, int lgn, QStringList **pList, int i)
        QString tb_name = "tb_view_00";
 
        if(i == tot_items){
-        tb_name = "Ana_z"+QString::number(zn+1);
-        /// TODO: code suppression derniere vue
+        tb_name = target+QString::number(zn+1);
        }
        msg = "alter table "+viewName+" rename to " + tb_name;
        isOk=query.exec(msg);
 
        if(isOk && (i<tot_items)){
-        isOk = sql_DigAll(zn,lgn,pList,i+1);
+        prm.i = i+1;
+        isOk = sql_DigAll(prm);
        }
+
       }
      }
       break;
@@ -956,8 +976,18 @@ void SyntheseGenerale::do_LinesCheck(void)
  bool check = true;
  int max_zn = pMaConf->nb_zone;
 
+ stDigAll prm;
+ prm.lgn = -1;
+ prm.pList = pList;
+ prm.i=0;
+ prm.target="Ana_z";
+ prm.fnDig = &SyntheseGenerale::sql_DigOne;
+
  for (int zn =0; zn < max_zn && check; zn++) {
-  check = sql_DigAll(zn, -1, pList, 0);
+  prm.zn=zn;
+
+  /// Traitement
+  check = sql_DigAll(prm);
  }
 }
 
@@ -998,10 +1028,10 @@ void SyntheseGenerale::DoComptageTotal(void)
  };
 
  tptrFns Trmt_brc_a={
-  &SyntheseGenerale::VbInfo_brc
+  &SyntheseGenerale::brc_VbInfo
  };
  tptrFns Trmt_brc_b={
-  &SyntheseGenerale::VbResu_brc
+  &SyntheseGenerale::brc_VbResu
  };
 
  /// --------
@@ -1348,10 +1378,10 @@ void SyntheseGenerale::DoComptageTotal(void)
  };
 
  tptrFns Trmt_brc_a={
-  &SyntheseGenerale::VbInfo_brc
+  &SyntheseGenerale::brc_VbInfo
  };
  tptrFns Trmt_brc_b={
-  &SyntheseGenerale::VbResu_brc
+  &SyntheseGenerale::brc_VbResu
  };
 
  /// Tableau contenant les poiteurs vers les tableaux
@@ -1750,17 +1780,13 @@ bool SyntheseGenerale::mettreBarycentre(QString tbl_dst, QString src_data)
  return isOK;
 }
 
-bool SyntheseGenerale::Contruire_Tbl_brc(int zn,
+bool SyntheseGenerale::brc_Contruire_Tbl(int zn,
                                          QString tb_src ,
                                          QString tb_ana,
                                          QString key_brc,
                                          QString tbl_dst )
 {
  bool isOk = true;
-
- //QString tb_ana = QString("r_")+tb_src + QString("_ana_z")+QString::number(zn+1);
- //QString tb_ana = ""+tb_ana_zn+"";
- //QString key_brc = "BC";
 
  if(!DB_Tools::checkHavingTableAndKey(tb_ana, key_brc, db_0.connectionName())){
   /// La table ""+tb_ana_zn+" (tirages)"
@@ -1773,8 +1799,19 @@ bool SyntheseGenerale::Contruire_Tbl_brc(int zn,
  QString st_requete;
 
  st_requete = A4_0_TrouverLignes(zn,  tb_src, tb_ana ,  key_brc);
+#ifndef QT_NO_DEBUG
+ qDebug() << st_requete;
+#endif
+
  st_requete = A4_1_CalculerEcart(st_requete);
+#ifndef QT_NO_DEBUG
+ qDebug() << st_requete;
+#endif
+
  st_requete = A4_2_RegrouperEcart(st_requete);
+#ifndef QT_NO_DEBUG
+ qDebug() << st_requete;
+#endif
 
  if((isOk = Contruire_Executer(tbl_dst,st_requete))){
   isOk = MarquerDerniers_brc(zn,  tb_src, tb_ana ,  key_brc,tbl_dst);
@@ -2136,7 +2173,7 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
 }
 #endif
 
-QGridLayout* SyntheseGenerale::VbInfo_brc(param_2 prm)
+QGridLayout* SyntheseGenerale::brc_VbInfo(param_2 prm)
 {
 
  QGridLayout *lay_tmp = new QGridLayout;
@@ -2149,7 +2186,7 @@ QGridLayout* SyntheseGenerale::VbInfo_brc(param_2 prm)
  QString tb_ref = prm.prm_1.hlp[1].tbl+QString::number(zn+1);
  QString key = "bc";
 
- qtv_tmp = TbvAnalyse_brc(zn, tb_src, tb_ref, key);
+ qtv_tmp = brc_TbvAnalyse(zn, tb_src, tb_ref, key);
  tbv[zn]<<qtv_tmp;
 
  lab_tmp->setText("Repartitions");
@@ -2163,7 +2200,7 @@ QGridLayout* SyntheseGenerale::VbInfo_brc(param_2 prm)
 }
 
 
-QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb_ref, QString key)
+QTableView * SyntheseGenerale::brc_TbvAnalyse(int zn, QString tb_src, QString tb_ref, QString key)
 {
  QString tb_out = QString("r_")+tb_src + QString("_brc_z")+QString::number(zn+1);
 
@@ -2177,7 +2214,7 @@ QTableView * SyntheseGenerale::TbvAnalyse_brc(int zn, QString tb_src, QString tb
  QString st_msg1 = "";
 
 
- if((isOk = Contruire_Tbl_brc(zn,tb_src,tb_ref,key,tb_out))){
+ if((isOk = brc_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
 
 
   QString msg = "select * from "+tb_out+";";
@@ -2275,7 +2312,7 @@ QGridLayout* SyntheseGenerale::tot_VbResu(param_2 prm)
  QString tb_ref = prm.prm_1.hlp[0].tbl;
  QString key = prm.prm_1.hlp[0].key;
 
- qtv_tmp = TbvResume_tot(zn, tb_src);
+ qtv_tmp = tot_TbvResume(zn, tb_src);
 
  lab_tmp->setText("Selections Possibles");
  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
@@ -2332,7 +2369,7 @@ QTableView * SyntheseGenerale::tot_TbvAnalyse(int zn, QString tb_src, QString tb
  QString st_msg1 = "";
 
 
- if((isOk = Contruire_Tbl_tot(zn,tb_src,tb_ref,key,tb_out))){
+ if((isOk = tot_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
   st_msg1 = "select * from "+tb_out+";";
  }
  ///sqm_bloc1_1->setQuery(st_msg1,db_0);
@@ -2432,7 +2469,7 @@ QTableView * SyntheseGenerale::tot_TbvAnalyse(int zn, QString tb_src, QString tb
  return qtv_tmp;
 }
 
-QGridLayout* SyntheseGenerale::VbResu_brc(param_2 prm)
+QGridLayout* SyntheseGenerale::brc_VbResu(param_2 prm)
 {
  QGridLayout *lay_tmp = new QGridLayout;
  QVBoxLayout *vb_tmp = new QVBoxLayout;
@@ -2444,7 +2481,7 @@ QGridLayout* SyntheseGenerale::VbResu_brc(param_2 prm)
  QString tb_ref = prm.prm_1.hlp[0].tbl;
  QString key = prm.prm_1.hlp[0].key;
 
- qtv_tmp = TbvResume_brc(zn, tb_src);
+ qtv_tmp = brc_TbvResume(zn, tb_src);
 
  lab_tmp->setText("Selections Possibles");
  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
@@ -2463,7 +2500,7 @@ inline int SyntheseGenerale::incValue(int *i)
  return a;
 }
 
-QTableView * SyntheseGenerale::TbvResume_brc(int zn, QString tb_in)
+QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in)
 {
  QTableView * qtv_tmp = new QTableView;
  //QString tb_ana_zn = "Ref_ana_z1";
@@ -2697,7 +2734,7 @@ void SyntheseGenerale::FaireResume(QTableView * qtv_tmp, QString tb_source, QStr
 }
 
 
-QTableView * SyntheseGenerale::TbvResume_tot(int zn, QString tb_in)
+QTableView * SyntheseGenerale::tot_TbvResume(int zn, QString tb_in)
 {
  QTableView * qtv_tmp = new QTableView;
  QString tb_write = QString("r_")+tb_in + QString("_tot_rsm_z")+QString::number(zn+1);
@@ -3425,7 +3462,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(prmLay prm)
  QTableView ** qtv_tmp_1 = new QTableView *[tot_zn];
  QTableView ** qtv_tmp_2 = new QTableView *[tot_zn];
  for(int zn=0;zn<tot_zn;zn++){
-  qtv_tmp_1[zn] = TbvAnalyse_brc(zn,tb_src,tb_ref,key);
+  qtv_tmp_1[zn] = brc_TbvAnalyse(zn,tb_src,tb_ref,key);
   qtv_tmp_2[zn] = TbvResume_brc(zn,tb_src);
  }
  tbv[zn]<< qtv_tmp_1[zn];
@@ -4410,16 +4447,16 @@ QString SyntheseGenerale::createSelection(void)
  {
    &SyntheseGenerale::tot_SqlCreateZn,
    &SyntheseGenerale::brc_SqlCreateZn/*,
-                                                                                                                                                                                                                                                                                                                                                  &SyntheseGenerale::cmb_SqlCreateZ1,
-                                                                                                                                                                                                                                                                                                                                                  &SyntheseGenerale::grp_SqlCreateZ1*/
+                                                                                                                                                                                                                                                                                                                                                            &SyntheseGenerale::cmb_SqlCreateZ1,
+                                                                                                                                                                                                                                                                                                                                                            &SyntheseGenerale::grp_SqlCreateZ1*/
 };
 
  QString (SyntheseGenerale::*ptrFz2[])(int zn,QList <QPair<int,stSelInfo*>*> *a)=
  {
    &SyntheseGenerale::tot_SqlCreateZn,
    &SyntheseGenerale::brc_SqlCreateZn/*,
-                                                                                                                                                                                                                                                                                                                                                                                                                              &SyntheseGenerale::stb_SqlCreate,
-                                                                                                                                                                                                                                                                                                                                                                                                                              &SyntheseGenerale::stb_SqlCreate*/
+                                                                                                                                                                                                                                                                                                                                                                                                                                        &SyntheseGenerale::stb_SqlCreate,
+                                                                                                                                                                                                                                                                                                                                                                                                                                        &SyntheseGenerale::stb_SqlCreate*/
 };
 
  typedef  QString (SyntheseGenerale::**ptrFZx)(int zn,QList <QPair<int,stSelInfo*>*> *a);
@@ -5075,7 +5112,7 @@ count(*)  as T,
   return st_query;
  }
 
- bool SyntheseGenerale::Contruire_Tbl_tot(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
+ bool SyntheseGenerale::tot_Contruire_Tbl(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
 {
   bool isOk = true;
   QString st_requete;
@@ -5099,15 +5136,15 @@ count(*)  as T,
 
   int len_zn = pMaConf->limites[zn].len;
   /*
-                                                QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
-                                                QString st_critere = "";
-                                                for(int i=0;i<len_zn;i++){
-                                                 st_critere = st_critere + ref.arg(i+1);
-                                                 if(i<(len_zn-1)){
-                                                  st_critere=st_critere+QString(",");
-                                                 }
-                                                }
-                                              */
+                                                          QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
+                                                          QString st_critere = "";
+                                                          for(int i=0;i<len_zn;i++){
+                                                           st_critere = st_critere + ref.arg(i+1);
+                                                           if(i<(len_zn-1)){
+                                                            st_critere=st_critere+QString(",");
+                                                           }
+                                                          }
+                                                        */
   QString st_critere = getFieldsFromZone(zn, "t2");
 
   /// Mettre info sur 2 derniers tirages
