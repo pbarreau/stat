@@ -172,6 +172,7 @@ class SyntheseGenerale : public QObject
   bool TraitementCodeTblCombi(QString tbName,int zn);
   bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
 
+  QString sql_grpOne(int zn, int lgn, QStringList **pList, int i);
   QString sql_DigOne(int zn, int lgn, QStringList **pList, int i);
   bool sql_DigAll(stDigAll prm);
 
@@ -203,6 +204,7 @@ class SyntheseGenerale : public QObject
   void DoTirages(void);
   void DoComptageTotal(void);
   void do_LinesCheck(void);
+  void do_grpTab(void);
   void do_SetKcmb(void);
   void DoBloc3(void);
 
