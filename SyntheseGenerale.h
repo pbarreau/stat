@@ -170,6 +170,8 @@ class SyntheseGenerale : public QObject
 
  private:
   QString grp_TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
+  QString grp_sqlFromSelection(QTableView *view, int path);
+  QString grp_SqlFromKey(int zn, int col);
 
   bool do_CmbRef(void);
   bool TraitementCodeVueCombi(int zn);

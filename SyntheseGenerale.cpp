@@ -1319,7 +1319,7 @@ QTableView *SyntheseGenerale::doTabGrpTirage(stDesigConf conf)
  qtv_tmp->setModel(sqm_tmp);
 
  qtv_tmp->setSortingEnabled(false);
- qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+ qtv_tmp->setSelectionMode(QAbstractItemView::MultiSelection);
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
  qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
