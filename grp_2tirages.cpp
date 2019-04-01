@@ -218,7 +218,7 @@ QString SyntheseGenerale::grp_sqlFromSelection(QTableView *view, int path)
    cl_2 = "("+allas.at(loop-2)+"="+item+")";
   }
   if(loop%3==0){
-   cl_3 = cl_2 + " and ";
+   cl_3 = " and ("+allas.at(loop-2)+"="+item+")";
   }
 
   /// --------
