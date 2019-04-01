@@ -93,7 +93,7 @@ void SyntheseGenerale::slot_grpSel(const QModelIndex &index)
  // Nouvelle de fenetre de detail de cette selection
  SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
  connect( ptabTop, SIGNAL(tabCloseRequested(int)) ,
-          unDetail, SLOT(slot_FermeLaRecherche(int) ) );
+         unDetail, SLOT(slot_FermeLaRecherche(int) ) );
 
 
 }
@@ -119,8 +119,8 @@ QString SyntheseGenerale::grp_sqlFromSelection(QTableView *view, int path)
   /// liberer la memoire occupee par p
   qDeleteAll(cur_sel.begin(), cur_sel.end());
 
-  /// puis detacher de la liste
-  cur_sel.clear();
+	/// puis detacher de la liste
+	cur_sel.clear();
  }
 
  /// Regrouper selection selon colonnes
@@ -128,33 +128,33 @@ QString SyntheseGenerale::grp_sqlFromSelection(QTableView *view, int path)
   int cur_key =un_index.model()->index(un_index.row(), un_index.column()).column();
   QPair<int,stSelInfo *> *p = NULL;
 
-  /// Parcourir existant et rajout si necessaire
-  bool isPresent = false;
-  for(int pos=0; pos< cur_sel.size(); pos++){
-   p=cur_sel.at(pos);
-   if(p->first==cur_key){
-    isPresent = true;
-    p->second->lstSel->append(un_index);
-    break;
-   }
-  }
+	/// Parcourir existant et rajout si necessaire
+	bool isPresent = false;
+	for(int pos=0; pos< cur_sel.size(); pos++){
+	 p=cur_sel.at(pos);
+	 if(p->first==cur_key){
+		isPresent = true;
+		p->second->lstSel->append(un_index);
+		break;
+	 }
+	}
 
-  if(isPresent == false){
-   p = new QPair<int,stSelInfo *>;
-   stSelInfo *info = new stSelInfo;
-   QModelIndexList *sel = new QModelIndexList;
+	if(isPresent == false){
+	 p = new QPair<int,stSelInfo *>;
+	 stSelInfo *info = new stSelInfo;
+	 QModelIndexList *sel = new QModelIndexList;
 
-   /// config
-   sel->append(un_index);
-   info->qtv = view;
-   info->lstSel = sel;
+	 /// config
+	 sel->append(un_index);
+	 info->qtv = view;
+	 info->lstSel = sel;
 
-   p->first = cur_key;
-   p->second = info;
+	 p->first = cur_key;
+	 p->second = info;
 
-   /// rajout
-   cur_sel.append(p);
-  }
+	 /// rajout
+	 cur_sel.append(p);
+	}
 
  }
 
@@ -172,69 +172,60 @@ QString SyntheseGenerale::grp_sqlFromSelection(QTableView *view, int path)
   as_def = "r_"+QString::number(pos);
 
 
-  QModelIndexList *lesSelDelaCol = cur_sel.at(pos)->second->lstSel;
-  QString msg_col = "";
-  int nbSelInCol = lesSelDelaCol->size();
-  for (int uneSel=0;uneSel< nbSelInCol; uneSel++) {
-   un_index = lesSelDelaCol->at(uneSel);
-   int occure = un_index.model()->index(un_index.row(), 0).data().toInt();
-   msg_col = msg_col + QString::number(occure);
-   if(uneSel<nbSelInCol-1){
-    msg_col = msg_col + ",";
-   }
-  }
+	QModelIndexList *lesSelDelaCol = cur_sel.at(pos)->second->lstSel;
+	QString msg_col = "";
+	int nbSelInCol = lesSelDelaCol->size();
+	for (int uneSel=0;uneSel< nbSelInCol; uneSel++) {
+	 un_index = lesSelDelaCol->at(uneSel);
+	 int occure = un_index.model()->index(un_index.row(), 0).data().toInt();
+	 msg_col = msg_col + QString::number(occure);
+	 if(uneSel<nbSelInCol-1){
+		msg_col = msg_col + ",";
+	 }
+	}
 #ifndef QT_NO_DEBUG
-  qDebug() << msg_col;
+	qDebug() << msg_col;
 #endif
 
-  items = items + "("+msg_key+")as "+as_def;
-  where = where +"("+as_def+".N"+QString::number(key)+ " in("
-          +msg_col+"))";
-  allas = allas << as_def+".id";
+	items = items + "("+msg_key+")as "+as_def;
+	where = where +"("+as_def+".N"+QString::number(key)+ " in("
+					+msg_col+"))";
+	allas = allas << as_def+".id";
 
 
 #ifndef QT_NO_DEBUG
-  qDebug() << items;
-  qDebug() << where;
-  qDebug() << allas;
+	qDebug() << items;
+	qDebug() << where;
+	qDebug() << allas;
 #endif
 
-  if(pos< nbScanCol -1){
-   items = items + " , ";
-   where = where + " and ";
-  }
+	if(pos< nbScanCol -1){
+	 items = items + " , ";
+	 where = where + " and ";
+	}
  }
 
  QString clef = "";
  QString cl_1 = "";
  QString cl_2 = "";
  QString cl_3 = "";
+
  int nbClef = allas.size();
- for (int loop=1;loop <= nbClef; loop++) {
-  QString item = allas.at(loop-1);
-  cl_1 = "("+item+")";
+ for (int loop=0;loop < nbClef; loop++) {
+  cl_1 = "r_"+QString::number(loop)+".id";
 
-  if(loop%2 == 0){
-   cl_2 = "("+allas.at(loop-2)+"="+item+")";
-  }
-  if(loop%3==0){
-   cl_3 = " and ("+allas.at(loop-2)+"="+item+")";
-  }
+	if(nbClef==1){
+	 clef = "("+cl_1+")";
+	}
 
-  /// --------
-  if(cl_3.size()){
-   clef = clef + cl_3;
-  }
-  else if (cl_2.size()) {
-   if(nbClef == 2){
-    clef = cl_2;
-   }
-   else{
-    clef = clef + "and"+ cl_2;
-   }
-  }else {
-   clef = clef + cl_1;
-  }
+	if(loop >= 1){
+	 clef = clef +"(r_"+QString::number(loop-1)+".id="+cl_1+")";
+	}
+
+	if((loop<nbClef-1) && (loop >= 1)){
+	 clef = clef+ "and";
+	}
+
  }
 
  where = "("+clef+")and("+where+")";
@@ -256,19 +247,19 @@ QString SyntheseGenerale::grp_SqlFromKey(int zn, int col)
 
  QString st_tmp =  getFieldsFromZone(zn,"tb1");
  QString st_return =
-   "/*D'"+st_cri+"'*/"
-   +"select tb1.*, count(tb2.B) as N"+QString::number(col)
-   +" from (" + st_tirages.remove(";")
-   +") as tb1 "
+  "/*D'"+st_cri+"'*/"
+  +"select tb1.*, count(tb2.B) as N"+QString::number(col)
+  +" from (" + st_tirages.remove(";")
+  +") as tb1 "
     "left join "
     "("
     "select id as B from Bnrz where (z"+QString::number(zn+1)
-   +" not null  and ("+st_cri+")) ) as tb2 " +
-   "on "+
-   "(tb2.b in("
-   +st_tmp+
-   ")) group by tb1.id"+
-   "/*F'"+st_cri+"'*/";
+  +" not null  and ("+st_cri+")) ) as tb2 " +
+  "on "+
+  "(tb2.b in("
+  +st_tmp+
+  ")) group by tb1.id"+
+  "/*F'"+st_cri+"'*/";
 
 
  return st_return;
@@ -280,27 +271,27 @@ QString SyntheseGenerale::grp_TrouverTirages(int col, int nb, QString st_tirages
 
  QString st_tmp =  getFieldsFromZone(zn,"tb1");//CriteresCreer("=","or",zn);
  QString st_return =
-   "/*S"+QString::number(demande)+"a '"+st_cri+"'*/"+
-   "select tb1.*, count(tb2.B) as N"+QString::number(col)+ " "+
-   "from (" + st_tirages.remove(";")+
-   ") as tb1 "
-   "left join "
-   "("
-   "select id as B from Bnrz where (z"+QString::number(zn+1)+
-   " not null  and ("+st_cri+")) ) as tb2 " +
-   "on "+
-   "(tb2.b in("
-   +st_tmp+
-   ")) group by tb1.id"+
-   "/*S"+QString::number(demande)+"a*/";
+  "/*S"+QString::number(demande)+"a '"+st_cri+"'*/"+
+  "select tb1.*, count(tb2.B) as N"+QString::number(col)+ " "+
+  "from (" + st_tirages.remove(";")+
+  ") as tb1 "
+  "left join "
+  "("
+  "select id as B from Bnrz where (z"+QString::number(zn+1)+
+  " not null  and ("+st_cri+")) ) as tb2 " +
+  "on "+
+  "(tb2.b in("
+  +st_tmp+
+  ")) group by tb1.id"+
+  "/*S"+QString::number(demande)+"a*/";
 
 
  st_return =
-   "/*S"+QString::number(demande)+"b*/"+
-   "select * from("+
-   st_return+
-   ")as tb1 where(tb1.N"+QString::number(col)+ "="+
-   QString::number(nb)+")/*S"+QString::number(demande)+"b*/;";
+  "/*S"+QString::number(demande)+"b*/"+
+  "select * from("+
+  st_return+
+  ")as tb1 where(tb1.N"+QString::number(col)+ "="+
+  QString::number(nb)+")/*S"+QString::number(demande)+"b*/;";
 
  demande++;
 
