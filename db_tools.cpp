@@ -303,3 +303,54 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
 
 }
 
+#if QT_LIB_DBG_ON
+/// https://doc.qt.io/archives/qq/qq03-big-brother.html#xref1
+void DB_Tools::dumpAllObjectTrees()
+{
+    dumpRecursive( QObject::objectTrees(), 0 );
+}
+
+void DB_Tools::dumpRecursive( const QObjectList *list,
+                    QListViewItem *parent )
+{
+    if ( list == 0 )
+        return;
+    QListView *listView = 0;
+    QListViewItem *child;
+    if ( parent == 0 ) {
+        listView = new QListView( 0 );
+        listView->setRootIsDecorated( TRUE );
+        listView->addColumn( "Class" );
+        listView->addColumn( "Name" );
+        listView->addColumn( "Geometry" );
+        listView->setSorting( -1 );
+        listView->show();
+    }
+    QObjectListIt it( *list );
+    QObject *obj;
+    while ( (obj = it.current()) ) {
+        if ( obj == listView ) {
+            ++it;
+            continue;
+        }
+        QString flags;
+        if ( obj->isWidgetType() ) {
+            QWidget *w = (QWidget *) obj;
+            if ( w->isVisible() ) {
+                flags.sprintf( "<%d,%d,%d,%d>", w->x(),
+                               w->y(), w->width(),
+                               w->height() );
+            } else {
+                flags = "invisible";
+            }
+        }
+        child = parent ? new QListViewItem( parent )
+                       : new QListViewItem( listView );
+        child->setText( 0, obj->className() );
+        child->setText( 1, obj->name() );
+        child->setText( 2, flags );
+        dumpRecursive( it.current()->children(), child );
+        ++it;
+    }
+}
+#endif

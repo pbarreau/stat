@@ -12,7 +12,7 @@
  QTableView *ptrSel = NULL;
  QList < QTabWidget *> *id_tab[2]={NULL};
 
- int *path = getPathToView(view, &id_tab[0], &ptrSel);
+ int *path = grp_getPathToView(view, &id_tab[0], &ptrSel);
 }
 
 void SyntheseGenerale::slot_grpSel(const QModelIndex &index)

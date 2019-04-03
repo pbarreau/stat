@@ -188,6 +188,7 @@ class SyntheseGenerale : public QObject
   int incValue(int *val);
   bool SimplifieSelection(QTableView *view);
   int * getPathToView(QTableView *view, QList<QTabWidget *> **id_tab, QTableView **sel_view);
+  int * grp_getPathToView(QTableView *view, QList<QTabWidget *> **id_tab, QTableView **sel_view);
   void saveSelection(int zn, int calc, QTableView *view, QTableView *ptrSel);
   void mettreInfoSelection(int calc, QList<QPair<int, stSelInfo *> *> *a, QTableView *view, QTableView *ptrSel);
 
