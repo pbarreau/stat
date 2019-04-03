@@ -2309,7 +2309,7 @@ QGridLayout* SyntheseGenerale::grp_VbInfo(param_2 prm)
  int zn =prm.zn;
  QString tb_src = prm.prm_1.tb_src;
  QString tb_ref = prm.prm_1.hlp[1].tbl+QString::number(zn+1);
- QString key = TBD;
+ QString key = prm.prm_1.hlp[1].key;
 
  qtv_tmp = grp_TbvAnalyse(zn, tb_src, tb_ref, key);
 
@@ -4040,7 +4040,7 @@ void SyntheseGenerale::slot_ChangementEnCours(const QItemSelection &selected,
 
 }
 #endif
-int * SyntheseGenerale::grp_getPathToView(QTableView *view, QList < QTabWidget *> **id_tab, QTableView ** sel_view)
+int  SyntheseGenerale::grp_getPathToView(QTableView *view, QList < QTabWidget *> **id_tab, QTableView ** sel_view)
 {
  int zn = view->objectName().split("z").at(1).toInt();
  QString r1 = "InfoTab_z"+QString::number(zn);
@@ -4058,6 +4058,8 @@ int * SyntheseGenerale::grp_getPathToView(QTableView *view, QList < QTabWidget *
   int tot = tmp2->count();
   tmp2->setCurrentIndex(tot-1);
  }
+
+ return zn;
 }
 
 int * SyntheseGenerale::getPathToView(QTableView *view, QList < QTabWidget *> **id_tab, QTableView ** sel_view)

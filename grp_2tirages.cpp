@@ -12,7 +12,7 @@
  QTableView *ptrSel = NULL;
  QList < QTabWidget *> *id_tab[2]={NULL};
 
- int *path = grp_getPathToView(view, &id_tab[0], &ptrSel);
+ int path = grp_getPathToView(view, &id_tab[0], &ptrSel);
 
  const QAbstractItemModel * pModel = index.model();
  int col = index.column();
@@ -27,6 +27,7 @@
  prm.hlp[0].tbl="Bnrz";
  prm.hlp[0].key="z";
  prm.hlp[1].tbl="Ana_z";
+ prm.zn = path;
  prm.hlp[1].key=headName;
 
  param_2 prm_2;
@@ -37,7 +38,7 @@
  prm_2.tb_wrt = QString("r_")
                 + prm.tb_src
                 +QString("_")
-                +prm.namesNiv[1][prm.path[1]]
+                +headName
                 +QString("_z")
                 +QString::number(prm.zn+1);
 
