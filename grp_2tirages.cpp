@@ -13,6 +13,36 @@
  QList < QTabWidget *> *id_tab[2]={NULL};
 
  int *path = grp_getPathToView(view, &id_tab[0], &ptrSel);
+
+ const QAbstractItemModel * pModel = index.model();
+ int col = index.column();
+ int lgn = index.row();
+ int use = index.model()->index(lgn,0).data().toInt();
+ int val = index.data().toInt();
+ QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+ QString headName = vCol.toString();
+
+ param_1 prm;
+ prm.tb_src = "RefTirages";
+ prm.hlp[0].tbl="Bnrz";
+ prm.hlp[0].key="z";
+ prm.hlp[1].tbl="Ana_z";
+ prm.hlp[1].key=headName;
+
+ param_2 prm_2;
+ prm_2.prm_1=prm;
+ prm_2.zn = prm.zn;
+ prm_2.dst = 0;
+
+ prm_2.tb_wrt = QString("r_")
+                + prm.tb_src
+                +QString("_")
+                +prm.namesNiv[1][prm.path[1]]
+                +QString("_z")
+                +QString::number(prm.zn+1);
+
+
+ grp_VbInfo(prm_2);
 }
 
 void SyntheseGenerale::slot_grpSel(const QModelIndex &index)

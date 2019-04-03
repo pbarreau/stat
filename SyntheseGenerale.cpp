@@ -2309,10 +2309,9 @@ QGridLayout* SyntheseGenerale::grp_VbInfo(param_2 prm)
  int zn =prm.zn;
  QString tb_src = prm.prm_1.tb_src;
  QString tb_ref = prm.prm_1.hlp[1].tbl+QString::number(zn+1);
- QString key = "bc";
+ QString key = TBD;
 
  qtv_tmp = grp_TbvAnalyse(zn, tb_src, tb_ref, key);
- tbv[zn]<<qtv_tmp;
 
  lab_tmp->setText("Repartitions");
  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
@@ -2605,7 +2604,6 @@ QTableView * SyntheseGenerale::tot_TbvAnalyse(int zn, QString tb_src, QString tb
  sqm_bloc1_1 = new QSqlQueryModel;
 
  QTableView *qtv_tmp = new QTableView;
- //QString qtv_name = QString("new")+QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
  qtv_tmp->setObjectName(tb_out);
 
  /*
