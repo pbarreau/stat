@@ -1,5 +1,20 @@
 #include "SyntheseGenerale.h"
 
+
+ void SyntheseGenerale::slot_grpShowEcart(const QModelIndex &index)
+{
+ QString st_titre = "";
+ //QStringList **pList = tabEcarts->getSqlGrp();
+
+ QString st_critere = "";
+ QString sqlReq =*(uneDemande.st_LDT_Depart);
+ QTableView *view = qobject_cast<QTableView *>(sender());
+ QTableView *ptrSel = NULL;
+ QList < QTabWidget *> *id_tab[2]={NULL};
+
+ int *path = getPathToView(view, &id_tab[0], &ptrSel);
+}
+
 void SyntheseGenerale::slot_grpSel(const QModelIndex &index)
 {
  QString st_titre = "";
@@ -25,23 +40,6 @@ void SyntheseGenerale::slot_grpSel(const QModelIndex &index)
  if(indexes.size())
  {
   sqlReq =grp_sqlFromSelection(view, path[0]);
-#if 0
-  QModelIndex un_index;
-  int curCol = 0;
-  int occure = 0;
-
-  /// Parcourir les selections
-  foreach(un_index, indexes)
-  {
-   curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
-   occure = un_index.model()->index(un_index.row(), 0).data().toInt();
-   if(curCol)
-   {
-    st_critere = "("+pList[path[0]][0].at(curCol-1)+")";
-    sqlReq =grp_TrouverTirages(curCol,occure,sqlReq,st_critere,path[0]);
-   }
-  }
-#endif
  }
 
 #if 0

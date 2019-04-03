@@ -163,6 +163,7 @@ class SyntheseGenerale : public QObject
 
 
  private slots:
+  void slot_grpShowEcart(const QModelIndex &index);
   void slot_grpSel(const QModelIndex &index);
 
   void slot_ShowBouleForNewDesign(const QModelIndex & index);
@@ -199,8 +200,8 @@ class SyntheseGenerale : public QObject
   QString A4_1_CalculerEcart(QString str_reponses);
   QString A4_2_RegrouperEcart(QString str_reponses);
 
-  bool MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst);
-  bool MarquerDerniers_brc(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst);
+  bool tot_MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst);
+  bool brc_MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst);
 
 
   bool Contruire_Executer(QString tbl_dst, QString st_requete);
@@ -329,12 +330,19 @@ class SyntheseGenerale : public QObject
   QGridLayout* brc_VbInfo(param_2 prm);
   QGridLayout* brc_VbResu(param_2 prm);
 
+	QGridLayout* grp_VbInfo(param_2 prm);
+	QGridLayout* grp_VbResu(param_2 prm);
+
+	QTableView * grp_TbvAnalyse(int zn, QString tb_src, QString tb_ref, QString key);
+
   QTableView * brc_TbvAnalyse(int zn, QString source, QString definition, QString key);
   QTableView * brc_TbvResume(int zn, QString tb_in);
+
   void FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete, QString tb_total);
 
   //bool isTableTotalBoulleReady(QString tbl_total);
   bool mettreBarycentre(QString tbl_dst, QString src_data);
+  bool grp_Contruire_Tbl(int zn, QString tbl_poids_boules, QString tb_ref, QString key, QString tbl_out);
   bool brc_Contruire_Tbl(int zn, QString tbl_poids_boules, QString tb_ref, QString key, QString tbl_out);
   bool A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poids_boules);
   bool RajouterCalculBarycentreDansAnalyses(int zn,
