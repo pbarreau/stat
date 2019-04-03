@@ -188,7 +188,7 @@ class SyntheseGenerale : public QObject
   int incValue(int *val);
   bool SimplifieSelection(QTableView *view);
   int * getPathToView(QTableView *view, QList<QTabWidget *> **id_tab, QTableView **sel_view);
-  int grp_getPathToView(QTableView *view, QList<QTabWidget *> **id_tab, QTableView **sel_view);
+  int grp_getPathToView(QTableView *view, QList<QTabWidget *> **id_tab, QGridLayout **sel_view);
   void saveSelection(int zn, int calc, QTableView *view, QTableView *ptrSel);
   void mettreInfoSelection(int calc, QList<QPair<int, stSelInfo *> *> *a, QTableView *view, QTableView *ptrSel);
 
@@ -259,6 +259,7 @@ class SyntheseGenerale : public QObject
     param_1 prm_1;
     int zn; /// zone
     int dst;/// distance
+    QString text_path;
     QString tb_wrt;///Write
   };
 
@@ -331,10 +332,10 @@ class SyntheseGenerale : public QObject
   QGridLayout* brc_VbInfo(param_2 prm);
   QGridLayout* brc_VbResu(param_2 prm);
 
-	QGridLayout* grp_VbInfo(param_2 prm);
+	QGridLayout* grp_VbInfo(QGridLayout *gridSel, param_2 prm);
 	QGridLayout* grp_VbResu(param_2 prm);
 
-	QTableView * grp_TbvAnalyse(int zn, QString tb_src, QString tb_ref, QString key);
+	QTableView * grp_TbvAnalyse(QTableView *useTbv, int zn, QString tb_src, QString tb_ref, QString key);
 
   QTableView * brc_TbvAnalyse(int zn, QString source, QString definition, QString key);
   QTableView * brc_TbvResume(int zn, QString tb_in);

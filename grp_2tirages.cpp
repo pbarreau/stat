@@ -10,9 +10,10 @@
  QString sqlReq =*(uneDemande.st_LDT_Depart);
  QTableView *view = qobject_cast<QTableView *>(sender());
  QTableView *ptrSel = NULL;
+ QGridLayout *gridSel = NULL;
  QList < QTabWidget *> *id_tab[2]={NULL};
 
- int path = grp_getPathToView(view, &id_tab[0], &ptrSel);
+ int path = grp_getPathToView(view, &id_tab[0], &gridSel);
 
  const QAbstractItemModel * pModel = index.model();
  int col = index.column();
@@ -27,7 +28,7 @@
  prm.hlp[0].tbl="Bnrz";
  prm.hlp[0].key="z";
  prm.hlp[1].tbl="Ana_z";
- prm.zn = path;
+ prm.zn = path -1;
  prm.hlp[1].key=headName;
 
  param_2 prm_2;
@@ -43,7 +44,9 @@
                 +QString::number(prm.zn+1);
 
 
- grp_VbInfo(prm_2);
+ if(gridSel){
+  grp_VbInfo(gridSel, prm_2);
+ }
 }
 
 void SyntheseGenerale::slot_grpSel(const QModelIndex &index)
