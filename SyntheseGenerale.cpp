@@ -2325,8 +2325,8 @@ QGridLayout* SyntheseGenerale::grp_VbInfo(QGridLayout *gridSel, param_2 prm)
 
  QGridLayout *lay_tmp =NULL;
 
- QVBoxLayout *vb_tmp = new QVBoxLayout;
- QLabel * lab_tmp = new QLabel;
+ QVBoxLayout *vb_tmp = NULL;
+ QLabel * lab_tmp = NULL;
  QTableView *qtv_tmp = NULL;
 
  int zn =prm.zn;
@@ -2336,16 +2336,28 @@ QGridLayout* SyntheseGenerale::grp_VbInfo(QGridLayout *gridSel, param_2 prm)
 
  if(gridSel){
   lay_tmp = gridSel;
-  qtv_tmp = lay_tmp->findChild<QTableView *>("tb_out");
+  QWidget *wid = lay_tmp->parentWidget();
+
+  vb_tmp = wid->findChild<QVBoxLayout *>();
+  if(!vb_tmp){
+   vb_tmp=new QVBoxLayout;
+   vb_tmp->setObjectName("vb_info");
+  }
+  lab_tmp = wid->findChild<QLabel *>();
+  if(!lab_tmp){
+   lab_tmp=new QLabel;
+   lab_tmp->setObjectName("lb_info");
+  }
  }
  else {
   lay_tmp = new QGridLayout;
  }
 
- qtv_tmp = grp_TbvAnalyse(qtv_tmp, zn, tb_src, tb_ref, key);
+ QString msg = "Repartitions : ( " +key+" )";
+ lab_tmp->setText(msg);
+ qtv_tmp = grp_TbvAnalyse(lay_tmp, zn, tb_src, tb_ref, key);
 
- lab_tmp->setText("Repartitions");
- vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+ vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);//,Qt::AlignLeft|Qt::AlignTop
  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
 
  lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
@@ -2354,18 +2366,19 @@ QGridLayout* SyntheseGenerale::grp_VbInfo(QGridLayout *gridSel, param_2 prm)
  return lay_tmp;
 }
 
-QTableView * SyntheseGenerale::grp_TbvAnalyse(QTableView *useTbv, int zn, QString tb_src, QString tb_ref, QString key)
+QTableView * SyntheseGenerale::grp_TbvAnalyse(QGridLayout *grid_parent, int zn, QString tb_src, QString tb_ref, QString key)
 {
  QTableView *qtv_tmp = NULL;
 
  QString tb_out = QString("r_")+tb_src + QString("_grp_")+key+"_z"+QString::number(zn+1);
 
- if(useTbv){
-  qtv_tmp = useTbv;
- }
- else {
-  qtv_tmp = new QTableView;
-  qtv_tmp->setObjectName("tb_out");
+ if(grid_parent){
+  QWidget *wid = grid_parent->parentWidget();
+  qtv_tmp = wid->findChild<QTableView *>("tb_out");
+  if(!qtv_tmp){
+   qtv_tmp = new QTableView();
+   qtv_tmp->setObjectName("tb_out");
+  }
  }
 
 
@@ -2779,18 +2792,39 @@ QGridLayout* SyntheseGenerale::brc_VbResu(param_2 prm)
 
 QGridLayout* SyntheseGenerale::grp_VbResu(QGridLayout *gridSel, param_2 prm)
 {
- QGridLayout *lay_tmp = gridSel;
- QVBoxLayout *vb_tmp = new QVBoxLayout;
- QLabel * lab_tmp = new QLabel;
+ QGridLayout *lay_tmp = NULL;
+ QVBoxLayout *vb_tmp = NULL;
+ QLabel * lab_tmp = NULL;
  QTableView *qtv_tmp = NULL;
 
  int zn =prm.zn;
  QString tb_in = prm.prm_1.tb_src;
  QString key = prm.prm_1.hlp[1].key;
 
- qtv_tmp = grp_TbvResume(zn, tb_in, key);
+ if(gridSel){
+  lay_tmp = gridSel;
+  QWidget *wid = lay_tmp->parentWidget();
 
- lab_tmp->setText("Selections Possibles");
+  vb_tmp = wid->findChild<QVBoxLayout *>();
+  if(!vb_tmp){
+   vb_tmp=new QVBoxLayout;
+   vb_tmp->setObjectName("vb_regroup");
+  }
+  lab_tmp = wid->findChild<QLabel *>();
+  if(!lab_tmp){
+   lab_tmp=new QLabel;
+   lab_tmp->setObjectName("lb_regroup");
+  }
+ }
+ else {
+  lay_tmp = new QGridLayout;
+ }
+
+ QString msg = "Selections :( " +key+" )";
+ lab_tmp->setText(msg);
+
+ qtv_tmp = grp_TbvResume(lay_tmp, zn, tb_in, key);
+
  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
 
@@ -2807,9 +2841,9 @@ inline int SyntheseGenerale::incValue(int *i)
  return a;
 }
 
-QTableView * SyntheseGenerale::grp_TbvResume(int znid, QString tb_in, QString str_key)
+QTableView * SyntheseGenerale::grp_TbvResume(QGridLayout *grid_parent, int znid, QString tb_in, QString str_key)
 {
- QTableView * qtv_tmp = new QTableView;
+ QTableView * qtv_tmp = NULL;
  QString str_elm_zn = getFieldsFromZone(znid,"t2");
  QString tb_ana_zn = "Ana_z"+QString::number(znid+1);
 
@@ -2820,7 +2854,16 @@ QTableView * SyntheseGenerale::grp_TbvResume(int znid, QString tb_in, QString st
  QString tb_source = QString("r_")+tb_in +  "_grp_" +str_key+"_"+ref_key;
  QString tb_total = QString("r_")+tb_in + QString("_tot_")+ref_key;
 
- qtv_tmp->setObjectName(tb_write);
+ if(grid_parent){
+  QWidget *wid = grid_parent->parentWidget();
+  qtv_tmp = wid->findChild<QTableView *>("tb_regroup");
+  if(!qtv_tmp){
+   qtv_tmp = new QTableView();
+   qtv_tmp->setObjectName("tb_regroup");
+  }
+ }
+
+ //qtv_tmp->setObjectName(tb_write);
 
 
  QString msg = "/* D_05 */ "
@@ -3135,7 +3178,7 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
 	 a.tb_rsm = tb_write;
 	 a.tb_tot = tb_total;
 
-	 qtv_tmp->setObjectName(tb_write);
+	 //qtv_tmp->setObjectName(tb_write);
 	 BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
 	 sqm_tmp->setQuery(st_requete,db_0);
 

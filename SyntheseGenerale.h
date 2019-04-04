@@ -335,8 +335,8 @@ class SyntheseGenerale : public QObject
 	QGridLayout* grp_VbInfo(QGridLayout *gridSel, param_2 prm);
 	QGridLayout* grp_VbResu(QGridLayout *gridSel, param_2 prm);
 
-	QTableView * grp_TbvAnalyse(QTableView *useTbv, int zn, QString tb_src, QString tb_ref, QString key);
-	QTableView * grp_TbvResume(int zn, QString tb_in, QString key);
+	QTableView * grp_TbvAnalyse(QGridLayout *grid_parent, int zn, QString tb_src, QString tb_ref, QString key);
+	QTableView * grp_TbvResume(QGridLayout *grid_parent, int zn, QString tb_in, QString key);
 
   QTableView * brc_TbvAnalyse(int zn, QString source, QString definition, QString key);
   QTableView * brc_TbvResume(int zn, QString tb_in, QString st_key);
