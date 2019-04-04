@@ -23,6 +23,7 @@ public:
         QString cnx;
         QString tb_rsm;
         QString tb_tot;
+        QString st_key;
         QString tb_cld; /// Table colors def
 
     } ;
@@ -57,6 +58,7 @@ private:
     int nb_colors;
     QString tb_rsm_src;
     QString tb_tot_src;
+    QString st_key;
     QTableWidget *a;
     QMap<BOrdColor,int> map_colors;
 

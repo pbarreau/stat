@@ -1,7 +1,7 @@
 #include "SyntheseGenerale.h"
 
 
- void SyntheseGenerale::slot_grpShowEcart(const QModelIndex &index)
+void SyntheseGenerale::slot_grpShowEcart(const QModelIndex &index)
 {
  QString st_titre = "";
  //QStringList **pList = tabEcarts->getSqlGrp();
@@ -10,10 +10,10 @@
  QString sqlReq =*(uneDemande.st_LDT_Depart);
  QTableView *view = qobject_cast<QTableView *>(sender());
  QTableView *ptrSel = NULL;
- QGridLayout *gridSel = NULL;
+ QGridLayout *gridSel[2] = {NULL};
  QList < QTabWidget *> *id_tab[2]={NULL};
 
- int path = grp_getPathToView(view, &id_tab[0], &gridSel);
+ int path = grp_getPathToView(view, &id_tab[0], &gridSel[0]);
 
  const QAbstractItemModel * pModel = index.model();
  int col = index.column();
@@ -44,8 +44,13 @@
                 +QString::number(prm.zn+1);
 
 
- if(gridSel){
-  grp_VbInfo(gridSel, prm_2);
+ if(gridSel[0]){
+  grp_VbInfo(gridSel[0], prm_2);
+
+	/// Faire le tableau des resumes
+	if(gridSel[1]){
+	 grp_VbResu(gridSel[1], prm_2);
+	}
  }
 }
 

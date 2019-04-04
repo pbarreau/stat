@@ -27,6 +27,7 @@ BVisuResume::BVisuResume(prmBVisuResume param, QTableView *parent)
   db_0 = QSqlDatabase::database(param.cnx);
   tb_rsm_src = param.tb_rsm;
   tb_tot_src = param.tb_tot;
+  st_key= param.st_key;
   recupereMapColor(param.tb_cld);
 }
 
@@ -196,7 +197,7 @@ void BVisuResume::setEditorData(QWidget *editor, const QModelIndex &index) const
     QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
 
 
-    QString msg = "select t1.c,t2.c as Cb,t1.bc, t1.T, t1.b,T1.tb,"
+    QString msg = "select t1.c,t2.c as Cb,t1."+st_key+", t1.T, t1.b,T1.tb,"
                   "printf(\"%.2f%%\",((t1.tb*100)/t1.t)) as 'Tb/T %',"
                   "printf(\"%.2f%%\",((t2.c*100)/65)) as 'Ce %' "
                   "FROM ("
@@ -204,7 +205,7 @@ void BVisuResume::setEditorData(QWidget *editor, const QModelIndex &index) const
                   +") as t1,("
                   +tb_tot_src
                   +") as t2 "
-                   "WHERE (t1.bc ="
+                   "WHERE (t1."+st_key+" ="
                   +sval
                   +" AND t1.b = t2.b)"
                   "ORDER by t1.t DESC , t1.tb DESC, 'Ce %' DESC";

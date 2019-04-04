@@ -315,7 +315,7 @@ class SyntheseGenerale : public QObject
 #endif
   QTableView * tot_TbvAnalyse(int zn, QString source, QString definition, QString key);
   QTableView * tot_TbvResume(int zn, QString tb_read);
-  void mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_total);
+  void mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_total, QString st_key);
 
   /*
     struct prmVana{
@@ -333,14 +333,15 @@ class SyntheseGenerale : public QObject
   QGridLayout* brc_VbResu(param_2 prm);
 
 	QGridLayout* grp_VbInfo(QGridLayout *gridSel, param_2 prm);
-	QGridLayout* grp_VbResu(param_2 prm);
+	QGridLayout* grp_VbResu(QGridLayout *gridSel, param_2 prm);
 
 	QTableView * grp_TbvAnalyse(QTableView *useTbv, int zn, QString tb_src, QString tb_ref, QString key);
+	QTableView * grp_TbvResume(int zn, QString tb_in, QString key);
 
   QTableView * brc_TbvAnalyse(int zn, QString source, QString definition, QString key);
-  QTableView * brc_TbvResume(int zn, QString tb_in);
+  QTableView * brc_TbvResume(int zn, QString tb_in, QString st_key);
 
-  void FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete, QString tb_total);
+  void FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete, QString tb_total, QString st_key);
 
   //bool isTableTotalBoulleReady(QString tbl_total);
   bool mettreBarycentre(QString tbl_dst, QString src_data);
