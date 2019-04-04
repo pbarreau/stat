@@ -164,7 +164,8 @@ class SyntheseGenerale : public QObject
 
  private slots:
   void slot_grpShowEcart(const QModelIndex &index);
-  void slot_grpSel(const QModelIndex &index);
+  void slot_grpSel();
+  void slot_ccmr_grpSel(const QPoint pos);
 
   void slot_ShowBouleForNewDesign(const QModelIndex & index);
   void slot_saveNewSelection(const QItemSelection &selected, const QItemSelection &deselected);

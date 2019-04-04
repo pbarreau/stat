@@ -1345,9 +1345,13 @@ QTableView *SyntheseGenerale::doTabGrpTirage(stDesigConf conf)
          this, SLOT(slot_grpShowEcart( QModelIndex) ) );
 
  // double click dans fenetre  pour afficher details boule
+ qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(slot_ccmr_grpSel(QPoint)));
+ /*
  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
          this, SLOT(slot_grpSel( QModelIndex) ) );
-
+*/
 
 
  return qtv_tmp;
@@ -2333,34 +2337,36 @@ QGridLayout* SyntheseGenerale::grp_VbInfo(QGridLayout *gridSel, param_2 prm)
  QString tb_src = prm.prm_1.tb_src;
  QString tb_ref = prm.prm_1.hlp[1].tbl+QString::number(zn+1);
  QString key = prm.prm_1.hlp[1].key;
+ QString msg = "Repartitions : ( " +key+" )";
 
  if(gridSel){
   lay_tmp = gridSel;
   QWidget *wid = lay_tmp->parentWidget();
 
-  vb_tmp = wid->findChild<QVBoxLayout *>();
-  if(!vb_tmp){
-   vb_tmp=new QVBoxLayout;
-   vb_tmp->setObjectName("vb_info");
-  }
   lab_tmp = wid->findChild<QLabel *>();
   if(!lab_tmp){
    lab_tmp=new QLabel;
    lab_tmp->setObjectName("lb_info");
+  }
+  lab_tmp->setText(msg);
+
+  qtv_tmp = grp_TbvAnalyse(lay_tmp, zn, tb_src, tb_ref, key);
+
+  vb_tmp = wid->findChild<QVBoxLayout *>();
+  if(!vb_tmp){
+   vb_tmp=new QVBoxLayout;
+   vb_tmp->setObjectName("vb_info");
+   vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);//,Qt::AlignLeft|Qt::AlignTop
+   vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+   lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
   }
  }
  else {
   lay_tmp = new QGridLayout;
  }
 
- QString msg = "Repartitions : ( " +key+" )";
- lab_tmp->setText(msg);
- qtv_tmp = grp_TbvAnalyse(lay_tmp, zn, tb_src, tb_ref, key);
 
- vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);//,Qt::AlignLeft|Qt::AlignTop
- vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-
- lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
 
 
  return lay_tmp;
@@ -2800,36 +2806,34 @@ QGridLayout* SyntheseGenerale::grp_VbResu(QGridLayout *gridSel, param_2 prm)
  int zn =prm.zn;
  QString tb_in = prm.prm_1.tb_src;
  QString key = prm.prm_1.hlp[1].key;
+ QString msg = "Selections : ( " +key+" )";
 
  if(gridSel){
   lay_tmp = gridSel;
   QWidget *wid = lay_tmp->parentWidget();
 
-  vb_tmp = wid->findChild<QVBoxLayout *>();
-  if(!vb_tmp){
-   vb_tmp=new QVBoxLayout;
-   vb_tmp->setObjectName("vb_regroup");
-  }
   lab_tmp = wid->findChild<QLabel *>();
   if(!lab_tmp){
    lab_tmp=new QLabel;
    lab_tmp->setObjectName("lb_regroup");
   }
+  lab_tmp->setText(msg);
+
+  qtv_tmp = grp_TbvResume(lay_tmp, zn, tb_in, key);
+
+  vb_tmp = wid->findChild<QVBoxLayout *>();
+  if(!vb_tmp){
+   vb_tmp=new QVBoxLayout;
+   vb_tmp->setObjectName("vb_regroup");
+   vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+   vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+   lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+  }
  }
  else {
   lay_tmp = new QGridLayout;
  }
-
- QString msg = "Selections :( " +key+" )";
- lab_tmp->setText(msg);
-
- qtv_tmp = grp_TbvResume(lay_tmp, zn, tb_in, key);
-
- vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
- vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-
- lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
-
 
  return lay_tmp;
 }
@@ -2856,14 +2860,14 @@ QTableView * SyntheseGenerale::grp_TbvResume(QGridLayout *grid_parent, int znid,
 
  if(grid_parent){
   QWidget *wid = grid_parent->parentWidget();
-  qtv_tmp = wid->findChild<QTableView *>("tb_regroup");
+  qtv_tmp = wid->findChild<QTableView *>();
   if(!qtv_tmp){
    qtv_tmp = new QTableView();
-   qtv_tmp->setObjectName("tb_regroup");
+   //qtv_tmp->setObjectName("tb_regroup");
   }
  }
 
- //qtv_tmp->setObjectName(tb_write);
+ qtv_tmp->setObjectName(tb_write);
 
 
  QString msg = "/* D_05 */ "
@@ -3178,7 +3182,7 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
 	 a.tb_rsm = tb_write;
 	 a.tb_tot = tb_total;
 
-	 //qtv_tmp->setObjectName(tb_write);
+	 qtv_tmp->setObjectName(tb_write);
 	 BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
 	 sqm_tmp->setQuery(st_requete,db_0);
 
@@ -3301,6 +3305,7 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
 	}
 	qtv_tmp->setColumnWidth(COL_VISU_COMBO,200);
 	qtv_tmp->resizeRowsToContents();
+	qtv_tmp->resizeColumnToContents(4);
 	qtv_tmp->setFixedWidth((nb_col*LCELL)+200);
 	// Ne pas modifier largeur des colonnes
 	qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);

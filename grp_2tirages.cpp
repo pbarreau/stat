@@ -1,3 +1,5 @@
+#include <QMenu>
+#include <QAction>
 #include "SyntheseGenerale.h"
 
 
@@ -54,14 +56,33 @@ void SyntheseGenerale::slot_grpShowEcart(const QModelIndex &index)
  }
 }
 
-void SyntheseGenerale::slot_grpSel(const QModelIndex &index)
+void SyntheseGenerale::slot_ccmr_grpSel(const QPoint pos)
+{
+ QTableView *view = qobject_cast<QTableView *>(sender());
+
+ QMenu *MonMenu=new QMenu;
+
+ QAction *act = new QAction(view);
+ act->setText("Montrer Les tirages");
+
+ MonMenu->addAction(act);
+
+ connect(act, SIGNAL(clicked()),
+         this, SLOT(slot_grpSel()) );
+
+ MonMenu->exec(view->viewport()->mapToGlobal(pos));
+}
+
+void SyntheseGenerale::slot_grpSel()
 {
  QString st_titre = "";
- //QStringList **pList = tabEcarts->getSqlGrp();
 
  QString st_critere = "";
  QString sqlReq =*(uneDemande.st_LDT_Depart);
- QTableView *view = qobject_cast<QTableView *>(sender());
+
+ QAction *act = qobject_cast<QAction *>(sender());
+ QTableView *view = qobject_cast<QTableView *>(act->parent());
+
  QTableView *ptrSel = NULL;
  QList < QTabWidget *> *id_tab[2]={NULL};
 
