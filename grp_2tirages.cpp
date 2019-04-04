@@ -67,7 +67,7 @@ void SyntheseGenerale::slot_ccmr_grpSel(const QPoint pos)
 
  MonMenu->addAction(act);
 
- connect(act, SIGNAL(clicked()),
+ connect(act, SIGNAL(triggered()),
          this, SLOT(slot_grpSel()) );
 
  MonMenu->exec(view->viewport()->mapToGlobal(pos));
