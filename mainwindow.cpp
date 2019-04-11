@@ -127,6 +127,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
           SIGNAL(sig_isClickedOnBall(QModelIndex)),
           syntheses,
           SLOT(slot_ShowBouleForNewDesign(QModelIndex)));
+
   connect(tous,
           SIGNAL(sig_isClickedOnBall(QModelIndex)),
           syntheses->GetTabEcarts(),

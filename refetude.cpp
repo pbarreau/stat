@@ -1291,6 +1291,8 @@ void RefEtude::slot_ShowBoule(const QModelIndex & index)
 
 void RefEtude::slot_ShowBoule_2(const QModelIndex & index)
 {
+ return;
+
  int val = 0;
  int zn = 0;
 

@@ -148,6 +148,8 @@ void SyntheseGenerale::GetInfoTableau(int onglet, QTableView **pTbl, QSqlQueryMo
 }
 void SyntheseGenerale::slot_ShowTotalBoule(const QModelIndex &index)
 {
+ return;
+
  QAbstractItemModel *mon_model = tbv_LesTirages->model();
 
  int ecart = 0;
@@ -178,6 +180,7 @@ void SyntheseGenerale::slot_ShowTotalBoule(const QModelIndex &index)
 
 void SyntheseGenerale::slot_ShowBouleForNewDesign(const QModelIndex & index)
 {
+ return;
  /// Pas de test sur la colonne ici
  /// se mettre sur le bon onglet
  ptabComptage->setCurrentIndex(0);///(boules)
