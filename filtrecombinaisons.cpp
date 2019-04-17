@@ -40,6 +40,7 @@ void FiltreCombinaisons::setFiltreConfig(QAbstractItemModel *model,QAbstractItem
 
     sourceView=view;
     sourceView->setModel(proxyModel);
+    totalLignes->setText( QString::number(proxyModel->getFilterNbRow()));
 }
 
 void FiltreCombinaisons::slot_setFKC(int colId, int nbCol)
