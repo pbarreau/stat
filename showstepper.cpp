@@ -774,12 +774,19 @@ void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int in_ci
 	// syteme a bascule
 	msg = "select " + table + ".bgc from "+ table +
 				" where (" +
+				table + ".tid = " + QString::number(tid) +
+				" and " +
+				table + ".b = " + QString::number(bid)+");";
+
+	/*
+				" where (" +
 				table + ".cid = " + QString::number(cid) +
 				" and " +
 				table + ".tid = " + QString::number(tid) +
 				" and " +
 				table + ".b = " + QString::number(bid)+");";
 
+	 */
 	// lancer la requete
 #ifndef QT_NO_DEBUG
 	qDebug() << msg;
@@ -806,17 +813,24 @@ void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int in_ci
 	// preparer la requete mise a jour
 	msg = "update " + table + " set bgc="+QString::number(newcolor)+
 				" where (" +
+				table + ".tid = " + QString::number(tid) +
+				" and " +
+				table + ".b = " + QString::number(bid)+");";
+
+/*
+				" where (" +
 				table + ".cid = " + QString::number(cid) +
 				" and " +
 				table + ".tid = " + QString::number(tid) +
 				" and " +
 				table + ".b = " + QString::number(bid)+");";
 
-	// lancer la requete
+ */
+  // lancer la requete
 #ifndef QT_NO_DEBUG
-	qDebug() << msg;
+  qDebug() << msg;
 #endif
-	sta = sql.exec(msg);
+  sta = sql.exec(msg);
 
  }
 
@@ -980,8 +994,15 @@ select r1.b as d0,r1.c,r1.bgc
 				 ",r1.c,r1.bgc from "+useTable+" as r1 " +
 				 "where ( (r1.b between "+
 				 QString::number(i*10)+" and "+QString::number(((i+1)*10)-1)+") "+
+				 "and (r1.tid ="+QString::number(tid)+"))" +
+				 "order by r1.b;";
+
+	 /*
+				 QString::number(i*10)+" and "+QString::number(((i+1)*10)-1)+") "+
 				 "and(r1.cid ="+QString::number(cid)+ ") and (r1.tid ="+QString::number(tid)+"))" +
 				 "order by r1.b;";
+
+		*/
 
 #ifndef QT_NO_DEBUG
 	 qDebug() << msg;

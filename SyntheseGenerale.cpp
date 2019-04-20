@@ -3118,9 +3118,9 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
  };
 
 
+ int taille = sizeof(st_requetes)/sizeof(QString);
 
 #ifndef QT_NO_DEBUG
- int taille = sizeof(st_requetes)/sizeof(QString);
  for(int i = 0; i< taille;i++){
   qDebug() << "st_requetes ["<<i<<"]: "<<st_requetes[i];
  }
