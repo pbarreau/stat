@@ -1,6 +1,9 @@
 #ifndef PROPERTIES_H
 #define PROPERTIES_H
 
+#define BMAX_2(a,b) (((a)>(b))?(a):(b))
+#define BMIN_2(a,b) (((a)<(b))?(a):(b))
+
 #ifdef QT_NO_DEBUG
 #define SET_DBG_LIVE    true
 #endif

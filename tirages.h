@@ -45,164 +45,165 @@
 //#define RELEASE_TRACK   1
 
 namespace NE_FDJ{
-typedef enum _les_jeux_a_tirages
-{
-    fdj_none,   /// aucun type defini
-    fdj_loto,   /// jeu : loto
-    fdj_sper,  /// superloto
-    fdj_slot,   /// Loto + super loto
-    fdj_euro,   /// jeu : euromillion
-    fdj_fini    /// fin de la liste des jeux possibles
-}E_typeJeux;
+ typedef enum _les_jeux_a_tirages
+ {
+  fdj_none,   /// aucun type defini
+  fdj_loto,   /// jeu : loto
+  fdj_sper,  /// superloto
+  fdj_slot,   /// Loto + super loto
+  fdj_euro,   /// jeu : euromillion
+  fdj_fini    /// fin de la liste des jeux possibles
+ }E_typeJeux;
 
-typedef enum _critere_recherche
-{
-    critere_boule,
-    critere_parite,
-    critere_enemble
-}E_typeCritere;
+ typedef enum _critere_recherche
+ {
+  critere_boule,
+  critere_parite,
+  critere_enemble
+ }E_typeCritere;
 }
 
 typedef struct _myhead
 {
-    int depart;
-    int total;
+ int start;
+ int total;
 }stMyHeadedList;
 
 typedef struct _ordreArrivee
 {
-    int x;  /// ordre arrivee
-    int y;  /// nb de fois
-    int n;  /// suivant
-    int p;  /// precedent
+ int a;  /// ordre arrivee
+ int x;  /// ordre dans liste
+ int y;  /// nb de fois
+ int n;  /// suivant
+ int p;  /// precedent
 }stMyLinkedList;
 
 typedef struct _stNames {
-    QString std;    /// nom long de la zone
-    QString abv;    /// nom abreg de la zone
-    QString sel;    /// nom correspondant à la selection en cours
+ QString std;    /// nom long de la zone
+ QString abv;    /// nom abreg de la zone
+ QString sel;    /// nom correspondant à la selection en cours
 }stNames;
 
 typedef struct _stBornes
 {
-    int len;    /// nb element composant la zone
-    int min;    /// val min de la zone
-    int max;    /// val max de la zone
-    int win;    /// nb element a avoir sur la zone pour gagner
+ int len;    /// nb element composant la zone
+ int min;    /// val min de la zone
+ int max;    /// val max de la zone
+ int win;    /// nb element a avoir sur la zone pour gagner
 }stBornes;
 
 typedef struct _stParam
 {
-    bool destination;
-    bool typeChargement;
-    NE_FDJ::E_typeJeux typeJeu;
+ bool destination;
+ bool typeChargement;
+ NE_FDJ::E_typeJeux typeJeu;
 
 }stParam;
 
 typedef struct _stErr
 {
-    bool status;
-    QString msg;
+ bool status;
+ QString msg;
 }stErr;
 
 typedef struct _stTiragesDef
 {
-    class tirages *pTir;
-    NE_FDJ::E_typeJeux choixJeu;
-    int *nbElmZone;
-    int *offsetFichier;
-    QString *jour_tir;
-    QString *nomZone;
-    QString *FullNameZone;
-    stNames *names; /// nom de la zone
-    stBornes *limites;
-    unsigned char nb_tir_semaine;
-    unsigned char nb_zone;
-    QStringList sl_Lev0;
-    QStringList sl_Lev1[5];
-    QString db_cnx;
+ class tirages *pTir;
+ NE_FDJ::E_typeJeux choixJeu;
+ int *nbElmZone;
+ int *offsetFichier;
+ QString *jour_tir;
+ QString *nomZone;
+ QString *FullNameZone;
+ stNames *names; /// nom de la zone
+ stBornes *limites;
+ unsigned char nb_tir_semaine;
+ unsigned char nb_zone;
+ QStringList sl_Lev0;
+ QStringList sl_Lev1[5];
+ QString db_cnx;
 }stTiragesDef;
 
 typedef struct _stUnTirage
 {
-    QString date;
-    int **valBoules;
+ QString date;
+ int **valBoules;
 }stUnTirage;
 
 
 class tirages
 {
-protected:
-    static stTiragesDef conf;
-    static stMyLinkedList *arrive;
-    static int *total;
+ protected:
+ static stTiragesDef conf;
+ static stMyLinkedList *arrive;
+ static int *total;
 
-public:
-    static QString *lib_col;
-    stUnTirage value;
+ public:
+ static QString *lib_col;
+ stUnTirage value;
 
-public:
-    tirages(NE_FDJ::E_typeJeux jeu = NE_FDJ::fdj_none);
-    void getConfigFor(stTiragesDef *priv_conf);
-    QString SelectSource(bool load);
-    QString s_LibColBase(stTiragesDef *ref);
-    QString s_LibColAnalyse(stTiragesDef *pRef);
-    QString qs_zColBaseName(int zone);
-    int RechercheNbBoulesPairs(int zone); // Nombre de nombre pair dans la zone
-    int RechercheNbBoulesDansGrp1(int zone); // Nombre de nombre de la zone appartenant a E1;
-    //int RechercheNbBoulesLimite(int zone, int min, int max);
-    void ListeCombinaison(stTiragesDef *ref);
-    void ConstruireListeCnp(int n, int p, QStringList &out);
-    int Cnp_v2(int n, int p);
+ public:
+ tirages(NE_FDJ::E_typeJeux jeu = NE_FDJ::fdj_none);
+ void getConfigFor(stTiragesDef *priv_conf);
+ QString SelectSource(bool load);
+ QString s_LibColBase(stTiragesDef *ref);
+ QString s_LibColAnalyse(stTiragesDef *pRef);
+ QString qs_zColBaseName(int zone);
+ int RechercheNbBoulesPairs(int zone); // Nombre de nombre pair dans la zone
+ int RechercheNbBoulesDansGrp1(int zone); // Nombre de nombre de la zone appartenant a E1;
+ //int RechercheNbBoulesLimite(int zone, int min, int max);
+ void ListeCombinaison(stTiragesDef *ref);
+ void ConstruireListeCnp(int n, int p, QStringList &out);
+ int Cnp_v2(int n, int p);
 
 
 };
 
 typedef struct _znfDef
 {
-    int start;  /// offset de debut zone dans fichier
-    int len;    /// taille dans la zone
-    int min;    /// valeur mini possible
-    int max;    /// valeur maxi possible
+ int start;  /// offset de debut zone dans fichier
+ int len;    /// taille dans la zone
+ int min;    /// valeur mini possible
+ int max;    /// valeur maxi possible
 }stFzn;
 
 typedef struct _keyForFile
 {
-    bool wget;  /// A telecharger ?
-    int ofdate; /// Offset dans fichier pour avoir la date
-    int ofday;  /// Offset dans fichier pour avoir le jour
-    int nbZone; /// Nb zone a lire
-    stFzn *pZn; /// Pointeur vers caracteristique de chacune des zones
+ bool wget;  /// A telecharger ?
+ int ofdate; /// Offset dans fichier pour avoir la date
+ int ofday;  /// Offset dans fichier pour avoir le jour
+ int nbZone; /// Nb zone a lire
+ stFzn *pZn; /// Pointeur vers caracteristique de chacune des zones
 }stKey;
 
 /// Tirage file format
 typedef struct _tiragesFileFormat
 {
-    QString fname;              /// file name
-    NE_FDJ::E_typeJeux type;    /// type de jeux
-    stKey param;
+ QString fname;              /// file name
+ NE_FDJ::E_typeJeux type;    /// type de jeux
+ stKey param;
 }tiragesFileFormat;
 
 class DelegationDeCouleur : public QItemDelegate
 {
-    Q_OBJECT
-public:
-    DelegationDeCouleur(QWidget *parent = 0) : QItemDelegate(parent) {}
-    //DelegationDeCouleur(const QModelIndex *index=0) : QItemDelegate(index) {}
+ Q_OBJECT
+ public:
+ DelegationDeCouleur(QWidget *parent = 0) : QItemDelegate(parent) {}
+ //DelegationDeCouleur(const QModelIndex *index=0) : QItemDelegate(index) {}
 
-public:
-    virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
-    {
-        drawBackground(painter, option, index);
-        QItemDelegate::paint(painter, option, index);
-    }
+ public:
+ virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+ {
+  drawBackground(painter, option, index);
+  QItemDelegate::paint(painter, option, index);
+ }
 
-protected:
-    virtual void drawBackground(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
-    {
-        Q_UNUSED(index);
-        painter->fillRect(option.rect, QColor(qrand()%255, qrand()%255, qrand()%255));
-    }
+ protected:
+ virtual void drawBackground(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+ {
+  Q_UNUSED(index);
+  painter->fillRect(option.rect, QColor(qrand()%255, qrand()%255, qrand()%255));
+ }
 };
 
 

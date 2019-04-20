@@ -8,39 +8,46 @@
 
 class BDelegateStepper : public QItemDelegate
 {
-    Q_OBJECT
-public:
-    BDelegateStepper(QWidget *parent = 0) : QItemDelegate(parent) {}
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-               const QModelIndex &index) const;
+ Q_OBJECT
+ public:
+ // https://doc.qt.io/archives/qt-4.8/qflags.html#details
+
+ enum JourBoule{pasImportant=0x00,
+                  hier=0x01,
+                  aujourdhui=0x02,
+                  demain=0x04};
+
+ BDelegateStepper(QWidget *parent = 0) : QItemDelegate(parent) {}
+ void paint(QPainter *painter, const QStyleOptionViewItem &option,
+            const QModelIndex &index) const;
 };
 
 class BDelegateElmOrCmb : public QItemDelegate
 {
-    Q_OBJECT
-public:
-    BDelegateElmOrCmb(QWidget *parent = 0) : QItemDelegate(parent) {}
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-               const QModelIndex &index) const;
+ Q_OBJECT
+ public:
+ BDelegateElmOrCmb(QWidget *parent = 0) : QItemDelegate(parent) {}
+ void paint(QPainter *painter, const QStyleOptionViewItem &option,
+            const QModelIndex &index) const;
 };
 
 class BDelegateFilterGrp : public QItemDelegate
 {
-    Q_OBJECT
-public:
-    BDelegateFilterGrp(QWidget *parent = 0) : QItemDelegate(parent) {}
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-               const QModelIndex &index) const;
+ Q_OBJECT
+ public:
+ BDelegateFilterGrp(QWidget *parent = 0) : QItemDelegate(parent) {}
+ void paint(QPainter *painter, const QStyleOptionViewItem &option,
+            const QModelIndex &index) const;
 };
 
 
 class BSqmColorizePriority:public QSqlQueryModel
 {
-    Q_OBJECT
+ Q_OBJECT
 
-public: ///
-    explicit BSqmColorizePriority(QObject *parent = 0);
-    QVariant data(const QModelIndex &index, int role) const;
+ public: ///
+ explicit BSqmColorizePriority(QObject *parent = 0);
+ QVariant data(const QModelIndex &index, int role) const;
 };
 
 #endif // DELEGATE_H

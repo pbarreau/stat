@@ -49,7 +49,7 @@ public slots:
     void slot_chkAdd(int);
 	void slot_MontrerBoule(QModelIndex index);
 #ifndef USE_SG_CODE
-    void slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid);
+		void slot_MaFonctionDeCalcul(const QModelIndex &my_index, int in_cid);
 #endif
 
 

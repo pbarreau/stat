@@ -17,8 +17,6 @@
 
 #define CEL2_H  55
 #define CEL2_L  40
-#define BMAX_2(a,b) (((a)>(b))?(a):(b))
-#define BMIN_2(a,b) (((a)<(b))?(a):(b))
 
 #if 0
 #define C_TBL_6      "SelElemt"  /// Choix de boules dans zone
