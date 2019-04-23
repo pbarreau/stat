@@ -4321,7 +4321,7 @@ int * SyntheseGenerale::getPathToView(QTableView *view, QList < QTabWidget *> **
  /// Recuperer id des onglets
  int steps = tbHead.size();
  int *path= new int [steps];
- memset(path,-1,steps);
+ memset(path,-1,steps*sizeof(int));
  for(int i=0; i< steps;i++){
   path[i] = tbHead.at(steps -(i+1))->currentIndex();
  }
@@ -4992,7 +4992,8 @@ QString SyntheseGenerale::createSelection(void)
 	 st_calc = (this->*pMyFnZx[zn][calc])(zn,a);
 
 	 if((calc==brc) && st_calc.size()){
-		other_table = ",Ref_ana_z"+QString::number(zn+1)+QString(" as t")+QString::number(zn+2);
+		other_table = other_table + ",(Ana_z"+QString::number(zn+1)+QString(") as t")+QString::number(zn+2);
+		//other_table = ",(Ana_z"+QString::number(zn+1)+QString(") as t2");
 	 }
 
 	 /// Regarder la sortie des calc
@@ -5041,7 +5042,7 @@ QString SyntheseGenerale::createSelection(void)
 
  // Le simple click a construit la liste des boules
  //----------
- QString sqlReq = *(uneDemande.st_LDT_Depart)+QString(" as t1")
+ QString sqlReq = (*(uneDemande.st_LDT_Depart))+QString(" as t1")
                   +other_table;
 
 #ifndef QT_NO_DEBUG
@@ -5139,6 +5140,7 @@ QString SyntheseGenerale::brc_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> 
   p=a->at(pos);
   int key = p->first;
   filter_key = QString("(t"+QString::number(zn+2)+".bc=")+QString::number(key)+QString(")");
+  //filter_key = QString("(t2.bc=")+QString::number(key)+QString(")");
 
 
   mon_brc_tmp = key;
@@ -5183,7 +5185,7 @@ QString SyntheseGenerale::brc_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> 
  }
 
  if(st_critere.size()){
-  st_critere = st_critere + QString(" and (t1.id=t2.id)");
+  st_critere = st_critere + QString(" and (t1.id=t"+QString::number(zn+2)+".id)");
  }
 
 #ifndef QT_NO_DEBUG
