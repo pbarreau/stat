@@ -1086,6 +1086,13 @@ void SyntheseGenerale::DoComptageTotal(void)
   &SyntheseGenerale::brc_VbResu
  };
 
+ tptrFns Trmt_cmb_a={
+  &SyntheseGenerale::cmb_VbInfo
+ };
+ tptrFns Trmt_cmb_b={
+  &SyntheseGenerale::VbInfo_nop
+ };
+
  tptrFns Trmt_grp_a={
   &SyntheseGenerale::VbInfo_nop
  };
@@ -1104,6 +1111,7 @@ void SyntheseGenerale::DoComptageTotal(void)
  pVtptrFns p_tot[]={Trmt_tot_a,Trmt_tot_b};
  pVtptrFns p_brc[]={Trmt_brc_a,Trmt_brc_b};
  pVtptrFns p_grp[]={Trmt_grp_a,Trmt_grp_b};
+ pVtptrFns p_cmb[]={Trmt_cmb_a,Trmt_cmb_b};
  pVtptrFns p_nop[]={Trmt_nop,Trmt_nop};
 
  /// Tableau contenant les calculs a effectuer
@@ -1111,7 +1119,7 @@ void SyntheseGenerale::DoComptageTotal(void)
   {
    {typeCalc::tot,p_tot},
    {typeCalc::brc,p_brc},
-   {typeCalc::nop,p_nop},
+   {typeCalc::cmb,p_cmb},
    {typeCalc::nop,p_grp},
    {typeCalc::endCalc,NULL}
   };
@@ -1933,6 +1941,40 @@ bool SyntheseGenerale::grp_Contruire_Tbl(int zn,
  return isOk;
 }
 
+bool SyntheseGenerale::cmb_Contruire_Tbl(int zn,
+																				 QString tb_src ,
+																				 QString tb_ana,
+																				 QString key_brc,
+																				 QString tbl_dst )
+{
+ bool isOk = true;
+
+
+ QString st_requete;
+
+ st_requete = A4_0_TrouverLignes(zn,  tb_src, tb_ana ,  key_brc);
+#ifndef QT_NO_DEBUG
+ qDebug() << st_requete;
+#endif
+
+ st_requete = A4_1_CalculerEcart(st_requete);
+#ifndef QT_NO_DEBUG
+ qDebug() << st_requete;
+#endif
+
+ st_requete = A4_2_RegrouperEcart(st_requete);
+#ifndef QT_NO_DEBUG
+ qDebug() << st_requete;
+#endif
+
+ if((isOk = Contruire_Executer(tbl_dst,st_requete))){
+  isOk = cmb_MarquerDerniers(zn,  tb_src, tb_ana ,  key_brc,tbl_dst);
+ }
+
+
+ return isOk;
+}
+
 bool SyntheseGenerale::brc_Contruire_Tbl(int zn,
 																				 QString tb_src ,
 																				 QString tb_ana,
@@ -1972,6 +2014,14 @@ bool SyntheseGenerale::brc_Contruire_Tbl(int zn,
 
 
  return isOk;
+}
+
+bool SyntheseGenerale::cmb_MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
+{
+ bool isOk = true;
+ QSqlQuery query(db_0);
+
+  return isOk;
 }
 
 bool SyntheseGenerale::brc_MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
@@ -2397,6 +2447,130 @@ QTableView * SyntheseGenerale::grp_TbvAnalyse(QGridLayout *grid_parent, int zn, 
 
 
  if((isOk = grp_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
+
+
+	QString msg = "select * from "+tb_out+";";
+
+	sqlqmDetails::st_sqlmqDetailsNeeds val;
+	val.ori = this;
+	val.cnx = db_0.connectionName();
+	val.sql = msg;
+	val.wko = tb_out;
+	val.view = qtv_tmp;
+
+	sqlqmDetails *sqm_tmp= new sqlqmDetails(val);
+
+	sqm_tmp->setQuery(msg,db_0);
+
+
+	BDelegateCouleurFond::st_ColorNeeds a;
+	a.ori = sqm_tmp;
+	a.cnx = db_0.connectionName();
+	a.wko = tb_out;
+
+	BDelegateCouleurFond *color = new BDelegateCouleurFond(a,qtv_tmp);
+	qtv_tmp->setItemDelegate(color);
+	/// Mise en place d'un toolstips
+	qtv_tmp->setMouseTracking(true);
+	connect(qtv_tmp,
+					SIGNAL(entered(QModelIndex)),
+					color,SLOT(slot_AideToolTip(QModelIndex)));
+
+
+	QSortFilterProxyModel *m=new QSortFilterProxyModel();
+	m->setDynamicSortFilter(true);
+	m->setSourceModel(sqm_tmp);
+	qtv_tmp->setModel(m);
+
+	qtv_tmp->setSortingEnabled(true);
+	qtv_tmp->sortByColumn(BDelegateCouleurFond::Columns::TotalElement,Qt::DescendingOrder);
+
+	// Renommer le nom des colonnes
+	int nbcol = sqm_tmp->columnCount();
+	for(int i = 0; i<nbcol;i++)
+	{
+	 QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+	 if(headName.size()>2)
+	 {
+		sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+	 }
+	}
+
+	qtv_tmp->setAlternatingRowColors(true);
+	//qtv_tmp->setStyleSheet("QTableView {selection-background-color: rgba(100, 100, 100, 150);}");
+	qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+	qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
+
+
+	/// Mettre toutes largeures identiques
+	qtv_tmp->verticalHeader()->hide();
+	qtv_tmp->hideColumn(0);
+	for(int j=0;j<=nbcol;j++){
+	 qtv_tmp->setColumnWidth(j,28);
+	}
+
+	/// Autoriser adaptation pour zone ecart
+	for(int j=BDelegateCouleurFond::Columns::EcartCourant;j<=BDelegateCouleurFond::Columns::TotalElement;j++){
+	 qtv_tmp->resizeColumnToContents(j);
+	}
+
+	// bloquer modif par utilisateur
+	qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+	qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+	// simple click dans fenetre  pour selectionner boule
+	connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+					this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+	connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+					this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+ }
+
+ return qtv_tmp;
+}
+QGridLayout* SyntheseGenerale::cmb_VbInfo(param_2 prm)
+{
+
+ QGridLayout *lay_tmp = new QGridLayout;
+ QVBoxLayout *vb_tmp = new QVBoxLayout;
+ QLabel * lab_tmp = new QLabel;
+ QTableView *qtv_tmp = NULL;
+
+ int zn =prm.zn;
+ QString tb_src = prm.prm_1.tb_src;
+ QString tb_ref = prm.prm_1.hlp[1].tbl+QString::number(zn+1);
+ QString key = "k_cmb";
+
+ qtv_tmp = cmb_TbvAnalyse(zn, tb_src, tb_ref, key);
+ tbv[zn]<<qtv_tmp;
+
+ lab_tmp->setText("Repartitions");
+ vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+ vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+ lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+
+ return lay_tmp;
+}
+
+QTableView * SyntheseGenerale::cmb_TbvAnalyse(int zn, QString tb_src, QString tb_ref, QString key)
+{
+ QString tb_out = QString("r_")+tb_src + "_"+key+QString("_z")+QString::number(zn+1);
+
+ QTableView *qtv_tmp = new QTableView;
+ qtv_tmp->setObjectName(tb_out);
+
+
+ QSqlQuery query(db_0);
+ bool isOk = true;
+ QString st_msg1 = "";
+
+
+ if((isOk = cmb_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
 
 
 	QString msg = "select * from "+tb_out+";";

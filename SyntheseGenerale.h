@@ -204,6 +204,7 @@ class SyntheseGenerale : public QObject
 
   bool tot_MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst);
   bool brc_MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst);
+  bool cmb_MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst);
 
 
   bool Contruire_Executer(QString tbl_dst, QString st_requete);
@@ -333,6 +334,9 @@ class SyntheseGenerale : public QObject
   QGridLayout* brc_VbInfo(param_2 prm);
   QGridLayout* brc_VbResu(param_2 prm);
 
+	QGridLayout* cmb_VbInfo(param_2 prm);
+	QGridLayout* cmb_VbResu(param_2 prm);
+
 	QGridLayout* grp_VbInfo(QGridLayout *gridSel, param_2 prm);
 	QGridLayout* grp_VbResu(QGridLayout *gridSel, param_2 prm);
 
@@ -342,12 +346,16 @@ class SyntheseGenerale : public QObject
   QTableView * brc_TbvAnalyse(int zn, QString source, QString definition, QString key);
   QTableView * brc_TbvResume(int zn, QString tb_in, QString st_key);
 
-  void FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete, QString tb_total, QString st_key);
+	QTableView * cmb_TbvAnalyse(int zn, QString source, QString definition, QString key);
+	QTableView * cmb_TbvResume(int zn, QString tb_in, QString st_key);
+
+	void FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete, QString tb_total, QString st_key);
 
   //bool isTableTotalBoulleReady(QString tbl_total);
   bool mettreBarycentre(QString tbl_dst, QString src_data);
   bool grp_Contruire_Tbl(int zn, QString tbl_poids_boules, QString tb_ref, QString key, QString tbl_out);
   bool brc_Contruire_Tbl(int zn, QString tbl_poids_boules, QString tb_ref, QString key, QString tbl_out);
+  bool cmb_Contruire_Tbl(int zn, QString tbl_poids_boules, QString tb_ref, QString key, QString tbl_out);
   bool A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poids_boules);
   bool RajouterCalculBarycentreDansAnalyses(int zn,
                                             QString tb_src ,
