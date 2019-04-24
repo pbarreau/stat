@@ -790,7 +790,7 @@ QWidget * SyntheseDetails::PBAR_CreerOngletsReponses(stCurDemande *pEtude, QMdiA
   else
   {
    QLabel * lb_info = new QLabel;
-   lb_info->setText("Pas de réponses selon ce critere ...");
+   lb_info->setText("Pas de reponses selon ce critere ...");
    MonComptage->addWidget(lb_info,0,0,Qt::AlignLeft|Qt::AlignTop);
 
   }
@@ -1831,25 +1831,31 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBarycentre(stCurDemande *pEtude, 
  QTableView *qtv_tmp = new QTableView;
 
 
+ /*
  int bary = pEtude->barycentre;
  if(!bary){
   return  lay_return;
  }
+*/
 
  QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
 
- QString sql_msgRef = "SELECT t4.bc, count(t4.bc) as T, "
-                      "count(CASE WHEN  t2.J like 'LUN%' then 1 end) as LUN,"
-                      "count(CASE WHEN  t2.J like 'MAR%' then 1 end) as MAR,"
-                      "count(CASE WHEN  t2.J like 'MER%' then 1 end) as MER,"
-                      "count(CASE WHEN  t2.J like 'SAM%' then 1 end) as SAM,"
-                      "count(CASE WHEN  t2.J like 'VEN%' then 1 end) as VEN  "
-                      "from RefTirages as t1, RefTirages as t2, "
-                      "Ref_ana_z1 as t3,Ref_ana_z1 as t4  "
+ QString filter_days = (*pEtude->st_jourDef);
+ filter_days.replace("J","t2.J");
+
+#ifndef QT_NO_DEBUG
+ qDebug() << filter_days;
+#endif
+
+ QString sql_msgRef = "select t3.bc, count(t3.bc) as T, "
+                      + filter_days +
+                      "from ("
+                      + pEtude->st_LDT_Filtre
+                      +") as t1,("
+                      +pEtude->st_LDT_Depart
+                      +") as t2, (Ana_z1) as t3 "
                       "WHERE ( "
-                      "(t3.bc="+QString::number(bary)+") and (t1.id=t3.id)  "
-                                                      "AND  "
-                                                      "(t2.id=t1.id+"+QString::number(d[ongPere])+") and(t4.id=t2.id)) GROUP by t4.bc ";
+                        "(t2.id=t1.id+"+QString::number(d[ongPere])+") and (t3.id=t2.id)) GROUP by t3.bc order by T desc ";
 
 #ifndef QT_NO_DEBUG
  qDebug() << sql_msgRef;
