@@ -5130,24 +5130,22 @@ QString SyntheseGenerale::createSelection(void)
  QString (SyntheseGenerale::*ptrFz1[])(int zn, QList <QPair<int,stSelInfo*>*> *a)=
   {
    &SyntheseGenerale::tot_SqlCreateZn,
-   &SyntheseGenerale::brc_SqlCreateZn/*,
-                                                                                                                                                                                                                                                                                                                                                                      &SyntheseGenerale::cmb_SqlCreateZ1,
-                                                                                                                                                                                                                                                                                                                                                                      &SyntheseGenerale::grp_SqlCreateZ1*/
+   &SyntheseGenerale::brc_SqlCreateZn,
+   &SyntheseGenerale::cmb_SqlCreateZn,
   };
 
  QString (SyntheseGenerale::*ptrFz2[])(int zn,QList <QPair<int,stSelInfo*>*> *a)=
   {
    &SyntheseGenerale::tot_SqlCreateZn,
-   &SyntheseGenerale::brc_SqlCreateZn/*,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                  &SyntheseGenerale::stb_SqlCreate,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                  &SyntheseGenerale::stb_SqlCreate*/
+   &SyntheseGenerale::brc_SqlCreateZn,
+   &SyntheseGenerale::cmb_SqlCreateZn,
   };
 
  typedef  QString (SyntheseGenerale::**ptrFZx)(int zn,QList <QPair<int,stSelInfo*>*> *a);
 
  ptrFZx pMyFnZx[] ={ptrFz1,ptrFz1};
  int max_zn = 2;
- int max_calc = 2; /// Debug tempo
+ int max_calc = 3; /// Debug tempo
 
  QString other_table = "";
 
@@ -5165,9 +5163,8 @@ QString SyntheseGenerale::createSelection(void)
 	 QList <QPair<int,stSelInfo*>*> *a = &qlSel[zn][calc];
 	 st_calc = (this->*pMyFnZx[zn][calc])(zn,a);
 
-	 if((calc==brc) && st_calc.size()){
+	 if(( (calc==brc)||(calc==cmb)) && st_calc.size()){
 		other_table = other_table + ",(Ana_z"+QString::number(zn+1)+QString(") as t")+QString::number(zn+2);
-		//other_table = ",(Ana_z"+QString::number(zn+1)+QString(") as t2");
 	 }
 
 	 /// Regarder la sortie des calc
@@ -5314,8 +5311,6 @@ QString SyntheseGenerale::brc_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> 
   p=a->at(pos);
   int key = p->first;
   filter_key = QString("(t"+QString::number(zn+2)+".bc=")+QString::number(key)+QString(")");
-  //filter_key = QString("(t2.bc=")+QString::number(key)+QString(")");
-
 
   mon_brc_tmp = key;
 
@@ -5368,6 +5363,71 @@ QString SyntheseGenerale::brc_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> 
  return st_critere;
 }
 
+QString SyntheseGenerale::cmb_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> *a)
+{
+ QString st_critere = "";
+ QString filter_key = "";
+ QString filter_days= "";
+
+ QString conjZn[]={" or "," or "};
+
+ int nb_items = a->size();
+ QPair<int,stSelInfo *> *p = NULL;
+ for(int pos = 0; pos< nb_items;pos++){
+  p=a->at(pos);
+  int key = p->first;
+  filter_key = QString("(t"+QString::number(zn+2)+".k_cmb=")+QString::number(key)+QString(")");
+
+  //mon_brc_tmp = key;
+
+
+	int nb_sel = p->second->lstSel->size();
+	filter_days="";
+	for(int sel=0; sel < nb_sel; sel++){
+	 QModelIndex un_index = p->second->lstSel->at(sel);
+	 const QAbstractItemModel * pModel = un_index.model();
+	 int nbcol = pModel->columnCount();
+	 int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
+
+	 int col = un_index.column();
+	 if((col >= BDelegateCouleurFond::Columns::TotalElement)
+			 &&
+			 (col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+		QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+		QString headName = vCol.toString();
+
+		if(col > BDelegateCouleurFond::Columns::TotalElement){
+		 filter_days = filter_days + QString("(J like'")+headName+QString("%')");
+		}
+		if(sel < nb_sel -1 ){
+		 filter_days = filter_days + " or ";
+		}
+	 }
+	}
+
+	if(filter_days.size()){
+	 st_critere = st_critere + QString("(")+filter_key+QString(" and (")+ filter_days + QString("))");
+	}
+	else {
+	 st_critere = st_critere + QString("(")+filter_key+QString(")");
+	}
+
+	/// Autre clef ?
+	if(pos < nb_items -1){
+	 st_critere = st_critere + conjZn[zn];
+	}
+
+ }
+
+ if(st_critere.size()){
+  st_critere = st_critere + QString(" and (t1.id=t"+QString::number(zn+2)+".id)");
+ }
+
+#ifndef QT_NO_DEBUG
+ qDebug() << st_critere;
+#endif
+ return st_critere;
+}
 
 QString SyntheseGenerale::tot_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> *a)
 {
