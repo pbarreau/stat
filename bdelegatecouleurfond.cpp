@@ -120,21 +120,40 @@ void BDelegateCouleurFond::paint(QPainter *painter, const QStyleOptionViewItem &
     painter->fillRect(option.rect, leFond);
   }
 
+  /// Colonnes fond bleu
   if(col == Columns::TotalElement || col == Columns::EcartCourant){
     painter->fillRect(option.rect, COULEUR_FOND_TOTAL);
   }
 
+  /// Zone distribution des totaux
   if((col > Columns::TotalElement) && (col <= Columns::TotalElement+nbJ)){
     //painter->save();
     painter->fillRect(option.rect, COULEUR_FOND_DETAILS);
     //painter->restore();
   }
 
+  /// Zone analyses
   if(col > Columns::EcartCourant && col < Columns::TotalElement){
-    //painter->save();
-    painter->fillRect(option.rect, COULEUR_FOND_ECARTS);
-    //painter->restore();
-  }
+   int d = col - (Columns::EcartCourant+1);
+   QColor info[]={COULEUR_FOND_Ep,COULEUR_FOND_Em,
+    COULEUR_FOND_EM,COULEUR_FOND_Es,COULEUR_FOND_Me};
+
+	 double ecartCourant = (index.sibling(index.row(),Columns::EcartCourant)).data().toDouble();
+	 double current = index.data().toDouble();
+	 double radix = 2.0;
+	 double pos = fabs(current-ecartCourant);
+
+	 if( pos < radix){
+		 painter->fillRect(option.rect, info[d]);
+	 }
+
+	 if( (pos < 2*radix) && (pos > radix)){
+		painter->save();
+		painter->setBrush(Qt::green);
+		painter->drawEllipse(c1,cx/2,cy/4);
+		painter->restore();
+	 }
+	}
 
   QItemDelegate::paint(painter, option, index);
 }

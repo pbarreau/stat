@@ -4,11 +4,11 @@
 #include "filtrecombinaisons.h"
 
 
-FiltreCombinaisons::FiltreCombinaisons(QWidget *parent) :
+FiltreCombinaisons::FiltreCombinaisons(int value, QWidget *parent) :
     QLineEdit(parent)
 {
-    totalLignes = new QLabel;
-    proxyModel = new MonFiltreProxyModel(totalLignes);
+		totalLignes = new QLabel;
+		proxyModel = new MonFiltreProxyModel(totalLignes, value);
 
     syntax = QRegExp::PatternSyntax(QRegExp::Wildcard);
     typeCase= Qt::CaseInsensitive;
@@ -40,7 +40,12 @@ void FiltreCombinaisons::setFiltreConfig(QAbstractItemModel *model,QAbstractItem
 
     sourceView=view;
     sourceView->setModel(proxyModel);
-    totalLignes->setText( QString::number(proxyModel->getFilterNbRow()));
+
+		int ligneVisibles = proxyModel->getFilterNbRow();
+		QString msg = "Total : " + QString::number(ligneVisibles);
+		//pTotal->setText(msg);
+
+		totalLignes->setText(msg);
 }
 
 void FiltreCombinaisons::slot_setFKC(int colId, int nbCol)

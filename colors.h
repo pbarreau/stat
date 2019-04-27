@@ -10,4 +10,9 @@
 #define COULEUR_FOND_VIDE       QColor(255,255,255,255)
 #define COULEUR_FOND_TOTAL      QColor(0,150,255,120)
 
+#define COULEUR_FOND_Ep         QColor(255,184,127,190)
+#define COULEUR_FOND_Em         QColor(140,255,124,190)
+#define COULEUR_FOND_EM         QColor(219,188,255,190)
+#define COULEUR_FOND_Es         QColor(255,182,0,140)
+#define COULEUR_FOND_Me         QColor(255,255,0,140)
 #endif // COLORS_H

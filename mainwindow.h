@@ -274,7 +274,7 @@ private:
 
     QTableView *G_tbv_CombiSourceSelection;
     QTableView *G_tbv_ProxyCombiSourceSelection;
-    FiltreCombinaisons *fltComb_1;
+    ///FiltreCombinaisons *fltComb_1;
     QSqlTableModel *G_tab_1Model;
 
 

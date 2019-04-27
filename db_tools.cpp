@@ -226,6 +226,35 @@ QString DB_Tools::leftJoinFiltered(stJoinArgs ja,QString arg5)
   return msg;
 }
 
+bool DB_Tools::checkHavingTable(QString tbl, QString cnx, bool silence)
+{
+ bool isOk = false;
+ QSqlDatabase db = QSqlDatabase::database(cnx);
+ QSqlQuery query(db);
+ QString msg_err= "";
+
+ QString msg[]{
+  {"SELECT name FROM sqlite_master "
+   "WHERE type='table' AND name='"+tbl+"';"}
+  };
+
+ if((isOk = query.exec(msg[0])))
+ {
+  query.first();
+  if((isOk=query.isValid()))
+  {
+   msg_err = QString("Presence Table ")+tbl;
+  }
+  else{
+   msg_err = QString("Absence Table ")+tbl;
+  }
+  if(!silence){
+   QMessageBox::information(NULL,"Test Table",msg_err,QMessageBox::Ok);
+  }
+ }
+ return isOk;
+}
+
 bool DB_Tools::checkHavingTableAndKey(QString tbl, QString key, QString cnx)
 {
   bool isOk = false;

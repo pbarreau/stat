@@ -73,34 +73,12 @@ void SyntheseGenerale::slot_ccmr_grpSel(const QPoint pos)
  MonMenu->exec(view->viewport()->mapToGlobal(pos));
 }
 
-void SyntheseGenerale::slot_grpSel()
+void SyntheseGenerale::main_CallToMkDetail(int zn, typeCalc calcul, QTableView *view)
 {
- QString st_titre = "";
+ QString msg = "";
 
- QString st_critere = "";
- QString sqlReq =*(uneDemande.st_LDT_Depart);
-
- QAction *act = qobject_cast<QAction *>(sender());
- QTableView *view = qobject_cast<QTableView *>(act->parent());
-
- QTableView *ptrSel = NULL;
- QList < QTabWidget *> *id_tab[2]={NULL};
-
- int *path = getPathToView(view, &id_tab[0], &ptrSel);
-
- QItemSelectionModel *selectionModel = view->selectionModel();
- QAbstractItemModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(view->model());
- int nbcol = sqm_tmp->columnCount();
-
-
-
- /// il y a t'il une selection
- QModelIndexList indexes =  selectionModel->selectedIndexes();
-
- if(indexes.size())
- {
-  sqlReq =grp_sqlFromSelection(view, path[0]);
- }
+ /// Selon type calcul faire::
+ msg = grp_CaseAll(zn,view);
 
 #if 0
  /// on informe !!!
@@ -117,6 +95,7 @@ void SyntheseGenerale::slot_grpSel()
   emit sig_ComptageReady(a);
  }
 #endif
+
 
  //----------
  stCurDemande *etude = new stCurDemande;
@@ -135,8 +114,8 @@ void SyntheseGenerale::slot_grpSel()
  etude->st_LDT_Filtre = new QString;
  etude->st_jourDef = new QString;
  *(etude->st_jourDef) = CompteJourTirage(db_0.connectionName());
- *(etude->st_LDT_Filtre) = sqlReq;
- etude->barycentre = mon_brc_tmp;
+ *(etude->st_LDT_Filtre) = msg;
+ //etude->barycentre = mon_brc_tmp;
 
 #ifndef QT_NO_DEBUG
  qDebug()<<etude->st_titre;
@@ -154,6 +133,64 @@ void SyntheseGenerale::slot_grpSel()
          unDetail, SLOT(slot_FermeLaRecherche(int) ) );
 
 
+
+}
+
+QString SyntheseGenerale::grp_CaseAll(int zn, QTableView *view)
+{
+ QString st_titre = "";
+
+ QString st_critere = "";
+ QString sqlReq =*(uneDemande.st_LDT_Depart);
+ QTableView *ptrSel = NULL;
+ QList < QTabWidget *> *id_tab[2]={NULL};
+
+ int *path = getPathToView(view, &id_tab[0], &ptrSel);
+
+ QItemSelectionModel *selectionModel = view->selectionModel();
+ QAbstractItemModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(view->model());
+ int nbcol = sqm_tmp->columnCount();
+
+
+
+ /// il y a t'il une selection
+ QModelIndexList indexes =  selectionModel->selectedIndexes();
+
+ if(indexes.size())
+ {
+  st_critere =grp_sqlFromSelection(view, path[0]);
+ }
+
+#ifndef QT_NO_DEBUG
+ qDebug()<<sqlReq;
+ qDebug()<<st_critere;
+#endif
+
+ return st_critere;
+}
+
+void SyntheseGenerale::slot_grpDbClikSel()
+{
+
+ QTableView *view = qobject_cast<QTableView *>(sender());
+
+ int zn = 0;
+ QString sqlReq = "";
+
+ main_CallToMkDetail(zn, grp, view);
+}
+
+void SyntheseGenerale::slot_grpSel()
+{
+
+ QAction *act = qobject_cast<QAction *>(sender());
+ QTableView *view = qobject_cast<QTableView *>(act->parent());
+
+ QStringList items = view->objectName().split("z");
+ int zn = items.at(1).toInt()-1;
+ QString sqlReq = "";
+
+ main_CallToMkDetail(zn, grp, view);
 }
 
 QString SyntheseGenerale::grp_sqlFromSelection(QTableView *view, int path)
@@ -227,6 +264,10 @@ QString SyntheseGenerale::grp_sqlFromSelection(QTableView *view, int path)
  for (int pos=0; pos < nbScanCol; pos++) {
   int key = cur_sel.at(pos)->first;
   QString msg_key = grp_SqlFromKey(path, key);
+#ifndef QT_NO_DEBUG
+  qDebug() << msg_key;
+#endif
+
   as_def = "r_"+QString::number(pos);
 
 

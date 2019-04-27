@@ -475,7 +475,8 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
 
     // Filtre
     QFormLayout *FiltreLayout = new QFormLayout;
-    FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
+    int nbLines=0;
+    FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons(nbLines);
     QList<qint32> colid;
     colid << 1; /// colonne Repartition
     fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);

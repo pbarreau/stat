@@ -109,18 +109,19 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
 {
  QGridLayout *lay_return = new QGridLayout;
 
- QTableView *tbv_tmp0 = tbForBaseLigne();
+ //QTableView *tbv_tmp0 = tbForBaseLigne();
  QTableView *tbv_tmp1 = tbForBaseRef();
 
- QWidget *tbv_tmp2 = EcartOnglets();
+ //QWidget *tbv_tmp2 = EcartOnglets();
 
- lay_return->addWidget(tbv_tmp0,0,0,1,3,Qt::AlignLeft|Qt::AlignTop);
- lay_return->addWidget(tbv_tmp1,1,0,Qt::AlignLeft|Qt::AlignTop);
- lay_return->addWidget(tbv_tmp2,1,1,Qt::AlignLeft|Qt::AlignTop);
+ //lay_return->addWidget(tbv_tmp0,0,0,1,3,Qt::AlignLeft|Qt::AlignTop);
+ lay_return->addWidget(tbv_tmp1,0,0,Qt::AlignLeft|Qt::AlignTop);
+ //lay_return->addWidget(tbv_tmp2,1,1,Qt::AlignLeft|Qt::AlignTop);
 
  return lay_return;
 }
 
+#if 0
 QTableView *RefEtude::tbForBaseLigne()
 {
  QTableView *qtv_tmp = new QTableView;
@@ -162,46 +163,9 @@ QTableView *RefEtude::tbForBaseLigne()
  p_tbv_3 = qtv_tmp;
  return qtv_tmp;
 }
-
-void RefEtude::slot_Type_G(const QModelIndex & index)
-{
- const QAbstractItemModel * pModel = index.model();
- int col = index.column();
- //int lgn = index.row();
- //int use = un_index.model()->index(lgn,0).data().toInt();
- int val = index.data().toInt();
- QVariant vCol = pModel->headerData(col,Qt::Horizontal);
- QString headName = vCol.toString();
+#endif
 
 
- QString titre = "b: - e: - c: - g:("
-                 +headName+","+QString::number(val)+")";
-
- stCurDemande *etude = new stCurDemande;
- QString *st_tmp1 = new QString;
- *st_tmp1 = C_TousLesTirages;
- etude->origine = Tableau1;
- etude->db_cnx = p_db->get_IdCnx();
-
- QItemSelectionModel *selectionModel = p_tbv_3->selectionModel();
- etude->selection[3] = selectionModel->selectedIndexes();
- etude->st_titre = titre;
- etude->cur_dst = 0;
- etude->st_Ensemble_1 = &p_stRefTirages;
- etude->ref = p_conf;
- etude->st_LDT_Filtre = new QString;
- etude->st_LDT_Depart = st_tmp1;
- etude->st_jourDef = new QString;
- *(etude->st_jourDef) = CompteJourTirage(db_0.connectionName());
-
- etude->st_TablePere = REF_BASE;
- // Nouvelle de fenetre de detail de cette selection
- SyntheseDetails *unDetail = new SyntheseDetails(etude,p_affiche,p_reponse);
- connect( p_reponse, SIGNAL(tabCloseRequested(int)) ,
-          unDetail, SLOT(slot_FermeLaRecherche(int) ) );
-
-
-}
 QTableView *RefEtude::tbForBaseRef()
 {
  QTableView *tbv_tmp = new QTableView;
@@ -232,7 +196,7 @@ QTableView *RefEtude::tbForBaseRef()
  tbv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
  // Taille tableau
- tbv_tmp->setFixedSize(XLenTir*2/3,CHauteur2);
+ tbv_tmp->setFixedSize(XLenTir,CHauteur2);
 
  // ----------------------
  // voir effet !!!
@@ -248,18 +212,21 @@ QTableView *RefEtude::tbForBaseRef()
  // ---------------------
  p_tbv_0 = tbv_tmp;
 
+ #if 0
  // click sur une ligne des tirages effectue l'analyse de la ligne
  connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
           this, SLOT( slot_ShowDetails( QModelIndex) ) );
 
-#if 0
+
  connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
           this, SLOT( slot_DecodeTirage( QModelIndex) ) );
-#endif
+
 
  // click sur la zone reservee au boules du tirage
  connect( tbv_tmp, SIGNAL(clicked (QModelIndex)) ,
           this, SLOT( slot_ShowBoule( QModelIndex) ) );
+
+#endif
 
 
  return tbv_tmp;
@@ -336,8 +303,8 @@ QGridLayout *RefEtude::MonLayout_TabEcart_2()
  QGridLayout *returnLayout = new QGridLayout;
 
  // Association recherche avec qttable !
- QTableView *tbv_tmp1 = tbForBaseEcart(0);
- returnLayout->addWidget(tbv_tmp1,0,0);
+ //QTableView *tbv_tmp1 = tbForBaseEcart(0);
+ //returnLayout->addWidget(tbv_tmp1,0,0);
 
  return returnLayout;
 }
@@ -347,8 +314,8 @@ QGridLayout *RefEtude::MonLayout_TabEcart_3()
  QGridLayout *returnLayout = new QGridLayout;
 
  // Association recherche avec qttable !
- QTableView *tbv_tmp1 = tbForBaseEcart(1);
- returnLayout->addWidget(tbv_tmp1,0,0);
+ //QTableView *tbv_tmp1 = tbForBaseEcart(1);
+ //returnLayout->addWidget(tbv_tmp1,0,0);
 
  return returnLayout;
 }
@@ -612,6 +579,7 @@ bool VerifierValeur(QSqlDatabase la_db, int item, QString table,int idColValue,i
  return ret;
 }
 
+#if 0
 QTableView *RefEtude::tbForBaseEcart(int zn)
 {
  QTableView *qtv_tmp = new QTableView;
@@ -701,6 +669,7 @@ QTableView *RefEtude::tbForBaseEcart(int zn)
 
  return qtv_tmp;
 }
+#endif
 
 QWidget *RefEtude::CouvMois_OglGroup()
 {
@@ -1270,6 +1239,8 @@ void RefEtude::slot_TotalCouverture(int index)
   }
  }
 }
+
+#if 0
 void RefEtude::slot_ShowBoule(const QModelIndex & index)
 {
  int val = 0;
@@ -1288,6 +1259,7 @@ void RefEtude::slot_ShowBoule(const QModelIndex & index)
 
  col = 0;
 }
+#endif
 
 void RefEtude::slot_ShowBoule_2(const QModelIndex & index)
 {
@@ -1306,6 +1278,7 @@ void RefEtude::slot_ShowBoule_2(const QModelIndex & index)
  col = 0;
 }
 
+#if 0
 void RefEtude::slot_ShowDetails(const QModelIndex & index)
 {
  static int sortir = 0;
@@ -1359,6 +1332,7 @@ void RefEtude::slot_ShowDetails(const QModelIndex & index)
   }
  }
 }
+#endif
 
 bool RefEtude::RechercheCouverture(QList<sCouv *> *lstCouv,int zn)
 {

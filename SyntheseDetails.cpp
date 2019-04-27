@@ -1041,7 +1041,19 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerTirages(int ref,
 
 
  QFormLayout *FiltreLayout = new QFormLayout;
- FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons;
+#ifndef QT_NO_DEBUG
+ qDebug()<<sql_msgRef;
+#endif
+ QString nbReponses = "select count (*) from ("+sql_msgRef.remove(";")+")";
+ QSqlQuery query(db_0);
+ int nbLines=0;
+ if(query.exec(nbReponses)){
+  query.first();
+  if(query.isValid()){
+   nbLines = query.value(0).toInt();
+  }
+ }
+ FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons(nbLines);
  QList<qint32> colid;
  colid << 2;
  fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
@@ -1191,7 +1203,19 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
          this, SLOT(slot_FiltreSurNewCol(int)));
 
  QFormLayout *FiltreLayout = new QFormLayout;
- FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons;
+#ifndef QT_NO_DEBUG
+ qDebug()<<sql_msgRef;
+#endif
+ QString nbReponses = "select count (*) from ("+sql_msgRef.remove(";")+")";
+ QSqlQuery query(db_0);
+ int nbLines=0;
+ if(query.exec(nbReponses)){
+  query.first();
+  if(query.isValid()){
+   nbLines = query.value(0).toInt();
+  }
+ }
+ FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons(nbLines);
  QList<qint32> colid;
  colid << 2;
  fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
@@ -1363,19 +1387,20 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
 
  // Filtre
  QFormLayout *FiltreLayout = new QFormLayout;
- FiltreCombinaisons *fltComb_1 = new FiltreCombinaisons();
+ int nbLines=0;
+ FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons(nbLines);
  QList<qint32> colid;
  colid << 1;
- fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
+ fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
 
  //fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,1);
- FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
+ FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
 
  // Memorisation des pointeurs
  if(ongPere == 3)
  {
   dist->keepPtr(2,sqm_tmp,qtv_tmp, NULL);
-  dist->keepFiltre(fltComb_1);
+  dist->keepFiltre(fltComb_tmp);
  }
 
 
@@ -1401,7 +1426,8 @@ QGridLayout * SyntheseDetails::MonLayout_CompteCombi(stCurDemande *pEtude, QStri
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
  qtv_tmp->hideColumn(0); // don't show the ID
  qtv_tmp->verticalHeader()->hide();
- qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
+ //qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
+ qtv_tmp->adjustSize();
 
  // Taille/Nom des colonnes
  qtv_tmp->setColumnWidth(1,70);
@@ -1699,13 +1725,14 @@ QGridLayout * SyntheseDetails::MonLayout_pFnDetailsMontrerRepartition(int ref, i
 
  // Filtre
  QFormLayout *FiltreLayout = new QFormLayout;
- FiltreCombinaisons *fltComb_1 = new FiltreCombinaisons();
+ int nbLines=0;
+ FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons(nbLines);
  QList<qint32> colid;
  colid << 1;
- fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
+ fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
 
  //fltComb_1->setFiltreConfig(sqm_tmp,qtv_tmp,1);
- FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
+ FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
 
  qtv_tmp->setSortingEnabled(true);
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -1888,9 +1915,11 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBarycentre(stCurDemande *pEtude, 
  qtv_tmp->setModel(m);
  qtv_tmp->verticalHeader()->hide();
 
- for(int j=0;j<=sqm_tmp->columnCount();j++)
+ for(int j=0;j<=sqm_tmp->columnCount();j++){
   qtv_tmp->setColumnWidth(j,LCELL);
- qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
+ }
+ //qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
+ qtv_tmp->adjustSize();
 
  // Ne pas modifier largeur des colonnes
  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
@@ -1954,7 +1983,8 @@ QGridLayout * SyntheseDetails::MonLayout_CompteBoulesZone(stCurDemande *pEtude, 
 
  for(int j=0;j<=sqm_tmp->columnCount();j++)
   qtv_tmp->setColumnWidth(j,LCELL);
- qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
+ //qtv_tmp->setFixedSize(CLargeur1,CHauteur1);
+ qtv_tmp->adjustSize();
 
  // Ne pas modifier largeur des colonnes
  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);

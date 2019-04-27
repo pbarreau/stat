@@ -19,7 +19,7 @@ class FiltreCombinaisons : public QLineEdit
     Q_OBJECT
 
 public:
-    explicit FiltreCombinaisons(QWidget *parent = 0);
+    explicit FiltreCombinaisons(int value, QWidget *parent = 0);
     void setFiltreConfig(QAbstractItemModel *model, QAbstractItemView *view, const QList<qint32> &filterColumns);
     int getRowAffected(void);
     QLabel *getLabel(void);

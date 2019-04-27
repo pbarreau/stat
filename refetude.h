@@ -53,9 +53,9 @@ private:
     bool RechercheCouverture(QList<sCouv *> *lstCouv, int zn);
 
     QTableView * DetailsLstcouv(int zn);
-    QTableView * tbForBaseLigne();
+    //QTableView * tbForBaseLigne();
     QTableView * tbForBaseRef();
-    QTableView * tbForBaseEcart(int zn);
+    //QTableView * tbForBaseEcart(int zn);
     QTableView * TableMoisBase(int zn);
     QTableView * TableMoisCouv(int zn);
 
@@ -75,10 +75,9 @@ private:
 public slots:
     void slot_AideToolTip(const QModelIndex & index);
     void slot_Couverture(const QModelIndex & index);
-    void slot_ShowDetails(const QModelIndex & index);
-    void slot_ShowBoule(const QModelIndex & index);
+    //void slot_ShowDetails(const QModelIndex & index);
+    //void slot_ShowBoule(const QModelIndex & index);
     void slot_ShowBoule_2(const QModelIndex & index);
-    void slot_Type_G(const QModelIndex & index);
     void slot_TotalCouverture(int index);
     void slot_SelectPartBase(const QModelIndex & index);
     void slot_ccmr_tbForBaseEcart(QPoint pos);

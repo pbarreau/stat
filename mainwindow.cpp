@@ -428,7 +428,8 @@ void MainWindow::MonLayout_Selectioncombi(QTabWidget *tabN1)
 #endif
  // Filtre
  QFormLayout *FiltreLayout = new QFormLayout;
- FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons();
+ int nbLines=0;
+ FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons(nbLines);
  QList<qint32> colid;
  colid << 1;
  fltComb_tmp->setFiltreConfig(sqm_r1,qtv_tmp,colid);
@@ -853,12 +854,13 @@ QGridLayout * MainWindow::MonLayout_VoisinDistribution()
 
  // Filtre
  QFormLayout *FiltreLayout = new QFormLayout;
- fltComb_1 = new FiltreCombinaisons();
+ int nbLines=0;
+ FiltreCombinaisons *fltComb_tmp = new FiltreCombinaisons(nbLines);
  QList<qint32> colid;
  colid << 2;
- fltComb_1->setFiltreConfig(G_tab_1Model,qtv_tmp,colid);
+ fltComb_tmp->setFiltreConfig(G_tab_1Model,qtv_tmp,colid);
 
- FiltreLayout->addRow("&Filtre Repartition", fltComb_1);
+ FiltreLayout->addRow("&Filtre Repartition", fltComb_tmp);
 
  qtv_tmp->setSortingEnabled(true);
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -4692,14 +4694,19 @@ void MainWindow::slot_MontreTirageAnalyse(const QModelIndex & index)
 }
 void MainWindow::slot_PresenteLaBoule(const QModelIndex & index)
 {
+ // recuperer la valeur de la boule
+ int val = index.model()->index(index.row(),0).data().toInt();
+
+ int path[]={0,0,0};
+ syntheses->Surligne(path,val);
+ return;
+
  QTableView *pTbv1 = NULL;
  QSqlQueryModel *pSqm1 =NULL;
  QStandardItemModel *pSim1 =NULL;
  QSortFilterProxyModel *pSfpm1 =NULL;
 
 
- // recuperer la valeur de la boule
- int val = index.model()->index(index.row(),0).data().toInt();
 
  // Recuperer le tableau des ecarts
  ecarts = syntheses->GetTabEcarts();

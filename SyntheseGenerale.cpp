@@ -496,7 +496,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
  db_0 = QSqlDatabase::database(chk);
 
  disposition = new QGridLayout;
- mon_brc_tmp = 0;
+ //mon_brc_tmp = 0;
 
  pEcran = visuel;
  pMaConf = pConf;
@@ -883,7 +883,7 @@ void SyntheseGenerale::DoTirages(void)
  tabEcarts = unTest;
 
  tbv_LesTirages = unTest->GetListeTirages();
- tbv_LesEcarts = unTest->GetLesEcarts();
+ //tbv_LesEcarts = unTest->GetLesEcarts();
 
  disposition->addWidget(uneReponse,0,0,Qt::AlignLeft|Qt::AlignTop);
 #if 0
@@ -928,9 +928,10 @@ void SyntheseGenerale::DoTirages(void)
           pEcran->parent(), SLOT(slot_MontreLeTirage( QModelIndex) ) );
 #endif
 
+ /*
  connect( tbv_LesEcarts, SIGNAL( clicked(QModelIndex)) ,
          this, SLOT( slot_ShowTotalBoule( QModelIndex) ) );
-
+*/
 
 }
 
@@ -1352,6 +1353,10 @@ QTableView *SyntheseGenerale::doTabGrpTirage(stDesigConf conf)
  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
  qtv_tmp->verticalHeader()->hide();
 
+ //qtv_tmp->layout()->setSizeConstraint(QLayout::SetFixedSize);
+ qtv_tmp->setFixedSize(650,250);
+ //qtv_tmp->adjustSize();
+
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
          this, SLOT(slot_grpShowEcart( QModelIndex) ) );
 
@@ -1359,10 +1364,10 @@ QTableView *SyntheseGenerale::doTabGrpTirage(stDesigConf conf)
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(slot_ccmr_grpSel(QPoint)));
- /*
+
  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-         this, SLOT(slot_grpSel( QModelIndex) ) );
-*/
+         this, SLOT(slot_grpDbClikSel( QModelIndex) ) );
+
 
 
  return qtv_tmp;
@@ -1404,9 +1409,71 @@ QTableView *SyntheseGenerale::doTabLgnTirage(stDesigConf conf)
  // Taille tableau
  qtv_tmp->setFixedHeight(75);
 
+ // simple click dans fenetre  pour selectionner boule
+ connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+         this, SLOT(slot_grpShowEcart( QModelIndex) ) );
+
+ // double click dans fenetre  pour afficher details boule
+ connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+         this, SLOT(slot_Type_G( QModelIndex) ) );
+
 
 
  return qtv_tmp;
+}
+
+void SyntheseGenerale::slot_Type_G(const QModelIndex & index)
+{
+ QTableView *view = qobject_cast<QTableView *>(sender());
+ QItemSelectionModel *selectionModel = view->selectionModel();
+ const QAbstractItemModel * pModel = index.model();
+
+ int col = index.column();
+ int val = index.data().toInt();
+ QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+ QString headName = vCol.toString();
+
+ QStringList items = view->objectName().split("z");
+ int zn = items.at(1).toInt()-1;
+ QString msg_key = grp_SqlFromKey(zn, col+1); ///coherence code de GRP
+#ifndef QT_NO_DEBUG
+ qDebug() << msg_key;
+#endif
+
+ QString titre = "Listes des tirages grp_z"+items.at(1)+":("
+                 +headName+","+QString::number(val)+")";
+
+ stCurDemande *etude = new stCurDemande;
+ QString *st_tmp1 = new QString;
+ *st_tmp1 = C_TousLesTirages;
+ etude->origine = Tableau1;
+ etude->db_cnx = db_0.connectionName();//db->get_IdCnx();
+
+ //QItemSelectionModel *selectionModel = p_tbv_3->selectionModel();
+ //etude->selection[3] = selectionModel->selectedIndexes();
+ etude->st_titre = titre;
+ etude->cur_dst = 0;
+ etude->st_Ensemble_1 = st_bdTirages;
+ etude->ref = pMaConf;
+
+ msg_key = "Select * from ("+msg_key+") as t1 where (t1.N"+QString::number(col+1)+"="+QString::number(val)+")";
+#ifndef QT_NO_DEBUG
+ qDebug() << msg_key;
+#endif
+ etude->st_LDT_Filtre = new QString;
+ *(etude->st_LDT_Filtre)= msg_key;
+
+ etude->st_LDT_Depart = st_tmp1;
+ etude->st_jourDef = new QString;
+ *(etude->st_jourDef) = CompteJourTirage(db_0.connectionName());
+
+ etude->st_TablePere = REF_BASE;
+ // Nouvelle de fenetre de detail de cette selection
+ SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
+ connect( ptabTop, SIGNAL(tabCloseRequested(int)) ,
+         unDetail, SLOT(slot_FermeLaRecherche(int) ) );
+
+
 }
 
 void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
@@ -2021,6 +2088,34 @@ bool SyntheseGenerale::cmb_MarquerDerniers(int zn, QString tb_src, QString tb_re
  bool isOk = true;
  QSqlQuery query(db_0);
 
+ /// Mettre info sur 2 derniers tirages
+ for(int dec=0; (dec <2) && isOk ; dec++){
+  int val = 1<<dec;
+  QString sdec = QString::number(val);
+  QString msg []={
+   {"SELECT "+key+" from ("+tb_ref
+    +") as t2 where(id = "+sdec+")"
+   },
+   {"update " + tbl_dst
+    + " set F=(case when f is (NULL or 0) then 0x"
+    +sdec
+    +" else(f|0x"
+    +sdec
+    +") end) "
+      "where (B in ("
+    +msg[0]
+    +"))"}
+  };
+
+  int taille = sizeof(msg)/sizeof(QString);
+#ifndef QT_NO_DEBUG
+	for(int i = 0; i< taille;i++){
+	 qDebug() << "msg ["<<i<<"]: "<<msg[i];
+	}
+#endif
+  isOk = query.exec(msg[taille-1]);
+ }
+
   return isOk;
 }
 
@@ -2039,8 +2134,13 @@ bool SyntheseGenerale::brc_MarquerDerniers(int zn, QString tb_src, QString tb_re
    },
    {"update " + tbl_dst
     + " set F=(case when f is (NULL or 0) then 0x"
-    +sdec+" else(f|0x"+sdec+") end) "
-                                   "where (B in ("+msg[0]+"))"}
+    +sdec
+    +" else(f|0x"
+    +sdec
+    +") end) "
+      "where (B in ("
+    +msg[0]
+    +"))"}
   };
 
   int taille = sizeof(msg)/sizeof(QString);
@@ -2428,6 +2528,8 @@ QGridLayout* SyntheseGenerale::grp_VbInfo(QGridLayout *gridSel, param_2 prm)
 QTableView * SyntheseGenerale::grp_TbvAnalyse(QGridLayout *grid_parent, int zn, QString tb_src, QString tb_ref, QString key)
 {
  QTableView *qtv_tmp = NULL;
+ sqlqmDetails *sqm_tmp= NULL;
+ QString msg = "";
 
  QString tb_out = QString("r_")+tb_src + QString("_grp_")+key+"_z"+QString::number(zn+1);
 
@@ -2438,6 +2540,24 @@ QTableView * SyntheseGenerale::grp_TbvAnalyse(QGridLayout *grid_parent, int zn, 
    qtv_tmp = new QTableView();
    qtv_tmp->setObjectName("tb_out");
   }
+  else {
+   ///verifier si ce calcul existe deja dans la base
+   if(DB_Tools::checkHavingTable(tb_out,db_0.connectionName())){
+
+		/// On depile les info de construction
+		QAbstractItemModel *qtv_model = qtv_tmp->model();
+		QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel*>(qtv_model);
+		sqlqmDetails *sqm_tmp = qobject_cast<sqlqmDetails*>(m->sourceModel());
+
+		QString queryStr = sqm_tmp->query().executedQuery();
+		sqm_tmp->query().clear();
+
+		msg = "select * from "+tb_out+";";
+		sqm_tmp->setQuery(msg, db_0);
+
+    return qtv_tmp;
+   }
+  }
  }
 
 
@@ -2445,11 +2565,12 @@ QTableView * SyntheseGenerale::grp_TbvAnalyse(QGridLayout *grid_parent, int zn, 
  bool isOk = true;
  QString st_msg1 = "";
 
+ /// verifier si le Table view resultat n'est pas deja present
 
  if((isOk = grp_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
 
 
-	QString msg = "select * from "+tb_out+";";
+	 msg = "select * from "+tb_out+";";
 
 	sqlqmDetails::st_sqlmqDetailsNeeds val;
 	val.ori = this;
@@ -2458,7 +2579,7 @@ QTableView * SyntheseGenerale::grp_TbvAnalyse(QGridLayout *grid_parent, int zn, 
 	val.wko = tb_out;
 	val.view = qtv_tmp;
 
-	sqlqmDetails *sqm_tmp= new sqlqmDetails(val);
+	sqm_tmp= new sqlqmDetails(val);
 
 	sqm_tmp->setQuery(msg,db_0);
 
@@ -2503,7 +2624,7 @@ QTableView * SyntheseGenerale::grp_TbvAnalyse(QGridLayout *grid_parent, int zn, 
 	qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
 	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
+	qtv_tmp->setFixedSize(475,CHauteur1);
 
 
 	/// Mettre toutes largeures identiques
@@ -2627,7 +2748,7 @@ QTableView * SyntheseGenerale::cmb_TbvAnalyse(int zn, QString tb_src, QString tb
 	qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
 	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
+	qtv_tmp->setFixedSize(475,CHauteur1);
 
 
 	/// Mettre toutes largeures identiques
@@ -2752,7 +2873,8 @@ QTableView * SyntheseGenerale::brc_TbvAnalyse(int zn, QString tb_src, QString tb
 	qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
 	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	qtv_tmp->setFixedSize((nbcol*LCELL)+20,CHauteur1);
+	qtv_tmp->setFixedSize(475,CHauteur1);
+
 
 
 	/// Mettre toutes largeures identiques
@@ -2922,7 +3044,7 @@ QTableView * SyntheseGenerale::tot_TbvAnalyse(int zn, QString tb_src, QString tb
  for(int j=0;j<=nbCol+1;j++){
   qtv_tmp->setColumnWidth(j,28);
  }
- qtv_tmp->setFixedSize(450,CHauteur1);
+ qtv_tmp->setFixedSize(475,CHauteur1);
  qtv_tmp->horizontalHeader()->setStretchLastSection(true);
 
  // Ne pas modifier largeur des colonnes
@@ -4526,8 +4648,12 @@ bool SyntheseGenerale::SimplifieSelection(QTableView *view)
 {
  bool isOk = true;
 
+ QAbstractItemModel *sqm_tmp = NULL;
+ QString objName = view->objectName();
+
  QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
- QAbstractItemModel *sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
+ sqm_tmp = qobject_cast<sqlqmDetails *>(m->sourceModel());
+
  int nbcol = sqm_tmp->columnCount();
  int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
 
@@ -5267,7 +5393,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
  etude->st_jourDef = new QString;
  *(etude->st_jourDef) = CompteJourTirage(db_0.connectionName());
  *(etude->st_LDT_Filtre) = sqlReq;
- etude->barycentre = mon_brc_tmp;
+ //etude->barycentre = mon_brc_tmp;
 
 #ifndef QT_NO_DEBUG
  qDebug()<<etude->st_titre;
@@ -5312,7 +5438,7 @@ QString SyntheseGenerale::brc_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> 
   int key = p->first;
   filter_key = QString("(t"+QString::number(zn+2)+".bc=")+QString::number(key)+QString(")");
 
-  mon_brc_tmp = key;
+  //mon_brc_tmp = key;
 
 
 	int nb_sel = p->second->lstSel->size();

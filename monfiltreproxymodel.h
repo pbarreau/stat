@@ -9,7 +9,7 @@ class MonFiltreProxyModel : public QSortFilterProxyModel
     Q_OBJECT
 
 public:
-    explicit MonFiltreProxyModel(QLabel *pText, QObject *parent = 0);
+    explicit MonFiltreProxyModel(QLabel *pText, int value, QObject *parent = 0);
     void setFilterKeyColumns(const QList<qint32> &filterColumns);
     void addFilterRegExp(const QRegExp &pattern);
     int getFilterNbRow(void);

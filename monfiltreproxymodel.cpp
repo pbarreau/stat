@@ -2,10 +2,10 @@
 #include "monfiltreproxymodel.h"
 //http://www.qtcentre.org/threads/24267-QSortFilterProxyModel-setFilterRegExp-for-more-than-1-column
 
-MonFiltreProxyModel::MonFiltreProxyModel(QLabel *pText, QObject *parent) : QSortFilterProxyModel(parent)
+MonFiltreProxyModel::MonFiltreProxyModel(QLabel *pText, int value, QObject *parent) : QSortFilterProxyModel(parent)
 {
     pTotal = pText;
-    ligneVisibles = -1;
+    ligneVisibles = value;
 }
 
 void MonFiltreProxyModel::setFilterKeyColumns(const QList<qint32> &filterColumns)
