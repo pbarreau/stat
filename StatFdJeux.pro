@@ -87,7 +87,9 @@ SOURCES += \
     bvisuresume_sql.cpp \
     sCouv.cpp \
     cmb_table.cpp \
-    grp_2tirages.cpp
+    grp_2tirages.cpp \
+    idlgttirages.cpp \
+    sqlqmtirages.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -136,7 +138,9 @@ HEADERS  += \
     bordcolor.h \
     bdelegatecouleurfond.h \
     bvisuresume_sql.h \
-    sCouv.h
+    sCouv.h \
+    idlgttirages.h \
+    sqlqmtirages.h
 
 
 FORMS    += mainwindow.ui \

@@ -4,6 +4,7 @@
 
 #include "bordcolor.h"
 
+
 bool BOrdColor::operator<(const BOrdColor  &b)const
 {
     /// https://www.developpez.net/forums/d1298928/c-cpp/bibliotheques/qt/qmap-operator-qpoint/
@@ -32,3 +33,4 @@ bool BOrdColor::operator<(const BOrdColor  &b)const
 #endif
 
 }
+

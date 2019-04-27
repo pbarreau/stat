@@ -2,10 +2,10 @@
 
 #include "sqlqmtirages.h"
 
-sqlqmTirages::sqlqmTirages(const B_Game &pDef,QObject *parent)
+sqlqmTirages::sqlqmTirages(const stTiragesDef &pDef, QObject *parent)
     :QSqlQueryModel(parent),leJeu(pDef)
 {
-    debzone=3;
+    debzone=4;
 }
 
 /// ce delegate permet d'afficher les chiffres sur 2 caracteres

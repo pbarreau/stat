@@ -15,7 +15,7 @@ void idlgtTirages::paint(QPainter *painter, const QStyleOptionViewItem &option,
     QStyleOptionViewItem maModif(option);
 
     /// Mettre une couleur en fonction du groupe u,dizaine,v,...
-    if(index.column()>=4 && index.column() <9)
+    if(index.column()>4 && index.column() <=9)
     {
         val =  index.data().toInt();
         val = val/10;

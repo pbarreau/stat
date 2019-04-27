@@ -27,6 +27,9 @@
 #include "tirages.h"
 #include "compter.h"
 
+#include "sqlqmtirages.h"
+#include "idlgttirages.h"
+
 // declaration de variable de classe
 QStandardItemModel **RefEtude::p_simResu = new QStandardItemModel*[2];
 
@@ -169,7 +172,7 @@ QTableView *RefEtude::tbForBaseLigne()
 QTableView *RefEtude::tbForBaseRef()
 {
  QTableView *tbv_tmp = new QTableView;
- QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
+ sqlqmTirages *sqm_tmp = new sqlqmTirages (*p_conf);//QSqlQueryModel;
  //p_qsim_3=sqm_tmp;
 
  sqm_tmp->setQuery(p_stRefTirages,db_0);
@@ -196,7 +199,8 @@ QTableView *RefEtude::tbForBaseRef()
  tbv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
  // Taille tableau
- tbv_tmp->setFixedSize(XLenTir,CHauteur2);
+ tbv_tmp->setFixedSize(XLenTir,2*CHauteur2);
+ tbv_tmp->setItemDelegate(new idlgtTirages);
 
  // ----------------------
  // voir effet !!!
