@@ -573,30 +573,33 @@ SyntheseDetails::~SyntheseDetails()
 
 }
 
-SyntheseDetails::SyntheseDetails(stCurDemande *pEtude, QMdiArea *visuel,QTabWidget *tab_Top)
+SyntheseDetails::SyntheseDetails(SynD_param param)
 {
- pLaDemande = pEtude;
- pEcran = visuel;
- gMemoTab = tab_Top;
+ pLaDemande = param.pEtude;
+ pEcran = param.visuel;
+ gMemoTab = param.tab_Top;
+ gMemoVue = param.tab_vue;
  detail_id ++;
 
- QString stRequete = "";
- int nb_zones = pEtude->ref->nb_zone;
- maRef = new  QStringList* [nb_zones] ;
- db_0 = QSqlDatabase::database(pEtude->db_cnx);
+ gMemoVue->setCurrentIndex(1);
 
- if((*pEtude->st_LDT_Filtre).size()!=0)
+ QString stRequete = "";
+ int nb_zones = pLaDemande->ref->nb_zone;
+ maRef = new  QStringList* [nb_zones] ;
+ db_0 = QSqlDatabase::database(pLaDemande->db_cnx);
+
+ if((*pLaDemande->st_LDT_Filtre).size()!=0)
  {
-  stRequete = (*pEtude->st_LDT_Filtre);
+  stRequete = (*pLaDemande->st_LDT_Filtre);
  }
  else
  {
-  stRequete = FiltreLesTirages(pEtude);
+  stRequete = FiltreLesTirages(pLaDemande);
  }
  //view_id = stRequete;
 
  // Creation des onglets reponses
- QWidget *uneReponse = PBAR_CreerOngletsReponses(pEtude,visuel,stRequete);
+ QWidget *uneReponse = PBAR_CreerOngletsReponses(pLaDemande,pEcran,stRequete);
  QString st_titre = "R "+QString::number(detail_id);
 
  int laFeuille = gMemoTab->addTab(uneReponse,st_titre);
@@ -1675,7 +1678,12 @@ void SyntheseDetails::slot_detailsDetails(const QModelIndex & index)
  etude->st_LDT_Filtre = new QString;
 
  // Nouvelle de fenetre de detail de cette selection
- SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,gMemoTab);
+ SynD_param a;
+ a.pEtude =etude;
+ a.visuel=pEcran;
+ a.tab_vue = gMemoVue;
+ a.tab_Top = gMemoTab;
+ SyntheseDetails *unDetail = new SyntheseDetails(a);
  connect( gMemoTab, SIGNAL(tabCloseRequested(int)) ,
           unDetail, SLOT(slot_FermeLaRecherche(int) ) );
 

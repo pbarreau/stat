@@ -41,12 +41,17 @@ RefEtude::RefEtude()
 {
 }
 
-RefEtude::RefEtude(GererBase *db, QString stFiltreTirages, int zn,
-                   stTiragesDef *pDef,QMdiArea *visuel, QTabWidget *tab_Top)
- :p_db(db),p_stRefTirages(stFiltreTirages),
-   p_conf(pDef),p_affiche(visuel),p_reponse(tab_Top)
+RefEtude::RefEtude(stRefP a)
 {
- db_0 = QSqlDatabase::database(db->get_IdCnx());
+ /// A DEFINIR p_vue
+ p_db = a.db;
+ p_stRefTirages = a.stFiltreTirages;
+ p_conf=a.pDef;
+ p_affiche=a.visuel;
+ p_reponse = a.tab_Top;
+ p_vue = a.tab_Vue;
+
+ db_0 = QSqlDatabase::database(p_db->get_IdCnx());
 
  // Nombre de zone composant un tirage (2: 1 zone boules + 1 zone etoiles)
  int nb_zones = p_conf->nb_zone;
@@ -1144,7 +1149,12 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
  *(etude->st_jourDef) = CompteJourTirage(db_0.connectionName());
 
  // Nouvelle de fenetre de detail de cette selection
- SyntheseDetails *unDetail = new SyntheseDetails(etude,p_affiche,p_reponse);
+ SyntheseDetails::SynD_param a;
+ a.pEtude =etude;
+ a.visuel=p_affiche;
+ a.tab_Top = p_reponse;
+
+ SyntheseDetails *unDetail = new SyntheseDetails(a);
  connect( p_reponse, SIGNAL(tabCloseRequested(int)) ,
           unDetail, SLOT(slot_FermeLaRecherche(int) ) );
 

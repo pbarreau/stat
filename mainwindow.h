@@ -24,6 +24,7 @@
 #include "tirages.h"
 #include "gererbase.h"
 
+#include "SyntheseDetails.h"
 #include "SyntheseGenerale.h"
 #include "lescomptages.h"
 
@@ -169,6 +170,8 @@ private:
     void FEN_ChoisirBoules(void);
     void FEN_Splitter(void);
     void FEN_NewTirages(stTiragesDef *pConf);
+    QWidget *FEN_Analyses(stTiragesDef *pConf);
+    QWidget *FEN_Recherches(stTiragesDef *pConf);
     void MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModelIndex & index);
 
     void MontreDansLaQtView(QTableView *ptr_qtv, int val, int col_id);
@@ -241,6 +244,7 @@ private:
 
     QWidget *w_FenetreDetails;
     QTabWidget *gtab_Top;
+    QTabWidget *gtab_vue;
     SyntheseGenerale *syntheses;
     RefEtude *ecarts;
     QTableView * qtv_s1;

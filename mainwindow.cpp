@@ -17,18 +17,20 @@
 
 #include <math.h>
 
-#include "mygraphicsview.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
+#include "mygraphicsview.h"
+
 #include "choixjeux.h"
 #include "tirages.h"
 #include "gererbase.h"
 #include "labelclickable.h"
 #include "pointtirage.h"
-#include "SyntheseGenerale.h"
+//#include "SyntheseDetails.h"
+//#include "SyntheseGenerale.h"
 #include "refetude.h"
 #include "filtrecombinaisons.h"
-#include "SyntheseDetails.h"
 #include "lescomptages.h"
 
 
@@ -85,11 +87,13 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
   RechercheProgressionBoules(&configJeu);
 
 
+  /// Espaces Reponses pour details des calculs
   w_FenetreDetails = new QWidget;
   gtab_Top = new QTabWidget;
   gtab_Top->setTabsClosable(true);
   QFormLayout *mainLayout = new QFormLayout;
   mainLayout->addWidget(gtab_Top);
+  w_FenetreDetails->setLayout(mainLayout);
   connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
 
 #if (SET_DBG_LIVE&&SET_DBG_LEV1)
@@ -2051,8 +2055,15 @@ QGridLayout * MainWindow::MonLayout_pFnNsr1(stTiragesDef *pConf)
 {
  QGridLayout *lay_return = new QGridLayout;
  int zone = 0;
+ SyntheseGenerale::stPSynG a;
+ a.pLaBase = DB_tirages;
+ a.ptabSynt = gtab_Top;
+ a.zn = zone;
+ a.pConf = pConf;
+ a.visuel = zoneCentrale;
+ a.ptabVue = gtab_vue;
 
- syntheses = new SyntheseGenerale(DB_tirages,gtab_Top,zone,pConf,zoneCentrale);
+ syntheses = new SyntheseGenerale(a);
  lay_return = syntheses->GetDisposition();
  //w_FenetreDetails->setVisible(true);
  //w_FenetreDetails->lower();
@@ -2089,6 +2100,44 @@ QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
 }
 
 void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
+{
+ QWidget *qw_nsr = new QWidget;
+ QTabWidget *tab_Top = new QTabWidget;
+ gtab_vue = tab_Top;
+ //QWidget **wid_ForTop = new QWidget*[2];
+ QString stNames[2]={"Analyses","Recherches"};
+ //QWidget *design_onglet[2];
+
+ // Tableau de pointeur de fonction
+ QWidget *(MainWindow::*ptrFunc[2])(stTiragesDef *pConf)=
+  {&MainWindow::FEN_Analyses,&MainWindow::FEN_Recherches};
+
+ for(int i =0; i<2;i++)
+ {
+  QWidget *myDesign = (this->*ptrFunc[i])(pConf);
+  tab_Top->addTab(myDesign,tr(stNames[i].toUtf8()));
+ }
+
+ QFormLayout *mainLayout = new QFormLayout;
+ mainLayout->addWidget(tab_Top);
+ qw_nsr->setWindowTitle("Loto");
+ qw_nsr->setLayout(mainLayout);
+
+
+ QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
+ subWindow->resize(1300,800);
+ subWindow->move(0,0);
+ qw_nsr->setVisible(true);
+}
+
+QWidget * MainWindow::FEN_Recherches(stTiragesDef *pConf)
+{
+ QWidget *qw_nsr = w_FenetreDetails;
+
+ return qw_nsr;
+}
+
+QWidget * MainWindow::FEN_Analyses(stTiragesDef *pConf)
 {
  QWidget *qw_nsr = new QWidget;
  QTabWidget *tab_Top = new QTabWidget;
@@ -2150,16 +2199,11 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
 
  QFormLayout *mainLayout = new QFormLayout;
  mainLayout->addWidget(tab_Top);
- qw_nsr->setWindowTitle("Analyses des boules");
  qw_nsr->setLayout(mainLayout);
- //qw_nsr->setFixedSize(700,500);
+ return qw_nsr;
 
-
- QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(qw_nsr);
- subWindow->resize(1080,860);
- subWindow->move(0,0);
- qw_nsr->setVisible(true);
 }
+
 void MainWindow::fen_Parites(void)
 {
  QWidget *qw_Parites = new QWidget;
@@ -2406,8 +2450,14 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
   etude->lst_boules[3] = stl_tmp;
   etude->ref = &configJeu;
 
-  // Nouvelle de fenetre de detail de cette boule
-  SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale,gtab_Top);
+	// Nouvelle de fenetre de detail de cette boule
+	SyntheseDetails::SynD_param a;
+	a.pEtude =etude;
+	a.visuel=zoneCentrale;
+	a.tab_Top = gtab_Top;
+	a.tab_vue = gtab_vue;
+
+  SyntheseDetails *unDetail = new SyntheseDetails(a);
   //w_FenetreDetails->setVisible(true);
 
  }
@@ -2430,7 +2480,13 @@ void MainWindow::slot_CriteresTiragesAppliquer()
 
 
  // Nouvelle de fenetre de detail de cette boule
- SyntheseDetails *unDetail = new SyntheseDetails(etude,zoneCentrale,gtab_Top);
+ SyntheseDetails::SynD_param a;
+ a.pEtude =etude;
+ a.visuel=zoneCentrale;
+ a.tab_Top = gtab_Top;
+ a.tab_vue = gtab_vue;
+
+ SyntheseDetails *unDetail = new SyntheseDetails(a);
  //w_FenetreDetails->setVisible(true);
 
 }
@@ -4694,6 +4750,9 @@ void MainWindow::slot_MontreTirageAnalyse(const QModelIndex & index)
 }
 void MainWindow::slot_PresenteLaBoule(const QModelIndex & index)
 {
+ /// se mettre sur le bon onglet
+ gtab_vue->setCurrentIndex(0);
+
  // recuperer la valeur de la boule
  int val = index.model()->index(index.row(),0).data().toInt();
 
@@ -4722,6 +4781,9 @@ void MainWindow::slot_PresenteLaBoule(const QModelIndex & index)
 
 void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
 {
+ /// se mettre sur le bon onglet
+ gtab_vue->setCurrentIndex(0);
+
  // recuperer la ligne de la table
  int val = index.model()->index(index.row(),0).data().toInt();
 

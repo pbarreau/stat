@@ -20,8 +20,17 @@ class RefEtude: public QObject
 {
     Q_OBJECT
 public:
+struct stRefP{
+ GererBase *db;
+ QString stFiltreTirages;
+ int zn;
+ stTiragesDef *pDef;
+ QMdiArea *visuel;
+ QTabWidget *tab_Top;
+ QTabWidget *tab_Vue;
+};
     RefEtude();
-    RefEtude(GererBase *db, QString stFiltreTirages, int zn, stTiragesDef *pDef, QMdiArea *visuel, QTabWidget *tab_Top);
+    RefEtude(stRefP a);
     QWidget *CreationOnglets();
     QTableView *GetListeTirages(void);
     QTableView *GetLesEcarts(void);
@@ -110,6 +119,7 @@ private:
     QStringList **codeSqlDeRegroupementSurZnId;
     QMdiArea *p_affiche;
     QTabWidget *p_reponse;
+    QTabWidget *p_vue;
     QTabWidget *tabTrackCouverture;
     BCountGroup *unTest;
 

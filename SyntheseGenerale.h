@@ -91,6 +91,7 @@ class SyntheseGenerale : public QObject
  stTiragesDef *pMaConf;
  QMdiArea *pEcran;
  QTabWidget *ptabTop;
+ QTabWidget *ptabVue;
  QTabWidget *ptabComptage;
  RefEtude *tabEcarts;
  //int curzn;
@@ -127,7 +128,15 @@ class SyntheseGenerale : public QObject
  //QStandardItemModel *gsim_AnalyseUnTirage;
 
  public:
- SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt, int zn, stTiragesDef *pConf, QMdiArea *visuel);
+ typedef struct stPSynG{
+  GererBase *pLaBase;
+  QTabWidget *ptabSynt;
+  QTabWidget *ptabVue;
+  int zn;
+  stTiragesDef *pConf;
+  QMdiArea *visuel;
+ };
+ SyntheseGenerale(stPSynG a);
  void Surligne(int *path,int val);
 
  QGridLayout *GetDisposition(void);

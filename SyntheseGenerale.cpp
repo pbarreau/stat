@@ -34,8 +34,8 @@
 #include <QSqlDatabase>
 
 #include "refetude.h"
-#include "SyntheseGenerale.h"
 #include "SyntheseDetails.h"
+#include "SyntheseGenerale.h"
 #include "showstepper.h"
 
 #include "compter_groupes.h"
@@ -489,22 +489,23 @@ void SyntheseGenerale::Surligne(int *path,int val)
 
 }
 
-SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int zn, stTiragesDef *pConf, QMdiArea *visuel)
+SyntheseGenerale::SyntheseGenerale(stPSynG a)
 {
- origine=pLaBase;
+ origine=a.pLaBase;
  QString chk = origine->get_IdCnx();
  db_0 = QSqlDatabase::database(chk);
 
  disposition = new QGridLayout;
  //mon_brc_tmp = 0;
 
- pEcran = visuel;
- pMaConf = pConf;
+ pEcran = a.visuel;
+ pMaConf = a.pConf;
  pMaConf->db_cnx=chk;
 
- ptabTop = ptabSynt;
+ ptabTop = a.ptabSynt;
+ ptabVue = a.ptabVue;
  //curzn = zn;
- int nb_zones = pConf->nb_zone;
+ int nb_zones = pMaConf->nb_zone;
  maRef = new  QStringList* [nb_zones] ;
 
 
@@ -524,7 +525,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
  uneDemande.st_LDT_Depart = st_tmp2;
  uneDemande.st_LDT_Filtre = st_tmp;
  uneDemande.st_jourDef = st_JourTirageDef;
- uneDemande.ref = pConf;
+ uneDemande.ref = pMaConf;
  DoTirages();
  do_CmbRef();
  do_LinesCheck();
@@ -541,7 +542,7 @@ SyntheseGenerale::SyntheseGenerale(GererBase *pLaBase, QTabWidget *ptabSynt,int 
 #endif
 
 
- disposition->addWidget(ptabTop,1,0,1,2,Qt::AlignLeft|Qt::AlignTop);
+ //disposition->addWidget(ptabTop,1,0,1,2,Qt::AlignLeft|Qt::AlignTop);
 }
 
 #ifdef USE_SG_CODE
@@ -876,7 +877,16 @@ void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
 #if 1
 void SyntheseGenerale::DoTirages(void)
 {
- RefEtude *unTest = new RefEtude(origine,*st_bdTirages,0,pMaConf,pEcran,ptabTop);
+ RefEtude::stRefP a;
+ a.db = origine;
+ a.stFiltreTirages = *st_bdTirages;
+ a.zn = 0;
+ a.pDef = pMaConf;
+ a.visuel = pEcran;
+ a.tab_Top = ptabTop;
+ a.tab_Vue = ptabVue;
+
+ RefEtude *unTest = new RefEtude(a);
  QWidget *uneReponse = unTest->CreationOnglets();
 
 
@@ -1469,7 +1479,14 @@ void SyntheseGenerale::slot_Type_G(const QModelIndex & index)
 
  etude->st_TablePere = REF_BASE;
  // Nouvelle de fenetre de detail de cette selection
- SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
+ SyntheseDetails::SynD_param a;
+ a.pEtude =etude;
+ a.visuel=pEcran;
+ a.tab_Top = ptabTop;
+ a.tab_vue = ptabVue;
+
+
+ SyntheseDetails *unDetail = new SyntheseDetails(a);
  connect( ptabTop, SIGNAL(tabCloseRequested(int)) ,
          unDetail, SLOT(slot_FermeLaRecherche(int) ) );
 
@@ -5405,8 +5422,14 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 #endif
 
 
- // Nouvelle de fenetre de detail de cette selection
- SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
+ // Nouvelle de fenetre de detail de cette
+ SyntheseDetails::SynD_param a;
+ a.pEtude =etude;
+ a.visuel=pEcran;
+ a.tab_Top = ptabTop;
+ a.tab_vue = ptabVue;
+
+ SyntheseDetails *unDetail = new SyntheseDetails(a);
  connect( ptabTop, SIGNAL(tabCloseRequested(int)) ,
          unDetail, SLOT(slot_FermeLaRecherche(int) ) );
 

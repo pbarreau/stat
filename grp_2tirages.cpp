@@ -128,7 +128,14 @@ void SyntheseGenerale::main_CallToMkDetail(int zn, typeCalc calcul, QTableView *
 
 
  // Nouvelle de fenetre de detail de cette selection
- SyntheseDetails *unDetail = new SyntheseDetails(etude,pEcran,ptabTop);
+ SyntheseDetails::SynD_param a;
+ a.pEtude =etude;
+ a.visuel=pEcran;
+ a.tab_Top = ptabTop;
+ a.tab_vue = ptabVue;
+
+
+ SyntheseDetails *unDetail = new SyntheseDetails(a);
  connect( ptabTop, SIGNAL(tabCloseRequested(int)) ,
          unDetail, SLOT(slot_FermeLaRecherche(int) ) );
 
