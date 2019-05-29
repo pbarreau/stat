@@ -1152,7 +1152,9 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
  SyntheseDetails::SynD_param a;
  a.pEtude =etude;
  a.visuel=p_affiche;
+ a.tab_vue = p_vue;
  a.tab_Top = p_reponse;
+
 
  SyntheseDetails *unDetail = new SyntheseDetails(a);
  connect( p_reponse, SIGNAL(tabCloseRequested(int)) ,

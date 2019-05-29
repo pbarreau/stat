@@ -13,6 +13,7 @@
 #include <QSqlQueryModel>
 
 #include "compter.h"
+#include "labelclickable.h"
 
 class BCountElem:public BCount
 {
@@ -23,6 +24,7 @@ public:
     ~BCountElem();
     int getCounter(void);
     QString getFilteringData(int zn);
+    LabelClickable *getLabPriority(void);
 
 public slots:
     void slot_ClicDeSelectionTableau(const QModelIndex &index);
@@ -39,6 +41,7 @@ private:
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
     QString PBAR_ReqComptage(QString ReqTirages, int zn,int distance);
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
+
 
 
 Q_SIGNALS:

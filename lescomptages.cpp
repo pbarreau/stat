@@ -46,7 +46,7 @@ void BPrevision::slot_changerTitreZone(QString le_titre)
 #endif
 
 
-    selection[0].setText("Z:"+le_titre);
+    //selection[0].setText("Z:"+le_titre);
 }
 
 BPrevision::BPrevision(eGame game, eFrom from, eBddUse def)
@@ -1341,6 +1341,21 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     tab_Top->addTab(pMonTmpWidget[3],tr("Groupes"));
 
     QGridLayout *tmp_layout = new QGridLayout;
+    int i = 0;
+
+    QString msg = QString("Selection : %1 sur %2");
+    QString s_sel = QString::number(0).rightJustified(2,'0');
+    QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
+    msg = msg.arg(s_sel).arg(s_max);
+
+		LabelClickable *tmp_lab = c1->getLabPriority();
+		tmp_lab->setText(msg);
+
+		tmp_layout->addWidget(tmp_lab,i,0);
+		i++;
+		tmp_layout->addWidget(tab_Top,i,0);
+
+    /*
     QString clef[]={"Z:","C:","G:"};
     int i = 0;
     for(i; i< 3; i++)
@@ -1348,7 +1363,7 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
         selection[i].setText(clef[i]+"aucun");
         tmp_layout->addWidget(&selection[i],i,0);
     }
-    tmp_layout->addWidget(tab_Top,i,0);
+*/
 
 #if 0
     connect( selection, SIGNAL( clicked(QString)) ,

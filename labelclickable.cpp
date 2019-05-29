@@ -10,6 +10,11 @@ LabelClickable::~LabelClickable()
 {
 }
 
+LabelClickable *LabelClickable::getLabel(void)
+{
+ return this;
+}
+
 void LabelClickable::mousePressEvent ( QMouseEvent * event )
 
 {

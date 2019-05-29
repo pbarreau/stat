@@ -12,7 +12,8 @@
 #include <QList>
 
 #include "delegate.h"
-//#include "cbarycentre.h"
+#include "labelclickable.h"
+
 #include "game.h"
 
 #define CEL2_H  55
@@ -114,6 +115,8 @@ protected:
     QString *sqlSelection;  /// code sql generee pour un tableau
     static QList<BRunningQuery *> sqmActive[3];
     BSqmColorizePriority *sqmZones; /// pour mettre a jour le tableau des resultats
+    LabelClickable selection[3];
+
 
 private:
     static int nbChild;

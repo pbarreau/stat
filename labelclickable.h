@@ -7,7 +7,8 @@ class LabelClickable : public QLabel
 {
     Q_OBJECT
 public:
-    explicit LabelClickable(const QString& text ="", QWidget  *parent = 0);
+		explicit LabelClickable(const QString& text ="", QWidget  *parent = 0);
+		LabelClickable *getLabel(void);
     ~LabelClickable();
 
 signals:

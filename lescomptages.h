@@ -13,7 +13,6 @@
 
 #include "compter.h"
 #include "db_tools.h"
-#include "labelclickable.h"
 
 /// informer de la prochaine definition de la classe
 class BPrevision;
@@ -140,7 +139,6 @@ private:
     CBaryCentre *c;
     QString tblTirages;
     QSqlQueryModel *sqm_resu;
-    LabelClickable selection[3];
     QLabel *lignes;
     QString titre[3];
     QString sql[3];

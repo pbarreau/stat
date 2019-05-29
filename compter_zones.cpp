@@ -426,6 +426,10 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
 
     return lay_return;
 }
+LabelClickable *BCountElem::getLabPriority(void)
+{
+ return selection[0].getLabel();
+}
 
 QString BCountElem::getFilteringData(int zn)
 {
