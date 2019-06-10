@@ -201,6 +201,7 @@ class SyntheseGenerale : public QObject
  QString sql_grpOne(int zn, int lgn, QStringList **pList, int i);
  QString sql_DigOne(int zn, int lgn, QStringList **pList, int i);
  bool sql_DigAll(stDigAll prm);
+ bool sql_grpAdd(stDigAll prm);
 
  QString CreatreTitle(stCurDemande *pConf);
  int incValue(int *val);

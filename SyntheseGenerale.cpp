@@ -316,6 +316,58 @@ QString SyntheseGenerale::sql_DigOne(int zn, int lgn, QStringList **pList, int i
  return msg;
 }
 
+bool SyntheseGenerale::sql_grpAdd(stDigAll prm)
+{
+ bool isOk = true;
+ QSqlQuery query(db_0);
+
+ /// decapsulation structure
+ //pMy_DigOne fnDig=prm.fnDig;
+ int zn = prm.zn;
+ QString target = prm.target;
+
+ QString tb_name = target+QString::number(zn+1);
+ QString key = "tz"+QString::number(zn+1);
+
+ QString msg = "select t1.*, t2.c1 from old_"
+               +tb_name+" as t1 "
+                 "inner JOIN "
+                 "( "
+                 "select t1."
+               +key
+               +" as V, count (t2.id) as c1 from Bnrz as t1  "
+                 "left join "
+                 "(select * from Ana_z"
+               +QString::number(zn+1)
+               +") as t2 "
+                 "on t2.c1 = t1."
+               +key
+               +" where(t1."
+               +key
+               +" not null) GROUP by t1."
+               +key
+               +
+               ")  "
+               "as t2 on t1.id=t2.V ";
+
+ QString sql_msg[]={
+  "alter table "+tb_name+" rename to old_"+tb_name,
+  "create table if not exists " + tb_name+ " as "+msg,
+  "drop table if exists old_"+tb_name
+ };
+ int nb_sql= sizeof(sql_msg)/sizeof(QString);
+
+ /// Rajout de la colonne c1
+ for (int current=0;(current < nb_sql) && isOk ; current++) {
+#ifndef QT_NO_DEBUG
+  qDebug() << "msg["<<current<<"]="<<sql_msg[current];
+#endif
+  isOk = query.exec(sql_msg[current]);
+ }
+
+ return isOk;
+}
+
 bool SyntheseGenerale::sql_DigAll(stDigAll prm)
 {
  bool isOk = true;
@@ -1052,6 +1104,11 @@ void SyntheseGenerale::do_grpTab(void)
 
 	/// Traitement
 	check = sql_DigAll(prm);
+
+	if(check){
+	 /// suite fusion tableau grp
+	 check = sql_grpAdd(prm);
+	}
  }
 }
 

@@ -265,6 +265,8 @@ QString SyntheseGenerale::grp_sqlFromSelection(QTableView *view, int path)
  QString where = "";
  QStringList allas;
  QString as_def = "";
+ int codage = 0;
+ QString my_msg_col = "";
 
  /// Parcourir la liste pour creer le code SQL
  int nbScanCol = cur_sel.size();
@@ -288,6 +290,7 @@ QString SyntheseGenerale::grp_sqlFromSelection(QTableView *view, int path)
 	 if(uneSel<nbSelInCol-1){
 		msg_col = msg_col + ",";
 	 }
+	 my_msg_col = msg_col;
 	}
 #ifndef QT_NO_DEBUG
 	qDebug() << msg_col;
@@ -337,6 +340,13 @@ QString SyntheseGenerale::grp_sqlFromSelection(QTableView *view, int path)
  where = "("+clef+")and("+where+")";
  msg = "select "+as_def+".* from " + items + " where("+where+")";
 
+ /// Codage rapide et sale:::
+ if(cur_sel.at(0)->first==18){
+
+	msg = "SELECT t1.* from RefTirages as t1, Ana_z1 as t2 where ( (t2.c1 in ("
+				+my_msg_col+
+				")) and (t2.id=t1.id) )";
+ }
 #ifndef QT_NO_DEBUG
  qDebug() << msg;
 #endif
@@ -348,24 +358,35 @@ QString SyntheseGenerale::grp_SqlFromKey(int zn, int col)
 {
 
  QStringList **pList = tabEcarts->getSqlGrp();
- QString st_cri = pList[zn][0].at(col-1);
- QString st_tirages = *(uneDemande.st_LDT_Depart);
 
- QString st_tmp =  getFieldsFromZone(zn,"tb1");
- QString st_return =
-  "/*D'"+st_cri+"'*/"
-  +"select tb1.*, count(tb2.B) as N"+QString::number(col)
-  +" from (" + st_tirages.remove(";")
-  +") as tb1 "
-    "left join "
-    "("
-    "select id as B from Bnrz where (z"+QString::number(zn+1)
-  +" not null  and ("+st_cri+")) ) as tb2 " +
-  "on "+
-  "(tb2.b in("
-  +st_tmp+
-  ")) group by tb1.id"+
-  "/*F'"+st_cri+"'*/";
+ QString st_tirages = *(uneDemande.st_LDT_Depart);
+ QString st_cri = "";
+
+ QString st_tmp ="";
+ QString st_return ="";
+
+ if(pList[zn][0].size()> col){
+  st_cri = pList[zn][0].at(col-1);
+
+	st_tmp =  getFieldsFromZone(zn,"tb1");
+	st_return =
+	 "/*D'"+st_cri+"'*/"
+	 +"select tb1.*, count(tb2.B) as N"+QString::number(col)
+	 +" from (" + st_tirages.remove(";")
+	 +") as tb1 "
+		 "left join "
+		 "("
+		 "select id as B from Bnrz where (z"+QString::number(zn+1)
+	 +" not null  and ("+st_cri+")) ) as tb2 " +
+	 "on "+
+	 "(tb2.b in("
+	 +st_tmp+
+	 ")) group by tb1.id"+
+	 "/*F'"+st_cri+"'*/";
+ }
+ else {
+
+ }
 
 
  return st_return;

@@ -378,7 +378,7 @@ void SyntheseGenerale::do_SetFollower(void)
  if(!isOk)
  {
   QString ErrLoc = "cmb_table.cpp";
-  DB_Tools::DisplayError("SyntheseGenerale::",&query,"do_SetKcmb");
+  DB_Tools::DisplayError("SyntheseGenerale::",&query,"do_SetFollower");
  }
 
 
