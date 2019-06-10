@@ -27,25 +27,25 @@ bool SyntheseGenerale::do_CmbRef(void)
   if(pMaConf->limites[zn].win>2){
    isOk = TraitementCodeVueCombi(zn);
 
-   if(isOk)
-    isOk = TraitementCodeTblCombi(tblUse,zn);
-  }
-  else
-  {
-   int n = pMaConf->limites[zn].max;
-   int p = pMaConf->limites[zn].win;
-   QString tbName = tblUse+ "_z"+QString::number(zn+1);
-   // calculer les combinaisons avec repetition
-   BCnp *a = new BCnp(n,p,db_0.connectionName());
-   tbName = a->getDbTblName();
-   isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn);
-  }
+	 if(isOk)
+		isOk = TraitementCodeTblCombi(tblUse,zn);
+	}
+	else
+	{
+	 int n = pMaConf->limites[zn].max;
+	 int p = pMaConf->limites[zn].win;
+	 QString tbName = tblUse+ "_z"+QString::number(zn+1);
+	 // calculer les combinaisons avec repetition
+	 BCnp *a = new BCnp(n,p,db_0.connectionName());
+	 tbName = a->getDbTblName();
+	 isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn);
+	}
 
-  /// Efface table temporaire
-  if(isOk){
-   msg = "drop view if exists tb_view_"+QString::number(zn+1);
-   isOk=query.exec(msg);
-  }
+	/// Efface table temporaire
+	if(isOk){
+	 msg = "drop view if exists tb_view_"+QString::number(zn+1);
+	 isOk=query.exec(msg);
+	}
  }
 
  if(!isOk)
@@ -65,12 +65,12 @@ bool SyntheseGenerale::TraitementCodeVueCombi(int zn)
  QString ref_1 = "";
 
  QString viewCode[]=
- {
-  "drop view if exists tb_view_%1;",
-  "create view if not exists tb_view_%1 as select tbChoix.tz%1 as "
-  +pMaConf->names[zn].abv+ " "
-  "from (%2 as tbChoix)where(tbChoix.tz%1 is not null);"
- };
+  {
+   "drop view if exists tb_view_%1;",
+   "create view if not exists tb_view_%1 as select tbChoix.tz%1 as "
+    +pMaConf->names[zn].abv+ " "
+                               "from (%2 as tbChoix)where(tbChoix.tz%1 is not null);"
+  };
  int argViewCount[]={1,2};
 
  /// Traitement de la vue
@@ -114,12 +114,12 @@ bool SyntheseGenerale::TraitementCodeTblCombi(QString tbName,int zn)
  QString msg = "";
 
  QString tblCode[]=
- {
-  "drop table if exists "+tbName+"_z%1;",
-  "create table if not exists "+tbName+"_z%1 (id integer primary key,%2);",
-  "insert into "+tbName+"_z%1 select NULL,%2 from (%3) where(%4="
-  +QString::number(+pMaConf->limites[zn].win)+");"
- };
+  {
+   "drop table if exists "+tbName+"_z%1;",
+   "create table if not exists "+tbName+"_z%1 (id integer primary key,%2);",
+   "insert into "+tbName+"_z%1 select NULL,%2 from (%3) where(%4="
+    +QString::number(+pMaConf->limites[zn].win)+");"
+  };
  int argTblCount[]={1,2,4};
 
  QString ref_1 = "";
@@ -156,7 +156,7 @@ bool SyntheseGenerale::TraitementCodeTblCombi(QString tbName,int zn)
     ref_1=ref_1 + "tip text, poids real";
     msg = tblCode[lgnCode].arg(zn+1).arg(ref_1);
    }
-    break;
+   break;
    case 4:{
     ref_1="%d";
     ref_2="t%1."+pMaConf->names[zn].abv;
@@ -181,20 +181,20 @@ bool SyntheseGenerale::TraitementCodeTblCombi(QString tbName,int zn)
      }
     }
 
-    ref_2=msg1+","+QString::fromLocal8Bit("printf('%1',%2)as tip,(%3) as poids");
-    ref_1 = ref_2.arg(ref_1).arg(msg2).arg(msg3);
-    ref_2 = msg4;
-    ref_3 = msg5;
-    msg = tblCode[lgnCode].arg(QString::number(zn+1),ref_1,ref_2,ref_3);
-   }
-    break;
-   default:
-    msg = "Error on the number of args";
-    break;
-  }
+		ref_2=msg1+","+QString::fromLocal8Bit("printf('%1',%2)as tip,(%3) as poids");
+		ref_1 = ref_2.arg(ref_1).arg(msg2).arg(msg3);
+		ref_2 = msg4;
+		ref_3 = msg5;
+		msg = tblCode[lgnCode].arg(QString::number(zn+1),ref_1,ref_2,ref_3);
+	 }
+	 break;
+	 default:
+		msg = "Error on the number of args";
+		break;
+	}
 
 #ifndef QT_NO_DEBUG
-  qDebug() << msg;
+	qDebug() << msg;
 #endif
 
   isOk = query.exec(msg);
@@ -241,40 +241,40 @@ bool SyntheseGenerale::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, i
    }
   }
 
-  ref_1 = msg1;
-  ref_1 = ref_1.replace("c",pMaConf->names[zn].abv) + +",tip text, poids real" ;
-  msg = "create table if not exists "
-        +tbName+"_z"+QString::number(zn+1)
-        +"(id integer primary key,"
-        +ref_1
-        +");";
+	ref_1 = msg1;
+	ref_1 = ref_1.replace("c",pMaConf->names[zn].abv) + +",tip text, poids real" ;
+	msg = "create table if not exists "
+				+tbName+"_z"+QString::number(zn+1)
+				+"(id integer primary key,"
+				+ref_1
+				+");";
 #ifndef QT_NO_DEBUG
-  qDebug() << msg;
+	qDebug() << msg;
 #endif
 
-  isOk = query.exec(msg);
+	isOk = query.exec(msg);
 
-  if(isOk){
-   msg1 = msg1.remove("int");
-   msg = msg1;
-   msg = msg.replace(QRegExp("c\\d\\s+"),"%02d");
-   msg = msg.replace(",","/");
-   /// traitement insertion dans table
-   msg = "insert into "+tbName+"_z"
-         +QString::number(zn+1)
-         +" select NULL,"
-         +msg1 + ",(printf('"+msg+"',"+msg1+"))as tip,("+msg2+") as poids "
-         +"from ("+tbCnp+")";
+	if(isOk){
+	 msg1 = msg1.remove("int");
+	 msg = msg1;
+	 msg = msg.replace(QRegExp("c\\d\\s+"),"%02d");
+	 msg = msg.replace(",","/");
+	 /// traitement insertion dans table
+	 msg = "insert into "+tbName+"_z"
+				 +QString::number(zn+1)
+				 +" select NULL,"
+				 +msg1 + ",(printf('"+msg+"',"+msg1+"))as tip,("+msg2+") as poids "
+				 +"from ("+tbCnp+")";
 #ifndef QT_NO_DEBUG
-   qDebug() << msg;
+	 qDebug() << msg;
 #endif
-   query.exec(msg);
-   if(isOk){
-    /// Supprimer la table Cnp
-    msg = "drop table if exists "+tbCnp;
-    isOk = query.exec(msg);
-   }
-  }
+	 query.exec(msg);
+	 if(isOk){
+		/// Supprimer la table Cnp
+		msg = "drop table if exists "+tbCnp;
+		isOk = query.exec(msg);
+	 }
+	}
 
  }
 
@@ -287,6 +287,101 @@ bool SyntheseGenerale::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, i
  query.finish();
 
  return isOk;
+}
+
+void SyntheseGenerale::do_SetFollower(void)
+{
+
+ bool isOk = true;
+ QSqlQuery query(db_0);
+ QString msg = "";
+
+ QString tblUse []= {"Ana_z","RefTirages", "Bnrz"};
+
+ int nbZone = pMaConf->nb_zone;
+
+ for (int zn=0;(zn < nbZone) && isOk;zn++ )
+ {
+  int nbwin = pMaConf->limites[zn].win;
+
+  if(nbwin>2){
+
+   msg = " select t1.*, t2.c1 from old_" + tblUse[0]+QString::number(zn+1)+ " as t1 left join (select 0 as c1) as t2 ";
+
+	 QString sql_msg[]={
+		"alter table "+tblUse[0]+QString::number(zn+1)+" rename to old_"+tblUse[0]+QString::number(zn+1),
+		"create table if not exists " + tblUse[0]+QString::number(zn+1)+ " as "+msg,
+		"drop table if exists old_"+tblUse[0]+QString::number(zn+1)
+	 };
+	 int nb_sql= sizeof(sql_msg)/sizeof(QString);
+
+	 /// Rajout de la colonne c1
+	 for (int current=0;(current < nb_sql) && isOk ; current++) {
+#ifndef QT_NO_DEBUG
+		qDebug() << "msg["<<current<<"]="<<sql_msg[current];
+#endif
+		isOk = query.exec(sql_msg[current]);
+	 }
+
+
+	 /// la colonne est creee la remplir
+	 /// du plus grand au plus petit
+	 QString zn_field = getFieldsFromZone(zn,"t1");
+	 QString ref="((r%2.z1=r%1.z1+1) and r%2.z1 in ("+zn_field+"))";
+	 QString ref2="(r%1.z1 in ("+zn_field+"))";
+
+	 for (int nbloop= nbwin;(nbloop>1) && isOk ;nbloop--) {
+
+		QString aliasZn="";
+		for (int k =1; k<=nbloop;k++) {
+		 aliasZn =aliasZn + tblUse[2] + " as r" +QString::number(k);
+		 if(k<nbloop){
+			aliasZn = aliasZn + ",";
+		 }
+		}
+
+		msg="";
+		QString deb = "";
+		QString msg1 = "";
+
+		for(int i = nbloop; i>0; i--){
+		 deb = "update "+tblUse[0]+QString::number(zn+1)+ " as t1 set c1 = " + QString::number(nbloop+1-i);
+
+
+		 if(i>1){
+			msg1 = ref.arg(i-1).arg(i);
+			msg1 = " AND " + msg1;
+		 }
+		 else {
+			msg1 = ref2.arg(i);
+		 }
+
+		 msg = msg1 + msg  ;
+		}
+
+		msg1 = deb + " where (t1.id in ( select t1.id from "
+					 + tblUse[1] + " as t1, " + aliasZn + " where ("
+					 + msg + ")) and t1.c1=0)";
+#ifndef QT_NO_DEBUG
+		qDebug() << "deb="<<deb;
+		qDebug() << "msg="<<msg;
+		qDebug() << "msg1="<<msg1;
+#endif
+
+		isOk = query.exec(msg1);
+	 }
+
+  }
+ }
+
+
+ if(!isOk)
+ {
+  QString ErrLoc = "cmb_table.cpp";
+  DB_Tools::DisplayError("SyntheseGenerale::",&query,"do_SetKcmb");
+ }
+
+
 }
 
 void SyntheseGenerale::do_SetKcmb(void)
@@ -333,19 +428,19 @@ void SyntheseGenerale::do_SetKcmb(void)
   }
 
 
-  QString sql_msg[]={
-   "alter table "+tblUse[1]+QString::number(zn+1)+" rename to old_"+tblUse[1]+QString::number(zn+1),
-   "create table if not exists " + tblUse[1]+QString::number(zn+1)+ " as "+msg,
-   "drop table if exists old_"+tblUse[1]+QString::number(zn+1)
-  };
-  int nb_sql= sizeof(sql_msg)/sizeof(QString);
+	QString sql_msg[]={
+	 "alter table "+tblUse[1]+QString::number(zn+1)+" rename to old_"+tblUse[1]+QString::number(zn+1),
+	 "create table if not exists " + tblUse[1]+QString::number(zn+1)+ " as "+msg,
+	 "drop table if exists old_"+tblUse[1]+QString::number(zn+1)
+	};
+	int nb_sql= sizeof(sql_msg)/sizeof(QString);
 
-  for (int current=0;(current < nb_sql) && isOk ; current++) {
+	for (int current=0;(current < nb_sql) && isOk ; current++) {
 #ifndef QT_NO_DEBUG
-   qDebug() << "msg["<<current<<"]="<<sql_msg[current];
+	 qDebug() << "msg["<<current<<"]="<<sql_msg[current];
 #endif
-   isOk = query.exec(sql_msg[current]);
-  }
+	 isOk = query.exec(sql_msg[current]);
+	}
 
  }
 

@@ -530,6 +530,7 @@ SyntheseGenerale::SyntheseGenerale(stPSynG a)
  do_CmbRef();
  do_LinesCheck();
  do_SetKcmb();
+ do_SetFollower();
  do_grpTab();
  DoComptageTotal();
 #if 0
