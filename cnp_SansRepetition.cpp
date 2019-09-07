@@ -16,7 +16,7 @@
 #include "db_tools.h"
 #include "cnp_SansRepetition.h"
 
-#undef CNP_SHOW_MSG
+#include "properties.h"
 
 BCnp::BCnp(int n_in, int p_in)
 {
@@ -52,6 +52,10 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
         tbName = str_cnp;
     }
 
+#if (SET_DBG_LIVE&&SET_DBG_LEV3)
+    QMessageBox::information(NULL, "Pgm", "Old 11 in a3!",QMessageBox::Yes);
+#endif
+
     int cnp_v1 = Cardinal_np();
     int cnp_v2 = CalculerCnp_v2();
 
@@ -68,16 +72,18 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
             msg = "Echec creation table " + str_cnp;
         }
         else{
-            QTime t;
+         QTime t;//t(0,0,0);
             t.start();
             isOk = effectueCalculCnp(n_in,p_in);
+            int delta = t.elapsed();
+            QString t_human = QString::number(delta);//t.toString("hh:mm:ss:zzz");
 #ifndef QT_NO_DEBUG
-            qDebug("Time elapsed: %d ms", t.elapsed());
+            qDebug("Time elapsed: %s ms", t_human);
 #endif
-            QString t_human = t.toString("hh:mm:ss:zzz");
+
             //QString::number(t.elapsed())
             msg = str_cnp
-                    +QString(" termine en :)")
+                    +QString(" termine en : ")
                     +t_human
                     +QString(" ms\nEtat ->")
                     +QString::number(isOk);
@@ -87,7 +93,7 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
         msg = str_cnp+ QString(" deja en base..");
     }
 
-#if (CNP_SHOW_MSG)
+#if (SET_DBG_LIVE && CNP_SHOW_MSG)
     QMessageBox::information(NULL,"BddCnp",msg,QMessageBox::Ok);
 #endif
 
@@ -137,6 +143,10 @@ bool BCnp::isNotPresentCnp(int n, int p)
     /// Verifier si la table existe deja
     msg = "SELECT name FROM sqlite_master "
           "WHERE type='table' AND name='"+st_table+"';";
+#if (SET_DBG_LIVE && CNP_SHOW_MSG)
+    QMessageBox::information(NULL,"BCnp",msg,QMessageBox::Ok);
+#endif
+
 
     if((isOk = query.exec(msg)))
     {
@@ -244,6 +254,11 @@ int BCnp::BP_count(void)
 
 QString BCnp::getDbTblName(void)
 {
+#if (SET_DBG_LIVE&&SET_DBG_LEV3)
+ QString  msg = "Old 11 in a3 '"+tbName+"' !";
+ QMessageBox::information(NULL, "Pgm", msg ,QMessageBox::Yes);
+#endif
+
     return(tbName);
 }
 

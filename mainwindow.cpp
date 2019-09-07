@@ -120,7 +120,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
     unJeu = eGameToSet;
     break;
   }
-#if (SET_DBG_LIVE&&SET_DBG_LEV2)
+#if (SET_DBG_LIVE && SET_DBG_LEV2)
   QMessageBox::information(NULL, "Open", "Prevision 1->"+QString::number(1),QMessageBox::Yes);
 #endif
 
@@ -2068,6 +2068,7 @@ QGridLayout * MainWindow::MonLayout_pFnNsr1(stTiragesDef *pConf)
  //w_FenetreDetails->setVisible(true);
  //w_FenetreDetails->lower();
 
+
  return(lay_return);
 }
 
@@ -2095,6 +2096,10 @@ QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
  tabWidget->addTab(dessin,"b<N/2");
 
  lay_return->addWidget(tabWidget);
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+ QMessageBox::information(NULL, "Pgm", "Old 11 in b!",QMessageBox::Yes);
+#endif
+
 
  return(lay_return);
 }
@@ -2177,6 +2182,10 @@ QWidget * MainWindow::FEN_Analyses(stTiragesDef *pConf)
  {&MainWindow::MonLayout_pFnNsr1,&MainWindow::MonLayout_pFnNsr2};
 
 
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+ QMessageBox::information(NULL, "Pgm", "Old 11 in!",QMessageBox::Yes);
+#endif
+
  for(int i =0; i<2;i++)
  {
   wid_ForTop[i]=new QWidget;
@@ -2196,6 +2205,10 @@ QWidget * MainWindow::FEN_Analyses(stTiragesDef *pConf)
 
  //ChartWidget *test = new ChartWidget(pSimEcart);
  //test->show();
+
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+ QMessageBox::information(NULL, "Pgm", "Old 11 out!",QMessageBox::Yes);
+#endif
 
  QFormLayout *mainLayout = new QFormLayout;
  mainLayout->addWidget(tab_Top);

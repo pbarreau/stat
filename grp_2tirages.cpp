@@ -176,7 +176,7 @@ QString SyntheseGenerale::grp_CaseAll(int zn, QTableView *view)
  return st_critere;
 }
 
-void SyntheseGenerale::slot_grpDbClikSel()
+void SyntheseGenerale::slot_grpDbClikSel(const QModelIndex &index)
 {
 
  QTableView *view = qobject_cast<QTableView *>(sender());
@@ -365,7 +365,7 @@ QString SyntheseGenerale::grp_SqlFromKey(int zn, int col)
  QString st_tmp ="";
  QString st_return ="";
 
- if(pList[zn][0].size()> col){
+ if(col <= pList[zn][0].size()){
   st_cri = pList[zn][0].at(col-1);
 
 	st_tmp =  getFieldsFromZone(zn,"tb1");

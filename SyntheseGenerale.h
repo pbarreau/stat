@@ -179,7 +179,7 @@ class SyntheseGenerale : public QObject
  void slot_Type_G(const QModelIndex & index);
  void slot_grpShowEcart(const QModelIndex &index);
  void slot_grpSel();
- void slot_grpDbClikSel();
+ void slot_grpDbClikSel(const QModelIndex &index);
  void slot_ccmr_grpSel(const QPoint pos);
 
  void slot_ShowBouleForNewDesign(const QModelIndex & index);

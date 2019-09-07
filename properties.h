@@ -9,7 +9,8 @@
 #endif
 
 #define SET_DBG_LEV1    false
-#define SET_DBG_LEV2    true
+#define SET_DBG_LEV2    false
+#define SET_DBG_LEV3    true
 
 #define TRY_CODE_NEW    1
 
@@ -22,6 +23,6 @@
 #define SET_QRY_DBG1    true
 #define SET_QRY_DBG2    false
 
-#define CNP_SHOW_MSG    false
+#define CNP_SHOW_MSG    true
 
 #endif // PROPERTIES_H

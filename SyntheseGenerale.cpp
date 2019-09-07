@@ -578,13 +578,45 @@ SyntheseGenerale::SyntheseGenerale(stPSynG a)
  uneDemande.st_LDT_Filtre = st_tmp;
  uneDemande.st_jourDef = st_JourTirageDef;
  uneDemande.ref = pMaConf;
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+ QMessageBox::information(NULL, "Pgm", "Old 11 in a1!",QMessageBox::Yes);
+#endif
+
  DoTirages();
+
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+ QMessageBox::information(NULL, "Pgm", "Old 11 in a2!",QMessageBox::Yes);
+#endif
+
  do_CmbRef();
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+ QMessageBox::information(NULL, "Pgm", "Old 11 out a3!",QMessageBox::Yes);
+#endif
+
  do_LinesCheck();
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+ QMessageBox::information(NULL, "Pgm", "Old 11 in a4!",QMessageBox::Yes);
+#endif
+
  do_SetKcmb();
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+ QMessageBox::information(NULL, "Pgm", "Old 11 in a5!",QMessageBox::Yes);
+#endif
+
  do_SetFollower();
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+ QMessageBox::information(NULL, "Pgm", "Old 11 in a6!",QMessageBox::Yes);
+#endif
+
  do_grpTab();
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+ QMessageBox::information(NULL, "Pgm", "Old 11 in a7!",QMessageBox::Yes);
+#endif
+
  DoComptageTotal();
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+ QMessageBox::information(NULL, "Pgm", "Old 11 in a8!",QMessageBox::Yes);
+#endif
 #if 0
  /// greffon pour calculer barycentre des tirages
  stNeedsOfBary param;
