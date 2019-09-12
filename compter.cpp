@@ -175,7 +175,7 @@ BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
 	tmp->sqmDef = sqmZones;
 	tmp->key = type;
 	nbChild++; /// Nombre total d'enfants A SUPPRIMER ?
-	/// Rajouter cet element Ã  la liste des requetes actives
+	/// Rajouter cet element Ã  la liste des requetes actives
 	int pos = -1;
 	if(type==eCountElm) pos = 0;
 	if(type==eCountCmb) pos = 1;
@@ -412,8 +412,8 @@ void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 
  if(showMyMenu(view,onglets,pos) == true){
   QMenu *MonMenu = new QMenu(this);
-  QMenu *subMenu= ContruireMyMenu(view,onglets,pos);
-  MonMenu->addMenu(subMenu);
+  QMenu *subMenu= mnu_SetPriority(MonMenu,view,onglets,pos);
+  //MonMenu->addMenu(subMenu);
   MonMenu->exec(view->viewport()->mapToGlobal(pos));
  }
  //}
@@ -438,9 +438,11 @@ bool BCount::showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint
  return isOk;
 }
 
-QMenu *BCount::ContruireMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos)
+QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos)
 {
  bool ret = false;
+ bool itm = false;
+
  QSqlQuery query(dbToUse) ;
  QString msg = "";
 
@@ -488,39 +490,57 @@ QMenu *BCount::ContruireMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre,
 	ret = query.first();
 	if(query.isValid())
 	{
-		pri = query.value("pri").toInt();
-		flt = query.value("flt").toInt();
+	 itm = true; /// On a touve la ligne dans la table
+	 pri = query.value("pri").toInt();
+	 flt = query.value("flt").toInt();
 	}
 	else {
 	 pri=-1;
+	 flt=-1;
 	}
  }
+
+ QString name = "";
+ name = QString::number(itm)+","+
+        QString::number(zne)+","+
+        QString::number(typ)+","+
+        QString::number(lgn)+","+
+        QString::number(col)+","+
+        QString::number(val)+","+
+        QString::number(pri)+","+
+        QString::number(flt);
 
  /// Total de priorite a afficher
  for(int i =1; i<=5;i++)
  {
-  QString name = QString::number(i);
-  QAction *radio = new QAction(name,grpPri);
+  QAction *radio = new QAction(QString::number(i),grpPri);
 
-	name = QString::number(zne)+","+
-				 QString::number(typ)+","+
-				 QString::number(lgn)+","+
-				 QString::number(col)+","+
-				 QString::number(val)+","+
-				 QString::number(pri)+","+
-				 QString::number(flt);
 	radio->setObjectName(name);
 	radio->setCheckable(true);
 	menu->addAction(radio);
  }
+ MonMenu->addMenu(menu);
  connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
 
+/// Filtre
+ QAction *filtrer = MonMenu->addAction("Filtrer");
+ filtrer->setCheckable(true);
+ filtrer->setParent(view);
+ filtrer->setObjectName(name);
 
- QAction *uneAction;
+ connect(filtrer,SIGNAL(triggered(bool)),
+         this,SLOT(slot_wdaFilter(bool)));
+
  if(pri>0)
  {
+  QAction *uneAction;
   uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
   uneAction->setChecked(true);
+ }
+
+ if(flt>0)
+ {
+  filtrer->setChecked(true);
  }
 
  return menu;
@@ -529,13 +549,83 @@ QMenu *BCount::ContruireMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre,
 void BCount::slot_ChoosePriority(QAction *cmd)
 {
  QSqlQuery query(dbToUse);
+ bool isOk = false;
  QString msg = "";
- QString msg_2 = "";
+ QString msg_2 = cmd->text();;
 
  QString st_from = cmd->objectName();
  QStringList def = st_from.split(",");
 
- msg_2 = "e";
+ /// Creation ou mise a jour ?
+ if(def[0].toInt()==0){
+  def[0]="NULL";
+  def[6]=msg_2;
+  st_from=def.join(",");
+  msg = "insert into Filtres (id, zne, typ,lgn,col,val,pri,flt) values ("
+        +st_from+");";
+ }
+ else {
+
+
+  /// Meme ligne pour off
+  if(msg_2.compare(def[6])==0){
+   msg_2="NULL";
+  }
+
+  msg = "update  Filtres set pri="+msg_2+
+        " where("
+        "zne="+def[1]+" and "+
+        "typ="+def[2]+" and "+
+        "lgn="+def[3]+" and "+
+        "col="+def[4]+
+        ");";
+ }
+
+ isOk = query.exec(msg);
+  if(isOk){
+   /// compter les priorites
+   msg = "select count(*) from Filtres where ("
+         "zne="+def[1]+" and "+
+         "typ="+def[2]+" and "+
+         "pri=1)";
+   int nbPrio = 0;
+   if((isOk = query.exec(msg))){
+    query.first();
+    nbPrio = query.value(0).toInt();
+   }
+
+	 /// mettre le champs infos a jour
+	 QString lab = QString("Selection : %1 sur %2");
+	 QString s_sel = QString::number(nbPrio).rightJustified(2,'0');
+	 QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
+	 lab = lab.arg(s_sel).arg(s_max);
+
+
+   selection[0].setText(lab);
+
+   /// Recherche des onglets zone et type dans lesquels est le tableau
+   QObject *obj = cmd;
+   QTableView *target=NULL;
+
+   do{
+    obj = obj->parent();
+    QTableView *view = qobject_cast<QTableView *>(obj);
+    if(view==NULL){
+     continue;
+    }
+    else{
+     target=view;
+    }
+   }while(target==NULL);
+
+   QAbstractItemModel *qtv_model = target->model();
+   QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
+   BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
+   QString queryStr = A2->query().executedQuery();
+   A2->query().clear();
+   A2->setQuery(queryStr, dbToUse);
+  }
+
 }
 
 #if 0
@@ -741,6 +831,70 @@ void BCount::CompleteMenu(QMenu *LeMenu,QTableView *view, int clef)
          this,SLOT(slot_wdaFilter(bool)));
 }
 
+void BCount::slot_wdaFilter(bool val)
+{
+ QAction *chkFrom = qobject_cast<QAction *>(sender());
+ QSqlQuery query(dbToUse);
+ bool isOk = false;
+ QString msg = "";
+ QString msg_2 = QString::number(val);
+
+ QString st_from = chkFrom->objectName();
+ QStringList def = st_from.split(",");
+
+ /// Creation ou mise a jour ?
+ if(def[0].toInt()==0){
+  def[0]="NULL";
+  def[7]=msg_2;
+  st_from=def.join(",");
+  msg = "insert into Filtres (id, zne, typ,lgn,col,val,pri,flt) values ("
+        +st_from+");";
+ }
+ else {
+
+
+  /// Meme ligne pour off
+  if(msg_2.compare(def[7])==0){
+   msg_2="NULL";
+  }
+
+  msg = "update  Filtres set flt="+msg_2+
+        " where("
+        "zne="+def[1]+" and "+
+        "typ="+def[2]+" and "+
+        "lgn="+def[3]+" and "+
+        "col="+def[4]+
+        ");";
+ }
+
+ isOk = query.exec(msg);
+  if(isOk){
+
+   /// Recherche des onglets zone et type dans lesquels est le tableau
+   QObject *obj = chkFrom;
+   QTableView *target=NULL;
+
+   do{
+    obj = obj->parent();
+    QTableView *view = qobject_cast<QTableView *>(obj);
+    if(view==NULL){
+     continue;
+    }
+    else{
+     target=view;
+    }
+   }while(target==NULL);
+
+   QAbstractItemModel *qtv_model = target->model();
+   QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
+   BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
+   QString queryStr = A2->query().executedQuery();
+   A2->query().clear();
+   A2->setQuery(queryStr, dbToUse);
+  }
+}
+
+#if 0
 /// https://openclassrooms.com/forum/sujet/qt-inclure-check-box-dans-un-menu-deroulant-67907
 void BCount::slot_wdaFilter(bool val)
 {
@@ -887,4 +1041,4 @@ void BCount::slot_wdaFilter(bool val)
 
  delete chkFrom;
 }
-
+#endif
