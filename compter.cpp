@@ -412,7 +412,7 @@ void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 
  if(showMyMenu(view,onglets,pos) == true){
   QMenu *MonMenu = new QMenu(this);
-  QMenu *subMenu= ContruireMenu(view,0);
+  QMenu *subMenu= ContruireMyMenu(view,onglets,pos);
   MonMenu->addMenu(subMenu);
   MonMenu->exec(view->viewport()->mapToGlobal(pos));
  }
@@ -422,9 +422,7 @@ void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 bool BCount::showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos)
 {
  bool isOk = false;
- QModelIndex index = view->indexAt(pos);
  int col = view->columnAt(pos.x());
- int v1 = index.model()->columnCount();
  int v2 = view->model()->columnCount();
 
 
@@ -440,25 +438,104 @@ bool BCount::showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint
  return isOk;
 }
 
-QMenu *BCount::ContruireMenu(QTableView *view, int val)
+QMenu *BCount::ContruireMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos)
 {
+ bool ret = false;
+ QSqlQuery query(dbToUse) ;
+ QString msg = "";
+
  QString msg2 = "Priorite";
  QMenu *menu =new QMenu(msg2, view); ///this
  QActionGroup *grpPri = new  QActionGroup(menu);
 
+ int zne = typeFiltre.at(0)->currentIndex();
+ int typ = typeFiltre.at(1)->currentIndex();
+ int lgn = view->rowAt(pos.y());
+ int col = view->columnAt(pos.x());
+ int val = 0;
+ int pri = 0;
+ int flt = 0;
 
+ QModelIndex  index = view->indexAt(pos);
+ if(index.model()->index(index.row(),col).data().canConvert(QMetaType::Int))
+ {
+  val =  index.model()->index(index.row(),col).data().toInt();
+ }
 
+ msg = "select * from Filtres "
+       "where ("
+       "zne="+QString::number(zne)+ " and " +
+       "typ="+QString::number(typ)+ " and " +
+       "lgn="+QString::number(lgn)+ " and " +
+       "col="+QString::number(col)+
+");";
+ ret =  query.exec(msg);
+
+ if(!ret)
+ {
+#ifndef QT_NO_DEBUG
+	qDebug() << "select * from Filtres ->"<< query.lastError();
+	qDebug() << "Bad code:\n"<<msg<<"\n-------";
+#endif
+ }
+ else
+ {
+#ifndef QT_NO_DEBUG
+  qDebug() << "Fn ContruireMyMenu:\n"<<msg<<"\n-------";
+#endif
+
+	// A t on un resultat
+	ret = query.first();
+	if(query.isValid())
+	{
+		pri = query.value("pri").toInt();
+		flt = query.value("flt").toInt();
+	}
+	else {
+	 pri=-1;
+	}
+ }
 
  /// Total de priorite a afficher
  for(int i =1; i<=5;i++)
  {
   QString name = QString::number(i);
   QAction *radio = new QAction(name,grpPri);
-  radio->setCheckable(true);
-  menu->addAction(radio);
+
+	name = QString::number(zne)+","+
+				 QString::number(typ)+","+
+				 QString::number(lgn)+","+
+				 QString::number(col)+","+
+				 QString::number(val)+","+
+				 QString::number(pri)+","+
+				 QString::number(flt);
+	radio->setObjectName(name);
+	radio->setCheckable(true);
+	menu->addAction(radio);
+ }
+ connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+
+
+ QAction *uneAction;
+ if(pri>0)
+ {
+  uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
+  uneAction->setChecked(true);
  }
 
  return menu;
+}
+
+void BCount::slot_ChoosePriority(QAction *cmd)
+{
+ QSqlQuery query(dbToUse);
+ QString msg = "";
+ QString msg_2 = "";
+
+ QString st_from = cmd->objectName();
+ QStringList def = st_from.split(",");
+
+ msg_2 = "e";
 }
 
 #if 0
@@ -502,6 +579,7 @@ QMenu *BCount::ContruireMenu(QTableView *view, int val)
 #endif
 
 
+#if 0
 /// Selectionner une priorite de choix pour une boule
 /// Cela conduira a la mettre dans un ensemble pour generer les jeux posibles
 void BCount::slot_ChoosePriority(QAction *cmd)
@@ -636,6 +714,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
  /// la demande utilisateur
  cmd->setChecked(true);
 }
+#endif
 
 void BCount::CompleteMenu(QMenu *LeMenu,QTableView *view, int clef)
 {
