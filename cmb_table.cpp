@@ -1,3 +1,4 @@
+#include <QApplication>
 #include "SyntheseGenerale.h"
 #include "db_tools.h"
 
@@ -38,6 +39,10 @@ bool SyntheseGenerale::do_CmbRef(void)
 	 // calculer les combinaisons avec repetition
 	 BCnp *a = new BCnp(n,p,db_0.connectionName());
 	 tbName = a->getDbTblName();
+	 if(tbName.isNull()){
+		QMessageBox::information(NULL, "Pgm", "tbName is null" ,QMessageBox::Yes);
+		QApplication::quit();
+	 }
 	 isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn);
 	}
 

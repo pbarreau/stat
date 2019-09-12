@@ -480,6 +480,7 @@ bool GererBase::f2(QString tb, QString *data)
 
 bool GererBase::f2_2(QString tb, QString *data)
 {
+ /// Code pour ancienne base
     bool status = true;
 
     QSqlQuery q_create(db_0);
@@ -506,7 +507,13 @@ bool GererBase::f2_2(QString tb, QString *data)
         }
 
     }
-    q_create.finish();
+
+		if(status){
+		/// Preparation nouvelle table pour supprimer ancienne def
+		st_sqldf =  "create table Filtres (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
+		status = q_create.exec(st_sqldf);
+		}
+		q_create.finish();
 
 #ifndef QT_NO_DEBUG
     if(!status)

@@ -3077,7 +3077,6 @@ QTableView * SyntheseGenerale::tot_TbvAnalyse(int zn, QString tb_src, QString tb
  bool isOk = true;
  QString st_msg1 = "";
 
-
  if((isOk = tot_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
   st_msg1 = "select * from "+tb_out+";";
  }
@@ -6064,6 +6063,7 @@ count(*)  as T,
 	QString str_count_days = *st_JourTirageDef+"," ;
 	QString st_query = "select "
 										 "(Select NULL) as Id,"
+										 "(Select NULL) as Bkey,"
 										 "(select NULL) as C, "
 										 "B,"
 										 "(select NULL) as I, "

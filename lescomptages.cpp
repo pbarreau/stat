@@ -266,6 +266,7 @@ bool BPrevision::creerTablesDeLaBase(void)
 {
     bool isOk= true;
     QSqlQuery q(db_1);
+    QString st_sqldf = "";
 
     stCreateTable creerTables[]={
         {C_TBL_3,&BPrevision::f3},   /// Table des tirages
@@ -278,6 +279,13 @@ bool BPrevision::creerTablesDeLaBase(void)
         {U_GRP,&BPrevision::f6},    /// Selection utilisateur
         {C_TBL_A,&BPrevision::f6}    /// Selection utilisateur
     };
+
+		/// Preparation de la suppression/modification de f6
+		if(isOk){
+		 /// Preparation nouvelle table pour supprimer ancienne def
+		 st_sqldf =  "create table Filtres (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
+		 isOk = q.exec(st_sqldf);
+		}
 
     int nbACreer = sizeof(creerTables)/sizeof(stCreateTable);
     for(int uneTable=0;(uneTable<nbACreer) && isOk;uneTable++)
@@ -641,6 +649,7 @@ bool BPrevision::f6(QString tb, QSqlQuery *query)
         st_sqldf =  "create table "+st_table+" (id Integer primary key, val int, p int, f int);";
         isOk = query->exec(st_sqldf);
     }
+
 
     if(!isOk)
     {

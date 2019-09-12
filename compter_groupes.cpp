@@ -462,6 +462,7 @@ bool BCountGroup::updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn)
     return isOk;
 }
 
+#if 0
 void BCountGroup::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 {
     /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
@@ -509,6 +510,7 @@ void BCountGroup::slot_ccmr_SetPriorityAndFilters(QPoint pos)
         MonMenu->exec(view->viewport()->mapToGlobal(pos));
     }
 }
+#endif
 
 void BCountGroup::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp)
 {

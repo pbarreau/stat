@@ -370,9 +370,29 @@ void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
  /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
 
  QTableView *view = qobject_cast<QTableView *>(sender());
- QModelIndex index = view->indexAt(pos);
- int col = view->columnAt(pos.x());
 
+ /// Recherche des onglets zone et type dans lesquels est le tableau
+ QObject *obj = view;
+ QList<QTabWidget *>onglets;
+
+ do{
+  obj = obj->parent();
+  QTabWidget *tab = qobject_cast<QTabWidget *>(obj);
+  if(tab==NULL){
+   continue;
+  }
+  else{
+   onglets.append(tab);
+#ifndef QT_NO_DEBUG
+	 qDebug() << "onglet:" <<tab->currentIndex();
+	 qDebug() << "max:" <<tab->count();
+#endif
+
+  }
+ }while(onglets.size() < 2);
+
+
+#if 0
  /// Dans object name on a les tables data:action
  if(col == 0)
  {
@@ -388,12 +408,60 @@ void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 	QMenu *subMenu= ContruireMenu(view,val);
 	MonMenu->addMenu(subMenu);
 	CompleteMenu(MonMenu, view, val);
+#endif
 
-
+ if(showMyMenu(view,onglets,pos) == true){
+  QMenu *MonMenu = new QMenu(this);
+  QMenu *subMenu= ContruireMenu(view,0);
+  MonMenu->addMenu(subMenu);
   MonMenu->exec(view->viewport()->mapToGlobal(pos));
  }
+ //}
 }
 
+bool BCount::showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos)
+{
+ bool isOk = false;
+ QModelIndex index = view->indexAt(pos);
+ int col = view->columnAt(pos.x());
+ int v1 = index.model()->columnCount();
+ int v2 = view->model()->columnCount();
+
+
+ if((typeFiltre.at(1)->currentIndex() < (typeFiltre.at(1)->count()-1)) && !col){
+  isOk = true;
+ }
+
+ if((typeFiltre.at(1)->currentIndex() == (typeFiltre.at(1)->count()-1))
+     && (col >0 && col < v2-1)){
+  isOk = true;
+ }
+
+ return isOk;
+}
+
+QMenu *BCount::ContruireMenu(QTableView *view, int val)
+{
+ QString msg2 = "Priorite";
+ QMenu *menu =new QMenu(msg2, view); ///this
+ QActionGroup *grpPri = new  QActionGroup(menu);
+
+
+
+
+ /// Total de priorite a afficher
+ for(int i =1; i<=5;i++)
+ {
+  QString name = QString::number(i);
+  QAction *radio = new QAction(name,grpPri);
+  radio->setCheckable(true);
+  menu->addAction(radio);
+ }
+
+ return menu;
+}
+
+#if 0
 QMenu *BCount::ContruireMenu(QTableView *view, int val)
 {
  QString tbl = view->objectName();
@@ -431,6 +499,7 @@ QMenu *BCount::ContruireMenu(QTableView *view, int val)
  connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
  return menu;
 }
+#endif
 
 
 /// Selectionner une priorite de choix pour une boule

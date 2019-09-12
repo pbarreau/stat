@@ -32,7 +32,7 @@ public slots:
 
 
 private slots:
-    void slot_ccmr_SetPriorityAndFilters(QPoint pos);
+    //void slot_ccmr_SetPriorityAndFilters(QPoint pos);
     void slot_wdaFilter(bool isChecked);
 
 
