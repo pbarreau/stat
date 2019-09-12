@@ -538,7 +538,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
   uneAction->setChecked(true);
  }
 
- if(flt>0)
+ if(flt>0 && ((flt&&0x2)==0))
  {
   filtrer->setChecked(true);
  }
@@ -837,7 +837,7 @@ void BCount::slot_wdaFilter(bool val)
  QSqlQuery query(dbToUse);
  bool isOk = false;
  QString msg = "";
- QString msg_2 = QString::number(val);
+ QString msg_2 = QString::number(1<<val);
 
  QString st_from = chkFrom->objectName();
  QStringList def = st_from.split(",");
@@ -852,6 +852,11 @@ void BCount::slot_wdaFilter(bool val)
  }
  else {
 
+  /// Rpl le champ filtre :
+  /// 1 c'est le dernier tirage
+  /// 2 demande de filtrage
+  /// 4 Non sorti
+  /// combinaison de bits
 
   /// Meme ligne pour off
   if(msg_2.compare(def[7])==0){
