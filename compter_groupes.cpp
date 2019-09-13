@@ -281,9 +281,14 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
     m->setDynamicSortFilter(true);
     m->setSourceModel(sqm_tmp);
-
     qtv_tmp->setModel(m);
-    qtv_tmp->setItemDelegate(new BDelegateFilterGrp); /// Delegation
+
+		BDelegateElmOrCmb::stPrmDlgt a;
+		a.parent = qtv_tmp;
+		a.db_cnx = dbToUse.connectionName();
+		a.zne=zn;
+		a.typ=3; ///Position de l'onglet qui va recevoir le tableau
+		qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
     //qtv_tmp->hideColumn(0);

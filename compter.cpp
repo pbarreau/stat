@@ -850,7 +850,7 @@ void BCount::slot_wdaFilter(bool val)
  if((def[1].toInt()==0) && (def[2].toInt()==0) && (def[6].toInt()!=1))
   return;
 
- QString msg_2 = QString::number(0x2);
+ QString msg_2 = QString::number(BDelegateElmOrCmb::isWanted);
 
  /// Creation ou mise a jour ?
  if(def[0].toInt()==0){
@@ -864,15 +864,15 @@ void BCount::slot_wdaFilter(bool val)
 
 	/// Rpl le champ filtre :
 	/// 1 c'est le dernier tirage
-	/// 2 demande de filtrage
-	/// 4 Non sorti
+	/// 4 demande de filtrage
+	/// 8 Non sorti
 	/// combinaison de bits
 
 	/// Meme ligne pour off
 	if(def[7].toInt()<0){
 	 def[7]="0";
 	}
-	msg_2=QString::number(def[7].toInt()^ 0x2);
+	msg_2=QString::number(def[7].toInt()^ (BDelegateElmOrCmb::isWanted));
 
   msg = "update  Filtres set flt="+msg_2+
         " where("

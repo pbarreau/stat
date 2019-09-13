@@ -25,10 +25,30 @@ class BDelegateStepper : public QItemDelegate
 class BDelegateElmOrCmb : public QItemDelegate
 {
  Q_OBJECT
+
  public:
- BDelegateElmOrCmb(QWidget *parent = 0) : QItemDelegate(parent) {}
+ typedef struct _stPrmDlgt{
+  QWidget *parent = 0;
+  QString db_cnx;
+  int zne=0;
+  int typ=0;
+ }stPrmDlgt;
+
+ enum Filtre  {isLast=1,isPrevious=1<<1, isWanted=1<<2, isNever=1<<3,
+               isPlusOne=1<<4, isMinusOne=1<<5};
+
+ Q_DECLARE_FLAGS(Filtres, Filtre)
+ Q_FLAG(Filtres)
+
+ public:
+ BDelegateElmOrCmb(stPrmDlgt prm);
  void paint(QPainter *painter, const QStyleOptionViewItem &option,
             const QModelIndex &index) const;
+
+ private:
+ QSqlDatabase dbToUse;
+ QString cur_zn;
+ QString cur_tp;
 };
 
 class BDelegateFilterGrp : public QItemDelegate
