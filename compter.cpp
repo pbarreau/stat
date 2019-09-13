@@ -64,7 +64,7 @@ QString BCount::CreerCritereJours(QString cnx_db_name, QString tbl_ref)
  }
 
 #ifndef QT_NO_DEBUG
- qDebug() << "CreerCritereJours ->"<< query.lastError();
+ qDebug() << "CreerCritereJours verif_erreur ->"<< query.lastError();
  qDebug() << "SQL 1:\n"<<msg<<"\n-------";
  qDebug() << "SQL 2:\n"<<st_tmp<<"\n-------";
 #endif

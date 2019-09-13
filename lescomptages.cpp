@@ -12,6 +12,7 @@
 #include <QTabWidget>
 #include <QSqlQuery>
 #include <QSqlResult>
+#include <QSqlRecord>
 #include <QTextStream>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -1471,7 +1472,17 @@ void BPrevision::slot_make_UserGamesList()
     /// Selectionner les boules choisi par l'utilisateur pour en faire
     /// un ensemble d'etude
     ///
-    msg = "select distinct count(Choix.p)  as T from "+SelElemt+"_z1 as Choix where(choix.p=1);";
+ msg = "select distinct count(Choix.pri)  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0);";
+
+ /*
+ msg = "select distinct count(Choix.flt)  as T from Filtres as Choix where("
+       "(choix.flt&0x"+QString::number(BDelegateElmOrCmb::isWanted)+"=0x"+QString::number(BDelegateElmOrCmb::isWanted)+
+       ") AND choix.zne=0 and choix.typ=0);";
+*/
+#ifndef QT_NO_DEBUG
+ qDebug() <<msg;
+#endif
+
     if((isOk = query.exec(msg)))
     {
         query.first();
@@ -1564,6 +1575,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 {
     bool isOk = false;
     QSqlQuery query(db_1);
+ QSqlQuery query_2(db_1);
     QString msg = "";
     QString source = "E1";
     QString tbUse = "U_"+source+"_ana";
@@ -1611,6 +1623,14 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 
         lignes =new QLabel;
         int nbLignes = sqm_resu->rowCount();
+        QSqlQuery nvll(db_1);
+        isOk=nvll.exec("select count(*) from (E1)");
+        if(isOk){
+         nvll.first();
+         if(nvll.isValid()){
+          nbLignes = nvll.value(0).toInt();
+         }
+        }
         QString tot = "Total : " + QString::number(nbLignes);
         lignes->setText(tot);
 
@@ -1657,8 +1677,7 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
 
     /// Creation d'une table temporaire pour sauver choix utilisateur
     int selprio = 1;
-    QString src_usr =tbSel
-            +"_z"+QString::number(zn+1);
+ QString src_usr ="Filtres";
 
     QString tmp_tbl =src_usr
             +"_p"+QString::number(selprio);
@@ -1677,12 +1696,16 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
             +tmp_tbl
             +" select NULL,choix.val from ("
             +src_usr+
-            ") as choix where(choix.p="
-            +QString::number(selprio)
-            +");"
+   ") as choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0);"
         }
 
     };
+
+ /*
+  * where((choix.flt&0x"
+   +QString::number(BDelegateElmOrCmb::isWanted)+"=0x"+QString::number(BDelegateElmOrCmb::isWanted)+
+   ") AND choix.zne=0 and choix.typ=0);"
+  */
 
     /// Faire en sequence les requetes
     int nbSqlmsg = sizeof(str_req)/sizeof(QString);

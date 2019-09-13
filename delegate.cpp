@@ -479,34 +479,40 @@ void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &opt
  QPoint t3(refx,refy+cy);
  triangle << t1<<t2<<t3<<t1;
 
- QString msg = "Select pri,flt from Filtres where("
-               "zne="+cur_zn+" and " +
-               "typ="+cur_tp+" and "+
-               "lgn="+QString::number(index.row())+" and "+
-               "col="+QString::number(index.column())+
-               ")";
- QSqlQuery q(dbToUse);
- bool isOk=q.exec(msg);
-
- int val_f = 0;
- int pri_f = 0;
- if(isOk){
-  q.first();
-  /// Info priorite
-  if(q.value(0).canConvert(QMetaType::Int)){
-   pri_f = q.value(0).toInt();
-   if(pri_f<0){pri_f=0;}
-  }
-
-	/// Info filtre
-	if(q.value(1).canConvert(QMetaType::Int)){
-	 val_f = q.value(1).toInt();
-	 if(val_f<0){val_f=0;}
-	}
- }
 
  if(((col == 0) && (cur_tp.toInt()<3)) || (col>0 && (cur_tp.toInt()==3))){
 
+	QString msg = "Select pri,flt from Filtres where("
+								"zne="+cur_zn+" and " +
+								"typ="+cur_tp+" and "+
+								"lgn="+QString::number(index.row())+" and "+
+								"col="+QString::number(index.column())+
+								")";
+	QSqlQuery q(dbToUse);
+	bool isOk=q.exec(msg);
+
+	int val_f = 0;
+	int pri_f = 0;
+	if(isOk){
+	 q.first();
+	 if(q.isValid()==false){
+		QItemDelegate::paint(painter, option, index);
+		return;
+	 }
+	 /// Info priorite
+	 if(q.value(0).canConvert(QMetaType::Int)){
+		pri_f = q.value(0).toInt();
+		if(pri_f<0){pri_f=0;}
+	 }
+
+	 /// Info filtre
+	 if(q.value(1).canConvert(QMetaType::Int)){
+		val_f = q.value(1).toInt();
+		if(val_f<0){val_f=0;}
+	 }
+	}
+
+	//----------------
 	painter->save();
 	painter->setRenderHint(QPainter::Antialiasing, true);
 
