@@ -38,7 +38,7 @@
 #define T_BRC     "brc"   /// ..on regroupement
 #define C_TBL_C     "elm"   /// ..on regroupement
 
-#define MAX_CHOIX_BOULES    30
+#define MAX_CHOIX_BOULES    49
 
 /// https://fr.wikibooks.org/wiki/Programmation_C%2B%2B/Les_classes
 /// https://fr.wikipedia.org/wiki/Fonction_virtuelle
@@ -92,6 +92,7 @@ protected:
     bool showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
     //void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
     QString CreerCritereJours(QString cnx_db_name, QString tbl_ref);
+    QString getFieldsFromZone(int zn, QString alias);
 
 
 private:

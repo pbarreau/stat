@@ -428,8 +428,96 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 
+		/// Mettre dans la base une info sur 2 derniers tirages
+		marquerDernieresBoules(zn);
+
     return lay_return;
 }
+
+void BCountElem::marquerDernieresBoules(int zn){
+ bool isOk = true;
+ QSqlQuery query(dbToUse);
+ QSqlQuery query_2(dbToUse);
+
+
+ int len_zn = myGame.limites[zn].len;
+
+ QString st_critere = getFieldsFromZone(zn, "t2");
+ QString key = "z"+QString::number(zn+1);
+ QString tb_ref = "B_elm";
+
+ /// Mettre info sur 2 derniers tirages
+ for(int dec=0; (dec <2) && isOk ; dec++){
+  int val = 1<<dec;
+  QString sdec = QString::number(val);
+  QString msg []={
+   {"SELECT "+st_critere+" from ("+db_data
+    +") as t2 where(id = "+sdec+")"
+   },
+   {
+    "select t1."+key+" as B from ("+tb_ref+") as t1,("
+    +msg[0]+") as t2 where(t1."+key+" in ("
+    +st_critere+"))"
+   }
+  };
+
+#if 0
+,
+   {"update Filtres set F=(case when f is (NULL or 0) then 0x"
+    +sdec+" else(f|0x"+sdec+") end) "
+                                   "where (B in ("+msg[1]+"))"}
+#endif
+
+	int taille = sizeof(msg)/sizeof(QString);
+#ifndef QT_NO_DEBUG
+	for(int i = 0; i< taille;i++){
+	 qDebug() << "msg ["<<i<<"]: "<<msg[i];
+	}
+#endif
+	isOk = query.exec(msg[taille-1]);
+
+	if(isOk){
+	 query.first();
+	 if(query.isValid()){
+		int boule = 0;
+		do{
+		 boule = query.value(0).toInt();
+
+		 /// check if Filtres
+		 QString mgs_2 = "Select count(*)  from Filtres where ("
+										 "zne="+QString::number(zn)+" and "+
+										 "typ=0 and lgn="+QString::number(boule-1)+ " and "+
+										 "col=0 and val="+QString::number(boule)+")";
+#ifndef QT_NO_DEBUG
+			qDebug() << "mgs_2: "<<mgs_2;
+#endif
+			isOk = query_2.exec(mgs_2);
+			if(isOk){
+			 query_2.first();
+			 int nbLigne = query_2.value(0).toInt();
+			 if(nbLigne==1){
+				mgs_2 = "update Filtres set flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
+				 sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+" and "+
+								"typ=0 and lgn="+QString::number(boule-1)+ " and "+
+								"col=0 and val="+QString::number(boule)+")";
+			 }
+			 else {
+				mgs_2 ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
+								" values (NULL,"+QString::number(zn)+",0,"+QString::number(boule-1)+
+								",0,"+QString::number(boule)+",-1,"+sdec+");";
+			 }
+#ifndef QT_NO_DEBUG
+			 qDebug() << "mgs_2: "<<mgs_2;
+#endif
+			 isOk = query_2.exec(mgs_2);
+			}
+		}while(query.next()&&isOk);
+	 }
+	}
+
+ }
+}
+
 LabelClickable *BCountElem::getLabPriority(void)
 {
  return selection[0].getLabel();

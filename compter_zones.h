@@ -35,7 +35,8 @@ public:
     int hCommon; // taille des tableaux
 
 private:
-    QGridLayout *Compter(QString * pName, int zn);
+		QGridLayout *Compter(QString * pName, int zn);
+		void marquerDernieresBoules(int zn);
     QStringList * CreateFilterForData(int zn);
     QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
     QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);

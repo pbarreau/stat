@@ -542,7 +542,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
          this,SLOT(slot_wdaFilter(bool)));
 
 
- if((flt>0) && (flt&0x2))
+ if((flt>0) && (flt&BDelegateElmOrCmb::isWanted))
  {
   filtrer->setChecked(true);
  }
@@ -1058,3 +1058,23 @@ void BCount::slot_wdaFilter(bool val)
  delete chkFrom;
 }
 #endif
+
+QString BCount::getFieldsFromZone(int zn, QString alias)
+{
+ int len_zn = myGame.limites[zn].len;
+
+ QString use_alias = "";
+
+ if(alias.size()){
+  use_alias = alias+".";
+ }
+ QString ref = use_alias+myGame.names[zn].abv+"%1";
+ QString st_items = "";
+ for(int i=0;i<len_zn;i++){
+  st_items = st_items + ref.arg(i+1);
+  if(i<(len_zn-1)){
+   st_items=st_items+QString(",");
+  }
+ }
+ return   st_items;
+}
