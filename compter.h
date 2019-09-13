@@ -87,10 +87,10 @@ protected:
     QString CriteresCreer(QString operateur, QString critere,int zone);
     void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
     bool VerifierValeur(int item, QString table,int idColValue,int *lev);
-    QMenu *ContruireMenu(QTableView *view, int val);
+    //QMenu *ContruireMenu(QTableView *view, int val);
     QMenu *mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
     bool showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
-    void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
+    //void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
     QString CreerCritereJours(QString cnx_db_name, QString tbl_ref);
 
 

@@ -510,19 +510,29 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
         QString::number(pri)+","+
         QString::number(flt);
 
- /// Total de priorite a afficher
- for(int i =1; i<=5;i++)
+ if((typeFiltre.at(0)->currentIndex()==0) && (typeFiltre.at(1)->currentIndex()==0))
  {
-  QAction *radio = new QAction(QString::number(i),grpPri);
+  /// Total de priorite a afficher
+  for(int i =1; i<=5;i++)
+  {
+   QAction *radio = new QAction(QString::number(i),grpPri);
 
-	radio->setObjectName(name);
-	radio->setCheckable(true);
-	menu->addAction(radio);
+	 radio->setObjectName(name);
+	 radio->setCheckable(true);
+	 menu->addAction(radio);
+	}
+	MonMenu->addMenu(menu);
+	connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+
+	if(pri>0)
+	{
+	 QAction *uneAction;
+	 uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
+	 uneAction->setChecked(true);
+	}
  }
- MonMenu->addMenu(menu);
- connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
 
-/// Filtre
+ /// Filtre
  QAction *filtrer = MonMenu->addAction("Filtrer");
  filtrer->setCheckable(true);
  filtrer->setParent(view);
@@ -531,14 +541,8 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
  connect(filtrer,SIGNAL(triggered(bool)),
          this,SLOT(slot_wdaFilter(bool)));
 
- if(pri>0)
- {
-  QAction *uneAction;
-  uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
-  uneAction->setChecked(true);
- }
 
- if(flt>0 && ((flt&&0x2)==0))
+ if((flt>0) && (flt&0x2))
  {
   filtrer->setChecked(true);
  }
@@ -804,7 +808,6 @@ void BCount::slot_ChoosePriority(QAction *cmd)
  /// la demande utilisateur
  cmd->setChecked(true);
 }
-#endif
 
 void BCount::CompleteMenu(QMenu *LeMenu,QTableView *view, int clef)
 {
@@ -830,6 +833,7 @@ void BCount::CompleteMenu(QMenu *LeMenu,QTableView *view, int clef)
  connect(filtrer,SIGNAL(triggered(bool)),
          this,SLOT(slot_wdaFilter(bool)));
 }
+#endif
 
 void BCount::slot_wdaFilter(bool val)
 {
@@ -837,10 +841,16 @@ void BCount::slot_wdaFilter(bool val)
  QSqlQuery query(dbToUse);
  bool isOk = false;
  QString msg = "";
- QString msg_2 = QString::number(1<<val);
 
  QString st_from = chkFrom->objectName();
  QStringList def = st_from.split(",");
+
+ /// Verrou
+ /// on ne peut filtrer que si la priorite est a 1 pour boules z0
+ if((def[1].toInt()==0) && (def[2].toInt()==0) && (def[6].toInt()!=1))
+  return;
+
+ QString msg_2 = QString::number(0x2);
 
  /// Creation ou mise a jour ?
  if(def[0].toInt()==0){
@@ -852,16 +862,17 @@ void BCount::slot_wdaFilter(bool val)
  }
  else {
 
-  /// Rpl le champ filtre :
-  /// 1 c'est le dernier tirage
-  /// 2 demande de filtrage
-  /// 4 Non sorti
-  /// combinaison de bits
+	/// Rpl le champ filtre :
+	/// 1 c'est le dernier tirage
+	/// 2 demande de filtrage
+	/// 4 Non sorti
+	/// combinaison de bits
 
-  /// Meme ligne pour off
-  if(msg_2.compare(def[7])==0){
-   msg_2="NULL";
-  }
+	/// Meme ligne pour off
+	if(def[7].toInt()<0){
+	 def[7]="0";
+	}
+	msg_2=QString::number(def[7].toInt()^ 0x2);
 
   msg = "update  Filtres set flt="+msg_2+
         " where("

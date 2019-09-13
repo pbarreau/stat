@@ -331,6 +331,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 
 }
 
+#if 0
 void BCountGroup::slot_wdaFilter(bool isChecked)
 {
     QAction *chkFrom = qobject_cast<QAction *>(sender());
@@ -360,6 +361,7 @@ void BCountGroup::slot_wdaFilter(bool isChecked)
     }
 
 }
+#endif
 
 bool BCountGroup::updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool isChecked, int zn)
 {
