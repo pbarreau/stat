@@ -502,10 +502,13 @@ QString BCountComb::getFilteringData(int zn)
     QString msg = "";
     QString useJonction = "or";
 
-    QString userFiltringTableData = "U_c_z"+QString::number(zn+1);
+    QString userFiltringTableData = "Filtres";
 
-    msg = "select tb1.val from ("+userFiltringTableData+")as tb1 where(tb1.f = 1)";
-    isOk = query.exec(msg);
+		msg = "select tb1.val from ("+userFiltringTableData
+					+")as tb1 "
+						"where((tb1.flt&0x"+QString::number(BDelegateElmOrCmb::isWanted)+"=0x"+QString::number(BDelegateElmOrCmb::isWanted)+
+					") AND tb1.zne="+QString::number(zn)+" and tb1.typ=2)";
+		isOk = query.exec(msg);
 
     if(isOk){
         msg="";

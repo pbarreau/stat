@@ -530,10 +530,16 @@ QString BCountElem::getFilteringData(int zn)
     QString msg = "";
     QString useJonction = "and";
 
-    QString userFiltringTableData = "U_e_z"+QString::number(zn+1);
+    QString userFiltringTableData = "Filtres";
 
-    msg = "select tb1.val from ("+userFiltringTableData+")as tb1 where(tb1.f = 1)";
+		msg = "select tb1.val from ("+userFiltringTableData
+					+")as tb1 "
+						"where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(BDelegateElmOrCmb::isWanted)+"=0x"+QString::number(BDelegateElmOrCmb::isWanted)+
+					") AND tb1.zne="+QString::number(zn)+" and tb1.typ=0 and tb1.pri=1)";
     isOk = query.exec(msg);
+#ifndef QT_NO_DEBUG
+    qDebug() << "msg:"<<msg;
+#endif
 
     if(isOk){
         msg="";
@@ -559,5 +565,8 @@ QString BCountElem::getFilteringData(int zn)
             msg=msg.remove(msg.length()-useJonction.length(),useJonction.length());
         }
     }
+#ifndef QT_NO_DEBUG
+    qDebug() << "msg:"<<msg;
+#endif
     return msg;
 }

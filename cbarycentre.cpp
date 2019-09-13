@@ -325,10 +325,21 @@ QString CBaryCentre::getFilteringData(int zn)
                                                                                                    "tbLeft.id=tbRight.id "
                                                                                                    ") ";
 #endif
-    QSqlQuery query(db_1);
+		QSqlQuery query(db_1);
+		//QString msg = "";
     bool isOk = true;
 
-    QString flt = "select val from U_b_z1 where (f=1)";
+    QString userFiltringTableData = "Filtres";
+
+		QString flt = "select tb1.val from ("+userFiltringTableData
+					+")as tb1 "
+						"where((tb1.flt>0) and (tb1.flt&0x"+QString::number(BDelegateElmOrCmb::isWanted)+"=0x"+QString::number(BDelegateElmOrCmb::isWanted)+
+					") AND tb1.zne="+QString::number(zn)+" and tb1.typ=1)";
+		//isOk = query.exec(msg);
+
+#ifndef QT_NO_DEBUG
+		qDebug() << "flt:"<<flt;
+#endif
 
     QString msg = "tb2.bc in ("+flt+")";
     if((isOk=query.exec(flt))){
@@ -337,5 +348,10 @@ QString CBaryCentre::getFilteringData(int zn)
             msg="";
         }
     }
+//#endif
+#ifndef QT_NO_DEBUG
+    qDebug() << "msg:"<<msg;
+#endif
+
     return msg;
 }

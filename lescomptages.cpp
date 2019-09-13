@@ -1433,7 +1433,7 @@ void BPrevision::slot_filterUserGamesList()
             +source
             +") as tb1,("
             +analys
-            +") as tb2 where ((tb1.id=tb2.id)"
+            +") as tb2 where ((tb1.id=tb2.id) "
             +otherCriteria
             +")";
 
@@ -1448,6 +1448,19 @@ void BPrevision::slot_filterUserGamesList()
     //sqm_resu->clear();
     sqm_resu->setQuery(msg,db_1);
     int nbLignes = sqm_resu->rowCount();
+    QSqlQuery nvll(db_1);
+    isOk=nvll.exec("select count(*) from ("+msg+")");
+#ifndef QT_NO_DEBUG
+    qDebug() << "msg:"<<msg;
+#endif
+
+		if(isOk){
+		 nvll.first();
+		 if(nvll.isValid()){
+			nbLignes = nvll.value(0).toInt();
+		 }
+		}
+
     QString tot = "Total : " + QString::number(nbLignes);
     lignes->setText(tot);
 
