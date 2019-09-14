@@ -432,13 +432,13 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
 		static int oneShotParZn = myGame.znCount; //
 		if(oneShotParZn > 0){
 		 oneShotParZn--;
-		 marquerDernieresBoules(zn);
+		 marquerDerniers_tir(zn);
 		}
 
     return lay_return;
 }
 
-void BCountElem::marquerDernieresBoules(int zn){
+void BCountElem::marquerDerniers_tir(int zn){
  bool isOk = true;
  QSqlQuery query(dbToUse);
  QSqlQuery query_2(dbToUse);

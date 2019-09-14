@@ -135,8 +135,60 @@ QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 
+    marquerDerniers_bar(zn);
     return lay_return;
 
+}
+
+void CBaryCentre::marquerDerniers_bar(int zn){
+ bool isOk = true;
+ QSqlQuery query(dbToUse);
+ QSqlQuery query_2(dbToUse);
+
+ QString key = "Bc";
+ QString tb_ref = "B_ana_z"+QString::number(zn+1);
+
+ /// Mettre info sur 2 derniers tirages
+ for(int dec=0; (dec <2) && isOk ; dec++){
+  int val = 1<<dec;
+  QString sdec = QString::number(val);
+
+	QString msg = "SELECT "+key+" from ("+tb_ref
+								+") as t2 where(id = "+sdec+")";
+
+	isOk = query.exec(msg);
+	if(isOk){
+	 query.first();
+	 int key_val = query.value(0).toInt();
+
+	 /// check if Filtres
+	 QString mgs_2 = "Select count(*)  from Filtres where ("
+									 "zne="+QString::number(zn)+" and "+
+									 "typ=1 and val="+QString::number(key_val)+")";
+	 isOk = query_2.exec(mgs_2);
+	 if(isOk){
+		query_2.first();
+		int nbLigne = query_2.value(0).toInt();
+
+		if(nbLigne==1){
+		 mgs_2 = "update Filtres set pri=-1, flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
+						 sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+" and "+
+						 "typ=1 and val="+QString::number(key_val)+")";
+		}
+		else {
+		 mgs_2 ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
+						 " values (NULL,"+QString::number(zn)+",1,"+QString::number(val)+
+						 ",0,"+QString::number(key_val)+",-1,"+sdec+");";
+		}
+#ifndef QT_NO_DEBUG
+		qDebug() << "mgs_2: "<<mgs_2;
+#endif
+		isOk = query_2.exec(mgs_2);
+
+	 }
+
+  }
+ }
 }
 
 void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)

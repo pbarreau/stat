@@ -18,6 +18,7 @@ class BCountComb:public BCount
 public:
     BCountComb(const BGame &pDef, const QString &in, QSqlDatabase fromDb);
     ~BCountComb();
+    void marquerDerniers_cmb(int zn);
     QString getFilteringData(int zn);
 
 public slots:
