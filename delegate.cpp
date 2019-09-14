@@ -480,22 +480,22 @@ void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &opt
  triangle << t1<<t2<<t3<<t1;
 
 //|| (col>0 && (cur_tp.toInt()==3))
- if(((col == 0) && (cur_tp.toInt()<3)) ){
+ if(((col == 0) && (cur_tp.toInt()<3)) || (col>0 && (cur_tp.toInt()==3))){
 
 	int val_cell = 0;
 	if(index.data().canConvert(QMetaType::Int)){
 	 val_cell = index.data().toInt();
 	}
 
-	/*
-	 * +" and "+
-								"col="+QString::number(index.column())
-	 * */
+	QString flt_grp_key="";
+	if(col>0 && (cur_tp.toInt()==3)){
+	 flt_grp_key = " and col="+QString::number(index.column());
+	}
 
 	QString msg = "Select pri,flt from Filtres where("
 								"zne="+cur_zn+" and " +
 								"typ="+cur_tp+" and "+
-								"val="+QString::number(val_cell)+
+								"val="+QString::number(val_cell)+flt_grp_key+
 								")";
 	QSqlQuery q(dbToUse);
 	bool isOk=q.exec(msg);
