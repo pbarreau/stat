@@ -441,7 +441,7 @@ bool BCount::showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint
 QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos)
 {
  bool ret = false;
- bool itm = false;
+ int itm = 0;
 
  QSqlQuery query(dbToUse) ;
  QString msg = "";
@@ -449,16 +449,17 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
  QString msg2 = "Priorite";
  QMenu *menu =new QMenu(msg2, view); ///this
  QActionGroup *grpPri = new  QActionGroup(menu);
+ QModelIndex  index = view->indexAt(pos);
 
  int zne = typeFiltre.at(0)->currentIndex();
  int typ = typeFiltre.at(1)->currentIndex();
- int lgn = view->rowAt(pos.y());
- int col = view->columnAt(pos.x());
+ int lgn = index.row() ;//view->rowAt(pos.y());
+ int col = index.column();//view->columnAt(pos.x());
  int val = 0;
  int pri = 0;
  int flt = 0;
 
- QModelIndex  index = view->indexAt(pos);
+
  if(index.model()->index(index.row(),col).data().canConvert(QMetaType::Int))
  {
   val =  index.model()->index(index.row(),col).data().toInt();
@@ -468,8 +469,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
        "where ("
        "zne="+QString::number(zne)+ " and " +
        "typ="+QString::number(typ)+ " and " +
-       "lgn="+QString::number(lgn)+ " and " +
-       "col="+QString::number(col)+
+       "val="+QString::number(val)+
 ");";
  ret =  query.exec(msg);
 
@@ -490,7 +490,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
 	ret = query.first();
 	if(query.isValid())
 	{
-	 itm = true; /// On a touve la ligne dans la table
+	 itm = query.value("id").toInt();; /// On a touve la ligne dans la table
 	 pri = query.value("pri").toInt();
 	 flt = query.value("flt").toInt();
 	}
@@ -578,10 +578,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
 
   msg = "update  Filtres set pri="+msg_2+
         " where("
-        "zne="+def[1]+" and "+
-        "typ="+def[2]+" and "+
-        "lgn="+def[3]+" and "+
-        "col="+def[4]+
+        "id="+def[0]+
         ");";
  }
 
@@ -876,10 +873,7 @@ void BCount::slot_wdaFilter(bool val)
 
   msg = "update  Filtres set flt="+msg_2+
         " where("
-        "zne="+def[1]+" and "+
-        "typ="+def[2]+" and "+
-        "lgn="+def[3]+" and "+
-        "col="+def[4]+
+        "id="+def[0]+
         ");";
  }
 
