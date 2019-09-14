@@ -68,11 +68,11 @@ QGridLayout *BCountGroup::Compter(QString * pName, int zn)
     QGridLayout *lay_return = new QGridLayout;
 
 
-    QTableView *qtv_tmp_1 = CompterLigne (pName, zn);
+    //QTableView *qtv_tmp_1 = CompterLigne (pName, zn);
     QTableView *qtv_tmp_2 = CompterEnsemble (pName, zn);
 
     // positionner les tableaux
-    lay_return->addWidget(qtv_tmp_1,0,0,Qt::AlignLeft|Qt::AlignTop);
+    //lay_return->addWidget(qtv_tmp_1,0,0,Qt::AlignLeft|Qt::AlignTop);
     lay_return->addWidget(qtv_tmp_2,1,0,Qt::AlignLeft|Qt::AlignTop);
 
 
@@ -279,9 +279,10 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel();
-    m->setDynamicSortFilter(true);
+    m->setDynamicSortFilter(false);
     m->setSourceModel(sqm_tmp);
     qtv_tmp->setModel(m);
+    qtv_tmp->setSortingEnabled(false);
 
 		BDelegateElmOrCmb::stPrmDlgt a;
 		a.parent = qtv_tmp;
@@ -292,8 +293,8 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 
     qtv_tmp->verticalHeader()->hide();
     //qtv_tmp->hideColumn(0);
-    qtv_tmp->setSortingEnabled(true);
-    qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+    //qtv_tmp->setSortingEnabled(true);
+    //qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
 
 
     //largeur des colonnes
@@ -304,7 +305,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
     {
         qtv_tmp->setColumnWidth(pos,CEL2_L);
     }
-    int L = (nbCol * CEL2_L)/2;
+    int L = (nbCol * CEL2_L);
     qtv_tmp->setFixedWidth(L);
 
 

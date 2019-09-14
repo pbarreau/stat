@@ -1501,13 +1501,8 @@ void BPrevision::slot_make_UserGamesList()
     /// Selectionner les boules choisi par l'utilisateur pour en faire
     /// un ensemble d'etude
     ///
- msg = "select distinct count(Choix.pri)  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0);";
+ msg = "select count(Choix.pri)  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0)";
 
- /*
- msg = "select distinct count(Choix.flt)  as T from Filtres as Choix where("
-       "(choix.flt&0x"+QString::number(BDelegateElmOrCmb::isWanted)+"=0x"+QString::number(BDelegateElmOrCmb::isWanted)+
-       ") AND choix.zne=0 and choix.typ=0);";
-*/
 #ifndef QT_NO_DEBUG
  qDebug() <<msg;
 #endif
@@ -1653,7 +1648,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
         lignes =new QLabel;
         int nbLignes = sqm_resu->rowCount();
         QSqlQuery nvll(db_1);
-        isOk=nvll.exec("select count(*) from (E1)");
+        isOk=nvll.exec("select count(*) from ("+source+")");
         if(isOk){
          nvll.first();
          if(nvll.isValid()){

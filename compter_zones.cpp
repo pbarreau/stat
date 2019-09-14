@@ -429,7 +429,11 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
             SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 
 		/// Mettre dans la base une info sur 2 derniers tirages
-		marquerDernieresBoules(zn);
+		static int oneShotParZn = myGame.znCount; //
+		if(oneShotParZn > 0){
+		 oneShotParZn--;
+		 marquerDernieresBoules(zn);
+		}
 
     return lay_return;
 }
@@ -461,12 +465,6 @@ void BCountElem::marquerDernieresBoules(int zn){
    }
   };
 
-#if 0
-,
-   {"update Filtres set F=(case when f is (NULL or 0) then 0x"
-    +sdec+" else(f|0x"+sdec+") end) "
-                                   "where (B in ("+msg[1]+"))"}
-#endif
 
 	int taille = sizeof(msg)/sizeof(QString);
 #ifndef QT_NO_DEBUG
@@ -486,8 +484,7 @@ void BCountElem::marquerDernieresBoules(int zn){
 		 /// check if Filtres
 		 QString mgs_2 = "Select count(*)  from Filtres where ("
 										 "zne="+QString::number(zn)+" and "+
-										 "typ=0 and lgn="+QString::number(boule-1)+ " and "+
-										 "col=0 and val="+QString::number(boule)+")";
+										 "typ=0 and val="+QString::number(boule)+")";
 #ifndef QT_NO_DEBUG
 			qDebug() << "mgs_2: "<<mgs_2;
 #endif
@@ -498,8 +495,7 @@ void BCountElem::marquerDernieresBoules(int zn){
 			 if(nbLigne==1){
 				mgs_2 = "update Filtres set flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
 				 sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+" and "+
-								"typ=0 and lgn="+QString::number(boule-1)+ " and "+
-								"col=0 and val="+QString::number(boule)+")";
+								"typ=0 and val="+QString::number(boule)+")";
 			 }
 			 else {
 				mgs_2 ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
