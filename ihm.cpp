@@ -42,11 +42,13 @@ void MainWindow::createActions()
 
     runAct = new QAction(QIcon(":/images/run_32px.png"), tr("&Run"), this);
     runAct->setStatusTip(tr("Creer liste de jeux"));
-    /// La connection s'effectue a la creation de l'objet.
 
-    FiltrerAct = new QAction(QIcon(":/images/filtre_1_32px.png"), tr("&Filtrer"), this);
+    FiltrerAct = new QAction(QIcon(":/images/flt_apply.png"), tr("&Filtrer"), this);
     FiltrerAct->setStatusTip(tr("Filtrer la liste de jeux"));
-    /// La connection s'effectue a la creation de l'objet.
+
+		FiltrerClearAct = new QAction(QIcon(":/images/flt_clear.png"), tr("&ClearFiltres"), this);
+		FiltrerClearAct->setStatusTip(tr("Supprimer tous les filtres"));
+		/// La connection s'effectue a la creation de l'objet.
 
     saveAsAct = new QAction(tr("Sau&ver sous..."), this);
     saveAsAct->setShortcuts(QKeySequence::SaveAs);
@@ -96,6 +98,7 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(saveAct);
     fileToolBar->addAction(runAct);
     fileToolBar->addAction(FiltrerAct);
+    fileToolBar->addAction(FiltrerClearAct);
 }
 
 void MainWindow::createStatusBar()

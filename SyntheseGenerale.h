@@ -128,14 +128,14 @@ class SyntheseGenerale : public QObject
  //QStandardItemModel *gsim_AnalyseUnTirage;
 
  public:
- typedef struct stPSynG{
+ typedef struct _stPSynG{
   GererBase *pLaBase;
   QTabWidget *ptabSynt;
   QTabWidget *ptabVue;
   int zn;
   stTiragesDef *pConf;
   QMdiArea *visuel;
- };
+ }stPSynG;
  SyntheseGenerale(stPSynG a);
  void Surligne(int *path,int val);
 

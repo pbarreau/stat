@@ -262,6 +262,7 @@ private:
     QAction *exitAct;
     QAction *runAct;
     QAction *FiltrerAct;
+    QAction *FiltrerClearAct;
     QAction *actGetFromUrlsFdj;
     QAction *aboutAct;
 

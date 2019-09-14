@@ -122,6 +122,7 @@ public slots:
     void slot_changerTitreZone(QString le_titre);
     void slot_make_UserGamesList();
     void slot_filterUserGamesList();
+    void slot_ClearFilters();
 
 private:
     static int total_items;

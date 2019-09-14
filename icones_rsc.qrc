@@ -3,7 +3,8 @@
         <file>images/new.png</file>
         <file>images/open.png</file>
         <file>images/save.png</file>
-        <file>images/filtre_1_32px.png</file>
         <file>images/run_32px.png</file>
+        <file>images/flt_apply.png</file>
+        <file>images/flt_clear.png</file>
     </qresource>
 </RCC>

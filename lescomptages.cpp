@@ -1387,6 +1387,22 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
     Resultats->setWindowTitle(source);
     Resultats->show();
 }
+void BPrevision::slot_ClearFilters()
+{
+ QSqlQuery query(db_1);
+ bool isOk = true;
+ QString msg = "";
+ msg = "update Filtres set flt=(case when ((flt&0x"+
+       QString::number(BDelegateElmOrCmb::isWanted)+")==0x"+QString::number(BDelegateElmOrCmb::isWanted)+
+        " and (flt>0)) then (flt&~(0x"+QString::number(BDelegateElmOrCmb::isWanted)+")) ELSE flt END)";
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<msg;
+#endif
+
+ isOk = query.exec(msg);
+}
+
 void BPrevision::slot_filterUserGamesList()
 {
     QSqlQuery query(db_1);
