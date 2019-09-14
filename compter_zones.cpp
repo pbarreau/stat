@@ -493,14 +493,14 @@ void BCountElem::marquerDernieresBoules(int zn){
 			 query_2.first();
 			 int nbLigne = query_2.value(0).toInt();
 			 if(nbLigne==1){
-				mgs_2 = "update Filtres set flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
+				mgs_2 = "update Filtres set pri=1, flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
 				 sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+" and "+
 								"typ=0 and val="+QString::number(boule)+")";
 			 }
 			 else {
 				mgs_2 ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
 								" values (NULL,"+QString::number(zn)+",0,"+QString::number(boule-1)+
-								",0,"+QString::number(boule)+",-1,"+sdec+");";
+								",0,"+QString::number(boule)+",1,"+sdec+");";
 			 }
 #ifndef QT_NO_DEBUG
 			 qDebug() << "mgs_2: "<<mgs_2;

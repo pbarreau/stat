@@ -440,7 +440,7 @@ bool BCount::showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint
 
 QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos)
 {
- bool ret = false;
+ bool isOk = false;
  int itm = 0;
 
  QSqlQuery query(dbToUse) ;
@@ -459,21 +459,52 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
  int pri = 0;
  int flt = 0;
 
-
  if(index.model()->index(index.row(),col).data().canConvert(QMetaType::Int))
  {
   val =  index.model()->index(index.row(),col).data().toInt();
  }
 
- msg = "select * from Filtres "
+#if 0
+ /// si je suis sur l'onglet GRP je peux avoir
+ /// la meme valeur pour plusieurs colonnes
+ if(typ==3){
+  /// Rechercher la ligne avec clef(val,colon)
+  msg="Select * from Filtres where(zne="+QString::number(zne)+
+        " and typ="+QString::number(typ)+" and col="+QString::number(col)+
+        " and val="+QString::number(val)+
+        +")";
+
+  isOk=query.exec(msg);
+
+	if(isOk){
+	 query.first();
+	 if(!query.isValid()){
+		/// c'est une nouvelle donnee de filtrage
+		flt=-1;
+	 }
+	}
+ }
+
+/*
+ *  msg = "select * from Filtres "
        "where ("
        "zne="+QString::number(zne)+ " and " +
        "typ="+QString::number(typ)+ " and " +
        "val="+QString::number(val)+
 ");";
- ret =  query.exec(msg);
 
- if(!ret)
+ */
+#endif
+
+
+	msg="Select * from Filtres where(zne="+QString::number(zne)+
+				" and typ="+QString::number(typ)+" and col="+QString::number(col)+
+				" and val="+QString::number(val)+
+				+")";
+
+ isOk =  query.exec(msg);
+
+ if(!isOk)
  {
 #ifndef QT_NO_DEBUG
 	qDebug() << "select * from Filtres ->"<< query.lastError();
@@ -487,7 +518,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
 #endif
 
 	// A t on un resultat
-	ret = query.first();
+	isOk = query.first();
 	if(query.isValid())
 	{
 	 itm = query.value("id").toInt();; /// On a touve la ligne dans la table
@@ -848,6 +879,26 @@ void BCount::slot_wdaFilter(bool val)
   return;
 
  QString msg_2 = QString::number(BDelegateElmOrCmb::isWanted);
+
+ /// si je suis sur l'onglet GRP je peux avoir
+ /// la meme valeur pour plusieurs colonnes
+ if(def[0].toInt() && (def[3].toInt()==3)){
+  /// Rechercher la ligne avec clef(val,colon)
+  msg="Select * from Filtres where(zne="+def[2]+
+        " and typ="+def[3]+" and col="+def[5]+
+        " and val="+def[6]+
+        +")";
+
+  isOk=query.exec(msg);
+
+	if(isOk){
+	 query.first();
+	 if(!query.isValid()){
+		/// c'est une nouvelle donnee de filtrage
+		def[0]="0";
+	 }
+	}
+ }
 
  /// Creation ou mise a jour ?
  if(def[0].toInt()==0){
