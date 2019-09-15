@@ -132,7 +132,8 @@ bool BCountGroup::marquerDerniers_grp(int zn)
 					if(isOk_1){
 					 query_3.first();
 
-					 QString sdec = QString::number(query_2.value(0).toInt());
+					 int cur_id = query_2.value(0).toInt();
+					 QString sdec = QString::number(cur_id|BDelegateElmOrCmb::isWanted);
 					 int nbLigne = query_3.value(0).toInt();
 					 if(nbLigne==1){
 						msg = "update Filtres set  flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
