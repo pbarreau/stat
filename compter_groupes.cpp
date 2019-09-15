@@ -5,6 +5,7 @@
 #include <QGridLayout>
 #include <QTableView>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include <QHeaderView>
 #include <QToolTip>
 #include <QStackedWidget>
@@ -75,8 +76,90 @@ QGridLayout *BCountGroup::Compter(QString * pName, int zn)
  //lay_return->addWidget(qtv_tmp_1,0,0,Qt::AlignLeft|Qt::AlignTop);
  lay_return->addWidget(qtv_tmp_2,1,0,Qt::AlignLeft|Qt::AlignTop);
 
+ marquerDerniers_grp(zn);
 
  return lay_return;
+}
+bool BCountGroup::marquerDerniers_grp(int zn)
+{
+ bool isOk_1 = true;
+ //bool isOk_2 = true;
+
+ QString msg = "";
+ QSqlQuery query_1(dbToUse);
+ QSqlQuery query_2(dbToUse);
+ QSqlQuery query_3(dbToUse);
+
+ /// Lire table GRP
+ QString  table_1 = "grp_z"+QString::number(zn+1);
+ msg = "select * from "+table_1+" Limit 1;";
+ isOk_1=query_1.exec(msg);
+
+ if(isOk_1){
+  query_1.first();
+
+	/// Lire table ANA
+	msg = "select * from B_ana_z"+QString::number(zn+1)+" Limit 2;";
+	isOk_1=query_2.exec(msg);
+
+	if(isOk_1){
+	 query_2.first();
+
+	 if(query_1.isValid() && query_2.isValid()){
+		QSqlRecord r1 = query_1.record();
+		int nbCol = r1.count(); /// Nombre de colonne
+
+		do{
+		 for (int col_id=1;col_id<nbCol;col_id++) {
+			QString col_name=r1.fieldName(col_id);
+			if(col_name.size()){
+			 int val_col = query_2.value(col_name).toInt();
+			 if(val_col){
+				msg="Select "+ col_name+" from "+table_1+" where(Nb="+QString::number(val_col)+");";
+				isOk_1 = query_3.exec(msg);
+
+				if(isOk_1){
+				 query_3.first();
+				 if(query_3.isValid()){
+					int val_cell = query_3.value(col_name).toInt();
+
+					/// check if Filtres
+					msg = "Select count(*)  from Filtres where ("
+								"zne="+QString::number(zn)+" and "+
+								"typ=3 and col="+QString::number(col_id)+" and val="+QString::number(val_cell)+")";
+					isOk_1 = query_3.exec(msg);
+
+					if(isOk_1){
+					 query_3.first();
+
+					 QString sdec = QString::number(query_2.value(0).toInt());
+					 int nbLigne = query_3.value(0).toInt();
+					 if(nbLigne==1){
+						msg = "update Filtres set  flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
+									sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+" and "+
+									"typ=3 and col="+QString::number(col_id)+" and val="+QString::number(val_cell)+")";
+					 }
+					 else {
+						msg="insert into Filtres (id,zne,typ,lgn,col,val,pri,flt) values (Null,"+
+									QString::number(zn)+",3,"+QString::number(val_col)+","+
+									QString::number(col_id)+","+QString::number(val_cell)+",0,"+sdec+")";
+					 }
+					}
+
+#ifndef QT_NO_DEBUG
+					qDebug() <<msg;
+#endif
+					isOk_1 = query_3.exec(msg);
+				 }
+				}
+			 }
+			}
+		 }///for
+		}while(query_2.next()&&isOk_1);
+	 }
+	}
+ }
+ return(isOk_1);
 }
 
 bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
@@ -675,6 +758,10 @@ QStringList * BCountGroup::CreateFilterForData(int zn)
  int maxElems = myGame.limites[zn].max;
  int nbBoules = floor(maxElems/10)+1;
 
+ // Parite & nb elment dans groupe
+ sl_filter[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
+ sl_filter[1] << "P" << "G";
+ sl_filter[2] << "Pair" << "< E/2";
 
  // Nombre de 10zaine
  for(int j=0;j<nbBoules;j++)
@@ -693,16 +780,9 @@ QStringList * BCountGroup::CreateFilterForData(int zn)
   sl_filter[2] << "Finissant par: "+ QString::number(j);
  }
 
- // Parite & nb elment dans groupe
- sl_filter[0] <<fields+"%2=0"<<fields+"<"+QString::number(maxElems/2);
- sl_filter[1] << "P" << "G";
- sl_filter[2] << "Pair" << "< E/2";
-
-
-
-
  return sl_filter;
 }
+
 QString BCountGroup::TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn)
 {
 

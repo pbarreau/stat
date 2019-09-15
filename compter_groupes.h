@@ -23,6 +23,8 @@ public:
     bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
     bool SupprimerVueIntermediaires(void);
     QString getFilteringData(int zn);
+    bool marquerDerniers_grp(int zn);
+
 
 
 public slots:

@@ -433,13 +433,7 @@ bool SyntheseGenerale::sql_DigAll(stDigAll prm)
 			isOk = sql_DigAll(prm);
 		 }
 		 break;
-			/*
-		 case 1: /// si 1 calcul suivant
-		 {
-			isOk = sql_DigAll(zn,lgn,pList,i+1);
-		 }
-			break;
-			*/
+
 		 case 2: /// si 2 fusion des premieres vers une troisieme
 		 {
 			for (int view=0;view<2 && isOk;view++) {
@@ -6060,10 +6054,12 @@ count(*)  as T,
 
 	/// C : Couleur fonction des ecarts
 	/// I : Couleur dernier arrive, pas encore sortie, filtre utilisateur
+
+	/// 										 "(Select NULL) as Bkey,"
+
 	QString str_count_days = *st_JourTirageDef+"," ;
 	QString st_query = "select "
 										 "(Select NULL) as Id,"
-										 "(Select NULL) as Bkey,"
 										 "(select NULL) as C, "
 										 "B,"
 										 "(select NULL) as I, "
