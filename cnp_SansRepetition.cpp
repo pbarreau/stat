@@ -78,7 +78,7 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
             int delta = t.elapsed();
             QString t_human = QString::number(delta);//t.toString("hh:mm:ss:zzz");
 #ifndef QT_NO_DEBUG
-            qDebug("Time elapsed: %s ms", t_human);
+            qDebug()<<"Time elapsed:"<<t_human;
 #endif
 
             //QString::number(t.elapsed())

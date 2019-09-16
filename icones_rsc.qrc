@@ -6,5 +6,7 @@
         <file>images/run_32px.png</file>
         <file>images/flt_apply.png</file>
         <file>images/flt_clear.png</file>
+        <file>images/pri_all.png</file>
+        <file>images/pri_none.png</file>
     </qresource>
 </RCC>

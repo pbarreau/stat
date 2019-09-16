@@ -589,6 +589,11 @@ bool BPrevision::f4(QString tb, QSqlQuery *query)
 //            BCnp *a = new BCnp(n,p,db_1.connectionName(),tbName);
             BCnp *a = new BCnp(n,p,db_1.connectionName());
             tbName = a->getDbTblName();
+            if(tbName.isEmpty()){
+             QMessageBox::information(NULL, "Pgm", "tbName is null" ,QMessageBox::Yes);
+             QApplication::quit();
+            }
+
             isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn);
         }
     }

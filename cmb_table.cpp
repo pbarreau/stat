@@ -39,7 +39,7 @@ bool SyntheseGenerale::do_CmbRef(void)
 	 // calculer les combinaisons avec repetition
 	 BCnp *a = new BCnp(n,p,db_0.connectionName());
 	 tbName = a->getDbTblName();
-	 if(tbName.isNull()){
+	 if(tbName.isEmpty()){
 		QMessageBox::information(NULL, "Pgm", "tbName is null" ,QMessageBox::Yes);
 		QApplication::quit();
 	 }
