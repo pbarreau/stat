@@ -260,9 +260,9 @@ private:
     QAction *saveAct;
     QAction *saveAsAct;
     QAction *exitAct;
-    QAction *runAct;
-    QAction *FiltrerAct;
-    QAction *FiltrerClearAct;
+    QAction *act_UGL_Create;
+    QAction *act_UGL_SetFilters;
+    QAction *act_UGL_ClrFilters;
     QAction *actGetFromUrlsFdj;
     QAction *aboutAct;
 

@@ -120,9 +120,9 @@ private slots:
 
 public slots:
     void slot_changerTitreZone(QString le_titre);
-    void slot_make_UserGamesList();
-    void slot_filterUserGamesList();
-    void slot_ClearFilters();
+    void slot_UGL_Create();
+    void slot_UGL_SetFilters();
+    void slot_UGL_ClrFilters();
 
 private:
     static int total_items;

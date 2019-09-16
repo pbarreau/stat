@@ -40,14 +40,14 @@ void MainWindow::createActions()
     saveAct->setStatusTip(tr("Sauver jeu sur disque"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(pslot_save()));
 
-    runAct = new QAction(QIcon(":/images/run_32px.png"), tr("&Run"), this);
-    runAct->setStatusTip(tr("Creer liste de jeux"));
+    act_UGL_Create = new QAction(QIcon(":/images/run_32px.png"), tr("&Run"), this);
+    act_UGL_Create->setStatusTip(tr("Creer liste de jeux"));
 
-    FiltrerAct = new QAction(QIcon(":/images/flt_apply.png"), tr("&Filtrer"), this);
-    FiltrerAct->setStatusTip(tr("Filtrer la liste de jeux"));
+    act_UGL_SetFilters = new QAction(QIcon(":/images/flt_apply.png"), tr("&Filtrer"), this);
+    act_UGL_SetFilters->setStatusTip(tr("Filtrer la liste de jeux"));
 
-		FiltrerClearAct = new QAction(QIcon(":/images/flt_clear.png"), tr("&ClearFiltres"), this);
-		FiltrerClearAct->setStatusTip(tr("Supprimer tous les filtres"));
+		act_UGL_ClrFilters = new QAction(QIcon(":/images/flt_clear.png"), tr("&ClearFiltres"), this);
+		act_UGL_ClrFilters->setStatusTip(tr("Supprimer tous les filtres"));
 		/// La connection s'effectue a la creation de l'objet.
 
     saveAsAct = new QAction(tr("Sau&ver sous..."), this);
@@ -96,9 +96,9 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(newAct);
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
-    fileToolBar->addAction(runAct);
-    fileToolBar->addAction(FiltrerAct);
-    fileToolBar->addAction(FiltrerClearAct);
+    fileToolBar->addAction(act_UGL_Create);
+    fileToolBar->addAction(act_UGL_SetFilters);
+    fileToolBar->addAction(act_UGL_ClrFilters);
 }
 
 void MainWindow::createStatusBar()

@@ -125,9 +125,9 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 #endif
 
   tous = new BPrevision(unJeu,eFdj,eBddUseDisk);
-  connect(runAct, SIGNAL(triggered()), tous, SLOT(slot_make_UserGamesList()));
-  connect(FiltrerAct, SIGNAL(triggered()), tous, SLOT(slot_filterUserGamesList()));
-  connect(FiltrerClearAct, SIGNAL(triggered()), tous, SLOT(slot_ClearFilters()));
+  connect(act_UGL_Create, SIGNAL(triggered()), tous, SLOT(slot_UGL_Create()));
+  connect(act_UGL_SetFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_SetFilters()));
+  connect(act_UGL_ClrFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_ClrFilters()));
 
   connect(tous,
           SIGNAL(sig_isClickedOnBall(QModelIndex)),
