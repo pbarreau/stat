@@ -52,8 +52,8 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
         tbName = str_cnp;
     }
 
-#if (SET_DBG_LIVE&&SET_DBG_LEV3)
-    QMessageBox::information(NULL, "Pgm", "Old 11 in a3!",QMessageBox::Yes);
+#if (SET_RUN_CHKP)
+        //QMessageBox::information(NULL, "P1", "OK",QMessageBox::Yes);
 #endif
 
     int cnp_v1 = Cardinal_np();
@@ -63,9 +63,15 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
     pos = 0;
     tab = NULL;
 
+#if (SET_RUN_CHKP)
+        //QMessageBox::information(NULL, "P1", "OK",QMessageBox::Yes);
+#endif
 
     if((isOk = isNotPresentCnp(n_in,p_in))){
 
+#if (SET_RUN_CHKP)
+        //QMessageBox::information(NULL, "P2", "OK",QMessageBox::Yes);
+#endif
         isOk = isCnpTableReady(n_in,p_in);
 
         if( !isOk){
@@ -76,7 +82,7 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
             t.start();
             isOk = effectueCalculCnp(n_in,p_in);
             int delta = t.elapsed();
-            QString t_human = QString::number(delta);//t.toString("hh:mm:ss:zzz");
+            QString t_human = QString::number(delta);
 #ifndef QT_NO_DEBUG
             qDebug()<<"Time elapsed:"<<t_human;
 #endif
@@ -335,6 +341,9 @@ bool BCnp::CalculerPascal(void)
     }
     else
     {
+#if (SET_RUN_CHKP)
+        QMessageBox::information(NULL, "M1", "OK",QMessageBox::Yes);
+#endif
         isOk = false;
     }
 

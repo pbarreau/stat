@@ -124,6 +124,10 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
   QMessageBox::information(NULL, "Open", "Prevision 1->"+QString::number(1),QMessageBox::Yes);
 #endif
 
+#if (SET_RUN_CHKP)
+        QMessageBox::information(NULL, "1C", "OK",QMessageBox::Yes);
+#endif
+
   tous = new BPrevision(unJeu,eFdj,eBddUseDisk);
   connect(act_UGL_Create, SIGNAL(triggered()), tous, SLOT(slot_UGL_Create()));
   connect(act_UGL_SetFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_SetFilters()));

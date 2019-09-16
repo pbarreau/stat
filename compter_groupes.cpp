@@ -110,7 +110,9 @@ bool BCountGroup::marquerDerniers_grp(int zn)
 		int nbCol = r1.count(); /// Nombre de colonne
 
 		do{
-		 for (int col_id=1;col_id<nbCol;col_id++) {
+		 /// nbCol-1 pour retirer colone F de la requete
+		 /// DBG a revoir construction de la table GRP_Zx
+		 for (int col_id=1;col_id<nbCol-1;col_id++) {
 			QString col_name=r1.fieldName(col_id);
 			if(col_name.size()){
 			 int val_col = query_2.value(col_name).toInt();
@@ -121,6 +123,12 @@ bool BCountGroup::marquerDerniers_grp(int zn)
 				if(isOk_1){
 				 query_3.first();
 				 if(query_3.isValid()){
+					if(col_name.compare("F",Qt::CaseInsensitive)==0){
+#if (SET_RUN_CHKP)
+				QMessageBox::information(NULL, "P1", "OK",QMessageBox::Yes);
+#endif
+				int i = 0;
+					}
 					int val_cell = query_3.value(col_name).toInt();
 
 					/// check if Filtres
@@ -148,7 +156,7 @@ bool BCountGroup::marquerDerniers_grp(int zn)
 					}
 
 #ifndef QT_NO_DEBUG
-					qDebug() <<msg;
+					qDebug()<<"Colonne("<<col_name<<") ->" <<msg;
 #endif
 					isOk_1 = query_3.exec(msg);
 				 }

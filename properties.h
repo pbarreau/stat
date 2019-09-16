@@ -5,8 +5,10 @@
 #define BMIN_2(a,b) (((a)<(b))?(a):(b))
 
 #ifdef QT_NO_DEBUG
-#define SET_DBG_LIVE    true
+#define SET_DBG_LIVE    false
 #endif
+
+#define SET_RUN_CHKP    true  /// RUN CHECK POINT
 
 #define SET_DBG_LEV1    false
 #define SET_DBG_LEV2    false

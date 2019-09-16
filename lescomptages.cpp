@@ -1646,32 +1646,14 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
  }
  if (isOk)isOk = query.exec("commit transaction");
 
- int zn=0;
 
- /// Verif execution commencee
+ /// Verif execution peut commencer
  if(!isOk) return;
-#if 0
- /// Attendre que la table soit entierement remplie
- QString msg_2 ="SELECT count(name) FROM sqlite_master "
-       "WHERE type='table' AND name like '"+tbl_cible+"'";
 
- int nbCalc = -1;
- do{
-  isOk = query_2.exec(msg_2);
+ /// ---------------------
+ ///  EFFFECTUER LA SUITE
 
-  if(isOk){
-
-	 query_2.first();
-	 if(query_2.isValid()){
-		nbCalc = query_2.value(0).toInt();
-	 }
-	}
-	else {
-	 QMessageBox::critical(0, "Loop", "Erreur traitement !",QMessageBox::Yes);
-	}
- }while(nbCalc <=0);
-#endif
-
+ int zn=0;
  isOk = AnalyserEnsembleTirage(tbl_cible,monJeu, zn);
  if(isOk)
   isOk = FaireTableauSynthese(tbl_cible_ana,monJeu,zn);
