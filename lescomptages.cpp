@@ -1626,18 +1626,31 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 #endif
 
  /// https://www.supinfo.com/articles/single/1160-utilisation-avancee-sqlite
- isOk = query.exec("begin transaction");
+ isOk = query.exec("begin IMMEDIATE Transaction");
  msg = "create table if not exists "+tbl_cible+" as "
        +msg;
- if(isOk) isOk = query.exec(msg);
 
+ int query_pos = QSql::BeforeFirstRow;
+ if(isOk) {
+  isOk = query.exec(msg);
+ }
+ else{
+  QMessageBox::critical(0, "UGL", "Erreur UGL !",QMessageBox::Yes);
+  QApplication::quit();
+ }
+ while (query.isActive()&& isOk){
+  query_pos = query.at();
+  if(query_pos==QSql::AfterLastRow){
+   break;
+  }
+ }
  if (isOk)isOk = query.exec("commit transaction");
 
  int zn=0;
 
  /// Verif execution commencee
  if(!isOk) return;
-//#if 0
+#if 0
  /// Attendre que la table soit entierement remplie
  QString msg_2 ="SELECT count(name) FROM sqlite_master "
        "WHERE type='table' AND name like '"+tbl_cible+"'";
@@ -1657,7 +1670,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 	 QMessageBox::critical(0, "Loop", "Erreur traitement !",QMessageBox::Yes);
 	}
  }while(nbCalc <=0);
-//#endif
+#endif
 
  isOk = AnalyserEnsembleTirage(tbl_cible,monJeu, zn);
  if(isOk)
