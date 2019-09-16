@@ -111,6 +111,7 @@ private:
     void analyserTirages(QString source, const BGame &config);
     bool isTableCnpinDb(int n, int p);
     void creerJeuxUtilisateur(int n, int p);
+    void ContinuerCreation(QString tbl_cible, QString tbl_cible_ana);
     bool isPreviousDestroyed(void);
 
 Q_SIGNALS:

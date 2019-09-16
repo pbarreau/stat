@@ -1501,6 +1501,7 @@ void BPrevision::slot_UGL_Create()
  QString msg = "";
  QString SelElemt = C_TBL_6;
  BCnp *a = NULL;
+ int m = 0;
  int n = 0;
  int p = 0;
 
@@ -1518,6 +1519,8 @@ void BPrevision::slot_UGL_Create()
   query.first();
   n = query.value("T").toInt();
   p = onGame.limites[0].win;
+  m = onGame.limites[0].max;
+
   if(n < p){
    return; /// pas assez d'info pour calcul Cnp
   }
@@ -1551,7 +1554,14 @@ void BPrevision::slot_UGL_Create()
 		 r.setHMS(0,0,0,0);
 		 t.restart();
 		 /// Creer une liste de jeux possibles
-		 creerJeuxUtilisateur(n,p);
+		 if(m == n){
+			QString tbl_cible = a->getDbTblName();
+			QString tbl_cible_ana = "U_E1_ana";
+			ContinuerCreation(tbl_cible, tbl_cible_ana);
+		 }
+		 else{
+			creerJeuxUtilisateur(n,p);
+		 }
 		 r = r.addMSecs(t.elapsed());
 		 t_human = r.toString("hh:mm:ss:zzz");
 		 msg = QString("Creation Liste de jeux en : ")
@@ -1652,6 +1662,16 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 
  /// ---------------------
  ///  EFFFECTUER LA SUITE
+ ContinuerCreation(tbl_cible, tbl_cible_ana);
+
+ isOk = true;
+
+}
+
+void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
+{
+ bool isOk=false;
+ QString msg = "";
 
  int zn=0;
  isOk = AnalyserEnsembleTirage(tbl_cible,monJeu, zn);
@@ -1703,9 +1723,6 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 	Affiche->setWindowTitle("Ensemble:"+ tbl_cible);
 	Affiche->show();
  }
-
- isOk = true;
-
 }
 
 bool BPrevision::isTableCnpinDb(int n, int p)
