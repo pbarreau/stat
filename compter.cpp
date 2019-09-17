@@ -431,6 +431,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
 
  QString msg2 = "Priorite";
  QMenu *menu =new QMenu(msg2, view); ///this
+ QAction *setForAll = new QAction("SetAll");
  QActionGroup *grpPri = new  QActionGroup(menu);
  QModelIndex  index = view->indexAt(pos);
 
@@ -494,6 +495,10 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
 
  if((typeFiltre.at(0)->currentIndex()==0) && (typeFiltre.at(1)->currentIndex()==0))
  {
+  setForAll->setCheckable(true);
+  setForAll->setObjectName("k_all");
+  menu->addAction(setForAll);
+
   /// Total de priorite a afficher
   for(int i =1; i<=5;i++)
   {
@@ -504,6 +509,8 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
 	 menu->addAction(radio);
 	}
 	MonMenu->addMenu(menu);
+	connect(setForAll,SIGNAL(triggered(bool)),this,SLOT(slot_wdaFilter(bool)));
+	///connect(setForAll,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
 	connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
 
 	if(pri>0)
@@ -527,6 +534,10 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
  if((flt>0) && (flt&BDelegateElmOrCmb::isWanted))
  {
   filtrer->setChecked(true);
+ }
+
+ if(setPriorityToAll){
+  setForAll->setChecked(true);
  }
 
  return menu;
@@ -822,6 +833,12 @@ void BCount::slot_wdaFilter(bool val)
  QString msg = "";
 
  QString st_from = chkFrom->objectName();
+
+ if(st_from.compare("k_all")==0){
+  setPriorityToAll=val;
+  return;
+ }
+
  QStringList def = st_from.split(",");
 
  /// Verrou

@@ -120,7 +120,7 @@ bool BCnp::isCnpTableReady(int n, int p)
     QString st_table = tbName;
 
     msg = "create table if not exists "
-            + st_table +"(id integer primary key, ";
+            + st_table +"(id integer primary key, J text,";
 
     QString ref = "c%1 int";
     QString colNames = "";
@@ -149,10 +149,6 @@ bool BCnp::isNotPresentCnp(int n, int p)
     /// Verifier si la table existe deja
     msg = "SELECT name FROM sqlite_master "
           "WHERE type='table' AND name='"+st_table+"';";
-#if (SET_DBG_LIVE && CNP_SHOW_MSG)
-    QMessageBox::information(NULL,"BCnp",msg,QMessageBox::Ok);
-#endif
-
 
     if((isOk = query.exec(msg)))
     {
@@ -191,8 +187,8 @@ bool BCnp::combinaisons(int n, int p, int k, int *L, int *t, int r) {
     if(r<p-k) return true;
 
     if(k==p) {
-        QString msg = "(NULL,";
-        QString col = "(id,";
+        QString msg = "(NULL,'NA',";
+        QString col = "(id,J,";
         QString ref = "c%1";
 
         for(i=0;i<p;i++){
@@ -260,11 +256,6 @@ int BCnp::BP_count(void)
 
 QString BCnp::getDbTblName(void)
 {
-#if (SET_DBG_LIVE&&SET_DBG_LEV3)
- QString  msg = "Old 11 in a3 '"+tbName+"' !";
- QMessageBox::information(NULL, "Pgm", msg ,QMessageBox::Yes);
-#endif
-
     return(tbName);
 }
 
@@ -342,7 +333,7 @@ bool BCnp::CalculerPascal(void)
     else
     {
 #if (SET_RUN_CHKP)
-        QMessageBox::information(NULL, "M1", "OK",QMessageBox::Yes);
+        QMessageBox::information(NULL, "M1", "Memory",QMessageBox::Yes);
 #endif
         isOk = false;
     }
@@ -398,10 +389,10 @@ int BCnp::Cardinal_np(void)
     t[0] = 1;
     for (int i = 1; i <= n; i++) {
         t[i] = 1;
-        for (int j = i - 1; j >= 1; j--) //On part de le fin pour ne pas écraser les valeurs.
-            t[j] = t[j] + t[j - 1]; //On fait les calculs nécessaires.
+        for (int j = i - 1; j >= 1; j--) //On part de le fin pour ne pas ecraser les valeurs.
+            t[j] = t[j] + t[j - 1]; //On fait les calculs necessaires.
     }
-    return t[p]; //On renvoie la valeur recherchée.
+    return t[p]; //On renvoie la valeur recherchee.
 }
 int BCnp::CalculerCnp_v2(void)
 {
@@ -419,7 +410,7 @@ int BCnp::CalculerCnp_v2(void)
 }
 
 /// Cette fonction insert les coefficient cnp dans la table appropriee
-/// celle ci est creer si necessaire lors du traitement
+/// celle ci est creee si necessaire lors du traitement
 /// de la premiere ligne
 void BCnp::insertLineInDbTable(const QString &Laligne)
 {
@@ -476,7 +467,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
                 verifLineId = 0;
 #endif
                 msg = "create table if not exists "
-                        + st_table +"(id integer primary key, ";
+                        + st_table +"(id integer primary key, J text,";
 
                 QString ref = "c%1 int";
                 colNames = "";
@@ -518,8 +509,8 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
         /// Rajouter chaque ligne
         msg = "insert into "
                 +st_table
-                +"(id,"+colNames+")"
-                +"values(NULL,"+Laligne+");";
+                +"(id,J,"+colNames+")"
+                +"values(NULL,'NA',"+Laligne+");";
         isOk = query.exec(msg);
 
 
@@ -550,7 +541,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///  *
 ///  * /* comb.c
 ///  *
-///  * Recherche de toutes les combinaisons de p éléments de
+///  * Recherche de toutes les combinaisons de p elements de
 ///  * l'ensemble {1, 2, 3, 4, 5, ..., n}
 ///  *
 ///  * 01/05/2005 Jean-Paul Davalan <jpdvl@wanadoo.fr>
@@ -558,10 +549,10 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///  * compilation :  gcc -O2 -o comb comb.c
 ///  * usage : comb n p
 ///  *
-///  * la structure comb contient après calcul toutes les combinaisons
+///  * la structure comb contient apres calcul toutes les combinaisons
 ///  * dans le tableau comb->tab
-///  * la i-ième combinaison est comb->tab[i] c'est un tableau de p entiers
-///  * dont les éléments sont comb->tab[i][0] jusqu'à comb->tab[i][p-1]
+///  * la i-ieme combinaison est comb->tab[i] c'est un tableau de p entiers
+///  * dont les elements sont comb->tab[i][0] jusqu'a  comb->tab[i][p-1]
 ///  *
 ///  */
 /// #include <stdio.h>
@@ -573,9 +564,9 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///     int n,    // le n de Cnp
 ///         p,    // le p de Cnp
 ///         cnp,  // la valeur Cnp du nombre de combinaisons
-///         pos,  // varie de 0 au début à Cnp-1 à la fin
+///         pos,  // varie de 0 au debut a Cnp-1 a  la fin
 ///         **tab; // tableau de Cnp lignes contenant chacune une combinaison
-///                // sous la forme de p entiers (de 1 au moins à n au plus)
+///                // sous la forme de p entiers (de 1 au moins a  n au plus)
 /// } cb;
 ///
 /// void combinaisons(cb *comb, int k, int *L, int *t, int r);
@@ -607,7 +598,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///     comb->tab = (int **)malloc(cnp * sizeof(int *));
 ///
 ///     /* -----------------------------------------------------------------
-///      *  préparation des paramètres L et t avant de lancer
+///      *  preparation des parametres L et t avant de lancer
 ///      *  la fonction 'combinaisons'
 ///      *  -----------------------------------------------------------------
 ///      */
@@ -646,7 +637,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///     free(comb);
 ///
 ///     /* -----------------------------------------------------------------
-///      * plus rien à faire ici, on peut d'en aller
+///      * plus rien �  faire ici, on peut d'en aller
 ///      * -----------------------------------------------------------------
 ///      */
 ///     return 0;
@@ -675,7 +666,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 /// /// -------------------------------------------------------------
 /// /* comb2.c
 ///  *
-///  * Recherche de toutes les combinaisons de p Ã©lÃ©ments de
+///  * Recherche de toutes les combinaisons de p elements de
 ///  * l'ensemble {1, 2, 3, 4, 5, ..., n}
 ///  *
 ///  * 01/05/2005 Jean-Paul Davalan <jpdvl@wanadoo.fr>
@@ -718,7 +709,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///                 printf("usage : %s n p\n",argv[0]);
 ///                 exit(1);
 ///         }
-///         n = atoi(argv[1]); // lecture des paramÃ¨tres
+///         n = atoi(argv[1]); // lecture des parametres
 ///         p = atoi(argv[2]);
 ///         if(n<0 || p<0 || p>n) return 0;
 ///         effectue(n, p);

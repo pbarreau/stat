@@ -586,7 +586,6 @@ bool BPrevision::f4(QString tb, QSqlQuery *query)
 	 int p = onGame.limites[zn].win;
 	 QString tbName = tblUse+ "_z"+QString::number(zn+1);
 	 // calculer les combinaisons avec repetition
-	 //            BCnp *a = new BCnp(n,p,db_1.connectionName(),tbName);
 	 BCnp *a = new BCnp(n,p,db_1.connectionName());
 	 tbName = a->getDbTblName();
 	 if(tbName.isEmpty()){

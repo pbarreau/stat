@@ -123,6 +123,7 @@ protected:
 
 private:
     static int nbChild;
+    bool setPriorityToAll;
 
 protected slots:
     void slot_AideToolTip(const QModelIndex & index);
