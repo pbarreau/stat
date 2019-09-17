@@ -392,24 +392,6 @@ void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
  }while(onglets.size() < 2);
 
 
-#if 0
- /// Dans object name on a les tables data:action
- if(col == 0)
- {
-  QString tbl = view->objectName();
-
-	int val = 0;
-	if(index.model()->index(index.row(),col).data().canConvert(QMetaType::Int))
-	{
-	 val =  index.model()->index(index.row(),col).data().toInt();
-	}
-
-	QMenu *MonMenu = new QMenu(this);
-	QMenu *subMenu= ContruireMenu(view,val);
-	MonMenu->addMenu(subMenu);
-	CompleteMenu(MonMenu, view, val);
-#endif
-
  if(showMyMenu(view,onglets,pos) == true){
   QMenu *MonMenu = new QMenu(this);
   QMenu *subMenu= mnu_SetPriority(MonMenu,view,onglets,pos);
@@ -430,8 +412,9 @@ bool BCount::showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint
   isOk = true;
  }
 
+ /// Cas table de syntheses des groupes
  if((typeFiltre.at(1)->currentIndex() == (typeFiltre.at(1)->count()-1))
-     && (col >0 && col < v2-1)){
+     && (col >0 && col < v2)){
   isOk = true;
  }
 
@@ -464,41 +447,9 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
   val =  index.model()->index(index.row(),col).data().toInt();
  }
 
-#if 0
- /// si je suis sur l'onglet GRP je peux avoir
- /// la meme valeur pour plusieurs colonnes
- if(typ==3){
-  /// Rechercher la ligne avec clef(val,colon)
-  msg="Select * from Filtres where(zne="+QString::number(zne)+
-        " and typ="+QString::number(typ)+" and col="+QString::number(col)+
-        " and val="+QString::number(val)+
-        +")";
-
-  isOk=query.exec(msg);
-
-	if(isOk){
-	 query.first();
-	 if(!query.isValid()){
-		/// c'est une nouvelle donnee de filtrage
-		flt=-1;
-	 }
-	}
- }
-
-/*
- *  msg = "select * from Filtres "
-       "where ("
-       "zne="+QString::number(zne)+ " and " +
-       "typ="+QString::number(typ)+ " and " +
-       "val="+QString::number(val)+
-");";
-
- */
-#endif
-
 
 	msg="Select * from Filtres where(zne="+QString::number(zne)+
-				" and typ="+QString::number(typ)+" and col="+QString::number(col)+
+				" and typ="+QString::number(typ)+" and lgn="+QString::number(lgn)+" and col="+QString::number(col)+
 				" and val="+QString::number(val)+
 				+")";
 
@@ -884,9 +835,9 @@ void BCount::slot_wdaFilter(bool val)
  /// la meme valeur pour plusieurs colonnes
  if(def[0].toInt() && (def[3].toInt()==3)){
   /// Rechercher la ligne avec clef(val,colon)
-  msg="Select * from Filtres where(zne="+def[2]+
-        " and typ="+def[3]+" and col="+def[5]+
-        " and val="+def[6]+
+  msg="Select * from Filtres where(zne="+def[1]+
+        " and typ="+def[2]+" and lgn="+def[3]+" and col="+def[4]+
+        " and val="+def[5]+
         +")";
 
   isOk=query.exec(msg);

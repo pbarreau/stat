@@ -112,7 +112,7 @@ bool BCountGroup::marquerDerniers_grp(int zn)
 		do{
 		 /// nbCol-1 pour retirer colone F de la requete
 		 /// DBG a revoir construction de la table GRP_Zx
-		 for (int col_id=1;col_id<nbCol-1;col_id++) {
+		 for (int col_id=1;col_id<nbCol;col_id++) {
 			QString col_name=r1.fieldName(col_id);
 			if(col_name.size()){
 			 int val_col = query_2.value(col_name).toInt();
@@ -123,18 +123,14 @@ bool BCountGroup::marquerDerniers_grp(int zn)
 				if(isOk_1){
 				 query_3.first();
 				 if(query_3.isValid()){
-					if(col_name.compare("F",Qt::CaseInsensitive)==0){
-#if (SET_RUN_CHKP)
-				QMessageBox::information(NULL, "P1", "OK",QMessageBox::Yes);
-#endif
-				int i = 0;
-					}
 					int val_cell = query_3.value(col_name).toInt();
 
 					/// check if Filtres
 					msg = "Select count(*)  from Filtres where ("
-								"zne="+QString::number(zn)+" and "+
-								"typ=3 and col="+QString::number(col_id)+" and val="+QString::number(val_cell)+")";
+								"zne="+QString::number(zn)+
+								" and typ=3  and lgn="+QString::number(val_col)+
+								" and col="+QString::number(col_id)+
+								" and val="+QString::number(val_cell)+")";
 					isOk_1 = query_3.exec(msg);
 
 					if(isOk_1){
@@ -145,8 +141,10 @@ bool BCountGroup::marquerDerniers_grp(int zn)
 					 int nbLigne = query_3.value(0).toInt();
 					 if(nbLigne==1){
 						msg = "update Filtres set  flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
-									sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+" and "+
-									"typ=3 and col="+QString::number(col_id)+" and val="+QString::number(val_cell)+")";
+									sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+
+									" and typ=3 and lgn="+QString::number(val_col)+
+									" and col="+QString::number(col_id)+
+									" and val="+QString::number(val_cell)+")";
 					 }
 					 else {
 						msg="insert into Filtres (id,zne,typ,lgn,col,val,pri,flt) values (Null,"+

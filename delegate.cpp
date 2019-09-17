@@ -489,7 +489,8 @@ void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &opt
 
 	QString flt_grp_key="";
 	if(col>0 && (cur_tp.toInt()==3)){
-	 flt_grp_key = " and col="+QString::number(index.column());
+	 flt_grp_key = " and lgn="+QString::number(index.row()) +
+								 " and col="+QString::number(index.column());
 	}
 
 	QString msg = "Select pri,flt from Filtres where("

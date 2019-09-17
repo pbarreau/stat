@@ -737,7 +737,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
 	if(isOk){
 	 msg = "create table if not exists "+TblCompact+"_z"
 				 + QString::number(zn+1)
-				 +" as select tb1.*, NULL as F from ("+curName+") as tb1";
+				 +" as select tb1.* from ("+curName+") as tb1";
 #ifndef QT_NO_DEBUG
 	 qDebug() << msg;
 #endif
