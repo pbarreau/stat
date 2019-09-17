@@ -1526,6 +1526,14 @@ void BPrevision::slot_UGL_Create()
   }
   else{
    if(n<=MAX_CHOIX_BOULES){
+
+		monJeu.type = onGame.type;
+		monJeu.from = eUsr;
+		monJeu.znCount = 1;
+		monJeu.limites = &(onGame.limites[0]);
+		monJeu.names = &(onGame.names[0]);
+
+
     QTime r;
     QTime t;
     QString t_human = "";
@@ -1555,8 +1563,9 @@ void BPrevision::slot_UGL_Create()
 		 t.restart();
 		 /// Creer une liste de jeux possibles
 		 if(m == n){
+			onGame.limites[0].usr=m;
 			QString tbl_cible = a->getDbTblName();
-			QString tbl_cible_ana = "U_E1_ana";
+			QString tbl_cible_ana = "U_"+tbl_cible+"_ana";
 			ContinuerCreation(tbl_cible, tbl_cible_ana);
 		 }
 		 else{
@@ -1620,14 +1629,6 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
  QString msg = "";
  QString tbl_cible = "E1";
  QString tbl_cible_ana = "U_"+tbl_cible+"_ana";
-
- //monJeu;
-
- monJeu.type = onGame.type;
- monJeu.from = eUsr;
- monJeu.znCount = 1;
- monJeu.limites = &(onGame.limites[0]);
- monJeu.names = &(onGame.names[0]);
 
 
  msg = ListeDesJeux(0,n,p);
@@ -1888,9 +1889,16 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
  /// sur quel nom des elements de la zone
  st_OnDef=""; /// remettre a zero pour chacune des zones
  int znLen = onGame.limites[zn].len;
+ /// Ma modification pour utiliser la table CNP
+ /// dans le cas jeu utilisateur
+ QString key_abv = onGame.names[zn].abv;
+ if(onGame.from==eUsr && (onGame.limites[0].usr == onGame.limites[0].max)){
+  key_abv = "c";
+ }
+
  for(int j=0;j<znLen;j++)
  {
-  st_OnDef = st_OnDef + ref.arg(onGame.names[zn].abv).arg(j+1);
+  st_OnDef = st_OnDef + ref.arg(key_abv).arg(j+1);
   if(j<znLen-1)
    st_OnDef = st_OnDef + " or ";
  }
@@ -1913,6 +1921,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
   QString curTarget = "view vt_0";
   QString lastTitle = "tbLeft.id  as Id,";
   QString curTitle = "tbLeft.*";
+
   do
   {
    /// Dans le cas zone etoiles prendre la valeur directe
@@ -1921,7 +1930,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
     colId++;
     msg = "create " + curTarget
           +" as select "+curTitle+", tbRight."
-          +onGame.names[zn].abv+QString::number(colId)+" as "
+          +key_abv+QString::number(colId)+" as "
           + slst[1].at(loop)
           +" from("+curName+")as tbLeft "
           +"left join ( "

@@ -29,6 +29,7 @@ typedef struct _stParam_1{
     int min;    /// valeur mini possible pour un element
     int max;    /// valeur maxi possible pour un element
     int win;    /// nb elements a avoir pour jackpot
+    int usr;    /// nb elements choisi par utilisateur
 }stParam_1;
 
 /// Definition d'un jeu
