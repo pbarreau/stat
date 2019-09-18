@@ -157,6 +157,7 @@ BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
  memo = NULL;
  sqmZones = NULL;
  myGame = pDef;
+ setPriorityToAll = false;
 
 
  if(useRequete){
@@ -449,10 +450,10 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
  }
 
 
-	msg="Select * from Filtres where(zne="+QString::number(zne)+
-				" and typ="+QString::number(typ)+" and lgn="+QString::number(lgn)+" and col="+QString::number(col)+
-				" and val="+QString::number(val)+
-				+")";
+ msg="Select * from Filtres where(zne="+QString::number(zne)+
+       " and typ="+QString::number(typ)+" and lgn="+QString::number(lgn)+" and col="+QString::number(col)+
+       " and val="+QString::number(val)+
+       +")";
 
  isOk =  query.exec(msg);
 
@@ -499,10 +500,10 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
   setForAll->setObjectName("k_all");
   menu->addAction(setForAll);
 
-  /// Total de priorite a afficher
-  for(int i =1; i<=5;i++)
-  {
-   QAction *radio = new QAction(QString::number(i),grpPri);
+	/// Total de priorite a afficher
+	for(int i =1; i<=5;i++)
+	{
+	 QAction *radio = new QAction(QString::number(i),grpPri);
 
 	 radio->setObjectName(name);
 	 radio->setCheckable(true);
@@ -553,74 +554,129 @@ void BCount::slot_ChoosePriority(QAction *cmd)
  QString st_from = cmd->objectName();
  QStringList def = st_from.split(",");
 
- /// Creation ou mise a jour ?
- if(def[0].toInt()==0){
-  def[0]="NULL";
-  def[6]=msg_2;
-  st_from=def.join(",");
-  msg = "insert into Filtres (id, zne, typ,lgn,col,val,pri,flt) values ("
-        +st_from+");";
- }
- else {
-
-
-  /// Meme ligne pour off
-  if(msg_2.compare(def[6])==0){
-   msg_2="NULL";
-  }
-
-  msg = "update  Filtres set pri="+msg_2+
-        " where("
-        "id="+def[0]+
-        ");";
+ /// Meme ligne pour off
+ if(msg_2.compare(def[6])==0){
+  msg_2="NULL";
  }
 
- isOk = query.exec(msg);
-  if(isOk){
-   /// compter les priorites
-   msg = "select count(*) from Filtres where ("
-         "zne="+def[1]+" and "+
-         "typ="+def[2]+" and "+
-         "pri=1)";
-   int nbPrio = 0;
-   if((isOk = query.exec(msg))){
-    query.first();
-    nbPrio = query.value(0).toInt();
-   }
-
-	 /// mettre le champs infos a jour
-	 QString lab = QString("Selection : %1 sur %2");
-	 QString s_sel = QString::number(nbPrio).rightJustified(2,'0');
-	 QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
-	 lab = lab.arg(s_sel).arg(s_max);
-
-
-   selection[0].setText(lab);
-
-   /// Recherche des onglets zone et type dans lesquels est le tableau
-   QObject *obj = cmd;
-   QTableView *target=NULL;
-
-   do{
-    obj = obj->parent();
-    QTableView *view = qobject_cast<QTableView *>(obj);
-    if(view==NULL){
-     continue;
-    }
-    else{
-     target=view;
-    }
-   }while(target==NULL);
-
-   QAbstractItemModel *qtv_model = target->model();
-   QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
-   BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
-   QString queryStr = A2->query().executedQuery();
-   A2->query().clear();
-   A2->setQuery(queryStr, dbToUse);
+ if(setPriorityToAll){
+  isOk = setUnifiedPriority(def[2],msg_2);
+ }
+ else{
+  /// Creation ou mise a jour ?
+  if(def[0].toInt()==0){
+   def[0]="NULL";
+   def[6]=msg_2;
+   st_from=def.join(",");
+   msg = "insert into Filtres (id, zne, typ,lgn,col,val,pri,flt) values ("
+         +st_from+");";
   }
+  else {
+   msg = "update  Filtres set pri="+msg_2+
+         " where("
+         "id="+def[0]+
+         ");";
+  }
+
+  isOk = query.exec(msg);
+ }
+
+ if(isOk){
+  /// compter les priorites
+  msg = "select count(*) from Filtres where ("
+        "zne="+def[1]+" and "+
+        "typ="+def[2]+" and "+
+        "pri=1)";
+  int nbPrio = 0;
+  if((isOk = query.exec(msg))){
+   query.first();
+   nbPrio = query.value(0).toInt();
+  }
+
+	/// mettre le champs infos a jour
+	QString lab = QString("Selection : %1 sur %2");
+	QString s_sel = QString::number(nbPrio).rightJustified(2,'0');
+	QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
+	lab = lab.arg(s_sel).arg(s_max);
+
+
+	selection[0].setText(lab);
+
+	/// Recherche des onglets zone et type dans lesquels est le tableau
+	QObject *obj = cmd;
+	QTableView *target=NULL;
+
+	do{
+	 obj = obj->parent();
+	 QTableView *view = qobject_cast<QTableView *>(obj);
+	 if(view==NULL){
+		continue;
+	 }
+	 else{
+		target=view;
+	 }
+	}while(target==NULL);
+
+	QAbstractItemModel *qtv_model = target->model();
+	QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
+	BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
+	QString queryStr = A2->query().executedQuery();
+	A2->query().clear();
+	A2->setQuery(queryStr, dbToUse);
+ }
 
 }
+
+bool BCount::setUnifiedPriority(QString szn, QString sprio){
+ QSqlQuery query(dbToUse);
+ QSqlQuery query_2(dbToUse);
+ bool isOk = false;
+ bool isOk_2 = false;
+ QString msg = "";
+ int zn = szn.toInt();
+
+ msg = "Select GROUP_CONCAT(val,',') as R from Filtres where (pri>0 and typ=0 and zne="+szn+")";
+ if((isOk = query.exec(msg))) {
+  query.first();
+  QString elem_1 ="0";
+
+	if(query.isValid()){
+		elem_1 = query.value(0).toString();
+	 /// mettre la nouvelle priorite
+	 msg =  "update Filtres set pri="+sprio+" where(zne="+szn+" and typ=0 and val in ("+elem_1+") );";
+	 if((isOk = query.exec(msg))) {
+		/// Verifier si il faut inserer les autres boules
+		QStringList nbValTab = elem_1.split(',');
+		if(nbValTab.size()< myGame.limites[zn].max){
+		 isOk_2=true;
+		}
+	 }
+	}
+	else {
+	 /// il faut mettre toutes les boules
+	 isOk_2=true;
+	}
+
+	if(isOk_2==true){
+	 /// Recuperer les boules manquantes
+	 msg="Select z"+QString::number(zn+1)+" from B_elm where (z"+QString::number(zn+1)+" not in ("+elem_1+"))";
+	 if((isOk = query.exec(msg))) {
+		query.first();
+		if(query.isValid()){
+		 int boule = 0;
+		 do{
+			boule = query.value(0).toInt();
+			msg="Insert into Filtres (id,zne,typ,lgn,col,val,pri,flt) values(NULL,"+
+						szn+",0,"+QString::number(boule-1)+",0,"+QString::number(boule)+","+sprio+",-1)";
+			isOk=query_2.exec(msg);
+		 }while(isOk && query.next());
+		}
+	 }
+	}
+ }
+ return isOk;
+}
+
 
 #if 0
 QMenu *BCount::ContruireMenu(QTableView *view, int val)
@@ -890,37 +946,37 @@ void BCount::slot_wdaFilter(bool val)
 	}
 	msg_2=QString::number(def[7].toInt()^ (BDelegateElmOrCmb::isWanted));
 
-  msg = "update  Filtres set flt="+msg_2+
-        " where("
-        "id="+def[0]+
-        ");";
+	msg = "update  Filtres set flt="+msg_2+
+				" where("
+				"id="+def[0]+
+				");";
  }
 
  isOk = query.exec(msg);
-  if(isOk){
+ if(isOk){
 
-   /// Recherche des onglets zone et type dans lesquels est le tableau
-   QObject *obj = chkFrom;
-   QTableView *target=NULL;
+	/// Recherche des onglets zone et type dans lesquels est le tableau
+	QObject *obj = chkFrom;
+	QTableView *target=NULL;
 
-   do{
-    obj = obj->parent();
-    QTableView *view = qobject_cast<QTableView *>(obj);
-    if(view==NULL){
-     continue;
-    }
-    else{
-     target=view;
-    }
-   }while(target==NULL);
+	do{
+	 obj = obj->parent();
+	 QTableView *view = qobject_cast<QTableView *>(obj);
+	 if(view==NULL){
+		continue;
+	 }
+	 else{
+		target=view;
+	 }
+	}while(target==NULL);
 
-   QAbstractItemModel *qtv_model = target->model();
-   QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
-   BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
-   QString queryStr = A2->query().executedQuery();
-   A2->query().clear();
-   A2->setQuery(queryStr, dbToUse);
-  }
+	QAbstractItemModel *qtv_model = target->model();
+	QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
+	BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
+	QString queryStr = A2->query().executedQuery();
+	A2->query().clear();
+	A2->setQuery(queryStr, dbToUse);
+ }
 }
 
 #if 0

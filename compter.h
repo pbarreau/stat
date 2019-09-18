@@ -96,7 +96,8 @@ protected:
 
 
 private:
-    void RecupererConfiguration(void);
+		void RecupererConfiguration(void);
+		bool setUnifiedPriority(QString szn, QString sprio);
 
 
 

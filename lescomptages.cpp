@@ -57,6 +57,7 @@ BPrevision::BPrevision(eGame game, eFrom from, eBddUse def)
 
  onGame.type = game;
  onGame.from = from;
+
  if(ouvrirBase(def,game)==true)
  {
   effectuerTraitement(game);
@@ -219,6 +220,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
 	 onGame.limites[0].max=49;
 	 onGame.limites[0].len=5;
 	 onGame.limites[0].win=5;
+	 onGame.limites[0].usr=0;
 	 onGame.names[0].std = "Boules";
 	 onGame.names[0].abv = "b";
 
@@ -227,6 +229,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
 	 onGame.limites[1].max=10;
 	 onGame.limites[1].len=1;
 	 onGame.limites[1].win=1;
+	 onGame.limites[1].usr=0;
 	 onGame.names[1].std = "Etoiles";
 	 onGame.names[1].abv = "e";
 	 break;
@@ -240,6 +243,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
 	 onGame.limites[0].max=50;
 	 onGame.limites[0].len=5;
 	 onGame.limites[0].win=5;
+	 onGame.limites[0].usr=0;
 	 onGame.names[0].std = "Boules";
 	 onGame.names[0].abv = "b";
 
@@ -248,6 +252,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
 	 onGame.limites[1].max=12;
 	 onGame.limites[1].len=2;
 	 onGame.limites[1].win=2;
+	 onGame.limites[1].usr=0;
 	 onGame.names[1].std = "Etoiles";
 	 onGame.names[1].abv = "e";
 	 break;
