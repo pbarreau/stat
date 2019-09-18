@@ -128,7 +128,13 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         QMessageBox::information(NULL, "1C", "OK",QMessageBox::Yes);
 #endif
 
-  tous = new BPrevision(unJeu,eFdj,eBddUseDisk);
+	BPrevision::stPrmPrevision prm;
+	prm.def = eBddUseDisk;
+	prm.from=eFdj;
+	prm.game=unJeu;
+	prm.tirages_fdj="fdj";
+	prm.tirages_usr="";
+	tous = new BPrevision(prm);
   connect(act_UGL_Create, SIGNAL(triggered()), tous, SLOT(slot_UGL_Create()));
   connect(act_UGL_SetFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_SetFilters()));
   connect(act_UGL_ClrFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_ClrFilters()));

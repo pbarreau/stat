@@ -50,17 +50,18 @@ void BPrevision::slot_changerTitreZone(QString le_titre)
  //selection[0].setText("Z:"+le_titre);
 }
 
-BPrevision::BPrevision(eGame game, eFrom from, eBddUse def)
+BPrevision::BPrevision(stPrmPrevision prm)
 {
  cur_item = total_items;
  total_items++;
+ conf = prm;
 
- onGame.type = game;
- onGame.from = from;
+ onGame.type = prm.game;
+ onGame.from = prm.from;
 
- if(ouvrirBase(def,game)==true)
+ if(ouvrirBase(prm.def,prm.game)==true)
  {
-  effectuerTraitement(game);
+  effectuerTraitement(prm.game);
   //dbInUse.close();
  }
 }
@@ -180,8 +181,14 @@ bool BPrevision::OPtimiseAccesBase(void)
 
 void BPrevision::effectuerTraitement(eGame game)
 {
- QString source = C_TBL_3;
- source = "B_" + source;
+ QString source = "";//C_TBL_3;
+ if(conf.from==eFrom::eFdj){
+  source = "B_" + conf.tirages_fdj;
+ }
+ else {
+  source=conf.tirages_usr;
+ }
+
 #if (SET_DBG_LIVE&&SET_DBG_LEV1)
  QMessageBox::information(NULL, "Pgm", "step 1!",QMessageBox::Yes);
 #endif
@@ -1566,7 +1573,7 @@ void BPrevision::slot_UGL_Create()
 		 r.setHMS(0,0,0,0);
 		 t.restart();
 		 /// Creer une liste de jeux possibles
-		 if(n == m){
+		 if(n <= m){
 			int memo_usr = onGame.limites[0].usr;
 			eFrom mem_from = onGame.from;
 

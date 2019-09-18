@@ -72,9 +72,18 @@ class BPrevision:public QGridLayout
 {
     Q_OBJECT
 
+		public:
+		typedef struct _stPrmPrevision{
+		 QString tirages_fdj;	/// liste des tirages provenant de la fdj
+		 QString tirages_usr;	/// liste des tirages contruitent par utilisateur
+		 eGame game;
+		 eFrom from;
+		 eBddUse def;
+		}stPrmPrevision;
+
     /// in : infos representant les tirages
 public:
-    BPrevision(eGame game, eFrom from, eBddUse def);
+    BPrevision(stPrmPrevision prm);
     ~BPrevision();
 
 private:
@@ -128,6 +137,8 @@ public slots:
 private:
     static int total_items;
     int cur_item;
+
+    stPrmPrevision conf;
 
     /// compteur des objets de cette classe
     QSqlDatabase db_1;   /// base de donnees associee a cet objets
