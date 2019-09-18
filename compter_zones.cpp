@@ -283,7 +283,12 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
         }
     }
 
-    boules<< "tbright."+myGame.names[zn].abv;
+		QString key_abv = myGame.names[zn].abv;
+		if(myGame.from==eUsr && (myGame.limites[0].usr == myGame.limites[0].max)){
+		 key_abv = "c";
+		}
+
+    boules<< "tbright."+key_abv;
     int loop = myGame.limites[zn].len;
     st_cri_all= st_cri_all +DB_Tools::GEN_Where_3(loop,"tbleft.boule",false,"=",boules,true,"or");
     boules.clear();

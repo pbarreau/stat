@@ -1566,7 +1566,7 @@ void BPrevision::slot_UGL_Create()
 		 r.setHMS(0,0,0,0);
 		 t.restart();
 		 /// Creer une liste de jeux possibles
-		 if(n <= m){
+		 if(n == m){
 			int memo_usr = onGame.limites[0].usr;
 			eFrom mem_from = onGame.from;
 
