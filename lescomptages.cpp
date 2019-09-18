@@ -1566,11 +1566,18 @@ void BPrevision::slot_UGL_Create()
 		 r.setHMS(0,0,0,0);
 		 t.restart();
 		 /// Creer une liste de jeux possibles
-		 if(m == n){
+		 if(n <= m){
+			int memo_usr = onGame.limites[0].usr;
+			eFrom mem_from = onGame.from;
+
 			onGame.limites[0].usr=m;
+			onGame.from=eUsr;
 			QString tbl_cible = a->getDbTblName();
 			QString tbl_cible_ana = "U_"+tbl_cible+"_ana";
 			ContinuerCreation(tbl_cible, tbl_cible_ana);
+
+			onGame.limites[0].usr=memo_usr;
+			onGame.from=mem_from;
 		 }
 		 else{
 			creerJeuxUtilisateur(n,p);
