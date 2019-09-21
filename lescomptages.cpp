@@ -685,24 +685,18 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
  QString stDefBoules = C_TBL_2;
  QString prvName = "";
  QString curName  ="";
- QString TblCompact = T_GRP;
 
- QString tblToUse = tblIn + "_z"+QString::number(zn+1);
-#if 0
-    QString viewName = "r_"
-            +db_data+ "_"+ QString::number(total-1)
-            +"_"+label[type]
-            +"_z"+QString::number(zn+1);
+ QString TblCompact ="";
+ QString tblToUse = "";
 
-
-    if(onGame.from == eFdj){
-        TblCompact = "B_"+TblCompact;
-    }
-    else{
-        tblToUse = tblIn +"_"T_ANA "_z"+QString::number(zn+1);
-        TblCompact = tblIn + "_"+TblCompact ;
-    }
-#endif
+ if(tblIn == "B_ana"){
+  tblToUse = tblIn + "_z"+QString::number(zn+1);
+  TblCompact = T_GRP;
+ }
+ else{
+  tblToUse = tblIn+ "_z"+QString::number(zn+1);;
+  TblCompact = "r_"+tblIn+"_grp";
+ }
 
  QString stCurTable = tblToUse;
 

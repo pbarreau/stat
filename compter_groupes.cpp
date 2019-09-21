@@ -337,7 +337,14 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
  QTableView *qtv_tmp = new QTableView;
  (* pName) = myGame.names[zn].abv; /// BUG sur db_data
 
- QString TblCompact = T_GRP;
+ QString TblCompact = "";
+
+ if(myGame.from == eFdj){
+  TblCompact = T_GRP;
+ }
+ else{
+  TblCompact = "r_U_"+db_data+"_ana_grp";
+ }
 
 #if 0
     if(myGame.from == eFdj)
