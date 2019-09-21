@@ -88,11 +88,11 @@ QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
  qtv_tmp->setObjectName(qtv_name);
 
 
- if(src_tbl == "E1"){
-  src_data = "select * from r_E1_0_brc_z1;";
+ if(src_tbl == "B_fdj"){
+  src_data = "select * from r_B_fdj_0_brc_z1;";
  }
  else{
-  src_data = "select * from r_B_fdj_0_brc_z1;";
+  src_data = "select * from r_"+src_tbl+"_0_brc_z1;";
  }
  sqm_tmp->setQuery(src_data,db_1);
 
@@ -250,7 +250,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 	 ///  de la base complete
 	 QString tbl_totalBoule = "r_B_fdj_0_elm_z1";
 	 if(isTableTotalBoulleReady(tbl_totalBoule)){
-		str_data = "Select c1.id as Id, sum(c2.t)/5 as BC, J From ("
+		str_data = "Select c1.id as Id, avg(c2.t) as BC, J From ("
 							 +str_data
 							 +") as c1, ("
 							 +tbl_totalBoule
@@ -277,11 +277,11 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 		if((isOk = query.exec(str_tblData))){
 		 /// mettre dans la table analyse le barycentre de chaque tirage
 		 QString str_tblAnalyse = "";
-		 if(tbl_in=="E1"){
-			str_tblAnalyse = "U_E1_ana_z1";
+		 if(tbl_in=="B_fdj"){
+			str_tblAnalyse = "B_ana_z1";
 		 }
 		 else{
-			str_tblAnalyse = "B_ana_z1";
+			str_tblAnalyse = "U_"+tbl_in+"_ana_z1";
 		 }
 
 		 if((isOk = mettreBarycentre(str_tblAnalyse, str_data))){
