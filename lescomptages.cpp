@@ -1319,11 +1319,11 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
  param.db = db_1;
  param.ncx = db_1.connectionName();
  param.tbl_in=source;
- if(source=="E1"){
-  param.tbl_ana = tr("U_E1_ana_z1");
+ if(source=="B_fdj"){
+  param.tbl_ana = source+tr("_ana_z1");
  }else
  {
-  param.tbl_ana = source+tr("_ana_z1");
+  param.tbl_ana = "U_"+monJeu.usr_source+"_ana_z1";
  }
  param.tbl_flt = tr("U_b_z1"); /// source+tr("_flt_z1");
  param.pDef = onGame;
@@ -1418,8 +1418,11 @@ void BPrevision::slot_UGL_SetFilters()
  QSqlQuery query(db_1);
  bool isOk = true;
  QString msg = "";
- QString source = "E1";
- QString analys = "U_E1_ana_z1";
+ QString source = monJeu.usr_source;
+ QString analys = monJeu.usr_analys+"_z1";///"U_E1_ana_z1";
+
+ //onGame;
+ //monJeu;
 
  /// Verifier si existance table resultat utilisateur
  msg = "SELECT name FROM sqlite_master "
@@ -1532,11 +1535,13 @@ void BPrevision::slot_UGL_Create()
   else{
    if(n<=MAX_CHOIX_BOULES){
 
-		monJeu.type = onGame.type;
-		monJeu.from = eUsr;
-		monJeu.znCount = 1;
-		monJeu.limites = &(onGame.limites[0]);
-		monJeu.names = &(onGame.names[0]);
+		monJeu.def.type = onGame.type;
+		monJeu.def.from = eUsr;
+		monJeu.def.znCount = 1;
+		monJeu.def.limites = &(onGame.limites[0]);
+		monJeu.def.names = &(onGame.names[0]);
+		monJeu.fdj_dta="B_fdj";
+		monJeu.fdj_brc="r_B_fdj_0_brc_z1";
 
 
     QTime r;
@@ -1567,7 +1572,7 @@ void BPrevision::slot_UGL_Create()
 		 r.setHMS(0,0,0,0);
 		 t.restart();
 		 /// Creer une liste de jeux possibles
-		 if(n == m){
+		 if(n <= m){
 			int memo_usr = onGame.limites[0].usr;
 			eFrom mem_from = onGame.from;
 
@@ -1575,6 +1580,8 @@ void BPrevision::slot_UGL_Create()
 			onGame.from=eUsr;
 			QString tbl_cible = a->getDbTblName();
 			QString tbl_cible_ana = "U_"+tbl_cible+"_ana";
+			monJeu.usr_source=tbl_cible;
+			monJeu.usr_analys=tbl_cible_ana;
 			ContinuerCreation(tbl_cible, tbl_cible_ana);
 
 			onGame.limites[0].usr=memo_usr;
@@ -1687,11 +1694,11 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
  QString msg = "";
 
  int zn=0;
- isOk = AnalyserEnsembleTirage(tbl_cible,monJeu, zn);
+ isOk = AnalyserEnsembleTirage(tbl_cible,monJeu.def, zn);
  if(isOk)
-  isOk = FaireTableauSynthese(tbl_cible_ana,monJeu,zn);
+  isOk = FaireTableauSynthese(tbl_cible_ana,monJeu.def,zn);
 
- analyserTirages(tbl_cible,monJeu);
+ analyserTirages(tbl_cible,monJeu.def);
 
  static bool OneShot = false;
  if(OneShot==false){

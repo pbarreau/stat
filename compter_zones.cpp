@@ -544,8 +544,10 @@ QString BCountElem::getFilteringData(int zn)
 
     if(isOk){
         msg="";
+        QString key_to_use = myGame.names[zn].abv;
+
         /// requete a ete execute
-        QString ref = "("+myGame.names[zn].abv+"%1=%2)";
+        QString ref = "("+key_to_use+"%1=%2)";
         int nb_items = myGame.limites[zn].len;
 
         isOk = query.first();

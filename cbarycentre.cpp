@@ -250,7 +250,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 	 ///  de la base complete
 	 QString tbl_totalBoule = "r_B_fdj_0_elm_z1";
 	 if(isTableTotalBoulleReady(tbl_totalBoule)){
-		str_data = "Select c1.id as Id, avg(c2.t) as BC, J From ("
+		str_data = "Select c1.id as Id, sum(c2.t)/5 as BC, J From ("
 							 +str_data
 							 +") as c1, ("
 							 +tbl_totalBoule

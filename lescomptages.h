@@ -81,7 +81,15 @@ class BPrevision:public QGridLayout
 		 eBddUse def;
 		}stPrmPrevision;
 
-    /// in : infos representant les tirages
+		typedef struct _stPrmOnGame{
+		 QString usr_source; /// nom de la table ayant la liste des tirages utilisateur
+		 QString usr_analys; /// table regroupant l'analyse des repartitions
+		 QString fdj_dta;		 /// Nom de la table ayant les tirages de la fdj
+		 QString fdj_brc;		 /// Table de la base ayant les barycentres calcules depuis fdj
+		 BGame def;
+		}stPrmOnGame;
+
+		/// in : infos representant les tirages
 public:
     BPrevision(stPrmPrevision prm);
     ~BPrevision();
@@ -141,10 +149,10 @@ private:
     stPrmPrevision conf;
 
     /// compteur des objets de cette classe
-    QSqlDatabase db_1;   /// base de donnees associee a cet objets
-    QString cnx_db_1;      /// nom de la connection
+    QSqlDatabase db_1;      /// base de donnees associee a cet objets
+    QString cnx_db_1;       /// nom de la connection
     BGame onGame;           /// parametres du jeu pour statistique globale
-    BGame monJeu;           /// parametres pour filtration
+    stPrmOnGame monJeu;     /// parametres pour filtration
     QStringList **slFlt;    /// zn_filters
     BCountElem *c1;
     BCountComb *c2;
