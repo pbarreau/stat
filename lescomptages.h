@@ -24,10 +24,10 @@ class BPrevision;
 /// Type de jeu possible d'etudier
 
 /// Localisation de la base de donnees
-typedef enum _eBddDest{
-    eBddUseRam, /// en memoire
-    eBddUseDisk   /// sur disque
-}eBddUse;
+typedef enum _eBddType{
+    eBddRam, /// en memoire
+    eBddDsk   /// sur disque
+}eBddType;
 /// -------STRUCT---------
 typedef struct _stErr2
 {
@@ -75,13 +75,16 @@ class BPrevision:public QGridLayout
 		public:
 		typedef struct _stPrmPrevision{
 		 BGame gameInfo;
-		 QString tirages_fdj;	/// liste des tirages provenant de fdj
-		 QString tirages_usr;	/// liste des tirages provenant de usr
-		 eFdjType fdjType;
-		 eAnaType anaType;
-		 eBddUse def;
+		 QString tblFdj_dta;	/// liste des tirages provenant de fdj
+		 QString tblFdj_ana;	/// analyse des tirages provenant de fdj
+		 QString tblUsr_dta;	/// liste des tirages provenant de usr
+		 QString tblUsr_ana;	/// analyse des tirages provenant de usr
+		 QString tblFdj_brc;		 /// Table de la base ayant les barycentres calcules depuis fdj
+
+		 eBddType bddStore;
 		}stPrmPrevision;
 
+#if 0
 		typedef struct _stPrmOnGame{
 		 QString usr_source; /// nom de la table ayant la liste des tirages utilisateur
 		 QString usr_analys; /// table regroupant l'analyse des repartitions
@@ -89,6 +92,7 @@ class BPrevision:public QGridLayout
 		 QString fdj_brc;		 /// Table de la base ayant les barycentres calcules depuis fdj
 		 BGame def;
 		}stPrmOnGame;
+#endif
 
 		/// in : infos representant les tirages
 public:
@@ -97,7 +101,7 @@ public:
 
 private:
     QString ListeDesJeux(int zn, int n, int p);
-    bool ouvrirBase(eBddUse cible, eFdjType game);
+    bool ouvrirBase(eBddType cible, eFdjType game);
     QString mk_IdDsk(eFdjType type);
     QString mk_IdCnx(eFdjType type);
     bool OPtimiseAccesBase(void);
@@ -153,7 +157,7 @@ private:
     QSqlDatabase db_1;      /// base de donnees associee a cet objets
     QString cnx_db_1;       /// nom de la connection
     BGame onGame;           /// parametres du jeu pour statistique globale
-    stPrmOnGame monJeu;     /// parametres pour filtration
+    stPrmPrevision monJeu;     /// parametres pour filtration
     QStringList **slFlt;    /// zn_filters
     BCountElem *c1;
     BCountComb *c2;

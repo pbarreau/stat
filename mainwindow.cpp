@@ -129,11 +129,11 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 #endif
 
 	BPrevision::stPrmPrevision prm;
-	prm.def = eBddUseDisk;
-	prm.anaType=eAnaFdj;
-	prm.fdjType=unJeu;
-	prm.tirages_fdj="fdj";
-	prm.tirages_usr="";
+	prm.bddStore = eBddDsk;
+	prm.gameInfo.anaBase=eAnaFdj;
+	prm.gameInfo.fdjGame=unJeu;
+	prm.tblFdj_dta="fdj";
+	prm.tblUsr_dta="";
 	tous = new BPrevision(prm);
   connect(act_UGL_Create, SIGNAL(triggered()), tous, SLOT(slot_UGL_Create()));
   connect(act_UGL_SetFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_SetFilters()));

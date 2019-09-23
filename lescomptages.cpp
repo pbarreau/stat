@@ -56,12 +56,12 @@ BPrevision::BPrevision(stPrmPrevision prm)
  total_items++;
  conf = prm;
 
- onGame.fdjGame = prm.fdjType;
- onGame.anaBase = prm.anaType;
+ onGame.fdjGame = prm.gameInfo.fdjGame;
+ onGame.anaBase = prm.gameInfo.anaBase;
 
- if(ouvrirBase(prm.def,prm.fdjType)==true)
+ if(ouvrirBase(prm.bddStore,prm.gameInfo.fdjGame)==true)
  {
-  effectuerTraitement(prm.fdjType);
+  effectuerTraitement(prm.gameInfo.fdjGame);
   //dbInUse.close();
  }
 }
@@ -112,7 +112,7 @@ QString BPrevision::mk_IdCnx(eFdjType type)
  return (QString("cnx_V1_")+gameLabel[type]+QString("-")+QString::number(cur_item).rightJustified(2,'0'));
 }
 
-bool BPrevision::ouvrirBase(eBddUse cible, eFdjType game)
+bool BPrevision::ouvrirBase(eBddType cible, eFdjType game)
 {
  bool isOk = true;
 
@@ -123,11 +123,11 @@ bool BPrevision::ouvrirBase(eBddUse cible, eFdjType game)
 
  switch(cible)
  {
-  case eBddUseRam:
+  case eBddRam:
    mabase = ":memory:";
    break;
 
-	case eBddUseDisk:
+	case eBddDsk:
 	default:
 	 mabase = mk_IdDsk(game);
 	 break;
@@ -182,11 +182,11 @@ bool BPrevision::OPtimiseAccesBase(void)
 void BPrevision::effectuerTraitement(eFdjType game)
 {
  QString source = "";//C_TBL_3;
- if(conf.anaType==eAnaType::eFdj){
-  source = "B_" + conf.tirages_fdj;
+ if(conf.gameInfo.anaBase==eAnaType::eAnaFdj){
+  source = "B_" + conf.tblFdj_dta;
  }
  else {
-  source=conf.tirages_usr;
+  source=conf.tblUsr_dta;
  }
 
 #if (SET_DBG_LIVE&&SET_DBG_LEV1)
@@ -1323,7 +1323,7 @@ void BPrevision::analyserTirages(QString source,const BGame &config)
   param.tbl_ana = source+tr("_ana_z1");
  }else
  {
-  param.tbl_ana = "U_"+monJeu.usr_source+"_ana_z1";
+  param.tbl_ana = "U_"+monJeu.tblUsr_dta+"_ana_z1";
  }
  param.tbl_flt = tr("U_b_z1"); /// source+tr("_flt_z1");
  param.pDef = onGame;
@@ -1418,8 +1418,8 @@ void BPrevision::slot_UGL_SetFilters()
  QSqlQuery query(db_1);
  bool isOk = true;
  QString msg = "";
- QString source = monJeu.usr_source;
- QString analys = monJeu.usr_analys+"_z1";///"U_E1_ana_z1";
+ QString source = monJeu.tblUsr_dta;
+ QString analys = monJeu.tblUsr_ana+"_z1";///"U_E1_ana_z1";
 
  //onGame;
  //monJeu;
@@ -1535,13 +1535,13 @@ void BPrevision::slot_UGL_Create()
   else{
    if(n<=MAX_CHOIX_BOULES){
 
-		monJeu.def.fdjGame = onGame.fdjGame;
-		monJeu.def.anaBase = eAnaUsr;
-		monJeu.def.znCount = 1;
-		monJeu.def.limites = &(onGame.limites[0]);
-		monJeu.def.names = &(onGame.names[0]);
-		monJeu.fdj_dta="B_fdj";
-		monJeu.fdj_brc="r_B_fdj_0_brc_z1";
+		monJeu.gameInfo.fdjGame = onGame.fdjGame;
+		monJeu.gameInfo.anaBase = eAnaUsr;
+		monJeu.gameInfo.znCount = 1;
+		monJeu.gameInfo.limites = &(onGame.limites[0]);
+		monJeu.gameInfo.names = &(onGame.names[0]);
+		monJeu.tblFdj_dta="B_fdj";
+		monJeu.tblFdj_brc="r_B_fdj_0_brc_z1";
 
 
     QTime r;
@@ -1580,8 +1580,8 @@ void BPrevision::slot_UGL_Create()
 			onGame.anaBase=eAnaUsr;
 			QString tbl_cible = a->getDbTblName();
 			QString tbl_cible_ana = "U_"+tbl_cible+"_ana";
-			monJeu.usr_source=tbl_cible;
-			monJeu.usr_analys=tbl_cible_ana;
+			monJeu.tblUsr_dta=tbl_cible;
+			monJeu.tblUsr_ana=tbl_cible_ana;
 			ContinuerCreation(tbl_cible, tbl_cible_ana);
 
 			onGame.limites[0].usr=memo_usr;
@@ -1694,11 +1694,11 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
  QString msg = "";
 
  int zn=0;
- isOk = AnalyserEnsembleTirage(tbl_cible,monJeu.def, zn);
+ isOk = AnalyserEnsembleTirage(tbl_cible,monJeu.gameInfo, zn);
  if(isOk)
-  isOk = FaireTableauSynthese(tbl_cible_ana,monJeu.def,zn);
+  isOk = FaireTableauSynthese(tbl_cible_ana,monJeu.gameInfo,zn);
 
- analyserTirages(tbl_cible,monJeu.def);
+ analyserTirages(tbl_cible,monJeu.gameInfo);
 
  static bool OneShot = false;
  if(OneShot==false){

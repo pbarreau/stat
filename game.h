@@ -13,7 +13,7 @@ typedef enum _eFdjType{
 }eFdjType;
 extern const QString gameLabel [eFdjEol];
 
-typedef enum _eGoal{
+typedef enum _eAnaType{
     eAnaFdj, /// le jeu e
     eAnaUsr
 }eAnaType;
