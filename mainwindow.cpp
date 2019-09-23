@@ -133,9 +133,12 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 	prm.gameInfo.anaBase=eAnaFdj;
 	prm.gameInfo.fdjGame=unJeu;
 	prm.tblFdj_dta="fdj";
+	prm.tblFdj_ana="ana_z";
+	prm.tblFdj_brc="";
 	prm.tblUsr_dta="";
+	prm.tblUsr_ana="";
 	tous = new BPrevision(prm);
-  connect(act_UGL_Create, SIGNAL(triggered()), tous, SLOT(slot_UGL_Create()));
+	connect(act_UGL_Create, SIGNAL(triggered()), tous, SLOT(slot_UGL_Create()));
   connect(act_UGL_SetFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_SetFilters()));
   connect(act_UGL_ClrFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_ClrFilters()));
 

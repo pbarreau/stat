@@ -183,11 +183,14 @@ void BPrevision::effectuerTraitement(eFdjType game)
 {
  QString source = "";//C_TBL_3;
  if(conf.gameInfo.anaBase==eAnaType::eAnaFdj){
-  source = "B_" + conf.tblFdj_dta;
+  conf.tblFdj_dta = "B_fdj";
+  source = conf.tblFdj_dta;
  }
  else {
+  conf.tblUsr_dta = "Usr_001";
   source=conf.tblUsr_dta;
  }
+
 
 #if (SET_DBG_LIVE&&SET_DBG_LEV1)
  QMessageBox::information(NULL, "Pgm", "step 1!",QMessageBox::Yes);
@@ -202,7 +205,8 @@ void BPrevision::effectuerTraitement(eFdjType game)
 #if (SET_DBG_LIVE&&SET_DBG_LEV1)
  QMessageBox::information(NULL, "Pgm", "step 3!",QMessageBox::Yes);
 #endif
- analyserTirages(source, onGame);
+ conf.gameInfo = onGame;
+ analyserTirages(conf,source, onGame);
 
 
 }
@@ -1301,7 +1305,7 @@ QString BPrevision::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
  return retval;
 }
 
-void BPrevision::analyserTirages(QString source,const BGame &config)
+void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const BGame &config)
 {
  QWidget * Resultats = new QWidget;
  QTabWidget *tab_Top = new QTabWidget;
@@ -1458,7 +1462,28 @@ void BPrevision::slot_UGL_SetFilters()
  if(flt_brc.size()){
   otherCriteria = otherCriteria+"and("+flt_brc+")";
  }
- msg = "select tb1.b1 as b1, tb1.b2 as b2, tb1.b3 as b3, tb1.b4 as b4, tb1.b5 as b5 from ("
+
+ int zn=0;
+ QString key_to_use = onGame.names[zn].abv;
+
+ if(source.contains("Cnp")){
+  key_to_use="c";
+ }
+ /// requete a ete execute
+ QString ref = "tb1."+key_to_use+"%1 as "+key_to_use+"%1";
+ int nb_items = onGame.limites[zn].len;
+
+ QString tmp = "";
+ for(int item=0;item<nb_items;item++){
+  tmp = tmp + ref.arg(item+1);
+  if(item < nb_items -1){
+   tmp = tmp + ",";
+  }
+ }
+ //msg = msg + "("+tmp+")"+useJonction;
+ /// "select tb1.b1 as b1, tb1.b2 as b2, tb1.b3 as b3, tb1.b4 as b4, tb1.b5 as b5 from ("
+
+ msg = "select "+tmp+" from ("
        +source
        +") as tb1,("
        +analys
@@ -1542,6 +1567,7 @@ void BPrevision::slot_UGL_Create()
 		monJeu.gameInfo.names = &(onGame.names[0]);
 		monJeu.tblFdj_dta="B_fdj";
 		monJeu.tblFdj_brc="r_B_fdj_0_brc_z1";
+		//onGame.anaBase=eAnaUsr;
 
 
     QTime r;
@@ -1572,12 +1598,11 @@ void BPrevision::slot_UGL_Create()
 		 r.setHMS(0,0,0,0);
 		 t.restart();
 		 /// Creer une liste de jeux possibles
-		 if(n <= m){
+		 if(n == m){
 			int memo_usr = onGame.limites[0].usr;
 			eAnaType mem_from = onGame.anaBase;
 
 			onGame.limites[0].usr=m;
-			onGame.anaBase=eAnaUsr;
 			QString tbl_cible = a->getDbTblName();
 			QString tbl_cible_ana = "U_"+tbl_cible+"_ana";
 			monJeu.tblUsr_dta=tbl_cible;
@@ -1588,6 +1613,8 @@ void BPrevision::slot_UGL_Create()
 			onGame.anaBase=mem_from;
 		 }
 		 else{
+			monJeu.tblUsr_dta="E1";
+			monJeu.tblUsr_ana="U_E1_ana";
 			creerJeuxUtilisateur(n,p);
 		 }
 		 r = r.addMSecs(t.elapsed());
@@ -1698,7 +1725,7 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
  if(isOk)
   isOk = FaireTableauSynthese(tbl_cible_ana,monJeu.gameInfo,zn);
 
- analyserTirages(tbl_cible,monJeu.gameInfo);
+ analyserTirages(conf,tbl_cible,monJeu.gameInfo);
 
  static bool OneShot = false;
  if(OneShot==false){

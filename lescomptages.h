@@ -130,7 +130,7 @@ private:
     QString DateAnormer(QString input);
     QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
-    void analyserTirages(QString source, const BGame &config);
+    void analyserTirages(stPrmPrevision calcul, QString source, const BGame &config);
     bool isTableCnpinDb(int n, int p);
     void creerJeuxUtilisateur(int n, int p);
     void ContinuerCreation(QString tbl_cible, QString tbl_cible_ana);

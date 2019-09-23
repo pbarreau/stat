@@ -546,6 +546,9 @@ QString BCountElem::getFilteringData(int zn)
         msg="";
         QString key_to_use = myGame.names[zn].abv;
 
+				if(db_data.contains("Cnp")){
+				 key_to_use="c";
+				}
         /// requete a ete execute
         QString ref = "("+key_to_use+"%1=%2)";
         int nb_items = myGame.limites[zn].len;
