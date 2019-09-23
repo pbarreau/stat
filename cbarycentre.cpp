@@ -206,7 +206,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
  /// prendre dans les tirages les jours, les boules de la zone
  int zn=0;
  QString key_abv = gameDef.names[zn].abv;
- if(gameDef.from==eUsr && (gameDef.limites[0].usr == gameDef.limites[0].max)){
+ if(gameDef.anaBase==eAnaUsr && (gameDef.limites[0].usr == gameDef.limites[0].max)){
   key_abv = "c";
  }
 

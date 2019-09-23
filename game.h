@@ -5,18 +5,18 @@
 #include "properties.h"
 
 /// Type de jeu possible d'etudier
-typedef enum _eGame{
-    eGameToSet, /// Jeu pas encore configure
-    eGameLoto,  /// Loto
-    eGameEuro,   /// Euro million
-    eGameDefEnd
-}eGame;
-extern const QString gameLabel [eGameDefEnd];
+typedef enum _eFdjType{
+    eFdjNotSet, /// Jeu pas encore configure
+    eFdjLoto,   /// Loto
+    eFdjEuro,   /// Euro million
+    eFdjEol     /// End of list
+}eFdjType;
+extern const QString gameLabel [eFdjEol];
 
 typedef enum _eGoal{
-    eFdj, /// le jeu e
-    eUsr
-}eFrom;
+    eAnaFdj, /// le jeu e
+    eAnaUsr
+}eAnaType;
 
 typedef struct _stParam_2 {
     QString std;    /// nom long de la zone
@@ -34,8 +34,8 @@ typedef struct _stParam_1{
 
 /// Definition d'un jeu
 typedef struct _stGameConf{
-    eGame type; /// type du jeu
-    eFrom from; /// origine
+    eFdjType fdjGame; /// type du jeu
+    eAnaType anaBase; /// origine
     int znCount; /// nombre de zones a regarder
     stParam_1 *limites; /// bornes sur la zone
     stParam_2 *names; /// nom de la zone

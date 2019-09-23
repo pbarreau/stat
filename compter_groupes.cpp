@@ -339,7 +339,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 
  QString TblCompact = "";
 
- if(myGame.from == eFdj){
+ if(myGame.anaBase == eAnaFdj){
   TblCompact = T_GRP;
  }
  else{

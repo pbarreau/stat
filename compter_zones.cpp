@@ -284,7 +284,7 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     }
 
 		QString key_abv = myGame.names[zn].abv;
-		if(myGame.from==eUsr && (myGame.limites[0].usr == myGame.limites[0].max)){
+		if(myGame.anaBase==eAnaUsr && (myGame.limites[0].usr == myGame.limites[0].max)){
 		 key_abv = "c";
 		}
 

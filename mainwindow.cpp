@@ -62,7 +62,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
  input.destination =dest_bdd;
  input.typeChargement = load;
  input.typeJeu = leJeu;
- eGame unJeu = eGameToSet;
+ eFdjType unJeu = eFdjNotSet;
  stErr NoErrors;
  NoErrors.status = true;
  NoErrors.msg = "None";
@@ -111,13 +111,13 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
   //// Reecriture sous forme objet
   switch(leJeu){
    case NE_FDJ::fdj_loto:
-    unJeu = eGameLoto;
+    unJeu = eFdjLoto;
     break;
    case NE_FDJ::fdj_euro:
-    unJeu = eGameEuro;
+    unJeu = eFdjEuro;
     break;
    default:
-    unJeu = eGameToSet;
+    unJeu = eFdjNotSet;
     break;
   }
 #if (SET_DBG_LIVE && SET_DBG_LEV2)
@@ -130,8 +130,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
 	BPrevision::stPrmPrevision prm;
 	prm.def = eBddUseDisk;
-	prm.from=eFdj;
-	prm.game=unJeu;
+	prm.anaType=eAnaFdj;
+	prm.fdjType=unJeu;
 	prm.tirages_fdj="fdj";
 	prm.tirages_usr="";
 	tous = new BPrevision(prm);

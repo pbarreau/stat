@@ -74,10 +74,11 @@ class BPrevision:public QGridLayout
 
 		public:
 		typedef struct _stPrmPrevision{
-		 QString tirages_fdj;	/// liste des tirages provenant de la fdj
-		 QString tirages_usr;	/// liste des tirages contruitent par utilisateur
-		 eGame game;
-		 eFrom from;
+		 BGame gameInfo;
+		 QString tirages_fdj;	/// liste des tirages provenant de fdj
+		 QString tirages_usr;	/// liste des tirages provenant de usr
+		 eFdjType fdjType;
+		 eAnaType anaType;
 		 eBddUse def;
 		}stPrmPrevision;
 
@@ -96,14 +97,14 @@ public:
 
 private:
     QString ListeDesJeux(int zn, int n, int p);
-    bool ouvrirBase(eBddUse cible, eGame game);
-    QString mk_IdDsk(eGame type);
-    QString mk_IdCnx(eGame type);
+    bool ouvrirBase(eBddUse cible, eFdjType game);
+    QString mk_IdDsk(eFdjType type);
+    QString mk_IdCnx(eFdjType type);
     bool OPtimiseAccesBase(void);
-    void effectuerTraitement(eGame game);
+    void effectuerTraitement(eFdjType game);
 
     bool creerTablesDeLaBase(void);
-    BGame *definirConstantesDuJeu(eGame game);
+    BGame *definirConstantesDuJeu(eFdjType game);
     bool f1(QString tbName,QSqlQuery *query);
     bool f2(QString tbName,QSqlQuery *query);
     bool f3(QString tbName,QSqlQuery *query);

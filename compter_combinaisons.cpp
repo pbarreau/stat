@@ -229,7 +229,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
  QString prefix = "B_";
 
 
- if(myGame.from == eUsr)
+ if(myGame.anaBase == eAnaUsr)
  {
   prefix = "U_"+st_baseUse+"_";
  }

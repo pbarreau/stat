@@ -56,12 +56,12 @@ BPrevision::BPrevision(stPrmPrevision prm)
  total_items++;
  conf = prm;
 
- onGame.type = prm.game;
- onGame.from = prm.from;
+ onGame.fdjGame = prm.fdjType;
+ onGame.anaBase = prm.anaType;
 
- if(ouvrirBase(prm.def,prm.game)==true)
+ if(ouvrirBase(prm.def,prm.fdjType)==true)
  {
-  effectuerTraitement(prm.game);
+  effectuerTraitement(prm.fdjType);
   //dbInUse.close();
  }
 }
@@ -80,7 +80,7 @@ BPrevision::BPrevision(eGame game, eBddUse def, QString stLesTirages)
 }
 #endif
 
-QString BPrevision::mk_IdDsk(eGame type)
+QString BPrevision::mk_IdDsk(eFdjType type)
 {
  QDate myDate = QDate::currentDate();
  QString toDay = myDate.toString("dd-MM-yyyy");
@@ -102,17 +102,17 @@ QString BPrevision::mk_IdDsk(eGame type)
  return testName;
 }
 
-QString BPrevision::mk_IdCnx(eGame type)
+QString BPrevision::mk_IdCnx(eFdjType type)
 {
- if((type <= eGameToSet) || (type>=eGameDefEnd)){
-  eGame err = eGameToSet;
+ if((type <= eFdjNotSet) || (type>=eFdjEol)){
+  eFdjType err = eFdjNotSet;
   QMessageBox::warning(NULL,"Prevision","Jeu "+gameLabel[err]+" inconnu !!",QMessageBox::Ok);
   QApplication::quit();
  }
  return (QString("cnx_V1_")+gameLabel[type]+QString("-")+QString::number(cur_item).rightJustified(2,'0'));
 }
 
-bool BPrevision::ouvrirBase(eBddUse cible, eGame game)
+bool BPrevision::ouvrirBase(eBddUse cible, eFdjType game)
 {
  bool isOk = true;
 
@@ -179,10 +179,10 @@ bool BPrevision::OPtimiseAccesBase(void)
  return isOk;
 }
 
-void BPrevision::effectuerTraitement(eGame game)
+void BPrevision::effectuerTraitement(eFdjType game)
 {
  QString source = "";//C_TBL_3;
- if(conf.from==eFrom::eFdj){
+ if(conf.anaType==eAnaType::eFdj){
   source = "B_" + conf.tirages_fdj;
  }
  else {
@@ -207,7 +207,7 @@ void BPrevision::effectuerTraitement(eGame game)
 
 }
 
-BGame * BPrevision::definirConstantesDuJeu(eGame game)
+BGame * BPrevision::definirConstantesDuJeu(eFdjType game)
 {
  /// Pour l'instant en loto ou en euro il y a 2 'zones'
  /// une pour les boules
@@ -218,7 +218,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
 
  switch(game)
  {
-  case eGameLoto:
+  case eFdjLoto:
    onGame.limites = new stParam_1 [onGame.znCount];
    onGame.names = new stParam_2 [onGame.znCount];
 
@@ -241,7 +241,7 @@ BGame * BPrevision::definirConstantesDuJeu(eGame game)
 	 onGame.names[1].abv = "e";
 	 break;
 
-	case eGameEuro:
+	case eFdjEuro:
 	 onGame.limites = new stParam_1 [onGame.znCount];
 	 onGame.names = new stParam_2 [onGame.znCount];
 
@@ -1068,7 +1068,7 @@ bool BPrevision::chargerDonneesFdjeux(QString destTable)
    }
   };
 
- if(onGame.type == eGameEuro){
+ if(onGame.fdjGame == eFdjEuro){
   nbelemt = sizeof(euroMillions)/sizeof(stFdjData);
   LesFichiers = euroMillions;
  }
@@ -1535,8 +1535,8 @@ void BPrevision::slot_UGL_Create()
   else{
    if(n<=MAX_CHOIX_BOULES){
 
-		monJeu.def.type = onGame.type;
-		monJeu.def.from = eUsr;
+		monJeu.def.fdjGame = onGame.fdjGame;
+		monJeu.def.anaBase = eAnaUsr;
 		monJeu.def.znCount = 1;
 		monJeu.def.limites = &(onGame.limites[0]);
 		monJeu.def.names = &(onGame.names[0]);
@@ -1574,10 +1574,10 @@ void BPrevision::slot_UGL_Create()
 		 /// Creer une liste de jeux possibles
 		 if(n <= m){
 			int memo_usr = onGame.limites[0].usr;
-			eFrom mem_from = onGame.from;
+			eAnaType mem_from = onGame.anaBase;
 
 			onGame.limites[0].usr=m;
-			onGame.from=eUsr;
+			onGame.anaBase=eAnaUsr;
 			QString tbl_cible = a->getDbTblName();
 			QString tbl_cible_ana = "U_"+tbl_cible+"_ana";
 			monJeu.usr_source=tbl_cible;
@@ -1585,7 +1585,7 @@ void BPrevision::slot_UGL_Create()
 			ContinuerCreation(tbl_cible, tbl_cible_ana);
 
 			onGame.limites[0].usr=memo_usr;
-			onGame.from=mem_from;
+			onGame.anaBase=mem_from;
 		 }
 		 else{
 			creerJeuxUtilisateur(n,p);
@@ -1893,7 +1893,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
  QString tbLabCmb = T_CMB;
 
  tbLabCmb = "B_" + tbLabCmb;
- if(onGame.from == eFdj){
+ if(onGame.anaBase == eAnaFdj){
   tbLabAna = "B_" + tbLabAna;
   tblToUse = tblTirages;
  }
@@ -1911,7 +1911,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
  /// Ma modification pour utiliser la table CNP
  /// dans le cas jeu utilisateur
  QString key_abv = onGame.names[zn].abv;
- if(onGame.from==eUsr && (onGame.limites[0].usr == onGame.limites[0].max)){
+ if(onGame.anaBase==eAnaUsr && (onGame.limites[0].usr == onGame.limites[0].max)){
   key_abv = "c";
  }
 
@@ -1996,7 +1996,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
 	 ref_1 = "(tbLeft.U%1 = tbRight."+onGame.names[zn].abv+"%2)";
 	 stLien = " and ";
 
-	 if(onGame.type == eGameEuro && zn == 1){
+	 if(onGame.fdjGame == eFdjEuro && zn == 1){
 		ref_1 = "((tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%1)"
 						+"or"+
 						"(tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%2))";
@@ -2005,7 +2005,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
 
 	 int znLen = onGame.limites[zn].len;
 	 for(int pos=0;pos<znLen;pos++){
-		if(onGame.type == eGameEuro && zn == 1){
+		if(onGame.fdjGame == eFdjEuro && zn == 1){
 		 stCombi = stCombi
 							 + ref_1.arg((pos%2)+1).arg(((pos+1)%2)+1).arg(pos);
 
