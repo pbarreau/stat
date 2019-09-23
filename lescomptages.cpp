@@ -1567,7 +1567,6 @@ void BPrevision::slot_UGL_Create()
 		monJeu.gameInfo.names = &(onGame.names[0]);
 		monJeu.tblFdj_dta="B_fdj";
 		monJeu.tblFdj_brc="r_B_fdj_0_brc_z1";
-		//onGame.anaBase=eAnaUsr;
 
 
     QTime r;
@@ -1607,6 +1606,7 @@ void BPrevision::slot_UGL_Create()
 			QString tbl_cible_ana = "U_"+tbl_cible+"_ana";
 			monJeu.tblUsr_dta=tbl_cible;
 			monJeu.tblUsr_ana=tbl_cible_ana;
+			onGame.anaBase=eAnaUsr;
 			ContinuerCreation(tbl_cible, tbl_cible_ana);
 
 			onGame.limites[0].usr=memo_usr;
