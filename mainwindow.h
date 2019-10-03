@@ -146,6 +146,7 @@ public slots:
 
 
 private:
+    void createIhm();
     void createActions();
     void createMenus();
     void createToolBars();

@@ -916,8 +916,7 @@ void BCount::slot_wdaFilter(bool val)
   isOk=query.exec(msg);
 
 	if(isOk){
-	 query.first();
-	 if(!query.isValid()){
+	 if(!query.first()){
 		/// c'est une nouvelle donnee de filtrage
 		def[0]="0";
 	 }

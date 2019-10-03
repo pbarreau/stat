@@ -8,5 +8,7 @@
         <file>images/flt_clear.png</file>
         <file>images/pri_all.png</file>
         <file>images/pri_none.png</file>
+        <file>images/downloadFdj.png</file>
+        <file>images/help.png</file>
     </qresource>
 </RCC>

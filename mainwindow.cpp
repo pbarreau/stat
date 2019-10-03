@@ -129,7 +129,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 #endif
 
 	BPrevision::stPrmPrevision prm;
-	prm.bddStore = eBddDsk;
+	prm.bddStore = eDbSetOnDsk;
 	prm.gameInfo.anaBase=eAnaFdj;
 	prm.gameInfo.fdjGame=unJeu;
 	prm.tblFdj_dta="fdj";

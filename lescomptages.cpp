@@ -80,7 +80,7 @@ BPrevision::BPrevision(eGame game, eBddUse def, QString stLesTirages)
 }
 #endif
 
-QString BPrevision::mk_IdDsk(eFdjType type)
+QString BPrevision::mk_IdDsk(eFdjType type, etDbUsage eDbUsage)
 {
  QDate myDate = QDate::currentDate();
  QString toDay = myDate.toString("dd-MM-yyyy");
@@ -89,47 +89,69 @@ QString BPrevision::mk_IdDsk(eFdjType type)
  QFile myFileName;
  QString testName = "";
 
- game = gameLabel[type] + QString("_V1_")+toDay+QString("_");
+ game = gameLabel[type] + QString("_V1_");
+
+ if(eDbUsage==eDbForFdj){
+  game = game +toDay+QString("_");
 
  int counter = 0;
  do{
   testName = game + QString::number(counter).rightJustified(3,'0')+QString("-");
-  testName = testName + QString::number(cur_item).rightJustified(2,'0')+QString(".sqlite");
+	 testName = testName + QString::number(cur_item).rightJustified(2,'0');
   myFileName.setFileName(testName);
   counter = (counter + 1)%999;
  }while(myFileName.exists());
+ }
+
+ if(eDbUsage==eDbForCnp){
+  testName=game+QString("Ref_Cnp");
+ }
+
+ testName=testName+QString(".sqlite");
 
  return testName;
 }
 
-QString BPrevision::mk_IdCnx(eFdjType type)
+QString BPrevision::mk_IdCnx(eFdjType type, etDbUsage eDbUsage)
 {
+ QString msg="cnx_NotSetYet";
+
  if((type <= eFdjNotSet) || (type>=eFdjEol)){
   eFdjType err = eFdjNotSet;
   QMessageBox::warning(NULL,"Prevision","Jeu "+gameLabel[err]+" inconnu !!",QMessageBox::Ok);
   QApplication::quit();
  }
- return (QString("cnx_V1_")+gameLabel[type]+QString("-")+QString::number(cur_item).rightJustified(2,'0'));
+
+ if(eDbUsage==eDbForCnp){
+  msg=QString("cnx_V1_")+gameLabel[type]+QString("-")+QString("Ref_Cnp");
+ }
+
+ if(eDbUsage==eDbForFdj){
+  msg=QString("cnx_V1_")+gameLabel[type];
+ }
+
+ msg = msg + QString("-")+QString::number(cur_item).rightJustified(2,'0');
+ return (msg);
 }
 
-bool BPrevision::ouvrirBase(eBddType cible, eFdjType game)
+bool BPrevision::ouvrirBase(etDbPlace cible, eFdjType game)
 {
  bool isOk = true;
 
- cnx_db_1 = mk_IdCnx(game);
+ cnx_db_1 = mk_IdCnx(game,eDbForFdj);
  db_1 = QSqlDatabase::addDatabase("QSQLITE",cnx_db_1);
 
  QString mabase = "";
 
  switch(cible)
  {
-  case eBddRam:
+  case eDbSetOnRam:
    mabase = ":memory:";
    break;
 
-	case eBddDsk:
+	case eDbSetOnDsk:
 	default:
-	 mabase = mk_IdDsk(game);
+	 mabase = mk_IdDsk(game,eDbForFdj);
 	 break;
  }
 
@@ -172,7 +194,7 @@ bool BPrevision::OPtimiseAccesBase(void)
 
  if(!isOk)
  {
-  QString ErrLoc = "cLesComptages::OPtimiseAccesBase";
+  QString ErrLoc = "LesComptages::OPtimiseAccesBase";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
@@ -1705,8 +1727,13 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 
 
  /// Verif execution peut commencer
- if(!isOk) return;
+ if(!isOk)
+ {
+  QString ErrLoc = "BPrevision::creerJeuxUtilisateur:";
+  DB_Tools::DisplayError(ErrLoc,&query,msg);
 
+  return;
+ }
  /// ---------------------
  ///  EFFFECTUER LA SUITE
  ContinuerCreation(tbl_cible, tbl_cible_ana);

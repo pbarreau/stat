@@ -278,11 +278,15 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 		 /// mettre dans la table analyse le barycentre de chaque tirage
 		 QString str_tblAnalyse = "";
 		 if(tbl_in=="B_fdj"){
-			str_tblAnalyse = "B_ana_z1";
+			str_tblAnalyse = tbl_in+"_brc_z1";
 		 }
 		 else{
-			str_tblAnalyse = "U_"+tbl_in+"_ana_z1";
+			str_tblAnalyse = "U_"+tbl_in+"_brc_z1";
 		 }
+
+		 /// verifier si la table analyse pour barycentre existe sinon la creer
+		 QString msg = "create TABLE if not EXISTS "+str_tblAnalyse+" as select id from "+tbl_in;
+		 isOk = query.exec(msg);
 
 		 if((isOk = mettreBarycentre(str_tblAnalyse, str_data))){
 			/// indiquer le dernier barycentre des tirages fdj
@@ -316,6 +320,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 bool CBaryCentre::repereDernier(QString tbl_bary)
 {
  bool isOK = true;
+#if 0
  QSqlQuery query(db_1);
 #if 0
     QString msg = "UPDATE "
@@ -325,7 +330,7 @@ bool CBaryCentre::repereDernier(QString tbl_bary)
 #endif
 
 
- QString msg = "select BC from B_ana_z1 LIMIT 1;";
+ QString msg = "select BC from "+tbl_bary+" LIMIT 1;";
 
  if((isOK = query.exec(msg))){
   query.first();
@@ -341,7 +346,7 @@ bool CBaryCentre::repereDernier(QString tbl_bary)
 	 isOK = query.exec(msg);
 	}
  }
-
+#endif
  return isOK;
 }
 

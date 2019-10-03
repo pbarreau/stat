@@ -74,6 +74,7 @@ bool GererBase::CreerTableCnp(QString tb, QString *data)
     bool isOk=true;
     return isOk;
 
+#if 0
     int nbZone = conf.nb_zone;
 
     for(int i = 0; (i< nbZone) && isOk; i++)
@@ -97,6 +98,7 @@ bool GererBase::CreerTableCnp(QString tb, QString *data)
     BCnp *a = new BCnp(12,2,db_0.connectionName());
     BCnp *b = new BCnp(10,1,db_0.connectionName());
     return(isOk);
+#endif
 }
 
 bool GererBase::RajouterTable(stTbToCreate des)

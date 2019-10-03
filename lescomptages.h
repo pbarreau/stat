@@ -25,9 +25,16 @@ class BPrevision;
 
 /// Localisation de la base de donnees
 typedef enum _eBddType{
-    eBddRam, /// en memoire
-    eBddDsk   /// sur disque
-}eBddType;
+    eDbSetOnRam, /// en memoire
+    eDbSetOnDsk   /// sur disque
+}etDbPlace;
+
+typedef enum _eBddUsage{
+ eDbForFdj=0,/// Base Fdj
+ eDbForCnp,  /// Base Cnp
+ eDbForEol   /// Fin de liste
+}etDbUsage;
+
 /// -------STRUCT---------
 typedef struct _stErr2
 {
@@ -81,7 +88,7 @@ class BPrevision:public QGridLayout
 		 QString tblUsr_ana;	/// analyse des tirages provenant de usr
 		 QString tblFdj_brc;		 /// Table de la base ayant les barycentres calcules depuis fdj
 
-		 eBddType bddStore;
+		 etDbPlace bddStore;
 		}stPrmPrevision;
 
 #if 0
@@ -101,9 +108,9 @@ public:
 
 private:
     QString ListeDesJeux(int zn, int n, int p);
-    bool ouvrirBase(eBddType cible, eFdjType game);
-    QString mk_IdDsk(eFdjType type);
-    QString mk_IdCnx(eFdjType type);
+    bool ouvrirBase(etDbPlace cible, eFdjType game);
+ QString mk_IdDsk(eFdjType type, etDbUsage eDbUsage);
+ QString mk_IdCnx(eFdjType type, etDbUsage eDbUsage);
     bool OPtimiseAccesBase(void);
     void effectuerTraitement(eFdjType game);
 
