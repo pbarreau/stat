@@ -16,7 +16,7 @@ class BCountComb:public BCount
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    BCountComb(const BGame &pDef, const QString &in, QSqlDatabase fromDb);
+    BCountComb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb);
     ~BCountComb();
     void marquerDerniers_cmb(int zn);
     QString getFilteringData(int zn);

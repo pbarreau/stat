@@ -58,11 +58,15 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
 
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
+
+ cGame *monJeu = new cGame (eFdjLoto);
+ return;
+
  stParam input;
  input.destination =dest_bdd;
  input.typeChargement = load;
  input.typeJeu = leJeu;
- eFdjType unJeu = eFdjNotSet;
+ etFdjType unJeu = eFdjNotSet;
  stErr NoErrors;
  NoErrors.status = true;
  NoErrors.msg = "None";
@@ -128,17 +132,17 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
         QMessageBox::information(NULL, "1C", "OK",QMessageBox::Yes);
 #endif
 
-	BPrevision::stPrmPrevision prm;
-	prm.bddStore = eDbSetOnDsk;
-	prm.gameInfo.anaBase=eAnaFdj;
-	prm.gameInfo.fdjGame=unJeu;
-	prm.tblFdj_dta="fdj";
-	prm.tblFdj_ana="ana_z";
-	prm.tblFdj_brc="";
-	prm.tblUsr_dta="";
-	prm.tblUsr_ana="";
-	tous = new BPrevision(prm);
-	connect(act_UGL_Create, SIGNAL(triggered()), tous, SLOT(slot_UGL_Create()));
+  BPrevision::stPrmPrevision prm;
+  prm.bddStore = eDbSetOnDsk;
+  prm.gameInfo.eTirType=eTirFdj;
+  prm.gameInfo.eFdjType=unJeu;
+  prm.tblFdj_dta="fdj";
+  prm.tblFdj_ana="ana_z";
+  prm.tblFdj_brc="";
+  prm.tblUsr_dta="";
+  prm.tblUsr_ana="";
+  tous = new BPrevision(prm);
+  connect(act_UGL_Create, SIGNAL(triggered()), tous, SLOT(slot_UGL_Create()));
   connect(act_UGL_SetFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_SetFilters()));
   connect(act_UGL_ClrFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_ClrFilters()));
 
@@ -2478,12 +2482,12 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
   etude->lst_boules[3] = stl_tmp;
   etude->ref = &configJeu;
 
-	// Nouvelle de fenetre de detail de cette boule
-	SyntheseDetails::SynD_param a;
-	a.pEtude =etude;
-	a.visuel=zoneCentrale;
-	a.tab_Top = gtab_Top;
-	a.tab_vue = gtab_vue;
+  // Nouvelle de fenetre de detail de cette boule
+  SyntheseDetails::SynD_param a;
+  a.pEtude =etude;
+  a.visuel=zoneCentrale;
+  a.tab_Top = gtab_Top;
+  a.tab_vue = gtab_vue;
 
   SyntheseDetails *unDetail = new SyntheseDetails(a);
   //w_FenetreDetails->setVisible(true);

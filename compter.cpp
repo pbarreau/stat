@@ -57,10 +57,10 @@ QString BCount::CreerCritereJours(QString cnx_db_name, QString tbl_ref)
              query.value(0).toString()+",";
    }while((status = query.next()));
 
-	 //supprimer derniere ','
-	 st_tmp.remove(st_tmp.length()-1,1);
-	 st_tmp = st_tmp + " ";
-	}
+   //supprimer derniere ','
+   st_tmp.remove(st_tmp.length()-1,1);
+   st_tmp = st_tmp + " ";
+  }
  }
 
 #ifndef QT_NO_DEBUG
@@ -141,14 +141,14 @@ void BCount::RecupererConfiguration(void)
 #endif
 }
 
-BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase useDb)
+BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb)
     :BCount(pDef,in,useDb,NULL,eCountToSet)
 {
 }
 
-BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
-							 QWidget *unParent=0, eCountingType genre=eCountToSet)
-		:QWidget(unParent), db_data(in),dbToUse(fromDb),type(genre)
+BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
+               QWidget *unParent=0, eCountingType genre=eCountToSet)
+    :QWidget(unParent), db_data(in),dbToUse(fromDb),type(genre)
 {
  bool useRequete = false;
  db_jours = "";
@@ -167,21 +167,21 @@ BCount::BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
   memo = new int [myGame.znCount];
   memset(memo,-1, sizeof(int)*myGame.znCount);
 
-	lesSelections = new QModelIndexList [myGame.znCount];
-	sqlSelection = new QString [myGame.znCount];
+  lesSelections = new QModelIndexList [myGame.znCount];
+  sqlSelection = new QString [myGame.znCount];
 
-	sqmZones = new BSqmColorizePriority [myGame.znCount];
-	BRunningQuery * tmp = new BRunningQuery;
-	tmp->size = myGame.znCount;
-	tmp->sqmDef = sqmZones;
-	tmp->key = type;
-	nbChild++; /// Nombre total d'enfants A SUPPRIMER ?
-	/// Rajouter cet element Ã  la liste des requetes actives
-	int pos = -1;
-	if(type==eCountElm) pos = 0;
-	if(type==eCountCmb) pos = 1;
-	if(type==eCountGrp) pos = 2;
-	sqmActive[pos].append(tmp);
+  sqmZones = new BSqmColorizePriority [myGame.znCount];
+  BRunningQuery * tmp = new BRunningQuery;
+  tmp->size = myGame.znCount;
+  tmp->sqmDef = sqmZones;
+  tmp->key = type;
+  nbChild++; /// Nombre total d'enfants A SUPPRIMER ?
+  /// Rajouter cet element Ã  la liste des requetes actives
+  int pos = -1;
+  if(type==eCountElm) pos = 0;
+  if(type==eCountCmb) pos = 1;
+  if(type==eCountGrp) pos = 2;
+  sqmActive[pos].append(tmp);
  }
 
  QString st_tmp = CreerCritereJours(fromDb.connectionName(),in);
@@ -262,30 +262,30 @@ void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int z
   int curCol = 0;
   int occure = 0;
 
-	/// Parcourir les selections
-	foreach(un_index, indexes)
-	{
-	 const QAbstractItemModel * pModel = un_index.model();
-	 curCol = pModel->index(un_index.row(), un_index.column()).column();
-	 occure = pModel->index(un_index.row(), 0).data().toInt();
+  /// Parcourir les selections
+  foreach(un_index, indexes)
+  {
+   const QAbstractItemModel * pModel = un_index.model();
+   curCol = pModel->index(un_index.row(), un_index.column()).column();
+   occure = pModel->index(un_index.row(), 0).data().toInt();
 
-	 // si on n'est pas sur la premiere colonne
-	 if(curCol)
-	 {
-		QVariant vCol;
-		QString headName;
+   // si on n'est pas sur la premiere colonne
+   if(curCol)
+   {
+    QVariant vCol;
+    QString headName;
 
-		vCol = pModel->headerData(curCol,Qt::Horizontal);
-		headName = vCol.toString();
-		str_titre = str_titre + "("+headName+"," + QString::number(occure) + "),";
-	 }
-	}
+    vCol = pModel->headerData(curCol,Qt::Horizontal);
+    headName = vCol.toString();
+    str_titre = str_titre + "("+headName+"," + QString::number(occure) + "),";
+   }
+  }
 
-	// supression derniere ','
-	str_titre.remove(str_titre.length()-1,1);
+  // supression derniere ','
+  str_titre.remove(str_titre.length()-1,1);
 
-	// on marque la fin
-	str_titre = str_titre +"]";
+  // on marque la fin
+  str_titre = str_titre +"]";
  }
  else
  {
@@ -342,8 +342,8 @@ bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
  if(!ret)
  {
 #ifndef QT_NO_DEBUG
-	qDebug() << "select: " <<table<<"->"<< query.lastError();
-	qDebug() << "Bad code:\n"<<msg<<"\n-------";
+  qDebug() << "select: " <<table<<"->"<< query.lastError();
+  qDebug() << "Bad code:\n"<<msg<<"\n-------";
 #endif
  }
  else
@@ -352,13 +352,13 @@ bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
   qDebug() << "Fn VerifierValeur:\n"<<msg<<"\n-------";
 #endif
 
-	// A t on un resultat
-	ret = query.first();
-	if(query.isValid())
-	{
-	 int val = query.value(idColValue).toInt();
-	 *lev = val;
-	}
+  // A t on un resultat
+  ret = query.first();
+  if(query.isValid())
+  {
+   int val = query.value(idColValue).toInt();
+   *lev = val;
+  }
  }
  return ret;
 }
@@ -385,8 +385,8 @@ void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
   else{
    onglets.append(tab);
 #ifndef QT_NO_DEBUG
-	 qDebug() << "onglet:" <<tab->currentIndex();
-	 qDebug() << "max:" <<tab->count();
+   qDebug() << "onglet:" <<tab->currentIndex();
+   qDebug() << "max:" <<tab->count();
 #endif
 
   }
@@ -460,8 +460,8 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
  if(!isOk)
  {
 #ifndef QT_NO_DEBUG
-	qDebug() << "select * from Filtres ->"<< query.lastError();
-	qDebug() << "Bad code:\n"<<msg<<"\n-------";
+  qDebug() << "select * from Filtres ->"<< query.lastError();
+  qDebug() << "Bad code:\n"<<msg<<"\n-------";
 #endif
  }
  else
@@ -470,18 +470,18 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
   qDebug() << "Fn ContruireMyMenu:\n"<<msg<<"\n-------";
 #endif
 
-	// A t on un resultat
-	isOk = query.first();
-	if(query.isValid())
-	{
-	 itm = query.value("id").toInt();; /// On a touve la ligne dans la table
-	 pri = query.value("pri").toInt();
-	 flt = query.value("flt").toInt();
-	}
-	else {
-	 pri=-1;
-	 flt=-1;
-	}
+  // A t on un resultat
+  isOk = query.first();
+  if(query.isValid())
+  {
+   itm = query.value("id").toInt();; /// On a touve la ligne dans la table
+   pri = query.value("pri").toInt();
+   flt = query.value("flt").toInt();
+  }
+  else {
+   pri=-1;
+   flt=-1;
+  }
  }
 
  QString name = "";
@@ -500,26 +500,26 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
   setForAll->setObjectName("k_all");
   menu->addAction(setForAll);
 
-	/// Total de priorite a afficher
-	for(int i =1; i<=5;i++)
-	{
-	 QAction *radio = new QAction(QString::number(i),grpPri);
+  /// Total de priorite a afficher
+  for(int i =1; i<=5;i++)
+  {
+   QAction *radio = new QAction(QString::number(i),grpPri);
 
-	 radio->setObjectName(name);
-	 radio->setCheckable(true);
-	 menu->addAction(radio);
-	}
-	MonMenu->addMenu(menu);
-	connect(setForAll,SIGNAL(triggered(bool)),this,SLOT(slot_wdaFilter(bool)));
-	///connect(setForAll,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
-	connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+   radio->setObjectName(name);
+   radio->setCheckable(true);
+   menu->addAction(radio);
+  }
+  MonMenu->addMenu(menu);
+  connect(setForAll,SIGNAL(triggered(bool)),this,SLOT(slot_wdaFilter(bool)));
+  ///connect(setForAll,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+  connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
 
-	if(pri>0)
-	{
-	 QAction *uneAction;
-	 uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
-	 uneAction->setChecked(true);
-	}
+  if(pri>0)
+  {
+   QAction *uneAction;
+   uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
+   uneAction->setChecked(true);
+  }
  }
 
  /// Filtre
@@ -593,36 +593,36 @@ void BCount::slot_ChoosePriority(QAction *cmd)
    nbPrio = query.value(0).toInt();
   }
 
-	/// mettre le champs infos a jour
-	QString lab = QString("Selection : %1 sur %2");
-	QString s_sel = QString::number(nbPrio).rightJustified(2,'0');
-	QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
-	lab = lab.arg(s_sel).arg(s_max);
+  /// mettre le champs infos a jour
+  QString lab = QString("Selection : %1 sur %2");
+  QString s_sel = QString::number(nbPrio).rightJustified(2,'0');
+  QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
+  lab = lab.arg(s_sel).arg(s_max);
 
 
-	selection[0].setText(lab);
+  selection[0].setText(lab);
 
-	/// Recherche des onglets zone et type dans lesquels est le tableau
-	QObject *obj = cmd;
-	QTableView *target=NULL;
+  /// Recherche des onglets zone et type dans lesquels est le tableau
+  QObject *obj = cmd;
+  QTableView *target=NULL;
 
-	do{
-	 obj = obj->parent();
-	 QTableView *view = qobject_cast<QTableView *>(obj);
-	 if(view==NULL){
-		continue;
-	 }
-	 else{
-		target=view;
-	 }
-	}while(target==NULL);
+  do{
+   obj = obj->parent();
+   QTableView *view = qobject_cast<QTableView *>(obj);
+   if(view==NULL){
+    continue;
+   }
+   else{
+    target=view;
+   }
+  }while(target==NULL);
 
-	QAbstractItemModel *qtv_model = target->model();
-	QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
-	BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
-	QString queryStr = A2->query().executedQuery();
-	A2->query().clear();
-	A2->setQuery(queryStr, dbToUse);
+  QAbstractItemModel *qtv_model = target->model();
+  QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
+  BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
+  QString queryStr = A2->query().executedQuery();
+  A2->query().clear();
+  A2->setQuery(queryStr, dbToUse);
  }
 
 }
@@ -640,39 +640,39 @@ bool BCount::setUnifiedPriority(QString szn, QString sprio){
   query.first();
   QString elem_1 ="0";
 
-	if(query.isValid()){
-		elem_1 = query.value(0).toString();
-	 /// mettre la nouvelle priorite
-	 msg =  "update Filtres set pri="+sprio+" where(zne="+szn+" and typ=0 and val in ("+elem_1+") );";
-	 if((isOk = query.exec(msg))) {
-		/// Verifier si il faut inserer les autres boules
-		QStringList nbValTab = elem_1.split(',');
-		if(nbValTab.size()< myGame.limites[zn].max){
-		 isOk_2=true;
-		}
-	 }
-	}
-	else {
-	 /// il faut mettre toutes les boules
-	 isOk_2=true;
-	}
+  if(query.isValid()){
+    elem_1 = query.value(0).toString();
+   /// mettre la nouvelle priorite
+   msg =  "update Filtres set pri="+sprio+" where(zne="+szn+" and typ=0 and val in ("+elem_1+") );";
+   if((isOk = query.exec(msg))) {
+    /// Verifier si il faut inserer les autres boules
+    QStringList nbValTab = elem_1.split(',');
+    if(nbValTab.size()< myGame.limites[zn].max){
+     isOk_2=true;
+    }
+   }
+  }
+  else {
+   /// il faut mettre toutes les boules
+   isOk_2=true;
+  }
 
-	if(isOk_2==true){
-	 /// Recuperer les boules manquantes
-	 msg="Select z"+QString::number(zn+1)+" from B_elm where (z"+QString::number(zn+1)+" not in ("+elem_1+"))";
-	 if((isOk = query.exec(msg))) {
-		query.first();
-		if(query.isValid()){
-		 int boule = 0;
-		 do{
-			boule = query.value(0).toInt();
-			msg="Insert into Filtres (id,zne,typ,lgn,col,val,pri,flt) values(NULL,"+
-						szn+",0,"+QString::number(boule-1)+",0,"+QString::number(boule)+","+sprio+",-1)";
-			isOk=query_2.exec(msg);
-		 }while(isOk && query.next());
-		}
-	 }
-	}
+  if(isOk_2==true){
+   /// Recuperer les boules manquantes
+   msg="Select z"+QString::number(zn+1)+" from B_elm where (z"+QString::number(zn+1)+" not in ("+elem_1+"))";
+   if((isOk = query.exec(msg))) {
+    query.first();
+    if(query.isValid()){
+     int boule = 0;
+     do{
+      boule = query.value(0).toInt();
+      msg="Insert into Filtres (id,zne,typ,lgn,col,val,pri,flt) values(NULL,"+
+            szn+",0,"+QString::number(boule-1)+",0,"+QString::number(boule)+","+sprio+",-1)";
+      isOk=query_2.exec(msg);
+     }while(isOk && query.next());
+    }
+   }
+  }
  }
  return isOk;
 }
@@ -754,8 +754,8 @@ void BCount::slot_ChoosePriority(QAction *cmd)
   msg = "insert into " + tbl + " (id, val, p, f) values(NULL,"
         +def[3]+","+ def[2]+",0);";
 
-	msg_2 = "update " + tbl2 + " set p="+def[2]+" "+
-					"where (b="+def[3]+");";
+  msg_2 = "update " + tbl2 + " set p="+def[2]+" "+
+          "where (b="+def[3]+");";
  }
  // Verifier si if faut supprimer la priorite
  if(v_1 == v_2)
@@ -773,8 +773,8 @@ void BCount::slot_ChoosePriority(QAction *cmd)
   msg = "update " + tbl + " set p="+def[2]+" "+
         "where (val="+def[3]+");";
 
-	msg_2 = "update " + tbl2 + " set p="+def[2]+" "+
-					"where (b="+def[3]+");";
+  msg_2 = "update " + tbl2 + " set p="+def[2]+" "+
+          "where (b="+def[3]+");";
  }
 
  /// https://forum.qt.io/topic/1168/solved-the-best-way-to-programmatically-refresh-a-qsqlquerymodel-when-the-content-of-the-query-changes/11
@@ -791,11 +791,11 @@ void BCount::slot_ChoosePriority(QAction *cmd)
     nbPrio = query.value(0).toInt();
    }
 
-	 /// mettre le champs infos a jour
-	 QString lab = QString("Selection : %1 sur %2");
-	 QString s_sel = QString::number(nbPrio).rightJustified(2,'0');
-	 QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
-	 lab = lab.arg(s_sel).arg(s_max);
+   /// mettre le champs infos a jour
+   QString lab = QString("Selection : %1 sur %2");
+   QString s_sel = QString::number(nbPrio).rightJustified(2,'0');
+   QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
+   lab = lab.arg(s_sel).arg(s_max);
 
 
    selection[0].setText(lab);
@@ -812,8 +812,8 @@ void BCount::slot_ChoosePriority(QAction *cmd)
    A2->setQuery(queryStr, dbToUse);
 
 #ifndef QT_NO_DEBUG
-	 qDebug() << "ms1:" <<msg;
-	 qDebug() << "ms2:" <<queryStr;
+   qDebug() << "ms1:" <<msg;
+   qDebug() << "ms2:" <<queryStr;
 #endif
 #if 0
             QItemSelectionModel *selectionModel = view->selectionModel();
@@ -832,8 +832,8 @@ void BCount::slot_ChoosePriority(QAction *cmd)
  {
   trv = false;
 #ifndef QT_NO_DEBUG
-	qDebug() << "select: " <<def[3]<<"->"<< query.lastError();
-	qDebug() << "Bad code:\n"<<msg<<"\n-------";
+  qDebug() << "select: " <<def[3]<<"->"<< query.lastError();
+  qDebug() << "Bad code:\n"<<msg<<"\n-------";
 #endif
  }
  else
@@ -915,12 +915,12 @@ void BCount::slot_wdaFilter(bool val)
 
   isOk=query.exec(msg);
 
-	if(isOk){
-	 if(!query.first()){
-		/// c'est une nouvelle donnee de filtrage
-		def[0]="0";
-	 }
-	}
+  if(isOk){
+   if(!query.first()){
+    /// c'est une nouvelle donnee de filtrage
+    def[0]="0";
+   }
+  }
  }
 
  /// Creation ou mise a jour ?
@@ -933,48 +933,48 @@ void BCount::slot_wdaFilter(bool val)
  }
  else {
 
-	/// Rpl le champ filtre :
-	/// 1 c'est le dernier tirage
-	/// 4 demande de filtrage
-	/// 8 Non sorti
-	/// combinaison de bits
+  /// Rpl le champ filtre :
+  /// 1 c'est le dernier tirage
+  /// 4 demande de filtrage
+  /// 8 Non sorti
+  /// combinaison de bits
 
-	/// Meme ligne pour off
-	if(def[7].toInt()<0){
-	 def[7]="0";
-	}
-	msg_2=QString::number(def[7].toInt()^ (BDelegateElmOrCmb::isWanted));
+  /// Meme ligne pour off
+  if(def[7].toInt()<0){
+   def[7]="0";
+  }
+  msg_2=QString::number(def[7].toInt()^ (BDelegateElmOrCmb::isWanted));
 
-	msg = "update  Filtres set flt="+msg_2+
-				" where("
-				"id="+def[0]+
-				");";
+  msg = "update  Filtres set flt="+msg_2+
+        " where("
+        "id="+def[0]+
+        ");";
  }
 
  isOk = query.exec(msg);
  if(isOk){
 
-	/// Recherche des onglets zone et type dans lesquels est le tableau
-	QObject *obj = chkFrom;
-	QTableView *target=NULL;
+  /// Recherche des onglets zone et type dans lesquels est le tableau
+  QObject *obj = chkFrom;
+  QTableView *target=NULL;
 
-	do{
-	 obj = obj->parent();
-	 QTableView *view = qobject_cast<QTableView *>(obj);
-	 if(view==NULL){
-		continue;
-	 }
-	 else{
-		target=view;
-	 }
-	}while(target==NULL);
+  do{
+   obj = obj->parent();
+   QTableView *view = qobject_cast<QTableView *>(obj);
+   if(view==NULL){
+    continue;
+   }
+   else{
+    target=view;
+   }
+  }while(target==NULL);
 
-	QAbstractItemModel *qtv_model = target->model();
-	QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
-	BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
-	QString queryStr = A2->query().executedQuery();
-	A2->query().clear();
-	A2->setQuery(queryStr, dbToUse);
+  QAbstractItemModel *qtv_model = target->model();
+  QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
+  BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
+  QString queryStr = A2->query().executedQuery();
+  A2->query().clear();
+  A2->setQuery(queryStr, dbToUse);
  }
 }
 
@@ -1047,44 +1047,44 @@ void BCount::slot_wdaFilter(bool val)
   QString filtre = "";
   QString key2use= "";
 
-	if(type==eCountElm)key2use = "b";
-	if(type==eCountBrc)key2use = "Bc";
-	if(type==eCountCmb)key2use = "id";
-	if(type==eCountGrp)key2use = "Nb";
+  if(type==eCountElm)key2use = "b";
+  if(type==eCountBrc)key2use = "Bc";
+  if(type==eCountCmb)key2use = "id";
+  if(type==eCountGrp)key2use = "Nb";
 
-	msg = "SELECT name FROM sqlite_master "
-				"WHERE type='table' and name like 'r_%"+endName+"'";
+  msg = "SELECT name FROM sqlite_master "
+        "WHERE type='table' and name like 'r_%"+endName+"'";
 
 #ifndef QT_NO_DEBUG
-	qDebug() <<msg;
+  qDebug() <<msg;
 #endif
 
-	if((isOk = query.exec(msg)))
-	{
-	 query.first();
-	 if(query.isValid()){
-		// On a des infos
-		if(val){
-		 filtre = "(case when f is null then 0x2 else (f|0x2) end)";
-		}
-		else{
-		 filtre = "(case when f is null then null else (f&~0x2) end)";
-		}
+  if((isOk = query.exec(msg)))
+  {
+   query.first();
+   if(query.isValid()){
+    // On a des infos
+    if(val){
+     filtre = "(case when f is null then 0x2 else (f|0x2) end)";
+    }
+    else{
+     filtre = "(case when f is null then null else (f&~0x2) end)";
+    }
 
-		bool next =true;
-		QSqlQuery update(dbToUse);
-		do{
-		 QString tblName = query.value(0).toString();
-		 msg = "update " + tblName
-					 + " set f="+filtre+" where ("+key2use+"="+def[3]+");";
+    bool next =true;
+    QSqlQuery update(dbToUse);
+    do{
+     QString tblName = query.value(0).toString();
+     msg = "update " + tblName
+           + " set f="+filtre+" where ("+key2use+"="+def[3]+");";
 #ifndef QT_NO_DEBUG
-		 qDebug() <<msg;
+     qDebug() <<msg;
 #endif
-		 isOk = update.exec(msg);
-		 next = query.next();
-		}while(isOk && next);
-	 }
-	}
+     isOk = update.exec(msg);
+     next = query.next();
+    }while(isOk && next);
+   }
+  }
  }
 
  if(!isOk)
@@ -1112,14 +1112,14 @@ void BCount::slot_wdaFilter(bool val)
  for(int item=0;item<nbCalcul;item++){
   BRunningQuery *tmp = sqmActive[useType].at(item);
 
-	int nb = tmp->size;
-	if(zn<nb){
-	 QString Montest = tmp->sqmDef[zn].query().executedQuery();
+  int nb = tmp->size;
+  if(zn<nb){
+   QString Montest = tmp->sqmDef[zn].query().executedQuery();
 #ifndef QT_NO_DEBUG
-	 qDebug() << Montest;
+   qDebug() << Montest;
 #endif
-	 tmp->sqmDef[zn].setQuery(Montest,dbToUse);
-	}
+   tmp->sqmDef[zn].setQuery(Montest,dbToUse);
+  }
  }
 #endif
 

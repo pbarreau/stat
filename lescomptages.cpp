@@ -56,12 +56,12 @@ BPrevision::BPrevision(stPrmPrevision prm)
  total_items++;
  conf = prm;
 
- onGame.fdjGame = prm.gameInfo.fdjGame;
- onGame.anaBase = prm.gameInfo.anaBase;
+ onGame.eFdjType = prm.gameInfo.eFdjType;
+ onGame.eTirType = prm.gameInfo.eTirType;
 
- if(ouvrirBase(prm.bddStore,prm.gameInfo.fdjGame)==true)
+ if(ouvrirBase(prm.bddStore,prm.gameInfo.eFdjType)==true)
  {
-  effectuerTraitement(prm.gameInfo.fdjGame);
+  effectuerTraitement(prm.gameInfo.eFdjType);
   //dbInUse.close();
  }
 }
@@ -80,7 +80,7 @@ BPrevision::BPrevision(eGame game, eBddUse def, QString stLesTirages)
 }
 #endif
 
-QString BPrevision::mk_IdDsk(eFdjType type, etDbUsage eDbUsage)
+QString BPrevision::mk_IdDsk(etFdjType type, etDbUsage eDbUsage)
 {
  QDate myDate = QDate::currentDate();
  QString toDay = myDate.toString("dd-MM-yyyy");
@@ -97,7 +97,7 @@ QString BPrevision::mk_IdDsk(eFdjType type, etDbUsage eDbUsage)
  int counter = 0;
  do{
   testName = game + QString::number(counter).rightJustified(3,'0')+QString("-");
-	 testName = testName + QString::number(cur_item).rightJustified(2,'0');
+   testName = testName + QString::number(cur_item).rightJustified(2,'0');
   myFileName.setFileName(testName);
   counter = (counter + 1)%999;
  }while(myFileName.exists());
@@ -112,12 +112,12 @@ QString BPrevision::mk_IdDsk(eFdjType type, etDbUsage eDbUsage)
  return testName;
 }
 
-QString BPrevision::mk_IdCnx(eFdjType type, etDbUsage eDbUsage)
+QString BPrevision::mk_IdCnx(etFdjType type, etDbUsage eDbUsage)
 {
  QString msg="cnx_NotSetYet";
 
  if((type <= eFdjNotSet) || (type>=eFdjEol)){
-  eFdjType err = eFdjNotSet;
+  etFdjType err = eFdjNotSet;
   QMessageBox::warning(NULL,"Prevision","Jeu "+gameLabel[err]+" inconnu !!",QMessageBox::Ok);
   QApplication::quit();
  }
@@ -134,7 +134,7 @@ QString BPrevision::mk_IdCnx(eFdjType type, etDbUsage eDbUsage)
  return (msg);
 }
 
-bool BPrevision::ouvrirBase(etDbPlace cible, eFdjType game)
+bool BPrevision::ouvrirBase(etDbPlace cible, etFdjType game)
 {
  bool isOk = true;
 
@@ -149,10 +149,10 @@ bool BPrevision::ouvrirBase(etDbPlace cible, eFdjType game)
    mabase = ":memory:";
    break;
 
-	case eDbSetOnDsk:
-	default:
-	 mabase = mk_IdDsk(game,eDbForFdj);
-	 break;
+  case eDbSetOnDsk:
+  default:
+   mabase = mk_IdDsk(game,eDbForFdj);
+   break;
  }
 
  /// definition de la base pour ce calcul
@@ -201,10 +201,10 @@ bool BPrevision::OPtimiseAccesBase(void)
  return isOk;
 }
 
-void BPrevision::effectuerTraitement(eFdjType game)
+void BPrevision::effectuerTraitement(etFdjType game)
 {
  QString source = "";//C_TBL_3;
- if(conf.gameInfo.anaBase==eAnaType::eAnaFdj){
+ if(conf.gameInfo.eTirType==etTirType::eTirFdj){
   conf.tblFdj_dta = "B_fdj";
   source = conf.tblFdj_dta;
  }
@@ -233,7 +233,7 @@ void BPrevision::effectuerTraitement(eFdjType game)
 
 }
 
-BGame * BPrevision::definirConstantesDuJeu(eFdjType game)
+stGameConf * BPrevision::definirConstantesDuJeu(etFdjType game)
 {
  /// Pour l'instant en loto ou en euro il y a 2 'zones'
  /// une pour les boules
@@ -248,53 +248,53 @@ BGame * BPrevision::definirConstantesDuJeu(eFdjType game)
    onGame.limites = new stParam_1 [onGame.znCount];
    onGame.names = new stParam_2 [onGame.znCount];
 
-	 /// z1 : boules
-	 onGame.limites[0].min=1;
-	 onGame.limites[0].max=49;
-	 onGame.limites[0].len=5;
-	 onGame.limites[0].win=5;
-	 onGame.limites[0].usr=0;
-	 onGame.names[0].std = "Boules";
-	 onGame.names[0].abv = "b";
+   /// z1 : boules
+   onGame.limites[0].min=1;
+   onGame.limites[0].max=49;
+   onGame.limites[0].len=5;
+   onGame.limites[0].win=5;
+   onGame.limites[0].usr=0;
+   onGame.names[0].std = "Boules";
+   onGame.names[0].abv = "b";
 
-	 /// z2 : etoiles
-	 onGame.limites[1].min=1;
-	 onGame.limites[1].max=10;
-	 onGame.limites[1].len=1;
-	 onGame.limites[1].win=1;
-	 onGame.limites[1].usr=0;
-	 onGame.names[1].std = "Etoiles";
-	 onGame.names[1].abv = "e";
-	 break;
+   /// z2 : etoiles
+   onGame.limites[1].min=1;
+   onGame.limites[1].max=10;
+   onGame.limites[1].len=1;
+   onGame.limites[1].win=1;
+   onGame.limites[1].usr=0;
+   onGame.names[1].std = "Etoiles";
+   onGame.names[1].abv = "e";
+   break;
 
-	case eFdjEuro:
-	 onGame.limites = new stParam_1 [onGame.znCount];
-	 onGame.names = new stParam_2 [onGame.znCount];
+  case eFdjEuro:
+   onGame.limites = new stParam_1 [onGame.znCount];
+   onGame.names = new stParam_2 [onGame.znCount];
 
-	 /// boules
-	 onGame.limites[0].min=1;
-	 onGame.limites[0].max=50;
-	 onGame.limites[0].len=5;
-	 onGame.limites[0].win=5;
-	 onGame.limites[0].usr=0;
-	 onGame.names[0].std = "Boules";
-	 onGame.names[0].abv = "b";
+   /// boules
+   onGame.limites[0].min=1;
+   onGame.limites[0].max=50;
+   onGame.limites[0].len=5;
+   onGame.limites[0].win=5;
+   onGame.limites[0].usr=0;
+   onGame.names[0].std = "Boules";
+   onGame.names[0].abv = "b";
 
-	 /// etoiles
-	 onGame.limites[1].min=1;
-	 onGame.limites[1].max=12;
-	 onGame.limites[1].len=2;
-	 onGame.limites[1].win=2;
-	 onGame.limites[1].usr=0;
-	 onGame.names[1].std = "Etoiles";
-	 onGame.names[1].abv = "e";
-	 break;
+   /// etoiles
+   onGame.limites[1].min=1;
+   onGame.limites[1].max=12;
+   onGame.limites[1].len=2;
+   onGame.limites[1].win=2;
+   onGame.limites[1].usr=0;
+   onGame.names[1].std = "Etoiles";
+   onGame.names[1].abv = "e";
+   break;
 
-	default:
-	 onGame.znCount = 0; /// boules + etoiles
-	 onGame.limites = NULL;
-	 onGame.names = NULL;
-	 break;
+  default:
+   onGame.znCount = 0; /// boules + etoiles
+   onGame.limites = NULL;
+   onGame.names = NULL;
+   break;
  }
 
  /// config effectuee
@@ -332,18 +332,18 @@ bool BPrevision::creerTablesDeLaBase(void)
   /// Nom de la table
   QString tbName = creerTables[uneTable].tbDef;
 
-	/// Fonction de traitement de la creation
-	isOk=(this->*(creerTables[uneTable].pFuncInit))(tbName,&q);
+  /// Fonction de traitement de la creation
+  isOk=(this->*(creerTables[uneTable].pFuncInit))(tbName,&q);
 
-	/// Analyser le retour de traitement
-	if(!isOk){
-	 //un message d'information
-	 QMessageBox::critical(0, tbName, "Erreur traitement !",QMessageBox::Yes);
+  /// Analyser le retour de traitement
+  if(!isOk){
+   //un message d'information
+   QMessageBox::critical(0, tbName, "Erreur traitement !",QMessageBox::Yes);
 #ifndef QT_NO_DEBUG
-	 qDebug() <<q.lastError().text();
+   qDebug() <<q.lastError().text();
 #endif
-	 QApplication::quit();
-	}
+   QApplication::quit();
+  }
  }
 
  return isOk;
@@ -386,9 +386,9 @@ bool BPrevision::f1(QString tbName,QSqlQuery *query)
    query->bindValue(":arg5",onGame.names[def].abv);
    query->bindValue(":arg6",onGame.names[def].std);
 
-	 /// executer la commande sql
-	 isOk = query->exec();
-	}
+   /// executer la commande sql
+   isOk = query->exec();
+  }
  }
 
  if(!isOk)
@@ -419,18 +419,18 @@ bool BPrevision::f2(QString tbName,QSqlQuery *query)
   /// Noms des colonnes a mettre
   colsDef=colsDef + def_1.arg(def+1);
 
-	/// valeurs
-	argsDef = argsDef + def_2.arg((def*2)+1).arg((def*2)+2);
+  /// valeurs
+  argsDef = argsDef + def_2.arg((def*2)+1).arg((def*2)+2);
 
-	/// derniere zone a traiter
-	if(def<totDef-1){
-	 colsDef = colsDef + ",";
-	 argsDef = argsDef + ",";
+  /// derniere zone a traiter
+  if(def<totDef-1){
+   colsDef = colsDef + ",";
+   argsDef = argsDef + ",";
 
-	 /// Maximum d'element
-	 maxElemts = BMAX_2(onGame.limites[def].max,
-											onGame.limites[def+1].max);
-	}
+   /// Maximum d'element
+   maxElemts = BMAX_2(onGame.limites[def].max,
+                      onGame.limites[def+1].max);
+  }
  }
 
  msg = "create table if not exists "
@@ -449,41 +449,41 @@ bool BPrevision::f2(QString tbName,QSqlQuery *query)
                  +tbName
                  +"(id,"+colsDef+")values(NULL,";
 
-	/// mettre des valeurs en sequence
-	for(int line=1;(line <maxElemts+1)&& isOk;line++)
-	{
-	 QString stValues="";
-	 for(int def = 0; (def<totDef) ;def++)
-	 {
-		int maxItems = onGame.limites[def].max;
-		//int nbDizaine = floor(maxItems/10)+1;
+  /// mettre des valeurs en sequence
+  for(int line=1;(line <maxElemts+1)&& isOk;line++)
+  {
+   QString stValues="";
+   for(int def = 0; (def<totDef) ;def++)
+   {
+    int maxItems = onGame.limites[def].max;
+    //int nbDizaine = floor(maxItems/10)+1;
 
-		/// Boules
-		if(line<=maxItems){
-		 stValues = stValues + QString::number(line);
-		}
-		else{
-		 stValues = stValues +"NULL";
-		}
-		stValues = stValues + ",";
+    /// Boules
+    if(line<=maxItems){
+     stValues = stValues + QString::number(line);
+    }
+    else{
+     stValues = stValues +"NULL";
+    }
+    stValues = stValues + ",";
 
-		/// Nb boules pour gagner
-		if(line<=onGame.limites[def].win+1){
-		 stValues = stValues + QString::number(line-1);
-		}
-		else{
-		 stValues = stValues +"NULL";
-		}
+    /// Nb boules pour gagner
+    if(line<=onGame.limites[def].win+1){
+     stValues = stValues + QString::number(line-1);
+    }
+    else{
+     stValues = stValues +"NULL";
+    }
 
-		if(def < totDef -1)
-		 stValues = stValues + ",";
-	 }
-	 msg = msg1 + stValues + ")";
+    if(def < totDef -1)
+     stValues = stValues + ",";
+   }
+   msg = msg1 + stValues + ")";
 #ifndef QT_NO_DEBUG
-	 qDebug() <<msg;
+   qDebug() <<msg;
 #endif
-	 isOk = query->exec(msg);
-	}
+   isOk = query->exec(msg);
+  }
  }
 
  if(!isOk)
@@ -536,14 +536,14 @@ bool BPrevision::f3(QString tb,QSqlQuery *query)
   if (i==1)
    stKeyOn = "id integer primary key,";
 
-	msg = "create table if not exists "
-				+ tables[i]
-				+ "("+ stKeyOn +"D text, J text,"
-				+ colsDef
-				+",file int);";
+  msg = "create table if not exists "
+        + tables[i]
+        + "("+ stKeyOn +"D text, J text,"
+        + colsDef
+        +",file int);";
 
 #ifndef QT_NO_DEBUG
-	qDebug() <<msg;
+  qDebug() <<msg;
 #endif
 
   isOk = query->exec(msg);
@@ -555,29 +555,29 @@ bool BPrevision::f3(QString tb,QSqlQuery *query)
   /// mettre les infos brut dans la table temporaire
   isOk = chargerDonneesFdjeux(tables[0]);
 
-	if(isOk)
-	{
-	 /// mettre les infos triees dans la table de reference
-	 colsDef.remove("int");
-	 /// trier les resultats pour la table finale
-	 msg = "insert into "
-				 + tables[1] + " "
-				 + "select NULL,"
-				 + "substr(src.D,-2,2)||'/'||substr(src.D,6,2)||'/'||substr(src.D,1,4) as D,"
-				 + "src.J,"
-				 + cAsDef + ",file from("
-				 + tables[0] + " as src)order by date(src.D) desc,src.J desc";
+  if(isOk)
+  {
+   /// mettre les infos triees dans la table de reference
+   colsDef.remove("int");
+   /// trier les resultats pour la table finale
+   msg = "insert into "
+         + tables[1] + " "
+         + "select NULL,"
+         + "substr(src.D,-2,2)||'/'||substr(src.D,6,2)||'/'||substr(src.D,1,4) as D,"
+         + "src.J,"
+         + cAsDef + ",file from("
+         + tables[0] + " as src)order by date(src.D) desc,src.J desc";
 #ifndef QT_NO_DEBUG
-	 qDebug() <<msg;
+   qDebug() <<msg;
 #endif
 
-	 isOk = query->exec(msg);
+   isOk = query->exec(msg);
 
-	 if(isOk){
-		/// supprimer la table tremporaire
-		msg = "drop table if exists " + tables[0];
-		isOk = query->exec(msg);
-	 }
+   if(isOk){
+    /// supprimer la table tremporaire
+    msg = "drop table if exists " + tables[0];
+    isOk = query->exec(msg);
+   }
 
   }
  }
@@ -615,24 +615,24 @@ bool BPrevision::f4(QString tb, QSqlQuery *query)
   if(onGame.limites[zn].win>2){
    isOk = TraitementCodeVueCombi(zn);
 
-	 if(isOk)
-		isOk = TraitementCodeTblCombi(tblUse,zn);
-	}
-	else
-	{
-	 int n = onGame.limites[zn].max;
-	 int p = onGame.limites[zn].win;
-	 QString tbName = tblUse+ "_z"+QString::number(zn+1);
-	 // calculer les combinaisons avec repetition
-	 BCnp *a = new BCnp(n,p,db_1.connectionName());
-	 tbName = a->getDbTblName();
-	 if(tbName.isEmpty()){
-		QMessageBox::information(NULL, "Pgm", "tbName is null" ,QMessageBox::Yes);
-		QApplication::quit();
-	 }
+   if(isOk)
+    isOk = TraitementCodeTblCombi(tblUse,zn);
+  }
+  else
+  {
+   int n = onGame.limites[zn].max;
+   int p = onGame.limites[zn].win;
+   QString tbName = tblUse+ "_z"+QString::number(zn+1);
+   // calculer les combinaisons avec repetition
+   BCnp *a = new BCnp(n,p,db_1.connectionName());
+   tbName = a->getDbTblName();
+   if(tbName.isEmpty()){
+    QMessageBox::information(NULL, "Pgm", "tbName is null" ,QMessageBox::Yes);
+    QApplication::quit();
+   }
 
-	 isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn);
-	}
+   isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn);
+  }
  }
 
  if(!isOk)
@@ -703,7 +703,7 @@ bool BPrevision::f6(QString tb, QSqlQuery *query)
  return isOk;
 }
 
-bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
+bool BPrevision::FaireTableauSynthese(QString tblIn, const stGameConf &onGame,int zn)
 {
  bool isOk = true;
  QString msg = "";
@@ -740,46 +740,46 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const BGame &onGame,int zn)
   qDebug() << msg;
 #endif
 
-	isOk = query.exec(msg);
-	QStringList *slst=&slFlt[zn][0];
+  isOk = query.exec(msg);
+  QStringList *slst=&slFlt[zn][0];
 
-	int nbCols = slst[1].size();
-	curName = "vt_1";
-	QString stGenre = "view";
-	for(int loop = 0; (loop < nbCols)&& isOk; loop ++){
-	 prvName ="vt_"+QString::number(loop);
-	 msg = "create "+stGenre+" if not exists "
-				 + curName
-				 +" as select tbleft.*, (case when count(tbRight.id)!=0 then count(tbRight.id) end)as "
-				 +slst[1].at(loop)
-				 + " from("+prvName+") as tbLeft "
-				 +"left join ("
-				 +stCurTable
-				 +") as tbRight on (tbLeft.Nb = tbRight."
-				 +slst[1].at(loop)+")group by tbLeft.Nb";
+  int nbCols = slst[1].size();
+  curName = "vt_1";
+  QString stGenre = "view";
+  for(int loop = 0; (loop < nbCols)&& isOk; loop ++){
+   prvName ="vt_"+QString::number(loop);
+   msg = "create "+stGenre+" if not exists "
+         + curName
+         +" as select tbleft.*, (case when count(tbRight.id)!=0 then count(tbRight.id) end)as "
+         +slst[1].at(loop)
+         + " from("+prvName+") as tbLeft "
+         +"left join ("
+         +stCurTable
+         +") as tbRight on (tbLeft.Nb = tbRight."
+         +slst[1].at(loop)+")group by tbLeft.Nb";
 #ifndef QT_NO_DEBUG
-	 qDebug() << msg;
+   qDebug() << msg;
 #endif
-	 isOk = query.exec(msg);
-	 if(loop<nbCols-1)
-		curName ="vt_"+QString::number(loop+2);
-	}
-	/// Rajouter a la fin une colonne pour fitrage
-	if(isOk){
-	 msg = "create table if not exists "+TblCompact+"_z"
-				 + QString::number(zn+1)
-				 +" as select tb1.* from ("+curName+") as tb1";
+   isOk = query.exec(msg);
+   if(loop<nbCols-1)
+    curName ="vt_"+QString::number(loop+2);
+  }
+  /// Rajouter a la fin une colonne pour fitrage
+  if(isOk){
+   msg = "create table if not exists "+TblCompact+"_z"
+         + QString::number(zn+1)
+         +" as select tb1.* from ("+curName+") as tb1";
 #ifndef QT_NO_DEBUG
-	 qDebug() << msg;
+   qDebug() << msg;
 #endif
 
-	 isOk = query.exec(msg);
+   isOk = query.exec(msg);
 
-	 /// Supprimer vues intermediaire
-	 if(isOk){
-		isOk = SupprimerVueIntermediaires();
-	 }
-	}
+   /// Supprimer vues intermediaire
+   if(isOk){
+    isOk = SupprimerVueIntermediaires();
+   }
+  }
  }
 
  if(!isOk)
@@ -914,20 +914,20 @@ bool BPrevision::TraitementCodeTblCombi(QString tbName,int zn)
      }
     }
 
-		ref_2=msg1+","+QString::fromLocal8Bit("printf('%1',%2)as tip,(%3) as poids");
-		ref_1 = ref_2.arg(ref_1).arg(msg2).arg(msg3);
-		ref_2 = msg4;
-		ref_3 = msg5;
-		msg = tblCode[lgnCode].arg(QString::number(zn+1),ref_1,ref_2,ref_3);
-	 }
-	 break;
-	 default:
-		msg = "Error on the number of args";
-		break;
-	}
+    ref_2=msg1+","+QString::fromLocal8Bit("printf('%1',%2)as tip,(%3) as poids");
+    ref_1 = ref_2.arg(ref_1).arg(msg2).arg(msg3);
+    ref_2 = msg4;
+    ref_3 = msg5;
+    msg = tblCode[lgnCode].arg(QString::number(zn+1),ref_1,ref_2,ref_3);
+   }
+   break;
+   default:
+    msg = "Error on the number of args";
+    break;
+  }
 
 #ifndef QT_NO_DEBUG
-	qDebug() << msg;
+  qDebug() << msg;
 #endif
 
   isOk = query.exec(msg);
@@ -974,40 +974,40 @@ bool BPrevision::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn)
    }
   }
 
-	ref_1 = msg1;
-	ref_1 = ref_1.replace("c",onGame.names[zn].abv) + +",tip text, poids real" ;
-	msg = "create table if not exists "
-				+tbName+"_z"+QString::number(zn+1)
-				+"(id integer primary key,"
-				+ref_1
-				+");";
+  ref_1 = msg1;
+  ref_1 = ref_1.replace("c",onGame.names[zn].abv) + +",tip text, poids real" ;
+  msg = "create table if not exists "
+        +tbName+"_z"+QString::number(zn+1)
+        +"(id integer primary key,"
+        +ref_1
+        +");";
 #ifndef QT_NO_DEBUG
-	qDebug() << msg;
+  qDebug() << msg;
 #endif
 
-	isOk = query.exec(msg);
+  isOk = query.exec(msg);
 
-	if(isOk){
-	 msg1 = msg1.remove("int");
-	 msg = msg1;
-	 msg = msg.replace(QRegExp("c\\d\\s+"),"%02d");
-	 msg = msg.replace(",","/");
-	 /// traitement insertion dans table
-	 msg = "insert into "+tbName+"_z"
-				 +QString::number(zn+1)
-				 +" select NULL,"
-				 +msg1 + ",(printf('"+msg+"',"+msg1+"))as tip,("+msg2+") as poids "
-				 +"from ("+tbCnp+")";
+  if(isOk){
+   msg1 = msg1.remove("int");
+   msg = msg1;
+   msg = msg.replace(QRegExp("c\\d\\s+"),"%02d");
+   msg = msg.replace(",","/");
+   /// traitement insertion dans table
+   msg = "insert into "+tbName+"_z"
+         +QString::number(zn+1)
+         +" select NULL,"
+         +msg1 + ",(printf('"+msg+"',"+msg1+"))as tip,("+msg2+") as poids "
+         +"from ("+tbCnp+")";
 #ifndef QT_NO_DEBUG
-	 qDebug() << msg;
+   qDebug() << msg;
 #endif
-	 query.exec(msg);
-	 if(isOk){
-		/// Supprimer la table Cnp
-		msg = "drop table if exists "+tbCnp;
-		isOk = query.exec(msg);
-	 }
-	}
+   query.exec(msg);
+   if(isOk){
+    /// Supprimer la table Cnp
+    msg = "drop table if exists "+tbCnp;
+    isOk = query.exec(msg);
+   }
+  }
 
  }
 
@@ -1094,7 +1094,7 @@ bool BPrevision::chargerDonneesFdjeux(QString destTable)
    }
   };
 
- if(onGame.fdjGame == eFdjEuro){
+ if(onGame.eFdjType == eFdjEuro){
   nbelemt = sizeof(euroMillions)/sizeof(stFdjData);
   LesFichiers = euroMillions;
  }
@@ -1154,15 +1154,15 @@ bool BPrevision::LireLesTirages(QString tblName, stFdjData *def)
   reqCols = "";
   reqValues = "";
 
-	//traitement de la ligne
-	list1 = ligne.split(";");
+  //traitement de la ligne
+  list1 = ligne.split(";");
 
-	// Recuperation du date_tirage (D)
-	data = DateAnormer(list1.at(2));
-	// Presentation de la date
-	reqCols = reqCols + "D,";
-	reqValues = reqValues + "'"
-							+ data+ "',";
+  // Recuperation du date_tirage (D)
+  data = DateAnormer(list1.at(2));
+  // Presentation de la date
+  reqCols = reqCols + "D,";
+  reqValues = reqValues + "'"
+              + data+ "',";
 #if 0
         QStringList tmp = data.split("-");
         reqValues = reqValues + "'"
@@ -1170,73 +1170,73 @@ bool BPrevision::LireLesTirages(QString tblName, stFdjData *def)
                 + tmp.at(1)+"/"
                 + tmp.at(0)+ "',";
 #endif
-	// Recuperation et verification du jour (J) en fonction de la date
-	data = JourFromDate(data, list1.at(1),&retErr);
-	if(retErr.status == false)
-	{
-	 msg = retErr.msg;
-	 msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1)+"\n"+msg;
-	 QMessageBox::critical(0, "cLesComptages::LireLesTirages", msg,QMessageBox::Yes);
-	 return false;
-	}
-	reqCols = reqCols + "J,";
-	reqValues = reqValues + "'"+data + "',";
+  // Recuperation et verification du jour (J) en fonction de la date
+  data = JourFromDate(data, list1.at(1),&retErr);
+  if(retErr.status == false)
+  {
+   msg = retErr.msg;
+   msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1)+"\n"+msg;
+   QMessageBox::critical(0, "cLesComptages::LireLesTirages", msg,QMessageBox::Yes);
+   return false;
+  }
+  reqCols = reqCols + "J,";
+  reqValues = reqValues + "'"+data + "',";
 
-	// Recuperation des boules
-	int max_zone = onGame.znCount;
-	for(int zone=0;zone< max_zone;zone++)
-	{
-	 int maxValZone = def->param.pZn[zone].max;
-	 int minValZone = def->param.pZn[zone].min;
-	 int maxElmZone = def->param.pZn[zone].len;
+  // Recuperation des boules
+  int max_zone = onGame.znCount;
+  for(int zone=0;zone< max_zone;zone++)
+  {
+   int maxValZone = def->param.pZn[zone].max;
+   int minValZone = def->param.pZn[zone].min;
+   int maxElmZone = def->param.pZn[zone].len;
 
-	 for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
-	 {
-		// Recuperation de la valeur
-		int val1 = list1.at(def->param.pZn[zone].start+ElmZone).toInt();
+   for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
+   {
+    // Recuperation de la valeur
+    int val1 = list1.at(def->param.pZn[zone].start+ElmZone).toInt();
 
-		// verification coherence
-		if((val1 >= def->param.pZn[zone].min)
-				&&
-				(val1 <=def->param.pZn[zone].max))
-		{
-		 /// On rajoute a Req values
-		 reqCols = reqCols+onGame.names[zone].abv+QString::number(ElmZone+1);
-		 reqValues = reqValues + QString::number(val1);
-		}
-		else
-		{
-		 /// Bug pour la valeur lue
-		 msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1);
-		 msg= msg +"\nzn:"+QString::number(zone)+",el:"+QString::number(ElmZone);
-		 msg= msg +",val:"+QString::number(val1);
-		 QMessageBox::critical(0, "LireLesTirages", msg,QMessageBox::Yes);
-		 return false;
-		}
+    // verification coherence
+    if((val1 >= def->param.pZn[zone].min)
+        &&
+        (val1 <=def->param.pZn[zone].max))
+    {
+     /// On rajoute a Req values
+     reqCols = reqCols+onGame.names[zone].abv+QString::number(ElmZone+1);
+     reqValues = reqValues + QString::number(val1);
+    }
+    else
+    {
+     /// Bug pour la valeur lue
+     msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1);
+     msg= msg +"\nzn:"+QString::number(zone)+",el:"+QString::number(ElmZone);
+     msg= msg +",val:"+QString::number(val1);
+     QMessageBox::critical(0, "LireLesTirages", msg,QMessageBox::Yes);
+     return false;
+    }
 
-		/// tous les elements sont vus ?
-		if(ElmZone < maxElmZone-1){
-		 reqCols = reqCols + ",";
-		 reqValues = reqValues + ",";
-		}
-	 }
+    /// tous les elements sont vus ?
+    if(ElmZone < maxElmZone-1){
+     reqCols = reqCols + ",";
+     reqValues = reqValues + ",";
+    }
+   }
 
-	 /// voir si passage a nouvelle zone
-	 if(zone< max_zone-1){
-		reqCols = reqCols + ",";
-		reqValues = reqValues + ",";
-	 }
-	}
-	/// Toutes les zones sont faites, ecrire dans la base
-	msg = "insert into "
-				+tblName+"("
-				+reqCols+",file)values("
-				+ reqValues +","+QString::number(def->id)
-				+ ")";
+   /// voir si passage a nouvelle zone
+   if(zone< max_zone-1){
+    reqCols = reqCols + ",";
+    reqValues = reqValues + ",";
+   }
+  }
+  /// Toutes les zones sont faites, ecrire dans la base
+  msg = "insert into "
+        +tblName+"("
+        +reqCols+",file)values("
+        + reqValues +","+QString::number(def->id)
+        + ")";
 #ifndef QT_NO_DEBUG
-	qDebug() <<msg;
+  qDebug() <<msg;
 #endif
-	isOk = query.exec(msg);
+  isOk = query.exec(msg);
 
  }  /// Fin while
 
@@ -1327,7 +1327,7 @@ QString BPrevision::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
  return retval;
 }
 
-void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const BGame &config)
+void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const stGameConf &config)
 {
  QWidget * Resultats = new QWidget;
  QTabWidget *tab_Top = new QTabWidget;
@@ -1368,8 +1368,8 @@ void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const BGam
   QGridLayout * grd_tmp = new QGridLayout;
   pConteneur[i] = grd_tmp;
 
-	QWidget * wid_tmp = new QWidget;
-	pMonTmpWidget [i] = wid_tmp;
+  QWidget * wid_tmp = new QWidget;
+  pMonTmpWidget [i] = wid_tmp;
  }
  pConteneur[0]->addWidget(c1,1,0);
  pConteneur[1]->addWidget(c,1,0);
@@ -1582,74 +1582,74 @@ void BPrevision::slot_UGL_Create()
   else{
    if(n<=MAX_CHOIX_BOULES){
 
-		monJeu.gameInfo.fdjGame = onGame.fdjGame;
-		monJeu.gameInfo.anaBase = eAnaUsr;
-		monJeu.gameInfo.znCount = 1;
-		monJeu.gameInfo.limites = &(onGame.limites[0]);
-		monJeu.gameInfo.names = &(onGame.names[0]);
-		monJeu.tblFdj_dta="B_fdj";
-		monJeu.tblFdj_brc="r_B_fdj_0_brc_z1";
+    monJeu.gameInfo.eFdjType = onGame.eFdjType;
+    monJeu.gameInfo.eTirType = eTirGen;
+    monJeu.gameInfo.znCount = 1;
+    monJeu.gameInfo.limites = &(onGame.limites[0]);
+    monJeu.gameInfo.names = &(onGame.names[0]);
+    monJeu.tblFdj_dta="B_fdj";
+    monJeu.tblFdj_brc="r_B_fdj_0_brc_z1";
 
 
     QTime r;
     QTime t;
     QString t_human = "";
 
-		if(isTableCnpinDb(n,p)==false)
-		{
-		 r.setHMS(0,0,0,0);
-		 t.start();
-		 a= new BCnp(n,p,db_1.connectionName());
-		 r = r.addMSecs(t.elapsed());
-		 t_human = r.toString("hh:mm:ss:zzz");
-		 msg = "Creation Cnp("
-					 +QString::number(n)
-					 +QString(",")
-					 +QString::number(p)
-					 +QString(") en : ")
-					 +t_human
-					 +QString (" (hh:mm:ss:ms)");
-		 QMessageBox::information(NULL,"UsrGame",msg,QMessageBox::Ok);
-		}
+    if(isTableCnpinDb(n,p)==false)
+    {
+     r.setHMS(0,0,0,0);
+     t.start();
+     a= new BCnp(n,p,db_1.connectionName());
+     r = r.addMSecs(t.elapsed());
+     t_human = r.toString("hh:mm:ss:zzz");
+     msg = "Creation Cnp("
+           +QString::number(n)
+           +QString(",")
+           +QString::number(p)
+           +QString(") en : ")
+           +t_human
+           +QString (" (hh:mm:ss:ms)");
+     QMessageBox::information(NULL,"UsrGame",msg,QMessageBox::Ok);
+    }
 
-		/// supprimer la vue resultat
-		msg = "drop table if exists E1";
-		isOk = query.exec(msg);
-		if(isOk){
-		 r.setHMS(0,0,0,0);
-		 t.restart();
-		 /// Creer une liste de jeux possibles
-		 if(n == m){
-			int memo_usr = onGame.limites[0].usr;
-			eAnaType mem_from = onGame.anaBase;
+    /// supprimer la vue resultat
+    msg = "drop table if exists E1";
+    isOk = query.exec(msg);
+    if(isOk){
+     r.setHMS(0,0,0,0);
+     t.restart();
+     /// Creer une liste de jeux possibles
+     if(n == m){
+      int memo_usr = onGame.limites[0].usr;
+      etTirType mem_from = onGame.eTirType;
 
-			onGame.limites[0].usr=m;
-			QString tbl_cible = a->getDbTblName();
-			QString tbl_cible_ana = "U_"+tbl_cible+"_ana";
-			monJeu.tblUsr_dta=tbl_cible;
-			monJeu.tblUsr_ana=tbl_cible_ana;
-			onGame.anaBase=eAnaUsr;
-			ContinuerCreation(tbl_cible, tbl_cible_ana);
+      onGame.limites[0].usr=m;
+      QString tbl_cible = a->getDbTblName();
+      QString tbl_cible_ana = "U_"+tbl_cible+"_ana";
+      monJeu.tblUsr_dta=tbl_cible;
+      monJeu.tblUsr_ana=tbl_cible_ana;
+      onGame.eTirType=eTirGen;
+      ContinuerCreation(tbl_cible, tbl_cible_ana);
 
-			onGame.limites[0].usr=memo_usr;
-			onGame.anaBase=mem_from;
-		 }
-		 else{
-			monJeu.tblUsr_dta="E1";
-			monJeu.tblUsr_ana="U_E1_ana";
-			creerJeuxUtilisateur(n,p);
-		 }
-		 r = r.addMSecs(t.elapsed());
-		 t_human = r.toString("hh:mm:ss:zzz");
-		 msg = QString("Creation Liste de jeux en : ")
-					 +t_human
-					 +QString (" (hh:mm:ss:ms)");
-		 QMessageBox::information(NULL,"UsrGame",msg,QMessageBox::Ok);
+      onGame.limites[0].usr=memo_usr;
+      onGame.eTirType=mem_from;
+     }
+     else{
+      monJeu.tblUsr_dta="E1";
+      monJeu.tblUsr_ana="U_E1_ana";
+      creerJeuxUtilisateur(n,p);
+     }
+     r = r.addMSecs(t.elapsed());
+     t_human = r.toString("hh:mm:ss:zzz");
+     msg = QString("Creation Liste de jeux en : ")
+           +t_human
+           +QString (" (hh:mm:ss:ms)");
+     QMessageBox::information(NULL,"UsrGame",msg,QMessageBox::Ok);
 
-		}
+    }
 
-	 }
-	}
+   }
+  }
 
  }
 
@@ -1671,20 +1671,20 @@ bool BPrevision::isPreviousDestroyed(void)
    //delete Affiche_E1;
    //delete Resulta_E1;
 
-	 int ret = QMessageBox::question(NULL,"Calcul","Continuer (supprime precedent) ?",
-																	 QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Ok);
-	 if(ret == QMessageBox::Cancel){
-		return false;
-	 }
-	 /// on a des tables a detruire
-	 QString tbl_tmp;
-	 QSqlQuery qdel(db_1);
-	 do{
-		tbl_tmp = query.value(0).toString();
-		msg = "drop table "+tbl_tmp+";";
-		isOk = qdel.exec(msg);
-	 }while(isOk && query.next());
-	}
+   int ret = QMessageBox::question(NULL,"Calcul","Continuer (supprime precedent) ?",
+                                   QMessageBox::Ok|QMessageBox::Cancel,QMessageBox::Ok);
+   if(ret == QMessageBox::Cancel){
+    return false;
+   }
+   /// on a des tables a detruire
+   QString tbl_tmp;
+   QSqlQuery qdel(db_1);
+   do{
+    tbl_tmp = query.value(0).toString();
+    msg = "drop table "+tbl_tmp+";";
+    isOk = qdel.exec(msg);
+   }while(isOk && query.next());
+  }
  }
  return isOk;
 }
@@ -1758,44 +1758,44 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
  if(OneShot==false){
   OneShot = true;
 
-	/// Montrer resultats
-	msg="select * from ("+tbl_cible+")";
-	QTableView *qtv_tmp = new QTableView;
-	sqm_resu = new QSqlQueryModel;
+  /// Montrer resultats
+  msg="select * from ("+tbl_cible+")";
+  QTableView *qtv_tmp = new QTableView;
+  sqm_resu = new QSqlQueryModel;
 
-	sqm_resu->setQuery(msg,db_1);
-	qtv_tmp->setModel(sqm_resu);
+  sqm_resu->setQuery(msg,db_1);
+  qtv_tmp->setModel(sqm_resu);
 
-	lignes =new QLabel;
-	int nbLignes = sqm_resu->rowCount();
-	QSqlQuery nvll(db_1);
-	isOk=nvll.exec("select count(*) from ("+tbl_cible+")");
-	if(isOk){
-	 nvll.first();
-	 if(nvll.isValid()){
-		nbLignes = nvll.value(0).toInt();
-	 }
-	}
-	QString tot = "Total : " + QString::number(nbLignes);
-	lignes->setText(tot);
+  lignes =new QLabel;
+  int nbLignes = sqm_resu->rowCount();
+  QSqlQuery nvll(db_1);
+  isOk=nvll.exec("select count(*) from ("+tbl_cible+")");
+  if(isOk){
+   nvll.first();
+   if(nvll.isValid()){
+    nbLignes = nvll.value(0).toInt();
+   }
+  }
+  QString tot = "Total : " + QString::number(nbLignes);
+  lignes->setText(tot);
 
-	QWidget *Affiche = new QWidget;
-	QVBoxLayout *layout = new QVBoxLayout;
-	layout->addWidget(lignes,0,Qt::AlignLeft|Qt::AlignTop);
-	layout->addWidget(qtv_tmp,1,Qt::AlignLeft|Qt::AlignTop);
+  QWidget *Affiche = new QWidget;
+  QVBoxLayout *layout = new QVBoxLayout;
+  layout->addWidget(lignes,0,Qt::AlignLeft|Qt::AlignTop);
+  layout->addWidget(qtv_tmp,1,Qt::AlignLeft|Qt::AlignTop);
 
 
-	int nbCol = sqm_resu->columnCount();
-	for(int col=0;col<nbCol;col++)
-	{
-	 qtv_tmp->setColumnWidth(col,CEL2_L);
-	}
-	qtv_tmp->setFixedHeight(700);
-	qtv_tmp->setFixedWidth((nbCol+1)*CEL2_L);
+  int nbCol = sqm_resu->columnCount();
+  for(int col=0;col<nbCol;col++)
+  {
+   qtv_tmp->setColumnWidth(col,CEL2_L);
+  }
+  qtv_tmp->setFixedHeight(700);
+  qtv_tmp->setFixedWidth((nbCol+1)*CEL2_L);
 
-	Affiche->setLayout(layout);
-	Affiche->setWindowTitle("Ensemble:"+ tbl_cible);
-	Affiche->show();
+  Affiche->setLayout(layout);
+  Affiche->setWindowTitle("Ensemble:"+ tbl_cible);
+  Affiche->show();
  }
 }
 
@@ -1927,7 +1927,7 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
  return msg;
 }
 
-bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int zn)
+bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const stGameConf &onGame, int zn)
 {
  /// Verifier si des vues temporaires precedentes sont encore presentes
  /// Si oui les effacer
@@ -1947,7 +1947,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
  QString tbLabCmb = T_CMB;
 
  tbLabCmb = "B_" + tbLabCmb;
- if(onGame.anaBase == eAnaFdj){
+ if(onGame.eTirType == eTirFdj){
   tbLabAna = "B_" + tbLabAna;
   tblToUse = tblTirages;
  }
@@ -1965,7 +1965,7 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
  /// Ma modification pour utiliser la table CNP
  /// dans le cas jeu utilisateur
  QString key_abv = onGame.names[zn].abv;
- if(onGame.anaBase==eAnaUsr && (onGame.limites[0].usr == onGame.limites[0].max)){
+ if(onGame.eTirType==eTirGen && (onGame.limites[0].usr == onGame.limites[0].max)){
   key_abv = "c";
  }
 
@@ -2009,92 +2009,92 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const BGame &onGame, int 
           +"left join ( "
           +tblToUse+") as tbRight  on (tbRight.id = tbLeft.id)";
 
-	 }
-	 else{
-		msg = "create " + curTarget
-					+" as select "+curTitle+", count(tbRight.B) as "
-					+ slst[1].at(loop)
-					+" from("+curName+")as tbLeft "
-					+"left join (select c1.id as B from "
-					+stDefBoules+" as c1 where (c1.z"
-					+QString::number(zn+1)+" not null and (c1."
-					+slst[0].at(loop)+"))) as tbRight on ("
-					+st_OnDef+") group by tbLeft.id";
-	 }
-	 isOk = query.exec(msg);
+   }
+   else{
+    msg = "create " + curTarget
+          +" as select "+curTitle+", count(tbRight.B) as "
+          + slst[1].at(loop)
+          +" from("+curName+")as tbLeft "
+          +"left join (select c1.id as B from "
+          +stDefBoules+" as c1 where (c1.z"
+          +QString::number(zn+1)+" not null and (c1."
+          +slst[0].at(loop)+"))) as tbRight on ("
+          +st_OnDef+") group by tbLeft.id";
+   }
+   isOk = query.exec(msg);
 
-	 curName = "vt_" +  QString::number(loop);
-	 lastTitle = lastTitle
-							 + "tbLeft."+slst[1].at(loop)
-							 +" as "+slst[1].at(loop);
-	 loop++;
-	 if(loop <  nbTot-1)
-	 {
-		curTarget = "view vt_"+QString::number(loop);
-		lastTitle = lastTitle + ",";
-	 }
-	 else
-	 {
-		curTarget = "view vrz"+QString::number(zn+1)+"_"+tbLabAna;
-		curTitle = lastTitle;
-	 }
-	}while(loop < nbTot && isOk);
+   curName = "vt_" +  QString::number(loop);
+   lastTitle = lastTitle
+               + "tbLeft."+slst[1].at(loop)
+               +" as "+slst[1].at(loop);
+   loop++;
+   if(loop <  nbTot-1)
+   {
+    curTarget = "view vt_"+QString::number(loop);
+    lastTitle = lastTitle + ",";
+   }
+   else
+   {
+    curTarget = "view vrz"+QString::number(zn+1)+"_"+tbLabAna;
+    curTitle = lastTitle;
+   }
+  }while(loop < nbTot && isOk);
 
-	if(isOk){
-	 /// mise en correspondance de la reference combinaison
-	 QString msg = "";
-	 QString ref_1 = "";
-	 QString stCombi = "";
-	 QString stLien = "";
+  if(isOk){
+   /// mise en correspondance de la reference combinaison
+   QString msg = "";
+   QString ref_1 = "";
+   QString stCombi = "";
+   QString stLien = "";
 
-	 ref_1 = "(tbLeft.U%1 = tbRight."+onGame.names[zn].abv+"%2)";
-	 stLien = " and ";
+   ref_1 = "(tbLeft.U%1 = tbRight."+onGame.names[zn].abv+"%2)";
+   stLien = " and ";
 
-	 if(onGame.fdjGame == eFdjEuro && zn == 1){
-		ref_1 = "((tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%1)"
-						+"or"+
-						"(tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%2))";
-		stLien = " and ";
-	 }
+   if(onGame.eFdjType == eFdjEuro && zn == 1){
+    ref_1 = "((tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%1)"
+            +"or"+
+            "(tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%2))";
+    stLien = " and ";
+   }
 
-	 int znLen = onGame.limites[zn].len;
-	 for(int pos=0;pos<znLen;pos++){
-		if(onGame.fdjGame == eFdjEuro && zn == 1){
-		 stCombi = stCombi
-							 + ref_1.arg((pos%2)+1).arg(((pos+1)%2)+1).arg(pos);
+   int znLen = onGame.limites[zn].len;
+   for(int pos=0;pos<znLen;pos++){
+    if(onGame.eFdjType == eFdjEuro && zn == 1){
+     stCombi = stCombi
+               + ref_1.arg((pos%2)+1).arg(((pos+1)%2)+1).arg(pos);
 
-		}else{
-		 stCombi = stCombi + ref_1.arg(pos).arg(pos+1);
-		}
+    }else{
+     stCombi = stCombi + ref_1.arg(pos).arg(pos+1);
+    }
 
-		if(pos<znLen-1)
-		 stCombi = stCombi + stLien;
-	 }
+    if(pos<znLen-1)
+     stCombi = stCombi + stLien;
+   }
 
-	 //curTarget = curTarget.remove("table");
-	 curTarget = curTarget.remove("view");
-	 msg = "create table if not exists "+tbLabAna
-				 +" as select tbLeft.*,tbRight.id as idComb  from ("
-				 +curTarget+")as tbLeft left join ("
-				 + tbLabCmb+"_z"+QString::number(zn+1)
-				 +")as tbRight on("
-				 + stCombi
-				 +")"
-		;
+   //curTarget = curTarget.remove("table");
+   curTarget = curTarget.remove("view");
+   msg = "create table if not exists "+tbLabAna
+         +" as select tbLeft.*,tbRight.id as idComb  from ("
+         +curTarget+")as tbLeft left join ("
+         + tbLabCmb+"_z"+QString::number(zn+1)
+         +")as tbRight on("
+         + stCombi
+         +")"
+    ;
 #ifndef QT_NO_DEBUG
-	 qDebug() << "msg:"<<msg;
+   qDebug() << "msg:"<<msg;
 #endif
-	 isOk = query.exec(msg);
-	}
+   isOk = query.exec(msg);
+  }
 
-	/// supression tables intermediaires
-	if(isOk){
-	 msg = "drop view if exists " + curTarget;
-	 isOk= query.exec(msg);
+  /// supression tables intermediaires
+  if(isOk){
+   msg = "drop view if exists " + curTarget;
+   isOk= query.exec(msg);
 
-	 if(isOk)
-		isOk = SupprimerVueIntermediaires();
-	}
+   if(isOk)
+    isOk = SupprimerVueIntermediaires();
+  }
  }
 
  if(!isOk)

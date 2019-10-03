@@ -23,7 +23,7 @@ BCountGroup::~BCountGroup()
  total --;
 }
 
-BCountGroup::BCountGroup(const BGame &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb)
+BCountGroup::BCountGroup(const stGameConf &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountGrp)
 {
  //type=eCountGrp;
@@ -339,7 +339,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 
  QString TblCompact = "";
 
- if(myGame.anaBase == eAnaFdj){
+ if(myGame.eTirType == eTirFdj){
   TblCompact = T_GRP;
  }
  else{

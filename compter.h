@@ -76,8 +76,8 @@ class BCount:public QWidget
 {
     Q_OBJECT
 public:
-    BCount(const BGame &pDef, const QString &in, QSqlDatabase useDb);
-    BCount(const BGame &pDef, const QString &in, QSqlDatabase fromDb,
+    BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb);
+    BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
            QWidget *unParent, eCountingType genre);
     BCount(const stNeedsOfBary &param){Q_UNUSED(param)}
 
@@ -107,7 +107,7 @@ public :
 protected:
     QString db_data;    /// information de tous les tirages
     QSqlDatabase dbToUse;
-    BGame myGame;
+    stGameConf myGame;
     int *memo;  /// A deplacer :
     eCountingType type; /// type de comptage en cours
     static QString label[]; /// nom associe aux types

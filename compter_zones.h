@@ -20,7 +20,7 @@ class BCountElem:public BCount
     Q_OBJECT
     /// in : infos representant les tirages
 public:
-    BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent);
+    BCountElem(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent);
     ~BCountElem();
     int getCounter(void);
     QString getFilteringData(int zn);

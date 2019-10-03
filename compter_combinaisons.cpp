@@ -24,7 +24,7 @@ BCountComb::~BCountComb()
  total --;
 }
 
-BCountComb::BCountComb(const BGame &pDef, const QString &in, QSqlDatabase fromDb)
+BCountComb::BCountComb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountCmb)
 {
  //type=eCountCmb;
@@ -229,7 +229,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
  QString prefix = "B_";
 
 
- if(myGame.anaBase == eAnaUsr)
+ if(myGame.eTirType == eTirGen)
  {
   prefix = "U_"+st_baseUse+"_";
  }

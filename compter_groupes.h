@@ -18,7 +18,7 @@ class BCountGroup:public BCount
     /// in : infos representant les tirages
     /// tb : nom de la table decrivant les zones
 public:
-    BCountGroup(const BGame &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb);
+    BCountGroup(const stGameConf &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb);
     ~BCountGroup();
     bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
     bool SupprimerVueIntermediaires(void);

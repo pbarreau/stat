@@ -34,7 +34,7 @@ BCountElem::~BCountElem()
     total --;
 }
 
-BCountElem::BCountElem(const BGame &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent)
+BCountElem::BCountElem(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent)
     :BCount(pDef,in,fromDb,LeParent,eCountElm)
 {
     //type=eCountElm;
@@ -284,7 +284,7 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     }
 
 		QString key_abv = myGame.names[zn].abv;
-		if(myGame.anaBase==eAnaUsr && (myGame.limites[0].usr == myGame.limites[0].max)){
+		if(myGame.eTirType==eTirGen && (myGame.limites[0].usr == myGame.limites[0].max)){
 		 key_abv = "c";
 		}
 

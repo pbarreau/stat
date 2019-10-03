@@ -23,11 +23,6 @@ class BPrevision;
 /// -------ENUM---------
 /// Type de jeu possible d'etudier
 
-/// Localisation de la base de donnees
-typedef enum _eBddType{
-    eDbSetOnRam, /// en memoire
-    eDbSetOnDsk   /// sur disque
-}etDbPlace;
 
 typedef enum _eBddUsage{
  eDbForFdj=0,/// Base Fdj
@@ -79,43 +74,43 @@ class BPrevision:public QGridLayout
 {
     Q_OBJECT
 
-		public:
-		typedef struct _stPrmPrevision{
-		 BGame gameInfo;
-		 QString tblFdj_dta;	/// liste des tirages provenant de fdj
-		 QString tblFdj_ana;	/// analyse des tirages provenant de fdj
-		 QString tblUsr_dta;	/// liste des tirages provenant de usr
-		 QString tblUsr_ana;	/// analyse des tirages provenant de usr
-		 QString tblFdj_brc;		 /// Table de la base ayant les barycentres calcules depuis fdj
+    public:
+    typedef struct _stPrmPrevision{
+     stGameConf gameInfo;
+     QString tblFdj_dta;	/// liste des tirages provenant de fdj
+     QString tblFdj_ana;	/// analyse des tirages provenant de fdj
+     QString tblUsr_dta;	/// liste des tirages provenant de usr
+     QString tblUsr_ana;	/// analyse des tirages provenant de usr
+     QString tblFdj_brc;		 /// Table de la base ayant les barycentres calcules depuis fdj
 
-		 etDbPlace bddStore;
-		}stPrmPrevision;
+     etDbPlace bddStore;
+    }stPrmPrevision;
 
 #if 0
-		typedef struct _stPrmOnGame{
-		 QString usr_source; /// nom de la table ayant la liste des tirages utilisateur
-		 QString usr_analys; /// table regroupant l'analyse des repartitions
-		 QString fdj_dta;		 /// Nom de la table ayant les tirages de la fdj
-		 QString fdj_brc;		 /// Table de la base ayant les barycentres calcules depuis fdj
-		 BGame def;
-		}stPrmOnGame;
+    typedef struct _stPrmOnGame{
+     QString usr_source; /// nom de la table ayant la liste des tirages utilisateur
+     QString usr_analys; /// table regroupant l'analyse des repartitions
+     QString fdj_dta;		 /// Nom de la table ayant les tirages de la fdj
+     QString fdj_brc;		 /// Table de la base ayant les barycentres calcules depuis fdj
+     BGame def;
+    }stPrmOnGame;
 #endif
 
-		/// in : infos representant les tirages
+    /// in : infos representant les tirages
 public:
     BPrevision(stPrmPrevision prm);
     ~BPrevision();
 
 private:
     QString ListeDesJeux(int zn, int n, int p);
-    bool ouvrirBase(etDbPlace cible, eFdjType game);
- QString mk_IdDsk(eFdjType type, etDbUsage eDbUsage);
- QString mk_IdCnx(eFdjType type, etDbUsage eDbUsage);
+    bool ouvrirBase(etDbPlace cible, etFdjType game);
+ QString mk_IdDsk(etFdjType type, etDbUsage eDbUsage);
+ QString mk_IdCnx(etFdjType type, etDbUsage eDbUsage);
     bool OPtimiseAccesBase(void);
-    void effectuerTraitement(eFdjType game);
+    void effectuerTraitement(etFdjType game);
 
     bool creerTablesDeLaBase(void);
-    BGame *definirConstantesDuJeu(eFdjType game);
+    stGameConf *definirConstantesDuJeu(etFdjType game);
     bool f1(QString tbName,QSqlQuery *query);
     bool f2(QString tbName,QSqlQuery *query);
     bool f3(QString tbName,QSqlQuery *query);
@@ -126,8 +121,8 @@ private:
     bool TraitementCodeTblCombi(QString tbName,int zn);
     bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
 
-    bool AnalyserEnsembleTirage(QString InputTable,const BGame &onGame, int zn);
-    bool FaireTableauSynthese(QString InputTable,const BGame &onGame, int zn);
+    bool AnalyserEnsembleTirage(QString InputTable,const stGameConf &onGame, int zn);
+    bool FaireTableauSynthese(QString InputTable,const stGameConf &onGame, int zn);
     bool SupprimerVueIntermediaires(void);
     QStringList * CreateFilterForData(int zn);
 
@@ -137,7 +132,7 @@ private:
     QString DateAnormer(QString input);
     QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
-    void analyserTirages(stPrmPrevision calcul, QString source, const BGame &config);
+    void analyserTirages(stPrmPrevision calcul, QString source, const stGameConf &config);
     bool isTableCnpinDb(int n, int p);
     void creerJeuxUtilisateur(int n, int p);
     void ContinuerCreation(QString tbl_cible, QString tbl_cible_ana);
@@ -163,7 +158,7 @@ private:
     /// compteur des objets de cette classe
     QSqlDatabase db_1;      /// base de donnees associee a cet objets
     QString cnx_db_1;       /// nom de la connection
-    BGame onGame;           /// parametres du jeu pour statistique globale
+    stGameConf onGame;           /// parametres du jeu pour statistique globale
     stPrmPrevision monJeu;     /// parametres pour filtration
     QStringList **slFlt;    /// zn_filters
     BCountElem *c1;

@@ -18,7 +18,7 @@ typedef struct _prmbary{
  QString tbl_in; /// Nom de la table avec les infos
  QString tbl_ana;
  QString tbl_flt;
- BGame pDef;
+ stGameConf pDef;
  QObject *origine;
 }stNeedsOfBary;
 
@@ -45,7 +45,7 @@ class CBaryCentre:public BCount
  QString tbl_src;
  QString tbl_ana;
  QString tbl_flt;
- BGame gameDef;
+ stGameConf gameDef;
 };
 
 #endif // CBARYCENTRE_H
