@@ -57,11 +57,42 @@ class cFdjData:public QObject
  Q_OBJECT
 
  private:
+ typedef struct _stErr2
+ {
+  bool status;
+  QString msg;
+ }stErr2;
+
  typedef struct _stTblFill
  {
   QString tbDef; /// nom de la table
   bool (cFdjData::*pFuncInit)(QString tbName,QSqlQuery *query); /// fonction traitant la creation
  }stTblFill;
+
+ typedef struct _stZnDef
+ {
+  int start;  /// offset de debut zone dans fichier
+  int len;    /// taille dans la zone
+  int min;    /// valeur mini possible
+  int max;    /// valeur maxi possible
+ }stZnDef;
+
+ typedef struct _stConfFdjData
+ {
+  bool wget;  /// A telecharger ?
+  int ofdate; /// Offset dans fichier pour avoir la date
+  int ofday;  /// Offset dans fichier pour avoir le jour
+  int nbZone; /// Nb zone a lire
+  stZnDef *pZn; /// Pointeur vers caracteristique de chacune des zones
+ }stConfFdjData;
+
+ /// Tirage file format
+ typedef struct _stFdjData
+ {
+  QString fname;  /// fichier en cours de traitement
+  int id;
+  stConfFdjData param;
+ }stFdjData;
 
  public:
  explicit cFdjData(cFdjData const &parent);
@@ -81,15 +112,21 @@ class cFdjData:public QObject
  bool crt_TblFdj(QString tbl_name,QSqlQuery *query);
  bool crt_TblAna(QString tbl_name,QSqlQuery *query);
 
+ bool chargerDonneesFdjeux(QString destTable);
+ bool LireLesTirages(QString tblName, stFdjData *def);
+ QString DateAnormer(QString input);
+ QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
+
+
 
  protected:
  QString mk_IdCnx(etFdjType type, etTirType eTirtype);
 
  protected:
- stGameConf fdj_def;
+ stGameConf fdj_game_cnf;
  QSqlDatabase fdj_db;
  QString fdj_cnx; /// Nom de la connexion a la base de donnee
- QString fdj_cnf; /// Table definition des zones
+ QString fdj_def; /// Table definition des zones
  QString fdj_elm; /// Table detail des zones
  QString fdj_lst; /// Table Liste des tirages depuis fdj
  QString fdj_ana; /// Table analyse de la liste

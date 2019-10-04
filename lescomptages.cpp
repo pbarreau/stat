@@ -1021,6 +1021,7 @@ bool BPrevision::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn)
 
  return isOk;
 }
+
 bool BPrevision::chargerDonneesFdjeux(QString destTable)
 {
  bool isOk= true;
