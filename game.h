@@ -110,6 +110,7 @@ class cFdjData:public QObject
  bool crt_TblDef(QString tbl_name,QSqlQuery *query);
  bool crt_TblElm(QString tbl_name,QSqlQuery *query);
  bool crt_TblFdj(QString tbl_name,QSqlQuery *query);
+ bool upd_TblElm(QString tbl_name,QSqlQuery *query);
  bool crt_TblAna(QString tbl_name,QSqlQuery *query);
 
  bool chargerDonneesFdjeux(QString destTable);
@@ -121,6 +122,9 @@ class cFdjData:public QObject
 
  protected:
  QString mk_IdCnx(etFdjType type, etTirType eTirtype);
+ QString getFieldsFromZone(int zn, QString alias);
+
+
 
  protected:
  stGameConf fdj_game_cnf;

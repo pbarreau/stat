@@ -135,6 +135,7 @@ bool cFdjData::FillDataBase(void)
   {"def",&cFdjData::crt_TblDef}, /// Table definition zones
   {"elm",&cFdjData::crt_TblElm}, /// Table definition elments zones
   {"fdj",&cFdjData::crt_TblFdj}, /// Table des tirages Fdj
+  {"elm",&cFdjData::upd_TblElm}, /// update Table definition elments zones
   {"ana",&cFdjData::crt_TblAna}  /// Table de l'analyses des tirages
  };
 
@@ -839,4 +840,53 @@ bool cFdjData::crt_TblAna(QString tbl_name,QSqlQuery *query)
                   +tbl_name;
 
  return isOk;
+}
+
+bool cFdjData::upd_TblElm(QString tbl_name,QSqlQuery *query)
+{
+ bool isOk= true;
+ QString msg = "";
+
+ int nbZone=fdj_game_cnf.znCount;
+
+ for(int zn=0; (zn < nbZone) && (isOk == true); zn++){
+  QString fields = getFieldsFromZone(zn,"tb2");
+  QString sZn = QString::number(zn+1);
+
+	msg = "update " + fdj_elm + " as tb1 set sz"
+				+sZn+"=(select T from (select tb1.z"
+				+sZn+" as B, count(*) as T from ("
+				+fdj_elm+") as tb1 left join ("+fdj_lst+") as tb2 on (tb1.z"
+				+sZn+" in("+fields+")) group by tb1.z"
+				+sZn+") as tb2 where(tb1.z"
+				+sZn+"=tb2.B))";
+
+#ifndef QT_NO_DEBUG
+	qDebug() <<msg;
+#endif
+
+  isOk= query->exec(msg);
+ }
+
+ return isOk;
+}
+
+QString cFdjData::getFieldsFromZone(int zn, QString alias)
+{
+ int len_zn = fdj_game_cnf.limites[zn].len;
+
+ QString use_alias = "";
+
+ if(alias.size()){
+  use_alias = alias+".";
+ }
+ QString ref = use_alias+fdj_game_cnf.names[zn].abv+QString("%1");
+ QString st_items = "";
+ for(int i=0;i<len_zn;i++){
+  st_items = st_items + ref.arg(i+1);
+  if(i<(len_zn-1)){
+   st_items=st_items+QString(",");
+  }
+ }
+ return   st_items;
 }
