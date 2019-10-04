@@ -59,7 +59,12 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 {
 
- cGame *monJeu = new cGame (eFdjLoto);
+ cFdjData f(eFdjEuro);
+ cFdjData h(f);
+
+ cFdjData *monJeu = new cFdjData (eFdjLoto);
+ cFdjData *a = new cFdjData (*monJeu);
+ int k=1;
  return;
 
  stParam input;

@@ -1127,7 +1127,7 @@ bool BPrevision::LireLesTirages(QString tblName, stFdjData *def)
  // On ouvre notre fichier en lecture seule et on verifie l'ouverture
  if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))
  {
-  QMessageBox::critical(0, "LireLesTirages", "Erreur chargement !:\n"+fileName_2,QMessageBox::Yes);
+  QMessageBox::critical(nullptr, "LireLesTirages", "Erreur chargement !:\n"+fileName_2,QMessageBox::Yes);
   return false;
  }
 
@@ -1163,20 +1163,14 @@ bool BPrevision::LireLesTirages(QString tblName, stFdjData *def)
   reqCols = reqCols + "D,";
   reqValues = reqValues + "'"
               + data+ "',";
-#if 0
-        QStringList tmp = data.split("-");
-        reqValues = reqValues + "'"
-                + tmp.at(2)+"/"
-                + tmp.at(1)+"/"
-                + tmp.at(0)+ "',";
-#endif
+
   // Recuperation et verification du jour (J) en fonction de la date
   data = JourFromDate(data, list1.at(1),&retErr);
   if(retErr.status == false)
   {
    msg = retErr.msg;
    msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1)+"\n"+msg;
-   QMessageBox::critical(0, "cLesComptages::LireLesTirages", msg,QMessageBox::Yes);
+   QMessageBox::critical(nullptr, "cLesComptages::LireLesTirages", msg,QMessageBox::Yes);
    return false;
   }
   reqCols = reqCols + "J,";
@@ -1196,9 +1190,9 @@ bool BPrevision::LireLesTirages(QString tblName, stFdjData *def)
     int val1 = list1.at(def->param.pZn[zone].start+ElmZone).toInt();
 
     // verification coherence
-    if((val1 >= def->param.pZn[zone].min)
+    if((val1 >= minValZone)
         &&
-        (val1 <=def->param.pZn[zone].max))
+        (val1 <=maxValZone))
     {
      /// On rajoute a Req values
      reqCols = reqCols+onGame.names[zone].abv+QString::number(ElmZone+1);
