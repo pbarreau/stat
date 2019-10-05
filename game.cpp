@@ -9,6 +9,7 @@
 #include <QDate>
 #include <QFile>
 
+#include "cnp_SansRepetition.h"
 #include "game.h"
 #include "db_tools.h"
 
@@ -136,6 +137,7 @@ bool cFdjData::FillDataBase(void)
   {"elm",&cFdjData::crt_TblElm}, /// Table definition elments zones
   {"fdj",&cFdjData::crt_TblFdj}, /// Table des tirages Fdj
   {"elm",&cFdjData::upd_TblElm}, /// update Table definition elments zones
+  {"cnp",&cFdjData::crt_TblCnp}, /// Table definition combinaison zones
   {"ana",&cFdjData::crt_TblAna}  /// Table de l'analyses des tirages
  };
 
@@ -744,7 +746,7 @@ bool cFdjData::LireLesTirages(QString tblName, stFdjData *def)
 
  if(!isOk)
  {
-  QString ErrLoc = "cLesComptages::LireLesTirages";
+  QString ErrLoc = "cFdjData::LireLesTirages";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
@@ -889,4 +891,277 @@ QString cFdjData::getFieldsFromZone(int zn, QString alias)
   }
  }
  return   st_items;
+}
+
+bool cFdjData::isPresentInDataBase(QString table, QString schema)
+{
+ bool isOk=true;
+ QSqlQuery query(fdj_db);
+
+ if(schema.size()){
+  schema=schema+".";
+ }
+
+ /// Verifier si existance table
+ QString msg = "SELECT name FROM "+schema+"sqlite_master "
+                                              "WHERE type='table' AND name='"+table+"';";
+
+ if((isOk = query.exec(msg)))
+ {
+  /// A t'on une reponse
+  isOk = query.first();
+ }
+ else {
+  QString ErrLoc = "cFdjData::isPresentInDataBase";
+  DB_Tools::DisplayError(ErrLoc,&query,msg);
+ }
+
+ return isOk;
+}
+
+/// Creation des tables pour les combinaisons a rechercher
+/// Normalement il faudrait chercher les Cnp
+/// dans le cas loto C(49,5) = 1906884
+/// autre approche pour gagner il faut 5 boules
+/// reparties sur 4 dizaines. on a donc 6 valeurs
+/// possible (0-5) a repartir sur chaque dizaine
+/// tel que le total soit 5 (le nombre de boule a avoir
+/// pour gagner.
+/// Pour les etoiles les combinaisons  sont
+/// moins nombreuses, on fait le calcul Cnp classique
+bool cFdjData::crt_TblCnp(QString tbl_name,QSqlQuery *query)
+{
+ Q_UNUSED(query)
+
+ bool isOk = true;
+ int nbZone = fdj_game_cnf.znCount;
+
+ QString tblUse = gameLabel[fdj_game_cnf.eFdjType]
+                  +QString("_") + tbl_name;
+
+ for (int zn=0;(zn < nbZone) && isOk;zn++ )
+ {
+  if(fdj_game_cnf.limites[zn].win>2){
+   isOk = TraitementCodeVueCombi(zn, query);
+
+	 if(isOk)
+		isOk = TraitementCodeTblCombi(tblUse,zn, query);
+	}
+	else
+	{
+	 int n = fdj_game_cnf.limites[zn].max;
+	 int p = fdj_game_cnf.limites[zn].win;
+	 QString tbName = tblUse+ "_z"+QString::number(zn+1);
+
+	 // calculer les combinaisons avec repetition
+	 BCnp *a = new BCnp(n,p,fdj_cnx);
+	 tbName = a->getDbTblName();
+	 if(tbName.isEmpty()){
+		QMessageBox::information(nullptr, "Pgm", "tbName is null" ,QMessageBox::Yes);
+		QApplication::quit();
+	 }
+
+	 isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn,query);
+	}
+ }
+ return isOk;
+}
+
+bool cFdjData::TraitementCodeVueCombi(int zn,QSqlQuery *query)
+{
+ bool isOk = true;
+
+ QString msg = "";
+ QString ref_1 = "";
+
+ QString viewCode[]=
+  {
+   "drop view if exists tbr%1;",
+   "create view if not exists tbr%1 as select tb1.tz%1 as "
+    +fdj_game_cnf.names[zn].abv
+    +" from (%2 as tb1)where(tb1.tz%1 is not null);"
+  };
+
+ /// Traitement de la vue
+ int nbLgnCode = sizeof(viewCode)/sizeof(QString);
+ for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+  msg = "";
+  if(lgnCode==0){
+   msg = msg + viewCode[lgnCode].arg(zn+1);
+  }
+  else {
+   msg = msg + viewCode[lgnCode].arg(zn+1).arg(fdj_elm);
+  }
+
+#ifndef QT_NO_DEBUG
+  qDebug() << msg;
+#endif
+
+  isOk = query->exec(msg);
+ }
+
+
+ return isOk;
+}
+
+bool cFdjData::TraitementCodeTblCombi(QString tbName,int zn,QSqlQuery *query)
+{
+ bool isOk = true;
+ //QSqlQuery query(db_1);
+ QString msg = "";
+
+ QString tblCode[]=
+  {
+   "drop table if exists "+tbName+"_z%1;",
+   "create table if not exists "+tbName+"_z%1 (id integer primary key,%2);",
+   "insert into "+tbName+"_z%1 select NULL,%2 from (%3) where(%4="
+    +QString::number(+fdj_game_cnf.limites[zn].win)+");"
+  };
+ int argTblCount[]={1,2,4};
+
+ QString ref_1 = "";
+ QString ref_2 = "";
+ QString ref_3 = "";
+ QString ref_4 = "";
+ QString ref_5 = "";
+ int nbLgnCode= 0;
+
+
+ /// traitement creation table en fonction 10zaine
+ int lenZn = floor(fdj_game_cnf.limites[zn].max/10)+1;
+ ref_1="t%1."+fdj_game_cnf.names[zn].abv+" as "+fdj_game_cnf.names[zn].abv+"%1";
+ QString msg1 = "";
+ for(int pos=0;pos<lenZn;pos++){
+  msg1 = msg1 + ref_1.arg(pos+1);
+  if(pos < lenZn -1)
+   msg1 = msg1 + ",";
+ }
+
+ nbLgnCode = sizeof(tblCode)/sizeof(QString);
+ for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+  msg="";
+  switch(argTblCount[lgnCode]){
+   case 1:
+    msg = tblCode[lgnCode].arg(zn+1);
+    break;
+   case 2:{
+    ref_1=msg1+",";
+    ref_1.replace(QRegExp("t\\d\."
+                          +fdj_game_cnf.names[zn].abv
+                          +"\\s+as\\s+"),"");
+    ref_1.replace(",", " int,");
+    ref_1=ref_1 + "tip text, poids real";
+    msg = tblCode[lgnCode].arg(zn+1).arg(ref_1);
+   }
+   break;
+   case 4:{
+    ref_1="%d";
+    ref_2="t%1."+fdj_game_cnf.names[zn].abv;
+    ref_3="(%1*t%2."+fdj_game_cnf.names[zn].abv+")";
+    ref_4="tbr%1 as t%2";
+    ref_5=fdj_game_cnf.names[zn].abv+"%1";
+    QString msg2 = "";
+    QString msg3 = "";
+    QString msg4 = "";
+    QString msg5 = "";
+    for(int pos=0;pos<lenZn;pos++){
+     msg2 = msg2 + ref_2.arg(pos+1);
+     msg3 = msg3 + ref_3.arg(1<<pos).arg(pos+1);
+     msg4 = msg4 + ref_4.arg(zn+1).arg(pos+1);
+     msg5 = msg5 + ref_5.arg(pos+1);
+     if(pos < lenZn -1){
+      ref_1 = ref_1 + "/%d";
+      msg2 = msg2 + ",";
+      msg3 = msg3 + "+";
+      msg4 = msg4 + ",";
+      msg5 = msg5 + "+";
+     }
+    }
+
+		ref_2=msg1+","+QString::fromLocal8Bit("printf('%1',%2)as tip,(%3) as poids");
+		ref_1 = ref_2.arg(ref_1).arg(msg2).arg(msg3);
+		ref_2 = msg4;
+		ref_3 = msg5;
+		msg = tblCode[lgnCode].arg(QString::number(zn+1),ref_1,ref_2,ref_3);
+	 }
+	 break;
+	 default:
+		msg = "Error on the number of args";
+		break;
+	}
+
+#ifndef QT_NO_DEBUG
+	qDebug() << msg;
+#endif
+
+  isOk = query->exec(msg);
+ }
+
+ return isOk;
+}
+
+/// Creer une table intermediaire
+/// Def_comb_z2Cnp_12_2
+bool cFdjData::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn, QSqlQuery *query)
+{
+ bool isOk = true;
+ //QSqlQuery query(db_1);
+ QString msg = "";
+
+ msg = "drop table if exists "+tbName+"_z"+QString::number(zn+1);
+ isOk = query->exec(msg);
+#ifndef QT_NO_DEBUG
+ qDebug() << msg;
+#endif
+
+ if(isOk){
+  /// traitement creation table
+  int lenZn = fdj_game_cnf.limites[zn].len;
+  QString ref_1="c%1 int";
+  QString ref_2="(%1*c%2)";//"+gameInfo.nom[zn].abv+"
+  QString msg1 = "";
+  QString msg2 = "";
+  for(int pos=0;pos<lenZn;pos++){
+   msg1 = msg1 + ref_1.arg(pos+1);
+   msg2 = msg2 + ref_2.arg(1<<(pos)).arg((pos+1));
+   if(pos < lenZn -1){
+    msg1 = msg1 + ",";
+    msg2 = msg2 + "+";
+   }
+  }
+
+	ref_1 = msg1;
+	ref_1 = ref_1.replace("c",fdj_game_cnf.names[zn].abv) + +",tip text, poids real" ;
+	msg = "create table if not exists "
+				+tbName+"_z"+QString::number(zn+1)
+				+"(id integer primary key,"
+				+ref_1
+				+");";
+#ifndef QT_NO_DEBUG
+	qDebug() << msg;
+#endif
+
+	isOk = query->exec(msg);
+
+	if(isOk){
+	 msg1 = msg1.remove("int");
+	 msg = msg1;
+	 msg = msg.replace(QRegExp("c\\d\\s+"),"%02d");
+	 msg = msg.replace(",","/");
+	 /// traitement insertion dans table
+	 msg = "insert into "+tbName+"_z"
+				 +QString::number(zn+1)
+				 +" select NULL,"
+				 +msg1 + ",(printf('"+msg+"',"+msg1+"))as tip,("+msg2+") as poids "
+				 +"from ("+tbCnp+")";
+#ifndef QT_NO_DEBUG
+	 qDebug() << msg;
+#endif
+	 query->exec(msg);
+	}
+
+ }
+
+
+ return isOk;
 }

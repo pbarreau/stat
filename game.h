@@ -111,6 +111,7 @@ class cFdjData:public QObject
  bool crt_TblElm(QString tbl_name,QSqlQuery *query);
  bool crt_TblFdj(QString tbl_name,QSqlQuery *query);
  bool upd_TblElm(QString tbl_name,QSqlQuery *query);
+ bool crt_TblCnp(QString tbl_name,QSqlQuery *query);
  bool crt_TblAna(QString tbl_name,QSqlQuery *query);
 
  bool chargerDonneesFdjeux(QString destTable);
@@ -118,11 +119,17 @@ class cFdjData:public QObject
  QString DateAnormer(QString input);
  QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
+ bool TraitementCodeVueCombi(int zn,QSqlQuery *query);
+ bool TraitementCodeTblCombi(QString tbName,int zn,QSqlQuery *query);
+ bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn, QSqlQuery *query);
+
 
 
  protected:
  QString mk_IdCnx(etFdjType type, etTirType eTirtype);
  QString getFieldsFromZone(int zn, QString alias);
+ bool isPresentInDataBase(QString table, QString schema="");
+
 
 
 
