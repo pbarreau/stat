@@ -114,6 +114,8 @@ class cFdjData:public QObject
  bool crt_TblCnp(QString tbl_name,QSqlQuery *query);
  bool crt_TblAna(QString tbl_name,QSqlQuery *query);
 
+ QStringList * CreateFilterForData(int zn);
+
  bool chargerDonneesFdjeux(QString destTable);
  bool LireLesTirages(QString tblName, stFdjData *def);
  QString DateAnormer(QString input);
@@ -123,7 +125,8 @@ class cFdjData:public QObject
  bool TraitementCodeTblCombi(QString tbName,int zn,QSqlQuery *query);
  bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn, QSqlQuery *query);
 
-
+ bool AnalyserEnsembleTirage(QString tblIn, QString tblCible, const stGameConf &onGame, int zn, QSqlQuery *query);
+ bool SupprimerVueIntermediaires(void);
 
  protected:
  QString mk_IdCnx(etFdjType type, etTirType eTirtype);
@@ -135,16 +138,20 @@ class cFdjData:public QObject
 
  protected:
  stGameConf fdj_game_cnf;
- QSqlDatabase fdj_db;
- QString fdj_cnx; /// Nom de la connexion a la base de donnee
- QString fdj_def; /// Table definition des zones
- QString fdj_elm; /// Table detail des zones
- QString fdj_lst; /// Table Liste des tirages depuis fdj
- QString fdj_ana; /// Table analyse de la liste
- QString fdj_tot; /// Table comptage des boules
+ QSqlDatabase fdj_db; /// Base de donnees pour les jeux
+
+ QStringList **slFlt; /// Tableau des codes Sql pour analyser les tirages
+ QString fdj_cnx;     /// Nom de la connexion a la base de donnee
+ QString fdj_def;     /// Table definition des zones
+ QString fdj_elm;     /// Table detail des zones
+ QString fdj_lst;     /// Table Liste des tirages depuis fdj
+ QString fdj_ana;     /// Table analyse de la liste
+ QString fdj_cmb;     /// Table contenant les combinaisons a chercher
+ QString fdj_tot;     /// Table comptage des boules
 
  private:
- static int total; /// compteur des jeux actifs
+ static int total;    /// compteur des jeux actifs
+ static bool bFdjSeen[eFdjEol];
 
 };
 

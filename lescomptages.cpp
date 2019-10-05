@@ -2136,9 +2136,10 @@ bool BPrevision::SupprimerVueIntermediaires(void)
 }
 
 // Cette fonction retourne un pointeur sur un tableau de QStringList
-// Ce tableau comporte 2 elements
+// Ce tableau comporte 3 elements
 // Element 0 liste des requetes construites
 // Element 1 Liste des titres assosies a la requete
+// Element 2 Liste des tooltips assosies au titres
 // En fonction de la zone a etudier les requetes sont adaptees
 // pour integrer le nombre maxi de boules a prendre en compte
 QStringList * BPrevision::CreateFilterForData(int zn)
