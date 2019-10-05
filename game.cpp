@@ -1097,6 +1097,20 @@ bool cFdjData::TraitementCodeTblCombi(QString tbName,int zn,QSqlQuery *query)
   isOk = query->exec(msg);
  }
 
+ /// Attendre la creation puis supprimer vue intermediaire
+ int query_pos = QSql::BeforeFirstRow;
+ while (query->isActive()&& isOk){
+  query_pos = query->at();
+  if(query_pos==QSql::AfterLastRow){
+   break;
+  }
+ }
+
+ if (isOk){
+  msg = "drop view if exists tbr"+QString::number(zn+1);
+  isOk = query->exec(msg);
+ }
+
  return isOk;
 }
 
