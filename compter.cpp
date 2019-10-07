@@ -1127,7 +1127,7 @@ void BCount::slot_wdaFilter(bool val)
 }
 #endif
 
-QString BCount::getFieldsFromZone(int zn, QString alias)
+QString BCount::FN1_getFieldsFromZone(int zn, QString alias)
 {
  int len_zn = myGame.limites[zn].len;
 

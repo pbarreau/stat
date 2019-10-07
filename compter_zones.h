@@ -16,7 +16,7 @@
 #include "compter.h"
 #include "labelclickable.h"
 
-class BCountElem:public BCount//, public cFdjData
+class BCountElem:public BCount, public cFdjData
 {
     Q_OBJECT
     /// in : infos representant les tirages

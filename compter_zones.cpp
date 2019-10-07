@@ -35,7 +35,7 @@ BCountElem::~BCountElem()
 }
 
 BCountElem::BCountElem(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent)
-    :BCount(pDef,in,fromDb,LeParent,eCountElm)//,cFdjData()
+    :BCount(pDef,in,fromDb,LeParent,eCountElm),cFdjData()
 {
     //type=eCountElm;
     countId = total;
@@ -451,7 +451,7 @@ void BCountElem::marquerDerniers_tir(int zn){
 
  int len_zn = myGame.limites[zn].len;
 
- QString st_critere = getFieldsFromZone(zn, "t2");
+ QString st_critere = FN1_getFieldsFromZone(zn, "t2");
  QString key = "z"+QString::number(zn+1);
  QString tb_ref = "B_elm";
 

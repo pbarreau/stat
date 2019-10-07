@@ -92,12 +92,12 @@ protected:
     bool showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
     //void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
     QString CreerCritereJours(QString cnx_db_name, QString tbl_ref);
-    QString getFieldsFromZone(int zn, QString alias);
+    QString FN1_getFieldsFromZone(int zn, QString alias);
 
 
 private:
-		void RecupererConfiguration(void);
-		bool setUnifiedPriority(QString szn, QString sprio);
+    void RecupererConfiguration(void);
+    bool setUnifiedPriority(QString szn, QString sprio);
 
 
 
