@@ -57,6 +57,21 @@ class cFdjData:public QObject
  Q_OBJECT
 
  private:
+  /// Reperes pour tables a creer
+  typedef enum _etTblId{
+   eTblGme, /// Table liste des jeux
+   eTblDef,
+   eTblElm,
+   eTblTir,
+   eTblAna,
+   eTblCnp,
+   eTblGrp,
+   eTblEol
+  }etTblId;
+
+
+
+
  typedef struct _stErr2
  {
   bool status;
@@ -107,6 +122,7 @@ class cFdjData:public QObject
  bool OPtimiseAccesBase(void);
 
  bool FillDataBase(void);
+ bool crt_TbGme(QString tbl_name,QSqlQuery *query);
  bool crt_TblDef(QString tbl_name,QSqlQuery *query);
  bool crt_TblElm(QString tbl_name,QSqlQuery *query);
  bool crt_TblFdj(QString tbl_name,QSqlQuery *query);
@@ -145,16 +161,13 @@ class cFdjData:public QObject
 
  QStringList **slFlt; /// Tableau des codes Sql pour analyser les tirages
  QString fdj_cnx;     /// Nom de la connexion a la base de donnee
- QString fdj_def;     /// Table definition des zones
- QString fdj_elm;     /// Table detail des zones
- QString fdj_lst;     /// Table Liste des tirages depuis fdj
- QString fdj_ana;     /// Table analyse de la liste
- QString fdj_cmb;     /// Table contenant les combinaisons a chercher
- QString fdj_tot;     /// Table comptage des boules
+ QString dbTbl[eTblEol]; /// Liste des noms des tables
+
 
  private:
  static int total;    /// compteur des jeux actifs
  static bool bFdjSeen[eFdjEol];
+ static const QString tblKey[eTblEol];
 
 };
 
