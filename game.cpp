@@ -27,6 +27,8 @@ const QString gameLabel [eFdjEol]={"NonDefini","Loto","Euro"};
 
 const QString cFdjData::tblKey [eTblEol]={"gme","def","elm","tir","ana","cnp","grp"};
 
+cFdjData::cFdjData(){}
+
 cFdjData::cFdjData(cFdjData const &parent)
 {
  fdj_game_cnf=parent.fdj_game_cnf;
@@ -38,7 +40,7 @@ cFdjData::cFdjData(cFdjData const &parent)
 }
 
 
-cFdjData::cFdjData(etFdjType eFdjType, cFdjData *parent):QObject (parent)
+cFdjData::cFdjData(etFdjType eFdjType, cFdjData *parent)//:QObject (parent)
 {
 
  if((eFdjType !=eFdjLoto) && (eFdjType != eFdjEuro)){

@@ -35,7 +35,7 @@ BCountElem::~BCountElem()
 }
 
 BCountElem::BCountElem(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent)
-    :BCount(pDef,in,fromDb,LeParent,eCountElm)
+    :BCount(pDef,in,fromDb,LeParent,eCountElm)//,cFdjData()
 {
     //type=eCountElm;
     countId = total;
@@ -283,10 +283,10 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
         }
     }
 
-		QString key_abv = myGame.names[zn].abv;
-		if(myGame.eTirType==eTirGen && (myGame.limites[0].usr == myGame.limites[0].max)){
-		 key_abv = "c";
-		}
+    QString key_abv = myGame.names[zn].abv;
+    if(myGame.eTirType==eTirGen && (myGame.limites[0].usr == myGame.limites[0].max)){
+     key_abv = "c";
+    }
 
     boules<< "tbright."+key_abv;
     int loop = myGame.limites[zn].len;
@@ -386,12 +386,12 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     m->setSourceModel(sqm_tmp);
     qtv_tmp->setModel(m);
 
-		BDelegateElmOrCmb::stPrmDlgt a;
-		a.parent = qtv_tmp;
-		a.db_cnx = dbToUse.connectionName();
-		a.zne=zn;
-		a.typ=0; ///Position de l'onglet qui va recevoir le tableau
-		qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
+    BDelegateElmOrCmb::stPrmDlgt a;
+    a.parent = qtv_tmp;
+    a.db_cnx = dbToUse.connectionName();
+    a.zne=zn;
+    a.typ=0; ///Position de l'onglet qui va recevoir le tableau
+    qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
     //qtv_tmp->hideColumn(0);
@@ -433,12 +433,12 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
             SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 
-		/// Mettre dans la base une info sur 2 derniers tirages
-		static int oneShotParZn = myGame.znCount; //
-		if(oneShotParZn > 0){
-		 oneShotParZn--;
-		 marquerDerniers_tir(zn);
-		}
+    /// Mettre dans la base une info sur 2 derniers tirages
+    static int oneShotParZn = myGame.znCount; //
+    if(oneShotParZn > 0){
+     oneShotParZn--;
+     marquerDerniers_tir(zn);
+    }
 
     return lay_return;
 }
@@ -471,50 +471,50 @@ void BCountElem::marquerDerniers_tir(int zn){
   };
 
 
-	int taille = sizeof(msg)/sizeof(QString);
+  int taille = sizeof(msg)/sizeof(QString);
 #ifndef QT_NO_DEBUG
-	for(int i = 0; i< taille;i++){
-	 qDebug() << "msg ["<<i<<"]: "<<msg[i];
-	}
+  for(int i = 0; i< taille;i++){
+   qDebug() << "msg ["<<i<<"]: "<<msg[i];
+  }
 #endif
-	isOk = query.exec(msg[taille-1]);
+  isOk = query.exec(msg[taille-1]);
 
-	if(isOk){
-	 query.first();
-	 if(query.isValid()){
-		int boule = 0;
-		do{
-		 boule = query.value(0).toInt();
+  if(isOk){
+   query.first();
+   if(query.isValid()){
+    int boule = 0;
+    do{
+     boule = query.value(0).toInt();
 
-		 /// check if Filtres
-		 QString mgs_2 = "Select count(*)  from Filtres where ("
-										 "zne="+QString::number(zn)+" and "+
-										 "typ=0 and val="+QString::number(boule)+")";
+     /// check if Filtres
+     QString mgs_2 = "Select count(*)  from Filtres where ("
+                     "zne="+QString::number(zn)+" and "+
+                     "typ=0 and val="+QString::number(boule)+")";
 #ifndef QT_NO_DEBUG
-			qDebug() << "mgs_2: "<<mgs_2;
+      qDebug() << "mgs_2: "<<mgs_2;
 #endif
-			isOk = query_2.exec(mgs_2);
-			if(isOk){
-			 query_2.first();
-			 int nbLigne = query_2.value(0).toInt();
-			 if(nbLigne==1){
-				mgs_2 = "update Filtres set pri=1, flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
-				 sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+" and "+
-								"typ=0 and val="+QString::number(boule)+")";
-			 }
-			 else {
-				mgs_2 ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
-								" values (NULL,"+QString::number(zn)+",0,"+QString::number(boule-1)+
-								",0,"+QString::number(boule)+",1,"+sdec+");";
-			 }
+      isOk = query_2.exec(mgs_2);
+      if(isOk){
+       query_2.first();
+       int nbLigne = query_2.value(0).toInt();
+       if(nbLigne==1){
+        mgs_2 = "update Filtres set pri=1, flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
+         sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+" and "+
+                "typ=0 and val="+QString::number(boule)+")";
+       }
+       else {
+        mgs_2 ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
+                " values (NULL,"+QString::number(zn)+",0,"+QString::number(boule-1)+
+                ",0,"+QString::number(boule)+",1,"+sdec+");";
+       }
 #ifndef QT_NO_DEBUG
-			 qDebug() << "mgs_2: "<<mgs_2;
+       qDebug() << "mgs_2: "<<mgs_2;
 #endif
-			 isOk = query_2.exec(mgs_2);
-			}
-		}while(query.next()&&isOk);
-	 }
-	}
+       isOk = query_2.exec(mgs_2);
+      }
+    }while(query.next()&&isOk);
+   }
+  }
 
  }
 }
@@ -533,10 +533,10 @@ QString BCountElem::getFilteringData(int zn)
 
     QString userFiltringTableData = "Filtres";
 
-		msg = "select tb1.val from ("+userFiltringTableData
-					+")as tb1 "
-						"where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(BDelegateElmOrCmb::isWanted)+"=0x"+QString::number(BDelegateElmOrCmb::isWanted)+
-					") AND tb1.zne="+QString::number(zn)+" and tb1.typ=0 and tb1.pri=1)";
+    msg = "select tb1.val from ("+userFiltringTableData
+          +")as tb1 "
+            "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(BDelegateElmOrCmb::isWanted)+"=0x"+QString::number(BDelegateElmOrCmb::isWanted)+
+          ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=0 and tb1.pri=1)";
     isOk = query.exec(msg);
 #ifndef QT_NO_DEBUG
     qDebug() << "msg:"<<msg;
@@ -546,9 +546,9 @@ QString BCountElem::getFilteringData(int zn)
         msg="";
         QString key_to_use = myGame.names[zn].abv;
 
-				if(db_data.contains("Cnp")){
-				 key_to_use="c";
-				}
+        if(db_data.contains("Cnp")){
+         key_to_use="c";
+        }
         /// requete a ete execute
         QString ref = "("+key_to_use+"%1=%2)";
         int nb_items = myGame.limites[zn].len;
