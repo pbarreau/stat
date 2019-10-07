@@ -113,6 +113,9 @@ class cFdjData:public QObject
  bool upd_TblElm(QString tbl_name,QSqlQuery *query);
  bool crt_TblCnp(QString tbl_name,QSqlQuery *query);
  bool crt_TblAna(QString tbl_name,QSqlQuery *query);
+ bool crt_TblGrp(QString tbl_name,QSqlQuery *query);
+
+ bool add_TblAna_IdComb(int zn, QString source, QString destination, QSqlQuery *query);
 
  QStringList * CreateFilterForData(int zn);
 

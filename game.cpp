@@ -148,7 +148,8 @@ bool cFdjData::FillDataBase(void)
   {"tir",&cFdjData::crt_TblFdj}, /// Table des tirages Fdj
   {"elm",&cFdjData::upd_TblElm}, /// update Table definition elments zones
   {"cnp",&cFdjData::crt_TblCnp}, /// Table definition combinaison zones
-  {"ana",&cFdjData::crt_TblAna}  /// Table de l'analyses des tirages
+  {"ana",&cFdjData::crt_TblAna}, /// Table de l'analyses des tirages
+  {"grp",&cFdjData::crt_TblGrp} /// Table regroupement l'analyses des tirages
  };
 
  int nbACreer = sizeof(lstTbl)/sizeof(stTblFill);
@@ -928,6 +929,93 @@ bool cFdjData::crt_TblAna(QString tbl_name,QSqlQuery *query)
  return isOk;
 }
 
+bool cFdjData::crt_TblGrp(QString tbl_name,QSqlQuery *query)
+{
+ bool isOk= true;
+ QString msg = "";
+ QString tbName = gameLabel[fdj_game_cnf.eFdjType];
+ QString tbRef = "";
+ QString tbLst = "";
+
+
+ if(fdj_game_cnf.eTirType==eTirFdj){
+  tbName = tbName
+           +QString("_fdj_")
+           +tbl_name;
+  tbRef = fdj_ana;
+  tbLst = fdj_lst;
+ }
+ else {
+  tbName = tbName
+           +QString("_")
+           + QString::number(fdj_game_cnf.id).rightJustified(3,'0')
+           +QString("_")
+           +tbl_name;
+ }
+
+
+ int nbZone = fdj_game_cnf.znCount;
+ QStringList **pList = slFlt;
+ for (int zn=0;(zn < nbZone) && isOk;zn++ )
+ {
+  int nbCalc = pList[zn][1].size();
+
+  QString destination = tbName+"_z"+QString::number(zn+1);
+  QString tbAna = tbRef+"_z"+QString::number(zn+1);
+
+	msg = "CREATE TABLE if not exists "
+				+ destination
+				+" as select tb1.tz"+QString::number(zn+1)+" as Nb from ("
+				+fdj_elm + ") as tb1 WHERE (tz"+QString::number(zn+1)+" not NULL)";
+	isOk = query->exec(msg);
+
+	/// faire en sequence les calculs a rajouter a cette table
+	for (int item=0;(item<nbCalc) && isOk;item++) {
+
+	 /// Etape 1 renomerla table
+	 msg = "alter TABLE "+destination+" RENAME to old_"+destination;
+	 isOk = query->exec(msg);
+
+	 /// Etape 2 recreer en rajoutant colonne
+	 if(isOk){
+		QString col_name = pList[zn][1].at(item);
+
+		msg="create TABLE if not exists "+destination+" as SELECT tb1.*, tb2.t as "
+					+col_name
+					+" from(old_"
+					+destination
+					+") as tb1 "
+						"left join ( "
+						"select r1.B as Id, count(*)  as T  "
+						"FROM (select t1.B as B, "
+						" ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID, "
+						" lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id, "
+						"(t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E, "
+						"t1.*  "
+						"from ( select t1."
+					+col_name
+					+" as B, t1.id as Id     "
+						"from ("+tbAna+") as t1, "
+						" (select * from "+tbLst+") as t2   "
+						"where ((t1.id=t2.id)) "
+						") as t1 )as r1 group by b "
+						") as tb2 on (tb1.Nb=tb2.Id) ";
+		isOk = query->exec(msg);
+
+		/// Etape 3 supprimer table old
+		if(isOk){
+		 msg = "drop table if exists old_"+destination;
+		 isOk = query->exec(msg);
+		}
+	 }
+	}
+ }
+
+
+ //----
+ return isOk;
+}
+
 bool cFdjData::upd_TblElm(QString tbl_name,QSqlQuery *query)
 {
  bool isOk= true;
@@ -1406,6 +1494,9 @@ bool cFdjData::AnalyserEnsembleTirage(QString tblIn, QString tblCible, const stG
 					+slst[0].at(loop)+"))) as tbRight on ("
 					+st_OnDef+") group by tbLeft.id";
 	 }
+#ifndef QT_NO_DEBUG
+	 qDebug() << "msg:"<<msg;
+#endif
 	 isOk = query->exec(msg);
 
 	 curName = "vt_" +  QString::number(loop);
@@ -1425,7 +1516,11 @@ bool cFdjData::AnalyserEnsembleTirage(QString tblIn, QString tblCible, const stG
 	 }
 	}while(loop < nbTot && isOk);
 
+	/// On a fait toutes les recherches simples
+	/// faire les recherches complexes
 	if(isOk){
+	 isOk = add_TblAna_IdComb(zn, curTarget, tbLabAna, query);
+#if 0
 	 /// mise en correspondance de la reference combinaison
 	 QString msg = "";
 	 QString ref_1 = "";
@@ -1470,10 +1565,12 @@ bool cFdjData::AnalyserEnsembleTirage(QString tblIn, QString tblCible, const stG
 	 qDebug() << "msg:"<<msg;
 #endif
 	 isOk = query->exec(msg);
+#endif
 	}
 
 	/// supression tables intermediaires
 	if(isOk){
+	 curTarget = curTarget.remove("view");
 	 msg = "drop view if exists " + curTarget;
 	 isOk= query->exec(msg);
 
@@ -1487,6 +1584,60 @@ bool cFdjData::AnalyserEnsembleTirage(QString tblIn, QString tblCible, const stG
   QString ErrLoc = "cFdjData::AnalyserEnsembleTirage:";
   DB_Tools::DisplayError(ErrLoc,query,msg);
  }
+ return isOk;
+}
+
+bool cFdjData::add_TblAna_IdComb(int zn, QString source, QString destination, QSqlQuery *query)
+{
+ bool isOk = true;
+ const stGameConf &onGame = fdj_game_cnf;
+
+ /// mise en correspondance de la reference combinaison
+ QString msg = "";
+ QString ref_1 = "";
+ QString stCombi = "";
+ QString stLien = "";
+ QString  tbLabCmb = fdj_cmb;
+
+ ref_1 = "(tbLeft.U%1 = tbRight."+onGame.names[zn].abv+"%2)";
+ stLien = " and ";
+
+ if(onGame.eFdjType == eFdjEuro && zn == 1){
+  ref_1 = "((tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%1)"
+          +"or"+
+          "(tbLeft.U%3 = tbRight."+onGame.names[zn].abv+"%2))";
+  stLien = " and ";
+ }
+
+ int znLen = onGame.limites[zn].len;
+ for(int pos=0;pos<znLen;pos++){
+  if(onGame.eFdjType == eFdjEuro && zn == 1){
+   stCombi = stCombi
+             + ref_1.arg((pos%2)+1).arg(((pos+1)%2)+1).arg(pos);
+
+	}else{
+	 stCombi = stCombi + ref_1.arg(pos).arg(pos+1);
+	}
+
+	if(pos<znLen-1)
+	 stCombi = stCombi + stLien;
+ }
+
+ //curTarget = curTarget.remove("table");
+ QString curTarget = source.remove("view");
+ msg = "create table if not exists "+destination
+       +" as select tbLeft.*,tbRight.id as idComb  from ("
+       +curTarget+")as tbLeft left join ("
+       + tbLabCmb+"_z"+QString::number(zn+1)
+       +")as tbRight on("
+       + stCombi
+       +")"
+  ;
+#ifndef QT_NO_DEBUG
+ qDebug() << "msg:"<<msg;
+#endif
+ isOk = query->exec(msg);
+
  return isOk;
 }
 
