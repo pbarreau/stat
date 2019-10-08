@@ -88,10 +88,22 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
    conf.nb_zone = 2;
    conf.nb_tir_semaine = 2;
 
-   conf.nbElmZone = new int [conf.nb_zone];
+	 conf.FullNameZone = new QString [conf.nb_zone];
+	 conf.nbElmZone = new int [conf.nb_zone];
+	 conf.jour_tir=new QString[conf.nb_tir_semaine];
+	 conf.limites = new stBornes [conf.nb_zone];
+	 conf.names = new stNames [conf.nb_zone];
+	 conf.nomZone = new QString [conf.nb_zone];
+	 conf.offsetFichier = new int [conf.nb_zone];
+
+	 conf.names[0].std = "Boules";
+	 conf.names[0].abv = "b";
+	 conf.names[1].std = "Etoiles";
+	 conf.names[1].abv = "e";
+
    conf.nbElmZone[0]=5;
    conf.nbElmZone[1]=2;
-   conf.limites = new stBornes [conf.nb_zone];
+
    conf.limites[0].len = 5;
    conf.limites[1].len = 2;
    conf.limites[0].min = 1;
@@ -100,7 +112,6 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
    conf.limites[1].max = 12;
    conf.limites[0].win = 5;
    conf.limites[1].win = 2;
-   conf.jour_tir=new QString[conf.nb_tir_semaine];
 
    /*
    conf.jour_tir[0]="MARDI";
@@ -109,7 +120,6 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
    conf.jour_tir[0]="";
    conf.jour_tir[1]="";
 
-   conf.nomZone = new QString [conf.nb_zone];
    conf.nomZone[0]="b";
    conf.nomZone[1]="e";
    conf.FullNameZone = new QString [conf.nb_zone];

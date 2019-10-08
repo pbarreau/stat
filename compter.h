@@ -38,7 +38,7 @@
 #define T_BRC     "brc"   /// ..on regroupement
 #define C_TBL_C     "elm"   /// ..on regroupement
 
-#define MAX_CHOIX_BOULES    49
+#define MAX_CHOIX_BOULES    50
 
 /// https://fr.wikibooks.org/wiki/Programmation_C%2B%2B/Les_classes
 /// https://fr.wikipedia.org/wiki/Fonction_virtuelle
