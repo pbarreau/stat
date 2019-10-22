@@ -27,44 +27,6 @@ MainWindow::MainWindow()
 }
 void MainWindow::createIhm()
 {
-#if 0
- typedef  void (MainWindow::*ptrFn)(void);
- typedef struct _stMyMenu{
-   QString ico;
-   QString act;
-   const QKeySequence key;
-   QString tip;
-   const char *fct;
- }stMyMenu;
-
- stMyMenu defMenu[]={
-  {":/images/new.png","&Nouveau",QKeySequence::New,"Choix du jeu","pslot_newGame"},
-  {":/images/open.png","&Ouvrir",QKeySequence::Open,"Ouvrir base...","pslot_open"},
-  {":/images/save.png","&Sauver",QKeySequence::Save,"Sauver base...","pslot_save"},
-  {"","E&xit",QKeySequence::Quit,"Terminer l'application","pslot_close"}
- };
- int nb_items = sizeof(defMenu)/sizeof(stMyMenu);
- for(int i=0; i< nb_items;i++){
-  QAction *tmp_act=NULL;
-
-  if(defMenu[i].ico.size()){
-   const QIcon tmp_ico = QIcon(defMenu[i].ico);
-   tmp_act = new QAction(tmp_ico,defMenu[i].act, this);
-  }
-  else{
-   tmp_act = new QAction(defMenu[i].act, this);
-  }
-  tmp_act->setShortcut(defMenu[i].key);
-  tmp_act->setStatusTip(defMenu[i].tip);
-  gameMenu->addAction(tmp_act);
-  if(defMenu[i].ico.size()){
-   gameToolBar->addAction(tmp_act);
-  }
-  connect(tmp_act, SIGNAL(triggered()), this, SLOT((defMenu[i].fct)),Qt::AutoConnection);
- }
- return;
-#endif
-
  /// Gestion type de jeu
  QIcon tmp_ico;
  QAction *tmp_act = NULL;

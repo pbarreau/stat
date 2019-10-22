@@ -95,7 +95,7 @@ typedef struct _stBornes
 typedef struct _stParam
 {
  bool destination;
- bool typeChargement;
+ bool bUseOneBdd;
  NE_FDJ::E_typeJeux typeJeu;
 
 }stParam;

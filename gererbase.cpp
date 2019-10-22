@@ -46,7 +46,7 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
 
 
     bool enMemoire = param->destination;
-    bool autoLoad = param->typeChargement;
+    bool autoLoad = param->bUseOneBdd;
     NE_FDJ::E_typeJeux leJeu = param->typeJeu;
 
     // Creation de la base

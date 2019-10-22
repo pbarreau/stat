@@ -56,7 +56,7 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
  qDebug()<<calcul.tb_data;
 }
 
-void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
+void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest_bdd)
 {
 
  cFdjData f(eFdjEuro);
@@ -68,7 +68,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
  stParam input;
  input.destination =dest_bdd;
- input.typeChargement = load;
+ input.bUseOneBdd = bUseOneBdd;
  input.typeJeu = leJeu;
  etFdjType unJeu = eFdjNotSet;
  stErr NoErrors;
@@ -138,6 +138,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd)
 
   BPrevision::stPrmPrevision prm;
   prm.bddStore = eDbSetOnDsk;
+  prm.bUseMyBdd = bUseOneBdd;
   prm.gameInfo.eTirType=eTirFdj;
   prm.gameInfo.eFdjType=unJeu;
   prm.tblFdj_dta="fdj";

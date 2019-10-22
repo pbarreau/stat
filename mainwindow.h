@@ -85,7 +85,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow();
     //explicit
-    void EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd);
+    void EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest_bdd);
     void RechercheProgressionBoules(stTiragesDef *pConf);
     void Prev_MainWindow(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false, bool dest_bdd=false);
     ~MainWindow();

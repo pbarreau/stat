@@ -68,7 +68,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Auto</string>
+    <string>Reutiliser une base SQLITE</string>
    </property>
   </widget>
   <widget class="QCheckBox" name="rb_bdd">

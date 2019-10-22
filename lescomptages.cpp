@@ -18,6 +18,7 @@
 #include <QLabel>
 
 #include <QMessageBox>
+#include <QFileDialog>
 
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
@@ -151,7 +152,15 @@ bool BPrevision::ouvrirBase(etDbPlace cible, etFdjType game)
 
   case eDbSetOnDsk:
   default:
-   mabase = mk_IdDsk(game,eDbForFdj);
+   /// Reutiliser existant ?
+   if(conf.bUseMyBdd){
+    QString myTitle = "Selectionnner un fichier " + gameLabel[game];
+    QString myFilter = gameLabel[game]+"_V1*.sqlite";
+    mabase = QFileDialog::getOpenFileName(nullptr,myTitle,".",myFilter);
+   }
+   else{
+    mabase = mk_IdDsk(game,eDbForFdj);
+   }
    break;
  }
 

@@ -25,7 +25,7 @@ void ChoixJeux::slot_ConfigureJeu(void)
 {
   NE_FDJ::E_typeJeux leJeu = NE_FDJ::fdj_none;
   bool baseEnRam = false;
-  bool autoLoad = false;
+  bool bUseMyBdd = false;
 
   // Type de jeu a etudier
   if(ui->rb_euro->isChecked())
@@ -46,10 +46,10 @@ void ChoixJeux::slot_ConfigureJeu(void)
   // Chargement automatique fichier des donnees ?
   if(ui->chk_autoLoad->isChecked())
   {
-    autoLoad = true;
+    bUseMyBdd = true;
   }
 
   // Lancer l'etude
-  EtudeJeu->EtudierJeu(leJeu,autoLoad,baseEnRam);
+  EtudeJeu->EtudierJeu(leJeu,bUseMyBdd,baseEnRam);
 
  }

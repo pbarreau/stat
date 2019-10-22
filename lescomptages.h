@@ -33,58 +33,60 @@ typedef enum _eBddUsage{
 /// -------STRUCT---------
 typedef struct _stErr2
 {
-    bool status;
-    QString msg;
+ bool status;
+ QString msg;
 }stErr2;
 
 typedef struct _stZnDef
 {
-    int start;  /// offset de debut zone dans fichier
-    int len;    /// taille dans la zone
-    int min;    /// valeur mini possible
-    int max;    /// valeur maxi possible
+ int start;  /// offset de debut zone dans fichier
+ int len;    /// taille dans la zone
+ int min;    /// valeur mini possible
+ int max;    /// valeur maxi possible
 }stZnDef;
 
 typedef struct _stConfFdjData
 {
-    bool wget;  /// A telecharger ?
-    int ofdate; /// Offset dans fichier pour avoir la date
-    int ofday;  /// Offset dans fichier pour avoir le jour
-    int nbZone; /// Nb zone a lire
-    stZnDef *pZn; /// Pointeur vers caracteristique de chacune des zones
+ bool wget;  /// A telecharger ?
+ int ofdate; /// Offset dans fichier pour avoir la date
+ int ofday;  /// Offset dans fichier pour avoir le jour
+ int nbZone; /// Nb zone a lire
+ stZnDef *pZn; /// Pointeur vers caracteristique de chacune des zones
 }stConfFdjData;
 
 /// Tirage file format
 typedef struct _stFdjData
 {
-    QString fname;  /// fichier en cours de traitement
-    int id;
-    stConfFdjData param;
+ QString fname;  /// fichier en cours de traitement
+ int id;
+ stConfFdjData param;
 }stFdjData;
 
 typedef struct
 {
-    QString tbDef; /// nom de la table
-    bool (BPrevision::*pFuncInit)(QString tbName,QSqlQuery *query); /// fonction traitant la creation
+ QString tbDef; /// nom de la table
+ bool (BPrevision::*pFuncInit)(QString tbName,QSqlQuery *query); /// fonction traitant la creation
 }stCreateTable;
 
 
 /// -------CLASS---------
 class BPrevision:public QGridLayout
 {
-    Q_OBJECT
+ Q_OBJECT
 
-    public:
-    typedef struct _stPrmPrevision{
-     stGameConf gameInfo;
-     QString tblFdj_dta;	/// liste des tirages provenant de fdj
-     QString tblFdj_ana;	/// analyse des tirages provenant de fdj
-     QString tblUsr_dta;	/// liste des tirages provenant de usr
-     QString tblUsr_ana;	/// analyse des tirages provenant de usr
-     QString tblFdj_brc;		 /// Table de la base ayant les barycentres calcules depuis fdj
+ public:
+ typedef struct _stPrmPrevision{
+  bool bUseMyBdd;
+  etDbPlace bddStore;
 
-     etDbPlace bddStore;
-    }stPrmPrevision;
+	QString tblFdj_ana;	/// analyse des tirages provenant de fdj
+	QString tblFdj_brc;		 /// Table de la base ayant les barycentres calcules depuis fdj
+	QString tblFdj_dta;	/// liste des tirages provenant de fdj
+	QString tblUsr_ana;	/// analyse des tirages provenant de usr
+	QString tblUsr_dta;	/// liste des tirages provenant de usr
+
+  stGameConf gameInfo;
+ }stPrmPrevision;
 
 #if 0
     typedef struct _stPrmOnGame{
@@ -96,80 +98,72 @@ class BPrevision:public QGridLayout
     }stPrmOnGame;
 #endif
 
-    /// in : infos representant les tirages
-public:
-    BPrevision(stPrmPrevision prm);
-    ~BPrevision();
+ /// in : infos representant les tirages
+ public:
+ BPrevision(stPrmPrevision prm);
+ ~BPrevision();
 
-private:
-    QString ListeDesJeux(int zn, int n, int p);
-    bool ouvrirBase(etDbPlace cible, etFdjType game);
- QString mk_IdDsk(etFdjType type, etDbUsage eDbUsage);
+ private:
+ bool AnalyserEnsembleTirage(QString InputTable,const stGameConf &onGame, int zn);
+ bool chargerDonneesFdjeux(QString tbName);
+ bool creerTablesDeLaBase(void);
+ bool f1(QString tbName,QSqlQuery *query);
+ bool f2(QString tbName,QSqlQuery *query);
+ bool f3(QString tbName,QSqlQuery *query);
+ bool f4(QString tbName,QSqlQuery *query);
+ bool f5(QString tbName,QSqlQuery *query);
+ bool f6(QString tbName,QSqlQuery *query);
+ bool FaireTableauSynthese(QString InputTable,const stGameConf &onGame, int zn);
+ bool isPreviousDestroyed(void);
+ bool isTableCnpinDb(int n, int p);
+ bool LireLesTirages(QString tblName, stFdjData *def);
+ bool OPtimiseAccesBase(void);
+ bool ouvrirBase(etDbPlace cible, etFdjType game);
+ bool SupprimerVueIntermediaires(void);
+ bool TraitementCodeTblCombi(QString tbName,int zn);
+ bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
+ bool TraitementCodeVueCombi(int zn);
+ QString DateAnormer(QString input);
+ QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
+ QString ListeDesJeux(int zn, int n, int p);
  QString mk_IdCnx(etFdjType type, etDbUsage eDbUsage);
-    bool OPtimiseAccesBase(void);
-    void effectuerTraitement(etFdjType game);
+ QString mk_IdDsk(etFdjType type, etDbUsage eDbUsage);
+ QStringList * CreateFilterForData(int zn);
+ stGameConf *definirConstantesDuJeu(etFdjType game);
+ void analyserTirages(stPrmPrevision calcul, QString source, const stGameConf &config);
+ void ContinuerCreation(QString tbl_cible, QString tbl_cible_ana);
+ void creerJeuxUtilisateur(int n, int p);
+ void effectuerTraitement(etFdjType game);
 
-    bool creerTablesDeLaBase(void);
-    stGameConf *definirConstantesDuJeu(etFdjType game);
-    bool f1(QString tbName,QSqlQuery *query);
-    bool f2(QString tbName,QSqlQuery *query);
-    bool f3(QString tbName,QSqlQuery *query);
-    bool f4(QString tbName,QSqlQuery *query);
-    bool f5(QString tbName,QSqlQuery *query);
-    bool f6(QString tbName,QSqlQuery *query);
-    bool TraitementCodeVueCombi(int zn);
-    bool TraitementCodeTblCombi(QString tbName,int zn);
-    bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
+ Q_SIGNALS:
+ void sig_isClickedOnBall(const QModelIndex &index);
+ private slots:
+ void slot_emitThatClickedBall(const QModelIndex &index);
 
-    bool AnalyserEnsembleTirage(QString InputTable,const stGameConf &onGame, int zn);
-    bool FaireTableauSynthese(QString InputTable,const stGameConf &onGame, int zn);
-    bool SupprimerVueIntermediaires(void);
-    QStringList * CreateFilterForData(int zn);
+ public slots:
+ void slot_changerTitreZone(QString le_titre);
+ void slot_UGL_Create();
+ void slot_UGL_SetFilters();
+ void slot_UGL_ClrFilters();
 
-    /// TBD
-    bool chargerDonneesFdjeux(QString tbName);
-    bool LireLesTirages(QString tblName, stFdjData *def);
-    QString DateAnormer(QString input);
-    QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
-
-    void analyserTirages(stPrmPrevision calcul, QString source, const stGameConf &config);
-    bool isTableCnpinDb(int n, int p);
-    void creerJeuxUtilisateur(int n, int p);
-    void ContinuerCreation(QString tbl_cible, QString tbl_cible_ana);
-    bool isPreviousDestroyed(void);
-
-Q_SIGNALS:
-    void sig_isClickedOnBall(const QModelIndex &index);
-private slots:
-    void slot_emitThatClickedBall(const QModelIndex &index);
-
-public slots:
-    void slot_changerTitreZone(QString le_titre);
-    void slot_UGL_Create();
-    void slot_UGL_SetFilters();
-    void slot_UGL_ClrFilters();
-
-private:
-    static int total_items;
-    int cur_item;
-
-    stPrmPrevision conf;
-
-    /// compteur des objets de cette classe
-    QSqlDatabase db_1;      /// base de donnees associee a cet objets
-    QString cnx_db_1;       /// nom de la connection
-    stGameConf onGame;           /// parametres du jeu pour statistique globale
-    stPrmPrevision monJeu;     /// parametres pour filtration
-    QStringList **slFlt;    /// zn_filters
-    BCountElem *c1;
-    BCountComb *c2;
-    BCountGroup *c3;
-    CBaryCentre *c;
-    QString tblTirages;
-    QSqlQueryModel *sqm_resu;
-    QLabel *lignes;
-    QString titre[3];
-    QString sql[3];
+ private:
+ BCountComb *c2;
+ BCountElem *c1;
+ BCountGroup *c3;
+ CBaryCentre *c;
+ int cur_item;
+ QLabel *lignes;
+ QSqlDatabase db_1;      /// base de donnees associee a cet objets
+ QSqlQueryModel *sqm_resu;
+ QString cnx_db_1;       /// nom de la connection
+ QString sql[3];
+ QString tblTirages;
+ QString titre[3];
+ QStringList **slFlt;    /// zn_filters
+ static int total_items;
+ stGameConf onGame;           /// parametres du jeu pour statistique globale
+ stPrmPrevision conf;
+ stPrmPrevision monJeu;     /// parametres pour filtration
 };
 
 
