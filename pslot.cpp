@@ -63,6 +63,7 @@ void MainWindow::pslot_GetFromFdj()
 
     manager = new QNetworkAccessManager(this);
 
+#if 0
     QString urlLoto []= {
         "https://www.fdj.fr/generated/game/loto/loto2017.zip",
         "https://www.fdj.fr/generated/game/loto/nouveau_loto.zip",
@@ -72,16 +73,40 @@ void MainWindow::pslot_GetFromFdj()
         "https://www.fdj.fr/generated/game/loto/superloto.zip",
         "https://www.fdj.fr/generated/game/loto/lotonoel2017.zip"
     };
+#endif
+		QString urlLoto []= {
+		 "https://media.fdj.fr/static/csv/loto/grandloto_201912.zip",
+		 "https://media.fdj.fr/static/csv/loto/loto_197605.zip",
+		 "https://media.fdj.fr/static/csv/loto/loto_200810.zip",
+		 "https://media.fdj.fr/static/csv/loto/loto_201703.zip",
+		 "https://media.fdj.fr/static/csv/loto/loto_201902.zip",
+		 "https://media.fdj.fr/static/csv/loto/loto_201911.zip",
+		 "https://media.fdj.fr/static/csv/loto/lotonoel_201703.zip",
+		 "https://media.fdj.fr/static/csv/loto/superloto_199605.zip",
+		 "https://media.fdj.fr/static/csv/loto/superloto_200810.zip",
+		 "https://media.fdj.fr/static/csv/loto/superloto_201703.zip",
+		 "https://media.fdj.fr/static/csv/loto/superloto_201907.zip",
+		};
+
     for (const QString &arg : urlLoto) {
         urlFdJeux << arg;
     }
-
+#if 0
     QString urlEuro[] = {
         "https://www.fdj.fr/generated/game/euromillions/euromillions_4.zip",
         "https://www.fdj.fr/generated/game/euromillions/euromillions_3.zip",
         "https://www.fdj.fr/generated/game/euromillions/euromillions_2.zip",
         "https://www.fdj.fr/generated/game/euromillions/euromillions.zip"
     };
+#endif
+		QString urlEuro[] = {
+		 "https://media.fdj.fr/static/csv/euromillions/euromillions_201902.zip",
+		 "https://media.fdj.fr/static/csv/euromillions/euromillions_201609.zip",
+		 "https://media.fdj.fr/static/csv/euromillions/euromillions_201402.zip",
+		 "https://media.fdj.fr/static/csv/euromillions/euromillions_201105.zip",
+		 "https://media.fdj.fr/static/csv/euromillions/euromillions_200402.zip"
+		};
+
     for (const QString &arg : urlEuro) {
         urlFdJeux << arg;
     }

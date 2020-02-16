@@ -248,6 +248,7 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
         }
     };
 
+#if 0
     tiragesFileFormat loto[]=
     {
         {"loto2017.csv",NE_FDJ::fdj_loto,
@@ -266,6 +267,32 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
          {false,2,1,2,&p2Zn[0]}
         }
     };
+#endif
+		tiragesFileFormat loto[]=
+		 {
+			{"loto2017.csv",NE_FDJ::fdj_loto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"superloto2017.csv",NE_FDJ::fdj_loto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"lotonoel2017.csv",NE_FDJ::fdj_loto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"nouveau_superloto.csv",NE_FDJ::fdj_loto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"nouveau_loto.csv",NE_FDJ::fdj_loto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"loto_201902.csv",NE_FDJ::fdj_loto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"loto_201911.csv",NE_FDJ::fdj_loto,
+			 {false,2,1,2,&p2Zn[0]}
+			}
+		 };
+
 
     if(typeTirages->conf.choixJeu == NE_FDJ::fdj_euro){
         nbelemt = sizeof(euroMillions)/sizeof(tiragesFileFormat);

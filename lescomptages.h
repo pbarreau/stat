@@ -108,6 +108,7 @@ class BPrevision:public QGridLayout
  bool chargerDonneesFdjeux(QString tbName);
  bool creerTablesDeLaBase(void);
  bool f1(QString tbName,QSqlQuery *query);
+ bool f1_TbFiltre(QString tbName,QSqlQuery *query);
  bool f2(QString tbName,QSqlQuery *query);
  bool f3(QString tbName,QSqlQuery *query);
  bool f4(QString tbName,QSqlQuery *query);

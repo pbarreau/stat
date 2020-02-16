@@ -1146,7 +1146,7 @@ QVariant MaSQlModel::data(const QModelIndex &index, int role) const
 
  if(index.column()>=10)
  {
-  if((role == Qt::TextColorRole))
+  if(role == Qt::TextColorRole)
   {
    return QColor(Qt::red);
   }

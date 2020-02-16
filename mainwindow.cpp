@@ -15,6 +15,8 @@
 #include <QSplitter>
 #include <QTreeView>
 
+#include <QStackedWidget>
+
 #include <math.h>
 
 #include "mainwindow.h"
@@ -58,19 +60,21 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
 
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest_bdd)
 {
+ etFdjType unJeu = eFdjNotSet;
 
+#if 0
  cFdjData f(eFdjEuro);
  cFdjData h(f);
 
  cFdjData *monJeu = new cFdjData (eFdjLoto);
  cFdjData *a = new cFdjData (*monJeu);
  //return;
+#endif /// if 0
 
  stParam input;
  input.destination =dest_bdd;
  input.bUseOneBdd = bUseOneBdd;
  input.typeJeu = leJeu;
- etFdjType unJeu = eFdjNotSet;
  stErr NoErrors;
  NoErrors.status = true;
  NoErrors.msg = "None";
@@ -87,7 +91,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
  }
  else
  {
-
+//#if 0 ///2
   /// Debut traitement
 #if (SET_DBG_LIVE&&SET_DBG_LEV1)
   QMessageBox::information(NULL, "Pgm", "Old 8!",QMessageBox::Yes);
@@ -115,6 +119,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 
   FEN_NewTirages(&configJeu);
 
+//#endif /// if 0 2
 
   //// Reecriture sous forme objet
   switch(leJeu){
@@ -151,6 +156,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
   connect(act_UGL_SetFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_SetFilters()));
   connect(act_UGL_ClrFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_ClrFilters()));
 
+//#if 0 //3
   connect(tous,
           SIGNAL(sig_isClickedOnBall(QModelIndex)),
           syntheses,
@@ -160,7 +166,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
           SIGNAL(sig_isClickedOnBall(QModelIndex)),
           syntheses->GetTabEcarts(),
           SLOT(slot_ShowBoule_2(QModelIndex)));
-
+//#endif /// if 0 3
  }
 }
 
@@ -4818,11 +4824,13 @@ void MainWindow::slot_PresenteLaBoule(const QModelIndex & index)
 
 void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
 {
- /// se mettre sur le bon onglet
- gtab_vue->setCurrentIndex(0);
-
  // recuperer la ligne de la table
  int val = index.model()->index(index.row(),0).data().toInt();
+
+ /// se mettre sur le bon onglet
+ gtab_vue->setCurrentIndex(0);
+ //int path[]={0,0,0};
+ //syntheses->Surligne(path,val);
 
  // Montrer la selection dans les graphiques
  VUE_MontreLeTirage(val);
@@ -4833,6 +4841,19 @@ void MainWindow::slot_MontreLeTirage(const QModelIndex & index)
 
  QTableView * pTableauTirages = NULL;
  pTableauTirages = syntheses->GetListeTirages();
+
+ // se mettre sur l'onglet qui contient ce table view
+ QObject *unParent = pTableauTirages;
+ QStackedWidget *target = NULL;
+
+ do{
+  unParent = unParent->parent();
+  target=unParent->findChild<QStackedWidget *>();
+ }while(target==NULL);
+
+ QTabWidget * tmp = qobject_cast<QTabWidget *>(unParent->parent());
+ tmp->setCurrentIndex(0);
+
  MontreDansLaQtView(pTableauTirages,val,2);
 }
 
