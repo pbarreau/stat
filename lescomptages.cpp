@@ -1401,6 +1401,8 @@ void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const stGa
  c2 = new BCountComb(config,source,db_1);
  c3 = new BCountGroup(config,source,slFlt,db_1);
 
+ do_PrepareCnpRecherche();
+
  QGridLayout **pConteneur = new QGridLayout *[4];
  QWidget **pMonTmpWidget = new QWidget * [4];
 
@@ -1464,6 +1466,41 @@ void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const stGa
  Resultats->setWindowTitle(source);
  Resultats->show();
 }
+
+bool BPrevision::do_PrepareCnpRecherche(void)
+{
+ bool isOk = true;
+ QString msg = "";
+ QSqlQuery query(db_1);
+
+
+ BCnp *a = new BCnp(5,2,db_1.connectionName());
+ connect(a,SIGNAL(sig_TriangleOut(BCnp::Status,int,int)), this, SLOT(slot_CnpEnd(BCnp::Status,int,int)));
+
+ BCnp *b = new BCnp(5,3,db_1.connectionName());
+ connect(b,SIGNAL(sig_TriangleOut(BCnp::Status,int,int)), this, SLOT(slot_CnpEnd(BCnp::Status,int,int)));
+
+ return isOk;
+}
+
+void BPrevision::slot_CnpEnd(const BCnp::Status eStatus,const int val_n, const int val_p){
+ BCnp *tmp = qobject_cast<BCnp *>(sender());
+ QString tabName = "";
+ int n = val_n;
+ int p = val_p;
+
+ switch (eStatus) {
+  case BCnp::Status::NoSet:
+  case BCnp::Status::Failure:
+   break;
+
+	case BCnp::Status::Ready:
+	case BCnp::Status::Created:
+	 tabName = tmp->getDbTblName();
+	 break;
+ }
+}
+
 void BPrevision::slot_UGL_ClrFilters()
 {
  QSqlQuery query(db_1);

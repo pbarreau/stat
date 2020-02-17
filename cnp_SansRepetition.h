@@ -30,7 +30,9 @@ typedef struct _sigData
 
 class BCnp:public QObject
 {
-    Q_OBJECT
+		Q_OBJECT
+		public:
+		enum Status{NoSet,Failure, Ready, Created};
 
 public:
     BCnp(int n_in, int p_in);
@@ -38,6 +40,7 @@ public:
     BCnp(int n_in, int p_in, QString cnx_bdd, QString Name);
     QString getDbTblName(void);
     ~BCnp();
+    BCnp(const BCnp &copie);
     int BP_count(void);
     int * BP_getPascalLine(int lineId);
 
@@ -52,6 +55,11 @@ private:
     /// sous la forme de p entiers (de 1 au moins à n au plus)
     QString tbName; /// prefix table dans la base
     QSqlDatabase dbCnp;
+
+
+
+		Q_SIGNALS:
+		void sig_TriangleOut(const BCnp::Status &info, const int &val_n, const int &val_p);
 
 
 #if USE_CNP_SLOT_LINE
@@ -80,4 +88,5 @@ private:
     bool isCnpTableReady(int n, int p);
 };
 
+//Q_DECLARE_METATYPE(BCnp)
 #endif // CNP_H

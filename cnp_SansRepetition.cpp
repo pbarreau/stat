@@ -34,11 +34,16 @@ BCnp::BCnp(int n, int p, QString cnx_bdd):BCnp(n,p,cnx_bdd,"")
 {
 }
 
+BCnp::BCnp(const BCnp & copie){
+
+}
 BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
 {
     n = n_in;
     p = p_in;
     dbCnp = QSqlDatabase::database(cnx_bdd);
+
+    //int id = qRegisterMetaType<BCnp>();
 
     bool isOk = true;
     QString msg = "";
@@ -58,6 +63,7 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
 
     int cnp_v1 = Cardinal_np();
     int cnp_v2 = CalculerCnp_v2();
+    Status eCnpStatus = NoSet;
 
     cnp = cnp_v1;
     pos = 0;
@@ -76,6 +82,7 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
 
         if( !isOk){
             msg = "Echec creation table " + str_cnp;
+            eCnpStatus = Failure;
         }
         else{
          QTime t;//t(0,0,0);
@@ -93,11 +100,15 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
                     +t_human
                     +QString(" ms\nEtat ->")
                     +QString::number(isOk);
+
+            eCnpStatus = Created;
         }
     }
     else{
         msg = str_cnp+ QString(" deja en base..");
+        eCnpStatus = Ready;
     }
+    emit sig_TriangleOut(eCnpStatus,n_in,p_in);
 
 #if (SET_DBG_LIVE && CNP_SHOW_MSG)
     QMessageBox::information(NULL,"BddCnp",msg,QMessageBox::Ok);
@@ -223,6 +234,8 @@ bool BCnp::combinaisons(int n, int p, int k, int *L, int *t, int r) {
 
         isOk = combinaisons(n, p, k+1, L, t2, j1);
     }
+
+    return isOk;
 }
 
 bool BCnp::creerCnpBdd(QString cnx_name){

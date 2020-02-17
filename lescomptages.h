@@ -14,6 +14,8 @@
 #include "compter.h"
 #include "db_tools.h"
 
+#include "cnp_SansRepetition.h"
+
 /// informer de la prochaine definition de la classe
 class BPrevision;
 
@@ -131,15 +133,20 @@ class BPrevision:public QGridLayout
  QString mk_IdDsk(etFdjType type, etDbUsage eDbUsage);
  QStringList * CreateFilterForData(int zn);
  stGameConf *definirConstantesDuJeu(etFdjType game);
+
  void analyserTirages(stPrmPrevision calcul, QString source, const stGameConf &config);
+ bool do_PrepareCnpRecherche(void);
+
  void ContinuerCreation(QString tbl_cible, QString tbl_cible_ana);
  void creerJeuxUtilisateur(int n, int p);
  void effectuerTraitement(etFdjType game);
 
  Q_SIGNALS:
  void sig_isClickedOnBall(const QModelIndex &index);
+
  private slots:
  void slot_emitThatClickedBall(const QModelIndex &index);
+ void slot_CnpEnd(const BCnp::Status eStatus, const int val_n, const int val_p);
 
  public slots:
  void slot_changerTitreZone(QString le_titre);
