@@ -135,7 +135,13 @@ class BPrevision:public QGridLayout
  stGameConf *definirConstantesDuJeu(etFdjType game);
 
  void analyserTirages(stPrmPrevision calcul, QString source, const stGameConf &config);
- bool do_PrepareCnpRecherche(void);
+ bool do_SqlCnpPrepare(void);
+ bool do_SqlCnpCount(void);
+
+ QString sql_CnpMkUplet(int nb, QString col, QString ensemble="B_elm");
+ QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString ensemble="B_fdj");
+ QString CreateSqlFrom(QString tbl, int val_p);
+ QString FN2_getFieldsFromZone(int zn, QString alias="");
 
  void ContinuerCreation(QString tbl_cible, QString tbl_cible_ana);
  void creerJeuxUtilisateur(int n, int p);
