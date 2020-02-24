@@ -647,7 +647,34 @@ bool BPrevision::f4(QString tbName,QSqlQuery *query)
  Q_UNUSED(query)
 
  bool isOk = true;
+ QString msg = "";
+QString ens_small = "with small as (select jour_next.* from (SELECT tb1.* from B_fdj as tb1  "
+										 "where "
+										 "( "
+										 "16 in (tb1.b1, tb1.b2, tb1.b3, tb1.b4, tb1.b5) AND "
+										 "41 in (tb1.b1, tb1.b2, tb1.b3, tb1.b4, tb1.b5) "
+										 ")) as jour_ref "
+										 ",  ( SELECT tb1.* from B_fdj as tb1) as jour_next "
+										 "where (jour_next.id = jour_ref.id -1) "
+										 ") "
+										 "select * from small";
 
+ do_SqlCnpCount();
+ //sql_CnpCountFromId(1,2);
+ QString tmp_sql = sql_CnpCountUplet(2,"Cnp_49_2",ens_small);
+
+ msg = "create table if not exists titi as "
+       +tmp_sql;
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<tmp_sql;
+ qDebug() <<msg;
+#endif
+
+ isOk = query->exec(msg);
+
+ sql_CnpCountFromId(1,3);
+ sql_CnpCountFromId(1,4);
  isOk = do_SqlCnpCount(); //do_SqlCnpPrepare();
 
  int nbZone = onGame.znCount;
@@ -1607,9 +1634,78 @@ QString BPrevision::sql_CnpMkUplet(int nb, QString col, QString tbl_in)
  return sql_cnp;
 }
 
+QString BPrevision::sql_CnpCountFromId(int tir_id, int uplet)
+{
+ QString msg = "";
+ int zn = 0;
+
+ QString tbl = "B_upl_" +QString::number(uplet)+ "_z"+QString::number(zn+1);
+
+ QString colNames = FN2_getFieldsFromZone(zn,"t2");
+ QString tab_1 = "B_elm";
+ QString tab_2 = "B_fdj";
+ QString tb_0 = "with tb0 as  (SELECT t1.z"
+                +QString::number(zn+1)
+                +" as boule from "
+                +tab_1
+                +" as t1, "
+                +tab_2
+                +" as t2 where (t1.z"+QString::number(zn+1)
+                +" in ("
+                +colNames
+                +") and t2.id = "
+                +QString::number(tir_id)
+                +")),";
+
+ QString ref_1 = "tb%1";
+ QString ref_2 = ref_1+" as (select * from tb0)";
+ QString ref_3 = "(tbr.b%2 = tb%2.boule)";
+
+ QString str_in_1 = "";
+ QString str_in_2 = "";
+ QString str_in_3 = "";
+
+ for(int i = 1; i<=uplet; i++){
+  str_in_1 = str_in_1 + ref_1.arg(i);
+  str_in_2 = str_in_2 + ref_2.arg(i);
+  str_in_3 = str_in_3 + ref_3.arg(i);
+
+	if(i<uplet){
+	 str_in_1 = str_in_1 + ",";
+	 str_in_2 = str_in_2 + ",";
+	 str_in_3 = str_in_3 + "and";
+	}
+ }
+
+ if(str_in_3.size()){
+  str_in_3 = " where("+str_in_3+")";
+ }
+
+ msg = tb_0
+       +str_in_2
+       +" select tbr.* from ("
+       + tbl
+       +") as tbr, "
+       +str_in_1
+       +str_in_3
+       +" order by total desc";
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<tbl;
+ qDebug() <<tb_0;
+ qDebug() <<str_in_1;
+ qDebug() <<str_in_2;
+ qDebug() <<str_in_3;
+ qDebug() <<msg;
+#endif
+
+ return msg;
+}
+
 QString BPrevision::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
 {
  QString msg = "";
+ int zn = 0;
 
  // Recherche dans base actuelle
  QString tbl_ref = "("+tbl_in+")";
@@ -1623,7 +1719,9 @@ QString BPrevision::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
  QString ref_2 = "lst_R.b%1";
  QString ref_3 = ref_2 + " as b%1";
  QString ref_4 = "tb_%1.id";
- QString ref_5 = "(tb_%1.id<tb_%2.id)";
+ QString ref_5 = "(tb_%1.id<=tb_%2.id)";
+
+ QString ref_7 = "tb_R.b%1";
 
  QString str_in_1 = "";
  QString str_in_2 = "";
@@ -1631,6 +1729,11 @@ QString BPrevision::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
  QString str_in_3 = "";
  QString str_in_4 = "";
  QString str_in_5 = "";
+ QString str_in_6 = "";
+ QString str_in_7 = "";
+ QString str_in_8 = "";
+
+ QString str_full = "";
 
  for(int i = 1; i<=nb; i++){
   str_in_1 = str_in_1 + ref_1.arg(i);
@@ -1638,17 +1741,44 @@ QString BPrevision::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
   str_uple = str_uple + ref_2.arg(i);
   str_in_3 = str_in_3 + ref_3.arg(i);
   str_in_4 = str_in_4 + ref_4.arg(i);
+  str_in_7 = str_in_7 + ref_7.arg(i);
+
+	QString tmp_tbl = ref_4.arg(i);
+	tmp_tbl=tmp_tbl.remove(".id");
+	QString colNames = FN2_getFieldsFromZone(zn,tmp_tbl);
+	QString tmp_lgn = "";
+	QString str_key = "";
+	for (int j = 1; j<=nb;j++) {
+	 QString cur_tbl = ref_2.arg(j);
+	 tmp_lgn = "("
+						 +cur_tbl
+						 + " in ("
+						 +colNames
+						 +"))";
+	 str_key = str_key
+						 +tmp_lgn;
+	 if(j<nb){
+		str_key = str_key
+							+"and";
+	 }
+	}
+
+	str_full = str_full + str_key;
 
 	if(i<nb){
 	 str_in_1 = str_in_1 + ", ";
 	 str_in_2 = str_in_2 + ", ";
 	 str_in_3 = str_in_3 + ", ";
 	 str_in_4 = str_in_4 + ", ";
-	 str_uple = str_uple + "||',' ";
+	 str_in_7 = str_in_7 + ", ";
+	 str_uple = str_uple + "||','||";
+	 str_full = str_full + "and";
+	 str_in_8 = str_in_8 + ref_4.arg(i);
 
 	 str_in_5 = str_in_5 + ref_5.arg(i).arg(i+1);
 	 if(i<nb-1){
 		str_in_5 = str_in_5 + "and";
+		str_in_8 = str_in_8 + ", ";
 	 }
 	}
  }
@@ -1656,9 +1786,24 @@ QString BPrevision::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
  if(str_in_5.size()){
   str_in_5 = " where("
              +str_in_5
+            +"and"
+             +str_full
              +")";
  }
  QString str_from = str_in_4;
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<lst_0;
+ qDebug() <<str_in_1;
+ qDebug() <<str_in_3;
+ qDebug() <<str_uple;
+ qDebug() <<str_from;
+ qDebug() <<str_in_5;
+ qDebug() <<str_in_2;
+ qDebug() <<str_in_8;
+ qDebug() <<str_in_7;
+#endif
+
  QString sql_cnp = "with "
                    +lst_0
                    +str_in_1
@@ -1672,15 +1817,22 @@ QString BPrevision::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
                    + " group by "
                    + str_in_2
                    + ","
-                   + str_in_4
+                   + str_in_8
                    + " order by nb DESC"
                    +")" ;
 
+ QString sql_req = "select "
+               + str_in_7
+               +", tb_R.uplet, max(tb_R.nb) over(PARTITION by tb_R.uplet) as total  from tb_R GROUP by tb_R.uplet order by tb_R.nb DESC";
+
+msg = sql_cnp + sql_req;
 #ifndef QT_NO_DEBUG
  qDebug() <<sql_cnp;
+ qDebug() <<str_full;
+ qDebug() <<sql_req;
+ qDebug() <<msg;
 #endif
 
- //QString colNames = FN2_getFieldsFromZone(zn);
 
  return msg;
 }
@@ -1732,16 +1884,18 @@ bool BPrevision::do_SqlCnpCount(void)
  int len = onGame.limites[zn].len;
  int max = onGame.limites[zn].max;
 
- for(int i = 2; (i<len) && isOk ;i++){
+ //len -1 pour tester moins de cas
+ for(int i = 2; (i<len-1) && isOk ;i++){
   /// Regarder si table existe deja
   QString tbl = "Cnp_" + QString::number(max)+"_"+QString::number(i);
   if(DB_Tools::checkHavingTable(tbl,db_1.connectionName())==false){
    msg = sql_CnpMkUplet(i, col);
    sql_cnp = "create table if not exists "
-                     + tbl
-                     + " as "
-                     + msg
-                     + " select * from lst_R";
+             + tbl
+             + " as "
+             + msg
+             + " select * from lst_R";
+
 #ifndef QT_NO_DEBUG
    qDebug() <<sql_cnp;
 #endif
@@ -1757,8 +1911,8 @@ bool BPrevision::do_SqlCnpCount(void)
 	 sql_cnp = "create table if not exists "
 						 + upl
 						 + " as "
-						 + msg
-						 + " select * from lst_R";
+						 + msg;
+
 #ifndef QT_NO_DEBUG
 	 qDebug() <<sql_cnp;
 #endif

@@ -140,6 +140,8 @@ class BPrevision:public QGridLayout
 
  QString sql_CnpMkUplet(int nb, QString col, QString ensemble="B_elm");
  QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString ensemble="B_fdj");
+ QString sql_CnpCountFromId(int tir_id, int uplet);
+
  QString CreateSqlFrom(QString tbl, int val_p);
  QString FN2_getFieldsFromZone(int zn, QString alias="");
 
