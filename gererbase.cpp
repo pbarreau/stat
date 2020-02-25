@@ -2,6 +2,8 @@
 #include <QDebug>
 #endif
 
+#include <QFileDialog>
+
 #include <QApplication>
 #include <QMessageBox>
 
@@ -54,7 +56,7 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
     QMessageBox::information(NULL, "Pgm", "Old 1!",QMessageBox::Yes);
 #endif
 
-    if(CreerBasePourEtude(enMemoire,leJeu)==true)
+    if(ouvrirBase(enMemoire,leJeu)==true)
     {
 #if (SET_DBG_LIVE&&SET_DBG_LEV1)
         QMessageBox::information(NULL, "Pgm", "Old 2!",QMessageBox::Yes);
@@ -455,7 +457,7 @@ QString GererBase::get_IdCnx(void)
     return db_0.connectionName();
 }
 
-QString GererBase::mk_IdDsk(NE_FDJ::E_typeJeux type)
+QString GererBase::mk_IdDsk(NE_FDJ::E_typeJeux type, int v_id)
 {
     QDate myDate = QDate::currentDate();
     QString toDay = myDate.toString("dd-MM-yyyy");
@@ -470,7 +472,7 @@ QString GererBase::mk_IdDsk(NE_FDJ::E_typeJeux type)
     else{
         game = "Loto";
     }
-    game = game + QString("_V0_")+toDay+QString("_");
+    game = game + QString("_V"+QString::number(v_id)+"_")+toDay+QString("_");
 
     int counter = 0;
     do{
@@ -483,7 +485,7 @@ QString GererBase::mk_IdDsk(NE_FDJ::E_typeJeux type)
     return testName;
 }
 
-QString GererBase::mk_IdCnx(NE_FDJ::E_typeJeux type)
+QString GererBase::mk_IdCnx(NE_FDJ::E_typeJeux type, int v_id)
 {
     QString game = "";
 
@@ -494,14 +496,36 @@ QString GererBase::mk_IdCnx(NE_FDJ::E_typeJeux type)
         game = "Loto";
     }
 
-    return (QString("cnx_V0_")+game+QString("-")+QString::number(cur_item).rightJustified(2,'0'));
+		return (
+		 QString("cnx_V")
+		 +QString::number(v_id)
+		 +QString("_")
+		 +game
+		 +QString("-")
+		 +QString::number(cur_item).rightJustified(2,'0'));
 }
 
-bool GererBase::CreerBasePourEtude(bool action,NE_FDJ::E_typeJeux type)
+bool GererBase::ouvrirBase(bool action,NE_FDJ::E_typeJeux type)
 {
     bool isOk = true;
-    QString db_dsk_name = mk_IdDsk(type); /// nom sur disque
-    QString db_cnx_name = mk_IdCnx(type); /// nom logique de connexion
+    const QString gameLabel []={"NonDefini","Loto","Euro"};
+
+		if(action){
+		 QString myTitle = "Selectionnner un fichier " + gameLabel[type];
+		 QString myFilter = gameLabel[type]+"_V1*.sqlite";
+		 QString mabase = QFileDialog::getOpenFileName(nullptr,myTitle,".",myFilter);
+		 if(mabase.size()){
+			QString cnx_new_db = mk_IdCnx(type, 1);
+			QSqlDatabase v1_db = QSqlDatabase::addDatabase("QSQLITE", cnx_new_db);
+			v1_db.setDatabaseName(mabase);
+			if(!v1_db.open()){
+			 QMessageBox::critical(NULL,"Echec ouverture",mabase,QMessageBox::Ok);
+			}
+		 }
+		}
+
+		QString db_dsk_name = mk_IdDsk(type, 0 ); /// nom sur disque
+		QString db_cnx_name = mk_IdCnx(type, 0); /// nom logique de connexion
 
 
     // http://developer.nokia.com/community/wiki/Creating_an_SQLite_database_in_Qt

@@ -143,7 +143,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 
   BPrevision::stPrmPrevision prm;
   prm.bddStore = eDbSetOnDsk;
-  prm.bUseMyBdd = bUseOneBdd;
+  prm.gameInfo.bUseMadeBdd = bUseOneBdd;
   prm.gameInfo.eTirType=eTirFdj;
   prm.gameInfo.eFdjType=unJeu;
   prm.tblFdj_dta="fdj";

@@ -45,6 +45,7 @@ typedef struct _stParam_1{
 /// Definition d'un jeu
 typedef struct _stGameConf{
   int id;
+  bool bUseMadeBdd;
   etFdjType eFdjType; /// type du jeu
   etTirType eTirType; /// origine
   int znCount; /// nombre de zones a regarder

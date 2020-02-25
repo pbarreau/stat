@@ -154,7 +154,7 @@ bool BPrevision::ouvrirBase(etDbPlace cible, etFdjType game)
 	case eDbSetOnDsk:
 	default:
 	 /// Reutiliser existant ?
-	 if(conf.bUseMyBdd){
+	 if(conf.gameInfo.bUseMadeBdd){
 		QString myTitle = "Selectionnner un fichier " + gameLabel[game];
 		QString myFilter = gameLabel[game]+"_V1*.sqlite";
 		mabase = QFileDialog::getOpenFileName(nullptr,myTitle,".",myFilter);
@@ -164,7 +164,7 @@ bool BPrevision::ouvrirBase(etDbPlace cible, etFdjType game)
 
  if(mabase.isEmpty()){
   /// pas de selection de base pre remplie
-  conf.bUseMyBdd = false;
+  conf.gameInfo.bUseMadeBdd = false;
   mabase = mk_IdDsk(game,eDbForFdj);
  }
 
@@ -227,23 +227,18 @@ void BPrevision::effectuerTraitement(etFdjType game)
  }
 
 
-#if (SET_DBG_LIVE&&SET_DBG_LEV1)
- QMessageBox::information(NULL, "Pgm", "step 1!",QMessageBox::Yes);
-#endif
- definirConstantesDuJeu(game);
+ if(conf.gameInfo.bUseMadeBdd == false){
+  definirConstantesDuJeu(game);
 
-#if (SET_DBG_LIVE&&SET_DBG_LEV1)
- QMessageBox::information(NULL, "Pgm", "step 2!",QMessageBox::Yes);
-#endif
- creerTablesDeLaBase();
+  creerTablesDeLaBase();
 
-#if (SET_DBG_LIVE&&SET_DBG_LEV1)
- QMessageBox::information(NULL, "Pgm", "step 3!",QMessageBox::Yes);
-#endif
- conf.gameInfo = onGame;
- analyserTirages(conf,source, onGame);
-
-
+	conf.gameInfo = onGame;
+	analyserTirages(conf,source, onGame);
+ }
+ else {
+  int a;
+ }
+ int b;
 }
 
 stGameConf * BPrevision::definirConstantesDuJeu(etFdjType game)
@@ -338,7 +333,7 @@ bool BPrevision::creerTablesDeLaBase(void)
 
 
  int nbACreer = 0;
- if(conf.bUseMyBdd){
+ if(conf.gameInfo.bUseMadeBdd){
   nbACreer=1;
  }
  else {
@@ -541,7 +536,7 @@ bool BPrevision::f3(QString tbName,QSqlQuery *query)
  QString useName = "B_" + tbName;
  tblTirages =  useName;
 
- if(conf.bUseMyBdd){
+ if(conf.gameInfo.bUseMadeBdd){
   msg="drop table if exists " + useName;
   isOk = query->exec(msg);
  }
@@ -647,7 +642,9 @@ bool BPrevision::f4(QString tbName,QSqlQuery *query)
  Q_UNUSED(query)
 
  bool isOk = true;
- QString msg = "";
+
+#if 0
+QString msg = "";
 QString ens_small = "with small as (select jour_next.* from (SELECT tb1.* from B_fdj as tb1  "
 										 "where "
 										 "( "
@@ -675,6 +672,8 @@ QString ens_small = "with small as (select jour_next.* from (SELECT tb1.* from B
 
  sql_CnpCountFromId(1,3);
  sql_CnpCountFromId(1,4);
+#endif
+
  isOk = do_SqlCnpCount(); //do_SqlCnpPrepare();
 
  int nbZone = onGame.znCount;
@@ -1885,7 +1884,7 @@ bool BPrevision::do_SqlCnpCount(void)
  int max = onGame.limites[zn].max;
 
  //len -1 pour tester moins de cas
- for(int i = 2; (i<len-1) && isOk ;i++){
+ for(int i = 2; (i<len) && isOk ;i++){
   /// Regarder si table existe deja
   QString tbl = "Cnp_" + QString::number(max)+"_"+QString::number(i);
   if(DB_Tools::checkHavingTable(tbl,db_1.connectionName())==false){

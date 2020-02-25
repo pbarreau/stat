@@ -33,7 +33,6 @@ SOURCES += \
 		mainwindow.cpp \
 		CreerTables.cpp \
 		ImportFdj.cpp \
-		OuvrirBase.cpp \
 		ReEcriture.cpp \
 		RemplirBase.cpp \
 		SyntheseDetails.cpp \

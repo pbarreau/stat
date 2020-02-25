@@ -1201,7 +1201,7 @@ void SyntheseGenerale::DoComptageTotal(void)
  };
  /// --------
 
- /// Tableau contenant les poiteurs vers les tableaux
+ /// Tableau contenant les pointeurs vers les tableaux
  /// contenant les fonctions de traitement de chacune des zones
  pVtptrFns p_tot[]={Trmt_tot_a,Trmt_tot_b};
  pVtptrFns p_brc[]={Trmt_brc_a,Trmt_brc_b};
@@ -1416,7 +1416,8 @@ QTableView *SyntheseGenerale::doTabLgnSelection(stDesigConf conf)
  qtv_tmp->verticalHeader()->hide();
 
  // Taille tableau
- //qtv_tmp->setFixedHeight(55);
+ qtv_tmp->setFixedHeight(75);
+ qtv_tmp->setFixedWidth(400);
 
 
  return qtv_tmp;
@@ -1448,7 +1449,7 @@ QTableView *SyntheseGenerale::doTabGrpTirage(stDesigConf conf)
  qtv_tmp->verticalHeader()->hide();
 
  //qtv_tmp->layout()->setSizeConstraint(QLayout::SetFixedSize);
- qtv_tmp->setFixedSize(650,250);
+ qtv_tmp->setFixedSize(600,250);
  //qtv_tmp->adjustSize();
 
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
@@ -1467,6 +1468,31 @@ QTableView *SyntheseGenerale::doTabGrpTirage(stDesigConf conf)
  return qtv_tmp;
 }
 
+QGridLayout* SyntheseGenerale::info_lgnTirage(QTableView * tbview)
+{
+
+ QGridLayout *lay_tmp = new QGridLayout;
+ QVBoxLayout *vb_tmp = new QVBoxLayout;
+ QLabel * lab_tmp = new QLabel;
+ QTableView *qtv_tmp = tbview;
+
+
+
+ lab_tmp->setText("Analyse du :");
+ vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+ vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+
+ QLabel * lab_uplet = new QLabel;
+ QTableView *tb_uplet = doTabShowUplet();
+ lab_uplet->setText("Uplet-2");
+ vb_tmp->addWidget(lab_uplet,0,Qt::AlignLeft|Qt::AlignTop);
+ vb_tmp->addWidget(tb_uplet,0,Qt::AlignLeft|Qt::AlignTop);
+
+ lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+
+ return lay_tmp;
+}
 
 QTableView *SyntheseGenerale::doTabLgnTirage(stDesigConf conf)
 {
@@ -1502,6 +1528,7 @@ QTableView *SyntheseGenerale::doTabLgnTirage(stDesigConf conf)
 
  // Taille tableau
  qtv_tmp->setFixedHeight(75);
+ qtv_tmp->setFixedWidth(500);
 
  // simple click dans fenetre  pour selectionner boule
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
@@ -1511,6 +1538,56 @@ QTableView *SyntheseGenerale::doTabLgnTirage(stDesigConf conf)
  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
          this, SLOT(slot_Type_G( QModelIndex) ) );
 
+
+
+ return qtv_tmp;
+}
+
+QTableView *SyntheseGenerale::doTabShowUplet()
+{
+ QTableView *qtv_tmp = new  QTableView;
+
+ QSqlQueryModel *sqm_tmp=new QSqlQueryModel;
+
+ QString st_msg1 = "select * from B_upl_2_z1";
+
+ QStringList openConnections = QSqlDatabase::connectionNames();
+ QSqlDatabase newDb = QSqlDatabase::database("cnx_V1-Loto-00");
+
+ sqm_tmp->setQuery(st_msg1,newDb);
+ qtv_tmp->setModel(sqm_tmp);
+
+ qtv_tmp->setSortingEnabled(false);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ //qtv_tmp->horizontalHeader()->setStretchLastSection(true);
+
+
+ // Bloquer largeur des colonnes
+ qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+ qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ qtv_tmp->verticalHeader()->hide();
+
+ //qtv_tmp->layout()->setSizeConstraint(QLayout::SetFixedSize);
+ //qtv_tmp->setFixedSize(600,250);
+ qtv_tmp->adjustSize();
+
+#if 0
+ connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+         this, SLOT(slot_grpShowEcart( QModelIndex) ) );
+
+ // double click dans fenetre  pour afficher details boule
+ qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(slot_ccmr_grpSel(QPoint)));
+
+ connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+         this, SLOT(slot_grpDbClikSel( QModelIndex) ) );
+
+#endif
 
 
  return qtv_tmp;
@@ -1604,12 +1681,23 @@ void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
    &SyntheseGenerale::doTabGrpTirage
   };
 
+ QGridLayout * (SyntheseGenerale::*ptrLayInfo[])(QTableView * tbview)
+  ={
+   &SyntheseGenerale::info_lgnTirage,
+   &SyntheseGenerale::info_lgnTirage,
+   &SyntheseGenerale::info_lgnTirage
+  };
+
  for(int i = 0; i< nb_items;i++){
   def[i].zn = niv;
   QTableView *tmp = (this->*ptrCreaTbv[i])(def[i]);
   QString id = QString("Info")+def[i].name.leftRef(3)+QString("_z")+QString::number(niv+1);
   tmp->setObjectName(id);
-  tab_info->addTab(tmp,def[i].name);
+  QGridLayout *lay_tmp = (this->*ptrLayInfo[i])(tmp);
+  QWidget *tmp_widget = new QWidget;
+  tmp_widget->setLayout(lay_tmp);
+  tmp_widget->adjustSize();
+  tab_info->addTab(tmp_widget,def[i].name);
   tbInfo[niv].append(tmp);
  }
 

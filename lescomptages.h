@@ -78,7 +78,6 @@ class BPrevision:public QGridLayout
 
  public:
  typedef struct _stPrmPrevision{
-  bool bUseMyBdd;
   etDbPlace bddStore;
 
 	QString tblFdj_ana;	/// analyse des tirages provenant de fdj

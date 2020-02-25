@@ -35,10 +35,10 @@ public:
     QString get_IdCnx(void);
     QVariant data(const QModelIndex &index, int role) const;
 
-    bool CreerBasePourEtude(bool action, NE_FDJ::E_typeJeux type);
+    bool ouvrirBase(bool action, NE_FDJ::E_typeJeux type);
     bool AuthoriseChargementExtension(void);
-    QString mk_IdDsk(NE_FDJ::E_typeJeux type);
-    QString mk_IdCnx(NE_FDJ::E_typeJeux type);
+    QString mk_IdDsk(NE_FDJ::E_typeJeux type, int v_id);
+    QString mk_IdCnx(NE_FDJ::E_typeJeux type, int v_id);
 
     bool CreationTablesDeLaBDD(tirages *pRref);
     bool CTB_Table1(QString nomTable, tirages *pRef);
