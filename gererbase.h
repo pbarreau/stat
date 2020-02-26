@@ -32,7 +32,8 @@ public:
 
 
 public:
-    QString get_IdCnx(void);
+    QString get_IdCnx(int id);
+    int get_IdBdd(void);
     QVariant data(const QModelIndex &index, int role) const;
 
     bool ouvrirBase(bool action, NE_FDJ::E_typeJeux type);
@@ -129,6 +130,7 @@ private:
     static int total_items;
     int cur_item;
     QSqlDatabase db_0;
+    QSqlDatabase db_1newDb;
     stTiragesDef conf;
     tirages *typeTirages;
     QSqlTableModel *tbl_model;

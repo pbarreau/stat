@@ -88,6 +88,7 @@ class SyntheseGenerale : public QObject
  B_ActFrMdlIndex *MonTraitement;
  GererBase *origine;
  QSqlDatabase db_0;
+ QSqlDatabase db_1newDb;
  stTiragesDef *pMaConf;
  QMdiArea *pEcran;
  QTabWidget *ptabTop;

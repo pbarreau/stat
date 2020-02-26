@@ -452,9 +452,23 @@ bool GererBase::AffectePoidsATirage_v2()
     return status;
 }
 
-QString GererBase::get_IdCnx(void)
+QString GererBase::get_IdCnx(int id)
 {
-    return db_0.connectionName();
+ QString cnx="";
+
+ if(id ==0){
+    cnx= db_0.connectionName();
+ }
+    else{
+  cnx = db_1newDb.connectionName();
+    }
+
+    return cnx;
+}
+
+int GererBase::get_IdBdd(void)
+{
+ return cur_item;
 }
 
 QString GererBase::mk_IdDsk(NE_FDJ::E_typeJeux type, int v_id)
@@ -515,10 +529,13 @@ bool GererBase::ouvrirBase(bool action,NE_FDJ::E_typeJeux type)
 		 QString myFilter = gameLabel[type]+"_V1*.sqlite";
 		 QString mabase = QFileDialog::getOpenFileName(nullptr,myTitle,".",myFilter);
 		 if(mabase.size()){
+			//QSqlDatabase v1_db;
 			QString cnx_new_db = mk_IdCnx(type, 1);
-			QSqlDatabase v1_db = QSqlDatabase::addDatabase("QSQLITE", cnx_new_db);
-			v1_db.setDatabaseName(mabase);
-			if(!v1_db.open()){
+
+			db_1newDb = QSqlDatabase::addDatabase("QSQLITE", cnx_new_db);
+			db_1newDb.setDatabaseName(mabase);
+
+			if(!db_1newDb.open()){
 			 QMessageBox::critical(NULL,"Echec ouverture",mabase,QMessageBox::Ok);
 			}
 		 }

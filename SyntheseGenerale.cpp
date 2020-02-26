@@ -538,15 +538,18 @@ void SyntheseGenerale::Surligne(int *path,int val)
 SyntheseGenerale::SyntheseGenerale(stPSynG a)
 {
  origine=a.pLaBase;
- QString chk = origine->get_IdCnx();
- db_0 = QSqlDatabase::database(chk);
+ QString cnx_0 = origine->get_IdCnx(0);
+ QString cnx_1 = origine->get_IdCnx(1);
+
+ db_0 = QSqlDatabase::database(cnx_0);
+ db_1newDb = QSqlDatabase::database(cnx_1);
 
  disposition = new QGridLayout;
  //mon_brc_tmp = 0;
 
  pEcran = a.visuel;
  pMaConf = a.pConf;
- pMaConf->db_cnx=chk;
+ pMaConf->db_cnx=cnx_0;
 
  ptabTop = a.ptabSynt;
  ptabVue = a.ptabVue;
@@ -1550,11 +1553,22 @@ QTableView *SyntheseGenerale::doTabShowUplet()
  QSqlQueryModel *sqm_tmp=new QSqlQueryModel;
 
  QString st_msg1 = "select * from B_upl_2_z1";
-
+#if 0
  QStringList openConnections = QSqlDatabase::connectionNames();
- QSqlDatabase newDb = QSqlDatabase::database("cnx_V1-Loto-00");
 
- sqm_tmp->setQuery(st_msg1,newDb);
+ int cur_item = origine->get_IdBdd();
+ QString bd_id = QString::number(cur_item).rightJustified(2,'0');
+ QString bd_cx = "cnx_V1-Loto-"+bd_id;
+ QSqlDatabase newDb = QSqlDatabase::database(bd_cx);
+ bool bStatus = newDb.isOpen();
+
+ if(!bStatus){
+  int a=0;
+  a++;
+  a++;
+ }
+#endif
+ sqm_tmp->setQuery(st_msg1,db_1newDb);
  qtv_tmp->setModel(sqm_tmp);
 
  qtv_tmp->setSortingEnabled(false);

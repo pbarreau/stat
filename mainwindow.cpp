@@ -80,7 +80,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
  NoErrors.msg = "None";
 
  DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
- configJeu.db_cnx = DB_tirages->get_IdCnx();
+ configJeu.db_cnx = DB_tirages->get_IdCnx(0);
  db_0 = QSqlDatabase::database(configJeu.db_cnx);
 
 
@@ -2483,7 +2483,7 @@ void MainWindow::slot_UneCombiChoisie(const QModelIndex & index)
   //stl_tmp << QString::number(ligne+1);
 
   etude->origine = Tableau3;
-  etude->db_cnx = DB_tirages->get_IdCnx();
+  etude->db_cnx = DB_tirages->get_IdCnx(0);
 
   etude->lgn[3] = index.model()->index(index.row(),0).data().toInt();;
   etude->col[3] = colon;
@@ -2519,7 +2519,7 @@ void MainWindow::slot_CriteresTiragesAppliquer()
  // recopie de la config courante
  critereTirages.cur_dst = 0;
  *etude = critereTirages;
- etude->db_cnx = DB_tirages->get_IdCnx();
+ etude->db_cnx = DB_tirages->get_IdCnx(0);
 
 
  // Nouvelle de fenetre de detail de cette boule

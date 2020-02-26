@@ -51,7 +51,7 @@ RefEtude::RefEtude(stRefP a)
  p_reponse = a.tab_Top;
  p_vue = a.tab_Vue;
 
- db_0 = QSqlDatabase::database(p_db->get_IdCnx());
+ db_0 = QSqlDatabase::database(p_db->get_IdCnx(0));
 
  // Nombre de zone composant un tirage (2: 1 zone boules + 1 zone etoiles)
  int nb_zones = p_conf->nb_zone;
@@ -1131,7 +1131,7 @@ void RefEtude::slot_SelectPartBase(const QModelIndex & index)
 
  stCurDemande *etude = new stCurDemande;
  etude->origine = Tableau3;
- etude->db_cnx = p_db->get_IdCnx();
+ etude->db_cnx = p_db->get_IdCnx(0);
 
  etude->st_titre = titre;
  etude->cur_dst = 0;
