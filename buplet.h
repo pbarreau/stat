@@ -23,13 +23,20 @@ public:
 BUplet(st_In const &param);
  ~BUplet();
 
+public slots:
+ void slot_Selection(const QString& lstBoules);
+
 private:
 QSqlDatabase db_0;
 st_In input;
+QGroupBox *gpb_upl;
+QTableView *qtv_upl;
+QString gpb_title;
 
 private:
 QGroupBox *gpbCreate();
-QTableView *doTabShowUplet();
+QTableView *doTabShowUplet(QString tbl_src);
+int  getNbLines(QString tbl_src);
 };
 
 #endif // BUPLET_H

@@ -101,6 +101,7 @@ for (int j = 0; (j< lst_usr.size()) && ret;j++) {
 
  }
 
+ //int nb_lgn = sourceModel()->rowCount();
  return ret;
 }
 

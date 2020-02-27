@@ -1,3 +1,9 @@
+#ifndef QT_NO_DEBUG
+#include <QDebug>
+#include <QSqlError>
+#endif
+
+
 #include <QSqlDatabase>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -7,7 +13,7 @@
 #include <QHeaderView>
 #include <QStandardItemModel>
 #include <QObject>
-
+#include <QSqlQuery>
 
 #include "buplet.h"
 #include "monfiltreproxymodel.h"
@@ -36,10 +42,10 @@ BUplet::~BUplet(){}
 
 QGroupBox *BUplet::gpbCreate()
 {
- QGroupBox *gpb_tmp = new QGroupBox;
- QString msg = "Uplet-"+QString::number(input.uplet);
+ int nb_uplet = input.uplet;
+ gpb_upl = new QGroupBox;
+ gpb_title = "Uplet-"+QString::number(nb_uplet);
 
- gpb_tmp->setTitle(msg);
 
  QGridLayout *layout = new QGridLayout;
  QLabel *rch = new QLabel;
@@ -47,7 +53,7 @@ QGroupBox *BUplet::gpbCreate()
 
 
  QString stPattern = "(\\d{1,2},?){1,"
-                     +QString::number(input.uplet)
+                     +QString::number(nb_uplet)
                         +"}";
  QValidator *validator = new QRegExpValidator(QRegExp(stPattern));
 
@@ -57,25 +63,58 @@ QGroupBox *BUplet::gpbCreate()
  layout->addWidget(rch,1,0);
  layout->addWidget(bval,1,1);
 
- QTableView * tbv_tmp = doTabShowUplet();
+ QString tbl= "B_upl_"
+                +QString::number(nb_uplet)
+                +"_z1";
+ qtv_upl = doTabShowUplet(tbl);
 
- connect(bval,SIGNAL(textChanged(const QString)),tbv_tmp->model(),SLOT(setUplets(const QString)));
+ //int nb_lgn = getNbLines(tbl);
+ BUpletFilterProxyModel *m = qobject_cast<BUpletFilterProxyModel *>(qtv_upl->model());
+ QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
- layout->addWidget(tbv_tmp,2,1);
+ int nb_lgn_ftr = m->rowCount();
+ int nb_lgn_rel = vl->rowCount();
 
- gpb_tmp->setLayout(layout);
- return gpb_tmp;
+ QString nb_start = gpb_title + " : " + QString::number(nb_lgn_ftr)+" sur les " + QString::number(nb_lgn_rel);
+ gpb_upl->setTitle(nb_start);
+
+ connect(bval,SIGNAL(textChanged(const QString)),qtv_upl->model(),SLOT(setUplets(const QString)));
+ connect(bval,SIGNAL(textChanged(const QString)),this,SLOT(slot_Selection(const QString)));
+
+ layout->addWidget(qtv_upl,2,1);
+
+ gpb_upl->setLayout(layout);
+ return gpb_upl;
 }
 
-QTableView *BUplet::doTabShowUplet()
+int BUplet::getNbLines(QString tbl_src)
+{
+ int val =-1;
+ bool isOk = false;
+
+ QSqlQuery nvll(db_0);
+ isOk=nvll.exec("select count(*) from ("+tbl_src+")");
+#ifndef QT_NO_DEBUG
+ //qDebug() << "msg:"<<tbl_src;
+#endif
+
+ if(isOk){
+  nvll.first();
+  if(nvll.isValid()){
+   val = nvll.value(0).toInt();
+  }
+ }
+
+ return val;
+}
+
+QTableView *BUplet::doTabShowUplet(QString tbl_src)
 {
  QTableView *qtv_tmp = new  QTableView;
  QSqlQueryModel *sqm_tmp=new QSqlQueryModel;
 
  int nb_uplet = input.uplet;
- QString st_msg1 = "select * from B_upl_"
-                   +QString::number(nb_uplet)
-                   +"_z1";
+ QString st_msg1 = "select * from "+tbl_src;
  sqm_tmp->setQuery(st_msg1,db_0);
  //qtv_tmp->setModel(sqm_tmp);
 
@@ -93,8 +132,26 @@ QTableView *BUplet::doTabShowUplet()
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
  qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
- qtv_tmp->setFixedWidth(180);
+ qtv_tmp->setFixedWidth(200);
 
+/// Necessaire pour compter toutes les lignes de reponses
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
 
  return qtv_tmp;
+}
+
+void BUplet::slot_Selection(const QString& lstBoules)
+{
+ QTableView *view = qtv_upl;
+ BUpletFilterProxyModel *m = qobject_cast<BUpletFilterProxyModel *>(view->model());
+ QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+ int nb_lgn_ftr = m->rowCount();
+ int nb_lgn_rel = vl->rowCount();
+
+ QString nb_start = gpb_title + " : " + QString::number(nb_lgn_ftr)+" sur les " + QString::number(nb_lgn_rel);
+ gpb_upl->setTitle(nb_start);
 }
