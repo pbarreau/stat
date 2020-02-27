@@ -97,6 +97,7 @@ typedef struct _stParam
  bool destination;
  bool bUseOneBdd;
  NE_FDJ::E_typeJeux typeJeu;
+ QMdiArea * pgm_mdi;
 
 }stParam;
 

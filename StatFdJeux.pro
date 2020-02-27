@@ -88,7 +88,8 @@ SOURCES += \
     cmb_table.cpp \
     grp_2tirages.cpp \
     idlgttirages.cpp \
-    sqlqmtirages.cpp
+    sqlqmtirages.cpp \
+    buplet.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -139,7 +140,8 @@ HEADERS  += \
     bvisuresume_sql.h \
     sCouv.h \
     idlgttirages.h \
-    sqlqmtirages.h
+    sqlqmtirages.h \
+    buplet.h
 
 
 FORMS    += mainwindow.ui \

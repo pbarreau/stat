@@ -32,12 +32,14 @@
 #include "SyntheseDetails.h"
 #include "cnp_SansRepetition.h"
 #include "cnp_AvecRepetition.h"
+#include "buplet.h"
 
 int GererBase::total_items = 0;
 GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
 {
     cur_item = total_items;
     total_items++;
+    pgm_mdi = param->pgm_mdi;
 
 #if USE_CNP_SLOT_LINE
     curZone = 0;
@@ -56,16 +58,18 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
     QMessageBox::information(NULL, "Pgm", "Old 1!",QMessageBox::Yes);
 #endif
 
+
+
+		ouvrirBase(enMemoire,leJeu);
+		return;
+
+
+
     if(ouvrirBase(enMemoire,leJeu)==true)
     {
-#if (SET_DBG_LIVE&&SET_DBG_LEV1)
-        QMessageBox::information(NULL, "Pgm", "Old 2!",QMessageBox::Yes);
-#endif
         /// Optimisation acces de la base
         OPtimiseAccesBase();
-#if (SET_DBG_LIVE&&SET_DBG_LEV1)
-        QMessageBox::information(NULL, "Pgm", "Old 3!",QMessageBox::Yes);
-#endif
+
         // Creeer la configuration de lecture
         typeTirages = new tirages(leJeu);
 
@@ -76,20 +80,11 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
         typeTirages->ListeCombinaison(pConf);
 
 
-#if (SET_DBG_LIVE&&SET_DBG_LEV1)
-        QMessageBox::information(NULL, "Pgm", "Old 4!",QMessageBox::Yes);
-#endif
         // Creer les tables initiales de la base
         CreationTablesDeLaBDD_v2();
 
         // Charger les fichiers de donnees
-#if (SET_DBG_LIVE&&SET_DBG_LEV1)
-        QMessageBox::information(NULL, "Pgm", "Old 5!",QMessageBox::Yes);
-#endif
         LireFichiersDesTirages(autoLoad, retErr);
-#if (SET_DBG_LIVE&&SET_DBG_LEV1)
-        QMessageBox::information(NULL, "Pgm", "Old 6!",QMessageBox::Yes);
-#endif
 
     }
     else
@@ -528,18 +523,20 @@ bool GererBase::ouvrirBase(bool action,NE_FDJ::E_typeJeux type)
 		 QString myTitle = "Selectionnner un fichier " + gameLabel[type];
 		 QString myFilter = gameLabel[type]+"_V1*.sqlite";
 		 QString mabase = QFileDialog::getOpenFileName(nullptr,myTitle,".",myFilter);
+
 		 if(mabase.size()){
-			//QSqlDatabase v1_db;
 			QString cnx_new_db = mk_IdCnx(type, 1);
 
 			db_1newDb = QSqlDatabase::addDatabase("QSQLITE", cnx_new_db);
 			db_1newDb.setDatabaseName(mabase);
 
-			if(!db_1newDb.open()){
+			if(db_1newDb.isValid()==false){
 			 QMessageBox::critical(NULL,"Echec ouverture",mabase,QMessageBox::Ok);
 			}
 		 }
 		}
+
+		return true;
 
 		QString db_dsk_name = mk_IdDsk(type, 0 ); /// nom sur disque
 		QString db_cnx_name = mk_IdCnx(type, 0); /// nom logique de connexion

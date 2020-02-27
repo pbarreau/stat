@@ -127,6 +127,7 @@ private:
 
 
 private:
+QMdiArea * pgm_mdi;
     static int total_items;
     int cur_item;
     QSqlDatabase db_0;

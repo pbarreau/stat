@@ -35,6 +35,8 @@
 #include "filtrecombinaisons.h"
 #include "lescomptages.h"
 
+#include "buplet.h"
+
 
 
 #include "chartwidget.h"
@@ -75,11 +77,29 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
  input.destination =dest_bdd;
  input.bUseOneBdd = bUseOneBdd;
  input.typeJeu = leJeu;
+ input.pgm_mdi = zoneCentrale;
  stErr NoErrors;
  NoErrors.status = true;
  NoErrors.msg = "None";
 
  DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
+
+
+	BUplet::st_In param;
+	param.uplet = 2;
+	param.cnx = DB_tirages->get_IdCnx(1);
+	BUplet *a = new BUplet(param);
+	//pgm_mdi->addSubWindow(a);
+	a->show();
+
+	param.uplet = 3;
+	BUplet *b = new BUplet(param);
+	b->show();
+
+	param.uplet = 4;
+	BUplet *c = new BUplet(param);
+	c->show();
+ return;
  configJeu.db_cnx = DB_tirages->get_IdCnx(0);
  db_0 = QSqlDatabase::database(configJeu.db_cnx);
 
