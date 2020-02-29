@@ -59,13 +59,7 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
 #endif
 
 
-
-		ouvrirBase(enMemoire,leJeu);
-		return;
-
-
-
-    if(ouvrirBase(enMemoire,leJeu)==true)
+    if(ouvrirBase(autoLoad,leJeu)==true)
     {
         /// Optimisation acces de la base
         OPtimiseAccesBase();
@@ -536,7 +530,6 @@ bool GererBase::ouvrirBase(bool action,NE_FDJ::E_typeJeux type)
 		 }
 		}
 
-		return true;
 
 		QString db_dsk_name = mk_IdDsk(type, 0 ); /// nom sur disque
 		QString db_cnx_name = mk_IdCnx(type, 0); /// nom logique de connexion

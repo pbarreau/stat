@@ -5,8 +5,11 @@
 #include <QWidget>
 #include <QSqlDatabase>
 #include <QGroupBox>
+
 #include <QTableView>
 #include <QDialog>
+
+#include "bvtabbar.h"
 
 class BUplet: public QWidget
 {
@@ -40,3 +43,11 @@ int  getNbLines(QString tbl_src);
 };
 
 #endif // BUPLET_H
+
+class BUplWidget: public QWidget
+{
+
+ public:
+ BUplWidget(QString cnx, QWidget *parent=0);
+
+};

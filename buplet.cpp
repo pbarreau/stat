@@ -155,3 +155,29 @@ void BUplet::slot_Selection(const QString& lstBoules)
  QString nb_start = gpb_title + " : " + QString::number(nb_lgn_ftr)+" sur les " + QString::number(nb_lgn_rel);
  gpb_upl->setTitle(nb_start);
 }
+
+/// ------------------------
+///
+BUplWidget::BUplWidget(QString cnx, QWidget *parent):QWidget(parent)
+{
+ BUplet::st_In cnf;
+ cnf.cnx = cnx;
+
+ BVTabWidget *tabTop = new BVTabWidget(QTabWidget::East);
+
+ for (int i = 2; i<5; i++) {
+  cnf.uplet = i;
+  BUplet *tmp = new BUplet(cnf);
+  QString name ="Upl:"+QString::number(i);
+  tabTop->addTab(tmp,name);
+ }
+
+ //tabTop->show();
+
+ QVBoxLayout *mainLayout = new QVBoxLayout;
+
+ mainLayout->addWidget(tabTop);
+ this->setLayout(mainLayout);
+ this->setWindowTitle("Tabed Uplets");
+
+}
