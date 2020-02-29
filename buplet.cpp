@@ -43,8 +43,15 @@ BUplet::~BUplet(){}
 QGroupBox *BUplet::gpbCreate(int index)
 {
  int nb_uplet = input.uplet;
+ bool isOk = false;
  gpb_upl = new QGroupBox;
- gpb_title = "Uplet-"+QString::number(nb_uplet);
+
+ QString jour = "";
+ if(index){
+  jour = getJourTirage(index);
+  jour = jour + " ";
+ }
+ gpb_title = jour+"Uplet-"+QString::number(nb_uplet);
 
 
  QGridLayout *layout = new QGridLayout;
@@ -66,6 +73,11 @@ QGroupBox *BUplet::gpbCreate(int index)
  QString tbl= "B_upl_"
                 +QString::number(nb_uplet)
                 +"_z1";
+ /// verifier si la table des uplets existe deja
+ if(!(isOk=isPresentTblUplet(tbl))){
+  isOk = DoCreateTblUplet(tbl);
+ }
+
  qtv_upl = doTabShowUplet(tbl, index);
 
  //int nb_lgn = getNbLines(tbl);
@@ -75,7 +87,7 @@ QGroupBox *BUplet::gpbCreate(int index)
  int nb_lgn_ftr = m->rowCount();
  int nb_lgn_rel = vl->rowCount();
 
- QString nb_start = gpb_title + " : " + QString::number(nb_lgn_ftr)+" sur les " + QString::number(nb_lgn_rel);
+ QString nb_start = gpb_title + " : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
  gpb_upl->setTitle(nb_start);
 
  connect(bval,SIGNAL(textChanged(const QString)),qtv_upl->model(),SLOT(setUplets(const QString)));
@@ -85,6 +97,35 @@ QGroupBox *BUplet::gpbCreate(int index)
 
  gpb_upl->setLayout(layout);
  return gpb_upl;
+}
+
+bool BUplet::DoCreateTblUplet(QString tbl)
+{
+ bool isOk = false;
+ QSqlQuery query(db_0);
+
+ return isOk;
+}
+
+bool BUplet::isPresentTblUplet(QString tbl)
+{
+ bool isOk = false;
+ QSqlQuery query(db_0);
+
+ /// regarder combien vue calc
+ QString msg ="SELECT count(name) FROM sqlite_master "
+               "WHERE type='table' AND name like '"+tbl+"%'";
+ isOk = query.exec(msg);
+
+ if(isOk){
+  int nbCalc = 0;
+
+	query.first();
+	if(!(nbCalc = query.value(0).toInt())){
+	 isOk=false;
+	}
+ }
+ return isOk;
 }
 
 int BUplet::getNbLines(QString tbl_src)
@@ -108,12 +149,32 @@ int BUplet::getNbLines(QString tbl_src)
  return val;
 }
 
-QString BUplet::getBoulesTirage(int index)
+QString BUplet::getJourTirage(int index)
 {
  QString st_tmp = "";
+ bool isOk = false;
+ QSqlQuery query(db_0);
+ QString sql_tmp = "select J,D from B_fdj";
+ isOk=query.exec(sql_tmp);
+ if(isOk){
+  query.first();
+  st_tmp=query.value(0).toString()
+          +" "
+          + query.value(1).toString();
+ }
+ return st_tmp;
+}
+
+QString BUplet::getBoulesTirage(int index)
+{
+ int zn=0;
+ QString st_tmp = "";
+ QString st_boules = FN2_getFieldsFromZone(zn,"t2");
  st_tmp = "with tb_0 as ("
           "SELECT t1.z1 as boule from B_elm as t1, "
-          "B_fdj as t2 where (t1.z1 in (t2.b1, t2.b2, t2.b3, t2.b4, t2.b5) and t2.id = "
+          "B_fdj as t2 where (t1.z1 in ("
+          +st_boules
+          +") and t2.id = "
           +QString::number(index)+"))";
 
  return st_tmp;
@@ -223,8 +284,28 @@ void BUplet::slot_Selection(const QString& lstBoules)
  int nb_lgn_ftr = m->rowCount();
  int nb_lgn_rel = vl->rowCount();
 
- QString nb_start = gpb_title + " : " + QString::number(nb_lgn_ftr)+" sur les " + QString::number(nb_lgn_rel);
+ QString nb_start = gpb_title + " : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
  gpb_upl->setTitle(nb_start);
+}
+
+QString BUplet::FN2_getFieldsFromZone(int zn, QString alias)
+{
+ int len_zn = 5; //onGame.limites[zn].len;
+
+ QString use_alias = "";
+
+ if(alias.size()){
+  use_alias = alias+".";
+ }
+ QString ref = use_alias+"b%1";//onGame.names[zn].abv+"%1";
+ QString st_items = "";
+ for(int i=0;i<len_zn;i++){
+  st_items = st_items + ref.arg(i+1);
+  if(i<(len_zn-1)){
+   st_items=st_items+QString(",");
+  }
+ }
+ return   st_items;
 }
 
 /// ------------------------

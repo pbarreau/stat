@@ -42,6 +42,10 @@ QTableView *doTabShowUplet(QString tbl_src, int index);
 int  getNbLines(QString tbl_src);
 QString getUpletFromIndex(int nb_uplet, int index, QString tbl_src);
 QString getBoulesTirage(int index);
+QString getJourTirage(int index);
+bool isPresentTblUplet(QString tbl);
+bool DoCreateTblUplet(QString tbl);
+QString FN2_getFieldsFromZone(int zn, QString alias);
 };
 
 #endif // BUPLET_H
