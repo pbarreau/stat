@@ -18,7 +18,7 @@
 #include "buplet.h"
 #include "monfiltreproxymodel.h"
 
-BUplet::BUplet(st_In const &param)
+BUplet::BUplet(st_In const &param, int index)
 {
  input = param;
 
@@ -27,7 +27,7 @@ BUplet::BUplet(st_In const &param)
  db_0 = QSqlDatabase::database(input.cnx);
 
  if((isOk=db_0.isValid()) == true){
-  QGroupBox *info = gpbCreate();
+  QGroupBox *info = gpbCreate(index);
   QVBoxLayout *mainLayout = new QVBoxLayout;
 
 	mainLayout->addWidget(info);
@@ -40,7 +40,7 @@ BUplet::BUplet(st_In const &param)
 }
 BUplet::~BUplet(){}
 
-QGroupBox *BUplet::gpbCreate()
+QGroupBox *BUplet::gpbCreate(int index)
 {
  int nb_uplet = input.uplet;
  gpb_upl = new QGroupBox;
@@ -66,7 +66,7 @@ QGroupBox *BUplet::gpbCreate()
  QString tbl= "B_upl_"
                 +QString::number(nb_uplet)
                 +"_z1";
- qtv_upl = doTabShowUplet(tbl);
+ qtv_upl = doTabShowUplet(tbl, index);
 
  //int nb_lgn = getNbLines(tbl);
  BUpletFilterProxyModel *m = qobject_cast<BUpletFilterProxyModel *>(qtv_upl->model());
@@ -108,13 +108,84 @@ int BUplet::getNbLines(QString tbl_src)
  return val;
 }
 
-QTableView *BUplet::doTabShowUplet(QString tbl_src)
+QString BUplet::getBoulesTirage(int index)
+{
+ QString st_tmp = "";
+ st_tmp = "with tb_0 as ("
+          "SELECT t1.z1 as boule from B_elm as t1, "
+          "B_fdj as t2 where (t1.z1 in (t2.b1, t2.b2, t2.b3, t2.b4, t2.b5) and t2.id = "
+          +QString::number(index)+"))";
+
+ return st_tmp;
+}
+
+QString BUplet::getUpletFromIndex(int nb_uplet, int index, QString tbl_src)
+{
+ QString st_tmp = "";
+
+ QString lgn = "";
+ lgn = getBoulesTirage(index);
+
+ QString ref_0 = "tb_%1";
+ QString ref_1 = ref_0 + " as (select * from tb_0)";
+ QString ref_2 = "(%1.b%2 = tb_%2.boule)";
+
+ QString str_0 = "";
+ QString str_1 = "";
+ QString str_2 = "";
+
+ /// recherche dans la table des uplets
+ for (int i=1;i<=nb_uplet;i++) {
+  str_0 = str_0 + ref_0.arg(i);
+  str_1 = str_1 + ref_1.arg(i);
+  str_2 = str_2 + ref_2.arg(tbl_src).arg(i);
+
+	if(i<nb_uplet){
+	 str_0 = str_0 + ",";
+	 str_1 = str_1 + ",";
+	 str_2 = str_2 + "and";
+	}
+ }
+
+ QString str_sele = " select " + tbl_src + ".* ";
+ QString str_From = " from "
+                    + tbl_src
+                    + ","
+                    + str_0;
+
+ if(str_2.size()){
+     str_2 = " where("+str_2+")";
+  }
+
+ st_tmp = lgn
+           + ","
+           + str_1
+           + str_sele
+           + str_From
+           + str_2
+           + " order by total desc";
+
+  #ifndef QT_NO_DEBUG
+   qDebug() << "msg:"<<st_tmp;
+  #endif
+
+ return st_tmp;
+}
+
+QTableView *BUplet::doTabShowUplet(QString tbl_src, int index)
 {
  QTableView *qtv_tmp = new  QTableView;
  QSqlQueryModel *sqm_tmp=new QSqlQueryModel;
 
  int nb_uplet = input.uplet;
- QString st_msg1 = "select * from "+tbl_src;
+ QString st_msg1 = "";
+ if(!index){
+  st_msg1 = "select * from "+tbl_src;
+ }
+ else {
+  st_msg1 = getUpletFromIndex(input.uplet,index,tbl_src);
+ }
+
  sqm_tmp->setQuery(st_msg1,db_0);
  //qtv_tmp->setModel(sqm_tmp);
 
@@ -158,7 +229,7 @@ void BUplet::slot_Selection(const QString& lstBoules)
 
 /// ------------------------
 ///
-BUplWidget::BUplWidget(QString cnx, QWidget *parent):QWidget(parent)
+BUplWidget::BUplWidget(QString cnx, int index, QWidget *parent):QWidget(parent)
 {
  BUplet::st_In cnf;
  cnf.cnx = cnx;
@@ -167,7 +238,7 @@ BUplWidget::BUplWidget(QString cnx, QWidget *parent):QWidget(parent)
 
  for (int i = 2; i<5; i++) {
   cnf.uplet = i;
-  BUplet *tmp = new BUplet(cnf);
+  BUplet *tmp = new BUplet(cnf,index);
   QString name ="Upl:"+QString::number(i);
   tabTop->addTab(tmp,name);
  }

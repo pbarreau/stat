@@ -23,7 +23,7 @@ typedef struct _stIn{
 
 
 public:
-BUplet(st_In const &param);
+BUplet(st_In const &param, int index=0);
  ~BUplet();
 
 public slots:
@@ -37,9 +37,11 @@ QTableView *qtv_upl;
 QString gpb_title;
 
 private:
-QGroupBox *gpbCreate();
-QTableView *doTabShowUplet(QString tbl_src);
+QGroupBox *gpbCreate(int index);
+QTableView *doTabShowUplet(QString tbl_src, int index);
 int  getNbLines(QString tbl_src);
+QString getUpletFromIndex(int nb_uplet, int index, QString tbl_src);
+QString getBoulesTirage(int index);
 };
 
 #endif // BUPLET_H
@@ -48,6 +50,6 @@ class BUplWidget: public QWidget
 {
 
  public:
- BUplWidget(QString cnx, QWidget *parent=0);
+ BUplWidget(QString cnx, int index = 0, QWidget *parent=0);
 
 };
