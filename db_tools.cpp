@@ -227,7 +227,7 @@ QString DB_Tools::leftJoinFiltered(stJoinArgs ja,QString arg5)
  return msg;
 }
 
-bool DB_Tools::checkHavingTable(QString tbl, QString cnx, bool silence)
+bool DB_Tools::isDbGotTbl(QString tbl, QString cnx, bool silence)
 {
  bool isOk = false;
  QSqlDatabase db = QSqlDatabase::database(cnx);
@@ -242,6 +242,7 @@ bool DB_Tools::checkHavingTable(QString tbl, QString cnx, bool silence)
  if((isOk = query.exec(msg[0])))
  {
   query.first();
+
   if((isOk=query.isValid()))
   {
    msg_err = QString("Presence Table ")+tbl;

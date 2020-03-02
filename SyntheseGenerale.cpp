@@ -2745,7 +2745,7 @@ QTableView * SyntheseGenerale::grp_TbvAnalyse(QGridLayout *grid_parent, int zn, 
   }
   else {
    ///verifier si ce calcul existe deja dans la base
-   if(DB_Tools::checkHavingTable(tb_out,db_0.connectionName())){
+   if(DB_Tools::isDbGotTbl(tb_out,db_0.connectionName())){
 
 		/// On depile les info de construction
 		QAbstractItemModel *qtv_model = qtv_tmp->model();

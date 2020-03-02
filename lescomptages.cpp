@@ -1851,7 +1851,7 @@ bool BPrevision::do_SqlCnpPrepare(void)
  for(int i = 2; (i<len) && isOk ;i++){
   /// Regarder si table existe deja
   QString tbl = "Cnp_" + QString::number(max)+"_"+QString::number(i);
-  if(DB_Tools::checkHavingTable(tbl,db_1.connectionName())==false){
+  if(DB_Tools::isDbGotTbl(tbl,db_1.connectionName())==false){
    msg = sql_CnpMkUplet(i, col);
    QString sql_cnp = "create table if not exists "
                  + tbl
@@ -1887,7 +1887,7 @@ bool BPrevision::do_SqlCnpCount(void)
  for(int i = 2; (i<len) && isOk ;i++){
   /// Regarder si table existe deja
   QString tbl = "Cnp_" + QString::number(max)+"_"+QString::number(i);
-  if(DB_Tools::checkHavingTable(tbl,db_1.connectionName())==false){
+  if(DB_Tools::isDbGotTbl(tbl,db_1.connectionName())==false){
    msg = sql_CnpMkUplet(i, col);
    sql_cnp = "create table if not exists "
              + tbl

@@ -17,10 +17,23 @@
 
 #include "buplet.h"
 #include "monfiltreproxymodel.h"
+#include "db_tools.h"
 
-BUplet::BUplet(st_In const &param, int index)
+int BUplet::usrEnsCounter = 0;
+BUplet::BUplet(st_In const &param):BUplet(param,0,""){}
+BUplet::BUplet(st_In const &param, int index):BUplet(param,index,""){}
+BUplet::BUplet(st_In const &param, QString ensemble):BUplet(param,0,ensemble){}
+
+BUplet::BUplet(st_In const &param, int index,QString ensemble)
 {
  input = param;
+
+ if(!ensemble.size()){
+  useData = eEnsFdj;
+ }
+ else {
+  useData = eEnsUsr;
+ }
 
  bool isOk = false;
 
@@ -51,7 +64,14 @@ QGroupBox *BUplet::gpbCreate(int index)
   jour = getJourTirage(index);
   jour = jour + " ";
  }
- gpb_title = jour+"Uplet-"+QString::number(nb_uplet);
+
+ QString usr_info = "";
+ if(useData == eEnsUsr){
+  //usrEnsCounter++;
+  //usr_info = QString::number(usrEnsCounter).rightJustified(2,'0')+"-Usr,";
+  usr_info = "Usr-";
+ }
+ gpb_title = jour+usr_info+"Uplet-"+QString::number(nb_uplet);
 
 
  QGridLayout *layout = new QGridLayout;
@@ -70,15 +90,17 @@ QGroupBox *BUplet::gpbCreate(int index)
  layout->addWidget(rch,1,0);
  layout->addWidget(bval,1,1);
 
- QString tbl= "B_upl_"
+ if((useData == eEnsFdj) || (useData == eEnsUsr)){
+  QString tbl= "B_upl_"
                 +QString::number(nb_uplet)
                 +"_z1";
- /// verifier si la table des uplets existe deja
- if(!(isOk=isPresentTblUplet(tbl))){
-  isOk = DoCreateTblUplet(tbl);
- }
+  /// verifier si la table des uplets existe deja
+  if(!(isOk=DB_Tools::isDbGotTbl(tbl,db_0.connectionName()))){
+   isOk = do_SqlCnpCount(nb_uplet);
+  }
 
- qtv_upl = doTabShowUplet(tbl, index);
+  qtv_upl = doTabShowUplet(tbl, index);
+ }
 
  //int nb_lgn = getNbLines(tbl);
  BUpletFilterProxyModel *m = qobject_cast<BUpletFilterProxyModel *>(qtv_upl->model());
@@ -97,35 +119,6 @@ QGroupBox *BUplet::gpbCreate(int index)
 
  gpb_upl->setLayout(layout);
  return gpb_upl;
-}
-
-bool BUplet::DoCreateTblUplet(QString tbl)
-{
- bool isOk = false;
- QSqlQuery query(db_0);
-
- return isOk;
-}
-
-bool BUplet::isPresentTblUplet(QString tbl)
-{
- bool isOk = false;
- QSqlQuery query(db_0);
-
- /// regarder combien vue calc
- QString msg ="SELECT count(name) FROM sqlite_master "
-               "WHERE type='table' AND name like '"+tbl+"%'";
- isOk = query.exec(msg);
-
- if(isOk){
-  int nbCalc = 0;
-
-	query.first();
-	if(!(nbCalc = query.value(0).toInt())){
-	 isOk=false;
-	}
- }
- return isOk;
 }
 
 int BUplet::getNbLines(QString tbl_src)
@@ -244,11 +237,10 @@ QTableView *BUplet::doTabShowUplet(QString tbl_src, int index)
   st_msg1 = "select * from "+tbl_src;
  }
  else {
-  st_msg1 = getUpletFromIndex(input.uplet,index,tbl_src);
+  st_msg1 = getUpletFromIndex(nb_uplet,index,tbl_src);
  }
 
  sqm_tmp->setQuery(st_msg1,db_0);
- //qtv_tmp->setModel(sqm_tmp);
 
  BUpletFilterProxyModel * fpm_tmp = new BUpletFilterProxyModel(input.uplet);
  fpm_tmp->setSourceModel(sqm_tmp);
@@ -272,7 +264,58 @@ QTableView *BUplet::doTabShowUplet(QString tbl_src, int index)
   sqm_tmp->fetchMore();
  }
 
+ connect( qtv_tmp, SIGNAL( doubleClicked(QModelIndex)) ,
+         this, SLOT(slot_FindNewUplet( QModelIndex) ) );
+
+
  return qtv_tmp;
+}
+
+void BUplet::slot_FindNewUplet(const QModelIndex & index)
+{
+ QObject * origine = this->parent();
+
+ QString cnx = db_0.connectionName();
+
+ QString data = sql_UsrSelectedTirages(index, origine);
+
+ BUplWidget *visu = new BUplWidget(cnx,0,data);
+ visu->show();
+
+}
+
+QString BUplet::sql_UsrSelectedTirages(const QModelIndex & index, QObject * origine)
+{
+ QString st_where = "";
+ QString tmp = "";
+ int zn =0;
+ int nb_upl = input.uplet;
+ int distance = -1;
+
+ QString cols = FN2_getFieldsFromZone(zn,"tb0");
+ QString ref1 = "(%1 in("+cols+"))";
+ for(int i=0;i<nb_upl;i++)
+ {
+  int val = index.sibling(index.row(),i).data().toInt();
+  st_where = st_where + ref1.arg(val);
+
+	if(i<nb_upl-1)
+	{
+	 st_where=st_where+"and";
+	}
+ }
+
+ tmp = "with tb1 as (select * from (B_fdj) as tb0 "
+       " where("
+       +st_where
+       +")), tbR as (select tb2.* from (B_fdj) as tb2, tb1 "
+       "where(tb2.id=tb1.id+("+QString::number(distance)+")))"
+                                   "select * from tbR";
+#ifndef QT_NO_DEBUG
+ qDebug() <<tmp;
+#endif
+
+ return tmp;
 }
 
 void BUplet::slot_Selection(const QString& lstBoules)
@@ -308,23 +351,282 @@ QString BUplet::FN2_getFieldsFromZone(int zn, QString alias)
  return   st_items;
 }
 
+
+bool BUplet::do_SqlCnpCount(int uplet_id)
+{
+ bool isOk = true;
+ QString msg = "";
+ QString sql_cnp="";
+
+ QSqlQuery query(db_0);
+
+ int zn = 0;
+ QString ensemble = "B_elm";
+ QString col = "z"+QString::number(zn+1);
+ int len = 5;//onGame.limites[zn].len;
+ int max = 49;//onGame.limites[zn].max;
+
+  /// Regarder si table existe deja
+  QString tbl = "Cnp_" + QString::number(max)+"_"+QString::number(uplet_id);
+  if(DB_Tools::isDbGotTbl(tbl,db_0.connectionName())==false){
+   msg = sql_CnpMkUplet(uplet_id, col);
+   sql_cnp = "create table if not exists "
+             + tbl
+             + " as "
+             + msg
+             + " select * from lst_R";
+
+#ifndef QT_NO_DEBUG
+   qDebug() <<sql_cnp;
+#endif
+
+	 isOk= query.exec(sql_cnp);
+	}
+
+	/// La table des Cnp est cree
+	/// compter les u-plets
+	if(isOk){
+	 QString upl = "B_upl_"+QString::number(uplet_id)+"_z"+QString::number(zn+1);
+	 msg = sql_CnpCountUplet(uplet_id,tbl);
+	 sql_cnp = "create table if not exists "
+						 + upl
+						 + " as "
+						 + msg;
+
+#ifndef QT_NO_DEBUG
+	 qDebug() <<sql_cnp;
+#endif
+
+	 isOk= query.exec(sql_cnp);
+	}
+
+ return isOk;
+}
+
+QString BUplet::sql_CnpMkUplet(int nb, QString col, QString tbl_in)
+{
+
+ // Selection numeros boule de la zone
+ QString tbl_ref = "("+tbl_in+")";
+ QString lst_0 =  "(select t1."+col+" as b from "+tbl_ref+" as t1), ";
+
+ QString ref_1 = "lst_%1 as (select * from lst_0)";
+ QString ref_2 = "lst_%1.b as b%1";
+ QString ref_3 = "lst_%1.b";
+ QString ref_4 = "(lst_%1.b<lst_%2.b)";
+
+ QString str_in_1 = "";
+ QString str_in_2 = "";
+ QString str_in_3 = "";
+ QString str_in_4 = "";
+
+ for(int i = 1; i<=nb; i++){
+  str_in_1 = str_in_1 + ref_1.arg(i);
+  str_in_2 = str_in_2 + ref_2.arg(i);
+  str_in_3 = str_in_3 + ref_3.arg(i);
+
+	if(i<nb){
+	 str_in_1 = str_in_1 + ", ";
+	 str_in_2 = str_in_2 + ", ";
+	 str_in_3 = str_in_3 + ", ";
+
+	 str_in_4 = str_in_4 + ref_4.arg(i).arg(i+1);
+	 if(i<nb-1){
+		str_in_4 = str_in_4 + "and";
+	 }
+	}
+ }
+
+ if(str_in_4.size()){
+  str_in_4 = " where("
+             +str_in_4
+             +")";
+ }
+ QString str_from = str_in_3;
+
+ QString sql_cnp = "with lst_0 as "
+                   +lst_0
+                   +str_in_1
+                   +", lst_R as (select "
+                   +str_in_2
+                   +" from "
+                   +str_from.remove(".b")
+                   + str_in_4
+                   + " order by "
+                   + str_in_3
+                   +")" ;
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<sql_cnp;
+#endif
+
+
+ return sql_cnp;
+}
+
+
+QString BUplet::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
+{
+ QString msg = "";
+ int zn = 0;
+
+ // Recherche dans base actuelle
+ QString tbl_ref = "("+tbl_in+")";
+ QString lst_0 =  "lst_R as (select * from("
+                 +tbl_cnp
+                 +")), tb_0 as (select * from "
+                 +tbl_ref
+                 +"), ";
+
+ QString ref_1 = "tb_%1 as (select * from tb_0)";
+ QString ref_2 = "lst_R.b%1";
+ QString ref_3 = ref_2 + " as b%1";
+ QString ref_4 = "tb_%1.id";
+ QString ref_5 = "(tb_%1.id<=tb_%2.id)";
+
+ QString ref_7 = "tb_R.b%1";
+
+ QString str_in_1 = "";
+ QString str_in_2 = "";
+ QString str_uple = "";
+ QString str_in_3 = "";
+ QString str_in_4 = "";
+ QString str_in_5 = "";
+ QString str_in_6 = "";
+ QString str_in_7 = "";
+ QString str_in_8 = "";
+
+ QString str_full = "";
+
+ for(int i = 1; i<=nb; i++){
+  str_in_1 = str_in_1 + ref_1.arg(i);
+  str_in_2 = str_in_2 + ref_2.arg(i);
+  str_uple = str_uple + ref_2.arg(i);
+  str_in_3 = str_in_3 + ref_3.arg(i);
+  str_in_4 = str_in_4 + ref_4.arg(i);
+  str_in_7 = str_in_7 + ref_7.arg(i);
+
+	QString tmp_tbl = ref_4.arg(i);
+	tmp_tbl=tmp_tbl.remove(".id");
+	QString colNames = FN2_getFieldsFromZone(zn,tmp_tbl);
+	QString tmp_lgn = "";
+	QString str_key = "";
+	for (int j = 1; j<=nb;j++) {
+	 QString cur_tbl = ref_2.arg(j);
+	 tmp_lgn = "("
+						 +cur_tbl
+						 + " in ("
+						 +colNames
+						 +"))";
+	 str_key = str_key
+						 +tmp_lgn;
+	 if(j<nb){
+		str_key = str_key
+							+"and";
+	 }
+	}
+
+	str_full = str_full + str_key;
+
+	if(i<nb){
+	 str_in_1 = str_in_1 + ", ";
+	 str_in_2 = str_in_2 + ", ";
+	 str_in_3 = str_in_3 + ", ";
+	 str_in_4 = str_in_4 + ", ";
+	 str_in_7 = str_in_7 + ", ";
+	 str_uple = str_uple + "||','||";
+	 str_full = str_full + "and";
+	 str_in_8 = str_in_8 + ref_4.arg(i);
+
+	 str_in_5 = str_in_5 + ref_5.arg(i).arg(i+1);
+	 if(i<nb-1){
+		str_in_5 = str_in_5 + "and";
+		str_in_8 = str_in_8 + ", ";
+	 }
+	}
+ }
+
+ if(str_in_5.size()){
+  str_in_5 = " where("
+             +str_in_5
+             +"and"
+             +str_full
+             +")";
+ }
+ QString str_from = str_in_4;
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<lst_0;
+ qDebug() <<str_in_1;
+ qDebug() <<str_in_3;
+ qDebug() <<str_uple;
+ qDebug() <<str_from;
+ qDebug() <<str_in_5;
+ qDebug() <<str_in_2;
+ qDebug() <<str_in_8;
+ qDebug() <<str_in_7;
+#endif
+
+ QString sql_cnp = "with "
+                   +lst_0
+                   +str_in_1
+                   +", tb_R as (select "
+                   +str_in_3
+                   +","
+                   +str_uple
+                   +" as uplet, count(*) as nb from lst_R,"
+                   +str_from.remove(".id")
+                   + str_in_5
+                   + " group by "
+                   + str_in_2
+                   + ","
+                   + str_in_8
+                   + " order by nb DESC"
+                   +")" ;
+
+ QString sql_req = "select "
+                   + str_in_7
+                   +", tb_R.uplet, max(tb_R.nb) over(PARTITION by tb_R.uplet) as total  from tb_R GROUP by tb_R.uplet order by tb_R.nb DESC";
+
+ msg = sql_cnp + sql_req;
+#ifndef QT_NO_DEBUG
+ qDebug() <<sql_cnp;
+ qDebug() <<str_full;
+ qDebug() <<sql_req;
+ qDebug() <<msg;
+#endif
+
+
+ return msg;
+}
+
+
 /// ------------------------
 ///
-BUplWidget::BUplWidget(QString cnx, int index, QWidget *parent):QWidget(parent)
+//BUplWidget::BUplWidget(QString cnx, QWidget *parent):QWidget(parent){BUplWidget(cnx,0,"B_fdj");}
+//BUplWidget::BUplWidget(QString cnx, int index, QWidget *parent):QWidget(parent){BUplWidget(cnx,index,"B_fdj");}
+//BUplWidget::BUplWidget(QString cnx, QString usr_ens, QWidget *parent):QWidget(parent){BUplWidget(cnx,0,usr_ens);}
+
+BUplWidget::BUplWidget(QString cnx, int index, QString usr_ens, QWidget *parent):QWidget(parent)
 {
+ QString str_data ="";
  BUplet::st_In cnf;
  cnf.cnx = cnx;
 
  BVTabWidget *tabTop = new BVTabWidget(QTabWidget::East);
 
+ if(usr_ens.size()){
+  str_data = "select * from ("+usr_ens+")as tb_data";
+ }
+
  for (int i = 2; i<5; i++) {
   cnf.uplet = i;
-  BUplet *tmp = new BUplet(cnf,index);
+  BUplet *tmp = new BUplet(cnf,index,usr_ens);
   QString name ="Upl:"+QString::number(i);
   tabTop->addTab(tmp,name);
  }
 
- //tabTop->show();
+ tabTop->show();
 
  QVBoxLayout *mainLayout = new QVBoxLayout;
 
