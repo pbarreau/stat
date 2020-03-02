@@ -46,11 +46,12 @@ QGroupBox *gpb_upl;
 QTableView *qtv_upl;
 QString gpb_title;
 eEnsemble useData;
+QString ens_ref;
 static int usrEnsCounter;
 
 private:
 QGroupBox *gpbCreate(int index);
-QTableView *doTabShowUplet(QString tbl_src, int index);
+QTableView *doTabShowUplet(QString tbl_src);
 int  getNbLines(QString tbl_src);
 QString getUpletFromIndex(int nb_uplet, int index, QString tbl_src);
 QString getBoulesTirage(int index);
@@ -61,6 +62,8 @@ QString FN2_getFieldsFromZone(int zn, QString alias);
 bool do_SqlCnpCount(int uplet_id);
 QString sql_CnpMkUplet(int nb, QString col, QString tbl_in="B_elm");
 QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
+QString sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
+
 
 QString sql_UsrSelectedTirages(const QModelIndex & index, QObject * origine);
 };

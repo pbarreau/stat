@@ -27,6 +27,7 @@ BUplet::BUplet(st_In const &param, QString ensemble):BUplet(param,0,ensemble){}
 BUplet::BUplet(st_In const &param, int index,QString ensemble)
 {
  input = param;
+ ens_ref = ensemble;
 
  if(!ensemble.size()){
   useData = eEnsFdj;
@@ -90,7 +91,8 @@ QGroupBox *BUplet::gpbCreate(int index)
  layout->addWidget(rch,1,0);
  layout->addWidget(bval,1,1);
 
- if((useData == eEnsFdj) || (useData == eEnsUsr)){
+ QString sql_req ="";
+ if(useData == eEnsFdj){
   QString tbl= "B_upl_"
                 +QString::number(nb_uplet)
                 +"_z1";
@@ -99,8 +101,21 @@ QGroupBox *BUplet::gpbCreate(int index)
    isOk = do_SqlCnpCount(nb_uplet);
   }
 
-  qtv_upl = doTabShowUplet(tbl, index);
+	if(!index){
+	 sql_req = "select * from "+tbl;
+	}
+	else {
+	 sql_req = getUpletFromIndex(nb_uplet,index,tbl);
+	}
+
  }
+ else {
+  QString tbl_cnp = "Cnp_49_"+QString::number(nb_uplet);
+  QString ens_in = ens_ref;
+  sql_req = sql_UsrCountUplet(nb_uplet,tbl_cnp, ens_in);
+ }
+
+ qtv_upl = doTabShowUplet(sql_req);
 
  //int nb_lgn = getNbLines(tbl);
  BUpletFilterProxyModel *m = qobject_cast<BUpletFilterProxyModel *>(qtv_upl->model());
@@ -226,19 +241,13 @@ QString BUplet::getUpletFromIndex(int nb_uplet, int index, QString tbl_src)
  return st_tmp;
 }
 
-QTableView *BUplet::doTabShowUplet(QString tbl_src, int index)
+QTableView *BUplet::doTabShowUplet(QString st_msg1)
 {
  QTableView *qtv_tmp = new  QTableView;
  QSqlQueryModel *sqm_tmp=new QSqlQueryModel;
 
  int nb_uplet = input.uplet;
- QString st_msg1 = "";
- if(!index){
-  st_msg1 = "select * from "+tbl_src;
- }
- else {
-  st_msg1 = getUpletFromIndex(nb_uplet,index,tbl_src);
- }
+ //QString st_msg1 = "";
 
  sqm_tmp->setQuery(st_msg1,db_0);
 
@@ -464,6 +473,135 @@ QString BUplet::sql_CnpMkUplet(int nb, QString col, QString tbl_in)
  return sql_cnp;
 }
 
+QString BUplet::sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in)
+{
+ QString msg = "";
+ int zn=0;
+
+ QString lst_0 = "with lst_R as (select * from("+tbl_cnp+")),"
+               "find as("+tbl_in+")"
+                        ", tb_0 as (select * from (find)),";
+
+ QString ref_1 = "tb_%1 as (select * from tb_0)";
+ QString ref_2 = "lst_R.b%1";
+ QString ref_3 = ref_2 + " as b%1";
+ QString ref_4 = "tb_%1.id";
+ QString ref_5 = "(tb_%1.id<=tb_%2.id)";
+
+ QString ref_7 = "tb_R.b%1";
+
+ QString str_in_1 = "";
+ QString str_in_2 = "";
+ QString str_uple = "";
+ QString str_in_3 = "";
+ QString str_in_4 = "";
+ QString str_in_5 = "";
+ QString str_in_6 = "";
+ QString str_in_7 = "";
+ QString str_in_8 = "";
+
+ QString str_full = "";
+
+ for(int i = 1; i<=nb; i++){
+  str_in_1 = str_in_1 + ref_1.arg(i);
+  str_in_2 = str_in_2 + ref_2.arg(i);
+  str_uple = str_uple + ref_2.arg(i);
+  str_in_3 = str_in_3 + ref_3.arg(i);
+  str_in_4 = str_in_4 + ref_4.arg(i);
+  str_in_7 = str_in_7 + ref_7.arg(i);
+
+	QString tmp_tbl = ref_4.arg(i);
+	tmp_tbl=tmp_tbl.remove(".id");
+	QString colNames = FN2_getFieldsFromZone(zn,tmp_tbl);
+	QString tmp_lgn = "";
+	QString str_key = "";
+	for (int j = 1; j<=nb;j++) {
+	 QString cur_tbl = ref_2.arg(j);
+	 tmp_lgn = "("
+						 +cur_tbl
+						 + " in ("
+						 +colNames
+						 +"))";
+	 str_key = str_key
+						 +tmp_lgn;
+	 if(j<nb){
+		str_key = str_key
+							+"and";
+	 }
+	}
+
+	str_full = str_full + str_key;
+
+	if(i<nb){
+	 str_in_1 = str_in_1 + ", ";
+	 str_in_2 = str_in_2 + ", ";
+	 str_in_3 = str_in_3 + ", ";
+	 str_in_4 = str_in_4 + ", ";
+	 str_in_7 = str_in_7 + ", ";
+	 str_uple = str_uple + "||','||";
+	 str_full = str_full + "and";
+	 str_in_8 = str_in_8 + ref_4.arg(i);
+
+	 str_in_5 = str_in_5 + ref_5.arg(i).arg(i+1);
+	 if(i<nb-1){
+		str_in_5 = str_in_5 + "and";
+		str_in_8 = str_in_8 + ", ";
+	 }
+	}
+ }
+
+ if(str_in_5.size()){
+  str_in_5 = " where("
+             +str_in_5
+             +"and"
+             +str_full
+             +")";
+ }
+ QString str_from = str_in_4;
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<lst_0;
+ qDebug() <<str_in_1;
+ qDebug() <<str_in_3;
+ qDebug() <<str_uple;
+ qDebug() <<str_from;
+ qDebug() <<str_in_5;
+ qDebug() <<str_in_2;
+ qDebug() <<str_in_8;
+ qDebug() <<str_in_7;
+#endif
+
+ QString sql_cnp = lst_0
+                   +str_in_1
+                   +", tb_R as (select "
+                   +str_in_3
+                   +","
+                   +str_uple
+                   +" as uplet, count(*) as nb from lst_R,"
+                   +str_from.remove(".id")
+                   + str_in_5
+                   + " group by "
+                   + str_in_2
+                   + ","
+                   + str_in_8
+                   + " order by nb DESC"
+                   +")" ;
+
+ QString sql_req = "select "
+                   + str_in_7
+                   +", tb_R.uplet, max(tb_R.nb) over(PARTITION by tb_R.uplet) as total  from tb_R GROUP by tb_R.uplet order by tb_R.nb DESC";
+
+ msg = sql_cnp + sql_req;
+#ifndef QT_NO_DEBUG
+ qDebug() <<sql_cnp;
+ qDebug() <<str_full;
+ qDebug() <<sql_req;
+ qDebug() <<msg;
+#endif
+
+
+ return msg;
+}
 
 QString BUplet::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
 {
