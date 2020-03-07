@@ -20,16 +20,15 @@
 #include "db_tools.h"
 
 int BUplet::usrEnsCounter = 0;
-BUplet::BUplet(st_In const &param):BUplet(param,0,""){}
-BUplet::BUplet(st_In const &param, int index):BUplet(param,index,""){}
-BUplet::BUplet(st_In const &param, QString ensemble):BUplet(param,0,ensemble){}
+//BUplet::BUplet(st_In const &param):BUplet(param,0,""){}
+//BUplet::BUplet(st_In const &param, int index):BUplet(param,index,""){}
+//BUplet::BUplet(st_In const &param, QString ensemble):BUplet(param,0,ensemble){}
 
-BUplet::BUplet(st_In const &param, int index,QString ensemble)
+BUplet::BUplet(st_In const &param, int index, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
  input = param;
- ens_ref = ensemble;
 
- if(!ensemble.size()){
+ if((ligne==QModelIndex())&&(!data.size())){
   useData = eEnsFdj;
  }
  else {
@@ -41,7 +40,7 @@ BUplet::BUplet(st_In const &param, int index,QString ensemble)
  db_0 = QSqlDatabase::database(input.cnx);
 
  if((isOk=db_0.isValid()) == true){
-  QGroupBox *info = gpbCreate(index);
+  QGroupBox *info = gpbCreate(index, ligne, data, parent);
   QVBoxLayout *mainLayout = new QVBoxLayout;
 
 	mainLayout->addWidget(info);
@@ -54,7 +53,7 @@ BUplet::BUplet(st_In const &param, int index,QString ensemble)
 }
 BUplet::~BUplet(){}
 
-QGroupBox *BUplet::gpbCreate(int index)
+QGroupBox *BUplet::gpbCreate(int index, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
  int nb_uplet = input.uplet;
  bool isOk = false;
@@ -67,12 +66,12 @@ QGroupBox *BUplet::gpbCreate(int index)
  }
 
  QString usr_info = "";
- if(useData == eEnsUsr){
-  //usrEnsCounter++;
-  //usr_info = QString::number(usrEnsCounter).rightJustified(2,'0')+"-Usr,";
-  usr_info = "Usr-";
+ if((useData == eEnsUsr) && parent){
+  BUplet *p = qobject_cast<BUplet *>(parent);
+  int use_uplet = p->getUpl();
+  usr_info = ligne.model()->index(ligne.row(),use_uplet).data().toString();
  }
- gpb_title = jour+usr_info+"Uplet-"+QString::number(nb_uplet);
+ gpb_title = jour+usr_info+" Up"+QString::number(nb_uplet);
 
 
  QGridLayout *layout = new QGridLayout;
@@ -111,7 +110,9 @@ QGroupBox *BUplet::gpbCreate(int index)
  }
  else {
   QString tbl_cnp = "Cnp_49_"+QString::number(nb_uplet);
-  QString ens_in = ens_ref;
+  QString ens_in = data;
+  //ens_in = sql_UsrSelectedTirages(ligne,0);
+
   sql_req = sql_UsrCountUplet(nb_uplet,tbl_cnp, ens_in);
  }
 
@@ -282,18 +283,22 @@ QTableView *BUplet::doTabShowUplet(QString st_msg1)
 
 void BUplet::slot_FindNewUplet(const QModelIndex & index)
 {
- QObject * origine = this->parent();
+ //QTableView *view = qobject_cast<QTableView *>(sender());
 
  QString cnx = db_0.connectionName();
 
- QString data = sql_UsrSelectedTirages(index, origine);
+ QString data = sql_UsrSelectedTirages(index);
 
- BUplWidget *visu = new BUplWidget(cnx,0,data);
+ BUplWidget *visu = new BUplWidget(cnx,0,index,data, this);
  visu->show();
 
 }
+int BUplet::getUpl(void)
+{
+ return (input.uplet);
+}
 
-QString BUplet::sql_UsrSelectedTirages(const QModelIndex & index, QObject * origine)
+QString BUplet::sql_UsrSelectedTirages(const QModelIndex & index)
 {
  QString st_where = "";
  QString tmp = "";
@@ -684,13 +689,17 @@ QString BUplet::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
 	}
  }
 
- if(str_in_5.size()){
-  str_in_5 = " where("
-             +str_in_5
-             +"and"
-             +str_full
-             +")";
- }
+ if(nb==1){
+  str_in_5 = " where("+str_full+")";
+ }else {
+  if(str_in_5.size()){
+   str_in_5 = " where("
+              +str_in_5
+              +"and"
+              +str_full
+              +")";
+  }
+}
  QString str_from = str_in_4;
 
 #ifndef QT_NO_DEBUG
@@ -705,6 +714,10 @@ QString BUplet::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
  qDebug() <<str_in_7;
 #endif
 
+ if(str_in_8.size()){
+  str_in_8 = ","+str_in_8;
+ }
+
  QString sql_cnp = "with "
                    +lst_0
                    +str_in_1
@@ -717,7 +730,6 @@ QString BUplet::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
                    + str_in_5
                    + " group by "
                    + str_in_2
-                   + ","
                    + str_in_8
                    + " order by nb DESC"
                    +")" ;
@@ -745,21 +757,30 @@ QString BUplet::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
 //BUplWidget::BUplWidget(QString cnx, int index, QWidget *parent):QWidget(parent){BUplWidget(cnx,index,"B_fdj");}
 //BUplWidget::BUplWidget(QString cnx, QString usr_ens, QWidget *parent):QWidget(parent){BUplWidget(cnx,0,usr_ens);}
 
-BUplWidget::BUplWidget(QString cnx, int index, QString usr_ens, QWidget *parent):QWidget(parent)
+BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const QString &data, BUplet * origine, QWidget *parent):QWidget(parent)
 {
  QString str_data ="";
  BUplet::st_In cnf;
  cnf.cnx = cnx;
 
+ int start = 0;
+ int stop = 0;
+
  BVTabWidget *tabTop = new BVTabWidget(QTabWidget::East);
 
- if(usr_ens.size()){
-  str_data = "select * from ("+usr_ens+")as tb_data";
+ if(data.size()){
+  str_data = "select * from ("+data+")as tb_data";
+  start = 1;
+  stop = 4;
+ }
+ else {
+  start = 1;
+  stop = 5;
  }
 
- for (int i = 2; i<5; i++) {
+ for (int i = start; i<stop; i++) {
   cnf.uplet = i;
-  BUplet *tmp = new BUplet(cnf,index,usr_ens);
+  BUplet *tmp = new BUplet(cnf,index,ligne, str_data, origine);
   QString name ="Upl:"+QString::number(i);
   tabTop->addTab(tmp,name);
  }

@@ -29,11 +29,12 @@ typedef enum _eEnsemble /// Ensemble dans lequel chercher les uplets
 }eEnsemble;
 
 public:
-BUplet(st_In const &param);
-BUplet(st_In const &param, int index=0);
-BUplet(st_In const &param, QString ensemble="");
-BUplet(st_In const &param, int index,QString ensemble);
+//BUplet(st_In const &param);
+//BUplet(st_In const &param, int index=0);
+//BUplet(st_In const &param, QString ensemble="");
+BUplet(st_In const &param, int index=0, const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=0);
  ~BUplet();
+ int getUpl(void);
 
 public slots:
  void slot_Selection(const QString& lstBoules);
@@ -50,7 +51,7 @@ QString ens_ref;
 static int usrEnsCounter;
 
 private:
-QGroupBox *gpbCreate(int index);
+QGroupBox *gpbCreate(int index, const QModelIndex & ligne, const QString &data,QWidget *parent);
 QTableView *doTabShowUplet(QString tbl_src);
 int  getNbLines(QString tbl_src);
 QString getUpletFromIndex(int nb_uplet, int index, QString tbl_src);
@@ -65,7 +66,7 @@ QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
 QString sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
 
 
-QString sql_UsrSelectedTirages(const QModelIndex & index, QObject * origine);
+QString sql_UsrSelectedTirages(const QModelIndex & index);
 };
 
 #endif // BUPLET_H
@@ -77,6 +78,6 @@ class BUplWidget: public QWidget
  //BUplWidget(QString cnx, QWidget *parent=0);
  //BUplWidget(QString cnx, int index, QWidget *parent=0);
  //BUplWidget(QString cnx, QString usr_ens, QWidget *parent=0);
- BUplWidget(QString cnx, int index=0, QString usr_ens="", QWidget *parent=0);
+ BUplWidget(QString cnx, int index=0, const QModelIndex & ligne=QModelIndex(), const QString & data="", BUplet *origine=0, QWidget *parent=0);
 
 };
