@@ -1199,13 +1199,21 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
 
  // Zone Filtre
  QHBoxLayout *tmp_hLay = new QHBoxLayout();
+
+ QFormLayout *Fl_1 = new QFormLayout;
+ QComboBox *tmp_combo = ComboPerso(ref);
+ Fl_1->addRow(tr("Filtre :"), tmp_combo);
+
+#if 0
  QComboBox *tmp_combo = ComboPerso(ref);
  QLabel *tmp_lab = new QLabel(tr("Filtre :"));
  tmp_lab->setBuddy(tmp_combo);
+#endif
+
  connect(tmp_combo, SIGNAL(currentIndexChanged(int)),
          this, SLOT(slot_FiltreSurNewCol(int)));
 
- QFormLayout *FiltreLayout = new QFormLayout;
+ QFormLayout *Fl_2 = new QFormLayout;
 #ifndef QT_NO_DEBUG
  qDebug()<<sql_msgRef;
 #endif
@@ -1222,21 +1230,36 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
  QList<qint32> colid;
  colid << 2;
  fltComb_tmp->setFiltreConfig(sqm_tmp,qtv_tmp,colid);
- FiltreLayout->addRow("&Recherche", fltComb_tmp);
+ Fl_2->addRow("&Recherche", fltComb_tmp);
 
  // Associer la combo de selection au filtre pour
  // cette distance (ie cet onglet) et la Qtview associee
  pCritere[ref] = tmp_combo;
  pFiltre[ref] = fltComb_tmp;
 
- QLabel *tmp_lab2 = fltComb_tmp->getLabel();
+ //QLabel *tmp_lab2 = fltComb_tmp->getLabel();
 
+#if 0
  // Mettre combo + line dans hvbox
  tmp_hLay->addWidget(tmp_lab);
  tmp_hLay->addWidget(tmp_combo);
- tmp_hLay->addLayout(FiltreLayout);
+ tmp_hLay->addLayout(FL_2);
  tmp_hLay->addWidget(tmp_lab2);
+#endif
 
+ QFormLayout *Fl_3 = new QFormLayout;
+ QLabel *tmp_lab2 = fltComb_tmp->getLabel();
+ Fl_3->addRow(" -> ", tmp_lab2);
+ Fl_3->setFormAlignment(Qt::AlignLeft|Qt::AlignVCenter);
+
+ tmp_hLay->addLayout(Fl_1);
+ tmp_hLay->addLayout(Fl_2);
+ tmp_hLay->addLayout(Fl_3);
+
+ QWidget *ligne = new QWidget;
+ ligne->setLayout(tmp_hLay);
+
+ ///QVBoxLayout *tmp_vbox = new QVBoxLayout;
 
  int pos_y = 0;
  if(ref==3)
@@ -1247,8 +1270,12 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
   dist = new DistancePourTirage(val,
                                 sqm_tmp,qtv_tmp);
 
-  distLayout->addRow("&Distance", dist);
-  lay_return->addLayout(distLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
+	distLayout->addRow("&Distance", dist);
+	QWidget *dist_ligne = new QWidget;
+	dist_ligne->setLayout(distLayout);
+
+  lay_return->addWidget(dist_ligne,0,0,Qt::AlignLeft|Qt::AlignTop);
+  //tmp_vbox->addLayout(distLayout,Qt::AlignLeft|Qt::AlignTop);
 
   // Connection du line edit
   connect(dist, SIGNAL(returnPressed()),
@@ -1256,7 +1283,13 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
 
   pos_y++;
  }
- lay_return->addLayout(tmp_hLay,pos_y,0,Qt::AlignLeft|Qt::AlignTop);
+ //tmp_vbox->addWidget(ligne);
+ //tmp_vbox->addWidget(qtv_tmp);
+
+ //lay_return->addLayout(tmp_vbox,0,0);
+
+ //lay_return->addLayout(tmp_hLay,pos_y,0,Qt::AlignLeft|Qt::AlignTop);
+ lay_return->addWidget(ligne,pos_y,0,Qt::AlignLeft|Qt::AlignTop);
  lay_return->addWidget(qtv_tmp,pos_y+1,0,Qt::AlignLeft|Qt::AlignTop);
 
 

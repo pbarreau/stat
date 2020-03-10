@@ -285,6 +285,11 @@ void BUplet::slot_FindNewUplet(const QModelIndex & index)
 {
  //QTableView *view = qobject_cast<QTableView *>(sender());
 
+ if(input.uplet==1){
+  /// Trop long le temps de calcul
+  /// A debuger
+  //return;
+ }
  QString cnx = db_0.connectionName();
 
  QString data = sql_UsrSelectedTirages(index);
@@ -555,12 +560,16 @@ QString BUplet::sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in)
 	}
  }
 
- if(str_in_5.size()){
-  str_in_5 = " where("
-             +str_in_5
-             +"and"
-             +str_full
-             +")";
+ if(nb==1){
+  str_in_5 = " where("+str_full+")";
+ }else {
+  if(str_in_5.size()){
+   str_in_5 = " where("
+              +str_in_5
+              +"and"
+              +str_full
+              +")";
+  }
  }
  QString str_from = str_in_4;
 
@@ -576,6 +585,10 @@ QString BUplet::sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in)
  qDebug() <<str_in_7;
 #endif
 
+ if(str_in_8.size()){
+  str_in_8 = ","+str_in_8;
+ }
+
  QString sql_cnp = lst_0
                    +str_in_1
                    +", tb_R as (select "
@@ -587,7 +600,6 @@ QString BUplet::sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in)
                    + str_in_5
                    + " group by "
                    + str_in_2
-                   + ","
                    + str_in_8
                    + " order by nb DESC"
                    +")" ;
@@ -771,7 +783,12 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
  if(data.size()){
   str_data = "select * from ("+data+")as tb_data";
   start = 1;
-  stop = 4;
+  if(origine->getUpl() == 1){
+   stop = 3;
+  }
+  else {
+   stop = 4;
+  }
  }
  else {
   start = 1;
