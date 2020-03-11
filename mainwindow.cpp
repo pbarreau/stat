@@ -103,7 +103,6 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 #endif
 
 	QString cnx = DB_tirages->get_IdCnx(1);
-	//QString data = "select * from B_fdj (where b1=1)";
 	BUplWidget *visu = new BUplWidget(cnx,1);
 	visu->show();
 

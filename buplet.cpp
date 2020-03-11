@@ -290,26 +290,34 @@ void BUplet::slot_FindNewUplet(const QModelIndex & index)
   /// A debuger
   //return;
  }
- QString cnx = db_0.connectionName();
+ QString cnx = input.cnx;//db_0.connectionName();
 
- QString data = sql_UsrSelectedTirages(index);
+ QTabWidget *tab_Top= new QTabWidget;
 
- BUplWidget *visu = new BUplWidget(cnx,0,index,data, this);
- visu->show();
+ for(int tab_id=0; tab_id> -2;tab_id--){
+  //int pos = tab_id * (-1);
+  QString data = sql_UsrSelectedTirages(index,tab_id);
+
+	BUplWidget *visu = new BUplWidget(cnx,0,index,data, this);
+	tab_Top->addTab(visu,QString::number(tab_id));
+ }
+
+ tab_Top->show();
 
 }
+
 int BUplet::getUpl(void)
 {
  return (input.uplet);
 }
 
-QString BUplet::sql_UsrSelectedTirages(const QModelIndex & index)
+QString BUplet::sql_UsrSelectedTirages(const QModelIndex & index, int pos)
 {
  QString st_where = "";
  QString tmp = "";
  int zn =0;
  int nb_upl = input.uplet;
- int distance = -1;
+ int distance = pos;//-1;
 
  QString cols = FN2_getFieldsFromZone(zn,"tb0");
  QString ref1 = "(%1 in("+cols+"))";

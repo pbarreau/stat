@@ -66,7 +66,7 @@ QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
 QString sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
 
 
-QString sql_UsrSelectedTirages(const QModelIndex & index);
+QString sql_UsrSelectedTirages(const QModelIndex & index, int pos);
 };
 
 #endif // BUPLET_H
