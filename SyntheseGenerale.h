@@ -317,7 +317,7 @@ class SyntheseGenerale : public QObject
  QTableView *doTabLgnSelection(stDesigConf conf);
  QTableView *doTabLgnTirage(stDesigConf conf);
  QTableView *doTabShowUplet();
- QGridLayout* info_lgnTirage(QTableView *tbview);
+ QGridLayout* info_lgnTirage(int t_id, QTableView *tbview);
  QTableView *doTabGrpTirage(stDesigConf conf);
 
  QWidget *VbInfoDepart (param_1 a,CnfFnCalc *b[2]);

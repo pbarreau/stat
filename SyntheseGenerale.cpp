@@ -56,6 +56,8 @@
 #include "bvisuresume.h"
 #include "btbvrepartition.h"
 
+#include "buplet.h"
+
 #include "properties.h"
 
 //extern MainWindow w;
@@ -1471,7 +1473,7 @@ QTableView *SyntheseGenerale::doTabGrpTirage(stDesigConf conf)
  return qtv_tmp;
 }
 
-QGridLayout* SyntheseGenerale::info_lgnTirage(QTableView * tbview)
+QGridLayout* SyntheseGenerale::info_lgnTirage(int t_id, QTableView * tbview)
 {
 
  QGridLayout *lay_tmp = new QGridLayout;
@@ -1481,15 +1483,21 @@ QGridLayout* SyntheseGenerale::info_lgnTirage(QTableView * tbview)
 
 
 
- lab_tmp->setText("Analyse du :");
- vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+ if(t_id==1){
+  lab_tmp->setText("Analyse du :");
+  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+ }
  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
 
- QLabel * lab_uplet = new QLabel;
- QTableView *tb_uplet = doTabShowUplet();
- lab_uplet->setText("Uplet-2");
- vb_tmp->addWidget(lab_uplet,0,Qt::AlignLeft|Qt::AlignTop);
- vb_tmp->addWidget(tb_uplet,0,Qt::AlignLeft|Qt::AlignTop);
+ if(t_id==1){
+  QLabel * lab_uplet = new QLabel;
+  lab_uplet->setText("Uplet-2");
+  vb_tmp->addWidget(lab_uplet,0,Qt::AlignLeft|Qt::AlignTop);
+  QString cnx = db_1newDb.connectionName();
+  BUplWidget *visu = new BUplWidget(cnx,1);
+
+  vb_tmp->addWidget(visu,0,Qt::AlignLeft|Qt::AlignTop);
+ }
 
  lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
 
@@ -1695,7 +1703,7 @@ void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
    &SyntheseGenerale::doTabGrpTirage
   };
 
- QGridLayout * (SyntheseGenerale::*ptrLayInfo[])(QTableView * tbview)
+ QGridLayout * (SyntheseGenerale::*ptrLayInfo[])(int t_id, QTableView * tbview)
   ={
    &SyntheseGenerale::info_lgnTirage,
    &SyntheseGenerale::info_lgnTirage,
@@ -1707,7 +1715,7 @@ void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
   QTableView *tmp = (this->*ptrCreaTbv[i])(def[i]);
   QString id = QString("Info")+def[i].name.leftRef(3)+QString("_z")+QString::number(niv+1);
   tmp->setObjectName(id);
-  QGridLayout *lay_tmp = (this->*ptrLayInfo[i])(tmp);
+  QGridLayout *lay_tmp = (this->*ptrLayInfo[i])(i, tmp);
   QWidget *tmp_widget = new QWidget;
   tmp_widget->setLayout(lay_tmp);
   tmp_widget->adjustSize();
@@ -3151,6 +3159,11 @@ QGridLayout* SyntheseGenerale::tot_VbInfo(param_2 prm)
  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
 
  lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+ // Rajout du tableau des uplets
+ QString cnx = db_1newDb.connectionName();
+ BUplWidget *visu = new BUplWidget(cnx);
+ lay_tmp->addWidget(visu,0,1,Qt::AlignLeft|Qt::AlignTop);
 
 
  return lay_tmp;
