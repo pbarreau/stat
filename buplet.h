@@ -28,11 +28,19 @@ typedef enum _eEnsemble /// Ensemble dans lequel chercher les uplets
  eEnsUsr     /// Selection de l'utilisateur
 }eEnsemble;
 
+typedef enum _eCalcul
+{
+ eCalNotSet,
+ eCalTot, /// Calcul sur boule
+ eCalCmb, /// Calcul sur Combinaison
+ eCalBrc  /// Calcul sur barycentre
+}eCalcul;
+
 public:
 //BUplet(st_In const &param);
 //BUplet(st_In const &param, int index=0);
 //BUplet(st_In const &param, QString ensemble="");
-BUplet(st_In const &param, int index=0, const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=0);
+BUplet(st_In const &param, int index=0, eCalcul eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=0);
  ~BUplet();
  int getUpl(void);
 
@@ -48,15 +56,19 @@ QTableView *qtv_upl;
 QString gpb_title;
 eEnsemble useData;
 QString ens_ref;
-static int usrEnsCounter;
+static int tot_upl;
 
 private:
-QGroupBox *gpbCreate(int index, const QModelIndex & ligne, const QString &data,QWidget *parent);
+QGroupBox *gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
 QTableView *doTabShowUplet(QString tbl_src);
 int  getNbLines(QString tbl_src);
 QString getUpletFromIndex(int nb_uplet, int index, QString tbl_src);
 QString getBoulesTirage(int index);
+
 QString getJourTirage(int index);
+QString getCmbTirage(int index);
+QString getBrcTirage(int index);
+
 //bool DoCreateTblUplet(QString tbl);
 QString FN2_getFieldsFromZone(int zn, QString alias);
 
@@ -79,5 +91,9 @@ class BUplWidget: public QWidget
  //BUplWidget(QString cnx, int index, QWidget *parent=0);
  //BUplWidget(QString cnx, QString usr_ens, QWidget *parent=0);
  BUplWidget(QString cnx, int index=0, const QModelIndex & ligne=QModelIndex(), const QString & data="", BUplet *origine=0, QWidget *parent=0);
+
+ private:
+ QString sql_lstTirCmb(int ligne, int dst);
+ QString sql_lstTirBrc(int ligne, int dst);
 
 };

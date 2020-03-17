@@ -107,7 +107,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 	visu->show();
 
  }
- //return;
+ return;
 
  configJeu.db_cnx = DB_tirages->get_IdCnx(0);
  db_0 = QSqlDatabase::database(configJeu.db_cnx);

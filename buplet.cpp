@@ -19,14 +19,15 @@
 #include "monfiltreproxymodel.h"
 #include "db_tools.h"
 
-int BUplet::usrEnsCounter = 0;
+int BUplet::tot_upl = 0;
 //BUplet::BUplet(st_In const &param):BUplet(param,0,""){}
 //BUplet::BUplet(st_In const &param, int index):BUplet(param,index,""){}
 //BUplet::BUplet(st_In const &param, QString ensemble):BUplet(param,0,ensemble){}
 
-BUplet::BUplet(st_In const &param, int index, const QModelIndex & ligne, const QString &data, QWidget *parent)
+BUplet::BUplet(st_In const &param, int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
  input = param;
+ tot_upl++;
 
  if((ligne==QModelIndex())&&(!data.size())){
   useData = eEnsFdj;
@@ -40,7 +41,7 @@ BUplet::BUplet(st_In const &param, int index, const QModelIndex & ligne, const Q
  db_0 = QSqlDatabase::database(input.cnx);
 
  if((isOk=db_0.isValid()) == true){
-  QGroupBox *info = gpbCreate(index, ligne, data, parent);
+  QGroupBox *info = gpbCreate(index, eCal, ligne, data, parent);
   QVBoxLayout *mainLayout = new QVBoxLayout;
 
 	mainLayout->addWidget(info);
@@ -53,7 +54,7 @@ BUplet::BUplet(st_In const &param, int index, const QModelIndex & ligne, const Q
 }
 BUplet::~BUplet(){}
 
-QGroupBox *BUplet::gpbCreate(int index, const QModelIndex & ligne, const QString &data, QWidget *parent)
+QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
  int nb_uplet = input.uplet;
  bool isOk = false;
@@ -61,7 +62,24 @@ QGroupBox *BUplet::gpbCreate(int index, const QModelIndex & ligne, const QString
 
  QString jour = "";
  if(index){
-  jour = getJourTirage(index);
+
+	switch (eCal) {
+	 case eCalTot:
+		jour = getJourTirage(index);
+		break;
+
+	 case eCalCmb:
+		jour = getCmbTirage(index);
+		break;
+
+	 case eCalBrc:
+		jour = getBrcTirage(index);
+		break;
+
+	 default:
+		jour = "Error!!";
+	}
+
   jour = jour + " ";
  }
 
@@ -109,6 +127,7 @@ QGroupBox *BUplet::gpbCreate(int index, const QModelIndex & ligne, const QString
 
  }
  else {
+  /// choix analyse d'un tirage
   QString tbl_cnp = "Cnp_49_"+QString::number(nb_uplet);
   QString ens_in = data;
   //ens_in = sql_UsrSelectedTirages(ligne,0);
@@ -163,14 +182,78 @@ QString BUplet::getJourTirage(int index)
  QString st_tmp = "";
  bool isOk = false;
  QSqlQuery query(db_0);
- QString sql_tmp = "select J,D from B_fdj";
+
+ QString sql_tmp = "select J,D from B_fdj where(id="
+                   +QString::number(index)
+                   +")";
+#ifndef QT_NO_DEBUG
+ qDebug() << "msg:"<<sql_tmp;
+#endif
  isOk=query.exec(sql_tmp);
- if(isOk){
-  query.first();
+
+ if(isOk && query.first()){
   st_tmp=query.value(0).toString()
           +" "
           + query.value(1).toString();
  }
+ return st_tmp;
+}
+
+QString BUplet::getCmbTirage(int index)
+{
+ QString st_tmp = "";
+ bool isOk = false;
+ QSqlQuery query(db_0);
+ int zn=0;
+
+ QString sql_tmp = "with Resu_1 as (select t1.idComb as fgkey from B_ana_z"
+                   +QString::number(zn+1)
+                   +" as t1, B_fdj as t2 where((t1.id=t2.id) and (t2.id="
+                   +QString::number(index)
+                   +"))),"
+                   "Resu_2 as (select t1.id, t1.tip from B_cmb_z"
+                   +QString::number(zn+1)+
+                   " as t1, Resu_1 as t2 where(t1.id = t2.fgkey)) select * from Resu_2";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "msg:"<<sql_tmp;
+#endif
+
+ isOk=query.exec(sql_tmp);
+
+ if(isOk && query.first()){
+  st_tmp="("+query.value(0).toString()
+           +"): "
+           + query.value(1).toString();
+ }
+
+ return st_tmp;
+}
+
+QString BUplet::getBrcTirage(int index)
+{
+ QString st_tmp = "";
+ bool isOk = false;
+ QSqlQuery query(db_0);
+ int zn=0;
+
+ QString sql_tmp = "with Resu_1 as (select t1.Bc as fgkey from B_fdj_brc_z"
+                   +QString::number(zn+1)
+                   +" as t1, B_fdj as t2 where((t1.id=t2.id) and (t2.id="
+                   +QString::number(index)
+                   +"))) select * from Resu_1";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "msg:"<<sql_tmp;
+#endif
+
+ isOk=query.exec(sql_tmp);
+
+ if(isOk && query.first()){
+  st_tmp="("+query.value(0).toString()
+           +") ";
+ }
+
  return st_tmp;
 }
 
@@ -246,9 +329,24 @@ QTableView *BUplet::doTabShowUplet(QString st_msg1)
 {
  QTableView *qtv_tmp = new  QTableView;
  QSqlQueryModel *sqm_tmp=new QSqlQueryModel;
+ QSqlQuery query(db_0);
+ QString req_vue = "";
+ bool status = false;
+
 
  int nb_uplet = input.uplet;
- //QString st_msg1 = "";
+ QString vueRefName = "vt_upl_"+QString::number(tot_upl);
+
+ //Creer la vue pour la requete a la bonne distance dans le bon onglet pere
+ // creation d'une vue pour cette recherche
+ req_vue = "create temp view if not exists " + vueRefName
+           + " as select * from(" +st_msg1+")as LaTable";
+
+ status = query.exec(req_vue);
+ if(!status){
+  return qtv_tmp;
+ }
+ st_msg1 = "select * from "+vueRefName;
 
  sqm_tmp->setQuery(st_msg1,db_0);
 
@@ -285,17 +383,11 @@ void BUplet::slot_FindNewUplet(const QModelIndex & index)
 {
  //QTableView *view = qobject_cast<QTableView *>(sender());
 
- if(input.uplet==1){
-  /// Trop long le temps de calcul
-  /// A debuger
-  //return;
- }
- QString cnx = input.cnx;//db_0.connectionName();
+ QString cnx = input.cnx;
 
  QTabWidget *tab_Top= new QTabWidget;
 
  for(int tab_id=0; tab_id> -2;tab_id--){
-  //int pos = tab_id * (-1);
   QString data = sql_UsrSelectedTirages(index,tab_id);
 
 	BUplWidget *visu = new BUplWidget(cnx,0,index,data, this);
@@ -770,7 +862,6 @@ QString BUplet::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
  return msg;
 }
 
-
 /// ------------------------
 ///
 //BUplWidget::BUplWidget(QString cnx, QWidget *parent):QWidget(parent){BUplWidget(cnx,0,"B_fdj");}
@@ -786,7 +877,8 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
  int start = 0;
  int stop = 0;
 
- BVTabWidget *tabTop = new BVTabWidget(QTabWidget::East);
+ QTabWidget * tabFul = new QTabWidget;
+ QString lstTab[]={"tot","cmb","brc"};
 
  if(data.size()){
   str_data = "select * from ("+data+")as tb_data";
@@ -803,19 +895,89 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
   stop = 5;
  }
 
- for (int i = start; i<stop; i++) {
-  cnf.uplet = i;
-  BUplet *tmp = new BUplet(cnf,index,ligne, str_data, origine);
-  QString name ="Upl:"+QString::number(i);
-  tabTop->addTab(tmp,name);
+ /// Fonction retournant le code sql
+ QString (BUplWidget::*ptrSqlCode[])(int, int)={
+  &BUplWidget::sql_lstTirCmb,
+  &BUplWidget::sql_lstTirBrc
+ };
+
+ BUplet::eCalcul valCal[]={
+  BUplet::eCalcul::eCalTot,
+  BUplet::eCalcul::eCalCmb,
+  BUplet::eCalcul::eCalBrc};
+
+ for (int tab=0;tab<3;tab++) {
+  BVTabWidget *tabTop = new BVTabWidget(QTabWidget::East);
+
+	if(tab&&index){
+	 str_data = (this->*ptrSqlCode[tab-1])(index,0);
+	 stop=4;
+	 if(tab==2){
+		stop=3;
+	 }
+	}
+
+	for (int i = start; i<stop; i++) {
+	 cnf.uplet = i;
+	 BUplet *tmp = new BUplet(cnf,index, valCal[tab], ligne, str_data, origine);
+	 QString name ="Upl:"+QString::number(i);
+	 tabTop->addTab(tmp,name);
+	}
+
+  tabFul->addTab(tabTop,lstTab[tab]);
  }
 
- tabTop->show();
+
+ tabFul->show();
 
  QVBoxLayout *mainLayout = new QVBoxLayout;
 
- mainLayout->addWidget(tabTop);
+ mainLayout->addWidget(tabFul);
  this->setLayout(mainLayout);
  this->setWindowTitle("Tabed Uplets");
 
 }
+
+QString BUplWidget::sql_lstTirBrc(int ligne, int dst)
+{
+ int zn = 0;
+
+ QString tmp = "WITH target as (select t1.bc as fgkey from B_fdj_brc_z"
+               +QString::number(zn+1)
+               +" as t1, B_fdj as t2 where((t1.id=t2.id) and (t2.id="
+               +QString::number(ligne)
+               +"))), t1 as (SELECT * from B_fdj),t2 as (SELECT * from B_fdj_brc_z"
+               +QString::number(zn+1)
+               +") select t1.* from t1,t2,target where((t1.id=t2.id+(-"
+               +QString::number(dst)
+               +")) and(t2.bc=target.fgkey))";
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<tmp;
+#endif
+
+ return tmp;
+}
+
+QString BUplWidget::sql_lstTirCmb(int ligne, int dst)
+{
+ int zn = 0;
+
+ QString tmp = "WITH target as (select t1.idComb as find from B_ana_z"
+               +QString::number(zn+1)
+               +" as t1, B_fdj as t2 where((t1.id=t2.id) and (t2.id="
+               +QString::number(ligne)
+               +"))), t1 as (SELECT * from B_fdj),t2 as (SELECT * from B_ana_z"
+               +QString::number(zn+1)
+               +") select t1.* from t1,t2,target where((t1.id=t2.id+(-"
+               +QString::number(dst)
+               +")) and(t2.idComb=target.find))";
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<tmp;
+#endif
+
+ return tmp;
+}
+
+
