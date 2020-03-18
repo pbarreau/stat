@@ -17,6 +17,15 @@ typedef struct _stJoinArgs{
 }stJoinArgs;
 
 namespace DB_Tools {
+ typedef enum _tbTypes{
+  etbNotSet,
+  etbTempView,
+  etbTempTbl,
+  etbView,
+  etbTable,
+  etbEnd
+ }tbTypes;
+
 QString GEN_Where_3(int loop,
                     QString tb1,bool inc1,QString op1,
                     QStringList &tb2,bool inc2,QString op2
@@ -28,17 +37,8 @@ QString innerJoinFiltered(stJoinArgs ja,QString arg5);
 QString leftJoinFiltered(stJoinArgs ja,QString arg5);
 void DisplayError(QString fnName, QSqlQuery *pCurrent, QString sqlCode);
 bool checkHavingTableAndKey(QString tbl, QString key, QString cnx);
-bool isDbGotTbl(QString tbl, QString cnx,bool silence = true);
+bool isDbGotTbl(QString tbl, QString cnx, tbTypes etbtTypes=etbTable, bool silence = true);
 
 }
-
-#if 0
-class DB_Tools
-{
-public:
-    DB_Tools();
-
-};
-#endif
 
 #endif // DB_TOOLS_H

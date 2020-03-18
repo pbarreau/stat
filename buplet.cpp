@@ -20,9 +20,6 @@
 #include "db_tools.h"
 
 int BUplet::tot_upl = 0;
-//BUplet::BUplet(st_In const &param):BUplet(param,0,""){}
-//BUplet::BUplet(st_In const &param, int index):BUplet(param,index,""){}
-//BUplet::BUplet(st_In const &param, QString ensemble):BUplet(param,0,ensemble){}
 
 BUplet::BUplet(st_In const &param, int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
@@ -89,7 +86,17 @@ QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne,
   int use_uplet = p->getUpl();
   usr_info = ligne.model()->index(ligne.row(),use_uplet).data().toString();
  }
- gpb_title = jour+usr_info+" Up"+QString::number(nb_uplet);
+
+ QString st_pos="";
+ if(input.dst<0){
+  st_pos=QString::number(abs(input.dst))+" jour apres ";
+ }
+
+ if(input.dst>0) {
+  st_pos=st_pos=QString::number(abs(input.dst))+" jour avant ";
+ }
+
+ gpb_title = st_pos+jour+usr_info+" Up"+QString::number(nb_uplet);
 
 
  QGridLayout *layout = new QGridLayout;
@@ -135,7 +142,7 @@ QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne,
   sql_req = sql_UsrCountUplet(nb_uplet,tbl_cnp, ens_in);
  }
 
- qtv_upl = doTabShowUplet(sql_req);
+ qtv_upl = doTabShowUplet(sql_req,ligne);
 
  //int nb_lgn = getNbLines(tbl);
  BUpletFilterProxyModel *m = qobject_cast<BUpletFilterProxyModel *>(qtv_upl->model());
@@ -325,24 +332,44 @@ QString BUplet::getUpletFromIndex(int nb_uplet, int index, QString tbl_src)
  return st_tmp;
 }
 
-QTableView *BUplet::doTabShowUplet(QString st_msg1)
+QTableView *BUplet::doTabShowUplet(QString st_msg1,const QModelIndex & ligne)
 {
  QTableView *qtv_tmp = new  QTableView;
  QSqlQueryModel *sqm_tmp=new QSqlQueryModel;
  QSqlQuery query(db_0);
  QString req_vue = "";
- bool status = false;
+ bool status = true;
 
 
  int nb_uplet = input.uplet;
- QString vueRefName = "vt_upl_"+QString::number(tot_upl);
+ QString vueRefName="";
+ QString vuetype="";
+ DB_Tools::tbTypes etbType = DB_Tools::tbTypes::etbNotSet;
 
  //Creer la vue pour la requete a la bonne distance dans le bon onglet pere
  // creation d'une vue pour cette recherche
- req_vue = "create temp view if not exists " + vueRefName
-           + " as select * from(" +st_msg1+")as LaTable";
+ if(ligne != QModelIndex()){
+  vueRefName = "vt_upl_";
+  vuetype="temp view";
+  etbType=DB_Tools::tbTypes::etbTempView;
+ }
+ else {
+  vueRefName = "tb_upl_";
+  vuetype="table";
+  etbType=DB_Tools::tbTypes::etbTable;
+ }
 
- status = query.exec(req_vue);
+ /// Verifier si existe deja
+ QString tblName = vueRefName + QString::number(tot_upl).rightJustified(3,'0');
+ QString cnx_1 = db_0.connectionName();
+ QString cnx_2 = input.cnx;
+ if(DB_Tools::isDbGotTbl(tblName,cnx_1,etbType)==false){
+  req_vue = "create "+vuetype+" if not exists " + tblName
+            + " as select * from(" +st_msg1+")as LaTable";
+
+  status = query.exec(req_vue);
+ }
+
  if(!status){
 #ifndef QT_NO_DEBUG
 	qDebug() << "msg:"<<req_vue;
@@ -351,11 +378,13 @@ QTableView *BUplet::doTabShowUplet(QString st_msg1)
 
   return qtv_tmp;
  }
- st_msg1 = "select * from "+vueRefName;
+
+ st_msg1 = "select * from "+tblName;
 
  sqm_tmp->setQuery(st_msg1,db_0);
 
  BUpletFilterProxyModel * fpm_tmp = new BUpletFilterProxyModel(input.uplet);
+ fpm_tmp->setDynamicSortFilter(true);
  fpm_tmp->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(fpm_tmp);
 
@@ -363,6 +392,9 @@ QTableView *BUplet::doTabShowUplet(QString st_msg1)
  for(int i = 0; i< nb_uplet;i++){
   qtv_tmp->hideColumn(i);
  }
+
+ qtv_tmp->setSortingEnabled(true);
+ qtv_tmp->sortByColumn(nb_uplet+1,Qt::DescendingOrder);
 
  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
@@ -903,20 +935,33 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
   BUplet::eCalcul::eCalCmb,
   BUplet::eCalcul::eCalBrc};
 
- QString tbDay[] ={"Jour 0", "Jour +1"};
+ QString tbDay[] ={"Jour J", "Jour J+1"};
  QString lstTab[]={"tot","cmb","brc"};
+ int maxDays = sizeof(tbDay)/sizeof(QString);
+ int tab_max = sizeof(lstTab)/sizeof(QString);
 
  QTabWidget * tabDays = new QTabWidget;
  int tir_pos = 0;
- for (int day=0;day<2;day++) {
+
+ if(!index){
+  /// Recherche sur toute la base uniquement
+  maxDays = 1;
+  tab_max=1;
+  tbDay[0]="Base";
+ }
+
+ // Si calcul depuis resultat precedent
+ if((ligne != QModelIndex()))
+ {
+  maxDays = 2;
+  tab_max=1;
+  tbDay[0]="Base J";
+  tbDay[1]="Base J+1";
+ }
+
+ for (int day=0;day<maxDays;day++) {
   QTabWidget * tabCalc = new QTabWidget;
 
-	// Si calcul depuis resultat precedent
-	int tab_max = 3;
-	if(ligne != QModelIndex())
-	{
-	 tab_max=1;
-	}
 
 	for (int tab=0;tab<tab_max;tab++) {
 	 BVTabWidget *tabEast = new BVTabWidget(QTabWidget::East);
@@ -942,6 +987,7 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
 		str_data = origine->sql_UsrSelectedTirages(ligne,tir_pos);
 	 }
 
+	 cnf.dst = tir_pos;
 	 for (int i = start; i<stop; i++) {
 		cnf.uplet = i;
 		BUplet *tmp = new BUplet(cnf,index, valCal[tab], ligne, str_data, origine);
@@ -951,7 +997,8 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
 
 	 tabCalc->addTab(tabEast,lstTab[tab]);
 	}
-	tabDays->addTab(tabCalc,tbDay[day]);
+
+  tabDays->addTab(tabCalc,tbDay[day]);
  }
 
 

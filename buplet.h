@@ -19,6 +19,7 @@ public:
 typedef struct _stIn{
  int uplet;   /// Valeur du n-uplet
  QString cnx; /// Nom de la connexion
+ int dst;     /// distance vis a vis uplet
 }st_In;
 
 typedef enum _eEnsemble /// Ensemble dans lequel chercher les uplets
@@ -61,7 +62,7 @@ static int tot_upl;
 
 private:
 QGroupBox *gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
-QTableView *doTabShowUplet(QString tbl_src);
+QTableView *doTabShowUplet(QString tbl_src, const QModelIndex &ligne);
 int  getNbLines(QString tbl_src);
 QString getUpletFromIndex(int nb_uplet, int index, QString tbl_src);
 QString getBoulesTirage(int index);
