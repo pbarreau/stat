@@ -43,6 +43,7 @@ public:
 BUplet(st_In const &param, int index=0, eCalcul eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=0);
  ~BUplet();
  int getUpl(void);
+ QString sql_UsrSelectedTirages(const QModelIndex & index, int pos);
 
 public slots:
  void slot_Selection(const QString& lstBoules);
@@ -78,7 +79,6 @@ QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
 QString sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
 
 
-QString sql_UsrSelectedTirages(const QModelIndex & index, int pos);
 };
 
 #endif // BUPLET_H

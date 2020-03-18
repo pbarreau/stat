@@ -223,7 +223,7 @@ QString BUplet::getCmbTirage(int index)
 
  if(isOk && query.first()){
   st_tmp="("+query.value(0).toString()
-           +"): "
+           +") "
            + query.value(1).toString();
  }
 
@@ -344,6 +344,11 @@ QTableView *BUplet::doTabShowUplet(QString st_msg1)
 
  status = query.exec(req_vue);
  if(!status){
+#ifndef QT_NO_DEBUG
+	qDebug() << "msg:"<<req_vue;
+	DB_Tools::DisplayError("doTabShowUplet",&query,req_vue);
+#endif
+
   return qtv_tmp;
  }
  st_msg1 = "select * from "+vueRefName;
@@ -385,16 +390,10 @@ void BUplet::slot_FindNewUplet(const QModelIndex & index)
 
  QString cnx = input.cnx;
 
- QTabWidget *tab_Top= new QTabWidget;
+  QString data = sql_UsrSelectedTirages(index,0);
 
- for(int tab_id=0; tab_id> -2;tab_id--){
-  QString data = sql_UsrSelectedTirages(index,tab_id);
-
-	BUplWidget *visu = new BUplWidget(cnx,0,index,data, this);
-	tab_Top->addTab(visu,QString::number(tab_id));
- }
-
- tab_Top->show();
+  BUplWidget *visu = new BUplWidget(cnx,0,index,data, this);
+ visu->show();
 
 }
 
@@ -877,8 +876,6 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
  int start = 0;
  int stop = 0;
 
- QTabWidget * tabFul = new QTabWidget;
- QString lstTab[]={"tot","cmb","brc"};
 
  if(data.size()){
   str_data = "select * from ("+data+")as tb_data";
@@ -906,33 +903,64 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
   BUplet::eCalcul::eCalCmb,
   BUplet::eCalcul::eCalBrc};
 
- for (int tab=0;tab<3;tab++) {
-  BVTabWidget *tabTop = new BVTabWidget(QTabWidget::East);
+ QString tbDay[] ={"Jour 0", "Jour +1"};
+ QString lstTab[]={"tot","cmb","brc"};
 
-	if(tab&&index){
-	 str_data = (this->*ptrSqlCode[tab-1])(index,0);
-	 stop=4;
-	 if(tab==2){
-		stop=3;
+ QTabWidget * tabDays = new QTabWidget;
+ int tir_pos = 0;
+ for (int day=0;day<2;day++) {
+  QTabWidget * tabCalc = new QTabWidget;
+
+	// Si calcul depuis resultat precedent
+	int tab_max = 3;
+	if(ligne != QModelIndex())
+	{
+	 tab_max=1;
+	}
+
+	for (int tab=0;tab<tab_max;tab++) {
+	 BVTabWidget *tabEast = new BVTabWidget(QTabWidget::East);
+
+	 tir_pos = -1*day;
+	 if(tab&&index){
+		/// filtrer les tirages (cmb, brc)
+		str_data = (this->*ptrSqlCode[tab-1])(index,tir_pos);
+		stop=4;
+		if(tab==2){
+		 /// recherche des uplets dans liste tirage par barycentre prend du temps
+		 stop=3;
+		}
 	 }
-	}
 
-	for (int i = start; i<stop; i++) {
-	 cnf.uplet = i;
-	 BUplet *tmp = new BUplet(cnf,index, valCal[tab], ligne, str_data, origine);
-	 QString name ="Upl:"+QString::number(i);
-	 tabTop->addTab(tmp,name);
-	}
+	 /// Verifier si selection es dernier tirage
+	 if((index==1) && (tab==0) && day ){
+		/// On ne peut pas voir les boules du prochain tirage
+		continue;
+	 }
 
-  tabFul->addTab(tabTop,lstTab[tab]);
+	 if(origine!=0){
+		str_data = origine->sql_UsrSelectedTirages(ligne,tir_pos);
+	 }
+
+	 for (int i = start; i<stop; i++) {
+		cnf.uplet = i;
+		BUplet *tmp = new BUplet(cnf,index, valCal[tab], ligne, str_data, origine);
+		QString name ="Upl:"+QString::number(i);
+		tabEast->addTab(tmp,name);
+	 }
+
+	 tabCalc->addTab(tabEast,lstTab[tab]);
+	}
+	tabDays->addTab(tabCalc,tbDay[day]);
  }
 
 
- tabFul->show();
+
+ tabDays->show();
 
  QVBoxLayout *mainLayout = new QVBoxLayout;
 
- mainLayout->addWidget(tabFul);
+ mainLayout->addWidget(tabDays);
  this->setLayout(mainLayout);
  this->setWindowTitle("Tabed Uplets");
 
@@ -948,7 +976,7 @@ QString BUplWidget::sql_lstTirBrc(int ligne, int dst)
                +QString::number(ligne)
                +"))), t1 as (SELECT * from B_fdj),t2 as (SELECT * from B_fdj_brc_z"
                +QString::number(zn+1)
-               +") select t1.* from t1,t2,target where((t1.id=t2.id+(-"
+               +") select t1.* from t1,t2,target where((t1.id=t2.id+("
                +QString::number(dst)
                +")) and(t2.bc=target.fgkey))";
 
@@ -969,7 +997,7 @@ QString BUplWidget::sql_lstTirCmb(int ligne, int dst)
                +QString::number(ligne)
                +"))), t1 as (SELECT * from B_fdj),t2 as (SELECT * from B_ana_z"
                +QString::number(zn+1)
-               +") select t1.* from t1,t2,target where((t1.id=t2.id+(-"
+               +") select t1.* from t1,t2,target where((t1.id=t2.id+("
                +QString::number(dst)
                +")) and(t2.idComb=target.find))";
 
