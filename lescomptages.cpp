@@ -327,12 +327,15 @@ bool BPrevision::creerTablesDeLaBase(void)
   {C_TBL_2,&BPrevision::f2},   /// Liste des boules par zone
   {T_CMB,&BPrevision::f4},    /// Table des combinaisons
   {T_ANA,&BPrevision::f5},    /// Table des Analyses
-  {C_TBL_6,&BPrevision::f6},    /// Selection utilisateur
+  {C_TBL_6,&BPrevision::f6}
+ };
+#if 0
+,    /// Selection utilisateur
   {U_CMB,&BPrevision::f6},    /// Selection utilisateur
   {U_GRP,&BPrevision::f6},    /// Selection utilisateur
   {C_TBL_A,&BPrevision::f6}    /// Selection utilisateur
- };
 
+#endif
 
  int nbACreer = 0;
  if(conf.gameInfo.bUseMadeBdd){
@@ -751,6 +754,10 @@ bool BPrevision::f6(QString tbName,QSqlQuery *query)
 {
  bool isOk = true;
 
+
+
+
+ //------------------
  QString st_sqldf = ""; /// sql definition
  QString st_table = "";
 
@@ -2101,14 +2108,14 @@ void BPrevision::slot_UGL_Create()
 	}
 	else{
 	 if(n<=MAX_CHOIX_BOULES){
-
+		int zn=0;
 		monJeu.gameInfo.eFdjType = onGame.eFdjType;
 		monJeu.gameInfo.eTirType = eTirGen;
 		monJeu.gameInfo.znCount = 1;
 		monJeu.gameInfo.limites = &(onGame.limites[0]);
 		monJeu.gameInfo.names = &(onGame.names[0]);
 		monJeu.tblFdj_dta="B_fdj";
-		monJeu.tblFdj_brc="r_B_fdj_0_brc_z1";
+		monJeu.tblFdj_brc="r_B_fdj_0_brc_z"+QString::number(zn+1);
 
 
 		QTime r;

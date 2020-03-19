@@ -89,10 +89,10 @@ QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
 
 
  if(src_tbl == "B_fdj"){
-  src_data = "select * from r_B_fdj_0_brc_z1;";
+  src_data = "select * from r_B_fdj_0_brc_z"+QString::number(zn+1);
  }
  else{
-  src_data = "select * from r_"+src_tbl+"_0_brc_z1;";
+  src_data = "select * from r_"+src_tbl+"_0_brc_z"+QString::number(zn+1);
  }
  sqm_tmp->setQuery(src_data,db_1);
 
@@ -248,7 +248,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 #endif
 	 /// 2: Calcul du barycentre si calcul toltal de chaque boule
 	 ///  de la base complete
-	 QString tbl_totalBoule = "r_B_fdj_0_elm_z1";
+	 QString tbl_totalBoule = "r_B_fdj_0_elm_z"+QString::number(zn+1);
 	 if(isTableTotalBoulleReady(tbl_totalBoule)){
 		str_data = "Select c1.id as Id, sum(c2.t)/5 as BC, J From ("
 							 +str_data
@@ -261,7 +261,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 #endif
 		/// 3: Creation d'une table regroupant les barycentres
 		QString str_tblData = "";
-		QString str_tblName = "r_"+tbl_in+"_0_brc_z1";
+		QString str_tblName = "r_"+tbl_in+"_0_brc_z"+QString::number(zn+1);
 		str_tblData = "select BC, count(BC) as T, "
 									+filterDays
 									+QString(",NULL as P, NULL as F from (")
@@ -278,10 +278,10 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 		 /// mettre dans la table analyse le barycentre de chaque tirage
 		 QString str_tblAnalyse = "";
 		 if(tbl_in=="B_fdj"){
-			str_tblAnalyse = tbl_in+"_brc_z1";
+			str_tblAnalyse = tbl_in+"_brc_z"+QString::number(zn+1);
 		 }
 		 else{
-			str_tblAnalyse = "U_"+tbl_in+"_brc_z1";
+			str_tblAnalyse = "U_"+tbl_in+"_brc_z"+QString::number(zn+1);
 		 }
 
 		 /// verifier si la table analyse pour barycentre existe sinon la creer

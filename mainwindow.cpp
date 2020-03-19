@@ -73,7 +73,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 
  cFdjData *monJeu = new cFdjData (eFdjLoto);
  cFdjData *a1 = new cFdjData (*monJeu);
- //return;
+ return;
 #endif /// if 0
 
  stParam input;

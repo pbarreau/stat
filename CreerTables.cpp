@@ -484,11 +484,12 @@ bool GererBase::f2_2(QString tb, QString *data)
 {
  /// Code pour ancienne base
     bool status = true;
-
     QSqlQuery q_create(db_0);
-    QString st_refTbl[] = {C_TBL_6,U_CMB,U_GRP,C_TBL_A,"U_brc"};
     QString st_sqldf = ""; /// sql definition
     QString st_table = "";
+
+#if 0
+    QString st_refTbl[] = {C_TBL_6,U_CMB,U_GRP,C_TBL_A,"U_brc"};
 
     stTiragesDef ref = typeTirages->conf;
     int maxTbl = sizeof(st_refTbl)/sizeof(QString);
@@ -509,10 +510,15 @@ bool GererBase::f2_2(QString tb, QString *data)
         }
 
     }
+#endif
 
 		if(status){
+		 st_table="Filtres";
+
 		/// Preparation nouvelle table pour supprimer ancienne def
-		st_sqldf =  "create table Filtres (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
+		st_sqldf =  "create table "
+								+st_table
+								+" (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
 		status = q_create.exec(st_sqldf);
 		}
 		q_create.finish();
