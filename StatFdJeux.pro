@@ -90,7 +90,8 @@ SOURCES += \
     idlgttirages.cpp \
     sqlqmtirages.cpp \
     buplet.cpp \
-    bvtabbar.cpp
+    bvtabbar.cpp \
+    btirbar.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -143,7 +144,8 @@ HEADERS  += \
     idlgttirages.h \
     sqlqmtirages.h \
     buplet.h \
-    bvtabbar.h
+    bvtabbar.h \
+    btirbar.h
 
 
 FORMS    += mainwindow.ui \

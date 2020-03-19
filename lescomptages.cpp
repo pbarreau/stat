@@ -227,8 +227,9 @@ void BPrevision::effectuerTraitement(etFdjType game)
  }
 
 
+ definirConstantesDuJeu(game);
+
  if(conf.gameInfo.bUseMadeBdd == false){
-  definirConstantesDuJeu(game);
 
   creerTablesDeLaBase();
 
@@ -236,7 +237,8 @@ void BPrevision::effectuerTraitement(etFdjType game)
 	analyserTirages(conf,source, onGame);
  }
  else {
-  int a;
+  conf.gameInfo = onGame;
+  analyserTirages(conf,source, onGame);
  }
  int b;
 }
