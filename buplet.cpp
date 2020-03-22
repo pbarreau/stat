@@ -1003,7 +1003,7 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
 
 
 
- tabDays->show();
+ //tabDays->show();
 
  QVBoxLayout *mainLayout = new QVBoxLayout;
 

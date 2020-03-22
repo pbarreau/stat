@@ -64,8 +64,9 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
 void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest_bdd)
 {
  etFdjType unJeu = eFdjNotSet;
- BTirBar *a = new BTirBar;
- return;
+ BTirBar *a = new BTirBar();
+ a->show();
+ //return;
 
 #if 0
  cFdjData f(eFdjEuro);
@@ -184,6 +185,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
   prm.tblUsr_dta="";
   prm.tblUsr_ana="";
 
+  return;
   tous = new BPrevision(prm);
 
 

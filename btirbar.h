@@ -8,7 +8,7 @@
 #include<QValidator>
 #include <QLineEdit>
 
-class BTirBar:public QObject
+class BTirBar:public QWidget
 {
  Q_OBJECT
 
@@ -24,6 +24,7 @@ class BTirBar:public QObject
  }efltType;
 
 public:
+//BTirBar(QWidget *parent=0);
 BTirBar();
 
 public slots:
@@ -35,6 +36,7 @@ QGroupBox * mkBarre(void);
 QComboBox *ComboPerso(int id);
 
 private:
+static int cnt_items;
 QRegExpValidator *validator;
 QLineEdit *data;
 };

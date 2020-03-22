@@ -14,14 +14,20 @@
 #include <QRegExpValidator>
 
 #include "btirbar.h"
+int BTirBar::cnt_items = 0;
 
-BTirBar::BTirBar()
+BTirBar::BTirBar()//(QWidget *parent):QWidget (parent)
 {
+ QHBoxLayout *layout= new QHBoxLayout;
+
+ cnt_items++;
  validator = new QRegExpValidator();
  QGroupBox *tmp_gpb = mkBarre();
 
+ layout->addWidget(tmp_gpb);
+ this->setLayout(layout);
 
- tmp_gpb->show();
+ //tmp_gpb->show();
 }
 
 void BTirBar::slot_FiltreSurNewCol(int colNum)
@@ -97,7 +103,7 @@ QComboBox *BTirBar::ComboPerso(int id)
  int nbChoix = ChoixCol.size();
 
  QStandardItemModel *model = new QStandardItemModel(nbChoix, 2);
- model->setHeaderData(0, Qt::Horizontal, QObject::tr("Filtre"));
+ model->setHeaderData(0, Qt::Horizontal, QObject::tr("Filtres"));
 
  for(int i = 0; i<nbChoix;i++)
  {
@@ -152,7 +158,10 @@ QGroupBox * BTirBar::mkBarre(void)
  tmp_lay->addLayout(&item[3]);
 
  tmp_gpb->setLayout(tmp_lay);
- tmp_gpb->setTitle("Recherche utilisateur :");
+ QString str_msg = "Recherche utilisateur ("
+                   +QString::number(cnt_items).rightJustified(2,'0')
+                   +")";
+ tmp_gpb->setTitle(str_msg);
 
  return tmp_gpb;
 }

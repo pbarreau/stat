@@ -29,6 +29,7 @@
 
 #include "sqlqmtirages.h"
 #include "idlgttirages.h"
+#include "btirbar.h"
 
 // declaration de variable de classe
 QStandardItemModel **RefEtude::p_simResu = new QStandardItemModel*[2];
@@ -118,12 +119,14 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
  QGridLayout *lay_return = new QGridLayout;
 
  //QTableView *tbv_tmp0 = tbForBaseLigne();
+ BTirBar *bar =new  BTirBar;
  QTableView *tbv_tmp1 = tbForBaseRef();
 
  //QWidget *tbv_tmp2 = EcartOnglets();
 
  //lay_return->addWidget(tbv_tmp0,0,0,1,3,Qt::AlignLeft|Qt::AlignTop);
- lay_return->addWidget(tbv_tmp1,0,0,Qt::AlignLeft|Qt::AlignTop);
+ lay_return->addWidget(bar,0,0,Qt::AlignLeft|Qt::AlignTop);
+ lay_return->addWidget(tbv_tmp1,1,0,Qt::AlignLeft|Qt::AlignTop);
  //lay_return->addWidget(tbv_tmp2,1,1,Qt::AlignLeft|Qt::AlignTop);
 
  return lay_return;
