@@ -106,7 +106,7 @@ QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne,
 
  QString stPattern = "(\\d{1,2},?){1,"
                      +QString::number(nb_uplet)
-                        +"}";
+                        +"}(\\d{1,2})";
  QValidator *validator = new QRegExpValidator(QRegExp(stPattern));
 
  bval->setValidator(validator);

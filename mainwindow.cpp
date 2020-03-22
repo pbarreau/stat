@@ -65,7 +65,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 {
  etFdjType unJeu = eFdjNotSet;
  BTirBar *a = new BTirBar;
- //return;
+ return;
 
 #if 0
  cFdjData f(eFdjEuro);
