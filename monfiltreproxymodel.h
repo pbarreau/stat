@@ -29,7 +29,7 @@ class BUpletFilterProxyModel:public QSortFilterProxyModel
 {
  Q_OBJECT
  public:
- explicit BUpletFilterProxyModel(int uplet, QObject *parent = nullptr);
+ explicit BUpletFilterProxyModel(int uplet, int start=0, QObject *parent = nullptr);
 
  protected:
  bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
@@ -38,7 +38,8 @@ class BUpletFilterProxyModel:public QSortFilterProxyModel
  void setUplets(const QString& lstBoules);
 
  private:
- int col_uplets;
+ int col_deb;
+ int col_tot;
  QStringList lst_usr;
 };
 

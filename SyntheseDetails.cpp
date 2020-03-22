@@ -1166,6 +1166,9 @@ QGridLayout * SyntheseDetails::MonLayout_MontrerTiragesFiltres(QMdiArea *visuel,
  //QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
  MaSQlModel *sqm_tmp = new MaSQlModel;
  QTableView *qtv_tmp = new QTableView;
+#ifndef QT_NO_DEBUG
+ qDebug()<<sql_msgRef;
+#endif
 
  sqm_tmp->setQuery(sql_msgRef,db_0);
  qtv_tmp->setModel(sqm_tmp);

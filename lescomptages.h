@@ -5,6 +5,7 @@
 #include <QGridLayout>
 #include <QSqlDatabase>
 #include <QLabel>
+#include <QGroupBox>
 
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
@@ -156,6 +157,7 @@ class BPrevision:public QGridLayout
  void slot_CnpEnd(const BCnp::Status eStatus, const int val_n, const int val_p);
 
  public slots:
+ void slot_ShowNewTotal(const QString& lstBoules);
  void slot_changerTitreZone(QString le_titre);
  void slot_UGL_Create();
  void slot_UGL_SetFilters();
@@ -167,7 +169,7 @@ class BPrevision:public QGridLayout
  BCountGroup *c3;
  CBaryCentre *c;
  int cur_item;
- QLabel *lignes;
+ QGroupBox *gpb_Tirages;
  QSqlDatabase db_1;      /// base de donnees associee a cet objets
  QSqlQueryModel *sqm_resu;
  QString cnx_db_1;       /// nom de la connection

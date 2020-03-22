@@ -9,6 +9,7 @@
 #include <QApplication>
 #include <QString>
 #include <QFormLayout>
+#include <QLineEdit>
 #include <QTabWidget>
 #include <QSqlQuery>
 #include <QSqlResult>
@@ -19,6 +20,9 @@
 
 #include <QMessageBox>
 #include <QFileDialog>
+
+#include "buplet.h"
+#include "monfiltreproxymodel.h"
 
 #include "compter.h"
 #include "compter_zones.h"
@@ -327,11 +331,11 @@ bool BPrevision::creerTablesDeLaBase(void)
   {C_TBL_2,&BPrevision::f2},   /// Liste des boules par zone
   {T_CMB,&BPrevision::f4},    /// Table des combinaisons
   {T_ANA,&BPrevision::f5},    /// Table des Analyses
-  {C_TBL_6,&BPrevision::f6}
+  {C_TBL_6,&BPrevision::f6},    /// Selection utilisateur
+  {U_CMB,&BPrevision::f6}
  };
 #if 0
 ,    /// Selection utilisateur
-  {U_CMB,&BPrevision::f6},    /// Selection utilisateur
   {U_GRP,&BPrevision::f6},    /// Selection utilisateur
   {C_TBL_A,&BPrevision::f6}    /// Selection utilisateur
 
@@ -2065,7 +2069,7 @@ void BPrevision::slot_UGL_SetFilters()
  }
 
  QString tot = "Total : " + QString::number(nbLignes);
- lignes->setText(tot);
+ gpb_Tirages->setTitle(tot);
 
 }
 
@@ -2269,17 +2273,35 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 
 }
 
+void BPrevision::slot_ShowNewTotal(const QString& lstBoules)
+{
+ BLineEdit *ble_tmp = qobject_cast<BLineEdit *>(sender());
+
+ QTableView *view = ble_tmp->getView();
+ BUpletFilterProxyModel *m = qobject_cast<BUpletFilterProxyModel *>(view->model());
+ QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+int nb_lgn_ftr = m->rowCount();
+int nb_lgn_rel = vl->rowCount();
+
+ QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
+ gpb_Tirages->setTitle(st_total);
+
+}
+
 void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
 {
  bool isOk=false;
  QString msg = "";
 
  int zn=0;
+ int chk_nb_col = monJeu.gameInfo.limites[zn].len;
+
  isOk = AnalyserEnsembleTirage(tbl_cible,monJeu.gameInfo, zn);
  if(isOk)
   isOk = FaireTableauSynthese(tbl_cible_ana,monJeu.gameInfo,zn);
 
- analyserTirages(conf,tbl_cible,monJeu.gameInfo);
+ //analyserTirages(conf,tbl_cible,monJeu.gameInfo);
 
  static bool OneShot = false;
  if(OneShot==false){
@@ -2288,41 +2310,78 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
 	/// Montrer resultats
 	msg="select * from ("+tbl_cible+")";
 	QTableView *qtv_tmp = new QTableView;
-	sqm_resu = new QSqlQueryModel;
 
+	QSqlQueryModel *sqm_resu = new QSqlQueryModel;
 	sqm_resu->setQuery(msg,db_1);
-	qtv_tmp->setModel(sqm_resu);
 
-	lignes =new QLabel;
-	int nbLignes = sqm_resu->rowCount();
+	BUpletFilterProxyModel * fpm_tmp = new BUpletFilterProxyModel(chk_nb_col,2);
+	fpm_tmp->setDynamicSortFilter(true);
+	fpm_tmp->setSourceModel(sqm_resu);
+	qtv_tmp->setModel(fpm_tmp);
+	//qtv_tmp->setSortingEnabled(true);
+
+	//--------------
+	QFormLayout *frm_chk = new QFormLayout;
+	BLineEdit *le_chk = new BLineEdit(qtv_tmp);
+	frm_chk->addRow("Rch :", le_chk);
+	le_chk->setToolTip("Recherche");
+
+	QString stPattern = "(\\d{1,2},?){1,"
+											+QString::number(chk_nb_col-1)
+											+"}(\\d{1,2})";
+	QValidator *validator = new QRegExpValidator(QRegExp(stPattern));
+
+	le_chk->setValidator(validator);
+	connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(setUplets(const QString)));
+	connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(slot_ShowNewTotal(const QString)));
+	//--------------
+
+
+	/// Necessaire pour compter toutes les lignes de reponses
+	while (sqm_resu->canFetchMore())
+	{
+	 sqm_resu->fetchMore();
+	}
+
+
+	/// Determination nb ligne par proxymodel
+	int nb_lgn_ftr = fpm_tmp->rowCount();
+	int nb_lgn_rel = sqm_resu->rowCount();
+
+#if 0
 	QSqlQuery nvll(db_1);
 	isOk=nvll.exec("select count(*) from ("+tbl_cible+")");
 	if(isOk){
 	 nvll.first();
 	 if(nvll.isValid()){
-		nbLignes = nvll.value(0).toInt();
+		nb_lgn_rel = nvll.value(0).toInt();
 	 }
 	}
-	QString tot = "Total : " + QString::number(nbLignes);
-	lignes->setText(tot);
+#endif
 
-	QWidget *Affiche = new QWidget;
+	gpb_Tirages =new QGroupBox;
+	QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
+	gpb_Tirages->setTitle(st_total);
+
+	//QWidget *Affiche = new QWidget;
 	QVBoxLayout *layout = new QVBoxLayout;
-	layout->addWidget(lignes,0,Qt::AlignLeft|Qt::AlignTop);
-	layout->addWidget(qtv_tmp,1,Qt::AlignLeft|Qt::AlignTop);
-
+	layout->addLayout(frm_chk,Qt::AlignLeft|Qt::AlignTop);
+	layout->addWidget(qtv_tmp, Qt::AlignLeft|Qt::AlignTop);
+	//layout->addWidget(gpb_Tirages,0,Qt::AlignLeft|Qt::AlignTop);
+	gpb_Tirages->setLayout(layout);
 
 	int nbCol = sqm_resu->columnCount();
 	for(int col=0;col<nbCol;col++)
 	{
 	 qtv_tmp->setColumnWidth(col,CEL2_L);
 	}
+	qtv_tmp->hideColumn(0);
 	qtv_tmp->setFixedHeight(700);
 	qtv_tmp->setFixedWidth((nbCol+1)*CEL2_L);
 
-	Affiche->setLayout(layout);
-	Affiche->setWindowTitle("Ensemble:"+ tbl_cible);
-	Affiche->show();
+	//Affiche->setLayout(layout);
+	gpb_Tirages->setWindowTitle("Ensemble : "+ tbl_cible);
+	gpb_Tirages->show();
  }
 }
 

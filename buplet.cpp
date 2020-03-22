@@ -1055,4 +1055,13 @@ QString BUplWidget::sql_lstTirCmb(int ligne, int dst)
  return tmp;
 }
 
+//-----------------
+BLineEdit::BLineEdit(QTableView *view)
+{
+ pView=view;
+}
 
+QTableView *BLineEdit::getView()
+{
+ return pView;
+}

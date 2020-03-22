@@ -71,9 +71,10 @@ int MonFiltreProxyModel::getFilterNbRow(void)
 }
 
 //---------------
-BUpletFilterProxyModel::BUpletFilterProxyModel(int uplet, QObject *parent): QSortFilterProxyModel(parent)
+BUpletFilterProxyModel::BUpletFilterProxyModel(int uplet, int start, QObject *parent): QSortFilterProxyModel(parent)
 {
- col_uplets=uplet;
+ col_tot=uplet;
+ col_deb=start;
 }
 
  bool BUpletFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
@@ -88,7 +89,7 @@ for (int j = 0; (j< lst_usr.size()) && ret;j++) {
 
   bool lgn = false;
 
-	for (int i= 0; (i < col_uplets) && !lgn; i++) {
+	for (int i= col_deb; (i < col_deb+col_tot) && !lgn; i++) {
 	 QModelIndex cur_index = sourceModel()->index(sourceRow, i, sourceParent);
 	 int boule = sourceModel()->data(cur_index).toInt();
 

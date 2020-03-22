@@ -6,6 +6,9 @@
 #include <QSqlDatabase>
 #include <QGroupBox>
 
+#include <QLineEdit>
+#include <QTableView>
+
 #include <QTableView>
 #include <QDialog>
 
@@ -97,4 +100,16 @@ class BUplWidget: public QWidget
  QString sql_lstTirCmb(int ligne, int dst);
  QString sql_lstTirBrc(int ligne, int dst);
 
+};
+
+class BLineEdit: public QLineEdit
+{
+ Q_OBJECT
+
+ public:
+ BLineEdit(QTableView *view);
+ QTableView *getView();
+
+ private:
+ QTableView *pView;
 };
