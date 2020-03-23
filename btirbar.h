@@ -7,6 +7,9 @@
 
 #include<QValidator>
 #include <QLineEdit>
+#include <QTableView>
+
+#include "blineedit.h"
 
 class BTirBar:public QWidget
 {
@@ -25,20 +28,21 @@ class BTirBar:public QWidget
 
 public:
 //BTirBar(QWidget *parent=0);
-BTirBar();
+BTirBar(QTableView *p_tbv=nullptr);
 
 public slots:
 void slot_FiltreSurNewCol(int colNum);
 void slot_Selection(const QString& lstBoules);
 
 private:
-QGroupBox * mkBarre(void);
+QGroupBox * mkBarre(QTableView *tbv_cible);
 QComboBox *ComboPerso(int id);
 
 private:
 static int cnt_items;
 QRegExpValidator *validator;
-QLineEdit *data;
+QLineEdit *le_dst;
+BLineEdit *ble_rch;
 };
 
 #endif // BTIRBAR_H

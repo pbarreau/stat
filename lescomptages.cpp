@@ -21,7 +21,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
-#include "buplet.h"
+#include "blineedit.h"
 #include "monfiltreproxymodel.h"
 
 #include "compter.h"
@@ -56,18 +56,19 @@ void BPrevision::slot_changerTitreZone(QString le_titre)
  //selection[0].setText("Z:"+le_titre);
 }
 
-BPrevision::BPrevision(stPrmPrevision prm)
+BPrevision::BPrevision(stPrmPrevision *prm)
 {
  cur_item = total_items;
  total_items++;
- conf = prm;
+ conf = *prm;
 
- onGame.eFdjType = prm.gameInfo.eFdjType;
- onGame.eTirType = prm.gameInfo.eTirType;
+ onGame = conf.gameInfo;
+ //onGame.eFdjType = conf.gameInfo.eFdjType;
+ //onGame.eTirType = conf.gameInfo.eTirType;
 
- if(ouvrirBase(prm.bddStore,prm.gameInfo.eFdjType)==true)
+ if(ouvrirBase(conf.bddStore,conf.gameInfo.eFdjType)==true)
  {
-  effectuerTraitement(prm.gameInfo.eFdjType);
+  effectuerTraitement(conf.gameInfo.eFdjType);
   //dbInUse.close();
  }
 }
@@ -2116,6 +2117,7 @@ void BPrevision::slot_UGL_Create()
 		monJeu.gameInfo.eFdjType = onGame.eFdjType;
 		monJeu.gameInfo.eTirType = eTirGen;
 		monJeu.gameInfo.znCount = 1;
+		monJeu.gameInfo.bUseMadeBdd=onGame.bUseMadeBdd;
 		monJeu.gameInfo.limites = &(onGame.limites[0]);
 		monJeu.gameInfo.names = &(onGame.names[0]);
 		monJeu.tblFdj_dta="B_fdj";
@@ -2297,11 +2299,15 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
  int zn=0;
  int chk_nb_col = monJeu.gameInfo.limites[zn].len;
 
- isOk = AnalyserEnsembleTirage(tbl_cible,monJeu.gameInfo, zn);
- if(isOk)
-  isOk = FaireTableauSynthese(tbl_cible_ana,monJeu.gameInfo,zn);
+ if(monJeu.gameInfo.bUseMadeBdd==false){
+  isOk = AnalyserEnsembleTirage(tbl_cible,monJeu.gameInfo, zn);
 
- //analyserTirages(conf,tbl_cible,monJeu.gameInfo);
+	if(isOk)
+	 isOk = FaireTableauSynthese(tbl_cible_ana,monJeu.gameInfo,zn);
+ }
+
+ /// Ligne analyse les tirages generees
+ // analyserTirages(conf,tbl_cible,monJeu.gameInfo);
 
  static bool OneShot = false;
  if(OneShot==false){

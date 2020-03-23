@@ -174,18 +174,24 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
         QMessageBox::information(NULL, "1C", "OK",QMessageBox::Yes);
 #endif
 
-  BPrevision::stPrmPrevision prm;
-  prm.bddStore = eDbSetOnDsk;
-  prm.gameInfo.bUseMadeBdd = bUseOneBdd;
-  prm.gameInfo.eTirType=eTirFdj;
-  prm.gameInfo.eFdjType=unJeu;
-  prm.tblFdj_dta="fdj";
-  prm.tblFdj_ana="ana_z";
-  prm.tblFdj_brc="";
-  prm.tblUsr_dta="";
-  prm.tblUsr_ana="";
+	BPrevision::stPrmPrevision *prm = new BPrevision::stPrmPrevision;
+	prm->bddStore = eDbSetOnDsk;
 
-  return;
+	prm->gameInfo.bUseMadeBdd = bUseOneBdd;
+	prm->gameInfo.eTirType=eTirFdj;
+	prm->gameInfo.eFdjType=unJeu;
+	prm->gameInfo.znCount = configJeu.nb_zone;
+	prm->gameInfo.id = -1;
+	prm->gameInfo.limites = NULL;
+	prm->gameInfo.names = NULL;
+
+	prm->tblFdj_dta="fdj";
+	prm->tblFdj_ana="ana_z";
+	prm->tblFdj_brc="";
+	prm->tblUsr_dta="";
+	prm->tblUsr_ana="";
+
+  ///return;
   tous = new BPrevision(prm);
 
 

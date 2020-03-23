@@ -102,14 +102,3 @@ class BUplWidget: public QWidget
 
 };
 
-class BLineEdit: public QLineEdit
-{
- Q_OBJECT
-
- public:
- BLineEdit(QTableView *view);
- QTableView *getView();
-
- private:
- QTableView *pView;
-};

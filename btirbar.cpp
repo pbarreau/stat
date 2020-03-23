@@ -12,17 +12,27 @@
 
 #include <QRegExp>
 #include <QRegExpValidator>
+#include <QTableView>
 
+#include "blineedit.h"
 #include "btirbar.h"
+
 int BTirBar::cnt_items = 0;
 
-BTirBar::BTirBar()//(QWidget *parent):QWidget (parent)
+BTirBar::BTirBar(QTableView *p_tbv)//(QWidget *parent):QWidget (parent)
 {
+ QTableView *pTbv_use = p_tbv;
  QHBoxLayout *layout= new QHBoxLayout;
 
  cnt_items++;
+
+ if(pTbv_use==NULL){
+  pTbv_use = new QTableView;
+  QString dbg_name = "tbvDbg_"+QString::number(cnt_items).rightJustified(2,'0');
+  pTbv_use->setObjectName(dbg_name);
+ }
  validator = new QRegExpValidator();
- QGroupBox *tmp_gpb = mkBarre();
+ QGroupBox *tmp_gpb = mkBarre(pTbv_use);
 
  layout->addWidget(tmp_gpb);
  this->setLayout(layout);
@@ -80,9 +90,9 @@ void BTirBar::slot_FiltreSurNewCol(int colNum)
 	 break;
  }
 
-  validator->setRegExp(QRegExp(str_fltMsk));
-  data[1].setValidator(validator);
-  data[1].clear();
+	validator->setRegExp(QRegExp(str_fltMsk));
+	ble_rch->setValidator(validator);
+	ble_rch->clear();
 }
 
 QComboBox *BTirBar::ComboPerso(int id)
@@ -117,25 +127,26 @@ QComboBox *BTirBar::ComboPerso(int id)
  return tmp_combo;
 }
 
-QGroupBox * BTirBar::mkBarre(void)
+QGroupBox * BTirBar::mkBarre(QTableView *tbv_cible)
 {
  QGroupBox *tmp_gpb = new QGroupBox;
 
  QHBoxLayout *tmp_lay = new QHBoxLayout;
  QFormLayout *item = new QFormLayout[4];
  QComboBox *tmp_combo = ComboPerso(0);
- data = new QLineEdit[2];
+ ble_rch = new BLineEdit(tbv_cible);
+ le_dst = new QLineEdit;
  QLCDNumber *total = new QLCDNumber(4);
 
  QString value = QString::number(0).rightJustified(4,'0');
 
- item[0].addRow("Dst :",&data[0]);
- data[0].setMaxLength(2);
- data[0].setFixedWidth(20);
- data[0].setText("0");
- data[0].setAlignment(Qt::AlignCenter);
- data[0].setEnabled(false);
- data[0].setToolTip("Distance");
+ item[0].addRow("Dst :",le_dst);
+ le_dst->setMaxLength(2);
+ le_dst->setFixedWidth(20);
+ le_dst->setText("0");
+ le_dst->setAlignment(Qt::AlignCenter);
+ le_dst->setEnabled(false);
+ le_dst->setToolTip("Distance");
  tmp_lay->addLayout(&item[0]);
 
  item[1].addRow("Flt :",tmp_combo);
@@ -144,10 +155,10 @@ QGroupBox * BTirBar::mkBarre(void)
  connect(tmp_combo, SIGNAL(currentIndexChanged(int)),
          this, SLOT(slot_FiltreSurNewCol(int)));
 
- item[2].addRow("Rch :",&data[1]);
- data[1].setToolTip("Recherche");
+ item[2].addRow("Rch :",ble_rch);
+ ble_rch->setToolTip("Recherche");
  tmp_lay->addLayout(&item[2]);
- connect(&data[1],SIGNAL(textChanged(const QString)),this,SLOT(slot_Selection(const QString)));
+ connect(ble_rch,SIGNAL(textChanged(const QString)),this,SLOT(slot_Selection(const QString)));
 
 
  total->display(value);

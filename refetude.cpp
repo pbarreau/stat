@@ -119,8 +119,8 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
  QGridLayout *lay_return = new QGridLayout;
 
  //QTableView *tbv_tmp0 = tbForBaseLigne();
- BTirBar *bar =new  BTirBar;
  QTableView *tbv_tmp1 = tbForBaseRef();
+ BTirBar *bar =new  BTirBar(tbv_tmp1);
 
  //QWidget *tbv_tmp2 = EcartOnglets();
 

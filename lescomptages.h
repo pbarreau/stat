@@ -102,7 +102,7 @@ class BPrevision:public QGridLayout
 
  /// in : infos representant les tirages
  public:
- BPrevision(stPrmPrevision prm);
+ BPrevision(stPrmPrevision *prm);
  ~BPrevision();
 
  private:

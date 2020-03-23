@@ -91,7 +91,9 @@ SOURCES += \
     sqlqmtirages.cpp \
     buplet.cpp \
     bvtabbar.cpp \
-    btirbar.cpp
+    btirbar.cpp \
+    blineedit.cpp \
+    bfpmtiragev1.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -145,7 +147,9 @@ HEADERS  += \
     sqlqmtirages.h \
     buplet.h \
     bvtabbar.h \
-    btirbar.h
+    btirbar.h \
+    blineedit.h \
+    bfpmtiragev1.h
 
 
 FORMS    += mainwindow.ui \
