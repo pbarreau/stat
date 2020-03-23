@@ -234,6 +234,15 @@ void BPrevision::effectuerTraitement(etFdjType game)
 
  definirConstantesDuJeu(game);
 
+ /// Liste des recherches
+ int nbZone = onGame.znCount;
+ slFlt = new  QStringList* [nbZone] ;
+ for (int zn=0;zn < nbZone;zn++ )
+ {
+  slFlt[zn] = CreateFilterForData(zn);
+ }
+
+
  if(conf.gameInfo.bUseMadeBdd == false){
 
   creerTablesDeLaBase();
@@ -730,7 +739,7 @@ bool BPrevision::f5(QString tbName,QSqlQuery *query)
 
  bool isOk = true;
  int nbZone = onGame.znCount;
- slFlt = new  QStringList* [nbZone] ;
+ //slFlt = new  QStringList* [nbZone] ; A supprimer
  QString tbUse = "";
  QString source = "";
  QString destination ="";
@@ -740,7 +749,7 @@ bool BPrevision::f5(QString tbName,QSqlQuery *query)
 
  for (int zn=0;(zn < nbZone) && isOk;zn++ )
  {
-  slFlt[zn] = CreateFilterForData(zn);
+  //slFlt[zn] = CreateFilterForData(zn); A Supprimer
   isOk = AnalyserEnsembleTirage(source,onGame, zn);
   if(isOk)
    isOk = FaireTableauSynthese(destination,onGame,zn);
@@ -2037,7 +2046,8 @@ void BPrevision::slot_UGL_SetFilters()
  //msg = msg + "("+tmp+")"+useJonction;
  /// "select tb1.b1 as b1, tb1.b2 as b2, tb1.b3 as b3, tb1.b4 as b4, tb1.b5 as b5 from ("
 
- msg = "select "+tmp+" from ("
+ // "select J, "+tmp+" from ("
+ msg = "select * from ("
        +source
        +") as tb1,("
        +analys
@@ -2307,7 +2317,7 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
  }
 
  /// Ligne analyse les tirages generees
- // analyserTirages(conf,tbl_cible,monJeu.gameInfo);
+ analyserTirages(conf,tbl_cible,monJeu.gameInfo);
 
  static bool OneShot = false;
  if(OneShot==false){
@@ -2317,7 +2327,7 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
 	msg="select * from ("+tbl_cible+")";
 	QTableView *qtv_tmp = new QTableView;
 
-	QSqlQueryModel *sqm_resu = new QSqlQueryModel;
+	sqm_resu = new QSqlQueryModel; //QSqlQueryModel *
 	sqm_resu->setQuery(msg,db_1);
 
 	BUpletFilterProxyModel * fpm_tmp = new BUpletFilterProxyModel(chk_nb_col,2);
