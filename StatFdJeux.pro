@@ -53,7 +53,6 @@ SOURCES += \
 		lescomptages.cpp \
 		monQview.cpp \
 		monSqlEditable.cpp \
-		monfiltreproxymodel.cpp \
 		mygraphicsview.cpp \
 		myqabstractitemviewofqtable.cpp \
 		myqtableview.cpp \
@@ -93,7 +92,9 @@ SOURCES += \
     bvtabbar.cpp \
     btirbar.cpp \
     blineedit.cpp \
-    bfpmtiragev1.cpp
+    bfpmtiragev1.cpp \
+    BFpm_2.cpp \
+    BFpm_1.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -113,7 +114,6 @@ HEADERS  += \
 		lescomptages.h \
 		monQview.h \
 		monSqlEditable.h \
-		monfiltreproxymodel.h \
 		mygraphicsview.h \
 		myqabstractitemviewofqtable.h \
 		myqtableview.h \
@@ -149,7 +149,9 @@ HEADERS  += \
     bvtabbar.h \
     btirbar.h \
     blineedit.h \
-    bfpmtiragev1.h
+    bfpmtiragev1.h \
+    BFpm_2.h \
+    BFpm_1.h
 
 
 FORMS    += mainwindow.ui \

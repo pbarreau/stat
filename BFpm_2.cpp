@@ -1,15 +1,15 @@
 #include <QLabel>
-#include "monfiltreproxymodel.h"
+#include "BFpm_2.h"
 //http://www.qtcentre.org/threads/24267-QSortFilterProxyModel-setFilterRegExp-for-more-than-1-column
 //https://stackoverflow.com/questions/39488901/change-qsortfilterproxymodel-behaviour-for-multiple-column-filtering
 
-MonFiltreProxyModel::MonFiltreProxyModel(QLabel *pText, int value, QObject *parent) : QSortFilterProxyModel(parent)
+BFpm_2::BFpm_2(QLabel *pText, int value, QObject *parent) : QSortFilterProxyModel(parent)
 {
     pTotal = pText;
     ligneVisibles = value;
 }
 
-void MonFiltreProxyModel::setFilterKeyColumns(const QList<qint32> &filterColumns)
+void BFpm_2::setFilterKeyColumns(const QList<qint32> &filterColumns)
 {
     m_columnPatterns.clear();
 
@@ -17,7 +17,7 @@ void MonFiltreProxyModel::setFilterKeyColumns(const QList<qint32> &filterColumns
         m_columnPatterns.insert(column, QRegExp());
 }
 
-void MonFiltreProxyModel::addFilterRegExp(const QRegExp &pattern)
+void BFpm_2::addFilterRegExp(const QRegExp &pattern)
 {
     // pour chacune des colonne mettre le filtre
     invalidateFilter();
@@ -36,7 +36,7 @@ void MonFiltreProxyModel::addFilterRegExp(const QRegExp &pattern)
     pTotal->setText(msg);
 }
 
-bool MonFiltreProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+bool BFpm_2::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     bool ret = false;
 
@@ -65,7 +65,7 @@ bool MonFiltreProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sou
     return ret;
 }
 
-int MonFiltreProxyModel::getFilterNbRow(void)
+int BFpm_2::getFilterNbRow(void)
 {
     return ligneVisibles;
 }

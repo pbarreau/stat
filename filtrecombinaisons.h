@@ -9,7 +9,7 @@
 #include <QLineEdit>
 #include <QLabel>
 
-#include "monfiltreproxymodel.h"
+#include "BFpm_2.h"
 
 
 //Q_DECLARE_METATYPE(QRegExp::PatternSyntax)
@@ -33,7 +33,7 @@ public slots:
 private:
     QRegExp::PatternSyntax syntax;
     Qt::CaseSensitivity typeCase;
-    MonFiltreProxyModel *proxyModel;
+    BFpm_2 *proxyModel;
     QAbstractItemView *sourceView;
     //QSqlTableModel *sourceModel;
     QAbstractItemModel *sourceModel;

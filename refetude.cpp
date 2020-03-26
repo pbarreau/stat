@@ -30,6 +30,7 @@
 #include "sqlqmtirages.h"
 #include "idlgttirages.h"
 #include "btirbar.h"
+#include "BFpm_1.h"
 
 // declaration de variable de classe
 QStandardItemModel **RefEtude::p_simResu = new QStandardItemModel*[2];
@@ -184,7 +185,11 @@ QTableView *RefEtude::tbForBaseRef()
  //p_qsim_3=sqm_tmp;
 
  sqm_tmp->setQuery(p_stRefTirages,db_0);
- tbv_tmp->setModel(sqm_tmp);
+ BFpm_1 * fpm_tmp = new BFpm_1();
+ fpm_tmp->setDynamicSortFilter(true);
+ fpm_tmp->setSourceModel(sqm_tmp);
+
+ tbv_tmp->setModel(fpm_tmp);
 
  tbv_tmp->setSortingEnabled(false);
  tbv_tmp->setAlternatingRowColors(true);

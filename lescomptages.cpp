@@ -22,7 +22,7 @@
 #include <QFileDialog>
 
 #include "blineedit.h"
-#include "monfiltreproxymodel.h"
+#include "BFpm_2.h"
 
 #include "compter.h"
 #include "compter_zones.h"

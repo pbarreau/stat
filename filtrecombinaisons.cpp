@@ -8,7 +8,7 @@ FiltreCombinaisons::FiltreCombinaisons(int value, QWidget *parent) :
     QLineEdit(parent)
 {
 		totalLignes = new QLabel;
-		proxyModel = new MonFiltreProxyModel(totalLignes, value);
+		proxyModel = new BFpm_2(totalLignes, value);
 
     syntax = QRegExp::PatternSyntax(QRegExp::Wildcard);
     typeCase= Qt::CaseInsensitive;

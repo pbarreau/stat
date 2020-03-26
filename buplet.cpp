@@ -16,7 +16,7 @@
 #include <QSqlQuery>
 
 #include "buplet.h"
-#include "monfiltreproxymodel.h"
+#include "BFpm_2.h"
 #include "db_tools.h"
 
 int BUplet::tot_upl = 0;
