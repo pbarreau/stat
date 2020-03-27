@@ -16,6 +16,7 @@
 
 #include "blineedit.h"
 #include "btirbar.h"
+#include "bfpm_1.h"
 
 int BTirBar::cnt_items = 0;
 
@@ -25,6 +26,7 @@ BTirBar::BTirBar(QTableView *p_tbv)//(QWidget *parent):QWidget (parent)
  QHBoxLayout *layout= new QHBoxLayout;
 
  cnt_items++;
+ usrFlt = eFlt::efltNone;
 
  if(pTbv_use==NULL){
   pTbv_use = new QTableView;
@@ -40,39 +42,53 @@ BTirBar::BTirBar(QTableView *p_tbv)//(QWidget *parent):QWidget (parent)
  //tmp_gpb->show();
 }
 
-void BTirBar::slot_FiltreSurNewCol(int colNum)
+void BTirBar::slot_FiltreSurNewCol(int lgn)
 {
+ QComboBox * tmp_combo = qobject_cast<QComboBox *>(sender());
+ QStandardItemModel *model = qobject_cast<QStandardItemModel *>(tmp_combo->model());
+
+
  QString str_fltMsk = "";
- BTirBar::efltType sel = BTirBar::efltType::efltNone;
+ eFlt sel = eFlt::efltNone;
+ QModelIndex item_key = model->index(lgn,1);
  int len_zn = 1; //loto (necessite connaitre type jeu !!!)
 
- switch (colNum) {
-  case 0:
-   sel=BTirBar::efltType::efltJour;
+
+ QModelIndex item_lib = model->index(lgn,0);
+ QString r="";
+ r=item_lib.data().toString();
+ int t = -1;
+ t = item_key.data().toInt();
+
+ sel=qvariant_cast<eFlt>(item_key.data().toInt());
+
+
+ switch (sel) {
+  case eFlt::efltNone:
+   str_fltMsk="*";
+   break;
+
+  case eFlt::efltJour:
    str_fltMsk="([A-Za-z]+)";
    break;
 
-	case 1:
-	 sel=BTirBar::efltType::efltDate;
+	case eFlt::efltDate:
 	 str_fltMsk="(\\d{1,2}/){2}(\\d{4})";
 	 break;
 
-	case 2:
-	 sel=BTirBar::efltType::efltComb;
+	case eFlt::efltComb:
 	 str_fltMsk="(\\d/){"
 								+QString::number(5-1)
 								+"}\\d";
 	 break;
 
-	case 3:
-	 sel=BTirBar::efltType::efltZn_1;
+	case eFlt::efltZn_1:
 	 str_fltMsk = "(\\d{1,2},?){1,"
 							 +QString::number(5-1)
 							 +"}(\\d{1,2})";
 	 break;
 
-	case 4:
-	 sel=BTirBar::efltType::efltZn_2;
+	case eFlt::efltZn_2:
 	 // Cas loto
 	 if(len_zn==1){
 		str_fltMsk = "(\\d{1,2})";
@@ -86,10 +102,12 @@ void BTirBar::slot_FiltreSurNewCol(int colNum)
 	 break;
 
 	default:
-	 sel=BTirBar::efltType::efltEnd;
+	 sel=eFlt::efltEnd;
+	 str_fltMsk="*";
 	 break;
  }
 
+	usrFlt = sel;
 	validator->setRegExp(QRegExp(str_fltMsk));
 	ble_rch->setValidator(validator);
 	ble_rch->clear();
@@ -108,21 +126,40 @@ QComboBox *BTirBar::ComboPerso(int id)
  sourceView->setSelectionBehavior(QAbstractItemView::SelectRows);
  sourceView->setAutoScroll(false);
 
- QStringList ChoixCol;
- ChoixCol<<"Jour"<<"Date"<<"Combinaison"<<"Boules"<<"Etoiles";
- int nbChoix = ChoixCol.size();
+ typedef struct _stCouple {
+  QString msg;
+  eFlt cod;
+ }stCouple;
 
- QStandardItemModel *model = new QStandardItemModel(nbChoix, 2);
- model->setHeaderData(0, Qt::Horizontal, QObject::tr("Filtres"));
+ stCouple def[] =
+  {
+   {"--", eFlt::efltNone},
+   {"Jour", eFlt::efltJour},
+   {"Date", eFlt::efltDate},
+   {"Combinaison", eFlt::efltComb},
+   {"Boules", eFlt::efltZn_1},
+   {"Etoiles", eFlt::efltZn_2}
+  };
 
- for(int i = 0; i<nbChoix;i++)
+ int nbChoix = sizeof(def)/sizeof(stCouple);
+
+ QStandardItemModel *sim_tmp = new QStandardItemModel(nbChoix, 2);
+ sim_tmp->setHeaderData(0, Qt::Horizontal, QObject::tr("Filtres"));
+
+ for(int row = 0; row<nbChoix;row++)
  {
-  model->setData(model->index(i, 0), ChoixCol.at(i));
-  model->setData(model->index(0, 1), id);
+  QStandardItem *item_1 = new QStandardItem(def[row].msg);
+
+	int val = static_cast<int>(def[row].cod);
+	QStandardItem *item_2 = new QStandardItem(QString::number(val));
+
+	sim_tmp->setItem(row,0, item_1);
+	sim_tmp->setItem(row,1, item_2);
+
  }
  sourceView->resizeColumnToContents(1);
 
- tmp_combo->setModel(model);
+ tmp_combo->setModel(sim_tmp);
 
  return tmp_combo;
 }
@@ -152,6 +189,7 @@ QGroupBox * BTirBar::mkBarre(QTableView *tbv_cible)
  item[1].addRow("Flt :",tmp_combo);
  tmp_combo->setToolTip("Selection filtre");
  tmp_lay->addLayout(&item[1]);
+ tmp_combo->setCurrentIndex(-1);
  connect(tmp_combo, SIGNAL(currentIndexChanged(int)),
          this, SLOT(slot_FiltreSurNewCol(int)));
 
@@ -177,7 +215,12 @@ QGroupBox * BTirBar::mkBarre(QTableView *tbv_cible)
  return tmp_gpb;
 }
 
-void BTirBar::slot_Selection(const QString& lstBoules)
+void BTirBar::slot_Selection(const QString& usrString)
 {
- int nb_lgn_ftr = 0;
+ QTableView *view = ble_rch->getView();
+ BFpm_1 *m = qobject_cast<BFpm_1 *>(view->model());
+
+ m->setFlt(usrFlt);
+ m->setStringKey(usrString);
+
 }
