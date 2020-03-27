@@ -25,11 +25,11 @@ private:
 };
 
 // https://stackoverflow.com/questions/39488901/change-qsortfilterproxymodel-behaviour-for-multiple-column-filtering
-class BUpletFilterProxyModel:public QSortFilterProxyModel
+class BFpm_3:public QSortFilterProxyModel
 {
  Q_OBJECT
  public:
- explicit BUpletFilterProxyModel(int uplet, int start=0, QObject *parent = nullptr);
+ explicit BFpm_3(int uplet, int start=0, QObject *parent = nullptr);
 
  protected:
  bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;

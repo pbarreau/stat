@@ -185,7 +185,7 @@ QTableView *RefEtude::tbForBaseRef()
  //p_qsim_3=sqm_tmp;
 
  sqm_tmp->setQuery(p_stRefTirages,db_0);
- BFpm_1 * fpm_tmp = new BFpm_1();
+ BFpm_1 * fpm_tmp = new BFpm_1(p_conf);
  fpm_tmp->setDynamicSortFilter(true);
  fpm_tmp->setSourceModel(sqm_tmp);
 

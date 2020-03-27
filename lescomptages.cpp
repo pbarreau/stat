@@ -2290,7 +2290,7 @@ void BPrevision::slot_ShowNewTotal(const QString& lstBoules)
  BLineEdit *ble_tmp = qobject_cast<BLineEdit *>(sender());
 
  QTableView *view = ble_tmp->getView();
- BUpletFilterProxyModel *m = qobject_cast<BUpletFilterProxyModel *>(view->model());
+ BFpm_3 *m = qobject_cast<BFpm_3 *>(view->model());
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
 int nb_lgn_ftr = m->rowCount();
@@ -2330,7 +2330,7 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
 	sqm_resu = new QSqlQueryModel; //QSqlQueryModel *
 	sqm_resu->setQuery(msg,db_1);
 
-	BUpletFilterProxyModel * fpm_tmp = new BUpletFilterProxyModel(chk_nb_col,2);
+	BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,2);
 	fpm_tmp->setDynamicSortFilter(true);
 	fpm_tmp->setSourceModel(sqm_resu);
 	qtv_tmp->setModel(fpm_tmp);

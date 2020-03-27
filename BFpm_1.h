@@ -4,6 +4,8 @@
 #include <QStandardItem>
 #include <QSortFilterProxyModel>
 
+#include "tirages.h"
+
 class BFpm_1;
 
 enum class eFlt
@@ -49,7 +51,7 @@ class BFpm_1 : public QSortFilterProxyModel
 #endif
 
 public:
-explicit BFpm_1();
+explicit BFpm_1(stTiragesDef *def);
 ~ BFpm_1() = default;
 BFpm_1(const BFpm_1 &);
 
@@ -62,7 +64,8 @@ bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
 
 private:
 eFlt flt;
-QString str_key;
+QStringList str_key;
+stTiragesDef *conf;
 };
 
 #endif // BFPM_1_H

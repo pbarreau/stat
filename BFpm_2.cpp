@@ -71,13 +71,13 @@ int BFpm_2::getFilterNbRow(void)
 }
 
 //---------------
-BUpletFilterProxyModel::BUpletFilterProxyModel(int uplet, int start, QObject *parent): QSortFilterProxyModel(parent)
+BFpm_3::BFpm_3(int uplet, int start, QObject *parent): QSortFilterProxyModel(parent)
 {
  col_tot=uplet;
  col_deb=start;
 }
 
- bool BUpletFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+ bool BFpm_3::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
  bool ret = true;
 
@@ -106,7 +106,7 @@ for (int j = 0; (j< lst_usr.size()) && ret;j++) {
  return ret;
 }
 
-void BUpletFilterProxyModel::setUplets(const QString& lstBoules)
+void BFpm_3::setUplets(const QString& lstBoules)
 {
  if(lstBoules.size()){
   lst_usr = lstBoules.split(",");

@@ -145,7 +145,7 @@ QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne,
  qtv_upl = doTabShowUplet(sql_req,ligne);
 
  //int nb_lgn = getNbLines(tbl);
- BUpletFilterProxyModel *m = qobject_cast<BUpletFilterProxyModel *>(qtv_upl->model());
+ BFpm_3 *m = qobject_cast<BFpm_3 *>(qtv_upl->model());
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
  int nb_lgn_ftr = m->rowCount();
@@ -383,7 +383,7 @@ QTableView *BUplet::doTabShowUplet(QString st_msg1,const QModelIndex & ligne)
 
  sqm_tmp->setQuery(st_msg1,db_0);
 
- BUpletFilterProxyModel * fpm_tmp = new BUpletFilterProxyModel(input.uplet);
+ BFpm_3 * fpm_tmp = new BFpm_3(input.uplet);
  fpm_tmp->setDynamicSortFilter(true);
  fpm_tmp->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(fpm_tmp);
@@ -471,7 +471,7 @@ QString BUplet::sql_UsrSelectedTirages(const QModelIndex & index, int pos)
 void BUplet::slot_Selection(const QString& lstBoules)
 {
  QTableView *view = qtv_upl;
- BUpletFilterProxyModel *m = qobject_cast<BUpletFilterProxyModel *>(view->model());
+ BFpm_3 *m = qobject_cast<BFpm_3 *>(view->model());
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
  int nb_lgn_ftr = m->rowCount();
