@@ -38,17 +38,6 @@ class BFpm_1 : public QSortFilterProxyModel
 {
  Q_OBJECT
  public:
-#if 0
- typedef enum _Filters{
-  efltNone,
-  efltJour,
-  efltDate,
-  efltComb,
-  efltZn_1,
-  efltZn_2,
-  efltEnd
- }eFlt;
-#endif
 
 public:
 explicit BFpm_1(stTiragesDef *def);

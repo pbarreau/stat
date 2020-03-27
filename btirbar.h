@@ -11,27 +11,15 @@
 
 #include "blineedit.h"
 #include "bfpm_1.h"
+#include "tirages.h"
 
 class BTirBar:public QWidget
 {
  Q_OBJECT
 
- public:
-#if 0
- typedef enum _efltType{
-  efltNone,
-  efltJour,
-  efltDate,
-  efltComb,
-  efltZn_1,
-  efltZn_2,
-  efltEnd
- }efltType;
-#endif
-
 public:
 //BTirBar(QWidget *parent=0);
-BTirBar(QTableView *p_tbv=nullptr);
+BTirBar(stTiragesDef *def, QTableView *p_tbv=nullptr);
 
 public slots:
 void slot_FiltreSurNewCol(int colNum);
@@ -47,6 +35,7 @@ QRegExpValidator *validator;
 QLineEdit *le_dst;
 BLineEdit *ble_rch;
 eFlt usrFlt;
+stTiragesDef *conf;
 };
 
 #endif // BTIRBAR_H

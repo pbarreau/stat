@@ -17,17 +17,18 @@
 #include "blineedit.h"
 #include "btirbar.h"
 #include "bfpm_1.h"
+#include "tirages.h"
 
 int BTirBar::cnt_items = 0;
 
-BTirBar::BTirBar(QTableView *p_tbv)//(QWidget *parent):QWidget (parent)
+BTirBar::BTirBar(stTiragesDef *def, QTableView *p_tbv)//(QWidget *parent):QWidget (parent)
 {
  QTableView *pTbv_use = p_tbv;
  QHBoxLayout *layout= new QHBoxLayout;
 
  cnt_items++;
  usrFlt = eFlt::efltNone;
-
+ conf = def;
  if(pTbv_use==NULL){
   pTbv_use = new QTableView;
   QString dbg_name = "tbvDbg_"+QString::number(cnt_items).rightJustified(2,'0');
@@ -51,7 +52,7 @@ void BTirBar::slot_FiltreSurNewCol(int lgn)
  QString str_fltMsk = "";
  eFlt sel = eFlt::efltNone;
  QModelIndex item_key = model->index(lgn,1);
- int len_zn = 1; //loto (necessite connaitre type jeu !!!)
+ int len_zn = conf->limites[1].len;
 
 
  QModelIndex item_lib = model->index(lgn,0);
