@@ -5,6 +5,8 @@
 #include <QGroupBox>
 #include <QComboBox>
 
+#include <QLCDNumber>
+
 #include<QValidator>
 #include <QLineEdit>
 #include <QTableView>
@@ -31,6 +33,7 @@ QComboBox *ComboPerso(int id);
 
 private:
 static int cnt_items;
+QLCDNumber *total;
 QRegExpValidator *validator;
 QLineEdit *le_dst;
 BLineEdit *ble_rch;

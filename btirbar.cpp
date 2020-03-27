@@ -174,9 +174,8 @@ QGroupBox * BTirBar::mkBarre(QTableView *tbv_cible)
  QComboBox *tmp_combo = ComboPerso(0);
  ble_rch = new BLineEdit(tbv_cible);
  le_dst = new QLineEdit;
- QLCDNumber *total = new QLCDNumber(4);
+ total = new QLCDNumber(4);
 
- QString value = QString::number(0).rightJustified(4,'0');
 
  item[0].addRow("Dst :",le_dst);
  le_dst->setMaxLength(2);
@@ -200,6 +199,12 @@ QGroupBox * BTirBar::mkBarre(QTableView *tbv_cible)
  connect(ble_rch,SIGNAL(textChanged(const QString)),this,SLOT(slot_Selection(const QString)));
 
 
+ QTableView *view = tbv_cible;
+ BFpm_1 *m = qobject_cast<BFpm_1 *>(view->model());
+ QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+ int nb_lgn_rel = vl->rowCount();
+ QString value = QString::number(nb_lgn_rel).rightJustified(4,'0');
  total->display(value);
  total->setStyleSheet("QLCDNumber {background-color: yellow;}");
  total->setPalette(Qt::red);
@@ -210,7 +215,8 @@ QGroupBox * BTirBar::mkBarre(QTableView *tbv_cible)
  tmp_gpb->setLayout(tmp_lay);
  QString str_msg = "Recherche utilisateur ("
                    +QString::number(cnt_items).rightJustified(2,'0')
-                   +")";
+                   +"), Total : "
+                   +QString::number(nb_lgn_rel).rightJustified(4,'0');
  tmp_gpb->setTitle(str_msg);
 
  return tmp_gpb;
@@ -220,8 +226,13 @@ void BTirBar::slot_Selection(const QString& usrString)
 {
  QTableView *view = ble_rch->getView();
  BFpm_1 *m = qobject_cast<BFpm_1 *>(view->model());
+ QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
  m->setFlt(usrFlt);
  m->setStringKey(usrString);
 
+ int nb_lgn_ftr = m->rowCount();
+ //int nb_lgn_rel = vl->rowCount();
+ QString value = QString::number(nb_lgn_ftr).rightJustified(4,'0');
+ total->display(value);
 }
