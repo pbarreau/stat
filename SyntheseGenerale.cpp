@@ -1495,7 +1495,6 @@ QGridLayout* SyntheseGenerale::info_lgnTirage(int t_id, QTableView * tbview)
   vb_tmp->addWidget(lab_uplet,0,Qt::AlignLeft|Qt::AlignTop);
   QString cnx = db_1newDb.connectionName();
   BUplWidget *visu = new BUplWidget(cnx,1);
-
   vb_tmp->addWidget(visu,0,Qt::AlignLeft|Qt::AlignTop);
  }
 

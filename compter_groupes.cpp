@@ -343,7 +343,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
   TblCompact = T_GRP;
  }
  else{
-  TblCompact = "r_U_"+db_data+"_ana_grp";
+  TblCompact = "r_"+db_data+"_ana_grp";
  }
 
 #if 0

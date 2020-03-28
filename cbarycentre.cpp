@@ -281,7 +281,8 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
 			str_tblAnalyse = tbl_in+"_brc_z"+QString::number(zn+1);
 		 }
 		 else{
-			str_tblAnalyse = "U_"+tbl_in+"_brc_z"+QString::number(zn+1);
+			///REM:str_tblAnalyse = "U_"+tbl_in+"_brc_z"+QString::number(zn+1);
+			str_tblAnalyse = tbl_in+"_brc_z"+QString::number(zn+1);
 		 }
 
 		 /// verifier si la table analyse pour barycentre existe sinon la creer

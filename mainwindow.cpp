@@ -177,10 +177,10 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 
 	BPrevision::stPrmPrevision *prm = new BPrevision::stPrmPrevision;
 	prm->bddStore = eDbSetOnDsk;
-
-	prm->gameInfo.bUseMadeBdd = bUseOneBdd;
 	prm->gameInfo.eTirType=eTirFdj;
 	prm->gameInfo.eFdjType=unJeu;
+
+	prm->gameInfo.bUseMadeBdd = bUseOneBdd;
 	prm->gameInfo.znCount = configJeu.nb_zone;
 	prm->gameInfo.id = -1;
 	prm->gameInfo.limites = NULL;

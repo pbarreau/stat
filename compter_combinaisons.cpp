@@ -231,7 +231,8 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
 
  if(myGame.eTirType == eTirGen)
  {
-  prefix = "U_"+st_baseUse+"_";
+  ///REM:prefix = "U_"+st_baseUse+"_";
+  prefix = st_baseUse+"_";
  }
 
  Def_comb = "B_" + Def_comb;

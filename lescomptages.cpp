@@ -21,6 +21,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
+#include "BGrbGenTirages.h"
 #include "blineedit.h"
 #include "BFpm_2.h"
 
@@ -63,8 +64,6 @@ BPrevision::BPrevision(stPrmPrevision *prm)
  conf = *prm;
 
  onGame = conf.gameInfo;
- //onGame.eFdjType = conf.gameInfo.eFdjType;
- //onGame.eTirType = conf.gameInfo.eTirType;
 
  if(ouvrirBase(conf.bddStore,conf.gameInfo.eFdjType)==true)
  {
@@ -749,7 +748,6 @@ bool BPrevision::f5(QString tbName,QSqlQuery *query)
 
  for (int zn=0;(zn < nbZone) && isOk;zn++ )
  {
-  //slFlt[zn] = CreateFilterForData(zn); A Supprimer
   isOk = AnalyserEnsembleTirage(source,onGame, zn);
   if(isOk)
    isOk = FaireTableauSynthese(destination,onGame,zn);
@@ -1444,7 +1442,8 @@ void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const stGa
   param.tbl_ana = source+tr("_ana_z1");
  }else
  {
-  param.tbl_ana = "U_"+monJeu.tblUsr_dta+"_ana_z1";
+  ///REM:param.tbl_ana = "U_"+monJeu.tblUsr_dta+"_ana_z1";
+  param.tbl_ana = monJeu.tblUsr_dta+"_ana_z1";
  }
  param.tbl_flt = tr("U_b_z1"); /// source+tr("_flt_z1");
  param.pDef = onGame;
@@ -1519,6 +1518,23 @@ void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const stGa
  Resultats->setLayout(tmp_layout);
  Resultats->setWindowTitle(source);
  Resultats->show();
+}
+
+CBaryCentre* BPrevision::getC0()
+{
+ return c;
+}
+BCountElem* BPrevision::getC1()
+{
+ return c1;
+}
+BCountComb* BPrevision::getC2()
+{
+ return c2;
+}
+BCountGroup* BPrevision::getC3()
+{
+ return c3;
 }
 
 QString BPrevision::CreateSqlFrom(QString tbl, int val_p)
@@ -1985,7 +2001,7 @@ void BPrevision::slot_UGL_SetFilters()
  QSqlQuery query(db_1);
  bool isOk = true;
  QString msg = "";
- QString source = monJeu.tblUsr_dta;
+ QString source = "E1_001_C49_5";//monJeu.tblUsr_dta;
  QString analys = monJeu.tblUsr_ana+"_z1";///"U_E1_ana_z1";
 
  //onGame;
@@ -2093,14 +2109,38 @@ void BPrevision::slot_emitThatClickedBall(const QModelIndex &index)
 #if 1
 void BPrevision::slot_UGL_Create()
 {
+ QString cnx_name = db_1.connectionName();
+ BGrbGenTirages *calcul = new BGrbGenTirages(&onGame,cnx_name, this);
+ calcul->show();
+ return;
+
  QSqlQuery query(db_1);
  bool isOk = true;
  QString msg = "";
  QString SelElemt = C_TBL_6;
- static int userRequest = 1;
  int n = 0;
  int p = onGame.limites[0].win;
  int m = onGame.limites[0].max;
+
+ QString UsrCnp = "";
+ static int userRequest = 1;
+
+ /// Reutilisation base
+ if(monJeu.gameInfo.bUseMadeBdd){
+  msg = "SELECT name as TbUsr FROM sqlite_master WHERE type='table' AND name like 'E1%'";
+  isOk = query.exec(msg);
+  if(query.first()){
+   /// Recherche(s) utilisateur presente(s)
+   do{
+    UsrCnp = query.value(0).toString();
+
+	 }while (query.next());
+	}
+	UsrCnp = "E1_"+QString::number(userRequest).rightJustified(3,'0')+"_C"+QString::number(n)+"_"+QString::number(p);
+	if(DB_Tools::isDbGotTbl(UsrCnp,"f")){
+	 /// Montrer le resultat
+	}
+ }
 
  /// Selectionner les boules choisi par l'utilisateur pour en faire
  /// un ensemble d'etude
@@ -2123,10 +2163,10 @@ void BPrevision::slot_UGL_Create()
   return; /// pas assez d'info pour calcul Cnp
  }
 
- /// On peur continuer
- QString UsrCnp = "";
+ /// On peut continuer
  if(n<=m){
   UsrCnp = "E1_"+QString::number(userRequest).rightJustified(3,'0')+"_C"+QString::number(n)+"_"+QString::number(p);
+  userRequest++;
  }
  else {
   ;
@@ -2158,7 +2198,8 @@ void BPrevision::slot_UGL_Create()
  monJeu.tblFdj_dta="B_fdj";
  monJeu.tblFdj_brc="r_B_fdj_0_brc_z"+QString::number(zn+1);
 
- QString tbl_cible_ana = "U_"+UsrCnp+"_ana";
+ ///REM:QString tbl_cible_ana = "U_"+UsrCnp+"_ana";
+ QString tbl_cible_ana = UsrCnp+"_ana";
  monJeu.tblUsr_dta=UsrCnp;
  monJeu.tblUsr_ana=tbl_cible_ana;
  onGame.eTirType=eTirGen;
@@ -2386,16 +2427,91 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
  int zn=0;
  int chk_nb_col = monJeu.gameInfo.limites[zn].len;
 
+#if 0
  if(monJeu.gameInfo.bUseMadeBdd==false){
   isOk = AnalyserEnsembleTirage(tbl_cible,monJeu.gameInfo, zn);
 
 	if(isOk)
 	 isOk = FaireTableauSynthese(tbl_cible_ana,monJeu.gameInfo,zn);
+
+	/// Ligne analyse les tirages generees
+	analyserTirages(conf,tbl_cible,monJeu.gameInfo);
+ }
+#endif
+ /// Montrer resultats
+ msg="select * from ("+tbl_cible+")";
+ QTableView *qtv_tmp = new QTableView;
+
+ sqm_resu = new QSqlQueryModel; //QSqlQueryModel *
+ sqm_resu->setQuery(msg,db_1);
+
+ BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,2);
+ fpm_tmp->setDynamicSortFilter(true);
+ fpm_tmp->setSourceModel(sqm_resu);
+ qtv_tmp->setModel(fpm_tmp);
+
+ //--------------
+ QFormLayout *frm_chk = new QFormLayout;
+ BLineEdit *le_chk = new BLineEdit(qtv_tmp);
+ frm_chk->addRow("Rch :", le_chk);
+ le_chk->setToolTip("Recherche");
+
+ QString stPattern = "(\\d{1,2},?){1,"
+                     +QString::number(chk_nb_col-1)
+                     +"}(\\d{1,2})";
+ QValidator *validator = new QRegExpValidator(QRegExp(stPattern));
+
+ le_chk->setValidator(validator);
+ connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(setUplets(const QString)));
+ connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(slot_ShowNewTotal(const QString)));
+ //--------------
+
+
+ /// Necessaire pour compter toutes les lignes de reponses
+ while (sqm_resu->canFetchMore())
+ {
+  sqm_resu->fetchMore();
  }
 
- /// Ligne analyse les tirages generees
- analyserTirages(conf,tbl_cible,monJeu.gameInfo);
 
+ /// Determination nb ligne par proxymodel
+ int nb_lgn_ftr = fpm_tmp->rowCount();
+ int nb_lgn_rel = sqm_resu->rowCount();
+
+#if 0
+	QSqlQuery nvll(db_1);
+	isOk=nvll.exec("select count(*) from ("+tbl_cible+")");
+	if(isOk){
+	 nvll.first();
+	 if(nvll.isValid()){
+		nb_lgn_rel = nvll.value(0).toInt();
+	 }
+	}
+#endif
+
+ gpb_Tirages =new QGroupBox;
+ QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
+ gpb_Tirages->setTitle(st_total);
+
+ //QWidget *Affiche = new QWidget;
+ QVBoxLayout *layout = new QVBoxLayout;
+ layout->addLayout(frm_chk,Qt::AlignLeft|Qt::AlignTop);
+ layout->addWidget(qtv_tmp, Qt::AlignLeft|Qt::AlignTop);
+ //layout->addWidget(gpb_Tirages,0,Qt::AlignLeft|Qt::AlignTop);
+ gpb_Tirages->setLayout(layout);
+
+ int nbCol = sqm_resu->columnCount();
+ for(int col=0;col<nbCol;col++)
+ {
+  qtv_tmp->setColumnWidth(col,CEL2_L);
+ }
+ qtv_tmp->hideColumn(0);
+ qtv_tmp->setFixedHeight(700);
+ qtv_tmp->setFixedWidth((nbCol+1)*CEL2_L);
+
+ //Affiche->setLayout(layout);
+ gpb_Tirages->setWindowTitle("Ensemble : "+ tbl_cible);
+ gpb_Tirages->show();
 }
 #else
 void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
@@ -2653,7 +2769,8 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const stGameConf &onGame,
  }
  else{
   tblToUse = tblIn ;
-  tbLabAna = "U_" + tblToUse + "_" +tbLabAna;
+  ///REM:tbLabAna = "U_" + tblToUse + "_" +tbLabAna;
+  tbLabAna = tblToUse + "_" +tbLabAna;
  }
  tbLabAna =tbLabAna+"_z"+QString::number(zn+1);
 

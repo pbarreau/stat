@@ -94,7 +94,8 @@ SOURCES += \
     blineedit.cpp \
     bfpmtiragev1.cpp \
     BFpm_2.cpp \
-    BFpm_1.cpp
+    BFpm_1.cpp \
+    BGrbGenTirages.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -151,7 +152,8 @@ HEADERS  += \
     blineedit.h \
     bfpmtiragev1.h \
     BFpm_2.h \
-    BFpm_1.h
+    BFpm_1.h \
+    BGrbGenTirages.h
 
 
 FORMS    += mainwindow.ui \

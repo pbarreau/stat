@@ -104,6 +104,10 @@ class BPrevision:public QGridLayout
  public:
  BPrevision(stPrmPrevision *prm);
  ~BPrevision();
+ CBaryCentre* getC0();
+ BCountElem* getC1();
+ BCountComb* getC2();
+ BCountGroup* getC3();
 
  private:
  bool AnalyserEnsembleTirage(QString InputTable,const stGameConf &onGame, int zn);
