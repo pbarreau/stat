@@ -1808,7 +1808,7 @@ QString BPrevision::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
  if(str_in_5.size()){
   str_in_5 = " where("
              +str_in_5
-            +"and"
+             +"and"
              +str_full
              +")";
  }
@@ -1833,7 +1833,7 @@ QString BPrevision::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
                    +str_in_3
                    +","
                    +str_uple
-                      +" as uplet, count(*) as nb from lst_R,"
+                   +" as uplet, count(*) as nb from lst_R,"
                    +str_from.remove(".id")
                    + str_in_5
                    + " group by "
@@ -1844,10 +1844,10 @@ QString BPrevision::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
                    +")" ;
 
  QString sql_req = "select "
-               + str_in_7
-               +", tb_R.uplet, max(tb_R.nb) over(PARTITION by tb_R.uplet) as total  from tb_R GROUP by tb_R.uplet order by tb_R.nb DESC";
+                   + str_in_7
+                   +", tb_R.uplet, max(tb_R.nb) over(PARTITION by tb_R.uplet) as total  from tb_R GROUP by tb_R.uplet order by tb_R.nb DESC";
 
-msg = sql_cnp + sql_req;
+ msg = sql_cnp + sql_req;
 #ifndef QT_NO_DEBUG
  qDebug() <<sql_cnp;
  qDebug() <<str_full;
@@ -1877,10 +1877,10 @@ bool BPrevision::do_SqlCnpPrepare(void)
   if(DB_Tools::isDbGotTbl(tbl,db_1.connectionName())==false){
    msg = sql_CnpMkUplet(i, col);
    QString sql_cnp = "create table if not exists "
-                 + tbl
-                 + " as "
-                 + msg
-                 + " select * from lst_R";
+                     + tbl
+                     + " as "
+                     + msg
+                     + " select * from lst_R";
 #ifndef QT_NO_DEBUG
    qDebug() <<sql_cnp;
 #endif
@@ -2090,6 +2090,82 @@ void BPrevision::slot_emitThatClickedBall(const QModelIndex &index)
  emit sig_isClickedOnBall(index);
 }
 
+#if 1
+void BPrevision::slot_UGL_Create()
+{
+ QSqlQuery query(db_1);
+ bool isOk = true;
+ QString msg = "";
+ QString SelElemt = C_TBL_6;
+ static int userRequest = 1;
+ int n = 0;
+ int p = onGame.limites[0].win;
+ int m = onGame.limites[0].max;
+
+ /// Selectionner les boules choisi par l'utilisateur pour en faire
+ /// un ensemble d'etude
+ ///
+ msg = "select count(Choix.pri)  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0)";
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<msg;
+#endif
+
+ isOk = query.exec(msg);
+
+ if(!query.first()){
+  return; // Pas de selection utilisateur
+ }
+
+ n = query.value("T").toInt();
+
+ if(n < p){
+  return; /// pas assez d'info pour calcul Cnp
+ }
+
+ /// On peur continuer
+ QString UsrCnp = "";
+ if(n<=m){
+  UsrCnp = "E1_"+QString::number(userRequest).rightJustified(3,'0')+"_C"+QString::number(n)+"_"+QString::number(p);
+ }
+ else {
+  ;
+ }
+ // Suite
+ msg = "create table "
+       +UsrCnp
+       +" as "
+         "with selection as (select ROW_NUMBER () OVER (ORDER by ROWID) id, val from filtres where (pri=1 and zne=0))"
+         "SELECT ROW_NUMBER () OVER () id,\"nop\" as J, t1.val as b1, t2.val as b2, t3.val as b3 , t4.val as b4 , t5.val as b5 "
+         "FROM selection As t1, selection As t2,  selection As t3,selection As t4,selection As t5 "
+         "WHERE ("
+         "(t1.id<t2.id) and"
+         "(t2.id<t3.id) and"
+         "(t3.id<t4.id) and"
+         "(t4.id<t5.id)"
+         ")"
+         "ORDER BY t1.id, t2.id, t2.id, t3.id, t4.id, t5.id";
+
+ isOk = query.exec(msg);
+
+ int zn=0;
+ monJeu.gameInfo.eFdjType = onGame.eFdjType;
+ monJeu.gameInfo.eTirType = eTirGen;
+ monJeu.gameInfo.znCount = 1;
+ monJeu.gameInfo.bUseMadeBdd=onGame.bUseMadeBdd;
+ monJeu.gameInfo.limites = &(onGame.limites[0]);
+ monJeu.gameInfo.names = &(onGame.names[0]);
+ monJeu.tblFdj_dta="B_fdj";
+ monJeu.tblFdj_brc="r_B_fdj_0_brc_z"+QString::number(zn+1);
+
+ QString tbl_cible_ana = "U_"+UsrCnp+"_ana";
+ monJeu.tblUsr_dta=UsrCnp;
+ monJeu.tblUsr_ana=tbl_cible_ana;
+ onGame.eTirType=eTirGen;
+ ContinuerCreation(UsrCnp, tbl_cible_ana);
+
+}
+#else
 void BPrevision::slot_UGL_Create()
 {
  /// fn UGL_Create (user game list)
@@ -2200,6 +2276,7 @@ void BPrevision::slot_UGL_Create()
  qDebug() <<msg;
 #endif
 }
+#endif
 
 bool BPrevision::isPreviousDestroyed(void)
 {
@@ -2293,14 +2370,34 @@ void BPrevision::slot_ShowNewTotal(const QString& lstBoules)
  BFpm_3 *m = qobject_cast<BFpm_3 *>(view->model());
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
-int nb_lgn_ftr = m->rowCount();
-int nb_lgn_rel = vl->rowCount();
+ int nb_lgn_ftr = m->rowCount();
+ int nb_lgn_rel = vl->rowCount();
 
  QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
  gpb_Tirages->setTitle(st_total);
 
 }
+#if 1
+void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
+{
+ bool isOk=false;
+ QString msg = "";
 
+ int zn=0;
+ int chk_nb_col = monJeu.gameInfo.limites[zn].len;
+
+ if(monJeu.gameInfo.bUseMadeBdd==false){
+  isOk = AnalyserEnsembleTirage(tbl_cible,monJeu.gameInfo, zn);
+
+	if(isOk)
+	 isOk = FaireTableauSynthese(tbl_cible_ana,monJeu.gameInfo,zn);
+ }
+
+ /// Ligne analyse les tirages generees
+ analyserTirages(conf,tbl_cible,monJeu.gameInfo);
+
+}
+#else
 void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
 {
  bool isOk=false;
@@ -2400,6 +2497,7 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
 	gpb_Tirages->show();
  }
 }
+#endif
 
 bool BPrevision::isTableCnpinDb(int n, int p)
 {

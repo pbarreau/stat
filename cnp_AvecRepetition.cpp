@@ -21,6 +21,8 @@ BGnp::~BGnp()
 {
 }
 
+/// https://denishulo.developpez.com/tutoriels/access/combinatoire/#LIV-A
+
 #if 0
 QString ConstruireRequete(QString item, int n, QString name, int step);
 QString LireTableau(int *t, int n);

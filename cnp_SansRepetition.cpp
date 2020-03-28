@@ -18,6 +18,8 @@
 
 #include "properties.h"
 
+/// https://denishulo.developpez.com/tutoriels/access/combinatoire/#LIV-A
+
 BCnp::BCnp(int n_in, int p_in)
 {
     QString cnx_bdd = "cnxTableCnp";

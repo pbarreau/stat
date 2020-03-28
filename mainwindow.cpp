@@ -192,7 +192,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 	prm->tblUsr_dta="";
 	prm->tblUsr_ana="";
 
-  return;
+  ///return;
   tous = new BPrevision(prm);
 
 
