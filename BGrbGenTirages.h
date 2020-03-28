@@ -9,6 +9,8 @@
 
 class BGrbGenTirages : public QGroupBox
 {
+ Q_OBJECT
+
 public:
 BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision *parent, QString st_table="");
 

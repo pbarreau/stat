@@ -65,11 +65,12 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
  if(query.first()){
   /// Recherche(s) utilisateur presente(s)
   do{
-   UsrCnp = query.value(0).toString();
+   QString usrTbl = query.value(0).toString();
    /// Verifier si la table que l'on veut ouvrir ne l'est pas deja
 
-	 BGrbGenTirages *read = new BGrbGenTirages(pGame,cnx, parent, UsrCnp);
+	 BGrbGenTirages *read = new BGrbGenTirages(pGame,cnx, parent, usrTbl);
 	 read->show();
+	 total++;
 	}while (query.next());
  }
 
@@ -145,8 +146,10 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  //--------------
  QIcon tmp_ico = QIcon(":/images/flt_apply.png");
  QPushButton *button = new QPushButton;
+ //QAction * tmp_action = new QAction;
  button->setIcon(tmp_ico);
- connect(button, SIGNAL(triggered()), this, SLOT(slot_UGL_SetFilters()));
+ //button->addAction(tmp_action);
+ connect(button, SIGNAL(clicked()), this, SLOT(slot_UGL_SetFilters()));
 
  //button->setIconSize(QSize(65, 65));
 
@@ -223,7 +226,7 @@ void BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
 
 void BGrbGenTirages::slot_ShowNewTotal(const QString& lstBoules)
 {
- Q_UNUSED(lstBoules);
+ //Q_UNUSED(lstBoules);
 
  BLineEdit *ble_tmp = qobject_cast<BLineEdit *>(sender());
 
