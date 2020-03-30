@@ -27,11 +27,11 @@ void slot_UGL_SetFilters();
 private:
 QString chkData(stGameConf *pGame, BPrevision * parent, QString cnx);
 QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
-void   CreerTable(stGameConf *pGame, QString tbl);
+bool CreerTable(stGameConf *pGame, QString tbl);
 
 private:
 static int total;
-static QList<QPair<QString, BGrbGenTirages*>> *lstGenTir;
+static QList<QPair<QString, BGrbGenTirages*>*> *lstGenTir;
 QString tbl_name;
 QGroupBox *gpb_Tirages;
 QSqlQueryModel *sqm_resu;

@@ -19,14 +19,14 @@
 #define CEL2_L 40
 
 int BGrbGenTirages::total = 1;
-QList<QPair<QString, BGrbGenTirages*>> *BGrbGenTirages::lstGenTir = nullptr;
+QList<QPair<QString, BGrbGenTirages*>*> *BGrbGenTirages::lstGenTir = nullptr;
 
 BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision * parent, QString st_table)
 {
  QString UsrCnp = st_table;
 
  if(lstGenTir==nullptr){
-  lstGenTir = new QList<QPair<QString, BGrbGenTirages*>>;
+  lstGenTir = new QList<QPair<QString, BGrbGenTirages*>*>;
  }
  // Etablir connexion a la base
  db_1 = QSqlDatabase::database(cnx);
@@ -53,8 +53,10 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision * pare
  }
 
  if(UsrCnp.size()){
-  tbl_name=UsrCnp;
+  QPair <QString, BGrbGenTirages*> *b = lstGenTir->last();
+  b->second=this;
 
+  tbl_name=UsrCnp;
   /// Regarder les filtrages demandes
   l_c0 = parent->getC0();
   l_c1 = parent->getC1();
@@ -89,15 +91,15 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
    /// Verifier si la table que l'on veut ouvrir ne l'est pas deja
    if(nb_items){
     for(int i = 0; i<nb_items;i++){
-     QPair <QString, BGrbGenTirages*> a=lstGenTir->at(i);
-     a.second->show();
+     QPair <QString, BGrbGenTirages*> *a=lstGenTir->at(i);
+     a->second->show();
     }
    }
    else {
     QPair <QString, BGrbGenTirages*> *b = new QPair <QString, BGrbGenTirages*>;
     b->first = usrTbl;
     b->second = new BGrbGenTirages(pGame,cnx,parent,usrTbl);
-    lstGenTir->append(*b);
+    lstGenTir->append(b);
     b->second->show();
    }
   }while (query.next());
@@ -138,24 +140,37 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
  msg = "with e1 as (select val  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0) order by val) "
        "SELECT group_concat(T) as lst_cur from e1";
  query.exec(msg);
+ bool bTrouve = false;
+ QString key = "";
  if(query.first()){
-  QString key=query.value(0).toString();
+  key=query.value(0).toString();
   msg = "select * from e_lst where(lst='"+key+"')";
   query.exec(msg);
   if(query.first()){
    key=query.value(1).toString();
    /// Chercher dans calcul precedent
-   bool bTrouve = false;
    for (int i = 0; (i< total-1) && (!bTrouve); i++) {
-    if(lstGenTir->at(i).first.compare(key)){
-     lstGenTir->at(i).second->show();
+    if(lstGenTir->at(i)->first.compare(key)){
+     lstGenTir->at(i)->second->show();
      bTrouve = true;
     }
    }
-   /// C'est une nouvelle demande
-   if(!bTrouve){
-    UsrCnp = "E1_"+QString::number(total).rightJustified(3,'0')+"_C"+QString::number(n)+"_"+QString::number(p);
-    CreerTable(pGame, UsrCnp);
+  }
+ }
+ /// C'est une nouvelle demande
+ if(!bTrouve){
+  UsrCnp = "E1_"+QString::number(total).rightJustified(3,'0')+"_C"+QString::number(n)+"_"+QString::number(p);
+  if(CreerTable(pGame, UsrCnp)){
+   // Rajouter cette table a la liste
+   msg = "insert into E_lst values(NULL,'"+UsrCnp+"','"+key+"')";
+   if(query.exec(msg)){
+    QPair <QString, BGrbGenTirages*> *b = new QPair <QString, BGrbGenTirages*>;
+    b->first = UsrCnp;
+    b->second = nullptr;
+    lstGenTir->append(b);
+   }
+ }
+
 #if 0
 		QPair <QString, BGrbGenTirages*> *b = new QPair <QString, BGrbGenTirages*>;
 		b->first = UsrCnp;
@@ -163,8 +178,6 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
 		lstGenTir->append(*b);
 		b->second->show();
 #endif
-	 }
-	}
  }
 
  return UsrCnp;
@@ -257,10 +270,9 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  return gpb_Tirages;
 }
 
-void BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
+bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
 {
  Q_UNUSED(pGame);
-
  QSqlQuery query(db_1);
  bool isOk = true;
  QString msg = "";
@@ -285,6 +297,8 @@ void BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
   DB_Tools::DisplayError("CreerTable",&query,msg);
  }
  total++;
+
+ return isOk;
 }
 
 void BGrbGenTirages::slot_ShowNewTotal(const QString& lstBoules)
