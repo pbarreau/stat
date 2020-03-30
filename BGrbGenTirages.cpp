@@ -71,6 +71,9 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision * pare
 	this->setLayout(mainLayout);
 	this->setWindowTitle("Ensemble : "+ UsrCnp);
  }
+ else {
+  delete this;
+ }
 }
 
 QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString cnx)
@@ -149,7 +152,7 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
   if(query.first()){
    key=query.value(1).toString();
    /// Chercher dans calcul precedent
-   for (int i = 0; (i< total-1) && (!bTrouve); i++) {
+   for (int i = 0; (i< total) && (!bTrouve); i++) {
     if(lstGenTir->at(i)->first.compare(key)){
      lstGenTir->at(i)->second->show();
      bTrouve = true;
