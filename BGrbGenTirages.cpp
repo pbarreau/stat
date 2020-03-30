@@ -9,6 +9,7 @@
 #include <QGroupBox>
 #include <QFormLayout>
 #include <QPushButton>
+#include <QPair>
 
 #include "db_tools.h"
 #include "BGrbGenTirages.h"
@@ -18,17 +19,32 @@
 #define CEL2_L 40
 
 int BGrbGenTirages::total = 1;
+QList<QPair<QString, BGrbGenTirages*>> *BGrbGenTirages::lstGenTir = nullptr;
 
 BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision * parent, QString st_table)
 {
  QString UsrCnp = st_table;
 
+ if(lstGenTir==nullptr){
+  lstGenTir = new QList<QPair<QString, BGrbGenTirages*>>;
+ }
  // Etablir connexion a la base
  db_1 = QSqlDatabase::database(cnx);
  if(db_1.isValid()==false){
   QString str_error = db_1.lastError().text();
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
+ }
+
+ /// Verifier si table des recherches existe
+ if(DB_Tools::isDbGotTbl("E_lst",cnx)==false){
+  QSqlQuery query(db_1);
+  QString msg = "CREATE TABLE if not EXISTS E_lst (id PRIMARY key, name text, lst TEXT)";
+  if(!query.exec(msg)){
+   QString str_error = query.lastError().text();
+   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+   return;
+  }
  }
 
  /// Verifier si il y a des calculs precedents
@@ -38,6 +54,8 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision * pare
 
  if(UsrCnp.size()){
   tbl_name=UsrCnp;
+
+  /// Regarder les filtrages demandes
   l_c0 = parent->getC0();
   l_c1 = parent->getC1();
   l_c2 = parent->getC2();
@@ -60,21 +78,36 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
  QString msg = "";
 
  /// Verif si calcul precedent dans base
- msg = "SELECT name as TbUsr FROM sqlite_master WHERE type='table' AND name like 'E1%'";
+ msg = "SELECT name as TbUsr FROM sqlite_master WHERE type='table' AND name like 'E1%' order by TbUsr asc";
  query.exec(msg);
  if(query.first()){
-  /// Recherche(s) utilisateur presente(s)
+  /// Recherche(s) utilisateur deja ouverte(s)
+  int nb_items = lstGenTir->size();
+  total=nb_items;
   do{
    QString usrTbl = query.value(0).toString();
    /// Verifier si la table que l'on veut ouvrir ne l'est pas deja
-
-	 BGrbGenTirages *read = new BGrbGenTirages(pGame,cnx, parent, usrTbl);
-	 read->show();
-	 total++;
-	}while (query.next());
+   if(nb_items){
+    for(int i = 0; i<nb_items;i++){
+     QPair <QString, BGrbGenTirages*> a=lstGenTir->at(i);
+     a.second->show();
+    }
+   }
+   else {
+    QPair <QString, BGrbGenTirages*> *b = new QPair <QString, BGrbGenTirages*>;
+    b->first = usrTbl;
+    b->second = new BGrbGenTirages(pGame,cnx,parent,usrTbl);
+    lstGenTir->append(*b);
+    b->second->show();
+   }
+  }while (query.next());
+  /// Mettre a jour la liste
+  total = lstGenTir->size();
  }
 
+ /// Si on avait aucun calcul precedent ?
 
+ /// Regarder le choix utilisateur
  msg = "select count(Choix.pri)  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0)";
 #ifndef QT_NO_DEBUG
  qDebug() <<msg;
@@ -100,9 +133,39 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
   return(""); /// trop d'info pour calcul Cnp
  }
 
- UsrCnp = "E1_"+QString::number(total).rightJustified(3,'0')+"_C"+QString::number(n)+"_"+QString::number(p);
-
- CreerTable(pGame, UsrCnp);
+ /// Les données de base sont bonnes
+ /// verifier si ce n'est pas le meme calcul qu'un des precedents
+ msg = "with e1 as (select val  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0) order by val) "
+       "SELECT group_concat(T) as lst_cur from e1";
+ query.exec(msg);
+ if(query.first()){
+  QString key=query.value(0).toString();
+  msg = "select * from e_lst where(lst='"+key+"')";
+  query.exec(msg);
+  if(query.first()){
+   key=query.value(1).toString();
+   /// Chercher dans calcul precedent
+   bool bTrouve = false;
+   for (int i = 0; (i< total-1) && (!bTrouve); i++) {
+    if(lstGenTir->at(i).first.compare(key)){
+     lstGenTir->at(i).second->show();
+     bTrouve = true;
+    }
+   }
+   /// C'est une nouvelle demande
+   if(!bTrouve){
+    UsrCnp = "E1_"+QString::number(total).rightJustified(3,'0')+"_C"+QString::number(n)+"_"+QString::number(p);
+    CreerTable(pGame, UsrCnp);
+#if 0
+		QPair <QString, BGrbGenTirages*> *b = new QPair <QString, BGrbGenTirages*>;
+		b->first = UsrCnp;
+		b->second = new BGrbGenTirages(pGame,cnx,parent,UsrCnp);
+		lstGenTir->append(*b);
+		b->second->show();
+#endif
+	 }
+	}
+ }
 
  return UsrCnp;
 }

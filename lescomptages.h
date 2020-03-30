@@ -7,6 +7,10 @@
 #include <QLabel>
 #include <QGroupBox>
 
+#include <QList>
+#include <QPair>
+//#include "BGrbGenTirages.h"
+
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
@@ -168,6 +172,8 @@ class BPrevision:public QGridLayout
  void slot_UGL_ClrFilters();
 
  private:
+ //QList<QPair<QString, BGrbGenTirages*>> *lstTirGen;
+ //QPair<QString, BGrbGenTirages*> *lstTirGen;
  BCountComb *c2;
  BCountElem *c1;
  BCountGroup *c3;

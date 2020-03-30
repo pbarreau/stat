@@ -21,6 +21,9 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
+#include <QList>
+#include <QPair>
+
 #include "BGrbGenTirages.h"
 #include "blineedit.h"
 #include "BFpm_2.h"
@@ -64,6 +67,7 @@ BPrevision::BPrevision(stPrmPrevision *prm)
  conf = *prm;
 
  onGame = conf.gameInfo;
+ //lstTirGen = new QPair<QString, BGrbGenTirages*>; //new QList<QPair<QString, BGrbGenTirages*>>;
 
  if(ouvrirBase(conf.bddStore,conf.gameInfo.eFdjType)==true)
  {

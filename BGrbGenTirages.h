@@ -4,8 +4,14 @@
 #include <QGroupBox>
 #include <QSqlQueryModel>
 
+#include <QList>
+#include <QPair>
+
 #include "lescomptages.h"
+
 #include "game.h"
+
+//class BPrevision;
 
 class BGrbGenTirages : public QGroupBox
 {
@@ -25,6 +31,7 @@ void   CreerTable(stGameConf *pGame, QString tbl);
 
 private:
 static int total;
+static QList<QPair<QString, BGrbGenTirages*>> *lstGenTir;
 QString tbl_name;
 QGroupBox *gpb_Tirages;
 QSqlQueryModel *sqm_resu;
