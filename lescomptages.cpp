@@ -2116,8 +2116,11 @@ void BPrevision::slot_UGL_Create()
  QString cnx_name = db_1.connectionName();
  BGrbGenTirages *calcul = nullptr;
  calcul = new BGrbGenTirages(&onGame,cnx_name, this);
- if(calcul != nullptr){
+ if(calcul->addr != nullptr){
   calcul->show();
+ }
+ else {
+  delete calcul;
  }
  return;
 

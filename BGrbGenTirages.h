@@ -19,12 +19,15 @@ class BGrbGenTirages : public QGroupBox
 
 public:
 BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision *parent, QString st_table="");
+BGrbGenTirages *addr;
 
 public slots:
 void slot_ShowNewTotal(const QString& lstBoules);
 void slot_UGL_SetFilters();
 
 private:
+void MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BPrevision *parent, QString st_table="");
+void mkForm(stGameConf *pGame, BPrevision *parent, QString st_table);
 QString chkData(stGameConf *pGame, BPrevision * parent, QString cnx);
 QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
 bool CreerTable(stGameConf *pGame, QString tbl);
