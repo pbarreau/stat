@@ -31,6 +31,7 @@ void mkForm(stGameConf *pGame, BPrevision *parent, QString st_table);
 QString chkData(stGameConf *pGame, BPrevision * parent, QString cnx);
 QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
 bool CreerTable(stGameConf *pGame, QString tbl);
+void analyserTirages(const stGameConf *pGame,const QString st_table);
 
 private:
 static int total;

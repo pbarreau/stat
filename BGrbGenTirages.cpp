@@ -16,6 +16,8 @@
 #include "blineedit.h"
 #include "BFpm_2.h"
 
+#include "compter_zones.h"
+
 #define CEL2_L 40
 
 int BGrbGenTirages::total = 1;
@@ -46,6 +48,7 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision * pare
 
 	if(UsrCnp.size()){
 	 mkForm(pGame,parent,UsrCnp);
+	 analyserTirages(pGame,UsrCnp);
 	}
 	else {
 	 addr = nullptr;
@@ -103,8 +106,11 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
  if(query.first() && (lstGenTir->size()==nb_tables)){
   /// Il y avait des requetes precedentes
   int pos = 0;
+  QString tmp = "";
   do{
+   tmp = lstGenTir->at(pos)->first;
    lstGenTir->at(pos)->second->show();
+   analyserTirages(pGame,tmp);
    pos++;
   }while(query.next());
  }
@@ -428,4 +434,103 @@ void BGrbGenTirages::mkForm(stGameConf *pGame, BPrevision *parent, QString st_ta
  mainLayout->addWidget(info);
  this->setLayout(mainLayout);
  this->setWindowTitle("Ensemble : "+ st_table);
+}
+
+void BGrbGenTirages::analyserTirages(const stGameConf *pGame,const QString st_table)
+{
+ QWidget * Resultats = new QWidget;
+ QTabWidget *tab_Top = new QTabWidget;
+
+
+ BCountElem *c1 = new BCountElem(*pGame,st_table,db_1,Resultats);
+
+ return;
+#if 0
+ connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
+ /// transfert vers SyntheseGenerale
+ connect(c1,
+         SIGNAL(sig_isClickedOnBall(QModelIndex)),
+         this,
+         SLOT(slot_emitThatClickedBall(QModelIndex)));
+
+ /// greffon pour calculer barycentre des tirages
+ stNeedsOfBary param;
+ param.db = db_1;
+ param.ncx = db_1.connectionName();
+ param.tbl_in=st_table;
+ param.tbl_ana = st_table+"_ana_z1";
+ param.tbl_flt = tr("U_b_z1"); /// source+tr("_flt_z1");
+ param.pDef = *pGame;
+ param.origine = this;
+ CBaryCentre *c= new CBaryCentre(param);
+
+
+ BCountComb *c2 = new BCountComb(*pGame,st_table,db_1);
+ BCountGroup *c3 = new BCountGroup(*pGame,st_table,slFlt,db_1);
+
+
+
+ QGridLayout **pConteneur = new QGridLayout *[4];
+ QWidget **pMonTmpWidget = new QWidget * [4];
+
+ for(int i = 0; i< 4;i++)
+ {
+  QGridLayout * grd_tmp = new QGridLayout;
+  pConteneur[i] = grd_tmp;
+
+	QWidget * wid_tmp = new QWidget;
+	pMonTmpWidget [i] = wid_tmp;
+ }
+ pConteneur[0]->addWidget(c1,1,0);
+ pConteneur[1]->addWidget(c,1,0);
+ pConteneur[2]->addWidget(c2,1,0);
+ pConteneur[3]->addWidget(c3,1,0);
+
+ pMonTmpWidget[0]->setLayout(pConteneur[0]);
+ pMonTmpWidget[1]->setLayout(pConteneur[1]);
+ pMonTmpWidget[2]->setLayout(pConteneur[2]);
+ pMonTmpWidget[3]->setLayout(pConteneur[3]);
+
+ tab_Top->addTab(pMonTmpWidget[0],tr("Zones"));
+ tab_Top->addTab(pMonTmpWidget[1],tr("Barycentre"));
+ tab_Top->addTab(pMonTmpWidget[2],tr("Combinaisons"));
+ tab_Top->addTab(pMonTmpWidget[3],tr("Groupes"));
+
+ QGridLayout *tmp_layout = new QGridLayout;
+ int i = 0;
+
+ QString msg = QString("Selection : %1 sur %2");
+ QString s_sel = QString::number(0).rightJustified(2,'0');
+ QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
+ msg = msg.arg(s_sel).arg(s_max);
+
+ LabelClickable *tmp_lab = c1->getLabPriority();
+ tmp_lab->setText(msg);
+
+ tmp_layout->addWidget(tmp_lab,i,0);
+ i++;
+ tmp_layout->addWidget(tab_Top,i,0);
+
+ /*
+    QString clef[]={"Z:","C:","G:"};
+    int i = 0;
+    for(i; i< 3; i++)
+    {
+        selection[i].setText(clef[i]+"aucun");
+        tmp_layout->addWidget(&selection[i],i,0);
+    }
+*/
+
+#if 0
+    connect( selection, SIGNAL( clicked(QString)) ,
+             this, SLOT( slot_RazSelection(QString) ) );
+#endif
+
+
+
+ /// ----------------
+ Resultats->setLayout(tmp_layout);
+ Resultats->setWindowTitle(st_table);
+ Resultats->show();
+#endif
 }
