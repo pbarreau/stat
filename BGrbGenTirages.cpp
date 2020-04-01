@@ -45,11 +45,7 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision * pare
   UsrCnp = chkData(pGame,parent,cnx);
 
 	if(UsrCnp.size()){
-	 //QPair <QString, BGrbGenTirages*> *b = lstGenTir->last();
-	 //b->second=this;
-
 	 mkForm(pGame,parent,UsrCnp);
-
 	}
 	else {
 	 addr = nullptr;
@@ -92,7 +88,7 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
 		a->second = tmp;
 		lstGenTir->append(a);
 	 }while(query.next());
-	 total = lstGenTir->size();
+	 total = lstGenTir->size() +1;
 	}
  }
 
@@ -101,7 +97,6 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
   /// Il y avait des requetes precedentes
   int pos = 0;
   do{
-   //QString title = lstGenTir->at(pos)->first;
    lstGenTir->at(pos)->second->show();
    pos++;
   }while(query.next());
@@ -114,44 +109,11 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
  QSqlQuery query(db_1);
  QString msg = "";
 
-#if 0
- /// Verif si calcul precedent dans base
- msg = "SELECT name as TbUsr FROM sqlite_master WHERE type='table' AND name like 'E1%' order by TbUsr asc";
- query.exec(msg);
- if(query.first()){
-  /// Recherche(s) utilisateur deja ouverte(s)
-  int nb_items = lstGenTir->size();
-  //total=nb_items;
-  do{
-   QString usrTbl = query.value(0).toString();
-   /// Verifier si la table que l'on veut ouvrir ne l'est pas deja
-   if(nb_items){
-    for(int i = 0; i<nb_items;i++){
-     QPair <QString, BGrbGenTirages*> *a=lstGenTir->at(i);
-     if(a->first.compare(usrTbl)){
-      a->second->show();
-     }
-    }
-   }
-   else {
-    QPair <QString, BGrbGenTirages*> *b = new QPair <QString, BGrbGenTirages*>;
-    b->first = usrTbl;
-    b->second = new BGrbGenTirages(pGame,cnx,parent,usrTbl);
-    lstGenTir->append(b);
-    b->second->show();
-   }
-  }while (query.next());
-  /// Mettre a jour la liste
-  total = lstGenTir->size();
- }
-
- /// Si on avait aucun calcul precedent ?
-#endif
-
  /// Regarder le choix utilisateur
  msg = "with somme as(select count(Choix.pri)  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0)),"
        "e1 as (select val from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0) order by val) "
        "SELECT somme.T, group_concat(e1.val) as boules from somme,e1";
+
 #ifndef QT_NO_DEBUG
  qDebug() <<msg;
 #endif
@@ -176,15 +138,6 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
   return(""); /// trop d'info pour calcul Cnp
  }
 
-#if 0
- /// Les données de base sont bonnes
- /// verifier si ce n'est pas le meme calcul qu'un des precedents
- msg = "with e1 as (select val  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0) order by val) "
-       "SELECT group_concat(T) as lst_cur from e1";
- query.exec(msg);
-#endif
-
- //bool bTrouve = false;
  QString key = "";
 
  /// Analyser la selection utilisateur
@@ -198,16 +151,16 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
   key=query.value(1).toString();
 
 	/// Chercher dans calcul precedent
-	for (int i = 0; (i< total) ; i++) { //&& (!bTrouve)
+	for (int i = 0; (i< total) ; i++) {
 	 if(lstGenTir->at(i)->first.compare(key)==0){
 		lstGenTir->at(i)->second->show();
-		//bTrouve = true;
 	 }
 	}
  }
  else {
   /// Creer ce calcul et le montrer
   UsrCnp = "E1_"+QString::number(total).rightJustified(3,'0')+"_C"+QString::number(n)+"_"+QString::number(p);
+
   if(CreerTable(pGame, UsrCnp)){
    // Rajouter cette table a la liste
    msg = "insert into E_lst values(NULL,'"+UsrCnp+"','"+key+"')";
@@ -218,16 +171,8 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
     lstGenTir->append(b);
    }
   }
- }
 
-#if 0
-		QPair <QString, BGrbGenTirages*> *b = new QPair <QString, BGrbGenTirages*>;
-		b->first = UsrCnp;
-		b->second = new BGrbGenTirages(pGame,cnx,parent,UsrCnp);
-		lstGenTir->append(*b);
-		b->second->show();
-#endif
- /// }
+ }
 
  return UsrCnp;
 }
@@ -243,7 +188,7 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  msg="select * from ("+tbl_cible+")";
  QTableView *qtv_tmp = new QTableView;
 
- sqm_resu = new QSqlQueryModel; //QSqlQueryModel *
+ sqm_resu = new QSqlQueryModel;
  sqm_resu->setQuery(msg,db_1);
 
  BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,2);
@@ -271,12 +216,9 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  //--------------
  QIcon tmp_ico = QIcon(":/images/flt_apply.png");
  QPushButton *button = new QPushButton;
- //QAction * tmp_action = new QAction;
  button->setIcon(tmp_ico);
- //button->addAction(tmp_action);
  connect(button, SIGNAL(clicked()), this, SLOT(slot_UGL_SetFilters()));
 
- //button->setIconSize(QSize(65, 65));
 
  QHBoxLayout *inputs = new QHBoxLayout;
  inputs->addWidget(le_chk);
@@ -297,11 +239,9 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
  gpb_Tirages->setTitle(st_total);
 
- //QWidget *Affiche = new QWidget;
  QVBoxLayout *layout = new QVBoxLayout;
  layout->addLayout(inputs,Qt::AlignLeft|Qt::AlignTop);
  layout->addWidget(qtv_tmp, Qt::AlignLeft|Qt::AlignTop);
- //layout->addWidget(gpb_Tirages,0,Qt::AlignLeft|Qt::AlignTop);
  gpb_Tirages->setLayout(layout);
 
  int nbCol = sqm_resu->columnCount();
@@ -313,9 +253,6 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  qtv_tmp->setFixedHeight(700);
  qtv_tmp->setFixedWidth((nbCol+1)*CEL2_L);
 
- //Affiche->setLayout(layout);
- //gpb_Tirages->setWindowTitle("Ensemble : "+ tbl_cible);
- //gpb_Tirages->show();
  return gpb_Tirages;
 }
 
@@ -372,11 +309,8 @@ void BGrbGenTirages::slot_UGL_SetFilters()
  QSqlQuery query(db_1);
  bool isOk = true;
  QString msg = "";
- QString source = tbl_name;//monJeu.tblUsr_dta;
+ QString source = tbl_name;
  QString analys = source+"_z1";///"U_E1_ana_z1";
-
- //onGame;
- //monJeu;
 
  /// Verifier si existance table resultat utilisateur
  msg = "SELECT name FROM sqlite_master "
