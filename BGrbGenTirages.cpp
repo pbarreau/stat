@@ -61,7 +61,7 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
 
  /// Verifier si table des recherches existe
  if(DB_Tools::isDbGotTbl("E_lst",cnx)==false){
-  msg = "CREATE TABLE if not EXISTS E_lst (id PRIMARY key, name text, lst TEXT)";
+  msg = "CREATE TABLE if not EXISTS E_lst (id integer PRIMARY key, name text, lst TEXT)";
   if(!query.exec(msg)){
    QString str_error = query.lastError().text();
    QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
@@ -70,8 +70,15 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
  }
 
  /// Verif presence
- msg = "select * from E_lst order by name asc";
+ int nb_tables = 0;
+ msg = "select count(*) as T from E_lst order by name asc";
  isOk= query.exec(msg);
+ if(query.first()){
+  nb_tables = query.value("T").toInt();
+
+	msg = "select * from E_lst order by name asc";
+	isOk= query.exec(msg);
+ }
 
  /// Tracking des calculs
  if(lstGenTir==nullptr){
@@ -93,7 +100,7 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
  }
 
 
- if(query.first() && (lstGenTir->size())){
+ if(query.first() && (lstGenTir->size()==nb_tables)){
   /// Il y avait des requetes precedentes
   int pos = 0;
   do{
@@ -151,9 +158,11 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
   key=query.value(1).toString();
 
 	/// Chercher dans calcul precedent
-	for (int i = 0; (i< total) ; i++) {
+	for (int i = 0; (i< total-1) ; i++) {
 	 if(lstGenTir->at(i)->first.compare(key)==0){
 		lstGenTir->at(i)->second->show();
+		lstGenTir->at(i)->second->activateWindow();
+		break;
 	 }
 	}
  }
