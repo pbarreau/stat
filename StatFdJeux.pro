@@ -95,7 +95,8 @@ SOURCES += \
     bfpmtiragev1.cpp \
     BFpm_2.cpp \
     BFpm_1.cpp \
-    BGrbGenTirages.cpp
+    BGrbGenTirages.cpp \
+    BPushButton.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -153,7 +154,8 @@ HEADERS  += \
     bfpmtiragev1.h \
     BFpm_2.h \
     BFpm_1.h \
-    BGrbGenTirages.h
+    BGrbGenTirages.h \
+    BPushButton.h
 
 
 FORMS    += mainwindow.ui \

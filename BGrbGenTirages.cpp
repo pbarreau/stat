@@ -18,6 +18,7 @@
 #include "BFpm_2.h"
 
 #include "compter_zones.h"
+#include "BPushButton.h"
 
 #define CEL2_L 40
 
@@ -260,6 +261,9 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  QGroupBox *tmp_gpb = new QGroupBox;
  QString msg = "";
 
+ QIcon tmp_ico;
+ QPushButton *tmp_btn = nullptr;
+
  int zn=0;
  int chk_nb_col = pGame->limites[zn].len;
 
@@ -274,6 +278,31 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  fpm_tmp->setDynamicSortFilter(true);
  fpm_tmp->setSourceModel(sqm_resu);
  qtv_tmp->setModel(fpm_tmp);
+
+ // Label
+ QHBoxLayout *seltir = new QHBoxLayout;
+
+ QFormLayout *frm_lab = new QFormLayout;
+
+ QLabel *lb_tir = new QLabel;
+ lb_tir->setText("01,02,03,04,05");
+ lb_tir->setStyleSheet("QLabel {color:green;font-weight: bold;font: 18pt;}"
+                       "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
+ frm_lab->addRow("Tir :", lb_tir);
+ seltir->addLayout(frm_lab);
+ lb_tir->setToolTip("Tirage courant");
+
+ tmp_ico = QIcon(":/images/pri_all.png");
+ BPushButton *my_btn = new BPushButton(lb_tir,"blue");
+ my_btn->setIcon(tmp_ico);
+ connect(my_btn, SIGNAL(unSurvol(QLabel *, QEvent *)), this, SLOT(slot_tirOk(QLabel *, QEvent *)));
+ seltir->addWidget(my_btn);
+
+ tmp_ico = QIcon(":/images/pri_none.png");
+ my_btn = new BPushButton(lb_tir,"black");
+ my_btn->setIcon(tmp_ico);
+ connect(my_btn, SIGNAL(unSurvol(QLabel *, QEvent *)), this, SLOT(slot_tirEsc(QLabel *, QEvent *)));
+ seltir->addWidget(my_btn);
 
  //--------------
  QFormLayout *frm_chk = new QFormLayout;
@@ -293,15 +322,15 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(slot_ShowNewTotal(const QString)));
 
  //--------------
- QIcon tmp_ico = QIcon(":/images/flt_apply.png");
- QPushButton *button = new QPushButton;
- button->setIcon(tmp_ico);
- connect(button, SIGNAL(clicked()), this, SLOT(slot_UGL_SetFilters()));
+ tmp_ico = QIcon(":/images/flt_apply.png");
+ tmp_btn = new QPushButton;
+ tmp_btn->setIcon(tmp_ico);
+ connect(tmp_btn, SIGNAL(clicked()), this, SLOT(slot_UGL_SetFilters()));
 
 
  QHBoxLayout *inputs = new QHBoxLayout;
- inputs->addWidget(le_chk);
- inputs->addWidget(button);
+ inputs->addLayout(frm_chk);
+ inputs->addWidget(tmp_btn);
 
  /// Necessaire pour compter toutes les lignes de reponses
  while (sqm_resu->canFetchMore())
@@ -319,6 +348,7 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  tmp_gpb->setTitle(st_total);
 
  QVBoxLayout *layout = new QVBoxLayout;
+ layout->addLayout(seltir,Qt::AlignLeft|Qt::AlignTop);
  layout->addLayout(inputs,Qt::AlignLeft|Qt::AlignTop);
  layout->addWidget(qtv_tmp, Qt::AlignLeft|Qt::AlignTop);
  tmp_gpb->setLayout(layout);
@@ -383,6 +413,27 @@ void BGrbGenTirages::slot_ShowNewTotal(const QString& lstBoules)
 
  QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
  gpb_Tirages->setTitle(st_total);
+}
+
+void BGrbGenTirages::slot_tirOk(QLabel *l, QEvent *e)
+{
+ BPushButton *btn = qobject_cast<BPushButton *>(sender());
+
+ if(e->type() == QEvent::Enter){
+  l->setStyleSheet("QLabel {color:"+btn->col+";font-weight: bold;font: 18pt;}"
+                   "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
+ }
+
+}
+
+void BGrbGenTirages::slot_tirEsc(QLabel *l, QEvent *e)
+{
+
+ if(e->type() == QEvent::Enter){
+  l->setStyleSheet("QLabel {color:green;font-weight: bold;font: 18pt;}"
+                   "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
+ }
+
 }
 
 void BGrbGenTirages::slot_UGL_SetFilters()

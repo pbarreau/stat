@@ -3,6 +3,7 @@
 
 #include <QGroupBox>
 #include <QSqlQueryModel>
+#include <QPushButton>
 
 #include <QList>
 #include <QPair>
@@ -12,6 +13,7 @@
 #include "game.h"
 
 //class BPrevision;
+
 
 class BGrbGenTirages : public QGroupBox
 {
@@ -24,6 +26,10 @@ BGrbGenTirages *addr;
 public slots:
 void slot_ShowNewTotal(const QString& lstBoules);
 void slot_UGL_SetFilters();
+
+private slots:
+void slot_tirOk(QLabel *l, QEvent *e);
+void slot_tirEsc(QLabel *l, QEvent *e);
 
 private:
 void MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BPrevision *parent, QString st_table="");
