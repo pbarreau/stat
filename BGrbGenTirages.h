@@ -29,6 +29,7 @@ private:
 void MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BPrevision *parent, QString st_table="");
 void mkForm(stGameConf *pGame, BPrevision *parent, QString st_table);
 QString chkData(stGameConf *pGame, BPrevision * parent, QString cnx);
+QGroupBox *  LireBoule(stGameConf *pGame, QString tbl_cible);
 QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
 bool CreerTable(stGameConf *pGame, QString tbl);
 void analyserTirages(const stGameConf *pGame,const QString st_table);

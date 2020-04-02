@@ -10,6 +10,7 @@
 #include <QFormLayout>
 #include <QPushButton>
 #include <QPair>
+#include <QHeaderView>
 
 #include "db_tools.h"
 #include "BGrbGenTirages.h"
@@ -48,7 +49,7 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision * pare
 
 	if(UsrCnp.size()){
 	 mkForm(pGame,parent,UsrCnp);
-	 analyserTirages(pGame,UsrCnp);
+	 //analyserTirages(pGame,UsrCnp);
 	}
 	else {
 	 addr = nullptr;
@@ -110,7 +111,7 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
   do{
    tmp = lstGenTir->at(pos)->first;
    lstGenTir->at(pos)->second->show();
-   analyserTirages(pGame,tmp);
+   //analyserTirages(pGame,tmp);
    pos++;
   }while(query.next());
  }
@@ -192,8 +193,71 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
  return UsrCnp;
 }
 
+QGroupBox *BGrbGenTirages::LireBoule(stGameConf *pGame, QString tbl_cible)
+{
+ QGroupBox *tmp_gpb = new QGroupBox;
+
+ QSqlQuery query(db_1);
+ QString msg ="";
+ bool isOk = true;
+
+ QStringList sel_boules;
+ QTableView *qtv_tmp = new QTableView;
+ int nb_row = 10;
+ int nb_col = (pGame->limites[0].max/nb_row)+1;
+
+ QStandardItemModel *visu = new QStandardItemModel(nb_row,nb_col);
+
+ msg = "select lst from e_lst where(name = '"+tbl_cible+"')";
+ isOk= query.exec(msg);
+ if(query.first()){
+  qtv_tmp->setModel(visu);
+  sel_boules = query.value(0).toString().split(",");
+  QStandardItem *tmp = nullptr;
+
+	for (int i=0;i<sel_boules.size();i++) {
+	 int val = sel_boules.at(i).toInt();
+	 int col_id = val/10;
+	 int row_id = val%10;
+	 tmp = new QStandardItem(QString::number(val).rightJustified(2,'0'));
+	 visu->setItem(row_id,col_id,tmp);
+	}
+
+	/// Fixer largeur colonne
+	for (int i = 0; i< nb_col; i++) {
+	 qtv_tmp->setColumnWidth(i,30);
+	}
+
+	/// faire disparaite barres
+	qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+	qtv_tmp->horizontalHeader()->hide();
+
+	qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+	qtv_tmp->verticalHeader()->hide();
+
+	qtv_tmp->setAlternatingRowColors(true);
+
+	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+
+	qtv_tmp->setFixedWidth((nb_col+0.5) * 30);;
+	qtv_tmp->setFixedHeight((nb_row+0.5) * 30);
+ }
+
+
+ QString st_total = "En cours : "+QString::number(sel_boules.size());
+ tmp_gpb->setTitle(st_total);
+
+ QVBoxLayout *layout = new QVBoxLayout;
+ layout->addWidget(qtv_tmp, Qt::AlignCenter|Qt::AlignTop);
+ tmp_gpb->setLayout(layout);
+
+ return tmp_gpb;
+}
+
 QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
 {
+ QGroupBox *tmp_gpb = new QGroupBox;
  QString msg = "";
 
  int zn=0;
@@ -250,14 +314,14 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  int nb_lgn_ftr = fpm_tmp->rowCount();
  int nb_lgn_rel = sqm_resu->rowCount();
 
- gpb_Tirages =new QGroupBox;
+ //gpb_Tirages =new QGroupBox;
  QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
- gpb_Tirages->setTitle(st_total);
+ tmp_gpb->setTitle(st_total);
 
  QVBoxLayout *layout = new QVBoxLayout;
  layout->addLayout(inputs,Qt::AlignLeft|Qt::AlignTop);
  layout->addWidget(qtv_tmp, Qt::AlignLeft|Qt::AlignTop);
- gpb_Tirages->setLayout(layout);
+ tmp_gpb->setLayout(layout);
 
  int nbCol = sqm_resu->columnCount();
  for(int col=0;col<nbCol;col++)
@@ -268,7 +332,9 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  qtv_tmp->setFixedHeight(700);
  qtv_tmp->setFixedWidth((nbCol+1)*CEL2_L);
 
- return gpb_Tirages;
+ gpb_Tirages = tmp_gpb;
+
+ return tmp_gpb;
 }
 
 bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
@@ -419,6 +485,12 @@ void BGrbGenTirages::slot_UGL_SetFilters()
 
 void BGrbGenTirages::mkForm(stGameConf *pGame, BPrevision *parent, QString st_table)
 {
+ QTabWidget *tab_Top = new QTabWidget;
+
+ /// Tableau de pointeur vers ..
+ QGridLayout ** grd_tmp = new QGridLayout*[2];
+ QWidget **wid_tmp = new QWidget*[2];
+
  tbl_name=st_table;
 
  /// Regarder les filtrages demandes
@@ -428,10 +500,34 @@ void BGrbGenTirages::mkForm(stGameConf *pGame, BPrevision *parent, QString st_ta
  l_c3 = parent->getC3();
 
 
- QGroupBox *info = LireTable(pGame, st_table);
+ /// regroupement des tirages generes
+ QString ongNames[]={"Boules","Tirages"};
+ int maxOnglets = sizeof(ongNames)/sizeof(QString);
+ QGroupBox * (BGrbGenTirages::*ptrFunc[])(stGameConf *pGame,QString st_table)=
+ {
+   &BGrbGenTirages::LireBoule,
+   &BGrbGenTirages::LireTable
+  };
+
+ for (int i=0;i<maxOnglets;i++) {
+  QGridLayout *gdl_here = new QGridLayout;
+
+	/// Function faisant le groupebox
+	QGroupBox *info = (this->*ptrFunc[i])(pGame, st_table);
+	gdl_here->addWidget(info,1,0);
+	grd_tmp[i]=gdl_here;
+
+	QWidget *wid_here = new QWidget;
+	wid_here->setLayout(grd_tmp[i]);
+	wid_tmp[i]=wid_here;
+
+  tab_Top->addTab(wid_tmp[i],ongNames[i]);
+ }
+
+
 
  QVBoxLayout *mainLayout = new QVBoxLayout;
- mainLayout->addWidget(info);
+ mainLayout->addWidget(tab_Top);
  this->setLayout(mainLayout);
  this->setWindowTitle("Ensemble : "+ st_table);
 }
@@ -440,9 +536,48 @@ void BGrbGenTirages::analyserTirages(const stGameConf *pGame,const QString st_ta
 {
  QWidget * Resultats = new QWidget;
  QTabWidget *tab_Top = new QTabWidget;
+ QGridLayout **pConteneur = new QGridLayout *[4];
+
+ QWidget **pMonTmpWidget = new QWidget * [4];
+ for(int i = 0; i< 4;i++)
+ {
+  QGridLayout * grd_tmp = new QGridLayout;
+  pConteneur[i] = grd_tmp;
+
+	QWidget * wid_tmp = new QWidget;
+	pMonTmpWidget [i] = wid_tmp;
+ }
 
 
  BCountElem *c1 = new BCountElem(*pGame,st_table,db_1,Resultats);
+
+ pConteneur[0]->addWidget(c1,1,0);
+ pMonTmpWidget[0]->setLayout(pConteneur[0]);
+
+ tab_Top->addTab(pMonTmpWidget[0],tr("Zones"));
+
+ QGridLayout *tmp_layout = new QGridLayout;
+ int i = 0;
+
+ int zn=0;
+ int max = pGame->limites[zn].max;
+
+ QString msg = QString("Selection : %1 sur %2");
+ QString s_sel = QString::number(0).rightJustified(2,'0');
+ QString s_max = QString::number(max).rightJustified(2,'0');
+ msg = msg.arg(s_sel).arg(s_max);
+
+ LabelClickable *tmp_lab = c1->getLabPriority();
+ tmp_lab->setText(msg);
+
+ tmp_layout->addWidget(tmp_lab,i,0);
+ i++;
+ tmp_layout->addWidget(tab_Top,i,0);
+
+ /// ----------------
+ Resultats->setLayout(tmp_layout);
+ Resultats->setWindowTitle(st_table);
+ Resultats->show();
 
  return;
 #if 0

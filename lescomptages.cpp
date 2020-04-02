@@ -69,9 +69,9 @@ BPrevision::BPrevision(stPrmPrevision *prm)
  onGame = conf.gameInfo;
  //lstTirGen = new QPair<QString, BGrbGenTirages*>; //new QList<QPair<QString, BGrbGenTirages*>>;
 
- if(ouvrirBase(conf.bddStore,conf.gameInfo.eFdjType)==true)
+ if(ouvrirBase(prm->bddStore,prm->gameInfo.eFdjType)==true)
  {
-  effectuerTraitement(conf.gameInfo.eFdjType);
+  effectuerTraitement(prm->gameInfo.eFdjType);
   //dbInUse.close();
  }
 }
@@ -2114,8 +2114,23 @@ void BPrevision::slot_emitThatClickedBall(const QModelIndex &index)
 void BPrevision::slot_UGL_Create()
 {
  QString cnx_name = db_1.connectionName();
- BGrbGenTirages *calcul = nullptr;
- calcul = new BGrbGenTirages(&onGame,cnx_name, this);
+
+ /// Caracteristique de la generation liste tirages utilistateur
+ stGameConf * tmp = new stGameConf;
+
+ /// Donnees initiale pgm
+ tmp->bUseMadeBdd = onGame.bUseMadeBdd;
+ tmp->eFdjType = onGame.eFdjType;
+ tmp->limites = onGame.limites;
+ tmp->names = onGame.names;
+
+ /// Specificite de cette recherche
+ tmp->znCount = 1;
+ tmp->eTirType = eTirUsr; /// A supprimer ?
+ tmp->id = 0; /// A supprimer ?
+
+ BGrbGenTirages *calcul = new BGrbGenTirages(tmp,cnx_name, this);
+
  if(calcul->addr != nullptr){
   calcul->show();
  }
