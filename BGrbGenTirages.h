@@ -9,7 +9,7 @@
 #include <QPair>
 
 #include "lescomptages.h"
-
+#include "BSqlQmTirages_3.h"
 #include "game.h"
 
 //class BPrevision;
@@ -28,8 +28,8 @@ void slot_ShowNewTotal(const QString& lstBoules);
 void slot_UGL_SetFilters();
 
 private slots:
-void slot_tirOk(QLabel *l, QEvent *e);
-void slot_tirEsc(QLabel *l, QEvent *e);
+void slot_Colorize(QLabel *l);
+void slot_btnClicked();
 
 private:
 void MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BPrevision *parent, QString st_table="");
@@ -45,7 +45,7 @@ static int total;
 static QList<QPair<QString, BGrbGenTirages*>*> *lstGenTir;
 QString tbl_name;
 QGroupBox *gpb_Tirages;
-QSqlQueryModel *sqm_resu;
+BSqlQmTirages_3 *sqm_resu;
 QSqlDatabase db_1;      /// base de donnees associee a cet objets
 
 CBaryCentre *l_c0;

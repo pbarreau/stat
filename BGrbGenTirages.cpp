@@ -268,10 +268,10 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  int chk_nb_col = pGame->limites[zn].len;
 
  /// Montrer resultats
- msg="select * from ("+tbl_cible+")";
+ msg="select *, 0 as key from ("+tbl_cible+")";
  QTableView *qtv_tmp = new QTableView;
 
- sqm_resu = new QSqlQueryModel;
+ sqm_resu = new BSqlQmTirages_3(pGame);
  sqm_resu->setQuery(msg,db_1);
 
  BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,2);
@@ -293,15 +293,20 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  lb_tir->setToolTip("Tirage courant");
 
  tmp_ico = QIcon(":/images/pri_all.png");
- BPushButton *my_btn = new BPushButton(lb_tir,"blue");
+ BPushButton *my_btn = new BPushButton(lb_tir,"red", BPushButton::eOk);
  my_btn->setIcon(tmp_ico);
- connect(my_btn, SIGNAL(unSurvol(QLabel *, QEvent *)), this, SLOT(slot_tirOk(QLabel *, QEvent *)));
+ connect(my_btn, SIGNAL(unSurvol(QLabel *)), this, SLOT(slot_Colorize(QLabel *)));
+ connect(my_btn, SIGNAL(clicked()), this, SLOT(slot_btnClicked()));
+ connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+         my_btn, SLOT(slot_tbvClicked( QModelIndex) ) );
+
  seltir->addWidget(my_btn);
 
  tmp_ico = QIcon(":/images/pri_none.png");
- my_btn = new BPushButton(lb_tir,"black");
+ my_btn = new BPushButton(lb_tir,"green",BPushButton::eEsc);
  my_btn->setIcon(tmp_ico);
- connect(my_btn, SIGNAL(unSurvol(QLabel *, QEvent *)), this, SLOT(slot_tirEsc(QLabel *, QEvent *)));
+ connect(my_btn, SIGNAL(unSurvol(QLabel *)), this, SLOT(slot_Colorize(QLabel *)));
+ connect(my_btn, SIGNAL(clicked()), this, SLOT(slot_btnClicked()));
  seltir->addWidget(my_btn);
 
  //--------------
@@ -359,8 +364,8 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
   qtv_tmp->setColumnWidth(col,CEL2_L);
  }
  qtv_tmp->hideColumn(0);
- qtv_tmp->setFixedHeight(700);
- qtv_tmp->setFixedWidth((nbCol+1)*CEL2_L);
+ qtv_tmp->setFixedHeight(400);
+ qtv_tmp->setFixedWidth((nbCol+.2)*CEL2_L);
 
  gpb_Tirages = tmp_gpb;
 
@@ -415,24 +420,24 @@ void BGrbGenTirages::slot_ShowNewTotal(const QString& lstBoules)
  gpb_Tirages->setTitle(st_total);
 }
 
-void BGrbGenTirages::slot_tirOk(QLabel *l, QEvent *e)
+void BGrbGenTirages::slot_btnClicked()
 {
  BPushButton *btn = qobject_cast<BPushButton *>(sender());
+ BPushButton::eRole action = btn->getRole();
 
- if(e->type() == QEvent::Enter){
-  l->setStyleSheet("QLabel {color:"+btn->col+";font-weight: bold;font: 18pt;}"
-                   "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
+ if (action == BPushButton::eOk){
+
  }
 
 }
 
-void BGrbGenTirages::slot_tirEsc(QLabel *l, QEvent *e)
+void BGrbGenTirages::slot_Colorize(QLabel *l)
 {
+ BPushButton *btn = qobject_cast<BPushButton *>(sender());
 
- if(e->type() == QEvent::Enter){
-  l->setStyleSheet("QLabel {color:green;font-weight: bold;font: 18pt;}"
+ l->setStyleSheet("QLabel {color:"+btn->getColor()+";font-weight: bold;font: 18pt;}"
                    "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
- }
+ l->setToolTip("Tirage courant");
 
 }
 
