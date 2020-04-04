@@ -6,6 +6,8 @@
 #include <QString>
 #include <QTableView>
 
+/// https://stackoverflow.com/questions/1464591/how-to-create-a-bold-red-text-label-in-qt
+/// https://forum.qt.io/topic/19826/qlabel-set-text-size-help/6
 class BPushButton : public QPushButton
 {
  Q_OBJECT

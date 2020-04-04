@@ -2129,19 +2129,34 @@ void BPrevision::slot_UGL_Create()
  tmp->eTirType = eTirUsr; /// A supprimer ?
  tmp->id = 0; /// A supprimer ?
 
- BGrbGenTirages *calcul = new BGrbGenTirages(tmp,cnx_name, this);
+ /// Temps de calcul
+ QTime r;
+ QTime t;
+ QString t_human = "";
 
+ r.setHMS(0,0,0,0);
+ t.start();
+ BGrbGenTirages *calcul = new BGrbGenTirages(tmp,cnx_name, this);
+ r = r.addMSecs(t.elapsed());
+ t_human = r.toString("hh:mm:ss:zzz");
  if(calcul->addr != nullptr){
   calcul->show();
  }
  else {
   delete calcul;
  }
+
+ QString msg = " Calcul en : "
+       +t_human
+       +QString (" (hh:mm:ss:ms)");
+ QMessageBox::information(NULL,"UsrGame",msg,QMessageBox::Ok);
+
+
  return;
 
  QSqlQuery query(db_1);
  bool isOk = true;
- QString msg = "";
+ //QString msg = "";
  QString SelElemt = C_TBL_6;
  int n = 0;
  int p = onGame.limites[0].win;

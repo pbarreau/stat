@@ -13,7 +13,10 @@
 #include <QHeaderView>
 
 #include "db_tools.h"
+
 #include "BGrbGenTirages.h"
+#include "BSqlQmTirages_3.h"
+
 #include "blineedit.h"
 #include "BFpm_2.h"
 
@@ -268,10 +271,11 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  int chk_nb_col = pGame->limites[zn].len;
 
  /// Montrer resultats
- msg="select *, 0 as key from ("+tbl_cible+")";
+ msg="select * from ("+tbl_cible+")";
  QTableView *qtv_tmp = new QTableView;
 
- sqm_resu = new BSqlQmTirages_3(pGame);
+ QString cnx = db_1.connectionName();
+ sqm_resu = new BSqlQmTirages_3(pGame,cnx,tbl_cible, qtv_tmp);
  sqm_resu->setQuery(msg,db_1);
 
  BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,2);
@@ -383,7 +387,7 @@ bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
        +tbl
        +" as "
          "with selection as (select ROW_NUMBER () OVER (ORDER by ROWID) id, val from filtres where (pri=1 and zne=0))"
-         "SELECT ROW_NUMBER () OVER () id,\"nop\" as J, t1.val as b1, t2.val as b2, t3.val as b3 , t4.val as b4 , t5.val as b5 "
+         "SELECT ROW_NUMBER () OVER () id,\"nop\" as J, t1.val as b1, t2.val as b2, t3.val as b3 , t4.val as b4 , t5.val as b5, 0 as chk "
          "FROM selection As t1, selection As t2,  selection As t3,selection As t4,selection As t5 "
          "WHERE ("
          "(t1.id<t2.id) and"

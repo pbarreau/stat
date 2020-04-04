@@ -3702,8 +3702,8 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
 	 QSortFilterProxyModel *m=new QSortFilterProxyModel();
 	 m->setDynamicSortFilter(true);
 	 m->setSourceModel(sqm_tmp);
-
 	 qtv_tmp->setModel(m);
+
 	 //qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked);
 	 mettreEnConformiteVisuel(qtv_tmp,tb_total, st_key);
 	}

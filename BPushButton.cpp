@@ -36,6 +36,7 @@ void BPushButton::slot_tbvClicked(const QModelIndex &index)
 {
  QTableView *src = qobject_cast<QTableView*>(sender());
  cible = src;
+ return;
 
  if(rol == eOk){
   QString lgn = "";
