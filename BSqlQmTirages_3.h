@@ -3,6 +3,7 @@
 
 #include <QSqlQueryModel>
 #include <QTableView>
+#include <QPersistentModelIndex>
 
 #include "game.h"
 
@@ -15,6 +16,10 @@ class BSqlQmTirages_3 : public QSqlQueryModel
  Qt::ItemFlags flags(const QModelIndex & index) const override;
  QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
  bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
+
+ public:
+ Q_SIGNALS:
+ void sig_chkChanged(const QPersistentModelIndex &target, const Qt::CheckState &chk);
 
  private:
  bool setVisualChk(int id, Qt::CheckState chk);

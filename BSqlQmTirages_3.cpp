@@ -15,7 +15,7 @@ BSqlQmTirages_3::BSqlQmTirages_3(stGameConf *conf, QString cnx, QString tbl, QTa
 
 Qt::ItemFlags BSqlQmTirages_3::flags(const QModelIndex & index) const
 {
- Qt::ItemFlags l_Flags = QSqlQueryModel::flags(index);// ( Qt::ItemIsEnabled | Qt::ItemIsSelectable );
+ Qt::ItemFlags l_Flags = QSqlQueryModel::flags(index);
 
  if(index.column() == 7){
   l_Flags= (Qt::ItemIsUserCheckable) | l_Flags;
@@ -45,6 +45,7 @@ QVariant BSqlQmTirages_3::data(const QModelIndex & index, int role) const
 
 /// https://stackoverflow.com/questions/35305801/qt-checkboxes-in-qtableview
 /// https://doc.qt.io/qt-5.12/qtsql-querymodel-editablesqlmodel-cpp.html
+/// https://www.qtcentre.org/threads/43849-Checkboxes-in-QTableView-with-my-custom-model
 bool BSqlQmTirages_3::setData(const QModelIndex & index, const QVariant & value, int role)
 {
  Qt::ItemDataRole l_role = static_cast<Qt::ItemDataRole>(role);
@@ -60,8 +61,10 @@ bool BSqlQmTirages_3::setData(const QModelIndex & index, const QVariant & value,
  if( (index.column() == 7) && (role == Qt::CheckStateRole) && (ret == true))
  {
   int chk_val = value.toInt();
-  Qt::CheckState chk = static_cast<Qt::CheckState>(chk_val);;
+  Qt::CheckState chk = static_cast<Qt::CheckState>(chk_val);
   ret = setVisualChk(id,chk);
+  QPersistentModelIndex per_index(index);
+  Q_EMIT sig_chkChanged(per_index,chk);
  }
 
  return ret;

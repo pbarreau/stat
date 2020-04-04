@@ -11,6 +11,8 @@
 #include <QPushButton>
 #include <QPair>
 #include <QHeaderView>
+#include <QCheckBox>
+#include <QPersistentModelIndex>
 
 #include "db_tools.h"
 
@@ -181,16 +183,16 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
   /// Creer ce calcul et le montrer
   UsrCnp = "E1_"+QString::number(total).rightJustified(3,'0')+"_C"+QString::number(n)+"_"+QString::number(p);
 
-  if(CreerTable(pGame, UsrCnp)){
-   // Rajouter cette table a la liste
-   msg = "insert into E_lst values(NULL,'"+UsrCnp+"','"+key+"')";
-   if(query.exec(msg)){
-    QPair <QString, BGrbGenTirages*> *b = new QPair <QString, BGrbGenTirages*>;
-    b->first = UsrCnp;
-    b->second = this;
-    lstGenTir->append(b);
-   }
-  }
+	if(CreerTable(pGame, UsrCnp)){
+	 // Rajouter cette table a la liste
+	 msg = "insert into E_lst values(NULL,'"+UsrCnp+"','"+key+"')";
+	 if(query.exec(msg)){
+		QPair <QString, BGrbGenTirages*> *b = new QPair <QString, BGrbGenTirages*>;
+		b->first = UsrCnp;
+		b->second = this;
+		lstGenTir->append(b);
+	 }
+	}
 
  }
 
@@ -277,6 +279,10 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  QString cnx = db_1.connectionName();
  sqm_resu = new BSqlQmTirages_3(pGame,cnx,tbl_cible, qtv_tmp);
  sqm_resu->setQuery(msg,db_1);
+ connect(sqm_resu,
+         SIGNAL(sig_chkChanged(QPersistentModelIndex ,Qt::CheckState)),
+         this,
+         SLOT(slot_UsrChk(QPersistentModelIndex, Qt::CheckState)));
 
  BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,2);
  fpm_tmp->setDynamicSortFilter(true);
@@ -289,12 +295,13 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  QFormLayout *frm_lab = new QFormLayout;
 
  QLabel *lb_tir = new QLabel;
- lb_tir->setText("01,02,03,04,05");
+ lb_tir->setText("--,--,--,--,--");
  lb_tir->setStyleSheet("QLabel {color:green;font-weight: bold;font: 18pt;}"
                        "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
  frm_lab->addRow("Tir :", lb_tir);
  seltir->addLayout(frm_lab);
  lb_tir->setToolTip("Tirage courant");
+ lb_Big = lb_tir;
 
  tmp_ico = QIcon(":/images/pri_all.png");
  BPushButton *my_btn = new BPushButton(lb_tir,"red", BPushButton::eOk);
@@ -302,8 +309,8 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  connect(my_btn, SIGNAL(unSurvol(QLabel *)), this, SLOT(slot_Colorize(QLabel *)));
  connect(my_btn, SIGNAL(clicked()), this, SLOT(slot_btnClicked()));
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         my_btn, SLOT(slot_tbvClicked( QModelIndex) ) );
-
+         this, SLOT(slot_tbvClicked( QModelIndex) ) );
+ // Creates a new QPersistentModelIndex that is a copy of the model index.
  seltir->addWidget(my_btn);
 
  tmp_ico = QIcon(":/images/pri_none.png");
@@ -387,7 +394,9 @@ bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
        +tbl
        +" as "
          "with selection as (select ROW_NUMBER () OVER (ORDER by ROWID) id, val from filtres where (pri=1 and zne=0))"
-         "SELECT ROW_NUMBER () OVER () id,\"nop\" as J, t1.val as b1, t2.val as b2, t3.val as b3 , t4.val as b4 , t5.val as b5, 0 as chk "
+         "SELECT cast(ROW_NUMBER () OVER () as int) as id, cast(\"nop\" as text) as J,"
+         "cast(t1.val as int) as b1, cast(t2.val as int)as b2, cast(t3.val as int) as b3 , "
+         "cast(t4.val as int) as b4 ,cast(t5.val as int)as b5, CAST('0' as int) as chk "
          "FROM selection As t1, selection As t2,  selection As t3,selection As t4,selection As t5 "
          "WHERE ("
          "(t1.id<t2.id) and"
@@ -440,7 +449,7 @@ void BGrbGenTirages::slot_Colorize(QLabel *l)
  BPushButton *btn = qobject_cast<BPushButton *>(sender());
 
  l->setStyleSheet("QLabel {color:"+btn->getColor()+";font-weight: bold;font: 18pt;}"
-                   "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
+                                                       "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
  l->setToolTip("Tirage courant");
 
 }
@@ -564,7 +573,7 @@ void BGrbGenTirages::mkForm(stGameConf *pGame, BPrevision *parent, QString st_ta
  QString ongNames[]={"Boules","Tirages"};
  int maxOnglets = sizeof(ongNames)/sizeof(QString);
  QGroupBox * (BGrbGenTirages::*ptrFunc[])(stGameConf *pGame,QString st_table)=
- {
+  {
    &BGrbGenTirages::LireBoule,
    &BGrbGenTirages::LireTable
   };
@@ -590,6 +599,87 @@ void BGrbGenTirages::mkForm(stGameConf *pGame, BPrevision *parent, QString st_ta
  mainLayout->addWidget(tab_Top);
  this->setLayout(mainLayout);
  this->setWindowTitle("Ensemble : "+ st_table);
+}
+
+void BGrbGenTirages::slot_tbvClicked(const QModelIndex &index)
+{
+ if(index == QModelIndex()){
+  return; /// invalid index
+ }
+
+ QTableView *src = qobject_cast<QTableView*>(sender());
+ int row = index.row();
+
+ /// https://forum.qt.io/topic/25740/checkbox-in-qtableview/4
+ QModelIndex try_index;
+ try_index= src->model()->index(row,7, QModelIndex());
+
+ QString msg = "";
+ if(try_index.data(Qt::CheckStateRole) == Qt::Checked){
+  msg = "QLabel {color:red;font-weight: bold;font: 18pt;}"
+        "QLabel:hover {color: #000000; background-color: #FFFFFF;}";
+ }
+ else{
+  msg = "QLabel {color:green;font-weight: bold;font: 18pt;}"
+        "QLabel:hover {color: #000000; background-color: #FFFFFF;}";
+ }
+
+ lb_Big->setStyleSheet(msg);
+ lb_Big->setToolTip("Tirage courant");
+
+ /// Texte a mettre
+ msg="";
+ for (int i =2;i<2+5;i++) {
+  QString val = index.model()->index(index.row(),i).data().toString().rightJustified(2,'0');
+  msg= msg + val;
+  if(i<2+5-1){
+   msg = msg + ",";
+  }
+ }
+
+ lb_Big->setText(msg);
+}
+
+void BGrbGenTirages::slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckState &chk)
+{
+
+ if(target == QModelIndex()){
+  return; /// invalid index
+ }
+
+ int col = target.column();
+ int row = target.row();
+
+ QString msg = "";
+ if(chk == Qt::Checked){
+  msg = "QLabel {color:red;font-weight: bold;font: 18pt;}"
+        "QLabel:hover {color: #000000; background-color: #FFFFFF;}";
+ }
+ else{
+  msg = "QLabel {color:green;font-weight: bold;font: 18pt;}"
+        "QLabel:hover {color: #000000; background-color: #FFFFFF;}";
+ }
+
+
+ lb_Big->setStyleSheet(msg);
+ lb_Big->setToolTip("Tirage courant");
+
+ /// Texte a mettre
+ msg="";
+ for (int i =2;i<2+5;i++) {
+  QModelIndex try_index;
+  try_index= target.model()->index(row,i, QModelIndex());
+
+  QString val = try_index.data().toString().rightJustified(2,'0');
+  msg= msg + val;
+  if(i<2+5-1){
+   msg = msg + ",";
+  }
+ }
+
+ lb_Big->setText(msg);
+
+
 }
 
 void BGrbGenTirages::analyserTirages(const stGameConf *pGame,const QString st_table)

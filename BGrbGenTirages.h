@@ -4,6 +4,7 @@
 #include <QGroupBox>
 #include <QSqlQueryModel>
 #include <QPushButton>
+#include <QPersistentModelIndex>
 
 #include <QList>
 #include <QPair>
@@ -30,6 +31,8 @@ void slot_UGL_SetFilters();
 private slots:
 void slot_Colorize(QLabel *l);
 void slot_btnClicked();
+void slot_tbvClicked(const QModelIndex &index);
+void slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckState &chk);
 
 private:
 void MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BPrevision *parent, QString st_table="");
@@ -47,6 +50,7 @@ QString tbl_name;
 QGroupBox *gpb_Tirages;
 BSqlQmTirages_3 *sqm_resu;
 QSqlDatabase db_1;      /// base de donnees associee a cet objets
+QLabel *lb_Big;
 
 CBaryCentre *l_c0;
 BCountElem *l_c1;
