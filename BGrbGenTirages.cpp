@@ -53,9 +53,10 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision * pare
  if(!UsrCnp.size()){
   UsrCnp = chkData(pGame,parent,cnx);
 
-	if(UsrCnp.size()){
-	 mkForm(pGame,parent,UsrCnp);
-	 //analyserTirages(pGame,UsrCnp);
+	/// A t on une selection utilisateur nouvelle
+	if(UsrCnp.size()){ /// oui
+	 mkForm(pGame,parent,UsrCnp); /// Faire visuel des infos
+	 analyserTirages(pGame,UsrCnp); /// Analyser les tirages generes
 	}
 	else {
 	 addr = nullptr;
@@ -117,7 +118,7 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
   do{
    tmp = lstGenTir->at(pos)->first;
    lstGenTir->at(pos)->second->show();
-   //analyserTirages(pGame,tmp);
+   analyserTirages(pGame,tmp);
    pos++;
   }while(query.next());
  }
@@ -375,7 +376,7 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
   qtv_tmp->setColumnWidth(col,CEL2_L);
  }
  qtv_tmp->hideColumn(0);
- qtv_tmp->setFixedHeight(400);
+ qtv_tmp->setFixedHeight(200);
  qtv_tmp->setFixedWidth((nbCol+.2)*CEL2_L);
 
  gpb_Tirages = tmp_gpb;
@@ -700,11 +701,23 @@ void BGrbGenTirages::analyserTirages(const stGameConf *pGame,const QString st_ta
 
 
  BCountElem *c1 = new BCountElem(*pGame,st_table,db_1,Resultats);
+ BCountComb *c2 = new BCountComb(*pGame,st_table,db_1);
+ //BCountGroup *c3 = new BCountGroup(*pGame,st_table,slFlt,db_1);
 
  pConteneur[0]->addWidget(c1,1,0);
+ //pConteneur[1]->addWidget(c,1,0);
+ pConteneur[2]->addWidget(c2,1,0);
+ //pConteneur[3]->addWidget(c3,1,0);
+
  pMonTmpWidget[0]->setLayout(pConteneur[0]);
+ pMonTmpWidget[1]->setLayout(pConteneur[1]);
+ pMonTmpWidget[2]->setLayout(pConteneur[2]);
+ pMonTmpWidget[3]->setLayout(pConteneur[3]);
 
  tab_Top->addTab(pMonTmpWidget[0],tr("Zones"));
+ tab_Top->addTab(pMonTmpWidget[1],tr("Barycentre"));
+ tab_Top->addTab(pMonTmpWidget[2],tr("Combinaisons"));
+ tab_Top->addTab(pMonTmpWidget[3],tr("Groupes"));
 
  QGridLayout *tmp_layout = new QGridLayout;
  int i = 0;

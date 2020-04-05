@@ -25,7 +25,7 @@
 QString DB_Tools::GEN_Where_3(int loop,
 															QString tb1,bool inc1,QString op1,
 															QStringList &tb2,bool inc2,QString op2
-																																													)
+																																																																																																									)
 {
  QString ret_msg = "";
  QString ind_1 = "";
@@ -189,14 +189,25 @@ QString DB_Tools::leftJoin(stJoinArgs ja)
  QString arg4 = ja.arg4;
  QString msg = "";
 
- msg = "select " + arg1
-       + " from ("+arg2+")as tbLeft "
-                            "left join ("+arg3+")as tbRight "
-              "on ("+arg4+")";
+ msg = "select "
+       + arg1
+       + " from ("
+       +arg2
+       +")as tbLeft "
+         "left join ("
+       +arg3
+       +")as tbRight "
+         "on ("
+       +arg4
+       +")";
 
 #ifndef QT_NO_DEBUG
  qDebug() << "DB_Tools::leftJoin";
  qDebug() << msg<<"\n-------\n";
+ qDebug() << "Arg 1:"<<arg1;
+ qDebug() << "Arg 2:"<<arg2;
+ qDebug() << "Arg 3:"<<arg3;
+ qDebug() << "Arg 4:"<<arg4;
 #endif
 
  return msg;
@@ -259,17 +270,17 @@ bool DB_Tools::isDbGotTbl(QString tbl, QString cnx, tbTypes etbTypes, bool silen
  if((isOk = query.exec(msg[0])))
  {
 
-  if((isOk=query.first()))
-  {
-   msg_err = QString("Presence Table ")+tbl;
-  }
-  else{
-   msg_err = QString("Absence Table ")+tbl;
-  }
+	if((isOk=query.first()))
+	{
+	 msg_err = QString("Presence Table ")+tbl;
+	}
+	else{
+	 msg_err = QString("Absence Table ")+tbl;
+	}
 
-  if(!silence){
-   QMessageBox::information(NULL,"Test :",msg_err,QMessageBox::Ok);
-  }
+	if(!silence){
+	 QMessageBox::information(NULL,"Test :",msg_err,QMessageBox::Ok);
+	}
  }
  return isOk;
 }

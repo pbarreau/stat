@@ -97,7 +97,10 @@ SOURCES += \
     BFpm_1.cpp \
     BGrbGenTirages.cpp \
     BPushButton.cpp \
-    BSqlQmTirages_3.cpp
+    BSqlQmTirages_3.cpp \
+    BAnalyserTirages.cpp \
+    BFdj.cpp \
+    cFdjData.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -157,7 +160,10 @@ HEADERS  += \
     BFpm_1.h \
     BGrbGenTirages.h \
     BPushButton.h \
-    BSqlQmTirages_3.h
+    BSqlQmTirages_3.h \
+    BAnalyserTirages.h \
+    BFdj.h \
+    cFdjData.h
 
 
 FORMS    += mainwindow.ui \

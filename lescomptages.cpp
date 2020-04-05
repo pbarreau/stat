@@ -69,11 +69,15 @@ BPrevision::BPrevision(stPrmPrevision *prm)
  onGame = conf.gameInfo;
  //lstTirGen = new QPair<QString, BGrbGenTirages*>; //new QList<QPair<QString, BGrbGenTirages*>>;
 
+ //cFdjData *monJeu = new cFdjData (eFdjLoto);
+
+#if 0
  if(ouvrirBase(prm->bddStore,prm->gameInfo.eFdjType)==true)
  {
   effectuerTraitement(prm->gameInfo.eFdjType);
   //dbInUse.close();
  }
+#endif
 }
 
 #if 0
@@ -1437,6 +1441,8 @@ void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const stGa
          this,
          SLOT(slot_emitThatClickedBall(QModelIndex)));
 
+
+#if 0
  /// greffon pour calculer barycentre des tirages
  stNeedsOfBary param;
  param.db = db_1;
@@ -1453,7 +1459,7 @@ void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const stGa
  param.pDef = onGame;
  param.origine = this;
  c= new CBaryCentre(param);
-
+#endif
 
  c2 = new BCountComb(config,source,db_1);
  c3 = new BCountGroup(config,source,slFlt,db_1);
@@ -1472,7 +1478,7 @@ void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const stGa
 	pMonTmpWidget [i] = wid_tmp;
  }
  pConteneur[0]->addWidget(c1,1,0);
- pConteneur[1]->addWidget(c,1,0);
+ //pConteneur[1]->addWidget(c,1,0);
  pConteneur[2]->addWidget(c2,1,0);
  pConteneur[3]->addWidget(c3,1,0);
 

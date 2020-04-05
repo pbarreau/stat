@@ -46,6 +46,7 @@
 #include "compter_groupes.h"
 #include "compter_zones.h"
 
+#include "BFdj.h"
 
 
 static stTiragesDef configJeu;
@@ -61,13 +62,11 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
  qDebug()<<calcul.tb_data;
 }
 
-void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest_bdd)
+void MainWindow::EtudierJeu(etFdjType curGame, bool usePrevBdd, bool dest_bdd)
 {
  etFdjType unJeu = eFdjNotSet;
 
- //BTirBar *a = new BTirBar();
- //a->show();
- //return;
+ BFdj *charge = new BFdj(curGame,usePrevBdd);
 
 #if 0
  cFdjData f(eFdjEuro);
@@ -80,8 +79,8 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 
  stParam input;
  input.destination =dest_bdd;
- input.bUseOneBdd = bUseOneBdd;
- input.typeJeu = leJeu;
+ input.bUseOneBdd = usePrevBdd;
+ input.typeJeu = curGame;
  input.pgm_mdi = zoneCentrale;
  stErr NoErrors;
  NoErrors.status = true;
@@ -89,7 +88,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 
  DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
 
- if(bUseOneBdd){
+ if(usePrevBdd){
 #if 0
   BUplet::st_In param;
   param.uplet = 2;
@@ -156,7 +155,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 //#endif /// if 0 2
 
   //// Reecriture sous forme objet
-  switch(leJeu){
+  switch(curGame){
    case NE_FDJ::fdj_loto:
     unJeu = eFdjLoto;
     break;
@@ -180,7 +179,7 @@ void MainWindow::EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool bUseOneBdd, bool dest
 	prm->gameInfo.eTirType=eTirFdj;
 	prm->gameInfo.eFdjType=unJeu;
 
-	prm->gameInfo.bUseMadeBdd = bUseOneBdd;
+	prm->gameInfo.bUseMadeBdd = usePrevBdd;
 	prm->gameInfo.znCount = configJeu.nb_zone;
 	prm->gameInfo.id = -1;
 	prm->gameInfo.limites = NULL;

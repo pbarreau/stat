@@ -23,18 +23,18 @@ ChoixJeux::~ChoixJeux()
 
 void ChoixJeux::slot_ConfigureJeu(void)
 {
-  NE_FDJ::E_typeJeux leJeu = NE_FDJ::fdj_none;
+  etFdjType setGame = eFdjNotSet;
   bool baseEnRam = false;
-  bool bUseMyBdd = false;
+  bool usePreviousBdd = false;
 
   // Type de jeu a etudier
   if(ui->rb_euro->isChecked())
   {
-    leJeu = NE_FDJ::fdj_euro;
+    setGame = eFdjEuro;
   }
   else
   {
-    leJeu = NE_FDJ::fdj_loto;
+    setGame = eFdjLoto;
   }
 
   // Ecriture de la base sur disque ?
@@ -46,10 +46,10 @@ void ChoixJeux::slot_ConfigureJeu(void)
   // Chargement automatique fichier des donnees ?
   if(ui->chk_autoLoad->isChecked())
   {
-    bUseMyBdd = true;
+    usePreviousBdd = true;
   }
 
   // Lancer l'etude
-  EtudeJeu->EtudierJeu(leJeu,bUseMyBdd,baseEnRam);
+  EtudeJeu->EtudierJeu(setGame,usePreviousBdd,baseEnRam);
 
  }

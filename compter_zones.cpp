@@ -35,7 +35,7 @@ BCountElem::~BCountElem()
 }
 
 BCountElem::BCountElem(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent)
-    :BCount(pDef,in,fromDb,LeParent,eCountElm),cFdjData()
+    :BCount(pDef,in,fromDb,LeParent,eCountElm)//,cFdjData()
 {
     //type=eCountElm;
     countId = total;
@@ -264,6 +264,17 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
     bool isOk = true;
     QString msg = "";
 
+		/// verifier si table reponse presente
+		QString viewName = "r_"
+											 +db_data
+											 +"_"+label[type]
+											 +"_z"+QString::number(zn+1);
+
+		QString ret_sql = "select * from ("+viewName+")";
+		if(DB_Tools::isDbGotTbl(viewName,dbToUse.connectionName())){
+		 return ret_sql;
+		}
+
     QString SelElemt = C_TBL_6;
     QString st_cri_all = "";
     QStringList boules;
@@ -323,7 +334,8 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 
 
     /// on rajoute une colone pour la priorité et une pour la couleur
-    arg1 = "tbLeft.*,tbRight.p as P,(case when (tbRight.f==1) then 0x2 end)as F ";
+    arg1 = "tbLeft.*,tbRight.p as P,"
+           "cast((case when (tbRight.f==1) then 0x2 end) as int) as F ";
     arg2 = msg;
     arg3 = " select * from "+SelElemt+"_z"+QString::number(zn+1);
     arg4 = "tbLeft.B = tbRight.val";
@@ -339,10 +351,7 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 #endif
 
     /// creation d'une vue pour ce resultat
-    QString viewName = "r_"
-            +db_data+ "_"+ QString::number(total-1)
-            +"_"+label[type]
-            +"_z"+QString::number(zn+1);
+    /// "_"+ QString::number(total-1)
     msg = "create table if not exists "
             +viewName
             +" as select * from ("
@@ -350,9 +359,11 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
             +")";
 
     isOk = query.exec(msg);
-    /// optimisation ?
-    msg = "select * from ("+viewName+")";
-    return msg;
+    if(!isOk){
+     DB_Tools::DisplayError("PBAR_ReqComptage",&query,msg);
+    }
+
+    return ret_sql;
 }
 
 QGridLayout *BCountElem::Compter(QString * pName, int zn)

@@ -223,6 +223,17 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
  QString msg = "";
  bool isOk = true;
 
+ /// verifier si table reponse presente
+ QString viewName = "r_"
+                    +db_data
+                    +"_"+label[type]
+                    +"_z"+QString::number(zn+1);
+
+ QString ret_sql = "select * from ("+viewName+")";
+ if(DB_Tools::isDbGotTbl(viewName,dbToUse.connectionName())){
+  return ret_sql;
+ }
+
  QString stTbAnalyse = T_ANA;
  QString Def_comb = T_CMB;
  QString SelComb = U_CMB;
@@ -287,10 +298,6 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
 #endif
 
  /// creation d'une vue pour ce resultat
- QString viewName = "r_"
-                    +db_data+ "_"+ QString::number(total-1)
-                    +"_"+label[type]
-                    +"_z"+QString::number(zn+1);
  msg = "create table if not exists "
        +viewName
        +" as select * from ("
@@ -298,61 +305,13 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
        +")";
 
  isOk = query.exec(msg);
- /// optimisation ?
- msg = "select * from ("+viewName+")";
+ if(!isOk){
+  DB_Tools::DisplayError("RequetePourTrouverTotal_z1",&query,msg);
+ }
 
- return    msg ;
+ return ret_sql;
 }
 
-#if 0
-QString BCountComb::RequetePourTrouverTotal_z2(QString st_baseUse,int zn)
-{
-    QString st_criteres = ConstruireCriteres(zn);
-    QString st_msg1 =
-            "select tb1.*,count(tb2.id) as T, "
-            + db_jours +
-            ", count(CASE when (tb2.id == 1) then 1 end) as L"
-            " "
-            "from  "
-            "("
-            +"MyCnp_"+QString::number(myGame.limites[zn].max)+"_"+QString::number(myGame.limites[zn].len)+
-            ") as tb1 "
-            "left join "
-            "("
-            "select tb2.* from "
-            "("
-            +st_baseUse+
-            " as tb2"
-            ")"
-            " )as tb2 "
-            "on"
-            "("
-            + st_criteres +
-            ")group by tb1.id order by T desc";
-
-#ifndef QT_NO_DEBUG
-    qDebug()<< st_msg1;
-#endif
-
-    QString arg1 = "tbLeft.*,(tbLeft.L | (case when (tbRight.f==1) then 0x2 else tbLeft.L end))as F ";
-    QString arg2 = st_msg1;
-    QString arg3 = " select * from SelComb_z2";
-    QString arg4 = "tbLeft.id = tbRight.val";
-
-    stJoinArgs args;
-    args.arg1 = arg1;
-    args.arg2 = arg2;
-    args.arg3 = arg3;
-    args.arg4 = arg4;
-
-    st_msg1 = DB_Tools::leftJoin(args);
-#ifndef QT_NO_DEBUG
-    qDebug()<< st_msg1;
-#endif
-
-    return    st_msg1 ;
-}
-#endif
 
 QString BCountComb::ConstruireCriteres(int zn)
 {
