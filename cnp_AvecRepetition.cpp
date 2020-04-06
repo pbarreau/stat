@@ -71,7 +71,15 @@ bool BGnp::creerTables(stGameConf *pGame, int z_id, QString tb_dest)
 
  QString ref = pGame->names[z_id].abv+"%1 int";
  QString cols = "";
- int len = pGame->limites[z_id].len;
+
+ int max = pGame->limites[z_id].max;
+ int nb_10 = max/10;
+ int reste = max%10;
+ int len = nb_10+((reste >0) ?1:0);
+ if( max == 50){ ///// HACK
+  len ++;
+ }
+
  for (int i = 0; i< len; i++) {
   cols = cols + ref.arg(i+1);
   if(i<len-1){
@@ -114,7 +122,10 @@ bool BGnp::mkAnp(stGameConf *pGame, int z_id, QString tb_dest)
  QString sql_4="";
  QString sql_5="";
 
- int len = pGame->limites[z_id].len;
+ int max = pGame->limites[z_id].max;
+ int win = pGame->limites[z_id].win;
+ int len = (int)floor(max/10)+1;
+
  for (int i = 0; i< len; i++) {
   sql_1 = sql_1 + ref_3.arg(i+1);
   sql_2 = sql_2 + ref_2.arg(i+1);
@@ -140,7 +151,7 @@ bool BGnp::mkAnp(stGameConf *pGame, int z_id, QString tb_dest)
        + ") where(("
        + sql_4
        + "="
-       + QString::number(len)
+       + QString::number(win)
        + ")) order by "
        + sql_5;
 
