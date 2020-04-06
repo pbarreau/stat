@@ -47,7 +47,7 @@
 #include "compter_zones.h"
 
 #include "BFdj.h"
-
+#include "BAnalyserTirages.h"
 
 static stTiragesDef configJeu;
 
@@ -68,6 +68,10 @@ void MainWindow::EtudierJeu(etFdjType curGame, bool usePrevBdd, bool dest_bdd)
 
  BFdj *charge = new BFdj(curGame,usePrevBdd);
 
+ stGameConf *curConf = charge->getConfig();
+
+ BAnalyserTirages *uneAnalyse = new BAnalyserTirages(curConf);
+ return;
 #if 0
  cFdjData f(eFdjEuro);
  cFdjData h(f);
@@ -156,10 +160,10 @@ void MainWindow::EtudierJeu(etFdjType curGame, bool usePrevBdd, bool dest_bdd)
 
   //// Reecriture sous forme objet
   switch(curGame){
-   case NE_FDJ::fdj_loto:
+   case eFdjLoto:
     unJeu = eFdjLoto;
     break;
-   case NE_FDJ::fdj_euro:
+   case eFdjEuro:
     unJeu = eFdjEuro;
     break;
    default:
@@ -5702,7 +5706,7 @@ void MainWindow::VUE_MontreLeTirage(double x)
     double y = query.value(0).toInt();
     int pos_x = x * C_COEF_X;
     QGraphicsScene *lavue = une_vue[graph]->scene();
-    PointTirage *un_test = new PointTirage(db_0.connectionName() ,NE_FDJ::fdj_loto,eTirage);
+    PointTirage *un_test = new PointTirage(db_0.connectionName() ,eFdjLoto,eTirage);
 
 
     double pos_y = myview[graph]->height();

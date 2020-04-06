@@ -386,6 +386,7 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
 
 bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
 {
+ /// https://denishulo.developpez.com/tutoriels/access/combinatoire/#LIV-A
  Q_UNUSED(pGame);
  QSqlQuery query(db_1);
  bool isOk = true;

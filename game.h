@@ -29,6 +29,11 @@ typedef enum _eAnaType{
  eTirUsr     /// Lst tirages choix utilisateur
 }etTirType;
 
+typedef struct _stParam_3 {
+ QString cnx;    /// nom connexion a la base
+ QString fdj;    /// nom Table liste des tirages
+}stParam_3;
+
 typedef struct _stParam_2 {
   QString std;    /// nom long de la zone
   QString abv;    /// nom abreg de la zone
@@ -52,6 +57,7 @@ typedef struct _stGameConf{
   int znCount; /// nombre de zones a regarder
   stParam_1 *limites; /// bornes sur la zone
   stParam_2 *names; /// nom de la zone
+  stParam_3 *db_ref;
 }stGameConf;
 
 extern const stParam_1 loto_prm1_zn[];

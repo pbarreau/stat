@@ -16,9 +16,17 @@
 #include "db_tools.h"
 #include "cnp_SansRepetition.h"
 
+#include "game.h"
 #include "properties.h"
 
 /// https://denishulo.developpez.com/tutoriels/access/combinatoire/#LIV-A
+
+BCnp::BCnp() {}
+
+BCnp::BCnp(stGameConf *pGame, QString tb_dest)
+{
+
+}
 
 BCnp::BCnp(int n_in, int p_in)
 {

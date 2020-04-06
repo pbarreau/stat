@@ -8,11 +8,13 @@
 
 #include "BAnalyserTirages.h"
 #include "db_tools.h"
+#include "cnp_AvecRepetition.h"
 
-BAnalyserTirages::BAnalyserTirages(stGameConf *pGame, QString cnx, QString st_table)
+BAnalyserTirages::BAnalyserTirages(stGameConf *pGame)
 {
  addr = nullptr;
- QString tbl_tirages = st_table;
+ QString cnx=pGame->db_ref->cnx;
+ QString tbl_tirages = pGame->db_ref->fdj;
 
  // Etablir connexion a la base
  db_1 = QSqlDatabase::database(cnx);
@@ -25,7 +27,7 @@ BAnalyserTirages::BAnalyserTirages(stGameConf *pGame, QString cnx, QString st_ta
 
  /// Verifier si les tables minimales sont presentes
  if(isPresentUsefullTables(pGame, tbl_tirages, cnx)){
-  startAnalyse();
+  startAnalyse(pGame);
  }
 }
 
@@ -44,7 +46,9 @@ bool BAnalyserTirages::isPresentUsefullTables(stGameConf *pGame, QString tbl_tir
  }stdbMinLstTables;
 
  stdbMinLstTables lstTable[]={
-  {"B_elm", &BAnalyserTirages::mkTblLstElm}
+  {"B_elm", &BAnalyserTirages::mkTblLstElm},
+  {"B_cmb", &BAnalyserTirages::mkTblLstCmb},
+  {"B_def", &BAnalyserTirages::mkTblGmeDef}
  };
  int totTables = sizeof(lstTable)/sizeof(stdbMinLstTables);
 
@@ -78,9 +82,8 @@ bool BAnalyserTirages::isPresentUsefullTables(stGameConf *pGame, QString tbl_tir
  return isOk;
 }
 
-void BAnalyserTirages::startAnalyse(void)
+void BAnalyserTirages::startAnalyse(stGameConf *pGame)
 {
-
 }
 
 bool BAnalyserTirages::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *query)
@@ -167,6 +170,64 @@ bool BAnalyserTirages::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *
 	 qDebug() <<msg;
 #endif
 	 isOk = query->exec(msg);
+	}
+ }
+
+ return isOk;
+}
+
+bool BAnalyserTirages::mkTblLstCmb(stGameConf *pGame, QString tbName,QSqlQuery *query)
+{
+ bool isOk = true;
+
+ BGnp *combi = new BGnp(pGame, tbName);
+
+ if(combi->self()==nullptr){
+  delete combi;
+  isOk = false;
+ }
+
+ return isOk;
+}
+
+bool BAnalyserTirages::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query)
+{
+ bool isOk= true;
+ QString msg = "";
+
+ QString colsDef = "min int, max int, len int, win int, abv text, std text";
+ msg = "create table if not exists "
+       + tbName
+       + "(id integer primary key,"
+       + colsDef
+       +");";
+
+ isOk = query->exec(msg);
+
+ /// preparation des insertions
+ msg = "insert into "
+       +tbName
+       +"(id,min,max,len,win,abv,std)values(NULL,:arg1, :arg2, :arg3, :arg4, :arg5, :arg6)";
+ query->prepare(msg);
+#ifndef QT_NO_DEBUG
+ qDebug() <<msg;
+#endif
+
+ /// la table est cree mettre les infos
+ if(isOk)
+ {
+  /// Parcourir toutes les definition
+  for(int def = 0; (def<pGame->znCount) && isOk;def++)
+  {
+   query->bindValue(":arg1",pGame->limites[def].min);
+   query->bindValue(":arg2",pGame->limites[def].max);
+   query->bindValue(":arg3",pGame->limites[def].len);
+   query->bindValue(":arg4",pGame->limites[def].win);
+   query->bindValue(":arg5",pGame->names[def].abv);
+   query->bindValue(":arg6",pGame->names[def].std);
+
+	 /// executer la commande sql
+	 isOk = query->exec();
 	}
  }
 

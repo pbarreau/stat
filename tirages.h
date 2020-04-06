@@ -43,6 +43,7 @@
 #define CL_IHM_TOT_1    6
 
 //#define RELEASE_TRACK   1
+#include "game.h"
 
 namespace NE_FDJ{
  typedef enum _les_jeux_a_tirages
@@ -53,7 +54,7 @@ namespace NE_FDJ{
   fdj_sper,  /// superloto
   fdj_slot,   /// Loto + super loto
   fdj_fini    /// fin de la liste des jeux possibles
- }E_typeJeux;
+ }etFdjType;
 
  typedef enum _critere_recherche
  {
@@ -96,7 +97,7 @@ typedef struct _stParam
 {
  bool destination;
  bool bUseOneBdd;
- NE_FDJ::E_typeJeux typeJeu;
+ etFdjType typeJeu;
  QMdiArea * pgm_mdi;
 
 }stParam;
@@ -110,7 +111,7 @@ typedef struct _stErr
 typedef struct _stTiragesDef
 {
  class tirages *pTir;
- NE_FDJ::E_typeJeux choixJeu;
+ etFdjType choixJeu;
  int *nbElmZone;
  int *offsetFichier;
  QString *jour_tir;
@@ -144,7 +145,7 @@ class tirages
  stUnTirage value;
 
  public:
- tirages(NE_FDJ::E_typeJeux jeu = NE_FDJ::fdj_none);
+ tirages(etFdjType jeu = eFdjNotSet);
  void getConfigFor(stTiragesDef *priv_conf);
  QString SelectSource(bool load);
  QString s_LibColBase(stTiragesDef *ref);
@@ -181,7 +182,7 @@ typedef struct _keyForFile
 typedef struct _tiragesFileFormat
 {
  QString fname;              /// file name
- NE_FDJ::E_typeJeux type;    /// type de jeux
+ etFdjType type;    /// type de jeux
  stKey param;
 }tiragesFileFormat;
 

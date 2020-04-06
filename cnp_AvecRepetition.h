@@ -2,16 +2,32 @@
 #define CAR_H
 #include <QObject>
 
+#include <QSqlDatabase>
+
 #include "cnp_SansRepetition.h"
+#include "game.h"
 
 // combinaison avec répétition
 class BGnp:public BCnp
 {
-public:
-    BGnp(int n, int p);
-    BGnp(int n, int p, QString destBdd);
-    BGnp(int n, int p, QString destBdd, QString tab);
-    ~BGnp();
+ public:
+ BGnp(stGameConf *pGame, QString tb_dest="");
+ BGnp *self();
+
+ BGnp(int n, int p);
+ BGnp(int n, int p, QString destBdd);
+ BGnp(int n, int p, QString destBdd, QString tab);
+ ~BGnp();
+
+ private:
+ bool mktTblGnp(stGameConf *pGame, QString tb_dest);
+ bool creerTables(stGameConf *pGame, int z_id, QString tb_dest);
+ bool mkAnp(stGameConf *pGame, int z_id,QString tb_dest);
+ bool mkCnp(stGameConf *pGame, int z_id,QString tb_dest);
+
+ private:
+ BGnp * addr;
+ QSqlDatabase db_1 ;
 };
 
 #if 0

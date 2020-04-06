@@ -8,6 +8,8 @@
 #define SET_DBG_LIVE    false
 #endif
 
+#define FDJ_FIXED       true /// Utiliser noms fixes
+
 #define SET_RUN_CHKP    true  /// RUN CHECK POINT
 
 #define SET_DBG_LEV1    false

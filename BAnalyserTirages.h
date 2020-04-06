@@ -9,14 +9,15 @@
 class BAnalyserTirages
 {
 public:
-BAnalyserTirages(stGameConf *pGame, QString cnx, QString st_table);
+BAnalyserTirages(stGameConf *pGame);
 BAnalyserTirages *self();
 
 private:
 bool isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QString cnx);
-void startAnalyse(void);
+void startAnalyse(stGameConf *pGame);
 bool mkTblLstElm(stGameConf *pGame, QString tbName, QSqlQuery *query);
-
+bool mkTblLstCmb(stGameConf *pGame, QString tbName, QSqlQuery *query);
+bool mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query);
 private:
 BAnalyserTirages *addr;
 QSqlDatabase db_1;

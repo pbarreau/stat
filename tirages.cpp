@@ -11,7 +11,7 @@ QString *tirages::lib_col;
 
 
 
-tirages::tirages(NE_FDJ::E_typeJeux jeu)
+tirages::tirages(etFdjType jeu)
 {
  int zone, j;
 
@@ -19,7 +19,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
  conf.pTir = this;
  switch(jeu)
  {
-  case NE_FDJ::fdj_none:
+  case eFdjNotSet:
   {
    conf.nb_zone = 0;
    conf.nb_tir_semaine = 0;
@@ -32,8 +32,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
   }
    break;
 
-  case NE_FDJ::fdj_slot:
-  case NE_FDJ::fdj_loto:
+  case eFdjLoto:
   {
    conf.nb_zone = 2;
    conf.nb_tir_semaine = 3;
@@ -83,7 +82,7 @@ tirages::tirages(NE_FDJ::E_typeJeux jeu)
   }
    break;
 
-  case NE_FDJ::fdj_euro:
+  case eFdjEuro:
   {
    conf.nb_zone = 2;
    conf.nb_tir_semaine = 2;
@@ -294,11 +293,11 @@ QString tirages::SelectSource(bool load)
  // Choix du fichier contenant les tirages
  switch(this->conf.choixJeu)
  {
-  case NE_FDJ::fdj_euro:
+  case eFdjEuro:
    msg = "Fichier pour Euro million";
    fileName_2 = "euromillions_4.csv";
    break;
-  case NE_FDJ::fdj_loto:
+  case eFdjLoto:
    msg="Fichier pour Loto";
    fileName_2="loto2017.csv";
    break;

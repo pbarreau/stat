@@ -1,12 +1,232 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #endif
+#ifndef QT_NO_DEBUG
+#include <QDebug>
+#endif
+
+#include <QMessageBox>
+#include <QSqlDatabase>
+#include  <QSqlError>
 
 #include <QString>
 #include <QStringList>
 #include <QSqlDatabase>
 
 #include "cnp_AvecRepetition.h"
+#include "db_tools.h"
+
+BGnp::BGnp(stGameConf *pGame, QString tb_dest):BCnp()
+{
+ QString cnx = pGame->db_ref->cnx;
+ bool isOk = true;
+ addr = nullptr;
+
+ // Etablir connexion a la base
+ db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+ addr=this; /// memo de cet objet
+
+ isOk = mktTblGnp(pGame,tb_dest);
+
+ if(!isOk){
+  addr = nullptr;
+ }
+}
+
+bool BGnp::mktTblGnp(stGameConf *pGame, QString tb_dest)
+{
+ bool isOk = true;
+ int nb_zn = pGame->znCount;
+ QString cnx = pGame->db_ref->cnx;
+
+ for(int zn=0; (zn < nb_zn) && isOk; zn ++){
+  QString tmp_tbl = tb_dest+"_z"+QString::number(zn+1);
+
+	if(DB_Tools::isDbGotTbl(tmp_tbl, cnx) == false)
+	 if((isOk = creerTables(pGame,zn,tmp_tbl))){
+
+		if(pGame->limites[zn].len > 2 ){
+		 /// Sous forme de A(n,p)
+		 isOk = mkAnp(pGame,zn,tmp_tbl);
+		}
+		else {
+		 isOk = mkCnp(pGame,zn,tmp_tbl);
+		}
+	 }
+ }
+
+ return isOk;
+}
+
+bool BGnp::creerTables(stGameConf *pGame, int z_id, QString tb_dest)
+{
+ bool isOk = true;
+ QString msg = "create table if not exists " + tb_dest;
+ QSqlQuery query(db_1);
+
+ QString ref = pGame->names[z_id].abv+"%1 int";
+ QString cols = "";
+ int len = pGame->limites[z_id].len;
+ for (int i = 0; i< len; i++) {
+  cols = cols + ref.arg(i+1);
+  if(i<len-1){
+   cols = cols + ",";
+  }
+ }
+ msg = msg +"(id integer primary key,"+ cols+",tip text)";
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<msg;
+#endif
+
+ isOk= query.exec(msg);
+
+ return isOk;
+}
+
+bool BGnp::mkAnp(stGameConf *pGame, int z_id, QString tb_dest)
+{
+ /// https://www.tutorialspoint.com/sqlite/sqlite_insert_query.htm
+ bool isOk = true;
+ QSqlQuery query(db_1);
+
+ QString key = "tz"+QString::number(z_id+1);
+ QString msg = "with choix as (select "
+               +key
+               +" from B_elm WHERE ("
+               +key
+               +" not null))";
+ msg = msg + "insert into "+tb_dest+" select NULL,";
+
+ QString ref_0 = pGame->names[z_id].abv+"%1";
+ QString ref_1 = "t%1";
+ QString ref_2 = "t%1."+key;
+ QString ref_3 = "cast("+ref_2+" as int) as "+ref_0;
+
+ QString sql_1="";
+ QString sql_2="";
+ QString sql_3="";
+ QString sql_4="";
+ QString sql_5="";
+
+ int len = pGame->limites[z_id].len;
+ for (int i = 0; i< len; i++) {
+  sql_1 = sql_1 + ref_3.arg(i+1);
+  sql_2 = sql_2 + ref_2.arg(i+1);
+  sql_3 = sql_3 + "choix as "+ref_1.arg(i+1);
+  sql_4 = sql_4 + ref_0.arg(i+1);
+  sql_5 = sql_5 + ref_0.arg(i+1);
+
+	if(i<len-1){
+	 sql_1 = sql_1 + ",";
+	 sql_2 = sql_2 + "||'/'||";
+	 sql_3 = sql_3 + ",";
+	 sql_4 = sql_4 + "+";
+	 sql_5 = sql_5 + ",";
+	}
+ }
+
+ msg = msg
+       + sql_1
+       + ", cast(("
+       + sql_2
+       + ") as text) as tip from("
+       + sql_3
+       + ") where(("
+       + sql_4
+       + "="
+       + QString::number(len)
+       + ")) order by "
+       + sql_5;
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<msg;
+#endif
+
+ isOk= query.exec(msg);
+
+ return isOk;
+}
+
+bool BGnp::mkCnp(stGameConf *pGame, int z_id, QString tb_dest)
+{
+ /// https://www.tutorialspoint.com/sqlite/sqlite_insert_query.htm
+ bool isOk = true;
+ QSqlQuery query(db_1);
+
+ QString key = "z"+QString::number(z_id+1);
+ QString msg = "with choix as (select id,"
+               +key
+               +" from B_elm WHERE ("
+               +key
+               +" not null))";
+ msg = msg + "insert into "+tb_dest+" select NULL,";
+
+ QString ref_0 = pGame->names[z_id].abv+"%1";
+ QString ref_1 = "t%1";
+ QString ref_2 = "printf('%02d',t%1."+key+")";
+ QString ref_3 = "cast("+ref_2+" as int) as "+ref_0;
+ QString ref_4 = "("+ref_1+".id < t%2.id)";
+
+ QString sql_1="";
+ QString sql_2="";
+ QString sql_3="";
+ QString sql_4="";
+ QString sql_5="";
+
+ int len = pGame->limites[z_id].len;
+ for (int i = 0; i< len; i++) {
+  sql_1 = sql_1 + ref_3.arg(i+1);
+  sql_2 = sql_2 + ref_2.arg(i+1);
+  sql_3 = sql_3 + "choix as "+ref_1.arg(i+1);
+  sql_5 = sql_5 + ref_0.arg(i+1);
+
+	if(i<len-1){
+	 sql_1 = sql_1 + ",";
+	 sql_2 = sql_2 + "||'/'||";
+	 sql_3 = sql_3 + ",";
+	 sql_4 = sql_4 + ref_4.arg(i+1).arg(i+2);
+	 sql_5 = sql_5 + ",";
+	}
+
+	if(i<len-2){
+	 sql_4 = sql_4 + " AND ";
+	}
+ }
+
+ if(sql_4.size()){
+  sql_4 = " where("+sql_4+")";
+ }
+
+ msg = msg
+       + sql_1
+       + ", cast(("
+       + sql_2
+       + ") as text) as tip from("
+       + sql_3
+       + ") "
+       + sql_4
+       + " order by "
+       + sql_5;
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<msg;
+#endif
+
+ isOk= query.exec(msg);
+
+ return isOk;
+}
+
+BGnp *BGnp::self()
+{
+ return addr;
+}
 
 BGnp::BGnp(int n, int p):BCnp((n+p-1),p)
 {

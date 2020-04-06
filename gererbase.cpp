@@ -51,7 +51,7 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
 
     bool enMemoire = param->destination;
     bool autoLoad = param->bUseOneBdd;
-    NE_FDJ::E_typeJeux leJeu = param->typeJeu;
+    etFdjType leJeu = param->typeJeu;
 
     // Creation de la base
 #if (SET_DBG_LIVE&&SET_DBG_LEV1)
@@ -225,16 +225,16 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
 
     tiragesFileFormat euroMillions[]=
     {
-        {"euromillions_4.csv",NE_FDJ::fdj_euro,
+        {"euromillions_4.csv",eFdjEuro,
          {false,2,1,2,&p4Zn[0]}
         },
-        {"euromillions_3.csv",NE_FDJ::fdj_euro,
+        {"euromillions_3.csv",eFdjEuro,
          {false,2,1,2,&p3Zn[0]}
         },
-        {"euromillions_2.csv",NE_FDJ::fdj_euro,
+        {"euromillions_2.csv",eFdjEuro,
          {false,2,1,2,&p3Zn[0]}
         },
-        {"euromillions.csv",NE_FDJ::fdj_euro,
+        {"euromillions.csv",eFdjEuro,
          {false,2,1,2,&p1Zn[0]}
         }
     };
@@ -242,50 +242,50 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
 #if 0
     tiragesFileFormat loto[]=
     {
-        {"loto2017.csv",NE_FDJ::fdj_loto,
+        {"loto2017.csv",eFdjLoto,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"superloto2017.csv",NE_FDJ::fdj_loto,
+        {"superloto2017.csv",eFdjLoto,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"lotonoel2017.csv",NE_FDJ::fdj_loto,
+        {"lotonoel2017.csv",eFdjLoto,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"nouveau_superloto.csv",NE_FDJ::fdj_loto,
+        {"nouveau_superloto.csv",eFdjLoto,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"nouveau_loto.csv",NE_FDJ::fdj_loto,
+        {"nouveau_loto.csv",eFdjLoto,
          {false,2,1,2,&p2Zn[0]}
         }
     };
 #endif
 		tiragesFileFormat loto[]=
 		 {
-			{"loto2017.csv",NE_FDJ::fdj_loto,
+			{"loto2017.csv",eFdjLoto,
 			 {false,2,1,2,&p2Zn[0]}
 			},
-			{"superloto2017.csv",NE_FDJ::fdj_loto,
+			{"superloto2017.csv",eFdjLoto,
 			 {false,2,1,2,&p2Zn[0]}
 			},
-			{"lotonoel2017.csv",NE_FDJ::fdj_loto,
+			{"lotonoel2017.csv",eFdjLoto,
 			 {false,2,1,2,&p2Zn[0]}
 			},
-			{"nouveau_superloto.csv",NE_FDJ::fdj_loto,
+			{"nouveau_superloto.csv",eFdjLoto,
 			 {false,2,1,2,&p2Zn[0]}
 			},
-			{"nouveau_loto.csv",NE_FDJ::fdj_loto,
+			{"nouveau_loto.csv",eFdjLoto,
 			 {false,2,1,2,&p2Zn[0]}
 			},
-			{"loto_201902.csv",NE_FDJ::fdj_loto,
+			{"loto_201902.csv",eFdjLoto,
 			 {false,2,1,2,&p2Zn[0]}
 			},
-			{"loto_201911.csv",NE_FDJ::fdj_loto,
+			{"loto_201911.csv",eFdjLoto,
 			 {false,2,1,2,&p2Zn[0]}
 			}
 		 };
 
 
-    if(typeTirages->conf.choixJeu == NE_FDJ::fdj_euro){
+    if(typeTirages->conf.choixJeu == eFdjEuro){
         nbelemt = sizeof(euroMillions)/sizeof(tiragesFileFormat);
         LesFichiers = euroMillions;
     }
@@ -460,7 +460,7 @@ int GererBase::get_IdBdd(void)
  return cur_item;
 }
 
-QString GererBase::mk_IdDsk(NE_FDJ::E_typeJeux type, int v_id)
+QString GererBase::mk_IdDsk(etFdjType type, int v_id)
 {
     QDate myDate = QDate::currentDate();
     QString toDay = myDate.toString("dd-MM-yyyy");
@@ -469,7 +469,7 @@ QString GererBase::mk_IdDsk(NE_FDJ::E_typeJeux type, int v_id)
     QFile myFileName;
     QString testName = "";
 
-    if(type == NE_FDJ::fdj_euro){
+    if(type == eFdjEuro){
         game = "Euro";
     }
     else{
@@ -488,11 +488,11 @@ QString GererBase::mk_IdDsk(NE_FDJ::E_typeJeux type, int v_id)
     return testName;
 }
 
-QString GererBase::mk_IdCnx(NE_FDJ::E_typeJeux type, int v_id)
+QString GererBase::mk_IdCnx(etFdjType type, int v_id)
 {
     QString game = "";
 
-    if(type == NE_FDJ::fdj_euro){
+    if(type == eFdjEuro){
         game = "Euro";
     }
     else{
@@ -508,7 +508,7 @@ QString GererBase::mk_IdCnx(NE_FDJ::E_typeJeux type, int v_id)
 		 +QString::number(cur_item).rightJustified(2,'0'));
 }
 
-bool GererBase::ouvrirBase(bool action,NE_FDJ::E_typeJeux type)
+bool GererBase::ouvrirBase(bool action,etFdjType type)
 {
     bool isOk = true;
     const QString gameLabel []={"NonDefini","Loto","Euro"};

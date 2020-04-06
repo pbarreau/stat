@@ -8,7 +8,7 @@ namespace NE_FDJ{
 	fdj_loto,   /// jeu : loto
 	fdj_euro,   /// jeu : euromillion
 	fdj_fini    /// fin de la liste des jeux possibles
-  }E_typeJeux;
+  }etFdjType;
 }
 
 #endif // TYPES_JEUX_H

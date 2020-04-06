@@ -48,13 +48,14 @@ class BFdj
 
 public:
 BFdj(etFdjType typeJeu=eFdjNotSet , bool bReUse = false, QString cnx = "", etDbPlace dst= eDbSetOnDsk);
+stGameConf *getConfig();
 
 private:
  bool ouvrirBase(etFdjType game=eFdjNotSet, bool reUse=false, etDbPlace cible = eDbSetOnDsk);
  QString mk_IdCnx(etFdjType type);
  QString mk_IdDsk(etFdjType type);
  bool OPtimiseAccesBase(void);
- stGameConf *init(etFdjType eFdjType);
+ stGameConf *init(etFdjType eFdjType, bool prev=false);
 
  bool crt_TblFdj(stGameConf *pGame, etFdjType typeJeu);
  bool chargerDonneesFdjeux(stGameConf *pGame, QString destTable);
@@ -66,6 +67,7 @@ private:
 static int total_items;
 int cur_item;
 QSqlDatabase fdj_db;
+stGameConf *fdjConf;
 
 };
 

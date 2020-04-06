@@ -23,6 +23,7 @@ BFdj::BFdj(etFdjType typeJeu, bool bReUse, QString cnx, etDbPlace dst)
 
  cur_item = total_items;
  total_items++;
+ fdjConf = nullptr;
 
  /// Doit on utiliser une connexion deja etablie
  if(!use_cnx.size()){
@@ -40,10 +41,19 @@ BFdj::BFdj(etFdjType typeJeu, bool bReUse, QString cnx, etDbPlace dst)
   return;
  }
 
- stGameConf *fdjConf = init(typeJeu);
- crt_TblFdj(fdjConf, typeJeu);
+ stGameConf *curConf = init(typeJeu,bReUse);
+ crt_TblFdj(curConf, typeJeu);
+
+ fdjConf = curConf;
 }
 
+stGameConf * BFdj::getConfig()
+{
+ return fdjConf;
+}
+
+
+/// ---------------- PRIVATE FUNCTIONS -----------------
 bool BFdj::ouvrirBase(etFdjType game, bool bReUse, etDbPlace cible)
 {
  bool isOk = true;
@@ -64,7 +74,7 @@ bool BFdj::ouvrirBase(etFdjType game, bool bReUse, etDbPlace cible)
 	 /// Reutiliser existant ?
 	 if(bReUse){
 		QString myTitle = "Selectionnner un fichier " + gameLabel[game];
-		QString myFilter = gameLabel[game]+"_V1*.sqlite";
+		QString myFilter = gameLabel[game]+QString(DB_VER)+"*.sqlite";
 		mabase = QFileDialog::getOpenFileName(nullptr,myTitle,".",myFilter);
 	 }
 	 break;
@@ -120,9 +130,8 @@ QString BFdj::mk_IdDsk(etFdjType type)
 
  int counter = 0;
  do{
-  testName = game + QString::number(counter).rightJustified(3,'0')+QString("-");
-  testName = testName + QString::number(cur_item).rightJustified(2,'0')+ ext;
-  myFileName.setFileName(testName);
+  testName = game + QString::number(counter).rightJustified(3,'0')+ ext;
+   myFileName.setFileName(testName);
   counter = (counter + 1)%999;
  }while(myFileName.exists());
 
@@ -160,9 +169,18 @@ bool BFdj::OPtimiseAccesBase(void)
  return isOk;
 }
 
-stGameConf * BFdj::init(etFdjType eFdjType)
+stGameConf * BFdj::init(etFdjType eFdjType, bool prev)
 {
  stGameConf * ret = new stGameConf;
+
+ ret->id = cur_item;
+ ret->bUseMadeBdd = prev;
+ ret->eFdjType = eFdjType;
+ ret->eTirType = eTirNotSet;
+
+ ret->db_ref = new stParam_3;
+ ret->db_ref->cnx = "";
+ ret->db_ref->fdj = "";
 
  if(eFdjType == eFdjLoto){
   int nbZn = 2;
@@ -197,10 +215,18 @@ bool BFdj::crt_TblFdj(stGameConf *pGame, etFdjType typeJeu)
  QSqlQuery query(fdj_db);
  QString msg = "";
 
- QString tbName = QString("fdj_")
-                  +gameLabel[typeJeu]
-                  + QString::number(cur_item).rightJustified(2,'0');
+ QString tbName = "";
 
+#ifdef FDJ_FIXED
+ tbName = "B_fdj";
+#else
+ tbName = QString("B_")
+          +gameLabel[typeJeu]+"_"
+          + QString::number(cur_item).rightJustified(2,'0');
+#endif
+
+ pGame->db_ref->fdj = tbName;
+ pGame->db_ref->cnx = fdj_db.connectionName();
 
 
  QString colsDef = "";
@@ -343,19 +369,31 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  fId = 0;
  stFdjData loto[]=
   {
-   {"loto2017.csv",fId++,
+   {"nouveau_superloto.csv",fId++,
     {false,2,1,2,&p2Zn[0]}
    },
    {"superloto2017.csv",fId++,
     {false,2,1,2,&p2Zn[0]}
    },
+   {"superloto_201907.csv",fId++,
+    {false,2,1,2,&p2Zn[0]}
+   },
+   {"grandloto_201912.csv",fId++,
+    {false,2,1,2,&p2Zn[0]}
+   },
    {"lotonoel2017.csv",fId++,
     {false,2,1,2,&p2Zn[0]}
    },
-   {"nouveau_superloto.csv",fId++,
+   {"nouveau_loto.csv",fId++,
     {false,2,1,2,&p2Zn[0]}
    },
-   {"nouveau_loto.csv",fId++,
+   {"loto2017.csv",fId++,
+    {false,2,1,2,&p2Zn[0]}
+   },
+   {"loto_201902.csv",fId++,
+    {false,2,1,2,&p2Zn[0]}
+   },
+   {"loto_201911.csv",fId++,
     {false,2,1,2,&p2Zn[0]}
    }
   };

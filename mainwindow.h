@@ -56,7 +56,7 @@ class EtudierJeu
 {
     Q_OBJECT
 public:
-    void EtudierJeu(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false, bool dest_bdd=false);
+    void EtudierJeu(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=eFdjLoto, bool load=false, bool dest_bdd=false);
 };
 #endif
 
@@ -87,7 +87,7 @@ public:
     //explicit
     void EtudierJeu(etFdjType curGame, bool usePrevBdd, bool dest_bdd);
     void RechercheProgressionBoules(stTiragesDef *pConf);
-    void Prev_MainWindow(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false, bool dest_bdd=false);
+    void Prev_MainWindow(QWidget *parent = nullptr, etFdjType leJeu=eFdjLoto, bool load=false, bool dest_bdd=false);
     ~MainWindow();
     void closeEvent(QCloseEvent *event);
     void getPgmVersion(void);
@@ -234,7 +234,7 @@ private:
     QString TST_PartitionEntierAdd(int p[], int n);
     QStandardItemModel * TST_SetTblViewCombi(int nbLigne, QTableView *qtv_r);
     QStandardItemModel * TST_SetTblViewVal(int nbLigne, QTableView *qtv_r);
-    int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *pMaConf);;
+    int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *pMaConf);
 
 private:
     static QStringList L1;

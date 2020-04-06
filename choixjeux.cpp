@@ -8,7 +8,7 @@ ChoixJeux::ChoixJeux(QWidget *parent) :
   QDialog(parent,Qt::Dialog),
   ui(new Ui::ChoixJeux)
 {
-  //eChoixJeu = NE_FDJ::fdj_none;
+  //eChoixJeu = eFdjNotSet;
 
   ui->setupUi(this);
   EtudeJeu = (MainWindow *)parent;
