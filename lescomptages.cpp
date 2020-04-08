@@ -2884,6 +2884,11 @@ bool BPrevision::AnalyserEnsembleTirage(QString tblIn, const stGameConf &onGame,
 					+slst[0].at(loop)+"))) as tbRight on ("
 					+st_OnDef+") group by tbLeft.id";
 	 }
+
+#ifndef QT_NO_DEBUG
+	 qDebug() << "msg:"<<msg;
+#endif
+
 	 isOk = query.exec(msg);
 
 	 curName = "vt_" +  QString::number(loop);
