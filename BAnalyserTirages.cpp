@@ -115,7 +115,14 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
  QString stDefBoules = "B_elm";
  QString st_OnDef = "";
 
- QString tbLabAna = tbName +"_ana_z"+QString::number(zn+1);
+ QString tbLabAna = "";
+ if(tbName.compare("B_fdj")==0){
+  tbLabAna = "B";
+ }
+ else{
+  tbLabAna = tbName;
+ }
+ tbLabAna = tbLabAna +"_ana_z"+QString::number(zn+1);
 
  QString ref="(tbleft.%1%2=tbRight.B)";
 
@@ -222,16 +229,16 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 
 
 	if(isOk){
-	/// Ecriture table finale
-	curTarget = curTarget.remove("view");
-	msg = "create table if not exists "+tbLabAna
-				+" as select "+ curTitle +" from ("
-				+curTarget+")as tbLeft";
+	 /// Ecriture table finale
+	 curTarget = curTarget.remove("view");
+	 msg = "create table if not exists "+tbLabAna
+				 +" as select "+ curTitle +" from ("
+				 +curTarget+")as tbLeft";
 #ifndef QT_NO_DEBUG
-	qDebug() << "msg:"<<msg;
+	 qDebug() << "msg:"<<msg;
 #endif
-  isOk = query.exec(msg);
- }
+	 isOk = query.exec(msg);
+	}
 
 
 	/// supression tables intermediaires
