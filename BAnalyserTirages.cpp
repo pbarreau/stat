@@ -115,7 +115,7 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
  QString stDefBoules = "B_elm";
  QString st_OnDef = "";
 
- QString tbLabAna = tbName +"ana_z"+QString::number(zn+1);
+ QString tbLabAna = tbName +"_ana_z"+QString::number(zn+1);
 
  QString ref="(tbleft.%1%2=tbRight.B)";
 
@@ -147,7 +147,7 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
   int colId = 0;
   QString curName = tbName;
   QString curTarget = "view vt_0";
-  QString lastTitle = "tbLeft.id  as Id,";
+  QString lastTitle = "cast(tbLeft.id as int) as Id,";
   QString curTitle = "tbLeft.*";
 
 	do
@@ -166,10 +166,18 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 
 	 }
 	 else{
-		if(slst[1].at(loop).compare("grp_skip") == 0 ){
+		if(slst[2].at(loop).compare("special")==0){
 		 msg = "create " + curTarget
-					 +" as  "
-					 + slst[0].at(loop);
+					 +" as select "+curTitle+", tbRight."
+					 + slst[1].at(loop) + " as "
+					 + slst[1].at(loop)
+					 + " from("+curName+")as tbLeft "
+					 + "left join ("+slst[0].at(loop)
+					 +") as tbRight on (tbRight.id=tbLeft.id)";
+#ifndef QT_NO_DEBUG
+		 qDebug() << "msg:"<<msg;
+#endif
+
 		}
 		else {
 		 msg = "create " + curTarget
@@ -184,28 +192,48 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 		}
 	 }
 
-#ifndef QT_NO_DEBUG
-	 qDebug() << "msg:"<<msg;
-#endif
-
 	 isOk = query.exec(msg);
+	 if(!isOk){
+#ifndef QT_NO_DEBUG
+		qDebug() << "msg:"<<msg;
+#endif
+	 }
 
 	 curName = "vt_" +  QString::number(loop);
 	 lastTitle = lastTitle
-							 + "tbLeft."+slst[1].at(loop)
-							 +" as "+slst[1].at(loop);
+							 + "cast(tbLeft."+slst[1].at(loop)
+							 +" as int) as "+slst[1].at(loop);
 	 loop++;
-	 if(loop <  nbTot-1)
+	 if(loop  < nbTot)
 	 {
 		curTarget = "view vt_"+QString::number(loop);
 		lastTitle = lastTitle + ",";
 	 }
 	 else
 	 {
-		curTarget = "view vrz"+QString::number(zn+1)+"_"+tbLabAna;
+		//curTarget = tbLabAna;
 		curTitle = lastTitle;
+#ifndef QT_NO_DEBUG
+		qDebug() << "curTarget:"<<curTarget;
+		qDebug() << "curTitle:"<<curTitle;
+#endif
 	 }
 	}while(loop < nbTot && isOk);
+
+
+	if(isOk){
+	/// Ecriture table finale
+	curTarget = curTarget.remove("view");
+	msg = "create table if not exists "+tbLabAna
+				+" as select "+ curTitle +" from ("
+				+curTarget+")as tbLeft";
+#ifndef QT_NO_DEBUG
+	qDebug() << "msg:"<<msg;
+#endif
+  isOk = query.exec(msg);
+ }
+
+
 	/// supression tables intermediaires
 	if(isOk){
 	 msg = "drop view if exists " + curTarget;
@@ -297,14 +325,16 @@ QStringList* BAnalyserTirages::CreateFilterForData(stGameConf *pGame, QString tb
  // Indication de Barycentre
  sql_code = sqlMkAnaBrc(pGame, tbl_tirages, zn);
  sl_filter[0]<< sql_code;
- sl_filter[1] << "grp_skip";
- sl_filter[2] << "";
+ sl_filter[1] << "bc";
+ sl_filter[2] << "special";
 
  // Indication de Combinaison
+ int cur_tmp = sl_filter[0].size()-1;
+ tbl_tirages = "vt_"+QString::number(cur_tmp);
  sql_code = sqlMkAnaCmb(pGame, tbl_tirages, zn);
  sl_filter[0]<< sql_code;
- sl_filter[1] << "grp_skip";
- sl_filter[2] << "";
+ sl_filter[1] << "idComb";
+ sl_filter[2] << "special";
 
  return sl_filter;
 }
@@ -344,8 +374,8 @@ QString BAnalyserTirages::sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, in
           +") as int) as T "
             "from B_elm as t1 LEFT join ("
           +tbl_tirages
-          +") as t2"
-            "where("
+          +") as t2 "
+            " where("
           +key
           +" in("
           +st_cols
@@ -354,18 +384,20 @@ QString BAnalyserTirages::sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, in
           +" order by t1.id asc)"
             "SELECT t2.id, cast( avg(poids.T) as real) as bc from ("
           +tbl_tirages
-          +") as t2"
+          +") as t2 "
             "left join poids where (poids.id in("
           +st_cols
-          +")) group by t1.id";
+          +")) group by t2.id";
 
+#ifndef QT_NO_DEBUG
+ qDebug() <<st_sql;
+#endif
 
  return st_sql;
 }
 
-QString BAnalyserTirages::sqlMkAnaCmb(stGameConf *pGame, QString tbl_tirages, int zn)
+QString BAnalyserTirages::sqlMkAnaCmb(stGameConf *pGame, QString tbl_ana_tmp, int zn)
 {
- Q_UNUSED(tbl_tirages);
 
  /* exemple requete :
   *
@@ -380,7 +412,7 @@ QString BAnalyserTirages::sqlMkAnaCmb(stGameConf *pGame, QString tbl_tirages, in
   */
 
  QString st_sql="";
- QString ref = "t1.U%1=t2."+pGame->names[zn].abv+"%1";
+ QString ref = "(t1.U%1=t2."+pGame->names[zn].abv+"%2)";
 
  int max = pGame->limites[zn].len;
  QString st_cols = "";
@@ -391,8 +423,8 @@ QString BAnalyserTirages::sqlMkAnaCmb(stGameConf *pGame, QString tbl_tirages, in
   }
  }
 
- st_sql = "select t1.id, t2.id as idComb from B_ana_z"
-          +QString::number(zn+1)
+ st_sql = "select t1.id, t2.id as idComb from "
+          + tbl_ana_tmp
           +" as t1 LEFT join B_cmb_z"
           +QString::number(zn+1)
           +" as t2 "
@@ -400,6 +432,9 @@ QString BAnalyserTirages::sqlMkAnaCmb(stGameConf *pGame, QString tbl_tirages, in
           +st_cols
           +")group by t1.id";
 
+#ifndef QT_NO_DEBUG
+ qDebug() <<st_sql;
+#endif
 
  return st_sql;
 }

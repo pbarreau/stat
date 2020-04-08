@@ -22,7 +22,7 @@ bool mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query);
 
 QStringList* CreateFilterForData(stGameConf *pGame, QString tbl_tirages, int zn);
 QString sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, int zn);
-QString sqlMkAnaCmb(stGameConf *pGame, QString tbl_tirages, int zn);
+QString sqlMkAnaCmb(stGameConf *pGame, QString tbl_ana_tmp, int zn);
 
 bool AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName);
 bool SupprimerVueIntermediaires(void);
