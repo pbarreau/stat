@@ -86,6 +86,9 @@ public:
     MainWindow();
     //explicit
     void EtudierJeu(etFdjType curGame, bool usePrevBdd, bool dest_bdd);
+    void EtudierJeu_v1(stGameConf *curConf, bool dest_bdd);
+    void EtudierJeu_v2(stGameConf *curConf);
+    void EtudierJeu_MontrerUplet(stGameConf *curConf, GererBase *use_db);
     void RechercheProgressionBoules(stTiragesDef *pConf);
     void Prev_MainWindow(QWidget *parent = nullptr, etFdjType leJeu=eFdjLoto, bool load=false, bool dest_bdd=false);
     ~MainWindow();

@@ -26,6 +26,7 @@ QString sqlMkAnaCmb(stGameConf *pGame, QString tbl_ana_tmp, int zn);
 
 bool AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName);
 bool SupprimerVueIntermediaires(void);
+void PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName);
 
 private:
 BAnalyserTirages *addr;

@@ -16,10 +16,69 @@
 #include "compter.h"
 #include "db_tools.h"
 
-QString BCount::label[]={"err",C_TBL_C,T_CMB,T_GRP,T_BRC,"laFin"};
+QString BCount::label[eCountEnd]={"err","elm","cmb","grp","brc"};
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
 
+BCount::BCount(const stGameConf *pGame, eCountingType genre):type(genre)
+{
+
+ QString cnx=pGame->db_ref->cnx;
+ QString tbl_tirages = pGame->db_ref->fdj;
+
+ QString st_tmp = CreerCritereJours(cnx,tbl_tirages);
+ db_jours = ","+st_tmp;
+
+}
+BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb)
+    :BCount(pDef,in,useDb,nullptr,eCountToSet)
+{
+}
+
+BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
+							 QWidget *unParent=nullptr, eCountingType genre=eCountToSet)
+		:QWidget(unParent), st_LstTirages(in),dbToUse(fromDb),type(genre)
+{
+ bool useRequete = false;
+ db_jours = "";
+ lesSelections = nullptr;
+ sqlSelection = nullptr;
+ memo = nullptr;
+ sqmZones = nullptr;
+ myGame = pDef;
+ setPriorityToAll = false;
+
+
+ if(useRequete){
+  RecupererConfiguration();
+ }
+ else{
+  memo = new int [myGame.znCount];
+  memset(memo,-1, sizeof(int)*myGame.znCount);
+
+	lesSelections = new QModelIndexList [myGame.znCount];
+	sqlSelection = new QString [myGame.znCount];
+
+	sqmZones = new BSqmColorizePriority [myGame.znCount];
+	BRunningQuery * tmp = new BRunningQuery;
+	tmp->size = myGame.znCount;
+	tmp->sqmDef = sqmZones;
+	tmp->key = type;
+	nbChild++; /// Nombre total d'enfants A SUPPRIMER ?
+	/// Rajouter cet element Ã  la liste des requetes actives
+	int pos = -1;
+	if(type==eCountElm) pos = 0;
+	if(type==eCountCmb) pos = 1;
+	if(type==eCountGrp) pos = 2;
+	sqmActive[pos].append(tmp);
+ }
+
+ QString st_tmp = CreerCritereJours(fromDb.connectionName(),in);
+ db_jours = ","+st_tmp;
+
+}
+
+/// ---------------------------------------
 QString BCount::CreerCritereJours(QString cnx_db_name, QString tbl_ref)
 {
  QString st_tmp = "";
@@ -52,8 +111,8 @@ QString BCount::CreerCritereJours(QString cnx_db_name, QString tbl_ref)
    do
    {
     //count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,
-    st_tmp = st_tmp + "count(CASE WHEN  J like '"+
-             query.value(0).toString()+"%' then 1 end) as "+
+    st_tmp = st_tmp + "cast (count(CASE WHEN  J like '"+
+             query.value(0).toString()+"%' then 1 end) as int) as "+
              query.value(0).toString()+",";
    }while((status = query.next()));
 
@@ -141,53 +200,6 @@ void BCount::RecupererConfiguration(void)
 #endif
 }
 
-BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb)
-    :BCount(pDef,in,useDb,NULL,eCountToSet)
-{
-}
-
-BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
-               QWidget *unParent=0, eCountingType genre=eCountToSet)
-    :QWidget(unParent), db_data(in),dbToUse(fromDb),type(genre)
-{
- bool useRequete = false;
- db_jours = "";
- lesSelections = NULL;
- sqlSelection = NULL;
- memo = NULL;
- sqmZones = NULL;
- myGame = pDef;
- setPriorityToAll = false;
-
-
- if(useRequete){
-  RecupererConfiguration();
- }
- else{
-  memo = new int [myGame.znCount];
-  memset(memo,-1, sizeof(int)*myGame.znCount);
-
-  lesSelections = new QModelIndexList [myGame.znCount];
-  sqlSelection = new QString [myGame.znCount];
-
-  sqmZones = new BSqmColorizePriority [myGame.znCount];
-  BRunningQuery * tmp = new BRunningQuery;
-  tmp->size = myGame.znCount;
-  tmp->sqmDef = sqmZones;
-  tmp->key = type;
-  nbChild++; /// Nombre total d'enfants A SUPPRIMER ?
-  /// Rajouter cet element Ã  la liste des requetes actives
-  int pos = -1;
-  if(type==eCountElm) pos = 0;
-  if(type==eCountCmb) pos = 1;
-  if(type==eCountGrp) pos = 2;
-  sqmActive[pos].append(tmp);
- }
-
- QString st_tmp = CreerCritereJours(fromDb.connectionName(),in);
- db_jours = ","+st_tmp;
-
-}
 
 void BCount::slot_AideToolTip(const QModelIndex & index)
 {

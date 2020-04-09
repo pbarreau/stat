@@ -71,18 +71,19 @@ void MainWindow::EtudierJeu(etFdjType curGame, bool usePrevBdd, bool dest_bdd)
  stGameConf *curConf = charge->getConfig();
 
  BAnalyserTirages *uneAnalyse = new BAnalyserTirages(curConf);
+ //EtudierJeu_v1(curConf, dest_bdd);
+ //EtudierJeu_v2(curConf);
  return;
-#if 0
- cFdjData f(eFdjEuro);
- cFdjData h(f);
+}
 
- cFdjData *monJeu = new cFdjData (eFdjLoto);
- cFdjData *a1 = new cFdjData (*monJeu);
- return;
-#endif /// if 0
+void MainWindow::EtudierJeu_v1(stGameConf *curConf, bool dest_bdd)
+{
+
+ bool usePrevBdd = curConf->bUseMadeBdd;
+ etFdjType curGame = curConf->eFdjType;
 
  stParam input;
- input.destination =dest_bdd;
+ input.destination = dest_bdd;
  input.bUseOneBdd = usePrevBdd;
  input.typeJeu = curGame;
  input.pgm_mdi = zoneCentrale;
@@ -92,30 +93,7 @@ void MainWindow::EtudierJeu(etFdjType curGame, bool usePrevBdd, bool dest_bdd)
 
  DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
 
- if(usePrevBdd){
-#if 0
-  BUplet::st_In param;
-  param.uplet = 2;
-  param.cnx = DB_tirages->get_IdCnx(1);
-  BUplet *a = new BUplet(param);
-  //pgm_mdi->addSubWindow(a);
-  a->show();
-
-	param.uplet = 3;
-	BUplet *b = new BUplet(param);
-	b->show();
-
-	param.uplet = 4;
-	BUplet *c = new BUplet(param);
-	c->show();
-#endif
-
-	QString cnx = DB_tirages->get_IdCnx(1);
-	BUplWidget *visu = new BUplWidget(cnx,1);
-	visu->show();
-
- }
- //return;
+ EtudierJeu_MontrerUplet(curConf, DB_tirages);
 
  configJeu.db_cnx = DB_tirages->get_IdCnx(0);
  db_0 = QSqlDatabase::database(configJeu.db_cnx);
@@ -126,97 +104,79 @@ void MainWindow::EtudierJeu(etFdjType curGame, bool usePrevBdd, bool dest_bdd)
   QMessageBox::critical(this,tr("Glob"),NoErrors.msg,QMessageBox::Ok,QMessageBox::NoButton);
   QApplication::quit();
  }
- else
- {
-//#if 0 ///2
-  /// Debut traitement
-#if (SET_DBG_LIVE&&SET_DBG_LEV1)
-  QMessageBox::information(NULL, "Pgm", "Old 8!",QMessageBox::Yes);
-#endif
-  RechercheProgressionBoules(&configJeu);
+
+  /// ICI Commence le calcul
+ RechercheProgressionBoules(&configJeu);
 
 
-  /// Espaces Reponses pour details des calculs
-  w_FenetreDetails = new QWidget;
-  gtab_Top = new QTabWidget;
-  gtab_Top->setTabsClosable(true);
-  QFormLayout *mainLayout = new QFormLayout;
-  mainLayout->addWidget(gtab_Top);
-  w_FenetreDetails->setLayout(mainLayout);
-  connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
+ /// Espaces Reponses pour details des calculs
+ w_FenetreDetails = new QWidget;
+ gtab_Top = new QTabWidget;
+ gtab_Top->setTabsClosable(true);
+ QFormLayout *mainLayout = new QFormLayout;
+ mainLayout->addWidget(gtab_Top);
+ w_FenetreDetails->setLayout(mainLayout);
+ connect(gtab_Top,SIGNAL(tabCloseRequested(int)),this,SLOT(pslot_closeTabDetails(int)));
 
-#if (SET_DBG_LIVE&&SET_DBG_LEV1)
-  QMessageBox::information(NULL, "Pgm", "Old 9!",QMessageBox::Yes);
-#endif
+ TST_EtoileCombi(&configJeu);
+ FEN_NewTirages(&configJeu);
+}
 
-  TST_EtoileCombi(&configJeu);
-#if (SET_DBG_LIVE&&SET_DBG_LEV1)
-  QMessageBox::information(NULL, "Pgm", "Old 10!",QMessageBox::Yes);
-#endif
+ void MainWindow::EtudierJeu_MontrerUplet(stGameConf *curConf, GererBase *use_db)
+{
+ bool usePrevBdd = curConf->bUseMadeBdd;
 
-  FEN_NewTirages(&configJeu);
+ if(usePrevBdd){
+  QString cnx = use_db->get_IdCnx(1);
+  BUplWidget *visu = new BUplWidget(cnx,1);
+  visu->show();
+ }
+}
 
-//#endif /// if 0 2
-
-  //// Reecriture sous forme objet
-  switch(curGame){
-   case eFdjLoto:
-    unJeu = eFdjLoto;
-    break;
-   case eFdjEuro:
-    unJeu = eFdjEuro;
-    break;
-   default:
-    unJeu = eFdjNotSet;
-    break;
-  }
-#if (SET_DBG_LIVE && SET_DBG_LEV2)
-  QMessageBox::information(NULL, "Open", "Prevision 1->"+QString::number(1),QMessageBox::Yes);
-#endif
+void MainWindow::EtudierJeu_v2(stGameConf *curConf)
+{
+ etFdjType unJeu = curConf->eFdjType;
+ bool usePrevBdd = curConf->bUseMadeBdd;
 
 #if (SET_RUN_CHKP)
-        QMessageBox::information(NULL, "1C", "OK",QMessageBox::Yes);
+ QMessageBox::information(nullptr, "1C", "OK",QMessageBox::Yes);
 #endif
 
-	BPrevision::stPrmPrevision *prm = new BPrevision::stPrmPrevision;
-	prm->bddStore = eDbSetOnDsk;
-	prm->gameInfo.eTirType=eTirFdj;
-	prm->gameInfo.eFdjType=unJeu;
+ BPrevision::stPrmPrevision *prm = new BPrevision::stPrmPrevision;
+ prm->bddStore = eDbSetOnDsk;
+ prm->gameInfo.eTirType=eTirFdj;
+ prm->gameInfo.eFdjType=unJeu;
 
-	prm->gameInfo.bUseMadeBdd = usePrevBdd;
-	prm->gameInfo.znCount = configJeu.nb_zone;
-	prm->gameInfo.id = -1;
-	prm->gameInfo.limites = NULL;
-	prm->gameInfo.names = NULL;
+ prm->gameInfo.bUseMadeBdd = usePrevBdd;
+ prm->gameInfo.znCount = configJeu.nb_zone;
+ prm->gameInfo.id = -1;
+ prm->gameInfo.limites = nullptr;
+ prm->gameInfo.names = nullptr;
 
-	prm->tblFdj_dta="fdj";
-	prm->tblFdj_ana="ana_z";
-	prm->tblFdj_brc="";
-	prm->tblUsr_dta="";
-	prm->tblUsr_ana="";
+ prm->tblFdj_dta="fdj";
+ prm->tblFdj_ana="ana_z";
+ prm->tblFdj_brc="";
+ prm->tblUsr_dta="";
+ prm->tblUsr_ana="";
 
-  ///return;
-  tous = new BPrevision(prm);
+ ///return;
+ tous = new BPrevision(curConf, prm);
 
 
 
-  connect(act_UGL_Create, SIGNAL(triggered()), tous, SLOT(slot_UGL_Create()));
-  connect(act_UGL_SetFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_SetFilters()));
-  connect(act_UGL_ClrFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_ClrFilters()));
+ connect(act_UGL_Create, SIGNAL(triggered()), tous, SLOT(slot_UGL_Create()));
+ connect(act_UGL_SetFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_SetFilters()));
+ connect(act_UGL_ClrFilters, SIGNAL(triggered()), tous, SLOT(slot_UGL_ClrFilters()));
 
-//#if 0 //3
-  connect(tous,
-          SIGNAL(sig_isClickedOnBall(QModelIndex)),
-          syntheses,
-          SLOT(slot_ShowBouleForNewDesign(QModelIndex)));
+ connect(tous,
+         SIGNAL(sig_isClickedOnBall(QModelIndex)),
+         syntheses,
+         SLOT(slot_ShowBouleForNewDesign(QModelIndex)));
 
-  connect(tous,
-          SIGNAL(sig_isClickedOnBall(QModelIndex)),
-          syntheses->GetTabEcarts(),
-          SLOT(slot_ShowBoule_2(QModelIndex)));
-//#endif /// if 0 3
-
- }
+ connect(tous,
+         SIGNAL(sig_isClickedOnBall(QModelIndex)),
+         syntheses->GetTabEcarts(),
+         SLOT(slot_ShowBoule_2(QModelIndex)));
 }
 
 QGridLayout *MainWindow::MonLayout_OldTbvTirage(int x, int y)

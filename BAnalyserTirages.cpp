@@ -6,10 +6,16 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QStringList>
+#include <QTabWidget>
+#include <QVector>
 
 #include "BAnalyserTirages.h"
 #include "db_tools.h"
 #include "cnp_AvecRepetition.h"
+
+#include "compter_zones.h"
+#include "compter_combinaisons.h"
+#include "compter_groupes.h"
 
 BAnalyserTirages::BAnalyserTirages(stGameConf *pGame)
 {
@@ -104,6 +110,141 @@ void BAnalyserTirages::startAnalyse(stGameConf *pGame, QString tbl_tirages)
  {
   isOk = AnalyserEnsembleTirage(pGame, info, zn, tbl_tirages);
  }
+
+ /// Presenter les resultats
+ PresenterResultats(pGame, info, tbl_tirages);
+}
+
+void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName)
+{
+ /// https://openclassrooms.com/fr/courses/1894236-programmez-avec-le-langage-c/1898632-mettez-en-oeuvre-le-polymorphisme
+ ///
+ QVector<BCount *> lstComptage; ///voir man de QList
+
+ QTabWidget *tab_Top = new QTabWidget;
+
+ BCountElem * tmpElm = new BCountElem(pGame);
+
+ lstComptage.append(tmpElm);
+
+ int nb_item = lstComptage.size();
+ for(int i = 0; i< nb_item; i++)
+ {
+  /// Appelle la methode dans la bonne classe
+  QString name = lstComptage.at(i)->getType();
+  QWidget *calcul = lstComptage.at(i)->creationTables(pGame);
+  if(calcul != nullptr){
+   tab_Top->addTab(calcul, name);
+  }
+ }
+
+ QWidget * Resultats = new QWidget;
+ QGridLayout *tmp_layout = new QGridLayout;
+ tmp_layout->addWidget(tab_Top,0,0);
+ Resultats->setLayout(tmp_layout);
+ Resultats->setWindowTitle(tbName);
+ Resultats->show();
+
+#if 0 //1
+ QWidget * Resultats = new QWidget;
+ QTabWidget *tab_Top = new QTabWidget;
+
+ c1 = new BCountElem(config,source,db_1,Resultats);
+ connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
+ /// transfert vers SyntheseGenerale
+ connect(c1,
+         SIGNAL(sig_isClickedOnBall(QModelIndex)),
+         this,
+         SLOT(slot_emitThatClickedBall(QModelIndex)));
+
+
+#if 0
+ /// greffon pour calculer barycentre des tirages
+ stNeedsOfBary param;
+ param.db = db_1;
+ param.ncx = db_1.connectionName();
+ param.tbl_in=source;
+ if(source=="B_fdj"){
+  param.tbl_ana = source+tr("_ana_z1");
+ }else
+ {
+  ///REM:param.tbl_ana = "U_"+monJeu.tblUsr_dta+"_ana_z1";
+  param.tbl_ana = monJeu.tblUsr_dta+"_ana_z1";
+ }
+ param.tbl_flt = tr("U_b_z1"); /// source+tr("_flt_z1");
+ param.pDef = onGame;
+ param.origine = this;
+ c= new CBaryCentre(param);
+#endif
+
+ c2 = new BCountComb(config,source,db_1);
+ c3 = new BCountGroup(config,source,slFlt,db_1);
+
+
+
+ QGridLayout **pConteneur = new QGridLayout *[4];
+ QWidget **pMonTmpWidget = new QWidget * [4];
+
+ for(int i = 0; i< 4;i++)
+ {
+  QGridLayout * grd_tmp = new QGridLayout;
+  pConteneur[i] = grd_tmp;
+
+	QWidget * wid_tmp = new QWidget;
+	pMonTmpWidget [i] = wid_tmp;
+ }
+ pConteneur[0]->addWidget(c1,1,0);
+ //pConteneur[1]->addWidget(c,1,0);
+ pConteneur[2]->addWidget(c2,1,0);
+ pConteneur[3]->addWidget(c3,1,0);
+
+ pMonTmpWidget[0]->setLayout(pConteneur[0]);
+ pMonTmpWidget[1]->setLayout(pConteneur[1]);
+ pMonTmpWidget[2]->setLayout(pConteneur[2]);
+ pMonTmpWidget[3]->setLayout(pConteneur[3]);
+
+ tab_Top->addTab(pMonTmpWidget[0],tr("Zones"));
+ tab_Top->addTab(pMonTmpWidget[1],tr("Barycentre"));
+ tab_Top->addTab(pMonTmpWidget[2],tr("Combinaisons"));
+ tab_Top->addTab(pMonTmpWidget[3],tr("Groupes"));
+
+ QGridLayout *tmp_layout = new QGridLayout;
+ int i = 0;
+
+ QString msg = QString("Selection : %1 sur %2");
+ QString s_sel = QString::number(0).rightJustified(2,'0');
+ QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
+ msg = msg.arg(s_sel).arg(s_max);
+
+ LabelClickable *tmp_lab = c1->getLabPriority();
+ tmp_lab->setText(msg);
+
+ tmp_layout->addWidget(tmp_lab,i,0);
+ i++;
+ tmp_layout->addWidget(tab_Top,i,0);
+
+ /*
+    QString clef[]={"Z:","C:","G:"};
+    int i = 0;
+    for(i; i< 3; i++)
+    {
+        selection[i].setText(clef[i]+"aucun");
+        tmp_layout->addWidget(&selection[i],i,0);
+    }
+*/
+
+#if 0
+    connect( selection, SIGNAL( clicked(QString)) ,
+             this, SLOT( slot_RazSelection(QString) ) );
+#endif
+
+
+
+ /// ----------------
+ Resultats->setLayout(tmp_layout);
+ Resultats->setWindowTitle(source);
+ Resultats->show();
+#endif //1
 }
 
 bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName)

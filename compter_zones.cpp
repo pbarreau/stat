@@ -24,6 +24,7 @@
 
 int BCountElem::total = 1;
 
+
 int BCountElem::getCounter(void)
 {
     return total;
@@ -32,6 +33,189 @@ int BCountElem::getCounter(void)
 BCountElem::~BCountElem()
 {
     total --;
+}
+
+BCountElem::BCountElem(const stGameConf *pGame):BCount(pGame,eCountElm)
+{
+ addr = nullptr;
+
+ QString cnx=pGame->db_ref->cnx;
+ QString tbl_tirages = pGame->db_ref->fdj;
+
+ // Etablir connexion a la base
+ db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+ addr=this; /// memo de cet objet
+ //creationTables(pGame);
+}
+
+QString BCountElem::getType()
+{
+ return label[type];
+}
+
+QTabWidget * BCountElem::creationTables(const stGameConf *pGame)
+{
+ QTabWidget *tab_Top = new QTabWidget(this);
+
+ int nb_zones = pGame->znCount;
+
+
+ QWidget *(BCountElem::*ptrFunc[])(const stGameConf *pGame,int zn) =
+  {
+   &BCountElem::fn_Count,
+   &BCountElem::fn_Count
+  };
+
+ for(int i = 0; i< nb_zones; i++)
+ {
+  QString name = pGame->names[i].abv;
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, i);
+  if(calcul != nullptr){
+   tab_Top->addTab(calcul, name);
+  }
+ }
+ return tab_Top;
+}
+
+QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
+{
+ QWidget * wdg_tmp = new QWidget;
+ QGridLayout *glay_tmp = new QGridLayout;
+ QTableView *qtv_tmp = new QTableView;
+
+ QString dstTbl = "r_"
+                  +pGame->db_ref->fdj
+                  +"_"+label[type]
+                  +"_z"+QString::number(zn+1);
+
+ /// Verifier si table existe deja
+ QString cnx = pGame->db_ref->cnx;
+ if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
+  /// Creation de la table avec les resultats
+  QString sql_msg = sql_MkCountElm(pGame, zn);
+  QString msg = "create table if not exists "
+                + dstTbl + " as "
+                + sql_msg;
+  QSqlQuery query(db_1);
+  bool isOk = query.exec(msg);
+
+	if(isOk == false){
+	 DB_Tools::DisplayError("BCountElem::fn_Count", &query, msg);
+	 delete wdg_tmp;
+	 delete glay_tmp;
+	 delete qtv_tmp;
+	 return nullptr;
+	}
+ }
+
+ QString sql_msg = "select * from "+dstTbl;
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+
+ sqm_tmp->setQuery(sql_msg, db_1);
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+ QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+
+ BDelegateElmOrCmb::stPrmDlgt a;
+ a.parent = qtv_tmp;
+ a.db_cnx = cnx;
+ a.zne=zn;
+ a.typ=0; ///Position de l'onglet qui va recevoir le tableau
+ qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
+
+ //qtv_tmp->verticalHeader()->hide();
+ qtv_tmp->hideColumn(0);
+ qtv_tmp->setSortingEnabled(true);
+ qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+
+
+ //largeur des colonnes
+ qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ int nbCol = sqm_tmp->columnCount();
+ for(int pos=0;pos<nbCol;pos++)
+ {
+  qtv_tmp->setColumnWidth(pos,35);
+ }
+ int l = (35+0.2) * nbCol;
+ qtv_tmp->setFixedWidth(l);
+
+ qtv_tmp->setFixedHeight(200);
+ //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+ //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+ // positionner le tableau
+ glay_tmp->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+ wdg_tmp->setLayout(glay_tmp);
+ return wdg_tmp;
+}
+
+QString BCountElem::sql_MkCountElm(const stGameConf *pGame, int zn)
+{
+ /* exemple requete :
+  *
+  * with tbResultat as (select cast(row_number() over ()as int) as id,
+  * cast(t1.z1 as int) as R,
+  * cast (count(t1.z1) as int) as T,
+  * cast (count(CASE WHEN  t2.J like 'lundi%' then 1 end) as int) as LUN
+  * from B_elm as t1
+  * LEFT join B_fdj as t2
+  * where
+  * (
+  * t1.z1 in(t2.b1,t2.b2,t2.b3,t2.b4,t2.b5)
+  * ) group by t1.z1 order by t1.id asc)
+  *
+  * SELECT t1.* from tbResultat as t1
+  *
+  */
+ QString st_sql="";
+
+ QString key = "t1.z"+QString::number(zn+1);
+ QString ref = "t2."+pGame->names[zn].abv+"%1";
+
+ int max = pGame->limites[zn].len;
+ QString st_cols = "";
+ for (int i=0;i<max;i++) {
+  st_cols = st_cols + ref.arg(i+1);
+  if(i<max-1){
+   st_cols=st_cols+",";
+  }
+ }
+
+ QString tbl_tirages = pGame->db_ref->fdj;
+ st_sql= "with tbResultat as (select cast(row_number() over ()as int) as id,"
+          "cast ("+key
+          +" as int) as R, cast (count("
+          +key
+          +") as int) as T "
+          + db_jours
+          +" from B_elm as t1 LEFT join ("
+          +tbl_tirages
+          +") as t2  where("
+          +key
+          +" in("
+          +st_cols
+          +")) group by "
+          +key
+          +" order by t1.id asc) SELECT t1.* from (tbResultat) as t1";
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<st_sql;
+#endif
+
+ return st_sql;
+
 }
 
 BCountElem::BCountElem(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent)
@@ -228,7 +412,7 @@ void BCountElem::slot_RequeteFromSelection(const QModelIndex &index)
     QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
 
     ///parcourir tous les onglets
-    sqlReq = db_data;
+    sqlReq = st_LstTirages;
     int nb_item = curOnglet->count();
     for(int onglet = 0; onglet<nb_item;onglet++)
     {
@@ -266,7 +450,7 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 
 		/// verifier si table reponse presente
 		QString viewName = "r_"
-											 +db_data
+											 +st_LstTirages
 											 +"_"+label[type]
 											 +"_z"+QString::number(zn+1);
 
@@ -379,7 +563,7 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     BSqmColorizePriority *sqm_tmp = &sqmZones[zn];
 
 
-    QString ReqTirages = db_data;
+    QString ReqTirages = st_LstTirages;
     QString sql_msgRef = PBAR_ReqComptage(ReqTirages, zn, 0);
 #ifndef QT_NO_DEBUG
     qDebug() << "SQL:"<<sql_msgRef;
@@ -471,7 +655,7 @@ void BCountElem::marquerDerniers_tir(int zn){
   int val = 1<<dec;
   QString sdec = QString::number(val);
   QString msg []={
-   {"SELECT "+st_critere+" from ("+db_data
+   {"SELECT "+st_critere+" from ("+st_LstTirages
     +") as t2 where(id = "+sdec+")"
    },
    {
@@ -557,7 +741,7 @@ QString BCountElem::getFilteringData(int zn)
         msg="";
         QString key_to_use = myGame.names[zn].abv;
 
-        if(db_data.contains("Cnp")){
+        if(st_LstTirages.contains("Cnp")){
          key_to_use="c";
         }
         /// requete a ete execute

@@ -23,6 +23,17 @@ BCountGroup::~BCountGroup()
  total --;
 }
 
+QString BCountGroup::getType()
+{
+ return label[type];
+}
+
+QTabWidget * BCountGroup::creationTables(const stGameConf *pGame)
+{
+ QTabWidget *tab_Top = new QTabWidget(this);
+ return tab_Top;
+}
+
 BCountGroup::BCountGroup(const stGameConf &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountGrp)
 {
@@ -343,7 +354,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
   TblCompact = T_GRP;
  }
  else{
-  TblCompact = "r_"+db_data+"_ana_grp";
+  TblCompact = "r_"+st_LstTirages+"_ana_grp";
  }
 
 #if 0
@@ -635,7 +646,7 @@ void BCountGroup::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tm
 	// Creer Requete pour compter items
 	QString msg1 = maRef[zn][0].at(j);
 	QString sqlReq = "";
-	sqlReq = CriteresAppliquer(db_data,msg1,zn);
+	sqlReq = CriteresAppliquer(st_LstTirages,msg1,zn);
 
 #ifndef QT_NO_DEBUG
 	qDebug() << sqlReq;
@@ -733,7 +744,7 @@ void BCountGroup::slot_DecodeTirage(const QModelIndex & index)
    // Creer Requete pour compter items
    QString msg1 = maRef[zn][0].at(j);
    QString sqlReq = "";
-   sqlReq = sql_ComptePourUnTirage(lgn,db_data,msg1,zn);
+   sqlReq = sql_ComptePourUnTirage(lgn,st_LstTirages,msg1,zn);
 
 #ifndef QT_NO_DEBUG
    qDebug() << sqlReq;
@@ -1008,7 +1019,7 @@ void BCountGroup::slot_RequeteFromSelection(const QModelIndex &index)
 
  /// il y a t'il une selection
  ///parcourir tous les onglets
- sqlReq = db_data;
+ sqlReq = st_LstTirages;
  int nb_item = curOnglet->count();
  for(int onglet = 0; onglet<nb_item;onglet++)
  {

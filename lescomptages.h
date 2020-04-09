@@ -106,7 +106,7 @@ class BPrevision:public QGridLayout
 
  /// in : infos representant les tirages
  public:
- BPrevision(stPrmPrevision *prm);
+ BPrevision(stGameConf *pGame, stPrmPrevision *prm);
  ~BPrevision();
  CBaryCentre* getC0();
  BCountElem* getC1();
@@ -129,7 +129,7 @@ class BPrevision:public QGridLayout
  bool isTableCnpinDb(int n, int p);
  bool LireLesTirages(QString tblName, stFdjData *def);
  bool OPtimiseAccesBase(void);
- bool ouvrirBase(etDbPlace cible, etFdjType game);
+ bool ouvrirBase(stGameConf *pGame, etDbPlace cible);
  bool SupprimerVueIntermediaires(void);
  bool TraitementCodeTblCombi(QString tbName,int zn);
  bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
@@ -188,6 +188,7 @@ class BPrevision:public QGridLayout
  QString titre[3];
  QStringList **slFlt;    /// zn_filters
  static int total_items;
+ stGameConf *pGame;
  stGameConf onGame;           /// parametres du jeu pour statistique globale
  stPrmPrevision conf;
  stPrmPrevision monJeu;     /// parametres pour filtration

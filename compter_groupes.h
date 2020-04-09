@@ -62,6 +62,9 @@ private:
     bool updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn);
 
 
+		private:
+		virtual QString getType();
+		virtual  QTabWidget *creationTables(const stGameConf *pGame);
 
 };
 

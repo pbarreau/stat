@@ -48,96 +48,104 @@
 /// -------ENUM---------
 
 typedef enum{
-    eCountToSet,    /// Pas de definition
-    eCountElm,      /// Comptage des boules de zones
-    eCountCmb,      /// ... des combinaisons
-    eCountGrp,       /// ... des regroupements
-    eCountBrc,      /// ... des barycentres
-    eCountEnd
+ eCountToSet,    /// Pas de definition
+ eCountElm,      /// Comptage des boules de zones
+ eCountCmb,      /// ... des combinaisons
+ eCountGrp,       /// ... des regroupements
+ eCountBrc,      /// ... des barycentres
+ eCountEnd
 }eCountingType;
 
 typedef struct _B_RequeteFromTbv
 {
-    QString db_data;    /// requete pour la base de donnees
-    QString tb_data;    /// titre de cette requete
+ QString db_data;    /// requete pour la base de donnees
+ QString tb_data;    /// titre de cette requete
 }B_RequeteFromTbv;
 
 typedef struct _BRunningQuery
 {
-    eCountingType key;  /// type element de la liste
-    int pos;            /// id dans la fille
-    int size;           /// nb de zone
-    QSqlQueryModel *sqmDef; /// info sur requete de zone
+ eCountingType key;  /// type element de la liste
+ int pos;            /// id dans la fille
+ int size;           /// nb de zone
+ QSqlQueryModel *sqmDef; /// info sur requete de zone
 }BRunningQuery;
 
 typedef struct _prmbary stNeedsOfBary;
 
 class BCount:public QWidget
 {
-    Q_OBJECT
-public:
-    BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb);
-    BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
-           QWidget *unParent, eCountingType genre);
-    BCount(const stNeedsOfBary &param){Q_UNUSED(param)}
+ Q_OBJECT
+ public:
+ BCount(const stGameConf *pGame, eCountingType genre);
+ BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb);
+ BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
+        QWidget *unParent, eCountingType genre);
+ BCount(const stNeedsOfBary &param){Q_UNUSED(param)}
 
-protected:
-    virtual QGridLayout *Compter(QString * pName, int zn)=0;
-    QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
-    QString CriteresCreer(QString operateur, QString critere,int zone);
-    void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
-    bool VerifierValeur(int item, QString table,int idColValue,int *lev);
-    //QMenu *ContruireMenu(QTableView *view, int val);
-    QMenu *mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
-    bool showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
-    //void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
-    QString CreerCritereJours(QString cnx_db_name, QString tbl_ref);
-    QString FN1_getFieldsFromZone(int zn, QString alias="");
+ public:
+ virtual QString getType()= 0;
+ virtual QTabWidget *creationTables(const stGameConf *pGame) = 0;
 
 
-private:
-    void RecupererConfiguration(void);
-    bool setUnifiedPriority(QString szn, QString sprio);
+ protected:
+ virtual QGridLayout *Compter(QString * pName, int zn)=0;
+
+ QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
+ QString CriteresCreer(QString operateur, QString critere,int zone);
+ void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
+ bool VerifierValeur(int item, QString table,int idColValue,int *lev);
+ //QMenu *ContruireMenu(QTableView *view, int val);
+ QMenu *mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
+ bool showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
+ //void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
+ QString CreerCritereJours(QString cnx_db_name, QString tbl_ref);
+ QString FN1_getFieldsFromZone(int zn, QString alias="");
 
 
-
-public :
-    B_RequeteFromTbv a;
-
-protected:
-    QString db_data;    /// information de tous les tirages
-    QSqlDatabase dbToUse;
-    stGameConf myGame;
-    int *memo;  /// A deplacer :
-    eCountingType type; /// type de comptage en cours
-    static QString label[]; /// nom associe aux types
-    int countId;
-    int curZn;          /// zone en cours
-    QString unNom;  /// Pour Tracer les requetes sql
-    QString db_jours;   /// information des jours de tirages
-    QModelIndexList *lesSelections; /// liste des selections dans les tableaux
-    QString *sqlSelection;  /// code sql generee pour un tableau
-    static QList<BRunningQuery *> sqmActive[3];
-    BSqmColorizePriority *sqmZones; /// pour mettre a jour le tableau des resultats
-    LabelClickable selection[3];
-
-
-private:
-    static int nbChild;
-    bool setPriorityToAll;
-
-protected slots:
-    void slot_AideToolTip(const QModelIndex & index);
-    void slot_ClicDeSelectionTableau(const QModelIndex &index);
-    void slot_ccmr_SetPriorityAndFilters(QPoint pos);
-    void slot_ChoosePriority(QAction *cmd);
-    void slot_wdaFilter(bool val);
+ private:
+ void RecupererConfiguration(void);
+ bool setUnifiedPriority(QString szn, QString sprio);
 
 
 
-Q_SIGNALS:
-    void sig_TitleReady(const QString &title);
-    void sig_ComptageReady(const B_RequeteFromTbv &my_answer);
+ public :
+ B_RequeteFromTbv a;
+
+ protected:
+ static QString label[]; /// nom associe aux types
+ eCountingType type; /// type de comptage en cours
+ QString st_LstTirages;    /// information de tous les tirages
+ QSqlDatabase dbToUse;
+ QString db_jours;   /// information des jours de tirages
+
+ stGameConf myGame;
+ int *memo;  /// A deplacer :
+ int countId;
+ int curZn;          /// zone en cours
+ QString unNom;  /// Pour Tracer les requetes sql
+ QModelIndexList *lesSelections; /// liste des selections dans les tableaux
+ QString *sqlSelection;  /// code sql generee pour un tableau
+ static QList<BRunningQuery *> sqmActive[3];
+ BSqmColorizePriority *sqmZones; /// pour mettre a jour le tableau des resultats
+ LabelClickable selection[3];
+
+
+ private:
+ static int nbChild;
+ bool setPriorityToAll;
+
+ protected slots:
+ void slot_AideToolTip(const QModelIndex & index);
+ void slot_ClicDeSelectionTableau(const QModelIndex &index);
+ void slot_ccmr_SetPriorityAndFilters(QPoint pos);
+ void slot_ChoosePriority(QAction *cmd);
+ void slot_wdaFilter(bool val);
+
+
+
+ Q_SIGNALS:
+ void sig_TitleReady(const QString &title);
+ void sig_ComptageReady(const B_RequeteFromTbv &my_answer);
 
 };
 

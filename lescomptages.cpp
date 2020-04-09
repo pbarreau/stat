@@ -60,24 +60,19 @@ void BPrevision::slot_changerTitreZone(QString le_titre)
  //selection[0].setText("Z:"+le_titre);
 }
 
-BPrevision::BPrevision(stPrmPrevision *prm)
+BPrevision::BPrevision(stGameConf *pGame, stPrmPrevision *prm)
 {
  cur_item = total_items;
  total_items++;
  conf = *prm;
 
  onGame = conf.gameInfo;
- //lstTirGen = new QPair<QString, BGrbGenTirages*>; //new QList<QPair<QString, BGrbGenTirages*>>;
 
- //cFdjData *monJeu = new cFdjData (eFdjLoto);
-
-#if 0
- if(ouvrirBase(prm->bddStore,prm->gameInfo.eFdjType)==true)
+ if(ouvrirBase(pGame, prm->bddStore)==true)
  {
-  effectuerTraitement(prm->gameInfo.eFdjType);
+  effectuerTraitement(pGame->eFdjType);
   //dbInUse.close();
  }
-#endif
 }
 
 #if 0
@@ -148,8 +143,11 @@ QString BPrevision::mk_IdCnx(etFdjType type, etDbUsage eDbUsage)
  return (msg);
 }
 
-bool BPrevision::ouvrirBase(etDbPlace cible, etFdjType game)
+bool BPrevision::ouvrirBase(stGameConf *pConf, etDbPlace cible)
 {
+ ;
+ etFdjType game = pConf->eFdjType;
+
  bool isOk = true;
 
  cnx_db_1 = mk_IdCnx(game,eDbForFdj);

@@ -38,6 +38,10 @@ private:
     void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
     QString ConstruireCriteres(int zn);
 
+		private:
+		virtual QString getType();
+		virtual  QTabWidget *creationTables(const stGameConf *pGame);
+
 
 };
 

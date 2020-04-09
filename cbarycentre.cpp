@@ -37,7 +37,7 @@ CBaryCentre::CBaryCentre(const stNeedsOfBary &param)
  dbToUse = db_1;
  //src_tbl = param.tbl_in;
  QString src_data = param.tbl_in;
- db_data = src_data;
+ st_LstTirages = src_data;
 
  tbl_src = src_data;
  tbl_ana = param.tbl_ana;

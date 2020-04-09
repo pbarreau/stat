@@ -24,6 +24,17 @@ BCountComb::~BCountComb()
  total --;
 }
 
+QString BCountComb::getType()
+{
+ return label[type];
+}
+
+QTabWidget * BCountComb::creationTables(const stGameConf *pGame)
+{
+ QTabWidget *tab_Top = new QTabWidget(this);
+ return tab_Top;
+}
+
 BCountComb::BCountComb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountCmb)
 {
@@ -190,7 +201,7 @@ void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
  QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
 
  ///parcourir tous les onglets
- sqlReq = db_data;
+ sqlReq = st_LstTirages;
  int nb_item = curOnglet->count();
  for(int onglet = 0; onglet<nb_item;onglet++)
  {
@@ -225,7 +236,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
 
  /// verifier si table reponse presente
  QString viewName = "r_"
-                    +db_data
+                    +st_LstTirages
                     +"_"+label[type]
                     +"_z"+QString::number(zn+1);
 
@@ -366,7 +377,7 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
 
  QSqlQueryModel *sqm_tmp = &sqmZones[zn];
 
- QString st_msg1 = RequetePourTrouverTotal_z1(db_data,zn,0);
+ QString st_msg1 = RequetePourTrouverTotal_z1(st_LstTirages,zn,0);
 
  sqm_tmp->setQuery(st_msg1,dbToUse);
 
