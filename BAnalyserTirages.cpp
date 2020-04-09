@@ -302,12 +302,15 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 	{
 	 /// Dans le cas zone etoiles prendre la valeur directe
 	 QString colName = slst[1].at(loop);
+	 QString ColType = "int";
+
+
 	 if(zn==1 && colName.contains("U")&&colId<znLen){
 		colId++;
 		msg = "create " + curTarget
 					+" as select "+curTitle+", tbRight."
 					+key_abv+QString::number(colId)+" as "
-					+ slst[1].at(loop)
+					+ colName
 					+" from("+curName+")as tbLeft "
 					+"left join ( "
 					+tbName+") as tbRight  on (tbRight.id = tbLeft.id)";
@@ -315,10 +318,17 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 	 }
 	 else{
 		if(slst[2].at(loop).compare("special")==0){
+		 if(slst[1].at(loop).contains(',') == true){
+			QStringList def = slst[1].at(loop).split(",");
+			if(def.size()>1){
+			 colName = def[0];
+			 ColType = def[1];
+			}
+		 }
 		 msg = "create " + curTarget
 					 +" as select "+curTitle+", tbRight."
-					 + slst[1].at(loop) + " as "
-					 + slst[1].at(loop)
+					 + colName + " as "
+					 + colName
 					 + " from("+curName+")as tbLeft "
 					 + "left join ("+slst[0].at(loop)
 					 +") as tbRight on (tbRight.id=tbLeft.id)";
@@ -349,8 +359,8 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 
 	 curName = "vt_" +  QString::number(loop);
 	 lastTitle = lastTitle
-							 + "cast(tbLeft."+slst[1].at(loop)
-							 +" as int) as "+slst[1].at(loop);
+							 + "cast(tbLeft."+colName
+							 +" as "+ColType+") as "+colName;
 	 loop++;
 	 if(loop  < nbTot)
 	 {
@@ -473,7 +483,7 @@ QStringList* BAnalyserTirages::CreateFilterForData(stGameConf *pGame, QString tb
  // Indication de Barycentre
  sql_code = sqlMkAnaBrc(pGame, tbl_tirages, zn);
  sl_filter[0]<< sql_code;
- sl_filter[1] << "bc";
+ sl_filter[1] << "bc,real";
  sl_filter[2] << "special";
 
  // Indication de Combinaison

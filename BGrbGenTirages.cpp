@@ -27,6 +27,11 @@
 
 #define CEL2_L 40
 
+/// https://stackoverflow.com/questions/25706408/how-to-get-the-count-of-rows
+/// https://doc.qt.io/archives/qt-4.8/model-view-programming.html#model-headers-and-data
+/// https://www.tutorialspoint.com/sqlite/sqlite_data_types.htm
+/// https://www.promepar.fr/analyses/
+///
 int BGrbGenTirages::total = 1;
 QList<QPair<QString, BGrbGenTirages*>*> *BGrbGenTirages::lstGenTir = nullptr;
 
