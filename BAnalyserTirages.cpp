@@ -15,6 +15,7 @@
 
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
+#include "compter_barycentre.h"
 #include "compter_groupes.h"
 
 BAnalyserTirages::BAnalyserTirages(stGameConf *pGame)
@@ -123,9 +124,13 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
 
  QTabWidget *tab_Top = new QTabWidget;
 
- BCountElem * tmpElm = new BCountElem(pGame);
+ BCountElem * item_1 = new BCountElem(pGame);
+ BCountComb * item_2 = new BCountComb(pGame);
+ BCountBrc * item_3 = new BCountBrc(pGame);
 
- lstComptage.append(tmpElm);
+ lstComptage.append(item_1);
+ lstComptage.append(item_2);
+ lstComptage.append(item_3);
 
  int nb_item = lstComptage.size();
  for(int i = 0; i< nb_item; i++)

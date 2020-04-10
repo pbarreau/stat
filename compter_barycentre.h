@@ -23,11 +23,13 @@ typedef struct _prmbary{
 }stNeedsOfBary;
 
 
-class CBaryCentre:public BCount
+class BCountBrc:public BCount
 {
  Q_OBJECT
  public:
- CBaryCentre(const stNeedsOfBary &param);
+ BCountBrc(const stGameConf *pDef);
+
+ BCountBrc(const stNeedsOfBary &param);
  QString getFilteringData(int zn);
 
  private:
@@ -40,8 +42,20 @@ class CBaryCentre:public BCount
  QGridLayout *Compter(QString * pName, int zn);
 
  private:
- static int total;
+ QWidget *fn_Count(const stGameConf *pGame, int zn);
+ QString sql_MkCountItems(const stGameConf *pGame, int zn);
+
+ private:
+ virtual QString getType();
+ virtual  QTabWidget *creationTables(const stGameConf *pGame);
+
+
+ private:
+ BCountBrc * addr;
  QSqlDatabase db_1;
+
+ private:
+ static int total;
  QString tbl_src;
  QString tbl_ana;
  QString tbl_flt;

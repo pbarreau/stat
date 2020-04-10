@@ -17,6 +17,7 @@
 #include "db_tools.h"
 
 QString BCount::label[eCountEnd]={"err","elm","cmb","grp","brc"};
+QString BCount::onglet[eCountEnd]={"Erreur","Zones","Combinaisons","Groupes","Barycentres"};
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
 

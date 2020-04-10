@@ -20,12 +20,210 @@
 
 #include "db_tools.h"
 #include "compter.h"
-#include "cbarycentre.h"
+#include "compter_barycentre.h"
 #include "delegate.h"
 
-int CBaryCentre::total = 0;
+int BCountBrc::total = 0;
 
-CBaryCentre::CBaryCentre(const stNeedsOfBary &param)
+BCountBrc::BCountBrc(const stGameConf *pGame):BCount(pGame,eCountBrc)
+{
+ addr = nullptr;
+
+ QString cnx=pGame->db_ref->cnx;
+ QString tbl_tirages = pGame->db_ref->fdj;
+
+ // Etablir connexion a la base
+ db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+ addr=this; /// memo de cet objet
+ //creationTables(pGame);
+}
+
+QString BCountBrc::getType()
+{
+ return onglet[type];
+}
+
+QTabWidget * BCountBrc::creationTables(const stGameConf *pGame)
+{
+ QTabWidget *tab_Top = new QTabWidget(this);
+
+ int nb_zones = pGame->znCount;
+
+
+ QWidget *(BCountBrc::*ptrFunc[])(const stGameConf *pGame,int zn) =
+  {
+   &BCountBrc::fn_Count,
+   &BCountBrc::fn_Count
+  };
+
+ for(int i = 0; i< nb_zones; i++)
+ {
+  QString name = pGame->names[i].abv;
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, i);
+  if(calcul != nullptr){
+   tab_Top->addTab(calcul, name);
+  }
+ }
+ return tab_Top;
+}
+
+QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
+{
+ QWidget * wdg_tmp = new QWidget;
+ QGridLayout *glay_tmp = new QGridLayout;
+ QTableView *qtv_tmp = new QTableView;
+
+ QString dstTbl = "r_"
+                  +pGame->db_ref->fdj
+                  +"_"+label[type]
+                  +"_z"+QString::number(zn+1);
+
+ /// Verifier si table existe deja
+ QString cnx = pGame->db_ref->cnx;
+ if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
+  /// Creation de la table avec les resultats
+  QString sql_msg = sql_MkCountItems(pGame, zn);
+  QString msg = "create table if not exists "
+                + dstTbl + " as "
+                + sql_msg;
+  QSqlQuery query(db_1);
+  bool isOk = query.exec(msg);
+
+	if(isOk == false){
+	 DB_Tools::DisplayError("BCountElem::fn_Count", &query, msg);
+	 delete wdg_tmp;
+	 delete glay_tmp;
+	 delete qtv_tmp;
+	 return nullptr;
+	}
+ }
+
+ QString sql_msg = "select * from "+dstTbl;
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+
+ sqm_tmp->setQuery(sql_msg, db_1);
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+ QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+
+ BDelegateElmOrCmb::stPrmDlgt a;
+ a.parent = qtv_tmp;
+ a.db_cnx = cnx;
+ a.zne=zn;
+ a.typ=0; ///Position de l'onglet qui va recevoir le tableau
+ qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
+
+ qtv_tmp->verticalHeader()->hide();
+ qtv_tmp->hideColumn(0);
+ qtv_tmp->setSortingEnabled(true);
+ qtv_tmp->sortByColumn(2,Qt::DescendingOrder);
+
+
+ //largeur des colonnes
+ qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ int nbCol = sqm_tmp->columnCount();
+ for(int pos=0;pos<nbCol;pos++)
+ {
+  qtv_tmp->setColumnWidth(pos,35);
+ }
+ int l = (35+0.2) * nbCol;
+ qtv_tmp->setFixedWidth(l);
+
+ qtv_tmp->setFixedHeight(200);
+ //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+ //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+ // positionner le tableau
+ glay_tmp->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+ wdg_tmp->setLayout(glay_tmp);
+ return wdg_tmp;
+}
+
+QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
+{
+ /* exemple requete :
+  *
+  * with tbBrc as
+  * (
+  * select cast(row_number() over ()as int) as id,
+  * cast(t1.bc as real) as bc
+  * from B_ana_z1 as t1
+  * group by bc order by bc asc
+  * ),
+  * tbCal as
+  * (
+  * select
+  * cast(t1.id as int)as Id,
+  * cast(t1.bc as real) as R,
+  * cast(count(t2.id) as int) as T,
+  * cast (count(CASE WHEN  J like 'lundi%' then 1 end) as int) as LUN
+  * from tbBrc as t1, B_ana_z1 as t2, B_fdj as t3
+  * where
+  * (
+  * (t2.bc = t1.bc) AND
+  * (t2.id = t3.id)
+  * ) group by t1.id order by T desc)
+  *
+  * select t1.* from (tbCal) as t1
+  */
+ QString st_sql="";
+
+ QString key = "bc";
+ QString ref = "t2."+pGame->names[zn].abv+"%1";
+
+ int max = pGame->limites[zn].len;
+ QString st_cols = "";
+ for (int i=0;i<max;i++) {
+  st_cols = st_cols + ref.arg(i+1);
+  if(i<max-1){
+   st_cols=st_cols+",";
+  }
+ }
+
+ QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  tbl_tirages="B";
+  tbl_key="_fdj";
+ }
+
+ st_sql= "with tbBrc as (select cast(row_number() over ()as int) as id,"
+          "cast (t1.bc as real) as bc from ("+tbl_tirages
+          +"_ana_z"+QString::number(zn+1)
+          +") as t1 "
+            "group by bc order by bc asc),"
+            "tbCal as (select cast(t1.id as int)as Id,"
+            "cast(t1.bc as real) as R,cast(count(t2.id) as int) as T"
+          +db_jours
+          +" from (tbBrc) as t1, ("+tbl_tirages
+          +"_ana_z"+QString::number(zn+1)
+          +") as t2, ("
+          +tbl_tirages+tbl_key
+          +") as t3 where((t2.bc = t1.bc) AND (t2.id = t3.id))"
+            "group by t1.id order by T desc)"
+            " select t1.* from (tbCal) as t1";
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<st_sql;
+#endif
+
+ return st_sql;
+
+}
+
+BCountBrc::BCountBrc(const stNeedsOfBary &param)
     :BCount(param)
 {
  type = eCountBrc;
@@ -46,10 +244,10 @@ CBaryCentre::CBaryCentre(const stNeedsOfBary &param)
 
  hc_RechercheBarycentre(param.tbl_in);
 
- QGridLayout *(CBaryCentre::*ptrFunc[])(QString) ={
-  &CBaryCentre::AssocierTableau,
-  &CBaryCentre::AssocierTableau,
-  &CBaryCentre::AssocierTableau
+ QGridLayout *(BCountBrc::*ptrFunc[])(QString) ={
+  &BCountBrc::AssocierTableau,
+  &BCountBrc::AssocierTableau,
+  &BCountBrc::AssocierTableau
  };
  //int calc = sizeof (ptrFunc)/sizeof(void *);
 
@@ -64,7 +262,7 @@ CBaryCentre::CBaryCentre(const stNeedsOfBary &param)
 
 }
 
-QGridLayout *CBaryCentre::Compter(QString * pName, int zn)
+QGridLayout *BCountBrc::Compter(QString * pName, int zn)
 {
  Q_UNUSED(pName);
  Q_UNUSED(zn);
@@ -76,7 +274,7 @@ QGridLayout *CBaryCentre::Compter(QString * pName, int zn)
  return lay_return;
 }
 
-QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
+QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
 {
  QGridLayout *lay_return = new QGridLayout;
  QTableView *qtv_tmp = new QTableView;
@@ -141,7 +339,7 @@ QGridLayout *CBaryCentre::AssocierTableau(QString src_tbl)
 
 }
 
-void CBaryCentre::marquerDerniers_bar(int zn){
+void BCountBrc::marquerDerniers_bar(int zn){
  bool isOk = true;
  QSqlQuery query(dbToUse);
  QSqlQuery query_2(dbToUse);
@@ -192,7 +390,7 @@ void CBaryCentre::marquerDerniers_bar(int zn){
  }
 }
 
-void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
+void BCountBrc::hc_RechercheBarycentre(QString tbl_in)
 {
  QSqlQuery query(db_1);
  bool isOk = true;
@@ -318,7 +516,7 @@ void CBaryCentre::hc_RechercheBarycentre(QString tbl_in)
  }
 }
 
-bool CBaryCentre::repereDernier(QString tbl_bary)
+bool BCountBrc::repereDernier(QString tbl_bary)
 {
  bool isOK = true;
 #if 0
@@ -351,12 +549,12 @@ bool CBaryCentre::repereDernier(QString tbl_bary)
  return isOK;
 }
 
-bool CBaryCentre::isTableTotalBoulleReady(QString tbl_total)
+bool BCountBrc::isTableTotalBoulleReady(QString tbl_total)
 {
  return true;
 }
 
-bool CBaryCentre::mettreBarycentre(QString tbl_dst, QString src_data)
+bool BCountBrc::mettreBarycentre(QString tbl_dst, QString src_data)
 {
  bool isOK = true;
  QSqlQuery query(db_1);
@@ -388,7 +586,7 @@ bool CBaryCentre::mettreBarycentre(QString tbl_dst, QString src_data)
  return isOK;
 }
 
-QString CBaryCentre::getFilteringData(int zn)
+QString BCountBrc::getFilteringData(int zn)
 {
 #if 0
     QString msg = "select tbLeft.* from ("+tbl_src+") as tbLeft "

@@ -32,7 +32,7 @@
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
-#include "cbarycentre.h"
+#include "compter_barycentre.h"
 
 #include "labelclickable.h"
 
@@ -1528,7 +1528,7 @@ void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const stGa
  Resultats->show();
 }
 
-CBaryCentre* BPrevision::getC0()
+BCountBrc* BPrevision::getC0()
 {
  return c;
 }

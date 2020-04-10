@@ -113,6 +113,7 @@ class BCount:public QWidget
 
  protected:
  static QString label[]; /// nom associe aux types
+ static QString onglet[]; /// nom associe aux types
  eCountingType type; /// type de comptage en cours
  QString st_LstTirages;    /// information de tous les tirages
  QSqlDatabase dbToUse;

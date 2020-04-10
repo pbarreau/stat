@@ -25,7 +25,7 @@ BCountGroup::~BCountGroup()
 
 QString BCountGroup::getType()
 {
- return label[type];
+ return onglet[type];
 }
 
 QTabWidget * BCountGroup::creationTables(const stGameConf *pGame)

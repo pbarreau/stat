@@ -24,15 +24,201 @@ BCountComb::~BCountComb()
  total --;
 }
 
+BCountComb::BCountComb(const stGameConf *pGame):BCount(pGame,eCountCmb)
+{
+ addr = nullptr;
+
+ QString cnx=pGame->db_ref->cnx;
+ QString tbl_tirages = pGame->db_ref->fdj;
+
+ // Etablir connexion a la base
+ db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+ addr=this; /// memo de cet objet
+ //creationTables(pGame);
+}
+
 QString BCountComb::getType()
 {
- return label[type];
+ return onglet[type];
 }
 
 QTabWidget * BCountComb::creationTables(const stGameConf *pGame)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
+
+ int nb_zones = pGame->znCount;
+
+
+ QWidget *(BCountComb::*ptrFunc[])(const stGameConf *pGame,int zn) =
+  {
+   &BCountComb::fn_Count,
+   &BCountComb::fn_Count
+  };
+
+ for(int i = 0; i< nb_zones; i++)
+ {
+  QString name = pGame->names[i].abv;
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, i);
+  if(calcul != nullptr){
+   tab_Top->addTab(calcul, name);
+  }
+ }
  return tab_Top;
+}
+
+QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
+{
+ QWidget * wdg_tmp = new QWidget;
+ QGridLayout *glay_tmp = new QGridLayout;
+ QTableView *qtv_tmp = new QTableView;
+
+ QString dstTbl = "r_"
+                  +pGame->db_ref->fdj
+                  +"_"+label[type]
+                  +"_z"+QString::number(zn+1);
+
+ /// Verifier si table existe deja
+ QString cnx = pGame->db_ref->cnx;
+ if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
+  /// Creation de la table avec les resultats
+  QString sql_msg = sql_MkCountItems(pGame, zn);
+  QString msg = "create table if not exists "
+                + dstTbl + " as "
+                + sql_msg;
+  QSqlQuery query(db_1);
+  bool isOk = query.exec(msg);
+
+	if(isOk == false){
+	 DB_Tools::DisplayError("BCountComb::fn_Count", &query, msg);
+	 delete wdg_tmp;
+	 delete glay_tmp;
+	 delete qtv_tmp;
+	 return nullptr;
+	}
+ }
+
+ QString sql_msg = "select * from "+dstTbl;
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+
+ sqm_tmp->setQuery(sql_msg, db_1);
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+ QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+
+ BDelegateElmOrCmb::stPrmDlgt a;
+ a.parent = qtv_tmp;
+ a.db_cnx = cnx;
+ a.zne=zn;
+ a.typ=0; ///Position de l'onglet qui va recevoir le tableau
+ qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
+
+ qtv_tmp->verticalHeader()->hide();
+ qtv_tmp->hideColumn(0);
+ qtv_tmp->setSortingEnabled(true);
+ qtv_tmp->sortByColumn(2,Qt::DescendingOrder);
+
+
+ //largeur des colonnes
+ qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ int nbCol = sqm_tmp->columnCount();
+ for(int pos=0;pos<nbCol;pos++)
+ {
+  qtv_tmp->setColumnWidth(pos,35);
+ }
+ int l = (35+0.2) * nbCol;
+ qtv_tmp->setFixedWidth(l);
+
+ qtv_tmp->setFixedHeight(200);
+ //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+ //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+ // positionner le tableau
+ glay_tmp->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+ wdg_tmp->setLayout(glay_tmp);
+ return wdg_tmp;
+}
+
+QString BCountComb::sql_MkCountItems(const stGameConf *pGame, int zn)
+{
+ /* exemple requete :
+  *
+  * with
+  * tbCmb as (select t1.id as Id, t1.tip as R from B_cmb_z1 as t1),
+  * tbRes as
+  * (select
+  * cast(t1.id as int)as Id,
+  * cast(t1.R as text) as R,
+  * cast(count(t2.id) as int) as T,
+  * cast (count(CASE WHEN  J like 'lundi%' then 1 end) as int) as LUN
+  * from tbCmb as t1, B_ana_z1 as t2, B_fdj as t3
+  * where
+  * (
+  * (t2.idComb = t1.id) AND
+  * (t2.id = t3.id)
+  * ) group by t1.id order by T desc)
+  *
+  * SELECT t1.* from tbRes as t1
+  *
+  */
+ QString st_sql="";
+
+ QString key = "t1.z"+QString::number(zn+1);
+ QString ref = "t2."+pGame->names[zn].abv+"%1";
+
+ int max = pGame->limites[zn].len;
+ QString st_cols = "";
+ for (int i=0;i<max;i++) {
+  st_cols = st_cols + ref.arg(i+1);
+  if(i<max-1){
+   st_cols=st_cols+",";
+  }
+ }
+
+ QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  tbl_tirages="B";
+  tbl_key="_fdj";
+ }
+ st_sql= "with "
+          "tbCmb as (select t1.id as Id, t1.tip as R from ("
+          +tbl_tirages
+          +"_cmb_z"
+          +QString::number(zn+1)
+          +") as t1),"
+            "tbRes as (select "
+            "cast(t1.id as int)as Id,"
+            "cast(t1.R as text) as R,"
+            "cast(count(t2.id) as int) as T"
+          + db_jours
+          +" from (tbCmb) as t1, ("
+          +tbl_tirages
+          +"_ana_z"
+          +QString::number(zn+1)
+          +") as t2, ("
+          +tbl_tirages+tbl_key
+          +") as t3 "
+            " where((t2.idComb = t1.id) AND (t2.id = t3.id) ) group by t1.id order by T desc)"
+            " SELECT t1.* from (tbRes) as t1";
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<st_sql;
+#endif
+
+ return st_sql;
+
 }
 
 BCountComb::BCountComb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb)

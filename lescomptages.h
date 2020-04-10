@@ -14,7 +14,7 @@
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
-#include "cbarycentre.h"
+#include "compter_barycentre.h"
 
 #include "compter.h"
 #include "db_tools.h"
@@ -108,7 +108,7 @@ class BPrevision:public QGridLayout
  public:
  BPrevision(stGameConf *pGame, stPrmPrevision *prm);
  ~BPrevision();
- CBaryCentre* getC0();
+ BCountBrc* getC0();
  BCountElem* getC1();
  BCountComb* getC2();
  BCountGroup* getC3();
@@ -177,7 +177,7 @@ class BPrevision:public QGridLayout
  BCountComb *c2;
  BCountElem *c1;
  BCountGroup *c3;
- CBaryCentre *c;
+ BCountBrc *c;
  int cur_item;
  QGroupBox *gpb_Tirages;
  QSqlDatabase db_1;      /// base de donnees associee a cet objets

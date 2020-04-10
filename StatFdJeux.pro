@@ -71,7 +71,6 @@ SOURCES += \
     cnp_SansRepetition.cpp \
     cnp_AvecRepetition.cpp \
     etudierjeux.cpp \
-    cbarycentre.cpp \
     version.cpp \
     game.cpp \
     sqlqmdetails.cpp \
@@ -100,7 +99,8 @@ SOURCES += \
     BSqlQmTirages_3.cpp \
     BAnalyserTirages.cpp \
     BFdj.cpp \
-    cFdjData.cpp
+    cFdjData.cpp \
+    compter_barycentre.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -136,7 +136,6 @@ HEADERS  += \
     cnp_SansRepetition.h \
     etudierjeux.h \
     game.h \
-    cbarycentre.h \
     colors.h \
     sqlqmdetails.h \
     bvisuresume.h \
@@ -163,7 +162,8 @@ HEADERS  += \
     BSqlQmTirages_3.h \
     BAnalyserTirages.h \
     BFdj.h \
-    cFdjData.h
+    cFdjData.h \
+    compter_barycentre.h
 
 
 FORMS    += mainwindow.ui \

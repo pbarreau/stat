@@ -51,7 +51,7 @@
 
 #include "mainwindow.h"
 
-#include "cbarycentre.h"
+#include "compter_barycentre.h"
 #include "sqlqmdetails.h"
 #include "bvisuresume.h"
 #include "btbvrepartition.h"
@@ -1494,8 +1494,8 @@ QGridLayout* SyntheseGenerale::info_lgnTirage(int t_id, QTableView * tbview)
   lab_uplet->setText("Uplet-2");
   vb_tmp->addWidget(lab_uplet,0,Qt::AlignLeft|Qt::AlignTop);
   QString cnx = db_1newDb.connectionName();
-  BUplWidget *visu = new BUplWidget(cnx,1);
-  vb_tmp->addWidget(visu,0,Qt::AlignLeft|Qt::AlignTop);
+  //BUG:BUplWidget *visu = new BUplWidget(cnx,1);
+  //BUG:vb_tmp->addWidget(visu,0,Qt::AlignLeft|Qt::AlignTop);
  }
 
  lay_tmp->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);

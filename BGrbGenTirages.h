@@ -52,7 +52,7 @@ BSqlQmTirages_3 *sqm_resu;
 QSqlDatabase db_1;      /// base de donnees associee a cet objets
 QLabel *lb_Big;
 
-CBaryCentre *l_c0;
+BCountBrc *l_c0;
 BCountElem *l_c1;
 BCountComb *l_c2;
 BCountGroup *l_c3;

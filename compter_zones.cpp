@@ -55,7 +55,7 @@ BCountElem::BCountElem(const stGameConf *pGame):BCount(pGame,eCountElm)
 
 QString BCountElem::getType()
 {
- return label[type];
+ return onglet[type];
 }
 
 QTabWidget * BCountElem::creationTables(const stGameConf *pGame)
@@ -97,7 +97,7 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  QString cnx = pGame->db_ref->cnx;
  if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
   /// Creation de la table avec les resultats
-  QString sql_msg = sql_MkCountElm(pGame, zn);
+  QString sql_msg = sql_MkCountItems(pGame, zn);
   QString msg = "create table if not exists "
                 + dstTbl + " as "
                 + sql_msg;
@@ -134,10 +134,10 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  a.typ=0; ///Position de l'onglet qui va recevoir le tableau
  qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
 
- //qtv_tmp->verticalHeader()->hide();
+ qtv_tmp->verticalHeader()->hide();
  qtv_tmp->hideColumn(0);
  qtv_tmp->setSortingEnabled(true);
- qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+ qtv_tmp->sortByColumn(2,Qt::DescendingOrder);
 
 
  //largeur des colonnes
@@ -161,7 +161,7 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  return wdg_tmp;
 }
 
-QString BCountElem::sql_MkCountElm(const stGameConf *pGame, int zn)
+QString BCountElem::sql_MkCountItems(const stGameConf *pGame, int zn)
 {
  /* exemple requete :
   *
@@ -194,6 +194,12 @@ QString BCountElem::sql_MkCountElm(const stGameConf *pGame, int zn)
  }
 
  QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  tbl_tirages="B";
+  tbl_key="_fdj";
+ }
+
  st_sql= "with tbResultat as (select cast(row_number() over ()as int) as id,"
           "cast ("+key
           +" as int) as R, cast (count("
@@ -201,7 +207,7 @@ QString BCountElem::sql_MkCountElm(const stGameConf *pGame, int zn)
           +") as int) as T "
           + db_jours
           +" from B_elm as t1 LEFT join ("
-          +tbl_tirages
+          +tbl_tirages+tbl_key
           +") as t2  where("
           +key
           +" in("
