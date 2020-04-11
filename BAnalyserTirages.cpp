@@ -127,10 +127,12 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
  BCountElem * item_1 = new BCountElem(pGame);
  BCountComb * item_2 = new BCountComb(pGame);
  BCountBrc * item_3 = new BCountBrc(pGame);
+ BCountGroup * item_4 = new BCountGroup(pGame, info);
 
  lstComptage.append(item_1);
  lstComptage.append(item_2);
  lstComptage.append(item_3);
+ lstComptage.append(item_4);
 
  int nb_item = lstComptage.size();
  for(int i = 0; i< nb_item; i++)

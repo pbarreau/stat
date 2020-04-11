@@ -23,6 +23,24 @@ BCountGroup::~BCountGroup()
  total --;
 }
 
+BCountGroup::BCountGroup(const stGameConf *pGame,QStringList** lstCri):BCount(pGame,eCountGrp)
+{
+ addr = nullptr;
+
+ QString cnx=pGame->db_ref->cnx;
+ QString tbl_tirages = pGame->db_ref->fdj;
+
+ // Etablir connexion a la base
+ db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+ addr=this; /// memo de cet objet
+ slFlt = lstCri;
+}
+
 QString BCountGroup::getType()
 {
  return onglet[type];
@@ -31,11 +49,211 @@ QString BCountGroup::getType()
 QTabWidget * BCountGroup::creationTables(const stGameConf *pGame)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
+
+ int nb_zones = pGame->znCount;
+
+
+ QWidget *(BCountGroup::*ptrFunc[])(const stGameConf *pGame,int zn) =
+  {
+   &BCountGroup::fn_Count,
+   &BCountGroup::fn_Count
+  };
+
+ for(int i = 0; i< nb_zones; i++)
+ {
+  QString name = pGame->names[i].abv;
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, i);
+  if(calcul != nullptr){
+   tab_Top->addTab(calcul, name);
+  }
+ }
  return tab_Top;
 }
 
+QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
+{
+ QWidget * wdg_tmp = new QWidget;
+ QGridLayout *glay_tmp = new QGridLayout;
+ QTableView *qtv_tmp = new QTableView;
+
+ QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  tbl_tirages="B";
+  tbl_key="_fdj";
+ }
+
+ QString dstTbl = "r_"
+                  +tbl_tirages
+                  +"_"+label[type]
+                  +"_z"+QString::number(zn+1);
+
+ /// Verifier si table existe deja
+ QString cnx = pGame->db_ref->cnx;
+ if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
+  /// Creation de la table avec les resultats
+  QString msg = "";
+  QSqlQuery query(db_1);
+
+  bool isOk = db_MkTblItems(pGame, zn, dstTbl, &query, &msg);
+
+	if(isOk == false){
+	 DB_Tools::DisplayError("BCountGroup::fn_Count", &query, msg);
+	 delete wdg_tmp;
+	 delete glay_tmp;
+	 delete qtv_tmp;
+	 return nullptr;
+	}
+ }
+
+ QString sql_msg = "select * from "+dstTbl;
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+
+ sqm_tmp->setQuery(sql_msg, db_1);
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+ QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+
+ BDelegateElmOrCmb::stPrmDlgt a;
+ a.parent = qtv_tmp;
+ a.db_cnx = cnx;
+ a.zne=zn;
+ a.typ=0; ///Position de l'onglet qui va recevoir le tableau
+ qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
+
+ qtv_tmp->verticalHeader()->hide();
+ //qtv_tmp->hideColumn(0);
+ qtv_tmp->setSortingEnabled(true);
+ qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+
+
+ //largeur des colonnes
+ qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ int nbCol = sqm_tmp->columnCount();
+ for(int pos=0;pos<nbCol;pos++)
+ {
+  qtv_tmp->setColumnWidth(pos,35);
+ }
+ int l = (35+0.2) * nbCol;
+ qtv_tmp->setFixedWidth(l);
+
+ qtv_tmp->setFixedHeight(200);
+ //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+ //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+ // positionner le tableau
+ glay_tmp->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+
+ wdg_tmp->setLayout(glay_tmp);
+ return wdg_tmp;
+}
+
+bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl, QSqlQuery * query, QString * msg)
+{
+ /* exemple requete :
+  *
+  * 1 : create view if not exists  vt_0
+  * as select cast(Choix.tz1 as int) as Nb
+  * from(B_elm)as Choix where(Choix.tz1 is not null)
+  *
+  * 2 : create view if not exists vt_1 as
+  * select tbleft.*,
+  * cast((case when count(tbRight.id)!=0 then count(tbRight.id) end) as int)as P
+  * from(vt_0) as tbLeft
+  * left join (B_ana_z1) as tbRight
+  * on (tbLeft.Nb = tbRight.P)group by tbLeft.Nb
+  *
+  */
+
+
+ bool isOk = true;
+
+ QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  tbl_tirages="B";
+  tbl_key="_fdj";
+ }
+
+ QString stCurTable = tbl_tirages + "_ana_z" + QString::number(zn+1);
+ QString stDefBoules = "B_elm";
+ QString prvName = "";
+ QString curName = "";
+
+ /// Verifier si des tables existent deja
+ if(SupprimerVueIntermediaires())
+ {
+  /// Plus de table intermediaire commencer
+  curName = "vt_0";
+  *msg = "create view if not exists "
+        +curName+" as select cast(Choix.tz"
+        +QString::number(zn+1)+ " as int) as Nb"
+        +" from("+stDefBoules+")as Choix where(Choix.tz"
+        +QString::number(zn+1)+ " is not null)";
+#ifndef QT_NO_DEBUG
+  qDebug() << *msg;
+#endif
+
+	isOk = query->exec(*msg);
+	QStringList *slst=&slFlt[zn][0];
+
+	int nbCols = slst[1].size();
+	curName = "vt_1";
+	QString stGenre = "view";
+	int cnt_spe = 0;
+	for(int loop = 0; (loop < nbCols)&& isOk; loop ++){
+	 if(slst[2].at(loop).compare("special") == 0){
+		prvName="vt_"+QString::number(loop-cnt_spe);
+		curName=prvName;
+		cnt_spe++;
+		continue;
+	 }
+
+	 prvName ="vt_"+QString::number(loop);
+	 *msg = "create "+stGenre+" if not exists "
+				 + curName
+				 +" as select tbleft.*, cast((case when count(tbRight.id)!=0 then count(tbRight.id) end)as int) as "
+				 +slst[1].at(loop)
+				 + " from("+prvName+") as tbLeft "
+				 +"left join ("
+				 +stCurTable
+				 +") as tbRight on (tbLeft.Nb = tbRight."
+				 +slst[1].at(loop)+")group by tbLeft.Nb";
+#ifndef QT_NO_DEBUG
+	 qDebug() << *msg;
+#endif
+	 isOk = query->exec(*msg);
+	 if(loop<nbCols-1)
+		curName ="vt_"+QString::number(loop+2-cnt_spe);
+	}
+	/// Rajouter a la fin une colonne pour fitrage
+	if(isOk){
+	 *msg = "create table if not exists "+dstTbl
+				 +" as select tb1.* from ("+curName+") as tb1";
+#ifndef QT_NO_DEBUG
+	 qDebug() << *msg;
+#endif
+
+	 isOk = query->exec(*msg);
+
+	 /// Supprimer vues intermediaire
+	 if(isOk){
+		isOk = SupprimerVueIntermediaires();
+	 }
+	}
+ }
+
+ return isOk;
+}
+
 BCountGroup::BCountGroup(const stGameConf &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb)
-    :BCount(pDef,in,fromDb,NULL,eCountGrp)
+    :BCount(pDef,in,fromDb,nullptr,eCountGrp)
 {
  //type=eCountGrp;
  countId = total;
@@ -268,8 +486,8 @@ bool BCountGroup::SupprimerVueIntermediaires(void)
 {
  bool isOk = true;
  QString msg = "";
- QSqlQuery query(dbToUse);
- QSqlQuery qDel(dbToUse);
+ QSqlQuery query(db_1);
+ QSqlQuery qDel(db_1);
 
  msg = "SELECT name FROM sqlite_master "
        "WHERE type='view' AND name like'vt_%';";
@@ -527,7 +745,7 @@ bool BCountGroup::updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn)
 
 
  /// un entier contient 32 bits
- /// on les utilise comme indicateur de colonne
+ /// on les utilisent comme indicateur de colonne
  if(d_col > 0 && d_col <=32){
   setSelected = 1<<(d_col-1);
   setUnSelected = ~setSelected;

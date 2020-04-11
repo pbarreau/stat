@@ -829,8 +829,8 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const stGameConf &onGame,in
   /// Plus de table intermediaire commencer
   curName = "vt_0";
   msg = "create view if not exists "
-        +curName+" as select Choix.tz"
-        +QString::number(zn+1)+ " as Nb"
+        +curName+" as select cast(Choix.tz"
+        +QString::number(zn+1)+ " as int) as Nb"
         +" from("+stDefBoules+")as Choix where(Choix.tz"
         +QString::number(zn+1)+ " is not null)";
 #ifndef QT_NO_DEBUG
@@ -847,7 +847,7 @@ bool BPrevision::FaireTableauSynthese(QString tblIn, const stGameConf &onGame,in
 	 prvName ="vt_"+QString::number(loop);
 	 msg = "create "+stGenre+" if not exists "
 				 + curName
-				 +" as select tbleft.*, (case when count(tbRight.id)!=0 then count(tbRight.id) end)as "
+				 +" as select tbleft.*, cast((case when count(tbRight.id)!=0 then count(tbRight.id) end)as int) as "
 				 +slst[1].at(loop)
 				 + " from("+prvName+") as tbLeft "
 				 +"left join ("
