@@ -324,7 +324,14 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 
 	 }
 	 else{
-		if(slst[2].at(loop).compare("special")==0){
+		QString Key_usr_1 = slst[1].at(loop);
+		QString Key_usr_2 = slst[2].at(loop);
+
+		if(Key_usr_1.contains("X")){
+		 ptrFnUsr usrFn = map_UsrFn.value(Key_usr_1);
+		 isOk = (this->*usrFn)(pGame, curName, curTarget, zn);
+		}
+		else if(Key_usr_2.compare("special")==0){
 		 if(slst[1].at(loop).contains(',') == true){
 			QStringList def = slst[1].at(loop).split(",");
 			if(def.size()>1){
@@ -484,6 +491,12 @@ QStringList* BAnalyserTirages::CreateFilterForData(stGameConf *pGame, QString tb
   sl_filter[1] << "F"+ QString::number(j);
   sl_filter[2] << "Finissant par: "+ QString::number(j);
  }
+
+ // Calcul Special utilisateur
+ sl_filter[0]<< "Fn";
+ sl_filter[1] << "X1";
+ sl_filter[2] << "Consecutifs";
+ map_UsrFn.insert("X1",&BAnalyserTirages::usrFn_X1);
 
  QString sql_code = "";
 
@@ -752,4 +765,121 @@ bool BAnalyserTirages::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *
  }
 
  return isOk;
+}
+
+bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn_in)
+{
+
+ bool isOk = true;
+ QSqlQuery query(db_1);
+ QString msg = "";
+
+ QString tbl_tirages = pGame->db_ref->fdj;
+ QString tblUse []= {"B_ana_z",tbl_tirages, "B_elm"};
+
+ int nbZone = pGame->znCount;
+
+ for (int zn=0;(zn < nbZone) && isOk;zn++ )
+ {
+  int nbwin = pGame->limites[zn].win;
+
+  if(nbwin>2){
+
+   msg = " select t1.*, t2.c1 from old_" + tblUse[0]+QString::number(zn+1)+ " as t1 left join (select 0 as c1) as t2 ";
+
+	 QString sql_msg[]={
+		"alter table "+tblUse[0]+QString::number(zn+1)+" rename to old_"+tblUse[0]+QString::number(zn+1),
+		"create table if not exists " + tblUse[0]+QString::number(zn+1)+ " as "+msg,
+		"drop table if exists old_"+tblUse[0]+QString::number(zn+1)
+	 };
+	 int nb_sql= sizeof(sql_msg)/sizeof(QString);
+
+	 /// Rajout de la colonne X1
+	 for (int current=0;(current < nb_sql) && isOk ; current++) {
+#ifndef QT_NO_DEBUG
+		qDebug() << "msg["<<current<<"]="<<sql_msg[current];
+#endif
+		isOk = query.exec(sql_msg[current]);
+	 }
+
+
+	 /// la colonne est creee la remplir
+	 /// du plus grand au plus petit
+	 QString zn_field = getFieldsFromZone(pGame, zn,"t1");
+	 QString ref="((r%2.z1=r%1.z1+1) and r%2.z1 in ("+zn_field+"))";
+	 QString ref2="(r%1.z1 in ("+zn_field+"))";
+
+	 for (int nbloop= nbwin;(nbloop>1) && isOk ;nbloop--) {
+
+		QString aliasZn="";
+		for (int k =1; k<=nbloop;k++) {
+		 aliasZn =aliasZn + tblUse[2] + " as r" +QString::number(k);
+		 if(k<nbloop){
+			aliasZn = aliasZn + ",";
+		 }
+		}
+
+		msg="";
+		QString deb = "";
+		QString msg1 = "";
+
+		for(int i = nbloop; i>0; i--){
+		 deb = "update "+tblUse[0]+QString::number(zn+1)+ " as t1 set c1 = " + QString::number(nbloop+1-i);
+
+
+		 if(i>1){
+			msg1 = ref.arg(i-1).arg(i);
+			msg1 = " AND " + msg1;
+		 }
+		 else {
+			msg1 = ref2.arg(i);
+		 }
+
+		 msg = msg1 + msg  ;
+		}
+
+		msg1 = deb + " where (t1.id in ( select t1.id from "
+					 + tblUse[1] + " as t1, " + aliasZn + " where ("
+					 + msg + ")) and t1.c1=0)";
+#ifndef QT_NO_DEBUG
+		qDebug() << "deb="<<deb;
+		qDebug() << "msg="<<msg;
+		qDebug() << "msg1="<<msg1;
+#endif
+
+		isOk = query.exec(msg1);
+	 }
+
+  }
+ }
+
+
+ if(!isOk)
+ {
+  QString ErrLoc = "cmb_table.cpp";
+  DB_Tools::DisplayError("BAnalyserTirages::usrFn_X1",&query,"do_SetFollower");
+ }
+
+
+ return isOk;
+}
+
+QString BAnalyserTirages::getFieldsFromZone(const stGameConf *pGame, int zn, QString alias)
+{
+ int len_zn = pGame->limites[zn].len;
+
+ QString use_alias = "";
+
+ if(alias.size()){
+  use_alias = alias+".";
+ }
+ QString ref = use_alias+pGame->names[zn].abv+"%1";
+ QString st_items = "";
+ for(int i=0;i<len_zn;i++){
+  st_items = st_items + ref.arg(i+1);
+  if(i<(len_zn-1)){
+   st_items=st_items+QString(",");
+  }
+ }
+ return   st_items;
 }

@@ -3,8 +3,9 @@
 
 #include <QString>
 #include <QSqlDatabase>
+#include <QMap>
 
-#include <game.h>
+#include "game.h"
 
 class BAnalyserTirages
 {
@@ -28,10 +29,17 @@ bool AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QStr
 bool SupprimerVueIntermediaires(void);
 void PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName);
 
+bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn_in);
+QString getFieldsFromZone(const stGameConf *pGame, int zn, QString alias);
+
+typedef bool(BAnalyserTirages::*ptrFnUsr)(const stGameConf *, QString, QString, int );
+
 private:
 BAnalyserTirages *addr;
 QSqlDatabase db_1;
 QStringList** slFlt;
+QMap<QString,ptrFnUsr> map_UsrFn;
+
 };
 
 #endif // BANALYSERTIRAGES_H
