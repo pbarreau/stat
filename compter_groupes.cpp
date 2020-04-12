@@ -10,7 +10,12 @@
 #include <QToolTip>
 #include <QStackedWidget>
 #include <QSortFilterProxyModel>
+
 #include <QMenu>
+#include <QScrollBar>
+
+#include <QHeaderView>
+#include <QToolTip>
 
 #include "compter_groupes.h"
 #include "db_tools.h"
@@ -119,6 +124,8 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
  m->setDynamicSortFilter(true);
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
+ /// Determination nb ligne par proxymodel
+ int nb_lgn_ftr = m->rowCount();
 
  BDelegateElmOrCmb::stPrmDlgt a;
  a.parent = qtv_tmp;
@@ -132,18 +139,24 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
  qtv_tmp->setSortingEnabled(true);
  qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
 
-
  //largeur des colonnes
- qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
  int nbCol = sqm_tmp->columnCount();
+ QStringList tooltips=slFlt[zn][2];
+ tooltips.insert(0,"Total"); /// La colone Nb (0)
  for(int pos=0;pos<nbCol;pos++)
  {
+  /// Mettre le tooltip
+  /// https://forum.qt.io/topic/96234/formatting-a-qtableview-header/2
+  m->setHeaderData(pos,Qt::Horizontal,tooltips.at(pos),Qt::ToolTipRole);
   qtv_tmp->setColumnWidth(pos,35);
  }
  int l = (35+0.2) * nbCol;
  qtv_tmp->setFixedWidth(l);
 
- qtv_tmp->setFixedHeight(200);
+ //qtv_tmp->setFixedHeight(36*nb_lgn_ftr);
+ qtv_tmp->setMinimumHeight(36*nb_lgn_ftr);
+ //verticalResizeTableViewToContents(qtv_tmp);
  //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
  //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
@@ -152,6 +165,47 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
 
  wdg_tmp->setLayout(glay_tmp);
  return wdg_tmp;
+}
+
+void BCountGroup::verticalResizeTableViewToContents(QTableView *tableView)
+{
+ /// https://savolai.net/notes/how-do-i-adjust-a-qtableview-height-according-to-contents/
+ ///
+ int count=tableView->verticalHeader()->count();
+ int scrollBarHeight=tableView->horizontalScrollBar()->height();
+ int horizontalHeaderHeight=tableView->horizontalHeader()->height();
+ int rowTotalHeight=0;
+ for (int i = 0; i < count; ++i) {
+  rowTotalHeight+=tableView->verticalHeader()->sectionSize(i);
+ }
+ tableView->setMinimumHeight(horizontalHeaderHeight+rowTotalHeight+scrollBarHeight);
+
+#if 0
+ /// https://stackoverflow.com/questions/42458735/how-do-i-adjust-a-qtableview-height-according-to-contents
+ int rowTotalHeight=0;
+
+ // Rows height
+ int count=tableView->verticalHeader()->count();
+ for (int i = 0; i < count; ++i) {
+  // 2018-03 edit: only account for row if it is visible
+  if (!tableView->verticalHeader()->isSectionHidden(i)) {
+   rowTotalHeight+=tableView->verticalHeader()->sectionSize(i);
+  }
+ }
+
+ // Check for scrollbar visibility
+ if (!tableView->horizontalScrollBar()->isHidden())
+ {
+  rowTotalHeight+=tableView->horizontalScrollBar()->height();
+ }
+
+ // Check for header visibility
+ if (!tableView->horizontalHeader()->isHidden())
+ {
+  rowTotalHeight+=tableView->horizontalHeader()->height();
+ }
+ tableView->setMinimumHeight(rowTotalHeight);
+#endif
 }
 
 bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl, QSqlQuery * query, QString * msg)

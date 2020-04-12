@@ -330,7 +330,7 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
  QString sqlText = "";
  QString sqlGood = "";
 
- if(pCurrent !=NULL)
+ if(pCurrent !=nullptr)
  {
   sqlGood = pCurrent->executedQuery();
   sqlError = pCurrent->lastError().text();

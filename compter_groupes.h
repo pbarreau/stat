@@ -66,6 +66,7 @@ class BCountGroup:public BCount
 
  private:
  QWidget *fn_Count(const stGameConf *pGame, int zn);
+ void verticalResizeTableViewToContents(QTableView *tableView);
  bool db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl, QSqlQuery * query, QString * msg);
 
  private:

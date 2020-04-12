@@ -107,13 +107,19 @@ void BAnalyserTirages::startAnalyse(stGameConf *pGame, QString tbl_tirages)
  }
 
  QStringList ** info = slFlt;
- for (int zn=0;zn < nbZn;zn++ )
+ for (int zn=0; (zn < nbZn) && isOk ;zn++ )
  {
   isOk = AnalyserEnsembleTirage(pGame, info, zn, tbl_tirages);
+  if(!isOk){
+   QString msg = "Erreur Analyse table : " + tbl_tirages;
+   DB_Tools::DisplayError(tbl_tirages,nullptr,msg);
+  }
  }
 
  /// Presenter les resultats
- PresenterResultats(pGame, info, tbl_tirages);
+ if(isOk){
+  PresenterResultats(pGame, info, tbl_tirages);
+ }
 }
 
 void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName)
@@ -279,6 +285,8 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
  int znLen = pGame->limites[zn].len;
  QString key_abv = pGame->names[zn].abv;
 
+ /// table temporaire
+ QString tbl_x1 = "";
  for(int j=0;j<znLen;j++)
  {
   st_OnDef = st_OnDef + ref.arg(key_abv).arg(j+1);
@@ -328,6 +336,9 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 		QString Key_usr_2 = slst[2].at(loop);
 
 		if(Key_usr_1.contains("X")){
+		 msg="";
+		 tbl_x1 = curTarget;
+		 tbl_x1 = tbl_x1.remove("view").trimmed();
 		 ptrFnUsr usrFn = map_UsrFn.value(Key_usr_1);
 		 isOk = (this->*usrFn)(pGame, curName, curTarget, zn);
 		}
@@ -340,8 +351,8 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 			}
 		 }
 		 msg = "create " + curTarget
-					 +" as select "+curTitle+", tbRight."
-					 + colName + " as "
+					 +" as select "+curTitle+", cast(tbRight."
+					 + colName + " as int) as "
 					 + colName
 					 + " from("+curName+")as tbLeft "
 					 + "left join ("+slst[0].at(loop)
@@ -364,10 +375,14 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 		}
 	 }
 
-	 isOk = query.exec(msg);
+	 /// Verification pas fonction utilisateur
+	 if(msg.size()){
+		isOk = query.exec(msg);
+	 }
+
 	 if(!isOk){
 #ifndef QT_NO_DEBUG
-		qDebug() << "msg:"<<msg;
+		qDebug() << "msg:'"<<msg<<"'";
 #endif
 	 }
 
@@ -403,13 +418,22 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 	 qDebug() << "msg:"<<msg;
 #endif
 	 isOk = query.exec(msg);
+
 	}
 
 
 	/// supression tables intermediaires
 	if(isOk){
-	 msg = "drop view if exists " + curTarget;
-	 isOk= query.exec(msg);
+	 /// On peut supprimer la table X1
+	 if(tbl_x1.size()){
+		msg = "drop table if exists " + tbl_x1;
+		isOk = query.exec(msg);
+	 }
+
+	 if(isOk){
+		msg = "drop view if exists " + curTarget;
+		isOk= query.exec(msg);
+	 }
 
 	 if(isOk)
 		isOk = SupprimerVueIntermediaires();
@@ -439,7 +463,7 @@ bool BAnalyserTirages::SupprimerVueIntermediaires(void)
    do
    {
     QString viewName = query.value("name").toString();
-    msg = "drop view if exists "+viewName;
+    msg = "drop view if exists "+viewName; //"drop view if exists "+viewName;
     isOk = qDel.exec(msg);
    }while(query.next()&& isOk);
   }
@@ -767,7 +791,7 @@ bool BAnalyserTirages::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *
  return isOk;
 }
 
-bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn_in)
+bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString tblIn, QString tblOut, int zn_in)
 {
 
  bool isOk = true;
@@ -778,6 +802,9 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString curName, QStrin
  QString tblUse []= {"B_ana_z",tbl_tirages, "B_elm"};
 
  int nbZone = pGame->znCount;
+ QString tmp_tbl = tblOut;
+ tmp_tbl.remove("view");
+ tmp_tbl = tmp_tbl.trimmed();
 
  for (int zn=0;(zn < nbZone) && isOk;zn++ )
  {
@@ -785,12 +812,10 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString curName, QStrin
 
   if(nbwin>2){
 
-   msg = " select t1.*, t2.c1 from old_" + tblUse[0]+QString::number(zn+1)+ " as t1 left join (select 0 as c1) as t2 ";
+   msg = " select t1.*, cast(t2.X1 as int) as X1 from "+tblIn+ " as t1 left join (select 0 as X1) as t2 ";
 
 	 QString sql_msg[]={
-		"alter table "+tblUse[0]+QString::number(zn+1)+" rename to old_"+tblUse[0]+QString::number(zn+1),
-		"create table if not exists " + tblUse[0]+QString::number(zn+1)+ " as "+msg,
-		"drop table if exists old_"+tblUse[0]+QString::number(zn+1)
+		"create table "+ tmp_tbl+ " as "+msg
 	 };
 	 int nb_sql= sizeof(sql_msg)/sizeof(QString);
 
@@ -824,7 +849,7 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString curName, QStrin
 		QString msg1 = "";
 
 		for(int i = nbloop; i>0; i--){
-		 deb = "update "+tblUse[0]+QString::number(zn+1)+ " as t1 set c1 = " + QString::number(nbloop+1-i);
+		 deb = "update "+ tmp_tbl+ " as t2 set X1 = " + QString::number(nbloop+1-i);
 
 
 		 if(i>1){
@@ -838,9 +863,9 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString curName, QStrin
 		 msg = msg1 + msg  ;
 		}
 
-		msg1 = deb + " where (t1.id in ( select t1.id from "
+		msg1 = deb + " where (t2.id in ( select t1.id from "
 					 + tblUse[1] + " as t1, " + aliasZn + " where ("
-					 + msg + ")) and t1.c1=0)";
+					 + msg + ")) and t2.X1=0)";
 #ifndef QT_NO_DEBUG
 		qDebug() << "deb="<<deb;
 		qDebug() << "msg="<<msg;
@@ -853,6 +878,23 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString curName, QStrin
   }
  }
 
+#if 0
+ /// Remettre dans une vue les resultats pour continuer processus analyse
+ QString sql_msg[]={
+  "alter table "+tmp_tbl+" rename to old_"+tmp_tbl,
+  "create view if not exists " + tmp_tbl+ " as select * from old_"+tmp_tbl,
+  "drop table if exists old_"+tmp_tbl
+ };
+ int nb_sql= sizeof(sql_msg)/sizeof(QString);
+
+ /// Rajout de la colonne c1
+ for (int current=0;(current < nb_sql) && isOk ; current++) {
+#ifndef QT_NO_DEBUG
+  qDebug() << "msg["<<current<<"]="<<sql_msg[current];
+#endif
+  isOk = query.exec(sql_msg[current]);
+ }
+#endif
 
  if(!isOk)
  {
