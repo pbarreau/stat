@@ -125,6 +125,7 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  QSortFilterProxyModel *m=new QSortFilterProxyModel();
  m->setDynamicSortFilter(true);
  m->setSourceModel(sqm_tmp);
+ m->setHeaderData(1,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
  qtv_tmp->setModel(m);
 
  BDelegateElmOrCmb::stPrmDlgt a;

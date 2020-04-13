@@ -115,6 +115,8 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
  m->setDynamicSortFilter(true);
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
+ m->setHeaderData(1,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
+
 
  BDelegateElmOrCmb::stPrmDlgt a;
  a.parent = qtv_tmp;
@@ -138,6 +140,7 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
  }
  int l = (35+0.2) * nbCol;
  qtv_tmp->setFixedWidth(l);
+ qtv_tmp->resizeColumnsToContents();
 
  qtv_tmp->setFixedHeight(200);
  //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);

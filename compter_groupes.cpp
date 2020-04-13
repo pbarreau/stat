@@ -10,6 +10,7 @@
 #include <QToolTip>
 #include <QStackedWidget>
 #include <QSortFilterProxyModel>
+#include <QAbstractItemView>
 
 #include <QMenu>
 #include <QScrollBar>
@@ -140,7 +141,7 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
  qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
 
  //largeur des colonnes
- qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+ //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
  int nbCol = sqm_tmp->columnCount();
  QStringList tooltips=slFlt[zn][2];
  tooltips.insert(0,"Total"); /// La colone Nb (0)
@@ -151,14 +152,16 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
   m->setHeaderData(pos,Qt::Horizontal,tooltips.at(pos),Qt::ToolTipRole);
   qtv_tmp->setColumnWidth(pos,35);
  }
+ m->setHeaderData(0,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
+
+ //QBrush shouldBeRed = (m->headerData(0,Qt::Horizontal,Qt::BackgroundRole)).value<QBrush>();
  int l = (35+0.2) * nbCol;
  qtv_tmp->setFixedWidth(l);
 
+ //qtv_tmp->resizeRowsToContents();
  //qtv_tmp->setFixedHeight(36*nb_lgn_ftr);
- qtv_tmp->setMinimumHeight(36*nb_lgn_ftr);
- //verticalResizeTableViewToContents(qtv_tmp);
- //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
- //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+ //qtv_tmp->setMinimumHeight(36*nb_lgn_ftr);
+ verticalResizeTableViewToContents(qtv_tmp);
 
  // positionner le tableau
  glay_tmp->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);

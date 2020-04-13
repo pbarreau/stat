@@ -505,7 +505,7 @@ QStringList* BAnalyserTirages::CreateFilterForData(stGameConf *pGame, QString tb
   sl_filter[0]<< fields+" >="+QString::number(10*j)+
                    " and "+fields+"<="+QString::number((10*j)+9);
   sl_filter[1] << "U"+ QString::number(j);
-  sl_filter[2] << "Entre:"+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
+  sl_filter[2] << "Entre : "+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
  }
 
  // Boule finissant par [0..9]
@@ -513,7 +513,7 @@ QStringList* BAnalyserTirages::CreateFilterForData(stGameConf *pGame, QString tb
  {
   sl_filter[0]<< fields+" like '%" + QString::number(j) + "'";
   sl_filter[1] << "F"+ QString::number(j);
-  sl_filter[2] << "Finissant par: "+ QString::number(j);
+  sl_filter[2] << "Finissant par : "+ QString::number(j);
  }
 
  // Calcul Special utilisateur
