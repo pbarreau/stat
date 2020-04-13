@@ -122,7 +122,7 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
  a.parent = qtv_tmp;
  a.db_cnx = cnx;
  a.zne=zn;
- a.typ=0; ///Position de l'onglet qui va recevoir le tableau
+ a.typ=1; ///Position de l'onglet qui va recevoir le tableau
  qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();

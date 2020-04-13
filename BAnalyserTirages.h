@@ -20,6 +20,7 @@ void startAnalyse(stGameConf *pGame, QString tbl_tirages);
 bool mkTblLstElm(stGameConf *pGame, QString tbName, QSqlQuery *query);
 bool mkTblLstCmb(stGameConf *pGame, QString tbName, QSqlQuery *query);
 bool mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query);
+bool mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *query);
 
 QStringList* CreateFilterForData(stGameConf *pGame, QString tbl_tirages, int zn);
 QString sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, int zn);

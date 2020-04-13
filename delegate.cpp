@@ -6,8 +6,11 @@
 #include <QAbstractTextDocumentLayout>
 #include <QLineF>
 
+#include <QMessageBox>
+
 #include <QSqlQuery>
 #include <QSqlQueryModel>
+#include <QSqlError>
 
 #include "delegate.h"
 
@@ -416,7 +419,15 @@ BDelegateElmOrCmb::BDelegateElmOrCmb(stPrmDlgt prm) : QItemDelegate(prm.parent)
 {
  cur_zn = QString::number(prm.zne);
  cur_tp = QString::number(prm.typ);
- dbToUse = QSqlDatabase::database(prm.db_cnx);
+
+ QString cnx=prm.db_cnx;
+ dbToUse = QSqlDatabase::database(cnx);
+ if(dbToUse.isValid()==false){
+  QString str_error = dbToUse.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+
 }
 
 void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &option,
@@ -480,7 +491,7 @@ void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &opt
  triangle << t1<<t2<<t3<<t1;
 
 //|| (col>0 && (cur_tp.toInt()==3))
- if(((col == 0) && (cur_tp.toInt()<3)) || (col>0 && (cur_tp.toInt()==3))){
+ if(((col == 1) && (cur_tp.toInt()<3)) || (col>0 && (cur_tp.toInt()==3))){
 
 	int val_cell = 0;
 	if(index.data().canConvert(QMetaType::Int)){

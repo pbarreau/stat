@@ -159,6 +159,34 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  glay_tmp->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
 
  wdg_tmp->setLayout(glay_tmp);
+
+ /// --------------------
+#if 0
+ // simple click dans fenetre  pour selectionner boules
+ connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+         this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+
+ // Double click dans fenetre  pour creer requete
+ connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+         this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
+
+ qtv_tmp->setMouseTracking(true);
+ connect(qtv_tmp,
+         SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
+
+ /// Selection & priorite
+ qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
+
+ /// Mettre dans la base une info sur 2 derniers tirages
+ static int oneShotParZn = pGame->znCount; //
+ if(oneShotParZn > 0){
+  oneShotParZn--;
+  marquerDerniers_tir(pGame, zn);
+ }
+#endif
+ /// --------------------
  return wdg_tmp;
 }
 
@@ -639,21 +667,22 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     static int oneShotParZn = myGame.znCount; //
     if(oneShotParZn > 0){
      oneShotParZn--;
-     marquerDerniers_tir(zn);
+     marquerDerniers_tir(&myGame, zn);
     }
 
     return lay_return;
 }
 
-void BCountElem::marquerDerniers_tir(int zn){
+void BCountElem::marquerDerniers_tir(const stGameConf *pGame, int zn){
  bool isOk = true;
- QSqlQuery query(dbToUse);
- QSqlQuery query_2(dbToUse);
+ QSqlQuery query(db_1);//query(dbToUse);
+ QSqlQuery query_2(db_1);//query_2(dbToUse);
 
 
- int len_zn = myGame.limites[zn].len;
+ int len_zn = pGame->limites[zn].len;//myGame.limites[zn].len;
+ QString st_tirages = pGame->db_ref->fdj;
 
- QString st_critere = FN1_getFieldsFromZone(zn, "t2");
+ QString st_critere = FN1_getFieldsFromZone(pGame, zn, "t2");
  QString key = "z"+QString::number(zn+1);
  QString tb_ref = "B_elm";
 
@@ -662,7 +691,7 @@ void BCountElem::marquerDerniers_tir(int zn){
   int val = 1<<dec;
   QString sdec = QString::number(val);
   QString msg []={
-   {"SELECT "+st_critere+" from ("+st_LstTirages
+   {"SELECT "+st_critere+" from ("+ st_tirages //st_LstTirages
     +") as t2 where(id = "+sdec+")"
    },
    {

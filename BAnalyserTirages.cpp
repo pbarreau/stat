@@ -58,7 +58,8 @@ bool BAnalyserTirages::isPresentUsefullTables(stGameConf *pGame, QString tbl_tir
  stdbMinLstTables lstTable[]={
   {"B_elm", &BAnalyserTirages::mkTblLstElm},
   {"B_cmb", &BAnalyserTirages::mkTblLstCmb},
-  {"B_def", &BAnalyserTirages::mkTblGmeDef}
+  {"B_def", &BAnalyserTirages::mkTblGmeDef},
+  {"Filtres", &BAnalyserTirages::mkTblFiltre}
  };
  int totTables = sizeof(lstTable)/sizeof(stdbMinLstTables);
 
@@ -788,6 +789,20 @@ bool BAnalyserTirages::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *
 	}
  }
 
+ return isOk;
+}
+
+bool BAnalyserTirages::mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *query)
+{
+ bool isOk= true;
+ QString msg = "";
+
+ /// Preparation de la suppression/modification de f6
+ msg =  "create table "+tbName
+       +" (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
+
+
+ isOk = query->exec(msg);
  return isOk;
 }
 

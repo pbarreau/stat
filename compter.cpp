@@ -1140,16 +1140,16 @@ void BCount::slot_wdaFilter(bool val)
 }
 #endif
 
-QString BCount::FN1_getFieldsFromZone(int zn, QString alias)
+QString BCount::FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString alias)
 {
- int len_zn = myGame.limites[zn].len;
+ int len_zn = pGame->limites[zn].len;//myGame.limites[zn].len;
 
  QString use_alias = "";
 
  if(alias.size()){
   use_alias = alias+".";
  }
- QString ref = use_alias+myGame.names[zn].abv+"%1";
+ QString ref = use_alias+pGame->names[zn].abv+"%1";//myGame.names[zn].abv+"%1";
  QString st_items = "";
  for(int i=0;i<len_zn;i++){
   st_items = st_items + ref.arg(i+1);
