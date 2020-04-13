@@ -4,6 +4,7 @@
 
 #include "bdelegatecouleurfond.h"
 #include "db_tools.h"
+#include "colors.h"
 
 const int PaintingScaleFactor = 10;
 

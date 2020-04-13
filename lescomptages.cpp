@@ -35,7 +35,7 @@
 #include "compter_barycentre.h"
 
 #include "labelclickable.h"
-
+#include "delegate.h"
 #include "lescomptages.h"
 #include "cnp_AvecRepetition.h"
 #include "db_tools.h"

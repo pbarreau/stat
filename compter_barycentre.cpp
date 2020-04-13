@@ -279,7 +279,7 @@ QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
 {
  QGridLayout *lay_return = new QGridLayout;
  QTableView *qtv_tmp = new QTableView;
- BSqmColorizePriority *sqm_tmp = new BSqmColorizePriority;
+ BColorPriority *sqm_tmp = new BColorPriority;
  QString src_data="";
 
  int zn = 0;

@@ -100,7 +100,8 @@ SOURCES += \
     BAnalyserTirages.cpp \
     BFdj.cpp \
     cFdjData.cpp \
-    compter_barycentre.cpp
+    compter_barycentre.cpp \
+    BColorPriority.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -163,7 +164,8 @@ HEADERS  += \
     BAnalyserTirages.h \
     BFdj.h \
     cFdjData.h \
-    compter_barycentre.h
+    compter_barycentre.h \
+    BColorPriority.h
 
 
 FORMS    += mainwindow.ui \

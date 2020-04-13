@@ -71,8 +71,8 @@ void MainWindow::EtudierJeu(etFdjType curGame, bool usePrevBdd, bool dest_bdd)
  stGameConf *curConf = charge->getConfig();
 
  BAnalyserTirages *uneAnalyse = new BAnalyserTirages(curConf);
- //EtudierJeu_v1(curConf, dest_bdd);
- //EtudierJeu_v2(curConf);
+ EtudierJeu_v1(curConf, dest_bdd);
+ EtudierJeu_v2(curConf);
  return;
 }
 

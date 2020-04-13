@@ -11,9 +11,9 @@
 #include <QSqlQueryModel>
 #include <QList>
 
-#include "delegate.h"
+//#include "delegate.h"
 #include "labelclickable.h"
-
+#include "BColorPriority.h"
 #include "game.h"
 
 #define CEL2_H  55
@@ -54,7 +54,7 @@ typedef enum{
  eCountGrp,       /// ... des regroupements
  eCountBrc,      /// ... des barycentres
  eCountEnd
-}eCountingType;
+}etCount;
 
 typedef struct _B_RequeteFromTbv
 {
@@ -64,7 +64,7 @@ typedef struct _B_RequeteFromTbv
 
 typedef struct _BRunningQuery
 {
- eCountingType key;  /// type element de la liste
+ etCount key;  /// type element de la liste
  int pos;            /// id dans la fille
  int size;           /// nb de zone
  QSqlQueryModel *sqmDef; /// info sur requete de zone
@@ -76,10 +76,10 @@ class BCount:public QWidget
 {
  Q_OBJECT
  public:
- BCount(const stGameConf *pGame, eCountingType genre);
+ BCount(const stGameConf *pGame, etCount genre);
  BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb);
  BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
-        QWidget *unParent, eCountingType genre);
+        QWidget *unParent, etCount genre);
  BCount(const stNeedsOfBary &param){Q_UNUSED(param)}
 
  public:
@@ -114,7 +114,7 @@ class BCount:public QWidget
  protected:
  static QString label[]; /// nom associe aux types
  static QString onglet[]; /// nom associe aux types
- eCountingType type; /// type de comptage en cours
+ etCount type; /// type de comptage en cours
  QString st_LstTirages;    /// information de tous les tirages
  QSqlDatabase dbToUse;
  QString db_jours;   /// information des jours de tirages
@@ -127,7 +127,7 @@ class BCount:public QWidget
  QModelIndexList *lesSelections; /// liste des selections dans les tableaux
  QString *sqlSelection;  /// code sql generee pour un tableau
  static QList<BRunningQuery *> sqmActive[3];
- BSqmColorizePriority *sqmZones; /// pour mettre a jour le tableau des resultats
+ BColorPriority *sqmZones; /// pour mettre a jour le tableau des resultats
  LabelClickable selection[3];
 
 

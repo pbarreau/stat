@@ -419,6 +419,8 @@ BDelegateElmOrCmb::BDelegateElmOrCmb(stPrmDlgt prm) : QItemDelegate(prm.parent)
 {
  cur_zn = QString::number(prm.zne);
  cur_tp = QString::number(prm.typ);
+ col_show = prm.start;
+ eTyp = prm.eTyp;
 
  QString cnx=prm.db_cnx;
  dbToUse = QSqlDatabase::database(cnx);
@@ -491,7 +493,8 @@ void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &opt
  triangle << t1<<t2<<t3<<t1;
 
 //|| (col>0 && (cur_tp.toInt()==3))
- if(((col == 1) && (cur_tp.toInt()<3)) || (col>0 && (cur_tp.toInt()==3))){
+// if(((col == col_show) && (cur_tp.toInt()<3)) || (col>0 && (cur_tp.toInt()==3))){
+ if(((col == col_show) && ((eTyp>eCountToSet) && (eTyp<eCountEnd))) || (col>0 && (cur_tp.toInt()==3))){
 
 	int val_cell = 0;
 	if(index.data().canConvert(QMetaType::Int)){
@@ -708,42 +711,4 @@ void BDelegateFilterGrp::paint(QPainter *painter, const QStyleOptionViewItem &op
     QItemDelegate::paint(painter, maModif, index);
 }
 
-BSqmColorizePriority::BSqmColorizePriority(QObject *parent):QSqlQueryModel(parent)
-{
-
-}
-
-QVariant BSqmColorizePriority::data(const QModelIndex &index, int role) const
-{
-
-    QColor u[]= {
-        Qt::black,
-        Qt::red,
-        Qt::green,
-        QColor(255,216,0,255),
-        QColor(255,106,0,255),
-        QColor(178,0,255,255),
-        QColor(211,255,204,255)
-    };
-
-    if(index.column()== 0 )
-    {
-        int nbCol=index.model()->columnCount();
-
-        /// recuperation de l'info donnant la couleur
-        QModelIndex priority = index.sibling(index.row(),nbCol-2);
-
-
-        /// Choix de la couleur a appliquer
-        if(priority.data().canConvert(QMetaType::Int)){
-            int val = priority.data().toInt();
-            if (role == Qt::TextColorRole){
-                if(val) val = 1; // On garde une seule couleur
-                return (u[val]);
-            }
-        }
-    }
-
-    return QSqlQueryModel::data(index,role);
-}
 

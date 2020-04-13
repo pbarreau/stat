@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QItemDelegate>
 #include <QSqlQueryModel>
+
+#include "compter.h"
 #include "colors.h"
 
 class BDelegateStepper : public QItemDelegate
@@ -17,7 +19,7 @@ class BDelegateStepper : public QItemDelegate
                   aujourdhui=0x02,
                   demain=0x04};
 
- BDelegateStepper(QWidget *parent = 0) : QItemDelegate(parent) {}
+ BDelegateStepper(QWidget *parent = nullptr) : QItemDelegate(parent) {}
  void paint(QPainter *painter, const QStyleOptionViewItem &option,
             const QModelIndex &index) const;
 };
@@ -28,10 +30,12 @@ class BDelegateElmOrCmb : public QItemDelegate
 
  public:
  typedef struct _stPrmDlgt{
-  QWidget *parent = 0;
+  QWidget *parent = nullptr;
   QString db_cnx;
+  int start=0;
   int zne=0;
   int typ=0;
+  etCount eTyp = eCountToSet;
  }stPrmDlgt;
 
  enum Filtre  {isLast=1,isPrevious=1<<1, isWanted=1<<2, isNever=1<<3,
@@ -47,27 +51,21 @@ class BDelegateElmOrCmb : public QItemDelegate
 
  private:
  QSqlDatabase dbToUse;
+ int col_show;
  QString cur_zn;
  QString cur_tp;
+ etCount eTyp;
 };
 
 class BDelegateFilterGrp : public QItemDelegate
 {
  Q_OBJECT
  public:
- BDelegateFilterGrp(QWidget *parent = 0) : QItemDelegate(parent) {}
+ BDelegateFilterGrp(QWidget *parent = nullptr) : QItemDelegate(parent) {}
  void paint(QPainter *painter, const QStyleOptionViewItem &option,
             const QModelIndex &index) const;
 };
 
 
-class BSqmColorizePriority:public QSqlQueryModel
-{
- Q_OBJECT
-
- public: ///
- explicit BSqmColorizePriority(QObject *parent = 0);
- QVariant data(const QModelIndex &index, int role) const;
-};
 
 #endif // DELEGATE_H

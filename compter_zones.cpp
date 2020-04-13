@@ -131,8 +131,10 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  BDelegateElmOrCmb::stPrmDlgt a;
  a.parent = qtv_tmp;
  a.db_cnx = cnx;
+ a.start = 1;
  a.zne=zn;
  a.typ=0; ///Position de l'onglet qui va recevoir le tableau
+ a.eTyp = eCountElm;
  qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -178,14 +180,14 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
-
+#endif
  /// Mettre dans la base une info sur 2 derniers tirages
  static int oneShotParZn = pGame->znCount; //
  if(oneShotParZn > 0){
   oneShotParZn--;
   marquerDerniers_tir(pGame, zn);
  }
-#endif
+
  /// --------------------
  return wdg_tmp;
 }
@@ -595,7 +597,7 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     QString qtv_name = QString::fromLatin1(C_TBL_6) + "_z"+QString::number(zn+1);
     qtv_tmp->setObjectName(qtv_name);
 
-    BSqmColorizePriority *sqm_tmp = &sqmZones[zn];
+    BColorPriority *sqm_tmp = &sqmZones[zn];
 
 
     QString ReqTirages = st_LstTirages;
@@ -619,8 +621,10 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     BDelegateElmOrCmb::stPrmDlgt a;
     a.parent = qtv_tmp;
     a.db_cnx = dbToUse.connectionName();
+    a.start = 0;
     a.zne=zn;
     a.typ=0; ///Position de l'onglet qui va recevoir le tableau
+    a.eTyp = eCountElm;
     qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
 
     qtv_tmp->verticalHeader()->hide();
@@ -667,6 +671,9 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
     static int oneShotParZn = myGame.znCount; //
     if(oneShotParZn > 0){
      oneShotParZn--;
+     stParam_3 *tmp = new stParam_3;
+     myGame.db_ref = tmp;
+     myGame.db_ref->fdj = st_LstTirages;
      marquerDerniers_tir(&myGame, zn);
     }
 

@@ -21,7 +21,7 @@ QString BCount::onglet[eCountEnd]={"Erreur","Zones","Combinaisons","Groupes","Ba
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
 
-BCount::BCount(const stGameConf *pGame, eCountingType genre):type(genre)
+BCount::BCount(const stGameConf *pGame, etCount genre):type(genre)
 {
 
  QString cnx=pGame->db_ref->cnx;
@@ -37,7 +37,7 @@ BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb)
 }
 
 BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
-							 QWidget *unParent=nullptr, eCountingType genre=eCountToSet)
+							 QWidget *unParent=nullptr, etCount genre=eCountToSet)
 		:QWidget(unParent), st_LstTirages(in),dbToUse(fromDb),type(genre)
 {
  bool useRequete = false;
@@ -60,7 +60,7 @@ BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
 	lesSelections = new QModelIndexList [myGame.znCount];
 	sqlSelection = new QString [myGame.znCount];
 
-	sqmZones = new BSqmColorizePriority [myGame.znCount];
+	sqmZones = new BColorPriority [myGame.znCount];
 	BRunningQuery * tmp = new BRunningQuery;
 	tmp->size = myGame.znCount;
 	tmp->sqmDef = sqmZones;
@@ -632,7 +632,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
 
   QAbstractItemModel *qtv_model = target->model();
   QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
-  BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
+  BColorPriority *A2 = qobject_cast<BColorPriority*>(A1->sourceModel());
   QString queryStr = A2->query().executedQuery();
   A2->query().clear();
   A2->setQuery(queryStr, dbToUse);
@@ -984,7 +984,7 @@ void BCount::slot_wdaFilter(bool val)
 
   QAbstractItemModel *qtv_model = target->model();
   QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
-  BSqmColorizePriority *A2 = qobject_cast<BSqmColorizePriority*>(A1->sourceModel());
+  BColorPriority *A2 = qobject_cast<BColorPriority*>(A1->sourceModel());
   QString queryStr = A2->query().executedQuery();
   A2->query().clear();
   A2->setQuery(queryStr, dbToUse);
