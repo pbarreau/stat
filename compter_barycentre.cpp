@@ -43,10 +43,12 @@ BCountBrc::BCountBrc(const stGameConf *pGame):BCount(pGame,eCountBrc)
  //creationTables(pGame);
 }
 
+/*
 QString BCountBrc::getType()
 {
  return onglet[type];
 }
+*/
 
 QTabWidget * BCountBrc::creationTables(const stGameConf *pGame)
 {
@@ -121,8 +123,10 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
  BDelegateElmOrCmb::stPrmDlgt a;
  a.parent = qtv_tmp;
  a.db_cnx = cnx;
+ a.start = 1;
  a.zne=zn;
- a.typ=1; ///Position de l'onglet qui va recevoir le tableau
+ a.typ=0; ///A supprimer
+ a.eTyp = eCountBrc;
  qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -147,74 +151,84 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
 
  // positionner le tableau
  glay_tmp->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
-
  wdg_tmp->setLayout(glay_tmp);
+
+ /// Mettre dans la base une info sur 2 derniers tirages
+ marquerDerniers_tir(pGame, eCountBrc, zn);
+
  return wdg_tmp;
 }
 
 QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
 {
  /* exemple requete :
-  *
-  * with tbBrc as
+  * with poids as
   * (
   * select cast(row_number() over ()as int) as id,
-  * cast(t1.bc as real) as bc
-  * from B_ana_z1 as t1
-  * group by bc order by bc asc
+  * cast (count(t1.z1) as int) as T
+  * from B_elm as t1
+  * LEFT join (B_fdj) as t2
+  * where(t1.z1 in(t2.b1,t2.b2,t2.b3,t2.b4,t2.b5)) group by t1.z1 order by t1.id asc
   * ),
-  * tbCal as
+  *
+  * tb_bc as
+  * (
+  * SELECT t2.id, cast( avg(poids.T) as real) as bc, t2.J as J
+  * from (B_fdj) as t2
+  * left join poids where (poids.id in(t2.b1,t2.b2,t2.b3,t2.b4,t2.b5)) group by t2.id
+  * ),
+  *
+  * tb_out as
   * (
   * select
-  * cast(t1.id as int)as Id,
-  * cast(t1.bc as real) as R,
-  * cast(count(t2.id) as int) as T,
+  * cast(row_number() over (order by count(tb_bc.bc) desc ) as int) as id,
+  * cast(tb_bc.bc as real) as R,
+  * cast (count(tb_bc.id) as int) as T,
   * cast (count(CASE WHEN  J like 'lundi%' then 1 end) as int) as LUN
-  * from tbBrc as t1, B_ana_z1 as t2, B_fdj as t3
-  * where
-  * (
-  * (t2.bc = t1.bc) AND
-  * (t2.id = t3.id)
-  * ) group by t1.id order by T desc)
+  * from tb_bc GROUP by tb_bc.bc
+  * )
   *
-  * select t1.* from (tbCal) as t1
+  * select t1.* from (tb_out) as t1
   */
  QString st_sql="";
 
- QString key = "bc";
- QString ref = "t2."+pGame->names[zn].abv+"%1";
-
- int max = pGame->limites[zn].len;
- QString st_cols = "";
- for (int i=0;i<max;i++) {
-  st_cols = st_cols + ref.arg(i+1);
-  if(i<max-1){
-   st_cols=st_cols+",";
-  }
- }
-
  QString tbl_tirages = pGame->db_ref->fdj;
- QString tbl_key = "";
- if(tbl_tirages.compare("B_fdj")==0){
-  tbl_tirages="B";
-  tbl_key="_fdj";
- }
+ QString st_critere = FN1_getFieldsFromZone(pGame, zn, "t2");
 
- st_sql= "with tbBrc as (select cast(row_number() over ()as int) as id,"
-          "cast (t1.bc as real) as bc from ("+tbl_tirages
-          +"_ana_z"+QString::number(zn+1)
-          +") as t1 "
-            "group by bc order by bc asc),"
-            "tbCal as (select cast(t1.id as int)as Id,"
-            "cast(t1.bc as real) as R,cast(count(t2.id) as int) as T"
-          +db_jours
-          +" from (tbBrc) as t1, ("+tbl_tirages
-          +"_ana_z"+QString::number(zn+1)
-          +") as t2, ("
-          +tbl_tirages+tbl_key
-          +") as t3 where((t2.bc = t1.bc) AND (t2.id = t3.id))"
-            "group by t1.id order by T desc)"
-            " select t1.* from (tbCal) as t1";
+ st_sql = "with poids as  "
+          "( "
+          "select cast(row_number() over ()as int) as id, "
+          "cast (count(t1.z"+QString::number(zn+1)+
+          ") as int) as T  "
+          "from B_elm as t1  "
+          "LEFT join ("+tbl_tirages
+          +") as t2   "
+            "where(t1.z"+QString::number(zn+1)+
+          " in("+st_critere+
+          ")) group by t1.z"+QString::number(zn+1)+
+          " order by t1.id asc), "
+          " "
+          "tb_bc as "
+          "( "
+          "SELECT t2.id, cast( avg(poids.T) as real) as bc, t2.J as J  "
+          "from ("+tbl_tirages
+          +") as t2  "
+            "left join poids where (poids.id in("+st_critere+
+          ")) group by t2.id "
+          "), "
+          " "
+          "tb_out as "
+          "( "
+          "select  "
+          "cast(row_number() over (order by count(tb_bc.bc) desc ) as int) as id,   "
+          "cast(tb_bc.bc as real) as R,  "
+          "cast (count(tb_bc.id) as int) as T "
+          +db_jours+
+          " from tb_bc GROUP by tb_bc.bc "
+          ") "
+          " "
+          "select t1.* from (tb_out) as t1 ";
+
 
 #ifndef QT_NO_DEBUG
  qDebug() <<st_sql;
@@ -310,6 +324,8 @@ QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
  a.db_cnx = dbToUse.connectionName();
  a.zne=zn;
  a.typ=1; ///Position de l'onglet qui va recevoir le tableau
+ a.eTyp = eCountBrc;
+ a.start=0;
  qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
 
 
@@ -335,12 +351,70 @@ QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
  connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 
- marquerDerniers_bar(zn);
+ marquerDerniers_bar(&myGame, eCountBrc, zn);
  return lay_return;
 
 }
 
-void BCountBrc::marquerDerniers_bar(int zn){
+void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
+{
+ bool isOk = true;
+ QSqlQuery query(db_1);//query(dbToUse);
+ QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  tbl_tirages="B";
+  tbl_key="_fdj";
+ }
+
+ /*
+  * select t1.id from r_B_fdj_brc_z1 as t1, B_ana_z1 as t2
+  * where
+  * (
+  *  (t2.id = 1) and
+  *  (t2.bc = t1.R)
+  * )
+  */
+ QString 	 msg_1 = "select t1.id from (r_"+tbl_tirages+tbl_key+
+                 "_brc_z"+QString::number(zn+1)+
+                 ") as t1, ("+tbl_tirages+
+                 "_ana_z"+QString::number(zn+1)+
+                 ") as t2 "
+                 "where "
+                 "( "
+                 " (t2.bc = t1.R) and ";
+
+ for (int lgn=1;(lgn<3) && isOk;lgn++) {
+  QString msg = msg_1+
+                " (t2.id="+QString::number(lgn)+
+                "))";
+
+#ifndef QT_NO_DEBUG
+	qDebug() << "msg: "<<msg;
+#endif
+	isOk = query.exec(msg);
+
+	if(isOk){
+	 if(query.first()){
+		stTbFiltres a;
+		a.tbName = "Filtres";
+		a.zn = zn;
+		a.eTyp = eType;
+		a.lgn = lgn;
+		a.col = 1;
+		a.pri = -1;
+		a.flt = lgn;
+		do{
+		 a.val = query.value(0).toInt();
+		 isOk = setFiltre(a,db_1);
+		 a.col++;
+		}while(query.next() && isOk);
+	 }
+	}
+ } /// fin for
+}
+
+void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int zn){
  bool isOk = true;
  QSqlQuery query(dbToUse);
  QSqlQuery query_2(dbToUse);
@@ -364,7 +438,8 @@ void BCountBrc::marquerDerniers_bar(int zn){
 	 /// check if Filtres
 	 QString mgs_2 = "Select count(*)  from Filtres where ("
 									 "zne="+QString::number(zn)+" and "+
-									 "typ=1 and val="+QString::number(key_val)+")";
+									 "typ="+QString::number(eType)+
+									 " and val="+QString::number(key_val)+")";
 	 isOk = query_2.exec(mgs_2);
 	 if(isOk){
 		query_2.first();
@@ -373,11 +448,13 @@ void BCountBrc::marquerDerniers_bar(int zn){
 		if(nbLigne==1){
 		 mgs_2 = "update Filtres set pri=-1, flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
 						 sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+" and "+
-						 "typ=1 and val="+QString::number(key_val)+")";
+						 "typ="+QString::number(eType)+
+						 " and val="+QString::number(key_val)+")";
 		}
 		else {
 		 mgs_2 ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
-						 " values (NULL,"+QString::number(zn)+",1,"+QString::number(val)+
+						 " values (NULL,"+QString::number(zn)+","+QString::number(eType)+
+						 ","+QString::number(val)+
 						 ",0,"+QString::number(key_val)+",-1,"+sdec+");";
 		}
 #ifndef QT_NO_DEBUG

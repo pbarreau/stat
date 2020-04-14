@@ -20,7 +20,7 @@ class BCountComb:public BCount
 
  BCountComb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb);
  ~BCountComb();
- void marquerDerniers_cmb(int zn);
+ void marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int zn);
  QString getFilteringData(int zn);
 
  public slots:
@@ -43,9 +43,9 @@ class BCountComb:public BCount
  private:
  QWidget *fn_Count(const stGameConf *pGame, int zn);
  QString sql_MkCountItems(const stGameConf *pGame, int zn);
-
+ void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
  private:
- virtual QString getType();
+ //virtual QString getType();
  virtual  QTabWidget *creationTables(const stGameConf *pGame);
 
 

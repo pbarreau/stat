@@ -21,6 +21,97 @@ QString BCount::onglet[eCountEnd]={"Erreur","Zones","Combinaisons","Groupes","Ba
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
 
+QString BCount::getType()
+{
+ return onglet[type];
+}
+
+bool BCount::setFiltre(stTbFiltres val, QSqlDatabase db)
+{
+ bool isOk = true;
+ QSqlQuery query_2(db);
+
+ QString tbFiltre = val.tbName;
+ int zn = val.zn;
+ etCount eType = val.eTyp;
+ int lgn = val.lgn;
+ int col = val.col;
+ int itm = val.val;
+ int pri = val.pri;
+ int flt = val.flt;
+
+ /// Verifier si info presente dans table
+ QString msg = "Select *  from "+tbFiltre+" where ("
+                 "zne="+QString::number(zn)+" and "+
+                 "typ="+QString::number(eType)+" and "+
+                 "lgn="+QString::number(lgn)+" and "+
+                 "col="+QString::number(col)+" and "+
+               "val="+QString::number(itm)+")";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "mgs_2: "<<msg;
+#endif
+ isOk = query_2.exec(msg);
+ if(isOk){
+
+	/// A t on des resultats ?
+	isOk = query_2.first();
+	if(isOk){
+	 // 1 ou plus de resultat ?
+	 int nb_items = 0;
+	 query_2.last();
+	 nb_items= query_2.at();
+	 query_2.first();
+
+	 //analyser nb_items
+	 if(nb_items>1){
+		/// Requete a donnee > 1
+		isOk = false;
+		msg="";
+	 }
+	 else {
+		/// == 1 donc update
+		msg = "update "+tbFiltre+
+						" set pri="+QString::number(pri)+
+						", flt=(case when flt is (NULL or 0 or flt<0) then 0x"+QString::number(lgn)
+						+" else(flt|0x"+QString::number(lgn)+
+						") end) where ("
+						"zne="+QString::number(zn)+" and "+
+						"typ="+QString::number(eType)+" and "+
+						"lgn="+QString::number(lgn)+" and "+
+						"col="+QString::number(col)+" and "+
+						"val="+QString::number(itm)+")";
+
+	 }
+	}
+	else {
+	 /// Pas de resultat donc insert
+	 msg ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
+					 " values (NULL,"
+					 +QString::number(zn)+","
+					 +QString::number(eType)+","
+					 +QString::number(lgn)+","
+					 +QString::number(col)+","
+					 +QString::number(itm)+","
+					 +QString::number(pri)+","
+					 +QString::number(flt)+")";
+	}
+ }
+
+ if(msg.size()){
+#ifndef QT_NO_DEBUG
+  qDebug() << "msg: "<<msg;
+#endif
+  isOk = query_2.exec(msg);
+ }
+
+ if(!isOk){
+  QMessageBox::warning(nullptr,"BCount","setFiltre",QMessageBox::Ok);
+ }
+
+ return isOk;
+}
+
 BCount::BCount(const stGameConf *pGame, etCount genre):type(genre)
 {
 

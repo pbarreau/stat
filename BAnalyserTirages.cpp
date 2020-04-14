@@ -353,7 +353,7 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 		 }
 		 msg = "create " + curTarget
 					 +" as select "+curTitle+", cast(tbRight."
-					 + colName + " as int) as "
+					 + colName + " as "+ColType+") as "
 					 + colName
 					 + " from("+curName+")as tbLeft "
 					 + "left join ("+slst[0].at(loop)
@@ -520,7 +520,7 @@ QStringList* BAnalyserTirages::CreateFilterForData(stGameConf *pGame, QString tb
  // Calcul Special utilisateur
  sl_filter[0]<< "Fn";
  sl_filter[1] << "X1";
- sl_filter[2] << "Consecutifs";
+ sl_filter[2] << "Consecutifs sur 1 tirage";
  map_UsrFn.insert("X1",&BAnalyserTirages::usrFn_X1);
 
  QString sql_code = "";
@@ -797,7 +797,14 @@ bool BAnalyserTirages::mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *
  bool isOk= true;
  QString msg = "";
 
- /// Preparation de la suppression/modification de f6
+ /// zne : zone
+ /// typ : nature du calcul (etCount)
+ /// lgn : ligne
+ /// col : colonne
+ /// val : clef associee a la representation R (ce qui est visible)
+ /// pri : priorite (de choix)
+ /// flt : filtre (1 dernier tirage, 2 avant dernier) Q_FLAG(Filtres)
+
  msg =  "create table "+tbName
        +" (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
 

@@ -42,10 +42,12 @@ BCountComb::BCountComb(const stGameConf *pGame):BCount(pGame,eCountCmb)
  //creationTables(pGame);
 }
 
+/*
 QString BCountComb::getType()
 {
  return onglet[type];
 }
+*/
 
 QTabWidget * BCountComb::creationTables(const stGameConf *pGame)
 {
@@ -121,8 +123,10 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
  BDelegateElmOrCmb::stPrmDlgt a;
  a.parent = qtv_tmp;
  a.db_cnx = cnx;
+ a.start = 1;
  a.zne=zn;
- a.typ=0; ///Position de l'onglet qui va recevoir le tableau
+ a.typ=0; ///A supprimer
+ a.eTyp = eCountCmb;
  qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -148,8 +152,11 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
 
  // positionner le tableau
  glay_tmp->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
-
  wdg_tmp->setLayout(glay_tmp);
+
+ /// Mettre dans la base une info sur 2 derniers tirages
+ marquerDerniers_tir(pGame, eCountCmb, zn);
+
  return wdg_tmp;
 }
 
@@ -592,6 +599,8 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
  a.db_cnx = dbToUse.connectionName();
  a.zne=zn;
  a.typ=2; ///Position de l'onglet qui va recevoir le tableau
+ a.eTyp = eCountCmb;
+ a.start = 0;
  qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -651,12 +660,62 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
  lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
  lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
 
- marquerDerniers_cmb(zn);
+ marquerDerniers_cmb(&myGame, eCountCmb, zn);
 
  return lay_return;
 }
 
-void BCountComb::marquerDerniers_cmb(int zn){
+void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
+{
+ bool isOk = true;
+ QSqlQuery query(db_1);//query(dbToUse);
+ QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  tbl_tirages="B";
+  tbl_key="_fdj";
+ }
+
+ /*
+  * select t1.idComb as b from B_ana_z1 as t1
+  * where ((t2.id=1))
+  */
+ QString 	 msg_1 = "select t1.idComb as b from ("+
+                 tbl_tirages+"_ana_z"+
+                 QString::number(zn+1)+") as t1 where";
+
+ for (int lgn=1;(lgn<3) && isOk;lgn++) {
+  QString msg = msg_1+
+                " (t1.id="+QString::number(lgn)+
+                ")";
+
+#ifndef QT_NO_DEBUG
+	qDebug() << "msg: "<<msg;
+#endif
+	isOk = query.exec(msg);
+
+	if(isOk){
+	 if(query.first()){
+		stTbFiltres a;
+		a.tbName = "Filtres";
+		a.zn = zn;
+		a.eTyp = eType;
+		a.lgn = lgn;
+		a.col = 1;
+		a.pri = -1;
+		a.flt = lgn;
+		do{
+		 a.val = query.value(0).toInt();
+		 isOk = setFiltre(a,db_1);
+		 a.col++;
+		}while(query.next() && isOk);
+	 }
+	}
+ } /// fin for
+}
+
+void BCountComb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int zn)
+{
  bool isOk = true;
  QSqlQuery query(dbToUse);
  QSqlQuery query_2(dbToUse);
@@ -680,7 +739,8 @@ void BCountComb::marquerDerniers_cmb(int zn){
 	 /// check if Filtres
 	 QString mgs_2 = "Select count(*)  from Filtres where ("
 									 "zne="+QString::number(zn)+" and "+
-									 "typ=2 and val="+QString::number(key_val)+")";
+									 "typ="+QString::number(eType)+
+									 " and val="+QString::number(key_val)+")";
 	 isOk = query_2.exec(mgs_2);
 	 if(isOk){
 		query_2.first();
@@ -689,11 +749,13 @@ void BCountComb::marquerDerniers_cmb(int zn){
 		if(nbLigne==1){
 		 mgs_2 = "update Filtres set pri=-1, flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
 						 sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+" and "+
-						 "typ=2 and val="+QString::number(key_val)+")";
+						 "typ="+QString::number(eType)+
+						 " and val="+QString::number(key_val)+")";
 		}
 		else {
 		 mgs_2 ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
-						 " values (NULL,"+QString::number(zn)+",2,"+QString::number(val)+
+						 " values (NULL,"+QString::number(zn)+","+QString::number(eType)+
+						 ","+QString::number(val)+
 						 ",0,"+QString::number(key_val)+",-1,"+sdec+");";
 		}
 #ifndef QT_NO_DEBUG

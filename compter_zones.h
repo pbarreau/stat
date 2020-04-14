@@ -39,7 +39,7 @@ class BCountElem:public BCount//, public cFdjData
 
  private:
  QGridLayout *Compter(QString * pName, int zn);
- void marquerDerniers_tir(const stGameConf *pGame, int zn);
+ void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
  QStringList * CreateFilterForData(int zn);
  QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
  QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
@@ -51,7 +51,7 @@ class BCountElem:public BCount//, public cFdjData
  QString sql_MkCountItems(const stGameConf *pGame, int zn);
 
  private:
- virtual QString getType();
+ //virtual QString getType();
  virtual  QTabWidget *creationTables(const stGameConf *pGame);
 
 

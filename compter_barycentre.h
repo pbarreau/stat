@@ -33,7 +33,7 @@ class BCountBrc:public BCount
  QString getFilteringData(int zn);
 
  private:
- void marquerDerniers_bar(int zn);
+ void marquerDerniers_bar(const stGameConf *pGame, etCount eType, int zn);
  void hc_RechercheBarycentre(QString tbl_in);
  bool isTableTotalBoulleReady(QString tbl_total);
  bool mettreBarycentre(QString tbl_dst, QString src_data);
@@ -46,8 +46,9 @@ class BCountBrc:public BCount
  QString sql_MkCountItems(const stGameConf *pGame, int zn);
 
  private:
- virtual QString getType();
+ //virtual QString getType();
  virtual  QTabWidget *creationTables(const stGameConf *pGame);
+ void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
 
 
  private:

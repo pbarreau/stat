@@ -423,9 +423,9 @@ BDelegateElmOrCmb::BDelegateElmOrCmb(stPrmDlgt prm) : QItemDelegate(prm.parent)
  eTyp = prm.eTyp;
 
  QString cnx=prm.db_cnx;
- dbToUse = QSqlDatabase::database(cnx);
- if(dbToUse.isValid()==false){
-  QString str_error = dbToUse.lastError().text();
+ db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
  }
@@ -494,25 +494,28 @@ void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &opt
 
 //|| (col>0 && (cur_tp.toInt()==3))
 // if(((col == col_show) && (cur_tp.toInt()<3)) || (col>0 && (cur_tp.toInt()==3))){
- if(((col == col_show) && ((eTyp>eCountToSet) && (eTyp<eCountEnd))) || (col>0 && (cur_tp.toInt()==3))){
+ if(((col == col_show) && ((eTyp>eCountToSet) && (eTyp<eCountEnd))) || (col>0 && (eTyp==eCountGrp))){
 
 	int val_cell = 0;
+	/*
 	if(index.data().canConvert(QMetaType::Int)){
 	 val_cell = index.data().toInt();
 	}
+*/
+	val_cell = index.sibling(index.row(),0).data().toInt();
 
 	QString flt_grp_key="";
-	if(col>0 && (cur_tp.toInt()==3)){
+	if(col>0 && (eTyp==eCountGrp)){
 	 flt_grp_key = " and lgn="+QString::number(index.row()) +
 								 " and col="+QString::number(index.column());
 	}
 
 	QString msg = "Select pri,flt from Filtres where("
 								"zne="+cur_zn+" and " +
-								"typ="+cur_tp+" and "+
+								"typ="+QString::number(eTyp)+" and "+
 								"val="+QString::number(val_cell)+flt_grp_key+
 								")";
-	QSqlQuery q(dbToUse);
+	QSqlQuery q(db_1);
 	bool isOk=q.exec(msg);
 
 	int val_f = 0;

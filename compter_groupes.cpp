@@ -47,10 +47,12 @@ BCountGroup::BCountGroup(const stGameConf *pGame,QStringList** lstCri):BCount(pG
  slFlt = lstCri;
 }
 
+/*
 QString BCountGroup::getType()
 {
  return onglet[type];
 }
+*/
 
 QTabWidget * BCountGroup::creationTables(const stGameConf *pGame)
 {
@@ -362,11 +364,11 @@ QGridLayout *BCountGroup::Compter(QString * pName, int zn)
  //lay_return->addWidget(qtv_tmp_1,0,0,Qt::AlignLeft|Qt::AlignTop);
  lay_return->addWidget(qtv_tmp_2,1,0,Qt::AlignLeft|Qt::AlignTop);
 
- marquerDerniers_grp(zn);
+ marquerDerniers_grp(&myGame, eCountGrp, zn);
 
  return lay_return;
 }
-bool BCountGroup::marquerDerniers_grp(int zn)
+bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, int zn)
 {
  bool isOk_1 = true;
  //bool isOk_2 = true;
@@ -414,7 +416,8 @@ bool BCountGroup::marquerDerniers_grp(int zn)
 					/// check if Filtres
 					msg = "Select count(*)  from Filtres where ("
 								"zne="+QString::number(zn)+
-								" and typ=3  and lgn="+QString::number(val_col)+
+								" and typ="+QString::number(eType)+
+								" and lgn="+QString::number(val_col)+
 								" and col="+QString::number(col_id)+
 								" and val="+QString::number(val_cell)+")";
 					isOk_1 = query_3.exec(msg);
@@ -428,13 +431,15 @@ bool BCountGroup::marquerDerniers_grp(int zn)
 					 if(nbLigne==1){
 						msg = "update Filtres set  flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
 									sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+
-									" and typ=3 and lgn="+QString::number(val_col)+
+									" and typ="+QString::number(eType)+
+									" and lgn="+QString::number(val_col)+
 									" and col="+QString::number(col_id)+
 									" and val="+QString::number(val_cell)+")";
 					 }
 					 else {
 						msg="insert into Filtres (id,zne,typ,lgn,col,val,pri,flt) values (Null,"+
-									QString::number(zn)+",3,"+QString::number(val_col)+","+
+									QString::number(zn)+","+QString::number(eType)+
+									","+QString::number(val_col)+","+
 									QString::number(col_id)+","+QString::number(val_cell)+",0,"+sdec+")";
 					 }
 					}
@@ -672,6 +677,9 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
  a.db_cnx = dbToUse.connectionName();
  a.zne=zn;
  a.typ=3; ///Position de l'onglet qui va recevoir le tableau
+ a.eTyp = eCountGrp;
+ a.start=0;
+
  qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();

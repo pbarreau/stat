@@ -72,6 +72,17 @@ typedef struct _BRunningQuery
 
 typedef struct _prmbary stNeedsOfBary;
 
+typedef struct _stTbFiltres{
+ QString tbName; /// Nom de la table filtre
+ int zn;         /// Zone id
+ etCount eTyp;   /// Type de filtre
+ int lgn;
+ int col;
+ int val;        /// Valeur a lgn & col
+ int pri;
+ int flt;        /// bit field
+}stTbFiltres;
+
 class BCount:public QWidget
 {
  Q_OBJECT
@@ -83,12 +94,13 @@ class BCount:public QWidget
  BCount(const stNeedsOfBary &param){Q_UNUSED(param)}
 
  public:
- virtual QString getType()= 0;
+ QString getType();
  virtual QTabWidget *creationTables(const stGameConf *pGame) = 0;
 
 
  protected:
  virtual QGridLayout *Compter(QString * pName, int zn)=0;
+ bool setFiltre(stTbFiltres val, QSqlDatabase db);
 
  QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
  QString CriteresCreer(QString operateur, QString critere,int zone);

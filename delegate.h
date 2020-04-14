@@ -30,12 +30,12 @@ class BDelegateElmOrCmb : public QItemDelegate
 
  public:
  typedef struct _stPrmDlgt{
-  QWidget *parent = nullptr;
+  QWidget *parent;
   QString db_cnx;
-  int start=0;
-  int zne=0;
-  int typ=0;
-  etCount eTyp = eCountToSet;
+  int start;
+  int zne;
+  int typ;
+  etCount eTyp;
  }stPrmDlgt;
 
  enum Filtre  {isLast=1,isPrevious=1<<1, isWanted=1<<2, isNever=1<<3,
@@ -50,7 +50,7 @@ class BDelegateElmOrCmb : public QItemDelegate
             const QModelIndex &index) const;
 
  private:
- QSqlDatabase dbToUse;
+ QSqlDatabase db_1;
  int col_show;
  QString cur_zn;
  QString cur_tp;

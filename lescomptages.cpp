@@ -698,7 +698,7 @@ QString ens_small = "with small as (select jour_next.* from (SELECT tb1.* from B
  sql_CnpCountFromId(1,4);
 #endif
 
- isOk = do_SqlCnpCount(); //do_SqlCnpPrepare();
+ //// TMP: isOk = do_SqlCnpCount(); //do_SqlCnpPrepare();
 
  int nbZone = onGame.znCount;
 

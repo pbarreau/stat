@@ -25,7 +25,7 @@ class BCountGroup:public BCount
  bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
  bool SupprimerVueIntermediaires(void);
  QString getFilteringData(int zn);
- bool marquerDerniers_grp(int zn);
+ bool marquerDerniers_grp(const stGameConf *pGame, etCount eType, int zn);
 
 
 
@@ -70,7 +70,7 @@ class BCountGroup:public BCount
  bool db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl, QSqlQuery * query, QString * msg);
 
  private:
- virtual QString getType();
+ //virtual QString getType();
  virtual  QTabWidget *creationTables(const stGameConf *pGame);
 
 
