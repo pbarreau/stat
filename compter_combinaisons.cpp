@@ -11,7 +11,9 @@
 #include <QFormLayout>
 #include <QStackedWidget>
 
-#include "delegate.h"
+//#include "delegate.h"
+#include "BFlags.h"
+
 #include "filtrecombinaisons.h"
 #include "compter_combinaisons.h"
 #include "cnp_SansRepetition.h"
@@ -120,14 +122,14 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
  m->setHeaderData(1,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
 
 
- BDelegateElmOrCmb::stPrmDlgt a;
+ BFlags::stPrmDlgt a;
  a.parent = qtv_tmp;
  a.db_cnx = cnx;
  a.start = 1;
  a.zne=zn;
  a.typ=0; ///A supprimer
  a.eTyp = eCountCmb;
- qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
+ qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
  qtv_tmp->hideColumn(0);
@@ -594,14 +596,14 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
 
- BDelegateElmOrCmb::stPrmDlgt a;
+ BFlags::stPrmDlgt a;
  a.parent = qtv_tmp;
  a.db_cnx = dbToUse.connectionName();
  a.zne=zn;
  a.typ=2; ///Position de l'onglet qui va recevoir le tableau
  a.eTyp = eCountCmb;
  a.start = 0;
- qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
+ qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
  //qtv_tmp->hideColumn(0);
@@ -780,7 +782,7 @@ QString BCountComb::getFilteringData(int zn)
 
  msg = "select tb1.val from ("+userFiltringTableData
        +")as tb1 "
-         "where((tb1.flt&0x"+QString::number(BDelegateElmOrCmb::isWanted)+"=0x"+QString::number(BDelegateElmOrCmb::isWanted)+
+         "where((tb1.flt&0x"+QString::number(BFlags::isWanted)+"=0x"+QString::number(BFlags::isWanted)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=2)";
  isOk = query.exec(msg);
 

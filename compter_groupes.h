@@ -72,7 +72,7 @@ class BCountGroup:public BCount
  private:
  //virtual QString getType();
  virtual  QTabWidget *creationTables(const stGameConf *pGame);
-
+ void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
 
  private:
  BCountGroup * addr;

@@ -35,7 +35,10 @@
 #include "compter_barycentre.h"
 
 #include "labelclickable.h"
-#include "delegate.h"
+
+//#include "delegate.h"
+#include "BFlags.h"
+
 #include "lescomptages.h"
 #include "cnp_AvecRepetition.h"
 #include "db_tools.h"
@@ -1994,8 +1997,8 @@ void BPrevision::slot_UGL_ClrFilters()
  bool isOk = true;
  QString msg = "";
  msg = "update Filtres set flt=(case when ((flt&0x"+
-       QString::number(BDelegateElmOrCmb::isWanted)+")==0x"+QString::number(BDelegateElmOrCmb::isWanted)+
-       " and (flt>0)) then (flt&~(0x"+QString::number(BDelegateElmOrCmb::isWanted)+")) ELSE flt END)";
+       QString::number(BFlags::isWanted)+")==0x"+QString::number(BFlags::isWanted)+
+       " and (flt>0)) then (flt&~(0x"+QString::number(BFlags::isWanted)+")) ELSE flt END)";
 
 #ifndef QT_NO_DEBUG
  qDebug() <<msg;

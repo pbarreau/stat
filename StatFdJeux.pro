@@ -101,7 +101,8 @@ SOURCES += \
     BFdj.cpp \
     cFdjData.cpp \
     compter_barycentre.cpp \
-    BColorPriority.cpp
+    BColorPriority.cpp \
+    BFlags.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -165,7 +166,8 @@ HEADERS  += \
     BFdj.h \
     cFdjData.h \
     compter_barycentre.h \
-    BColorPriority.h
+    BColorPriority.h \
+    BFlags.h
 
 
 FORMS    += mainwindow.ui \

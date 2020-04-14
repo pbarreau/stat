@@ -20,7 +20,9 @@
 
 #include "compter_groupes.h"
 #include "db_tools.h"
-#include "delegate.h"
+
+//#include "delegate.h"
+#include "BFlags.h"
 
 int BCountGroup::total = 0;
 
@@ -130,12 +132,14 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
  /// Determination nb ligne par proxymodel
  int nb_lgn_ftr = m->rowCount();
 
- BDelegateElmOrCmb::stPrmDlgt a;
+ BFlags::stPrmDlgt a;
  a.parent = qtv_tmp;
  a.db_cnx = cnx;
+ a.start = 1;
  a.zne=zn;
- a.typ=0; ///Position de l'onglet qui va recevoir le tableau
- qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
+ a.typ=0; ///A supprimer
+ a.eTyp = eCountGrp;
+ qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
  //qtv_tmp->hideColumn(0);
@@ -167,8 +171,11 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
 
  // positionner le tableau
  glay_tmp->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
-
  wdg_tmp->setLayout(glay_tmp);
+
+ /// Mettre dans la base une info sur 2 derniers tirages
+ marquerDerniers_tir(pGame, eCountGrp, zn);
+
  return wdg_tmp;
 }
 
@@ -251,10 +258,10 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
   /// Plus de table intermediaire commencer
   curName = "vt_0";
   *msg = "create view if not exists "
-        +curName+" as select cast(Choix.tz"
-        +QString::number(zn+1)+ " as int) as Nb"
-        +" from("+stDefBoules+")as Choix where(Choix.tz"
-        +QString::number(zn+1)+ " is not null)";
+         +curName+" as select cast(Choix.tz"
+         +QString::number(zn+1)+ " as int) as Nb"
+         +" from("+stDefBoules+")as Choix where(Choix.tz"
+         +QString::number(zn+1)+ " is not null)";
 #ifndef QT_NO_DEBUG
   qDebug() << *msg;
 #endif
@@ -276,14 +283,14 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
 
 	 prvName ="vt_"+QString::number(loop);
 	 *msg = "create "+stGenre+" if not exists "
-				 + curName
-				 +" as select tbleft.*, cast((case when count(tbRight.id)!=0 then count(tbRight.id) end)as int) as "
-				 +slst[1].at(loop)
-				 + " from("+prvName+") as tbLeft "
-				 +"left join ("
-				 +stCurTable
-				 +") as tbRight on (tbLeft.Nb = tbRight."
-				 +slst[1].at(loop)+")group by tbLeft.Nb";
+					+ curName
+					+" as select tbleft.*, cast((case when count(tbRight.id)!=0 then count(tbRight.id) end)as int) as "
+					+slst[1].at(loop)
+					+ " from("+prvName+") as tbLeft "
+					+"left join ("
+					+stCurTable
+					+") as tbRight on (tbLeft.Nb = tbRight."
+					+slst[1].at(loop)+")group by tbLeft.Nb";
 #ifndef QT_NO_DEBUG
 	 qDebug() << *msg;
 #endif
@@ -294,7 +301,7 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
 	/// Rajouter a la fin une colonne pour fitrage
 	if(isOk){
 	 *msg = "create table if not exists "+dstTbl
-				 +" as select tb1.* from ("+curName+") as tb1";
+					+" as select tb1.* from ("+curName+") as tb1";
 #ifndef QT_NO_DEBUG
 	 qDebug() << *msg;
 #endif
@@ -368,6 +375,89 @@ QGridLayout *BCountGroup::Compter(QString * pName, int zn)
 
  return lay_return;
 }
+
+void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
+{
+ bool isOk = true;
+ QSqlQuery query(db_1);//query(dbToUse);
+
+ QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  tbl_tirages="B";
+  tbl_key="_fdj";
+ }
+
+ /*
+  * with tb_clef
+  * as(select t1.P from (B_ana_z1) as t1 where (t1.id=1)),
+  *
+  * tb_out
+  * as(select t2.Nb as key, t2.P from (r_B_grp_z1) as t2, tb_clef where(t2.Nb=tb_clef.p))
+  *
+  * select t1.* from (tb_out) as t1
+  */
+
+ QStringList *slst=&slFlt[zn][0];
+ int nbCols = slst[1].size();
+
+
+ QString msg = "";
+ QString key = "";
+
+ for (int lgn=1;(lgn<3) && isOk;lgn++)
+ {
+
+	for(int loop = 0; (loop < nbCols)&& isOk; loop ++)
+	{
+
+	 if(slst[2].at(loop).compare("special") == 0){
+		continue;
+	 }
+
+	 key = slst[1].at(loop);
+
+	 msg = "with tb_clef  "
+				 "as(select t1."+key+
+				 " from ("+tbl_tirages+
+				 "_ana_z"+QString::number(zn+1)+
+				 ") as t1 where (t1.id="+QString::number(lgn)
+				 +")), "
+					 " "
+					 "tb_out  "
+					 "as(select t2.Nb as key, t2."+key+
+				 " from (r_"+tbl_tirages+
+				 "_grp_z"+QString::number(zn+1)+
+				 ") as t2, tb_clef where(t2.Nb=tb_clef."+key+
+				 ")) "
+				 " "
+				 "select t1.* from (tb_out) as t1 ";
+
+#ifndef QT_NO_DEBUG
+	 qDebug() << "msg: "<<msg;
+#endif
+	 isOk = query.exec(msg);
+
+	 if(isOk){
+		if(query.first()){
+		 stTbFiltres a;
+		 a.tbName = "Filtres";
+		 a.zn = zn;
+		 a.eTyp = eType;
+		 a.lgn = query.value(0).toInt();
+		 a.col = loop+1;
+		 a.pri = -1;
+		 a.flt = lgn|BFlags::Filtre::isWanted;
+		 do{
+			a.val = query.value(1).toInt();
+			isOk = setFiltre(a,db_1);
+		 }while(query.next() && isOk);
+		}
+	 }
+	} /// fin for loop
+ }
+}
+
 bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, int zn)
 {
  bool isOk_1 = true;
@@ -426,7 +516,7 @@ bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, in
 					 query_3.first();
 
 					 int cur_id = query_2.value(0).toInt();
-					 QString sdec = QString::number(cur_id|BDelegateElmOrCmb::isWanted);
+					 QString sdec = QString::number(cur_id|BFlags::isWanted);
 					 int nbLigne = query_3.value(0).toInt();
 					 if(nbLigne==1){
 						msg = "update Filtres set  flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
@@ -672,7 +762,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
  qtv_tmp->setModel(m);
  qtv_tmp->setSortingEnabled(false);
 
- BDelegateElmOrCmb::stPrmDlgt a;
+ BFlags::stPrmDlgt a;
  a.parent = qtv_tmp;
  a.db_cnx = dbToUse.connectionName();
  a.zne=zn;
@@ -680,7 +770,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
  a.eTyp = eCountGrp;
  a.start=0;
 
- qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
+ qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
  //qtv_tmp->hideColumn(0);
@@ -1360,7 +1450,7 @@ QString BCountGroup::getFilteringData(int zn)
 
  msg = "select tb1.* from ("+userFiltringTableData
        +")as tb1 "
-         "where((tb1.flt&0x"+QString::number(BDelegateElmOrCmb::isWanted)+"=0x"+QString::number(BDelegateElmOrCmb::isWanted)+
+         "where((tb1.flt&0x"+QString::number(BFlags::isWanted)+"=0x"+QString::number(BFlags::isWanted)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=3) order by tb1.col, tb1.lgn";
  isOk_1 = query_1.exec(msg);
  isOk_2 = query_2.exec(msg);

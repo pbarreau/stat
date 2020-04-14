@@ -20,7 +20,8 @@
 
 #include "compter_zones.h"
 #include "db_tools.h"
-#include "delegate.h"
+//#include "delegate.h"
+#include "BFlags.h"
 
 int BCountElem::total = 1;
 
@@ -130,14 +131,14 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  m->setHeaderData(1,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
  qtv_tmp->setModel(m);
 
- BDelegateElmOrCmb::stPrmDlgt a;
+ BFlags::stPrmDlgt a;
  a.parent = qtv_tmp;
  a.db_cnx = cnx;
  a.start = 1;
  a.zne=zn;
  a.typ=0; ///A supprimer
  a.eTyp = eCountElm;
- qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
+ qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
  qtv_tmp->hideColumn(0);
@@ -630,14 +631,14 @@ QGridLayout *BCountElem::Compter(QString * pName, int zn)
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
 
- BDelegateElmOrCmb::stPrmDlgt a;
+ BFlags::stPrmDlgt a;
  a.parent = qtv_tmp;
  a.db_cnx = db_1.connectionName();
  a.start = 0;
  a.zne=zn;
  a.typ=0; ///Position de l'onglet qui va recevoir le tableau
  a.eTyp = eCountElm;
- qtv_tmp->setItemDelegate(new BDelegateElmOrCmb(a)); /// Delegation
+ qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
  //qtv_tmp->hideColumn(0);
@@ -848,7 +849,7 @@ QString BCountElem::getFilteringData(int zn)
 
  msg = "select tb1.val from ("+userFiltringTableData
        +")as tb1 "
-         "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(BDelegateElmOrCmb::isWanted)+"=0x"+QString::number(BDelegateElmOrCmb::isWanted)+
+         "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(BFlags::isWanted)+"=0x"+QString::number(BFlags::isWanted)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=0 and tb1.pri=1)";
  isOk = query.exec(msg);
 #ifndef QT_NO_DEBUG

@@ -12,7 +12,9 @@
 #include <QMenu>
 #include <QSortFilterProxyModel>
 
-#include "delegate.h"
+//#include "delegate.h"
+#include "BFlags.h"
+
 #include "compter.h"
 #include "db_tools.h"
 
@@ -73,8 +75,8 @@ bool BCount::setFiltre(stTbFiltres val, QSqlDatabase db)
 		/// == 1 donc update
 		msg = "update "+tbFiltre+
 						" set pri="+QString::number(pri)+
-						", flt=(case when flt is (NULL or 0 or flt<0) then 0x"+QString::number(lgn)
-						+" else(flt|0x"+QString::number(lgn)+
+						", flt=(case when flt is (NULL or 0 or flt<0) then 0x"+QString::number(flt)
+						+" else(flt|0x"+QString::number(flt)+
 						") end) where ("
 						"zne="+QString::number(zn)+" and "+
 						"typ="+QString::number(eType)+" and "+
@@ -636,7 +638,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
          this,SLOT(slot_wdaFilter(bool)));
 
 
- if((flt>0) && (flt&BDelegateElmOrCmb::isWanted))
+ if((flt>0) && (flt&BFlags::isWanted))
  {
   filtrer->setChecked(true);
  }
@@ -1006,7 +1008,7 @@ void BCount::slot_wdaFilter(bool val)
  if((def[1].toInt()==0) && (def[2].toInt()==0) && (def[6].toInt()!=1))
   return;
 
- QString msg_2 = QString::number(BDelegateElmOrCmb::isWanted);
+ QString msg_2 = QString::number(BFlags::isWanted);
 
  /// si je suis sur l'onglet GRP je peux avoir
  /// la meme valeur pour plusieurs colonnes
@@ -1047,7 +1049,7 @@ void BCount::slot_wdaFilter(bool val)
   if(def[7].toInt()<0){
    def[7]="0";
   }
-  msg_2=QString::number(def[7].toInt()^ (BDelegateElmOrCmb::isWanted));
+  msg_2=QString::number(def[7].toInt()^ (BFlags::isWanted));
 
   msg = "update  Filtres set flt="+msg_2+
         " where("
