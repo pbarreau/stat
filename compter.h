@@ -154,6 +154,7 @@ class BCount:public QWidget
  void slot_ChoosePriority(QAction *cmd);
  void slot_wdaFilter(bool val);
 
+ void slot_V2_AideToolTip(const QModelIndex & index);
 
 
  Q_SIGNALS:

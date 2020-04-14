@@ -294,6 +294,35 @@ void BCount::RecupererConfiguration(void)
 #endif
 }
 
+void BCount::slot_V2_AideToolTip(const QModelIndex & index)
+{
+ QString msg="";
+ const QAbstractItemModel * pModel = index.model();
+ int col = index.column();
+
+ QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+ QString headTop= "";
+ QString headRef = "";
+
+ int start = 1;
+ if(type == eCountGrp){
+  start = 0;
+  vCol = pModel->headerData(col,Qt::Horizontal,Qt::ToolTipRole);
+ }
+
+ headRef = pModel->headerData(start,Qt::Horizontal).toString();
+ headTop = vCol.toString();
+ if (col > start)
+ {
+  QString s_nb = index.model()->index(index.row(),start).data().toString();
+  QString s_va = index.model()->index(index.row(),col).data().toString();
+  QString s_hd = headTop;
+  msg = msg + QString("Quand %1=%2,%3=%4 tirage(s)").arg(headRef).arg(s_nb).arg(s_hd).arg(s_va);
+ }
+ if(msg.length())
+  QToolTip::showText (QCursor::pos(), msg);
+}
+
 
 void BCount::slot_AideToolTip(const QModelIndex & index)
 {

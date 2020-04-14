@@ -166,6 +166,10 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  wdg_tmp->setLayout(glay_tmp);
 
  /// --------------------
+ qtv_tmp->setMouseTracking(true);
+ connect(qtv_tmp,
+         SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
+
 #if 0
  // simple click dans fenetre  pour selectionner boules
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
@@ -174,10 +178,6 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  // Double click dans fenetre  pour creer requete
  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
          this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
-
- qtv_tmp->setMouseTracking(true);
- connect(qtv_tmp,
-         SIGNAL(entered(QModelIndex)),this,SLOT(slot_AideToolTip(QModelIndex)));
 
  /// Selection & priorite
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);

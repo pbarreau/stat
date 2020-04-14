@@ -159,6 +159,10 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
  /// Mettre dans la base une info sur 2 derniers tirages
  marquerDerniers_tir(pGame, eCountCmb, zn);
 
+ qtv_tmp->setMouseTracking(true);
+ connect(qtv_tmp,
+         SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
+
  return wdg_tmp;
 }
 
