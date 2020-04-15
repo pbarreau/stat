@@ -85,6 +85,7 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
  QTableView *qtv_tmp = new QTableView;
+ qtv_tmp->setObjectName(QString::number(zn));
 
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
@@ -179,6 +180,11 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,
          SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
+
+ /// Selection & priorite
+ qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
 
  return wdg_tmp;
 }
@@ -468,9 +474,9 @@ bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, in
  //bool isOk_2 = true;
 
  QString msg = "";
- QSqlQuery query_1(dbToUse);
- QSqlQuery query_2(dbToUse);
- QSqlQuery query_3(dbToUse);
+ QSqlQuery query_1(dbCount);
+ QSqlQuery query_2(dbCount);
+ QSqlQuery query_3(dbCount);
 
  /// Lire table GRP
  QString  table_1 = "grp_z"+QString::number(zn+1);
@@ -566,7 +572,7 @@ bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable
 
  bool isOk = true;
  QString msg = "";
- QSqlQuery query(dbToUse);
+ QSqlQuery query(dbCount);
  QString stDefBoules = C_TBL_2;
  QString st_OnDef = "";
 
@@ -753,7 +759,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
  qDebug() << "SQL:"<<sql_msgRef;
 #endif
 
- sqm_tmp->setQuery(sql_msgRef,dbToUse);
+ sqm_tmp->setQuery(sql_msgRef,dbCount);
 
  qtv_tmp->setAlternatingRowColors(true);
  qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -768,7 +774,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 
  BFlags::stPrmDlgt a;
  a.parent = qtv_tmp;
- a.db_cnx = dbToUse.connectionName();
+ a.db_cnx = dbCount.connectionName();
  a.zne=zn;
  a.typ=3; ///Position de l'onglet qui va recevoir le tableau
  a.eTyp = eCountGrp;
@@ -857,7 +863,7 @@ void BCountGroup::slot_wdaFilter(bool isChecked)
 bool BCountGroup::updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool isChecked, int zn)
 {
  bool isOk = true;
- QSqlQuery query(dbToUse);
+ QSqlQuery query(dbCount);
  QString msg = "";
 
  QString tbl_1 = "U_g_z1";
@@ -893,7 +899,7 @@ bool BCountGroup::updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool 
 bool BCountGroup::updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn)
 {
  bool isOk = true;
- QSqlQuery query(dbToUse);
+ QSqlQuery query(dbCount);
  QString msg = "";
 
 
@@ -943,7 +949,7 @@ bool BCountGroup::updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn)
  if(isOk){
   /// Relancer les requetes pour voir les modifs
   msg = sqmZones[zn].query().executedQuery();
-  sqmZones[zn].setQuery(msg,dbToUse);
+  sqmZones[zn].setQuery(msg,dbCount);
  }
 
  if(!isOk)
@@ -1008,7 +1014,7 @@ void BCountGroup::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 void BCountGroup::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp)
 {
  bool status = true;
- QSqlQuery query(dbToUse) ;
+ QSqlQuery query(dbCount) ;
 
  for(int j=0; (j< nbCol) && (status == true);j++)
  {
@@ -1109,7 +1115,7 @@ void BCountGroup::slot_DecodeTirage(const QModelIndex & index)
   return;
  }
 
- QSqlQuery query(dbToUse);
+ QSqlQuery query(dbCount);
 
  for(int zn = 0; zn < myGame.znCount;zn ++)
  {
@@ -1442,8 +1448,8 @@ void BCountGroup::slot_RequeteFromSelection(const QModelIndex &index)
 
 QString BCountGroup::getFilteringData(int zn)
 {
- QSqlQuery query_1(dbToUse);
- QSqlQuery query_2(dbToUse);
+ QSqlQuery query_1(dbCount);
+ QSqlQuery query_2(dbCount);
  bool isOk_1 = true;
  bool isOk_2 = true;
  QString msg = "";

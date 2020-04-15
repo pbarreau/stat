@@ -113,6 +113,8 @@ class BCount:public QWidget
  QString CreerCritereJours(QString cnx_db_name, QString tbl_ref);
  QString FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString alias="");
 
+ bool V2_showMyMenu(etCount eSrc, QTableView *view, QPoint pos);
+ QMenu *V2_mnu_SetPriority(etCount eSrc, QMenu *MonMenu, QTableView *view, QPoint pos);
 
  private:
  void RecupererConfiguration(void);
@@ -128,7 +130,7 @@ class BCount:public QWidget
  static QString onglet[]; /// nom associe aux types
  etCount type; /// type de comptage en cours
  QString st_LstTirages;    /// information de tous les tirages
- QSqlDatabase dbToUse;
+ QSqlDatabase dbCount;
  QString db_jours;   /// information des jours de tirages
 
  stGameConf myGame;
@@ -155,6 +157,7 @@ class BCount:public QWidget
  void slot_wdaFilter(bool val);
 
  void slot_V2_AideToolTip(const QModelIndex & index);
+ void slot_V2_ccmr_SetPriorityAndFilters(QPoint pos);
 
 
  Q_SIGNALS:

@@ -80,6 +80,7 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
  QTableView *qtv_tmp = new QTableView;
+ qtv_tmp->setObjectName(QString::number(zn));
 
  QString dstTbl = "r_"
                   +pGame->db_ref->fdj
@@ -162,6 +163,11 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,
          SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
+
+ /// Selection & priorite
+ qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
 
  return wdg_tmp;
 }
@@ -432,7 +438,7 @@ void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
 
 QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int dst)
 {
- QSqlQuery query(dbToUse) ;
+ QSqlQuery query(dbCount) ;
  QString msg = "";
  bool isOk = true;
 
@@ -443,7 +449,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
                     +"_z"+QString::number(zn+1);
 
  QString ret_sql = "select * from ("+viewName+")";
- if(DB_Tools::isDbGotTbl(viewName,dbToUse.connectionName())){
+ if(DB_Tools::isDbGotTbl(viewName,dbCount.connectionName())){
   return ret_sql;
  }
 
@@ -581,7 +587,7 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
 
  QString st_msg1 = RequetePourTrouverTotal_z1(st_LstTirages,zn,0);
 
- sqm_tmp->setQuery(st_msg1,dbToUse);
+ sqm_tmp->setQuery(st_msg1,dbCount);
 
 
 
@@ -602,7 +608,7 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
 
  BFlags::stPrmDlgt a;
  a.parent = qtv_tmp;
- a.db_cnx = dbToUse.connectionName();
+ a.db_cnx = dbCount.connectionName();
  a.zne=zn;
  a.typ=2; ///Position de l'onglet qui va recevoir le tableau
  a.eTyp = eCountCmb;
@@ -723,8 +729,8 @@ void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int
 void BCountComb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int zn)
 {
  bool isOk = true;
- QSqlQuery query(dbToUse);
- QSqlQuery query_2(dbToUse);
+ QSqlQuery query(dbCount);
+ QSqlQuery query_2(dbCount);
 
  QString key = "idComb";
  QString tb_ref = "B_ana_z"+QString::number(zn+1);
@@ -777,7 +783,7 @@ void BCountComb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int
 
 QString BCountComb::getFilteringData(int zn)
 {
- QSqlQuery query(dbToUse);
+ QSqlQuery query(dbCount);
  bool isOk = true;
  QString msg = "";
  QString useJonction = "or";

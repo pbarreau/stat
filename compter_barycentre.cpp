@@ -80,6 +80,7 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
  QTableView *qtv_tmp = new QTableView;
+ qtv_tmp->setObjectName(QString::number(zn));
 
  QString dstTbl = "r_"
                   +pGame->db_ref->fdj
@@ -160,6 +161,11 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,
          SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
+
+ /// Selection & priorite
+ qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
 
  return wdg_tmp;
 }
@@ -252,7 +258,7 @@ BCountBrc::BCountBrc(const stNeedsOfBary &param)
  QTabWidget *tab_Top = new QTabWidget(this);
 
  db_1= QSqlDatabase::database(param.ncx);
- dbToUse = db_1;
+ dbCount = db_1;
  //src_tbl = param.tbl_in;
  QString src_data = param.tbl_in;
  st_LstTirages = src_data;
@@ -326,7 +332,7 @@ QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
 
  BFlags::stPrmDlgt a;
  a.parent = qtv_tmp;
- a.db_cnx = dbToUse.connectionName();
+ a.db_cnx = dbCount.connectionName();
  a.zne=zn;
  a.typ=1; ///Position de l'onglet qui va recevoir le tableau
  a.eTyp = eCountBrc;
@@ -421,8 +427,8 @@ void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int 
 
 void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int zn){
  bool isOk = true;
- QSqlQuery query(dbToUse);
- QSqlQuery query_2(dbToUse);
+ QSqlQuery query(dbCount);
+ QSqlQuery query_2(dbCount);
 
  QString key = "Bc";
  QString tb_ref = "B_ana_z"+QString::number(zn+1);

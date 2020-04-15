@@ -90,6 +90,7 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
  QTableView *qtv_tmp = new QTableView;
+ qtv_tmp->setObjectName(QString::number(zn));
 
  QString dstTbl = "r_"
                   +pGame->db_ref->fdj
@@ -169,6 +170,11 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,
          SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
+
+ /// Selection & priorite
+ qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
 
 #if 0
  // simple click dans fenetre  pour selectionner boules
@@ -494,7 +500,7 @@ void BCountElem::slot_RequeteFromSelection(const QModelIndex &index)
 ///
 QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 {
- QSqlQuery query(dbToUse);
+ QSqlQuery query(dbCount);
  bool isOk = true;
  QString msg = "";
 
@@ -505,7 +511,7 @@ QString BCountElem::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
                     +"_z"+QString::number(zn+1);
 
  QString ret_sql = "select * from ("+viewName+")";
- if(DB_Tools::isDbGotTbl(viewName,dbToUse.connectionName())){
+ if(DB_Tools::isDbGotTbl(viewName,dbCount.connectionName())){
   return ret_sql;
  }
 
@@ -840,7 +846,7 @@ LabelClickable *BCountElem::getLabPriority(void)
 
 QString BCountElem::getFilteringData(int zn)
 {
- QSqlQuery query(dbToUse);
+ QSqlQuery query(dbCount);
  bool isOk = true;
  QString msg = "";
  QString useJonction = "and";

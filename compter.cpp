@@ -108,6 +108,7 @@ bool BCount::setFiltre(stTbFiltres val, QSqlDatabase db)
  }
 
  if(!isOk){
+  DB_Tools::DisplayError("BCount::setFiltre",&query_2,msg);
   QMessageBox::warning(nullptr,"BCount","setFiltre",QMessageBox::Ok);
  }
 
@@ -120,6 +121,14 @@ BCount::BCount(const stGameConf *pGame, etCount genre):type(genre)
  QString cnx=pGame->db_ref->cnx;
  QString tbl_tirages = pGame->db_ref->fdj;
 
+ // Etablir connexion a la base
+ dbCount = QSqlDatabase::database(cnx);
+ if(dbCount.isValid()==false){
+  QString str_error = dbCount.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+
  QString st_tmp = CreerCritereJours(cnx,tbl_tirages);
  db_jours = ","+st_tmp;
 
@@ -131,7 +140,7 @@ BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb)
 
 BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
 							 QWidget *unParent=nullptr, etCount genre=eCountToSet)
-		:QWidget(unParent), st_LstTirages(in),dbToUse(fromDb),type(genre)
+		:QWidget(unParent), st_LstTirages(in),dbCount(fromDb),type(genre)
 {
  bool useRequete = false;
  db_jours = "";
@@ -466,7 +475,7 @@ void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int z
 bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
 {
  bool ret = false;
- QSqlQuery query(dbToUse) ;
+ QSqlQuery query(dbCount) ;
  QString msg = "";
 
  /// La colonne val sert de foreign key
@@ -499,6 +508,154 @@ bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
 }
 
 
+void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
+{
+ /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
+ /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
+
+ QTableView *view = qobject_cast<QTableView *>(sender());
+
+ etCount origine = type;
+ QString cnx = dbCount.connectionName();
+
+ if(V2_showMyMenu(origine,view,pos) == true){
+  QMenu *MonMenu = new QMenu(this);
+  QMenu *subMenu= V2_mnu_SetPriority(origine, MonMenu,view,pos);
+  //MonMenu->addMenu(subMenu);
+  MonMenu->exec(view->viewport()->mapToGlobal(pos));
+ }
+ //}
+}
+
+bool BCount::V2_showMyMenu(etCount eSrc, QTableView *view, QPoint pos)
+{
+ bool isOk = false ;
+ int col = view->columnAt(pos.x());
+ //int v2 = view->model()->columnCount();
+
+ if(eSrc >= eCountToSet && eSrc <= eCountEnd){
+  switch (eSrc) {
+   case eCountElm:
+   case eCountCmb:
+   case eCountBrc:
+    if(col == 1)
+    {
+     isOk = true;
+    }
+    break;
+   case eCountGrp:
+    if(col > 0)
+    {
+     isOk = true;
+    }
+    break;
+   case eCountToSet:
+   case eCountEnd:
+    break;
+  }
+ }
+ return isOk;
+}
+
+QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QMenu *MonMenu, QTableView *view, QPoint pos)
+{
+ bool isOk = false;
+ int itm = 0;
+
+ QSqlQuery query(dbCount) ;
+ QString msg = "";
+
+ QString msg2 = "Priorite";
+ QMenu *menu =new QMenu(msg2, view);
+ QAction *setForAll = new QAction("SetAll");
+ QActionGroup *grpPri = new  QActionGroup(menu);
+ QModelIndex  index = view->indexAt(pos);
+
+
+ int row = index.row();
+ stTbFiltres a;
+ a.tbName = "Filtres";
+ a.zn = view->objectName().toInt();;
+ a.eTyp = eSrc;
+ a.lgn = -1;
+ a.col = index.column();
+ a.pri = -1;
+ a.val = -1;
+ a.flt = 0;
+
+ if(eSrc == eCountGrp)
+ {
+  a.lgn = index.row() ;
+
+	if(index.model()->index(index.row(),a.col).data().canConvert(QMetaType::Int))
+	{
+	 a.val =  index.model()->index(index.row(),a.col).data().toInt();
+	}
+ }
+ else {
+  a.lgn = a.eTyp * 10;
+
+  a.val =  index.model()->index(index.row(),0).data().toInt();
+ }
+
+
+  isOk = setFiltre(a,dbCount);
+
+
+ //if((typeFiltre.at(0)->currentIndex()==0) && (typeFiltre.at(1)->currentIndex()==0))
+ {
+  setForAll->setCheckable(true);
+  setForAll->setObjectName("k_all");
+  menu->addAction(setForAll);
+
+	/// Total de priorite a afficher
+	for(int i =1; i<=5;i++)
+	{
+	 QAction *radio = new QAction(QString::number(i),grpPri);
+
+	 //radio->setObjectName(name);
+	 radio->setCheckable(true);
+	 menu->addAction(radio);
+	}
+	MonMenu->addMenu(menu);
+
+	/*
+	connect(setForAll,SIGNAL(triggered(bool)),this,SLOT(slot_wdaFilter(bool)));
+	///connect(setForAll,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+	connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+	if(pri>0)
+	{
+	 QAction *uneAction;
+	 uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
+	 uneAction->setChecked(true);
+	}
+ */
+
+ }
+
+ /// Filtre
+ QAction *filtrer = MonMenu->addAction("Filtrer");
+ filtrer->setCheckable(true);
+ filtrer->setParent(view);
+#if 0
+ filtrer->setObjectName(name);
+
+ connect(filtrer,SIGNAL(triggered(bool)),
+         this,SLOT(slot_wdaFilter(bool)));
+
+
+ if((flt>0) && (flt&BFlags::isWanted))
+ {
+  filtrer->setChecked(true);
+ }
+
+ if(setPriorityToAll){
+  setForAll->setChecked(true);
+ }
+#endif
+
+ return menu;
+}
 
 void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 {
@@ -562,7 +719,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
  bool isOk = false;
  int itm = 0;
 
- QSqlQuery query(dbToUse) ;
+ QSqlQuery query(dbCount) ;
  QString msg = "";
 
  QString msg2 = "Priorite";
@@ -681,7 +838,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
 
 void BCount::slot_ChoosePriority(QAction *cmd)
 {
- QSqlQuery query(dbToUse);
+ QSqlQuery query(dbCount);
  bool isOk = false;
  QString msg = "";
  QString msg_2 = cmd->text();;
@@ -757,14 +914,14 @@ void BCount::slot_ChoosePriority(QAction *cmd)
   BColorPriority *A2 = qobject_cast<BColorPriority*>(A1->sourceModel());
   QString queryStr = A2->query().executedQuery();
   A2->query().clear();
-  A2->setQuery(queryStr, dbToUse);
+  A2->setQuery(queryStr, dbCount);
  }
 
 }
 
 bool BCount::setUnifiedPriority(QString szn, QString sprio){
- QSqlQuery query(dbToUse);
- QSqlQuery query_2(dbToUse);
+ QSqlQuery query(dbCount);
+ QSqlQuery query_2(dbCount);
  bool isOk = false;
  bool isOk_2 = false;
  QString msg = "";
@@ -1019,7 +1176,7 @@ void BCount::CompleteMenu(QMenu *LeMenu,QTableView *view, int clef)
 void BCount::slot_wdaFilter(bool val)
 {
  QAction *chkFrom = qobject_cast<QAction *>(sender());
- QSqlQuery query(dbToUse);
+ QSqlQuery query(dbCount);
  bool isOk = false;
  QString msg = "";
 
@@ -1109,7 +1266,7 @@ void BCount::slot_wdaFilter(bool val)
   BColorPriority *A2 = qobject_cast<BColorPriority*>(A1->sourceModel());
   QString queryStr = A2->query().executedQuery();
   A2->query().clear();
-  A2->setQuery(queryStr, dbToUse);
+  A2->setQuery(queryStr, dbCount);
  }
 }
 
