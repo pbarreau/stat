@@ -50,16 +50,22 @@ bool BAnalyserTirages::isPresentUsefullTables(stGameConf *pGame, QString tbl_tir
 {
  bool isOk = true;
 
+ typedef enum _etDrop{
+  eDropOn,
+  eDropNo
+ }etDrop;
+
  typedef struct _stdbMinLstTables{
   QString tbName;
+  etDrop drop;
   bool (BAnalyserTirages::*ptrFunc)(stGameConf *pGame, QString tbl_tirages,QSqlQuery *query);
  }stdbMinLstTables;
 
  stdbMinLstTables lstTable[]={
-  {"B_elm", &BAnalyserTirages::mkTblLstElm},
-  {"B_cmb", &BAnalyserTirages::mkTblLstCmb},
-  {"B_def", &BAnalyserTirages::mkTblGmeDef},
-  {"Filtres", &BAnalyserTirages::mkTblFiltre}
+  {"B_elm", eDropNo, &BAnalyserTirages::mkTblLstElm},
+  {"B_cmb", eDropNo, &BAnalyserTirages::mkTblLstCmb},
+  {"B_def", eDropNo, &BAnalyserTirages::mkTblGmeDef},
+  {"Filtres", eDropOn, &BAnalyserTirages::mkTblFiltre}
  };
  int totTables = sizeof(lstTable)/sizeof(stdbMinLstTables);
 
@@ -77,6 +83,12 @@ bool BAnalyserTirages::isPresentUsefullTables(stGameConf *pGame, QString tbl_tir
   /// Nom de la table
   QString tbName = lstTable[uneTable].tbName;
   QSqlQuery query(db_1);
+
+	/// Tables a supprimer si recharge db fdj
+	if((pGame->db_ref->ihm->fdj_new) && (lstTable[uneTable].drop==eDropOn)){
+	 QString msg = "drop table if exists " + tbName;
+	 isOk = query.exec(msg);
+	}
 
 	/// Verifier si la table est deja cree
 	if(isOk && (DB_Tools::isDbGotTbl(tbName, cnx)==false)){
@@ -108,7 +120,7 @@ void BAnalyserTirages::startAnalyse(stGameConf *pGame, QString tbl_tirages)
  }
 
  QStringList ** info = slFlt;
- for (int zn=0; (zn < nbZn) && isOk ;zn++ )
+ for (int zn=0; (zn < nbZn) && isOk;zn++ )
  {
   isOk = AnalyserEnsembleTirage(pGame, info, zn, tbl_tirages);
   if(!isOk){
@@ -279,6 +291,18 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
  }
  tbLabAna = tbLabAna +"_ana_z"+QString::number(zn+1);
 
+ /// Utiliser anciennes tables
+ if(pGame->db_ref->ihm->use_odb==true){
+  if(pGame->db_ref->ihm->fdj_new==false){
+   return isOk;
+  }
+  else {
+   /// supprimer la table tremporaire
+   msg = "drop table if exists " + tbLabAna;
+   isOk = query.exec(msg);
+  }
+ }
+
  QString ref="(tbleft.%1%2=tbRight.B)";
 
  /// sur quel nom des elements de la zone
@@ -302,7 +326,7 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
  QStringList *slst=&info[zn][0];
 
  /// Verifier si des tables existent deja
- if(SupprimerVueIntermediaires())
+ if(isOk && SupprimerVueIntermediaires())
  {
   /// les anciennes vues ne sont pas presentes
   ///  on peut faire les calculs

@@ -16,7 +16,7 @@ class PointTirage : public QGraphicsItem
   //Q_OBJECT
 public:
   //explicit PointTirage();
-  PointTirage(QString db_cnx, etFdjType leJeu=eFdjEuro, eGType sceneType = eNoGraph);
+  PointTirage(QString db_cnx, etFdj leJeu=eFdjEuro, eGType sceneType = eNoGraph);
   QRectF boundingRect() const;
   QPainterPath shape() const;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);

@@ -63,14 +63,14 @@ class cFdjData//:public QObject
  public:
  explicit cFdjData(void);
  explicit cFdjData(cFdjData const &parent);
- explicit cFdjData(etFdjType eFdjType,cFdjData *parent=nullptr);
+ explicit cFdjData(etFdj eFdjType,cFdjData *parent=nullptr);
  ~cFdjData();
 
- void init(etFdjType eFdjType);
+ void init(etFdj eFdjType);
 
  private:
- QString mk_IdDsk(etFdjType type, etTirType eTirtype);
- bool ouvrirBase(etFdjType eFdjType);
+ QString mk_IdDsk(etFdj type, etTirType eTirtype);
+ bool ouvrirBase(etFdj eFdjType);
  bool OPtimiseAccesBase(void);
 
  bool FillDataBase(void);
@@ -100,7 +100,7 @@ class cFdjData//:public QObject
  bool SupprimerVueIntermediaires(void);
 
  protected:
- QString mk_IdCnx(etFdjType type, etTirType eTirtype);
+ QString mk_IdCnx(etFdj type, etTirType eTirtype);
  QString getFieldsFromZone(int zn, QString alias);
  bool isPresentInDataBase(QString table, QString schema="");
 

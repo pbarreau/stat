@@ -15,8 +15,10 @@
 
 int BFdj::total_items = 0;
 
-BFdj::BFdj(etFdjType typeJeu, bool bReUse, QString cnx, etDbPlace dst)
+BFdj::BFdj(stFdj *prm, QString cnx)
 {
+
+
  QString use_cnx = cnx;
  QString stConfFile = "";
  bool isOk = true;
@@ -27,7 +29,7 @@ BFdj::BFdj(etFdjType typeJeu, bool bReUse, QString cnx, etDbPlace dst)
 
  /// Doit on utiliser une connexion deja etablie
  if(!use_cnx.size()){
-  isOk = ouvrirBase(typeJeu, bReUse, dst);
+  isOk = ouvrirBase(prm);
  }
  else {
   // Etablir connexion a la base
@@ -41,8 +43,8 @@ BFdj::BFdj(etFdjType typeJeu, bool bReUse, QString cnx, etDbPlace dst)
   return;
  }
 
- stGameConf *curConf = init(typeJeu,bReUse);
- crt_TblFdj(curConf, typeJeu);
+ stGameConf *curConf = init(prm);
+ crt_TblFdj(curConf);
 
  fdjConf = curConf;
 }
@@ -54,25 +56,26 @@ stGameConf * BFdj::getConfig()
 
 
 /// ---------------- PRIVATE FUNCTIONS -----------------
-bool BFdj::ouvrirBase(etFdjType game, bool bReUse, etDbPlace cible)
+bool BFdj::ouvrirBase(stFdj *prm)
 {
  bool isOk = true;
 
- QString use_cnx = mk_IdCnx(game);
+ QString use_cnx = mk_IdCnx(prm->typeJeu);
  fdj_db = QSqlDatabase::addDatabase("QSQLITE",use_cnx);
 
+ etFdj game = prm->typeJeu;
  QString mabase = "";
 
- switch(cible)
+ switch(prm->db_type)
  {
-  case eDbSetOnRam:
+  case eDbRam:
    mabase = ":memory:";
    break;
 
-	case eDbSetOnDsk:
+	case eDbDsk:
 	default:
 	 /// Reutiliser existant ?
-	 if(bReUse){
+	 if(prm->use_odb){
 		QString myTitle = "Selectionnner un fichier " + gameLabel[game];
 		QString myFilter = gameLabel[game]+QString(DB_VER)+"*.sqlite";
 		mabase = QFileDialog::getOpenFileName(nullptr,myTitle,".",myFilter);
@@ -98,12 +101,12 @@ bool BFdj::ouvrirBase(etFdjType game, bool bReUse, etDbPlace cible)
  return isOk;
 }
 
-QString BFdj::mk_IdCnx(etFdjType type)
+QString BFdj::mk_IdCnx(etFdj type)
 {
  QString msg="cnx_NotSetYet";
 
- if((type <= eFdjNotSet) || (type>=eFdjEol)){
-  etFdjType err = eFdjNotSet;
+ if((type <= eFdjNone) || (type>=eFdjEol)){
+  etFdj err = eFdjNone;
   QMessageBox::warning(nullptr,"BFdj","Jeu "+gameLabel[err]+" inconnu !!",QMessageBox::Ok);
   QApplication::quit();
  }
@@ -114,7 +117,7 @@ QString BFdj::mk_IdCnx(etFdjType type)
  return (msg);
 }
 
-QString BFdj::mk_IdDsk(etFdjType type)
+QString BFdj::mk_IdDsk(etFdj type)
 {
  QDate myDate = QDate::currentDate();
  QString toDay = myDate.toString("dd-MM-yyyy");
@@ -169,9 +172,11 @@ bool BFdj::OPtimiseAccesBase(void)
  return isOk;
 }
 
-stGameConf * BFdj::init(etFdjType eFdjType, bool prev)
+stGameConf * BFdj::init(stFdj *prm)
 {
  stGameConf * ret = new stGameConf;
+ etFdj eFdjType = prm->typeJeu;
+ bool prev = false;
 
  ret->id = cur_item;
  ret->bUseMadeBdd = prev;
@@ -179,6 +184,7 @@ stGameConf * BFdj::init(etFdjType eFdjType, bool prev)
  ret->eTirType = eTirNotSet;
 
  ret->db_ref = new stParam_3;
+ ret->db_ref->ihm = prm;
  ret->db_ref->cnx = "";
  ret->db_ref->fdj = "";
 
@@ -209,7 +215,7 @@ stGameConf * BFdj::init(etFdjType eFdjType, bool prev)
  return ret;
 }
 
-bool BFdj::crt_TblFdj(stGameConf *pGame, etFdjType typeJeu)
+bool BFdj::crt_TblFdj(stGameConf *pGame)
 {
  bool isOk= true;
  QSqlQuery query(fdj_db);
@@ -228,6 +234,17 @@ bool BFdj::crt_TblFdj(stGameConf *pGame, etFdjType typeJeu)
  pGame->db_ref->fdj = tbName;
  pGame->db_ref->cnx = fdj_db.connectionName();
 
+ /// Utiliser anciennes tables
+ if(pGame->db_ref->ihm->use_odb==true){
+  if(pGame->db_ref->ihm->fdj_new==false){
+   return isOk;
+  }
+  else {
+   /// supprimer la table tremporaire
+   msg = "drop table if exists " + tbName;
+   isOk = query.exec(msg);
+  }
+ }
 
  QString colsDef = "";
  QString cAsDef = ""; /// column as def
@@ -252,6 +269,10 @@ bool BFdj::crt_TblFdj(stGameConf *pGame, etFdjType typeJeu)
    cAsDef = cAsDef + ",";
   }
  }
+#ifndef QT_NO_DEBUG
+ qDebug() <<"colsDef:"<<colsDef;
+ qDebug() <<"cAsDef:"<<cAsDef;
+#endif
 
  /// J: jour ie Lundi...
  /// D: date xx/yy/nnnn

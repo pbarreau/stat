@@ -9,17 +9,17 @@
 
 /// Localisation de la base de donnees
 typedef enum _eBddType{
- eDbSetOnRam, /// en memoire
- eDbSetOnDsk   /// sur disque
-}etDbPlace;
+ eDbRam, /// en memoire
+ eDbDsk   /// sur disque
+}etDb;
 
 /// Type de jeu possible d'etudier
 typedef enum _eFdjType{
- eFdjNotSet, /// Jeu pas encore configure
+ eFdjNone, /// Jeu pas encore configure
  eFdjLoto,   /// Loto
  eFdjEuro,   /// Euro million
  eFdjEol     /// End of list
-}etFdjType;
+}etFdj;
 extern const QString gameLabel [eFdjEol];
 
 typedef enum _eAnaType{
@@ -29,7 +29,15 @@ typedef enum _eAnaType{
  eTirUsr     /// Lst tirages choix utilisateur
 }etTirType;
 
+typedef  struct _stFdj{
+ etFdj typeJeu;
+ etDb db_type;
+ bool use_odb;			/// utilisation ancien fichier *.sqlite
+ bool fdj_new;			/// Recharger info base de la fdj
+}stFdj;
+
 typedef struct _stParam_3 {
+ stFdj *ihm;
  QString cnx;    /// nom connexion a la base
  QString fdj;    /// nom Table liste des tirages
 }stParam_3;
@@ -52,7 +60,7 @@ typedef struct _stParam_1{
 typedef struct _stGameConf{
   int id;
   bool bUseMadeBdd;
-  etFdjType eFdjType; /// type du jeu
+  etFdj eFdjType; /// type du jeu
   etTirType eTirType; /// origine
   int znCount; /// nombre de zones a regarder
   stParam_1 *limites; /// bornes sur la zone

@@ -49,7 +49,7 @@ MyGraphicsView::MyGraphicsView(QString db_cnx, eGType gtype, QGraphicsView *ptr_
 }
 
 
-void MyGraphicsView::DessineCourbeSql(QString msg_2, etFdjType leJeu, QColor cpen, int sqlIdY, int scale_y, int delta_y)
+void MyGraphicsView::DessineCourbeSql(QString msg_2, etFdj leJeu, QColor cpen, int sqlIdY, int scale_y, int delta_y)
 {
     QSqlQuery sql_2(db_0);
     bool status = false;

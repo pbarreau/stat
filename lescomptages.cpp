@@ -92,7 +92,7 @@ BPrevision::BPrevision(eGame game, eBddUse def, QString stLesTirages)
 }
 #endif
 
-QString BPrevision::mk_IdDsk(etFdjType type, etDbUsage eDbUsage)
+QString BPrevision::mk_IdDsk(etFdj type, etDbUsage eDbUsage)
 {
  QDate myDate = QDate::currentDate();
  QString toDay = myDate.toString("dd-MM-yyyy");
@@ -124,12 +124,12 @@ QString BPrevision::mk_IdDsk(etFdjType type, etDbUsage eDbUsage)
  return testName;
 }
 
-QString BPrevision::mk_IdCnx(etFdjType type, etDbUsage eDbUsage)
+QString BPrevision::mk_IdCnx(etFdj type, etDbUsage eDbUsage)
 {
  QString msg="cnx_NotSetYet";
 
- if((type <= eFdjNotSet) || (type>=eFdjEol)){
-  etFdjType err = eFdjNotSet;
+ if((type <= eFdjNone) || (type>=eFdjEol)){
+  etFdj err = eFdjNone;
   QMessageBox::warning(NULL,"Prevision","Jeu "+gameLabel[err]+" inconnu !!",QMessageBox::Ok);
   QApplication::quit();
  }
@@ -146,10 +146,10 @@ QString BPrevision::mk_IdCnx(etFdjType type, etDbUsage eDbUsage)
  return (msg);
 }
 
-bool BPrevision::ouvrirBase(stGameConf *pConf, etDbPlace cible)
+bool BPrevision::ouvrirBase(stGameConf *pConf, etDb cible)
 {
  ;
- etFdjType game = pConf->eFdjType;
+ etFdj game = pConf->eFdjType;
 
  bool isOk = true;
 
@@ -160,11 +160,11 @@ bool BPrevision::ouvrirBase(stGameConf *pConf, etDbPlace cible)
 
  switch(cible)
  {
-  case eDbSetOnRam:
+  case eDbRam:
    mabase = ":memory:";
    break;
 
-	case eDbSetOnDsk:
+	case eDbDsk:
 	default:
 	 /// Reutiliser existant ?
 	 if(conf.gameInfo.bUseMadeBdd){
@@ -227,7 +227,7 @@ bool BPrevision::OPtimiseAccesBase(void)
  return isOk;
 }
 
-void BPrevision::effectuerTraitement(etFdjType game)
+void BPrevision::effectuerTraitement(etFdj game)
 {
  QString source = "";//C_TBL_3;
  if(conf.gameInfo.eTirType==etTirType::eTirFdj){
@@ -265,7 +265,7 @@ void BPrevision::effectuerTraitement(etFdjType game)
  int b;
 }
 
-stGameConf * BPrevision::definirConstantesDuJeu(etFdjType game)
+stGameConf * BPrevision::definirConstantesDuJeu(etFdj game)
 {
  /// Pour l'instant en loto ou en euro il y a 2 'zones'
  /// une pour les boules

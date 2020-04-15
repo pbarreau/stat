@@ -23,9 +23,9 @@ ChoixJeux::~ChoixJeux()
 
 void ChoixJeux::slot_ConfigureJeu(void)
 {
-  etFdjType setGame = eFdjNotSet;
-  bool baseEnRam = false;
-  bool usePreviousBdd = false;
+  etFdj setGame = eFdjNone;
+  bool bNewFdj = false;
+  bool bOldFile = false;
 
   // Type de jeu a etudier
   if(ui->rb_euro->isChecked())
@@ -37,19 +37,19 @@ void ChoixJeux::slot_ConfigureJeu(void)
     setGame = eFdjLoto;
   }
 
-  // Ecriture de la base sur disque ?
-  if(!ui->rb_bdd->isChecked())
+  // Effacer donnees FDJ ?
+  if(ui->rb_bdd->isChecked())
   {
-    baseEnRam = true;
+    bNewFdj = true;
   }
 
   // Chargement automatique fichier des donnees ?
   if(ui->chk_autoLoad->isChecked())
   {
-    usePreviousBdd = true;
+    bOldFile = true;
   }
 
   // Lancer l'etude
-  EtudeJeu->EtudierJeu(setGame,usePreviousBdd,baseEnRam);
+  EtudeJeu->EtudierJeu(setGame,bOldFile,bNewFdj);
 
  }

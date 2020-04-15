@@ -83,7 +83,7 @@ class BPrevision:public QGridLayout
 
  public:
  typedef struct _stPrmPrevision{
-  etDbPlace bddStore;
+  etDb bddStore;
 
 	QString tblFdj_ana;	/// analyse des tirages provenant de fdj
 	QString tblFdj_brc;		 /// Table de la base ayant les barycentres calcules depuis fdj
@@ -129,7 +129,7 @@ class BPrevision:public QGridLayout
  bool isTableCnpinDb(int n, int p);
  bool LireLesTirages(QString tblName, stFdjData *def);
  bool OPtimiseAccesBase(void);
- bool ouvrirBase(stGameConf *pGame, etDbPlace cible);
+ bool ouvrirBase(stGameConf *pGame, etDb cible);
  bool SupprimerVueIntermediaires(void);
  bool TraitementCodeTblCombi(QString tbName,int zn);
  bool TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn);
@@ -137,10 +137,10 @@ class BPrevision:public QGridLayout
  QString DateAnormer(QString input);
  QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
  QString ListeDesJeux(int zn, int n, int p);
- QString mk_IdCnx(etFdjType type, etDbUsage eDbUsage);
- QString mk_IdDsk(etFdjType type, etDbUsage eDbUsage);
+ QString mk_IdCnx(etFdj type, etDbUsage eDbUsage);
+ QString mk_IdDsk(etFdj type, etDbUsage eDbUsage);
  QStringList * CreateFilterForData(int zn);
- stGameConf *definirConstantesDuJeu(etFdjType game);
+ stGameConf *definirConstantesDuJeu(etFdj game);
 
  void analyserTirages(stPrmPrevision calcul, QString source, const stGameConf &config);
  bool do_SqlCnpPrepare(void);
@@ -155,7 +155,7 @@ class BPrevision:public QGridLayout
 
  void ContinuerCreation(QString tbl_cible, QString tbl_cible_ana);
  void creerJeuxUtilisateur(int n, int p);
- void effectuerTraitement(etFdjType game);
+ void effectuerTraitement(etFdj game);
 
  Q_SIGNALS:
  void sig_isClickedOnBall(const QModelIndex &index);

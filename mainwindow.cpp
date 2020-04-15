@@ -62,11 +62,16 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
  qDebug()<<calcul.tb_data;
 }
 
-void MainWindow::EtudierJeu(etFdjType curGame, bool usePrevBdd, bool dest_bdd)
+void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 {
- etFdjType unJeu = eFdjNotSet;
 
- BFdj *charge = new BFdj(curGame,usePrevBdd);
+ stFdj *prm = new stFdj;
+ prm->typeJeu = curGame;
+ prm->db_type = eDbDsk;
+ prm->use_odb = use_odb;
+ prm->fdj_new = fdj_new;
+
+ BFdj *charge = new BFdj(prm);
 
  stGameConf *curConf = charge->getConfig();
 
@@ -80,7 +85,7 @@ void MainWindow::EtudierJeu_v1(stGameConf *curConf, bool dest_bdd)
 {
 
  bool usePrevBdd = curConf->bUseMadeBdd;
- etFdjType curGame = curConf->eFdjType;
+ etFdj curGame = curConf->eFdjType;
 
  stParam input;
  input.destination = dest_bdd;
@@ -136,7 +141,7 @@ void MainWindow::EtudierJeu_v1(stGameConf *curConf, bool dest_bdd)
 
 void MainWindow::EtudierJeu_v2(stGameConf *curConf)
 {
- etFdjType unJeu = curConf->eFdjType;
+ etFdj unJeu = curConf->eFdjType;
  bool usePrevBdd = curConf->bUseMadeBdd;
 
 #if (SET_RUN_CHKP)
@@ -144,7 +149,7 @@ void MainWindow::EtudierJeu_v2(stGameConf *curConf)
 #endif
 
  BPrevision::stPrmPrevision *prm = new BPrevision::stPrmPrevision;
- prm->bddStore = eDbSetOnDsk;
+ prm->bddStore = eDbDsk;
  prm->gameInfo.eTirType=eTirFdj;
  prm->gameInfo.eFdjType=unJeu;
 

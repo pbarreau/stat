@@ -47,17 +47,17 @@ class BFdj
 
 
 public:
-BFdj(etFdjType typeJeu=eFdjNotSet , bool bReUse = false, QString cnx = "", etDbPlace dst= eDbSetOnDsk);
+BFdj(stFdj *prm, QString cnx = "");
 stGameConf *getConfig();
 
 private:
- bool ouvrirBase(etFdjType game=eFdjNotSet, bool reUse=false, etDbPlace cible = eDbSetOnDsk);
- QString mk_IdCnx(etFdjType type);
- QString mk_IdDsk(etFdjType type);
+ bool ouvrirBase(stFdj *prm);
+ QString mk_IdCnx(etFdj type);
+ QString mk_IdDsk(etFdj type);
  bool OPtimiseAccesBase(void);
- stGameConf *init(etFdjType eFdjType, bool prev=false);
+ stGameConf *init(stFdj *prm);
 
- bool crt_TblFdj(stGameConf *pGame, etFdjType typeJeu);
+ bool crt_TblFdj(stGameConf *pGame);
  bool chargerDonneesFdjeux(stGameConf *pGame, QString destTable);
  bool LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName);
  QString DateAnormer(QString input);

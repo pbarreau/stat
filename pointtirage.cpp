@@ -17,7 +17,7 @@ stTiragesDef PointTirage::tirDef;
 QList<QGraphicsLineItem *> PointTirage::lst_lignes;
 
 
-PointTirage::PointTirage(QString db_cnx, etFdjType leJeu, eGType sceneType) :
+PointTirage::PointTirage(QString db_cnx, etFdj leJeu, eGType sceneType) :
     QGraphicsItem()
 {
     db_0 = QSqlDatabase::database(db_cnx);

@@ -11,7 +11,7 @@ QString *tirages::lib_col;
 
 
 
-tirages::tirages(etFdjType jeu)
+tirages::tirages(etFdj jeu)
 {
  int zone, j;
 
@@ -19,7 +19,7 @@ tirages::tirages(etFdjType jeu)
  conf.pTir = this;
  switch(jeu)
  {
-  case eFdjNotSet:
+  case eFdjNone:
   {
    conf.nb_zone = 0;
    conf.nb_tir_semaine = 0;

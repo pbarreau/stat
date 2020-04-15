@@ -36,10 +36,10 @@ public:
     int get_IdBdd(void);
     QVariant data(const QModelIndex &index, int role) const;
 
-    bool ouvrirBase(bool action, etFdjType type);
+    bool ouvrirBase(bool action, etFdj type);
     bool AuthoriseChargementExtension(void);
-    QString mk_IdDsk(etFdjType type, int v_id);
-    QString mk_IdCnx(etFdjType type, int v_id);
+    QString mk_IdDsk(etFdj type, int v_id);
+    QString mk_IdCnx(etFdj type, int v_id);
 
     bool CreationTablesDeLaBDD(tirages *pRref);
     bool CTB_Table1(QString nomTable, tirages *pRef);

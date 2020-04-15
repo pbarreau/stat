@@ -48,8 +48,9 @@ bool BGnp::mktTblGnp(stGameConf *pGame, QString tb_dest)
   QString tmp_tbl = tb_dest+"_z"+QString::number(zn+1);
 
 	if(DB_Tools::isDbGotTbl(tmp_tbl, cnx) == false)
-	 if((isOk = creerTables(pGame,zn,tmp_tbl))){
-
+	{
+	 if((isOk = creerTables(pGame,zn,tmp_tbl)))
+	 {
 		if(pGame->limites[zn].len > 2 ){
 		 /// Sous forme de A(n,p)
 		 isOk = mkAnp(pGame,zn,tmp_tbl);
@@ -58,6 +59,7 @@ bool BGnp::mktTblGnp(stGameConf *pGame, QString tb_dest)
 		 isOk = mkCnp(pGame,zn,tmp_tbl);
 		}
 	 }
+	}
  }
 
  return isOk;

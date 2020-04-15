@@ -32,7 +32,7 @@ cFdjData::cFdjData(cFdjData const &parent)
 }
 
 
-cFdjData::cFdjData(etFdjType eFdjType, cFdjData *parent)//:QObject (parent)
+cFdjData::cFdjData(etFdj eFdjType, cFdjData *parent)//:QObject (parent)
 {
 
  if((eFdjType !=eFdjLoto) && (eFdjType != eFdjEuro)){
@@ -85,7 +85,7 @@ cFdjData::~cFdjData()
 #endif
 }
 
-void cFdjData::init(etFdjType eFdjType)
+void cFdjData::init(etFdj eFdjType)
 {
  bool isOk = false;
 
@@ -120,7 +120,7 @@ void cFdjData::init(etFdjType eFdjType)
  QMessageBox::information(nullptr,"Pgm", msg,QMessageBox::Ok);
 
  /// Ouvrir un fichier sqlite
- if((eFdjType!=eFdjNotSet) && (isOk = ouvrirBase(eFdjType))==true){
+ if((eFdjType!=eFdjNone) && (isOk = ouvrirBase(eFdjType))==true){
   isOk = FillDataBase();
  }
  else {
@@ -165,7 +165,7 @@ bool cFdjData::FillDataBase(void)
  return isOk;
 }
 
-QString cFdjData::mk_IdDsk(etFdjType type, etTirType eTirtype)
+QString cFdjData::mk_IdDsk(etFdj type, etTirType eTirtype)
 {
  QDate myDate = QDate::currentDate();
  QString toDay = myDate.toString("dd-MM-yyyy");
@@ -196,12 +196,12 @@ QString cFdjData::mk_IdDsk(etFdjType type, etTirType eTirtype)
  return testName;
 }
 
-QString cFdjData::mk_IdCnx(etFdjType type, etTirType eTirtype)
+QString cFdjData::mk_IdCnx(etFdj type, etTirType eTirtype)
 {
  QString msg="cnx_NotSetYet";
 
- if((type <= eFdjNotSet) || (type>=eFdjEol)){
-  etFdjType err = eFdjNotSet;
+ if((type <= eFdjNone) || (type>=eFdjEol)){
+  etFdj err = eFdjNone;
   QMessageBox::warning(nullptr,"cFdjData","Jeu "+gameLabel[err]+" inconnu !!",QMessageBox::Ok);
   QApplication::quit();
  }
@@ -217,10 +217,10 @@ QString cFdjData::mk_IdCnx(etFdjType type, etTirType eTirtype)
  return (msg);
 }
 
-bool cFdjData::ouvrirBase(etFdjType eFdjType)
+bool cFdjData::ouvrirBase(etFdj eFdjType)
 {
  bool isOk = true;
- etDbPlace cible = eDbSetOnDsk;
+ etDb cible = eDbDsk;
  fdj_cnx = mk_IdCnx(eFdjType,eTirFdj);
  fdj_db = QSqlDatabase::addDatabase("QSQLITE",fdj_cnx);
 
@@ -228,11 +228,11 @@ bool cFdjData::ouvrirBase(etFdjType eFdjType)
 
  switch(cible)
  {
-  case eDbSetOnRam:
+  case eDbRam:
    mabase = ":memory:";
    break;
 
-	case eDbSetOnDsk:
+	case eDbDsk:
 	default:
 	 mabase = mk_IdDsk(eFdjType,eTirFdj);
 	 break;

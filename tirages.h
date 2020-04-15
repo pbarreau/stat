@@ -97,7 +97,7 @@ typedef struct _stParam
 {
  bool destination;
  bool bUseOneBdd;
- etFdjType typeJeu;
+ etFdj typeJeu;
  QMdiArea * pgm_mdi;
 
 }stParam;
@@ -111,7 +111,7 @@ typedef struct _stErr
 typedef struct _stTiragesDef
 {
  class tirages *pTir;
- etFdjType choixJeu;
+ etFdj choixJeu;
  int *nbElmZone;
  int *offsetFichier;
  QString *jour_tir;
@@ -145,7 +145,7 @@ class tirages
  stUnTirage value;
 
  public:
- tirages(etFdjType jeu = eFdjNotSet);
+ tirages(etFdj jeu = eFdjNone);
  void getConfigFor(stTiragesDef *priv_conf);
  QString SelectSource(bool load);
  QString s_LibColBase(stTiragesDef *ref);
@@ -182,7 +182,7 @@ typedef struct _keyForFile
 typedef struct _tiragesFileFormat
 {
  QString fname;              /// file name
- etFdjType type;    /// type de jeux
+ etFdj type;    /// type de jeux
  stKey param;
 }tiragesFileFormat;
 

@@ -51,7 +51,7 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
 
     bool enMemoire = param->destination;
     bool autoLoad = param->bUseOneBdd;
-    etFdjType leJeu = param->typeJeu;
+    etFdj leJeu = param->typeJeu;
 
     // Creation de la base
 #if (SET_DBG_LIVE&&SET_DBG_LEV1)
@@ -460,7 +460,7 @@ int GererBase::get_IdBdd(void)
  return cur_item;
 }
 
-QString GererBase::mk_IdDsk(etFdjType type, int v_id)
+QString GererBase::mk_IdDsk(etFdj type, int v_id)
 {
     QDate myDate = QDate::currentDate();
     QString toDay = myDate.toString("dd-MM-yyyy");
@@ -488,7 +488,7 @@ QString GererBase::mk_IdDsk(etFdjType type, int v_id)
     return testName;
 }
 
-QString GererBase::mk_IdCnx(etFdjType type, int v_id)
+QString GererBase::mk_IdCnx(etFdj type, int v_id)
 {
     QString game = "";
 
@@ -508,7 +508,7 @@ QString GererBase::mk_IdCnx(etFdjType type, int v_id)
 		 +QString::number(cur_item).rightJustified(2,'0'));
 }
 
-bool GererBase::ouvrirBase(bool action,etFdjType type)
+bool GererBase::ouvrirBase(bool action,etFdj type)
 {
     bool isOk = true;
     const QString gameLabel []={"NonDefini","Loto","Euro"};
