@@ -47,7 +47,8 @@ class BCountBrc:public BCount
 
  private:
  //virtual QString getType();
- virtual  QTabWidget *creationTables(const stGameConf *pGame);
+ virtual  QTabWidget *creationTables(const stGameConf *pGame, const etCount eCalcul);
+ virtual bool fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn);
  void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
 
 

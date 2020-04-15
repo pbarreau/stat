@@ -21,7 +21,6 @@
 BAnalyserTirages::BAnalyserTirages(stGameConf *pGame)
 {
  addr = nullptr;
- slFlt = nullptr;
 
  QString cnx=pGame->db_ref->cnx;
  QString tbl_tirages = pGame->db_ref->fdj;
@@ -110,16 +109,16 @@ void BAnalyserTirages::startAnalyse(stGameConf *pGame, QString tbl_tirages)
  bool isOk = true;
  int nbZn = pGame->znCount;
 
- if(slFlt==nullptr){
+ if(pGame->slFlt==nullptr){
 
-	slFlt = new  QStringList * [nbZn] ;
+	pGame->slFlt = new  QStringList * [nbZn] ;
 	for (int zn=0;zn < nbZn;zn++ )
 	{
-	 slFlt[zn] = CreateFilterForData(pGame, tbl_tirages, zn);
+	 pGame->slFlt[zn] = CreateFilterForData(pGame, tbl_tirages, zn);
 	}
  }
 
- QStringList ** info = slFlt;
+ QStringList ** info = pGame->slFlt;
  for (int zn=0; (zn < nbZn) && isOk;zn++ )
  {
   isOk = AnalyserEnsembleTirage(pGame, info, zn, tbl_tirages);
@@ -157,8 +156,9 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
  for(int i = 0; i< nb_item; i++)
  {
   /// Appelle la methode dans la bonne classe
-  QString name = lstComptage.at(i)->getType();
-  QWidget *calcul = lstComptage.at(i)->creationTables(pGame);
+  etCount eCalcul = lstComptage.at(i)->getType();
+  QString name = BCount::onglet[eCalcul];
+  QWidget *calcul = lstComptage.at(i)->creationTables(pGame, eCalcul);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
   }

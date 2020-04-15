@@ -41,33 +41,25 @@ BCountBrc::BCountBrc(const stGameConf *pGame):BCount(pGame,eCountBrc)
   return;
  }
  addr=this; /// memo de cet objet
- //creationTables(pGame);
 }
 
-/*
-QString BCountBrc::getType()
-{
- return onglet[type];
-}
-*/
-
-QTabWidget * BCountBrc::creationTables(const stGameConf *pGame)
+QTabWidget * BCountBrc::creationTables(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
  int nb_zones = pGame->znCount;
 
 
- QWidget *(BCountBrc::*ptrFunc[])(const stGameConf *pGame,int zn) =
+ QWidget *(BCountBrc::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
   {
-   &BCountBrc::fn_Count,
-   &BCountBrc::fn_Count
+   &BCountBrc::V2_fn_Count,
+   &BCountBrc::V2_fn_Count
   };
 
  for(int i = 0; i< nb_zones; i++)
  {
   QString name = pGame->names[i].abv;
-  QWidget *calcul = (this->*ptrFunc[i])(pGame, i);
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::fn_mkLocal, i);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
   }
@@ -168,6 +160,12 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
          SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
 
  return wdg_tmp;
+}
+
+bool BCountBrc::fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)
+{
+ bool isOk = true;
+ return isOk;
 }
 
 QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)

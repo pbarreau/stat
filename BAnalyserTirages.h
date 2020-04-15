@@ -38,7 +38,7 @@ typedef bool(BAnalyserTirages::*ptrFnUsr)(const stGameConf *, QString, QString, 
 private:
 BAnalyserTirages *addr;
 QSqlDatabase db_1;
-QStringList** slFlt;
+//QStringList** slFlt;
 QMap<QString,ptrFnUsr> map_UsrFn;
 
 };

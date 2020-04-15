@@ -83,9 +83,12 @@ typedef struct _stTbFiltres{
  int flt;        /// bit field
 }stTbFiltres;
 
+
 class BCount:public QWidget
 {
  Q_OBJECT
+
+
  public:
  BCount(const stGameConf *pGame, etCount genre);
  BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb);
@@ -94,12 +97,23 @@ class BCount:public QWidget
  BCount(const stNeedsOfBary &param){Q_UNUSED(param)}
 
  public:
- QString getType();
- virtual QTabWidget *creationTables(const stGameConf *pGame) = 0;
+ typedef struct _stMkLocal{
+  QString dstTbl; /// table a creer
+  QSqlQuery *query;
+  QString *sql;
+ }stMkLocal;
+ typedef bool (BCount::*ptrFn_tbl)(const stGameConf *pDef, const stMkLocal prm, const int zn);
+
+ public:
+ etCount getType();
+ virtual QTabWidget *creationTables(const stGameConf *pGame, const etCount eCalcul) = 0;
+ QWidget *V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn);
+ virtual bool fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)=0;
 
 
  protected:
  virtual QGridLayout *Compter(QString * pName, int zn)=0;
+
  bool setFiltre(stTbFiltres val, QSqlDatabase db);
 
  QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
@@ -114,20 +128,21 @@ class BCount:public QWidget
  QString FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString alias="");
 
  bool V2_showMyMenu(etCount eSrc, QTableView *view, QPoint pos);
- QMenu *V2_mnu_SetPriority(etCount eSrc, QMenu *MonMenu, QTableView *view, QPoint pos);
+ QMenu *V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos);
 
  private:
  void RecupererConfiguration(void);
  bool setUnifiedPriority(QString szn, QString sprio);
+ void V2_marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
 
 
 
  public :
  B_RequeteFromTbv a;
+ static QString onglet[]; /// nom associe aux types
 
  protected:
  static QString label[]; /// nom associe aux types
- static QString onglet[]; /// nom associe aux types
  etCount type; /// type de comptage en cours
  QString st_LstTirages;    /// information de tous les tirages
  QSqlDatabase dbCount;
@@ -158,6 +173,7 @@ class BCount:public QWidget
 
  void slot_V2_AideToolTip(const QModelIndex & index);
  void slot_V2_ccmr_SetPriorityAndFilters(QPoint pos);
+ void slot_V2_wdaFilter(bool val);
 
 
  Q_SIGNALS:

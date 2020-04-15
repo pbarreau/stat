@@ -66,6 +66,7 @@ typedef struct _stGameConf{
   stParam_1 *limites; /// bornes sur la zone
   stParam_2 *names; /// nom de la zone
   stParam_3 *db_ref;
+  QStringList** slFlt;
 }stGameConf;
 
 extern const stParam_1 loto_prm1_zn[];

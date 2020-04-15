@@ -188,6 +188,8 @@ stGameConf * BFdj::init(stFdj *prm)
  ret->db_ref->cnx = "";
  ret->db_ref->fdj = "";
 
+ ret->slFlt = nullptr;
+
  if(eFdjType == eFdjLoto){
   int nbZn = 2;
   ret->znCount = nbZn;

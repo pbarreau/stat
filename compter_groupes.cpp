@@ -49,30 +49,23 @@ BCountGroup::BCountGroup(const stGameConf *pGame,QStringList** lstCri):BCount(pG
  slFlt = lstCri;
 }
 
-/*
-QString BCountGroup::getType()
-{
- return onglet[type];
-}
-*/
-
-QTabWidget * BCountGroup::creationTables(const stGameConf *pGame)
+QTabWidget * BCountGroup::creationTables(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
  int nb_zones = pGame->znCount;
 
 
- QWidget *(BCountGroup::*ptrFunc[])(const stGameConf *pGame,int zn) =
+ QWidget *(BCountGroup::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
   {
-   &BCountGroup::fn_Count,
-   &BCountGroup::fn_Count
+   &BCountGroup::V2_fn_Count,
+   &BCountGroup::V2_fn_Count
   };
 
  for(int i = 0; i< nb_zones; i++)
  {
   QString name = pGame->names[i].abv;
-  QWidget *calcul = (this->*ptrFunc[i])(pGame, i);
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::fn_mkLocal, i);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
   }
@@ -187,6 +180,12 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
          SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
 
  return wdg_tmp;
+}
+
+bool BCountGroup::fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)
+{
+ bool isOk = true;
+ return isOk;
 }
 
 void BCountGroup::verticalResizeTableViewToContents(QTableView *tableView)

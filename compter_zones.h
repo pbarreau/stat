@@ -52,7 +52,8 @@ class BCountElem:public BCount//, public cFdjData
 
  private:
  //virtual QString getType();
- virtual  QTabWidget *creationTables(const stGameConf *pGame);
+ virtual  QTabWidget *creationTables(const stGameConf *pGame, const etCount eCalcul);
+ virtual bool fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn);
 
 
  private:

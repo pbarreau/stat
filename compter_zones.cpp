@@ -51,16 +51,34 @@ BCountElem::BCountElem(const stGameConf *pGame):BCount(pGame,eCountElm)
   return;
  }
  addr=this; /// memo de cet objet
- //creationTables(pGame);
 }
 
-/*
-QString BCountElem::getType()
+
+#if 1
+QTabWidget * BCountElem::creationTables(const stGameConf *pGame, const etCount eCalcul)
 {
- return onglet[type];
-}
-*/
+ QTabWidget *tab_Top = new QTabWidget(this);
 
+ int nb_zones = pGame->znCount;
+
+
+ QWidget *(BCount::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
+  {
+   &BCount::V2_fn_Count,
+   &BCount::V2_fn_Count
+  };
+
+ for(int i = 0; i< nb_zones; i++)
+ {
+  QString name = pGame->names[i].abv;
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::fn_mkLocal, i);
+  if(calcul != nullptr){
+   tab_Top->addTab(calcul, name);
+  }
+ }
+ return tab_Top;
+}
+#else
 QTabWidget * BCountElem::creationTables(const stGameConf *pGame)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
@@ -83,6 +101,24 @@ QTabWidget * BCountElem::creationTables(const stGameConf *pGame)
   }
  }
  return tab_Top;
+}
+#endif
+
+bool BCountElem::fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)
+{
+ bool isOk = true;
+
+ QString sql_msg = sql_MkCountItems(pDef, zn);
+ QString msg = "create table if not exists "
+               + prm.dstTbl + " as "
+               + sql_msg;
+
+ isOk = prm.query->exec(msg);
+
+ if(!isOk){
+  *prm.sql=msg;
+ }
+ return isOk;
 }
 
 QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
@@ -204,6 +240,7 @@ QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
  /// --------------------
  return wdg_tmp;
 }
+
 
 QString BCountElem::sql_MkCountItems(const stGameConf *pGame, int zn)
 {

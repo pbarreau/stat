@@ -51,6 +51,31 @@ QString BCountComb::getType()
 }
 */
 
+#if 1
+QTabWidget * BCountComb::creationTables(const stGameConf *pGame, const etCount eCalcul)
+{
+ QTabWidget *tab_Top = new QTabWidget(this);
+
+ int nb_zones = pGame->znCount;
+
+
+ QWidget *(BCount::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
+  {
+   &BCount::V2_fn_Count,
+   &BCount::V2_fn_Count
+  };
+
+ for(int i = 0; i< nb_zones; i++)
+ {
+  QString name = pGame->names[i].abv;
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::fn_mkLocal, i);
+  if(calcul != nullptr){
+   tab_Top->addTab(calcul, name);
+  }
+ }
+ return tab_Top;
+}
+#else
 QTabWidget * BCountComb::creationTables(const stGameConf *pGame)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
@@ -74,6 +99,7 @@ QTabWidget * BCountComb::creationTables(const stGameConf *pGame)
  }
  return tab_Top;
 }
+#endif
 
 QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
 {
@@ -170,6 +196,12 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
          SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
 
  return wdg_tmp;
+}
+
+bool BCountComb::fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)
+{
+ bool isOk = true;
+ return isOk;
 }
 
 QString BCountComb::sql_MkCountItems(const stGameConf *pGame, int zn)
