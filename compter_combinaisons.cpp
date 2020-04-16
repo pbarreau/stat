@@ -201,6 +201,17 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
 bool BCountComb::fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool isOk = true;
+
+ QString sql_msg = sql_MkCountItems(pDef, zn);
+ QString msg = "create table if not exists "
+               + prm.dstTbl + " as "
+               + sql_msg;
+
+ isOk = prm.query->exec(msg);
+
+ if(!isOk){
+  *prm.sql=msg;
+ }
  return isOk;
 }
 
@@ -744,7 +755,7 @@ void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int
 		a.tbName = "Filtres";
 		a.zn = zn;
 		a.eTyp = eType;
-		a.lgn = lgn;
+		a.lgn = 10 * eType;
 		a.col = 1;
 		a.pri = -1;
 		a.flt = lgn;
@@ -752,6 +763,57 @@ void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int
 		 a.val = query.value(0).toInt();
 		 isOk = setFiltre(a,db_1);
 		 a.col++;
+		}while(query.next() && isOk);
+	 }
+	}
+ } /// fin for
+}
+
+void BCountComb::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)
+{
+ Q_UNUSED(view)
+
+ bool isOk = true;
+ QSqlQuery query(db_1);//query(dbToUse);
+ QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  tbl_tirages="B";
+  tbl_key="_fdj";
+ }
+
+ /*
+  * select t1.idComb as b from B_ana_z1 as t1
+  * where ((t2.id=1))
+  */
+ QString 	 msg_1 = "select t1.idComb as b from ("+
+                 tbl_tirages+"_ana_z"+
+                 QString::number(zn+1)+") as t1 where";
+
+ for (int lgn=1;(lgn<3) && isOk;lgn++) {
+  QString msg = msg_1+
+                " (t1.id="+QString::number(lgn)+
+                ")";
+
+#ifndef QT_NO_DEBUG
+	qDebug() << "msg: "<<msg;
+#endif
+	isOk = query.exec(msg);
+
+	if(isOk){
+	 if(query.first()){
+		stTbFiltres a;
+		a.tbName = "Filtres";
+		a.zn = zn;
+		a.eTyp = eType;
+		a.lgn = 10 * eType;
+		a.col = -1;
+		a.pri = -1;
+		a.flt = lgn;
+		do{
+		 a.val = query.value(0).toInt();
+		 a.col = a.val;
+		 isOk = setFiltre(a,dbCount);
 		}while(query.next() && isOk);
 	 }
 	}

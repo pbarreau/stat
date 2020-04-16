@@ -121,6 +121,59 @@ bool BCountElem::fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const i
  return isOk;
 }
 
+void BCountElem::V2_marquerDerniers_tir(const stGameConf *pGame,  QTableView *view, const etCount eType, const int zn)
+{
+ Q_UNUSED(view)
+
+ bool isOk = true;
+ QSqlQuery query(dbCount);//query(dbToUse);
+ QString st_tirages = pGame->db_ref->fdj;
+ QString st_critere = FN1_getFieldsFromZone(pGame, zn, "t2");
+
+ /*
+  * select (row_number() over())as id, t1.z1 as b from B_elm as t1, B_fdj as t2
+  * where (
+  * (t1.z1 in (t2.b1,t2.b2,t2.b3,t2.b4,t2.b5))
+  * and(t2.id=1)
+  * )
+  */
+ QString 	 msg_1 = "select t1.z"+QString::number(zn+1)+
+                 " as b from (B_elm) as t1, ("+st_tirages+
+                 " )as t2 where ("
+                 "(t1.z"+QString::number(zn+1)+
+                 " in ("+st_critere+
+                 "))";
+
+ for (int lgn=1;(lgn<3) && isOk;lgn++) {
+  QString msg = msg_1+
+                " and (t2.id="+QString::number(lgn)+
+                "))";
+
+#ifndef QT_NO_DEBUG
+	qDebug() << "msg: "<<msg;
+#endif
+	isOk = query.exec(msg);
+
+	if(isOk){
+	 if(query.first()){
+		stTbFiltres a;
+		a.tbName = "Filtres";
+		a.zn = zn;
+		a.eTyp = eType;
+		a.lgn = 10 * eType;
+		a.col = -1;
+		a.pri = 1;
+		a.flt = lgn;
+		do{
+		 a.val = query.value(0).toInt();
+		 a.col = a.val;
+		 isOk = setFiltre(a,dbCount);
+		}while(query.next() && isOk);
+	 }
+	}
+ } /// fin for
+}
+
 QWidget *BCountElem::fn_Count(const stGameConf *pGame, int zn)
 {
  QWidget * wdg_tmp = new QWidget;

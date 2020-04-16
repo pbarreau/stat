@@ -185,6 +185,9 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
 bool BCountGroup::fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool isOk = true;
+
+ isOk = db_MkTblItems(pDef, zn, prm.dstTbl, prm.query, prm.sql);
+
  return isOk;
 }
 
@@ -396,6 +399,90 @@ void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, in
   tbl_tirages="B";
   tbl_key="_fdj";
  }
+
+ /*
+  * with tb_clef
+  * as(select t1.P from (B_ana_z1) as t1 where (t1.id=1)),
+  *
+  * tb_out
+  * as(select t2.Nb as key, t2.P from (r_B_grp_z1) as t2, tb_clef where(t2.Nb=tb_clef.p))
+  *
+  * select t1.* from (tb_out) as t1
+  */
+
+ QStringList *slst=&slFlt[zn][0];
+ int nbCols = slst[1].size();
+
+
+ QString msg = "";
+ QString key = "";
+
+ for (int lgn=1;(lgn<3) && isOk;lgn++)
+ {
+
+	for(int loop = 0; (loop < nbCols)&& isOk; loop ++)
+	{
+
+	 if(slst[2].at(loop).compare("special") == 0){
+		continue;
+	 }
+
+	 key = slst[1].at(loop);
+
+	 msg = "with tb_clef  "
+				 "as(select t1."+key+
+				 " from ("+tbl_tirages+
+				 "_ana_z"+QString::number(zn+1)+
+				 ") as t1 where (t1.id="+QString::number(lgn)
+				 +")), "
+					 " "
+					 "tb_out  "
+					 "as(select t2.Nb as key, t2."+key+
+				 " from (r_"+tbl_tirages+
+				 "_grp_z"+QString::number(zn+1)+
+				 ") as t2, tb_clef where(t2.Nb=tb_clef."+key+
+				 ")) "
+				 " "
+				 "select t1.* from (tb_out) as t1 ";
+
+#ifndef QT_NO_DEBUG
+	 qDebug() << "msg: "<<msg;
+#endif
+	 isOk = query.exec(msg);
+
+	 if(isOk){
+		if(query.first()){
+		 stTbFiltres a;
+		 a.tbName = "Filtres";
+		 a.zn = zn;
+		 a.eTyp = eType;
+		 a.lgn = query.value(0).toInt();
+		 a.col = loop+1;
+		 a.pri = -1;
+		 a.flt = lgn|BFlags::Filtre::isWanted;
+		 do{
+			a.val = query.value(1).toInt();
+			isOk = setFiltre(a,db_1);
+		 }while(query.next() && isOk);
+		}
+	 }
+	} /// fin for loop
+ }
+}
+
+void BCountGroup::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)
+{
+ bool isOk = true;
+ QSqlQuery query(db_1);//query(dbToUse);
+
+ QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  tbl_tirages="B";
+  tbl_key="_fdj";
+ }
+
+ verticalResizeTableViewToContents(view);
 
  /*
   * with tb_clef

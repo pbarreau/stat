@@ -109,6 +109,7 @@ class BCount:public QWidget
  virtual QTabWidget *creationTables(const stGameConf *pGame, const etCount eCalcul) = 0;
  QWidget *V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn);
  virtual bool fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)=0;
+ virtual void V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)=0;
 
 
  protected:
@@ -127,14 +128,13 @@ class BCount:public QWidget
  QString CreerCritereJours(QString cnx_db_name, QString tbl_ref);
  QString FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString alias="");
 
- bool V2_showMyMenu(etCount eSrc, QTableView *view, QPoint pos);
+ bool V2_showMyMenu(int col, etCount eSrc);
  QMenu *V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos);
 
  private:
  void RecupererConfiguration(void);
  bool setUnifiedPriority(QString szn, QString sprio);
- void V2_marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
-
+ bool getFiltre(stTbFiltres *ret, const etCount origine, QTableView *view, const QModelIndex index);
 
 
  public :

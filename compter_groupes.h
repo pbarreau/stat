@@ -74,6 +74,7 @@ class BCountGroup:public BCount
  virtual  QTabWidget *creationTables(const stGameConf *pGame, const etCount eCalcul);
  virtual bool fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn);
  void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
+ virtual void V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn);
 
  private:
  BCountGroup * addr;
