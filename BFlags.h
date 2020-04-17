@@ -4,8 +4,17 @@
 #include <QItemDelegate>
 #include <QSqlQueryModel>
 
-#include "compter.h"
 #include "colors.h"
+
+typedef enum{
+ eCountToSet,    /// Pas de definition
+ eCountElm,      /// Comptage des boules de zones
+ eCountCmb,      /// ... des combinaisons
+ eCountGrp,       /// ... des regroupements
+ eCountBrc,      /// ... des barycentres
+ eCountEnd
+}etCount;
+
 
 class BFlags : public QItemDelegate
 {
@@ -21,8 +30,8 @@ class BFlags : public QItemDelegate
   etCount eTyp;
  }stPrmDlgt;
 
- enum Filtre  {isLast=1,isPrevious=1<<1, isWanted=1<<2, isNever=1<<3,
-               isPlusOne=1<<4, isMinusOne=1<<5};
+ enum Filtre  {isNotSet=0, isLast=1,isPrevious=1<<1, isFiltred=1<<2, isNever=1<<3,
+               isPlusOne=1<<4, isMinusOne=1<<5, isWanted=1<< 6, isTerminated=1<<7 };
 
  Q_DECLARE_FLAGS(Filtres, Filtre)
  Q_FLAG(Filtres)
@@ -39,6 +48,7 @@ class BFlags : public QItemDelegate
  QString cur_tp;
  etCount eTyp;
 };
-
+Q_DECLARE_OPERATORS_FOR_FLAGS(BFlags::Filtres)
+Q_DECLARE_METATYPE(BFlags::Filtre)
 
 #endif // BFLAGS_H

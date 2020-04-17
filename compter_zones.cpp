@@ -830,6 +830,7 @@ void BCountElem::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int
 		 a.lgn = lgn;
 		 a.col = 1;
 		 a.pri = 1;
+//		 a.flt = static_cast<BFlags::Filtre>(lgn);
 		 a.flt = lgn;
 		 do{
 			a.val = query.value(0).toInt();
@@ -945,7 +946,7 @@ QString BCountElem::getFilteringData(int zn)
 
  msg = "select tb1.val from ("+userFiltringTableData
        +")as tb1 "
-         "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(BFlags::isWanted)+"=0x"+QString::number(BFlags::isWanted)+
+         "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(BFlags::isFiltred)+"=0x"+QString::number(BFlags::isFiltred)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=0 and tb1.pri=1)";
  isOk = query.exec(msg);
 #ifndef QT_NO_DEBUG

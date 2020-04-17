@@ -20,15 +20,17 @@ class BMenu : public QMenu
 
  private:
  void construireMenu(void);
- bool getFiltre(stTbFiltres *ret, const etCount origine, const QTableView *view, const QModelIndex index);
  QMenu *mnu_Priority(stTbFiltres *ret, const etCount eSrc, const QTableView *view, const QModelIndex index);
+ bool getdbFlt(stTbFiltres *ret, const etCount origine, const QTableView *view, const QModelIndex index);
+ bool setdbFlt(stTbFiltres in);
 
  public slots:
  void slot_showMenu();
 
  private slots:
- void slot_Filtre(bool chk);
- void slot_SetAll(bool chk);
+ void slot_isWanted(bool chk);
+ void slot_isFiltred(bool chk);
+ void slot_ForWanted(bool chk);
 
  private:
  QMenu *main_menu;

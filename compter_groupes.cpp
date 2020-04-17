@@ -459,7 +459,7 @@ void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, in
 		 a.lgn = query.value(0).toInt();
 		 a.col = loop+1;
 		 a.pri = -1;
-		 a.flt = lgn|BFlags::Filtre::isWanted;
+		 a.flt = BFlags::Filtre::isFiltred;
 		 do{
 			a.val = query.value(1).toInt();
 			isOk = setFiltre(a,db_1);
@@ -522,7 +522,7 @@ void BCountGroup::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *vi
 					 " "
 					 "tb_out  "
 					 "as(select t2.Nb as key, t2."+key+
-				 " from (r_"+tbl_tirages+
+				 " from (r_"+tbl_tirages+tbl_key+
 				 "_grp_z"+QString::number(zn+1)+
 				 ") as t2, tb_clef where(t2.Nb=tb_clef."+key+
 				 ")) "
@@ -543,7 +543,7 @@ void BCountGroup::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *vi
 		 a.lgn = query.value(0).toInt();
 		 a.col = loop+1;
 		 a.pri = -1;
-		 a.flt = lgn|BFlags::Filtre::isWanted;
+		 a.flt = lgn | BFlags::Filtre::isFiltred;
 		 do{
 			a.val = query.value(1).toInt();
 			isOk = setFiltre(a,db_1);
@@ -551,6 +551,11 @@ void BCountGroup::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *vi
 		}
 	 }
 	} /// fin for loop
+ }
+
+ if(!isOk){
+  DB_Tools::DisplayError("BCountGroup::V2_marquerDerniers_tir",&query,msg);
+  QMessageBox::warning(nullptr,"BCountGroup","V2_marquerDerniers_tir",QMessageBox::Ok);
  }
 }
 
@@ -612,7 +617,7 @@ bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, in
 					 query_3.first();
 
 					 int cur_id = query_2.value(0).toInt();
-					 QString sdec = QString::number(cur_id|BFlags::isWanted);
+					 QString sdec = QString::number(cur_id|BFlags::isFiltred);
 					 int nbLigne = query_3.value(0).toInt();
 					 if(nbLigne==1){
 						msg = "update Filtres set  flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
@@ -1546,7 +1551,7 @@ QString BCountGroup::getFilteringData(int zn)
 
  msg = "select tb1.* from ("+userFiltringTableData
        +")as tb1 "
-         "where((tb1.flt&0x"+QString::number(BFlags::isWanted)+"=0x"+QString::number(BFlags::isWanted)+
+         "where((tb1.flt&0x"+QString::number(BFlags::isFiltred)+"=0x"+QString::number(BFlags::isFiltred)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=3) order by tb1.col, tb1.lgn";
  isOk_1 = query_1.exec(msg);
  isOk_2 = query_2.exec(msg);

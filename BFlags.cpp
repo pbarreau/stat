@@ -131,7 +131,7 @@ void BFlags::paint(QPainter *painter, const QStyleOptionViewItem &option,
 	painter->save();
 	painter->setRenderHint(QPainter::Antialiasing, true);
 
-	if(val_f & Filtre::isWanted){
+	if(val_f & Filtre::isFiltred){
 	 painter->fillRect(option.rect, COULEUR_FOND_FILTRE);
 	}
 

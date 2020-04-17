@@ -1997,8 +1997,8 @@ void BPrevision::slot_UGL_ClrFilters()
  bool isOk = true;
  QString msg = "";
  msg = "update Filtres set flt=(case when ((flt&0x"+
-       QString::number(BFlags::isWanted)+")==0x"+QString::number(BFlags::isWanted)+
-       " and (flt>0)) then (flt&~(0x"+QString::number(BFlags::isWanted)+")) ELSE flt END)";
+       QString::number(BFlags::isFiltred)+")==0x"+QString::number(BFlags::isFiltred)+
+       " and (flt>0)) then (flt&~(0x"+QString::number(BFlags::isFiltred)+")) ELSE flt END)";
 
 #ifndef QT_NO_DEBUG
  qDebug() <<msg;

@@ -169,8 +169,11 @@ bool BCount::setFiltre(stTbFiltres val, QSqlDatabase db)
  int flt = val.flt;
 
  /// Verifier si info presente dans table
- QString msg = "Select *  from "+tbFiltre+" where ("
-                                              "zne="+QString::number(zn)+" and "+
+ QString msg = "Select *  from "+tbFiltre+
+               " where ("
+               "zne="+
+               QString::number(zn)+
+               " and "+
                "typ="+QString::number(eType)+" and "+
                "lgn="+QString::number(lgn)+" and "+
                "col="+QString::number(col)+" and "+
@@ -691,7 +694,7 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
  if((isOk = query_2.first()))
  {
   //(*ret).tbName = tbFiltre;
-  (*ret).flt = query_2.value("flt").toInt();
+  (*ret).flt = query_2.value("flt").value<BFlags::Filtre>();
   (*ret).pri = query_2.value("pri").toInt();
 
 	(*ret).lgn = lgn;
@@ -818,7 +821,7 @@ QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
  a.col = index.column();
  a.pri = -1;
  a.val = -1;
- a.flt = 0;
+ a.flt = BFlags::isNotSet;
 
  if(eSrc == eCountGrp)
  {
@@ -1044,7 +1047,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
          this,SLOT(slot_wdaFilter(bool)));
 
 
- if((flt>0) && (flt&BFlags::isWanted))
+ if((flt>0) && (flt&BFlags::isFiltred))
  {
   filtrer->setChecked(true);
  }
@@ -1414,7 +1417,7 @@ void BCount::slot_V2_wdaFilter(bool val)
  if((def[1].toInt()==0) && (def[2].toInt()==0) && (def[6].toInt()!=1))
   return;
 
- QString msg_2 = QString::number(BFlags::isWanted);
+ QString msg_2 = QString::number(BFlags::isFiltred);
 
  /// si je suis sur l'onglet GRP je peux avoir
  /// la meme valeur pour plusieurs colonnes
@@ -1455,7 +1458,7 @@ void BCount::slot_V2_wdaFilter(bool val)
 	if(def[7].toInt()<0){
 	 def[7]="0";
 	}
-	msg_2=QString::number(def[7].toInt()^ (BFlags::isWanted));
+	msg_2=QString::number(def[7].toInt()^ (BFlags::isFiltred));
 
 	msg = "update  Filtres set flt="+msg_2+
 				" where("
@@ -1511,7 +1514,7 @@ void BCount::slot_wdaFilter(bool val)
  if((def[1].toInt()==0) && (def[2].toInt()==0) && (def[6].toInt()!=1))
   return;
 
- QString msg_2 = QString::number(BFlags::isWanted);
+ QString msg_2 = QString::number(BFlags::isFiltred);
 
  /// si je suis sur l'onglet GRP je peux avoir
  /// la meme valeur pour plusieurs colonnes
@@ -1552,7 +1555,7 @@ void BCount::slot_wdaFilter(bool val)
 	if(def[7].toInt()<0){
 	 def[7]="0";
 	}
-	msg_2=QString::number(def[7].toInt()^ (BFlags::isWanted));
+	msg_2=QString::number(def[7].toInt()^ (BFlags::isFiltred));
 
 	msg = "update  Filtres set flt="+msg_2+
 				" where("

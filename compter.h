@@ -14,7 +14,9 @@
 //#include "delegate.h"
 #include "labelclickable.h"
 #include "BColorPriority.h"
+
 #include "game.h"
+#include "BFlags.h"
 
 #define CEL2_H  55
 #define CEL2_L  40
@@ -47,15 +49,6 @@
 
 /// -------ENUM---------
 
-typedef enum{
- eCountToSet,    /// Pas de definition
- eCountElm,      /// Comptage des boules de zones
- eCountCmb,      /// ... des combinaisons
- eCountGrp,       /// ... des regroupements
- eCountBrc,      /// ... des barycentres
- eCountEnd
-}etCount;
-
 typedef struct _B_RequeteFromTbv
 {
  QString db_data;    /// requete pour la base de donnees
@@ -74,6 +67,7 @@ typedef struct _prmbary stNeedsOfBary;
 
 typedef struct _stTbFiltres{
  QString tbName; /// Nom de la table filtre
+ bool isPresent; /// La structure a des infos correctes
  int zn;         /// Zone id
  etCount eTyp;   /// Type de filtre
  int lgn;
