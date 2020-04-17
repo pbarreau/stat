@@ -17,6 +17,8 @@
 //#include "delegate.h"
 #include "BFlags.h"
 
+#include "BMenu.h"
+
 #include "compter.h"
 #include "db_tools.h"
 
@@ -670,7 +672,7 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
  }
 
  QSqlQuery query_2(dbCount);
- QString tbFiltre = "Filtres";
+ QString tbFiltre = (*ret).tbName;
 
  /// Verifier si info presente dans table
  QString msg = "Select *  from "+tbFiltre
@@ -688,15 +690,15 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
 
  if((isOk = query_2.first()))
  {
-  ret->tbName = tbFiltre;
-  ret->flt = query_2.value("flt").toInt();
-  ret->pri = query_2.value("pri").toInt();
+  //(*ret).tbName = tbFiltre;
+  (*ret).flt = query_2.value("flt").toInt();
+  (*ret).pri = query_2.value("pri").toInt();
 
-	ret->lgn = lgn;
-	ret->col = col;
-	ret->val = val;
-	ret->zn = zn;
-	ret->eTyp = typ;
+	(*ret).lgn = lgn;
+	(*ret).col = col;
+	(*ret).val = val;
+	(*ret).zn = zn;
+	(*ret).eTyp = typ;
  }
 
  return isOk;
@@ -707,9 +709,21 @@ void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
  /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
 
  QTableView *view = qobject_cast<QTableView *>(sender());
-
- etCount origine = type;
  QString cnx = dbCount.connectionName();
+ etCount eType = type;
+
+ BMenu a(pos, cnx, eType, view);
+
+ connect(&a,SIGNAL(aboutToShow()), &a, SLOT(slot_showMenu()));
+ a.exec(view->viewport()->mapToGlobal(pos));
+
+ /*
+ BMenu *tmp = new BMenu(pos, cnx, eType, view);
+
+ connect(tmp,SIGNAL(aboutToShow()), tmp, SLOT(slot_showMenu()));
+ tmp->exec(view->viewport()->mapToGlobal(pos));
+*/
+#if 0
  int col = view->columnAt(pos.x());
 
  if(V2_showMyMenu(col, origine) == true)
@@ -718,6 +732,7 @@ void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 
 	stTbFiltres val;
 	memset(&val,0,sizeof(stTbFiltres));
+	val.tbName = "Filtres";
 
 	bool isOk = getFiltre(&val, origine,view,index);
 
@@ -748,6 +763,7 @@ void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
   MonMenu->exec(view->viewport()->mapToGlobal(pos));
  }
  //}
+#endif
 }
 
 bool BCount::V2_showMyMenu(int col, etCount eSrc)
