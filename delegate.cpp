@@ -5,6 +5,7 @@
 #include <QTextDocument>
 #include <QAbstractTextDocumentLayout>
 #include <QLineF>
+#include <QPlainTextEdit>
 
 #include <QMessageBox>
 

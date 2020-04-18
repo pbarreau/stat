@@ -67,6 +67,7 @@ QWidget *BCount::V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, con
 
  QString sql_msg = "select * from "+dstTbl;
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ //BFlags_sql *sqm_tmp= new BFlags_sql(eCalcul);
 
  sqm_tmp->setQuery(sql_msg, dbCount);
  qtv_tmp->setAlternatingRowColors(true);
@@ -85,6 +86,7 @@ QWidget *BCount::V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, con
  a.start = 1;
  a.zne=zn;
  a.eTyp = eCalcul;
+ a.mod = sqm_tmp;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
