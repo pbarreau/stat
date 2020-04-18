@@ -164,6 +164,8 @@ void BCountElem::V2_marquerDerniers_tir(const stGameConf *pGame,  QTableView *vi
 		a.col = -1;
 		a.pri = 1;
 		a.flt = lgn;
+		Bp::Filterings tmp = static_cast<Bp::Filterings>(lgn);
+		a.b_flt = a.b_flt | tmp;
 		do{
 		 a.val = query.value(0).toInt();
 		 a.col = a.val;

@@ -75,6 +75,7 @@ typedef struct _stTbFiltres{
  int val;        /// Valeur a lgn & col
  int pri;
  int flt;        /// bit field
+ Bp::Filterings b_flt;
 }stTbFiltres;
 
 

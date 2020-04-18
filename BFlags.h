@@ -21,6 +21,8 @@ namespace Bp {
  };
  Q_DECLARE_FLAGS(Filterings, Filtering)
 }
+Q_DECLARE_OPERATORS_FOR_FLAGS(Bp::Filterings)
+//Q_DECLARE_METATYPE(Bp::Filtering)
 /// -------------
 
 
@@ -44,6 +46,7 @@ class BFlags : public QStyledItemDelegate
   QString db_cnx;
   int start;
   int zne;
+  Bp::Filtering b_flt;
   int typ;
   etCount eTyp;
   QSqlQueryModel *mod;
@@ -79,6 +82,7 @@ class BFlags : public QStyledItemDelegate
  QString cur_zn;
  QString cur_tp;
  etCount eTyp;
+ Bp::Filterings eflt;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(BFlags::Filtres)
 Q_DECLARE_METATYPE(BFlags::Filtre)

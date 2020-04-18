@@ -23,6 +23,7 @@ BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(prm.parent)
  col_show = prm.start;
  eTyp = prm.eTyp;
  model = prm.mod;
+ eflt = prm.b_flt;
 
  QString cnx=prm.db_cnx;
  db_1 = QSqlDatabase::database(cnx);

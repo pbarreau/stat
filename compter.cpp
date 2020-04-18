@@ -87,6 +87,7 @@ QWidget *BCount::V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, con
  a.zne=zn;
  a.eTyp = eCalcul;
  a.mod = sqm_tmp;
+ a.b_flt = Bp::Filtering::isNotSet;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -169,6 +170,7 @@ bool BCount::setFiltre(stTbFiltres val, QSqlDatabase db)
  int itm = val.val;
  int pri = val.pri;
  int flt = val.flt;
+ Bp::Filterings tmp_flt = val.b_flt;
 
  /// Verifier si info presente dans table
  QString msg = "Select *  from "+tbFiltre+
@@ -206,8 +208,8 @@ bool BCount::setFiltre(stTbFiltres val, QSqlDatabase db)
 		/// == 1 donc update
 		msg = "update "+tbFiltre+
 					" set pri="+QString::number(pri)+
-					", flt=(case when flt is (NULL or 0 or flt<0) then 0x"+QString::number(flt)
-					+" else(flt|0x"+QString::number(flt)+
+					", flt=(case when flt is (NULL or 0 or flt<0) then 0x"+QString::number(tmp_flt)
+					+" else(flt|0x"+QString::number(tmp_flt)+
 					") end) where ("
 					"zne="+QString::number(zn)+" and "+
 					"typ="+QString::number(eType)+" and "+
@@ -227,7 +229,7 @@ bool BCount::setFiltre(stTbFiltres val, QSqlDatabase db)
 				 +QString::number(col)+","
 				 +QString::number(itm)+","
 				 +QString::number(pri)+","
-				 +QString::number(flt)+")";
+				 +QString::number(tmp_flt)+")";
 	}
  }
 

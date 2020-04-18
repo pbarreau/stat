@@ -544,6 +544,8 @@ void BCountGroup::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *vi
 		 a.col = loop+1;
 		 a.pri = -1;
 		 a.flt = lgn | BFlags::Filtre::isFiltred;
+		 Bp::Filterings tmp = static_cast<Bp::Filterings>(lgn);
+		 a.b_flt = a.b_flt | tmp;
 		 do{
 			a.val = query.value(1).toInt();
 			isOk = setFiltre(a,db_1);
