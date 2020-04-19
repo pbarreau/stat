@@ -110,7 +110,7 @@ class BCount:public QWidget
  protected:
  virtual QGridLayout *Compter(QString * pName, int zn)=0;
 
- bool setFiltre(stTbFiltres val, QSqlDatabase db);
+ bool setdbFlt(stTbFiltres val, QSqlDatabase db);
 
  QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
  QString CriteresCreer(QString operateur, QString critere,int zone);

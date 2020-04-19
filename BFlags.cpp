@@ -14,16 +14,10 @@
 #include <QTableView>
 
 #include "BFlags.h"
-//BFlags::BFlags(stPrmDlgt prm) : QItemDelegate(prm.parent)
 
 BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(prm.parent)
 {
- cur_zn = QString::number(prm.zne);
- cur_tp = QString::number(prm.typ);
- col_show = prm.start;
- eTyp = prm.eTyp;
- model = prm.mod;
- eflt = prm.b_flt;
+ flt = prm;
 
  QString cnx=prm.db_cnx;
  db_1 = QSqlDatabase::database(cnx);
@@ -36,70 +30,12 @@ BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(prm.parent)
 }
 
 
-QWidget * BFlags::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
- QLineEdit *tmp = new QLineEdit;
- return tmp;
- /*
- if (index.data().canConvert<QLabel>()) {
-  QLabel *tmp = new QLabel;
-  return tmp;
- }
-*/
- //return QStyledItemDelegate::createEditor(parent, option, index);
-}
-
-void BFlags::setEditorData(QWidget *editor, const QModelIndex &index) const
-{
- QString data = index.data().toString();
- QLineEdit *in = qobject_cast<QLineEdit *>(editor);
- in->setText(data);
- /*
- if (index.data().canConvert<QLineEdit>()) {
-  QString data = index.data().toString();
-  QLineEdit *in = qobject_cast<QLineEdit *>(editor);
-  in->setText(data);
- } else {
-  QStyledItemDelegate::setEditorData(editor, index);
- }
-*/
-}
-
-BFlags_sql::BFlags_sql(etCount eIn, int col,
-											 QObject *parent)
-		:
-			QSqlQueryModel(parent),
-			col_show(col),
-			eTyp(eIn)
-
-{
-
-}
-
-QVariant	BFlags_sql::data(const QModelIndex &index, int role) const
-{
-
- Qt::ItemDataRole d = static_cast<Qt::ItemDataRole>(role);
-
-
- if(index.column()==col_show)
- {
-
-	if((role == Qt::DisplayRole) && (eTyp == eCountElm) )
-	{
-	 //return "";
-	}
- }
- return QSqlQueryModel::data(index,role);
-
-}
-
 void BFlags::paint(QPainter *painter, const QStyleOptionViewItem &option,
                    const QModelIndex &index) const
 {
  int col = index.column();
 
- if((col == col_show) && (eTyp==eCountElm))
+ if((col == flt.start) && (flt.eTyp==eCountElm))
  {
   v2_paint(painter,option,index);
  }
@@ -126,18 +62,6 @@ void BFlags::v2_paint(QPainter *painter, const QStyleOptionViewItem &option,
 
  item_Wanted(monOption);
 
-#if 0
- monOption.palette.setColor(QPalette::Active, QPalette::Text, Qt::red);
- monOption.displayAlignment = Qt::AlignCenter | Qt::AlignVCenter;
-
- monOption.text = QString::number(monOption.text.toInt()).rightJustified(2,'0');
-
- monOption.font.setFamily("ARIAL");
- monOption.font.setPointSize(10);
-
- monOption.font.setItalic(true);
- //monOption.font.setBold(true);
-#endif
 
  QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &monOption, painter, nullptr);
  //QStyledItemDelegate::paint(painter, monOption, index);
@@ -181,12 +105,14 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
  };
 
  QRect Cellrect = maModif.rect;
+
  int refx = Cellrect.topLeft().x();
  int refy = Cellrect.topLeft().y();
- int ctw = Cellrect.width();
- int cth = Cellrect.height();
+ int ctw = Cellrect.width();  /// largeur cellule
+ int cth = Cellrect.height(); /// Hauteur cellule
  int cx = ctw/4;
  int cy = cth/2;
+
  QPoint c1(refx +(ctw/5)*4,refy + (cth/6));
  QPoint c2(refx +(ctw/5)*4,refy + (cth*5/6));
 
@@ -223,13 +149,13 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
  QPoint t3(refx,refy+cy);
  triangle << t1<<t2<<t3<<t1;
 
- if(((col == col_show) && ((eTyp>eCountToSet) && (eTyp<eCountEnd))) || (col>0 && (eTyp==eCountGrp))){
+ if(((col == flt.start) && ((flt.eTyp>eCountToSet) && (flt.eTyp<eCountEnd))) || (col>0 && (flt.eTyp==eCountGrp))){
 
 
 	int val_cell = index.sibling(index.row(),0).data().toInt();
 
 	QString flt_grp_key="";
-	if(col>0 && (eTyp==eCountGrp)){
+	if(col>0 && (flt.eTyp==eCountGrp)){
 	 val_cell = 0;
 	 if(index.data().canConvert(QMetaType::Int)){
 		val_cell = index.data().toInt();
@@ -239,8 +165,8 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
 	}
 
 	QString msg = "Select pri,flt from Filtres where("
-								"zne="+cur_zn+" and " +
-								"typ="+QString::number(eTyp)+" and "+
+								"zne="+QString::number(flt.zne)+" and " +
+								"typ="+QString::number(flt.eTyp)+" and "+
 								"val="+QString::number(val_cell)+flt_grp_key+
 								")";
 	QSqlQuery q(db_1);
@@ -275,7 +201,7 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
 
 	painter->setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOver);
 
-	if((col == col_show) && (eTyp==eCountElm)){
+	if((col == flt.start) && (flt.eTyp==eCountElm)){
 	 painter->setBackground(QBrush(QColor(Qt::white)));
 	 painter->fillRect(option.rect, QColor(Qt::white));
 	}
@@ -286,7 +212,7 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
 	 painter->fillRect(option.rect, COULEUR_FOND_FILTRE);
 	}
 
-	if( (val_f & Filtre::isLast)){
+	if( (val_f & Filtre::isLastTir)){
 	 painter->fillRect(r2, COULEUR_FOND_DERNIER);
 	}
 
@@ -310,7 +236,7 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
 
 	if(val_f & Filtre::isWanted){
 
-	 if((col == col_show) && (eTyp==eCountElm)){
+	 if((col == flt.start) && (flt.eTyp==eCountElm)){
 
 		painter->setBrush(Qt::BrushStyle::SolidPattern);
 		painter->fillRect(option.rect, QColor(Qt::white));
@@ -326,7 +252,7 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
 		int aa_row = index.row();
 
 		const QSortFilterProxyModel *m= static_cast<const QSortFilterProxyModel *>(index.model());
-		BFlags_sql *s= static_cast<BFlags_sql *>(m->sourceModel());
+		QSqlQueryModel *s= static_cast<QSqlQueryModel *>(m->sourceModel());
 		int aa_len = s->columnCount();
 
 

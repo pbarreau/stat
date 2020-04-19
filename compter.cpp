@@ -67,7 +67,6 @@ QWidget *BCount::V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, con
 
  QString sql_msg = "select * from "+dstTbl;
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
- //BFlags_sql *sqm_tmp= new BFlags_sql(eCalcul);
 
  sqm_tmp->setQuery(sql_msg, dbCount);
  qtv_tmp->setAlternatingRowColors(true);
@@ -157,7 +156,7 @@ etCount BCount::getType()
  return type;
 }
 
-bool BCount::setFiltre(stTbFiltres val, QSqlDatabase db)
+bool BCount::setdbFlt(stTbFiltres val, QSqlDatabase db)
 {
  bool isOk = true;
  QSqlQuery query_2(db);
@@ -208,8 +207,11 @@ bool BCount::setFiltre(stTbFiltres val, QSqlDatabase db)
 		/// == 1 donc update
 		msg = "update "+tbFiltre+
 					" set pri="+QString::number(pri)+
-					", flt=(case when flt is (NULL or 0 or flt<0) then 0x"+QString::number(tmp_flt)
-					+" else(flt|0x"+QString::number(tmp_flt)+
+					", flt=("
+					" case when flt is NULL then 0x"+QString::number(tmp_flt)+
+					"  when flt = 0 then 0x"+QString::number(tmp_flt)+
+					"  when flt < 0 then 0x"+QString::number(tmp_flt)+
+					" else(flt&0x"+QString::number(tmp_flt)+
 					") end) where ("
 					"zne="+QString::number(zn)+" and "+
 					"typ="+QString::number(eType)+" and "+
@@ -241,8 +243,8 @@ bool BCount::setFiltre(stTbFiltres val, QSqlDatabase db)
  }
 
  if(!isOk){
-  DB_Tools::DisplayError("BCount::setFiltre",&query_2,msg);
-  QMessageBox::warning(nullptr,"BCount","setFiltre",QMessageBox::Ok);
+  DB_Tools::DisplayError("BCount::setdbFlt",&query_2,msg);
+  QMessageBox::warning(nullptr,"BCount","setdbFlt",QMessageBox::Ok);
  }
 
  return isOk;
@@ -843,7 +845,7 @@ QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
  }
 
 
- isOk = setFiltre(a,dbCount);
+ isOk = setdbFlt(a,dbCount);
 
 
  //if((typeFiltre.at(0)->currentIndex()==0) && (typeFiltre.at(1)->currentIndex()==0))

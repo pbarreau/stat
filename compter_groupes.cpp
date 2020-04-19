@@ -462,7 +462,7 @@ void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, in
 		 a.flt = BFlags::Filtre::isFiltred;
 		 do{
 			a.val = query.value(1).toInt();
-			isOk = setFiltre(a,db_1);
+			isOk = setdbFlt(a,db_1);
 		 }while(query.next() && isOk);
 		}
 	 }
@@ -548,7 +548,7 @@ void BCountGroup::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *vi
 		 a.b_flt = a.b_flt | tmp;
 		 do{
 			a.val = query.value(1).toInt();
-			isOk = setFiltre(a,db_1);
+			isOk = setdbFlt(a,db_1);
 		 }while(query.next() && isOk);
 		}
 	 }

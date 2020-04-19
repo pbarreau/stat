@@ -9,6 +9,10 @@
 
 /// -------------
 namespace Bp {
+ /// https://wiki.qt.io/QFlags_tutorial
+ /// https://www.qtcentre.org/threads/49096-Use-QFlags
+ /// https://stackoverflow.com/questions/43478059/how-to-you-use-operator-int-of-qflags
+
  enum Filtering{
   isNotSet  = 0x0000,
   isLastTir	= 0x0001,
@@ -20,9 +24,14 @@ namespace Bp {
   isSeenAft	=	0x0040
  };
  Q_DECLARE_FLAGS(Filterings, Filtering)
+
+ enum FltLayer{
+  lyFiltred
+ };
+
 }
 Q_DECLARE_OPERATORS_FOR_FLAGS(Bp::Filterings)
-//Q_DECLARE_METATYPE(Bp::Filtering)
+Q_DECLARE_METATYPE(Bp::Filterings)
 /// -------------
 
 
@@ -46,14 +55,14 @@ class BFlags : public QStyledItemDelegate
   QString db_cnx;
   int start;
   int zne;
-  Bp::Filtering b_flt;
+  Bp::Filterings b_flt;
   int typ;
   etCount eTyp;
   QSqlQueryModel *mod;
  }stPrmDlgt;
 
  /// https://stackoverflow.com/questions/46180506/qt-retrieve-qflags-form-qvariant
- enum Filtre  {isNotSet=0, isLast=1,isPrevious=1<<1, isFiltred=1<<2, isNever=1<<3,
+ enum Filtre  {isNotSet=0, isLastTir=1,isPrevious=1<<1, isFiltred=1<<2, isNever=1<<3,
                isPlusOne=1<<4, isMinusOne=1<<5, isWanted=1<< 6, isTerminated=1<<7 };
 
  Q_DECLARE_FLAGS(Filtres, Filtre)
@@ -63,9 +72,6 @@ class BFlags : public QStyledItemDelegate
  BFlags(stPrmDlgt prm);
  virtual void paint(QPainter *painter, const QStyleOptionViewItem &option,
             const QModelIndex &index) const;
-
- virtual QWidget * createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
- virtual void setEditorData(QWidget *editor, const QModelIndex &index) const;
 
  private:
  void v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
@@ -77,27 +83,15 @@ class BFlags : public QStyledItemDelegate
 
  private:
  QSqlDatabase db_1;
+ stPrmDlgt flt;
  QSqlQueryModel *model;
- int col_show;
- QString cur_zn;
- QString cur_tp;
- etCount eTyp;
- Bp::Filterings eflt;
+ //int flt.start;
+ //QString flt.zne;
+ //QString cur_tp;
+ //etCount flt.eTyp;
+ //Bp::Filterings flt.b_flt;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(BFlags::Filtres)
 Q_DECLARE_METATYPE(BFlags::Filtre)
 
-class BFlags_sql : public QSqlQueryModel
-{
- public:
- BFlags_sql(etCount eIn, int col=1, QObject *parent=nullptr);
-
- private:
- QVariant data(const QModelIndex &index, int role) const;
-
- private:
- int col_show;
- etCount eTyp;
-
-};
 #endif // BFLAGS_H
