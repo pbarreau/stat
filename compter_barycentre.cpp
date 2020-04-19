@@ -119,8 +119,7 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
  a.db_cnx = cnx;
  a.start = 1;
  a.zne=zn;
- a.typ=0; ///A supprimer
- a.eTyp = eCountBrc;
+ a.typ = eCountBrc;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -343,8 +342,7 @@ QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
  a.parent = qtv_tmp;
  a.db_cnx = dbCount.connectionName();
  a.zne=zn;
- a.typ=1; ///Position de l'onglet qui va recevoir le tableau
- a.eTyp = eCountBrc;
+ a.typ = eCountBrc;
  a.start=0;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
@@ -419,8 +417,8 @@ void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int 
 	 if(query.first()){
 		stTbFiltres a;
 		a.tbName = "Filtres";
-		a.zn = zn;
-		a.eTyp = eType;
+		a.zne = zn;
+		a.typ = eType;
 		a.lgn = 10 * eType;
 		a.col = 1;
 		a.pri = -1;
@@ -479,8 +477,8 @@ void BCountBrc::V2_marquerDerniers_tir(const stGameConf *pGame,  QTableView *vie
 	 if(query.first()){
 		stTbFiltres a;
 		a.tbName = "Filtres";
-		a.zn = zn;
-		a.eTyp = eType;
+		a.zne = zn;
+		a.typ = eType;
 		a.lgn = 10*eType;
 		a.col = -1;
 		a.pri = -1;

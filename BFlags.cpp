@@ -1,3 +1,7 @@
+#ifndef QT_NO_DEBUG
+#include <QDebug>
+#endif
+
 #include <QMessageBox>
 
 #include <QSqlError>
@@ -35,7 +39,7 @@ void BFlags::paint(QPainter *painter, const QStyleOptionViewItem &option,
 {
  int col = index.column();
 
- if((col == flt.start) && (flt.eTyp==eCountElm))
+ if((col == flt.start) && (flt.typ==eCountElm))
  {
   v2_paint(painter,option,index);
  }
@@ -56,34 +60,248 @@ void BFlags::v2_paint(QPainter *painter, const QStyleOptionViewItem &option,
 
  QStyleOptionViewItem monOption = option;
 
+ stTbFiltres a;
+ a.tbName = "Filtres";
+ a.zne = flt.zne;
+ a.typ = flt.typ;
+ a.lgn = -1;
+ a.col = -1;
+ a.val = -1;
+ a.pri = -1;
+ a.flt = Bp::Filtering::isNotSet;
+
+
  painter->save();
 
  initStyleOption(&monOption, index);
 
- item_Wanted(monOption);
+ painter->setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOver);
+ painter->setRenderHint(QPainter::Antialiasing, true);
 
+ if(getdbFlt(&a, flt.typ, index)){
+  setWanted(true, painter,monOption, a);
+ }
+ else {
+  setWanted(false, painter,monOption, a);
+ }
+
+ drawFltKey(a,painter,monOption,index);
 
  QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &monOption, painter, nullptr);
  //QStyledItemDelegate::paint(painter, monOption, index);
  painter->restore();
 }
 
-void BFlags::item_Wanted(QStyleOptionViewItem &opt) const
+void BFlags::setWanted(bool state, QPainter *painter, QStyleOptionViewItem &opt, stTbFiltres a) const
 {
  /// BUG : il faut cliquer pour voir apparaitrela couleur.
  /// QTableView *tmp = static_cast<QTableView *>(opt.styleObject);
  /// Qt::ItemDataRole f;
 
- opt.palette.setColor(QPalette::Active, QPalette::Text, Qt::red);
- opt.displayAlignment = Qt::AlignTop|Qt::AlignLeft;//Qt::AlignCenter | Qt::AlignVCenter;
+ int size = 0;
+ Qt::GlobalColor pen;
+ Qt::Alignment alg;
+
+ if(state){
+  size= 7;
+  alg = Qt::AlignTop|Qt::AlignLeft;
+ }
+ else {
+  size = 10;
+  alg = Qt::AlignCenter | Qt::AlignVCenter;
+ }
+
+ if( (a.b_flt & Bp::Filtering::isWanted) == Bp::Filtering::isWanted){
+  pen = Qt::green;
+ }
+ else if ((a.b_flt & (Bp::Filtering::isFiltred|Bp::Filtering::isLastTir|Bp::Filtering::isPrevTir))) {
+  pen = Qt::red;
+ }
+ else {
+  pen = Qt::black;
+ }
+
+ opt.palette.setColor(QPalette::Active, QPalette::Text, pen);
+ opt.displayAlignment = alg;
 
  opt.text = QString::number(opt.text.toInt()).rightJustified(2,'0');
 
  opt.font.setFamily("ARIAL");
- opt.font.setPointSize(7);
+ opt.font.setPointSize(size);
 
  //opt.font.setItalic(true);
  //opt.font.setBold(true);
+ //QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter, nullptr);
+}
+
+bool BFlags::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QModelIndex index) const
+{
+ bool isOk = false;
+ etCount typ = in_typ;
+
+ int zn  = flt.zne;
+ int lgn = -1;
+ int col = -1;
+ int val = -1;
+ Bp::Filterings my_flt = Bp::Filtering::isNotSet;
+
+
+ if(typ >= eCountToSet && typ <= eCountEnd){
+  switch (typ) {
+   case eCountElm:
+   case eCountCmb:
+   case eCountBrc:
+    lgn = typ *10;
+    col = index.model()->index(index.row(),0).data().toInt();
+    val = col;
+    break;
+   case eCountGrp:
+    lgn = index.row();
+    col = index.column();
+    if(index.model()->index(lgn,col).data().canConvert(QMetaType::Int)){
+     val = index.model()->index(lgn,col).data().toInt();
+    }
+    break;
+   case eCountToSet:
+   case eCountEnd:
+    break;
+  }
+ }
+ else {
+  typ = eCountToSet;
+ }
+
+ QSqlQuery query_2(db_1);
+ QString tbFiltre = (*ret).tbName;
+
+ /// Verifier si info presente dans table
+ QString msg = "Select *  from "+tbFiltre
+               +" where ("
+                 "zne="+QString::number(zn)+" and "+
+               "typ="+QString::number(typ)+" and "+
+               "lgn="+QString::number(lgn)+" and "+
+               "col="+QString::number(col)+" and "+
+               "val="+QString::number(val)+")";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "mgs_2: "<<msg;
+#endif
+ isOk = query_2.exec(msg);
+
+ if((isOk = query_2.first()))
+ {
+  int valeur = query_2.value("flt").toInt();
+  my_flt = static_cast<Bp::Filterings>(valeur);
+  (*ret).b_flt = my_flt;
+  (*ret).flt = query_2.value("flt").toInt();
+  //(*ret).flt = query_2.value("flt").value<BFlags::Filtre>();
+  (*ret).pri = query_2.value("pri").toInt();
+ }
+
+ (*ret).isPresent = isOk;
+ (*ret).zne = zn;
+ (*ret).typ = typ;
+ (*ret).lgn = lgn;
+ (*ret).col = col;
+ (*ret).val = val;
+
+ return isOk;
+}
+
+void BFlags::drawFltKey(stTbFiltres a, QPainter *painter, const QStyleOptionViewItem &maModif,
+                const QModelIndex &index) const
+{
+ int col = index.column();
+
+ QColor v[]= {
+  Qt::black,
+  Qt::red,
+  Qt::green,
+  QColor(255,216,0,255),
+  QColor(255,106,0,255),
+  QColor(178,0,255,255),
+  QColor(211,255,204,255)
+ };
+ int nbColors = sizeof (v)/sizeof (QColor);
+
+ QRect Cellrect = maModif.rect;
+
+
+ int refx = Cellrect.topLeft().x();
+ int refy = Cellrect.topLeft().y();
+ int ctw = Cellrect.width();  /// largeur cellule
+ int cth = Cellrect.height(); /// Hauteur cellule
+ int cx = ctw/4;
+ int cy = cth/2;
+
+ QPoint c1(refx +(ctw/5)*4,refy + (cth/6));
+ QPoint c2(refx +(ctw/5)*4,refy + (cth*5/6));
+
+ QRect r1; /// priorite
+ QRect r2; /// Last
+ QRect r3; /// previous
+ QRect r4; /// Selected
+
+ QPoint p1(refx,refy);
+ QPoint p2(refx +(ctw/3),refy+cth);
+ QPoint p3(refx+ctw,refy+(cth*2/3));
+ QPoint p4(refx +(ctw/3),refy+(cth/3));
+ QPoint p5(refx + ctw,refy);
+
+ /// Priorite
+ r1.setTopLeft(p1);
+ r1.setBottomRight(p2);
+
+ /// Last
+ r2.setBottomLeft(p2);
+ r2.setTopRight(p3);
+
+ /// Previous
+ r3.setBottomRight(p3);
+ r3.setTopLeft(p4);
+
+ ///Selected
+ r4.setBottomLeft(p4);
+ r4.setTopRight(p5);
+
+ /// ------------------
+ //painter->save();
+ /// ------------------
+ painter->setRenderHint(QPainter::Antialiasing, true);
+
+ if( (a.b_flt & Bp::Filtering::isFiltred) == (Bp::Filtering::isFiltred)){
+  painter->fillRect(maModif.rect, COULEUR_FOND_FILTRE);
+ }
+
+ if( (a.b_flt & Bp::Filtering::isLastTir) == (Bp::Filtering::isLastTir)){
+  painter->fillRect(r2, COULEUR_FOND_DERNIER);
+ }
+
+ if((a.b_flt & Bp::Filtering::isPrevTir) == (Bp::Filtering::isPrevTir)){
+  painter->fillRect(r3, COULEUR_FOND_AVANTDER);
+ }
+
+
+ if((a.b_flt & Bp::Filtering::isNotSeen) == (Bp::Filtering::isNotSeen)){
+  painter->fillRect(r2, COULEUR_FOND_JAMSORTI);
+ }
+
+ /// Mettre les cercles maintenant car les fonds
+ /// snt deja dessinee
+ if((a.pri > 0) && (a.pri<nbColors)){
+
+	painter->setBrush(v[a.pri]);
+	painter->drawEllipse(c1,cx/2,cy/4);
+
+ }
+ else {
+  int a= 0;
+ }
+
+
+ /// ------------------
+ //painter->restore();
+ /// ------------------
 
 }
 
@@ -105,6 +323,7 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
  };
 
  QRect Cellrect = maModif.rect;
+
 
  int refx = Cellrect.topLeft().x();
  int refy = Cellrect.topLeft().y();
@@ -149,13 +368,13 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
  QPoint t3(refx,refy+cy);
  triangle << t1<<t2<<t3<<t1;
 
- if(((col == flt.start) && ((flt.eTyp>eCountToSet) && (flt.eTyp<eCountEnd))) || (col>0 && (flt.eTyp==eCountGrp))){
+ if(((col == flt.start) && ((flt.typ>eCountToSet) && (flt.typ<eCountEnd))) || (col>0 && (flt.typ==eCountGrp))){
 
 
 	int val_cell = index.sibling(index.row(),0).data().toInt();
 
 	QString flt_grp_key="";
-	if(col>0 && (flt.eTyp==eCountGrp)){
+	if(col>0 && (flt.typ==eCountGrp)){
 	 val_cell = 0;
 	 if(index.data().canConvert(QMetaType::Int)){
 		val_cell = index.data().toInt();
@@ -166,7 +385,7 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
 
 	QString msg = "Select pri,flt from Filtres where("
 								"zne="+QString::number(flt.zne)+" and " +
-								"typ="+QString::number(flt.eTyp)+" and "+
+								"typ="+QString::number(flt.typ)+" and "+
 								"val="+QString::number(val_cell)+flt_grp_key+
 								")";
 	QSqlQuery q(db_1);
@@ -201,7 +420,7 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
 
 	painter->setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOver);
 
-	if((col == flt.start) && (flt.eTyp==eCountElm)){
+	if((col == flt.start) && (flt.typ==eCountElm)){
 	 painter->setBackground(QBrush(QColor(Qt::white)));
 	 painter->fillRect(option.rect, QColor(Qt::white));
 	}
@@ -216,12 +435,12 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
 	 painter->fillRect(r2, COULEUR_FOND_DERNIER);
 	}
 
-	if(val_f & Filtre::isPrevious){
+	if(val_f & Filtre::isPrevTir){
 	 painter->fillRect(r3, COULEUR_FOND_AVANTDER);
 	}
 
 
-	if(val_f & Filtre::isNever){
+	if(val_f & Filtre::isNotSeen){
 	 painter->fillRect(r2, COULEUR_FOND_JAMSORTI);
 	}
 
@@ -236,7 +455,7 @@ void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
 
 	if(val_f & Filtre::isWanted){
 
-	 if((col == flt.start) && (flt.eTyp==eCountElm)){
+	 if((col == flt.start) && (flt.typ==eCountElm)){
 
 		painter->setBrush(Qt::BrushStyle::SolidPattern);
 		painter->fillRect(option.rect, QColor(Qt::white));

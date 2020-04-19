@@ -14,7 +14,6 @@
 #include <QModelIndex>
 #include <QScrollBar>
 
-//#include "delegate.h"
 #include "BFlags.h"
 
 #include "BMenu.h"
@@ -84,8 +83,7 @@ QWidget *BCount::V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, con
  a.db_cnx = cnx;
  a.start = 1;
  a.zne=zn;
- a.eTyp = eCalcul;
- a.mod = sqm_tmp;
+ a.typ = eCalcul;
  a.b_flt = Bp::Filtering::isNotSet;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
@@ -162,8 +160,8 @@ bool BCount::setdbFlt(stTbFiltres val, QSqlDatabase db)
  QSqlQuery query_2(db);
 
  QString tbFiltre = val.tbName;
- int zn = val.zn;
- etCount eType = val.eTyp;
+ int zn = val.zne;
+ etCount eType = val.typ;
  int lgn = val.lgn;
  int col = val.col;
  int itm = val.val;
@@ -706,8 +704,8 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
 	(*ret).lgn = lgn;
 	(*ret).col = col;
 	(*ret).val = val;
-	(*ret).zn = zn;
-	(*ret).eTyp = typ;
+	(*ret).zne = zn;
+	(*ret).typ = typ;
  }
 
  return isOk;
@@ -821,8 +819,8 @@ QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
  int row = index.row();
  stTbFiltres a;
  a.tbName = "Filtres";
- a.zn = view->objectName().toInt();;
- a.eTyp = eSrc;
+ a.zne = view->objectName().toInt();;
+ a.typ = eSrc;
  a.lgn = -1;
  a.col = index.column();
  a.pri = -1;
@@ -839,7 +837,7 @@ QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
 	}
  }
  else {
-  a.lgn = a.eTyp * 10;
+  a.lgn = a.typ * 10;
 
   a.val =  index.model()->index(index.row(),0).data().toInt();
  }

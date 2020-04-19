@@ -131,8 +131,7 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
  a.db_cnx = cnx;
  a.start = 1;
  a.zne=zn;
- a.typ=0; ///A supprimer
- a.eTyp = eCountGrp;
+ a.typ = eCountGrp;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -454,8 +453,8 @@ void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, in
 		if(query.first()){
 		 stTbFiltres a;
 		 a.tbName = "Filtres";
-		 a.zn = zn;
-		 a.eTyp = eType;
+		 a.zne = zn;
+		 a.typ = eType;
 		 a.lgn = query.value(0).toInt();
 		 a.col = loop+1;
 		 a.pri = -1;
@@ -538,8 +537,8 @@ void BCountGroup::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *vi
 		if(query.first()){
 		 stTbFiltres a;
 		 a.tbName = "Filtres";
-		 a.zn = zn;
-		 a.eTyp = eType;
+		 a.zne = zn;
+		 a.typ = eType;
 		 a.lgn = query.value(0).toInt();
 		 a.col = loop+1;
 		 a.pri = -1;
@@ -869,8 +868,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
  a.parent = qtv_tmp;
  a.db_cnx = dbCount.connectionName();
  a.zne=zn;
- a.typ=3; ///Position de l'onglet qui va recevoir le tableau
- a.eTyp = eCountGrp;
+ a.typ = eCountGrp;
  a.start=0;
 
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation

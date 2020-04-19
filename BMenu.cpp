@@ -32,9 +32,9 @@ BMenu::BMenu(const QPoint pos, QString cnx, const etCount eType, const QTableVie
  val.pri = -1;
  val.col =-1;
  val.lgn=-1;
- val.eTyp = eCountToSet;
+ val.typ = eCountToSet;
  val.val = -1;
- val.zn = -1;
+ val.zne = -1;
  val.b_flt = Bp::Filtering::isNotSet;
 
  construireMenu();
@@ -352,8 +352,8 @@ bool BMenu::setdbFlt(stTbFiltres in)
 				" set pri="+QString::number(in.pri)+
 				", flt="+QString::number(in.b_flt)+
 				" where ("
-				"zne="+QString::number(in.zn)+" and "+
-				"typ="+QString::number(in.eTyp)+" and "+
+				"zne="+QString::number(in.zne)+" and "+
+				"typ="+QString::number(in.typ)+" and "+
 				"lgn="+QString::number(in.lgn)+" and "+
 				"col="+QString::number(in.col)+" and "+
 				"val="+QString::number(in.val)+")";
@@ -364,8 +364,8 @@ bool BMenu::setdbFlt(stTbFiltres in)
   msg ="insert into "+in.tbName+
         " (id, zne, typ,lgn,col,val,pri,flt)"
         " values (NULL,"
-        +QString::number(in.zn)+","
-        +QString::number(in.eTyp)+","
+        +QString::number(in.zne)+","
+        +QString::number(in.typ)+","
         +QString::number(in.lgn)+","
         +QString::number(in.col)+","
         +QString::number(in.val)+","
@@ -516,8 +516,8 @@ bool BMenu::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QTableView *v
  }
 
  (*ret).isPresent = isOk;
- (*ret).zn = zn;
- (*ret).eTyp = typ;
+ (*ret).zne = zn;
+ (*ret).typ = typ;
  (*ret).lgn = lgn;
  (*ret).col = col;
  (*ret).val = val;

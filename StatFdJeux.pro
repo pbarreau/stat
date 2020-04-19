@@ -169,7 +169,8 @@ HEADERS  += \
     compter_barycentre.h \
     BColorPriority.h \
     BFlags.h \
-    BMenu.h
+    BMenu.h \
+    bstflt.h
 
 
 FORMS    += mainwindow.ui \

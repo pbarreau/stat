@@ -65,18 +65,8 @@ typedef struct _BRunningQuery
 
 typedef struct _prmbary stNeedsOfBary;
 
-typedef struct _stTbFiltres{
- QString tbName; /// Nom de la table filtre
- bool isPresent; /// La structure a des infos correctes
- int zn;         /// Zone id
- etCount eTyp;   /// Type de filtre
- int lgn;
- int col;
- int val;        /// Valeur a lgn & col
- int pri;
- int flt;        /// bit field
- Bp::Filterings b_flt;
-}stTbFiltres;
+
+
 
 
 class BCount:public QWidget
