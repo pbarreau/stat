@@ -9,13 +9,21 @@
 
 #include <QLineEdit>
 
-#include <QPainter>
 #include <QAbstractTextDocumentLayout>
 #include <QTextDocument>
 #include <QStyledItemDelegate>
 #include <QSortFilterProxyModel>
 #include <QApplication>
 #include <QTableView>
+
+#include <QPainter>
+#include <QStyle>
+#include <QStyleOption>
+#include <QStylePainter>
+#include <QStyleOptionViewItem>
+#include <QFontMetrics>
+#include <QPalette>
+#include <QRect>
 
 #include "BFlags.h"
 
@@ -41,7 +49,7 @@ void BFlags::paint(QPainter *painter, const QStyleOptionViewItem &option,
 
  if((col == flt.start) && (flt.typ==eCountElm))
  {
-  v2_paint(painter,option,index);
+  v3_paint(painter,option,index);
  }
  else {
   QStyledItemDelegate::paint(painter, option, index);
@@ -57,6 +65,9 @@ void BFlags::v2_paint(QPainter *painter, const QStyleOptionViewItem &option,
  /// https://forum.qt.io/topic/41463/solved-qstyleditemdelegate-set-text-color-when-row-is-selected
  /// https://openclassrooms.com/forum/sujet/recuperer-les-ligne-selectionnees-dans-un-qitemdelegate-35100
  /// https://stackoverflow.com/questions/34729858/override-text-in-qstyleditemdelegate-for-qtreeview
+ ///
+ /// https://code.qt.io/cgit/qt/qt.git/tree/src/gui/styles/qstyle.cpp?h=4.5
+ /// ligne 489 , QStyle::drawItemText
 
 
  stTbFiltres a;
@@ -66,11 +77,8 @@ void BFlags::v2_paint(QPainter *painter, const QStyleOptionViewItem &option,
  a.lgn = -1;
  a.col = -1;
  a.val = -1;
- a.pri = 0;
+ a.pri = -1;
  a.flt = Bp::Filtering::isNotSet;
-
-
- //painter->save();
 
 
  if(getdbFlt(&a, flt.typ, index)){
@@ -79,10 +87,50 @@ void BFlags::v2_paint(QPainter *painter, const QStyleOptionViewItem &option,
  else {
   setWanted(false, painter,option, &a, index);
  }
-
- //QStyledItemDelegate::paint(painter, monOption, index);
- //painter->restore();
 }
+
+void BFlags::v3_paint(QPainter *painter, const QStyleOptionViewItem &option,
+                      const QModelIndex &index) const
+{
+ /// https://openclassrooms.com/forum/sujet/qt-qtableview-qstyleditemdelegate
+ /// https://forum.qt.io/topic/41463/solved-qstyleditemdelegate-set-text-color-when-row-is-selected
+ /// https://openclassrooms.com/forum/sujet/recuperer-les-ligne-selectionnees-dans-un-qitemdelegate-35100
+ /// https://stackoverflow.com/questions/34729858/override-text-in-qstyleditemdelegate-for-qtreeview
+ ///
+ /// https://code.qt.io/cgit/qt/qt.git/tree/src/gui/styles/qstyle.cpp?h=4.5
+ /// ligne 489 , QStyle::drawItemText
+ ///
+ /// https://code.qt.io/cgit/qt/qtbase.git/tree/src/widgets/itemviews/qstyleditemdelegate.cpp?h=dev
+
+ Q_ASSERT(index.isValid());
+
+ stTbFiltres a;
+ a.tbName = "Filtres";
+ a.zne = flt.zne;
+ a.typ = flt.typ;
+ a.lgn = -1;
+ a.col = -1;
+ a.val = -1;
+ a.pri = -1;
+ a.flt = Bp::Filtering::isNotSet;
+
+ bool ret = getdbFlt(&a, flt.typ, index);
+ setVisual(ret, &a, painter, option, index);
+ }
+
+ void BFlags::setVisual(const bool isPresent, stTbFiltres *a,QPainter *painter, const QStyleOptionViewItem &option,
+                        const QModelIndex &index) const
+ {
+  QStyleOptionViewItem myOpt = option;
+  initStyleOption(&myOpt, index);
+
+	/// Gestion des graphiques
+	fltDraw(isPresent, a, painter, myOpt, index);
+
+
+	/// Gestion du texte
+	fltWrite(isPresent, a, painter, myOpt, index);
+ }
 
 void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem &opt, stTbFiltres *a, const QModelIndex &index) const
 {
@@ -90,34 +138,58 @@ void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem
  /// QTableView *tmp = static_cast<QTableView *>(opt.styleObject);
  /// Qt::ItemDataRole f;
 
- drawFltKey(a,painter,opt,index);
+ /// Gestion des graphiques
+ fltDraw(state, a,painter,opt,index);
 
  QStyleOptionViewItem myOpt = opt;
  initStyleOption(&myOpt, index);
 
- //QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &myOpt, painter, nullptr);
+ QPainter p;
+ /*
+ QStyle::State val_state = myOpt.state;
+ */
+
  QRect Cellrect = myOpt.rect;
+
  Qt::Alignment alg;
  alg = Qt::AlignTop|Qt::AlignLeft;
  QPalette pal;
  QString try_txt = QString::number(myOpt.text.toInt()).rightJustified(2,'0');
  int alignment = static_cast<int>(alg);
 
+ QFont myFont;
+ myFont.setFamily("ARIAL");
+ myFont.setPointSize(7);
+ myFont.setWeight(QFont::Normal);
+ myFont.setItalic(true);
+
+ /// Calcul de l'epace pour le texte
+ QFontMetrics qfm(myFont);
+ QRect space = QApplication::style()->itemTextRect(qfm, Cellrect, alignment, false, try_txt);
+
+ painter->save();
+ painter->setFont(myFont);
+ //QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &myOpt, painter, nullptr);
+ //myOpt.font.setItalic(true);
+
+
  QApplication::style()->drawItemText(
   painter,
-  Cellrect,
+  space,
   alignment,
   pal,
   false,
-  try_txt);
+  try_txt,
+  QPalette::ColorRole::Text);
 
+ painter->restore();
  return;
 
  int size = 0;
  Qt::GlobalColor pen;
  //Qt::Alignment alg;
 
- if(state){
+ if((a->b_flt & Bp::Filtering::isWanted) == Bp::Filtering::isWanted){
   size= 7;
   alg = Qt::AlignTop|Qt::AlignLeft;
  }
@@ -129,14 +201,14 @@ void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem
  if( (a->b_flt & Bp::Filtering::isWanted) == Bp::Filtering::isWanted){
   pen = Qt::green;
  }
- else if ((a->b_flt & (Bp::Filtering::isFiltred|Bp::Filtering::isLastTir|Bp::Filtering::isPrevTir))) {
+ else if ((a->b_flt & Bp::Filtering::isFiltred) == Bp::Filtering::isFiltred) {
   pen = Qt::red;
  }
  else {
   pen = Qt::black;
  }
 
- //opt.palette.setColor(QPalette::Active, QPalette::Text, pen);
+ myOpt.palette.setColor(QPalette::Active, QPalette::Text, pen);
  myOpt.displayAlignment = alg;
 
  myOpt.text = QString::number(myOpt.text.toInt()).rightJustified(2,'0');
@@ -146,12 +218,19 @@ void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem
 
  //opt.font.setItalic(true);
  //opt.font.setBold(true);
- //QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter, nullptr);
 
- //drawFltKey(a,painter,myOpt,index);
+ /*
+ QApplication::style()->drawItemText(
+  painter,
+  Cellrect,
+  alignment,
+  pal,
+  false,
+  try_txt);
+*/
 
- QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &myOpt, painter, nullptr);
-
+ /// drawFltKey(a,painter,myOpt,index);
+ /// reponse incomplete : QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &myOpt, painter, nullptr);
 }
 
 bool BFlags::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QModelIndex index) const
@@ -230,7 +309,62 @@ bool BFlags::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QModelIndex 
  return isOk;
 }
 
-void BFlags::drawFltKey(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
+void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
+                     const QModelIndex &index) const
+{
+ QStyleOptionViewItem myOpt = maModif;
+ initStyleOption(&myOpt, index);
+
+ QFont myFnt;
+ QPalette myPal;
+ Qt::Alignment myAlg;
+ Qt::GlobalColor myPen;
+ QRect curCell = myOpt.rect;
+
+ int alignment = 0;
+ int size = 0;
+ bool b_italic = false;
+
+ myFnt.setFamily("ARIAL");
+ myFnt.setWeight(QFont::Normal);
+
+ if((a->b_flt & Bp::Filtering::isWanted) == Bp::Filtering::isWanted){
+  myPen = Qt::green;
+  size= 7;
+  myAlg = Qt::AlignTop|Qt::AlignLeft;
+  b_italic = true;
+ }
+ else {
+  myPen = Qt::black;
+  size = 10;
+  myAlg = Qt::AlignCenter | Qt::AlignVCenter;
+  b_italic = false;
+ }
+
+ if ((a->b_flt & Bp::Filtering::isFiltred) == Bp::Filtering::isFiltred) {
+  myPen = Qt::red;
+ }
+
+ myFnt.setPointSize(size);
+ myFnt.setItalic(b_italic);
+ alignment = static_cast<int>(myAlg);
+
+ QString myTxt = QString::number(myOpt.text.toInt()).rightJustified(2,'0');
+
+ /// Calcul de l'epace pour le texte
+ QFontMetrics qfm(myFnt);
+ QRect space = QApplication::style()->itemTextRect(qfm, curCell, alignment, false, myTxt);
+
+ painter->save();
+
+ painter->setFont(myFnt);
+ myPal.setColor(QPalette::Active, QPalette::Text, myPen);
+ QApplication::style()->drawItemText(painter,space,alignment,myPal,true,myTxt,QPalette::ColorRole::Text);
+
+ painter->restore();
+}
+
+void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
                 const QModelIndex &index) const
 {
  int col = index.column();
@@ -290,25 +424,25 @@ void BFlags::drawFltKey(stTbFiltres *a, QPainter *painter, const QStyleOptionVie
  painter->save();
  /// ------------------
  painter->setRenderHint(QPainter::Antialiasing, true);
-#if 0
+//#if 0
 
- if( (a.b_flt & Bp::Filtering::isFiltred) == (Bp::Filtering::isFiltred)){
+ if(((a->pri)>0) && ((a->b_flt & Bp::Filtering::isFiltred) == (Bp::Filtering::isFiltred))){
   painter->fillRect(maModif.rect, COULEUR_FOND_FILTRE);
  }
 
- if( (a.b_flt & Bp::Filtering::isLastTir) == (Bp::Filtering::isLastTir)){
+ if( (a->b_flt & Bp::Filtering::isLastTir) == (Bp::Filtering::isLastTir)){
   painter->fillRect(r2, COULEUR_FOND_DERNIER);
  }
 
- if((a.b_flt & Bp::Filtering::isPrevTir) == (Bp::Filtering::isPrevTir)){
+ if((a->b_flt & Bp::Filtering::isPrevTir) == (Bp::Filtering::isPrevTir)){
   painter->fillRect(r3, COULEUR_FOND_AVANTDER);
  }
 
 
- if((a.b_flt & Bp::Filtering::isNotSeen) == (Bp::Filtering::isNotSeen)){
+ if((a->b_flt & Bp::Filtering::isNotSeen) == (Bp::Filtering::isNotSeen)){
   painter->fillRect(r2, COULEUR_FOND_JAMSORTI);
  }
-#endif
+//#endif
  /// Mettre les cercles maintenant car les fonds
  /// snt deja dessinee
  if((a->pri > 0) && (a->pri<nbColors)){
@@ -316,9 +450,6 @@ void BFlags::drawFltKey(stTbFiltres *a, QPainter *painter, const QStyleOptionVie
 	painter->setBrush(v[a->pri]);
 	painter->drawEllipse(c1,cx/2,cy/4);
 
- }
- else {
-  int a= 0;
  }
 
 

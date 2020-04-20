@@ -30,7 +30,8 @@ class BMenu : public QMenu
  private slots:
  void slot_isWanted(bool chk);
  void slot_isFiltred(bool chk);
- void slot_ForWanted(bool chk);
+ void slot_priorityForAll(bool chk);
+ void slot_ChoosePriority(QAction *cmd);
 
  private:
  QMenu *main_menu;

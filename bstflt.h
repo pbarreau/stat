@@ -50,6 +50,7 @@ typedef enum{
 typedef struct _stTbFiltres{
  QString tbName; /// Nom de la table filtre
  bool isPresent; /// La structure a des infos correctes
+ int id;
  int zne;         /// Zone id
  etCount typ;   /// Type de filtre
  int lgn;

@@ -27,6 +27,7 @@ BMenu::BMenu(const QPoint pos, QString cnx, const etCount eType, const QTableVie
  lview = view;
  index = view->indexAt(pos);
 
+ val.id=-1;
  val.tbName = "Filtres";
  val.flt = BFlags::Filtre::isNotSet;
  val.pri = -1;
@@ -44,11 +45,11 @@ void BMenu::construireMenu(void)
 {
  main_menu = this;
 
- QAction *isWanted = main_menu->addAction("Prendre",this,SLOT(slot_isWanted(bool)));
+ QAction *isWanted = main_menu->addAction("Reserver",this,SLOT(slot_isWanted(bool)));
  isWanted->setCheckable(true);
  isWanted->setEnabled(true);
 
- QAction *isFiltred = main_menu->addAction("Filtrer",this,SLOT(slot_isFiltred(bool)));
+ QAction *isFiltred = main_menu->addAction("Choisir",this,SLOT(slot_isFiltred(bool)));
  isFiltred->setCheckable(true);
  isFiltred->setDisabled(true);
 }
@@ -143,7 +144,7 @@ QMenu *BMenu::mnu_Priority(stTbFiltres *ret, const etCount eSrc, const QTableVie
  QString msg2 = "Priorites";
  QMenu *menu =new QMenu(msg2);
 
- QAction *setForAll = menu->addAction("Mettre tout :",this,SLOT(slot_ForWanted(bool)));
+ QAction *setForAll = menu->addAction("Tous",this,SLOT(slot_priorityForAll(bool)));
  setForAll->setCheckable(true);
 
  QActionGroup *grpPri = new  QActionGroup(menu);
@@ -152,11 +153,11 @@ QMenu *BMenu::mnu_Priority(stTbFiltres *ret, const etCount eSrc, const QTableVie
  for(int i =1; i<=5;i++)
  {
   QAction *radio = new QAction(QString::number(i),grpPri);
-
 	radio->setCheckable(true);
 	menu->addAction(radio);
+	grpPri->addAction(radio)->setData(i);
  }
- ///connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+ connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
 
  if((*ret).pri>0)
  {
@@ -246,6 +247,7 @@ void BMenu::slot_isWanted(bool chk)
  }
  else {
   val.b_flt = val.b_flt & ~Bp::Filtering::isWanted;
+  val.b_flt = val.b_flt & ~Bp::Filtering::isFiltred;
  }
 
  /// Mettre a jour action dans base
@@ -324,12 +326,41 @@ void BMenu::slot_isFiltred(bool chk)
 }
 #endif
 
-void BMenu::slot_ForWanted(bool chk)
+void BMenu::slot_priorityForAll(bool chk)
 {
  QAction *chkFrom = qobject_cast<QAction *>(sender());
  chkFrom->setChecked(chk);
 }
 
+void BMenu::slot_ChoosePriority(QAction *cmd)
+{
+ /// https://stackoverflow.com/questions/9187538/how-to-add-a-list-of-qactions-to-a-qmenu-and-handle-them-with-a-single-slot
+ bool isOk = true;
+ QSqlQuery query(db_1);
+
+ int value = cmd->data().toInt();
+
+ /// Supprimer la priorite ?
+ if(value==val.pri){
+  value=0;
+ }
+
+ QString msg = "update  Filtres set pri="+QString::number(value)+
+               " where("
+               "id="+QString::number(val.id)+
+               ");";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "msg: "<<msg;
+#endif
+ isOk = query.exec(msg);
+
+ if(!isOk){
+  DB_Tools::DisplayError("BMenu::slot_ChoosePriority",&query,msg);
+  QMessageBox::warning(nullptr,"BMenu","slot_ChoosePriority",QMessageBox::Ok);
+ }
+
+}
 
 #if 1
 bool BMenu::setdbFlt(stTbFiltres in)
@@ -507,6 +538,7 @@ bool BMenu::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QTableView *v
 
  if((isOk = query_2.first()))
  {
+  (*ret).id = query_2.value("id").toInt();
   int valeur = query_2.value("flt").toInt();
   my_flt = static_cast<Bp::Filterings>(valeur);
   (*ret).b_flt = my_flt;
