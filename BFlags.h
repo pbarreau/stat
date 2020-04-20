@@ -50,6 +50,7 @@ class BFlags : public QStyledItemDelegate
               const QModelIndex &index) const;
  void setVisual(const bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &option,
                         const QModelIndex &index) const;
+ void cellWrite(QPainter *painter, QRect curCell, const QString myTxt, Qt::GlobalColor inPen=Qt::black,  bool up=false) const;
 
 
  private:

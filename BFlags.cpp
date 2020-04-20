@@ -45,17 +45,9 @@ BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(prm.parent)
 void BFlags::paint(QPainter *painter, const QStyleOptionViewItem &option,
                    const QModelIndex &index) const
 {
- int col = index.column();
 
- if((col == flt.start) && (flt.typ==eCountElm))
- {
-  v3_paint(painter,option,index);
- }
- else {
-  QStyledItemDelegate::paint(painter, option, index);
- }
+ v3_paint(painter,option,index);
 
- //v1_paint(painter,option,index);
 }
 
 void BFlags::v2_paint(QPainter *painter, const QStyleOptionViewItem &option,
@@ -309,49 +301,37 @@ bool BFlags::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QModelIndex 
  return isOk;
 }
 
-void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
-                     const QModelIndex &index) const
+void BFlags::cellWrite(QPainter *painter, QRect curCell, const QString myTxt, Qt::GlobalColor inPen, bool up)const
 {
- QStyleOptionViewItem myOpt = maModif;
- initStyleOption(&myOpt, index);
-
  QFont myFnt;
  QPalette myPal;
  Qt::Alignment myAlg;
- Qt::GlobalColor myPen;
- QRect curCell = myOpt.rect;
+ Qt::GlobalColor myPen=inPen;
 
+ QString font_family = "ARIAL";
+ int font_weight = QFont::Normal;
  int alignment = 0;
  int size = 0;
  bool b_italic = false;
 
- myFnt.setFamily("ARIAL");
- myFnt.setWeight(QFont::Normal);
-
- if((a->b_flt & Bp::Filtering::isWanted) == Bp::Filtering::isWanted){
-  myPen = Qt::green;
+ if(up==true){
   size= 7;
   myAlg = Qt::AlignTop|Qt::AlignLeft;
   b_italic = true;
  }
  else {
-  myPen = Qt::black;
   size = 10;
   myAlg = Qt::AlignCenter | Qt::AlignVCenter;
   b_italic = false;
  }
 
- if ((a->b_flt & Bp::Filtering::isFiltred) == Bp::Filtering::isFiltred) {
-  myPen = Qt::red;
- }
-
  myFnt.setPointSize(size);
+ myFnt.setWeight(font_weight);
  myFnt.setItalic(b_italic);
  alignment = static_cast<int>(myAlg);
 
- QString myTxt = QString::number(myOpt.text.toInt()).rightJustified(2,'0');
 
- /// Calcul de l'epace pour le texte
+ /// Calcul de l'espace pour le texte
  QFontMetrics qfm(myFnt);
  QRect space = QApplication::style()->itemTextRect(qfm, curCell, alignment, false, myTxt);
 
@@ -364,10 +344,94 @@ void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const Q
  painter->restore();
 }
 
+void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
+                     const QModelIndex &index) const
+{
+ QStyleOptionViewItem myOpt = maModif;
+ initStyleOption(&myOpt, index);
+
+ QFont myFnt;
+ QPalette myPal;
+ Qt::GlobalColor myPen=Qt::black;
+ bool set_up = false;
+
+ QString myTxt = myOpt.text;
+ QRect curCell = myOpt.rect;
+ int cur_col = index.column();
+
+ int painting_col = -1;
+ switch (a->typ) {
+  case eCountElm:
+  case eCountCmb:
+  case eCountBrc:
+   painting_col = 1;
+   if(cur_col != painting_col ){
+    cellWrite(painter,curCell,myTxt);
+    return;
+   }
+  break;
+  case eCountGrp:
+   painting_col = 0;
+   break;
+  default:
+   painting_col = -1;
+   break;
+ }
+
+ if(cur_col==painting_col){
+
+	if((a->typ == eCountElm)||(a->typ == eCountGrp)){
+	 myTxt = QString::number(myOpt.text.toInt()).rightJustified(2,'0');
+	}
+
+	if(a->typ == eCountBrc){
+	 /// https://stackoverflow.com/questions/7234824/format-a-number-to-a-specific-qstring-format
+	 QStringList tmp_lst = myTxt.split(",");
+	 if(tmp_lst.size()>1){
+		myTxt=tmp_lst[0]+","+tmp_lst[1].leftJustified(2,'0');
+	 }
+	 else {
+		myTxt=myTxt+","+"00";
+	 }
+	}
+ }
+
+ if((a->b_flt & Bp::Filtering::isWanted) == Bp::Filtering::isWanted){
+  set_up = true;
+  myPen = Qt::green;
+ }
+
+ if (
+  (a->b_flt & Bp::Filtering::isChoosed) == Bp::Filtering::isChoosed
+                                            ||
+  (a->b_flt & Bp::Filtering::isFiltred) == Bp::Filtering::isFiltred
+
+  ) {
+  set_up = false;
+  myPen = Qt::red;
+ }
+
+ cellWrite(painter,curCell,myTxt,myPen,set_up);
+
+}
+
 void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
                 const QModelIndex &index) const
 {
  int col = index.column();
+
+ /// Test faisabilite
+
+ switch (a->typ) {
+  case eCountElm:
+  case eCountCmb:
+  case eCountBrc:
+   if(col != flt.start ){
+    return;
+   }
+   break;
+  default: ;// Rien
+ }
 
  QColor v[]= {
   Qt::black,
@@ -426,8 +490,16 @@ void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QS
  painter->setRenderHint(QPainter::Antialiasing, true);
 //#if 0
 
- if(((a->pri)>0) && ((a->b_flt & Bp::Filtering::isFiltred) == (Bp::Filtering::isFiltred))){
-  painter->fillRect(maModif.rect, COULEUR_FOND_FILTRE);
+ if(a->typ==eCountElm){
+  if(((a->pri)>0) && ((a->b_flt & Bp::Filtering::isFiltred) == (Bp::Filtering::isFiltred))){
+   painter->fillRect(maModif.rect, COULEUR_FOND_FILTRE);
+  }
+ }
+ else {
+  if(
+   ((a->b_flt & Bp::Filtering::isWanted) == (Bp::Filtering::isWanted)) && ((a->b_flt & Bp::Filtering::isFiltred) == (Bp::Filtering::isFiltred))){
+   painter->fillRect(maModif.rect, COULEUR_FOND_FILTRE);
+  }
  }
 
  if( (a->b_flt & Bp::Filtering::isLastTir) == (Bp::Filtering::isLastTir)){

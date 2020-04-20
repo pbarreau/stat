@@ -136,8 +136,8 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString 
  QString msg = "";
 
  /// Regarder le choix utilisateur
- msg = "with somme as(select count(Choix.pri)  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0)),"
-       "e1 as (select val from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=0) order by val) "
+ msg = "with somme as(select count(Choix.pri)  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=1)),"
+       "e1 as (select val from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=1) order by val) "
        "SELECT somme.T, group_concat(e1.val) as boules from somme,e1";
 
 #ifndef QT_NO_DEBUG

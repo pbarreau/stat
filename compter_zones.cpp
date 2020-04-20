@@ -165,7 +165,7 @@ void BCountElem::V2_marquerDerniers_tir(const stGameConf *pGame,  QTableView *vi
 		a.pri = 1;
 		a.flt = lgn;
 		Bp::Filterings tmp = static_cast<Bp::Filterings>(lgn);
-		a.b_flt = a.b_flt | tmp;
+		a.b_flt = tmp|Bp::Filtering::isWanted|Bp::Filtering::isChoosed;
 		do{
 		 a.val = query.value(0).toInt();
 		 a.col = a.val;
@@ -935,6 +935,29 @@ LabelClickable *BCountElem::getLabPriority(void)
  return selection[0].getLabel();
 }
 
+#if 1
+QString BCountElem::getFilteringData(int zn)
+{
+ QSqlQuery query(dbCount);
+ bool isOk = true;
+ QString msg = "";
+ QString useJonction = "and";
+
+ QString userFiltringTableData = "Filtres";
+ Bp::Filterings tmp= Bp::Filtering::isWanted|Bp::Filtering::isFiltred;
+
+ msg = "select tb1.val from ("+userFiltringTableData
+       +")as tb1 "
+         "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(tmp)+"=0x"+QString::number(tmp)+
+       ") AND tb1.zne="+QString::number(zn)+" and tb1.typ="+QString::number(eCountElm)+" and tb1.pri=1)";
+ isOk = query.exec(msg);
+#ifndef QT_NO_DEBUG
+ qDebug() << "msg:"<<msg;
+#endif
+ return msg;
+}
+
+#else
 QString BCountElem::getFilteringData(int zn)
 {
  QSqlQuery query(dbCount);
@@ -987,3 +1010,4 @@ QString BCountElem::getFilteringData(int zn)
 #endif
  return msg;
 }
+#endif

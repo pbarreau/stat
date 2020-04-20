@@ -16,10 +16,11 @@ namespace Bp {
   isLastTir	= 0x0001,
   isPrevTir	=	0x0002,
   isWanted	=	0x0004,
-  isFiltred	= 0x0008,
-  isNotSeen	=	0x0010,
-  isSeenBfr	=	0x0020,
-  isSeenAft	=	0x0040
+  isChoosed	= 0x0008,
+  isFiltred	= 0x0010,
+  isNotSeen	=	0x0020,
+  isSeenBfr	=	0x0040,
+  isSeenAft	=	0x0080
  };
  Q_DECLARE_FLAGS(Filterings, Filtering)
 

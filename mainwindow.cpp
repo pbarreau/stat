@@ -76,8 +76,9 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
  stGameConf *curConf = charge->getConfig();
 
  BAnalyserTirages *uneAnalyse = new BAnalyserTirages(curConf);
- //EtudierJeu_v1(curConf, dest_bdd);
- //EtudierJeu_v2(curConf);
+ //return;
+ EtudierJeu_v1(curConf, use_odb);
+ EtudierJeu_v2(curConf);
  return;
 }
 

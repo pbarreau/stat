@@ -49,7 +49,11 @@ void BMenu::construireMenu(void)
  isWanted->setCheckable(true);
  isWanted->setEnabled(true);
 
- QAction *isFiltred = main_menu->addAction("Choisir",this,SLOT(slot_isFiltred(bool)));
+ QAction *isChoosed = main_menu->addAction("Choisir",this,SLOT(slot_isChoosed(bool)));
+ isChoosed->setCheckable(true);
+ isChoosed->setDisabled(true);
+
+ QAction *isFiltred = main_menu->addAction("Filtrer",this,SLOT(slot_isFiltred(bool)));
  isFiltred->setCheckable(true);
  isFiltred->setDisabled(true);
 }
@@ -70,6 +74,7 @@ void BMenu::slot_showMenu()
 	if((val.b_flt & Bp::Filtering::isWanted)== Bp::Filtering::isWanted){
 	 lst.at(0)->setChecked(true);
 	 lst.at(1)->setEnabled(true);
+	 lst.at(2)->setEnabled(true);
 
 	 if(eCalcul == eCountElm){
 		QMenu *subMenu = mnu_Priority(&val, eCalcul,lview,index);
@@ -77,18 +82,29 @@ void BMenu::slot_showMenu()
 	 }
 	}
 	else {
-	 lst.at(1)->setChecked(false);
+	 lst.at(2)->setChecked(false);
 	 val.b_flt = val.b_flt & ~(Bp::Filtering::isFiltred);
+
+	 lst.at(1)->setChecked(false);
+	 val.b_flt = val.b_flt & ~(Bp::Filtering::isChoosed);
 
 	 lst.at(0)->setChecked(false);
 	}
 
-	/// --------- filter
-	if((val.b_flt & Bp::Filtering::isFiltred)== Bp::Filtering::isFiltred){
+	/// --------- filtrer
+	if((val.b_flt & Bp::Filtering::isChoosed)== Bp::Filtering::isChoosed){
 	 lst.at(1)->setChecked(true);
 	}
 	else {
 	 lst.at(1)->setChecked(false);
+	}
+
+	/// --------- filtrer
+	if((val.b_flt & Bp::Filtering::isFiltred)== Bp::Filtering::isFiltred){
+	 lst.at(2)->setChecked(true);
+	}
+	else {
+	 lst.at(2)->setChecked(false);
 	}
  }
 }
@@ -282,6 +298,24 @@ void BMenu::slot_isWanted(bool chk)
 }
 #endif
 
+
+void BMenu::slot_isChoosed(bool chk)
+{
+ QAction *chkFrom = qobject_cast<QAction *>(sender());
+
+ if(chk){
+  val.b_flt = val.b_flt | Bp::Filtering::isChoosed;
+ }
+ else {
+  val.b_flt = val.b_flt & ~Bp::Filtering::isChoosed;
+ }
+
+ /// Mettre a jour action dans base
+ if(setdbFlt(val)){
+  chkFrom->setChecked(chk);
+ }
+
+}
 
 #if 1
 void BMenu::slot_isFiltred(bool chk)

@@ -113,7 +113,7 @@ QWidget *BCount::V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, con
  m->setHeaderData(visual,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
 
  qtv_tmp->resizeColumnsToContents();
- qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
  int count=qtv_tmp->horizontalHeader()->count();
  int l = 0;
