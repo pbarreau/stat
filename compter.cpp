@@ -4,6 +4,9 @@
 
 #include <QGridLayout>
 #include <QTableView>
+#include <QGroupBox>
+#include <QLabel>
+
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QHeaderView>
@@ -29,6 +32,7 @@ int BCount::nbChild = 0;
 QWidget *BCount::V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn)
 {
  QWidget * wdg_tmp = new QWidget;
+ QGroupBox *tmp_gpb = new QGroupBox;
  QGridLayout *glay_tmp = new QGridLayout;
  QTableView *qtv_tmp = new QTableView;
  qtv_tmp->setObjectName(QString::number(zn));
@@ -125,8 +129,19 @@ QWidget *BCount::V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, con
  qtv_tmp->setFixedWidth(l);
 
  // positionner le tableau
- glay_tmp->addWidget(qtv_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+ QString st_total = "En cours : ";
+ tmp_gpb->setTitle(st_total);
 
+ QVBoxLayout *layout = new QVBoxLayout;
+ QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+ layout->addWidget(qtv_tmp, Qt::AlignCenter|Qt::AlignTop);
+ tmp_gpb->setLayout(layout);
+
+ glay_tmp->addWidget(tmp_gpb,0,0);//,-1,Qt::AlignLeft|Qt::AlignTop
+ glay_tmp->addItem(ecart,0,1);
+ glay_tmp->setColumnStretch(1, 10);
+ glay_tmp->setColumnStretch(2, 20);
  wdg_tmp->setLayout(glay_tmp);
 
  /// Mettre dans la base une info sur 2 derniers tirages

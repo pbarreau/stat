@@ -1,6 +1,7 @@
 #ifndef BFLAGS_H
 #define BFLAGS_H
 
+#include <QMainWindow>
 #include <QItemDelegate>
 #include <QStyledItemDelegate>
 #include <QSqlQueryModel>

@@ -58,7 +58,6 @@ void BMenu::construireMenu(void)
  isFiltred->setDisabled(true);
 }
 
-#if 1
 void BMenu::slot_showMenu()
 {
  QString msg = main_menu->title();
@@ -91,7 +90,7 @@ void BMenu::slot_showMenu()
 	 lst.at(0)->setChecked(false);
 	}
 
-	/// --------- filtrer
+	/// --------- selected
 	if((val.b_flt & Bp::Filtering::isChoosed)== Bp::Filtering::isChoosed){
 	 lst.at(1)->setChecked(true);
 	}
@@ -99,7 +98,7 @@ void BMenu::slot_showMenu()
 	 lst.at(1)->setChecked(false);
 	}
 
-	/// --------- filtrer
+	/// --------- filtred
 	if((val.b_flt & Bp::Filtering::isFiltred)== Bp::Filtering::isFiltred){
 	 lst.at(2)->setChecked(true);
 	}
@@ -108,51 +107,12 @@ void BMenu::slot_showMenu()
 	}
  }
 }
-#else
-void BMenu::slot_showMenu()
-{
- QString msg = main_menu->title();
- QList<QAction *> lst = main_menu->actions();
-
- /// lecture info dans la base de la selection en cours
- bool isOk = getdbFlt(&val, eCalcul,lview,index);
-
- /// On a trouve une reponse
- if(isOk){
-
-	///
-	if((val.flt>BFlags::isNotSet) && (val.flt & BFlags::isWanted))
-	{
-	 lst.at(0)->setChecked(true);
-	 lst.at(1)->setEnabled(true);
-	}
-	else {
-	 lst.at(0)->setChecked(false);
-	 lst.at(1)->setEnabled(false);
-	}
-
-	if((val.flt>BFlags::isNotSet) && (val.flt & BFlags::isFiltred))
-	{
-	 lst.at(1)->setChecked(true);
-	}
-	else {
-	 lst.at(1)->setChecked(false);
-	}
-
-	if( (eCalcul == eCountElm)
-			&& lst.at(0)->isChecked()
-					 ){
-	 QMenu *subMenu = mnu_Priority(&val, eCalcul,lview,index);
-	 main_menu->addMenu(subMenu);
-	}
- }
-}
-#endif
 
 QMenu *BMenu::mnu_Priority(stTbFiltres *ret, const etCount eSrc, const QTableView *view, const QModelIndex index)
 {
- bool isOk = false;
- int itm = 0;
+Q_UNUSED(eSrc)
+Q_UNUSED(view)
+Q_UNUSED(index)
 
  QSqlQuery query(db_1) ;
  QString msg = "";
@@ -182,78 +142,9 @@ QMenu *BMenu::mnu_Priority(stTbFiltres *ret, const etCount eSrc, const QTableVie
   uneAction->setChecked(true);
  }
 
- /*
- int row = index.row();
- stTbFiltres a;
- a.tbName = "Filtres";
- a.zn = view->objectName().toInt();;
- a.eTyp = eSrc;
- a.lgn = -1;
- a.col = index.column();
- a.pri = -1;
- a.val = -1;
- a.flt = 0;
-
- if(eSrc == eCountGrp)
- {
-  a.lgn = index.row() ;
-
-	if(index.model()->index(index.row(),a.col).data().canConvert(QMetaType::Int))
-	{
-	 a.val =  index.model()->index(index.row(),a.col).data().toInt();
-	}
- }
- else {
-  a.lgn = a.eTyp * 10;
-
-  a.val =  index.model()->index(index.row(),0).data().toInt();
- }
-
- */
-
-#if 0
- isOk = setFiltre(a,db_1);
-
-
- //if((typeFiltre.at(0)->currentIndex()==0) && (typeFiltre.at(1)->currentIndex()==0))
- {
-  setForAll->setCheckable(true);
-  setForAll->setObjectName("k_all");
-  menu->addAction(setForAll);
-
-	/// Total de priorite a afficher
-	for(int i =1; i<=5;i++)
-	{
-	 QAction *radio = new QAction(QString::number(i),grpPri);
-
-	 //radio->setObjectName(name);
-	 radio->setCheckable(true);
-	 menu->addAction(radio);
-	}
-
-	/*
-	connect(setForAll,SIGNAL(triggered(bool)),this,SLOT(slot_wdaFilter(bool)));
-	///connect(setForAll,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
-	connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
-	if(pri>0)
-	{
-	 QAction *uneAction;
-	 uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
-	 uneAction->setChecked(true);
-	}
- */
-
- }
-
- if(setPriorityToAll){
-  setForAll->setChecked(true);
- }
-#endif
-
  return menu;
 }
 
-#if 1
 void BMenu::slot_isWanted(bool chk)
 {
  QAction *chkFrom = qobject_cast<QAction *>(sender());
@@ -263,6 +154,7 @@ void BMenu::slot_isWanted(bool chk)
  }
  else {
   val.b_flt = val.b_flt & ~Bp::Filtering::isWanted;
+  val.b_flt = val.b_flt & ~Bp::Filtering::isChoosed;
   val.b_flt = val.b_flt & ~Bp::Filtering::isFiltred;
  }
 
@@ -272,31 +164,6 @@ void BMenu::slot_isWanted(bool chk)
  }
 
 }
-#else
-void BMenu::slot_isWanted(bool chk)
-{
- QAction *chkFrom = qobject_cast<QAction *>(sender());
-
- /// Verifier bornes des filtres
- if((val.flt<BFlags::isNotSet) || (val.flt>=BFlags::isTerminated)){
-  val.flt = BFlags::Filtre::isNotSet;
- }
-
- /// Analyser action utilisateur
- if(chk){
-  val.flt |= BFlags::isWanted;
- }
- else {
-  val.flt = val.flt &  (~BFlags::isWanted);
- }
-
- /// Mettre a jour action dans base
- if(setdbFlt(val)){
-  chkFrom->setChecked(chk);
- }
-
-}
-#endif
 
 
 void BMenu::slot_isChoosed(bool chk)
@@ -317,12 +184,12 @@ void BMenu::slot_isChoosed(bool chk)
 
 }
 
-#if 1
 void BMenu::slot_isFiltred(bool chk)
 {
  QAction *chkFrom = qobject_cast<QAction *>(sender());
 
  if(chk){
+  val.b_flt = val.b_flt | Bp::Filtering::isChoosed;
   val.b_flt = val.b_flt | Bp::Filtering::isFiltred;
  }
  else {
@@ -335,30 +202,6 @@ void BMenu::slot_isFiltred(bool chk)
  }
 
 }
-#else
-void BMenu::slot_isFiltred(bool chk)
-{
- QAction *chkFrom = qobject_cast<QAction *>(sender());
-
- /// Verifier bornes des filtres
- if((val.flt<BFlags::isNotSet) || (val.flt>=BFlags::isTerminated)){
-  val.flt = 0;
- }
-
- /// Analyser action utilisateur
- if(chk){
-  val.flt |= BFlags::isFiltred;
- }
- else {
-  val.flt &= ~BFlags::isFiltred;
- }
-
- /// Mettre a jour action dans base
- if(setdbFlt(val)){
-  chkFrom->setChecked(chk);
- }
-}
-#endif
 
 void BMenu::slot_priorityForAll(bool chk)
 {
@@ -396,7 +239,6 @@ void BMenu::slot_ChoosePriority(QAction *cmd)
 
 }
 
-#if 1
 bool BMenu::setdbFlt(stTbFiltres in)
 {
  bool isOk = false;
@@ -453,66 +295,6 @@ bool BMenu::setdbFlt(stTbFiltres in)
 
  return isOk;
 }
-
-#else
-bool BMenu::setdbFlt(stTbFiltres in)
-{
- bool isOk = false;
- QString msg = "";
- QSqlQuery query(db_1);
-
- if(in.isPresent==true){
-  /// == 1 donc update
-  QString op = "";
-  if(in.flt>0){
-   op="|";
-  }
-  else {
-   op="&";
-  }
-  msg = "update "+in.tbName+
-        " set pri="+QString::number(in.pri)+
-        ", flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
-        QString::number(in.flt)+
-        " else(flt"+op+"0x"+QString::number(in.flt)+
-        ") end) where ("
-        "zne="+QString::number(in.zn)+" and "+
-        "typ="+QString::number(in.eTyp)+" and "+
-        "lgn="+QString::number(in.lgn)+" and "+
-        "col="+QString::number(in.col)+" and "+
-        "val="+QString::number(in.val)+")";
-
- }
- else {
-  /// Pas de resultat donc insert
-  msg ="insert into "+in.tbName+
-        " (id, zne, typ,lgn,col,val,pri,flt)"
-        " values (NULL,"
-        +QString::number(in.zn)+","
-        +QString::number(in.eTyp)+","
-        +QString::number(in.lgn)+","
-        +QString::number(in.col)+","
-        +QString::number(in.val)+","
-        +QString::number(in.pri)+","
-        +QString::number(in.flt)+")";
- }
-
- if(msg.size()){
-#ifndef QT_NO_DEBUG
-  qDebug() << "msg: "<<msg;
-#endif
-  isOk = query.exec(msg);
- }
-
- if(!isOk){
-  DB_Tools::DisplayError("BMenu::setdbFlt",&query,msg);
-  QMessageBox::warning(nullptr,"BMenu","setdbFlt",QMessageBox::Ok);
- }
-
-
- return isOk;
-}
-#endif
 
 
 bool BMenu::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QTableView *view, const QModelIndex index)

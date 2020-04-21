@@ -27,7 +27,7 @@
 
 #include "BFlags.h"
 
-BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(prm.parent)
+BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(prm.parent)//, QMainWindow(prm.parent)
 {
  flt = prm;
 
@@ -45,40 +45,7 @@ BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(prm.parent)
 void BFlags::paint(QPainter *painter, const QStyleOptionViewItem &option,
                    const QModelIndex &index) const
 {
-
  v3_paint(painter,option,index);
-
-}
-
-void BFlags::v2_paint(QPainter *painter, const QStyleOptionViewItem &option,
-                      const QModelIndex &index) const
-{
- /// https://openclassrooms.com/forum/sujet/qt-qtableview-qstyleditemdelegate
- /// https://forum.qt.io/topic/41463/solved-qstyleditemdelegate-set-text-color-when-row-is-selected
- /// https://openclassrooms.com/forum/sujet/recuperer-les-ligne-selectionnees-dans-un-qitemdelegate-35100
- /// https://stackoverflow.com/questions/34729858/override-text-in-qstyleditemdelegate-for-qtreeview
- ///
- /// https://code.qt.io/cgit/qt/qt.git/tree/src/gui/styles/qstyle.cpp?h=4.5
- /// ligne 489 , QStyle::drawItemText
-
-
- stTbFiltres a;
- a.tbName = "Filtres";
- a.zne = flt.zne;
- a.typ = flt.typ;
- a.lgn = -1;
- a.col = -1;
- a.val = -1;
- a.pri = -1;
- a.flt = Bp::Filtering::isNotSet;
-
-
- if(getdbFlt(&a, flt.typ, index)){
-  setWanted(true, painter,option, &a, index);
- }
- else {
-  setWanted(false, painter,option, &a, index);
- }
 }
 
 void BFlags::v3_paint(QPainter *painter, const QStyleOptionViewItem &option,
@@ -137,9 +104,6 @@ void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem
  initStyleOption(&myOpt, index);
 
  QPainter p;
- /*
- QStyle::State val_state = myOpt.state;
- */
 
  QRect Cellrect = myOpt.rect;
 
@@ -347,6 +311,8 @@ void BFlags::cellWrite(QPainter *painter, QRect curCell, const QString myTxt, Qt
 void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
                      const QModelIndex &index) const
 {
+ Q_UNUSED(isPresent)
+
  QStyleOptionViewItem myOpt = maModif;
  initStyleOption(&myOpt, index);
 
@@ -418,6 +384,8 @@ void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const Q
 void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
                 const QModelIndex &index) const
 {
+ Q_UNUSED(isPresent)
+
  int col = index.column();
 
  /// Test faisabilite
@@ -488,7 +456,6 @@ void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QS
  painter->save();
  /// ------------------
  painter->setRenderHint(QPainter::Antialiasing, true);
-//#if 0
 
  if(a->typ==eCountElm){
   if(((a->pri)>0) && ((a->b_flt & Bp::Filtering::isFiltred) == (Bp::Filtering::isFiltred))){
@@ -514,7 +481,7 @@ void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QS
  if((a->b_flt & Bp::Filtering::isNotSeen) == (Bp::Filtering::isNotSeen)){
   painter->fillRect(r2, COULEUR_FOND_JAMSORTI);
  }
-//#endif
+
  /// Mettre les cercles maintenant car les fonds
  /// snt deja dessinee
  if((a->pri > 0) && (a->pri<nbColors)){
@@ -529,238 +496,3 @@ void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QS
  painter->restore();
  /// ------------------
 }
-
-void BFlags::v1_paint(QPainter *painter, const QStyleOptionViewItem &option,
-                      const QModelIndex &index) const
-{
- QStyleOptionViewItem maModif(option);
-
- int col = index.column();
-
- QColor v[]= {
-  Qt::black,
-  Qt::red,
-  Qt::green,
-  QColor(255,216,0,255),
-  QColor(255,106,0,255),
-  QColor(178,0,255,255),
-  QColor(211,255,204,255)
- };
-
- QRect Cellrect = maModif.rect;
-
-
- int refx = Cellrect.topLeft().x();
- int refy = Cellrect.topLeft().y();
- int ctw = Cellrect.width();  /// largeur cellule
- int cth = Cellrect.height(); /// Hauteur cellule
- int cx = ctw/4;
- int cy = cth/2;
-
- QPoint c1(refx +(ctw/5)*4,refy + (cth/6));
- QPoint c2(refx +(ctw/5)*4,refy + (cth*5/6));
-
- QRect r1; /// priorite
- QRect r2; /// Last
- QRect r3; /// previous
- QRect r4; /// Selected
-
- QPoint p1(refx,refy);
- QPoint p2(refx +(ctw/3),refy+cth);
- QPoint p3(refx+ctw,refy+(cth*2/3));
- QPoint p4(refx +(ctw/3),refy+(cth/3));
- QPoint p5(refx + ctw,refy);
-
- /// Priorite
- r1.setTopLeft(p1);
- r1.setBottomRight(p2);
-
- /// Last
- r2.setBottomLeft(p2);
- r2.setTopRight(p3);
-
- /// Previous
- r3.setBottomRight(p3);
- r3.setTopLeft(p4);
-
- ///Selected
- r4.setBottomLeft(p4);
- r4.setTopRight(p5);
-
- QPolygon triangle;
- QPoint t1(refx,refy);
- QPoint t2(refx+ctw,refy);
- QPoint t3(refx,refy+cy);
- triangle << t1<<t2<<t3<<t1;
-
- if(((col == flt.start) && ((flt.typ>eCountToSet) && (flt.typ<eCountEnd))) || (col>0 && (flt.typ==eCountGrp))){
-
-
-	int val_cell = index.sibling(index.row(),0).data().toInt();
-
-	QString flt_grp_key="";
-	if(col>0 && (flt.typ==eCountGrp)){
-	 val_cell = 0;
-	 if(index.data().canConvert(QMetaType::Int)){
-		val_cell = index.data().toInt();
-	 }
-	 flt_grp_key = " and lgn="+QString::number(index.row()) +
-								 " and col="+QString::number(index.column());
-	}
-
-	QString msg = "Select pri,flt from Filtres where("
-								"zne="+QString::number(flt.zne)+" and " +
-								"typ="+QString::number(flt.typ)+" and "+
-								"val="+QString::number(val_cell)+flt_grp_key+
-								")";
-	QSqlQuery q(db_1);
-	bool isOk=q.exec(msg);
-
-	int val_f = 0;
-	int pri_f = 0;
-	if(isOk){
-	 q.first();
-	 if(q.isValid()==false){
-		//QItemDelegate::paint(painter, option, index);
-		QStyledItemDelegate::paint(painter, option, index);
-		return;
-	 }
-	 /// Info priorite
-	 if(q.value(0).canConvert(QMetaType::Int)){
-		pri_f = q.value(0).toInt();
-		if(pri_f<0){pri_f=0;}
-	 }
-
-	 /// Info filtre
-	 if(q.value(1).canConvert(QMetaType::Int)){
-		val_f = q.value(1).toInt();
-		if(val_f<0){val_f=0;}
-	 }
-	}
-
-	//----------------
-	//QAbstractItemView::
-
-	painter->save();
-
-	painter->setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOver);
-
-	if((col == flt.start) && (flt.typ==eCountElm)){
-	 painter->setBackground(QBrush(QColor(Qt::white)));
-	 painter->fillRect(option.rect, QColor(Qt::white));
-	}
-
-	painter->setRenderHint(QPainter::Antialiasing, true);
-
-	if(val_f & Filtre::isFiltred){
-	 painter->fillRect(option.rect, COULEUR_FOND_FILTRE);
-	}
-
-	if( (val_f & Filtre::isLastTir)){
-	 painter->fillRect(r2, COULEUR_FOND_DERNIER);
-	}
-
-	if(val_f & Filtre::isPrevTir){
-	 painter->fillRect(r3, COULEUR_FOND_AVANTDER);
-	}
-
-
-	if(val_f & Filtre::isNotSeen){
-	 painter->fillRect(r2, COULEUR_FOND_JAMSORTI);
-	}
-
-	/// Mettre les cercles maintenant car les fonds
-	/// snt deja dessinee
-	if(pri_f > 0){
-
-	 painter->setBrush(v[pri_f]);
-	 painter->drawEllipse(c1,cx/2,cy/4);
-
-	}
-
-	if(val_f & Filtre::isWanted){
-
-	 if((col == flt.start) && (flt.typ==eCountElm)){
-
-		painter->setBrush(Qt::BrushStyle::SolidPattern);
-		painter->fillRect(option.rect, QColor(Qt::white));
-
-		static int toto = 0;
-		QStyle::State value = option.state;
-
-		//QString text = "0"+ option.text;
-		//text = 		QString::number(toto).rightJustified(2,'0');
-		toto++;
-		int aa_cel = index.sibling(index.row(),0).data().toInt();
-		int aa_col = index.column();
-		int aa_row = index.row();
-
-		const QSortFilterProxyModel *m= static_cast<const QSortFilterProxyModel *>(index.model());
-		QSqlQueryModel *s= static_cast<QSqlQueryModel *>(m->sourceModel());
-		int aa_len = s->columnCount();
-
-
-		QModelIndex aa_index = s->index(index.row(), index.column());
-		aa_cel = aa_index.sibling(index.row()-1,0).data().toInt();
-		//QString aa_text = QString::number(aa_cel).rightJustified(2,'0');
-		//painter->setPen(QPen(Qt::green));
-		//QString text = "0"+ option.text;AlignCenter
-		//painter->drawText(option.rect, Qt::AlignCenter | Qt::AlignVCenter, text );
-
-		QStyleOptionViewItem unStyleOption = option;
-		//unStyleOption.text = aa_text;
-
-		unStyleOption.palette.setColor(QPalette::HighlightedText, Qt::green);
-
-		unStyleOption.font.setFamily("ARIAL");
-		unStyleOption.font.setPointSize(14);
-		//painter->setFont(QFont("ARIAL",12,1));
-
-		unStyleOption.font.setItalic(true);
-		//unStyleOption.font.setBold(true);
-
-		//painter->setPen(QPen(Qt::red));
-		unStyleOption.palette.setColor(QPalette::Active, QPalette::Text, Qt::red);
-
-		//painter->setBrush(Qt::BrushStyle::SolidPattern);
-		//unStyleOption.palette.setBrush(QPalette::Text, Qt::red);
-
-		//painter->drawText(option.rect, Qt::AlignCenter | Qt::AlignVCenter, aa_text );
-
-		QStyledItemDelegate::paint(painter, unStyleOption, index);
-
-	 }
-	}
-
-  painter->restore();
- }
-
-#if 0
- if((col == col_show) && (eTyp==eCountElm)){
-  painter->save();
-  if(option.text.compare("1")){
-   QString v0 = option.text;
-   int v1 = option.type;
-   QFont v2 = option.font;
-   QModelIndex v3 = option.index;
-   QLocale v4 = option.locale;
-   //ViewItemFeatures v5 = option.features;
-   QStyle::State v5 = option.state;
-   int v6 = option.version;
-   QObject *v7 = option.styleObject;
-   QStyleOptionViewItem s = option;
-   QString t = s.text;
-   painter->setPen(QPen(Qt::red));
-   s.palette.setColor(QPalette::Active, QPalette::Text, Qt::red);
-   s.font.setBold(true);
-   QStyledItemDelegate::paint(painter, s, index);
-  }
-  painter->restore();
- }
-#endif
-
- //QItemDelegate::paint(painter, option, index);
- QStyledItemDelegate::paint(painter, option, index);
-
- }
-
