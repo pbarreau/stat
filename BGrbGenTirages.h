@@ -53,7 +53,7 @@ QSqlDatabase db_1;      /// base de donnees associee a cet objets
 QLabel *lb_Big;
 
 BCountBrc *l_c0;
-BCountElem *l_c1;
+BcElm *l_c1;
 BCountComb *l_c2;
 BCountGroup *l_c3;
 };

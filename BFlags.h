@@ -8,6 +8,7 @@
 
 #include "bstflt.h"
 #include "colors.h"
+#include "BTbView.h"
 
 class BFlags : public QStyledItemDelegate
 {
@@ -15,12 +16,12 @@ class BFlags : public QStyledItemDelegate
 
  public:
  typedef struct _stPrmDlgt{
-  QWidget *parent;
+  BTbView *parent;
   QString db_cnx;
   int start;
   int zne;
   etCount typ;
-  Bp::Filterings b_flt;
+  Bp::F_Flts b_flt;
   //int typ;
  }stPrmDlgt;
 
@@ -44,7 +45,7 @@ class BFlags : public QStyledItemDelegate
  void v3_paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const;
  void setWanted(bool state, QPainter *painter, const QStyleOptionViewItem &opt, stTbFiltres *a, const QModelIndex &index) const;
- bool getdbFlt(stTbFiltres *ret, const etCount in_typ, const QModelIndex index) const;
+ bool getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelIndex index) const;
  void fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
                const QModelIndex &index) const;
  void fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
@@ -62,7 +63,7 @@ class BFlags : public QStyledItemDelegate
  //QString flt.zne;
  //QString cur_tp;
  //etCount flt.eTyp;
- //Bp::Filterings flt.b_flt;
+ //Bp::F_Flts flt.b_flt;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(BFlags::Filtres)
 Q_DECLARE_METATYPE(BFlags::Filtre)

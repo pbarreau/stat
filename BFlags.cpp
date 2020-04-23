@@ -26,6 +26,7 @@
 #include <QRect>
 
 #include "BFlags.h"
+#include "db_tools.h"
 
 BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(prm.parent)//, QMainWindow(prm.parent)
 {
@@ -65,15 +66,18 @@ void BFlags::v3_paint(QPainter *painter, const QStyleOptionViewItem &option,
 
  stTbFiltres a;
  a.tbName = "Filtres";
+ a.sta = Bp::E_Sta::noSta;
+ a.db_total = -1;
+ a.b_flt = flt.b_flt;
  a.zne = flt.zne;
  a.typ = flt.typ;
- a.lgn = -1;
- a.col = -1;
+ a.lgn = index.row();
+ a.col = index.column();
  a.val = -1;
  a.pri = -1;
- a.flt = Bp::Filtering::isNotSet;
 
- bool ret = getdbFlt(&a, flt.typ, index);
+
+ bool ret = getThisFlt(&a, flt.typ, index);
  setVisual(ret, &a, painter, option, index);
  }
 
@@ -141,6 +145,7 @@ void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem
  painter->restore();
  return;
 
+#if 0
  int size = 0;
  Qt::GlobalColor pen;
  //Qt::Alignment alg;
@@ -187,18 +192,58 @@ void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem
 
  /// drawFltKey(a,painter,myOpt,index);
  /// reponse incomplete : QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &myOpt, painter, nullptr);
+#endif
 }
 
+#if 1
+bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelIndex index) const
+{
+ bool isOk = false;
+ val->zne =flt.zne;
+ val->typ = in_typ;
+ val->b_flt = flt.b_flt;
+
+ if(val->typ >= eCountToSet && val->typ <= eCountEnd){
+  switch (val->typ) {
+   case eCountElm:
+   case eCountCmb:
+   case eCountBrc:
+    val->lgn = val->typ *10;
+    val->col = index.model()->index(index.row(),0).data().toInt();
+    val->val = val->col;
+    break;
+   case eCountGrp:
+    val->lgn = index.row();
+    val->col = index.column();
+    if(index.model()->index(val->lgn,val->col).data().canConvert(QMetaType::Int)){
+     val->val = index.model()->index(val->lgn,val->col).data().toInt();
+    }
+    break;
+   case eCountToSet:
+   case eCountEnd:
+    break;
+  }
+ }
+ else {
+  val->typ = eCountToSet;
+ }
+
+ isOk = DB_Tools::tbFltGet(val,flt.db_cnx);
+
+ return isOk;
+}
+#else
 bool BFlags::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QModelIndex index) const
 {
  bool isOk = false;
+#if 0
  etCount typ = in_typ;
 
  int zn  = flt.zne;
  int lgn = -1;
  int col = -1;
  int val = -1;
- Bp::Filterings my_flt = Bp::Filtering::isNotSet;
+ Bp::F_Flts my_flt = Bp::Filtering::isNotSet;
 
 
  if(typ >= eCountToSet && typ <= eCountEnd){
@@ -247,23 +292,24 @@ bool BFlags::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QModelIndex 
  {
   int valeur = query_2.value("flt").toInt();
   int priori = query_2.value("pri").toInt();
-  my_flt = static_cast<Bp::Filterings>(valeur);
+  my_flt = static_cast<Bp::F_Flts>(valeur);
 
   (*ret).pri = priori;
   (*ret).b_flt = my_flt;
-  (*ret).flt = query_2.value("flt").toInt();
+  (*ret).flt = Bp::Filtering::isNotSet;//query_2.value("flt").toInt();
 
  }
 
- (*ret).isPresent = isOk;
+ (*ret).sta = isOk;
  (*ret).zne = zn;
  (*ret).typ = typ;
  (*ret).lgn = lgn;
  (*ret).col = col;
  (*ret).val = val;
-
+#endif
  return isOk;
 }
+#endif
 
 void BFlags::cellWrite(QPainter *painter, QRect curCell, const QString myTxt, Qt::GlobalColor inPen, bool up)const
 {
@@ -362,15 +408,15 @@ void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const Q
 	}
  }
 
- if((a->b_flt & Bp::Filtering::isWanted) == Bp::Filtering::isWanted){
+ if((a->b_flt & Bp::F_Flt::fltWanted) == Bp::F_Flt::fltWanted){
   set_up = true;
   myPen = Qt::green;
  }
 
  if (
-  (a->b_flt & Bp::Filtering::isChoosed) == Bp::Filtering::isChoosed
+  (a->b_flt & Bp::F_Flt::fltSelected) == Bp::F_Flt::fltSelected
                                             ||
-  (a->b_flt & Bp::Filtering::isFiltred) == Bp::Filtering::isFiltred
+  (a->b_flt & Bp::F_Flt::fltFiltred) == Bp::F_Flt::fltFiltred
 
   ) {
   set_up = false;
@@ -458,27 +504,27 @@ void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QS
  painter->setRenderHint(QPainter::Antialiasing, true);
 
  if(a->typ==eCountElm){
-  if(((a->pri)>0) && ((a->b_flt & Bp::Filtering::isFiltred) == (Bp::Filtering::isFiltred))){
+  if(((a->pri)>0) && ((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
    painter->fillRect(maModif.rect, COULEUR_FOND_FILTRE);
   }
  }
  else {
   if(
-   ((a->b_flt & Bp::Filtering::isWanted) == (Bp::Filtering::isWanted)) && ((a->b_flt & Bp::Filtering::isFiltred) == (Bp::Filtering::isFiltred))){
+   ((a->b_flt & Bp::F_Flt::fltWanted) == (Bp::F_Flt::fltWanted)) && ((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
    painter->fillRect(maModif.rect, COULEUR_FOND_FILTRE);
   }
  }
 
- if( (a->b_flt & Bp::Filtering::isLastTir) == (Bp::Filtering::isLastTir)){
+ if( (a->b_flt & Bp::F_Flt::fltTirLast) == (Bp::F_Flt::fltTirLast)){
   painter->fillRect(r2, COULEUR_FOND_DERNIER);
  }
 
- if((a->b_flt & Bp::Filtering::isPrevTir) == (Bp::Filtering::isPrevTir)){
+ if((a->b_flt & Bp::F_Flt::fltTirPrev) == (Bp::F_Flt::fltTirPrev)){
   painter->fillRect(r3, COULEUR_FOND_AVANTDER);
  }
 
 
- if((a->b_flt & Bp::Filtering::isNotSeen) == (Bp::Filtering::isNotSeen)){
+ if((a->b_flt & Bp::F_Flt::fltSeenNot) == (Bp::F_Flt::fltSeenNot)){
   painter->fillRect(r2, COULEUR_FOND_JAMSORTI);
  }
 

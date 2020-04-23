@@ -706,7 +706,7 @@ void BGrbGenTirages::analyserTirages(const stGameConf *pGame,const QString st_ta
  }
 
 
- BCountElem *c1 = new BCountElem(*pGame,st_table,db_1,Resultats);
+ BcElm *c1 = new BcElm(*pGame,st_table,db_1,Resultats);
  BCountComb *c2 = new BCountComb(*pGame,st_table,db_1);
  //BCountGroup *c3 = new BCountGroup(*pGame,st_table,slFlt,db_1);
 

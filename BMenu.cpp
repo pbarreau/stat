@@ -12,13 +12,17 @@
 #include "BMenu.h"
 #include "BFlags.h"
 #include "db_tools.h"
+#include "BTbView.h"
 
-BMenu::BMenu(const QPoint pos, QString cnx, const etCount eType, const QTableView *view):QMenu ("Actions")
+BMenu::BMenu(const QPoint pos, QString cnx,
+						 const etCount eType, BTbView *view,
+						 QWidget *parent):QMenu (parent)
 {
+
  // Etablir connexion a la base
- db_1 = QSqlDatabase::database(cnx);
- if(db_1.isValid()==false){
-  QString str_error = db_1.lastError().text();
+ db_menu = QSqlDatabase::database(cnx);
+ if(db_menu.isValid()==false){
+  QString str_error = db_menu.lastError().text();
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
  }
@@ -27,16 +31,16 @@ BMenu::BMenu(const QPoint pos, QString cnx, const etCount eType, const QTableVie
  lview = view;
  index = view->indexAt(pos);
 
- val.id=-1;
  val.tbName = "Filtres";
- val.flt = BFlags::Filtre::isNotSet;
+ val.id=-1;
  val.pri = -1;
- val.col =-1;
- val.lgn=-1;
+ val.b_flt = Bp::F_Flt::noFlt;
  val.typ = eCountToSet;
- val.val = -1;
+ val.sta = Bp::E_Sta::noSta;
  val.zne = -1;
- val.b_flt = Bp::Filtering::isNotSet;
+ val.lgn=-1;
+ val.col =-1;
+ val.val = -1;
 
  construireMenu();
 }
@@ -66,11 +70,20 @@ void BMenu::slot_showMenu()
  /// lecture info dans la base de la selection en cours
  bool isOk = getdbFlt(&val, eCalcul,lview,index);
 
- /// On a trouve une reponse
+ if(isOk==false){
+  if(val.sta == Bp::E_Sta::Er_Result){
+   isOk = DB_Tools::tbFltSet(&val,db_menu.connectionName());
+  }
+  else {
+   DB_Tools::genStop("BMenu::slot_showMenu");
+  }
+ }
+
+ /// On a trouve/cree une reponse
  if(isOk){
 
 	/// wanted ?
-	if((val.b_flt & Bp::Filtering::isWanted)== Bp::Filtering::isWanted){
+	if((val.b_flt & Bp::F_Flt::fltWanted)== Bp::F_Flt::fltWanted){
 	 lst.at(0)->setChecked(true);
 	 lst.at(1)->setEnabled(true);
 	 lst.at(2)->setEnabled(true);
@@ -82,16 +95,16 @@ void BMenu::slot_showMenu()
 	}
 	else {
 	 lst.at(2)->setChecked(false);
-	 val.b_flt = val.b_flt & ~(Bp::Filtering::isFiltred);
+	 val.b_flt = val.b_flt & ~(Bp::F_Flt::fltFiltred);
 
 	 lst.at(1)->setChecked(false);
-	 val.b_flt = val.b_flt & ~(Bp::Filtering::isChoosed);
+	 val.b_flt = val.b_flt & ~(Bp::F_Flt::fltSelected);
 
 	 lst.at(0)->setChecked(false);
 	}
 
 	/// --------- selected
-	if((val.b_flt & Bp::Filtering::isChoosed)== Bp::Filtering::isChoosed){
+	if((val.b_flt & Bp::F_Flt::fltSelected)== Bp::F_Flt::fltSelected){
 	 lst.at(1)->setChecked(true);
 	}
 	else {
@@ -99,7 +112,7 @@ void BMenu::slot_showMenu()
 	}
 
 	/// --------- filtred
-	if((val.b_flt & Bp::Filtering::isFiltred)== Bp::Filtering::isFiltred){
+	if((val.b_flt & Bp::F_Flt::fltFiltred)== Bp::F_Flt::fltFiltred){
 	 lst.at(2)->setChecked(true);
 	}
 	else {
@@ -108,13 +121,13 @@ void BMenu::slot_showMenu()
  }
 }
 
-QMenu *BMenu::mnu_Priority(stTbFiltres *ret, const etCount eSrc, const QTableView *view, const QModelIndex index)
+QMenu *BMenu::mnu_Priority(stTbFiltres *ret, const etCount eSrc, const BTbView *view, const QModelIndex index)
 {
 Q_UNUSED(eSrc)
 Q_UNUSED(view)
 Q_UNUSED(index)
 
- QSqlQuery query(db_1) ;
+ QSqlQuery query(db_menu) ;
  QString msg = "";
 
  QString msg2 = "Priorites";
@@ -150,19 +163,20 @@ void BMenu::slot_isWanted(bool chk)
  QAction *chkFrom = qobject_cast<QAction *>(sender());
 
  if(chk){
-  val.b_flt = val.b_flt | Bp::Filtering::isWanted;
+  val.b_flt = val.b_flt | Bp::F_Flt::fltWanted;
  }
  else {
-  val.b_flt = val.b_flt & ~Bp::Filtering::isWanted;
-  val.b_flt = val.b_flt & ~Bp::Filtering::isChoosed;
-  val.b_flt = val.b_flt & ~Bp::Filtering::isFiltred;
+  val.b_flt = val.b_flt & ~Bp::F_Flt::fltWanted;
+  val.b_flt = val.b_flt & ~Bp::F_Flt::fltSelected;
+  val.b_flt = val.b_flt & ~Bp::F_Flt::fltFiltred;
  }
 
  /// Mettre a jour action dans base
- if(setdbFlt(val)){
+ if(DB_Tools::tbFltSet(&val,db_menu.connectionName()) == true){
   chkFrom->setChecked(chk);
  }
 
+ lview->updateTitle();
 }
 
 
@@ -171,17 +185,19 @@ void BMenu::slot_isChoosed(bool chk)
  QAction *chkFrom = qobject_cast<QAction *>(sender());
 
  if(chk){
-  val.b_flt = val.b_flt | Bp::Filtering::isChoosed;
+  val.b_flt = val.b_flt | Bp::F_Flt::fltSelected;
  }
  else {
-  val.b_flt = val.b_flt & ~Bp::Filtering::isChoosed;
+  val.b_flt = val.b_flt & ~Bp::F_Flt::fltSelected;
+  val.b_flt = val.b_flt & ~Bp::F_Flt::fltFiltred;
  }
 
  /// Mettre a jour action dans base
- if(setdbFlt(val)){
+ if(DB_Tools::tbFltSet(&val,db_menu.connectionName()) == true){
   chkFrom->setChecked(chk);
  }
 
+ lview->updateTitle();
 }
 
 void BMenu::slot_isFiltred(bool chk)
@@ -189,18 +205,19 @@ void BMenu::slot_isFiltred(bool chk)
  QAction *chkFrom = qobject_cast<QAction *>(sender());
 
  if(chk){
-  val.b_flt = val.b_flt | Bp::Filtering::isChoosed;
-  val.b_flt = val.b_flt | Bp::Filtering::isFiltred;
+  val.b_flt = val.b_flt | Bp::F_Flt::fltSelected;
+  val.b_flt = val.b_flt | Bp::F_Flt::fltFiltred;
  }
  else {
-  val.b_flt = val.b_flt & ~Bp::Filtering::isFiltred;
+  val.b_flt = val.b_flt & ~Bp::F_Flt::fltFiltred;
  }
 
  /// Mettre a jour action dans base
- if(setdbFlt(val)){
+ if(DB_Tools::tbFltSet(&val,db_menu.connectionName()) == true){
   chkFrom->setChecked(chk);
  }
 
+ lview->updateTitle();
 }
 
 void BMenu::slot_priorityForAll(bool chk)
@@ -213,15 +230,19 @@ void BMenu::slot_ChoosePriority(QAction *cmd)
 {
  /// https://stackoverflow.com/questions/9187538/how-to-add-a-list-of-qactions-to-a-qmenu-and-handle-them-with-a-single-slot
  bool isOk = true;
- QSqlQuery query(db_1);
+ QSqlQuery query(db_menu);
 
  int value = cmd->data().toInt();
 
  /// Supprimer la priorite ?
  if(value==val.pri){
-  value=0;
+  val.pri= 0;
+ }
+ else {
+  val.pri=value;
  }
 
+ /*
  QString msg = "update  Filtres set pri="+QString::number(value)+
                " where("
                "id="+QString::number(val.id)+
@@ -231,99 +252,45 @@ void BMenu::slot_ChoosePriority(QAction *cmd)
  qDebug() << "msg: "<<msg;
 #endif
  isOk = query.exec(msg);
-
- if(!isOk){
-  DB_Tools::DisplayError("BMenu::slot_ChoosePriority",&query,msg);
-  QMessageBox::warning(nullptr,"BMenu","slot_ChoosePriority",QMessageBox::Ok);
- }
+*/
+ isOk = DB_Tools::tbFltSet(&val,db_menu.connectionName());
 
 }
 
+/*
 bool BMenu::setdbFlt(stTbFiltres in)
 {
- bool isOk = false;
- QString msg = "";
- QSqlQuery query(db_1);
-
- if(in.isPresent==true){
-  /// == 1 donc update
-  QString op = "";
-  if(in.flt>0){
-   op="|";
-  }
-  else {
-   op="&";
-  }
-
-	msg = "update "+in.tbName+
-				" set pri="+QString::number(in.pri)+
-				", flt="+QString::number(in.b_flt)+
-				" where ("
-				"zne="+QString::number(in.zne)+" and "+
-				"typ="+QString::number(in.typ)+" and "+
-				"lgn="+QString::number(in.lgn)+" and "+
-				"col="+QString::number(in.col)+" and "+
-				"val="+QString::number(in.val)+")";
-
- }
- else {
-  /// Pas de resultat donc insert
-  msg ="insert into "+in.tbName+
-        " (id, zne, typ,lgn,col,val,pri,flt)"
-        " values (NULL,"
-        +QString::number(in.zne)+","
-        +QString::number(in.typ)+","
-        +QString::number(in.lgn)+","
-        +QString::number(in.col)+","
-        +QString::number(in.val)+","
-        +QString::number(in.pri)+","
-        +QString::number(in.b_flt)+")";
- }
-
- if(msg.size()){
-#ifndef QT_NO_DEBUG
-  qDebug() << "msg: "<<msg;
-#endif
-  isOk = query.exec(msg);
- }
-
- if(!isOk){
-  DB_Tools::DisplayError("BMenu::setdbFlt",&query,msg);
-  QMessageBox::warning(nullptr,"BMenu","setdbFlt",QMessageBox::Ok);
- }
-
-
+ bool isOk = DB_Tools::tbFltSet(&in, db_menu.connectionName());
  return isOk;
 }
+*/
 
-
-bool BMenu::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QTableView *view, const QModelIndex index)
+bool BMenu::getdbFlt(stTbFiltres *val, const etCount in_typ, const BTbView *view, const QModelIndex index)
 {
  bool isOk = false;
- etCount typ = in_typ;
+ //QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
 
- QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
- int zn = view->objectName().toInt();
- int lgn = -1;
- int col = -1;
- int val = -1;
- Bp::Filterings my_flt = Bp::Filtering::isNotSet;
+ val->typ = in_typ;
 
+ val->zne = view->objectName().toInt();
+ val->lgn = -1;
+ val->col = -1;
+ val->val = -1;
 
- if(typ >= eCountToSet && typ <= eCountEnd){
-  switch (typ) {
+ if(val->typ >= eCountToSet && val->typ <= eCountEnd){
+  switch (val->typ) {
    case eCountElm:
    case eCountCmb:
    case eCountBrc:
-    lgn = typ *10;
-    col = index.model()->index(index.row(),0).data().toInt();
-    val = col;
+    val->lgn = val->typ *10;
+    val->col = index.model()->index(index.row(),0).data().toInt();
+    val->val = val->col;
     break;
    case eCountGrp:
-    lgn = index.row();
-    col = index.column();
-    if(index.model()->index(lgn,col).data().canConvert(QMetaType::Int)){
-     val = index.model()->index(lgn,col).data().toInt();
+    val->lgn = index.row();
+    val->col = index.column();
+    if(index.model()->index(val->lgn,val->col).data().canConvert(QMetaType::Int)){
+     val->val = index.model()->index(val->lgn,val->col).data().toInt();
     }
     break;
    case eCountToSet:
@@ -332,44 +299,11 @@ bool BMenu::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QTableView *v
   }
  }
  else {
-  typ = eCountToSet;
+  val->typ = eCountToSet;
  }
 
- QSqlQuery query_2(db_1);
- QString tbFiltre = (*ret).tbName;
-
- /// Verifier si info presente dans table
- QString msg = "Select *  from "+tbFiltre
-               +" where ("
-                 "zne="+QString::number(zn)+" and "+
-               "typ="+QString::number(typ)+" and "+
-               "lgn="+QString::number(lgn)+" and "+
-               "col="+QString::number(col)+" and "+
-               "val="+QString::number(val)+")";
-
-#ifndef QT_NO_DEBUG
- qDebug() << "mgs_2: "<<msg;
-#endif
- isOk = query_2.exec(msg);
-
- if((isOk = query_2.first()))
- {
-  (*ret).id = query_2.value("id").toInt();
-  int valeur = query_2.value("flt").toInt();
-  my_flt = static_cast<Bp::Filterings>(valeur);
-  (*ret).b_flt = my_flt;
-  (*ret).flt = query_2.value("flt").toInt();
-  //(*ret).flt = query_2.value("flt").value<BFlags::Filtre>();
-  (*ret).pri = query_2.value("pri").toInt();
- }
-
- (*ret).isPresent = isOk;
- (*ret).zne = zn;
- (*ret).typ = typ;
- (*ret).lgn = lgn;
- (*ret).col = col;
- (*ret).val = val;
+ isOk = DB_Tools::tbFltGet(val,db_menu.connectionName());
 
  return isOk;
-}
 
+}

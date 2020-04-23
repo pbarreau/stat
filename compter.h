@@ -76,10 +76,18 @@ class BCount:public QWidget
 
  public:
  BCount(const stGameConf *pGame, etCount genre);
+ BCount* mySefl(void);
+
  BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb);
  BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
         QWidget *unParent, etCount genre);
  BCount(const stNeedsOfBary &param){Q_UNUSED(param)}
+
+ protected:
+ BCount* ptr_self;
+ const stGameConf *gm_def;
+ etCount type; /// type de comptage en cours
+ QSqlDatabase dbCount;
 
  public:
  typedef struct _stMkLocal{
@@ -91,16 +99,16 @@ class BCount:public QWidget
 
  public:
  etCount getType();
- virtual QTabWidget *creationTables(const stGameConf *pGame, const etCount eCalcul) = 0;
- QWidget *V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn);
- virtual bool fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)=0;
- virtual void V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)=0;
+ virtual QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul) = 0;
+ QWidget *startIhm(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn);
+ virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)=0;
+ virtual void usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)=0;
 
 
  protected:
  virtual QGridLayout *Compter(QString * pName, int zn)=0;
 
- bool setdbFlt(stTbFiltres val, QSqlDatabase db);
+ //bool setdbFlt(const stTbFiltres val, QSqlDatabase db);
 
  QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
  QString CriteresCreer(QString operateur, QString critere,int zone);
@@ -110,7 +118,6 @@ class BCount:public QWidget
  QMenu *mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
  bool showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
  //void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
- QString CreerCritereJours(QString cnx_db_name, QString tbl_ref);
  QString FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString alias="");
 
  bool V2_showMyMenu(int col, etCount eSrc);
@@ -120,7 +127,12 @@ class BCount:public QWidget
  void RecupererConfiguration(void);
  bool setUnifiedPriority(QString szn, QString sprio);
  bool getFiltre(stTbFiltres *ret, const etCount origine, QTableView *view, const QModelIndex index);
+ QString mkTitle(int zn, etCount eCalcul, QTableView *view);
 
+
+ //static bool DB_Tools::flt_DbRead(stTbFiltres *ret, QString cnx);
+ static bool flt_DbWrite(stTbFiltres *ret, QString cnx, bool update=true);
+ //static QString DB_Tools::getLstDays(QString cnx_db_name, QString tbl_ref);
 
  public :
  B_RequeteFromTbv a;
@@ -128,9 +140,7 @@ class BCount:public QWidget
 
  protected:
  static QString label[]; /// nom associe aux types
- etCount type; /// type de comptage en cours
  QString st_LstTirages;    /// information de tous les tirages
- QSqlDatabase dbCount;
  QString db_jours;   /// information des jours de tirages
 
  stGameConf myGame;

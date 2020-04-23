@@ -34,9 +34,9 @@ BCountComb::BCountComb(const stGameConf *pGame):BCount(pGame,eCountCmb)
  QString tbl_tirages = pGame->db_ref->fdj;
 
  // Etablir connexion a la base
- db_1 = QSqlDatabase::database(cnx);
- if(db_1.isValid()==false){
-  QString str_error = db_1.lastError().text();
+ db_cmb = QSqlDatabase::database(cnx);
+ if(db_cmb.isValid()==false){
+  QString str_error = db_cmb.lastError().text();
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
  }
@@ -52,7 +52,7 @@ QString BCountComb::getType()
 */
 
 #if 1
-QTabWidget * BCountComb::creationTables(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BCountComb::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
@@ -61,14 +61,14 @@ QTabWidget * BCountComb::creationTables(const stGameConf *pGame, const etCount e
 
  QWidget *(BCount::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
   {
-   &BCount::V2_fn_Count,
-   &BCount::V2_fn_Count
+   &BCount::startIhm,
+   &BCount::startIhm
   };
 
  for(int i = 0; i< nb_zones; i++)
  {
   QString name = pGame->names[i].abv;
-  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::fn_mkLocal, i);
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::usr_MkTbl, i);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
   }
@@ -104,6 +104,7 @@ QTabWidget * BCountComb::creationTables(const stGameConf *pGame)
 QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
 {
  QWidget * wdg_tmp = new QWidget;
+#if 0
  QGridLayout *glay_tmp = new QGridLayout;
  QTableView *qtv_tmp = new QTableView;
  qtv_tmp->setObjectName(QString::number(zn));
@@ -121,7 +122,7 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
   QString msg = "create table if not exists "
                 + dstTbl + " as "
                 + sql_msg;
-  QSqlQuery query(db_1);
+  QSqlQuery query(db_cmb);
   bool isOk = query.exec(msg);
 
 	if(isOk == false){
@@ -136,7 +137,7 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
  QString sql_msg = "select * from "+dstTbl;
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
 
- sqm_tmp->setQuery(sql_msg, db_1);
+ sqm_tmp->setQuery(sql_msg, db_cmb);
  qtv_tmp->setAlternatingRowColors(true);
  qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
@@ -193,11 +194,11 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
-
+#endif
  return wdg_tmp;
 }
 
-bool BCountComb::fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)
+bool BCountComb::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool isOk = true;
 
@@ -618,6 +619,7 @@ QString BCountComb::ConstruireCriteres(int zn)
 QGridLayout *BCountComb::Compter(QString * pName, int zn)
 {
  QGridLayout *lay_return = new QGridLayout;
+#if 0
  (* pName) = myGame.names[zn].abv;
 
  QTableView *qtv_tmp = new QTableView;
@@ -714,14 +716,15 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
  lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
 
  marquerDerniers_cmb(&myGame, eCountCmb, zn);
-
+#endif
  return lay_return;
 }
 
 void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 {
+#if 0
  bool isOk = true;
- QSqlQuery query(db_1);//query(dbToUse);
+ QSqlQuery query(db_cmb);//query(dbToUse);
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
@@ -751,28 +754,31 @@ void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int
 	 if(query.first()){
 		stTbFiltres a;
 		a.tbName = "Filtres";
+		a.sta = Bp::Status::notSet;
+		a.db_total = -1;
+		a.b_flt = Bp::Filtering::isWanted|Bp::Filtering::isChoosed;
 		a.zne = zn;
 		a.typ = eType;
 		a.lgn = 10 * eType;
 		a.col = 1;
 		a.pri = -1;
-		a.flt = BFlags::isNotSet;
 		do{
 		 a.val = query.value(0).toInt();
-		 isOk = setdbFlt(a,db_1);
+		 isOk = DB_Tools::tbFltSet(&a,db_cmb.connectionName());
 		 a.col++;
 		}while(query.next() && isOk);
 	 }
 	}
  } /// fin for
+#endif
 }
 
-void BCountComb::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)
+void BCountComb::usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)
 {
  Q_UNUSED(view)
 
  bool isOk = true;
- QSqlQuery query(db_1);//query(dbToUse);
+ QSqlQuery query(db_cmb);//query(dbToUse);
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
@@ -786,12 +792,26 @@ void BCountComb::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *vie
   */
  QString 	 msg_1 = "select t1.idComb as b from ("+
                  tbl_tirages+"_ana_z"+
-                 QString::number(zn+1)+") as t1 where";
+                 QString::number(zn+1)+") as t1 where ";
 
+ /// ----------
+ stTbFiltres a;
+ a.tbName = "Filtres";
+ a.sta = Bp::E_Sta::noSta;
+ a.db_total = -1;
+ a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
+ a.zne = zn;
+ a.typ = eType;
+ a.lgn = 10 * eType;
+ a.col = -1;
+ a.pri = -1; /// pas de priorite ici
+ /// --
+ ///
+ QString msg  = "";
  for (int lgn=1;(lgn<3) && isOk;lgn++) {
-  QString msg = msg_1+
-                " (t1.id="+QString::number(lgn)+
-                ")";
+  msg = msg_1+
+        " (t1.id="+QString::number(lgn)+
+        ")";
 
 #ifndef QT_NO_DEBUG
 	qDebug() << "msg: "<<msg;
@@ -800,24 +820,22 @@ void BCountComb::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *vie
 
 	if(isOk){
 	 if(query.first()){
-		stTbFiltres a;
-		a.tbName = "Filtres";
-		a.zne = zn;
-		a.typ = eType;
-		a.lgn = 10 * eType;
-		a.col = -1;
-		a.pri = -1;
-		a.flt = lgn;
-		Bp::Filterings tmp = static_cast<Bp::Filterings>(lgn);
+		Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
 		a.b_flt = a.b_flt | tmp;
 		do{
 		 a.val = query.value(0).toInt();
 		 a.col = a.val;
-		 isOk = setdbFlt(a,dbCount);
+		 isOk = DB_Tools::tbFltSet(&a,db_cmb.connectionName());
 		}while(query.next() && isOk);
 	 }
 	}
  } /// fin for
+
+ if(!isOk){
+  DB_Tools::DisplayError("BCountComb::V2_marquerDerniers_tir",&query,msg);
+  QMessageBox::warning(nullptr,"BCountComb","V2_marquerDerniers_tir",QMessageBox::Ok);
+ }
+
 }
 
 void BCountComb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int zn)

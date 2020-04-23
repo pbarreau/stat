@@ -110,7 +110,6 @@ void BAnalyserTirages::startAnalyse(stGameConf *pGame, QString tbl_tirages)
  int nbZn = pGame->znCount;
 
  if(pGame->slFlt==nullptr){
-
 	pGame->slFlt = new  QStringList * [nbZn] ;
 	for (int zn=0;zn < nbZn;zn++ )
 	{
@@ -125,6 +124,7 @@ void BAnalyserTirages::startAnalyse(stGameConf *pGame, QString tbl_tirages)
   if(!isOk){
    QString msg = "Erreur Analyse table : " + tbl_tirages;
    DB_Tools::DisplayError(tbl_tirages,nullptr,msg);
+   return;
   }
  }
 
@@ -140,25 +140,62 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
  ///
  QVector<BCount *> lstComptage; ///voir man de QList
 
- QTabWidget *tab_Top = new QTabWidget;
+ QTabWidget *tab_Top = nullptr;
 
- BCountElem * item_1 = new BCountElem(pGame);
+ /// pour tester non importance variable globale
+ /*
+ stGameConf a;
+ stParam_3 *tmp = new stParam_3;
+ a.db_ref = tmp;
+ a.db_ref->cnx = "";
+ BcElm * item_1 = new BcElm(&a);
+ */
+
+ BcElm * item_1 = new BcElm(pGame);
+ if(item_1->mySefl() == nullptr){
+  delete  item_1;
+ }
+ else {
+  lstComptage.append(item_1);
+ }
+
+/*
  BCountComb * item_2 = new BCountComb(pGame);
- BCountBrc * item_3 = new BCountBrc(pGame);
- BCountGroup * item_4 = new BCountGroup(pGame, info);
+ if(item_2->mySefl() == nullptr){
+  delete  item_2;
+ }
+ else {
+  lstComptage.append(item_2);
+ }
 
- lstComptage.append(item_1);
- lstComptage.append(item_2);
- lstComptage.append(item_3);
- lstComptage.append(item_4);
+ BCountBrc * item_3 = new BCountBrc(pGame);
+ if(item_3->mySefl() == nullptr){
+  delete  item_3;
+ }
+ else {
+  lstComptage.append(item_3);
+ }
+
+ BCountGroup * item_4 = new BCountGroup(pGame, info);
+ if(item_4->mySefl() == nullptr){
+  delete  item_4;
+ }
+ else {
+  lstComptage.append(item_4);
+ }
+*/
 
  int nb_item = lstComptage.size();
+ if(nb_item){
+  tab_Top = new QTabWidget;
+ }
+
  for(int i = 0; i< nb_item; i++)
  {
   /// Appelle la methode dans la bonne classe
-  etCount eCalcul = lstComptage.at(i)->getType();
-  QString name = BCount::onglet[eCalcul];
-  QWidget *calcul = lstComptage.at(i)->creationTables(pGame, eCalcul);
+  etCount type = lstComptage.at(i)->getType();
+  QString name = BCount::onglet[type];
+  QWidget *calcul = lstComptage.at(i)->startCount(pGame, type);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
   }
@@ -166,7 +203,16 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
 
  QWidget * Resultats = new QWidget;
  QGridLayout *tmp_layout = new QGridLayout;
- tmp_layout->addWidget(tab_Top,0,0);
+
+ /// faire test pour voir si production de calculs ?
+ if(tab_Top!=nullptr){
+  tmp_layout->addWidget(tab_Top,0,0);
+ }
+ else {
+  QLabel *tmp = new QLabel("Erreur pas de resultats a montrer !!");
+  tmp_layout->addWidget(tmp,0,0);
+ }
+
  Resultats->setLayout(tmp_layout);
  Resultats->setWindowTitle(tbName);
  Resultats->show();

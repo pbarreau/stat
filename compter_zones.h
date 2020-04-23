@@ -16,15 +16,15 @@
 #include "compter.h"
 #include "labelclickable.h"
 
-class BCountElem:public BCount//, public cFdjData
+class BcElm:public BCount//, public cFdjData
 {
  Q_OBJECT
  /// in : infos representant les tirages
  public:
- BCountElem(const stGameConf *pDef);
+ BcElm(const stGameConf *pDef);
 
- BCountElem(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent);
- ~BCountElem();
+ BcElm(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent);
+ ~BcElm();
  int getCounter(void);
  QString getFilteringData(int zn);
  LabelClickable *getLabPriority(void);
@@ -34,7 +34,7 @@ class BCountElem:public BCount//, public cFdjData
  void slot_RequeteFromSelection(const QModelIndex &index);
 
  public:
- static int total;
+ static int tot_elm;
  int hCommon; // taille des tableaux
 
  private:
@@ -48,19 +48,18 @@ class BCountElem:public BCount//, public cFdjData
 
  private:
  QWidget *fn_Count(const stGameConf *pGame, int zn);
- QString sql_MkCountItems(const stGameConf *pGame, int zn);
+ QString usr_doCount(const stGameConf *pGame, int zn);
 
  private:
  //virtual QString getType();
- virtual  QTabWidget *creationTables(const stGameConf *pGame, const etCount eCalcul);
- virtual bool fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn);
- virtual void V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn);
+ virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
+ virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
+ virtual void usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn);
 
 
 
  private:
- BCountElem * addr;
- QSqlDatabase db_1;
+ QSqlDatabase db_elm;
 
 
  Q_SIGNALS:

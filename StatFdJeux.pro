@@ -103,7 +103,8 @@ SOURCES += \
     compter_barycentre.cpp \
     BColorPriority.cpp \
     BFlags.cpp \
-    BMenu.cpp
+    BMenu.cpp \
+    BTbView.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -170,7 +171,8 @@ HEADERS  += \
     BColorPriority.h \
     BFlags.h \
     BMenu.h \
-    bstflt.h
+    bstflt.h \
+    BTbView.h
 
 
 FORMS    += mainwindow.ui \

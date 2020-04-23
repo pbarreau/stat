@@ -20,6 +20,7 @@
 #include "BFlags.h"
 
 #include "BMenu.h"
+#include "BTbView.h"
 
 #include "compter.h"
 #include "db_tools.h"
@@ -29,14 +30,21 @@ QString BCount::onglet[eCountEnd]={"Erreur","Zones","Combinaisons","Groupes","Ba
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
 
-QWidget *BCount::V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn)
+/*
+ * Cette fonction met dans un qtableview la lecture d'une table
+ * de la base de donnees
+ * obtenue grace a la fonction utlisateur usr_fn
+ */
+
+QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn)
 {
  QWidget * wdg_tmp = new QWidget;
- QGroupBox *tmp_gpb = new QGroupBox;
+ //QGroupBox *tmp_gpb = new QGroupBox;
  QGridLayout *glay_tmp = new QGridLayout;
- QTableView *qtv_tmp = new QTableView;
+ BTbView *qtv_tmp = new BTbView(zn,eCalcul, dbCount.connectionName());
  qtv_tmp->setObjectName(QString::number(zn));
 
+ /// Nom de la table resultat
  QString dstTbl = "r_"
                   +pGame->db_ref->fdj
                   +"_"+label[eCalcul]
@@ -88,7 +96,7 @@ QWidget *BCount::V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, con
  a.start = 1;
  a.zne=zn;
  a.typ = eCalcul;
- a.b_flt = Bp::Filtering::isNotSet;
+ a.b_flt = Bp::F_Flt::noFlt;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -128,24 +136,19 @@ QWidget *BCount::V2_fn_Count(const stGameConf *pGame, const etCount eCalcul, con
  }
  qtv_tmp->setFixedWidth(l);
 
- // positionner le tableau
- QString st_total = "En cours : ";
- tmp_gpb->setTitle(st_total);
+ /// Mettre dans la base une info sur 2 derniers tirages
+ usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
 
- QVBoxLayout *layout = new QVBoxLayout;
+
+ /// Agencer le tableau
  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
 
- layout->addWidget(qtv_tmp, Qt::AlignCenter|Qt::AlignTop);
- tmp_gpb->setLayout(layout);
-
- glay_tmp->addWidget(tmp_gpb,0,0);//,-1,Qt::AlignLeft|Qt::AlignTop
+ /// https://stackoverflow.com/questions/24005346/qgridlayout-remove-spacing
+ glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);//,-1,Qt::AlignLeft|Qt::AlignTop
  glay_tmp->addItem(ecart,0,1);
- glay_tmp->setColumnStretch(1, 10);
+ glay_tmp->setColumnStretch(1, 10); /// Exemple basic layouts
  glay_tmp->setColumnStretch(2, 20);
  wdg_tmp->setLayout(glay_tmp);
-
- /// Mettre dans la base une info sur 2 derniers tirages
- V2_marquerDerniers_tir(pGame, qtv_tmp, eCalcul, zn);
 
  /// --------------------
  qtv_tmp->setMouseTracking(true);
@@ -169,102 +172,11 @@ etCount BCount::getType()
  return type;
 }
 
-bool BCount::setdbFlt(stTbFiltres val, QSqlDatabase db)
+
+BCount::BCount(const stGameConf *pGame, etCount genre):gm_def(pGame), type(genre)
 {
- bool isOk = true;
- QSqlQuery query_2(db);
 
- QString tbFiltre = val.tbName;
- int zn = val.zne;
- etCount eType = val.typ;
- int lgn = val.lgn;
- int col = val.col;
- int itm = val.val;
- int pri = val.pri;
- int flt = val.flt;
- Bp::Filterings tmp_flt = val.b_flt;
-
- /// Verifier si info presente dans table
- QString msg = "Select *  from "+tbFiltre+
-               " where ("
-               "zne="+
-               QString::number(zn)+
-               " and "+
-               "typ="+QString::number(eType)+" and "+
-               "lgn="+QString::number(lgn)+" and "+
-               "col="+QString::number(col)+" and "+
-               "val="+QString::number(itm)+")";
-
-#ifndef QT_NO_DEBUG
- qDebug() << "mgs_2: "<<msg;
-#endif
- isOk = query_2.exec(msg);
- if(isOk){
-
-	/// A t on des resultats ?
-	isOk = query_2.first();
-	if(isOk){
-	 // 1 ou plus de resultat ?
-	 int nb_items = 0;
-	 query_2.last();
-	 nb_items= query_2.at();
-	 query_2.first();
-
-	 //analyser nb_items
-	 if(nb_items>1){
-		/// Requete a donnee > 1
-		isOk = false;
-		msg="";
-	 }
-	 else {
-		/// == 1 donc update
-		msg = "update "+tbFiltre+
-					" set pri="+QString::number(pri)+
-					", flt=("
-					" case when flt is NULL then 0x"+QString::number(tmp_flt)+
-					"  when flt = 0 then 0x"+QString::number(tmp_flt)+
-					"  when flt < 0 then 0x"+QString::number(tmp_flt)+
-					" else(flt&0x"+QString::number(tmp_flt)+
-					") end) where ("
-					"zne="+QString::number(zn)+" and "+
-					"typ="+QString::number(eType)+" and "+
-					"lgn="+QString::number(lgn)+" and "+
-					"col="+QString::number(col)+" and "+
-					"val="+QString::number(itm)+")";
-
-	 }
-	}
-	else {
-	 /// Pas de resultat donc insert
-	 msg ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
-				 " values (NULL,"
-				 +QString::number(zn)+","
-				 +QString::number(eType)+","
-				 +QString::number(lgn)+","
-				 +QString::number(col)+","
-				 +QString::number(itm)+","
-				 +QString::number(pri)+","
-				 +QString::number(tmp_flt)+")";
-	}
- }
-
- if(msg.size()){
-#ifndef QT_NO_DEBUG
-  qDebug() << "msg: "<<msg;
-#endif
-  isOk = query_2.exec(msg);
- }
-
- if(!isOk){
-  DB_Tools::DisplayError("BCount::setdbFlt",&query_2,msg);
-  QMessageBox::warning(nullptr,"BCount","setdbFlt",QMessageBox::Ok);
- }
-
- return isOk;
-}
-
-BCount::BCount(const stGameConf *pGame, etCount genre):type(genre)
-{
+ ptr_self = nullptr;
 
  QString cnx=pGame->db_ref->cnx;
  QString tbl_tirages = pGame->db_ref->fdj;
@@ -277,10 +189,18 @@ BCount::BCount(const stGameConf *pGame, etCount genre):type(genre)
   return;
  }
 
- QString st_tmp = CreerCritereJours(cnx,tbl_tirages);
+ ptr_self = this;
+
+ QString st_tmp = DB_Tools::getLstDays(cnx,tbl_tirages);
  db_jours = ","+st_tmp;
 
 }
+
+BCount * BCount::mySefl()
+{
+ return ptr_self;
+}
+
 BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb)
     :BCount(pDef,in,useDb,nullptr,eCountToSet)
 {
@@ -324,66 +244,12 @@ BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
 	sqmActive[pos].append(tmp);
  }
 
- QString st_tmp = CreerCritereJours(fromDb.connectionName(),in);
+ QString st_tmp = DB_Tools::getLstDays(fromDb.connectionName(),in);
  db_jours = ","+st_tmp;
 
 }
 
 /// ---------------------------------------
-QString BCount::CreerCritereJours(QString cnx_db_name, QString tbl_ref)
-{
- QString st_tmp = "";
-
- bool status = false;
-
- QSqlDatabase cur_db = QSqlDatabase::database(cnx_db_name);
- QSqlQuery query(cur_db) ;
- QString msg = "";
-
- QString st_table = "J";
-
-#if 0
-    if(myGame.from == eUsr){
-        //db_jours = "";
-        return st_tmp;
-    }
-#endif
-
- msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
-       tbl_ref+") as tb1 order by J asc;";
-
- status = query.exec(msg);
-
- if(status)
- {
-  status = query.first();
-  if (query.isValid())
-  {
-   do
-   {
-    //count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,
-    st_tmp = st_tmp + "cast (count(CASE WHEN  J like '"+
-             query.value(0).toString()+"%' then 1 end) as int) as "+
-             query.value(0).toString()+",";
-   }while((status = query.next()));
-
-	 //supprimer derniere ','
-	 st_tmp.remove(st_tmp.length()-1,1);
-	 st_tmp = st_tmp + " ";
-	}
- }
-
-#ifndef QT_NO_DEBUG
- qDebug() << "CreerCritereJours verif_erreur ->"<< query.lastError();
- qDebug() << "SQL 1:\n"<<msg<<"\n-------";
- qDebug() << "SQL 2:\n"<<st_tmp<<"\n-------";
-#endif
-
- query.finish();
- //db_jours = ","+st_tmp;
-
- return st_tmp;
-}
 
 void BCount::RecupererConfiguration(void)
 {
@@ -659,6 +525,7 @@ bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
  return ret;
 }
 
+#if 0
 bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, const QModelIndex index)
 {
  stTbFiltres a;
@@ -713,7 +580,7 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
  if((isOk = query_2.first()))
  {
   //(*ret).tbName = tbFiltre;
-  (*ret).flt = query_2.value("flt").value<BFlags::Filtre>();
+  (*ret).flt = Bp::Filtering::isNotSet;//query_2.value("flt").value<BFlags::Filtre>();
   (*ret).pri = query_2.value("pri").toInt();
 
 	(*ret).lgn = lgn;
@@ -725,12 +592,82 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
 
  return isOk;
 }
+#endif
+
+bool BCount::flt_DbWrite(stTbFiltres *ret, QString cnx, bool update)
+{
+ bool isOk = false;
+
+ // Etablir connexion a la base
+ QSqlDatabase db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  ret->sta = Bp::E_Sta::Er_Db;
+  return isOk;
+ }
+
+ QSqlQuery query(db_1);
+ QString tbFiltre = ret->tbName;
+
+ QString msg = "";
+ if(update){
+  if(ret->id < 0){
+   msg = "update "+ret->tbName+
+         " set pri="+QString::number(ret->pri)+
+         ", flt="+QString::number(ret->b_flt)+
+         " where (("
+         "zne="+QString::number(ret->zne)+") and ("+
+         "typ="+QString::number(ret->typ)+") and ("+
+         "lgn="+QString::number(ret->lgn)+") and ("+
+         "col="+QString::number(ret->col)+") and ("+
+         "val="+QString::number(ret->val)+"))";
+  }
+  else {
+   msg = "update "+ret->tbName+
+         " set pri="+QString::number(ret->pri)+
+         ", flt="+QString::number(ret->b_flt)+
+         " where (("
+         "zne="+QString::number(ret->id)+
+         "))";
+  }
+ }
+ else {
+  /// Pas de resultat donc insert
+  msg ="insert into "+ret->tbName+
+        " (id, zne, typ,lgn,col,val,pri,flt)"
+        " values (NULL,"
+        +QString::number(ret->zne)+","
+        +QString::number(ret->typ)+","
+        +QString::number(ret->lgn)+","
+        +QString::number(ret->col)+","
+        +QString::number(ret->val)+","
+        +QString::number(ret->pri)+","
+        +QString::number(ret->b_flt)+")";
+
+ }
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "flt_DbWrite : "<<msg;
+#endif
+ isOk = query.exec(msg);
+ if(isOk){
+  ret->sta = Bp::E_Sta::Ok_Query;
+ }
+ else {
+  ret->sta = Bp::E_Sta::Er_Query;
+ }
+
+ return isOk;
+}
+
+
 void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 {
  /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
  /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
 
- QTableView *view = qobject_cast<QTableView *>(sender());
+ BTbView *view = qobject_cast<BTbView *>(sender());
  QString cnx = dbCount.connectionName();
  etCount eType = type;
 
@@ -834,13 +771,15 @@ QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
  int row = index.row();
  stTbFiltres a;
  a.tbName = "Filtres";
+ a.sta = Bp::E_Sta::noSta;
+ a.db_total = -1;
+ a.b_flt = Bp::F_Flt::noFlt;
  a.zne = view->objectName().toInt();;
  a.typ = eSrc;
  a.lgn = -1;
  a.col = index.column();
  a.pri = -1;
  a.val = -1;
- a.flt = BFlags::isNotSet;
 
  if(eSrc == eCountGrp)
  {
@@ -858,7 +797,7 @@ QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
  }
 
 
- isOk = setdbFlt(a,dbCount);
+ isOk = DB_Tools::tbFltSet(&a,dbCount.connectionName());
 
 
  //if((typeFiltre.at(0)->currentIndex()==0) && (typeFiltre.at(1)->currentIndex()==0))

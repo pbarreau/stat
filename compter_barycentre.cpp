@@ -34,16 +34,16 @@ BCountBrc::BCountBrc(const stGameConf *pGame):BCount(pGame,eCountBrc)
  QString tbl_tirages = pGame->db_ref->fdj;
 
  // Etablir connexion a la base
- db_1 = QSqlDatabase::database(cnx);
- if(db_1.isValid()==false){
-  QString str_error = db_1.lastError().text();
+ db_brc = QSqlDatabase::database(cnx);
+ if(db_brc.isValid()==false){
+  QString str_error = db_brc.lastError().text();
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
  }
  addr=this; /// memo de cet objet
 }
 
-QTabWidget * BCountBrc::creationTables(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BCountBrc::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
@@ -52,14 +52,14 @@ QTabWidget * BCountBrc::creationTables(const stGameConf *pGame, const etCount eC
 
  QWidget *(BCountBrc::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
   {
-   &BCountBrc::V2_fn_Count,
-   &BCountBrc::V2_fn_Count
+   &BCountBrc::startIhm,
+   &BCountBrc::startIhm
   };
 
  for(int i = 0; i< nb_zones; i++)
  {
   QString name = pGame->names[i].abv;
-  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::fn_mkLocal, i);
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::usr_MkTbl, i);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
   }
@@ -70,6 +70,7 @@ QTabWidget * BCountBrc::creationTables(const stGameConf *pGame, const etCount eC
 QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
 {
  QWidget * wdg_tmp = new QWidget;
+#if 0
  QGridLayout *glay_tmp = new QGridLayout;
  QTableView *qtv_tmp = new QTableView;
  qtv_tmp->setObjectName(QString::number(zn));
@@ -87,7 +88,7 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
   QString msg = "create table if not exists "
                 + dstTbl + " as "
                 + sql_msg;
-  QSqlQuery query(db_1);
+  QSqlQuery query(db_brc);
   bool isOk = query.exec(msg);
 
 	if(isOk == false){
@@ -102,7 +103,7 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
  QString sql_msg = "select * from "+dstTbl;
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
 
- sqm_tmp->setQuery(sql_msg, db_1);
+ sqm_tmp->setQuery(sql_msg, db_brc);
  qtv_tmp->setAlternatingRowColors(true);
  qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
@@ -157,11 +158,11 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
-
+#endif
  return wdg_tmp;
 }
 
-bool BCountBrc::fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)
+bool BCountBrc::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool isOk = true;
 
@@ -265,8 +266,8 @@ BCountBrc::BCountBrc(const stNeedsOfBary &param)
 
  QTabWidget *tab_Top = new QTabWidget(this);
 
- db_1= QSqlDatabase::database(param.ncx);
- dbCount = db_1;
+ db_brc= QSqlDatabase::database(param.ncx);
+ dbCount = db_brc;
  //src_tbl = param.tbl_in;
  QString src_data = param.tbl_in;
  st_LstTirages = src_data;
@@ -311,6 +312,7 @@ QGridLayout *BCountBrc::Compter(QString * pName, int zn)
 QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
 {
  QGridLayout *lay_return = new QGridLayout;
+#if 0
  QTableView *qtv_tmp = new QTableView;
  BColorPriority *sqm_tmp = new BColorPriority;
  QString src_data="";
@@ -326,7 +328,7 @@ QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
  else{
   src_data = "select * from r_"+src_tbl+"_0_brc_z"+QString::number(zn+1);
  }
- sqm_tmp->setQuery(src_data,db_1);
+ sqm_tmp->setQuery(src_data,db_brc);
 
  qtv_tmp->setAlternatingRowColors(true);
  qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -370,15 +372,17 @@ QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
          SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 
  marquerDerniers_bar(&myGame, eCountBrc, zn);
+#endif
+
  return lay_return;
 
 }
 
 void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 {
-
+#if 0
  bool isOk = true;
- QSqlQuery query(db_1);//query(dbToUse);
+ QSqlQuery query(db_brc);//query(dbToUse);
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
@@ -417,28 +421,31 @@ void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int 
 	 if(query.first()){
 		stTbFiltres a;
 		a.tbName = "Filtres";
+		a.sta = Bp::Status::notSet;
+		a.db_total = -1;
+		a.b_flt = Bp::Filtering::isNotSet;
 		a.zne = zn;
 		a.typ = eType;
 		a.lgn = 10 * eType;
 		a.col = 1;
 		a.pri = -1;
-		a.flt = BFlags::Filtre::isNotSet;
 		do{
 		 a.val = query.value(0).toInt();
-		 isOk = setdbFlt(a,db_1);
+		 isOk = DB_Tools::tbFltSet(&a,db_brc.connectionName());;
 		 a.col++;
 		}while(query.next() && isOk);
 	 }
 	}
  } /// fin for
+#endif
 }
 
-void BCountBrc::V2_marquerDerniers_tir(const stGameConf *pGame,  QTableView *view, const etCount eType, const int zn)
+void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCount eType, const int zn)
 {
  Q_UNUSED(view)
 
  bool isOk = true;
- QSqlQuery query(db_1);//query(dbToUse);
+ QSqlQuery query(db_brc);//query(dbToUse);
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
@@ -461,12 +468,26 @@ void BCountBrc::V2_marquerDerniers_tir(const stGameConf *pGame,  QTableView *vie
                  ") as t2 "
                  "where "
                  "( "
-                 " (t2.bc = t1.R) and ";
+                 " (t2.bc = t1.R) ";
 
+ /// ----------
+ stTbFiltres a;
+ a.tbName = "Filtres";
+ a.sta = Bp::E_Sta::noSta;
+ a.db_total = -1;
+ a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
+ a.zne = zn;
+ a.typ = eType;
+ a.lgn = 10 * eType;
+ a.col = -1;
+ a.pri = -1; /// pas de priorite ici
+ /// --
+ ///
+ QString msg  = "";
  for (int lgn=1;(lgn<3) && isOk;lgn++) {
-  QString msg = msg_1+
-                " (t2.id="+QString::number(lgn)+
-                "))";
+  msg = msg_1+
+        " and (t2.id="+QString::number(lgn)+
+        "))";
 
 #ifndef QT_NO_DEBUG
 	qDebug() << "msg: "<<msg;
@@ -475,24 +496,22 @@ void BCountBrc::V2_marquerDerniers_tir(const stGameConf *pGame,  QTableView *vie
 
 	if(isOk){
 	 if(query.first()){
-		stTbFiltres a;
-		a.tbName = "Filtres";
-		a.zne = zn;
-		a.typ = eType;
-		a.lgn = 10*eType;
-		a.col = -1;
-		a.pri = -1;
-		a.flt = lgn;
-		Bp::Filterings tmp = static_cast<Bp::Filterings>(lgn);
+		Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
 		a.b_flt = a.b_flt | tmp;
 		do{
 		 a.val = query.value(0).toInt();
 		 a.col = a.val;
-		 isOk = setdbFlt(a,dbCount);
+		 isOk = DB_Tools::tbFltSet(&a,db_brc.connectionName());
 		}while(query.next() && isOk);
 	 }
 	}
  } /// fin for
+
+ if(!isOk){
+  DB_Tools::DisplayError("BCountBrc::V2_marquerDerniers_tir",&query,msg);
+  QMessageBox::warning(nullptr,"BCountBrc","V2_marquerDerniers_tir",QMessageBox::Ok);
+ }
+
 }
 
 void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int zn){
@@ -551,10 +570,10 @@ void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int 
 
 void BCountBrc::hc_RechercheBarycentre(QString tbl_in)
 {
- QSqlQuery query(db_1);
+ QSqlQuery query(db_brc);
  bool isOk = true;
 
- QString filterDays = CreerCritereJours(db_1.connectionName(),tbl_in);
+ QString filterDays = DB_Tools::getLstDays(db_brc.connectionName(),tbl_in);
 
 #ifndef QT_NO_DEBUG
  qDebug() << "filterDays:"<<filterDays;
@@ -716,7 +735,7 @@ bool BCountBrc::isTableTotalBoulleReady(QString tbl_total)
 bool BCountBrc::mettreBarycentre(QString tbl_dst, QString src_data)
 {
  bool isOK = true;
- QSqlQuery query(db_1);
+ QSqlQuery query(db_brc);
  QString msg = "";
 
  /// 1 : Renommer la table resultat
@@ -761,7 +780,7 @@ QString BCountBrc::getFilteringData(int zn)
                                                                                                    "tbLeft.id=tbRight.id "
                                                                                                    ") ";
 #endif
- QSqlQuery query(db_1);
+ QSqlQuery query(db_brc);
  //QString msg = "";
  bool isOk = true;
 

@@ -1434,7 +1434,7 @@ void BPrevision::analyserTirages(stPrmPrevision calcul,QString source,const stGa
  QTabWidget *tab_Top = new QTabWidget;
 
 
- c1 = new BCountElem(config,source,db_1,Resultats);
+ c1 = new BcElm(config,source,db_1,Resultats);
  connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
  /// transfert vers SyntheseGenerale
  connect(c1,
@@ -1535,7 +1535,7 @@ BCountBrc* BPrevision::getC0()
 {
  return c;
 }
-BCountElem* BPrevision::getC1()
+BcElm* BPrevision::getC1()
 {
  return c1;
 }

@@ -11,30 +11,38 @@ namespace Bp {
  /// https://www.qtcentre.org/threads/49096-Use-QFlags
  /// https://stackoverflow.com/questions/43478059/how-to-you-use-operator-int-of-qflags
 
- enum Filtering{
-  isNotSet  = 0x0000,
-  isLastTir	= 0x0001,
-  isPrevTir	=	0x0002,
-  isWanted	=	0x0004,
-  isChoosed	= 0x0008,
-  isFiltred	= 0x0010,
-  isNotSeen	=	0x0020,
-  isSeenBfr	=	0x0040,
-  isSeenAft	=	0x0080
+ enum F_Flt{
+  noFlt  = 0x0000,
+  fltTirLast	= 0x0001,
+  fltTirPrev	=	0x0002,
+  fltWanted	=	0x0004,
+  fltSelected	= 0x0008,
+  fltFiltred	= 0x0010,
+  fltSeenNot	=	0x0020,
+  fltSeenBfr	=	0x0040,
+  fltSeenAft	=	0x0080
  };
- Q_DECLARE_FLAGS(Filterings, Filtering)
+ Q_DECLARE_FLAGS(F_Flts, F_Flt)
 
- enum FltLayer{
-  lyFiltred,
-  lyLastTir,
-  lyPrevTir,
-  lyNotSeen,
+ enum E_Sta{
+  noSta,
+  Ok_Query,
+  Ok_Result,
+  isOkFld_pri,
+  isOkFld_flt,
+  isFalse,
+  isAbsent,
+  isErrFld_pri,
+  isErrFld_flt,
+  Er_Db,
+  Er_Query,
+  Er_Result,
   lyend
  };
 }
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(Bp::Filterings)
-Q_DECLARE_METATYPE(Bp::Filterings)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Bp::F_Flts)
+Q_DECLARE_METATYPE(Bp::F_Flts)
 /// -------------
 
 
@@ -49,8 +57,10 @@ typedef enum{
 
 
 typedef struct _stTbFiltres{
- QString tbName; /// Nom de la table filtre
- bool isPresent; /// La structure a des infos correctes
+ QString tbName;     /// Nom de la table filtre
+ Bp::E_Sta sta;     /// Precision sur le code retour
+ Bp::F_Flts b_flt;
+ int db_total;   /// total recupere de la base par read
  int id;
  int zne;         /// Zone id
  etCount typ;   /// Type de filtre
@@ -58,8 +68,6 @@ typedef struct _stTbFiltres{
  int col;
  int val;        /// Valeur a lgn & col
  int pri;
- int flt;        /// bit field
- Bp::Filterings b_flt;
 }stTbFiltres;
 
 #endif // BSTFLT_H

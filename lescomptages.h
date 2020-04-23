@@ -109,7 +109,7 @@ class BPrevision:public QGridLayout
  BPrevision(stGameConf *pGame, stPrmPrevision *prm);
  ~BPrevision();
  BCountBrc* getC0();
- BCountElem* getC1();
+ BcElm* getC1();
  BCountComb* getC2();
  BCountGroup* getC3();
 
@@ -175,7 +175,7 @@ class BPrevision:public QGridLayout
  //QList<QPair<QString, BGrbGenTirages*>> *lstTirGen;
  //QPair<QString, BGrbGenTirages*> *lstTirGen;
  BCountComb *c2;
- BCountElem *c1;
+ BcElm *c1;
  BCountGroup *c3;
  BCountBrc *c;
  int cur_item;

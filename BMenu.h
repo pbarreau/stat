@@ -9,6 +9,7 @@
 #include <QSqlDatabase>
 #include <QModelIndex>
 
+#include "BTbView.h"
 #include "compter.h"
 
 class BMenu : public QMenu
@@ -16,13 +17,13 @@ class BMenu : public QMenu
  Q_OBJECT
 
  public:
- BMenu(const QPoint pos, QString cnx, const etCount eType, const QTableView *view);
+ BMenu(const QPoint pos, QString cnx, const etCount eType, BTbView *view, QWidget *parent=nullptr);
 
  private:
  void construireMenu(void);
- QMenu *mnu_Priority(stTbFiltres *ret, const etCount eSrc, const QTableView *view, const QModelIndex index);
- bool getdbFlt(stTbFiltres *ret, const etCount origine, const QTableView *view, const QModelIndex index);
- bool setdbFlt(stTbFiltres in);
+ QMenu *mnu_Priority(stTbFiltres *ret, const etCount eSrc, const BTbView *view, const QModelIndex index);
+ bool getdbFlt(stTbFiltres *ret, const etCount origine, const BTbView *view, const QModelIndex index);
+ //bool setdbFlt(stTbFiltres in);
 
  public slots:
  void slot_showMenu();
@@ -36,9 +37,9 @@ class BMenu : public QMenu
 
  private:
  QMenu *main_menu;
- QSqlDatabase db_1;
+ QSqlDatabase db_menu;
  etCount eCalcul;
- const QTableView *lview;
+ BTbView *lview;
  QModelIndex  index;
  stTbFiltres val;
 };

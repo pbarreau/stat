@@ -25,7 +25,7 @@
 QString DB_Tools::GEN_Where_3(int loop,
 															QString tb1,bool inc1,QString op1,
 															QStringList &tb2,bool inc2,QString op2
-																																																																																																									)
+																																																																																																																																																																																																																																	)
 {
  QString ret_msg = "";
  QString ind_1 = "";
@@ -321,53 +321,279 @@ bool DB_Tools::checkHavingTableAndKey(QString tbl, QString key, QString cnx)
  return isOk;
 }
 
+QString DB_Tools::getLstDays(QString cnx_db_name, QString tbl_ref)
+{
+ QString st_tmp = "";
+
+ bool isOk = false;
+
+ QSqlDatabase cur_db = QSqlDatabase::database(cnx_db_name);
+ QSqlQuery query(cur_db) ;
+ QString msg = "";
+
+ QString st_table = "J";
+
+ msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
+       tbl_ref+") as tb1 order by J asc;";
+
+ isOk = query.exec(msg);
+
+
+ if (isOk && (isOk = query.first()))
+ {
+  // 1 ou plus de resultat ?
+  int nb_items = 0;
+  query.last();
+  nb_items= query.at()+1;
+  query.first();
+
+	do
+	{
+	 //count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,
+	 st_tmp = st_tmp + "cast (count(CASE WHEN  J like '"+
+						query.value(0).toString()+"%' then 1 end) as int) as "+
+						query.value(0).toString()+",";
+	}while(query.next());
+
+	//supprimer derniere ','
+	st_tmp.remove(st_tmp.length()-1,1);
+	st_tmp = st_tmp + " ";
+ }
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "Msg : "<<msg;
+ qDebug() << "Date(s) : "<<st_tmp;
+#endif
+
+ if(!isOk){
+  DisplayError("DB_Tools::getLstDays",&query,msg);
+  QMessageBox::warning(nullptr,"DB_Tools","getLstDays",QMessageBox::Ok);
+ }
+
+
+ return st_tmp;
+}
+
+bool DB_Tools::tbFltGet(stTbFiltres *in_out, QString cnx)
+{
+ bool isOk = false;
+
+ // Etablir connexion a la base
+ QSqlDatabase db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  DB_Tools::DisplayError("DB_Tools::flt_DbRead",nullptr,"");
+  in_out->sta = Bp::E_Sta::Er_Db;
+  return isOk;
+ }
+
+ QSqlQuery query(db_1);
+
+ ///
+ /// rappel : ret-> = (*ret).
+ ///
+
+ /// Verifier si info presente dans table
+ QString tbFiltre = in_out->tbName;
+
+ QString msg = "";
+ if((in_out->id>0) && (in_out->db_total==1)){
+  msg = "Select *  from "+
+        tbFiltre+
+        " where ("
+        "id="+QString::number(in_out->id)+")";
+ }
+ else {
+  msg = "Select *  from "+
+        tbFiltre+
+        " where ("
+        "zne="+QString::number(in_out->zne)+" and "+
+        "typ="+QString::number(in_out->typ)+" and "+
+        "lgn="+QString::number(in_out->lgn)+" and "+
+        "col="+QString::number(in_out->col)+" and "+
+        "val="+QString::number(in_out->val)+")";
+ }
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "flt_DbRead : "<<msg;
+#endif
+ isOk = query.exec(msg);
+ if(isOk){
+  in_out->sta = Bp::E_Sta::Ok_Query;
+
+	if((isOk = query.first())){
+	 in_out->sta = Bp::E_Sta::Ok_Result;
+
+	 /// comptage des reponses
+	 query.last();
+	 in_out->db_total = query.at() +1;
+	 query.first();
+	 in_out->id = query.value("id").toInt();
+
+	 int int_flt = query.value("flt").toInt();
+	 Bp::F_Flts tmp = static_cast<Bp::F_Flts>(int_flt);
+	 in_out->b_flt = tmp;
+	 in_out->pri = query.value("pri").toInt();
+	}
+	else {
+	 in_out->db_total = -1;
+	 in_out->sta = Bp::E_Sta::Er_Result;
+	}
+ }
+ else {
+  in_out->sta = Bp::E_Sta::Er_Query;
+  DB_Tools::DisplayError("DB_Tools::flt_DbRead",&query,msg);
+ }
+
+ return isOk;
+}
+
+void DB_Tools::genStop(QString fnName)
+{
+ QString text = "Code exception : "+fnName;
+ QMessageBox::question(nullptr,"Exception !!",text);
+}
+
+bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
+{
+ bool isOk = false;
+
+ // Etablir connexion a la base
+ QSqlDatabase db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  DB_Tools::DisplayError("DB_Tools::setdbFlt",nullptr,"");
+  in_out->sta = Bp::E_Sta::Er_Db;
+  return isOk;
+ }
+
+ QSqlQuery query(db_1);
+ QString tbFiltre = in_out->tbName;
+ QString msg = "";
+
+ /// Analyse de la lecture precedente/config utilisateur
+ if((in_out->id>0) && (in_out->db_total==1)){
+  msg = "update "+in_out->tbName+
+        " set pri="+QString::number(in_out->pri)+
+        ", flt="+QString::number(in_out->b_flt)+
+        " where ("
+        "id="+QString::number(in_out->id)+")";
+
+ }
+ else if(in_out->db_total<=0){
+  /// Faire message insert
+  msg ="insert into "+
+        tbFiltre+
+        " (id, zne, typ,lgn,col,val,pri,flt)"
+        " values (NULL,"
+        +QString::number(in_out->zne)+","
+        +QString::number(in_out->typ)+","
+        +QString::number(in_out->lgn)+","
+        +QString::number(in_out->col)+","
+        +QString::number(in_out->val)+","
+        +QString::number(in_out->pri)+","
+        +QString::number(in_out->b_flt)+")";
+  /// BUG ? : in_out pas de mise a jour de id
+ }
+ else if (in_out->db_total == 1) {
+  /// Faire un update
+  msg = "update "+in_out->tbName+
+        " set pri="+QString::number(in_out->pri)+
+        ", flt="+QString::number(in_out->b_flt)+
+        " where ("
+        "zne="+QString::number(in_out->zne)+" and "+
+        "typ="+QString::number(in_out->typ)+" and "+
+        "lgn="+QString::number(in_out->lgn)+" and "+
+        "col="+QString::number(in_out->col)+" and "+
+        "val="+QString::number(in_out->val)+")";
+ }
+ else {
+  /// faire une analyse ici
+  DB_Tools::genStop("DB_Tools::tbFltSet");
+  isOk = false;
+ }
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "msg: "<<msg;
+#endif
+ isOk = query.exec(msg);
+
+ if(!isOk){
+  DB_Tools::DisplayError("DB_Tools::tbFltSet",&query,msg);
+  QMessageBox::warning(nullptr,"DB_Tools","tbFltSet",QMessageBox::Ok);
+ }
+
+ return isOk;
+}
+
 void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
 {
- //un message d'information
- //QMessageBox::critical(NULL, fnName, "Erreur traitement !",QMessageBox::Yes);
-
+ QString db_list = QSqlDatabase::connectionNames().join(", ");
+ QString dbError = "";
  QString sqlError = "";
  QString sqlText = "";
  QString sqlGood = "";
 
- if(pCurrent !=nullptr)
- {
-  sqlGood = pCurrent->executedQuery();
-  sqlError = pCurrent->lastError().text();
-  sqlText = pCurrent->lastQuery();
- }
- else
- {
-  sqlError = "Not in query";
-  sqlText = "Can not say";
- }
+ /// Analyse des connection ouvertes
+ QStringList lst_cnx = QSqlDatabase::connectionNames();
+ int nb_db = lst_cnx.size();
 
- QString msg = QString("Fn:")+fnName + "\n"
-               +QString("Gr:")+sqlGood + "\n"
-               +QString("Rf:")+sqlText + "\n"
-               +QString("Er:")+sqlError + "\n"
-               +QString("Cw:")+sqlCode + "\n";
- QMessageBox::information(NULL, "Pgm", msg,QMessageBox::Yes);
+ QString err_id = "Cnx %1/%2 : %3\n";
+ for (int i= 0; i< nb_db;i++) {
+  QString cnx = lst_cnx.at(i).simplified();
+  QSqlDatabase db = QSqlDatabase::database(cnx);
 
-#if 0//#ifndef QT_NO_DEBUG
-  qDebug() << "Fonction:"<<fnName;
-  qDebug() << "Derniere bonne requete : "<<sqlGood;
-  qDebug() << "Requete fautive : "<<sqlText;
-  qDebug() << "Erreur :"<<sqlError;
-  qDebug() << "Code wanted:"<<sqlCode<<"\n--------------";
+	if(cnx.isEmpty()){
+	 cnx = "default";
+	}
+
+	QString cnx_id = err_id.arg(i+1).arg(nb_db).arg(cnx);
+	QString db_err = db.lastError().text();
+
+	db_err = db_err.simplified();
+	if(db_err.isEmpty()){
+	 db_err = "Aucune a priori";
+	}
+
+	if(pCurrent !=nullptr)
+	{
+	 sqlGood = pCurrent->executedQuery();
+	 sqlText = pCurrent->lastQuery();
+
+	 sqlError = pCurrent->lastError().text();
+	 sqlError = sqlError.simplified();
+	 if(sqlError.isEmpty()){
+		sqlError = "Aucune a priori";
+	 }
+	}
+	else
+	{
+	 sqlText = sqlCode.simplified();
+	 if(sqlText.isEmpty()){
+		sqlText = "Code usr absent";
+	 }
+
+	 sqlError = "QSqlQuery non renseignee";
+	}
+
+	QString msg = cnx_id
+								+QString("\ndb error :\n")+db_err + "\n"
+								+QString("\nSql considere bon :\n")+sqlGood + "\n"
+								+QString("\nSql en cours :\n")+sqlText + "\n"
+								+QString("\n\nFn usr : ")+fnName + "\n"
+								+QString("\nSql demande :\n")+sqlCode + "\n"
+								+QString("\nSql Error :\n")+sqlError + "\n";
+
+	QMessageBox::information(nullptr, "Pgm", msg,QMessageBox::Yes);
+#ifndef QT_NO_DEBUG
+	qDebug() <<msg;
 #endif
 
-#if SET_DBG_LIVE
- QString msg = QString("Fn:")+fnName + "\n"
-               +QString("Gr:")+sqlGood + "\n"
-               +QString("Rf:")+sqlText + "\n"
-               +QString("Er:")+sqlError + "\n"
-               +QString("Cw:")+sqlCode + "\n";
- QMessageBox::information(NULL, "Pgm", msg,QMessageBox::Yes);
-#endif
-
- QApplication::exit();
-
+ }
+ //QCoreApplication::exit(-1);
+ //QApplication::exit();
 }
 
 #if QT_LIB_DBG_ON

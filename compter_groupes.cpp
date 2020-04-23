@@ -39,9 +39,9 @@ BCountGroup::BCountGroup(const stGameConf *pGame,QStringList** lstCri):BCount(pG
  QString tbl_tirages = pGame->db_ref->fdj;
 
  // Etablir connexion a la base
- db_1 = QSqlDatabase::database(cnx);
- if(db_1.isValid()==false){
-  QString str_error = db_1.lastError().text();
+ db_grp = QSqlDatabase::database(cnx);
+ if(db_grp.isValid()==false){
+  QString str_error = db_grp.lastError().text();
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
  }
@@ -49,7 +49,7 @@ BCountGroup::BCountGroup(const stGameConf *pGame,QStringList** lstCri):BCount(pG
  slFlt = lstCri;
 }
 
-QTabWidget * BCountGroup::creationTables(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BCountGroup::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
@@ -58,14 +58,14 @@ QTabWidget * BCountGroup::creationTables(const stGameConf *pGame, const etCount 
 
  QWidget *(BCountGroup::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
   {
-   &BCountGroup::V2_fn_Count,
-   &BCountGroup::V2_fn_Count
+   &BCountGroup::startIhm,
+   &BCountGroup::startIhm
   };
 
  for(int i = 0; i< nb_zones; i++)
  {
   QString name = pGame->names[i].abv;
-  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::fn_mkLocal, i);
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::usr_MkTbl, i);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
   }
@@ -76,6 +76,9 @@ QTabWidget * BCountGroup::creationTables(const stGameConf *pGame, const etCount 
 QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
 {
  QWidget * wdg_tmp = new QWidget;
+
+#if 0
+
  QGridLayout *glay_tmp = new QGridLayout;
  QTableView *qtv_tmp = new QTableView;
  qtv_tmp->setObjectName(QString::number(zn));
@@ -97,7 +100,7 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
  if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
   /// Creation de la table avec les resultats
   QString msg = "";
-  QSqlQuery query(db_1);
+  QSqlQuery query(db_grp);
 
   bool isOk = db_MkTblItems(pGame, zn, dstTbl, &query, &msg);
 
@@ -113,7 +116,7 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
  QString sql_msg = "select * from "+dstTbl;
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
 
- sqm_tmp->setQuery(sql_msg, db_1);
+ sqm_tmp->setQuery(sql_msg, db_grp);
  qtv_tmp->setAlternatingRowColors(true);
  qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
@@ -177,11 +180,11 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
-
+#endif
  return wdg_tmp;
 }
 
-bool BCountGroup::fn_mkLocal(const stGameConf *pDef, const stMkLocal prm, const int zn)
+bool BCountGroup::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool isOk = true;
 
@@ -389,8 +392,9 @@ QGridLayout *BCountGroup::Compter(QString * pName, int zn)
 
 void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 {
+#if 0
  bool isOk = true;
- QSqlQuery query(db_1);//query(dbToUse);
+ QSqlQuery query(db_grp);//query(dbToUse);
 
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
@@ -452,27 +456,30 @@ void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, in
 	 if(isOk){
 		if(query.first()){
 		 stTbFiltres a;
+		 a.sta = Bp::Status::notSet;
+		 a.db_total = -1;
 		 a.tbName = "Filtres";
+		 a.b_flt = Bp::Filtering::isWanted|Bp::Filtering::isChoosed;
 		 a.zne = zn;
 		 a.typ = eType;
 		 a.lgn = query.value(0).toInt();
 		 a.col = loop+1;
 		 a.pri = -1;
-		 a.flt = BFlags::Filtre::isFiltred;
 		 do{
 			a.val = query.value(1).toInt();
-			isOk = setdbFlt(a,db_1);
+			isOk = DB_Tools::tbFltSet(&a,db_grp.connectionName());
 		 }while(query.next() && isOk);
 		}
 	 }
 	} /// fin for loop
  }
+#endif
 }
 
-void BCountGroup::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)
+void BCountGroup::usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)
 {
  bool isOk = true;
- QSqlQuery query(db_1);//query(dbToUse);
+ QSqlQuery query(db_grp);//query(dbToUse);
 
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
@@ -499,7 +506,17 @@ void BCountGroup::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *vi
 
  QString msg = "";
  QString key = "";
-
+ /// ----------
+ stTbFiltres a;
+ a.tbName = "Filtres";
+ a.sta = Bp::E_Sta::noSta;
+ a.db_total = -1;
+ a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
+ a.zne = zn;
+ a.typ = eType;
+ a.pri = -1; /// ICI  Priorite NON
+ /// --
+ ///
  for (int lgn=1;(lgn<3) && isOk;lgn++)
  {
 
@@ -535,19 +552,13 @@ void BCountGroup::V2_marquerDerniers_tir(const stGameConf *pGame, QTableView *vi
 
 	 if(isOk){
 		if(query.first()){
-		 stTbFiltres a;
-		 a.tbName = "Filtres";
-		 a.zne = zn;
-		 a.typ = eType;
 		 a.lgn = query.value(0).toInt();
 		 a.col = loop+1;
-		 a.pri = -1;
-		 a.flt = lgn | BFlags::Filtre::isFiltred;
-		 Bp::Filterings tmp = static_cast<Bp::Filterings>(lgn);
-		 a.b_flt = tmp;//|Bp::Filtering::isWanted|Bp::Filtering::isFiltred; //a.b_flt|
+		 Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
+		 a.b_flt = a.b_flt|tmp;//|Bp::Filtering::isWanted|Bp::Filtering::isFiltred; //a.b_flt|
 		 do{
 			a.val = query.value(1).toInt();
-			isOk = setdbFlt(a,db_1);
+			isOk = DB_Tools::tbFltSet(&a,db_grp.connectionName());
 		 }while(query.next() && isOk);
 		}
 	 }
@@ -740,8 +751,8 @@ bool BCountGroup::SupprimerVueIntermediaires(void)
 {
  bool isOk = true;
  QString msg = "";
- QSqlQuery query(db_1);
- QSqlQuery qDel(db_1);
+ QSqlQuery query(db_grp);
+ QSqlQuery qDel(db_grp);
 
  msg = "SELECT name FROM sqlite_master "
        "WHERE type='view' AND name like'vt_%';";
@@ -819,7 +830,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
 {
  QTableView *qtv_tmp = new QTableView;
  (* pName) = myGame.names[zn].abv; /// BUG sur db_data
-
+#if 0
  QString TblCompact = "";
 
  if(myGame.eTirType == eTirFdj){
@@ -914,6 +925,7 @@ QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
+#endif
 
  return qtv_tmp;
 

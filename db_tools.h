@@ -8,6 +8,7 @@
 #include <QSqlQuery>
 
 #include "properties.h"
+#include "bstflt.h"
 
 typedef struct _stJoinArgs{
     QString arg1;
@@ -38,6 +39,11 @@ QString leftJoinFiltered(stJoinArgs ja,QString arg5);
 void DisplayError(QString fnName, QSqlQuery *pCurrent, QString sqlCode);
 bool checkHavingTableAndKey(QString tbl, QString key, QString cnx);
 bool isDbGotTbl(QString tbl, QString cnx, tbTypes etbtTypes=etbTable, bool silence = true);
+
+QString getLstDays(QString cnx_db_name, QString tbl_ref);
+bool tbFltGet(stTbFiltres *in_out, QString cnx);
+bool tbFltSet(stTbFiltres *in_out, QString cnx);
+void genStop(QString fnName);
 
 }
 
