@@ -136,7 +136,6 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 	 a.tbName = "Filtres";
 	 a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
 	 a.sta = Bp::E_Sta::noSta;
-	 a.db_total = -1;
 	 a.zne = zn;
 	 a.typ = eType;
 	 a.lgn = 10 * eType;
@@ -148,6 +147,7 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 		do{
 		 a.val = query.value(0).toInt();
 		 a.col = a.val;
+		 a.db_total = -1;
 
 		 a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
 		 /// RECUPERER FLT DE CETTE LIGNE

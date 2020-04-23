@@ -28,19 +28,8 @@ int BCountBrc::total = 0;
 
 BCountBrc::BCountBrc(const stGameConf *pGame):BCount(pGame,eCountBrc)
 {
- addr = nullptr;
-
- QString cnx=pGame->db_ref->cnx;
- QString tbl_tirages = pGame->db_ref->fdj;
-
- // Etablir connexion a la base
- db_brc = QSqlDatabase::database(cnx);
- if(db_brc.isValid()==false){
-  QString str_error = db_brc.lastError().text();
-  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-  return;
- }
- addr=this; /// memo de cet objet
+ /// appel du constructeur parent
+ db_brc = dbCount;
 }
 
 QTabWidget * BCountBrc::startCount(const stGameConf *pGame, const etCount eCalcul)
@@ -474,7 +463,6 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const et
  stTbFiltres a;
  a.tbName = "Filtres";
  a.sta = Bp::E_Sta::noSta;
- a.db_total = -1;
  a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
  a.zne = zn;
  a.typ = eType;
@@ -497,10 +485,16 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const et
 	if(isOk){
 	 if(query.first()){
 		Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
-		a.b_flt = a.b_flt | tmp;
 		do{
 		 a.val = query.value(0).toInt();
 		 a.col = a.val;
+		 a.db_total = -1;
+
+		 a.b_flt = Bp::F_Flt::noFlt;
+		 /// RECUPERER FLT DE CETTE LIGNE
+		 isOk = DB_Tools::tbFltGet(&a, db_brc.connectionName());
+		 a.b_flt = a.b_flt|tmp;
+
 		 isOk = DB_Tools::tbFltSet(&a,db_brc.connectionName());
 		}while(query.next() && isOk);
 	 }

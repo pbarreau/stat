@@ -42,7 +42,7 @@ class BCountComb:public BCount
 
  private:
  QWidget *fn_Count(const stGameConf *pGame, int zn);
- QString sql_MkCountItems(const stGameConf *pGame, int zn);
+ QString usr_doCount(const stGameConf *pGame, int zn);
  void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
  private:
  //virtual QString getType();

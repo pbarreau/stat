@@ -23,7 +23,7 @@ class BMenu : public QMenu
  void construireMenu(void);
  QMenu *mnu_Priority(stTbFiltres *ret, const etCount eSrc, const BTbView *view, const QModelIndex index);
  bool getdbFlt(stTbFiltres *ret, const etCount origine, const BTbView *view, const QModelIndex index);
- //bool setdbFlt(stTbFiltres in);
+ bool chkShowMenu(void);
 
  public slots:
  void slot_showMenu();

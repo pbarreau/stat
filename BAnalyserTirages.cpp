@@ -159,7 +159,7 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
   lstComptage.append(item_1);
  }
 
-/*
+ ///*
  BCountComb * item_2 = new BCountComb(pGame);
  if(item_2->mySefl() == nullptr){
   delete  item_2;
@@ -167,6 +167,7 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
  else {
   lstComptage.append(item_2);
  }
+
 
  BCountBrc * item_3 = new BCountBrc(pGame);
  if(item_3->mySefl() == nullptr){
@@ -183,7 +184,8 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
  else {
   lstComptage.append(item_4);
  }
-*/
+ ///*/
+
 
  int nb_item = lstComptage.size();
  if(nb_item){

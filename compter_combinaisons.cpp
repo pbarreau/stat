@@ -28,28 +28,9 @@ BCountComb::~BCountComb()
 
 BCountComb::BCountComb(const stGameConf *pGame):BCount(pGame,eCountCmb)
 {
- addr = nullptr;
-
- QString cnx=pGame->db_ref->cnx;
- QString tbl_tirages = pGame->db_ref->fdj;
-
- // Etablir connexion a la base
- db_cmb = QSqlDatabase::database(cnx);
- if(db_cmb.isValid()==false){
-  QString str_error = db_cmb.lastError().text();
-  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-  return;
- }
- addr=this; /// memo de cet objet
- //creationTables(pGame);
+ /// appel du constructeur parent
+ db_cmb = dbCount;
 }
-
-/*
-QString BCountComb::getType()
-{
- return onglet[type];
-}
-*/
 
 #if 1
 QTabWidget * BCountComb::startCount(const stGameConf *pGame, const etCount eCalcul)
@@ -202,7 +183,7 @@ bool BCountComb::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const in
 {
  bool isOk = true;
 
- QString sql_msg = sql_MkCountItems(pDef, zn);
+ QString sql_msg = usr_doCount(pDef, zn);
  QString msg = "create table if not exists "
                + prm.dstTbl + " as "
                + sql_msg;
@@ -215,7 +196,7 @@ bool BCountComb::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const in
  return isOk;
 }
 
-QString BCountComb::sql_MkCountItems(const stGameConf *pGame, int zn)
+QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
 {
  /* exemple requete :
   *
@@ -798,8 +779,7 @@ void BCountComb::usr_TagLast(const stGameConf *pGame, QTableView *view, const et
  stTbFiltres a;
  a.tbName = "Filtres";
  a.sta = Bp::E_Sta::noSta;
- a.db_total = -1;
- a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
+ a.b_flt = Bp::F_Flt::noFlt;
  a.zne = zn;
  a.typ = eType;
  a.lgn = 10 * eType;
@@ -821,10 +801,16 @@ void BCountComb::usr_TagLast(const stGameConf *pGame, QTableView *view, const et
 	if(isOk){
 	 if(query.first()){
 		Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
-		a.b_flt = a.b_flt | tmp;
 		do{
 		 a.val = query.value(0).toInt();
 		 a.col = a.val;
+		 a.db_total = -1;
+
+		 a.b_flt = Bp::F_Flt::noFlt;
+		 /// RECUPERER FLT DE CETTE LIGNE
+		 isOk = DB_Tools::tbFltGet(&a, db_cmb.connectionName());
+		 a.b_flt = a.b_flt|tmp;
+
 		 isOk = DB_Tools::tbFltSet(&a,db_cmb.connectionName());
 		}while(query.next() && isOk);
 	 }
@@ -832,8 +818,8 @@ void BCountComb::usr_TagLast(const stGameConf *pGame, QTableView *view, const et
  } /// fin for
 
  if(!isOk){
-  DB_Tools::DisplayError("BCountComb::V2_marquerDerniers_tir",&query,msg);
-  QMessageBox::warning(nullptr,"BCountComb","V2_marquerDerniers_tir",QMessageBox::Ok);
+  DB_Tools::DisplayError("BCountComb::usr_TagLast",&query,msg);
+  QMessageBox::warning(nullptr,"BCountComb","usr_TagLast",QMessageBox::Ok);
  }
 
 }

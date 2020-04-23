@@ -33,19 +33,8 @@ BCountGroup::~BCountGroup()
 
 BCountGroup::BCountGroup(const stGameConf *pGame,QStringList** lstCri):BCount(pGame,eCountGrp)
 {
- addr = nullptr;
-
- QString cnx=pGame->db_ref->cnx;
- QString tbl_tirages = pGame->db_ref->fdj;
-
- // Etablir connexion a la base
- db_grp = QSqlDatabase::database(cnx);
- if(db_grp.isValid()==false){
-  QString str_error = db_grp.lastError().text();
-  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-  return;
- }
- addr=this; /// memo de cet objet
+ /// appel du constructeur parent
+ db_grp = dbCount;
  slFlt = lstCri;
 }
 
@@ -510,7 +499,6 @@ void BCountGroup::usr_TagLast(const stGameConf *pGame, QTableView *view, const e
  stTbFiltres a;
  a.tbName = "Filtres";
  a.sta = Bp::E_Sta::noSta;
- a.db_total = -1;
  a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
  a.zne = zn;
  a.typ = eType;
@@ -552,12 +540,28 @@ void BCountGroup::usr_TagLast(const stGameConf *pGame, QTableView *view, const e
 
 	 if(isOk){
 		if(query.first()){
+		 /*
 		 a.lgn = query.value(0).toInt();
 		 a.col = loop+1;
 		 Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
 		 a.b_flt = a.b_flt|tmp;//|Bp::Filtering::isWanted|Bp::Filtering::isFiltred; //a.b_flt|
 		 do{
 			a.val = query.value(1).toInt();
+			isOk = DB_Tools::tbFltSet(&a,db_grp.connectionName());
+		 }while(query.next() && isOk);*/
+
+		 a.lgn = query.value(0).toInt();
+		 a.col = loop+1;
+		 Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
+		 do{
+			a.val = query.value(1).toInt();
+			a.db_total = -1;
+
+			a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
+			/// RECUPERER FLT DE CETTE CASE
+			isOk = DB_Tools::tbFltGet(&a, db_grp.connectionName());
+			a.b_flt = a.b_flt|tmp;
+
 			isOk = DB_Tools::tbFltSet(&a,db_grp.connectionName());
 		 }while(query.next() && isOk);
 		}

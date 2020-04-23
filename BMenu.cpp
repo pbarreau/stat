@@ -35,12 +35,15 @@ BMenu::BMenu(const QPoint pos, QString cnx,
  val.id=-1;
  val.pri = -1;
  val.b_flt = Bp::F_Flt::noFlt;
- val.typ = eCountToSet;
+ val.typ = eType;
  val.sta = Bp::E_Sta::noSta;
- val.zne = -1;
- val.lgn=-1;
- val.col =-1;
+ val.zne = view->objectName().toInt();
+ val.lgn=index.row();
+ val.col =index.column();
  val.val = -1;
+
+ /// Recuperer infos
+ //DB_Tools::tbFltGet(&val,cnx);
 
  construireMenu();
 }
@@ -64,6 +67,11 @@ void BMenu::construireMenu(void)
 
 void BMenu::slot_showMenu()
 {
+
+ if(chkShowMenu() == false){
+  return;
+ }
+
  QString msg = main_menu->title();
  QList<QAction *> lst = main_menu->actions();
 
@@ -78,6 +86,7 @@ void BMenu::slot_showMenu()
    DB_Tools::genStop("BMenu::slot_showMenu");
   }
  }
+
 
  /// On a trouve/cree une reponse
  if(isOk){
@@ -276,6 +285,7 @@ bool BMenu::getdbFlt(stTbFiltres *val, const etCount in_typ, const BTbView *view
  val->lgn = -1;
  val->col = -1;
  val->val = -1;
+ val->db_total = -1;
 
  if(val->typ >= eCountToSet && val->typ <= eCountEnd){
   switch (val->typ) {
@@ -306,4 +316,33 @@ bool BMenu::getdbFlt(stTbFiltres *val, const etCount in_typ, const BTbView *view
 
  return isOk;
 
+}
+
+bool BMenu::chkShowMenu(void)
+{
+ bool isOk = false;
+
+ switch (eCalcul) {
+  case eCountElm:
+  case eCountCmb:
+  case eCountBrc:
+   if(index.column()==1){
+    isOk = true;
+   }
+   else {
+    isOk = false;
+   }
+   break;
+  case eCountGrp:
+   if(index.column()>0){
+    isOk = true;
+   }
+   else {
+    isOk = false;
+   }
+   break;
+  default:
+   isOk = false;
+ }
+ return isOk;
 }
