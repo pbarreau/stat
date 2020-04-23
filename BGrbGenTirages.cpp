@@ -73,7 +73,7 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
 {
  QSqlQuery query(db_1);
  QString msg ="";
- bool isOk = true;
+ bool b_retVal = true;
 
  /// Verifier si table des recherches existe
  if(DB_Tools::isDbGotTbl("E_lst",cnx)==false){
@@ -88,12 +88,12 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
  /// Verif presence
  int nb_tables = 0;
  msg = "select count(*) as T from E_lst order by name asc";
- isOk= query.exec(msg);
+ b_retVal= query.exec(msg);
  if(query.first()){
   nb_tables = query.value("T").toInt();
 
 	msg = "select * from E_lst order by name asc";
-	isOk= query.exec(msg);
+	b_retVal= query.exec(msg);
  }
 
  /// Tracking des calculs
@@ -211,7 +211,7 @@ QGroupBox *BGrbGenTirages::LireBoule(stGameConf *pGame, QString tbl_cible)
 
  QSqlQuery query(db_1);
  QString msg ="";
- bool isOk = true;
+ bool b_retVal = true;
 
  QStringList sel_boules;
  QTableView *qtv_tmp = new QTableView;
@@ -221,7 +221,7 @@ QGroupBox *BGrbGenTirages::LireBoule(stGameConf *pGame, QString tbl_cible)
  QStandardItemModel *visu = new QStandardItemModel(nb_row,nb_col);
 
  msg = "select lst from e_lst where(name = '"+tbl_cible+"')";
- isOk= query.exec(msg);
+ b_retVal= query.exec(msg);
  if(query.first()){
   qtv_tmp->setModel(visu);
   sel_boules = query.value(0).toString().split(",");
@@ -394,7 +394,7 @@ bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
  /// https://denishulo.developpez.com/tutoriels/access/combinatoire/#LIV-A
  Q_UNUSED(pGame);
  QSqlQuery query(db_1);
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
 
  msg = "create table "
@@ -413,14 +413,14 @@ bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
          ")"
          "ORDER BY t1.id, t2.id, t2.id, t3.id, t4.id, t5.id";
 
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 
- if(!isOk){
+ if(!b_retVal){
   DB_Tools::DisplayError("CreerTable",&query,msg);
  }
  total++;
 
- return isOk;
+ return b_retVal;
 }
 
 void BGrbGenTirages::slot_ShowNewTotal(const QString& lstBoules)
@@ -464,7 +464,7 @@ void BGrbGenTirages::slot_Colorize(QLabel *l)
 void BGrbGenTirages::slot_UGL_SetFilters()
 {
  QSqlQuery query(db_1);
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  QString source = tbl_name;
  QString analys = source+"_z1";///"U_E1_ana_z1";
@@ -473,11 +473,11 @@ void BGrbGenTirages::slot_UGL_SetFilters()
  msg = "SELECT name FROM sqlite_master "
        "WHERE type='table' AND name='"+source+"';";
 
- if((isOk = query.exec(msg)))
+ if((b_retVal = query.exec(msg)))
  {
   /// A t'on une reponse
-  isOk = query.first();
-  if(!isOk)
+  b_retVal = query.first();
+  if(!b_retVal)
    return;
  }
 
@@ -542,12 +542,12 @@ void BGrbGenTirages::slot_UGL_SetFilters()
  sqm_resu->setQuery(msg,db_1);
  int nbLignes = sqm_resu->rowCount();
  QSqlQuery nvll(db_1);
- isOk=nvll.exec("select count(*) from ("+msg+")");
+ b_retVal=nvll.exec("select count(*) from ("+msg+")");
 #ifndef QT_NO_DEBUG
  qDebug() << "msg:"<<msg;
 #endif
 
- if(isOk){
+ if(b_retVal){
   nvll.first();
   if(nvll.isValid()){
    nbLignes = nvll.value(0).toInt();

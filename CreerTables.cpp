@@ -45,15 +45,15 @@ bool GererBase::CreerTableDistriCombi(void)
 /// Table des combinaisons avec repetitions
 bool GererBase::CreerTableGnp(QString tb, QString *data)
 {
-    bool isOk=true;
-    return isOk;
+    bool b_retVal=true;
+    return b_retVal;
 
     int nbZone = conf.nb_zone;
 #ifndef QT_NO_DEBUG
     int b = 0;
 #endif
 
-    for(int i = 0; (i< nbZone) && isOk; i++)
+    for(int i = 0; (i< nbZone) && b_retVal; i++)
     {
         int maxNz = floor(conf.limites[i].max/10)+1;
         int maxPz = conf.limites[i].win;
@@ -65,19 +65,19 @@ bool GererBase::CreerTableGnp(QString tb, QString *data)
         b = a->BP_count();
 #endif
     }
-    return(isOk);
+    return(b_retVal);
 }
 
 /// Table des combinaisons sans repetitions
 bool GererBase::CreerTableCnp(QString tb, QString *data)
 {
-    bool isOk=true;
-    return isOk;
+    bool b_retVal=true;
+    return b_retVal;
 
 #if 0
     int nbZone = conf.nb_zone;
 
-    for(int i = 0; (i< nbZone) && isOk; i++)
+    for(int i = 0; (i< nbZone) && b_retVal; i++)
     {
         int maxPz = conf.nbElmZone[i];
         int maxNz = conf.limites[i].max;
@@ -97,13 +97,13 @@ bool GererBase::CreerTableCnp(QString tb, QString *data)
     /// A verifier incidence double creation
     BCnp *a = new BCnp(12,2,db_0.connectionName());
     BCnp *b = new BCnp(10,1,db_0.connectionName());
-    return(isOk);
+    return(b_retVal);
 #endif
 }
 
 bool GererBase::RajouterTable(stTbToCreate des)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     QString msg = "";
     QSqlQuery query(db_0);
     QStringList input;
@@ -116,7 +116,7 @@ bool GererBase::RajouterTable(stTbToCreate des)
         QMessageBox::information(NULL, "Pgm", msg,QMessageBox::Yes);
 #endif
         // faire avec la fonction
-        isOk=(this->*(des.pFuncInit))(des.tbDef,des.tbData);
+        b_retVal=(this->*(des.pFuncInit))(des.tbDef,des.tbData);
     }
     else
     {
@@ -154,14 +154,14 @@ bool GererBase::RajouterTable(stTbToCreate des)
                 +");";
 
         /// traitement creation table
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
 
         /// traitement insertion donnees
-        if((des.tbData != NULL) && isOk)
+        if((des.tbData != NULL) && b_retVal)
         {
             /// verifier que le nombre de donnees
             /// a inserer correspond au nombre de champs
-            for(int i = 0; (i< (des.nb_data))&& isOk;i++)
+            for(int i = 0; (i< (des.nb_data))&& b_retVal;i++)
             {
                 QString data = des.tbData[i];
                 QStringList items;
@@ -177,12 +177,12 @@ bool GererBase::RajouterTable(stTbToCreate des)
                         +data
                         +");";
                 /// traitement
-                isOk = query.exec(msg);
+                b_retVal = query.exec(msg);
             }
         }
     }
 
-    if(!isOk)
+    if(!b_retVal)
     {
         QString ErrLoc = "RajouterTable:"+input.at(0);
         DB_Tools::DisplayError(ErrLoc,&query,msg);
@@ -190,7 +190,7 @@ bool GererBase::RajouterTable(stTbToCreate des)
 
     query.finish();
 
-    return isOk;
+    return b_retVal;
 }
 
 bool GererBase::CreationTablesDeLaBDD_v2()
@@ -541,7 +541,7 @@ bool GererBase::f3(QString tb, QString *data)
 {
     Q_UNUSED(data)
 
-    bool isOk = true;
+    bool b_retVal = true;
     QSqlQuery query(db_0);
 
     stTiragesDef ref = typeTirages->conf;
@@ -555,21 +555,21 @@ bool GererBase::f3(QString tb, QString *data)
     destination = "B_"+tb;
     //source = tblTirages;
 
-    for (int zn=0;(zn < nbZone) && isOk;zn++ )
+    for (int zn=0;(zn < nbZone) && b_retVal;zn++ )
     {
         myslFlt[zn] = noClass_CreateFilterForData(zn,&ref);
-        //isOk = AnalyserEnsembleTirage(source,onGame, zn);
-        if(isOk)
-            ;//isOk = FaireTableauSynthese(destination,onGame,zn);
+        //b_retVal = AnalyserEnsembleTirage(source,onGame, zn);
+        if(b_retVal)
+            ;//b_retVal = FaireTableauSynthese(destination,onGame,zn);
     }
 
-    if(!isOk)
+    if(!b_retVal)
     {
         QString ErrLoc = "f5:";
         DB_Tools::DisplayError(ErrLoc,NULL,"");
     }
 
-    return isOk;
+    return b_retVal;
 
 }
 */
@@ -577,7 +577,7 @@ bool GererBase::f3(QString tb, QString *data)
 
 bool GererBase::f3(QString tb, QString *data)
 {
-    bool isOk = true;
+    bool b_retVal = true;
 
     QSqlQuery query(db_0);
     QString requete = "";
@@ -588,10 +588,10 @@ bool GererBase::f3(QString tb, QString *data)
 
     requete = typeTirages->s_LibColAnalyse(&ref);
     requete.replace(",", " int,");
-    for (int zn=0;zn < nbZone && isOk;zn++ )
+    for (int zn=0;zn < nbZone && b_retVal;zn++ )
     {
         QString tb_ana_zn = "Ref_ana_z"+QString::number(zn+1);
-        if((requete.length() != 0) && isOk)
+        if((requete.length() != 0) && b_retVal)
         {
             QString msg = "create table "+tb_ana_zn+" (id INTEGER PRIMARY KEY,"+
                     requete + " int, fk_idCombi_z"+QString::number(zn+1)+" int);";
@@ -599,12 +599,12 @@ bool GererBase::f3(QString tb, QString *data)
         qDebug() << msg;
 #endif
 
-            isOk = query.exec(msg);
+            b_retVal = query.exec(msg);
         }
     }
 
 
-    return isOk;
+    return b_retVal;
 }
 
 
@@ -612,29 +612,29 @@ bool GererBase::f3(QString tb, QString *data)
 //#if 0
 bool GererBase::f4(QString tb, QString *data)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     int nbZone = conf.nb_zone;
 
-    for (int zn=0;(zn < nbZone-1) && isOk;zn++ )
+    for (int zn=0;(zn < nbZone-1) && b_retVal;zn++ )
     {
-        isOk = TraitementCodeVueCombi(zn);
+        b_retVal = TraitementCodeVueCombi(zn);
 
-        if(isOk)
-            isOk = TraitementCodeTblCombi(zn);
+        if(b_retVal)
+            b_retVal = TraitementCodeTblCombi(zn);
     }
 
-    if(!isOk)
+    if(!b_retVal)
     {
         QString ErrLoc = "f4:";
         DB_Tools::DisplayError(ErrLoc,NULL,"");
     }
 
-    return isOk;
+    return b_retVal;
 }
 
 bool GererBase::TraitementCodeVueCombi(int zn)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     QSqlQuery query(db_0);
     QString msg = "";
     QString ref_1 = "";
@@ -649,7 +649,7 @@ bool GererBase::TraitementCodeVueCombi(int zn)
 
     /// Traitement de la vue
     int nbLgnCode = sizeof(viewCode)/sizeof(QString);
-    for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+    for(int lgnCode=0;(lgnCode<nbLgnCode) && b_retVal;lgnCode++){
         msg = "";
         switch(argViewCount[lgnCode]){
         case 1:
@@ -667,10 +667,10 @@ bool GererBase::TraitementCodeVueCombi(int zn)
         qDebug() << msg;
 #endif
 
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
     }
 
-    if(!isOk)
+    if(!b_retVal)
     {
         QString ErrLoc = "TraitementCodeVueCombi:";
         DB_Tools::DisplayError(ErrLoc,&query,msg);
@@ -678,12 +678,12 @@ bool GererBase::TraitementCodeVueCombi(int zn)
 
     query.finish();
 
-    return isOk;
+    return b_retVal;
 }
 
 bool GererBase::TraitementCodeTblCombi(int zn)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     QSqlQuery query(db_0);
     QString msg = "";
 
@@ -715,7 +715,7 @@ bool GererBase::TraitementCodeTblCombi(int zn)
     }
 
     nbLgnCode = sizeof(tblCode)/sizeof(QString);
-    for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+    for(int lgnCode=0;(lgnCode<nbLgnCode) && b_retVal;lgnCode++){
         msg="";
         switch(argTblCount[lgnCode]){
         case 1:
@@ -769,10 +769,10 @@ bool GererBase::TraitementCodeTblCombi(int zn)
         qDebug() << msg;
 #endif
 
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
     }
 
-    if(!isOk)
+    if(!b_retVal)
     {
         QString ErrLoc = "TraitementCodeVueCombi:";
         DB_Tools::DisplayError(ErrLoc,&query,msg);
@@ -780,7 +780,7 @@ bool GererBase::TraitementCodeTblCombi(int zn)
 
     query.finish();
 
-    return isOk;
+    return b_retVal;
 }
 
 //#endif

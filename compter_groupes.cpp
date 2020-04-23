@@ -91,9 +91,9 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
   QString msg = "";
   QSqlQuery query(db_grp);
 
-  bool isOk = db_MkTblItems(pGame, zn, dstTbl, &query, &msg);
+  bool b_retVal = db_MkTblItems(pGame, zn, dstTbl, &query, &msg);
 
-	if(isOk == false){
+	if(b_retVal == false){
 	 DB_Tools::DisplayError("BCountGroup::fn_Count", &query, msg);
 	 delete wdg_tmp;
 	 delete glay_tmp;
@@ -175,11 +175,11 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
 
 bool BCountGroup::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
- bool isOk = true;
+ bool b_retVal = true;
 
- isOk = db_MkTblItems(pDef, zn, prm.dstTbl, prm.query, prm.sql);
+ b_retVal = db_MkTblItems(pDef, zn, prm.dstTbl, prm.query, prm.sql);
 
- return isOk;
+ return b_retVal;
 }
 
 void BCountGroup::verticalResizeTableViewToContents(QTableView *tableView)
@@ -241,7 +241,7 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
   */
 
 
- bool isOk = true;
+ bool b_retVal = true;
 
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
@@ -269,14 +269,14 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
   qDebug() << *msg;
 #endif
 
-	isOk = query->exec(*msg);
+	b_retVal = query->exec(*msg);
 	QStringList *slst=&slFlt[zn][0];
 
 	int nbCols = slst[1].size();
 	curName = "vt_1";
 	QString stGenre = "view";
 	int cnt_spe = 0;
-	for(int loop = 0; (loop < nbCols)&& isOk; loop ++){
+	for(int loop = 0; (loop < nbCols)&& b_retVal; loop ++){
 	 if(slst[2].at(loop).compare("special") == 0){
 		prvName="vt_"+QString::number(loop-cnt_spe);
 		curName=prvName;
@@ -297,28 +297,28 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
 #ifndef QT_NO_DEBUG
 	 qDebug() << *msg;
 #endif
-	 isOk = query->exec(*msg);
+	 b_retVal = query->exec(*msg);
 	 if(loop<nbCols-1)
 		curName ="vt_"+QString::number(loop+2-cnt_spe);
 	}
 	/// Rajouter a la fin une colonne pour fitrage
-	if(isOk){
+	if(b_retVal){
 	 *msg = "create table if not exists "+dstTbl
 					+" as select tb1.* from ("+curName+") as tb1";
 #ifndef QT_NO_DEBUG
 	 qDebug() << *msg;
 #endif
 
-	 isOk = query->exec(*msg);
+	 b_retVal = query->exec(*msg);
 
 	 /// Supprimer vues intermediaire
-	 if(isOk){
-		isOk = SupprimerVueIntermediaires();
+	 if(b_retVal){
+		b_retVal = SupprimerVueIntermediaires();
 	 }
 	}
  }
 
- return isOk;
+ return b_retVal;
 }
 
 BCountGroup::BCountGroup(const stGameConf &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb)
@@ -382,7 +382,7 @@ QGridLayout *BCountGroup::Compter(QString * pName, int zn)
 void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 {
 #if 0
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_grp);//query(dbToUse);
 
  QString tbl_tirages = pGame->db_ref->fdj;
@@ -409,10 +409,10 @@ void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, in
  QString msg = "";
  QString key = "";
 
- for (int lgn=1;(lgn<3) && isOk;lgn++)
+ for (int lgn=1;(lgn<3) && b_retVal;lgn++)
  {
 
-	for(int loop = 0; (loop < nbCols)&& isOk; loop ++)
+	for(int loop = 0; (loop < nbCols)&& b_retVal; loop ++)
 	{
 
 	 if(slst[2].at(loop).compare("special") == 0){
@@ -440,9 +440,9 @@ void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, in
 #ifndef QT_NO_DEBUG
 	 qDebug() << "msg: "<<msg;
 #endif
-	 isOk = query.exec(msg);
+	 b_retVal = query.exec(msg);
 
-	 if(isOk){
+	 if(b_retVal){
 		if(query.first()){
 		 stTbFiltres a;
 		 a.sta = Bp::Status::notSet;
@@ -456,8 +456,8 @@ void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, in
 		 a.pri = -1;
 		 do{
 			a.val = query.value(1).toInt();
-			isOk = DB_Tools::tbFltSet(&a,db_grp.connectionName());
-		 }while(query.next() && isOk);
+			b_retVal = DB_Tools::tbFltSet(&a,db_grp.connectionName());
+		 }while(query.next() && b_retVal);
 		}
 	 }
 	} /// fin for loop
@@ -467,7 +467,15 @@ void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, in
 
 void BCountGroup::usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)
 {
- bool isOk = true;
+
+ /// Utiliser anciennes tables
+ if(pGame->db_ref->ihm->use_odb==true){
+  if(pGame->db_ref->ihm->fdj_new==false){
+   return;
+  }
+ }
+
+ bool b_retVal = true;
  QSqlQuery query(db_grp);//query(dbToUse);
 
  QString tbl_tirages = pGame->db_ref->fdj;
@@ -505,10 +513,10 @@ void BCountGroup::usr_TagLast(const stGameConf *pGame, QTableView *view, const e
  a.pri = -1; /// ICI  Priorite NON
  /// --
  ///
- for (int lgn=1;(lgn<3) && isOk;lgn++)
+ for (int lgn=1;(lgn<3) && b_retVal;lgn++)
  {
 
-	for(int loop = 0; (loop < nbCols)&& isOk; loop ++)
+	for(int loop = 0; (loop < nbCols)&& b_retVal; loop ++)
 	{
 
 	 if(slst[2].at(loop).compare("special") == 0){
@@ -536,9 +544,9 @@ void BCountGroup::usr_TagLast(const stGameConf *pGame, QTableView *view, const e
 #ifndef QT_NO_DEBUG
 	 qDebug() << "msg: "<<msg;
 #endif
-	 isOk = query.exec(msg);
+	 b_retVal = query.exec(msg);
 
-	 if(isOk){
+	 if(b_retVal){
 		if(query.first()){
 		 /*
 		 a.lgn = query.value(0).toInt();
@@ -547,8 +555,8 @@ void BCountGroup::usr_TagLast(const stGameConf *pGame, QTableView *view, const e
 		 a.b_flt = a.b_flt|tmp;//|Bp::Filtering::isWanted|Bp::Filtering::isFiltred; //a.b_flt|
 		 do{
 			a.val = query.value(1).toInt();
-			isOk = DB_Tools::tbFltSet(&a,db_grp.connectionName());
-		 }while(query.next() && isOk);*/
+			b_retVal = DB_Tools::tbFltSet(&a,db_grp.connectionName());
+		 }while(query.next() && b_retVal);*/
 
 		 a.lgn = query.value(0).toInt();
 		 a.col = loop+1;
@@ -559,17 +567,17 @@ void BCountGroup::usr_TagLast(const stGameConf *pGame, QTableView *view, const e
 
 			a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
 			/// RECUPERER FLT DE CETTE CASE
-			isOk = DB_Tools::tbFltGet(&a, db_grp.connectionName());
+			b_retVal = DB_Tools::tbFltGet(&a, db_grp.connectionName());
 			a.b_flt = a.b_flt|tmp;
 
-			isOk = DB_Tools::tbFltSet(&a,db_grp.connectionName());
-		 }while(query.next() && isOk);
+			b_retVal = DB_Tools::tbFltSet(&a,db_grp.connectionName());
+		 }while(query.next() && b_retVal);
 		}
 	 }
 	} /// fin for loop
  }
 
- if(!isOk){
+ if(!b_retVal){
   DB_Tools::DisplayError("BCountGroup::V2_marquerDerniers_tir",&query,msg);
   QMessageBox::warning(nullptr,"BCountGroup","V2_marquerDerniers_tir",QMessageBox::Ok);
  }
@@ -677,7 +685,7 @@ bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable
  /// quand on arrive a nombre de criteres total -1 la vue destination
  /// sera OutputTable.
 
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  QSqlQuery query(dbCount);
  QString stDefBoules = C_TBL_2;
@@ -721,7 +729,7 @@ bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable
          +QString::number(zn+1)+" not null and (c1."
          +slst[0].at(loop)+"))) as tbRight on ("
          +st_OnDef+") group by tbLeft.id";
-   isOk = query.exec(msg);
+   b_retVal = query.exec(msg);
 #ifndef QT_NO_DEBUG
    qDebug() << "msg:"<<msg;
 #endif
@@ -735,34 +743,34 @@ bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable
 	 {
 		curTarget = "table vrz"+QString::number(zn+1)+"_"+OutputTable;
 	 }
-	}while(loop < nbTot && isOk);
+	}while(loop < nbTot && b_retVal);
 
 
 	/// supression tables intermediaires
-	if(isOk)
-	 isOk = SupprimerVueIntermediaires();
+	if(b_retVal)
+	 b_retVal = SupprimerVueIntermediaires();
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "BCountGroup::AnalyserEnsembleTirage:";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
- return isOk;
+ return b_retVal;
 }
 
 bool BCountGroup::SupprimerVueIntermediaires(void)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  QSqlQuery query(db_grp);
  QSqlQuery qDel(db_grp);
 
  msg = "SELECT name FROM sqlite_master "
        "WHERE type='view' AND name like'vt_%';";
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 
- if(isOk)
+ if(b_retVal)
  {
   query.first();
   if(query.isValid())
@@ -772,18 +780,18 @@ bool BCountGroup::SupprimerVueIntermediaires(void)
    {
     QString viewName = query.value("name").toString();
     msg = "drop view if exists "+viewName;
-    isOk = qDel.exec(msg);
-   }while(query.next()&& isOk);
+    b_retVal = qDel.exec(msg);
+   }while(query.next()&& b_retVal);
   }
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "SupprimerVueIntermediaires:";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 QTableView *BCountGroup::CompterLigne(QString * pName, int zn)
@@ -940,7 +948,7 @@ void BCountGroup::slot_wdaFilter(bool isChecked)
 {
     QAction *chkFrom = qobject_cast<QAction *>(sender());
     QString tmp = chkFrom->objectName();
-    bool isOk = true;
+    bool b_retVal = true;
 
     int zn = ((tmp.split("z")).at(1)).toInt()-1;
     bool isPresent = tmp.split(":").at(0).toInt();
@@ -951,14 +959,14 @@ void BCountGroup::slot_wdaFilter(bool isChecked)
     int d_cell_id = (d_lgn*nbCol)+d_col;
 
     /// Mise a jour table pour menu contextuel
-    isOk = updateOrInsertGrpSelection(d_cell_id,isPresent,isChecked,zn);
+    b_retVal = updateOrInsertGrpSelection(d_cell_id,isPresent,isChecked,zn);
 
     /// Mise a jour tableau des syntheses
-    if(isOk)
-        isOk = updateGrpTable(d_lgn,d_col,isChecked,zn);
+    if(b_retVal)
+        b_retVal = updateGrpTable(d_lgn,d_col,isChecked,zn);
 
 
-    if(!isOk)
+    if(!b_retVal)
     {
         QString ErrLoc = "BCountGroup::slot_wdaFilter:";
         DB_Tools::DisplayError(ErrLoc,NULL,"");
@@ -969,7 +977,7 @@ void BCountGroup::slot_wdaFilter(bool isChecked)
 
 bool BCountGroup::updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool isChecked, int zn)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(dbCount);
  QString msg = "";
 
@@ -992,20 +1000,20 @@ bool BCountGroup::updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool 
         +");";
  }
 
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "BCountGroup::updateOrInsertGrpSelection:";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 bool BCountGroup::updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(dbCount);
  QString msg = "";
 
@@ -1030,8 +1038,8 @@ bool BCountGroup::updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn)
  msg = "select tb1.f from("+tbl_2+") as tb1 where(tb1.Nb="
        +QString::number(d_lgn)
        +")";
- isOk= query.exec(msg);
- if(isOk){
+ b_retVal= query.exec(msg);
+ if(b_retVal){
   query.first();
   int curValue = query.value(0).toInt();
 
@@ -1050,22 +1058,22 @@ bool BCountGroup::updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn)
 				+QString::number(d_lgn)
 				+");";
 
-  isOk= query.exec(msg);
+  b_retVal= query.exec(msg);
  }
 
- if(isOk){
+ if(b_retVal){
   /// Relancer les requetes pour voir les modifs
   msg = sqmZones[zn].query().executedQuery();
   sqmZones[zn].setQuery(msg,dbCount);
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "BCountGroup::updateGrpTable:";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 #if 0

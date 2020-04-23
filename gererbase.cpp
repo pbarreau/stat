@@ -95,7 +95,7 @@ GererBase::~GererBase(void)
 
 bool GererBase::OPtimiseAccesBase(void)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     QSqlQuery query(db_0);
 
     QString stRequete[]={
@@ -108,11 +108,11 @@ bool GererBase::OPtimiseAccesBase(void)
     };
     int items = sizeof(stRequete)/sizeof(QString);
 
-    for(int i=0; (i<items)&& isOk ;i++){
-        isOk = query.exec(stRequete[i]);
+    for(int i=0; (i<items)&& b_retVal ;i++){
+        b_retVal = query.exec(stRequete[i]);
     }
 
-    return isOk;
+    return b_retVal;
 }
 
 
@@ -135,10 +135,10 @@ void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
     static QString colNames = "";
     QSqlQuery query;
     QString msg = "";
-    static bool isOk = true;
+    static bool b_retVal = true;
 
     /// Creer la table
-    if( (d.val_pos == 0) && (isOk == true))
+    if( (d.val_pos == 0) && (b_retVal == true))
     {
         i = 0;
         msg = "create table if not exists Cnp_"+QString::number(d.val_n)
@@ -153,9 +153,9 @@ void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
         msg = msg+colNames+";";
 
         /// debut de transaction
-        isOk = QSqlDatabase::database().transaction();
+        b_retVal = QSqlDatabase::database().transaction();
 
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
         colNames.remove("int");
 
 #ifndef QT_NO_DEBUG
@@ -171,16 +171,16 @@ void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
             + "_" + QString::number(d.val_p)
             +"(id,"+colNames
             +"values(NULL,"+p+");";
-    isOk = query.exec(msg);
+    b_retVal = query.exec(msg);
 
 
     /// derniere ligne effectuer la transaction globale
-    if((d.val_pos == (d.val_cnp-1)) && (isOk == true))
+    if((d.val_pos == (d.val_cnp-1)) && (b_retVal == true))
     {
-        isOk = QSqlDatabase::database().commit();
+        b_retVal = QSqlDatabase::database().commit();
     }
 
-    if(isOk == false)
+    if(b_retVal == false)
     {
 #ifndef QT_NO_DEBUG
         qDebug()<< "SQL ERROR:" << query.executedQuery()  << "\n";
@@ -510,7 +510,7 @@ QString GererBase::mk_IdCnx(etFdj type, int v_id)
 
 bool GererBase::ouvrirBase(bool action,etFdj type)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     const QString gameLabel []={"NonDefini","Loto","Euro"};
 
 		if(action){
@@ -541,21 +541,21 @@ bool GererBase::ouvrirBase(bool action,etFdj type)
 
 
     // Open databasee
-    if((isOk = db_0.open())){
+    if((b_retVal = db_0.open())){
         QSqlQuery query(db_0);
         QString st_query = "select sqlite_version();";
-        if((isOk = query.exec(st_query))){
+        if((b_retVal = query.exec(st_query))){
             query.first();
             QString version =query.value(0).toString();
 
             if(version < "3.25"){
                 st_query = QString("Version sqlite :") + version +QString(" < 3.25\n");
                 QMessageBox::critical(NULL,"Stat",st_query,QMessageBox::Ok);
-                isOk = false;
+                b_retVal = false;
             }
             else{
                 /// Chargement librairie math
-                if(!(isOk=AuthoriseChargementExtension())){
+                if(!(b_retVal=AuthoriseChargementExtension())){
                     st_query = QString("Chargement sqMath echec !!\n");
                     QMessageBox::critical(NULL,"Stat",st_query,QMessageBox::Ok);
                 }
@@ -563,13 +563,13 @@ bool GererBase::ouvrirBase(bool action,etFdj type)
         }
     }
 
-    return isOk;
+    return b_retVal;
 }
 
 
 bool GererBase::AuthoriseChargementExtension(void)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     QSqlQuery query(db_0);
     QString msg = "";
 
@@ -602,7 +602,7 @@ bool GererBase::AuthoriseChargementExtension(void)
 
             /// Lancer la requete
             QString msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-sqMath.dll')";
-            isOk = query.exec(msg);
+            b_retVal = query.exec(msg);
 #ifndef QT_NO_DEBUG
             if (query.lastError() .isValid())
             {
@@ -610,7 +610,7 @@ bool GererBase::AuthoriseChargementExtension(void)
                     qDebug() << path;
 
                 qDebug() << "Error: cannot load extension (" << query.lastError().text()<<")";
-                isOk = false;
+                b_retVal = false;
             }
 #endif
 
@@ -619,9 +619,9 @@ bool GererBase::AuthoriseChargementExtension(void)
     }
     else
     {
-        isOk = false;
+        b_retVal = false;
     }
-    return isOk;
+    return b_retVal;
 }
 
 bool GererBase::SupprimerBase()

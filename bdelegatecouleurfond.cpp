@@ -296,11 +296,11 @@ BDelegateCouleurFond::BDelegateCouleurFond(st_ColorNeeds param, QTableView *pare
 
 bool BDelegateCouleurFond::MapColorRead(QString tbl_def)
 {
-  bool isOk = true;
+  bool b_retVal = true;
   QSqlQuery query(db_0);
   QString msg = "Select * from "+tbl_def;
 
-  if((isOk = query.exec(msg)))
+  if((b_retVal = query.exec(msg)))
   {
     query.first();
     if(query.isValid())
@@ -312,12 +312,12 @@ bool BDelegateCouleurFond::MapColorRead(QString tbl_def)
         QString color = query.value(1).toString();
         QColor a;
         a.setNamedColor(color);
-        if(!(isOk=map_FromColor.contains(a))){
+        if(!(b_retVal=map_FromColor.contains(a))){
           map_FromColor.insert(a,key-1);
         }
-      }while(query.next()&& (isOk==false));
+      }while(query.next()&& (b_retVal==false));
       nb_colors = map_FromColor.size();
-      if(isOk){
+      if(b_retVal){
 #ifndef QT_NO_DEBUG
         qDebug()<<"Erreur : presence couleur deja la pour clef "<<key;
 #endif
@@ -338,30 +338,30 @@ bool BDelegateCouleurFond::MapColorRead(QString tbl_def)
   ;
 #endif
 
-  return isOk;
+  return b_retVal;
 }
 
 bool BDelegateCouleurFond::isTablePresent(QString tb_name)
 {
-  bool isOk = true;
+  bool b_retVal = true;
   QSqlQuery query(db_0);
   QString msg = "SELECT name FROM sqlite_master "
                 "WHERE type='table' AND name='"+tb_name+"';";
 
-  if((isOk = query.exec(msg)))
+  if((b_retVal = query.exec(msg)))
   {
-    if((isOk=query.first())){
-      isOk = query.isValid();
+    if((b_retVal=query.first())){
+      b_retVal = query.isValid();
     }
   }
-  return isOk;
+  return b_retVal;
 }
 
 void BDelegateCouleurFond::MapColorApply(QTableView *tbv_cible)
 {
   Q_UNUSED(tbv_cible);
 
-  bool isOk = true;
+  bool b_retVal = true;
   QSqlQuery query(db_0);
 
   sqlqmDetails *sqm_tmp= qobject_cast<sqlqmDetails*>((this->origine));
@@ -391,7 +391,7 @@ void BDelegateCouleurFond::MapColorApply(QTableView *tbv_cible)
   // Pour la base
   int taille = map_FromColor.count();
 
-  for(int row=0; (row < nb_row) && isOk;row++){
+  for(int row=0; (row < nb_row) && b_retVal;row++){
     BOrdColor leFond = resu_color[row];
     int prio = map_FromColor.value(leFond,-1);
 #ifndef QT_NO_DEBUG
@@ -414,7 +414,7 @@ void BDelegateCouleurFond::MapColorApply(QTableView *tbv_cible)
                         +QString::number(prio)
                         +QString("' where id = '")
                         +QString::number(row+1)+ "'";
-    isOk = query.exec(st_update);
+    b_retVal = query.exec(st_update);
   }
 
   if(query.lastError().isValid()){
@@ -522,7 +522,7 @@ void BDelegateCouleurFond::MapColorCreate(void)
 
 bool BDelegateCouleurFond::MapColorWrite(QString tbl_def)
 {
-  bool isOk = true;
+  bool b_retVal = true;
   QSqlQuery query(db_0);
 
   QString msg []= {
@@ -533,24 +533,24 @@ bool BDelegateCouleurFond::MapColorWrite(QString tbl_def)
      +"(id integer primary key, color text)"}
   };
 
-  if((isOk = query.exec(msg[0])))
+  if((b_retVal = query.exec(msg[0])))
   {
     query.first();
     if(query.isValid())
     {
       /// La table existe
-      isOk = true;
+      b_retVal = true;
     }
     else{
       /// il faut la creer et la remplir
-      if((isOk = query.exec(msg[1]))){
-        for(int i =0; (i < nb_colors) && isOk ;i++){
+      if((b_retVal = query.exec(msg[1]))){
+        for(int i =0; (i < nb_colors) && b_retVal ;i++){
           QString str_insert = QString(" insert into ")
                                + tbl_def
                                + QString(" values(NULL,'")
                                + map_FromColor.key(i).name(QColor::HexRgb)
                                +QString("')");
-          isOk = query.exec(str_insert);
+          b_retVal = query.exec(str_insert);
         }
       }
     }
@@ -560,7 +560,7 @@ bool BDelegateCouleurFond::MapColorWrite(QString tbl_def)
     DB_Tools::DisplayError("BDelegateCouleurFond::",&query," na ");
   }
 
-  return isOk;
+  return b_retVal;
 }
 
 QColor BDelegateCouleurFond::getColorForValue(const QModelIndex &index) const

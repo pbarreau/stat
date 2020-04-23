@@ -55,11 +55,11 @@ void BVisuResume::paint(QPainter *painter, const QStyleOptionViewItem &option,
 
 bool BVisuResume::recupereMapColor(QString tbl_def)
 {
-  bool isOk = true;
+  bool b_retVal = true;
   QSqlQuery query(db_0);
   QString msg = "Select * from "+tbl_def;
 
-  if((isOk = query.exec(msg)))
+  if((b_retVal = query.exec(msg)))
   {
     query.first();
     if(query.isValid())
@@ -71,12 +71,12 @@ bool BVisuResume::recupereMapColor(QString tbl_def)
         QString color = query.value(1).toString();
         QColor a;
         a.setNamedColor(color);
-        if(!(isOk=map_colors.contains(a))){
+        if(!(b_retVal=map_colors.contains(a))){
           map_colors.insert(a,key-1);
         }
-      }while(query.next()&& (isOk==false));
+      }while(query.next()&& (b_retVal==false));
       nb_colors = map_colors.size();
-      if(isOk){
+      if(b_retVal){
 #ifndef QT_NO_DEBUG
         qDebug()<<"Erreur : presence couleur deja la pour clef "<<key;
 #endif
@@ -97,7 +97,7 @@ bool BVisuResume::recupereMapColor(QString tbl_def)
   ;
 #endif
 
-  return isOk;
+  return b_retVal;
 }
 
 void BVisuResume::slot_AideToolTip(const QModelIndex & index)

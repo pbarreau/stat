@@ -64,9 +64,9 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
 	/// Creation de la table avec les resultats
 	/// appel de la fonction utilisateur de creation
-	bool isOk = (this->*usr_fn)(pGame, prm, zn);
+	bool b_retVal = (this->*usr_fn)(pGame, prm, zn);
 
-	if(isOk == false){
+	if(b_retVal == false){
 	 QString fnName = "BCount::V2_fn_Count : "+label[eCalcul];
 	 DB_Tools::DisplayError(fnName, &query, msg);
 	 delete wdg_tmp;
@@ -256,14 +256,14 @@ void BCount::RecupererConfiguration(void)
 #if 0
     QSqlQuery query(dbToUse) ;
     QString msg = "";
-    bool isOk = false;
+    bool b_retVal = false;
 
     msg = "select count(id) as tot from (" + QString::fromLocal8Bit(C_TBL_1) + ");";
-    isOk = query.exec(msg);
+    b_retVal = query.exec(msg);
 
-    if(isOk)
+    if(b_retVal)
     {
-        isOk = query.first();
+        b_retVal = query.first();
         if (query.isValid())
         {
             myGame.znCount = query.value(0).toInt();
@@ -282,14 +282,14 @@ void BCount::RecupererConfiguration(void)
             // remplir les infos
             msg = "select tb1.id, tb1.std, tb1.abv, tb1.len, tb1.min, tb1.max, tb1.win from " +
                     QString::fromLocal8Bit(C_TBL_1) + " as tb1;";
-            isOk = query.exec(msg);
+            b_retVal = query.exec(msg);
 
-            if(isOk)
+            if(b_retVal)
             {
-                isOk = query.first();
+                b_retVal = query.first();
                 if (query.isValid())
                 {
-                    for(int i = 0; (i< myGame.znCount) && isOk; i++)
+                    for(int i = 0; (i< myGame.znCount) && b_retVal; i++)
                     {
                         myGame.names[i].sel = "";
                         myGame.names[i].std = query.value(1).toString();
@@ -300,14 +300,14 @@ void BCount::RecupererConfiguration(void)
                         myGame.limites[i].win = query.value(6).toInt();
 
                         if(i<myGame.znCount-1)
-                            isOk = query.next();
+                            b_retVal = query.next();
                     }
                 }
             }
         }
     }
 
-    if(!isOk)
+    if(!b_retVal)
     {
         QString ErrLoc = "RecupererConfiguration:";
         DB_Tools::DisplayError(ErrLoc,&query,msg);
@@ -529,7 +529,7 @@ bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
 bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, const QModelIndex index)
 {
  stTbFiltres a;
- bool isOk = true;
+ bool b_retVal = true;
 
  QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
  int zn = view->objectName().toInt();
@@ -575,9 +575,9 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
 #ifndef QT_NO_DEBUG
  qDebug() << "mgs_2: "<<msg;
 #endif
- isOk = query_2.exec(msg);
+ b_retVal = query_2.exec(msg);
 
- if((isOk = query_2.first()))
+ if((b_retVal = query_2.first()))
  {
   //(*ret).tbName = tbFiltre;
   (*ret).flt = Bp::Filtering::isNotSet;//query_2.value("flt").value<BFlags::Filtre>();
@@ -590,13 +590,13 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
 	(*ret).typ = typ;
  }
 
- return isOk;
+ return b_retVal;
 }
 #endif
 
 bool BCount::flt_DbWrite(stTbFiltres *ret, QString cnx, bool update)
 {
- bool isOk = false;
+ bool b_retVal = false;
 
  // Etablir connexion a la base
  QSqlDatabase db_1 = QSqlDatabase::database(cnx);
@@ -604,7 +604,7 @@ bool BCount::flt_DbWrite(stTbFiltres *ret, QString cnx, bool update)
   QString str_error = db_1.lastError().text();
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   ret->sta = Bp::E_Sta::Er_Db;
-  return isOk;
+  return b_retVal;
  }
 
  QSqlQuery query(db_1);
@@ -650,15 +650,15 @@ bool BCount::flt_DbWrite(stTbFiltres *ret, QString cnx, bool update)
 #ifndef QT_NO_DEBUG
  qDebug() << "flt_DbWrite : "<<msg;
 #endif
- isOk = query.exec(msg);
- if(isOk){
+ b_retVal = query.exec(msg);
+ if(b_retVal){
   ret->sta = Bp::E_Sta::Ok_Query;
  }
  else {
   ret->sta = Bp::E_Sta::Er_Query;
  }
 
- return isOk;
+ return b_retVal;
 }
 
 
@@ -693,7 +693,7 @@ void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 	memset(&val,0,sizeof(stTbFiltres));
 	val.tbName = "Filtres";
 
-	bool isOk = getFiltre(&val, origine,view,index);
+	bool b_retVal = getFiltre(&val, origine,view,index);
 
   QMenu *MonMenu = new QMenu(this);
   QMenu *subMenu= nullptr;
@@ -727,7 +727,7 @@ void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 
 bool BCount::V2_showMyMenu(int col, etCount eSrc)
 {
- bool isOk = false ;
+ bool b_retVal = false ;
 
  if(eSrc >= eCountToSet && eSrc <= eCountEnd){
   switch (eSrc) {
@@ -736,13 +736,13 @@ bool BCount::V2_showMyMenu(int col, etCount eSrc)
    case eCountBrc:
     if(col == 1)
     {
-     isOk = true;
+     b_retVal = true;
     }
     break;
    case eCountGrp:
     if(col > 0)
     {
-     isOk = true;
+     b_retVal = true;
     }
     break;
    case eCountToSet:
@@ -750,12 +750,12 @@ bool BCount::V2_showMyMenu(int col, etCount eSrc)
     break;
   }
  }
- return isOk;
+ return b_retVal;
 }
 
 QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
 {
- bool isOk = false;
+ bool b_retVal = false;
  int itm = 0;
 
  QSqlQuery query(dbCount) ;
@@ -797,7 +797,7 @@ QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
  }
 
 
- isOk = DB_Tools::tbFltSet(&a,dbCount.connectionName());
+ b_retVal = DB_Tools::tbFltSet(&a,dbCount.connectionName());
 
 
  //if((typeFiltre.at(0)->currentIndex()==0) && (typeFiltre.at(1)->currentIndex()==0))
@@ -877,27 +877,27 @@ void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 
 bool BCount::showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos)
 {
- bool isOk = false;
+ bool b_retVal = false;
  int col = view->columnAt(pos.x());
  int v2 = view->model()->columnCount();
 
 
  if((typeFiltre.at(1)->currentIndex() < (typeFiltre.at(1)->count()-1)) && !col){
-  isOk = true;
+  b_retVal = true;
  }
 
  /// Cas table de syntheses des groupes
  if((typeFiltre.at(1)->currentIndex() == (typeFiltre.at(1)->count()-1))
      && (col >0 && col < v2)){
-  isOk = true;
+  b_retVal = true;
  }
 
- return isOk;
+ return b_retVal;
 }
 
 QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos)
 {
- bool isOk = false;
+ bool b_retVal = false;
  int itm = 0;
 
  QSqlQuery query(dbCount) ;
@@ -928,9 +928,9 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
        " and val="+QString::number(val)+
        +")";
 
- isOk =  query.exec(msg);
+ b_retVal =  query.exec(msg);
 
- if(!isOk)
+ if(!b_retVal)
  {
 #ifndef QT_NO_DEBUG
 	qDebug() << "select * from Filtres ->"<< query.lastError();
@@ -944,7 +944,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
 #endif
 
 	// A t on un resultat
-	isOk = query.first();
+	b_retVal = query.first();
 	if(query.isValid())
 	{
 	 itm = query.value("id").toInt();; /// On a touve la ligne dans la table
@@ -1020,7 +1020,7 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
 void BCount::slot_ChoosePriority(QAction *cmd)
 {
  QSqlQuery query(dbCount);
- bool isOk = false;
+ bool b_retVal = false;
  QString msg = "";
  QString msg_2 = cmd->text();;
 
@@ -1033,7 +1033,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
  }
 
  if(setPriorityToAll){
-  isOk = setUnifiedPriority(def[2],msg_2);
+  b_retVal = setUnifiedPriority(def[2],msg_2);
  }
  else{
   /// Creation ou mise a jour ?
@@ -1051,17 +1051,17 @@ void BCount::slot_ChoosePriority(QAction *cmd)
          ");";
   }
 
-  isOk = query.exec(msg);
+  b_retVal = query.exec(msg);
  }
 
- if(isOk){
+ if(b_retVal){
   /// compter les priorites
   msg = "select count(*) from Filtres where ("
         "zne="+def[1]+" and "+
         "typ="+def[2]+" and "+
         "pri=1)";
   int nbPrio = 0;
-  if((isOk = query.exec(msg))){
+  if((b_retVal = query.exec(msg))){
    query.first();
    nbPrio = query.value(0).toInt();
   }
@@ -1103,13 +1103,13 @@ void BCount::slot_ChoosePriority(QAction *cmd)
 bool BCount::setUnifiedPriority(QString szn, QString sprio){
  QSqlQuery query(dbCount);
  QSqlQuery query_2(dbCount);
- bool isOk = false;
+ bool b_retVal = false;
  bool isOk_2 = false;
  QString msg = "";
  int zn = szn.toInt();
 
  msg = "Select GROUP_CONCAT(val,',') as R from Filtres where (pri>0 and typ=0 and zne="+szn+")";
- if((isOk = query.exec(msg))) {
+ if((b_retVal = query.exec(msg))) {
   query.first();
   QString elem_1 ="0";
 
@@ -1117,7 +1117,7 @@ bool BCount::setUnifiedPriority(QString szn, QString sprio){
 	 elem_1 = query.value(0).toString();
 	 /// mettre la nouvelle priorite
 	 msg =  "update Filtres set pri="+sprio+" where(zne="+szn+" and typ=0 and val in ("+elem_1+") );";
-	 if((isOk = query.exec(msg))) {
+	 if((b_retVal = query.exec(msg))) {
 		/// Verifier si il faut inserer les autres boules
 		QStringList nbValTab = elem_1.split(',');
 		if(nbValTab.size()< myGame.limites[zn].max){
@@ -1133,7 +1133,7 @@ bool BCount::setUnifiedPriority(QString szn, QString sprio){
 	if(isOk_2==true){
 	 /// Recuperer les boules manquantes
 	 msg="Select z"+QString::number(zn+1)+" from B_elm where (z"+QString::number(zn+1)+" not in ("+elem_1+"))";
-	 if((isOk = query.exec(msg))) {
+	 if((b_retVal = query.exec(msg))) {
 		query.first();
 		if(query.isValid()){
 		 int boule = 0;
@@ -1141,13 +1141,13 @@ bool BCount::setUnifiedPriority(QString szn, QString sprio){
 			boule = query.value(0).toInt();
 			msg="Insert into Filtres (id,zne,typ,lgn,col,val,pri,flt) values(NULL,"+
 						szn+",0,"+QString::number(boule-1)+",0,"+QString::number(boule)+","+sprio+",-1)";
-			isOk=query_2.exec(msg);
-		 }while(isOk && query.next());
+			b_retVal=query_2.exec(msg);
+		 }while(b_retVal && query.next());
 		}
 	 }
 	}
  }
- return isOk;
+ return b_retVal;
 }
 
 
@@ -1252,14 +1252,14 @@ void BCount::slot_ChoosePriority(QAction *cmd)
 
  /// https://forum.qt.io/topic/1168/solved-the-best-way-to-programmatically-refresh-a-qsqlquerymodel-when-the-content-of-the-query-changes/11
 
- bool isOk = query.exec(msg);
- if(isOk){
-  isOk = query.exec(msg_2);
-  if(isOk){
+ bool b_retVal = query.exec(msg);
+ if(b_retVal){
+  b_retVal = query.exec(msg_2);
+  if(b_retVal){
    /// compter les priorites
    msg_2 = "select count(*) from " + tbl2 + " where (p=1)";
    int nbPrio = 0;
-   if((isOk = query.exec(msg_2))){
+   if((b_retVal = query.exec(msg_2))){
     query.first();
     nbPrio = query.value(0).toInt();
    }
@@ -1301,7 +1301,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
   }
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   trv = false;
 #ifndef QT_NO_DEBUG
@@ -1358,7 +1358,7 @@ void BCount::slot_V2_wdaFilter(bool val)
 {
  QAction *chkFrom = qobject_cast<QAction *>(sender());
  QSqlQuery query(dbCount);
- bool isOk = false;
+ bool b_retVal = false;
  QString msg = "";
 
  QString st_from = chkFrom->objectName();
@@ -1386,9 +1386,9 @@ void BCount::slot_V2_wdaFilter(bool val)
         " and val="+def[5]+
         +")";
 
-  isOk=query.exec(msg);
+  b_retVal=query.exec(msg);
 
-	if(isOk){
+	if(b_retVal){
 	 if(!query.first()){
 		/// c'est une nouvelle donnee de filtrage
 		def[0]="0";
@@ -1424,8 +1424,8 @@ void BCount::slot_V2_wdaFilter(bool val)
 				");";
  }
 
- isOk = query.exec(msg);
- if(isOk){
+ b_retVal = query.exec(msg);
+ if(b_retVal){
 
 	/// Recherche des onglets zone et type dans lesquels est le tableau
 	QObject *obj = chkFrom;
@@ -1455,7 +1455,7 @@ void BCount::slot_wdaFilter(bool val)
 {
  QAction *chkFrom = qobject_cast<QAction *>(sender());
  QSqlQuery query(dbCount);
- bool isOk = false;
+ bool b_retVal = false;
  QString msg = "";
 
  QString st_from = chkFrom->objectName();
@@ -1483,9 +1483,9 @@ void BCount::slot_wdaFilter(bool val)
         " and val="+def[5]+
         +")";
 
-  isOk=query.exec(msg);
+  b_retVal=query.exec(msg);
 
-	if(isOk){
+	if(b_retVal){
 	 if(!query.first()){
 		/// c'est une nouvelle donnee de filtrage
 		def[0]="0";
@@ -1521,8 +1521,8 @@ void BCount::slot_wdaFilter(bool val)
 				");";
  }
 
- isOk = query.exec(msg);
- if(isOk){
+ b_retVal = query.exec(msg);
+ if(b_retVal){
 
 	/// Recherche des onglets zone et type dans lesquels est le tableau
 	QObject *obj = chkFrom;
@@ -1553,7 +1553,7 @@ void BCount::slot_wdaFilter(bool val)
 void BCount::slot_wdaFilter(bool val)
 {
  QAction *chkFrom = qobject_cast<QAction *>(sender());
- bool isOk = true;
+ bool b_retVal = true;
 
  QString tmp = chkFrom->objectName();
  tmp = (tmp.split("z")).at(1);
@@ -1613,7 +1613,7 @@ void BCount::slot_wdaFilter(bool val)
 #ifndef QT_NO_DEBUG
  qDebug() <<msg;
 #endif
- if((isOk = query.exec(msg))){
+ if((b_retVal = query.exec(msg))){
   QString filtre = "";
   QString key2use= "";
 
@@ -1629,7 +1629,7 @@ void BCount::slot_wdaFilter(bool val)
   qDebug() <<msg;
 #endif
 
-  if((isOk = query.exec(msg)))
+  if((b_retVal = query.exec(msg)))
   {
    query.first();
    if(query.isValid()){
@@ -1650,14 +1650,14 @@ void BCount::slot_wdaFilter(bool val)
 #ifndef QT_NO_DEBUG
      qDebug() <<msg;
 #endif
-     isOk = update.exec(msg);
+     b_retVal = update.exec(msg);
      next = query.next();
-    }while(isOk && next);
+    }while(b_retVal && next);
    }
   }
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "BCount::slot_wdaFilter";
   DB_Tools::DisplayError(ErrLoc,&query,msg);

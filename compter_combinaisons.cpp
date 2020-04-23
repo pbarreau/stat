@@ -104,9 +104,9 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
                 + dstTbl + " as "
                 + sql_msg;
   QSqlQuery query(db_cmb);
-  bool isOk = query.exec(msg);
+  bool b_retVal = query.exec(msg);
 
-	if(isOk == false){
+	if(b_retVal == false){
 	 DB_Tools::DisplayError("BCountComb::fn_Count", &query, msg);
 	 delete wdg_tmp;
 	 delete glay_tmp;
@@ -181,19 +181,19 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
 
 bool BCountComb::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
- bool isOk = true;
+ bool b_retVal = true;
 
  QString sql_msg = usr_doCount(pDef, zn);
  QString msg = "create table if not exists "
                + prm.dstTbl + " as "
                + sql_msg;
 
- isOk = prm.query->exec(msg);
+ b_retVal = prm.query->exec(msg);
 
- if(!isOk){
+ if(!b_retVal){
   *prm.sql=msg;
  }
- return isOk;
+ return b_retVal;
 }
 
 QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
@@ -464,7 +464,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
 {
  QSqlQuery query(dbCount) ;
  QString msg = "";
- bool isOk = true;
+ bool b_retVal = true;
 
  /// verifier si table reponse presente
  QString viewName = "r_"
@@ -547,8 +547,8 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
        +msg
        +")";
 
- isOk = query.exec(msg);
- if(!isOk){
+ b_retVal = query.exec(msg);
+ if(!b_retVal){
   DB_Tools::DisplayError("RequetePourTrouverTotal_z1",&query,msg);
  }
 
@@ -704,7 +704,7 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
 void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 {
 #if 0
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_cmb);//query(dbToUse);
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
@@ -721,7 +721,7 @@ void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int
                  tbl_tirages+"_ana_z"+
                  QString::number(zn+1)+") as t1 where";
 
- for (int lgn=1;(lgn<3) && isOk;lgn++) {
+ for (int lgn=1;(lgn<3) && b_retVal;lgn++) {
   QString msg = msg_1+
                 " (t1.id="+QString::number(lgn)+
                 ")";
@@ -729,9 +729,9 @@ void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int
 #ifndef QT_NO_DEBUG
 	qDebug() << "msg: "<<msg;
 #endif
-	isOk = query.exec(msg);
+	b_retVal = query.exec(msg);
 
-	if(isOk){
+	if(b_retVal){
 	 if(query.first()){
 		stTbFiltres a;
 		a.tbName = "Filtres";
@@ -745,9 +745,9 @@ void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int
 		a.pri = -1;
 		do{
 		 a.val = query.value(0).toInt();
-		 isOk = DB_Tools::tbFltSet(&a,db_cmb.connectionName());
+		 b_retVal = DB_Tools::tbFltSet(&a,db_cmb.connectionName());
 		 a.col++;
-		}while(query.next() && isOk);
+		}while(query.next() && b_retVal);
 	 }
 	}
  } /// fin for
@@ -758,7 +758,14 @@ void BCountComb::usr_TagLast(const stGameConf *pGame, QTableView *view, const et
 {
  Q_UNUSED(view)
 
- bool isOk = true;
+ /// Utiliser anciennes tables
+ if(pGame->db_ref->ihm->use_odb==true){
+  if(pGame->db_ref->ihm->fdj_new==false){
+   return;
+  }
+ }
+
+ bool b_retVal = true;
  QSqlQuery query(db_cmb);//query(dbToUse);
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
@@ -788,7 +795,7 @@ void BCountComb::usr_TagLast(const stGameConf *pGame, QTableView *view, const et
  /// --
  ///
  QString msg  = "";
- for (int lgn=1;(lgn<3) && isOk;lgn++) {
+ for (int lgn=1;(lgn<3) && b_retVal;lgn++) {
   msg = msg_1+
         " (t1.id="+QString::number(lgn)+
         ")";
@@ -796,9 +803,9 @@ void BCountComb::usr_TagLast(const stGameConf *pGame, QTableView *view, const et
 #ifndef QT_NO_DEBUG
 	qDebug() << "msg: "<<msg;
 #endif
-	isOk = query.exec(msg);
+	b_retVal = query.exec(msg);
 
-	if(isOk){
+	if(b_retVal){
 	 if(query.first()){
 		Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
 		do{
@@ -808,16 +815,16 @@ void BCountComb::usr_TagLast(const stGameConf *pGame, QTableView *view, const et
 
 		 a.b_flt = Bp::F_Flt::noFlt;
 		 /// RECUPERER FLT DE CETTE LIGNE
-		 isOk = DB_Tools::tbFltGet(&a, db_cmb.connectionName());
+		 b_retVal = DB_Tools::tbFltGet(&a, db_cmb.connectionName());
 		 a.b_flt = a.b_flt|tmp;
 
-		 isOk = DB_Tools::tbFltSet(&a,db_cmb.connectionName());
-		}while(query.next() && isOk);
+		 b_retVal = DB_Tools::tbFltSet(&a,db_cmb.connectionName());
+		}while(query.next() && b_retVal);
 	 }
 	}
  } /// fin for
 
- if(!isOk){
+ if(!b_retVal){
   DB_Tools::DisplayError("BCountComb::usr_TagLast",&query,msg);
   QMessageBox::warning(nullptr,"BCountComb","usr_TagLast",QMessageBox::Ok);
  }
@@ -826,7 +833,7 @@ void BCountComb::usr_TagLast(const stGameConf *pGame, QTableView *view, const et
 
 void BCountComb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int zn)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(dbCount);
  QSqlQuery query_2(dbCount);
 
@@ -834,15 +841,15 @@ void BCountComb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int
  QString tb_ref = "B_ana_z"+QString::number(zn+1);
 
  /// Mettre info sur 2 derniers tirages
- for(int dec=0; (dec <2) && isOk ; dec++){
+ for(int dec=0; (dec <2) && b_retVal ; dec++){
   int val = 1<<dec;
   QString sdec = QString::number(val);
 
 	QString msg = "SELECT "+key+" from ("+tb_ref
 								+") as t2 where(id = "+sdec+")";
 
-	isOk = query.exec(msg);
-	if(isOk){
+	b_retVal = query.exec(msg);
+	if(b_retVal){
 	 query.first();
 	 int key_val = query.value(0).toInt();
 
@@ -851,8 +858,8 @@ void BCountComb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int
 									 "zne="+QString::number(zn)+" and "+
 									 "typ="+QString::number(eType)+
 									 " and val="+QString::number(key_val)+")";
-	 isOk = query_2.exec(mgs_2);
-	 if(isOk){
+	 b_retVal = query_2.exec(mgs_2);
+	 if(b_retVal){
 		query_2.first();
 		int nbLigne = query_2.value(0).toInt();
 
@@ -871,7 +878,7 @@ void BCountComb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int
 #ifndef QT_NO_DEBUG
 		qDebug() << "mgs_2: "<<mgs_2;
 #endif
-		isOk = query_2.exec(mgs_2);
+		b_retVal = query_2.exec(mgs_2);
 
 	 }
 
@@ -882,7 +889,7 @@ void BCountComb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int
 QString BCountComb::getFilteringData(int zn)
 {
  QSqlQuery query(dbCount);
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  QString useJonction = "or";
 
@@ -892,15 +899,15 @@ QString BCountComb::getFilteringData(int zn)
        +")as tb1 "
          "where((tb1.flt&0x"+QString::number(BFlags::isFiltred)+"=0x"+QString::number(BFlags::isFiltred)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=2)";
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 
- if(isOk){
+ if(b_retVal){
   msg="";
   /// requete a ete execute
   QString ref = "(idComb=%1)";
 
-	isOk = query.first();
-	if(isOk){
+	b_retVal = query.first();
+	if(b_retVal){
 	 /// requete a au moins une reponse
 	 do{
 		int value = query.value(0).toInt();

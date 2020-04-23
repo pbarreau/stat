@@ -68,7 +68,7 @@ void BFlags::v3_paint(QPainter *painter, const QStyleOptionViewItem &option,
  a.tbName = "Filtres";
  a.sta = Bp::E_Sta::noSta;
  a.db_total = -1;
- a.b_flt = flt.b_flt;
+ a.b_flt = Bp::F_Flt::noFlt;
  a.zne = flt.zne;
  a.typ = flt.typ;
  a.lgn = index.row();
@@ -198,26 +198,46 @@ void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem
 #if 1
 bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelIndex index) const
 {
- bool isOk = false;
- val->zne =flt.zne;
+ bool b_retVal = false;
+
+ int cur_col = index.column();
+ int cur_row = index.row();
+
  val->typ = in_typ;
- val->b_flt = flt.b_flt;
 
  if(val->typ >= eCountToSet && val->typ <= eCountEnd){
   switch (val->typ) {
    case eCountElm:
    case eCountCmb:
    case eCountBrc:
-    val->lgn = val->typ *10;
-    val->col = index.model()->index(index.row(),0).data().toInt();
-    val->val = val->col;
-    break;
-   case eCountGrp:
-    val->lgn = index.row();
-    val->col = index.column();
-    if(index.model()->index(val->lgn,val->col).data().canConvert(QMetaType::Int)){
-     val->val = index.model()->index(val->lgn,val->col).data().toInt();
+    if(index.column()==1){
+     val->lgn = val->typ *10;
+     val->col = cur_col;
+     val->val = index.model()->index(index.row(),0).data().toInt();
     }
+    else {
+     return b_retVal;
+    }
+    break;
+
+	 case eCountGrp:
+		if(((index.column())>0) &&
+				(!index.data().isNull()) &&
+				(index.data().isValid()))
+		{
+		 val->lgn = cur_row;
+		 val->col = cur_col;
+		 if(index.model()->index(val->lgn,val->col).data().canConvert(QMetaType::Int)){
+			val->val = index.model()->index(val->lgn,val->col).data().toInt();
+		 }
+		 else {
+			return b_retVal;
+		 }
+		}
+		else {
+		 return b_retVal;
+		}
+
     break;
    case eCountToSet:
    case eCountEnd:
@@ -228,14 +248,23 @@ bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelInde
   val->typ = eCountToSet;
  }
 
- isOk = DB_Tools::tbFltGet(val,flt.db_cnx);
+ val->zne =flt.zne;
+ val->b_flt = flt.b_flt;
 
- return isOk;
+ b_retVal = DB_Tools::tbFltGet(val,flt.db_cnx);
+
+ if(b_retVal == false){
+  if(val->b_flt != Bp::noFlt){
+   b_retVal = true;
+  }
+ }
+
+ return b_retVal;
 }
 #else
 bool BFlags::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QModelIndex index) const
 {
- bool isOk = false;
+ bool b_retVal = false;
 #if 0
  etCount typ = in_typ;
 
@@ -286,9 +315,9 @@ bool BFlags::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QModelIndex 
 #ifndef QT_NO_DEBUG
  qDebug() << "mgs_2: "<<msg;
 #endif
- isOk = query_2.exec(msg);
+ b_retVal = query_2.exec(msg);
 
- if((isOk = query_2.first()))
+ if((b_retVal = query_2.first()))
  {
   int valeur = query_2.value("flt").toInt();
   int priori = query_2.value("pri").toInt();
@@ -300,14 +329,14 @@ bool BFlags::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QModelIndex 
 
  }
 
- (*ret).sta = isOk;
+ (*ret).sta = b_retVal;
  (*ret).zne = zn;
  (*ret).typ = typ;
  (*ret).lgn = lgn;
  (*ret).col = col;
  (*ret).val = val;
 #endif
- return isOk;
+ return b_retVal;
 }
 #endif
 
@@ -362,13 +391,19 @@ void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const Q
  QStyleOptionViewItem myOpt = maModif;
  initStyleOption(&myOpt, index);
 
+ QString myTxt = myOpt.text;
+ QRect curCell = myOpt.rect;
+
+ if(isPresent == false ){
+  cellWrite(painter,curCell,myTxt);
+  return;
+ }
+
  QFont myFnt;
  QPalette myPal;
  Qt::GlobalColor myPen=Qt::black;
  bool set_up = false;
 
- QString myTxt = myOpt.text;
- QRect curCell = myOpt.rect;
  int cur_col = index.column();
 
  int painting_col = -1;
@@ -377,10 +412,12 @@ void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const Q
   case eCountCmb:
   case eCountBrc:
    painting_col = 1;
+   /*
    if(cur_col != painting_col ){
     cellWrite(painter,curCell,myTxt);
     return;
    }
+*/
   break;
   case eCountGrp:
    painting_col = 0;
@@ -431,6 +468,10 @@ void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QS
                 const QModelIndex &index) const
 {
  Q_UNUSED(isPresent)
+
+ if(isPresent == false){
+  return;
+ }
 
  int col = index.column();
 

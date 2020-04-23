@@ -21,7 +21,7 @@ BFdj::BFdj(stFdj *prm, QString cnx)
 
  QString use_cnx = cnx;
  QString stConfFile = "";
- bool isOk = true;
+ bool b_retVal = true;
 
  cur_item = total_items;
  total_items++;
@@ -29,15 +29,15 @@ BFdj::BFdj(stFdj *prm, QString cnx)
 
  /// Doit on utiliser une connexion deja etablie
  if(!use_cnx.size()){
-  isOk = ouvrirBase(prm);
+  b_retVal = ouvrirBase(prm);
  }
  else {
   // Etablir connexion a la base
   fdj_db = QSqlDatabase::database(use_cnx);
-  isOk = fdj_db.isValid();
+  b_retVal = fdj_db.isValid();
  }
 
- if(isOk ==false){
+ if(b_retVal ==false){
   QString str_error = fdj_db.lastError().text();
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
@@ -58,7 +58,7 @@ stGameConf * BFdj::getConfig()
 /// ---------------- PRIVATE FUNCTIONS -----------------
 bool BFdj::ouvrirBase(stFdj *prm)
 {
- bool isOk = true;
+ bool b_retVal = true;
 
  QString use_cnx = mk_IdCnx(prm->typeJeu);
  fdj_db = QSqlDatabase::addDatabase("QSQLITE",use_cnx);
@@ -92,13 +92,13 @@ bool BFdj::ouvrirBase(stFdj *prm)
  fdj_db.setDatabaseName(mabase);
 
  // Open database
- isOk = fdj_db.open();
+ b_retVal = fdj_db.open();
 
- if(isOk)
-  isOk = OPtimiseAccesBase();
+ if(b_retVal)
+  b_retVal = OPtimiseAccesBase();
 
 
- return isOk;
+ return b_retVal;
 }
 
 QString BFdj::mk_IdCnx(etFdj type)
@@ -144,7 +144,7 @@ QString BFdj::mk_IdDsk(etFdj type)
 
 bool BFdj::OPtimiseAccesBase(void)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(fdj_db);
  QString msg = "";
 
@@ -158,18 +158,18 @@ bool BFdj::OPtimiseAccesBase(void)
  };
  int items = sizeof(stRequete)/sizeof(QString);
 
- for(int i=0; (i<items)&& isOk ;i++){
+ for(int i=0; (i<items)&& b_retVal ;i++){
   msg = stRequete[i];
-  isOk = query.exec(msg);
+  b_retVal = query.exec(msg);
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "BFdj::OPtimiseAccesBase";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 stGameConf * BFdj::init(stFdj *prm)
@@ -219,7 +219,7 @@ stGameConf * BFdj::init(stFdj *prm)
 
 bool BFdj::crt_TblFdj(stGameConf *pGame)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QSqlQuery query(fdj_db);
  QString msg = "";
 
@@ -239,12 +239,12 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
  /// Utiliser anciennes tables
  if(pGame->db_ref->ihm->use_odb==true){
   if(pGame->db_ref->ihm->fdj_new==false){
-   return isOk;
+   return b_retVal;
   }
   else {
    /// supprimer la table tremporaire
    msg = "drop table if exists " + tbName;
-   isOk = query.exec(msg);
+   b_retVal = query.exec(msg);
   }
  }
 
@@ -253,7 +253,7 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
 
 
  int totDef=pGame->znCount;
- for(int def = 0; (def<totDef) && isOk;def++)
+ for(int def = 0; (def<totDef) && b_retVal;def++)
  {
   QString ref = pGame->names[def].abv+"%1 int";
   QString ref_2 = "printf('%02d',"+pGame->names[def].abv+"%1)as "+pGame->names[def].abv+"%1";
@@ -280,7 +280,7 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
  /// D: date xx/yy/nnnn
  /// creation d'une table temporaire et d'une table destination
  QString tables[]={"tmp_"+tbName,tbName};
- for(int i=0; i<2 && isOk;i++)
+ for(int i=0; i<2 && b_retVal;i++)
  {
   QString stKeyOn = "";
   if (i==1)
@@ -296,16 +296,16 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
 	qDebug() <<msg;
 #endif
 
-  isOk = query.exec(msg);
+  b_retVal = query.exec(msg);
  }
 
  /// Les tables sont presentes maintenant
- if(isOk)
+ if(b_retVal)
  {
   /// mettre les infos brut dans la table temporaire
-  isOk = chargerDonneesFdjeux(pGame, tables[0]);
+  b_retVal = chargerDonneesFdjeux(pGame, tables[0]);
 
-	if(isOk)
+	if(b_retVal)
 	{
 	 /// mettre les infos triees dans la table de reference
 	 colsDef.remove("int");
@@ -321,24 +321,24 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
 	 qDebug() <<msg;
 #endif
 
-	 isOk = query.exec(msg);
+	 b_retVal = query.exec(msg);
 
-	 if(isOk){
+	 if(b_retVal){
 		/// supprimer la table tremporaire
 		msg = "drop table if exists " + tables[0];
-		isOk = query.exec(msg);
+		b_retVal = query.exec(msg);
 	 }
 
   }
  }
 
 
- return isOk;
+ return b_retVal;
 }
 
 bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
 {
- bool isOk= true;
+ bool b_retVal= true;
 
  stFdjData *LesFichiers;
  int nbelemt = 0;
@@ -432,20 +432,20 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  }
 
  // Lectures des fichiers de la Fd jeux
- while((isOk == true) && (nbelemt>0))
+ while((b_retVal == true) && (nbelemt>0))
  {
-  isOk = LireLesTirages(pGame, &LesFichiers[nbelemt-1], destTable);
+  b_retVal = LireLesTirages(pGame, &LesFichiers[nbelemt-1], destTable);
   nbelemt--;
  };
 
 
 
- return isOk;
+ return b_retVal;
 }
 
 bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QSqlQuery query(fdj_db);
 
  QString fileName_2 = def->fname;
@@ -474,7 +474,7 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 
  // Analyse des suivantes
  int nb_lignes=0;
- while((! flux.atEnd() )&& (isOk == true))
+ while((! flux.atEnd() )&& (b_retVal == true))
  {
   ligne = flux.readLine();
   nb_lignes++;
@@ -557,18 +557,18 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 #ifndef QT_NO_DEBUG
 	qDebug() <<msg;
 #endif
-	isOk = query.exec(msg);
+	b_retVal = query.exec(msg);
 
  }  /// Fin while
 
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "cFdjData::LireLesTirages";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 QString BFdj::DateAnormer(QString input)

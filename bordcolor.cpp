@@ -8,12 +8,12 @@
 bool BOrdColor::operator<(const BOrdColor  &b)const
 {
     /// https://www.developpez.net/forums/d1298928/c-cpp/bibliotheques/qt/qmap-operator-qpoint/
-    bool isOk = (this->blue()<b.blue()) ||
+    bool b_retVal = (this->blue()<b.blue()) ||
             ((this->blue()==b.blue()) && (this->green()<b.green()))||
             ((this->green()==b.green()) && (this->red()<b.red()))||
             ((this->red()==b.red()) && (this->alpha() < b.alpha()));
 
-    return isOk;
+    return b_retVal;
 
 #ifndef QT_NO_DEBUG
     QString msg_1 =  "("+QString::number(this->red()).rightJustified(3,'0')
@@ -28,7 +28,7 @@ bool BOrdColor::operator<(const BOrdColor  &b)const
             +")";
 
     QString msg = msg_1 + QString(" < ") + msg_2 + QString(" ? -> ")
-            +QString::number(isOk);
+            +QString::number(b_retVal);
     qDebug()<< msg;
 #endif
 

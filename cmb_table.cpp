@@ -15,7 +15,7 @@
 bool SyntheseGenerale::do_CmbRef(void)
 {
 
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  QSqlQuery query(db_0);
 
@@ -23,13 +23,13 @@ bool SyntheseGenerale::do_CmbRef(void)
 
  QString tblUse = "A_cmb";
 
- for (int zn=0;(zn < nbZone) && isOk;zn++ )
+ for (int zn=0;(zn < nbZone) && b_retVal;zn++ )
  {
   if(pMaConf->limites[zn].win>2){
-   isOk = TraitementCodeVueCombi(zn);
+   b_retVal = TraitementCodeVueCombi(zn);
 
-	 if(isOk)
-		isOk = TraitementCodeTblCombi(tblUse,zn);
+	 if(b_retVal)
+		b_retVal = TraitementCodeTblCombi(tblUse,zn);
 	}
 	else
 	{
@@ -43,28 +43,28 @@ bool SyntheseGenerale::do_CmbRef(void)
 		QMessageBox::information(NULL, "Pgm", "tbName is null" ,QMessageBox::Yes);
 		QApplication::quit();
 	 }
-	 isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn);
+	 b_retVal = TraitementCodeTblCombi_2(tblUse,tbName,zn);
 	}
 
 	/// Efface table temporaire
-	if(isOk){
+	if(b_retVal){
 	 msg = "drop view if exists tb_view_"+QString::number(zn+1);
-	 isOk=query.exec(msg);
+	 b_retVal=query.exec(msg);
 	}
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "SyntheseGenerale::do_CmbRef";
   DB_Tools::DisplayError(ErrLoc,&query,"");
  }
 
- return isOk;
+ return b_retVal;
 }
 
 bool SyntheseGenerale::TraitementCodeVueCombi(int zn)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_0);
  QString msg = "";
  QString ref_1 = "";
@@ -80,7 +80,7 @@ bool SyntheseGenerale::TraitementCodeVueCombi(int zn)
 
  /// Traitement de la vue
  int nbLgnCode = sizeof(viewCode)/sizeof(QString);
- for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+ for(int lgnCode=0;(lgnCode<nbLgnCode) && b_retVal;lgnCode++){
   msg = "";
   switch(argViewCount[lgnCode]){
    case 1:
@@ -98,10 +98,10 @@ bool SyntheseGenerale::TraitementCodeVueCombi(int zn)
   qDebug() << msg;
 #endif
 
-  isOk = query.exec(msg);
+  b_retVal = query.exec(msg);
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "TraitementCodeVueCombi:";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
@@ -109,12 +109,12 @@ bool SyntheseGenerale::TraitementCodeVueCombi(int zn)
 
  query.finish();
 
- return isOk;
+ return b_retVal;
 }
 
 bool SyntheseGenerale::TraitementCodeTblCombi(QString tbName,int zn)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_0);
  QString msg = "";
 
@@ -146,7 +146,7 @@ bool SyntheseGenerale::TraitementCodeTblCombi(QString tbName,int zn)
  }
 
  nbLgnCode = sizeof(tblCode)/sizeof(QString);
- for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+ for(int lgnCode=0;(lgnCode<nbLgnCode) && b_retVal;lgnCode++){
   msg="";
   switch(argTblCount[lgnCode]){
    case 1:
@@ -202,10 +202,10 @@ bool SyntheseGenerale::TraitementCodeTblCombi(QString tbName,int zn)
 	qDebug() << msg;
 #endif
 
-  isOk = query.exec(msg);
+  b_retVal = query.exec(msg);
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "TraitementCodeVueCombi:";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
@@ -213,24 +213,24 @@ bool SyntheseGenerale::TraitementCodeTblCombi(QString tbName,int zn)
 
  query.finish();
 
- return isOk;
+ return b_retVal;
 }
 
 /// Creer une table intermediaire
 /// Def_comb_z2Cnp_12_2
 bool SyntheseGenerale::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_0);
  QString msg = "";
 
  msg = "drop table if exists "+tbName+"_z"+QString::number(zn+1);
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 #ifndef QT_NO_DEBUG
  qDebug() << msg;
 #endif
 
- if(isOk){
+ if(b_retVal){
   /// traitement creation table
   int lenZn = pMaConf->limites[zn].len;
   QString ref_1="c%1 int";
@@ -257,9 +257,9 @@ bool SyntheseGenerale::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, i
 	qDebug() << msg;
 #endif
 
-	isOk = query.exec(msg);
+	b_retVal = query.exec(msg);
 
-	if(isOk){
+	if(b_retVal){
 	 msg1 = msg1.remove("int");
 	 msg = msg1;
 	 msg = msg.replace(QRegExp("c\\d\\s+"),"%02d");
@@ -274,16 +274,16 @@ bool SyntheseGenerale::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, i
 	 qDebug() << msg;
 #endif
 	 query.exec(msg);
-	 if(isOk){
+	 if(b_retVal){
 		/// Supprimer la table Cnp
 		msg = "drop table if exists "+tbCnp;
-		isOk = query.exec(msg);
+		b_retVal = query.exec(msg);
 	 }
 	}
 
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "TraitementCodeVueCombi:";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
@@ -291,13 +291,13 @@ bool SyntheseGenerale::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, i
 
  query.finish();
 
- return isOk;
+ return b_retVal;
 }
 
 void SyntheseGenerale::do_SetFollower(void)
 {
 
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_0);
  QString msg = "";
 
@@ -305,7 +305,7 @@ void SyntheseGenerale::do_SetFollower(void)
 
  int nbZone = pMaConf->nb_zone;
 
- for (int zn=0;(zn < nbZone) && isOk;zn++ )
+ for (int zn=0;(zn < nbZone) && b_retVal;zn++ )
  {
   int nbwin = pMaConf->limites[zn].win;
 
@@ -321,11 +321,11 @@ void SyntheseGenerale::do_SetFollower(void)
 	 int nb_sql= sizeof(sql_msg)/sizeof(QString);
 
 	 /// Rajout de la colonne c1
-	 for (int current=0;(current < nb_sql) && isOk ; current++) {
+	 for (int current=0;(current < nb_sql) && b_retVal ; current++) {
 #ifndef QT_NO_DEBUG
 		qDebug() << "msg["<<current<<"]="<<sql_msg[current];
 #endif
-		isOk = query.exec(sql_msg[current]);
+		b_retVal = query.exec(sql_msg[current]);
 	 }
 
 
@@ -335,7 +335,7 @@ void SyntheseGenerale::do_SetFollower(void)
 	 QString ref="((r%2.z1=r%1.z1+1) and r%2.z1 in ("+zn_field+"))";
 	 QString ref2="(r%1.z1 in ("+zn_field+"))";
 
-	 for (int nbloop= nbwin;(nbloop>1) && isOk ;nbloop--) {
+	 for (int nbloop= nbwin;(nbloop>1) && b_retVal ;nbloop--) {
 
 		QString aliasZn="";
 		for (int k =1; k<=nbloop;k++) {
@@ -373,14 +373,14 @@ void SyntheseGenerale::do_SetFollower(void)
 		qDebug() << "msg1="<<msg1;
 #endif
 
-		isOk = query.exec(msg1);
+		b_retVal = query.exec(msg1);
 	 }
 
   }
  }
 
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "cmb_table.cpp";
   DB_Tools::DisplayError("SyntheseGenerale::",&query,"do_SetFollower");
@@ -392,7 +392,7 @@ void SyntheseGenerale::do_SetFollower(void)
 void SyntheseGenerale::do_SetKcmb(void)
 {
 
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_0);
  QString msg = "";
 
@@ -400,7 +400,7 @@ void SyntheseGenerale::do_SetKcmb(void)
 
  int nbZone = pMaConf->nb_zone;
 
- for (int zn=0;(zn < nbZone) && isOk;zn++ )
+ for (int zn=0;(zn < nbZone) && b_retVal;zn++ )
  {
   if(pMaConf->limites[zn].win>2){
    QString ref="(t1.U%1=t2.b%2)";
@@ -440,16 +440,16 @@ void SyntheseGenerale::do_SetKcmb(void)
 	};
 	int nb_sql= sizeof(sql_msg)/sizeof(QString);
 
-	for (int current=0;(current < nb_sql) && isOk ; current++) {
+	for (int current=0;(current < nb_sql) && b_retVal ; current++) {
 #ifndef QT_NO_DEBUG
 	 qDebug() << "msg["<<current<<"]="<<sql_msg[current];
 #endif
-	 isOk = query.exec(sql_msg[current]);
+	 b_retVal = query.exec(sql_msg[current]);
 	}
 
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "cmb_table.cpp";
   DB_Tools::DisplayError("SyntheseGenerale::",&query,"do_SetKcmb");

@@ -78,9 +78,9 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
                 + dstTbl + " as "
                 + sql_msg;
   QSqlQuery query(db_brc);
-  bool isOk = query.exec(msg);
+  bool b_retVal = query.exec(msg);
 
-	if(isOk == false){
+	if(b_retVal == false){
 	 DB_Tools::DisplayError("BCountElem::fn_Count", &query, msg);
 	 delete wdg_tmp;
 	 delete glay_tmp;
@@ -153,19 +153,19 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
 
 bool BCountBrc::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
- bool isOk = true;
+ bool b_retVal = true;
 
  QString sql_msg = sql_MkCountItems(pDef, zn);
  QString msg = "create table if not exists "
                + prm.dstTbl + " as "
                + sql_msg;
 
- isOk = prm.query->exec(msg);
+ b_retVal = prm.query->exec(msg);
 
- if(!isOk){
+ if(!b_retVal){
   *prm.sql=msg;
  }
- return isOk;
+ return b_retVal;
 }
 
 QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
@@ -370,7 +370,7 @@ QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
 void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 {
 #if 0
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_brc);//query(dbToUse);
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
@@ -396,7 +396,7 @@ void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int 
                  "( "
                  " (t2.bc = t1.R) and ";
 
- for (int lgn=1;(lgn<3) && isOk;lgn++) {
+ for (int lgn=1;(lgn<3) && b_retVal;lgn++) {
   QString msg = msg_1+
                 " (t2.id="+QString::number(lgn)+
                 "))";
@@ -404,9 +404,9 @@ void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int 
 #ifndef QT_NO_DEBUG
 	qDebug() << "msg: "<<msg;
 #endif
-	isOk = query.exec(msg);
+	b_retVal = query.exec(msg);
 
-	if(isOk){
+	if(b_retVal){
 	 if(query.first()){
 		stTbFiltres a;
 		a.tbName = "Filtres";
@@ -420,9 +420,9 @@ void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int 
 		a.pri = -1;
 		do{
 		 a.val = query.value(0).toInt();
-		 isOk = DB_Tools::tbFltSet(&a,db_brc.connectionName());;
+		 b_retVal = DB_Tools::tbFltSet(&a,db_brc.connectionName());;
 		 a.col++;
-		}while(query.next() && isOk);
+		}while(query.next() && b_retVal);
 	 }
 	}
  } /// fin for
@@ -433,7 +433,14 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const et
 {
  Q_UNUSED(view)
 
- bool isOk = true;
+ /// Utiliser anciennes tables
+ if(pGame->db_ref->ihm->use_odb==true){
+  if(pGame->db_ref->ihm->fdj_new==false){
+   return;
+  }
+ }
+
+ bool b_retVal = true;
  QSqlQuery query(db_brc);//query(dbToUse);
  QString tbl_tirages = pGame->db_ref->fdj;
  QString tbl_key = "";
@@ -472,7 +479,7 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const et
  /// --
  ///
  QString msg  = "";
- for (int lgn=1;(lgn<3) && isOk;lgn++) {
+ for (int lgn=1;(lgn<3) && b_retVal;lgn++) {
   msg = msg_1+
         " and (t2.id="+QString::number(lgn)+
         "))";
@@ -480,9 +487,9 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const et
 #ifndef QT_NO_DEBUG
 	qDebug() << "msg: "<<msg;
 #endif
-	isOk = query.exec(msg);
+	b_retVal = query.exec(msg);
 
-	if(isOk){
+	if(b_retVal){
 	 if(query.first()){
 		Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
 		do{
@@ -492,16 +499,16 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const et
 
 		 a.b_flt = Bp::F_Flt::noFlt;
 		 /// RECUPERER FLT DE CETTE LIGNE
-		 isOk = DB_Tools::tbFltGet(&a, db_brc.connectionName());
+		 b_retVal = DB_Tools::tbFltGet(&a, db_brc.connectionName());
 		 a.b_flt = a.b_flt|tmp;
 
-		 isOk = DB_Tools::tbFltSet(&a,db_brc.connectionName());
-		}while(query.next() && isOk);
+		 b_retVal = DB_Tools::tbFltSet(&a,db_brc.connectionName());
+		}while(query.next() && b_retVal);
 	 }
 	}
  } /// fin for
 
- if(!isOk){
+ if(!b_retVal){
   DB_Tools::DisplayError("BCountBrc::V2_marquerDerniers_tir",&query,msg);
   QMessageBox::warning(nullptr,"BCountBrc","V2_marquerDerniers_tir",QMessageBox::Ok);
  }
@@ -509,7 +516,7 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const et
 }
 
 void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int zn){
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(dbCount);
  QSqlQuery query_2(dbCount);
 
@@ -517,15 +524,15 @@ void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int 
  QString tb_ref = "B_ana_z"+QString::number(zn+1);
 
  /// Mettre info sur 2 derniers tirages
- for(int dec=0; (dec <2) && isOk ; dec++){
+ for(int dec=0; (dec <2) && b_retVal ; dec++){
   int val = 1<<dec;
   QString sdec = QString::number(val);
 
 	QString msg = "SELECT "+key+" from ("+tb_ref
 								+") as t2 where(id = "+sdec+")";
 
-	isOk = query.exec(msg);
-	if(isOk){
+	b_retVal = query.exec(msg);
+	if(b_retVal){
 	 query.first();
 	 int key_val = query.value(0).toInt();
 
@@ -534,8 +541,8 @@ void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int 
 									 "zne="+QString::number(zn)+" and "+
 									 "typ="+QString::number(eType)+
 									 " and val="+QString::number(key_val)+")";
-	 isOk = query_2.exec(mgs_2);
-	 if(isOk){
+	 b_retVal = query_2.exec(mgs_2);
+	 if(b_retVal){
 		query_2.first();
 		int nbLigne = query_2.value(0).toInt();
 
@@ -554,7 +561,7 @@ void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int 
 #ifndef QT_NO_DEBUG
 		qDebug() << "mgs_2: "<<mgs_2;
 #endif
-		isOk = query_2.exec(mgs_2);
+		b_retVal = query_2.exec(mgs_2);
 
 	 }
 
@@ -565,7 +572,7 @@ void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int 
 void BCountBrc::hc_RechercheBarycentre(QString tbl_in)
 {
  QSqlQuery query(db_brc);
- bool isOk = true;
+ bool b_retVal = true;
 
  QString filterDays = DB_Tools::getLstDays(db_brc.connectionName(),tbl_in);
 
@@ -597,10 +604,10 @@ void BCountBrc::hc_RechercheBarycentre(QString tbl_in)
  qDebug() << "str_data:"<<str_data;
 #endif
 
- if((isOk = query.exec(str_data))){
+ if((b_retVal = query.exec(str_data))){
   //Verifier si on a des donnees
   query.first();
-  if((isOk=query.isValid())){
+  if((b_retVal=query.isValid())){
    QString tab = "b";
    QStringList lstBoules;
    lstBoules <<key_abv;
@@ -644,7 +651,7 @@ void BCountBrc::hc_RechercheBarycentre(QString tbl_in)
 #ifndef QT_NO_DEBUG
 		qDebug() << "str_tblData:"<<str_tblData;
 #endif
-		if((isOk = query.exec(str_tblData))){
+		if((b_retVal = query.exec(str_tblData))){
 		 /// mettre dans la table analyse le barycentre de chaque tirage
 		 QString str_tblAnalyse = "";
 		 if(tbl_in=="B_fdj"){
@@ -657,11 +664,11 @@ void BCountBrc::hc_RechercheBarycentre(QString tbl_in)
 
 		 /// verifier si la table analyse pour barycentre existe sinon la creer
 		 QString msg = "create TABLE if not EXISTS "+str_tblAnalyse+" as select id from "+tbl_in;
-		 isOk = query.exec(msg);
+		 b_retVal = query.exec(msg);
 
-		 if((isOk = mettreBarycentre(str_tblAnalyse, str_data))){
+		 if((b_retVal = mettreBarycentre(str_tblAnalyse, str_data))){
 			/// indiquer le dernier barycentre des tirages fdj
-			isOk = repereDernier(str_tblName);
+			b_retVal = repereDernier(str_tblName);
 		 }
 		}
 	 }
@@ -676,7 +683,7 @@ void BCountBrc::hc_RechercheBarycentre(QString tbl_in)
 	}
  }
 
- if(!isOk){
+ if(!b_retVal){
   /// analyser erreur
   QString err_msg = query.lastError().text();
   //un message d'information
@@ -776,7 +783,7 @@ QString BCountBrc::getFilteringData(int zn)
 #endif
  QSqlQuery query(db_brc);
  //QString msg = "";
- bool isOk = true;
+ bool b_retVal = true;
 
  QString userFiltringTableData = "Filtres";
 
@@ -784,14 +791,14 @@ QString BCountBrc::getFilteringData(int zn)
                +")as tb1 "
                  "where((tb1.flt>0) and (tb1.flt&0x"+QString::number(BFlags::isFiltred)+"=0x"+QString::number(BFlags::isFiltred)+
                ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=1)";
- //isOk = query.exec(msg);
+ //b_retVal = query.exec(msg);
 
 #ifndef QT_NO_DEBUG
  qDebug() << "flt:"<<flt;
 #endif
 
  QString msg = "tb2.bc in ("+flt+")";
- if((isOk=query.exec(flt))){
+ if((b_retVal=query.exec(flt))){
   query.first();
   if(!query.isValid()){
    msg="";

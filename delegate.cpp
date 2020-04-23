@@ -450,9 +450,9 @@ void BDelegateElmOrCmb::paint(QPainter *painter, const QStyleOptionViewItem &opt
                   "col="+QString::number(index.column())+
                   ")";
     QSqlQuery q(dbToUse);
-    bool isOk=q.exec(msg);
+    bool b_retVal=q.exec(msg);
 
-		if(isOk){
+		if(b_retVal){
 		 q.first();
 		 /// Info priorite
 		 if(q.value(0).canConvert(QMetaType::Int)){

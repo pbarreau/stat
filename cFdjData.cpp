@@ -87,7 +87,7 @@ cFdjData::~cFdjData()
 
 void cFdjData::init(etFdj eFdjType)
 {
- bool isOk = false;
+ bool b_retVal = false;
 
  if(eFdjType == eFdjLoto){
   int nbZn = 2;
@@ -120,8 +120,8 @@ void cFdjData::init(etFdj eFdjType)
  QMessageBox::information(nullptr,"Pgm", msg,QMessageBox::Ok);
 
  /// Ouvrir un fichier sqlite
- if((eFdjType!=eFdjNone) && (isOk = ouvrirBase(eFdjType))==true){
-  isOk = FillDataBase();
+ if((eFdjType!=eFdjNone) && (b_retVal = ouvrirBase(eFdjType))==true){
+  b_retVal = FillDataBase();
  }
  else {
   QMessageBox::critical(nullptr,"Pgm", "Ouverture base impossible !!",QMessageBox::Close);
@@ -131,7 +131,7 @@ void cFdjData::init(etFdj eFdjType)
 
 bool cFdjData::FillDataBase(void)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QSqlQuery query(fdj_db);
 
  stTblFill lstTbl[]={
@@ -146,23 +146,23 @@ bool cFdjData::FillDataBase(void)
  };
 
  int nbACreer = sizeof(lstTbl)/sizeof(stTblFill);
- for(int uneTable=0;(uneTable<nbACreer) && isOk;uneTable++)
+ for(int uneTable=0;(uneTable<nbACreer) && b_retVal;uneTable++)
  {
   /// Nom de la table
   QString tbName = lstTbl[uneTable].tbDef;
 
 	/// Fonction de traitement de la creation
-	isOk=(this->*(lstTbl[uneTable].pFuncInit))(tbName,&query);
+	b_retVal=(this->*(lstTbl[uneTable].pFuncInit))(tbName,&query);
 
 	/// Analyser le retour de traitement
-	if(!isOk){
+	if(!b_retVal){
 	 QString ErrLoc = "cFdjData::FillDataBase";
 	 DB_Tools::DisplayError(ErrLoc,&query,tbName);
 	 QApplication::quit();
 	}
  }
 
- return isOk;
+ return b_retVal;
 }
 
 QString cFdjData::mk_IdDsk(etFdj type, etTirType eTirtype)
@@ -219,7 +219,7 @@ QString cFdjData::mk_IdCnx(etFdj type, etTirType eTirtype)
 
 bool cFdjData::ouvrirBase(etFdj eFdjType)
 {
- bool isOk = true;
+ bool b_retVal = true;
  etDb cible = eDbDsk;
  fdj_cnx = mk_IdCnx(eFdjType,eTirFdj);
  fdj_db = QSqlDatabase::addDatabase("QSQLITE",fdj_cnx);
@@ -242,18 +242,18 @@ bool cFdjData::ouvrirBase(etFdj eFdjType)
  fdj_db.setDatabaseName(mabase);
 
  // Open database
- isOk = fdj_db.open();
+ b_retVal = fdj_db.open();
 
- if(isOk)
-  isOk = OPtimiseAccesBase();
+ if(b_retVal)
+  b_retVal = OPtimiseAccesBase();
 
 
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::OPtimiseAccesBase(void)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(fdj_db);
  QString msg = "";
 
@@ -267,23 +267,23 @@ bool cFdjData::OPtimiseAccesBase(void)
  };
  int items = sizeof(stRequete)/sizeof(QString);
 
- for(int i=0; (i<items)&& isOk ;i++){
+ for(int i=0; (i<items)&& b_retVal ;i++){
   msg = stRequete[i];
-  isOk = query.exec(msg);
+  b_retVal = query.exec(msg);
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "LesComptages::OPtimiseAccesBase";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::crt_TblDef(QString tbl_name,QSqlQuery *query)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QString msg = "";
 
 #if 0
@@ -299,7 +299,7 @@ bool cFdjData::crt_TblDef(QString tbl_name,QSqlQuery *query)
                   +tbl_name;
 
  /// si la table existe deja sortir
- if(isPresentInDataBase(tbName)) return isOk;
+ if(isPresentInDataBase(tbName)) return b_retVal;
 
  dbTbl[eTblDef] = tbName;
 
@@ -310,7 +310,7 @@ bool cFdjData::crt_TblDef(QString tbl_name,QSqlQuery *query)
        + colsDef
        +");";
 
- isOk = query->exec(msg);
+ b_retVal = query->exec(msg);
 
  /// preparation des insertions
  msg = "insert into "
@@ -322,10 +322,10 @@ bool cFdjData::crt_TblDef(QString tbl_name,QSqlQuery *query)
 #endif
 
  /// la table est cree mettre les infos
- if(isOk)
+ if(b_retVal)
  {
   /// Parcourir toutes les definition
-  for(int def = 0; (def<fdj_game_cnf.znCount) && isOk;def++)
+  for(int def = 0; (def<fdj_game_cnf.znCount) && b_retVal;def++)
   {
    query->bindValue(":arg1",fdj_game_cnf.limites[def].min);
    query->bindValue(":arg2",fdj_game_cnf.limites[def].max);
@@ -335,15 +335,15 @@ bool cFdjData::crt_TblDef(QString tbl_name,QSqlQuery *query)
    query->bindValue(":arg6",fdj_game_cnf.names[def].std);
 
 	 /// executer la commande sql
-	 isOk = query->exec();
+	 b_retVal = query->exec();
 	}
  }
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::crt_TbGme(QString tbl_name,QSqlQuery *query)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QString msg = "";
 
  QString tbName =  gameLabel[fdj_game_cnf.eFdjType]
@@ -351,7 +351,7 @@ bool cFdjData::crt_TbGme(QString tbl_name,QSqlQuery *query)
                   +tbl_name;
 
  /// si la table existe deja sortir
- if(isPresentInDataBase(tbName)) return isOk;
+ if(isPresentInDataBase(tbName)) return b_retVal;
 
  dbTbl[eTblGme] = tbName;
 
@@ -384,7 +384,7 @@ bool cFdjData::crt_TbGme(QString tbl_name,QSqlQuery *query)
  qDebug() << "msg : " << msg;
 #endif
 
- isOk = query->exec(msg);
+ b_retVal = query->exec(msg);
 
  /// preparation des insertions
  colsDef = colsDef.remove(QRegExp("\\s+inte.*y"));
@@ -414,7 +414,7 @@ bool cFdjData::crt_TbGme(QString tbl_name,QSqlQuery *query)
  query->prepare(msg);
 
  /// la table est cree mettre les infos
- if(isOk)
+ if(b_retVal)
  {
   /// Parcourir toutes les definition
   for (int i = eTblDef; i< eTblEol; i++) {
@@ -425,13 +425,13 @@ bool cFdjData::crt_TbGme(QString tbl_name,QSqlQuery *query)
 #endif
 
  /// executer la commande sql
- isOk = query->exec(msg);
- return isOk;
+ b_retVal = query->exec(msg);
+ return b_retVal;
 }
 
 bool cFdjData::crt_TblElm(QString tbl_name,QSqlQuery *query)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QString msg = "";
  QString tbName = gameLabel[fdj_game_cnf.eFdjType];
 
@@ -449,7 +449,7 @@ bool cFdjData::crt_TblElm(QString tbl_name,QSqlQuery *query)
  }
 
  /// si la table existe deja sortir
- if(isPresentInDataBase(tbName)) return isOk;
+ if(isPresentInDataBase(tbName)) return b_retVal;
 
  dbTbl[eTblElm] = tbName;
 
@@ -460,7 +460,7 @@ bool cFdjData::crt_TblElm(QString tbl_name,QSqlQuery *query)
 
  int totDef=fdj_game_cnf.znCount;
  int maxElemts = 0;
- for(int def = 0; (def<totDef) && isOk;def++)
+ for(int def = 0; (def<totDef) && b_retVal;def++)
  {
   /// Noms des colonnes a mettre
   colsDef=colsDef + def_1.arg(def+1);
@@ -489,9 +489,9 @@ bool cFdjData::crt_TblElm(QString tbl_name,QSqlQuery *query)
   qDebug() <<msg;
 #endif
 
- isOk = query->exec(msg);
+ b_retVal = query->exec(msg);
 
- if(isOk)
+ if(b_retVal)
  {
   /// Preparer la requete Sql
   colsDef.remove("int");
@@ -500,7 +500,7 @@ bool cFdjData::crt_TblElm(QString tbl_name,QSqlQuery *query)
                  +"(id,"+colsDef+")values(NULL,";
 
 	/// mettre des valeurs en sequence
-	for(int line=1;(line <maxElemts+1)&& isOk;line++)
+	for(int line=1;(line <maxElemts+1)&& b_retVal;line++)
 	{
 	 QString stValues="";
 	 for(int def = 0; (def<totDef) ;def++)
@@ -536,17 +536,17 @@ bool cFdjData::crt_TblElm(QString tbl_name,QSqlQuery *query)
 #if 0 //#ifndef QT_NO_DEBUG
 		qDebug() <<msg;
 #endif
-	 isOk = query->exec(msg);
+	 b_retVal = query->exec(msg);
 	}
  }
 
 
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::crt_TblFdj(QString tbl_name,QSqlQuery *query)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QString msg = "";
 
  QString tbName = gameLabel[fdj_game_cnf.eFdjType];
@@ -565,7 +565,7 @@ bool cFdjData::crt_TblFdj(QString tbl_name,QSqlQuery *query)
  }
 
  /// si la table existe deja sortir
- if(isPresentInDataBase(tbName)) return isOk;
+ if(isPresentInDataBase(tbName)) return b_retVal;
 
  /// Cette table contient tous les tirages
  dbTbl[eTblTir] =  tbName;
@@ -575,7 +575,7 @@ bool cFdjData::crt_TblFdj(QString tbl_name,QSqlQuery *query)
 
 
  int totDef=fdj_game_cnf.znCount;
- for(int def = 0; (def<totDef) && isOk;def++)
+ for(int def = 0; (def<totDef) && b_retVal;def++)
  {
   QString ref = fdj_game_cnf.names[def].abv+"%1 int";
   QString ref_2 = "printf('%02d',"+fdj_game_cnf.names[def].abv+"%1)as "+fdj_game_cnf.names[def].abv+"%1";
@@ -598,7 +598,7 @@ bool cFdjData::crt_TblFdj(QString tbl_name,QSqlQuery *query)
  /// D: date xx/yy/nnnn
  /// creation d'une table temporaire et d'une table destination
  QString tables[]={"tmp_"+tbName,tbName};
- for(int i=0; i<2 && isOk;i++)
+ for(int i=0; i<2 && b_retVal;i++)
  {
   QString stKeyOn = "";
   if (i==1)
@@ -614,16 +614,16 @@ bool cFdjData::crt_TblFdj(QString tbl_name,QSqlQuery *query)
 	qDebug() <<msg;
 #endif
 
-  isOk = query->exec(msg);
+  b_retVal = query->exec(msg);
  }
 
  /// Les tables sont presentes maintenant
- if(isOk)
+ if(b_retVal)
  {
   /// mettre les infos brut dans la table temporaire
-  isOk = chargerDonneesFdjeux(tables[0]);
+  b_retVal = chargerDonneesFdjeux(tables[0]);
 
-	if(isOk)
+	if(b_retVal)
 	{
 	 /// mettre les infos triees dans la table de reference
 	 colsDef.remove("int");
@@ -639,24 +639,24 @@ bool cFdjData::crt_TblFdj(QString tbl_name,QSqlQuery *query)
 	 qDebug() <<msg;
 #endif
 
-	 isOk = query->exec(msg);
+	 b_retVal = query->exec(msg);
 
-	 if(isOk){
+	 if(b_retVal){
 		/// supprimer la table tremporaire
 		msg = "drop table if exists " + tables[0];
-		isOk = query->exec(msg);
+		b_retVal = query->exec(msg);
 	 }
 
   }
  }
 
 
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::chargerDonneesFdjeux(QString destTable)
 {
- bool isOk= true;
+ bool b_retVal= true;
 
  stFdjData *LesFichiers;
  int nbelemt = 0;
@@ -738,20 +738,20 @@ bool cFdjData::chargerDonneesFdjeux(QString destTable)
  }
 
  // Lectures des fichiers de la Fd jeux
- while((isOk == true) && (nbelemt>0))
+ while((b_retVal == true) && (nbelemt>0))
  {
-  isOk = LireLesTirages(destTable, &LesFichiers[nbelemt-1]);
+  b_retVal = LireLesTirages(destTable, &LesFichiers[nbelemt-1]);
   nbelemt--;
  };
 
 
 
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::LireLesTirages(QString tblName, stFdjData *def)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QSqlQuery query(fdj_db);
 
  QString fileName_2 = def->fname;
@@ -780,7 +780,7 @@ bool cFdjData::LireLesTirages(QString tblName, stFdjData *def)
 
  // Analyse des suivantes
  int nb_lignes=0;
- while((! flux.atEnd() )&& (isOk == true))
+ while((! flux.atEnd() )&& (b_retVal == true))
  {
   ligne = flux.readLine();
   nb_lignes++;
@@ -863,18 +863,18 @@ bool cFdjData::LireLesTirages(QString tblName, stFdjData *def)
 #ifndef QT_NO_DEBUG
 	qDebug() <<msg;
 #endif
-	isOk = query.exec(msg);
+	b_retVal = query.exec(msg);
 
  }  /// Fin while
 
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "cFdjData::LireLesTirages";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 QString cFdjData::DateAnormer(QString input)
@@ -956,7 +956,7 @@ QString cFdjData::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
 
 bool cFdjData::crt_TblAna(QString tbl_name,QSqlQuery *query)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QString msg = "";
  QString tbName = gameLabel[fdj_game_cnf.eFdjType];
 
@@ -964,7 +964,7 @@ bool cFdjData::crt_TblAna(QString tbl_name,QSqlQuery *query)
 
  if(fdj_game_cnf.eTirType==eTirFdj){
   slFlt = new  QStringList* [nbZone] ;
-  for (int zn=0;(zn < nbZone) && isOk;zn++ )
+  for (int zn=0;(zn < nbZone) && b_retVal;zn++ )
   {
    slFlt[zn] = CreateFilterForData(zn);
   }
@@ -989,17 +989,17 @@ bool cFdjData::crt_TblAna(QString tbl_name,QSqlQuery *query)
 
  source = dbTbl[eTblTir];
 
- for (int zn=0;(zn < nbZone) && isOk;zn++ )
+ for (int zn=0;(zn < nbZone) && b_retVal;zn++ )
  {
   destination = tbName + "_z"+QString::number(zn+1);
 
 	/// si la table existe deja sortir
 	if(isPresentInDataBase(destination)) continue;
 
-	isOk = AnalyserEnsembleTirage(source,destination,fdj_game_cnf, zn, query);
+	b_retVal = AnalyserEnsembleTirage(source,destination,fdj_game_cnf, zn, query);
 #if 0
-   if(isOk)
-    isOk = FaireTableauSynthese(destination,onGame,zn);
+   if(b_retVal)
+    b_retVal = FaireTableauSynthese(destination,onGame,zn);
 #endif
  }
 
@@ -1007,12 +1007,12 @@ bool cFdjData::crt_TblAna(QString tbl_name,QSqlQuery *query)
  //-------
 
 
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::crt_TblGrp(QString tbl_name,QSqlQuery *query)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QString msg = "";
  QString tbName = gameLabel[fdj_game_cnf.eFdjType];
  QString tbRef = "";
@@ -1037,7 +1037,7 @@ bool cFdjData::crt_TblGrp(QString tbl_name,QSqlQuery *query)
 
  int nbZone = fdj_game_cnf.znCount;
  QStringList **pList = slFlt;
- for (int zn=0;(zn < nbZone) && isOk;zn++ )
+ for (int zn=0;(zn < nbZone) && b_retVal;zn++ )
  {
   int nbCalc = pList[zn][1].size();
 
@@ -1048,17 +1048,17 @@ bool cFdjData::crt_TblGrp(QString tbl_name,QSqlQuery *query)
 				+ destination
 				+" as select tb1.tz"+QString::number(zn+1)+" as Nb from ("
 				+dbTbl[eTblElm] + ") as tb1 WHERE (tz"+QString::number(zn+1)+" not NULL)";
-	isOk = query->exec(msg);
+	b_retVal = query->exec(msg);
 
 	/// faire en sequence les calculs a rajouter a cette table
-	for (int item=0;(item<nbCalc) && isOk;item++) {
+	for (int item=0;(item<nbCalc) && b_retVal;item++) {
 
 	 /// Etape 1 renomerla table
 	 msg = "alter TABLE "+destination+" RENAME to old_"+destination;
-	 isOk = query->exec(msg);
+	 b_retVal = query->exec(msg);
 
 	 /// Etape 2 recreer en rajoutant colonne
-	 if(isOk){
+	 if(b_retVal){
 		QString col_name = pList[zn][1].at(item);
 
 		msg="create TABLE if not exists "+destination+" as SELECT tb1.*, tb2.t as "
@@ -1081,12 +1081,12 @@ bool cFdjData::crt_TblGrp(QString tbl_name,QSqlQuery *query)
 									"where ((t1.id=t2.id)) "
 									") as t1 )as r1 group by b "
 									") as tb2 on (tb1.Nb=tb2.Id) ";
-		isOk = query->exec(msg);
+		b_retVal = query->exec(msg);
 
 		/// Etape 3 supprimer table old
-		if(isOk){
+		if(b_retVal){
 		 msg = "drop table if exists old_"+destination;
-		 isOk = query->exec(msg);
+		 b_retVal = query->exec(msg);
 		}
 	 }
 	}
@@ -1094,17 +1094,17 @@ bool cFdjData::crt_TblGrp(QString tbl_name,QSqlQuery *query)
 
 
  //----
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::upd_TblElm(QString tbl_name,QSqlQuery *query)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QString msg = "";
 
  int nbZone=fdj_game_cnf.znCount;
 
- for(int zn=0; (zn < nbZone) && (isOk == true); zn++){
+ for(int zn=0; (zn < nbZone) && (b_retVal == true); zn++){
   QString fields = getFieldsFromZone(zn,"tb2");
   QString sZn = QString::number(zn+1);
 
@@ -1120,10 +1120,10 @@ bool cFdjData::upd_TblElm(QString tbl_name,QSqlQuery *query)
 	qDebug() <<msg;
 #endif
 
-  isOk= query->exec(msg);
+  b_retVal= query->exec(msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 QString cFdjData::getFieldsFromZone(int zn, QString alias)
@@ -1148,7 +1148,7 @@ QString cFdjData::getFieldsFromZone(int zn, QString alias)
 
 bool cFdjData::isPresentInDataBase(QString table, QString schema)
 {
- bool isOk=true;
+ bool b_retVal=true;
  QSqlQuery query(fdj_db);
 
  if(schema.size()){
@@ -1159,17 +1159,17 @@ bool cFdjData::isPresentInDataBase(QString table, QString schema)
  QString msg = "SELECT name FROM "+schema+"sqlite_master "
                                               "WHERE type='table' AND name='"+table+"';";
 
- if((isOk = query.exec(msg)))
+ if((b_retVal = query.exec(msg)))
  {
   /// A t'on une reponse
-  isOk = query.first();
+  b_retVal = query.first();
  }
  else {
   QString ErrLoc = "cFdjData::isPresentInDataBase";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 /// Creation des tables pour les combinaisons a rechercher
@@ -1186,7 +1186,7 @@ bool cFdjData::crt_TblCnp(QString tbl_name,QSqlQuery *query)
 {
  Q_UNUSED(query)
 
- bool isOk = true;
+ bool b_retVal = true;
  int nbZone = fdj_game_cnf.znCount;
 
  QString tblUse = gameLabel[fdj_game_cnf.eFdjType]
@@ -1194,7 +1194,7 @@ bool cFdjData::crt_TblCnp(QString tbl_name,QSqlQuery *query)
 
  dbTbl[eTblCnp] = tblUse;
 
- for (int zn=0;(zn < nbZone) && isOk;zn++ )
+ for (int zn=0;(zn < nbZone) && b_retVal;zn++ )
  {
   QString tbName = tblUse+ "_z"+QString::number(zn+1);
 
@@ -1202,7 +1202,7 @@ bool cFdjData::crt_TblCnp(QString tbl_name,QSqlQuery *query)
 	if(isPresentInDataBase(tbName)) continue;
 
 	if(fdj_game_cnf.limites[zn].win>2){
-	 isOk = TraitementCodeTblCombi(tblUse,zn, query);
+	 b_retVal = TraitementCodeTblCombi(tblUse,zn, query);
 	}
 	else
 	{
@@ -1217,15 +1217,15 @@ bool cFdjData::crt_TblCnp(QString tbl_name,QSqlQuery *query)
 		QApplication::quit();
 	 }
 
-	 isOk = TraitementCodeTblCombi_2(tblUse,tbName,zn,query);
+	 b_retVal = TraitementCodeTblCombi_2(tblUse,tbName,zn,query);
 	}
  }
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::TraitementCodeVueCombi(int zn,QSqlQuery *query)
 {
- bool isOk = true;
+ bool b_retVal = true;
 
  QString msg = "";
  QString ref_1 = "";
@@ -1240,7 +1240,7 @@ bool cFdjData::TraitementCodeVueCombi(int zn,QSqlQuery *query)
 
  /// Traitement de la vue
  int nbLgnCode = sizeof(viewCode)/sizeof(QString);
- for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+ for(int lgnCode=0;(lgnCode<nbLgnCode) && b_retVal;lgnCode++){
   msg = "";
   if(lgnCode==0){
    msg = msg + viewCode[lgnCode].arg(zn+1);
@@ -1253,22 +1253,22 @@ bool cFdjData::TraitementCodeVueCombi(int zn,QSqlQuery *query)
   qDebug() << msg;
 #endif
 
-  isOk = query->exec(msg);
+  b_retVal = query->exec(msg);
  }
 
 
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::TraitementCodeTblCombi(QString tbName,int zn,QSqlQuery *query)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
 
  /// Creation d'une vue intermediaire
- isOk = TraitementCodeVueCombi(zn, query);
+ b_retVal = TraitementCodeVueCombi(zn, query);
 
- if(!isOk) return isOk;
+ if(!b_retVal) return b_retVal;
 
  QString tblCode[]=
   {
@@ -1298,7 +1298,7 @@ bool cFdjData::TraitementCodeTblCombi(QString tbName,int zn,QSqlQuery *query)
  }
 
  nbLgnCode = sizeof(tblCode)/sizeof(QString);
- for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+ for(int lgnCode=0;(lgnCode<nbLgnCode) && b_retVal;lgnCode++){
   msg="";
   switch(argTblCount[lgnCode]){
    case 1:
@@ -1354,41 +1354,41 @@ bool cFdjData::TraitementCodeTblCombi(QString tbName,int zn,QSqlQuery *query)
 	qDebug() << msg;
 #endif
 
-  isOk = query->exec(msg);
+  b_retVal = query->exec(msg);
  }
 
  /// Attendre la creation puis supprimer vue intermediaire
  int query_pos = QSql::BeforeFirstRow;
- while (query->isActive()&& isOk){
+ while (query->isActive()&& b_retVal){
   query_pos = query->at();
   if(query_pos==QSql::AfterLastRow){
    break;
   }
  }
 
- if (isOk){
+ if (b_retVal){
   msg = "drop view if exists tbr"+QString::number(zn+1);
-  isOk = query->exec(msg);
+  b_retVal = query->exec(msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 /// Utiliser une table intermediaire
 /// Cnp_12_2
 bool cFdjData::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn, QSqlQuery *query)
 {
- bool isOk = true;
+ bool b_retVal = true;
  //QSqlQuery query(db_1);
  QString msg = "";
 
  msg = "drop table if exists "+tbName+"_z"+QString::number(zn+1);
- isOk = query->exec(msg);
+ b_retVal = query->exec(msg);
 #ifndef QT_NO_DEBUG
  qDebug() << msg;
 #endif
 
- if(isOk){
+ if(b_retVal){
   /// traitement creation table
   int lenZn = fdj_game_cnf.limites[zn].len;
   QString ref_1="c%1 int";
@@ -1415,9 +1415,9 @@ bool cFdjData::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn, Q
 	qDebug() << msg;
 #endif
 
-	isOk = query->exec(msg);
+	b_retVal = query->exec(msg);
 
-	if(isOk){
+	if(b_retVal){
 	 msg1 = msg1.remove("int");
 	 msg = msg1;
 	 msg = msg.replace(QRegExp("c\\d\\s+"),"%02d");
@@ -1437,7 +1437,7 @@ bool cFdjData::TraitementCodeTblCombi_2(QString tbName, QString tbCnp, int zn, Q
  }
 
 
- return isOk;
+ return b_retVal;
 }
 
 // Cette fonction retourne un pointeur sur un tableau de QStringList
@@ -1491,7 +1491,7 @@ bool cFdjData::AnalyserEnsembleTirage(QString tblIn, QString tblCible, const stG
  /// quand on arrive a nombre de criteres total -1 la vue destination
  /// sera OutputTable.
 
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  //QSqlQuery query(db_1);
  QString stDefBoules = dbTbl[eTblElm];
@@ -1578,7 +1578,7 @@ bool cFdjData::AnalyserEnsembleTirage(QString tblIn, QString tblCible, const stG
 #ifndef QT_NO_DEBUG
 	 qDebug() << "msg:"<<msg;
 #endif
-	 isOk = query->exec(msg);
+	 b_retVal = query->exec(msg);
 
 	 curName = "vt_" +  QString::number(loop);
 	 lastTitle = lastTitle
@@ -1595,12 +1595,12 @@ bool cFdjData::AnalyserEnsembleTirage(QString tblIn, QString tblCible, const stG
 		curTarget = "view vrz"+QString::number(zn+1)+"_"+tbLabAna;
 		curTitle = lastTitle;
 	 }
-	}while(loop < nbTot && isOk);
+	}while(loop < nbTot && b_retVal);
 
 	/// On a fait toutes les recherches simples
 	/// faire les recherches complexes
-	if(isOk){
-	 isOk = add_TblAna_IdComb(zn, curTarget, tbLabAna, query);
+	if(b_retVal){
+	 b_retVal = add_TblAna_IdComb(zn, curTarget, tbLabAna, query);
 #if 0
     /// mise en correspondance de la reference combinaison
     QString msg = "";
@@ -1645,32 +1645,32 @@ bool cFdjData::AnalyserEnsembleTirage(QString tblIn, QString tblCible, const stG
 #ifndef QT_NO_DEBUG
     qDebug() << "msg:"<<msg;
 #endif
-    isOk = query->exec(msg);
+    b_retVal = query->exec(msg);
 #endif
   }
 
 	/// supression tables intermediaires
-	if(isOk){
+	if(b_retVal){
 	 curTarget = curTarget.remove("view");
 	 msg = "drop view if exists " + curTarget;
-	 isOk= query->exec(msg);
+	 b_retVal= query->exec(msg);
 
-	 if(isOk)
-		isOk = SupprimerVueIntermediaires();
+	 if(b_retVal)
+		b_retVal = SupprimerVueIntermediaires();
 	}
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "cFdjData::AnalyserEnsembleTirage:";
   DB_Tools::DisplayError(ErrLoc,query,msg);
  }
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::add_TblAna_IdComb(int zn, QString source, QString destination, QSqlQuery *query)
 {
- bool isOk = true;
+ bool b_retVal = true;
  const stGameConf &onGame = fdj_game_cnf;
 
  /// mise en correspondance de la reference combinaison
@@ -1717,23 +1717,23 @@ bool cFdjData::add_TblAna_IdComb(int zn, QString source, QString destination, QS
 #ifndef QT_NO_DEBUG
  qDebug() << "msg:"<<msg;
 #endif
- isOk = query->exec(msg);
+ b_retVal = query->exec(msg);
 
- return isOk;
+ return b_retVal;
 }
 
 bool cFdjData::SupprimerVueIntermediaires(void)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  QSqlQuery query(fdj_db);
  QSqlQuery qDel(fdj_db);
 
  msg = "SELECT name FROM sqlite_master "
        "WHERE type='view' AND name like'vt_%';";
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 
- if(isOk)
+ if(b_retVal)
  {
   query.first();
   if(query.isValid())
@@ -1743,16 +1743,16 @@ bool cFdjData::SupprimerVueIntermediaires(void)
    {
     QString viewName = query.value("name").toString();
     msg = "drop view if exists "+viewName;
-    isOk = qDel.exec(msg);
-   }while(query.next()&& isOk);
+    b_retVal = qDel.exec(msg);
+   }while(query.next()&& b_retVal);
   }
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "cFdjData::SupprimerVueIntermediaires:";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
- return isOk;
+ return b_retVal;
 }

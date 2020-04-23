@@ -61,6 +61,7 @@ typedef struct _stTbFiltres{
  Bp::E_Sta sta;     /// Precision sur le code retour
  Bp::F_Flts b_flt;
  int db_total;   /// total recupere de la base par read
+ int tst_total;
  int id;
  int zne;         /// Zone id
  etCount typ;   /// Type de filtre

@@ -70,7 +70,7 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
   * ( ((flt & 0x1C) & 0x4) = 0x4))
   */
 
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_tbv);
  int memo_choisi = -1;
  QString tblFlt = "Filtres";
@@ -83,7 +83,7 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
                  QString::number(eCalcul)+
                  ")";
 
- for(int i = 0; (i< nb_items) && isOk ; i++){
+ for(int i = 0; (i< nb_items) && b_retVal ; i++){
   QString msg_2 = " and ( ((flt & 0x"+
                   QString::number(msk,16).toUpper()+
                   ") & 0x"+
@@ -100,7 +100,7 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
 	qDebug()<< "msg:"<<msg;
 #endif
 
-	isOk = query.exec(msg);
+	b_retVal = query.exec(msg);
 
 	int total = 0;
 	if(query.first()){
@@ -115,7 +115,7 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
  }
  title = title+ tmp_lst[tmp_lst.size()-1].arg(nb_lgn_ftr-memo_choisi);
 
- if(!isOk){
+ if(!b_retVal){
   DB_Tools::DisplayError("BCount::mkTitle",&query,msg);
   QMessageBox::warning(nullptr,"BCount","mkTitle",QMessageBox::Ok);
  }

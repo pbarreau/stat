@@ -73,19 +73,19 @@ QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)
 
 bool BcElm::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
- bool isOk = true;
+ bool b_retVal = true;
 
  QString sql_msg = usr_doCount(pDef, zn);
  QString msg = "create table if not exists "
                + prm.dstTbl + " as "
                + sql_msg;
 
- isOk = prm.query->exec(msg);
+ b_retVal = prm.query->exec(msg);
 
- if(!isOk){
+ if(!b_retVal){
   *prm.sql=msg;
  }
- return isOk;
+ return b_retVal;
 }
 
 void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCount eType, const int zn)
@@ -99,7 +99,7 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
   }
  }
 
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_elm);
  QString st_tirages = pGame->db_ref->fdj;
  QString st_critere = FN1_getFieldsFromZone(pGame, zn, "t2");
@@ -120,7 +120,7 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 
 
  QString msg  = "";
- for (int lgn=1;(lgn<3) && isOk;lgn++) {
+ for (int lgn=1;(lgn<3) && b_retVal;lgn++) {
   msg = msg_1+
         " and (t2.id="+QString::number(lgn)+
         "))";
@@ -128,9 +128,9 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 #ifndef QT_NO_DEBUG
 	qDebug() << "msg: "<<msg;
 #endif
-	isOk = query.exec(msg);
+	b_retVal = query.exec(msg);
 
-	if(isOk){
+	if(b_retVal){
 	 /// ----------
 	 stTbFiltres a;
 	 a.tbName = "Filtres";
@@ -151,16 +151,16 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 
 		 a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
 		 /// RECUPERER FLT DE CETTE LIGNE
-		 isOk = DB_Tools::tbFltGet(&a, db_elm.connectionName());
+		 b_retVal = DB_Tools::tbFltGet(&a, db_elm.connectionName());
 		 a.b_flt = a.b_flt|tmp;
 
-		 isOk = DB_Tools::tbFltSet(&a,db_elm.connectionName());
-		}while(query.next() && isOk);
+		 b_retVal = DB_Tools::tbFltSet(&a,db_elm.connectionName());
+		}while(query.next() && b_retVal);
 	 }
 	}
  } /// fin for
 
- if(!isOk){
+ if(!b_retVal){
   DB_Tools::DisplayError("BcElm::usr_TagLast",&query,msg);
   QMessageBox::warning(nullptr,"BcElm","usr_TagLast",QMessageBox::Ok);
  }
@@ -189,9 +189,9 @@ QWidget *BcElm::fn_Count(const stGameConf *pGame, int zn)
                 + dstTbl + " as "
                 + sql_msg;
   QSqlQuery query(db_elm);
-  bool isOk = query.exec(msg);
+  bool b_retVal = query.exec(msg);
 
-	if(isOk == false){
+	if(b_retVal == false){
 	 DB_Tools::DisplayError("BCountElem::fn_Count", &query, msg);
 	 delete wdg_tmp;
 	 delete glay_tmp;
@@ -584,7 +584,7 @@ void BcElm::slot_RequeteFromSelection(const QModelIndex &index)
 QString BcElm::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 {
  QSqlQuery query(dbCount);
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
 
  /// verifier si table reponse presente
@@ -681,8 +681,8 @@ QString BcElm::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
        +msg
        +")";
 
- isOk = query.exec(msg);
- if(!isOk){
+ b_retVal = query.exec(msg);
+ if(!b_retVal){
   DB_Tools::DisplayError("PBAR_ReqComptage",&query,msg);
  }
 
@@ -786,7 +786,7 @@ QGridLayout *BcElm::Compter(QString * pName, int zn)
 void BcElm::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 {
 #if 0
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_elm);//query(dbToUse);
  QString st_tirages = pGame->db_ref->fdj;
  QString st_critere = FN1_getFieldsFromZone(pGame, zn, "t2");
@@ -805,7 +805,7 @@ void BcElm::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
                " in ("+st_critere+
                "))";
 
- for (int lgn=1;(lgn<3) && isOk;lgn++) {
+ for (int lgn=1;(lgn<3) && b_retVal;lgn++) {
   QString msg = msg_1+
         " and (t2.id="+QString::number(lgn)+
         "))";
@@ -813,9 +813,9 @@ void BcElm::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 #ifndef QT_NO_DEBUG
 	 qDebug() << "msg: "<<msg;
 #endif
-	 isOk = query.exec(msg);
+	 b_retVal = query.exec(msg);
 
-	 if(isOk){
+	 if(b_retVal){
 		if(query.first()){
 		 stTbFiltres a;
 		 a.tbName = "Filtres";
@@ -826,9 +826,9 @@ void BcElm::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 		 a.pri = 1;
 		 do{
 			a.val = query.value(0).toInt();
-			isOk = DB_Tools::setdbFlt(&a,db_elm.connectionName());
+			b_retVal = DB_Tools::setdbFlt(&a,db_elm.connectionName());
 			a.col++;
-		 }while(query.next() && isOk);
+		 }while(query.next() && b_retVal);
 		}
 	 }
  } /// fin for
@@ -837,7 +837,7 @@ void BcElm::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 #else
 void BCountElem::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_1);//query(dbToUse);
  QSqlQuery query_2(db_1);//query_2(dbToUse);
 
@@ -849,7 +849,7 @@ void BCountElem::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int
  QString tb_ref = "B_elm";
 
  /// Mettre info sur 2 derniers tirages
- for(int dec=0; (dec <2) && isOk ; dec++){
+ for(int dec=0; (dec <2) && b_retVal ; dec++){
   int val = 1<<dec;
   QString sdec = QString::number(val);
   QString msg []={
@@ -876,9 +876,9 @@ msg [ 1 ]:  "where(t1.z1 in (t2.b1,t2.b2,t2.b3,t2.b4,t2.b5))"
 	 qDebug() << "msg ["<<i<<"]: "<<msg[i];
 	}
 #endif
-	isOk = query.exec(msg[taille-1]);
+	b_retVal = query.exec(msg[taille-1]);
 
-	if(isOk){
+	if(b_retVal){
 	 query.first();
 	 if(query.isValid()){
 		int boule = 0;
@@ -893,8 +893,8 @@ msg [ 1 ]:  "where(t1.z1 in (t2.b1,t2.b2,t2.b3,t2.b4,t2.b5))"
 #ifndef QT_NO_DEBUG
 		 qDebug() << "mgs_2: "<<mgs_2;
 #endif
-		 isOk = query_2.exec(mgs_2);
-		 if(isOk){
+		 b_retVal = query_2.exec(mgs_2);
+		 if(b_retVal){
 			query_2.first();
 			int nbLigne = query_2.value(0).toInt();
 			if(nbLigne==1){
@@ -913,9 +913,9 @@ msg [ 1 ]:  "where(t1.z1 in (t2.b1,t2.b2,t2.b3,t2.b4,t2.b5))"
 #ifndef QT_NO_DEBUG
 			qDebug() << "mgs_2: "<<mgs_2;
 #endif
-			isOk = query_2.exec(mgs_2);
+			b_retVal = query_2.exec(mgs_2);
 		 }
-		}while(query.next()&&isOk);
+		}while(query.next()&&b_retVal);
 	 }
 	}
 
@@ -932,7 +932,7 @@ LabelClickable *BcElm::getLabPriority(void)
 QString BcElm::getFilteringData(int zn)
 {
  QSqlQuery query(dbCount);
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  QString useJonction = "and";
 
@@ -943,7 +943,7 @@ QString BcElm::getFilteringData(int zn)
        +")as tb1 "
          "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(tmp)+"=0x"+QString::number(tmp)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ="+QString::number(eCountElm)+" and tb1.pri=1)";
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 #ifndef QT_NO_DEBUG
  qDebug() << "msg:"<<msg;
 #endif
@@ -954,7 +954,7 @@ QString BcElm::getFilteringData(int zn)
 QString BCountElem::getFilteringData(int zn)
 {
  QSqlQuery query(dbCount);
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  QString useJonction = "and";
 
@@ -964,12 +964,12 @@ QString BCountElem::getFilteringData(int zn)
        +")as tb1 "
          "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(BFlags::isFiltred)+"=0x"+QString::number(BFlags::isFiltred)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=0 and tb1.pri=1)";
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 #ifndef QT_NO_DEBUG
  qDebug() << "msg:"<<msg;
 #endif
 
- if(isOk){
+ if(b_retVal){
   msg="";
   QString key_to_use = myGame.names[zn].abv;
 
@@ -980,7 +980,7 @@ QString BCountElem::getFilteringData(int zn)
 	QString ref = "("+key_to_use+"%1=%2)";
 	int nb_items = myGame.limites[zn].len;
 
-	isOk = query.first();
+	b_retVal = query.first();
 	if(query.isValid()){
 	 /// requete a au moins une reponse
 	 do{

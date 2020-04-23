@@ -55,7 +55,7 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
 
     //int id = qRegisterMetaType<BCnp>();
 
-    bool isOk = true;
+    bool b_retVal = true;
     QString msg = "";
     QString str_cnp = "Cnp_"+QString::number(n_in)
             + "_" + QString::number(p_in);
@@ -83,21 +83,21 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
         //QMessageBox::information(NULL, "P1", "OK",QMessageBox::Yes);
 #endif
 
-    if((isOk = isNotPresentCnp(n_in,p_in))){
+    if((b_retVal = isNotPresentCnp(n_in,p_in))){
 
 #if (SET_RUN_CHKP)
         //QMessageBox::information(NULL, "P2", "OK",QMessageBox::Yes);
 #endif
-        isOk = isCnpTableReady(n_in,p_in);
+        b_retVal = isCnpTableReady(n_in,p_in);
 
-        if( !isOk){
+        if( !b_retVal){
             msg = "Echec creation table " + str_cnp;
             eCnpStatus = Failure;
         }
         else{
          QTime t;//t(0,0,0);
             t.start();
-            isOk = effectueCalculCnp(n_in,p_in);
+            b_retVal = effectueCalculCnp(n_in,p_in);
             int delta = t.elapsed();
             QString t_human = QString::number(delta);
 #ifndef QT_NO_DEBUG
@@ -109,7 +109,7 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
                     +QString(" termine en : ")
                     +t_human
                     +QString(" ms\nEtat ->")
-                    +QString::number(isOk);
+                    +QString::number(b_retVal);
 
             eCnpStatus = Created;
         }
@@ -135,7 +135,7 @@ BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
 
 bool BCnp::isCnpTableReady(int n, int p)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     QSqlQuery query(dbCnp);
     QString msg ="";
     QString st_table = tbName;
@@ -155,14 +155,14 @@ bool BCnp::isCnpTableReady(int n, int p)
     /// Premiere Requete a executer
     msg = msg+colNames+");";
 
-    isOk = query.exec(msg);
+    b_retVal = query.exec(msg);
 
-    return isOk;
+    return b_retVal;
 }
 
 bool BCnp::isNotPresentCnp(int n, int p)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     QSqlQuery query(dbCnp);
     QString msg ="";
     QString st_table = tbName;
@@ -171,21 +171,21 @@ bool BCnp::isNotPresentCnp(int n, int p)
     msg = "SELECT name FROM sqlite_master "
           "WHERE type='table' AND name='"+st_table+"';";
 
-    if((isOk = query.exec(msg)))
+    if((b_retVal = query.exec(msg)))
     {
         query.first();
         if(query.isValid())
         {
             /// La table existe
-            isOk = false;
+            b_retVal = false;
         }
     }
 
-    return isOk;
+    return b_retVal;
 }
 
 bool BCnp::effectueCalculCnp(int n, int p) {
-    bool isOk = true;
+    bool b_retVal = true;
 
     ///
 
@@ -194,13 +194,13 @@ bool BCnp::effectueCalculCnp(int n, int p) {
     for(i=0;i<n;i++)
         t[i] = i;
 
-    isOk = combinaisons(n, p, 0, L, t, n);
+    b_retVal = combinaisons(n, p, 0, L, t, n);
 
-    return isOk;
+    return b_retVal;
 }
 
 bool BCnp::combinaisons(int n, int p, int k, int *L, int *t, int r) {
-    bool isOk = true;
+    bool b_retVal = true;
     QSqlQuery query(dbCnp);
 
     int i, j, j1, t2[n];
@@ -231,34 +231,34 @@ bool BCnp::combinaisons(int n, int p, int k, int *L, int *t, int r) {
                 +msg;
 
         /// Mettre les valeurs
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
 
-        return isOk;
+        return b_retVal;
     }
 
-    for(i=0;(i<r) && (isOk) ;i++) {
+    for(i=0;(i<r) && (b_retVal) ;i++) {
         L[k] = t[i];
         for(j=i+1, j1=0;j<r;j++, j1++) {
             t2[j1] = t[j];
         }
 
-        isOk = combinaisons(n, p, k+1, L, t2, j1);
+        b_retVal = combinaisons(n, p, k+1, L, t2, j1);
     }
 
-    return isOk;
+    return b_retVal;
 }
 
 bool BCnp::creerCnpBdd(QString cnx_name){
-    bool isOk= true;
+    bool b_retVal= true;
     QSqlDatabase myCnpBdd;
     QString bddOnDisk = "Cnp.sqlite";
 
     myCnpBdd = QSqlDatabase::addDatabase("QSQLITE",cnx_name);
     myCnpBdd.setDatabaseName(bddOnDisk);
 
-    isOk = myCnpBdd.open();
+    b_retVal = myCnpBdd.open();
 
-    return isOk;
+    return b_retVal;
 }
 
 
@@ -328,10 +328,10 @@ void BCnp::MontrerTableau_v1(void)
 
 bool BCnp::CalculerPascal(void)
 {
-    bool isOk = true;
+    bool b_retVal = true;
 
     if (tab != NULL)
-        return isOk;
+        return b_retVal;
 
     tab = new int *[cnp]; /// tableau de pointeur d'entiers de Cnp lignes
 
@@ -342,7 +342,7 @@ bool BCnp::CalculerPascal(void)
         int *t = new int [n];
 
         /// pour verifier allocation memoire
-        isOk = false;
+        b_retVal = false;
 
         if(t != NULL)
             for(int i =0; i<n;i++) t[i]=i;
@@ -350,7 +350,7 @@ bool BCnp::CalculerPascal(void)
         /// demarrage
         if((L != NULL) && (t !=NULL)){
             CreerLigneTrianglePascal(0,L,t,n);
-            isOk = true;
+            b_retVal = true;
         }
     }
     else
@@ -358,10 +358,10 @@ bool BCnp::CalculerPascal(void)
 #if (SET_RUN_CHKP)
         QMessageBox::information(NULL, "M1", "Memory",QMessageBox::Yes);
 #endif
-        isOk = false;
+        b_retVal = false;
     }
 
-    return isOk;
+    return b_retVal;
 }
 
 void BCnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
@@ -458,14 +458,14 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 
     static QString st_table ="";
     static QString colNames = "";
-    static bool isOk = true;
+    static bool b_retVal = true;
     static bool skipInsert = false;
     QSqlQuery query(dbCnp);
 
 
     /// Creer la table ?
     if( (pos == 0)
-            && (isOk == true)
+            && (b_retVal == true)
             && (skipInsert == false))
     {
         /// nom de la table
@@ -474,9 +474,9 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
         /// Verifier si la table existe deja
         msg = "SELECT name FROM sqlite_master "
               "WHERE type='table' AND name='"+st_table+"';";
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
 
-        if(isOk)
+        if(b_retVal)
         {
             query.first();
             if(!query.isValid())
@@ -509,9 +509,9 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
                 msg = msg+colNames+");";
 
                 /// debut de transaction
-                isOk = QSqlDatabase::database().transaction();
+                b_retVal = QSqlDatabase::database().transaction();
 
-                isOk = query.exec(msg);
+                b_retVal = query.exec(msg);
                 colNames.remove("int");
 
 #ifndef QT_NO_DEBUG
@@ -528,25 +528,25 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
     }
 
     /// Rajouter info si la table n'existe pas encore
-    if((skipInsert==false) && isOk==true){
+    if((skipInsert==false) && b_retVal==true){
         /// Rajouter chaque ligne
         msg = "insert into "
                 +st_table
                 +"(id,J,"+colNames+")"
                 +"values(NULL,'NA',"+Laligne+");";
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
 
 
         /// derniere ligne effectuer la transaction globale
-        if((pos == (cnp-1)) && (isOk == true))
+        if((pos == (cnp-1)) && (b_retVal == true))
         {
-            isOk = QSqlDatabase::database().commit();
+            b_retVal = QSqlDatabase::database().commit();
         }
 
     }
 
 
-    if(isOk == false)
+    if(b_retVal == false)
     {
 #ifndef QT_NO_DEBUG
         qDebug()<< "SQL ERROR:" << query.executedQuery()  << "\n";

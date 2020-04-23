@@ -33,11 +33,11 @@ BUplet::BUplet(st_In const &param, int index, eCalcul eCal, const QModelIndex & 
   useData = eEnsUsr;
  }
 
- bool isOk = false;
+ bool b_retVal = false;
 
  db_0 = QSqlDatabase::database(input.cnx);
 
- if((isOk=db_0.isValid()) == true){
+ if((b_retVal=db_0.isValid()) == true){
   QGroupBox *info = gpbCreate(index, eCal, ligne, data, parent);
   QVBoxLayout *mainLayout = new QVBoxLayout;
 
@@ -54,7 +54,7 @@ BUplet::~BUplet(){}
 QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
  int nb_uplet = input.uplet;
- bool isOk = false;
+ bool b_retVal = false;
  gpb_upl = new QGroupBox;
 
  QString jour = "";
@@ -121,8 +121,8 @@ QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne,
                 +QString::number(nb_uplet)
                 +"_z1";
   /// verifier si la table des uplets existe deja
-  if(!(isOk=DB_Tools::isDbGotTbl(tbl,db_0.connectionName()))){
-   isOk = do_SqlCnpCount(nb_uplet);
+  if(!(b_retVal=DB_Tools::isDbGotTbl(tbl,db_0.connectionName()))){
+   b_retVal = do_SqlCnpCount(nb_uplet);
   }
 
 	if(!index){
@@ -166,15 +166,15 @@ QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne,
 int BUplet::getNbLines(QString tbl_src)
 {
  int val =-1;
- bool isOk = false;
+ bool b_retVal = false;
 
  QSqlQuery nvll(db_0);
- isOk=nvll.exec("select count(*) from ("+tbl_src+")");
+ b_retVal=nvll.exec("select count(*) from ("+tbl_src+")");
 #ifndef QT_NO_DEBUG
  //qDebug() << "msg:"<<tbl_src;
 #endif
 
- if(isOk){
+ if(b_retVal){
   nvll.first();
   if(nvll.isValid()){
    val = nvll.value(0).toInt();
@@ -187,7 +187,7 @@ int BUplet::getNbLines(QString tbl_src)
 QString BUplet::getJourTirage(int index)
 {
  QString st_tmp = "";
- bool isOk = false;
+ bool b_retVal = false;
  QSqlQuery query(db_0);
 
  QString sql_tmp = "select J,D from B_fdj where(id="
@@ -196,9 +196,9 @@ QString BUplet::getJourTirage(int index)
 #ifndef QT_NO_DEBUG
  qDebug() << "msg:"<<sql_tmp;
 #endif
- isOk=query.exec(sql_tmp);
+ b_retVal=query.exec(sql_tmp);
 
- if(isOk && query.first()){
+ if(b_retVal && query.first()){
   st_tmp=query.value(0).toString()
           +" "
           + query.value(1).toString();
@@ -209,7 +209,7 @@ QString BUplet::getJourTirage(int index)
 QString BUplet::getCmbTirage(int index)
 {
  QString st_tmp = "";
- bool isOk = false;
+ bool b_retVal = false;
  QSqlQuery query(db_0);
  int zn=0;
 
@@ -226,9 +226,9 @@ QString BUplet::getCmbTirage(int index)
  qDebug() << "msg:"<<sql_tmp;
 #endif
 
- isOk=query.exec(sql_tmp);
+ b_retVal=query.exec(sql_tmp);
 
- if(isOk && query.first()){
+ if(b_retVal && query.first()){
   st_tmp="("+query.value(0).toString()
            +") "
            + query.value(1).toString();
@@ -240,7 +240,7 @@ QString BUplet::getCmbTirage(int index)
 QString BUplet::getBrcTirage(int index)
 {
  QString st_tmp = "";
- bool isOk = false;
+ bool b_retVal = false;
  QSqlQuery query(db_0);
  int zn=0;
 
@@ -254,9 +254,9 @@ QString BUplet::getBrcTirage(int index)
  qDebug() << "msg:"<<sql_tmp;
 #endif
 
- isOk=query.exec(sql_tmp);
+ b_retVal=query.exec(sql_tmp);
 
- if(isOk && query.first()){
+ if(b_retVal && query.first()){
   st_tmp="("+query.value(0).toString()
            +") ";
  }
@@ -504,7 +504,7 @@ QString BUplet::FN2_getFieldsFromZone(int zn, QString alias)
 
 bool BUplet::do_SqlCnpCount(int uplet_id)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  QString sql_cnp="";
 
@@ -530,12 +530,12 @@ bool BUplet::do_SqlCnpCount(int uplet_id)
    qDebug() <<sql_cnp;
 #endif
 
-	 isOk= query.exec(sql_cnp);
+	 b_retVal= query.exec(sql_cnp);
 	}
 
 	/// La table des Cnp est cree
 	/// compter les u-plets
-	if(isOk){
+	if(b_retVal){
 	 QString upl = "B_upl_"+QString::number(uplet_id)+"_z"+QString::number(zn+1);
 	 msg = sql_CnpCountUplet(uplet_id,tbl);
 	 sql_cnp = "create table if not exists "
@@ -547,10 +547,10 @@ bool BUplet::do_SqlCnpCount(int uplet_id)
 	 qDebug() <<sql_cnp;
 #endif
 
-	 isOk= query.exec(sql_cnp);
+	 b_retVal= query.exec(sql_cnp);
 	}
 
- return isOk;
+ return b_retVal;
 }
 
 QString BUplet::sql_CnpMkUplet(int nb, QString col, QString tbl_in)

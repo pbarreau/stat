@@ -19,7 +19,7 @@
 BGnp::BGnp(stGameConf *pGame, QString tb_dest):BCnp()
 {
  QString cnx = pGame->db_ref->cnx;
- bool isOk = true;
+ bool b_retVal = true;
  addr = nullptr;
 
  // Etablir connexion a la base
@@ -31,43 +31,43 @@ BGnp::BGnp(stGameConf *pGame, QString tb_dest):BCnp()
  }
  addr=this; /// memo de cet objet
 
- isOk = mktTblGnp(pGame,tb_dest);
+ b_retVal = mktTblGnp(pGame,tb_dest);
 
- if(!isOk){
+ if(!b_retVal){
   addr = nullptr;
  }
 }
 
 bool BGnp::mktTblGnp(stGameConf *pGame, QString tb_dest)
 {
- bool isOk = true;
+ bool b_retVal = true;
  int nb_zn = pGame->znCount;
  QString cnx = pGame->db_ref->cnx;
 
- for(int zn=0; (zn < nb_zn) && isOk; zn ++){
+ for(int zn=0; (zn < nb_zn) && b_retVal; zn ++){
   QString tmp_tbl = tb_dest+"_z"+QString::number(zn+1);
 
 	if(DB_Tools::isDbGotTbl(tmp_tbl, cnx) == false)
 	{
-	 if((isOk = creerTables(pGame,zn,tmp_tbl)))
+	 if((b_retVal = creerTables(pGame,zn,tmp_tbl)))
 	 {
 		if(pGame->limites[zn].len > 2 ){
 		 /// Sous forme de A(n,p)
-		 isOk = mkAnp(pGame,zn,tmp_tbl);
+		 b_retVal = mkAnp(pGame,zn,tmp_tbl);
 		}
 		else {
-		 isOk = mkCnp(pGame,zn,tmp_tbl);
+		 b_retVal = mkCnp(pGame,zn,tmp_tbl);
 		}
 	 }
 	}
  }
 
- return isOk;
+ return b_retVal;
 }
 
 bool BGnp::creerTables(stGameConf *pGame, int z_id, QString tb_dest)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "create table if not exists " + tb_dest;
  QSqlQuery query(db_1);
 
@@ -94,15 +94,15 @@ bool BGnp::creerTables(stGameConf *pGame, int z_id, QString tb_dest)
  qDebug() <<msg;
 #endif
 
- isOk= query.exec(msg);
+ b_retVal= query.exec(msg);
 
- return isOk;
+ return b_retVal;
 }
 
 bool BGnp::mkAnp(stGameConf *pGame, int z_id, QString tb_dest)
 {
  /// https://www.tutorialspoint.com/sqlite/sqlite_insert_query.htm
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_1);
 
  QString key = "tz"+QString::number(z_id+1);
@@ -161,15 +161,15 @@ bool BGnp::mkAnp(stGameConf *pGame, int z_id, QString tb_dest)
  qDebug() <<msg;
 #endif
 
- isOk= query.exec(msg);
+ b_retVal= query.exec(msg);
 
- return isOk;
+ return b_retVal;
 }
 
 bool BGnp::mkCnp(stGameConf *pGame, int z_id, QString tb_dest)
 {
  /// https://www.tutorialspoint.com/sqlite/sqlite_insert_query.htm
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_1);
 
  QString key = "z"+QString::number(z_id+1);
@@ -231,9 +231,9 @@ bool BGnp::mkCnp(stGameConf *pGame, int z_id, QString tb_dest)
  qDebug() <<msg;
 #endif
 
- isOk= query.exec(msg);
+ b_retVal= query.exec(msg);
 
- return isOk;
+ return b_retVal;
 }
 
 BGnp *BGnp::self()
@@ -292,7 +292,7 @@ bool BP_Gnp::CalculerGamma(void)
 
 bool BP_Gnp::FaireTableauGamma(void)
 {
-    bool isOk = false;
+    bool b_retVal = false;
     tab = new int *[gnp]; /// tableau de pointeur d'entiers de Cnp lignes
 
     /// Allocation memoire OK ?
@@ -309,11 +309,11 @@ bool BP_Gnp::FaireTableauGamma(void)
         /// demarrage
         if((L != NULL) && (t !=NULL)){
             CreerLigneTrianglePascal(0,L,t,n);
-            isOk = true;
+            b_retVal = true;
         }
     }
 
-    return isOk;
+    return b_retVal;
 }
 
 double BP_Gnp::CalculerFactorielle(double *x)

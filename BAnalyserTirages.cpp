@@ -47,7 +47,7 @@ BAnalyserTirages * BAnalyserTirages::self()
 
 bool BAnalyserTirages::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QString cnx)
 {
- bool isOk = true;
+ bool b_retVal = true;
 
  typedef enum _etDrop{
   eDropOn,
@@ -70,14 +70,14 @@ bool BAnalyserTirages::isPresentUsefullTables(stGameConf *pGame, QString tbl_tir
 
 
  /// Verifier si on a bien la table des tirages
- if((isOk = DB_Tools::isDbGotTbl(tbl_tirages, cnx)) == false)
+ if((b_retVal = DB_Tools::isDbGotTbl(tbl_tirages, cnx)) == false)
  {
   QString str_error = "Missing table : " + tbl_tirages + "in DataBase";
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
  }
 
  /// Verifier existance des tables
- for(int uneTable=0;(uneTable<totTables) && isOk;uneTable++)
+ for(int uneTable=0;(uneTable<totTables) && b_retVal;uneTable++)
  {
   /// Nom de la table
   QString tbName = lstTable[uneTable].tbName;
@@ -86,27 +86,27 @@ bool BAnalyserTirages::isPresentUsefullTables(stGameConf *pGame, QString tbl_tir
 	/// Tables a supprimer si recharge db fdj
 	if((pGame->db_ref->ihm->fdj_new) && (lstTable[uneTable].drop==eDropOn)){
 	 QString msg = "drop table if exists " + tbName;
-	 isOk = query.exec(msg);
+	 b_retVal = query.exec(msg);
 	}
 
 	/// Verifier si la table est deja cree
-	if(isOk && (DB_Tools::isDbGotTbl(tbName, cnx)==false)){
+	if(b_retVal && (DB_Tools::isDbGotTbl(tbName, cnx)==false)){
 	 /// Fonction de traitement de la creation
-	 isOk=(this->*(lstTable[uneTable].ptrFunc))(pGame, tbName, &query);
+	 b_retVal=(this->*(lstTable[uneTable].ptrFunc))(pGame, tbName, &query);
 	}
 	/// Analyser le retour de traitement
-	if(!isOk){
+	if(!b_retVal){
 	 QString msg = "Erreur creation table : " + tbName;
 	 DB_Tools::DisplayError(tbName,&query,msg);
 	}
  }
 
- return isOk;
+ return b_retVal;
 }
 
 void BAnalyserTirages::startAnalyse(stGameConf *pGame, QString tbl_tirages)
 {
- bool isOk = true;
+ bool b_retVal = true;
  int nbZn = pGame->znCount;
 
  if(pGame->slFlt==nullptr){
@@ -118,10 +118,10 @@ void BAnalyserTirages::startAnalyse(stGameConf *pGame, QString tbl_tirages)
  }
 
  QStringList ** info = pGame->slFlt;
- for (int zn=0; (zn < nbZn) && isOk;zn++ )
+ for (int zn=0; (zn < nbZn) && b_retVal;zn++ )
  {
-  isOk = AnalyserEnsembleTirage(pGame, info, zn, tbl_tirages);
-  if(!isOk){
+  b_retVal = AnalyserEnsembleTirage(pGame, info, zn, tbl_tirages);
+  if(!b_retVal){
    QString msg = "Erreur Analyse table : " + tbl_tirages;
    DB_Tools::DisplayError(tbl_tirages,nullptr,msg);
    return;
@@ -129,7 +129,7 @@ void BAnalyserTirages::startAnalyse(stGameConf *pGame, QString tbl_tirages)
  }
 
  /// Presenter les resultats
- if(isOk){
+ if(b_retVal){
   PresenterResultats(pGame, info, tbl_tirages);
  }
 }
@@ -323,7 +323,7 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
 
 bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  QSqlQuery query(db_1);
 
@@ -342,12 +342,12 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
  /// Utiliser anciennes tables
  if(pGame->db_ref->ihm->use_odb==true){
   if(pGame->db_ref->ihm->fdj_new==false){
-   return isOk;
+   return b_retVal;
   }
   else {
    /// supprimer la table tremporaire
    msg = "drop table if exists " + tbLabAna;
-   isOk = query.exec(msg);
+   b_retVal = query.exec(msg);
   }
  }
 
@@ -374,7 +374,7 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
  QStringList *slst=&info[zn][0];
 
  /// Verifier si des tables existent deja
- if(isOk && SupprimerVueIntermediaires())
+ if(b_retVal && SupprimerVueIntermediaires())
  {
   /// les anciennes vues ne sont pas presentes
   ///  on peut faire les calculs
@@ -413,7 +413,7 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 		 tbl_x1 = curTarget;
 		 tbl_x1 = tbl_x1.remove("view").trimmed();
 		 ptrFnUsr usrFn = map_UsrFn.value(Key_usr_1);
-		 isOk = (this->*usrFn)(pGame, curName, curTarget, zn);
+		 b_retVal = (this->*usrFn)(pGame, curName, curTarget, zn);
 		}
 		else if(Key_usr_2.compare("special")==0){
 		 if(slst[1].at(loop).contains(',') == true){
@@ -450,10 +450,10 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 
 	 /// Verification pas fonction utilisateur
 	 if(msg.size()){
-		isOk = query.exec(msg);
+		b_retVal = query.exec(msg);
 	 }
 
-	 if(!isOk){
+	 if(!b_retVal){
 #ifndef QT_NO_DEBUG
 		qDebug() << "msg:'"<<msg<<"'";
 #endif
@@ -478,10 +478,10 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 		qDebug() << "curTitle:"<<curTitle;
 #endif
 	 }
-	}while(loop < nbTot && isOk);
+	}while(loop < nbTot && b_retVal);
 
 
-	if(isOk){
+	if(b_retVal){
 	 /// Ecriture table finale
 	 curTarget = curTarget.remove("view");
 	 msg = "create table if not exists "+tbLabAna
@@ -490,44 +490,44 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 #ifndef QT_NO_DEBUG
 	 qDebug() << "msg:"<<msg;
 #endif
-	 isOk = query.exec(msg);
+	 b_retVal = query.exec(msg);
 
 	}
 
 
 	/// supression tables intermediaires
-	if(isOk){
+	if(b_retVal){
 	 /// On peut supprimer la table X1
 	 if(tbl_x1.size()){
 		msg = "drop table if exists " + tbl_x1;
-		isOk = query.exec(msg);
+		b_retVal = query.exec(msg);
 	 }
 
-	 if(isOk){
+	 if(b_retVal){
 		msg = "drop view if exists " + curTarget;
-		isOk= query.exec(msg);
+		b_retVal= query.exec(msg);
 	 }
 
-	 if(isOk)
-		isOk = SupprimerVueIntermediaires();
+	 if(b_retVal)
+		b_retVal = SupprimerVueIntermediaires();
 	}
  }
 
- return isOk;
+ return b_retVal;
 }
 
 bool BAnalyserTirages::SupprimerVueIntermediaires(void)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QString msg = "";
  QSqlQuery query(db_1);
  QSqlQuery qDel(db_1);
 
  msg = "SELECT name FROM sqlite_master "
        "WHERE type='view' AND name like'vt_%';";
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 
- if(isOk)
+ if(b_retVal)
  {
   query.first();
   if(query.isValid())
@@ -537,18 +537,18 @@ bool BAnalyserTirages::SupprimerVueIntermediaires(void)
    {
     QString viewName = query.value("name").toString();
     msg = "drop view if exists "+viewName; //"drop view if exists "+viewName;
-    isOk = qDel.exec(msg);
-   }while(query.next()&& isOk);
+    b_retVal = qDel.exec(msg);
+   }while(query.next()&& b_retVal);
   }
  }
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "SupprimerVueIntermediaires:";
   DB_Tools::DisplayError(ErrLoc,&query,msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 QStringList* BAnalyserTirages::CreateFilterForData(stGameConf *pGame, QString tbl_tirages, int zn)
@@ -719,7 +719,7 @@ bool BAnalyserTirages::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *
  /// Creation des listes de reference des noms
  /// des boules et du nombre par zone
 
- bool isOk = true;
+ bool b_retVal = true;
 
  QString msg = "";
 
@@ -730,7 +730,7 @@ bool BAnalyserTirages::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *
 
  int totDef=pGame->znCount;
  int maxElemts = 0;
- for(int def = 0; (def<totDef) && isOk;def++)
+ for(int def = 0; (def<totDef) && b_retVal;def++)
  {
   /// Noms des colonnes a mettre
   colsDef=colsDef + def_1.arg(def+1);
@@ -755,9 +755,9 @@ bool BAnalyserTirages::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *
        + colsDef
        +")";
 
- isOk = query->exec(msg);
+ b_retVal = query->exec(msg);
 
- if(isOk)
+ if(b_retVal)
  {
   /// Preparer la requete Sql
   colsDef.remove("int");
@@ -766,7 +766,7 @@ bool BAnalyserTirages::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *
                  +"(id,"+colsDef+")values(NULL,";
 
 	/// mettre des valeurs en sequence
-	for(int line=1;(line <maxElemts+1)&& isOk;line++)
+	for(int line=1;(line <maxElemts+1)&& b_retVal;line++)
 	{
 	 QString stValues="";
 	 for(int def = 0; (def<totDef) ;def++)
@@ -797,32 +797,32 @@ bool BAnalyserTirages::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *
 #ifndef QT_NO_DEBUG
 	 qDebug() <<msg;
 #endif
-	 isOk = query->exec(msg);
+	 b_retVal = query->exec(msg);
 	}
  }
 
- return isOk;
+ return b_retVal;
 }
 
 bool BAnalyserTirages::mkTblLstCmb(stGameConf *pGame, QString tbName,QSqlQuery *query)
 {
  Q_UNUSED(query);
 
- bool isOk = true;
+ bool b_retVal = true;
 
  BGnp *combi = new BGnp(pGame, tbName);
 
  if(combi->self()==nullptr){
   delete combi;
-  isOk = false;
+  b_retVal = false;
  }
 
- return isOk;
+ return b_retVal;
 }
 
 bool BAnalyserTirages::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QString msg = "";
 
  QString colsDef = "min int, max int, len int, win int, abv text, std text";
@@ -832,7 +832,7 @@ bool BAnalyserTirages::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *
        + colsDef
        +");";
 
- isOk = query->exec(msg);
+ b_retVal = query->exec(msg);
 
  /// preparation des insertions
  msg = "insert into "
@@ -844,10 +844,10 @@ bool BAnalyserTirages::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *
 #endif
 
  /// la table est cree mettre les infos
- if(isOk)
+ if(b_retVal)
  {
   /// Parcourir toutes les definition
-  for(int def = 0; (def<pGame->znCount) && isOk;def++)
+  for(int def = 0; (def<pGame->znCount) && b_retVal;def++)
   {
    query->bindValue(":arg1",pGame->limites[def].min);
    query->bindValue(":arg2",pGame->limites[def].max);
@@ -857,16 +857,16 @@ bool BAnalyserTirages::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *
    query->bindValue(":arg6",pGame->names[def].std);
 
 	 /// executer la commande sql
-	 isOk = query->exec();
+	 b_retVal = query->exec();
 	}
  }
 
- return isOk;
+ return b_retVal;
 }
 
 bool BAnalyserTirages::mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *query)
 {
- bool isOk= true;
+ bool b_retVal= true;
  QString msg = "";
 
  /// zne : zone
@@ -881,14 +881,14 @@ bool BAnalyserTirages::mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *
        +" (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
 
 
- isOk = query->exec(msg);
- return isOk;
+ b_retVal = query->exec(msg);
+ return b_retVal;
 }
 
 bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString tblIn, QString tblOut, int zn_in)
 {
 
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_1);
  QString msg = "";
 
@@ -900,7 +900,7 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString tblIn, QString 
  tmp_tbl.remove("view");
  tmp_tbl = tmp_tbl.trimmed();
 
- for (int zn=0;(zn < nbZone) && isOk;zn++ )
+ for (int zn=0;(zn < nbZone) && b_retVal;zn++ )
  {
   int nbwin = pGame->limites[zn].win;
 
@@ -914,11 +914,11 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString tblIn, QString 
 	 int nb_sql= sizeof(sql_msg)/sizeof(QString);
 
 	 /// Rajout de la colonne X1
-	 for (int current=0;(current < nb_sql) && isOk ; current++) {
+	 for (int current=0;(current < nb_sql) && b_retVal ; current++) {
 #ifndef QT_NO_DEBUG
 		qDebug() << "msg["<<current<<"]="<<sql_msg[current];
 #endif
-		isOk = query.exec(sql_msg[current]);
+		b_retVal = query.exec(sql_msg[current]);
 	 }
 
 
@@ -928,7 +928,7 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString tblIn, QString 
 	 QString ref="((r%2.z1=r%1.z1+1) and r%2.z1 in ("+zn_field+"))";
 	 QString ref2="(r%1.z1 in ("+zn_field+"))";
 
-	 for (int nbloop= nbwin;(nbloop>1) && isOk ;nbloop--) {
+	 for (int nbloop= nbwin;(nbloop>1) && b_retVal ;nbloop--) {
 
 		QString aliasZn="";
 		for (int k =1; k<=nbloop;k++) {
@@ -966,7 +966,7 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString tblIn, QString 
 		qDebug() << "msg1="<<msg1;
 #endif
 
-		isOk = query.exec(msg1);
+		b_retVal = query.exec(msg1);
 	 }
 
   }
@@ -982,22 +982,22 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString tblIn, QString 
  int nb_sql= sizeof(sql_msg)/sizeof(QString);
 
  /// Rajout de la colonne c1
- for (int current=0;(current < nb_sql) && isOk ; current++) {
+ for (int current=0;(current < nb_sql) && b_retVal ; current++) {
 #ifndef QT_NO_DEBUG
   qDebug() << "msg["<<current<<"]="<<sql_msg[current];
 #endif
-  isOk = query.exec(sql_msg[current]);
+  b_retVal = query.exec(sql_msg[current]);
  }
 #endif
 
- if(!isOk)
+ if(!b_retVal)
  {
   QString ErrLoc = "cmb_table.cpp";
   DB_Tools::DisplayError("BAnalyserTirages::usrFn_X1",&query,"do_SetFollower");
  }
 
 
- return isOk;
+ return b_retVal;
 }
 
 QString BAnalyserTirages::getFieldsFromZone(const stGameConf *pGame, int zn, QString alias)

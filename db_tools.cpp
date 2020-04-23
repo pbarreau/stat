@@ -85,7 +85,7 @@ QString DB_Tools::GEN_Where_3(int loop,
 /// http://www.sqlitetutorial.net/sqlite-primary-key/
 bool DB_Tools::myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QString asCode)
 {
- bool isOk=false;
+ bool b_retVal=false;
  QSqlQuery q_atom(query);
  QString msg = "select sql from sqlite_master where (type = 'table' and tbl_name='"+
                tblName+"'); ";
@@ -105,10 +105,10 @@ bool DB_Tools::myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QS
 
 #endif
 
- if((isOk=q_atom.exec(asCode))){
-  if((isOk=q_atom.exec(msg))){
+ if((b_retVal=q_atom.exec(asCode))){
+  if((b_retVal=q_atom.exec(msg))){
    q_atom.first();
-   if((isOk=q_atom.isValid())){
+   if((b_retVal=q_atom.isValid())){
     msg=q_atom.value(0).toString();
     msg = msg.simplified();
     msg = msg.replace("\"","'");
@@ -127,12 +127,12 @@ bool DB_Tools::myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QS
       {"PRAGMA foreign_keys=on;"}
      };
     int items = sizeof(atomic)/sizeof(QString);
-    for(int item=0; (item<items) && isOk; item++){
+    for(int item=0; (item<items) && b_retVal; item++){
      msg = atomic[item];
 #ifndef QT_NO_DEBUG
      qDebug() << atomic[item];
 #endif
-     isOk = q_atom.exec(msg);
+     b_retVal = q_atom.exec(msg);
 
 		}
 	 }
@@ -141,12 +141,12 @@ bool DB_Tools::myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QS
 #ifndef QT_NO_DEBUG
  qDebug() << "SQL msg:\n"<<msg<<"\n-------";
 #endif
- if(!isOk){
+ if(!b_retVal){
   QString ErrLoc = "DB_Tools::myCreateTableAs";
   DB_Tools::DisplayError(ErrLoc,&q_atom,msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 #if 0
@@ -240,7 +240,7 @@ QString DB_Tools::leftJoinFiltered(stJoinArgs ja,QString arg5)
 
 bool DB_Tools::isDbGotTbl(QString tbl, QString cnx, tbTypes etbTypes, bool silence)
 {
- bool isOk = false;
+ bool b_retVal = false;
  QSqlDatabase db = QSqlDatabase::database(cnx);
  QSqlQuery query(db);
  QString msg_err= "";
@@ -267,10 +267,10 @@ bool DB_Tools::isDbGotTbl(QString tbl, QString cnx, tbTypes etbTypes, bool silen
    "WHERE type='"+type+"' AND name='"+tbl+"';"}
  };
 
- if((isOk = query.exec(msg[0])))
+ if((b_retVal = query.exec(msg[0])))
  {
 
-	if((isOk=query.first()))
+	if((b_retVal=query.first()))
 	{
 	 msg_err = QString("Presence Table ")+tbl;
 	}
@@ -282,12 +282,12 @@ bool DB_Tools::isDbGotTbl(QString tbl, QString cnx, tbTypes etbTypes, bool silen
 	 QMessageBox::information(NULL,"Test :",msg_err,QMessageBox::Ok);
 	}
  }
- return isOk;
+ return b_retVal;
 }
 
 bool DB_Tools::checkHavingTableAndKey(QString tbl, QString key, QString cnx)
 {
- bool isOk = false;
+ bool b_retVal = false;
  QSqlDatabase db = QSqlDatabase::database(cnx);
  QSqlQuery query(db);
  QString msg_err= "";
@@ -298,15 +298,15 @@ bool DB_Tools::checkHavingTableAndKey(QString tbl, QString key, QString cnx)
   {"SELECT t1."+key+" from ("+tbl+") as t1; "}
  };
 
- if((isOk = query.exec(msg[0])))
+ if((b_retVal = query.exec(msg[0])))
  {
   query.first();
   if(query.isValid())
   {
    /// La table existe faire test sur la clef
-   if((isOk = query.exec(msg[1]))){
+   if((b_retVal = query.exec(msg[1]))){
     query.first();
-    isOk = query.isValid();
+    b_retVal = query.isValid();
    }
    else{
     msg_err = QString("Inconnu \"")+key+QString("\"\ndans table ") +tbl;
@@ -318,14 +318,14 @@ bool DB_Tools::checkHavingTableAndKey(QString tbl, QString key, QString cnx)
    QMessageBox::critical(NULL,"Test",msg_err,QMessageBox::Ok);
   }
  }
- return isOk;
+ return b_retVal;
 }
 
 QString DB_Tools::getLstDays(QString cnx_db_name, QString tbl_ref)
 {
  QString st_tmp = "";
 
- bool isOk = false;
+ bool b_retVal = false;
 
  QSqlDatabase cur_db = QSqlDatabase::database(cnx_db_name);
  QSqlQuery query(cur_db) ;
@@ -336,10 +336,10 @@ QString DB_Tools::getLstDays(QString cnx_db_name, QString tbl_ref)
  msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
        tbl_ref+") as tb1 order by J asc;";
 
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 
 
- if (isOk && (isOk = query.first()))
+ if (b_retVal && (b_retVal = query.first()))
  {
   // 1 ou plus de resultat ?
   int nb_items = 0;
@@ -365,7 +365,7 @@ QString DB_Tools::getLstDays(QString cnx_db_name, QString tbl_ref)
  qDebug() << "Date(s) : "<<st_tmp;
 #endif
 
- if(!isOk){
+ if(!b_retVal){
   DisplayError("DB_Tools::getLstDays",&query,msg);
   QMessageBox::warning(nullptr,"DB_Tools","getLstDays",QMessageBox::Ok);
  }
@@ -376,7 +376,7 @@ QString DB_Tools::getLstDays(QString cnx_db_name, QString tbl_ref)
 
 bool DB_Tools::tbFltGet(stTbFiltres *in_out, QString cnx)
 {
- bool isOk = false;
+ bool b_retVal = false;
 
  // Etablir connexion a la base
  QSqlDatabase db_1 = QSqlDatabase::database(cnx);
@@ -385,7 +385,7 @@ bool DB_Tools::tbFltGet(stTbFiltres *in_out, QString cnx)
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   DB_Tools::DisplayError("DB_Tools::flt_DbRead",nullptr,"");
   in_out->sta = Bp::E_Sta::Er_Db;
-  return isOk;
+  return b_retVal;
  }
 
  QSqlQuery query(db_1);
@@ -418,11 +418,11 @@ bool DB_Tools::tbFltGet(stTbFiltres *in_out, QString cnx)
 #ifndef QT_NO_DEBUG
  qDebug() << "flt_DbRead : "<<msg;
 #endif
- isOk = query.exec(msg);
- if(isOk){
+ b_retVal = query.exec(msg);
+ if(b_retVal){
   in_out->sta = Bp::E_Sta::Ok_Query;
 
-	if((isOk = query.first())){
+	if((b_retVal = query.first())){
 	 in_out->sta = Bp::E_Sta::Ok_Result;
 
 	 /// comptage des reponses
@@ -446,7 +446,7 @@ bool DB_Tools::tbFltGet(stTbFiltres *in_out, QString cnx)
   DB_Tools::DisplayError("DB_Tools::flt_DbRead",&query,msg);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 void DB_Tools::genStop(QString fnName)
@@ -457,7 +457,11 @@ void DB_Tools::genStop(QString fnName)
 
 bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
 {
- bool isOk = false;
+ bool b_retVal = false;
+ if(in_out->val <0){
+  in_out->sta = Bp::E_Sta::Er_Query;
+  return b_retVal;
+ }
 
  // Etablir connexion a la base
  QSqlDatabase db_1 = QSqlDatabase::database(cnx);
@@ -466,7 +470,7 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   DB_Tools::DisplayError("DB_Tools::setdbFlt",nullptr,"");
   in_out->sta = Bp::E_Sta::Er_Db;
-  return isOk;
+  return b_retVal;
  }
 
  QSqlQuery query(db_1);
@@ -496,6 +500,7 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
         +QString::number(in_out->pri)+","
         +QString::number(in_out->b_flt)+")";
   /// BUG ? : in_out pas de mise a jour de id
+  in_out->db_total=1;
  }
  else if (in_out->db_total == 1) {
   /// Faire un update
@@ -510,22 +515,23 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
         "val="+QString::number(in_out->val)+")";
  }
  else {
+  in_out->db_total++;
   /// faire une analyse ici
   DB_Tools::genStop("DB_Tools::tbFltSet");
-  isOk = false;
+  b_retVal = false;
  }
 
 #ifndef QT_NO_DEBUG
  qDebug() << "msg: "<<msg;
 #endif
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 
- if(!isOk){
+ if(!b_retVal){
   DB_Tools::DisplayError("DB_Tools::tbFltSet",&query,msg);
   QMessageBox::warning(nullptr,"DB_Tools","tbFltSet",QMessageBox::Ok);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)

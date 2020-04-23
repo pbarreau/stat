@@ -212,9 +212,9 @@ void SyntheseGenerale::slot_AnalyseLigne(const QModelIndex & index)
  for(int zn=0; zn <pMaConf->nb_zone;zn++){
   int nbAnalyses = pList[zn][0].size();
 
-	bool isOk=true;
+	bool b_retVal=true;
 	QSqlQuery query(db_0);
-	for(int i=0; (i< nbAnalyses) && (isOk == true);i++)
+	for(int i=0; (i< nbAnalyses) && (b_retVal == true);i++)
 	{
 	 QString key_sql = pList[zn][0].at(i);
 	 QString sqlReq = sql_DigOne(zn, lgn, pList, i);
@@ -223,9 +223,9 @@ void SyntheseGenerale::slot_AnalyseLigne(const QModelIndex & index)
 	 qDebug() << sqlReq;
 #endif
 
-	 isOk = query.exec(sqlReq);
+	 b_retVal = query.exec(sqlReq);
 
-	 if(isOk)
+	 if(b_retVal)
 	 {
 		// Mise a jour de la tables des resultats
 		QStandardItemModel *sqm_tmp = qobject_cast<QStandardItemModel *>(tbInfo[zn].at(1)->model());
@@ -238,8 +238,8 @@ void SyntheseGenerale::slot_AnalyseLigne(const QModelIndex & index)
 		 QStandardItem * item_1 = sqm_tmp->item(0,i);
 		 item_1->setData(tot,Qt::DisplayRole);
 		 sqm_tmp->setItem(0,i,item_1);
-		}while(query.next() && isOk);
-	 }/// if isOk
+		}while(query.next() && b_retVal);
+	 }/// if b_retVal
 	}/// for analyses
  }/// for zn
 }
@@ -320,7 +320,7 @@ QString SyntheseGenerale::sql_DigOne(int zn, int lgn, QStringList **pList, int i
 
 bool SyntheseGenerale::sql_grpAdd(stDigAll prm)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_0);
 
  /// decapsulation structure
@@ -360,19 +360,19 @@ bool SyntheseGenerale::sql_grpAdd(stDigAll prm)
  int nb_sql= sizeof(sql_msg)/sizeof(QString);
 
  /// Rajout de la colonne c1
- for (int current=0;(current < nb_sql) && isOk ; current++) {
+ for (int current=0;(current < nb_sql) && b_retVal ; current++) {
 #ifndef QT_NO_DEBUG
   qDebug() << "msg["<<current<<"]="<<sql_msg[current];
 #endif
-  isOk = query.exec(sql_msg[current]);
+  b_retVal = query.exec(sql_msg[current]);
  }
 
- return isOk;
+ return b_retVal;
 }
 
 bool SyntheseGenerale::sql_DigAll(stDigAll prm)
 {
- bool isOk = true;
+ bool b_retVal = true;
 
  /// decapsulation structure
  pMy_DigOne fnDig=prm.fnDig;
@@ -392,9 +392,9 @@ bool SyntheseGenerale::sql_DigAll(stDigAll prm)
  /// regarder combien vue calc
  QString msg ="SELECT count(name) FROM sqlite_master "
                "WHERE type='table' AND name like '"+viewName+"%'";
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 
- if(isOk){
+ if(b_retVal){
   int nbCalc = -1;
 
 	query.first();
@@ -425,36 +425,36 @@ bool SyntheseGenerale::sql_DigAll(stDigAll prm)
 	 qDebug() << msg;
 #endif
 
-	 isOk = query.exec(msg);
-	 if(isOk && (i<=tot_items)){
+	 b_retVal = query.exec(msg);
+	 if(b_retVal && (i<=tot_items)){
 		switch (nbCalc) {
 		 case 0:
 		 case 1:
 		 {
 			prm.i = i+1;
-			isOk = sql_DigAll(prm);
+			b_retVal = sql_DigAll(prm);
 		 }
 		 break;
 
 		 case 2: /// si 2 fusion des premieres vers une troisieme
 		 {
-			for (int view=0;view<2 && isOk;view++) {
+			for (int view=0;view<2 && b_retVal;view++) {
 			 msg = "drop table if exists tb_view_"+QString::number(view).rightJustified(2,'0');
-			 isOk=query.exec(msg);
+			 b_retVal=query.exec(msg);
 			}
 
-			if(isOk){
+			if(b_retVal){
 			 QString tb_name = "tb_view_00";
 
 			 if(i == tot_items){
 				tb_name = target+QString::number(zn+1);
 			 }
 			 msg = "alter table "+viewName+" rename to " + tb_name;
-			 isOk=query.exec(msg);
+			 b_retVal=query.exec(msg);
 
-			 if(isOk && (i<tot_items)){
+			 if(b_retVal && (i<tot_items)){
 				prm.i = i+1;
-				isOk = sql_DigAll(prm);
+				b_retVal = sql_DigAll(prm);
 			 }
 
 			}
@@ -469,7 +469,7 @@ bool SyntheseGenerale::sql_DigAll(stDigAll prm)
 	 }
 	}
  }
- return isOk;
+ return b_retVal;
 }
 
 void SyntheseGenerale::slot_ShowBoule(const QModelIndex & index)
@@ -1433,7 +1433,7 @@ QTableView *SyntheseGenerale::doTabGrpTirage(stDesigConf conf)
 
  //QSqlQuery query(db_0);
  QSqlQueryModel *sqm_tmp=new QSqlQueryModel;
- //bool isOk = true;
+ //bool b_retVal = true;
 
  QString st_msg1 = "select * from Grp_z"+QString::number(conf.zn+1);
  sqm_tmp->setQuery(st_msg1,db_0);
@@ -2046,7 +2046,7 @@ void SyntheseGenerale::slot_RazSelection(QString)
 
 #if 0
 QSqlQuery query(db_1);
-bool isOk = true;
+bool b_retVal = true;
 
 QString filterDays = CreerCritereJours(db_1.connectionName(),tbl_in);
 
@@ -2062,10 +2062,10 @@ QString str_data = "select id,J,b1,b2,b3,b4,b5 from ("
 qDebug() << "str_data:"<<str_data;
 #endif
 
-if((isOk = query.exec(str_data))){
+if((b_retVal = query.exec(str_data))){
  //Verifier si on a des donnees
  query.first();
- if((isOk=query.isValid())){
+ if((b_retVal=query.isValid())){
   /// Poursuivre les calculs
   /// 1 : Transformation de lignes vers 1 colonne
   QString tbl_refBoules = QStringLiteral("B_elm");
@@ -2105,7 +2105,7 @@ if((isOk = query.exec(str_data))){
 #ifndef QT_NO_DEBUG
    qDebug() << "str_tblData:"<<str_tblData;
 #endif
-   if((isOk = query.exec(str_tblData))){
+   if((b_retVal = query.exec(str_tblData))){
     /// mettre dans la table analyse le barycentre de chaque tirage
     QString str_tblAnalyse = "";
     if(tbl_in=="E1"){
@@ -2115,9 +2115,9 @@ if((isOk = query.exec(str_data))){
      str_tblAnalyse = "B_ana_z1";
     }
 
-    if((isOk = mettreBarycentre(str_tblAnalyse, str_data))){
+    if((b_retVal = mettreBarycentre(str_tblAnalyse, str_data))){
      /// indiquer le dernier barycentre des tirages fdj
-     isOk = repereDernier(str_tblName);
+     b_retVal = repereDernier(str_tblName);
     }
    }
   }
@@ -2132,7 +2132,7 @@ if((isOk = query.exec(str_data))){
  }
 }
 
-if(!isOk){
+if(!b_retVal){
  /// analyser erreur
  QString err_msg = query.lastError().text();
  //un message d'information
@@ -2188,7 +2188,7 @@ bool SyntheseGenerale::grp_Contruire_Tbl(int zn,
 																				 QString key_brc,
 																				 QString tbl_dst )
 {
- bool isOk = false;
+ bool b_retVal = false;
 
 
  QString st_requete;
@@ -2210,12 +2210,12 @@ bool SyntheseGenerale::grp_Contruire_Tbl(int zn,
 
  /// Si la table existe deja sortir
  if(DB_Tools::checkHavingTableAndKey(tb_ana, key_brc, db_0.connectionName())){
-  if((isOk = Contruire_Executer(tbl_dst,st_requete))){
-   //isOk = brc_MarquerDerniers(zn,  tb_src, tb_ana ,  key_brc,tbl_dst);
+  if((b_retVal = Contruire_Executer(tbl_dst,st_requete))){
+   //b_retVal = brc_MarquerDerniers(zn,  tb_src, tb_ana ,  key_brc,tbl_dst);
   }
  }
 
- return isOk;
+ return b_retVal;
 }
 
 bool SyntheseGenerale::cmb_Contruire_Tbl(int zn,
@@ -2224,7 +2224,7 @@ bool SyntheseGenerale::cmb_Contruire_Tbl(int zn,
 																				 QString key_brc,
 																				 QString tbl_dst )
 {
- bool isOk = true;
+ bool b_retVal = true;
 
 
  QString st_requete;
@@ -2244,12 +2244,12 @@ bool SyntheseGenerale::cmb_Contruire_Tbl(int zn,
  qDebug() << st_requete;
 #endif
 
- if((isOk = Contruire_Executer(tbl_dst,st_requete))){
-  isOk = cmb_MarquerDerniers(zn,  tb_src, tb_ana ,  key_brc,tbl_dst);
+ if((b_retVal = Contruire_Executer(tbl_dst,st_requete))){
+  b_retVal = cmb_MarquerDerniers(zn,  tb_src, tb_ana ,  key_brc,tbl_dst);
  }
 
 
- return isOk;
+ return b_retVal;
 }
 
 bool SyntheseGenerale::brc_Contruire_Tbl(int zn,
@@ -2258,7 +2258,7 @@ bool SyntheseGenerale::brc_Contruire_Tbl(int zn,
 																				 QString key_brc,
 																				 QString tbl_dst )
 {
- bool isOk = true;
+ bool b_retVal = true;
 
  if(!DB_Tools::checkHavingTableAndKey(tb_ana, key_brc, db_0.connectionName())){
   /// La table ""+tb_ana_zn+" (tirages)"
@@ -2285,21 +2285,21 @@ bool SyntheseGenerale::brc_Contruire_Tbl(int zn,
  qDebug() << st_requete;
 #endif
 
- if((isOk = Contruire_Executer(tbl_dst,st_requete))){
-  isOk = brc_MarquerDerniers(zn,  tb_src, tb_ana ,  key_brc,tbl_dst);
+ if((b_retVal = Contruire_Executer(tbl_dst,st_requete))){
+  b_retVal = brc_MarquerDerniers(zn,  tb_src, tb_ana ,  key_brc,tbl_dst);
  }
 
 
- return isOk;
+ return b_retVal;
 }
 
 bool SyntheseGenerale::cmb_MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_0);
 
  /// Mettre info sur 2 derniers tirages
- for(int dec=0; (dec <2) && isOk ; dec++){
+ for(int dec=0; (dec <2) && b_retVal ; dec++){
   int val = 1<<dec;
   QString sdec = QString::number(val);
   QString msg []={
@@ -2323,19 +2323,19 @@ bool SyntheseGenerale::cmb_MarquerDerniers(int zn, QString tb_src, QString tb_re
 	 qDebug() << "msg ["<<i<<"]: "<<msg[i];
 	}
 #endif
-  isOk = query.exec(msg[taille-1]);
+  b_retVal = query.exec(msg[taille-1]);
  }
 
-  return isOk;
+  return b_retVal;
 }
 
 bool SyntheseGenerale::brc_MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
 {
- bool isOk = true;
+ bool b_retVal = true;
  QSqlQuery query(db_0);
 
  /// Mettre info sur 2 derniers tirages
- for(int dec=0; (dec <2) && isOk ; dec++){
+ for(int dec=0; (dec <2) && b_retVal ; dec++){
   int val = 1<<dec;
   QString sdec = QString::number(val);
   QString msg []={
@@ -2359,12 +2359,12 @@ bool SyntheseGenerale::brc_MarquerDerniers(int zn, QString tb_src, QString tb_re
 	 qDebug() << "msg ["<<i<<"]: "<<msg[i];
 	}
 #endif
-  isOk = query.exec(msg[taille-1]);
+  b_retVal = query.exec(msg[taille-1]);
  }
 
  /// --------------------------------
  /// Mettre marqueur sur b+1 et b-1
- for(int dec=0; (dec <2) && isOk ; dec++){
+ for(int dec=0; (dec <2) && b_retVal ; dec++){
   int d[2]={+1,-1}; // voir BDelegateCouleurFond
 
 
@@ -2396,7 +2396,7 @@ bool SyntheseGenerale::brc_MarquerDerniers(int zn, QString tb_src, QString tb_re
 	 qDebug() << "msg ["<<i<<"]: "<<msg[i];
 	}
 #endif
-  isOk = query.exec(msg[taille-1]);
+  b_retVal = query.exec(msg[taille-1]);
  }
 
 
@@ -2404,7 +2404,7 @@ bool SyntheseGenerale::brc_MarquerDerniers(int zn, QString tb_src, QString tb_re
   DB_Tools::DisplayError("SyntheseGenerale::",&query,"tot_MarquerDerniers");
  }
 
- return isOk;
+ return b_retVal;
 }
 
 QString SyntheseGenerale::getFieldsFromZone(int zn, QString alias)
@@ -2444,7 +2444,7 @@ bool SyntheseGenerale::RajouterCalculBarycentreDansAnalyses(int zn,
 
 
  QSqlQuery query(db_0);
- bool isOk = true;
+ bool b_retVal = true;
  QString filterDays = *st_JourTirageDef;
 
 #ifndef QT_NO_DEBUG
@@ -2485,10 +2485,10 @@ bool SyntheseGenerale::RajouterCalculBarycentreDansAnalyses(int zn,
  qDebug() << "str_data:"<<str_data;
 #endif
 
- if((isOk = query.exec(str_data))){
+ if((b_retVal = query.exec(str_data))){
   //Verifier si on a des donnees
   query.first();
-  if((isOk=query.isValid())){
+  if((b_retVal=query.isValid())){
    /// Poursuivre les calculs
    /// 1 : Transformation de lignes vers 1 colonne
    QString tbl_refBoules = tb_ref;
@@ -2531,17 +2531,17 @@ bool SyntheseGenerale::RajouterCalculBarycentreDansAnalyses(int zn,
 #ifndef QT_NO_DEBUG
 		qDebug() << "str_tblData:"<<str_tblData;
 #endif
-		if((isOk = query.exec(str_tblData))){
+		if((b_retVal = query.exec(str_tblData))){
 		 /// mettre dans la table analyse le barycentre de chaque tirage
 		 QString str_tblAnalyse = tb_ana;
 
-		 if((isOk = mettreBarycentre(str_tblAnalyse, str_data))){
+		 if((b_retVal = mettreBarycentre(str_tblAnalyse, str_data))){
 			/// Supprimer table old
 			/// A verifier blocage base si select direct !!!
 			///
 			/// ------------------------------------------------
 			QString msg = "drop view if exists "+str_tblName+";";
-			isOk = query.exec(msg);
+			b_retVal = query.exec(msg);
 		 }
 		 else{
 			;
@@ -2562,7 +2562,7 @@ bool SyntheseGenerale::RajouterCalculBarycentreDansAnalyses(int zn,
  if(query.lastError().isValid()){
   DB_Tools::DisplayError("SyntheseGenerale::",&query,"A4_0_CalculerBarycentre");
  }
- return isOk;
+ return b_retVal;
 }
 #else
 bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poids_boules)
@@ -2574,7 +2574,7 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
  QString ky_ref = "z"+QString::number(zn+1);
 
  QSqlQuery query(db_0);
- bool isOk = true;
+ bool b_retVal = true;
  QString filterDays = *st_JourTirageDef;
 
  QString st_query = "";
@@ -2608,10 +2608,10 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
  qDebug() << "str_data:"<<str_data;
 #endif
 
- if((isOk = query.exec(str_data))){
+ if((b_retVal = query.exec(str_data))){
   //Verifier si on a des donnees
   query.first();
-  if((isOk=query.isValid())){
+  if((b_retVal=query.isValid())){
    /// Poursuivre les calculs
    /// 1 : Transformation de lignes vers 1 colonne
    QString tbl_refBoules = tb_ref;
@@ -2654,13 +2654,13 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
 #ifndef QT_NO_DEBUG
 		qDebug() << "str_tblData:"<<str_tblData;
 #endif
-		if((isOk = query.exec(str_tblData))){
+		if((b_retVal = query.exec(str_tblData))){
 		 /// mettre dans la table analyse le barycentre de chaque tirage
 		 QString str_tblAnalyse = ""+tb_ana_zn+"";
 
-		 if((isOk = mettreBarycentre(str_tblAnalyse, str_data))){
+		 if((b_retVal = mettreBarycentre(str_tblAnalyse, str_data))){
 			/// indiquer le dernier barycentre des tirages fdj
-			//isOk = repereDernier(str_tblName);
+			//b_retVal = repereDernier(str_tblName);
 			;
 		 }
 		 else{
@@ -2682,7 +2682,7 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
  if(query.lastError().isValid()){
   DB_Tools::DisplayError("SyntheseGenerale::",&query,"A4_0_CalculerBarycentre");
  }
- return isOk;
+ return b_retVal;
 }
 #endif
 
@@ -2772,12 +2772,12 @@ QTableView * SyntheseGenerale::grp_TbvAnalyse(QGridLayout *grid_parent, int zn, 
 
 
  QSqlQuery query(db_0);
- bool isOk = true;
+ bool b_retVal = true;
  QString st_msg1 = "";
 
  /// verifier si le Table view resultat n'est pas deja present
 
- if((isOk = grp_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
+ if((b_retVal = grp_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
 
 
 	 msg = "select * from "+tb_out+";";
@@ -2897,11 +2897,11 @@ QTableView * SyntheseGenerale::cmb_TbvAnalyse(int zn, QString tb_src, QString tb
 
 
  QSqlQuery query(db_0);
- bool isOk = true;
+ bool b_retVal = true;
  QString st_msg1 = "";
 
 
- if((isOk = cmb_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
+ if((b_retVal = cmb_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
 
 
 	QString msg = "select * from "+tb_out+";";
@@ -3022,11 +3022,11 @@ QTableView * SyntheseGenerale::brc_TbvAnalyse(int zn, QString tb_src, QString tb
 
 
  QSqlQuery query(db_0);
- bool isOk = true;
+ bool b_retVal = true;
  QString st_msg1 = "";
 
 
- if((isOk = brc_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
+ if((b_retVal = brc_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
 
 
 	QString msg = "select * from "+tb_out+";";
@@ -3182,10 +3182,10 @@ QTableView * SyntheseGenerale::tot_TbvAnalyse(int zn, QString tb_src, QString tb
   int totalTbv = tb_brc.size();
 */
  QSqlQuery query(db_0);
- bool isOk = true;
+ bool b_retVal = true;
  QString st_msg1 = "";
 
- if((isOk = tot_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
+ if((b_retVal = tot_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
   st_msg1 = "select * from "+tb_out+";";
  }
  ///sqm_bloc1_1->setQuery(st_msg1,db_0);
@@ -3460,9 +3460,9 @@ QTableView * SyntheseGenerale::grp_TbvResume(QGridLayout *grid_parent, int znid,
 #endif
 
  QSqlQuery query(db_0);
- bool isOk= true;
+ bool b_retVal= true;
  msg = "create table if not exists " + tb_write + " as " + msg;
- if((isOk = query.exec(msg))){
+ if((b_retVal = query.exec(msg))){
   msg = "select id, c, "+str_key+" as B, I,T, NULL as Boules, P, F FROM "
         + tb_write +" as t1 GROUP by t1."+str_key+" ORDER by t1.t DESC";
 
@@ -3495,7 +3495,7 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
 
  QSqlQuery query(db_0);
  QSqlQueryModel a;
- bool isOk = true;
+ bool b_retVal = true;
  QString msg[]={
   {"SELECT name FROM sqlite_master "
    "WHERE type='table' AND name='"+tb_source+"';"}
@@ -3641,7 +3641,7 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
  qDebug() << "msg [0]: "<<msg[0];
 #endif
 
- if((isOk = query.exec(msg[0])))
+ if((b_retVal = query.exec(msg[0])))
  {
   query.first();
   if(query.isValid())
@@ -3650,7 +3650,7 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
    qDebug() << "st_requetes[taille-2]: "<<st_requetes[taille-2];
 #endif
 	 /// La table de base existe faire le resume
-	 if((isOk = query.exec(st_requetes[taille-2]))){
+	 if((b_retVal = query.exec(st_requetes[taille-2]))){
 #ifndef QT_NO_DEBUG
 		qDebug() << "st_requetes[taille-1]: "<<st_requetes[taille-1];
 #endif
@@ -3673,7 +3673,7 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
  void SyntheseGenerale::FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete, QString tb_total, QString st_key)
  {
   QSqlQuery query(db_0);
-  bool isOk = true;
+  bool b_retVal = true;
 
 	/// mettre a jour la colonne C en fonction de la B
 	QString msg =  "UPDATE "
@@ -3689,7 +3689,7 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
 	qDebug() << "msg: "<<msg;
 #endif
 
-	if((isOk = query.exec(msg))){
+	if((b_retVal = query.exec(msg))){
 	 BVisuResume_sql::stBVisuResume_sql a;
 	 a.cnx = db_0.connectionName();
 	 a.tb_rsm = tb_write;
@@ -3718,7 +3718,7 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
 
 	QSqlQuery query(db_0);
 	QSqlQueryModel a;
-	bool isOk = true;
+	bool b_retVal = true;
 	QString msg[]={
 	 {"SELECT name FROM sqlite_master "
 		"WHERE type='table' AND name='"+tb_source+"';"},
@@ -3738,13 +3738,13 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
 	};
 
 
-	if((isOk = query.exec(msg[0])))
+	if((b_retVal = query.exec(msg[0])))
 	{
 	 query.first();
 	 if(query.isValid())
 	 {
 		/// La table existe faire le resume
-		if((isOk = query.exec(msg[1]))){
+		if((b_retVal = query.exec(msg[1]))){
 		 BVisuResume_sql::stBVisuResume_sql a;
 		 a.cnx = db_0.connectionName();
 		 a.tb_rsm =tb_write;
@@ -4425,7 +4425,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(prmLay prm)
 QGridLayout * SyntheseGenerale::MonLayout_R4_brc_z1(prmLay prm)
 {
  QGridLayout *lay_return = new QGridLayout;
- bool isOk = true;
+ bool b_retVal = true;
 
  int dst = prm.dst;
  int zn = prm.zn;
@@ -4860,7 +4860,7 @@ int * SyntheseGenerale::getPathToView(QTableView *view, QList < QTabWidget *> **
 
 bool SyntheseGenerale::SimplifieSelection(QTableView *view)
 {
- bool isOk = true;
+ bool b_retVal = true;
 
  QAbstractItemModel *sqm_tmp = NULL;
  QString objName = view->objectName();
@@ -4931,7 +4931,7 @@ bool SyntheseGenerale::SimplifieSelection(QTableView *view)
   //return;
  }
 
- return isOk;
+ return b_retVal;
 }
 void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
@@ -6209,23 +6209,23 @@ count(*)  as T,
 
  bool SyntheseGenerale::tot_Contruire_Tbl(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
  {
-  bool isOk = true;
+  bool b_retVal = true;
   QString st_requete;
 
 	st_requete = A1_0_TrouverLignes(zn,  tb_src, tb_ref ,  key);
 	st_requete = A1_1_CalculerEcart(st_requete);
 	st_requete = A1_2_RegrouperEcart(st_requete);
 
-	if((isOk = Contruire_Executer(tbl_dst,st_requete))){
-	 isOk = tot_MarquerDerniers(zn,  tb_src, tb_ref ,  key,tbl_dst);
+	if((b_retVal = Contruire_Executer(tbl_dst,st_requete))){
+	 b_retVal = tot_MarquerDerniers(zn,  tb_src, tb_ref ,  key,tbl_dst);
 	}
 
-  return isOk;
+  return b_retVal;
  }
 
  bool SyntheseGenerale::tot_MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
  {
-  bool isOk = true;
+  bool b_retVal = true;
   QSqlQuery query(db_0);
 
 
@@ -6233,7 +6233,7 @@ count(*)  as T,
 	QString st_critere = getFieldsFromZone(zn, "t2");
 
 	/// Mettre info sur 2 derniers tirages
-	for(int dec=0; (dec <2) && isOk ; dec++){
+	for(int dec=0; (dec <2) && b_retVal ; dec++){
 	 int val = 1<<dec;
 	 QString sdec = QString::number(val);
 	 QString msg []={
@@ -6257,12 +6257,12 @@ count(*)  as T,
 		qDebug() << "msg ["<<i<<"]: "<<msg[i];
 	 }
 #endif
-	 isOk = query.exec(msg[taille-1]);
+	 b_retVal = query.exec(msg[taille-1]);
 	}
 
 	/// --------------------------------
 	/// Mettre marqueur sur b+1 et b-1
-	for(int dec=0; (dec <2) && isOk ; dec++){
+	for(int dec=0; (dec <2) && b_retVal ; dec++){
 	 int d[2]={+1,-1}; // voir BDelegateCouleurFond
 
 	 QString ref = "(t2."+pMaConf->nomZone[zn]+"%1+%2)";
@@ -6296,14 +6296,14 @@ count(*)  as T,
 		qDebug() << "msg ["<<i<<"]: "<<msg[i];
 	 }
 #endif
-	 isOk = query.exec(msg[taille-1]);
+	 b_retVal = query.exec(msg[taille-1]);
 	}
 
 	/// --------------------------------
 	/// Marquer les tirages pas encore sortis
 	QList<sCouv *> lstCouv = tabEcarts->getLstCouv(zn);
 
-	if(lstCouv.size() && isOk){
+	if(lstCouv.size() && b_retVal){
 	 QString sdec = QString::number(BDelegateCouleurFond::Filtre::isNever,16);
 	 int items = pMaConf->limites[zn].max;
 	 sCouv *curCouv = lstCouv.last();
@@ -6329,22 +6329,22 @@ count(*)  as T,
 								 + " set F=(case when f is (NULL or 0) then 0x"
 								 +sdec+" else(f|0x"+sdec+") end) "
 																								"where (B in ("+lst_items+"))";
-	 isOk = query.exec(sql);
+	 b_retVal = query.exec(sql);
 	}
 
 	if(query.lastError().isValid()){
 	 DB_Tools::DisplayError("SyntheseGenerale::",&query,"tot_MarquerDerniers");
 	}
-	return(isOk);
+	return(b_retVal);
  }
 
  bool SyntheseGenerale::Contruire_Executer(QString tbl_dst, QString st_requete)
  {
-  bool isOk = true;
+  bool b_retVal = true;
   QSqlQuery query(db_0);
 
 	/// Lancement de la requete pour trouver le nom des colonnes
-	if((isOk=query.exec(st_requete))){
+	if((b_retVal=query.exec(st_requete))){
 	 QString type = "";
 	 QString st_header = "(";
 	 int nbCol = query.record().count();
@@ -6379,16 +6379,16 @@ count(*)  as T,
 
 	 /// Creation de la table
 	 QString msg = "drop table if exists "+tbl_dst;
-	 isOk = query.exec(msg);
+	 b_retVal = query.exec(msg);
 
 	 st_header = "create table if not exists "+tbl_dst+" " + st_header;
-	 if(isOk && (isOk = query.exec(st_header))){
+	 if(b_retVal && (b_retVal = query.exec(st_header))){
 		/// mettre les donnees precedentes
 		st_header = "insert into "+tbl_dst+" select * from ("+st_requete+")";
 #ifndef QT_NO_DEBUG
 		qDebug() << st_header;
 #endif
-		isOk = query.exec(st_header);
+		b_retVal = query.exec(st_header);
 	 }
 
 	}
@@ -6397,7 +6397,7 @@ count(*)  as T,
 	 DB_Tools::DisplayError("SyntheseGenerale::",&query,"A1_2_RegrouperEcart");
 	}
 
-  return(isOk);
+  return(b_retVal);
  }
 
  QString SyntheseGenerale::grp_SqlCreateZ1(int onglet, QString table)

@@ -4,9 +4,9 @@
 
 cAssemble::cAssemble(int priorite, int zn)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     // Trouver les boules de la priorité
-    isOk = TrouverBoules(priorite, zn);
+    b_retVal = TrouverBoules(priorite, zn);
     // creer la liste des possibilites
     // applique a la selection utilisateur
 }

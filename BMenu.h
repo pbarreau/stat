@@ -36,6 +36,13 @@ class BMenu : public QMenu
  void slot_ChoosePriority(QAction *cmd);
 
  private:
+ void initialiser_v1(const QPoint pos, const etCount eType, BTbView *view);
+ void initialiser_v2(const QPoint pos, const etCount eType, BTbView *view);
+ void gererMenu_v1();
+ void gererMenu_v2();
+ void presenterMenu();
+
+ private:
  QMenu *main_menu;
  QSqlDatabase db_menu;
  etCount eCalcul;

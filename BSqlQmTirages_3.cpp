@@ -74,7 +74,7 @@ bool BSqlQmTirages_3::setVisualChk(int id, Qt::CheckState chk)
 {
  QSqlDatabase db = QSqlDatabase::database(db_cnx);
  QSqlQuery query(db);
- bool isOk = false;
+ bool b_retVal = false;
 
  /// Recuperer le code ayant permis les resultats
 #if 0
@@ -95,10 +95,10 @@ bool BSqlQmTirages_3::setVisualChk(int id, Qt::CheckState chk)
                +")";
 
  /// Execution
- isOk = query.exec(msg);
+ b_retVal = query.exec(msg);
 
  /// Mise a jour ?
- if(isOk){
+ if(b_retVal){
   this->query().clear();
   this->setQuery(s_tmp,db);
 #if 0
@@ -110,5 +110,5 @@ bool BSqlQmTirages_3::setVisualChk(int id, Qt::CheckState chk)
 
  }
 
- return  isOk;
+ return  b_retVal;
 }
