@@ -25,13 +25,13 @@ BTbView::BTbView(int in_zn, etCount in_typ, QString cnx, QTableView * parent)
   return;
  }
 
- myGpb = new QGroupBox;
+ myGpb = new BGpbMenu(cnx);
+ construireMenu();
 }
 
 BTbView::~BTbView()
 {
  delete myGpb;
- //delete myTbv;
 }
 
 QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
@@ -125,11 +125,48 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
  return title;
 }
 
+
 void BTbView::updateTitle()
 {
  /// Mettre ensuite l'analyse du marquage
  QString st_total = mkTitle(zn,cal,this);
  myGpb->setTitle(st_total);
+}
+
+/*
+void  BTbView::slot_ShowMenu(const QGroupBox *cible)
+{
+ menu->popup(cible->mapToGlobal(pos()));
+}
+
+void BTbView::mousePressEvent ( QMouseEvent * event )
+
+{
+ emit sig_ShowMenu(myGpb);
+}
+*/
+
+void BTbView::construireMenu(void)
+{
+
+ menu = new QMenu();
+
+ QAction *isWanted = menu->addAction("Reserver",this,SLOT(slot_isWanted(bool)));
+ isWanted->setCheckable(true);
+ isWanted->setEnabled(true);
+
+ QAction *isChoosed = menu->addAction("Choisir",this,SLOT(slot_isChoosed(bool)));
+ isChoosed->setCheckable(true);
+ isChoosed->setDisabled(true);
+
+ QAction *isFiltred = menu->addAction("Filtrer",this,SLOT(slot_isFiltred(bool)));
+ isFiltred->setCheckable(true);
+ isFiltred->setDisabled(true);
+}
+
+BGpbMenu *BTbView::getGpb()
+{
+ return myGpb;
 }
 
 QGroupBox * BTbView::getScreen()

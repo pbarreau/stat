@@ -4,8 +4,10 @@
 #include <QTableView>
 #include <QGroupBox>
 #include <QSqlDatabase>
+#include <QMenu>
 
 #include "bstflt.h"
+#include "BGpbMenu.h"
 
 class BTbView : public QTableView
 {
@@ -14,18 +16,31 @@ class BTbView : public QTableView
  public :
  BTbView(int in_zn, etCount in_typ, QString cnx, QTableView *parent=nullptr);
  QGroupBox * getScreen();
+ BGpbMenu * getGpb();
  void updateTitle();
 
  ~BTbView();
 
+ /*
+ protected:
+ void mousePressEvent ( QMouseEvent * event ) ;
+
+ signals:
+ void sig_ShowMenu(const QGroupBox *cible);
+
+ public slots:
+ void slot_ShowMenu(const QGroupBox *cible);
+*/
  private:
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);
+ void construireMenu(void);
 
  private:
  QSqlDatabase db_tbv;
  int zn;
  etCount cal;
- QGroupBox *myGpb;
+ BGpbMenu *myGpb;
+ QMenu *menu;
 };
 
 #endif // BTBVIEW_H

@@ -160,6 +160,13 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
 
+ /// Click sur le group box
+ BGpbMenu *tmp_gpb = qtv_tmp->getGpb();
+ connect(tmp_gpb,
+         SIGNAL(sig_ShowMenu(const QGroupBox *, const QPoint)),
+         tmp_gpb,
+         SLOT(slot_ShowMenu(const QGroupBox *, const QPoint)));
+
  /// --------------------
 
 
