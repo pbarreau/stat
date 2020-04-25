@@ -111,6 +111,11 @@ void BGpbMenu::setNewFlt(Bp::F_Flts flt_def)
  /// Rechercher ce qui manque dans table Filtres
  /// le rajouter
  /// effectuer le traitement flt
+ ///
+ /// https://www.sqlitetutorial.net/sqlite-intersect/
+ /// https://www.sqlitetutorial.net/sqlite-except/
+ /// https://www.sqlitetutorial.net/sqlite-insert/
+ /// https://www.sqlitetutorial.net/sqlite-update/
 
  /*
   * insert into filtres

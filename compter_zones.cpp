@@ -76,6 +76,9 @@ QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)
 QLayout * BcElm::usr_UpperItems(int zn)
 {
  /// https://wiki.qt.io/PushButton_Based_On_Action
+ /// https://wiki.qt.io/How_to_Use_QPushButton
+ /// https://doc.qt.io/qt-5/qpushbutton.html#details
+ /// https://openclassrooms.com/fr/courses/1355051-le-gui-avec-qt-la-suite/1355248-gestion-avancee-des-qpushbutton
 
  QHBoxLayout *ret_lay = nullptr;
 
