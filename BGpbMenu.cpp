@@ -1,10 +1,18 @@
+#ifndef QT_NO_DEBUG
+#include <QDebug>
+#endif
+
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QMessageBox>
+#include <QSqlQuery>
 
 #include "BGpbMenu.h"
+#include "compter.h"
+#include "db_tools.h"
 
-BGpbMenu::BGpbMenu(QString cnx, QGroupBox *parent):QGroupBox(parent)
+BGpbMenu::BGpbMenu(const int in_zn, const etCount in_typ, const QString cnx, BTbView *in_parent)
+    :QGroupBox(nullptr),zn(in_zn),typ(in_typ),parent(in_parent)
 {
  // Etablir connexion a la base
  db_gbm = QSqlDatabase::database(cnx);
@@ -14,13 +22,20 @@ BGpbMenu::BGpbMenu(QString cnx, QGroupBox *parent):QGroupBox(parent)
   return;
  }
 
+ tb_flt = "Filtres";
+ tb_tirages = "B_fdj";
+ use_gpb = nullptr;
+
  gbm_Menu();
 }
 
 void  BGpbMenu::slot_ShowMenu(const QGroupBox *cible, const QPoint &p)
 {
- menu->popup(p);
+ if(typ==eCountGrp)
+  return;
 
+ use_gpb = cible;
+ menu->popup(p);
 }
 
 void BGpbMenu::mousePressEvent ( QMouseEvent * event )
@@ -35,18 +50,138 @@ void BGpbMenu::mousePressEvent ( QMouseEvent * event )
 
 void BGpbMenu::gbm_Menu(void)
 {
+ menu = new QMenu("All");
 
- menu = new QMenu();
+ QString choix[]={"tous : Reset","tous : Reserver", "tous : Choisir", "tous : Filtrer"};
+ int nb_chx = sizeof(choix)/sizeof(QString);
 
- QAction *isWanted = menu->addAction("Reserver",this,SLOT(slot_isWanted(bool)));
- isWanted->setCheckable(true);
- isWanted->setEnabled(true);
+ menu->addSection("ALL");
+ menu->addSeparator();
+ QActionGroup *usr_sel = new  QActionGroup(menu);
 
- QAction *isChoosed = menu->addAction("Choisir",this,SLOT(slot_isChoosed(bool)));
- isChoosed->setCheckable(true);
- isChoosed->setDisabled(true);
+ for(int i =1; i<=nb_chx;i++)
+ {
+  QAction *radio = new QAction(choix[i-1],usr_sel);
+  radio->setCheckable(true);
+  menu->addAction(radio);
+  usr_sel->addAction(radio)->setData(i);
+ }
+ connect(usr_sel,SIGNAL(triggered(QAction*)),this,SLOT(slot_ManageFlts(QAction*)));
+}
 
- QAction *isFiltred = menu->addAction("Filtrer",this,SLOT(slot_isFiltred(bool)));
- isFiltred->setCheckable(true);
- isFiltred->setDisabled(true);
+void BGpbMenu::slot_ManageFlts(QAction *all_cmd)
+{
+ Bp::F_Flts flt_def = Bp::noFlt;
+
+ int req = all_cmd->data().toInt();
+
+ switch (req) {
+
+	case 1:
+	 flt_def = ~(Bp::fltWanted | Bp::fltSelected | Bp::fltFiltred);
+	 //flt_def = flt_def.operator~();
+	 break;
+	case 2:
+	 flt_def =  ~(Bp::fltSelected | Bp::fltFiltred) & Bp::fltWanted ;
+	 break;
+
+	case 3:
+	 flt_def = (Bp::fltWanted|Bp::fltSelected) & ~Bp::fltFiltred;
+	 break;
+
+	case 4:
+	 flt_def = Bp::fltWanted|Bp::fltSelected|Bp::fltFiltred;
+	 break;
+	default:
+			;//rien
+ }
+
+ setNewFlt(flt_def);
+
+ parent->updateTitle();
+}
+
+void BGpbMenu::setNewFlt(Bp::F_Flts flt_def)
+{
+ bool b_retVal = true;
+ QSqlQuery query(db_gbm);
+
+ QString msg = "";
+
+ /// Rechercher ce qui manque dans table Filtres
+ /// le rajouter
+ /// effectuer le traitement flt
+
+ /*
+  * insert into filtres
+  * with
+  * t1 as (select tb1.id as id from (r_B_fdj_elm_z1) as tb1),
+  * t2 as (select tb1.val as val from (filtres) as tb1 where ((tb1.zne=0) and (tb1.typ=1))),
+  * t3 as (select t1.id from t1 EXCEPT SELECT t2.val from t2)
+  *
+  * select NULL,0,1,10,t3.id,t3.id,-2,0 from t3
+  */
+
+ msg = "insert into "+tb_flt+
+       "  "
+       "with  "
+       "t1 as (select tb1.id as id from (r_"+tb_tirages+
+       "_"+BCount::label[typ]+
+       "_z"+QString::number(zn+1)+
+       ") as tb1), "
+       "t2 as (select tb1.val as val from ("+tb_flt+
+       ") as tb1 where ((tb1.zne="+QString::number(zn)+
+       " and (tb1.typ="+QString::number(typ)+
+       ")))), "
+       "t3 as (select t1.id from t1 EXCEPT SELECT t2.val from t2) "
+       " "
+       "select NULL,"+QString::number(zn)+
+       ","+QString::number(typ)+
+       ","+QString::number(typ*10)+
+       ",t3.id,t3.id,-2,0 from t3 ";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << msg;
+#endif
+
+ b_retVal = query.exec(msg);
+
+ if(b_retVal){
+  /*
+   * update filtres  set flt=(flt & ~0x1C) |(0x8) where ((zne=0) and (typ=1))
+   */
+
+	/// Mettre la nouvelle valeur de filtre
+	Bp::F_Flts msk = (Bp::fltWanted|Bp::fltSelected|Bp::fltFiltred) ;
+	//int val_msk = static_cast<int>(msk) & 0xFFFF;
+	unsigned int val_msk = msk.operator unsigned int();
+
+
+	QString op = "&";
+	if(flt_def == Bp::noFlt){
+	 //op = "|";
+	 flt_def = msk.operator~();
+	}
+
+	flt_def = flt_def & 0xFFFF;
+	//int val_flt = static_cast<int>(flt_def);
+	unsigned int val_flt = flt_def.operator unsigned int();
+
+	msg = "update "+tb_flt+
+				"  set flt=(flt | 0x"+QString::number(val_msk,16)+
+				") "+op+" (0x"+QString::number(val_flt,16)+
+				") where ((zne="+QString::number(zn)+
+				") and (typ="+QString::number(typ)+
+				"))";
+#ifndef QT_NO_DEBUG
+	qDebug() << msg;
+#endif
+
+  b_retVal = query.exec(msg);
+ }
+
+ if(b_retVal==false){
+  DB_Tools::DisplayError("BGpbMenu::setNewFlt",&query,msg);
+ }
+
 }

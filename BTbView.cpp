@@ -25,8 +25,9 @@ BTbView::BTbView(int in_zn, etCount in_typ, QString cnx, QTableView * parent)
   return;
  }
 
- myGpb = new BGpbMenu(cnx);
- construireMenu();
+ myGpb = new BGpbMenu(in_zn,in_typ,cnx, this);
+ up = nullptr;
+ //construireMenu();
 }
 
 BTbView::~BTbView()
@@ -169,12 +170,20 @@ BGpbMenu *BTbView::getGpb()
  return myGpb;
 }
 
+void BTbView::setUpLayout(QLayout *usr_up)
+{
+ up = usr_up;
+}
+
 QGroupBox * BTbView::getScreen()
 {
  /// Mettre ensuite l'analyse du marquage
  updateTitle();
 
  QVBoxLayout *layout = new QVBoxLayout;
+ if(up != nullptr){
+  layout->addLayout(up, Qt::AlignCenter|Qt::AlignTop);
+ }
  layout->addWidget(this, Qt::AlignCenter|Qt::AlignTop);
  myGpb->setLayout(layout);
 

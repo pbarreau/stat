@@ -15,7 +15,7 @@ namespace Bp {
   noFlt  = 0x0000,
   fltTirLast	= 0x0001,
   fltTirPrev	=	0x0002,
-  fltWanted	=	0x0004,
+  fltWanted   = 0x0004,
   fltSelected	= 0x0008,
   fltFiltred	= 0x0010,
   fltSeenNot	=	0x0020,

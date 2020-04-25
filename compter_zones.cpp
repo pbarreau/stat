@@ -18,6 +18,8 @@
 #include <QAction>
 #include <QMenu>
 
+#include <QPushButton>
+
 #include "compter_zones.h"
 #include "db_tools.h"
 //#include "delegate.h"
@@ -71,9 +73,55 @@ QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)
  return tab_Top;
 }
 
+QLayout * BcElm::usr_UpperItems(int zn)
+{
+ /// https://wiki.qt.io/PushButton_Based_On_Action
+
+ QHBoxLayout *ret_lay = nullptr;
+
+ QIcon tmp_ico;
+ //QAction *tmp_act = nullptr;
+
+
+ if(zn == 0){
+  ret_lay = new QHBoxLayout;
+  QPushButton *tmp_btn = nullptr;
+
+	tmp_ico = QIcon(":/images/run_32px.png");
+	tmp_btn = new QPushButton(tmp_ico,tr("&Creer liste"));
+	ret_lay->addWidget(tmp_btn);
+
+	/*
+	tmp_ico = QIcon(":/images/run_32px.png");
+	tmp_act = new QAction(tmp_ico,tr("&Creer liste"), ret_lay);
+	tmp_act->setShortcut(Qt::CTRL | Qt::Key_L );
+	tmp_act->setStatusTip(tr("Creer liste de jeux..."));
+
+	/// --- flt on
+	tmp_ico = QIcon(":/images/flt_apply.png");
+	tmp_act = new QAction(tmp_ico,tr("&Filtrer liste"), ret_lay);
+	tmp_act->setShortcut(Qt::CTRL | Qt::Key_F );
+	tmp_act->setStatusTip(tr("Appliquer Filtres sur la liste de jeux..."));
+
+	/// --- flt clear
+	tmp_ico = QIcon(":/images/flt_clear.png");
+	tmp_act = new QAction(tmp_ico,tr("&Effacer filtre"), ret_lay);
+	tmp_act->setShortcut(Qt::ALT | Qt::Key_F );
+	tmp_act->setStatusTip(tr("Supprimer tous les filtres..."));
+*/
+ }
+
+ return ret_lay;
+}
+
 bool BcElm::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool b_retVal = true;
+
+ QLayout *test_layout = usr_UpperItems(zn);
+ if(test_layout != nullptr){
+  *prm.up = test_layout;
+ }
 
  QString sql_msg = usr_doCount(pDef, zn);
  QString msg = "create table if not exists "

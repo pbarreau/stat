@@ -18,6 +18,7 @@ class BTbView : public QTableView
  QGroupBox * getScreen();
  BGpbMenu * getGpb();
  void updateTitle();
+ void setUpLayout(QLayout *usr_up);
 
  ~BTbView();
 
@@ -40,6 +41,7 @@ class BTbView : public QTableView
  int zn;
  etCount cal;
  BGpbMenu *myGpb;
+ QLayout *up;
  QMenu *menu;
 };
 

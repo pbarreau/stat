@@ -477,12 +477,23 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
  QString tbFiltre = in_out->tbName;
  QString msg = "";
 
+ Bp::F_Flts flt_def = in_out->b_flt;
+ Bp::F_Flts msk = (Bp::fltWanted|Bp::fltSelected|Bp::fltFiltred) ;
+
+ if(flt_def == Bp::noFlt){
+  flt_def = msk.operator~();
+ }
+ flt_def = flt_def & 0xFFFF;
+ unsigned int val_flt = flt_def.operator unsigned int();
+ unsigned int val_msk = msk.operator unsigned int();
+
  /// Analyse de la lecture precedente/config utilisateur
  if((in_out->id>0) && (in_out->db_total==1)){
   msg = "update "+in_out->tbName+
         " set pri="+QString::number(in_out->pri)+
-        ", flt="+QString::number(in_out->b_flt)+
-        " where ("
+        ", flt=(flt | 0x"+QString::number(val_msk,16)+
+        ") & (0x"+QString::number(val_flt,16)+
+        ") where ("
         "id="+QString::number(in_out->id)+")";
 
  }
@@ -506,8 +517,9 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
   /// Faire un update
   msg = "update "+in_out->tbName+
         " set pri="+QString::number(in_out->pri)+
-        ", flt="+QString::number(in_out->b_flt)+
-        " where ("
+        ", flt=(flt | 0x"+QString::number(val_msk,16)+
+        ") & (0x"+QString::number(val_flt,16)+
+        ") where ("
         "zne="+QString::number(in_out->zne)+" and "+
         "typ="+QString::number(in_out->typ)+" and "+
         "lgn="+QString::number(in_out->lgn)+" and "+

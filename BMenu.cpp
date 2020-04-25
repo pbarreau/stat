@@ -75,10 +75,13 @@ void BMenu::initialiser_v2(const QPoint pos, const etCount eType, BTbView *view)
   case eCountElm:
   case eCountCmb:
   case eCountBrc:
-   val.lgn = 10 * val.typ;
-   val.col = cur_col;
-   ///val.val = view->model()->index(cur_row,0).data().toInt();
-   val.val = index.sibling(cur_row,0).data().toInt();
+   if(cur_col){
+    val.lgn = 10 * val.typ;
+    val.col = index.sibling(cur_row,0).data().toInt();
+    val.val = val.col;
+    ///val.val = view->model()->index(cur_row,0).data().toInt();
+    ///val.val = index.sibling(cur_row,0).data().toInt();
+   }
    break;
 
 	case eCountGrp:
@@ -297,8 +300,8 @@ QMenu *BMenu::mnu_Priority(stTbFiltres *ret, const etCount eSrc, const BTbView *
  QString msg2 = "Priorites";
  QMenu *menu =new QMenu(msg2);
 
- QAction *setForAll = menu->addAction("Tous",this,SLOT(slot_priorityForAll(bool)));
- setForAll->setCheckable(true);
+ //QAction *setForAll = menu->addAction("Tous",this,SLOT(slot_priorityForAll(bool)));
+ //setForAll->setCheckable(true);
 
  QActionGroup *grpPri = new  QActionGroup(menu);
 

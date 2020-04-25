@@ -7,7 +7,10 @@
 #include <QTableView>
 #include <QString>
 #include <QStringList>
+
+#include <QLayout>
 #include <QGridLayout>
+
 #include <QSqlQueryModel>
 #include <QList>
 
@@ -75,6 +78,7 @@ class BCount:public QWidget
 
 
  public:
+ BCount();
  BCount(const stGameConf *pGame, etCount genre);
  BCount* mySefl(void);
 
@@ -92,6 +96,7 @@ class BCount:public QWidget
  public:
  typedef struct _stMkLocal{
   QString dstTbl; /// table a creer
+  QLayout **up;
   QSqlQuery *query;
   QString *sql;
  }stMkLocal;
@@ -107,8 +112,7 @@ class BCount:public QWidget
 
  protected:
  virtual QGridLayout *Compter(QString * pName, int zn)=0;
-
- //bool setdbFlt(const stTbFiltres val, QSqlDatabase db);
+ virtual QLayout * usr_UpperItems(int zn);
 
  QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
  QString CriteresCreer(QString operateur, QString critere,int zone);
@@ -137,9 +141,9 @@ class BCount:public QWidget
  public :
  B_RequeteFromTbv a;
  static QString onglet[]; /// nom associe aux types
+ static QString label[]; /// nom associe aux types
 
  protected:
- static QString label[]; /// nom associe aux types
  QString st_LstTirages;    /// information de tous les tirages
  QString db_jours;   /// information des jours de tirages
 

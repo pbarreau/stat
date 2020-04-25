@@ -36,11 +36,20 @@ int BCount::nbChild = 0;
  * obtenue grace a la fonction utlisateur usr_fn
  */
 
+QLayout * BCount::usr_UpperItems(int zn)
+{
+ QLayout *ret_lay = nullptr;
+ return ret_lay;
+}
+
 QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn)
 {
  QWidget * wdg_tmp = new QWidget;
  //QGroupBox *tmp_gpb = new QGroupBox;
  QGridLayout *glay_tmp = new QGridLayout;
+
+ stMkLocal prm;
+ QLayout *up_qtv = nullptr;
  BTbView *qtv_tmp = new BTbView(zn,eCalcul, dbCount.connectionName());
  qtv_tmp->setObjectName(QString::number(zn));
 
@@ -50,6 +59,8 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
                   +"_"+label[eCalcul]
                   +"_z"+QString::number(zn+1);
 
+ up_qtv = usr_UpperItems(zn);
+
  /// Verifier si table existe deja
  QString cnx = pGame->db_ref->cnx;
  if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
@@ -57,10 +68,10 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 	QSqlQuery query(dbCount);
 	QString msg ="";
 
-	stMkLocal prm;
 	prm.dstTbl = dstTbl;
 	prm.query=&query;
 	prm.sql=&msg;
+	prm.up = &up_qtv;
 
 	/// Creation de la table avec les resultats
 	/// appel de la fonction utilisateur de creation
@@ -69,12 +80,20 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 	if(b_retVal == false){
 	 QString fnName = "BCount::V2_fn_Count : "+label[eCalcul];
 	 DB_Tools::DisplayError(fnName, &query, msg);
+	 if(up_qtv != nullptr){
+		delete up_qtv;
+	 }
 	 delete wdg_tmp;
 	 delete glay_tmp;
 	 delete qtv_tmp;
 	 return nullptr;
 	}
  }
+
+ /// Bandeau superieur
+  if(up_qtv != nullptr){
+   qtv_tmp->setUpLayout(up_qtv);
+  }
 
  QString sql_msg = "select * from "+dstTbl;
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
@@ -206,6 +225,10 @@ BCount::BCount(const stGameConf *pGame, etCount genre):gm_def(pGame), type(genre
 BCount * BCount::mySefl()
 {
  return ptr_self;
+}
+
+BCount::BCount()
+{
 }
 
 BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb)

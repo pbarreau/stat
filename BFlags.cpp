@@ -204,6 +204,7 @@ bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelInde
  int cur_row = index.row();
 
  val->typ = in_typ;
+ val->zne = flt.zne;
 
  if(val->typ >= eCountToSet && val->typ <= eCountEnd){
   switch (val->typ) {
@@ -212,8 +213,8 @@ bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelInde
    case eCountBrc:
     if(index.column()==1){
      val->lgn = val->typ *10;
-     val->col = cur_col;
-     val->val = index.model()->index(index.row(),0).data().toInt();
+     val->col = index.model()->index(index.row(),0).data().toInt();
+     val->val = val->col;
     }
     else {
      return b_retVal;
@@ -545,7 +546,8 @@ void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QS
  painter->setRenderHint(QPainter::Antialiasing, true);
 
  if(a->typ==eCountElm){
-  if(((a->pri)>0) && ((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
+  /// if(((a->pri)>0) && ((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
+  if(((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
    painter->fillRect(maModif.rect, COULEUR_FOND_FILTRE);
   }
  }
