@@ -7,53 +7,260 @@
 #include <QSqlQuery>
 #include <QStringList>
 #include <QSqlDatabase>
+#include <QSqlQuery>
+
+#include <QTime>
+#include <QMessageBox>
+#include <QApplication>
 
 #include "db_tools.h"
 #include "cnp_SansRepetition.h"
 
-BCnp::BCnp(int n, int p,QSqlDatabase destBdd):BCnp(n,p,destBdd,"")
+#include "game.h"
+#include "properties.h"
+
+/// https://denishulo.developpez.com/tutoriels/access/combinatoire/#LIV-A
+
+BCnp::BCnp() {}
+
+BCnp::BCnp(stGameConf *pGame, QString tb_dest)
+{
+
+}
+
+BCnp::BCnp(int n_in, int p_in)
+{
+    QString cnx_bdd = "cnxTableCnp";
+    if(creerCnpBdd(cnx_bdd)==true){
+        BCnp(n_in,p_in,cnx_bdd);
+    }
+    else{
+        QMessageBox::critical(NULL,"Cnp","Creation BddCnp echec !!",QMessageBox::Ok);
+        QApplication::quit();
+    }
+}
+
+BCnp::BCnp(int n, int p, QString cnx_bdd):BCnp(n,p,cnx_bdd,"")
 {
 }
-//BCnp::BCnp(int n, int p,QSqlDatabase destBdd, QString tbName="My"):n(n),p(p),dbToUse(destBdd),tbName(tbName)
-BCnp::BCnp(int n_in, int p_in,QSqlDatabase destBdd, QString Name="My")
+
+BCnp::BCnp(const BCnp & copie){
+
+}
+BCnp::BCnp(int n_in, int p_in, QString cnx_bdd, QString Name="My")
 {
     n = n_in;
     p = p_in;
-    dbToUse = destBdd;
-    tbName = Name+"Cnp_"+QString::number(n)
-            + "_" + QString::number(p);
+    dbCnp = QSqlDatabase::database(cnx_bdd);
 
-    int cnp_v1 = Cardinal_np();
-    int cnp_v2 = CalculerCnp_v2();
+    //int id = qRegisterMetaType<BCnp>();
 
-    cnp = cnp_v1;
-    pos = 0;
-    tab = NULL;
+    bool b_retVal = true;
+    QString msg = "";
+    QString str_cnp = "Cnp_"+QString::number(n_in)
+            + "_" + QString::number(p_in);
 
-
-    if(CalculerPascal()==false)
-    {
-        delete (this);
+    if(Name != ""){
+        tbName = Name;
     }
-}
-BCnp::BCnp(int n_in, int p_in)
-{
-    QSqlDatabase db = QSqlDatabase::database();
-    BCnp(n_in,p_in,db,"test");
-#if 0
+    else{
+        tbName = str_cnp;
+    }
+
+#if (SET_RUN_CHKP)
+        //QMessageBox::information(NULL, "P1", "OK",QMessageBox::Yes);
+#endif
+
     int cnp_v1 = Cardinal_np();
     int cnp_v2 = CalculerCnp_v2();
+    Status eCnpStatus = NoSet;
 
     cnp = cnp_v1;
     pos = 0;
     tab = NULL;
 
+#if (SET_RUN_CHKP)
+        //QMessageBox::information(NULL, "P1", "OK",QMessageBox::Yes);
+#endif
+
+    if((b_retVal = isNotPresentCnp(n_in,p_in))){
+
+#if (SET_RUN_CHKP)
+        //QMessageBox::information(NULL, "P2", "OK",QMessageBox::Yes);
+#endif
+        b_retVal = isCnpTableReady(n_in,p_in);
+
+        if( !b_retVal){
+            msg = "Echec creation table " + str_cnp;
+            eCnpStatus = Failure;
+        }
+        else{
+         QTime t;//t(0,0,0);
+            t.start();
+            b_retVal = effectueCalculCnp(n_in,p_in);
+            int delta = t.elapsed();
+            QString t_human = QString::number(delta);
+#ifndef QT_NO_DEBUG
+            qDebug()<<"Time elapsed:"<<t_human;
+#endif
+
+            //QString::number(t.elapsed())
+            msg = str_cnp
+                    +QString(" termine en : ")
+                    +t_human
+                    +QString(" ms\nEtat ->")
+                    +QString::number(b_retVal);
+
+            eCnpStatus = Created;
+        }
+    }
+    else{
+        msg = str_cnp+ QString(" deja en base..");
+        eCnpStatus = Ready;
+    }
+    emit sig_TriangleOut(eCnpStatus,n_in,p_in);
+
+#if (SET_DBG_LIVE && CNP_SHOW_MSG)
+    QMessageBox::information(NULL,"BddCnp",msg,QMessageBox::Ok);
+#endif
+
+#if 0
     if(CalculerPascal()==false)
     {
         delete (this);
     }
 #endif
+
 }
+
+bool BCnp::isCnpTableReady(int n, int p)
+{
+    bool b_retVal = true;
+    QSqlQuery query(dbCnp);
+    QString msg ="";
+    QString st_table = tbName;
+
+    msg = "create table if not exists "
+            + st_table +"(id integer primary key, J text,";
+
+    QString ref = "c%1 int";
+    QString colNames = "";
+    for(int i= 0; i<p;i++)
+    {
+        colNames = colNames + ref.arg(i+1);
+        if(i<p-1)
+            colNames = colNames + ",";
+    }
+
+    /// Premiere Requete a executer
+    msg = msg+colNames+");";
+
+    b_retVal = query.exec(msg);
+
+    return b_retVal;
+}
+
+bool BCnp::isNotPresentCnp(int n, int p)
+{
+    bool b_retVal = true;
+    QSqlQuery query(dbCnp);
+    QString msg ="";
+    QString st_table = tbName;
+
+    /// Verifier si la table existe deja
+    msg = "SELECT name FROM sqlite_master "
+          "WHERE type='table' AND name='"+st_table+"';";
+
+    if((b_retVal = query.exec(msg)))
+    {
+        query.first();
+        if(query.isValid())
+        {
+            /// La table existe
+            b_retVal = false;
+        }
+    }
+
+    return b_retVal;
+}
+
+bool BCnp::effectueCalculCnp(int n, int p) {
+    bool b_retVal = true;
+
+    ///
+
+    int L[p], t[n], i;
+
+    for(i=0;i<n;i++)
+        t[i] = i;
+
+    b_retVal = combinaisons(n, p, 0, L, t, n);
+
+    return b_retVal;
+}
+
+bool BCnp::combinaisons(int n, int p, int k, int *L, int *t, int r) {
+    bool b_retVal = true;
+    QSqlQuery query(dbCnp);
+
+    int i, j, j1, t2[n];
+
+    if(r<p-k) return true;
+
+    if(k==p) {
+        QString msg = "(NULL,'NA',";
+        QString col = "(id,J,";
+        QString ref = "c%1";
+
+        for(i=0;i<p;i++){
+            /// Construire valeur de insert into
+            msg = msg + QString::number(L[i] + 1);
+            col = col + ref.arg(i+1);
+            if(i<(p-1)){
+                msg=msg+QString(",");
+                col=col+QString(",");
+            }
+        }
+        msg = msg+QString(")");
+        col = col+QString(")");
+
+        msg = QString("insert into ")
+                + tbName
+                + col
+                + QString(" values ")
+                +msg;
+
+        /// Mettre les valeurs
+        b_retVal = query.exec(msg);
+
+        return b_retVal;
+    }
+
+    for(i=0;(i<r) && (b_retVal) ;i++) {
+        L[k] = t[i];
+        for(j=i+1, j1=0;j<r;j++, j1++) {
+            t2[j1] = t[j];
+        }
+
+        b_retVal = combinaisons(n, p, k+1, L, t2, j1);
+    }
+
+    return b_retVal;
+}
+
+bool BCnp::creerCnpBdd(QString cnx_name){
+    bool b_retVal= true;
+    QSqlDatabase myCnpBdd;
+    QString bddOnDisk = "Cnp.sqlite";
+
+    myCnpBdd = QSqlDatabase::addDatabase("QSQLITE",cnx_name);
+    myCnpBdd.setDatabaseName(bddOnDisk);
+
+    b_retVal = myCnpBdd.open();
+
+    return b_retVal;
+}
+
 
 BCnp::~BCnp()
 {
@@ -121,10 +328,10 @@ void BCnp::MontrerTableau_v1(void)
 
 bool BCnp::CalculerPascal(void)
 {
-    bool isOk = true;
+    bool b_retVal = true;
 
     if (tab != NULL)
-        return isOk;
+        return b_retVal;
 
     tab = new int *[cnp]; /// tableau de pointeur d'entiers de Cnp lignes
 
@@ -135,7 +342,7 @@ bool BCnp::CalculerPascal(void)
         int *t = new int [n];
 
         /// pour verifier allocation memoire
-        isOk = false;
+        b_retVal = false;
 
         if(t != NULL)
             for(int i =0; i<n;i++) t[i]=i;
@@ -143,15 +350,18 @@ bool BCnp::CalculerPascal(void)
         /// demarrage
         if((L != NULL) && (t !=NULL)){
             CreerLigneTrianglePascal(0,L,t,n);
-            isOk = true;
+            b_retVal = true;
         }
     }
     else
     {
-        isOk = false;
+#if (SET_RUN_CHKP)
+        QMessageBox::information(NULL, "M1", "Memory",QMessageBox::Yes);
+#endif
+        b_retVal = false;
     }
 
-    return isOk;
+    return b_retVal;
 }
 
 void BCnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
@@ -202,10 +412,10 @@ int BCnp::Cardinal_np(void)
     t[0] = 1;
     for (int i = 1; i <= n; i++) {
         t[i] = 1;
-        for (int j = i - 1; j >= 1; j--) //On part de le fin pour ne pas écraser les valeurs.
-            t[j] = t[j] + t[j - 1]; //On fait les calculs nécessaires.
+        for (int j = i - 1; j >= 1; j--) //On part de le fin pour ne pas ecraser les valeurs.
+            t[j] = t[j] + t[j - 1]; //On fait les calculs necessaires.
     }
-    return t[p]; //On renvoie la valeur recherchée.
+    return t[p]; //On renvoie la valeur recherchee.
 }
 int BCnp::CalculerCnp_v2(void)
 {
@@ -223,7 +433,7 @@ int BCnp::CalculerCnp_v2(void)
 }
 
 /// Cette fonction insert les coefficient cnp dans la table appropriee
-/// celle ci est creer si necessaire lors du traitement
+/// celle ci est creee si necessaire lors du traitement
 /// de la premiere ligne
 void BCnp::insertLineInDbTable(const QString &Laligne)
 {
@@ -248,14 +458,14 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 
     static QString st_table ="";
     static QString colNames = "";
-    static bool isOk = true;
+    static bool b_retVal = true;
     static bool skipInsert = false;
-    QSqlQuery query(dbToUse);
+    QSqlQuery query(dbCnp);
 
 
     /// Creer la table ?
     if( (pos == 0)
-            && (isOk == true)
+            && (b_retVal == true)
             && (skipInsert == false))
     {
         /// nom de la table
@@ -264,9 +474,9 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
         /// Verifier si la table existe deja
         msg = "SELECT name FROM sqlite_master "
               "WHERE type='table' AND name='"+st_table+"';";
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
 
-        if(isOk)
+        if(b_retVal)
         {
             query.first();
             if(!query.isValid())
@@ -280,7 +490,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
                 verifLineId = 0;
 #endif
                 msg = "create table if not exists "
-                        + st_table +"(id integer primary key, ";
+                        + st_table +"(id integer primary key, J text,";
 
                 QString ref = "c%1 int";
                 colNames = "";
@@ -299,9 +509,9 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
                 msg = msg+colNames+");";
 
                 /// debut de transaction
-                isOk = QSqlDatabase::database().transaction();
+                b_retVal = QSqlDatabase::database().transaction();
 
-                isOk = query.exec(msg);
+                b_retVal = query.exec(msg);
                 colNames.remove("int");
 
 #ifndef QT_NO_DEBUG
@@ -318,25 +528,25 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
     }
 
     /// Rajouter info si la table n'existe pas encore
-    if((skipInsert==false) && isOk==true){
+    if((skipInsert==false) && b_retVal==true){
         /// Rajouter chaque ligne
         msg = "insert into "
                 +st_table
-                +"(id,"+colNames+")"
-                +"values(NULL,"+Laligne+");";
-        isOk = query.exec(msg);
+                +"(id,J,"+colNames+")"
+                +"values(NULL,'NA',"+Laligne+");";
+        b_retVal = query.exec(msg);
 
 
         /// derniere ligne effectuer la transaction globale
-        if((pos == (cnp-1)) && (isOk == true))
+        if((pos == (cnp-1)) && (b_retVal == true))
         {
-            isOk = QSqlDatabase::database().commit();
+            b_retVal = QSqlDatabase::database().commit();
         }
 
     }
 
 
-    if(isOk == false)
+    if(b_retVal == false)
     {
 #ifndef QT_NO_DEBUG
         qDebug()<< "SQL ERROR:" << query.executedQuery()  << "\n";
@@ -354,7 +564,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///  *
 ///  * /* comb.c
 ///  *
-///  * Recherche de toutes les combinaisons de p éléments de
+///  * Recherche de toutes les combinaisons de p elements de
 ///  * l'ensemble {1, 2, 3, 4, 5, ..., n}
 ///  *
 ///  * 01/05/2005 Jean-Paul Davalan <jpdvl@wanadoo.fr>
@@ -362,28 +572,28 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///  * compilation :  gcc -O2 -o comb comb.c
 ///  * usage : comb n p
 ///  *
-///  * la structure comb contient après calcul toutes les combinaisons
+///  * la structure comb contient apres calcul toutes les combinaisons
 ///  * dans le tableau comb->tab
-///  * la i-ième combinaison est comb->tab[i] c'est un tableau de p entiers
-///  * dont les éléments sont comb->tab[i][0] jusqu'à comb->tab[i][p-1]
+///  * la i-ieme combinaison est comb->tab[i] c'est un tableau de p entiers
+///  * dont les elements sont comb->tab[i][0] jusqu'a  comb->tab[i][p-1]
 ///  *
 ///  */
 /// #include <stdio.h>
 /// #include <stdlib.h>
 /// #include <string.h>
-/// 
+///
 /// /* la structure cb ci-dessous contient tous les résultats */
 /// typedef struct cb {
 ///     int n,    // le n de Cnp
 ///         p,    // le p de Cnp
 ///         cnp,  // la valeur Cnp du nombre de combinaisons
-///         pos,  // varie de 0 au début à Cnp-1 à la fin
+///         pos,  // varie de 0 au debut a Cnp-1 a  la fin
 ///         **tab; // tableau de Cnp lignes contenant chacune une combinaison
-///                // sous la forme de p entiers (de 1 au moins à n au plus)
+///                // sous la forme de p entiers (de 1 au moins a  n au plus)
 /// } cb;
-/// 
+///
 /// void combinaisons(cb *comb, int k, int *L, int *t, int r);
-/// 
+///
 /// int
 /// main(int argc, char *argv[]) {
 ///     int n, p, i, j, cnp, *L, *t;
@@ -395,7 +605,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///     n = atoi(argv[1]); // lecture des paramètres
 ///     p = atoi(argv[2]);
 ///         if(n<0 || p<0 || p>n) return 0;
-/// 
+///
 ///     /* -----------------------------------------------------------------
 ///      * initialisations de 'comb' ,
 ///      * on pourrait le mettre dans une fonction
@@ -409,20 +619,20 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///     comb->cnp = cnp;
 ///     comb->pos = 0;
 ///     comb->tab = (int **)malloc(cnp * sizeof(int *));
-/// 
+///
 ///     /* -----------------------------------------------------------------
-///      *  préparation des paramètres L et t avant de lancer
+///      *  preparation des parametres L et t avant de lancer
 ///      *  la fonction 'combinaisons'
 ///      *  -----------------------------------------------------------------
 ///      */
 ///     L = (int *) malloc(p*sizeof(int));
 ///     t = (int *) malloc(n*sizeof(int));
 ///     for(i=0;i<n;i++) t[i] = i;
-/// 
+///
 ///     /* c'est parti */
-/// 
+///
 ///     combinaisons(comb, 0, L, t, n);
-/// 
+///
 ///     /* -----------------------------------------------------------------
 ///      * faire ici ce qu'on veut de comb
 ///      * par exemple l'afficher comme on le fait ci-dessous
@@ -448,15 +658,15 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///     }
 ///     free(comb->tab);
 ///     free(comb);
-/// 
+///
 ///     /* -----------------------------------------------------------------
-///      * plus rien à faire ici, on peut d'en aller
+///      * plus rien �  faire ici, on peut d'en aller
 ///      * -----------------------------------------------------------------
 ///      */
 ///     return 0;
 /// }
-/// 
-/// 
+///
+///
 /// void combinaisons(cb *comb, int k, int *L, int *t, int r) {
 ///     int n = comb->n, p = comb->p, i, j, j1, t2[n];
 ///     if(r<p-k) return;
@@ -479,7 +689,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 /// /// -------------------------------------------------------------
 /// /* comb2.c
 ///  *
-///  * Recherche de toutes les combinaisons de p Ã©lÃ©ments de
+///  * Recherche de toutes les combinaisons de p elements de
 ///  * l'ensemble {1, 2, 3, 4, 5, ..., n}
 ///  *
 ///  * 01/05/2005 Jean-Paul Davalan <jpdvl@wanadoo.fr>
@@ -522,7 +732,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///                 printf("usage : %s n p\n",argv[0]);
 ///                 exit(1);
 ///         }
-///         n = atoi(argv[1]); // lecture des paramÃ¨tres
+///         n = atoi(argv[1]); // lecture des parametres
 ///         p = atoi(argv[2]);
 ///         if(n<0 || p<0 || p>n) return 0;
 ///         effectue(n, p);

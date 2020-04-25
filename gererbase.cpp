@@ -2,7 +2,11 @@
 #include <QDebug>
 #endif
 
+#include <QFileDialog>
+
 #include <QApplication>
+#include <QMessageBox>
+
 #include <math.h>
 #include <iomanip>
 #include <iostream>
@@ -16,43 +20,27 @@
 #include <QTableView>
 #include <QTableWidget>
 
+#include <QDate>
+#include <QDateTime>
+
+#include <QSqlDriver>
+#include "sqlExtensions/inc/sqlite3.h"
+#include "sqlExtensions/inc/sqlite3ext.h"
+
 #include "tirages.h"
 #include "gererbase.h"
 #include "SyntheseDetails.h"
 #include "cnp_SansRepetition.h"
 #include "cnp_AvecRepetition.h"
+#include "buplet.h"
 
-#if 0
-GererBase::GererBase(QObject *parent) :
-    QObject(parent)
-{
-}
-#endif
-
-bool GererBase::OPtimiseAccesBase(void)
-{
-    bool isOk = true;
-    QSqlQuery query;
-
-    QString stRequete[]={
-        "PRAGMA synchronous = OFF",
-        "PRAGMA page_size = 4096",
-        "PRAGMA cache_size = 16384",
-        "PRAGMA temp_store = MEMORY",
-        "PRAGMA journal_mode = OFF",
-        "PRAGMA locking_mode = EXCLUSIVE"
-    };
-    int items = sizeof(stRequete)/sizeof(QString);
-
-    for(int i=0; (i<items)&& isOk ;i++){
-        isOk = query.exec(stRequete[i]);
-    }
-
-    return isOk;
-}
-
+int GererBase::total_items = 0;
 GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
 {
+    cur_item = total_items;
+    total_items++;
+    pgm_mdi = param->pgm_mdi;
+
 #if USE_CNP_SLOT_LINE
     curZone = 0;
 #endif
@@ -62,13 +50,18 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
 
 
     bool enMemoire = param->destination;
-    bool autoLoad = param->typeChargement;
-    NE_FDJ::E_typeJeux leJeu = param->typeJeu;
+    bool autoLoad = param->bUseOneBdd;
+    etFdj leJeu = param->typeJeu;
 
     // Creation de la base
-    if(CreerBasePourEtude(enMemoire,leJeu)==true)
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+    QMessageBox::information(NULL, "Pgm", "Old 1!",QMessageBox::Yes);
+#endif
+
+
+    if(ouvrirBase(autoLoad,leJeu)==true)
     {
-        /// Test Optimisation acces de la base
+        /// Optimisation acces de la base
         OPtimiseAccesBase();
 
         // Creeer la configuration de lecture
@@ -80,11 +73,6 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
 
         typeTirages->ListeCombinaison(pConf);
 
-
-        /// Test ok
-        ///
-        ///QString msg = GammaNk::MakeSqlFromGamma(pConf,1,2);
-        ///return;
 
         // Creer les tables initiales de la base
         CreationTablesDeLaBDD_v2();
@@ -101,6 +89,34 @@ GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)
         retErr->msg = "CreerBasePourEtude";
     }
 }
+
+GererBase::~GererBase(void)
+{
+
+}
+
+bool GererBase::OPtimiseAccesBase(void)
+{
+    bool b_retVal = true;
+    QSqlQuery query(db_0);
+
+    QString stRequete[]={
+        "PRAGMA synchronous = OFF",
+        "PRAGMA page_size = 4096",
+        "PRAGMA cache_size = 16384",
+        "PRAGMA temp_store = MEMORY",
+        "PRAGMA journal_mode = OFF",
+        "PRAGMA locking_mode = EXCLUSIVE"
+    };
+    int items = sizeof(stRequete)/sizeof(QString);
+
+    for(int i=0; (i<items)&& b_retVal ;i++){
+        b_retVal = query.exec(stRequete[i]);
+    }
+
+    return b_retVal;
+}
+
 
 #if USE_CNP_SLOT_LINE
 void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
@@ -121,10 +137,10 @@ void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
     static QString colNames = "";
     QSqlQuery query;
     QString msg = "";
-    static bool isOk = true;
+    static bool b_retVal = true;
 
     /// Creer la table
-    if( (d.val_pos == 0) && (isOk == true))
+    if( (d.val_pos == 0) && (b_retVal == true))
     {
         i = 0;
         msg = "create table if not exists Cnp_"+QString::number(d.val_n)
@@ -139,9 +155,9 @@ void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
         msg = msg+colNames+";";
 
         /// debut de transaction
-        isOk = QSqlDatabase::database().transaction();
+        b_retVal = QSqlDatabase::database().transaction();
 
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
         colNames.remove("int");
 
 #ifndef QT_NO_DEBUG
@@ -157,16 +173,16 @@ void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
             + "_" + QString::number(d.val_p)
             +"(id,"+colNames
             +"values(NULL,"+p+");";
-    isOk = query.exec(msg);
+    b_retVal = query.exec(msg);
 
 
     /// derniere ligne effectuer la transaction globale
-    if((d.val_pos == (d.val_cnp-1)) && (isOk == true))
+    if((d.val_pos == (d.val_cnp-1)) && (b_retVal == true))
     {
-        isOk = QSqlDatabase::database().commit();
+        b_retVal = QSqlDatabase::database().commit();
     }
 
-    if(isOk == false)
+    if(b_retVal == false)
     {
 #ifndef QT_NO_DEBUG
         qDebug()<< "SQL ERROR:" << query.executedQuery()  << "\n";
@@ -178,16 +194,12 @@ void GererBase::slot_UseCnpLine(const sigData &d, const QString &p)
 }
 #endif
 
-GererBase::~GererBase(void)
-{
-
-}
 
 bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
 {
     bool status = false;
     QString req_vue = "";
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     int nbelemt = 0;
     tiragesFileFormat *LesFichiers;
 
@@ -215,40 +227,67 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
 
     tiragesFileFormat euroMillions[]=
     {
-        {"euromillions_4.csv",NE_FDJ::fdj_euro,
+        {"euromillions_4.csv",eFdjEuro,
          {false,2,1,2,&p4Zn[0]}
         },
-        {"euromillions_3.csv",NE_FDJ::fdj_euro,
+        {"euromillions_3.csv",eFdjEuro,
          {false,2,1,2,&p3Zn[0]}
         },
-        {"euromillions_2.csv",NE_FDJ::fdj_euro,
+        {"euromillions_2.csv",eFdjEuro,
          {false,2,1,2,&p3Zn[0]}
         },
-        {"euromillions.csv",NE_FDJ::fdj_euro,
+        {"euromillions.csv",eFdjEuro,
          {false,2,1,2,&p1Zn[0]}
         }
     };
 
+#if 0
     tiragesFileFormat loto[]=
     {
-        {"loto2017.csv",NE_FDJ::fdj_loto,
+        {"loto2017.csv",eFdjLoto,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"superloto2017.csv",NE_FDJ::fdj_loto,
+        {"superloto2017.csv",eFdjLoto,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"lotonoel2017.csv",NE_FDJ::fdj_loto,
+        {"lotonoel2017.csv",eFdjLoto,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"nouveau_superloto.csv",NE_FDJ::fdj_loto,
+        {"nouveau_superloto.csv",eFdjLoto,
          {false,2,1,2,&p2Zn[0]}
         },
-        {"nouveau_loto.csv",NE_FDJ::fdj_loto,
+        {"nouveau_loto.csv",eFdjLoto,
          {false,2,1,2,&p2Zn[0]}
         }
     };
+#endif
+		tiragesFileFormat loto[]=
+		 {
+			{"loto2017.csv",eFdjLoto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"superloto2017.csv",eFdjLoto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"lotonoel2017.csv",eFdjLoto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"nouveau_superloto.csv",eFdjLoto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"nouveau_loto.csv",eFdjLoto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"loto_201902.csv",eFdjLoto,
+			 {false,2,1,2,&p2Zn[0]}
+			},
+			{"loto_201911.csv",eFdjLoto,
+			 {false,2,1,2,&p2Zn[0]}
+			}
+		 };
 
-    if(typeTirages->conf.choixJeu == NE_FDJ::fdj_euro){
+
+    if(typeTirages->conf.choixJeu == eFdjEuro){
         nbelemt = sizeof(euroMillions)/sizeof(tiragesFileFormat);
         LesFichiers = euroMillions;
     }
@@ -332,7 +371,7 @@ bool GererBase::ReorganiserLesTirages()
 {
     stTiragesDef ref=typeTirages->conf;
     bool status = false;
-    QSqlQuery sql_1;
+    QSqlQuery sql_1(db_0);
     QString st_tmp2 ;
 
 
@@ -349,11 +388,13 @@ bool GererBase::ReorganiserLesTirages()
 bool GererBase::AffectePoidsATirage_v2()
 {
     bool status = false;
-    QSqlQuery sql_1;
-    QSqlQuery sql_2;
-    QString msg_1 = "select * from lstCombi_z1;";
+    QSqlQuery sql_1(db_0);
+    QSqlQuery sql_2(db_0);
+    QString msg_1 = "select * from Ref_cmb_z1;";
     stTiragesDef ref=typeTirages->conf;
     int zn = 0;
+    QString tb_ana_zn = "Ref_ana_z1";
+
     int nbBoules = floor(ref.limites[zn].max/10);
 
     status = sql_1.exec(msg_1);
@@ -372,7 +413,7 @@ bool GererBase::AffectePoidsATirage_v2()
                 {
                     // Voir les champs de la table
                     // les unites commence en position 4 (ancienne version)
-                    // 1 vouvelle version de lstCombi_z1
+                    // 1 vouvelle version de Ref_cmb_z1
                     coef[i] = sql_1.value(1+i).toInt();
                     msg_2 = msg_2 + "bd"+QString::number(i)
                             +"="+QString::number(coef[i])+ " and ";
@@ -384,9 +425,9 @@ bool GererBase::AffectePoidsATirage_v2()
                 // creation d'une requete mise a jour des poids
                 //double poids = sql_1.value(lastcol-1).toDouble();
                 msg_2.remove(msg_2.length()-5,5);
-                msg_2 = "Update analyses set fk_idCombi_z1="
+                msg_2 = "Update "+tb_ana_zn+" set fk_idCombi_z1="
                         +QString::number(fk_idCombi_z1)
-                        +" where(id in (select id from analyses where("
+                        +" where(id in (select id from "+tb_ana_zn+" where("
                         +msg_2+")"
                         +"));";
 #ifndef QT_NO_DEBUG
@@ -402,63 +443,193 @@ bool GererBase::AffectePoidsATirage_v2()
     return status;
 }
 
-bool GererBase::CreerBasePourEtude(bool action,NE_FDJ::E_typeJeux type)
+QString GererBase::get_IdCnx(int id)
 {
+ QString cnx="";
+
+ if(id ==0){
+    cnx= db_0.connectionName();
+ }
+    else{
+  cnx = db_1newDb.connectionName();
+    }
+
+    return cnx;
+}
+
+int GererBase::get_IdBdd(void)
+{
+ return cur_item;
+}
+
+QString GererBase::mk_IdDsk(etFdj type, int v_id)
+{
+    QDate myDate = QDate::currentDate();
+    QString toDay = myDate.toString("dd-MM-yyyy");
+    QString game = "";
+
+    QFile myFileName;
+    QString testName = "";
+
+    if(type == eFdjEuro){
+        game = "Euro";
+    }
+    else{
+        game = "Loto";
+    }
+    game = game + QString("_V"+QString::number(v_id)+"_")+toDay+QString("_");
+
+    int counter = 0;
+    do{
+        testName = game + QString::number(counter).rightJustified(3,'0')+QString("-");
+        testName = testName + QString::number(cur_item).rightJustified(2,'0')+QString(".sqlite");
+        myFileName.setFileName(testName);
+        counter = (counter + 1)%999;
+    }while(myFileName.exists());
+
+    return testName;
+}
+
+QString GererBase::mk_IdCnx(etFdj type, int v_id)
+{
+    QString game = "";
+
+    if(type == eFdjEuro){
+        game = "Euro";
+    }
+    else{
+        game = "Loto";
+    }
+
+		return (
+		 QString("cnx_V")
+		 +QString::number(v_id)
+		 +QString("_")
+		 +game
+		 +QString("-")
+		 +QString::number(cur_item).rightJustified(2,'0'));
+}
+
+bool GererBase::ouvrirBase(bool action,etFdj type)
+{
+    bool b_retVal = true;
+    const QString gameLabel []={"NonDefini","Loto","Euro"};
+
+		if(action){
+		 QString myTitle = "Selectionnner un fichier " + gameLabel[type];
+		 QString myFilter = gameLabel[type]+"_V1*.sqlite";
+		 QString mabase = QFileDialog::getOpenFileName(nullptr,myTitle,".",myFilter);
+
+		 if(mabase.size()){
+			QString cnx_new_db = mk_IdCnx(type, 1);
+
+			db_1newDb = QSqlDatabase::addDatabase("QSQLITE", cnx_new_db);
+			db_1newDb.setDatabaseName(mabase);
+
+			if(db_1newDb.isValid()==false){
+			 QMessageBox::critical(NULL,"Echec ouverture",mabase,QMessageBox::Ok);
+			}
+		 }
+		}
+
+
+		QString db_dsk_name = mk_IdDsk(type, 0 ); /// nom sur disque
+		QString db_cnx_name = mk_IdCnx(type, 0); /// nom logique de connexion
+
+
     // http://developer.nokia.com/community/wiki/Creating_an_SQLite_database_in_Qt
-    db = QSqlDatabase::addDatabase("QSQLITE");
+    db_0 = QSqlDatabase::addDatabase("QSQLITE", db_cnx_name);
+    db_0.setDatabaseName(db_dsk_name);
 
-    QString mabase = "";
 
-    if(action == true){
+    // Open databasee
+    if((b_retVal = db_0.open())){
+        QSqlQuery query(db_0);
+        QString st_query = "select sqlite_version();";
+        if((b_retVal = query.exec(st_query))){
+            query.first();
+            QString version =query.value(0).toString();
 
-        db.setDatabaseName(":memory:");
+            if(version < "3.25"){
+                st_query = QString("Version sqlite :") + version +QString(" < 3.25\n");
+                QMessageBox::critical(NULL,"Stat",st_query,QMessageBox::Ok);
+                b_retVal = false;
+            }
+            else{
+                /// Chargement librairie math
+                if(!(b_retVal=AuthoriseChargementExtension())){
+                    st_query = QString("Chargement sqMath echec !!\n");
+                    QMessageBox::critical(NULL,"Stat",st_query,QMessageBox::Ok);
+                }
+            }
+        }
+    }
+
+    return b_retVal;
+}
+
+
+bool GererBase::AuthoriseChargementExtension(void)
+{
+    bool b_retVal = true;
+    QSqlQuery query(db_0);
+    QString msg = "";
+
+    QString cur_rep = QCoreApplication::applicationDirPath();
+    QString MonDirLib = cur_rep + ".\\sqlExtensions\\lib";
+    QStringList mesLibs = QCoreApplication::libraryPaths();
+    mesLibs<<MonDirLib;
+    //QCoreApplication::addLibraryPath(MonDirLib);
+    QCoreApplication::setLibraryPaths(mesLibs);
+
+    /// http://sqlite.1065341.n5.nabble.com/Using-loadable-extension-with-Qt-td24872.html
+    /// https://arstechnica.com/civis/viewtopic.php?f=20&t=64150
+    QVariant v = db_0.driver()->handle();
+
+    if (v.isValid() && qstrcmp(v.typeName(), "sqlite3*")==0)
+
+    {
+
+        // v.data() returns a pointer to the handle
+        sqlite3_initialize();
+        sqlite3 *handle = *static_cast<sqlite3 **>(v.data());
+
+        if (handle != 0) { // check that it is not NULL
+
+            //const char *loc = NULL;
+            //loc = sqlite_version();
+
+            int ret = sqlite3_enable_load_extension(handle,1);
+            //int ret = loadExt(handle,1);
+
+            /// Lancer la requete
+            QString msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-sqMath.dll')";
+            b_retVal = query.exec(msg);
+#ifndef QT_NO_DEBUG
+            if (query.lastError() .isValid())
+            {
+                foreach (const QString &path, QCoreApplication::libraryPaths())
+                    qDebug() << path;
+
+                qDebug() << "Error: cannot load extension (" << query.lastError().text()<<")";
+                b_retVal = false;
+            }
+#endif
+
+        }
+
     }
     else
     {
-        if(type == NE_FDJ::fdj_euro)
-        {
-            mabase = "db_euro.sqlite";
-        }
-        else
-        {
-            mabase = "db_loto.sqlite";
-        }
-
-        QFile fichier(mabase);
-
-        if(fichier.exists())
-        {
-            fichier.remove();
-        }
-#ifdef Q_OS_LINUX
-        // NOTE: We have to store database file into user home folder in Linux
-        QString path(QDir::home().path());
-        path.append(QDir::separator()).append(mabase);
-        path = QDir::toNativeSeparators(path);
-        db.setDatabaseName(path);
-#else
-        // Tester si le fichier est present
-        // NOTE: File exists in the application private folder
-        db.setDatabaseName(mabase);
-#endif
-
+        b_retVal = false;
     }
-
-    // Open databasee
-    return db.open();
-}
-
-QSqlError GererBase::lastError()
-{
-    // If opening database has failed user can ask
-    // error description by QSqlError::text()
-    return db.lastError();
+    return b_retVal;
 }
 
 bool GererBase::SupprimerBase()
 {
     // Close database
-    db.close();
+    db_0.close();
 
 #ifdef Q_OS_LINUX
     // NOTE: We have to store database file into user home folder in Linux
@@ -581,7 +752,7 @@ void GererBase::AfficherResultatCouverture(stTiragesDef *pConf, QTableView *cibl
 
 void GererBase::MontrerLaBoule(int boule, QTableView *fen)
 {
-    QSqlQuery selection;
+    QSqlQuery selection(db_0);
     QString msg = "";
     bool status = false;
 
@@ -618,7 +789,7 @@ void GererBase::MontrerLaBoule(int boule, QTableView *fen)
 
 void GererBase::MLB_DansCouverture(int boule, stTiragesDef *pConf, QTableView *fen )
 {
-    QSqlQuery selection;
+    QSqlQuery selection(db_0);
     bool status = true;
     int zn=0;
     int j=0;
@@ -712,7 +883,7 @@ void GererBase::MLB_DansCouverture(int boule, stTiragesDef *pConf, QTableView *f
 void GererBase::EffectuerTrieMesAbsents(int tri_id, int col_id,int b_id,stTiragesDef *pConf, QStandardItemModel * vue)
 {
     QString msg;
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     bool status = false;
     QString tblColName[5]={"r0","rp1","rp2","rn1","rn2"};
     int zn = 0;
@@ -746,7 +917,7 @@ void GererBase::EffectuerTrieMesAbsents(int tri_id, int col_id,int b_id,stTirage
 void GererBase::EffectuerTrieMesPossibles(int tri_id, int col_id,int b_id,stTiragesDef *pConf, QStandardItemModel * vue)
 {
     QString msg;
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     bool status = false;
     QString tblColName[5]={"r0","rp1","rp2","rn1","rn2"};
     int zn = 0;
@@ -812,7 +983,7 @@ void GererBase::MontreMesPossibles(const QModelIndex & index,
 {
     QString msg = "";
     QString msg_2 = "";
-    QSqlQuery selection;
+    QSqlQuery selection(db_0);
     QStandardItemModel *fen = (QStandardItemModel *)qfen->model();
     bool status = true;
     int zn = 0;
@@ -882,7 +1053,7 @@ void GererBase::MontreMesAbsents(const QModelIndex & index,
 {
     QString msg = "";
     //SQString msg_2 = "";
-    QSqlQuery selection;
+    QSqlQuery selection(db_0);
     QStandardItemModel *fen = (QStandardItemModel *)qfen->model();
     bool status = true;
     int zn = 0;
@@ -919,7 +1090,7 @@ void GererBase::MontreMesAbsents(const QModelIndex & index,
 //-------
 void GererBase::MLB_MontreLesCommuns(stTiragesDef * pConf,QTableView *qfen)
 {
-    QSqlQuery selection;
+    QSqlQuery selection(db_0);
     QString msg = "";
     int zn = 0;
     //QStandardItemModel *fen = (QStandardItemModel *)qfen->model();
@@ -1103,17 +1274,18 @@ void GererBase::MLB_DansLaQtTabView(int boule, QTableView *fen)
 
 void GererBase::MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen)
 {
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     QString msg ="";
     int nb_zone = pConf->nb_zone;
     int i =0;
     bool status = true;
+    QString tb_ana_zn = "Ref_ana_z1";
 
 
 
     for (i=0; i< nb_zone;i++)
     {
-        //select     bd0, count (*) as tot from analyses group by bd0;";
+        //select     bd0, count (*) as tot from "+tb_ana_zn+" group by bd0;";
         int nb_elem = pConf->limites[i].max/10;
         // Fentre pour boule existe et pas pour etoiles
         for (int j=0;(j<= nb_elem) && status && (i == 0);j++)
@@ -1122,7 +1294,7 @@ void GererBase::MLP_UniteDizaine(stTiragesDef *pConf, QStandardItemModel *fen)
 
             msg = "select " +
                     col_name +
-                    ", count (*) as tot from analyses group by " +
+                    ", count (*) as tot from "+tb_ana_zn+" group by " +
                     col_name + ";";
             status = query.exec(msg);
             query.first();
@@ -1181,7 +1353,7 @@ void GererBase::MLP_DansLaQtTabView_F2(stTiragesDef *pConf, QString etude, QStan
 //-------------
 void GererBase::MLP_DansLaQtTabView(stTiragesDef *pConf, QString etude, QStandardItemModel *fen)
 {
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     int nb_zone = pConf->nb_zone;
     int i =0;
     bool status = true;
@@ -1345,7 +1517,7 @@ void GererBase::RechercheCombinaison(stTiragesDef *ref, QTabWidget *onglets)
                 colsel.remove(colsel.length()-5,5);
 
                 // Sql msg
-                msg = "select count (*) from analyses where ("
+                msg = "select count (*) from "+tb_ana_zn+" where ("
                         + colsel + ");";
 
                 status = query.exec(msg);
@@ -1438,13 +1610,14 @@ void GererBase::MontrerDetailCombinaison(QString msg)
     QString st_msg ="";
     QFormLayout *mainLayout = new QFormLayout;
     bool status = true;
+    QString tb_ana_zn = "Ref_ana_z1";
 
     //tv_r1->setWindowTitle(msg);
 
     msg.replace("c","bd");
     msg.replace(",","and");
 
-    st_msg = "Select * from tirages inner join (select * from analyses where("
+    st_msg = "Select * from tirages inner join (select * from "+tb_ana_zn+" where("
             + msg +
             "))as s on tirages.id = s.id;";
 
@@ -1452,7 +1625,7 @@ void GererBase::MontrerDetailCombinaison(QString msg)
 
 
 
-    sqm_r1->setQuery(st_msg);
+    sqm_r1->setQuery(st_msg,db_0);
     tv_r1->setModel(sqm_r1);
     //view->setSortingEnabled(true);
 
@@ -1488,7 +1661,7 @@ void GererBase::MontrerDetailCombinaison(QString msg)
         item_1->setData(i,Qt::DisplayRole);
         qsim_rep->setItem(i-1,0,item_1);
 
-        QSqlQuery sql_1;
+        QSqlQuery sql_1(db_0);
         QString msg_2 = "select count (*) from (" +st_msg+ " where (" +
                 "b1 = " +QString::number(i) + " or " +
                 "b2 = " +QString::number(i) + " or " +

@@ -6,6 +6,7 @@
 #include <QApplication>
 
 #include <QString>
+#include <QObject>
 #include <QStringList>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -30,7 +31,7 @@ bool GererBase::CreerTableDistriCombi(void)
 {
     bool ret = true;
     QString st_sqlMsg = "";
-    QSqlQuery query;
+    QSqlQuery query(db_0);
 
     st_sqlMsg =  "create table DistriCombi "
                  "(id INTEGER PRIMARY KEY,"
@@ -44,45 +45,46 @@ bool GererBase::CreerTableDistriCombi(void)
 /// Table des combinaisons avec repetitions
 bool GererBase::CreerTableGnp(QString tb, QString *data)
 {
-    bool isOk=true;
-    return isOk;
+    bool b_retVal=true;
+    return b_retVal;
 
     int nbZone = conf.nb_zone;
 #ifndef QT_NO_DEBUG
     int b = 0;
 #endif
 
-    for(int i = 0; (i< nbZone) && isOk; i++)
+    for(int i = 0; (i< nbZone) && b_retVal; i++)
     {
         int maxNz = floor(conf.limites[i].max/10)+1;
         int maxPz = conf.limites[i].win;
         maxNz = BMIN(GNP_N_MAX,maxNz);
         maxPz = BMIN(GNP_P_MAX,maxPz);
 
-        BGnp *a = new BGnp(maxNz,maxPz);
+        BGnp *a = new BGnp(maxNz,maxPz,db_0.connectionName());
 #ifndef QT_NO_DEBUG
         b = a->BP_count();
 #endif
     }
-    return(isOk);
+    return(b_retVal);
 }
 
 /// Table des combinaisons sans repetitions
 bool GererBase::CreerTableCnp(QString tb, QString *data)
 {
-    bool isOk=true;
-    return isOk;
+    bool b_retVal=true;
+    return b_retVal;
 
+#if 0
     int nbZone = conf.nb_zone;
 
-    for(int i = 0; (i< nbZone) && isOk; i++)
+    for(int i = 0; (i< nbZone) && b_retVal; i++)
     {
-        int maxPz = conf.limites[i].len;
+        int maxPz = conf.nbElmZone[i];
         int maxNz = conf.limites[i].max;
         maxNz = BMIN(CNP_N_MAX,maxNz);
         maxPz = BMIN(CNP_P_MAX,maxPz);
 
-        BCnp *a = new BCnp(maxNz,maxPz);
+        BCnp *a = new BCnp(maxNz,maxPz,db_0.connectionName());
         int b = a->BP_count();
 #if USE_CNP_SLOT_LINE
         curZone = i;
@@ -90,27 +92,31 @@ bool GererBase::CreerTableCnp(QString tb, QString *data)
                 this,SLOT(slot_UseCnpLine(sigData,QString)));
 #endif
     }
-/* BUG ???
+
     /// Pour Voir les resultats
     /// A verifier incidence double creation
-    BCnp *a = new BCnp(12,2);
-    BCnp *b = new BCnp(10,1);
-    */
-    return(isOk);
+    BCnp *a = new BCnp(12,2,db_0.connectionName());
+    BCnp *b = new BCnp(10,1,db_0.connectionName());
+    return(b_retVal);
+#endif
 }
 
 bool GererBase::RajouterTable(stTbToCreate des)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     QString msg = "";
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     QStringList input;
 
     // A t on une fonction de traitement
     if(des.pFuncInit != NULL)
     {
+        msg = des.tbDef;
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+        QMessageBox::information(NULL, "Pgm", msg,QMessageBox::Yes);
+#endif
         // faire avec la fonction
-        isOk=(this->*(des.pFuncInit))(des.tbDef,des.tbData);
+        b_retVal=(this->*(des.pFuncInit))(des.tbDef,des.tbData);
     }
     else
     {
@@ -148,14 +154,14 @@ bool GererBase::RajouterTable(stTbToCreate des)
                 +");";
 
         /// traitement creation table
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
 
         /// traitement insertion donnees
-        if((des.tbData != NULL) && isOk)
+        if((des.tbData != NULL) && b_retVal)
         {
             /// verifier que le nombre de donnees
             /// a inserer correspond au nombre de champs
-            for(int i = 0; (i< (des.nb_data))&& isOk;i++)
+            for(int i = 0; (i< (des.nb_data))&& b_retVal;i++)
             {
                 QString data = des.tbData[i];
                 QStringList items;
@@ -171,12 +177,12 @@ bool GererBase::RajouterTable(stTbToCreate des)
                         +data
                         +");";
                 /// traitement
-                isOk = query.exec(msg);
+                b_retVal = query.exec(msg);
             }
         }
     }
 
-    if(!isOk)
+    if(!b_retVal)
     {
         QString ErrLoc = "RajouterTable:"+input.at(0);
         DB_Tools::DisplayError(ErrLoc,&query,msg);
@@ -184,22 +190,13 @@ bool GererBase::RajouterTable(stTbToCreate des)
 
     query.finish();
 
-    return isOk;
-}
-
-bool GererBase::TraitementPerso(QString def, QString *data)
-{
-    bool isOk = true;
-    QSqlQuery query;
-    QString msg = "";
-
-    return isOk;
+    return b_retVal;
 }
 
 bool GererBase::CreationTablesDeLaBDD_v2()
 {
     bool status = true;
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     QString requete = "";
 
 
@@ -207,16 +204,15 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     {
         "TablesList:tbName text,usage int,description text",
         "ExplAvecData:name text, abv text",
-        "TbNomCreeDansLaFonctionAppelee:2",
-        "TbNomCreeDansLaFonctionAppelee:4",
         "TbNomCreeDansLaFonctionAppelee:CNP",
         "TbNomCreeDansLaFonctionAppelee:Gamma_NP",
         "TbNomCreeDansLaFonctionAppelee:1",
+        "TbNomCreeDansLaFonctionAppelee:2",
         "TbNomCreeDansLaFonctionAppelee:3",
+        "TbNomCreeDansLaFonctionAppelee:4",
         "TbNomCreeDansLaFonctionAppelee:5",
         "TbNomCreeDansLaFonctionAppelee:6",
         "TbNomCreeDansLaFonctionAppelee:7"
-           /* */
     };
 
     QString data_1[]=
@@ -230,16 +226,15 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     {
         {aCreer[position++],NULL,0,NULL},
         {aCreer[position++],&data_1[0],sizeof(data_1)/sizeof(QString*),NULL},
-        {aCreer[position++],NULL,0,f2}, /// nom des boules
-        {aCreer[position],NULL,0,f4}, /// table des combinaisons
-        {aCreer[position++],NULL,0,CreerTableCnp},
-        {aCreer[position++],NULL,0,CreerTableGnp},
-        {aCreer[position++],NULL,0,f1}, ///tirages
-        {aCreer[position++],NULL,0,f1_1}, ///noms des zones
-        {aCreer[position++],NULL,0,f1_2}, /// limites
-        {aCreer[position++],NULL,0,f2_2}, /// selections utilisateur
-        {aCreer[position++],NULL,0,f3} /// analyse des boules
-        /**/
+        {aCreer[position++],NULL,0,&GererBase::CreerTableCnp},
+        {aCreer[position++],NULL,0,&GererBase::CreerTableGnp},
+        {aCreer[position++],NULL,0,&GererBase::f1}, ///tirages
+        {aCreer[position++],NULL,0,&GererBase::f1_1}, ///noms des zones
+        {aCreer[position++],NULL,0,&GererBase::f1_2}, /// limites
+        {aCreer[position++],NULL,0,&GererBase::f2}, /// nom des boules
+        {aCreer[position++],NULL,0,&GererBase::f2_2}, /// selections utilisateur
+        {aCreer[position++],NULL,0,&GererBase::f3}, /// analyse des boules
+        {aCreer[position],NULL,0,&GererBase::f4} /// table des combinaisons
     };
 
     int total_1 = sizeof(aCreer)/sizeof(QString);
@@ -253,9 +248,18 @@ bool GererBase::CreationTablesDeLaBDD_v2()
 
     for(int i=0;(i<total_2) && status;i++)
     {
+
         status = RajouterTable(depart[i]);
-        if(!status){
             QString tbName = (depart[i].tbDef.split(":")).at(0);
+        QString msg = "Old 4 end ! i="
+                +QString::number(i)
+                +QString("\nRajout de ")
+                +tbName + "\nstatus ="
+                +QString::number(status);
+#if (SET_DBG_LIVE&&SET_DBG_LEV1)
+        QMessageBox::information(NULL, "Pgm", msg,QMessageBox::Yes);
+#endif
+        if(!status){
             //un message d'information
             QMessageBox::critical(0, tbName, "Erreur traitement !",QMessageBox::Yes);
             QApplication::quit();
@@ -269,7 +273,7 @@ bool GererBase::f1(QString tb, QString *data)
 {
     bool status = true;
 
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     QString requete = "";
 
     stTiragesDef ref = typeTirages->conf;
@@ -295,7 +299,7 @@ bool GererBase::f1_1(QString tb, QString *data)
 {
     bool status = true;
 
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     QString requete = "";
     QString st_table = TB_RZ;
 
@@ -313,8 +317,8 @@ bool GererBase::f1_1(QString tb, QString *data)
         for(int i = 0; (i<totZone) && status;i++)
         {
             requete = "insert into "+st_table+" (id,name,abv) values "+
-                    "(NULL,'"+ref.TT_Zn[i].std+"','"+
-                    ref.TT_Zn[i].abv+"');";
+                    "(NULL,'"+ref.FullNameZone[i]+"','"+
+                    ref.nomZone[i]+"');";
             status = query.exec(requete);
         }
     }
@@ -336,7 +340,7 @@ bool GererBase::f1_2(QString tb, QString *data)
 {
     bool status = true;
 
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     QString requete = "";
     QString st_table = TB_RZVA;
 
@@ -359,7 +363,7 @@ bool GererBase::f1_2(QString tb, QString *data)
         for(int i = 0; (i<totZone) && status;i++)
         {
             requete = "insert into "+st_table+" (id,len,min,max,neg) values "+
-                    "(NULL,"+QString::number(ref.limites[i].len)+","+
+                    "(NULL,"+QString::number(ref.nbElmZone[i])+","+
                     QString::number(ref.limites[i].min)+","+
                     QString::number(ref.limites[i].max)+ "," +
                     QString::number(ref.limites[i].win)+
@@ -383,7 +387,7 @@ bool GererBase::f2(QString tb, QString *data)
 {
     bool status = true;
 
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     QString requete = "";
     QString st_table = TB_RZBN;
 
@@ -478,12 +482,14 @@ bool GererBase::f2(QString tb, QString *data)
 
 bool GererBase::f2_2(QString tb, QString *data)
 {
+ /// Code pour ancienne base
     bool status = true;
-
-    QSqlQuery q_create;
-    QString st_refTbl[] = {cUsr_elm,cUsr_cmb,cUsr_grp};
+    QSqlQuery q_create(db_0);
     QString st_sqldf = ""; /// sql definition
     QString st_table = "";
+
+#if 0
+    QString st_refTbl[] = {C_TBL_6,U_CMB,U_GRP,C_TBL_A,"U_brc"};
 
     stTiragesDef ref = typeTirages->conf;
     int maxTbl = sizeof(st_refTbl)/sizeof(QString);
@@ -504,6 +510,17 @@ bool GererBase::f2_2(QString tb, QString *data)
         }
 
     }
+#endif
+
+		if(status){
+		 st_table="Filtres";
+
+		/// Preparation nouvelle table pour supprimer ancienne def
+		st_sqldf =  "create table "
+								+st_table
+								+" (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
+		status = q_create.exec(st_sqldf);
+		}
     q_create.finish();
 
 #ifndef QT_NO_DEBUG
@@ -519,56 +536,106 @@ bool GererBase::f2_2(QString tb, QString *data)
 
 }
 
+/*
 bool GererBase::f3(QString tb, QString *data)
 {
-    bool status = true;
+    Q_UNUSED(data)
 
-    QSqlQuery query;
+    bool b_retVal = true;
+    QSqlQuery query(db_0);
+
+    stTiragesDef ref = typeTirages->conf;
+    int nbZone = conf.nb_zone;
+
+    myslFlt = new  QStringList* [nbZone] ;
+    QString tbUse = "";
+    QString source = "";
+    QString destination ="";
+
+    destination = "B_"+tb;
+    //source = tblTirages;
+
+    for (int zn=0;(zn < nbZone) && b_retVal;zn++ )
+    {
+        myslFlt[zn] = noClass_CreateFilterForData(zn,&ref);
+        //b_retVal = AnalyserEnsembleTirage(source,onGame, zn);
+        if(b_retVal)
+            ;//b_retVal = FaireTableauSynthese(destination,onGame,zn);
+    }
+
+    if(!b_retVal)
+    {
+        QString ErrLoc = "f5:";
+        DB_Tools::DisplayError(ErrLoc,NULL,"");
+    }
+
+    return b_retVal;
+
+}
+*/
+
+
+bool GererBase::f3(QString tb, QString *data)
+{
+    bool b_retVal = true;
+
+    QSqlQuery query(db_0);
     QString requete = "";
 
     stTiragesDef ref = typeTirages->conf;
 
-    requete = typeTirages->s_LibColAnalyse(&ref);
-    if((requete.length() != 0) && status)
-    {
-        requete.replace(",", " int,");
-        requete = "create table analyses (id INTEGER PRIMARY KEY,"+
-                requete + " int, fk_idCombi_z1 int);";
+    int nbZone = conf.nb_zone;
 
-        status = query.exec(requete);
-        query.finish();
+    requete = typeTirages->s_LibColAnalyse(&ref);
+        requete.replace(",", " int,");
+    for (int zn=0;zn < nbZone && b_retVal;zn++ )
+    {
+        QString tb_ana_zn = "Ref_ana_z"+QString::number(zn+1);
+        if((requete.length() != 0) && b_retVal)
+        {
+            QString msg = "create table "+tb_ana_zn+" (id INTEGER PRIMARY KEY,"+
+                    requete + " int, fk_idCombi_z"+QString::number(zn+1)+" int);";
+#ifndef QT_NO_DEBUG
+        qDebug() << msg;
+#endif
+
+            b_retVal = query.exec(msg);
+        }
     }
 
-    return status;
+
+    return b_retVal;
 }
+
+
 
 //#if 0
 bool GererBase::f4(QString tb, QString *data)
 {
-    bool isOk = true;
+    bool b_retVal = true;
     int nbZone = conf.nb_zone;
 
-    for (int zn=0;(zn < nbZone-1) && isOk;zn++ )
+    for (int zn=0;(zn < nbZone-1) && b_retVal;zn++ )
     {
-        isOk = TraitementCodeVueCombi(zn);
+        b_retVal = TraitementCodeVueCombi(zn);
 
-        if(isOk)
-            isOk = TraitementCodeTblCombi(zn);
+        if(b_retVal)
+            b_retVal = TraitementCodeTblCombi(zn);
     }
 
-    if(!isOk)
+    if(!b_retVal)
     {
         QString ErrLoc = "f4:";
         DB_Tools::DisplayError(ErrLoc,NULL,"");
     }
 
-    return isOk;
+    return b_retVal;
 }
 
 bool GererBase::TraitementCodeVueCombi(int zn)
 {
-    bool isOk = true;
-    QSqlQuery query;
+    bool b_retVal = true;
+    QSqlQuery query(db_0);
     QString msg = "";
     QString ref_1 = "";
 
@@ -582,7 +649,7 @@ bool GererBase::TraitementCodeVueCombi(int zn)
 
     /// Traitement de la vue
     int nbLgnCode = sizeof(viewCode)/sizeof(QString);
-    for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+    for(int lgnCode=0;(lgnCode<nbLgnCode) && b_retVal;lgnCode++){
         msg = "";
         switch(argViewCount[lgnCode]){
         case 1:
@@ -600,10 +667,10 @@ bool GererBase::TraitementCodeVueCombi(int zn)
         qDebug() << msg;
 #endif
 
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
     }
 
-    if(!isOk)
+    if(!b_retVal)
     {
         QString ErrLoc = "TraitementCodeVueCombi:";
         DB_Tools::DisplayError(ErrLoc,&query,msg);
@@ -611,20 +678,20 @@ bool GererBase::TraitementCodeVueCombi(int zn)
 
     query.finish();
 
-    return isOk;
+    return b_retVal;
 }
 
 bool GererBase::TraitementCodeTblCombi(int zn)
 {
-    bool isOk = true;
-    QSqlQuery query;
+    bool b_retVal = true;
+    QSqlQuery query(db_0);
     QString msg = "";
 
     QString tblCode[]=
     {
-        "drop table if exists lstCombi_z%1;",
-        "create table if not exists lstCombi_z%1 (id integer primary key,%2);",
-        "insert into lstCombi_z%1 select NULL,%2 from (%3) where(%4="
+        "drop table if exists Ref_cmb_z%1;",
+        "create table if not exists Ref_cmb_z%1 (id integer primary key,%2);",
+        "insert into Ref_cmb_z%1 select NULL,%2 from (%3) where(%4="
         +QString::number(+conf.limites[zn].win)+");"
     };
     int argTblCount[]={1,2,4};
@@ -639,7 +706,7 @@ bool GererBase::TraitementCodeTblCombi(int zn)
 
     /// traitement creation table en fonction 10zaine
     int lenZn = floor(conf.limites[zn].max/10)+1;
-    ref_1="t%1."+conf.TT_Zn[zn].abv+" as "+conf.TT_Zn[zn].abv+"%1";
+    ref_1="t%1."+conf.nomZone[zn]+" as "+conf.nomZone[zn]+"%1";
     QString msg1 = "";
     for(int pos=0;pos<lenZn;pos++){
         msg1 = msg1 + ref_1.arg(pos+1);
@@ -648,7 +715,7 @@ bool GererBase::TraitementCodeTblCombi(int zn)
     }
 
     nbLgnCode = sizeof(tblCode)/sizeof(QString);
-    for(int lgnCode=0;(lgnCode<nbLgnCode) && isOk;lgnCode++){
+    for(int lgnCode=0;(lgnCode<nbLgnCode) && b_retVal;lgnCode++){
         msg="";
         switch(argTblCount[lgnCode]){
         case 1:
@@ -664,8 +731,8 @@ bool GererBase::TraitementCodeTblCombi(int zn)
             break;
         case 4:{
             ref_1="%d";
-            ref_2="t%1."+conf.TT_Zn[zn].abv;
-            ref_3="(%1*t%2."+conf.TT_Zn[zn].abv+")";
+            ref_2="t%1."+conf.nomZone[zn];
+            ref_3="(%1*t%2."+conf.nomZone[zn]+")";
             ref_4="tbr%1 as t%2";
             ref_5="b%1";
             QString msg2 = "";
@@ -702,10 +769,10 @@ bool GererBase::TraitementCodeTblCombi(int zn)
         qDebug() << msg;
 #endif
 
-        isOk = query.exec(msg);
+        b_retVal = query.exec(msg);
     }
 
-    if(!isOk)
+    if(!b_retVal)
     {
         QString ErrLoc = "TraitementCodeVueCombi:";
         DB_Tools::DisplayError(ErrLoc,&query,msg);
@@ -713,7 +780,7 @@ bool GererBase::TraitementCodeTblCombi(int zn)
 
     query.finish();
 
-    return isOk;
+    return b_retVal;
 }
 
 //#endif
@@ -744,21 +811,21 @@ bool GererBase::GrouperCombi(int zn)
 {
     bool status = true;
 
-    QSqlQuery sql_1;
+    QSqlQuery sql_1(db_0);
 
     QString st_critere = "";
     QString msg_1 = "";
-    int max= typeTirages->conf.limites[0].len;
+    int max= typeTirages->conf.nbElmZone[0];
 
     for(int i = 5; i>1 && status;i--)
     {
         st_critere = ContruireRechercheCombi(i,zn,&typeTirages->conf);
 
-        st_critere = "select id from lstCombi_z1 where ("
+        st_critere = "select id from Ref_cmb_z1 where ("
                 + st_critere
                 +")";
 
-        msg_1 = "update lstCombi_z1 set pos = "
+        msg_1 = "update Ref_cmb_z1 set pos = "
                 +QString::number(6-i)
                 +" where id in("
                 +st_critere
@@ -777,7 +844,7 @@ bool GererBase::GrouperCombi(int zn)
     st_critere ="";
     for(int i =1; i<=max;i++)
     {
-        st_critere = st_critere + "select * from lstCombi_z1 where b"
+        st_critere = st_critere + "select * from Ref_cmb_z1 where b"
                 +QString::number(i)
                 +"=1 "
                 +str_union;
@@ -787,7 +854,7 @@ bool GererBase::GrouperCombi(int zn)
     st_critere = "select id from(select id, count(id) as T from("
             +st_critere+") as u1 group by id order by T) as r1 where (r1.T=3)";
 
-    msg_1 = "update lstCombi_z1 set pos = 5 where id in("
+    msg_1 = "update Ref_cmb_z1 set pos = 5 where id in("
             +st_critere
             +");";
 
@@ -802,11 +869,11 @@ bool GererBase::GrouperCombi(int zn)
     {
         st_critere = ContruireRechercheCombi(1,zn,&typeTirages->conf);
 
-        st_critere = "select id from lstCombi_z1 where ("
+        st_critere = "select id from Ref_cmb_z1 where ("
                 + st_critere
                 +")";
 
-        msg_1 = "update lstCombi_z1 set pos = 6 where id in("
+        msg_1 = "update Ref_cmb_z1 set pos = 6 where id in("
                 +st_critere
                 +");";
 
@@ -830,8 +897,8 @@ QString ContruireRechercheCombi(int i,int zn,stTiragesDef *pRef)
     bool putIndice = true;
     int max = 0;
 
-    max = pRef->limites[zn].len;
-    champ = pRef->TT_Zn[zn].abv;
+    max = pRef->nbElmZone[zn];
+    champ = pRef->nomZone[zn];
 
     lstBoules << QString::number(i);
     if(i>2){
@@ -862,8 +929,8 @@ QString DetailsSomme(int zn,stTiragesDef *pRef)
     QString champ = "";
     int max = 0;
 
-    max = pRef->limites[zn].len;
-    champ = pRef->TT_Zn[zn].abv;
+    max = pRef->nbElmZone[zn];
+    champ = pRef->nomZone[zn];
 
 
     for(int i=1;i<max;i++)
@@ -885,9 +952,9 @@ QString DetailsSomme(int zn,stTiragesDef *pRef)
 bool  GererBase::MettrePonderationCombi(int delta)
 {
     bool status = false;
-    QSqlQuery sql_1;
-    QSqlQuery sql_2;
-    QString msg_1 = "select pos, count(pos)as T from lstCombi_z1 group by pos;";
+    QSqlQuery sql_1(db_0);
+    QSqlQuery sql_2(db_0);
+    QString msg_1 = "select pos, count(pos)as T from Ref_cmb_z1 group by pos;";
 
 
     status = sql_1.exec(msg_1);
@@ -907,7 +974,7 @@ bool  GererBase::MettrePonderationCombi(int delta)
 
                 for(int i = depart; (i<(depart+nblgn)) && (status == true);i++)
                 {
-                    msg_1 = "update lstCombi_z1 set poids="
+                    msg_1 = "update Ref_cmb_z1 set poids="
                             +QString::number(val)+" where (id="
                             +QString::number(i)
                             +");";
@@ -940,11 +1007,11 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
     stTiragesDef ref=typeTirages->conf;
     int nbBoules = floor(ref.limites[zn].max/10);
 
-    QSqlQuery sql_1;
+    QSqlQuery sql_1(db_0);
     QString st_cols = "";
     QString st_vals = "";
     QString st_valtips = "";
-    QString msg_1 = " CREATE table if not exists lstCombi_z1 (id INTEGER PRIMARY KEY, pos int, comb int,rot int, b1 int, b2 int ,b3 int ,b4 int, b5 int, b6 int, poids real, tip text);";
+    QString msg_1 = " CREATE table if not exists Ref_cmb_z1 (id INTEGER PRIMARY KEY, pos int, comb int,rot int, b1 int, b2 int ,b3 int ,b4 int, b5 int, b6 int, poids real, tip text);";
 
 
     int coef[5][2][5] = {
@@ -1008,7 +1075,7 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
                             }
                             st_valtips.remove(st_valtips.length()-1,1);
 
-                            msg_1 = "insert into lstCombi_z1 (id,pos,comb,rot,"
+                            msg_1 = "insert into Ref_cmb_z1 (id,pos,comb,rot,"
                                     + st_cols + ",tip) Values (NULL,"
                                     + QString::number(loop)+","
                                     + QString::number(i)+","
@@ -1042,7 +1109,7 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
                 }
                 st_valtips.remove(st_valtips.length()-1,1);
 
-                msg_1 = "insert into lstCombi_z1 (id,pos,comb,rot,"
+                msg_1 = "insert into Ref_cmb_z1 (id,pos,comb,rot,"
                         + st_cols + ",tip) Values (NULL,"
                         + QString::number(loop)+","
                         + QString::number(i)+",0,"
@@ -1062,7 +1129,7 @@ bool GererBase::SauverCombiVersTable (QStringList &combi)
 
 bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
 {
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     QString requete;
     stTiragesDef ref;
     bool status = true;
@@ -1080,7 +1147,7 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
     // Creation table pour la couverture
     for(zone=0;(zone<ref.nb_zone && status == true);zone++)
     {
-        requete =  "create table " + QString::fromLocal8Bit(CL_TCOUV) + ref.TT_Zn[zone].abv +
+        requete =  "create table " + QString::fromLocal8Bit(CL_TCOUV) + ref.nomZone[zone] +
                 " (id INTEGER PRIMARY KEY, depart int, fin int, taille int);";
         status = query.exec(requete);
         query.finish();
@@ -1091,13 +1158,13 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
     {
         //    msg1 =  "create table " + CL_TCOUV + "%1 (id INTEGER PRIMARY KEY)";
         //    msg1 = msg1.arg(zone+1);
-        requete =  "create table " + QString::fromLocal8Bit(CL_TOARR) + ref.TT_Zn[zone].abv +
+        requete =  "create table " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zone] +
                 " (id INTEGER PRIMARY KEY, boule int);";
         status = query.exec(requete);
 
         // Preparer les boules de la zone
         if(status){
-            requete = "insert into " + QString::fromLocal8Bit(CL_TOARR) + ref.TT_Zn[zone].abv +
+            requete = "insert into " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zone] +
                     " (id, boule) values (:id, :boule)";
             status = query.prepare(requete);
 
@@ -1112,10 +1179,11 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
 
     // creation de la table analyse des boules (lors du chargement de la base)
     requete = pRef->s_LibColAnalyse(&ref);
+    QString tb_ana_zn = "Ref_ana_z1";
     if((requete.length() != 0) && status)
     {
         requete.replace(",", " int,");
-        requete = "create table analyses (id INTEGER PRIMARY KEY,"+
+        requete = "create table "+tb_ana_zn+" (id INTEGER PRIMARY KEY,"+
                 requete + " int, fk_idCombi_z1 int);";
 
         status = query.exec(requete);
@@ -1142,7 +1210,7 @@ bool GererBase::CreationTablesDeLaBDD(tirages *pRef)
 // CTB_T1 : Creation table de base :Table1
 bool GererBase:: CTB_Table1(QString nomTable, tirages *pRef)
 {
-    QSqlQuery query;
+    QSqlQuery query(db_0);
     QString msg1;
     stTiragesDef ref;
     bool ret = true;

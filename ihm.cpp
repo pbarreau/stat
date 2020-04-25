@@ -17,14 +17,111 @@ MainWindow::MainWindow()
     //zoneCentrale->setViewport(this);
     setCentralWidget(zoneCentrale);
 
+ createIhm();
+#if 0
     createActions();
     createMenus();
     createToolBars();
     createStatusBar();
+#endif
+}
+void MainWindow::createIhm()
+{
+ /// Gestion type de jeu
+ QIcon tmp_ico;
+ QAction *tmp_act = NULL;
+
+ QMenu *gameMenu = menuBar()->addMenu(tr("&Base"));
+ QToolBar *gameToolBar = addToolBar(tr("Base"));
+ /// --- new
+ tmp_ico = QIcon(":/images/new.png");
+ tmp_act = new QAction(tmp_ico,tr("&Nouvelle"), this);
+ tmp_act->setShortcuts(QKeySequence::New);
+ tmp_act->setStatusTip(tr("Creation base pour type de jeu.."));
+ gameMenu->addAction(tmp_act);
+ gameToolBar->addAction(tmp_act);
+ connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_newGame()));
+ /// -------
+
+ /// --- open
+ tmp_ico = QIcon(":/images/open.png");
+ tmp_act = new QAction(tmp_ico,tr("&Ouvrir"), this);
+ tmp_act->setShortcuts(QKeySequence::Open);
+ tmp_act->setStatusTip(tr("Utiliser base.."));
+ gameMenu->addAction(tmp_act);
+ gameToolBar->addAction(tmp_act);
+ connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_open()));
+ /// -------
+
+ /// --- save
+ tmp_ico = QIcon(":/images/save.png");
+ tmp_act = new QAction(tmp_ico,tr("&Sauvegarder"), this);
+ tmp_act->setShortcuts(QKeySequence::Save);
+ tmp_act->setStatusTip(tr("Sauver base..."));
+ gameMenu->addAction(tmp_act);
+ gameToolBar->addAction(tmp_act);
+ connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_save()));
+ /// -------
+
+ //--------- Element du menu Aide ---------
+ tmp_ico = QIcon(":/images/help.png");
+ tmp_act = new QAction(tmp_ico,tr("&Apropos"), this);
+ tmp_act->setShortcut(Qt::CTRL | Qt::Key_T );
+ tmp_act->setStatusTip(tr("Show the application's About box..."));
+ gameMenu->addAction(tmp_act);
+ gameToolBar->addAction(tmp_act);
+ connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_about()));
+
+
+ /// --- quit
+ tmp_act = new QAction(tr("E&xit"), this);
+ tmp_act->setShortcuts(QKeySequence::Quit);
+ tmp_act->setStatusTip(tr("Fermer ce jeu.."));
+ gameMenu->addAction(tmp_act);
+ connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_close()));
+ /// -------
+
+
+ QMenu *actionMenu = menuBar()->addMenu(tr("&Tirages"));
+ QToolBar *actionToolBar = addToolBar(tr("Tirages"));
+
+ /// --- Download fdj
+ tmp_ico = QIcon(":/images/downloadFdj.png");
+ tmp_act = new QAction(tmp_ico,tr("&Telecharger"), this);
+ tmp_act->setShortcut(Qt::CTRL | Qt::Key_T );
+ tmp_act->setStatusTip(tr("Telecharger depuis Francaise des jeux..."));
+ actionMenu->addAction(tmp_act);
+ actionToolBar->addAction(tmp_act);
+ connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_GetFromFdj()));
+
+ /// --- Run
+ tmp_ico = QIcon(":/images/run_32px.png");
+ act_UGL_Create = new QAction(tmp_ico,tr("&Creer liste"), this);
+ act_UGL_Create->setShortcut(Qt::CTRL | Qt::Key_L );
+ act_UGL_Create->setStatusTip(tr("Creer liste de jeux..."));
+ actionMenu->addAction(act_UGL_Create);
+ actionToolBar->addAction(act_UGL_Create);
+ /// --- flt on
+ tmp_ico = QIcon(":/images/flt_apply.png");
+ act_UGL_SetFilters = new QAction(tmp_ico,tr("&Filtrer liste"), this);
+ act_UGL_SetFilters->setShortcut(Qt::CTRL | Qt::Key_F );
+ act_UGL_SetFilters->setStatusTip(tr("Appliquer Filtres sur la liste de jeux..."));
+ actionMenu->addAction(act_UGL_SetFilters);
+ actionToolBar->addAction(act_UGL_SetFilters);
+ /// --- flt clear
+ tmp_ico = QIcon(":/images/flt_clear.png");
+ act_UGL_ClrFilters = new QAction(tmp_ico,tr("&Effacer filtre"), this);
+ act_UGL_ClrFilters->setShortcut(Qt::ALT | Qt::Key_F );
+ act_UGL_ClrFilters->setStatusTip(tr("Supprimer tous les filtres..."));
+ actionMenu->addAction(act_UGL_ClrFilters);
+ actionToolBar->addAction(act_UGL_ClrFilters);
+
+ createStatusBar();
 }
 
 void MainWindow::createActions()
 {
+
     newAct = new QAction(QIcon(":/images/new.png"), tr("&Nouveau"), this);
     newAct->setShortcuts(QKeySequence::New);
     newAct->setStatusTip(tr("Nouvelle etude de jeu"));
@@ -40,13 +137,15 @@ void MainWindow::createActions()
     saveAct->setStatusTip(tr("Sauver jeu sur disque"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(pslot_save()));
 
-    act_mkUsrGame = new QAction(QIcon(":/images/run_32px.png"), tr("&Run"), this);
-    act_mkUsrGame->setStatusTip(tr("Creer liste de jeux"));
-    /// La connection s'effectue a la creation de l'objet.
+    act_UGL_Create = new QAction(QIcon(":/images/run_32px.png"), tr("&Run"), this);
+    act_UGL_Create->setStatusTip(tr("Creer liste de jeux"));
 
-    FiltrerAct = new QAction(QIcon(":/images/filtre_1_32px.png"), tr("&Filtrer"), this);
-    FiltrerAct->setStatusTip(tr("Filtrer la liste de jeux"));
-    /// La connection s'effectue a la creation de l'objet.
+    act_UGL_SetFilters = new QAction(QIcon(":/images/flt_apply.png"), tr("&Filtrer"), this);
+    act_UGL_SetFilters->setStatusTip(tr("Filtrer la liste de jeux"));
+
+		act_UGL_ClrFilters = new QAction(QIcon(":/images/flt_clear.png"), tr("&ClearFiltres"), this);
+		act_UGL_ClrFilters->setStatusTip(tr("Supprimer tous les filtres"));
+		/// La connection s'effectue a la creation de l'objet.
 
     saveAsAct = new QAction(tr("Sau&ver sous..."), this);
     saveAsAct->setShortcuts(QKeySequence::SaveAs);
@@ -60,7 +159,7 @@ void MainWindow::createActions()
 
     //--------- Element du menu Resultats ---------
     actGetFromUrlsFdj = new QAction(tr("&Telecharger de la Fdj"), this);
-    actGetFromUrlsFdj ->setStatusTip("Telecharger depuis Francais des jeux");
+ actGetFromUrlsFdj ->setStatusTip("Telecharger depuis Francaise des jeux");
     connect(actGetFromUrlsFdj, SIGNAL(triggered()), this, SLOT(pslot_GetFromFdj()));
 
     //--------- Element du menu Aide ---------
@@ -94,8 +193,9 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(newAct);
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
-    fileToolBar->addAction(act_mkUsrGame);
-    fileToolBar->addAction(FiltrerAct);
+    fileToolBar->addAction(act_UGL_Create);
+    fileToolBar->addAction(act_UGL_SetFilters);
+    fileToolBar->addAction(act_UGL_ClrFilters);
 }
 
 void MainWindow::createStatusBar()

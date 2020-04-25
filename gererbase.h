@@ -22,7 +22,7 @@ typedef struct
 }stTbToCreate;
 
 
-class GererBase : public QObject,tirages
+class GererBase : public QWidget,tirages
 {
     Q_OBJECT
 public:
@@ -32,8 +32,14 @@ public:
 
 
 public:
+    QString get_IdCnx(int id);
+    int get_IdBdd(void);
     QVariant data(const QModelIndex &index, int role) const;
-    bool CreerBasePourEtude(bool action, NE_FDJ::E_typeJeux type);
+
+    bool ouvrirBase(bool action, etFdj type);
+    bool AuthoriseChargementExtension(void);
+    QString mk_IdDsk(etFdj type, int v_id);
+    QString mk_IdCnx(etFdj type, int v_id);
 
     bool CreationTablesDeLaBDD(tirages *pRref);
     bool CTB_Table1(QString nomTable, tirages *pRef);
@@ -41,7 +47,7 @@ public:
     bool LireLesTirages(tiragesFileFormat *def,int file_id,stErr *retErr);
     bool NEW_AnalyseLesTirages(tirages *pRef);
     bool SupprimerBase();
-    QSqlError lastError();
+
     void AfficherBase(stTiragesDef *pConf, QTableView *cibleview);
     void AfficherResultatCouverture(stTiragesDef *pConf, QTableView *cibleview);
     void DistributionSortieDeBoule(int boule, QStandardItemModel *modele);
@@ -98,7 +104,6 @@ private:
     bool OPtimiseAccesBase(void);
     bool CreationTablesDeLaBDD_v2();
     bool RajouterTable(stTbToCreate des);
-    bool TraitementPerso(QString tb, QString *data);
     bool CreerTableCnp(QString tb, QString *data);
     bool CreerTableGnp(QString tb, QString *data);
 
@@ -122,12 +127,17 @@ private:
 
 
 private:
-    QSqlDatabase db;
+QMdiArea * pgm_mdi;
+    static int total_items;
+    int cur_item;
+    QSqlDatabase db_0;
+    QSqlDatabase db_1newDb;
     stTiragesDef conf;
     tirages *typeTirages;
     QSqlTableModel *tbl_model;
     QSqlTableModel *tbl_couverture;
     int iAffichageVoisinEnCoursDeLaBoule[2];
+    QStringList **myslFlt;
 
 #if USE_CNP_SLOT_LINE
 private:

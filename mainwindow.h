@@ -24,6 +24,7 @@
 #include "tirages.h"
 #include "gererbase.h"
 
+#include "SyntheseDetails.h"
 #include "SyntheseGenerale.h"
 #include "lescomptages.h"
 
@@ -35,7 +36,6 @@ class MainWindow;
 }
 
 extern QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf);
-extern int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *pMaConf);
 
 #if 0
 class MonToolTips:public QStandardItemModel
@@ -56,7 +56,7 @@ class EtudierJeu
 {
     Q_OBJECT
 public:
-    void EtudierJeu(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false, bool dest_bdd=false);
+    void EtudierJeu(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=eFdjLoto, bool load=false, bool dest_bdd=false);
 };
 #endif
 
@@ -85,9 +85,12 @@ class MainWindow : public QMainWindow
 public:
     MainWindow();
     //explicit
-    void EtudierJeu(NE_FDJ::E_typeJeux leJeu, bool load, bool dest_bdd);
+    void EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new=false);
+    void EtudierJeu_v1(stGameConf *curConf, bool dest_bdd);
+    void EtudierJeu_v2(stGameConf *curConf);
+    void EtudierJeu_MontrerUplet(stGameConf *curConf, GererBase *use_db);
     void RechercheProgressionBoules(stTiragesDef *pConf);
-    void Prev_MainWindow(QWidget *parent = 0, NE_FDJ::E_typeJeux leJeu=NE_FDJ::fdj_loto, bool load=false, bool dest_bdd=false);
+    void Prev_MainWindow(QWidget *parent = nullptr, etFdj leJeu=eFdjLoto, bool load=false, bool dest_bdd=false);
     ~MainWindow();
     void closeEvent(QCloseEvent *event);
     void getPgmVersion(void);
@@ -146,6 +149,7 @@ public slots:
 
 
 private:
+    void createIhm();
     void createActions();
     void createMenus();
     void createToolBars();
@@ -170,6 +174,8 @@ private:
     void FEN_ChoisirBoules(void);
     void FEN_Splitter(void);
     void FEN_NewTirages(stTiragesDef *pConf);
+    QWidget *FEN_Analyses(stTiragesDef *pConf);
+    QWidget *FEN_Recherches(stTiragesDef *pConf);
     void MemoriserCriteresTirages(int zn, QTableView *ptbv, const QModelIndex & index);
 
     void MontreDansLaQtView(QTableView *ptr_qtv, int val, int col_id);
@@ -231,15 +237,18 @@ private:
     QString TST_PartitionEntierAdd(int p[], int n);
     QStandardItemModel * TST_SetTblViewCombi(int nbLigne, QTableView *qtv_r);
     QStandardItemModel * TST_SetTblViewVal(int nbLigne, QTableView *qtv_r);
+    int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *pMaConf);
 
 private:
     static QStringList L1;
     GererBase *DB_tirages;
+    QSqlDatabase db_0;
     QMdiArea *zoneCentrale;
     BPrevision *tous;
 
     QWidget *w_FenetreDetails;
     QTabWidget *gtab_Top;
+    QTabWidget *gtab_vue;
     SyntheseGenerale *syntheses;
     RefEtude *ecarts;
     QTableView * qtv_s1;
@@ -255,8 +264,9 @@ private:
     QAction *saveAct;
     QAction *saveAsAct;
     QAction *exitAct;
-    QAction *act_mkUsrGame;
-    QAction *FiltrerAct;
+    QAction *act_UGL_Create;
+    QAction *act_UGL_SetFilters;
+    QAction *act_UGL_ClrFilters;
     QAction *actGetFromUrlsFdj;
     QAction *aboutAct;
 
@@ -273,7 +283,7 @@ private:
 
     QTableView *G_tbv_CombiSourceSelection;
     QTableView *G_tbv_ProxyCombiSourceSelection;
-    FiltreCombinaisons *fltComb_1;
+    ///FiltreCombinaisons *fltComb_1;
     QSqlTableModel *G_tab_1Model;
 
 
@@ -284,7 +294,7 @@ private:
     QTableView *G_tbv_MesPossibles;
     QTableView *G_tbv_TabPrevision;
     QTableView *G_tbv_TabPrevision_v2;
-    //QTableView *G_tbv_lstCombi_z1_z1;
+    //QTableView *G_tbv_Ref_cmb_z1_z1;
     QTableView *G_tbv_LesAbsents;
     QTableView *G_tbv_Parites;
     QTableView **gtbv_DernierTirageDetail;

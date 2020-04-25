@@ -3,7 +3,6 @@
 #endif
 
 #include <QFile>
-#include <QDir>
 #include <QString>
 #include <QStringList>
 #include <math.h>
@@ -29,14 +28,11 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
 {
     QString fileName_2 = def->fname;
     QFile fichier(fileName_2);
-    QDir d;
-    QString ceRep = d.absolutePath();
 
     // On ouvre notre fichier en lecture seule et on verifie l'ouverture
     if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-
-        retErr->msg = "Auto Surchargement : " + ceRep+fileName_2 + "\nEchec!!";
+        retErr->msg = "Auto chargement : " + fileName_2 + "\nEchec!!";
         retErr->status = false;
         return false;
     }
@@ -48,7 +44,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
     QString str_1 = "";
     QString str_2 = "";
 
-    QSqlQuery sql_1(db);
+    QSqlQuery sql_1(db_0);
     int nbPair = 0;
     int nbE1 = 0;
 
@@ -132,7 +128,7 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
                     pRef->value.valBoules[zone][ElmZone]= val1;
 
                     // Preparation pour affectation variable sql (tirages)
-                    clef_1 = ":"+ref.TT_Zn[zone].abv+QString::number(ElmZone+1);
+                    clef_1 = ":"+ref.nomZone[zone]+QString::number(ElmZone+1);
                     clef_1.replace(QRegExp("\\s+"),"");
                     sql_1.bindValue(clef_1,val1);
                 }
@@ -158,11 +154,11 @@ bool GererBase::LireLesTirages(tiragesFileFormat *def,int file_id, stErr *retErr
             // Calcul perso a mettre dans la base
             // Automatisation possible ?????
             nbPair = pRef->RechercheNbBoulesPairs(zone);
-            clef_1 = " :" + ref.TT_Zn[zone].abv+ CL_PAIR;
+            clef_1 = " :" + ref.nomZone[zone]+ CL_PAIR;
             sql_1.bindValue(clef_1.replace(QRegExp("\\s+"),""),nbPair);
 
             nbE1 = pRef->RechercheNbBoulesDansGrp1(zone);
-            clef_1 = " :" + ref.TT_Zn[zone].abv+ CL_SGRP ;
+            clef_1 = " :" + ref.nomZone[zone]+ CL_SGRP ;
             sql_1.bindValue(clef_1.replace(QRegExp("\\s+"),""),nbE1);
         }
 
@@ -252,15 +248,16 @@ QString JourFromDate(QString LaDate, QString verif, stErr *retErr)
 bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
 {
     bool status = false;
-    QSqlQuery sql_1;
-    QSqlQuery sql_all;
+    QSqlQuery sql_1(db_0);
+    QSqlQuery sql_all(db_0);
     QString clef_1= "";
     QString sAllTirages = "";
+    QString tb_ana_zn = "Ref_ana_z1";
 
     stTiragesDef ref;
     pRef->getConfigFor(&ref);
 
-    // Table des analyses
+    // Table des "+tb_ana_zn+"
     QString str_1 = pRef->s_LibColAnalyse(&ref);
     QString str_2 = str_1;
 #ifndef QT_NO_DEBUG
@@ -274,7 +271,7 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
 #endif
 
 
-    str_1 = "INSERT INTO analyses (" + str_2 + ")VALUES (:" + str_1 + ")";
+    str_1 = "INSERT INTO "+tb_ana_zn+" (" + str_2 + ")VALUES (:" + str_1 + ")";
     sql_1.prepare(str_1);
 #ifndef QT_NO_DEBUG
     qDebug() << str_1;
@@ -309,11 +306,11 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
             for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
                 pRZone[zone][j]=0;
 
-            int maxElmZone = ref.limites[zone].len;
-            // recuperer chaque tirage pour compter unitï¿½, dizaine,...
+            int maxElmZone = ref.nbElmZone[zone];
+            // recuperer chaque tirage pour compter unité, dizaine,...
             for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
             {
-                QString champ = ref.TT_Zn[zone].abv+QString::number(ElmZone+1);
+                QString champ = ref.nomZone[zone]+QString::number(ElmZone+1);
 
                 // La valeur a deja ete verifie dans chargement des donnees
                 int val1 = ligne.value(champ).toInt();
@@ -326,8 +323,8 @@ bool GererBase::NEW_AnalyseLesTirages(tirages *pRef)
             for(int j = 0; j < (ref.limites[zone].max/10)+1; j++)
             {
                 int val2 = pRZone[zone][j];
-                // Preparation pour affectation variable sql (analyses)
-                clef_1 = ":"+ref.TT_Zn[zone].abv+"d"+QString::number(j);
+                // Preparation pour affectation variable sql ("+tb_ana_zn+")
+                clef_1 = ":"+ref.nomZone[zone]+"d"+QString::number(j);
                 clef_1.replace(QRegExp("\\s+"),"");
                 sql_1.bindValue(clef_1,val2);
             }

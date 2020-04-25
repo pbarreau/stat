@@ -12,17 +12,27 @@ TARGET = StatFdJeux
 TEMPLATE = app
 
 
-## https://indy.fulgan.com/SSL/
-INCLUDEPATH +="./sqlExtensions"
-LIBS +=  -L./sqlExtensions -lsqlite3-0 -leay32 -lssleay32
+
+#include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
+
+#win32:CONFIG(release, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchart2
+#else:win32:CONFIG(debug, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchartd2
+#win32: LIBS += -LC:/Devel/kdchart-2.5.1-source/lib/ -ltesttools2
+
+#INCLUDEPATH += "C:/Devel/kdchart-2.5.1-source/include"
+#DEPENDPATH += "C:/Devel/kdchart-2.5.1-source/include"
+# -lsqlite -lStatPgm-dl
+
+LIBS = -L.\sqlExtensions\lib  -lStatPgm-sqlite
 message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
-#QMAKE_CXXFLAGS_RELEASE += -g
+
+
+
 SOURCES += \
 		main.cpp\
 		mainwindow.cpp \
 		CreerTables.cpp \
 		ImportFdj.cpp \
-		OuvrirBase.cpp \
 		ReEcriture.cpp \
 		RemplirBase.cpp \
 		SyntheseDetails.cpp \
@@ -31,6 +41,9 @@ SOURCES += \
 		choixjeux.cpp \
 		combinaison.cpp \
 		compter.cpp \
+		compter_combinaisons.cpp \
+		compter_groupes.cpp \
+		compter_zones.cpp \
 		delegate.cpp \
 		distancepourtirage.cpp \
 		filtrecombinaisons.cpp \
@@ -40,9 +53,10 @@ SOURCES += \
 		lescomptages.cpp \
 		monQview.cpp \
 		monSqlEditable.cpp \
-		monfiltreproxymodel.cpp \
 		mygraphicsview.cpp \
+		myqabstractitemviewofqtable.cpp \
 		myqtableview.cpp \
+		newdetails.cpp \
 		pointtirage.cpp \
 		prevision.cpp \
 		progression.cpp \
@@ -51,24 +65,47 @@ SOURCES += \
 		showstepper.cpp \
 		sqlbackup.cpp \
 		tirages.cpp \
+    cappliquerfiltres.cpp \
+    cassemble.cpp \
     db_tools.cpp \
     cnp_SansRepetition.cpp \
     cnp_AvecRepetition.cpp \
     etudierjeux.cpp \
-    compter_une_repartition.cpp \
-    montrer_tirages.cpp \
-    bcouv.cpp \
-    bar_action.cpp \
-    barcalculprevision.cpp \
-    ihm_tirages.cpp \
-    sqlqmtirages.cpp \
+    version.cpp \
+    game.cpp \
+    sqlqmdetails.cpp \
+    bvisuresume.cpp \
+    btablevieweditor.cpp \
+    bnewcombo.cpp \
+    bpopupcolor.cpp \
+    btbvrepartition.cpp \
+    bordcolor.cpp \
+    bdelegatecouleurfond.cpp \
+    bvisuresume_sql.cpp \
+    sCouv.cpp \
+    cmb_table.cpp \
+    grp_2tirages.cpp \
     idlgttirages.cpp \
-    cmpt_elem_ecarts.cpp \
-    cmpt_comb_details.cpp \
-    cmpt_elem_details.cpp \
-    cmpt_grou_details.cpp \
-    cmpt_comb_ecarts.cpp \
-    version.cpp
+    sqlqmtirages.cpp \
+    buplet.cpp \
+    bvtabbar.cpp \
+    btirbar.cpp \
+    blineedit.cpp \
+    bfpmtiragev1.cpp \
+    BFpm_2.cpp \
+    BFpm_1.cpp \
+    BGrbGenTirages.cpp \
+    BPushButton.cpp \
+    BSqlQmTirages_3.cpp \
+    BAnalyserTirages.cpp \
+    BFdj.cpp \
+    cFdjData.cpp \
+    compter_barycentre.cpp \
+    BColorPriority.cpp \
+    BFlags.cpp \
+    BMenu.cpp \
+    BTbView.cpp \
+    BGpbMenu.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -77,6 +114,9 @@ HEADERS  += \
 		chartwidget.h \
 		choixjeux.h \
 		compter.h \
+		compter_combinaisons.h \
+		compter_groupes.h \
+		compter_zones.h \
 		delegate.h \
 		distancepourtirage.h \
 		filtrecombinaisons.h \
@@ -85,8 +125,8 @@ HEADERS  += \
 		lescomptages.h \
 		monQview.h \
 		monSqlEditable.h \
-		monfiltreproxymodel.h \
 		mygraphicsview.h \
+		myqabstractitemviewofqtable.h \
 		myqtableview.h \
 		pointtirage.h \
 		refetude.h \
@@ -94,24 +134,47 @@ HEADERS  += \
 		sqlbackup.h \
 		tirages.h \
 		types_jeux.h \
+    cappliquerfiltres.h \
+    cassemble.h \
     db_tools.h \
     cnp_AvecRepetition.h \
     cnp_SansRepetition.h \
     etudierjeux.h \
     game.h \
-    compter_une_repartition.h \
-    montrer_tirages.h \
-    bcouv.h \
-    bar_action.h \
-    barcalculprevision.h \
-    ihm_tirages.h \
-    sqlqmtirages.h \
+    colors.h \
+    sqlqmdetails.h \
+    bvisuresume.h \
+    properties.h \
+    btablevieweditor.h \
+    bnewcombo.h \
+    bpopupcolor.h \
+    btbvrepartition.h \
+    bordcolor.h \
+    bdelegatecouleurfond.h \
+    bvisuresume_sql.h \
+    sCouv.h \
     idlgttirages.h \
-    cmpt_comb_ecarts.h \
-    cmpt_elem_ecarts.h \
-    cmpt_elem_details.h \
-    cmpt_comb_details.h \
-    cmpt_grou_details.h
+    sqlqmtirages.h \
+    buplet.h \
+    bvtabbar.h \
+    btirbar.h \
+    blineedit.h \
+    bfpmtiragev1.h \
+    BFpm_2.h \
+    BFpm_1.h \
+    BGrbGenTirages.h \
+    BPushButton.h \
+    BSqlQmTirages_3.h \
+    BAnalyserTirages.h \
+    BFdj.h \
+    cFdjData.h \
+    compter_barycentre.h \
+    BColorPriority.h \
+    BFlags.h \
+    BMenu.h \
+    bstflt.h \
+    BTbView.h \
+    BGpbMenu.h
 
 
 FORMS    += mainwindow.ui \
@@ -119,3 +182,6 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     icones_rsc.qrc
+
+DISTFILES += \
+    test_uml_qt.qmodel

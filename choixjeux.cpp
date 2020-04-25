@@ -8,7 +8,7 @@ ChoixJeux::ChoixJeux(QWidget *parent) :
   QDialog(parent,Qt::Dialog),
   ui(new Ui::ChoixJeux)
 {
-  //eChoixJeu = NE_FDJ::fdj_none;
+  //eChoixJeu = eFdjNotSet;
 
   ui->setupUi(this);
   EtudeJeu = (MainWindow *)parent;
@@ -23,33 +23,33 @@ ChoixJeux::~ChoixJeux()
 
 void ChoixJeux::slot_ConfigureJeu(void)
 {
-  NE_FDJ::E_typeJeux leJeu = NE_FDJ::fdj_none;
-  bool baseEnRam = false;
-  bool autoLoad = false;
+  etFdj setGame = eFdjNone;
+  bool bNewFdj = false;
+  bool bOldFile = false;
 
   // Type de jeu a etudier
   if(ui->rb_euro->isChecked())
   {
-    leJeu = NE_FDJ::fdj_euro;
+    setGame = eFdjEuro;
   }
   else
   {
-    leJeu = NE_FDJ::fdj_loto;
+    setGame = eFdjLoto;
   }
 
-  // Ecriture de la base sur disque ?
-  if(!ui->rb_bdd->isChecked())
+  // Effacer donnees FDJ ?
+  if(ui->rb_bdd->isChecked())
   {
-    baseEnRam = true;
+    bNewFdj = true;
   }
 
   // Chargement automatique fichier des donnees ?
   if(ui->chk_autoLoad->isChecked())
   {
-    autoLoad = true;
+    bOldFile = true;
   }
 
   // Lancer l'etude
-  EtudeJeu->EtudierJeu(leJeu,autoLoad,baseEnRam);
+  EtudeJeu->EtudierJeu(setGame,bOldFile,bNewFdj);
 
  }

@@ -11,41 +11,60 @@
 #include <QObject>
 #include <QSortFilterProxyModel>
 #include <QSqlQueryModel>
-#include <QTableView>
 
+#include "game.h"
 #include "compter.h"
+#include "labelclickable.h"
 
-class C_ElmDetails:public BCount
+class BcElm:public BCount//, public cFdjData
 {
-    Q_OBJECT
-    /// in : infos representant les tirages
-public:
-    C_ElmDetails(const QString &in, const B_Game &pDef, QSqlDatabase fromDb);
-    ~C_ElmDetails();
-    int getCounter(void);
-    QString getFilteringData(int zn);
-    QTableView * getTbv(int zn);
+ Q_OBJECT
+ /// in : infos representant les tirages
+ public:
+ BcElm(const stGameConf *pDef);
 
-public slots:
-    void slot_ClicDeSelectionTableau(const QModelIndex &index);
-    void slot_RequeteFromSelection(const QModelIndex &index);
-    void slot_AideToolTip(const QModelIndex & index);
+ BcElm(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent);
+ ~BcElm();
+ int getCounter(void);
+ QString getFilteringData(int zn);
+ LabelClickable *getLabPriority(void);
 
-private:
-    static int total;
-    int hCommon; // taille des tableaux
-    QTableView **tbvCalculs;
+ public slots:
+ void slot_ClicDeSelectionTableau(const QModelIndex &index);
+ void slot_RequeteFromSelection(const QModelIndex &index);
 
-private:
-    QTableView *Compter(QString * pName, int zn);
-    QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
-    QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
-    QString PBAR_ReqComptage(QString ReqTirages, int zn,int distance);
-    void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
+ public:
+ static int tot_elm;
+ int hCommon; // taille des tableaux
+
+ private:
+ QGridLayout *Compter(QString * pName, int zn);
+ void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
+ QStringList * CreateFilterForData(int zn);
+ QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
+ QString TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
+ QString PBAR_ReqComptage(QString ReqTirages, int zn,int distance);
+ void SqlFromSelection (const QItemSelectionModel *selectionModel, int zn);
+
+ private:
+ QWidget *fn_Count(const stGameConf *pGame, int zn);
+ QString usr_doCount(const stGameConf *pGame, int zn);
+
+ private:
+ //virtual QString getType();
+ virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
+ virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
+ virtual void usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn);
+ virtual QLayout * usr_UpperItems(int zn);
 
 
-Q_SIGNALS:
-    void sig_isClickedOnBall(const QModelIndex &index);
+
+ private:
+ QSqlDatabase db_elm;
+
+
+ Q_SIGNALS:
+ void sig_isClickedOnBall(const QModelIndex &index);
 
 };
 

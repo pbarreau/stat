@@ -7,39 +7,43 @@
 #include <QTableView>
 #include <QString>
 #include <QStringList>
+
+#include <QLayout>
 #include <QGridLayout>
+
 #include <QSqlQueryModel>
-#include <QItemDelegate>
 #include <QList>
 
-#include "delegate.h"
-#include "game.h"
+//#include "delegate.h"
+#include "labelclickable.h"
+#include "BColorPriority.h"
 
-#define CEL2_H  35
-#define CEL2_L  30
-#define BMAX_2(a,b) (((a)>(b))?(a):(b))
-#define BMIN_2(a,b) (((a)<(b))?(a):(b))
+#include "game.h"
+#include "BFlags.h"
+
+#define CEL2_H  55
+#define CEL2_L  40
 
 #if 0
 #define C_TBL_6      "SelElemt"  /// Choix de boules dans zone
-#define C_TBL_7      "SelComb"  /// Choix de combinaison dans zone
-#define C_TBL_8      "SelGrp"  /// Choix de criteres groupement dans zone
+#define U_CMB      "SelComb"  /// Choix de combinaison dans zone
+#define U_GRP      "SelGrp"  /// Choix de criteres groupement dans zone
 #endif
 
 #define C_TBL_1     "B_def" /// config du jeu
-#define cRef_elm    "B_elm" /// constituant des boules
-#define cRef_fdj    "fdj"   /// Base de tous les tirages
-#define cRef_ana    "ana"   /// Resultat analyse des sommes de la fdj
-#define cUsr_elm    "U_e"   /// User choice on element
-#define cUsr_cmb    "U_c"   /// ..on combinaison
-#define cUsr_grp    "U_g"   /// ..on regroupement
+#define C_TBL_2     "B_elm" /// constituant des boules
+#define C_TBL_3     "fdj" /// Base de tous les tirages
+#define T_CMB     "cmb" /// Combinaison a appliquer sur zone
+#define T_ANA     "ana" /// Resultat analyse des sones de la fdj
+#define C_TBL_6     "U_e"   /// User choice on element
+#define U_CMB     "U_c"   /// ..on combinaison
+#define U_GRP     "U_g"   /// ..on regroupement
+#define T_GRP     "grp"   /// synthese on regroupement
+#define C_TBL_A     "U_b"   /// ..on regroupement
+#define T_BRC     "brc"   /// ..on regroupement
+#define C_TBL_C     "elm"   /// ..on regroupement
 
-#define cClc_elm    "elm"   /// Boules
-#define cClc_cmb    "cmb"   /// Combinaison
-#define cClc_grp    "grp"   /// Regroupement
-#define cClc_eca    "eca"   /// Ecart
-
-#define MAX_CHOIX_BOULES    30
+#define MAX_CHOIX_BOULES    50
 
 /// https://fr.wikibooks.org/wiki/Programmation_C%2B%2B/Les_classes
 /// https://fr.wikipedia.org/wiki/Fonction_virtuelle
@@ -48,140 +52,133 @@
 
 /// -------ENUM---------
 
-typedef enum{
-    eCountToSet,    /// Pas de definition
-    eCountElm,      /// Comptage des boules de zones
-    eCountCmb,      /// ... des combinaisons
-    eCountGrp       /// ... des regroupements
-}eCountingType;
 typedef struct _B_RequeteFromTbv
 {
-    QString db_data;    /// requete pour la base de donnees
-    QString tb_data;    /// titre de cette requete
+ QString db_data;    /// requete pour la base de donnees
+ QString tb_data;    /// titre de cette requete
 }B_RequeteFromTbv;
 
 typedef struct _BRunningQuery
 {
-    eCountingType key;  /// type element de la liste
-    int pos;            /// id dans la fille
-    int size;           /// nb de zone
-    QSqlQueryModel *sqmDef; /// info sur requete de zone
+ etCount key;  /// type element de la liste
+ int pos;            /// id dans la fille
+ int size;           /// nb de zone
+ QSqlQueryModel *sqmDef; /// info sur requete de zone
 }BRunningQuery;
 
-/// classe pour trouver les couvertures
-typedef struct _stCouvData
+typedef struct _prmbary stNeedsOfBary;
+
+
+
+
+
+class BCount:public QWidget
 {
-    int **p_TotalMois;
-    int **p_val;
-    int p_deb;
-    int p_fin;
-    int b_deb;
-    int b_fin;
-}stCouvData;
-
-class BCouv
-{
-public:
-    BCouv(QString surEnsemble, int zn, const B_Game &pDef, QSqlDatabase fromDb);
-    ~BCouv();
-
-private:
-    bool rechercherCouverture(QString surEnsemble, int zn);
-    stCouvData *newCouvData(stCouvData *prev, int zn, int line, int pos);
-
-private:
-    int zoneEtudie;
-    QString ensemble;
-    B_Game p_conf;
-    QSqlDatabase db;
-    stCouvData *couv;
-
-public:
-    QList<stCouvData *> qldata;
-};
-
-class BCount:public QTableView
-{
-    Q_OBJECT
-public:
-    BCount(const B_Game &pDef, const QString &in, QSqlDatabase useDb);
-    BCount(const B_Game &pDef, const QString &in, QSqlDatabase fromDb,
-           QWidget *unParent, eCountingType genre);
-
-protected:
-    virtual QTableView *Compter(QString * pName, int zn)=0; //virtual
-    QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
-    QString CriteresCreer(QString operateur, QString critere,int zone);
-    void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
-    bool VerifierValeur(int item, QString table,int idColValue,int *lev);
-    QMenu *ContruireMenu(QString tbl, int val);
-    void CompleteMenu(QMenu *LeMenu,QString tbl, int clef);
-    bool CalculerSqrt(QString tblName, QString colVariance);
-
-private:
-    void RecupererConfiguration(void);
-    void CreerCritereJours(void);
+ Q_OBJECT
 
 
+ public:
+ BCount();
+ BCount(const stGameConf *pGame, etCount genre);
+ BCount* mySefl(void);
 
-public :
-    B_RequeteFromTbv a;
+ BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb);
+ BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
+        QWidget *unParent, etCount genre);
+ BCount(const stNeedsOfBary &param){Q_UNUSED(param)}
 
-protected:
-    QString db_data;    /// information de tous les tirages
-    QSqlDatabase dbToUse;
-    B_Game myGame;
-    int *memo;  /// A deplacer :
-    eCountingType type; /// type de comptage en cours
-    static const QString cLabCount[]; /// nom associe aux types
-    int countId;
-    int curZn;          /// zone en cours
-    QString unNom;  /// Pour Tracer les requetes sql
-    QString db_jours;   /// information des jours de tirages
-    QModelIndexList *lesSelections; /// liste des selections dans les tableaux
-    QString *sqlSelection;  /// code sql generee pour un tableau
-    static QList<BRunningQuery *> sqmActive[3];
-    BSqmColorizePriority *sqmZones; /// pour mettre a jour le tableau des resultats
+ protected:
+ BCount* ptr_self;
+ const stGameConf *gm_def;
+ etCount type; /// type de comptage en cours
+ QSqlDatabase dbCount;
 
-private:
-    static int nbChild;
+ public:
+ typedef struct _stMkLocal{
+  QString dstTbl; /// table a creer
+  QLayout **up;
+  QSqlQuery *query;
+  QString *sql;
+ }stMkLocal;
+ typedef bool (BCount::*ptrFn_tbl)(const stGameConf *pDef, const stMkLocal prm, const int zn);
 
-protected slots:
-    void slot_AideToolTip(const QModelIndex & index);
-    void slot_ClicDeSelectionTableau(const QModelIndex &index);
-    void slot_ccmr_SetPriorityAndFilters(QPoint pos);
-    void slot_ChoosePriority(QAction *cmd);
-    void slot_wdaFilter(bool val);
+ public:
+ etCount getType();
+ virtual QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul) = 0;
+ QWidget *startIhm(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn);
+ virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)=0;
+ virtual void usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)=0;
 
 
+ protected:
+ virtual QGridLayout *Compter(QString * pName, int zn)=0;
+ virtual QLayout * usr_UpperItems(int zn);
 
-Q_SIGNALS:
-    void sig_TitleReady(const QString &title);
-    void sig_ComptageReady(const B_RequeteFromTbv &my_answer);
+ QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
+ QString CriteresCreer(QString operateur, QString critere,int zone);
+ void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
+ bool VerifierValeur(int item, QString table,int idColValue,int *lev);
+ //QMenu *ContruireMenu(QTableView *view, int val);
+ QMenu *mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
+ bool showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
+ //void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
+ QString FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString alias="");
 
-};
+ bool V2_showMyMenu(int col, etCount eSrc);
+ QMenu *V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos);
 
-class BSqmColorizeEcart:public QSqlQueryModel
-{
-    Q_OBJECT
+ private:
+ void RecupererConfiguration(void);
+ bool setUnifiedPriority(QString szn, QString sprio);
+ bool getFiltre(stTbFiltres *ret, const etCount origine, QTableView *view, const QModelIndex index);
+ QString mkTitle(int zn, etCount eCalcul, QTableView *view);
 
-public:
-    BSqmColorizeEcart(QObject *parent=0):QSqlQueryModel(parent){}
-    QVariant data(const QModelIndex &index, int role) const;
-    //Qt::ItemFlags flags(const QModelIndex &index) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role);
 
-private:
-    bool isNeedSpotLight(int v1, int v2, float r)const;
-};
+ //static bool DB_Tools::flt_DbRead(stTbFiltres *ret, QString cnx);
+ static bool flt_DbWrite(stTbFiltres *ret, QString cnx, bool update=true);
+ //static QString DB_Tools::getLstDays(QString cnx_db_name, QString tbl_ref);
 
-class BDlgEcart : public QItemDelegate
-{
-    Q_OBJECT
-public:
-    BDlgEcart(QWidget *parent = 0) : QItemDelegate(parent) {}
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-               const QModelIndex &index) const;
+ public :
+ B_RequeteFromTbv a;
+ static QString onglet[]; /// nom associe aux types
+ static QString label[]; /// nom associe aux types
+
+ protected:
+ QString st_LstTirages;    /// information de tous les tirages
+ QString db_jours;   /// information des jours de tirages
+
+ stGameConf myGame;
+ int *memo;  /// A deplacer :
+ int countId;
+ int curZn;          /// zone en cours
+ QString unNom;  /// Pour Tracer les requetes sql
+ QModelIndexList *lesSelections; /// liste des selections dans les tableaux
+ QString *sqlSelection;  /// code sql generee pour un tableau
+ static QList<BRunningQuery *> sqmActive[3];
+ BColorPriority *sqmZones; /// pour mettre a jour le tableau des resultats
+ LabelClickable selection[3];
+
+
+ private:
+ static int nbChild;
+ bool setPriorityToAll;
+
+ protected slots:
+ void slot_AideToolTip(const QModelIndex & index);
+ void slot_ClicDeSelectionTableau(const QModelIndex &index);
+ void slot_ccmr_SetPriorityAndFilters(QPoint pos);
+ void slot_ChoosePriority(QAction *cmd);
+ void slot_wdaFilter(bool val);
+
+ void slot_V2_AideToolTip(const QModelIndex & index);
+ void slot_V2_ccmr_SetPriorityAndFilters(QPoint pos);
+ void slot_V2_wdaFilter(bool val);
+
+
+ Q_SIGNALS:
+ void sig_TitleReady(const QString &title);
+ void sig_ComptageReady(const B_RequeteFromTbv &my_answer);
+
 };
 
 #endif // COMPTER_H

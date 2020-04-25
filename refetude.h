@@ -7,61 +7,64 @@
 #include <QTabWidget>
 #include <QSortFilterProxyModel>
 
+#if 0
+#include "tirages.h"
 #include "gererbase.h"
-#include "cmpt_grou_details.h"
+#endif
 
-class sCouv
-{
-public:
-    sCouv(int zn,stTiragesDef *pDef);
-    ~sCouv();
-
-private:
-    int zoneEtudie;
-
-public:
-    stTiragesDef *p_conf;
-    int **p_TotalMois;
-    QList<bool> *p_trackingBoule;
-    int p_deb;
-    int p_fin;
-    int **p_val;
-};
-
+#include "gererbase.h"
+#include "compter_groupes.h"
+#include "sCouv.h"
 
 class RefEtude: public QObject
 {
     Q_OBJECT
 public:
+struct stRefP{
+ GererBase *db;
+ QString stFiltreTirages;
+ int zn;
+ stTiragesDef *pDef;
+ QMdiArea *visuel;
+ QTabWidget *tab_Top;
+ QTabWidget *tab_Vue;
+};
     RefEtude();
-    RefEtude(GererBase *db, QString stFiltreTirages, int zn, stTiragesDef *pDef, QMdiArea *visuel, QTabWidget *tab_Top);
+    RefEtude(stRefP a);
     QWidget *CreationOnglets();
     QTableView *GetListeTirages(void);
     QTableView *GetLesEcarts(void);
     QStandardItemModel *GetPtrToModel(void);
     void GetInfoTableau(int onglet, QTableView **pTbl, QStandardItemModel **pSim, QSortFilterProxyModel **pSfpm);
+    QList<sCouv *> getLstCouv(int zn);
+    QStringList ** getSqlGrp(void);
 
 private:
     QGridLayout *MonLayout_TabTirages();
     QGridLayout *MonLayout_TabCouvertures();
     QGridLayout *MonLayout_TabCouverturesZnId(int zn);
     QGridLayout *MonLayout_TabCouvertures_etoiles();
+
     QGridLayout *MonLayout_TabEcarts();
     QGridLayout *MonLayout_TabEcart_2();
     QGridLayout *MonLayout_TabEcart_3();
+    QGridLayout *MonLayout_TabEcart_4();
+
     QGridLayout *MonLayout_TabMois();
     QGridLayout *MonLayout_TabMois_boules();
     QGridLayout *MonLayout_TabMois_etoiles();
     QGridLayout *MonLayout_TabMois_1(int zn);
-    QGridLayout *MonLayout_TabMois_2(QList<sCouv *> *lstCouv,int zn);
 
-    bool RechercheCouverture(QList<sCouv *> *lstCouv, int zn);
-    bool AnalysePourCouverture(QSqlRecord unTirage, bool *depart, int *total, int *bIdStart, int zn, sCouv *memo);
+    QGridLayout *MonLayout_TabMois_2(QList<sCouv *> *lstCouv,int zn);
     QTableView * TablePourLstcouv(QList<sCouv *> *lstCouv,int zn);
+    bool AnalysePourCouverture(QSqlRecord unTirage, bool *depart, int *total, int *bIdStart, int zn, sCouv *memo);
+    void MontrerBoulesNonSorties(int zn, QStandardItemModel *sim_tmp, sCouv *curCouv, int memo_last_boule);
+    bool RechercheCouverture(QList<sCouv *> *lstCouv, int zn);
+
     QTableView * DetailsLstcouv(int zn);
-    QTableView * tbForBaseLigne();
+    //QTableView * tbForBaseLigne();
     QTableView * tbForBaseRef();
-    QTableView * tbForBaseEcart(int zn);
+    //QTableView * tbForBaseEcart(int zn);
     QTableView * TableMoisBase(int zn);
     QTableView * TableMoisCouv(int zn);
 
@@ -70,7 +73,6 @@ private:
     QWidget *CouvMois_OglGroup();
 
     void RemplirTableauEcart(int zn,QStandardItemModel *sim_tmp);
-    void MontrerBoulesNonSorties(int zn, QStandardItemModel *sim_tmp, sCouv *curCouv, int memo_last_boule);
     double DistributionSortieDeBoule_v2(int zn, int boule, QStandardItemModel *modele);
     void CouvMontrerProbable_v2(int i, QStandardItemModel *dest);
     void CouvMontrerProbable_v3(int i,double Emg, QStandardItemModel *dest);
@@ -82,10 +84,9 @@ private:
 public slots:
     void slot_AideToolTip(const QModelIndex & index);
     void slot_Couverture(const QModelIndex & index);
-    void slot_ShowDetails(const QModelIndex & index);
-    void slot_ShowBoule(const QModelIndex & index);
+    //void slot_ShowDetails(const QModelIndex & index);
+    //void slot_ShowBoule(const QModelIndex & index);
     void slot_ShowBoule_2(const QModelIndex & index);
-    void slot_Type_G(const QModelIndex & index);
     void slot_TotalCouverture(int index);
     void slot_SelectPartBase(const QModelIndex & index);
     void slot_ccmr_tbForBaseEcart(QPoint pos);
@@ -100,9 +101,10 @@ public slots:
 private:
     static QStandardItemModel **p_simResu;
     GererBase *p_db;
+    QSqlDatabase db_0;
     QString p_stRefTirages;
     stTiragesDef *p_conf;
-    QList<sCouv *> p_ListeDesCouverturesSurZnId[2];
+    QList<sCouv *> *p_ListeDesCouverturesSurZnId;
     int ***p_couvBase;
 
     QTableView *p_tbv_0;
@@ -117,8 +119,9 @@ private:
     QStringList **codeSqlDeRegroupementSurZnId;
     QMdiArea *p_affiche;
     QTabWidget *p_reponse;
+    QTabWidget *p_vue;
     QTabWidget *tabTrackCouverture;
-    C_GrpDetails *unTest;
+    BCountGroup *unTest;
 
 };
 

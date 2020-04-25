@@ -8,25 +8,15 @@
 #include <QSplitter>
 #include <QCheckBox>
 
-#include "lescomptages.h"
 #include "tirages.h"
 
-typedef struct _stStepperNeeds
-{
-    BPrevision *origine;
-    stZnNames *TT_Zn;
-    stZnLimites *limites;
-    //QString *FullNameZone;
-    //unsigned char nb_zone;
-}stStepperNeeds;
 
 class ShowStepper: public QObject
 {
     Q_OBJECT
 public:
     ~ShowStepper();
-    ShowStepper(stStepperNeeds *pdef);
-    //ShowStepper(stTiragesDef *pdef);
+    ShowStepper(stTiragesDef *pdef);
     void RunStepper(int cid, int tid);
 
 private:
@@ -40,6 +30,8 @@ private:
     QSplitter *SetDataSplitter_2(int col, int cid, int tid);
     QSplitter *SetDataSplitter_3(int col, int cid, int tid);
     void SetBgColorCell(int tbl, int cid, int tid, int bid);
+    QString GetBoulesOfTirage(int tir);
+    QString GetTirageInfo(int id);
 #ifndef USE_CODE_IN_SG
     void MemoriserProgression(QString table, stMyHeadedList *h, stMyLinkedList *l, int start, int y, int cid, int tid);
     void MettreCouleur(int start, int cur);
@@ -57,7 +49,7 @@ public slots:
     void slot_chkAdd(int);
 	void slot_MontrerBoule(QModelIndex index);
 #ifndef USE_SG_CODE
-    void slot_MaFonctionDeCalcul(const QModelIndex &my_index);
+		void slot_MaFonctionDeCalcul(const QModelIndex &my_index, int in_cid);
 #endif
 
 
@@ -66,8 +58,8 @@ private:
     int tid_cur;
     int tid_start;
     int cid_start;
-    //stTiragesDef *pGlobConf;
-    stStepperNeeds *pGlobConf;
+    stTiragesDef *pGlobConf;
+    QSqlDatabase db_0;
     QSqlQueryModel *my_model;
     QSqlQueryModel *my_model_2;
     QSqlQueryModel *my_model_3;

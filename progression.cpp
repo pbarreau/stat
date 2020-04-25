@@ -20,7 +20,7 @@ void MainWindow::RechercheProgressionBoules(stTiragesDef *pConf)
         tab3[i]=i+1;
     }
 
-    QSqlQuery req;
+    QSqlQuery req(db_0);
     bool status = false;
     QString sql = "select b1,b2,b3,b4,b5 from tirages;";
 
