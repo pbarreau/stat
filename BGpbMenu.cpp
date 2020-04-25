@@ -153,23 +153,15 @@ void BGpbMenu::setNewFlt(Bp::F_Flts flt_def)
 
 	/// Mettre la nouvelle valeur de filtre
 	Bp::F_Flts msk = (Bp::fltWanted|Bp::fltSelected|Bp::fltFiltred) ;
-	//int val_msk = static_cast<int>(msk) & 0xFFFF;
-	unsigned int val_msk = msk.operator unsigned int();
+	unsigned int val_msk = msk.operator unsigned int() & 0xFFFF;
+	unsigned int neg_msk = ~val_msk;
 
-
-	QString op = "&";
-	if(flt_def == Bp::noFlt){
-	 //op = "|";
-	 flt_def = msk.operator~();
-	}
-
-	flt_def = flt_def & 0xFFFF;
-	//int val_flt = static_cast<int>(flt_def);
-	unsigned int val_flt = flt_def.operator unsigned int();
+	unsigned int val_flt = flt_def.operator unsigned int() & 0xFFFF;
+	val_flt = val_flt & val_msk;
 
 	msg = "update "+tb_flt+
-				"  set flt=(flt | 0x"+QString::number(val_msk,16)+
-				") "+op+" (0x"+QString::number(val_flt,16)+
+				"  set flt=(flt & 0x"+QString::number(neg_msk,16)+
+				") | (0x"+QString::number(val_flt,16)+
 				") where ((zne="+QString::number(zn)+
 				") and (typ="+QString::number(typ)+
 				"))";
