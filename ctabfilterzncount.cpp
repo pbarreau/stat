@@ -47,8 +47,8 @@ cTabFilterZnCount::cTabFilterZnCount(QString in, stTiragesDef *def)
 QTableView *cTabFilterZnCount::znCalculRegroupement(QString * pName, int zn)
 {
     QTableView *qtv_tmp = new QTableView;
-    int nbLgn = conf->limites[zn].len + 1;
-    (* pName) = conf->TT_Zn[zn].abv;
+    int nbLgn = conf->nbElmZone[zn] + 1;
+    (* pName) = conf->nomZone[zn];
 
     QStandardItemModel * tmpStdItem = NULL;
     QSqlQuery query ;
@@ -283,10 +283,10 @@ QString cTabFilterZnCount::ActionElmZone(QString critere , QString operateur, in
 
     // Operateur : or | and
     // critere : = | <>
-    for(int i = 0; i<pConf->limites[zone].len;i++)
+    for(int i = 0; i<pConf->nbElmZone[zone];i++)
     {
         ret_msg = ret_msg +"tb2.B "+ critere +" tb1."
-                + pConf->TT_Zn[zone].abv+QString::number(i+1)
+                + pConf->nomZone[zone]+QString::number(i+1)
                 + " " + operateur+ " ";
     }
     int len_flag = operateur.length();

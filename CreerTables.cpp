@@ -250,7 +250,7 @@ bool GererBase::CreationTablesDeLaBDD_v2()
     {
 
         status = RajouterTable(depart[i]);
-            QString tbName = (depart[i].tbDef.split(":")).at(0);
+        QString tbName = (depart[i].tbDef.split(":")).at(0);
         QString msg = "Old 4 end ! i="
                 +QString::number(i)
                 +QString("\nRajout de ")
@@ -521,7 +521,7 @@ bool GererBase::f2_2(QString tb, QString *data)
 								+" (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
 		status = q_create.exec(st_sqldf);
 		}
-    q_create.finish();
+		q_create.finish();
 
 #ifndef QT_NO_DEBUG
     if(!status)
@@ -587,7 +587,7 @@ bool GererBase::f3(QString tb, QString *data)
     int nbZone = conf.nb_zone;
 
     requete = typeTirages->s_LibColAnalyse(&ref);
-        requete.replace(",", " int,");
+    requete.replace(",", " int,");
     for (int zn=0;zn < nbZone && b_retVal;zn++ )
     {
         QString tb_ana_zn = "Ref_ana_z"+QString::number(zn+1);

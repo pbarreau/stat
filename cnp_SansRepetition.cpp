@@ -444,7 +444,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
     QString stNum = QString::number(verifLineId);
     stNum.rightJustified(6,'0',true);
     msg = "C(%1,%2:%3<->%4 sur %5 ->)";
-    msg = msg.arg(n).arg(p).arg(stNum).arg(pos).arg(cnp);
+    msg.arg(n).arg(p).arg(stNum).arg(pos).arg(cnp);
     msg = msg + Laligne;
     qDebug()<< msg;
 #if 0

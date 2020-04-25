@@ -16,7 +16,7 @@
 #include "tirages.h"
 #include "labelclickable.h"
 
-// 1,$s/ r"/ r_"\+pConf->TT_Zn[zone].abv\+"_"/g
+// 1,$s/ r"/ r_"\+pConf->nomZone[zone]\+"_"/g
 
 void GererBase::TotalApparitionBoule(int boule, stTiragesDef *pConf, int zone, QStandardItemModel *modele)
 {
@@ -243,10 +243,10 @@ QString GererBase::TST_ZoneRequete(stTiragesDef *pConf, int zone, QString operat
     // Operateur : or | and
     // critere : = | <>
     // b1=0 or b2=0 or ..
-    for(int i = 0; i<pConf->limites[zone].len;i++)
+    for(int i = 0; i<pConf->nbElmZone[zone];i++)
     {
         ret_msg = ret_msg
-                + pConf->TT_Zn[zone].abv+QString::number(i+1)
+                + pConf->nomZone[zone]+QString::number(i+1)
                 + critere + QString::number(boule)
                 + " " + operateur+ " ";
     }
@@ -324,7 +324,7 @@ void GererBase::MontrerResultatRechercheVoisins(QStandardItemModel *modele,int z
     QString msg;
     bool status = true;
 
-    msg = "select * from r_"+pConf->TT_Zn[zone].abv+"_"+QString::number(b_id) + " ;";
+    msg = "select * from r_"+pConf->nomZone[zone]+"_"+QString::number(b_id) + " ;";
     status = query.exec(msg);
 
     if(status)
@@ -380,7 +380,7 @@ void GererBase::MontrerResultatRechercheAbsent(QStandardItemModel *modele,int zo
     QString msg;
     bool status = true;
 
-    msg = "select * from abs_"+pConf->TT_Zn[zone].abv+"_"+QString::number(b_id) + " ;";
+    msg = "select * from abs_"+pConf->nomZone[zone]+"_"+QString::number(b_id) + " ;";
     status = query.exec(msg);
 
     if(status)
@@ -459,7 +459,7 @@ void GererBase::RechercherAbsentDeLaBoule(int b_id, int zone, stTiragesDef *pCon
         rp2 = RechercheAbsentADistanceDe(-2,b_id,zone,pConf,absent);
 
         // mise a jour dans la base
-        msg = "update abs_"+pConf->TT_Zn[zone].abv+"_"+QString::number(b_id) + " " +
+        msg = "update abs_"+pConf->nomZone[zone]+"_"+QString::number(b_id) + " " +
                 "set r0=" +QString::number(r0)+ ", " +
                 "rp1=" +QString::number(rp1)+ ", " +
                 "rp2=" +QString::number(rp2)+ ", " +
@@ -496,7 +496,7 @@ void GererBase::RechercherVoisinDeLaBoule(int b_id, int zone, stTiragesDef *pCon
         rp2 = TotalRechercheVoisinADistanceDe(-2,b_id,zone,pConf,voisin);
 
         // mise a jour dans la base
-        msg = "update r_"+pConf->TT_Zn[zone].abv+"_"+QString::number(b_id) + " " +
+        msg = "update r_"+pConf->nomZone[zone]+"_"+QString::number(b_id) + " " +
                 "set r0=" +QString::number(r0)+ ", " +
                 "rp1=" +QString::number(rp1)+ ", " +
                 "rp2=" +QString::number(rp2)+ ", " +
@@ -514,14 +514,14 @@ bool GererBase::CreerTableAbsentDeBoule(int b_id, int zone, stTiragesDef *pConf,
     bool status = false;
 
     // Creation d'une table si pas encore cree pour memoriser la recherche
-    msg =  "create table if not exists abs_"+pConf->TT_Zn[zone].abv+"_"+QString::number(b_id)+ " " +
+    msg =  "create table if not exists abs_"+pConf->nomZone[zone]+"_"+QString::number(b_id)+ " " +
             "(id INTEGER PRIMARY KEY, r0 int, rp1 int, rp2 int, rn1 int, rn2 int);";
     status = query.exec(msg);
 
     if(status)
     {
         // On essai de recuperer une valeur pour voir si les infos dans table
-        msg = "select count (*) from abs_"+pConf->TT_Zn[zone].abv+"_" +QString::number(b_id)+ "; ";
+        msg = "select count (*) from abs_"+pConf->nomZone[zone]+"_" +QString::number(b_id)+ "; ";
         status = query.exec(msg);
 
         if(status)
@@ -534,7 +534,7 @@ bool GererBase::CreerTableAbsentDeBoule(int b_id, int zone, stTiragesDef *pConf,
                     // Table pas encore cree mettre a 0 les donnees
                     for(int absent=1;(absent<=max_voisins) && status;absent++)
                     {
-                        msg = "insert into abs_"+pConf->TT_Zn[zone].abv+"_"+QString::number(b_id)+
+                        msg = "insert into abs_"+pConf->nomZone[zone]+"_"+QString::number(b_id)+
                                 " (id, r0, rp1, rp2, rn1, rn2) values (null, 0,0,0,0,0);";
                         status = query.exec(msg);
                     }
@@ -560,11 +560,11 @@ void GererBase::CreerTablePonderationAbsentDeBoule(int b_id, int zn, stTiragesDe
     QString names[5]={"r0","rp1","rp2","rn1","rn2"};
     int ecart[5]={0,-1,-2,1,2};
 
-    for(int i=0;(i<(pConf->limites[zn].len)) && status;i++)
+    for(int i=0;(i<(pConf->nbElmZone[zn])) && status;i++)
     {
         // voir si la table existe
         msg = "select * from tabs_"
-                + pConf->TT_Zn[zn].abv
+                + pConf->nomZone[zn]
                 +"_"
                 + QString::number(b_id)+names[i]+";";
         status = query.exec(msg);
@@ -573,7 +573,7 @@ void GererBase::CreerTablePonderationAbsentDeBoule(int b_id, int zn, stTiragesDe
         {
             // Creer la table
             msg = "create table tabs_"
-                    + pConf->TT_Zn[zn].abv
+                    + pConf->nomZone[zn]
                     +"_"
                     +QString::number(b_id)+names[i]+
                     " (id INTEGER PRIMARY KEY, b int, nb int);";
@@ -584,7 +584,7 @@ void GererBase::CreerTablePonderationAbsentDeBoule(int b_id, int zn, stTiragesDe
                 // recuperer les absents et donner leur rapport a la boule
                 // 1: select id from abs_b_13 where (r0 = 1)
                 msg = "select id from abs_"
-                        + pConf->TT_Zn[zn].abv
+                        + pConf->nomZone[zn]
                         +"_"
                         +QString::number(b_id)
                         +" where ("+names[i]+"=1);";
@@ -628,7 +628,7 @@ void GererBase::CreerTablePonderationAbsentDeBoule(int b_id, int zn, stTiragesDe
                                 if(query_2.isValid())
                                 {
                                     total = query_2.value(0).toInt();
-                                    msg = "insert into tabs_"+pConf->TT_Zn[zn].abv+"_"+QString::number(b_id)+names[i]+
+                                    msg = "insert into tabs_"+pConf->nomZone[zn]+"_"+QString::number(b_id)+names[i]+
                                             " (id, b, nb) values (null,"
                                             +QString::number(boule)
                                             +","
@@ -655,14 +655,14 @@ bool GererBase::CreerTableVoisinsDeBoule(int b_id, int zone, stTiragesDef *pConf
     bool status = false;
 
     // Creation d'une table si pas encore cree pour memoriser la recherche
-    msg =  "create table if not exists r_"+pConf->TT_Zn[zone].abv+"_"+QString::number(b_id)+ " " +
+    msg =  "create table if not exists r_"+pConf->nomZone[zone]+"_"+QString::number(b_id)+ " " +
             "(id INTEGER PRIMARY KEY, r0 int, rp1 int, rp2 int, rn1 int, rn2 int);";
     status = query.exec(msg);
 
     if(status)
     {
         // On essai de recuperer une valeur pour voir si les infos dans table
-        msg = "select count (*) from r_"+pConf->TT_Zn[zone].abv+"_" +QString::number(b_id)+ "; ";
+        msg = "select count (*) from r_"+pConf->nomZone[zone]+"_" +QString::number(b_id)+ "; ";
         status = query.exec(msg);
 
         if(status)
@@ -675,7 +675,7 @@ bool GererBase::CreerTableVoisinsDeBoule(int b_id, int zone, stTiragesDef *pConf
                     // Table pas encore cree mettre a 0 les donnees
                     for(int voisin=1;(voisin<=max_voisins) && status;voisin++)
                     {
-                        msg = "insert into r_"+pConf->TT_Zn[zone].abv+"_"+QString::number(b_id)+
+                        msg = "insert into r_"+pConf->nomZone[zone]+"_"+QString::number(b_id)+
                                 " (id, r0, rp1, rp2, rn1, rn2) values (null, 0,0,0,0,0);";
                         status = query.exec(msg);
                     }
@@ -884,11 +884,11 @@ void GererBase::RechercheVoisin(int boule, int zn, stTiragesDef *pConf,
     }
 
     // creer les tables avec les meilleurs de facon ordonne
-    for(int i=0;(i<(pConf->limites[zn].len)) && status;i++)
+    for(int i=0;(i<(pConf->nbElmZone[zn])) && status;i++)
     {
         // voir si la table existe
         msg = "select * from tb_"
-                + pConf->TT_Zn[zn].abv
+                + pConf->nomZone[zn]
                 +"_"
                 + QString::number(boule)+mvoisins[i]+";";
         status = query.exec(msg);
@@ -897,29 +897,29 @@ void GererBase::RechercheVoisin(int boule, int zn, stTiragesDef *pConf,
         {
             // La table n'existe pas encore
             msg = "create table tb_"
-                    + pConf->TT_Zn[zn].abv
+                    + pConf->nomZone[zn]
                     +"_"
                     +QString::number(boule)+mvoisins[i]+
                     " as select id,"+mvoisins[i]+" from " +
-                    "r_"+pConf->TT_Zn[zn].abv+"_"+QString::number(boule)
+                    "r_"+pConf->nomZone[zn]+"_"+QString::number(boule)
                     + " order by " + mvoisins[i]+" desc limit 10;";
             status = query.exec(msg);
         }
     }
 
     // Selection les meilleurs resultats de chacun
-    msg = "select * from union_" + pConf->TT_Zn[zn].abv+ QString::number(boule)+";";
+    msg = "select * from union_" + pConf->nomZone[zn]+ QString::number(boule)+";";
     status = query.exec(msg);
 
     if(!query.isValid())
     {
         QString flag = " union ";
         msg="";
-        for(int i=0;i<pConf->limites[zn].len;i++)
+        for(int i=0;i<pConf->nbElmZone[zn];i++)
         {
             msg = msg
                     + "select id from tb_"
-                    + pConf->TT_Zn[zn].abv
+                    + pConf->nomZone[zn]
                     + "_"
                     + QString::number(boule)+mvoisins[i]+ flag
                     ;
@@ -927,9 +927,9 @@ void GererBase::RechercheVoisin(int boule, int zn, stTiragesDef *pConf,
         msg.remove(msg.length()-flag.length(),flag.length());
 
         // La table n'existe pas encore
-        msg = "create table union_" + pConf->TT_Zn[zn].abv+ QString::number(boule)+
-                " as select r_"+pConf->TT_Zn[zn].abv+"_"+ QString::number(boule)+".id,"+
-                "(r0+rp1+rp2+rn1+rn2) 'T' from r_"+pConf->TT_Zn[zn].abv+"_"+ QString::number(boule)+
+        msg = "create table union_" + pConf->nomZone[zn]+ QString::number(boule)+
+                " as select r_"+pConf->nomZone[zn]+"_"+ QString::number(boule)+".id,"+
+                "(r0+rp1+rp2+rn1+rn2) 'T' from r_"+pConf->nomZone[zn]+"_"+ QString::number(boule)+
                 " where id in ("+msg+") order by T desc;";
         status = query.exec(msg);
     }
@@ -937,7 +937,7 @@ void GererBase::RechercheVoisin(int boule, int zn, stTiragesDef *pConf,
 #if 0
 
     "select id from tb_"
-    + pConf->TT_Zn[zn].abv
+    + pConf->nomZone[zn]
             +"_"
             +QString::number(boule)+mvoisins[0]+ " union " +
             "select id from tb_"+QString::number(boule)+mvoisins[1]+ " union " +
@@ -1245,7 +1245,7 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
     if(query.isValid())
     {
         // requete a effectuer
-        msg = "insert into " + QString::fromLocal8Bit(CL_TCOUV) + ref.TT_Zn[zn].abv  +
+        msg = "insert into " + QString::fromLocal8Bit(CL_TCOUV) + ref.nomZone[zn]  +
                 " (id, depart, fin, taille) values (:id, :depart, :fin, :taille)";
         status = sauve.prepare(msg);
 
@@ -1266,7 +1266,7 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
 
             int boule = 0;
             // prendre toutes les boules de la zone pour le tirage concerne
-            for(i = 0; (i<ref.limites[zn].len)&& (nb_boules<ref.limites->max);i++)
+            for(i = 0; (i<ref.nbElmZone[zn])&& (nb_boules<ref.limites->max);i++)
             {
                 boule = rec.value(2+i).toInt();
 
@@ -1282,7 +1282,7 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
                     {
                         // non alors memoriser l'ordre d'arrivee
                         ordr_boule[nb_boules]= boule;
-                        msg = "update " + QString::fromLocal8Bit(CL_TOARR) + ref.TT_Zn[zn].abv +
+                        msg = "update " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn] +
                                 " set " + QString::fromLocal8Bit(CL_CCOUV) +
                                 QString::number(id_couv) + "=" +QString::number(boule)+
                                 " where (id="+QString::number(nb_boules+1)+");";
@@ -1330,7 +1330,7 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
 
 #if 0
                 // Est ce la derniere boule du tirage qui a permis la couverture
-                if( i != ref.limites[zn].len-1)
+                if( i != ref.nbElmZone[zn]-1)
                 {
                     // Creer une nouvelle colonne couverture
                     // creer colonne pour ordre d'arrivee
@@ -1344,7 +1344,7 @@ void GererBase::CouvertureBase(QStandardItemModel *dest,stTiragesDef *pRef)
                         // On ne prends pas celle qui a permis la fin de couverture
                         if(i !=j)
                         {
-                            msg = "update " + QString::fromLocal8Bit(CL_TOARR) + ref.TT_Zn[zn].abv +
+                            msg = "update " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn] +
                                     " set " + QString::fromLocal8Bit(CL_CCOUV) +
                                     QString::number(id_couv+1) + "=" +QString::number(boule)+
                                     " where (id="+QString::number(nb_boules+1)+");";
@@ -1445,7 +1445,7 @@ void GererBase::CouvMontrerProbable(int i,
 
 QString req_msg(QString base, int zone, int boule, stTiragesDef *ref)
 {
-    int max_elm_zone = ref->limites[zone].len;
+    int max_elm_zone = ref->nbElmZone[zone];
     QString msg = "select r1.id as id from ("+ base +") as r1 where (";
 
 
@@ -1453,7 +1453,7 @@ QString req_msg(QString base, int zone, int boule, stTiragesDef *ref)
     for(int col_id=1;col_id<=max_elm_zone;col_id++)
     {
         msg = msg +
-                ref->TT_Zn[zone].abv +
+                ref->nomZone[zone] +
                 QString::number(col_id)+ "=" + QString::number(boule)+
                 " or ";
     }
@@ -1475,14 +1475,14 @@ bool GererBase::CreerColonneOrdreArrivee(int id, stTiragesDef *pConf)
     int zn = 0;
 
     // test pour voir si une colonne existe deja
-    msg = "select * from " + QString::fromLocal8Bit(CL_TOARR) + ref.TT_Zn[zn].abv +
+    msg = "select * from " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn] +
             "." + QString::fromLocal8Bit(CL_CCOUV) +
             QString::number(id);
     status = query.exec(msg);
 
     if (status == false)
     {
-        msg = "alter table " + QString::fromLocal8Bit(CL_TOARR) + ref.TT_Zn[zn].abv +
+        msg = "alter table " + QString::fromLocal8Bit(CL_TOARR) + ref.nomZone[zn] +
                 " add column " + QString::fromLocal8Bit(CL_CCOUV) +
                 QString::number(id) + " int;";
         status = query.exec(msg);
@@ -1506,7 +1506,7 @@ void GererBase::PopulateCellMenu(int b_id, int v_id,int zone, stTiragesDef *pCon
     QString Lib[6]={"tot:","r0:","+1:","+2:","-1:","-2:"};
     QString vVoisin[6];
 
-    msg = "select * from r_"+pConf->TT_Zn[zone].abv+"_" + QString::number(b_id) +
+    msg = "select * from r_"+pConf->nomZone[zone]+"_" + QString::number(b_id) +
             " where (id = "+QString::number(v_id) +");";
     status = query.exec(msg);
 

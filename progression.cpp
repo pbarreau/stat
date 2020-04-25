@@ -3,7 +3,7 @@
 void MainWindow::RechercheProgressionBoules(stTiragesDef *pConf)
 {
     int nbBoulesJeu =pConf->limites->max;
-    int nbElmZone = pConf->limites[0].len;
+    int nbElmZone = pConf->nbElmZone[0];
     int ptrR=0; /// Pointeur lecture
     int ptrW=0; /// pointeur ecriture
     int *tab1 = new int [nbBoulesJeu];

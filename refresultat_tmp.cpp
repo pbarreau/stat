@@ -224,7 +224,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalEtoiles(int dst)
     QString st_cr1 = "";
     QStringList lst_tmp;
     lst_tmp << "tb2.e";
-    int loop = pMaConf->limites[1].len;
+    int loop = pMaConf->nbElmZone[1];
     st_cr1 =  GEN_Where_3(loop,"tb1.boule",false,"=",lst_tmp,true,"or");
     QString st_msg1 =
             "select tb1.boule as B, count(tb2.id) as T, "
@@ -339,7 +339,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalRepartitions(int dst)
     QString st_cr1 = "";
     QStringList lst_tmp;
     lst_tmp << "tb2.e";
-    int loop = pMaConf->limites[1].len;
+    int loop = pMaConf->nbElmZone[1];
     st_cr1 =  "tb1.id=tb2.pid";
     QString st_msg1 =
             "select tb1.id as Id, tb1.tip as Repartition, count(tb2.id) as T, "
@@ -686,7 +686,7 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 
     QStringList *maRef = LstCritereGroupement(zone,uneDemande.ref);
     int nbCol = maRef[0].size();
-    int nbLgn = uneDemande.ref->limites[zone].len + 1;
+    int nbLgn = uneDemande.ref->nbElmZone[zone] + 1;
 
     QTableView *qtv_tmp ;
     tbv_bloc2 = new QTableView;
@@ -935,8 +935,8 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int z
     }
     else
     {
-        nb_element_max_zone = pMaConf->limites[zn].len;
-        stNomZone = pMaConf->TT_Zn[zn].abv;
+        nb_element_max_zone = pMaConf->nbElmZone[zn];
+        stNomZone = pMaConf->nomZone[zn];
     }
 
     // Maxi choix atteind
@@ -1009,7 +1009,7 @@ void SyntheseGenerale::MemoriserChoixUtilisateur(const QModelIndex & index,int z
         foreach(un_index, indexes)
         {
 #ifndef QT_NO_DEBUG
-            //QString stNomZone = pMaConf->TT_Zn[zn].abv;
+            //QString stNomZone = pMaConf->nomZone[zn];
             qDebug() << stNomZone
                      <<" -> Nb items:"<<nb_items
                     <<"Col:" << un_index.column()
@@ -1032,7 +1032,7 @@ QString CreatreTitle(stCurDemande *pConf)
         if(indexes.size())
         {
             if (i<2)
-                titre = titre + pConf->ref->TT_Zn[i].abv;
+                titre = titre + pConf->ref->nomZone[i];
             if(i==2)
                 titre = titre + "c";
             if(i==3)
@@ -1452,9 +1452,9 @@ QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaCon
 
     for(int i =0 ; i< pMaConf->nb_zone; i++)
     {
-        lst_tmp <<   pMaConf->TT_Zn[i].abv;
-        st_tmp = "tb3."+pMaConf->TT_Zn[i].abv;
-        loop =  pMaConf->limites[i].len;
+        lst_tmp <<   pMaConf->nomZone[i];
+        st_tmp = "tb3."+pMaConf->nomZone[i];
+        loop =  pMaConf->nbElmZone[i];
         st_tmp =  GEN_Where_3(loop,st_tmp,true," as ",lst_tmp,true,",");
         st_cr1 = st_cr1 + st_tmp + ",";
         lst_tmp.clear();
@@ -1566,7 +1566,7 @@ QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pCo
     //exemple dst = 1; loop=5; boules <<1 <<2;
     // st_cr1 => ((tb1.b1=1 or tb1.b2=1 or tb1.b3=1 or tb1.b4=1 or tb1.b5=1 )
     // and (tb1.b1=2 or tb1.b2=2 or tb1.b3=2 or tb1.b4=2 or tb1.b5=2 ))
-    int loop = pConf->limites[zn].len;
+    int loop = pConf->nbElmZone[zn];
     st_cr1 =  GEN_Where_3(loop,"tb1.b",true,"=",boules,false,"or");
 #ifndef QT_NO_DEBUG
     qDebug() << st_cr1;
@@ -1638,10 +1638,10 @@ QString GEN_Where_2(stTiragesDef *pConf, int zone, QString operateur, int boule,
     // Operateur : or | and
     // critere : = | <>
     // b1=0 or b2=0 or ..
-    for(int i = 0; i<pConf->limites[zone].len;i++)
+    for(int i = 0; i<pConf->nbElmZone[zone];i++)
     {
         ret_msg = ret_msg
-                + alias + "." + pConf->TT_Zn[zone].abv+QString::number(i+1)
+                + alias + "." + pConf->nomZone[zone]+QString::number(i+1)
                 + critere + QString::number(boule)
                 + " " + operateur+ " ";
     }
@@ -1664,7 +1664,7 @@ QString GEN_Where_1(int zn, stTiragesDef *pConf, QStringList &boules, QString op
         int val_boule = boules.at(i).toInt();
         //QString msg1 = GEN_Where_2(pConf, zn,op1,val_boule,op2,alias);
         //        QString msg1 = GEN_Where_2(pConf, zn,"or",val_boule,"=");
-        int loop = pConf->limites[zn].len;
+        int loop = pConf->nbElmZone[zn];
         QString msg1 = GEN_Where_3(loop, "tb1.b",true,"=",boules,false,"or");
 
         msg = msg + "(" +msg1+ ")"
@@ -1679,7 +1679,7 @@ QString GEN_Where_1(int zn, stTiragesDef *pConf, QStringList &boules, QString op
 
 QString NEW_ExceptionBoule(int zn, stTiragesDef *pConf,QStringList &boules)
 {
-    //QString col(QString::fromLocal8Bit(CL_TOARR) + pConf->TT_Zn[zn].abv);
+    //QString col(QString::fromLocal8Bit(CL_TOARR) + pConf->nomZone[zn]);
     QString msg= "" ;
     QString flag = " and ";
 
