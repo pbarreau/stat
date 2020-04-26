@@ -57,18 +57,18 @@ typedef enum{
 
 
 typedef struct _stTbFiltres{
- QString tbName;     /// Nom de la table filtre
+ QString tb_flt;     /// Nom de la table filtre
+ QString tb_ref;   /// Nom de la table de reference tirages
  Bp::E_Sta sta;     /// Precision sur le code retour
- Bp::F_Flts b_flt;
- int db_total;   /// total recupere de la base par read
- int tst_total;
- int id;
+ Bp::F_Flts b_flt; /// valeur flt
+ int dbt;   /// total recupere de la base par read
+ int id;    /// key table id
  int zne;         /// Zone id
- etCount typ;   /// Type de filtre
- int lgn;
- int col;
+ etCount typ;     /// Type de filtre
+ int lgn;   /// ligne tbv en cours
+ int col;   /// colonne
  int val;        /// Valeur a lgn & col
- int pri;
+ int pri;   /// priorite
 }stTbFiltres;
 
 #endif // BSTFLT_H

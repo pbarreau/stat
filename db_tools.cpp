@@ -395,10 +395,10 @@ bool DB_Tools::tbFltGet(stTbFiltres *in_out, QString cnx)
  ///
 
  /// Verifier si info presente dans table
- QString tbFiltre = in_out->tbName;
+ QString tbFiltre = in_out->tb_flt;
 
  QString msg = "";
- if((in_out->id>0) && (in_out->db_total==1)){
+ if((in_out->id>0) && (in_out->dbt==1)){
   msg = "Select *  from "+
         tbFiltre+
         " where ("
@@ -427,7 +427,7 @@ bool DB_Tools::tbFltGet(stTbFiltres *in_out, QString cnx)
 
 	 /// comptage des reponses
 	 query.last();
-	 in_out->db_total = query.at() +1;
+	 in_out->dbt = query.at() +1;
 	 query.first();
 	 in_out->id = query.value("id").toInt();
 
@@ -437,7 +437,7 @@ bool DB_Tools::tbFltGet(stTbFiltres *in_out, QString cnx)
 	 in_out->pri = query.value("pri").toInt();
 	}
 	else {
-	 in_out->db_total = -1;
+	 in_out->dbt = -1;
 	 in_out->sta = Bp::E_Sta::Er_Result;
 	}
  }
@@ -474,7 +474,7 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
  }
 
  QSqlQuery query(db_1);
- QString tbFiltre = in_out->tbName;
+ QString tbFiltre = in_out->tb_flt;
  QString msg = "";
 
  Bp::F_Flts flt_def = in_out->b_flt;
@@ -488,8 +488,8 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
  unsigned int val_msk = msk.operator unsigned int();
 
  /// Analyse de la lecture precedente/config utilisateur
- if((in_out->id>0) && (in_out->db_total==1)){
-  msg = "update "+in_out->tbName+
+ if((in_out->id>0) && (in_out->dbt==1)){
+  msg = "update "+in_out->tb_flt+
         " set pri="+QString::number(in_out->pri)+
         ", flt=(flt | 0x"+QString::number(val_msk,16)+
         ") & (0x"+QString::number(val_flt,16)+
@@ -497,7 +497,7 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
         "id="+QString::number(in_out->id)+")";
 
  }
- else if(in_out->db_total<=0){
+ else if(in_out->dbt<=0){
   /// Faire message insert
   msg ="insert into "+
         tbFiltre+
@@ -511,11 +511,11 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
         +QString::number(in_out->pri)+","
         +QString::number(in_out->b_flt)+")";
   /// BUG ? : in_out pas de mise a jour de id
-  in_out->db_total=1;
+  in_out->dbt=1;
  }
- else if (in_out->db_total == 1) {
+ else if (in_out->dbt == 1) {
   /// Faire un update
-  msg = "update "+in_out->tbName+
+  msg = "update "+in_out->tb_flt+
         " set pri="+QString::number(in_out->pri)+
         ", flt=(flt | 0x"+QString::number(val_msk,16)+
         ") & (0x"+QString::number(val_flt,16)+
@@ -527,7 +527,7 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
         "val="+QString::number(in_out->val)+")";
  }
  else {
-  in_out->db_total++;
+  in_out->dbt++;
   /// faire une analyse ici
   DB_Tools::genStop("DB_Tools::tbFltSet");
   b_retVal = false;

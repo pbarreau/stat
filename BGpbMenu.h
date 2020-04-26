@@ -8,15 +8,16 @@
 #include <QPointF>
 #include <QMenu>
 
+#include "BFlt.h"
 #include "bstflt.h"
 
 class BTbView;
 
-class BGpbMenu : public QGroupBox
+class BGpbMenu : public QGroupBox, BFlt
 {
  Q_OBJECT
 public:
-explicit BGpbMenu(const int in_zn, const etCount in_typ, const QString cnx, BTbView *in_parent=nullptr);
+explicit BGpbMenu(const BFlt *conf, BTbView *in_parent=nullptr);
 
 protected:
 void mousePressEvent ( QMouseEvent * event ) ;

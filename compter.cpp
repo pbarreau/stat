@@ -45,12 +45,11 @@ QLayout * BCount::usr_UpperItems(int zn)
 QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn)
 {
  QWidget * wdg_tmp = new QWidget;
- //QGroupBox *tmp_gpb = new QGroupBox;
  QGridLayout *glay_tmp = new QGridLayout;
 
  stMkLocal prm;
- QLayout *up_qtv = nullptr;
- BTbView *qtv_tmp = new BTbView(zn,eCalcul, dbCount.connectionName());
+ QLayout *up_qtv = nullptr; /// Bandeau audesseu du tabview
+ BTbView *qtv_tmp = new BTbView(pGame,zn,eCalcul);///BTbView(zn,eCalcul, dbCount.connectionName());
  qtv_tmp->setObjectName(QString::number(zn));
 
  /// Nom de la table resultat
@@ -174,10 +173,12 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  connect(qtv_tmp,
          SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
 
+#if 0
  /// Selection & priorite
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
+#endif
 
  /// Click sur le group box
  BGpbMenu *tmp_gpb = qtv_tmp->getGpb();
@@ -379,7 +380,6 @@ void BCount::slot_V2_AideToolTip(const QModelIndex & index)
 
  QToolTip::showText (QCursor::pos(), msg);
 }
-
 
 void BCount::slot_AideToolTip(const QModelIndex & index)
 {
@@ -638,12 +638,12 @@ bool BCount::flt_DbWrite(stTbFiltres *ret, QString cnx, bool update)
  }
 
  QSqlQuery query(db_1);
- QString tbFiltre = ret->tbName;
+ QString tbFiltre = ret->tb_flt;
 
  QString msg = "";
  if(update){
   if(ret->id < 0){
-   msg = "update "+ret->tbName+
+   msg = "update "+ret->tb_flt+
          " set pri="+QString::number(ret->pri)+
          ", flt="+QString::number(ret->b_flt)+
          " where (("
@@ -654,7 +654,7 @@ bool BCount::flt_DbWrite(stTbFiltres *ret, QString cnx, bool update)
          "val="+QString::number(ret->val)+"))";
   }
   else {
-   msg = "update "+ret->tbName+
+   msg = "update "+ret->tb_flt+
          " set pri="+QString::number(ret->pri)+
          ", flt="+QString::number(ret->b_flt)+
          " where (("
@@ -664,7 +664,7 @@ bool BCount::flt_DbWrite(stTbFiltres *ret, QString cnx, bool update)
  }
  else {
   /// Pas de resultat donc insert
-  msg ="insert into "+ret->tbName+
+  msg ="insert into "+ret->tb_flt+
         " (id, zne, typ,lgn,col,val,pri,flt)"
         " values (NULL,"
         +QString::number(ret->zne)+","
@@ -692,6 +692,7 @@ bool BCount::flt_DbWrite(stTbFiltres *ret, QString cnx, bool update)
 }
 
 
+#if 0
 void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 {
  /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
@@ -754,6 +755,7 @@ void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
  //}
 #endif
 }
+#endif
 
 bool BCount::V2_showMyMenu(int col, etCount eSrc)
 {
@@ -800,9 +802,9 @@ QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
 
  int row = index.row();
  stTbFiltres a;
- a.tbName = "Filtres";
+ a.tb_flt = "Filtres";
  a.sta = Bp::E_Sta::noSta;
- a.db_total = -1;
+ a.dbt = -1;
  a.b_flt = Bp::F_Flt::noFlt;
  a.zne = view->objectName().toInt();;
  a.typ = eSrc;

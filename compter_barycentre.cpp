@@ -468,7 +468,7 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const et
 
  /// ----------
  stTbFiltres a;
- a.tbName = "Filtres";
+ a.tb_flt = "Filtres";
  a.sta = Bp::E_Sta::noSta;
  a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
  a.zne = zn;
@@ -495,7 +495,7 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const et
 		do{
 		 a.val = query.value(0).toInt();
 		 a.col = a.val;
-		 a.db_total = -1;
+		 a.dbt = -1;
 
 		 a.b_flt = Bp::F_Flt::noFlt;
 		 /// RECUPERER FLT DE CETTE LIGNE

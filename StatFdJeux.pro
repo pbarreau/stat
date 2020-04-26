@@ -105,7 +105,8 @@ SOURCES += \
     BFlags.cpp \
     BMenu.cpp \
     BTbView.cpp \
-    BGpbMenu.cpp
+    BGpbMenu.cpp \
+    BFlt.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -174,7 +175,8 @@ HEADERS  += \
     BMenu.h \
     bstflt.h \
     BTbView.h \
-    BGpbMenu.h
+    BGpbMenu.h \
+    BFlt.h
 
 
 FORMS    += mainwindow.ui \

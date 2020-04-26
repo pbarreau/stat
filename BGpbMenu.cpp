@@ -10,20 +10,31 @@
 #include "BGpbMenu.h"
 #include "compter.h"
 #include "db_tools.h"
-
-BGpbMenu::BGpbMenu(const int in_zn, const etCount in_typ, const QString cnx, BTbView *in_parent)
+/*
+ * BGpbMenu::BGpbMenu(const int in_zn, const etCount in_typ, const QString cnx, BTbView *in_parent)
     :QGroupBox(nullptr),zn(in_zn),typ(in_typ),parent(in_parent)
-{
- // Etablir connexion a la base
- db_gbm = QSqlDatabase::database(cnx);
- if(db_gbm.isValid()==false){
-  QString str_error = db_gbm.lastError().text();
-  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-  return;
- }
+*/
 
- tb_flt = "Filtres";
- tb_tirages = "B_fdj";
+/*
+ * Cette classe affiche un menu lorsque l'on clique sur le titre
+ * du group box
+ * cela permet de faire des selections sur
+ * l'ensemble des elements du tableau
+ * les requetes sur la table filtres associee a l'analyse
+ * sont directement effectuees ici
+ */
+
+BGpbMenu::BGpbMenu(const BFlt *conf, BTbView *in_parent)
+    :QGroupBox(nullptr),BFlt(*conf), parent(in_parent)///zn(in_zn),typ(in_typ),parent(in_parent)
+{
+ db_gbm = db_flt;
+
+ //QString cnx_test = db_gbm .connectionName();
+
+ zn=inf_flt->zne;
+ tb_flt = inf_flt->tb_flt;
+ tb_tirages = inf_flt->tb_ref;
+ typ = inf_flt->typ;
  use_gpb = nullptr;
 
  gbm_Menu();
@@ -79,7 +90,6 @@ void BGpbMenu::slot_ManageFlts(QAction *all_cmd)
 
 	case 1:
 	 flt_def = ~(Bp::fltWanted | Bp::fltSelected | Bp::fltFiltred);
-	 //flt_def = flt_def.operator~();
 	 break;
 	case 2:
 	 flt_def =  ~(Bp::fltSelected | Bp::fltFiltred) & Bp::fltWanted ;

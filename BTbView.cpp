@@ -11,12 +11,14 @@
 #include <QMessageBox>
 
 #include "BTbView.h"
-
+#include "BMenu.h"
 #include "db_tools.h"
 
-BTbView::BTbView(int in_zn, etCount in_typ, QString cnx, QTableView * parent)
-    :QTableView(parent),zn(in_zn),cal(in_typ)
+BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ, QTableView * parent)
+    :QTableView(parent),BFlt(pGame, in_zn, in_typ)//,zn(in_zn),cal(in_typ)
 {
+ db_tbv = db_flt;
+#if 0
  // Etablir connexion a la base
  db_tbv = QSqlDatabase::database(cnx);
  if(db_tbv.isValid()==false){
@@ -24,8 +26,16 @@ BTbView::BTbView(int in_zn, etCount in_typ, QString cnx, QTableView * parent)
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
  }
+#endif
+ /// Encapsulation sur cet objet
+ this->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(this, SIGNAL(customContextMenuRequested(QPoint)),
+         this, SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
 
- myGpb = new BGpbMenu(in_zn,in_typ,cnx, this);
+
+ /// --------
+ QString cnx = pGame->db_ref->cnx;
+ myGpb = new BGpbMenu(cur_bflt, this);
  up = nullptr;
  //construireMenu();
 }
@@ -34,6 +44,69 @@ BTbView::~BTbView()
 {
  delete myGpb;
 }
+
+void BTbView::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
+{
+ BMenu a(pos, db_tbv.connectionName(), inf_flt->typ, this);
+
+ connect(&a,SIGNAL(aboutToShow()), &a, SLOT(slot_showMenu()));
+ a.exec(this->viewport()->mapToGlobal(pos));
+
+#if 0
+ /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
+ /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
+
+ BTbView *view = qobject_cast<BTbView *>(sender());
+ QString cnx = dbCount.connectionName();
+ etCount eType = type;
+
+ BMenu a(pos, cnx, eType, view);
+
+ connect(&a,SIGNAL(aboutToShow()), &a, SLOT(slot_showMenu()));
+ a.exec(view->viewport()->mapToGlobal(pos));
+#endif
+}
+
+void BTbView::slot_V2_AideToolTip(const QModelIndex & index)
+{
+
+}
+
+
+#if 0
+void BTbView::slot_V2_AideToolTip(const QModelIndex & index)
+{
+ /// https://doc.qt.io/qt-5/qtooltip.html
+ /// https://stackoverflow.com/questions/34197295/how-to-change-the-background-color-of-qtooltip-of-a-qtablewidget-item
+
+ QString msg="";
+ const QAbstractItemModel * pModel = index.model();
+ int col = index.column();
+
+ QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+ QString headTop= "";
+ QString headRef = "";
+
+ int start = 1;
+ if(type == eCountGrp){
+  start = 0;
+  vCol = pModel->headerData(col,Qt::Horizontal,Qt::ToolTipRole);
+ }
+
+ headRef = pModel->headerData(start,Qt::Horizontal).toString();
+ headTop = vCol.toString();
+ QString s_va = "";
+ if ((col > start) &&
+     (s_va = index.model()->index(index.row(),col).data().toString()) !="" )
+ {
+  QString s_nb = index.model()->index(index.row(),start).data().toString();
+  QString s_hd = headTop;
+  msg = msg + QString("Quand %1=%2,%3=%4 tirage(s)").arg(headRef).arg(s_nb).arg(s_hd).arg(s_va);
+ }
+
+ QToolTip::showText (QCursor::pos(), msg);
+}
+#endif
 
 QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
 {
@@ -130,7 +203,7 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
 void BTbView::updateTitle()
 {
  /// Mettre ensuite l'analyse du marquage
- QString st_total = mkTitle(zn,cal,this);
+ QString st_total = mkTitle(inf_flt->zne,inf_flt->typ,this);
  myGpb->setTitle(st_total);
 }
 

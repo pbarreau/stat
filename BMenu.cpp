@@ -31,40 +31,16 @@ BMenu::BMenu(const QPoint pos, QString cnx,
  initialiser_v2(pos,eType,view);
 }
 
-void BMenu::initialiser_v1(const QPoint pos, const etCount eType, BTbView *view)
-{
-
- eCalcul = eType;
- lview = view;
- index = view->indexAt(pos);
-
- val.tbName = "Filtres";
- val.id=-1;
- val.pri = -1;
- val.b_flt = Bp::F_Flt::noFlt;
- val.typ = eType;
- val.sta = Bp::E_Sta::noSta;
- val.zne = view->objectName().toInt();
- val.lgn=index.row();
- val.col =index.column();
- val.val = -1;
-
- /// Recuperer infos
- //DB_Tools::tbFltGet(&val,cnx);
-
- construireMenu();
-}
-
 void BMenu::initialiser_v2(const QPoint pos, const etCount eType, BTbView *view)
 {
- val.tbName = "Filtres";
+ val.tb_flt = "Filtres";
  val.b_flt = Bp::F_Flt::noFlt;
  val.pri = -1;
  val.id = -1;
  val.sta = Bp::E_Sta::noSta;
  val.typ = eType;
  val.zne = view->objectName().toInt();
- val.db_total = -1;
+ val.dbt = -1;
 
  lview = view;
  index = view->indexAt(pos);
@@ -156,68 +132,6 @@ void BMenu::slot_showMenu()
  }
  else {
   return;
- }
-}
-
-void BMenu::gererMenu_v1()
-{
- QString msg = main_menu->title();
- QList<QAction *> lst = main_menu->actions();
-
- /// lecture info dans la base de la selection en cours
- bool b_retVal = getdbFlt(&val, eCalcul,lview,index);
-
- if(b_retVal==false){
-  if(val.sta == Bp::E_Sta::Er_Result){
-   b_retVal = DB_Tools::tbFltSet(&val,db_menu.connectionName());
-  }
-  else {
-   DB_Tools::genStop("BMenu::slot_showMenu");
-  }
- }
-
-
- /// On a trouve/cree une reponse
- if(b_retVal){
-
-	/// wanted ?
-	if((val.b_flt & Bp::F_Flt::fltWanted)== Bp::F_Flt::fltWanted){
-	 lst.at(0)->setChecked(true);
-	 lst.at(1)->setEnabled(true);
-	 lst.at(2)->setEnabled(true);
-
-	 if(eCalcul == eCountElm){
-		QMenu *subMenu = mnu_Priority(&val, eCalcul,lview,index);
-		main_menu->addMenu(subMenu);
-	 }
-	}
-	else {
-	 lst.at(2)->setChecked(false);
-	 //val.b_flt = val.b_flt & ~(Bp::F_Flt::fltFiltred);
-	 val.b_flt = val.b_flt ^ Bp::F_Flt::fltFiltred;
-
-	 lst.at(1)->setChecked(false);
-	 //val.b_flt = val.b_flt & ~(Bp::F_Flt::fltSelected);
-	 val.b_flt = val.b_flt ^ Bp::F_Flt::fltSelected;
-
-	 lst.at(0)->setChecked(false);
-	}
-
-	/// --------- selected
-	if((val.b_flt & Bp::F_Flt::fltSelected)== Bp::F_Flt::fltSelected){
-	 lst.at(1)->setChecked(true);
-	}
-	else {
-	 lst.at(1)->setChecked(false);
-	}
-
-	/// --------- filtred
-	if((val.b_flt & Bp::F_Flt::fltFiltred)== Bp::F_Flt::fltFiltred){
-	 lst.at(2)->setChecked(true);
-	}
-	else {
-	 lst.at(2)->setChecked(false);
-	}
  }
 }
 
@@ -424,7 +338,7 @@ bool BMenu::getdbFlt(stTbFiltres *val, const etCount in_typ, const BTbView *view
  val->lgn = -1;
  val->col = -1;
  val->val = -1;
- val->db_total = -1;
+ val->dbt = -1;
 
  if(val->typ >= eCountToSet && val->typ <= eCountEnd){
   switch (val->typ) {

@@ -65,9 +65,9 @@ void BFlags::v3_paint(QPainter *painter, const QStyleOptionViewItem &option,
  Q_ASSERT(index.isValid());
 
  stTbFiltres a;
- a.tbName = "Filtres";
+ a.tb_flt = "Filtres";
  a.sta = Bp::E_Sta::noSta;
- a.db_total = -1;
+ a.dbt = -1;
  a.b_flt = Bp::F_Flt::noFlt;
  a.zne = flt.zne;
  a.typ = flt.typ;

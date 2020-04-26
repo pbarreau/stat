@@ -171,7 +171,7 @@ class BCount:public QWidget
  void slot_wdaFilter(bool val);
 
  void slot_V2_AideToolTip(const QModelIndex & index);
- void slot_V2_ccmr_SetPriorityAndFilters(QPoint pos);
+ //void slot_V2_ccmr_SetPriorityAndFilters(QPoint pos);
  void slot_V2_wdaFilter(bool val);
 
 
