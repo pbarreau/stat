@@ -71,14 +71,17 @@ void BFlags::displayTbv_cell(QPainter *painter, const QStyleOptionViewItem &opti
   /// Gestion des graphiques
   fltDraw(inf_flt,painter,myOpt);
 
-	/// Il faut mettre notre texte
-	fltWrite(inf_flt, painter, myOpt);
  }
+ /*
  else {
   QRect curCell = myOpt.rect;
   QString myTxt = myOpt.text;
   cellWrite(painter,curCell,myTxt);
  }
+*/
+ /// Il faut mettre notre texte
+ fltWrite(inf_flt, painter, myOpt);
+
 }
 
 void BFlags::setVisual(const bool isPresent, stTbFiltres *a,QPainter *painter, const QStyleOptionViewItem &option,
