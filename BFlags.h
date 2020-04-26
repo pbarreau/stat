@@ -10,7 +10,7 @@
 #include "colors.h"
 #include "BTbView.h"
 
-class BFlags : public QStyledItemDelegate
+class BFlags : public QStyledItemDelegate, BFlt
 {
  Q_OBJECT
 
@@ -33,7 +33,7 @@ class BFlags : public QStyledItemDelegate
  Q_FLAG(Filtres)
 
  public:
- BFlags(stPrmDlgt prm);
+ BFlags(const BFlt *conf);
  virtual void paint(QPainter *painter, const QStyleOptionViewItem &option,
             const QModelIndex &index) const;
 
@@ -46,13 +46,11 @@ class BFlags : public QStyledItemDelegate
                const QModelIndex &index) const;
  void setWanted(bool state, QPainter *painter, const QStyleOptionViewItem &opt, stTbFiltres *a, const QModelIndex &index) const;
  bool getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelIndex index) const;
- void fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
-               const QModelIndex &index) const;
- void fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
-              const QModelIndex &index) const;
+ void fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const;
+ void fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const;
  void setVisual(const bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &option,
                         const QModelIndex &index) const;
- void cellWrite(QPainter *painter, QRect curCell, const QString myTxt, Qt::GlobalColor inPen=Qt::black,  bool up=false) const;
+ void cellWrite(QPainter *painter, const QRect curCell, const QString myTxt, Qt::GlobalColor inPen=Qt::black,  bool up=false) const;
 
 
  private:

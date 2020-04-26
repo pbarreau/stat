@@ -478,7 +478,10 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
  QString msg = "";
 
  Bp::F_Flts flt_def = in_out->b_flt;
- Bp::F_Flts msk = (Bp::fltWanted|Bp::fltSelected|Bp::fltFiltred) ;
+ Bp::F_Flts msk = Bp::fltTirLast | Bp::fltTirPrev|
+                  Bp::fltWanted|Bp::fltSelected|
+                  Bp::fltFiltred|Bp::fltSeenAft|
+                  Bp::fltSeenBfr|Bp::fltSeenNot;
 
  if(flt_def == Bp::noFlt){
   flt_def = msk.operator~();

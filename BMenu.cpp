@@ -24,84 +24,6 @@ BMenu::BMenu(const QPoint pos, const BFlt *conf, BTbView *view):QMenu (nullptr),
  }
 }
 
-#if 0
-void BMenu::initialiser_v2(const QPoint pos, const etCount eType, BTbView *view)
-{
- inf_flt->tb_flt = "Filtres";
- inf_flt->b_flt = Bp::F_Flt::noFlt;
- inf_flt->pri = -1;
- inf_flt->id = -1;
- inf_flt->sta = Bp::E_Sta::noSta;
- inf_flt->typ = eType;
- inf_flt->zne = view->objectName().toInt();
- inf_flt->dbt = -1;
-
- lview = view;
- index = view->indexAt(pos);
- int cur_col = index.column();
- int cur_row = index.row();
-
- switch (inf_flt->typ) {
-  case eCountElm:
-  case eCountCmb:
-  case eCountBrc:
-   if(cur_col){
-    inf_flt->lgn = 10 * inf_flt->typ;
-    inf_flt->col = index.sibling(cur_row,0).data().toInt();
-    inf_flt->val = inf_flt->col;
-    ///inf_flt->val = view->model()->index(cur_row,0).data().toInt();
-    ///inf_flt->val = index.sibling(cur_row,0).data().toInt();
-   }
-   break;
-
-	case eCountGrp:
-	 inf_flt->lgn = cur_row;
-	 inf_flt->col = cur_col;
-	 if(index.data().isValid()){
-		if(index.data().isNull()){
-		 inf_flt->val = -1;
-		}
-		else if(index.data().canConvert(QMetaType::Int)){
-		 inf_flt->val=index.data().toInt();
-		}
-		else {
-		 inf_flt->val=-2;
-		}
-	 }
-	 else {
-		inf_flt->val=-3;
-	 }
-
-	 break;
-
-	default:
-	 inf_flt->lgn = -1;
-	 inf_flt->col = -1;
-	 inf_flt->val = -4;
- }
-
- bool b_retVal = true;
-
- if(inf_flt->val > 0){
-  /// regarder si connu
-  b_retVal = DB_Tools::tbFltGet(inf_flt,db_menu.connectionName());
-
-	/// Verifier resultat
-	if(b_retVal==false){
-	 if(inf_flt->sta == Bp::E_Sta::Er_Result){
-		b_retVal = DB_Tools::tbFltSet(inf_flt,db_menu.connectionName());
-	 }
-	}
- }
-
- if(b_retVal==false){
-  if(inf_flt->sta != Bp::E_Sta::Er_Result){
-   DB_Tools::genStop("BMenu::initialiser_v2");
-  }
- }
-}
-#endif
-
 void BMenu::construireMenu(void)
 {
  main_menu = this;
@@ -119,15 +41,13 @@ void BMenu::construireMenu(void)
  isFiltred->setDisabled(true);
 }
 
+
 void BMenu::slot_showMenu()
 {
+ /// ce slot est appele apres le constructeur
+ /// les verifications de base sont deja faites
 
- if(chkShowMenu() == true){
-  gererMenu_v2();
- }
- else {
-  return;
- }
+ gererMenu_v2();
 }
 
 void BMenu::gererMenu_v2()
@@ -296,12 +216,6 @@ void BMenu::slot_isFiltred(bool chk)
  lview->updateTitle();
 }
 
-void BMenu::slot_priorityForAll(bool chk)
-{
- QAction *chkFrom = qobject_cast<QAction *>(sender());
- chkFrom->setChecked(chk);
-}
-
 void BMenu::slot_ChoosePriority(QAction *cmd)
 {
  /// https://stackoverflow.com/questions/9187538/how-to-add-a-list-of-qactions-to-a-qmenu-and-handle-them-with-a-single-slot
@@ -319,81 +233,4 @@ void BMenu::slot_ChoosePriority(QAction *cmd)
  }
 
  b_retVal = DB_Tools::tbFltSet(inf_flt,db_menu.connectionName());
-}
-
-
-bool BMenu::getdbFlt(stTbFiltres *val, const etCount in_typ, const BTbView *view, const QModelIndex index)
-{
- bool b_retVal = false;
- //QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
-
- val->typ = in_typ;
-
- val->zne = view->objectName().toInt();
- val->lgn = -1;
- val->col = -1;
- val->val = -1;
- val->dbt = -1;
-
- if(val->typ >= eCountToSet && val->typ <= eCountEnd){
-  switch (val->typ) {
-   case eCountElm:
-   case eCountCmb:
-   case eCountBrc:
-    val->lgn = val->typ *10;
-    val->col = index.model()->index(index.row(),0).data().toInt();
-    val->val = val->col;
-    break;
-   case eCountGrp:
-    val->lgn = index.row();
-    val->col = index.column();
-    if(index.model()->index(val->lgn,val->col).data().canConvert(QMetaType::Int)){
-     val->val = index.model()->index(val->lgn,val->col).data().toInt();
-    }
-    break;
-   case eCountToSet:
-   case eCountEnd:
-    break;
-  }
- }
- else {
-  val->typ = eCountToSet;
- }
-
- b_retVal = DB_Tools::tbFltGet(val,db_menu.connectionName());
-
- return b_retVal;
-
-}
-
-bool BMenu::chkShowMenu(void)
-{
- bool b_retVal = false;
-
- int cur_col = index.column();
- int cur_row = index.row();
-
- switch (inf_flt->typ) {
-  case eCountElm:
-  case eCountCmb:
-  case eCountBrc:
-   if(index.column()==1){
-    b_retVal = true;
-   }
-   else {
-    b_retVal = false;
-   }
-   break;
-  case eCountGrp:
-   if((inf_flt->val >=0) && (index.column())>0){
-    b_retVal = true;
-   }
-   else {
-    b_retVal = false;
-   }
-   break;
-  default:
-   b_retVal = false;
- }
- return b_retVal;
 }

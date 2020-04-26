@@ -19,7 +19,7 @@ BFlt(BFlt *other);
 
 protected:
 bool displayTbvMenu_cell(const QPoint pos, BTbView *view);
-bool chkThatCell(QModelIndex a_cell);
+bool chkThatCell(QModelIndex a_cell) const;
 
 protected:
 BFlt *cur_bflt;

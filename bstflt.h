@@ -12,7 +12,7 @@ namespace Bp {
  /// https://stackoverflow.com/questions/43478059/how-to-you-use-operator-int-of-qflags
 
  enum F_Flt{
-  noFlt  = 0x0000,
+  noFlt       = 0x0000,
   fltTirLast	= 0x0001,
   fltTirPrev	=	0x0002,
   fltWanted   = 0x0004,

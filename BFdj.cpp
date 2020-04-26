@@ -639,7 +639,7 @@ QString BFdj::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
 
  retval = tab [JS];
 
- if(retval.left(2) != verif.trimmed().left(2))
+ if(retval.left(2).toUpper() != verif.trimmed().left(2).toUpper())
  {
   retErr->status = false;
   retErr->msg = "Err:JourFromDate->" + LaDate+"\n"+retval+" != "+verif.trimmed();

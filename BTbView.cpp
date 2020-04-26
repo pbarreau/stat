@@ -18,15 +18,8 @@ BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ, QTableView 
     :QTableView(parent),BFlt(pGame, in_zn, in_typ)//,zn(in_zn),cal(in_typ)
 {
  db_tbv = db_flt;
-#if 0
- // Etablir connexion a la base
- db_tbv = QSqlDatabase::database(cnx);
- if(db_tbv.isValid()==false){
-  QString str_error = db_tbv.lastError().text();
-  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-  return;
- }
-#endif
+ lbflt = cur_bflt;
+
  /// Encapsulation sur cet objet
  this->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(this, SIGNAL(customContextMenuRequested(QPoint)),

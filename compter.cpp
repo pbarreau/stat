@@ -48,8 +48,8 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  QGridLayout *glay_tmp = new QGridLayout;
 
  stMkLocal prm;
- QLayout *up_qtv = nullptr; /// Bandeau audesseu du tabview
- BTbView *qtv_tmp = new BTbView(pGame,zn,eCalcul);///BTbView(zn,eCalcul, dbCount.connectionName());
+ QLayout *up_qtv = nullptr; /// Bandeau audessu du tabview
+ BTbView *qtv_tmp = new BTbView(pGame,zn,eCalcul);
  qtv_tmp->setObjectName(QString::number(zn));
 
  /// Nom de la table resultat
@@ -108,6 +108,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
 
+ /*
  BFlags::stPrmDlgt a;
  a.parent = qtv_tmp;
  a.db_cnx = cnx;
@@ -115,7 +116,8 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  a.zne=zn;
  a.typ = eCalcul;
  a.b_flt = Bp::F_Flt::noFlt;
- qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
+*/
+ qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
  qtv_tmp->setSortingEnabled(true);

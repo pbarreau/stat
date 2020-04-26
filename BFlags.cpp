@@ -28,18 +28,9 @@
 #include "BFlags.h"
 #include "db_tools.h"
 
-BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(nullptr)//, QMainWindow(prm.parent)
+BFlags::BFlags(const BFlt *conf) : QStyledItemDelegate(nullptr),BFlt(*conf)
 {
- flt = prm;
-
- QString cnx=prm.db_cnx;
- db_1 = QSqlDatabase::database(cnx);
- if(db_1.isValid()==false){
-  QString str_error = db_1.lastError().text();
-  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-  return;
- }
-
+ db_1 = db_flt;
 }
 
 
@@ -50,7 +41,7 @@ void BFlags::paint(QPainter *painter, const QStyleOptionViewItem &option,
 }
 
 void BFlags::displayTbv_cell(QPainter *painter, const QStyleOptionViewItem &option,
-                      const QModelIndex &index) const
+                             const QModelIndex &index) const
 {
  /// https://openclassrooms.com/forum/sujet/qt-qtableview-qstyleditemdelegate
  /// https://forum.qt.io/topic/41463/solved-qstyleditemdelegate-set-text-color-when-row-is-selected
@@ -64,36 +55,45 @@ void BFlags::displayTbv_cell(QPainter *painter, const QStyleOptionViewItem &opti
 
  Q_ASSERT(index.isValid());
 
- stTbFiltres a;
- a.tb_flt = "Filtres";
- a.sta = Bp::E_Sta::noSta;
- a.dbt = -1;
- a.b_flt = Bp::F_Flt::noFlt;
- a.zne = flt.zne;
- a.typ = flt.typ;
- a.lgn = index.row();
- a.col = index.column();
- a.val = -1;
- a.pri = -1;
+ bool b_retVal = false;
+
+ inf_flt->id = -1;
+ inf_flt->dbt = -1;
+ inf_flt->b_flt = Bp::F_Flt::noFlt;
+ inf_flt->pri = -1;
+ inf_flt->sta = Bp::E_Sta::noSta;
 
 
- bool ret = getThisFlt(&a, flt.typ, index);
- setVisual(ret, &a, painter, option, index);
+ QStyleOptionViewItem myOpt = option;
+ initStyleOption(&myOpt, index);
+
+ if(( b_retVal = chkThatCell(index)) == true){
+  /// Gestion des graphiques
+  fltDraw(inf_flt,painter,myOpt);
+
+	/// Il faut mettre notre texte
+	fltWrite(inf_flt, painter, myOpt);
  }
-
- void BFlags::setVisual(const bool isPresent, stTbFiltres *a,QPainter *painter, const QStyleOptionViewItem &option,
-                        const QModelIndex &index) const
- {
-  QStyleOptionViewItem myOpt = option;
-  initStyleOption(&myOpt, index);
-
-	/// Gestion des graphiques
-	fltDraw(isPresent, a, painter, myOpt, index);
-
-
-	/// Gestion du texte
-	fltWrite(isPresent, a, painter, myOpt, index);
+ else {
+  QRect curCell = myOpt.rect;
+  QString myTxt = myOpt.text;
+  cellWrite(painter,curCell,myTxt);
  }
+}
+
+void BFlags::setVisual(const bool isPresent, stTbFiltres *a,QPainter *painter, const QStyleOptionViewItem &option,
+                       const QModelIndex &index) const
+{
+ QStyleOptionViewItem myOpt = option;
+ initStyleOption(&myOpt, index);
+
+ /// Gestion des graphiques
+ ///fltDraw(isPresent, a, painter, myOpt, index);
+
+
+ /// Gestion du texte
+ fltWrite(a, painter, myOpt);
+}
 
 void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem &opt, stTbFiltres *a, const QModelIndex &index) const
 {
@@ -102,7 +102,7 @@ void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem
  /// Qt::ItemDataRole f;
 
  /// Gestion des graphiques
- fltDraw(state, a,painter,opt,index);
+ fltDraw(a,painter,opt);
 
  QStyleOptionViewItem myOpt = opt;
  initStyleOption(&myOpt, index);
@@ -238,11 +238,11 @@ bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelInde
 		 return b_retVal;
 		}
 
-    break;
-   case eCountToSet:
-   case eCountEnd:
-    break;
-  }
+		break;
+	 case eCountToSet:
+	 case eCountEnd:
+		break;
+	}
  }
  else {
   val->typ = eCountToSet;
@@ -262,8 +262,10 @@ bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelInde
  return b_retVal;
 }
 
-void BFlags::cellWrite(QPainter *painter, QRect curCell, const QString myTxt, Qt::GlobalColor inPen, bool up)const
+//void BFlags::cellWrite(QPainter *painter, const QStyleOptionViewItem &myOpt, Qt::GlobalColor inPen, bool up)const
+void BFlags::cellWrite(QPainter *painter, const QRect curCell, const QString myTxt, Qt::GlobalColor inPen, bool up)const
 {
+
  QFont myFnt;
  QPalette myPal;
  Qt::Alignment myAlg;
@@ -294,7 +296,7 @@ void BFlags::cellWrite(QPainter *painter, QRect curCell, const QString myTxt, Qt
 
  /// Calcul de l'espace pour le texte
  QFontMetrics qfm(myFnt);
- QRect space = QApplication::style()->itemTextRect(qfm, curCell, alignment, false, myTxt);
+ QRect space = QApplication::style()->itemTextRect(qfm, curCell, alignment, true, myTxt);
 
  painter->save();
 
@@ -305,21 +307,15 @@ void BFlags::cellWrite(QPainter *painter, QRect curCell, const QString myTxt, Qt
  painter->restore();
 }
 
-void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
-                     const QModelIndex &index) const
+void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const
 {
- Q_UNUSED(isPresent)
 
- QStyleOptionViewItem myOpt = maModif;
- initStyleOption(&myOpt, index);
+ //QStyleOptionViewItem myOpt = maModif;
+ //initStyleOption(&myOpt, index);
 
  QString myTxt = myOpt.text;
- QRect curCell = myOpt.rect;
-
- if(isPresent == false ){
-  cellWrite(painter,curCell,myTxt);
-  return;
- }
+ QRect cur_rect = myOpt.rect;
+ QModelIndex index = myOpt.index;
 
  QFont myFnt;
  QPalette myPal;
@@ -334,19 +330,15 @@ void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const Q
   case eCountCmb:
   case eCountBrc:
    painting_col = 1;
-   /*
-   if(cur_col != painting_col ){
-    cellWrite(painter,curCell,myTxt);
-    return;
-   }
-*/
-  break;
-  case eCountGrp:
-   painting_col = 0;
    break;
-  default:
-   painting_col = -1;
-   break;
+
+	case eCountGrp:
+	 painting_col = 0;
+	 break;
+
+	default:
+	 painting_col = -1;
+	 break;
  }
 
  if(cur_col==painting_col){
@@ -374,41 +366,26 @@ void BFlags::fltWrite(bool isPresent, stTbFiltres *a, QPainter *painter, const Q
 
  if (
   (a->b_flt & Bp::F_Flt::fltSelected) == Bp::F_Flt::fltSelected
-                                            ||
+  ||
   (a->b_flt & Bp::F_Flt::fltFiltred) == Bp::F_Flt::fltFiltred
 
-  ) {
-  set_up = false;
-  myPen = Qt::red;
+		 ) {
+	set_up = false;
+	myPen = Qt::red;
  }
 
- cellWrite(painter,curCell,myTxt,myPen,set_up);
+ cellWrite(painter,cur_rect, myTxt,myPen,set_up);
 
 }
 
-void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &maModif,
-                const QModelIndex &index) const
+void BFlags::fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const
 {
- Q_UNUSED(isPresent)
 
- if(isPresent == false){
+ if((inf_flt->typ !=eCountGrp) && (myOpt.index.column() != 1)){
   return;
  }
 
- int col = index.column();
-
- /// Test faisabilite
-
- switch (a->typ) {
-  case eCountElm:
-  case eCountCmb:
-  case eCountBrc:
-   if(col != flt.start ){
-    return;
-   }
-   break;
-  default: ;// Rien
- }
+ QRect cur_rect = myOpt.rect;
 
  QColor v[]= {
   Qt::black,
@@ -421,13 +398,10 @@ void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QS
  };
  int nbColors = sizeof (v)/sizeof (QColor);
 
- QRect Cellrect = maModif.rect;
-
-
- int refx = Cellrect.topLeft().x();
- int refy = Cellrect.topLeft().y();
- int ctw = Cellrect.width();  /// largeur cellule
- int cth = Cellrect.height(); /// Hauteur cellule
+ int refx = cur_rect.topLeft().x();
+ int refy = cur_rect.topLeft().y();
+ int ctw = cur_rect.width();  /// largeur cellule
+ int cth = cur_rect.height(); /// Hauteur cellule
  int cx = ctw/4;
  int cy = cth/2;
 
@@ -467,15 +441,14 @@ void BFlags::fltDraw(bool isPresent, stTbFiltres *a, QPainter *painter, const QS
  painter->setRenderHint(QPainter::Antialiasing, true);
 
  if(a->typ==eCountElm){
-  /// if(((a->pri)>0) && ((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
   if(((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
-   painter->fillRect(maModif.rect, COULEUR_FOND_FILTRE);
+   painter->fillRect(cur_rect, COULEUR_FOND_FILTRE);
   }
  }
  else {
   if(
    ((a->b_flt & Bp::F_Flt::fltWanted) == (Bp::F_Flt::fltWanted)) && ((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
-   painter->fillRect(maModif.rect, COULEUR_FOND_FILTRE);
+   painter->fillRect(cur_rect, COULEUR_FOND_FILTRE);
   }
  }
 

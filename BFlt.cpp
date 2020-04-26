@@ -161,7 +161,7 @@ bool BFlt::displayTbvMenu_cell(const QPoint pos, BTbView *view)
 
 /// Cette methode verifie si la cellule
 /// en cours doit etre traite
-bool BFlt::chkThatCell(QModelIndex a_cell)
+bool BFlt::chkThatCell(QModelIndex a_cell) const
 {
  bool b_retVal = false;
 
@@ -215,5 +215,13 @@ bool BFlt::chkThatCell(QModelIndex a_cell)
 	 inf_flt->val = -4;
 	 b_retVal = false;
  }
+
+ /// La cellule est valide
+ /// rechercher dans la table filtre
+ ///
+ if(b_retVal){
+  b_retVal = DB_Tools::tbFltGet(inf_flt,db_flt.connectionName());
+ }
+
  return b_retVal;
 }

@@ -23,8 +23,8 @@ class BMenu : public QMenu,BFlt
  private:
  void construireMenu(void);
  QMenu *mnu_Priority(stTbFiltres *ret, const etCount eSrc, const BTbView *view, const QModelIndex index);
- bool getdbFlt(stTbFiltres *ret, const etCount origine, const BTbView *view, const QModelIndex index);
- bool chkShowMenu(void);
+ ///bool getdbFlt(stTbFiltres *ret, const etCount origine, const BTbView *view, const QModelIndex index);
+ ///bool chkShowMenu(void);
 
  public slots:
  void slot_showMenu();
@@ -33,7 +33,7 @@ class BMenu : public QMenu,BFlt
  void slot_isWanted(bool chk);
  void slot_isChoosed(bool chk);
  void slot_isFiltred(bool chk);
- void slot_priorityForAll(bool chk);
+ ///void slot_priorityForAll(bool chk);
  void slot_ChoosePriority(QAction *cmd);
 
  private:

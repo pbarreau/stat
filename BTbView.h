@@ -32,9 +32,11 @@ class BTbView : public QTableView, BFlt
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);
  void construireMenu(void);
 
+ public:
+ BFlt *lbflt;
+
  private:
  QSqlDatabase db_tbv;
- BFlt *lbflt;
  //int zn;
  //etCount cal;
  BGpbMenu *myGpb;
