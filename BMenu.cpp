@@ -18,16 +18,10 @@
 BMenu::BMenu(const QPoint pos, const BFlt *conf, BTbView *view):QMenu (nullptr),BFlt(*conf)
 {
  db_menu = db_flt;
-#if 0
- // Etablir connexion a la base
- db_menu = QSqlDatabase::database(cnx);
- if(db_menu.isValid()==false){
-  QString str_error = db_menu.lastError().text();
-  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-  return;
+ addr = nullptr;
+ if(displayTbvMenu_cell(pos,view)==true){
+  addr = this;
  }
-#endif
- initialiser_v2(pos,view);
 }
 
 #if 0

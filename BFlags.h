@@ -42,7 +42,7 @@ class BFlags : public QStyledItemDelegate
                     const QModelIndex &index) const;
  void v2_paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const;
- void v3_paint(QPainter *painter, const QStyleOptionViewItem &option,
+ void displayTbv_cell(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const;
  void setWanted(bool state, QPainter *painter, const QStyleOptionViewItem &opt, stTbFiltres *a, const QModelIndex &index) const;
  bool getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelIndex index) const;

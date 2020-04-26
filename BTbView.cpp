@@ -37,7 +37,6 @@ BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ, QTableView 
  QString cnx = pGame->db_ref->cnx;
  myGpb = new BGpbMenu(cur_bflt, this);
  up = nullptr;
- //construireMenu();
 }
 
 BTbView::~BTbView()
@@ -47,10 +46,15 @@ BTbView::~BTbView()
 
 void BTbView::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 {
- BMenu a(pos, cur_bflt, this);
+ BMenu *a = new BMenu (pos, cur_bflt, this);
 
- connect(&a,SIGNAL(aboutToShow()), &a, SLOT(slot_showMenu()));
- a.exec(this->viewport()->mapToGlobal(pos));
+ if(a->addr != nullptr){
+  connect(a,SIGNAL(aboutToShow()), a, SLOT(slot_showMenu()));
+  a->exec(this->viewport()->mapToGlobal(pos));
+ }
+ else {
+  delete a;
+ }
 
 #if 0
  /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items

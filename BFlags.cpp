@@ -28,7 +28,7 @@
 #include "BFlags.h"
 #include "db_tools.h"
 
-BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(prm.parent)//, QMainWindow(prm.parent)
+BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(nullptr)//, QMainWindow(prm.parent)
 {
  flt = prm;
 
@@ -46,10 +46,10 @@ BFlags::BFlags(stPrmDlgt prm) : QStyledItemDelegate(prm.parent)//, QMainWindow(p
 void BFlags::paint(QPainter *painter, const QStyleOptionViewItem &option,
                    const QModelIndex &index) const
 {
- v3_paint(painter,option,index);
+ displayTbv_cell(painter,option,index);
 }
 
-void BFlags::v3_paint(QPainter *painter, const QStyleOptionViewItem &option,
+void BFlags::displayTbv_cell(QPainter *painter, const QStyleOptionViewItem &option,
                       const QModelIndex &index) const
 {
  /// https://openclassrooms.com/forum/sujet/qt-qtableview-qstyleditemdelegate
@@ -195,7 +195,6 @@ void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem
 #endif
 }
 
-#if 1
 bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelIndex index) const
 {
  bool b_retVal = false;
@@ -262,84 +261,6 @@ bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelInde
 
  return b_retVal;
 }
-#else
-bool BFlags::getdbFlt(stTbFiltres *ret, const etCount in_typ, const QModelIndex index) const
-{
- bool b_retVal = false;
-#if 0
- etCount typ = in_typ;
-
- int zn  = flt.zne;
- int lgn = -1;
- int col = -1;
- int val = -1;
- Bp::F_Flts my_flt = Bp::Filtering::isNotSet;
-
-
- if(typ >= eCountToSet && typ <= eCountEnd){
-  switch (typ) {
-   case eCountElm:
-   case eCountCmb:
-   case eCountBrc:
-    lgn = typ *10;
-    col = index.model()->index(index.row(),0).data().toInt();
-    val = col;
-    break;
-   case eCountGrp:
-    lgn = index.row();
-    col = index.column();
-    if(index.model()->index(lgn,col).data().canConvert(QMetaType::Int)){
-     val = index.model()->index(lgn,col).data().toInt();
-    }
-    break;
-   case eCountToSet:
-   case eCountEnd:
-    break;
-  }
- }
- else {
-  typ = eCountToSet;
- }
-
- QSqlQuery query_2(db_1);
- QString tbFiltre = (*ret).tbName;
-
- /// Verifier si info presente dans table
- QString msg = "Select *  from "+tbFiltre
-               +" where ("
-                 "zne="+QString::number(zn)+" and "+
-               "typ="+QString::number(typ)+" and "+
-               "lgn="+QString::number(lgn)+" and "+
-               "col="+QString::number(col)+" and "+
-               "val="+QString::number(val)+")";
-
-#ifndef QT_NO_DEBUG
- qDebug() << "mgs_2: "<<msg;
-#endif
- b_retVal = query_2.exec(msg);
-
- if((b_retVal = query_2.first()))
- {
-  int valeur = query_2.value("flt").toInt();
-  int priori = query_2.value("pri").toInt();
-  my_flt = static_cast<Bp::F_Flts>(valeur);
-
-  (*ret).pri = priori;
-  (*ret).b_flt = my_flt;
-  (*ret).flt = Bp::Filtering::isNotSet;//query_2.value("flt").toInt();
-
- }
-
- (*ret).sta = b_retVal;
- (*ret).zne = zn;
- (*ret).typ = typ;
- (*ret).lgn = lgn;
- (*ret).col = col;
- (*ret).val = val;
-#endif
- return b_retVal;
-}
-#endif
 
 void BFlags::cellWrite(QPainter *painter, QRect curCell, const QString myTxt, Qt::GlobalColor inPen, bool up)const
 {

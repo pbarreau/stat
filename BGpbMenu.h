@@ -32,7 +32,7 @@ private slots:
 void slot_ManageFlts(QAction *all_cmd);
 
 private:
-void gbm_Menu(void);
+void displayTbvMenu_gpb(void);
 void setNewFlt(Bp::F_Flts flt_def);
 
 private:

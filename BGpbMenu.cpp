@@ -37,7 +37,7 @@ BGpbMenu::BGpbMenu(const BFlt *conf, BTbView *in_parent)
  typ = inf_flt->typ;
  use_gpb = nullptr;
 
- gbm_Menu();
+ displayTbvMenu_gpb();
 }
 
 void  BGpbMenu::slot_ShowMenu(const QGroupBox *cible, const QPoint &p)
@@ -59,7 +59,7 @@ void BGpbMenu::mousePressEvent ( QMouseEvent * event )
  emit sig_ShowMenu(this,event->screenPos().toPoint());
 }
 
-void BGpbMenu::gbm_Menu(void)
+void BGpbMenu::displayTbvMenu_gpb(void)
 {
  menu = new QMenu("All");
 

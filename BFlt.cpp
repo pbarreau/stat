@@ -54,18 +54,9 @@ BFlt::BFlt(const stGameConf *pGame, int in_zn, etCount in_typ, QString tb_flt)
  index = QModelIndex();
 }
 
-void BFlt::initialiser_v2(const QPoint pos, BTbView *view)
+bool BFlt::displayTbvMenu_cell(const QPoint pos, BTbView *view)
 {
- /*
- inf_flt->tb_flt = "Filtres";
- inf_flt->typ = eType;
- inf_flt->zne = view->objectName().toInt();
-
- inf_flt->b_flt = Bp::F_Flt::noFlt;
- inf_flt->pri = -1;
- inf_flt->sta = Bp::E_Sta::noSta;
- inf_flt->dbt = -1;
- */
+ bool b_retVal = false;
 
  inf_flt->id = -1;
  inf_flt->dbt = -1;
@@ -75,6 +66,34 @@ void BFlt::initialiser_v2(const QPoint pos, BTbView *view)
 
  lview = view;
  index = view->indexAt(pos);
+
+ QModelIndex a_cell = view->indexAt(pos);
+
+
+ /// Verifier si on peut utiliser cette case
+ /// pour afficher un menu
+ if(( b_retVal = chkThatCell(a_cell)) == true){
+  if(inf_flt->val > 0){
+   /// regarder si connu
+   b_retVal = DB_Tools::tbFltGet(inf_flt,db_flt.connectionName());
+
+	 /// Verifier resultat
+	 if(b_retVal==false){
+		if(inf_flt->sta == Bp::E_Sta::Er_Result){
+		 b_retVal = DB_Tools::tbFltSet(inf_flt,db_flt.connectionName());
+		}
+	 }
+	}
+
+	if(b_retVal==false){
+	 if(inf_flt->sta != Bp::E_Sta::Er_Result){
+		DB_Tools::genStop("BFlt::initialiser_v2");
+	 }
+	}
+ }
+
+ return b_retVal;
+#if 0
  int cur_col = index.column();
  int cur_row = index.row();
 
@@ -136,4 +155,65 @@ void BFlt::initialiser_v2(const QPoint pos, BTbView *view)
    DB_Tools::genStop("BFlt::initialiser_v2");
   }
  }
+#endif
+
+}
+
+/// Cette methode verifie si la cellule
+/// en cours doit etre traite
+bool BFlt::chkThatCell(QModelIndex a_cell)
+{
+ bool b_retVal = false;
+
+ int cur_col = a_cell.column();
+ int cur_row = a_cell.row();
+
+ switch (inf_flt->typ) {
+  case eCountElm:
+  case eCountCmb:
+  case eCountBrc:
+   if(a_cell.column()==1){
+    inf_flt->lgn = 10 * inf_flt->typ;
+    inf_flt->col = a_cell.sibling(cur_row,0).data().toInt();
+    inf_flt->val = inf_flt->col;
+    ///inf_flt->val = view->model()->index(cur_row,0).data().toInt();
+    ///inf_flt->val = a_cell.sibling(cur_row,0).data().toInt();
+
+		b_retVal = true;
+	 }
+	 else {
+		b_retVal = false;
+	 }
+	 break;
+
+	case eCountGrp:
+	 inf_flt->lgn = cur_row;
+	 inf_flt->col = cur_col;
+	 if(a_cell.data().isValid()){
+		if(a_cell.data().isNull()){
+		 inf_flt->val = -1;
+		 b_retVal = false;
+		}
+		else if(a_cell.data().canConvert(QMetaType::Int)){
+		 inf_flt->val=a_cell.data().toInt();
+		 b_retVal = true;
+		}
+		else {
+		 inf_flt->val=-2;
+		 b_retVal = false;
+		}
+	 }
+	 else {
+		inf_flt->val=-3;
+		b_retVal = false;
+	 }
+	 break;
+
+	default:
+	 inf_flt->lgn = -1;
+	 inf_flt->col = -1;
+	 inf_flt->val = -4;
+	 b_retVal = false;
+ }
+ return b_retVal;
 }

@@ -43,6 +43,9 @@ class BMenu : public QMenu,BFlt
  void gererMenu_v2();
  void presenterMenu();
 
+ public:
+ BMenu *addr;
+
  private:
  QMenu *main_menu;
  QSqlDatabase db_menu;

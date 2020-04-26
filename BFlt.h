@@ -18,7 +18,8 @@ BFlt(const stGameConf *pGame, int in_zn, etCount in_typ, QString tb_flt="Filtres
 BFlt(BFlt *other);
 
 protected:
-void initialiser_v2(const QPoint pos, BTbView *view);
+bool displayTbvMenu_cell(const QPoint pos, BTbView *view);
+bool chkThatCell(QModelIndex a_cell);
 
 protected:
 BFlt *cur_bflt;
