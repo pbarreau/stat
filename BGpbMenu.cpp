@@ -25,7 +25,7 @@
  */
 
 BGpbMenu::BGpbMenu(const BFlt *conf, BTbView *in_parent)
-    :QGroupBox(nullptr),BFlt(*conf), parent(in_parent)///zn(in_zn),typ(in_typ),parent(in_parent)
+    :QGroupBox(nullptr),BFlt(*conf), parent(in_parent)
 {
  db_gbm = db_flt;
 

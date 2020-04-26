@@ -9,15 +9,16 @@
 #include <QSqlDatabase>
 #include <QModelIndex>
 
+#include "BFlt.h"
 #include "BTbView.h"
 #include "compter.h"
 
-class BMenu : public QMenu
+class BMenu : public QMenu,BFlt
 {
  Q_OBJECT
 
  public:
- BMenu(const QPoint pos, QString cnx, const etCount eType, BTbView *view, QWidget *parent=nullptr);
+ BMenu(const QPoint pos, const BFlt *conf, BTbView *view);
 
  private:
  void construireMenu(void);
@@ -37,7 +38,7 @@ class BMenu : public QMenu
 
  private:
  ///void initialiser_v1(const QPoint pos, const etCount eType, BTbView *view);
- void initialiser_v2(const QPoint pos, const etCount eType, BTbView *view);
+ ///void initialiser_v2(const QPoint pos, const etCount eType, BTbView *view);
  ///void gererMenu_v1();
  void gererMenu_v2();
  void presenterMenu();
@@ -45,10 +46,10 @@ class BMenu : public QMenu
  private:
  QMenu *main_menu;
  QSqlDatabase db_menu;
- etCount eCalcul;
- BTbView *lview;
- QModelIndex  index;
- stTbFiltres val;
+ //etCount eCalcul;
+ //BTbView *lview;
+ //QModelIndex  index;
+ //stTbFiltres val;
 };
 
 #endif // BMENU_H

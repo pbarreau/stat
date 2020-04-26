@@ -47,7 +47,7 @@ BTbView::~BTbView()
 
 void BTbView::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 {
- BMenu a(pos, db_tbv.connectionName(), inf_flt->typ, this);
+ BMenu a(pos, cur_bflt, this);
 
  connect(&a,SIGNAL(aboutToShow()), &a, SLOT(slot_showMenu()));
  a.exec(this->viewport()->mapToGlobal(pos));

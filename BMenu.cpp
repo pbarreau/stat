@@ -15,11 +15,10 @@
 #include "db_tools.h"
 #include "BTbView.h"
 
-BMenu::BMenu(const QPoint pos, QString cnx,
-						 const etCount eType, BTbView *view,
-						 QWidget *parent):QMenu (parent)
+BMenu::BMenu(const QPoint pos, const BFlt *conf, BTbView *view):QMenu (nullptr),BFlt(*conf)
 {
-
+ db_menu = db_flt;
+#if 0
  // Etablir connexion a la base
  db_menu = QSqlDatabase::database(cnx);
  if(db_menu.isValid()==false){
@@ -27,85 +26,87 @@ BMenu::BMenu(const QPoint pos, QString cnx,
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
  }
-
- initialiser_v2(pos,eType,view);
+#endif
+ initialiser_v2(pos,view);
 }
 
+#if 0
 void BMenu::initialiser_v2(const QPoint pos, const etCount eType, BTbView *view)
 {
- val.tb_flt = "Filtres";
- val.b_flt = Bp::F_Flt::noFlt;
- val.pri = -1;
- val.id = -1;
- val.sta = Bp::E_Sta::noSta;
- val.typ = eType;
- val.zne = view->objectName().toInt();
- val.dbt = -1;
+ inf_flt->tb_flt = "Filtres";
+ inf_flt->b_flt = Bp::F_Flt::noFlt;
+ inf_flt->pri = -1;
+ inf_flt->id = -1;
+ inf_flt->sta = Bp::E_Sta::noSta;
+ inf_flt->typ = eType;
+ inf_flt->zne = view->objectName().toInt();
+ inf_flt->dbt = -1;
 
  lview = view;
  index = view->indexAt(pos);
  int cur_col = index.column();
  int cur_row = index.row();
 
- switch (val.typ) {
+ switch (inf_flt->typ) {
   case eCountElm:
   case eCountCmb:
   case eCountBrc:
    if(cur_col){
-    val.lgn = 10 * val.typ;
-    val.col = index.sibling(cur_row,0).data().toInt();
-    val.val = val.col;
-    ///val.val = view->model()->index(cur_row,0).data().toInt();
-    ///val.val = index.sibling(cur_row,0).data().toInt();
+    inf_flt->lgn = 10 * inf_flt->typ;
+    inf_flt->col = index.sibling(cur_row,0).data().toInt();
+    inf_flt->val = inf_flt->col;
+    ///inf_flt->val = view->model()->index(cur_row,0).data().toInt();
+    ///inf_flt->val = index.sibling(cur_row,0).data().toInt();
    }
    break;
 
 	case eCountGrp:
-	 val.lgn = cur_row;
-	 val.col = cur_col;
+	 inf_flt->lgn = cur_row;
+	 inf_flt->col = cur_col;
 	 if(index.data().isValid()){
 		if(index.data().isNull()){
-		 val.val = -1;
+		 inf_flt->val = -1;
 		}
 		else if(index.data().canConvert(QMetaType::Int)){
-		 val.val=index.data().toInt();
+		 inf_flt->val=index.data().toInt();
 		}
 		else {
-		 val.val=-2;
+		 inf_flt->val=-2;
 		}
 	 }
 	 else {
-		val.val=-3;
+		inf_flt->val=-3;
 	 }
 
 	 break;
 
 	default:
-	 val.lgn = -1;
-	 val.col = -1;
-	 val.val = -4;
+	 inf_flt->lgn = -1;
+	 inf_flt->col = -1;
+	 inf_flt->val = -4;
  }
 
  bool b_retVal = true;
 
- if(val.val > 0){
+ if(inf_flt->val > 0){
   /// regarder si connu
-  b_retVal = DB_Tools::tbFltGet(&val,db_menu.connectionName());
+  b_retVal = DB_Tools::tbFltGet(inf_flt,db_menu.connectionName());
 
 	/// Verifier resultat
 	if(b_retVal==false){
-	 if(val.sta == Bp::E_Sta::Er_Result){
-		b_retVal = DB_Tools::tbFltSet(&val,db_menu.connectionName());
+	 if(inf_flt->sta == Bp::E_Sta::Er_Result){
+		b_retVal = DB_Tools::tbFltSet(inf_flt,db_menu.connectionName());
 	 }
 	}
  }
 
  if(b_retVal==false){
-  if(val.sta != Bp::E_Sta::Er_Result){
+  if(inf_flt->sta != Bp::E_Sta::Er_Result){
    DB_Tools::genStop("BMenu::initialiser_v2");
   }
  }
 }
+#endif
 
 void BMenu::construireMenu(void)
 {
@@ -137,11 +138,11 @@ void BMenu::slot_showMenu()
 
 void BMenu::gererMenu_v2()
 {
- bool    b_retVal = DB_Tools::tbFltGet(&val,db_menu.connectionName());
+ bool    b_retVal = DB_Tools::tbFltGet(inf_flt,db_menu.connectionName());
 
  if(b_retVal==false){
-  if(val.sta == Bp::E_Sta::Er_Result){
-   b_retVal = DB_Tools::tbFltSet(&val,db_menu.connectionName());
+  if(inf_flt->sta == Bp::E_Sta::Er_Result){
+   b_retVal = DB_Tools::tbFltSet(inf_flt,db_menu.connectionName());
    if(b_retVal == true){
     presenterMenu();
    }
@@ -164,28 +165,28 @@ void BMenu::presenterMenu()
  construireMenu();
  QList<QAction *> lst = main_menu->actions();
 
- if((val.b_flt & Bp::F_Flt::fltWanted)== Bp::F_Flt::fltWanted){
+ if((inf_flt->b_flt & Bp::F_Flt::fltWanted)== Bp::F_Flt::fltWanted){
   lst.at(0)->setChecked(true);
   lst.at(1)->setEnabled(true);
   lst.at(2)->setEnabled(true);
 
-	if(val.typ == eCountElm){
-	 QMenu *subMenu = mnu_Priority(&val, eCalcul,lview,index);
+	if(inf_flt->typ == eCountElm){
+	 QMenu *subMenu = mnu_Priority(inf_flt, inf_flt->typ,lview,index);
 	 main_menu->addMenu(subMenu);
 	}
  }
  else {
   lst.at(2)->setChecked(false);
-  val.b_flt = val.b_flt & ~(Bp::F_Flt::fltFiltred);
+  inf_flt->b_flt = inf_flt->b_flt & ~(Bp::F_Flt::fltFiltred);
 
 	lst.at(1)->setChecked(false);
-	val.b_flt = val.b_flt & ~(Bp::F_Flt::fltSelected);
+	inf_flt->b_flt = inf_flt->b_flt & ~(Bp::F_Flt::fltSelected);
 
   lst.at(0)->setChecked(false);
  }
 
  /// --------- selected
- if((val.b_flt & Bp::F_Flt::fltSelected)== Bp::F_Flt::fltSelected){
+ if((inf_flt->b_flt & Bp::F_Flt::fltSelected)== Bp::F_Flt::fltSelected){
   lst.at(1)->setChecked(true);
  }
  else {
@@ -193,7 +194,7 @@ void BMenu::presenterMenu()
  }
 
  /// --------- filtred
- if((val.b_flt & Bp::F_Flt::fltFiltred)== Bp::F_Flt::fltFiltred){
+ if((inf_flt->b_flt & Bp::F_Flt::fltFiltred)== Bp::F_Flt::fltFiltred){
   lst.at(2)->setChecked(true);
  }
  else {
@@ -244,16 +245,16 @@ void BMenu::slot_isWanted(bool chk)
  QAction *chkFrom = qobject_cast<QAction *>(sender());
 
  if(chk){
-  val.b_flt = val.b_flt | Bp::F_Flt::fltWanted;
+  inf_flt->b_flt = inf_flt->b_flt | Bp::F_Flt::fltWanted;
  }
  else {
-  val.b_flt = val.b_flt & ~Bp::F_Flt::fltWanted;
-  val.b_flt = val.b_flt & ~Bp::F_Flt::fltSelected;
-  val.b_flt = val.b_flt & ~Bp::F_Flt::fltFiltred;
+  inf_flt->b_flt = inf_flt->b_flt & ~Bp::F_Flt::fltWanted;
+  inf_flt->b_flt = inf_flt->b_flt & ~Bp::F_Flt::fltSelected;
+  inf_flt->b_flt = inf_flt->b_flt & ~Bp::F_Flt::fltFiltred;
  }
 
  /// Mettre a jour action dans base
- if(DB_Tools::tbFltSet(&val,db_menu.connectionName()) == true){
+ if(DB_Tools::tbFltSet(inf_flt,db_menu.connectionName()) == true){
   chkFrom->setChecked(chk);
  }
 
@@ -266,15 +267,15 @@ void BMenu::slot_isChoosed(bool chk)
  QAction *chkFrom = qobject_cast<QAction *>(sender());
 
  if(chk){
-  val.b_flt = val.b_flt | Bp::F_Flt::fltSelected;
+  inf_flt->b_flt = inf_flt->b_flt | Bp::F_Flt::fltSelected;
  }
  else {
-  val.b_flt = val.b_flt & ~Bp::F_Flt::fltSelected;
-  val.b_flt = val.b_flt & ~Bp::F_Flt::fltFiltred;
+  inf_flt->b_flt = inf_flt->b_flt & ~Bp::F_Flt::fltSelected;
+  inf_flt->b_flt = inf_flt->b_flt & ~Bp::F_Flt::fltFiltred;
  }
 
  /// Mettre a jour action dans base
- if(DB_Tools::tbFltSet(&val,db_menu.connectionName()) == true){
+ if(DB_Tools::tbFltSet(inf_flt,db_menu.connectionName()) == true){
   chkFrom->setChecked(chk);
  }
 
@@ -286,15 +287,15 @@ void BMenu::slot_isFiltred(bool chk)
  QAction *chkFrom = qobject_cast<QAction *>(sender());
 
  if(chk){
-  val.b_flt = val.b_flt | Bp::F_Flt::fltSelected;
-  val.b_flt = val.b_flt | Bp::F_Flt::fltFiltred;
+  inf_flt->b_flt = inf_flt->b_flt | Bp::F_Flt::fltSelected;
+  inf_flt->b_flt = inf_flt->b_flt | Bp::F_Flt::fltFiltred;
  }
  else {
-  val.b_flt = val.b_flt & ~Bp::F_Flt::fltFiltred;
+  inf_flt->b_flt = inf_flt->b_flt & ~Bp::F_Flt::fltFiltred;
  }
 
  /// Mettre a jour action dans base
- if(DB_Tools::tbFltSet(&val,db_menu.connectionName()) == true){
+ if(DB_Tools::tbFltSet(inf_flt,db_menu.connectionName()) == true){
   chkFrom->setChecked(chk);
  }
 
@@ -316,14 +317,14 @@ void BMenu::slot_ChoosePriority(QAction *cmd)
  int value = cmd->data().toInt();
 
  /// Supprimer la priorite ?
- if(value==val.pri){
-  val.pri= 0;
+ if(value==inf_flt->pri){
+  inf_flt->pri= 0;
  }
  else {
-  val.pri=value;
+  inf_flt->pri=value;
  }
 
- b_retVal = DB_Tools::tbFltSet(&val,db_menu.connectionName());
+ b_retVal = DB_Tools::tbFltSet(inf_flt,db_menu.connectionName());
 }
 
 
@@ -378,7 +379,7 @@ bool BMenu::chkShowMenu(void)
  int cur_col = index.column();
  int cur_row = index.row();
 
- switch (val.typ) {
+ switch (inf_flt->typ) {
   case eCountElm:
   case eCountCmb:
   case eCountBrc:
@@ -390,7 +391,7 @@ bool BMenu::chkShowMenu(void)
    }
    break;
   case eCountGrp:
-   if((val.val >=0) && (index.column())>0){
+   if((inf_flt->val >=0) && (index.column())>0){
     b_retVal = true;
    }
    else {
