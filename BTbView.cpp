@@ -10,8 +10,11 @@
 
 #include <QMessageBox>
 
+#include <QTime>
+
 #include "BTbView.h"
 #include "BMenu.h"
+#include "BGrbGenTirages.h"
 #include "db_tools.h"
 
 BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ, QTableView * parent)
@@ -52,6 +55,11 @@ void BTbView::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
  else {
   delete a;
  }
+}
+
+stTbFiltres * BTbView::getFlt(void)
+{
+ return inf_flt;
 }
 
 void BTbView::slot_V2_AideToolTip(const QModelIndex & index)
@@ -267,7 +275,43 @@ QPushButton * BTbView::getUsrGameButton(void)
 
 void  BTbView::slot_usrCreateGame()
 {
- ;
+ /// Caracteristique de la generation liste tirages utilistateur
+ stGameConf * tmp = new stGameConf;
+ /// Specificite de cette recherche
+ tmp->znCount = 1;
+ tmp->eTirType = eTirUsr; /// A supprimer ?
+ tmp->eFdjType = cur_game->eFdjType;
+
+ /// Partie commune
+ tmp->limites = cur_game->limites;
+ tmp->names = cur_game->names;
+ tmp->db_ref = cur_game->db_ref;///new stParam_3;
+ tmp->slFlt = cur_game->slFlt;
+
+
+ tmp->id = 0; /// A supprimer ?
+
+ /// Temps de calcul
+ QTime r;
+ QTime t;
+ QString t_human = "";
+
+ r.setHMS(0,0,0,0);
+ t.start();
+ BGrbGenTirages *calcul = new BGrbGenTirages(tmp, this);
+ r = r.addMSecs(t.elapsed());
+ t_human = r.toString("hh:mm:ss:zzz");
+ if(calcul->addr != nullptr){
+  calcul->show();
+ }
+ else {
+  delete calcul;
+ }
+
+ QString msg = " Calcul en : "
+               +t_human
+               +QString (" (hh:mm:ss:ms)");
+ QMessageBox::information(nullptr,"UsrGame",msg,QMessageBox::Ok);
 }
 
 QGroupBox * BTbView::getScreen()

@@ -24,6 +24,7 @@
 
 #include "compter_zones.h"
 #include "BPushButton.h"
+#include "BFlt.h"
 
 #define CEL2_L 40
 
@@ -35,10 +36,11 @@
 int BGrbGenTirages::total = 1;
 QList<QPair<QString, BGrbGenTirages*>*> *BGrbGenTirages::lstGenTir = nullptr;
 
-BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision * parent, QString st_table)
+BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, BTbView *parent, QString st_table)
 {
  addr = nullptr;
  QString UsrCnp = st_table;
+ QString cnx = pGame->db_ref->cnx;
 
  // Etablir connexion a la base
  db_1 = QSqlDatabase::database(cnx);
@@ -69,7 +71,7 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision * pare
  }
 }
 
-void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BPrevision *parent, QString st_table)
+void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BTbView *parent, QString st_table)
 {
  QSqlQuery query(db_1);
  QString msg ="";
@@ -104,7 +106,7 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
 	if(query.first()){
 	 do{
 		msg = query.value("name").toString();
-		BGrbGenTirages *tmp = new BGrbGenTirages(pGame,cnx,parent,msg);
+		BGrbGenTirages *tmp = new BGrbGenTirages(pGame,parent,msg);
 		QPair<QString, BGrbGenTirages*> *a = new QPair<QString, BGrbGenTirages*>;
 		a->first = msg;
 		tmp->mkForm(pGame,parent,msg);
@@ -129,22 +131,49 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
  }
 }
 
-QString BGrbGenTirages::chkData(stGameConf *pGame, BPrevision * parent, QString cnx)
+QString BGrbGenTirages::chkData(stGameConf *pGame, BTbView *parent, QString cnx)
 {
  QString UsrCnp="";
  QSqlQuery query(db_1);
  QString msg = "";
+ bool b_retVal = true;
 
+ stTbFiltres *cur_flt = parent->getFlt();
  /// Regarder le choix utilisateur
- msg = "with somme as(select count(Choix.pri)  as T from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=1)),"
-       "e1 as (select val from Filtres as Choix where(choix.pri=1 AND choix.zne=0 and choix.typ=1) order by val) "
-       "SELECT somme.T, group_concat(e1.val) as boules from somme,e1";
+ /*
+  * with
+  * somme as(select count(Choix.id)  as T from Filtres as Choix where(choix.zne=0 and choix.typ=1 and ((choix.flt & 0x08) = 0x08) )),
+  * e1 as (select val from Filtres as Choix where(choix.zne=0 and choix.typ=1 and ((choix.flt & 0x08) = 0x08) ) order by val)
+  *
+  * SELECT somme.T,
+  * group_concat(e1.val) as boules from somme,e1
+  *
+  */
+
+ QString st_zne = QString::number(cur_flt->zne);
+ QString st_typ = QString::number(cur_flt->typ);
+ QString st_flt = QString::number(Bp::fltSelected,16);
+
+ msg = "with   "
+       "somme as(select count(Choix.id)  as T from Filtres as Choix where(choix.zne="+st_zne+
+       " and choix.typ="+st_typ+
+       " and ((choix.flt & 0x"+st_flt+
+       ") = 0x"+st_flt+
+       ") )),   "
+       "e1 as (select val from Filtres as Choix where(choix.zne="+st_zne+
+       " and choix.typ="+st_typ+
+       " and ((choix.flt & 0x"+st_flt+
+       ") = 0x"+st_flt+
+       ") ) order by val)   "
+       "  "
+       "SELECT somme.T,   "
+       "group_concat(e1.val) as boules from somme,e1   ";
 
 #ifndef QT_NO_DEBUG
  qDebug() <<msg;
 #endif
 
- query.exec(msg);
+ b_retVal = query.exec(msg);
 
  if(!query.first()){
   return(""); // Pas de selection utilisateur
@@ -397,21 +426,31 @@ bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
  bool b_retVal = true;
  QString msg = "";
 
- msg = "create table "
-       +tbl
-       +" as "
-         "with selection as (select ROW_NUMBER () OVER (ORDER by ROWID) id, val from filtres where (pri=1 and zne=0))"
-         "SELECT cast(ROW_NUMBER () OVER () as int) as id, cast(\"nop\" as text) as J,"
-         "cast(t1.val as int) as b1, cast(t2.val as int)as b2, cast(t3.val as int) as b3 , "
-         "cast(t4.val as int) as b4 ,cast(t5.val as int)as b5, CAST('0' as int) as chk "
-         "FROM selection As t1, selection As t2,  selection As t3,selection As t4,selection As t5 "
-         "WHERE ("
-         "(t1.id<t2.id) and"
-         "(t2.id<t3.id) and"
-         "(t3.id<t4.id) and"
-         "(t4.id<t5.id)"
-         ")"
-         "ORDER BY t1.id, t2.id, t2.id, t3.id, t4.id, t5.id";
+ QString st_zne = QString::number(0);///(cur_flt->zne);
+ QString st_typ = QString::number(1);///(cur_flt->typ);
+ QString st_flt = QString::number(Bp::fltSelected,16);
+
+ msg = "create table "+
+       tbl+
+       " as "
+       "with selection as (select ROW_NUMBER () OVER (ORDER by ROWID) id, val from filtres "
+       "where (choix.zne="+st_zne+
+       " and choix.typ="+st_typ+
+       " and ((choix.flt & 0x"+st_flt+
+       ") = 0x"+st_flt+
+       ") )"
+       ")"
+       "SELECT cast(ROW_NUMBER () OVER () as int) as id, cast(\"nop\" as text) as J,"
+       "cast(t1.val as int) as b1, cast(t2.val as int)as b2, cast(t3.val as int) as b3 , "
+       "cast(t4.val as int) as b4 ,cast(t5.val as int)as b5, CAST('0' as int) as chk "
+       "FROM selection As t1, selection As t2,  selection As t3,selection As t4,selection As t5 "
+       "WHERE ("
+       "(t1.id<t2.id) and"
+       "(t2.id<t3.id) and"
+       "(t3.id<t4.id) and"
+       "(t4.id<t5.id)"
+       ")"
+       "ORDER BY t1.id, t2.id, t2.id, t3.id, t4.id, t5.id";
 
  b_retVal = query.exec(msg);
 
@@ -559,7 +598,7 @@ void BGrbGenTirages::slot_UGL_SetFilters()
 
 }
 
-void BGrbGenTirages::mkForm(stGameConf *pGame, BPrevision *parent, QString st_table)
+void BGrbGenTirages::mkForm(stGameConf *pGame, BTbView *parent, QString st_table)
 {
  QTabWidget *tab_Top = new QTabWidget;
 
@@ -570,11 +609,12 @@ void BGrbGenTirages::mkForm(stGameConf *pGame, BPrevision *parent, QString st_ta
  tbl_name=st_table;
 
  /// Regarder les filtrages demandes
+ /*
  l_c0 = parent->getC0();
  l_c1 = parent->getC1();
  l_c2 = parent->getC2();
  l_c3 = parent->getC3();
-
+*/
 
  /// regroupement des tirages generes
  QString ongNames[]={"Boules","Tirages"};
@@ -677,11 +717,11 @@ void BGrbGenTirages::slot_UsrChk(const QPersistentModelIndex &target, const Qt::
   QModelIndex try_index;
   try_index= target.model()->index(row,i, QModelIndex());
 
-  QString val = try_index.data().toString().rightJustified(2,'0');
-  msg= msg + val;
-  if(i<2+5-1){
-   msg = msg + ",";
-  }
+	QString val = try_index.data().toString().rightJustified(2,'0');
+	msg= msg + val;
+	if(i<2+5-1){
+	 msg = msg + ",";
+	}
  }
 
  lb_Big->setText(msg);
@@ -691,6 +731,7 @@ void BGrbGenTirages::slot_UsrChk(const QPersistentModelIndex &target, const Qt::
 
 void BGrbGenTirages::analyserTirages(const stGameConf *pGame,const QString st_table)
 {
+#if 0
  QWidget * Resultats = new QWidget;
  QTabWidget *tab_Top = new QTabWidget;
  QGridLayout **pConteneur = new QGridLayout *[4];
@@ -749,92 +790,5 @@ void BGrbGenTirages::analyserTirages(const stGameConf *pGame,const QString st_ta
  Resultats->show();
 
  return;
-#if 0
- connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
- /// transfert vers SyntheseGenerale
- connect(c1,
-         SIGNAL(sig_isClickedOnBall(QModelIndex)),
-         this,
-         SLOT(slot_emitThatClickedBall(QModelIndex)));
-
- /// greffon pour calculer barycentre des tirages
- stNeedsOfBary param;
- param.db = db_1;
- param.ncx = db_1.connectionName();
- param.tbl_in=st_table;
- param.tbl_ana = st_table+"_ana_z1";
- param.tbl_flt = tr("U_b_z1"); /// source+tr("_flt_z1");
- param.pDef = *pGame;
- param.origine = this;
- CBaryCentre *c= new CBaryCentre(param);
-
-
- BCountComb *c2 = new BCountComb(*pGame,st_table,db_1);
- BCountGroup *c3 = new BCountGroup(*pGame,st_table,slFlt,db_1);
-
-
-
- QGridLayout **pConteneur = new QGridLayout *[4];
- QWidget **pMonTmpWidget = new QWidget * [4];
-
- for(int i = 0; i< 4;i++)
- {
-  QGridLayout * grd_tmp = new QGridLayout;
-  pConteneur[i] = grd_tmp;
-
-	QWidget * wid_tmp = new QWidget;
-	pMonTmpWidget [i] = wid_tmp;
- }
- pConteneur[0]->addWidget(c1,1,0);
- pConteneur[1]->addWidget(c,1,0);
- pConteneur[2]->addWidget(c2,1,0);
- pConteneur[3]->addWidget(c3,1,0);
-
- pMonTmpWidget[0]->setLayout(pConteneur[0]);
- pMonTmpWidget[1]->setLayout(pConteneur[1]);
- pMonTmpWidget[2]->setLayout(pConteneur[2]);
- pMonTmpWidget[3]->setLayout(pConteneur[3]);
-
- tab_Top->addTab(pMonTmpWidget[0],tr("Zones"));
- tab_Top->addTab(pMonTmpWidget[1],tr("Barycentre"));
- tab_Top->addTab(pMonTmpWidget[2],tr("Combinaisons"));
- tab_Top->addTab(pMonTmpWidget[3],tr("Groupes"));
-
- QGridLayout *tmp_layout = new QGridLayout;
- int i = 0;
-
- QString msg = QString("Selection : %1 sur %2");
- QString s_sel = QString::number(0).rightJustified(2,'0');
- QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
- msg = msg.arg(s_sel).arg(s_max);
-
- LabelClickable *tmp_lab = c1->getLabPriority();
- tmp_lab->setText(msg);
-
- tmp_layout->addWidget(tmp_lab,i,0);
- i++;
- tmp_layout->addWidget(tab_Top,i,0);
-
- /*
-    QString clef[]={"Z:","C:","G:"};
-    int i = 0;
-    for(i; i< 3; i++)
-    {
-        selection[i].setText(clef[i]+"aucun");
-        tmp_layout->addWidget(&selection[i],i,0);
-    }
-*/
-
-#if 0
-    connect( selection, SIGNAL( clicked(QString)) ,
-             this, SLOT( slot_RazSelection(QString) ) );
-#endif
-
-
-
- /// ----------------
- Resultats->setLayout(tmp_layout);
- Resultats->setWindowTitle(st_table);
- Resultats->show();
 #endif
 }

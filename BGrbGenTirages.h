@@ -21,7 +21,7 @@ class BGrbGenTirages : public QGroupBox
  Q_OBJECT
 
 public:
-BGrbGenTirages(stGameConf *pGame, QString cnx, BPrevision *parent, QString st_table="");
+BGrbGenTirages(stGameConf *pGame, BTbView *parent, QString st_table="");
 BGrbGenTirages *addr;
 
 public slots:
@@ -35,9 +35,9 @@ void slot_tbvClicked(const QModelIndex &index);
 void slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckState &chk);
 
 private:
-void MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BPrevision *parent, QString st_table="");
-void mkForm(stGameConf *pGame, BPrevision *parent, QString st_table);
-QString chkData(stGameConf *pGame, BPrevision * parent, QString cnx);
+void MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BTbView *parent, QString st_table="");
+void mkForm(stGameConf *pGame, BTbView *parent, QString st_table);
+QString chkData(stGameConf *pGame, BTbView * parent, QString cnx);
 QGroupBox *  LireBoule(stGameConf *pGame, QString tbl_cible);
 QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
 bool CreerTable(stGameConf *pGame, QString tbl);

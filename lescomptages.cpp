@@ -2120,6 +2120,7 @@ void BPrevision::slot_emitThatClickedBall(const QModelIndex &index)
 #if 1
 void BPrevision::slot_UGL_Create()
 {
+ /*
  QString cnx_name = db_1.connectionName();
 
  /// Caracteristique de la generation liste tirages utilistateur
@@ -2251,7 +2252,7 @@ void BPrevision::slot_UGL_Create()
  monJeu.tblUsr_ana=tbl_cible_ana;
  onGame.eTirType=eTirGen;
  ContinuerCreation(UsrCnp, tbl_cible_ana);
-
+*/
 }
 #else
 void BPrevision::slot_UGL_Create()

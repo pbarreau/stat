@@ -23,6 +23,7 @@ class BTbView : public QTableView, BFlt
  void setUpLayout(QLayout *usr_up);
  void setUsrGameButton(QPushButton *usr_game);
  QPushButton *getUsrGameButton(void);
+ stTbFiltres * getFlt(void);
 
  ~BTbView();
 
