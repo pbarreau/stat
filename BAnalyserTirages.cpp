@@ -20,6 +20,11 @@
 
 int BAnalyserTirages::total_analyses = 0;
 
+int BAnalyserTirages::getCounter(void)
+{
+ return  total_analyses;
+}
+
 BAnalyserTirages::BAnalyserTirages(stGameConf *pGame)
 {
  addr = nullptr;
@@ -129,7 +134,6 @@ void BAnalyserTirages::startAnalyse(stGameConf *pGame, QString tbl_tirages)
   if(!b_retVal){
    QString msg = "Erreur Analyse table : " + tbl_tirages;
    DB_Tools::DisplayError(tbl_tirages,nullptr,msg);
-   return;
   }
  }
 
@@ -164,7 +168,6 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
   lstComptage.append(item_1);
  }
 
- ///*
  BCountComb * item_2 = new BCountComb(pGame);
  if(item_2->mySefl() == nullptr){
   delete  item_2;
@@ -172,7 +175,6 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
  else {
   lstComptage.append(item_2);
  }
-
 
  BCountBrc * item_3 = new BCountBrc(pGame);
  if(item_3->mySefl() == nullptr){
@@ -189,9 +191,10 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
  else {
   lstComptage.append(item_4);
  }
- ///*/
 
 
+
+ /// Les objets existent faire les calculs
  int nb_item = lstComptage.size();
  if(nb_item){
   tab_Top = new QTabWidget;
@@ -202,6 +205,7 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
   /// Appelle la methode dans la bonne classe
   etCount type = lstComptage.at(i)->getType();
   QString name = BCount::onglet[type];
+
   QWidget *calcul = lstComptage.at(i)->startCount(pGame, type);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
@@ -225,107 +229,6 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
  Resultats->setLayout(tmp_layout);
  Resultats->setWindowTitle(my_title);
  Resultats->show();
-
-#if 0 //1
- QWidget * Resultats = new QWidget;
- QTabWidget *tab_Top = new QTabWidget;
-
- c1 = new BCountElem(config,source,db_1,Resultats);
- connect(c1,SIGNAL(sig_TitleReady(QString)),this,SLOT(slot_changerTitreZone(QString)));
- /// transfert vers SyntheseGenerale
- connect(c1,
-         SIGNAL(sig_isClickedOnBall(QModelIndex)),
-         this,
-         SLOT(slot_emitThatClickedBall(QModelIndex)));
-
-
-#if 0
- /// greffon pour calculer barycentre des tirages
- stNeedsOfBary param;
- param.db = db_1;
- param.ncx = db_1.connectionName();
- param.tbl_in=source;
- if(source=="B_fdj"){
-  param.tbl_ana = source+tr("_ana_z1");
- }else
- {
-  ///REM:param.tbl_ana = "U_"+monJeu.tblUsr_dta+"_ana_z1";
-  param.tbl_ana = monJeu.tblUsr_dta+"_ana_z1";
- }
- param.tbl_flt = tr("U_b_z1"); /// source+tr("_flt_z1");
- param.pDef = onGame;
- param.origine = this;
- c= new CBaryCentre(param);
-#endif
-
- c2 = new BCountComb(config,source,db_1);
- c3 = new BCountGroup(config,source,slFlt,db_1);
-
-
-
- QGridLayout **pConteneur = new QGridLayout *[4];
- QWidget **pMonTmpWidget = new QWidget * [4];
-
- for(int i = 0; i< 4;i++)
- {
-  QGridLayout * grd_tmp = new QGridLayout;
-  pConteneur[i] = grd_tmp;
-
-	QWidget * wid_tmp = new QWidget;
-	pMonTmpWidget [i] = wid_tmp;
- }
- pConteneur[0]->addWidget(c1,1,0);
- //pConteneur[1]->addWidget(c,1,0);
- pConteneur[2]->addWidget(c2,1,0);
- pConteneur[3]->addWidget(c3,1,0);
-
- pMonTmpWidget[0]->setLayout(pConteneur[0]);
- pMonTmpWidget[1]->setLayout(pConteneur[1]);
- pMonTmpWidget[2]->setLayout(pConteneur[2]);
- pMonTmpWidget[3]->setLayout(pConteneur[3]);
-
- tab_Top->addTab(pMonTmpWidget[0],tr("Zones"));
- tab_Top->addTab(pMonTmpWidget[1],tr("Barycentre"));
- tab_Top->addTab(pMonTmpWidget[2],tr("Combinaisons"));
- tab_Top->addTab(pMonTmpWidget[3],tr("Groupes"));
-
- QGridLayout *tmp_layout = new QGridLayout;
- int i = 0;
-
- QString msg = QString("Selection : %1 sur %2");
- QString s_sel = QString::number(0).rightJustified(2,'0');
- QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
- msg = msg.arg(s_sel).arg(s_max);
-
- LabelClickable *tmp_lab = c1->getLabPriority();
- tmp_lab->setText(msg);
-
- tmp_layout->addWidget(tmp_lab,i,0);
- i++;
- tmp_layout->addWidget(tab_Top,i,0);
-
- /*
-    QString clef[]={"Z:","C:","G:"};
-    int i = 0;
-    for(i; i< 3; i++)
-    {
-        selection[i].setText(clef[i]+"aucun");
-        tmp_layout->addWidget(&selection[i],i,0);
-    }
-*/
-
-#if 0
-    connect( selection, SIGNAL( clicked(QString)) ,
-             this, SLOT( slot_RazSelection(QString) ) );
-#endif
-
-
-
- /// ----------------
- Resultats->setLayout(tmp_layout);
- Resultats->setWindowTitle(source);
- Resultats->show();
-#endif //1
 }
 
 bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName)
@@ -938,7 +841,8 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString tblIn, QString 
 
 	 /// la colonne est creee la remplir
 	 /// du plus grand au plus petit
-	 QString zn_field = getFieldsFromZone(pGame, zn,"t1");
+	 //QString zn_field = getFieldsFromZone(pGame, zn,"t1");
+	 QString zn_field = BCount::FN1_getFieldsFromZone(pGame, zn,"t1");
 	 QString ref="((r%2.z1=r%1.z1+1) and r%2.z1 in ("+zn_field+"))";
 	 QString ref2="(r%1.z1 in ("+zn_field+"))";
 

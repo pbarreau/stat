@@ -32,7 +32,6 @@ BCountComb::BCountComb(const stGameConf *pGame):BCount(pGame,eCountCmb)
  db_cmb = dbCount;
 }
 
-#if 1
 QTabWidget * BCountComb::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
@@ -56,31 +55,6 @@ QTabWidget * BCountComb::startCount(const stGameConf *pGame, const etCount eCalc
  }
  return tab_Top;
 }
-#else
-QTabWidget * BCountComb::creationTables(const stGameConf *pGame)
-{
- QTabWidget *tab_Top = new QTabWidget(this);
-
- int nb_zones = pGame->znCount;
-
-
- QWidget *(BCountComb::*ptrFunc[])(const stGameConf *pGame,int zn) =
-  {
-   &BCountComb::fn_Count,
-   &BCountComb::fn_Count
-  };
-
- for(int i = 0; i< nb_zones; i++)
- {
-  QString name = pGame->names[i].abv;
-  QWidget *calcul = (this->*ptrFunc[i])(pGame, i);
-  if(calcul != nullptr){
-   tab_Top->addTab(calcul, name);
-  }
- }
- return tab_Top;
-}
-#endif
 
 QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
 {
@@ -233,6 +207,7 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
  }
 
  QString tbl_tirages = pGame->db_ref->src;
+ QString tbl_ref_cmb = "B";
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
@@ -240,7 +215,7 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
  }
  st_sql= "with "
           "tbCmb as (select t1.id as Id, t1.tip as R from ("
-          +tbl_tirages
+          +tbl_ref_cmb
           +"_cmb_z"
           +QString::number(zn+1)
           +") as t1),"

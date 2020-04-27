@@ -13,6 +13,7 @@ class BAnalyserTirages
 public:
 BAnalyserTirages(stGameConf *pGame);
 BAnalyserTirages *self();
+static int getCounter(void);
 
 private:
 bool isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QString cnx);
@@ -35,6 +36,7 @@ bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int z
 QString getFieldsFromZone(const stGameConf *pGame, int zn, QString alias);
 
 typedef bool(BAnalyserTirages::*ptrFnUsr)(const stGameConf *, QString, QString, int );
+
 
 private:
 static int total_analyses;

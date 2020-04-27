@@ -22,7 +22,8 @@
 
 #include "compter_zones.h"
 #include "db_tools.h"
-//#include "delegate.h"
+
+#include "BAnalyserTirages.h"
 #include "BFlags.h"
 
 int BcElm::tot_elm = 1;
@@ -86,7 +87,7 @@ QLayout * BcElm::usr_UpperItems(int zn, BTbView *cur_tbv)
  //QAction *tmp_act = nullptr;
 
 
- if(zn == 0){
+ if((zn == 0) && (BAnalyserTirages::getCounter() == 0)){
   ret_lay = new QHBoxLayout;
   QPushButton *tmp_btn = nullptr;
 
@@ -154,7 +155,7 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 
  bool b_retVal = true;
  QSqlQuery query(db_elm);
- QString st_tirages = pGame->db_ref->src;
+ QString st_tirages = pGame->db_ref->fdj;
  QString st_critere = FN1_getFieldsFromZone(pGame, zn, "t2");
 
  /*

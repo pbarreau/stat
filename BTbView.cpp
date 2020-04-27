@@ -283,6 +283,7 @@ void  BTbView::slot_usrCreateGame()
  tmp->eFdjType = cur_game->eFdjType;
  tmp->db_ref = new stParam_3;
  tmp->db_ref->src = ""; /// Sera renseignee par la suite
+ tmp->db_ref->fdj = cur_game->db_ref->fdj;
  tmp->db_ref->cnx = cur_game->db_ref->cnx;
  tmp->db_ref->ihm = cur_game->db_ref->ihm;
 

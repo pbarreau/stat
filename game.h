@@ -40,6 +40,7 @@ typedef struct _stParam_3 {
  stFdj *ihm;
  QString cnx;    /// nom connexion a la base
  QString src;    /// nom Table liste des tirages a traiter
+ QString fdj;    /// nom de la tables des tirages fdj
 }stParam_3;
 
 typedef struct _stParam_2 {

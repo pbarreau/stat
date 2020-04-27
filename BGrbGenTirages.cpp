@@ -642,6 +642,11 @@ void BGrbGenTirages::mkForm(stGameConf *pGame, BTbView *parent, QString st_table
 
 	gdl_here->addWidget(info,0,0);
 	gdl_here->addItem(ecart,0,1);
+	if(i==0){
+	 gdl_here->addItem(ecart,1,0);
+	 gdl_here->setRowStretch(0,10);
+	 gdl_here->setRowStretch(1,20);
+	}
 	gdl_here->setColumnStretch(1, 10); /// Exemple basic layouts
 	gdl_here->setColumnStretch(2, 20);
 
