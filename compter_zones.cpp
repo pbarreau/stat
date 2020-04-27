@@ -214,7 +214,7 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 		 /// Pour le dernier tirage
 		 /// marquer les boules a (+ ou -) 1
 		 if(lgn == 1){
-			//marquerProcheVoisin(pGame, zn, &a);
+			marquerProcheVoisin(pGame, zn, &a);
 		 }
 		}while(query.next() && b_retVal);
 	 }
