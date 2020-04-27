@@ -99,6 +99,7 @@ class BCount:public QWidget
   QLayout **up;
   QSqlQuery *query;
   QString *sql;
+  BTbView *cur_tbv;
  }stMkLocal;
  typedef bool (BCount::*ptrFn_tbl)(const stGameConf *pDef, const stMkLocal prm, const int zn);
 
@@ -112,7 +113,7 @@ class BCount:public QWidget
 
  protected:
  virtual QGridLayout *Compter(QString * pName, int zn)=0;
- virtual QLayout * usr_UpperItems(int zn);
+ virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
 
  QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
  QString CriteresCreer(QString operateur, QString critere,int zone);

@@ -15,7 +15,7 @@
 #include "db_tools.h"
 
 BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ, QTableView * parent)
-    :QTableView(parent),BFlt(pGame, in_zn, in_typ)//,zn(in_zn),cal(in_typ)
+    :QTableView(parent),BFlt(pGame, in_zn, in_typ), cur_game(pGame)
 {
  db_tbv = db_flt;
  lbflt = cur_bflt;
@@ -30,6 +30,7 @@ BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ, QTableView 
  QString cnx = pGame->db_ref->cnx;
  myGpb = new BGpbMenu(cur_bflt, this);
  up = nullptr;
+ btn_usrGame = nullptr;
 }
 
 BTbView::~BTbView()
@@ -39,6 +40,9 @@ BTbView::~BTbView()
 
 void BTbView::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 {
+ /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
+ /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
+
  BMenu *a = new BMenu (pos, cur_bflt, this);
 
  if(a->addr != nullptr){
@@ -48,20 +52,6 @@ void BTbView::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
  else {
   delete a;
  }
-
-#if 0
- /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
- /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
-
- BTbView *view = qobject_cast<BTbView *>(sender());
- QString cnx = dbCount.connectionName();
- etCount eType = type;
-
- BMenu a(pos, cnx, eType, view);
-
- connect(&a,SIGNAL(aboutToShow()), &a, SLOT(slot_showMenu()));
- a.exec(view->viewport()->mapToGlobal(pos));
-#endif
 }
 
 void BTbView::slot_V2_AideToolTip(const QModelIndex & index)
@@ -176,6 +166,26 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
 	int total = 0;
 	if(query.first()){
 	 total = query.value(0).toInt();
+
+	 /// Verification nb choix suffisant
+	 /// pour creer liste de jeux
+	 if((inf_flt->typ == eCountElm) && (keys[i]== Bp::fltSelected))
+	 {
+		if(zn == 0){
+		 bool activate = false;
+		 if(total>= cur_game->limites[zn].win){
+			/// Activer le bouton creer liste !!!
+			activate = true;
+		 }
+		 else {
+			activate = false;
+		 }
+		 if(btn_usrGame != nullptr){
+			btn_usrGame->setEnabled(activate);
+		 }
+		}
+	 }
+
 	}
 	title = title + tmp_lst[i+1].arg(total)+", ";
 
@@ -243,6 +253,21 @@ BGpbMenu *BTbView::getGpb()
 void BTbView::setUpLayout(QLayout *usr_up)
 {
  up = usr_up;
+}
+
+void BTbView::setUsrGameButton(QPushButton *usr_game)
+{
+ btn_usrGame = usr_game;
+}
+
+QPushButton * BTbView::getUsrGameButton(void)
+{
+ return btn_usrGame;
+}
+
+void  BTbView::slot_usrCreateGame()
+{
+ ;
 }
 
 QGroupBox * BTbView::getScreen()

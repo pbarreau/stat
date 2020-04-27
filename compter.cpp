@@ -36,7 +36,7 @@ int BCount::nbChild = 0;
  * obtenue grace a la fonction utlisateur usr_fn
  */
 
-QLayout * BCount::usr_UpperItems(int zn)
+QLayout * BCount::usr_UpperItems(int zn, BTbView *cur_tbv)
 {
  QLayout *ret_lay = nullptr;
  return ret_lay;
@@ -58,7 +58,15 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
                   +"_"+label[eCalcul]
                   +"_z"+QString::number(zn+1);
 
- up_qtv = usr_UpperItems(zn);
+ up_qtv = usr_UpperItems(zn, qtv_tmp);
+
+ if(zn==0 && eCalcul == eCountElm){
+  QPushButton * tmp_btn = qtv_tmp->getUsrGameButton();
+  if(tmp_btn != nullptr){
+   connect(tmp_btn,SIGNAL(clicked()),
+           qtv_tmp,SLOT(slot_usrCreateGame()));
+  }
+ }
 
  /// Verifier si table existe deja
  QString cnx = pGame->db_ref->cnx;
@@ -71,6 +79,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 	prm.query=&query;
 	prm.sql=&msg;
 	prm.up = &up_qtv;
+	prm.cur_tbv = qtv_tmp;
 
 	/// Creation de la table avec les resultats
 	/// appel de la fonction utilisateur de creation
@@ -108,15 +117,6 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
 
- /*
- BFlags::stPrmDlgt a;
- a.parent = qtv_tmp;
- a.db_cnx = cnx;
- a.start = 1;
- a.zne=zn;
- a.typ = eCalcul;
- a.b_flt = Bp::F_Flt::noFlt;
-*/
  qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();

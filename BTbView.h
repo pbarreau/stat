@@ -5,9 +5,9 @@
 #include <QGroupBox>
 #include <QSqlDatabase>
 #include <QMenu>
+#include <QPushButton>
 
 #include "BFlt.h"
-///#include "bstflt.h"
 #include "BGpbMenu.h"
 #include "game.h"
 
@@ -21,12 +21,17 @@ class BTbView : public QTableView, BFlt
  BGpbMenu * getGpb();
  void updateTitle();
  void setUpLayout(QLayout *usr_up);
+ void setUsrGameButton(QPushButton *usr_game);
+ QPushButton *getUsrGameButton(void);
 
  ~BTbView();
 
  private slots:
  void slot_V2_AideToolTip(const QModelIndex & index);
  void slot_V2_ccmr_SetPriorityAndFilters(QPoint pos);
+
+ public slots:
+ void slot_usrCreateGame();
 
  private:
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);
@@ -37,11 +42,11 @@ class BTbView : public QTableView, BFlt
 
  private:
  QSqlDatabase db_tbv;
- //int zn;
- //etCount cal;
+ const stGameConf *cur_game;
  BGpbMenu *myGpb;
  QLayout *up;
  QMenu *menu;
+ QPushButton *btn_usrGame;
 };
 
 #endif // BTBVIEW_H

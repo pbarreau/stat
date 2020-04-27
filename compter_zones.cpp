@@ -73,7 +73,7 @@ QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)
  return tab_Top;
 }
 
-QLayout * BcElm::usr_UpperItems(int zn)
+QLayout * BcElm::usr_UpperItems(int zn, BTbView *cur_tbv)
 {
  /// https://wiki.qt.io/PushButton_Based_On_Action
  /// https://wiki.qt.io/How_to_Use_QPushButton
@@ -92,7 +92,9 @@ QLayout * BcElm::usr_UpperItems(int zn)
 
 	tmp_ico = QIcon(":/images/run_32px.png");
 	tmp_btn = new QPushButton(tmp_ico,tr("&Creer liste"));
+	tmp_btn->setEnabled(false);
 	ret_lay->addWidget(tmp_btn);
+	cur_tbv->setUsrGameButton(tmp_btn);
 
 	/*
 	tmp_ico = QIcon(":/images/run_32px.png");
@@ -121,7 +123,7 @@ bool BcElm::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool b_retVal = true;
 
- QLayout *test_layout = usr_UpperItems(zn);
+ QLayout *test_layout = usr_UpperItems(zn, prm.cur_tbv);
  if(test_layout != nullptr){
   *prm.up = test_layout;
  }
@@ -199,12 +201,13 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 		 a.col = a.val;
 		 a.dbt = -1;
 
-		 a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
-
 		 /// RECUPERER FLT DE CETTE LIGNE
 		 b_retVal = DB_Tools::tbFltGet(&a, db_elm.connectionName());
 		 a.b_flt = a.b_flt|tmp;
+
 		 a.pri = 1; /// ICI  on force la priorite meme si deja present
+		 a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
+
 
 		 b_retVal = DB_Tools::tbFltSet(&a,db_elm.connectionName());
 
