@@ -154,7 +154,7 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 
  bool b_retVal = true;
  QSqlQuery query(db_elm);
- QString st_tirages = pGame->db_ref->fdj;
+ QString st_tirages = pGame->db_ref->src;
  QString st_critere = FN1_getFieldsFromZone(pGame, zn, "t2");
 
  /*
@@ -414,7 +414,7 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
   }
  }
 
- QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_tirages = pGame->db_ref->src;
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";

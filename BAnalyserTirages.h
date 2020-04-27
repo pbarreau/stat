@@ -37,6 +37,7 @@ QString getFieldsFromZone(const stGameConf *pGame, int zn, QString alias);
 typedef bool(BAnalyserTirages::*ptrFnUsr)(const stGameConf *, QString, QString, int );
 
 private:
+static int total_analyses;
 BAnalyserTirages *addr;
 QSqlDatabase db_1;
 //QStringList** slFlt;

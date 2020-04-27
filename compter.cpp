@@ -54,7 +54,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
  /// Nom de la table resultat
  QString dstTbl = "r_"
-                  +pGame->db_ref->fdj
+                  +pGame->db_ref->src
                   +"_"+label[eCalcul]
                   +"_z"+QString::number(zn+1);
 
@@ -208,7 +208,7 @@ BCount::BCount(const stGameConf *pGame, etCount genre):gm_def(pGame), type(genre
  ptr_self = nullptr;
 
  QString cnx=pGame->db_ref->cnx;
- QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_tirages = pGame->db_ref->src;
 
  // Etablir connexion a la base
  dbCount = QSqlDatabase::database(cnx);

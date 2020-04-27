@@ -76,6 +76,11 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
  stGameConf *curConf = charge->getConfig();
 
  BAnalyserTirages *uneAnalyse = new BAnalyserTirages(curConf);
+ if(uneAnalyse->self() == nullptr){
+  QString msg = "Erreur de l'analyse des tirages :" + curConf->db_ref->src;
+  QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
+  delete uneAnalyse;
+ }
  return;
  EtudierJeu_v1(curConf, use_odb);
  EtudierJeu_v2(curConf);

@@ -14,6 +14,9 @@
 #include <QCheckBox>
 #include <QPersistentModelIndex>
 
+#include <QHeaderView>
+#include <QScrollBar>
+
 #include "db_tools.h"
 
 #include "BGrbGenTirages.h"
@@ -25,6 +28,7 @@
 #include "compter_zones.h"
 #include "BPushButton.h"
 #include "BFlt.h"
+#include "BAnalyserTirages.h"
 
 #define CEL2_L 40
 
@@ -63,7 +67,9 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, BTbView *parent, QString st_ta
 	/// A t on une selection utilisateur nouvelle
 	if(UsrCnp.size()){ /// oui
 	 mkForm(pGame,parent,UsrCnp); /// Faire visuel des infos
-	 analyserTirages(pGame,UsrCnp); /// Analyser les tirages generes
+
+	 pGame->db_ref->src = UsrCnp;
+	 analyserTirages(pGame); /// Analyser les tirages generes
 	}
 	else {
 	 addr = nullptr;
@@ -125,7 +131,8 @@ void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx,
   do{
    tmp = lstGenTir->at(pos)->first;
    lstGenTir->at(pos)->second->show();
-   analyserTirages(pGame,tmp);
+   pGame->db_ref->src = tmp;
+   analyserTirages(pGame);
    pos++;
   }while(query.next());
  }
@@ -405,13 +412,20 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  tmp_gpb->setLayout(layout);
 
  int nbCol = sqm_resu->columnCount();
- for(int col=0;col<nbCol;col++)
- {
-  qtv_tmp->setColumnWidth(col,CEL2_L);
+ qtv_tmp->resizeColumnsToContents();
+ //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+ int count=qtv_tmp->horizontalHeader()->count();
+ int l = 0;
+ l = qtv_tmp->verticalScrollBar()->width();
+ for (int i = 0; i < count-2; ++i) {
+  if(!qtv_tmp->horizontalHeader()->isSectionHidden(i))
+   l+=qtv_tmp->horizontalHeader()->sectionSize(i);
  }
+ qtv_tmp->setFixedWidth(l);
  qtv_tmp->hideColumn(0);
- qtv_tmp->setFixedHeight(200);
- qtv_tmp->setFixedWidth((nbCol+.2)*CEL2_L);
+ //qtv_tmp->setFixedHeight(200);
+ //qtv_tmp->setFixedWidth((nbCol+.2)*CEL2_L);
 
  gpb_Tirages = tmp_gpb;
 
@@ -608,14 +622,6 @@ void BGrbGenTirages::mkForm(stGameConf *pGame, BTbView *parent, QString st_table
 
  tbl_name=st_table;
 
- /// Regarder les filtrages demandes
- /*
- l_c0 = parent->getC0();
- l_c1 = parent->getC1();
- l_c2 = parent->getC2();
- l_c3 = parent->getC3();
-*/
-
  /// regroupement des tirages generes
  QString ongNames[]={"Boules","Tirages"};
  int maxOnglets = sizeof(ongNames)/sizeof(QString);
@@ -628,9 +634,17 @@ void BGrbGenTirages::mkForm(stGameConf *pGame, BTbView *parent, QString st_table
  for (int i=0;i<maxOnglets;i++) {
   QGridLayout *gdl_here = new QGridLayout;
 
+	/// Agencer le tableau
+	QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
+
 	/// Function faisant le groupebox
 	QGroupBox *info = (this->*ptrFunc[i])(pGame, st_table);
-	gdl_here->addWidget(info,1,0);
+
+	gdl_here->addWidget(info,0,0);
+	gdl_here->addItem(ecart,0,1);
+	gdl_here->setColumnStretch(1, 10); /// Exemple basic layouts
+	gdl_here->setColumnStretch(2, 20);
+
 	grd_tmp[i]=gdl_here;
 
 	QWidget *wid_here = new QWidget;
@@ -729,66 +743,12 @@ void BGrbGenTirages::slot_UsrChk(const QPersistentModelIndex &target, const Qt::
 
 }
 
-void BGrbGenTirages::analyserTirages(const stGameConf *pGame,const QString st_table)
+void BGrbGenTirages::analyserTirages(stGameConf *pGame)
 {
-#if 0
- QWidget * Resultats = new QWidget;
- QTabWidget *tab_Top = new QTabWidget;
- QGridLayout **pConteneur = new QGridLayout *[4];
-
- QWidget **pMonTmpWidget = new QWidget * [4];
- for(int i = 0; i< 4;i++)
- {
-  QGridLayout * grd_tmp = new QGridLayout;
-  pConteneur[i] = grd_tmp;
-
-	QWidget * wid_tmp = new QWidget;
-	pMonTmpWidget [i] = wid_tmp;
+ BAnalyserTirages *uneAnalyse = new BAnalyserTirages(pGame);
+ if(uneAnalyse->self() == nullptr){
+  QString msg = "Erreur de l'analyse des tirages :" + pGame->db_ref->src;
+  QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
+  delete uneAnalyse;
  }
-
-
- BcElm *c1 = new BcElm(*pGame,st_table,db_1,Resultats);
- BCountComb *c2 = new BCountComb(*pGame,st_table,db_1);
- //BCountGroup *c3 = new BCountGroup(*pGame,st_table,slFlt,db_1);
-
- pConteneur[0]->addWidget(c1,1,0);
- //pConteneur[1]->addWidget(c,1,0);
- pConteneur[2]->addWidget(c2,1,0);
- //pConteneur[3]->addWidget(c3,1,0);
-
- pMonTmpWidget[0]->setLayout(pConteneur[0]);
- pMonTmpWidget[1]->setLayout(pConteneur[1]);
- pMonTmpWidget[2]->setLayout(pConteneur[2]);
- pMonTmpWidget[3]->setLayout(pConteneur[3]);
-
- tab_Top->addTab(pMonTmpWidget[0],tr("Zones"));
- tab_Top->addTab(pMonTmpWidget[1],tr("Barycentre"));
- tab_Top->addTab(pMonTmpWidget[2],tr("Combinaisons"));
- tab_Top->addTab(pMonTmpWidget[3],tr("Groupes"));
-
- QGridLayout *tmp_layout = new QGridLayout;
- int i = 0;
-
- int zn=0;
- int max = pGame->limites[zn].max;
-
- QString msg = QString("Selection : %1 sur %2");
- QString s_sel = QString::number(0).rightJustified(2,'0');
- QString s_max = QString::number(max).rightJustified(2,'0');
- msg = msg.arg(s_sel).arg(s_max);
-
- LabelClickable *tmp_lab = c1->getLabPriority();
- tmp_lab->setText(msg);
-
- tmp_layout->addWidget(tmp_lab,i,0);
- i++;
- tmp_layout->addWidget(tab_Top,i,0);
-
- /// ----------------
- Resultats->setLayout(tmp_layout);
- Resultats->setWindowTitle(st_table);
- Resultats->show();
-
- return;
-#endif
 }

@@ -243,7 +243,7 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
 
  bool b_retVal = true;
 
- QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_tirages = pGame->db_ref->src;
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
@@ -478,7 +478,7 @@ void BCountGroup::usr_TagLast(const stGameConf *pGame, QTableView *view, const e
  bool b_retVal = true;
  QSqlQuery query(db_grp);//query(dbToUse);
 
- QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_tirages = pGame->db_ref->src;
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";

@@ -18,12 +18,14 @@
 #include "compter_barycentre.h"
 #include "compter_groupes.h"
 
+int BAnalyserTirages::total_analyses = 0;
+
 BAnalyserTirages::BAnalyserTirages(stGameConf *pGame)
 {
  addr = nullptr;
 
  QString cnx=pGame->db_ref->cnx;
- QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_tirages = pGame->db_ref->src;
 
  // Etablir connexion a la base
  db_1 = QSqlDatabase::database(cnx);
@@ -37,6 +39,9 @@ BAnalyserTirages::BAnalyserTirages(stGameConf *pGame)
  /// Verifier si les tables minimales sont presentes
  if(isPresentUsefullTables(pGame, tbl_tirages, cnx)){
   startAnalyse(pGame, tbl_tirages);
+ }
+ else {
+  addr = nullptr;
  }
 }
 
@@ -215,8 +220,10 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
   tmp_layout->addWidget(tmp,0,0);
  }
 
+ QString my_title = "A_"+QString::number(total_analyses).rightJustified(2,'0')+" : ("+tbName+")";
+ total_analyses++;
  Resultats->setLayout(tmp_layout);
- Resultats->setWindowTitle(tbName);
+ Resultats->setWindowTitle(my_title);
  Resultats->show();
 
 #if 0 //1
@@ -413,7 +420,14 @@ bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** 
 		 tbl_x1 = curTarget;
 		 tbl_x1 = tbl_x1.remove("view").trimmed();
 		 ptrFnUsr usrFn = map_UsrFn.value(Key_usr_1);
-		 b_retVal = (this->*usrFn)(pGame, curName, curTarget, zn);
+		 if(usrFn != nullptr){
+			b_retVal = (this->*usrFn)(pGame, curName, curTarget, zn);
+		 }
+		 else {
+			QString err_msg = "Impossible traiter fn : " + Key_usr_1;
+			QMessageBox::critical(nullptr, "Analyses", err_msg,QMessageBox::Yes);
+			b_retVal = false;
+		 }
 		}
 		else if(Key_usr_2.compare("special")==0){
 		 if(slst[1].at(loop).contains(',') == true){
@@ -892,7 +906,7 @@ bool BAnalyserTirages::usrFn_X1(const stGameConf *pGame, QString tblIn, QString 
  QSqlQuery query(db_1);
  QString msg = "";
 
- QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_tirages = pGame->db_ref->src;
  QString tblUse []= {"B_ana_z",tbl_tirages, "B_elm"};
 
  int nbZone = pGame->znCount;

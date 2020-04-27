@@ -201,7 +201,7 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
   */
  QString st_sql="";
 
- QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_tirages = pGame->db_ref->src;
  QString st_critere = FN1_getFieldsFromZone(pGame, zn, "t2");
 
  st_sql = "with poids as  "
@@ -442,7 +442,7 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const et
 
  bool b_retVal = true;
  QSqlQuery query(db_brc);//query(dbToUse);
- QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_tirages = pGame->db_ref->src;
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";

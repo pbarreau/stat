@@ -186,7 +186,7 @@ stGameConf * BFdj::init(stFdj *prm)
  ret->db_ref = new stParam_3;
  ret->db_ref->ihm = prm;
  ret->db_ref->cnx = "";
- ret->db_ref->fdj = "";
+ ret->db_ref->src = "";
 
  ret->slFlt = nullptr;
 
@@ -233,7 +233,7 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
           + QString::number(cur_item).rightJustified(2,'0');
 #endif
 
- pGame->db_ref->fdj = tbName;
+ pGame->db_ref->src = tbName;
  pGame->db_ref->cnx = fdj_db.connectionName();
 
  /// Utiliser anciennes tables

@@ -281,12 +281,19 @@ void  BTbView::slot_usrCreateGame()
  tmp->znCount = 1;
  tmp->eTirType = eTirUsr; /// A supprimer ?
  tmp->eFdjType = cur_game->eFdjType;
+ tmp->db_ref = new stParam_3;
+ tmp->db_ref->src = ""; /// Sera renseignee par la suite
+ tmp->db_ref->cnx = cur_game->db_ref->cnx;
+ tmp->db_ref->ihm = cur_game->db_ref->ihm;
 
  /// Partie commune
  tmp->limites = cur_game->limites;
  tmp->names = cur_game->names;
- tmp->db_ref = cur_game->db_ref;///new stParam_3;
- tmp->slFlt = cur_game->slFlt;
+
+ /// sera reconstruit par la classe Analyse
+ /// mappage des fonctions utilisateurs speciales
+ /// d'analyses
+ tmp->slFlt = nullptr;
 
 
  tmp->id = 0; /// A supprimer ?

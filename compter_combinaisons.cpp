@@ -232,7 +232,7 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
   }
  }
 
- QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_tirages = pGame->db_ref->src;
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
@@ -767,7 +767,7 @@ void BCountComb::usr_TagLast(const stGameConf *pGame, QTableView *view, const et
 
  bool b_retVal = true;
  QSqlQuery query(db_cmb);//query(dbToUse);
- QString tbl_tirages = pGame->db_ref->fdj;
+ QString tbl_tirages = pGame->db_ref->src;
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
