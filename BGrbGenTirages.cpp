@@ -433,10 +433,10 @@ bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
  msg = "create table "+
        tbl+
        " as "
-       "with selection as (select ROW_NUMBER () OVER (ORDER by ROWID) id, val from filtres "
-       "where (choix.zne="+st_zne+
-       " and choix.typ="+st_typ+
-       " and ((choix.flt & 0x"+st_flt+
+       "with selection as (select ROW_NUMBER () OVER (ORDER by ROWID) id, val from (filtres) as tb1 "
+       "where (tb1.zne="+st_zne+
+       " and tb1.typ="+st_typ+
+       " and ((tb1.flt & 0x"+st_flt+
        ") = 0x"+st_flt+
        ") )"
        ")"
