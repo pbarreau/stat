@@ -51,7 +51,7 @@ class BcElm:public BCount//, public cFdjData
  QString usr_doCount(const stGameConf *pGame, int zn);
 
  private:
- void marquerProcheVoisin(stTbFiltres *a);
+ void marquerProcheVoisin(const stGameConf *pGame, const int zn, stTbFiltres *a);
  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
  virtual void usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn);
