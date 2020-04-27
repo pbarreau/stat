@@ -60,14 +60,6 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
  up_qtv = usr_UpperItems(zn, qtv_tmp);
 
- if(zn==0 && eCalcul == eCountElm){
-  QPushButton * tmp_btn = qtv_tmp->getUsrGameButton();
-  if(tmp_btn != nullptr){
-   connect(tmp_btn,SIGNAL(clicked()),
-           qtv_tmp,SLOT(slot_usrCreateGame()));
-  }
- }
-
  /// Verifier si table existe deja
  QString cnx = pGame->db_ref->cnx;
  if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
@@ -96,6 +88,14 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 	 delete qtv_tmp;
 	 return nullptr;
 	}
+ }
+
+ if(zn==0 && eCalcul == eCountElm){
+  QPushButton * tmp_btn = qtv_tmp->getUsrGameButton();
+  if(tmp_btn != nullptr){
+   connect(tmp_btn,SIGNAL(clicked()),
+           qtv_tmp,SLOT(slot_usrCreateGame()));
+  }
  }
 
  /// Bandeau superieur
