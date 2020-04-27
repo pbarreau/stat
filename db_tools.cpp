@@ -376,6 +376,8 @@ QString DB_Tools::getLstDays(QString cnx_db_name, QString tbl_ref)
 
 bool DB_Tools::tbFltGet(stTbFiltres *in_out, QString cnx)
 {
+ /// https://www.fayewilliams.com/2011/07/13/gdb-conditional-breakpoints/
+
  bool b_retVal = false;
 
  // Etablir connexion a la base

@@ -191,7 +191,6 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 	 a.typ = eType;
 	 a.lgn = 10 * eType;
 	 a.col = -1;
-	 a.pri = 1; /// ICI  OK Priorite
 
 	 if(query.first()){
 		Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
@@ -201,11 +200,19 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 		 a.dbt = -1;
 
 		 a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
+
 		 /// RECUPERER FLT DE CETTE LIGNE
 		 b_retVal = DB_Tools::tbFltGet(&a, db_elm.connectionName());
 		 a.b_flt = a.b_flt|tmp;
+		 a.pri = 1; /// ICI  on force la priorite meme si deja present
 
 		 b_retVal = DB_Tools::tbFltSet(&a,db_elm.connectionName());
+
+		 /// Pour le dernier tirage
+		 /// marquer les boules a (+ ou -) 1
+		 if(lgn == 1){
+			marquerProcheVoisin(&a);
+		 }
 		}while(query.next() && b_retVal);
 	 }
 	}
@@ -216,6 +223,30 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
   QMessageBox::warning(nullptr,"BcElm","usr_TagLast",QMessageBox::Ok);
  }
 
+}
+
+void BcElm::marquerProcheVoisin(stTbFiltres *a)
+{
+ bool b_retVal = false;
+
+ Bp::F_Flts flags[]={Bp::fltSeenBfr,Bp::fltSeenAft};
+ int ref_val = a->val;
+
+ for (int i = -1, j = 0; i<2; i=i+2,j++) {
+  a->val = ref_val + i;
+  a->col = a->val;
+  a->dbt = -1;
+  a->pri = -2;
+  a->id	 = -2;
+  a->sta	 = Bp::noSta;
+  a->b_flt = Bp::noFlt;
+
+  b_retVal = DB_Tools::tbFltGet(a, db_elm.connectionName());
+
+  a->b_flt = a->b_flt|flags[j];
+
+  b_retVal = DB_Tools::tbFltSet(a,db_elm.connectionName());
+ }
 }
 
 QWidget *BcElm::fn_Count(const stGameConf *pGame, int zn)

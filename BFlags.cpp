@@ -391,11 +391,11 @@ void BFlags::fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
  QRect cur_rect = myOpt.rect;
 
  QColor v[]= {
-  Qt::black,
+  QColor(255,106,0,255),
   Qt::red,
   Qt::green,
   QColor(255,216,0,255),
-  QColor(255,106,0,255),
+  Qt::black,
   QColor(178,0,255,255),
   QColor(211,255,204,255)
  };
@@ -408,8 +408,15 @@ void BFlags::fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
  int cx = ctw/4;
  int cy = cth/2;
 
- QPoint c1(refx +(ctw/5)*4,refy + (cth/6));
- QPoint c2(refx +(ctw/5)*4,refy + (cth*5/6));
+ QPoint c_ru(refx +(ctw/5)*4,refy + (cth/6));   /// Center Right up
+
+ /*
+ QPoint c_rm(refx +(ctw/5)*4,refy + (cth*3/6)); /// Center Right middle
+ QPoint c_rd(refx +(ctw/5)*4,refy + (cth*5/6)); /// Center Right down
+ */
+
+ QPoint c_rm(refx +(ctw/5)*1,refy + (cth*3/6)); /// Center Right middle
+ QPoint c_rd(refx +(ctw/5)*1,refy + (cth*5/6)); /// Center Right down
 
  QRect r1; /// priorite
  QRect r2; /// Last
@@ -443,7 +450,17 @@ void BFlags::fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
  /// ------------------
  painter->setRenderHint(QPainter::Antialiasing, true);
 
+ if(((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
+  painter->fillRect(cur_rect, COULEUR_FOND_FILTRE);
+ }
+
+ /*
  if(a->typ==eCountElm){
+
+  if(((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
+   painter->fillRect(cur_rect, COULEUR_FOND_FILTRE);
+  }
+
   if(((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
    painter->fillRect(cur_rect, COULEUR_FOND_FILTRE);
   }
@@ -454,6 +471,7 @@ void BFlags::fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
    painter->fillRect(cur_rect, COULEUR_FOND_FILTRE);
   }
  }
+ */
 
  if( (a->b_flt & Bp::F_Flt::fltTirLast) == (Bp::F_Flt::fltTirLast)){
   painter->fillRect(r2, COULEUR_FOND_DERNIER);
@@ -473,8 +491,17 @@ void BFlags::fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
  if((a->pri > 0) && (a->pri<nbColors)){
 
 	painter->setBrush(v[a->pri]);
-	painter->drawEllipse(c1,cx/2,cy/4);
+	painter->drawEllipse(c_ru,cx/2,cy/4);
+ }
 
+ if((a->b_flt & Bp::F_Flt::fltSeenBfr) == (Bp::F_Flt::fltSeenBfr)){
+  painter->setBrush(Qt::green);
+  painter->drawEllipse(c_rd,cx/2,cy/4);
+ }
+
+ if((a->b_flt & Bp::F_Flt::fltSeenAft) == (Bp::F_Flt::fltSeenAft)){
+  painter->setBrush(QColor(0,100,255,255));
+  painter->drawEllipse(c_rm,cx/2,cy/4);
  }
 
 
