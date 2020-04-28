@@ -775,6 +775,8 @@ void BGrbGenTirages::slot_UsrChk(const QPersistentModelIndex &target, const Qt::
 
 void BGrbGenTirages::analyserTirages(stGameConf *pGame)
 {
+ MontrerResultat();
+ /*
  BAnalyserTirages *uneAnalyse = new BAnalyserTirages(pGame);
  if(uneAnalyse->self() == nullptr){
   QString msg = "Erreur de l'analyse des tirages :" + pGame->db_ref->src;
@@ -785,6 +787,7 @@ void BGrbGenTirages::analyserTirages(stGameConf *pGame)
    ret_2 = uneAnalyse->getVisual();
    MontrerResultat();
  }
+*/
 }
 
 void BGrbGenTirages::MontrerResultat(void)
@@ -792,7 +795,18 @@ void BGrbGenTirages::MontrerResultat(void)
  QWidget * Resultats = new QWidget;
  QGridLayout *tmp_layout = new QGridLayout;
 
+ QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
+ QWidget * tmp = new QWidget;
+ tmp->setLayout(ret_1);
+ tmp_layout->addWidget(tmp,0,0,2,1);///,Qt::AlignTop|Qt::AlignLeft
+ tmp_layout->addItem(ecart,1,1);
+ tmp_layout->setRowStretch(0,10);
+ tmp_layout->setRowStretch(1,20);
+ tmp_layout->setColumnStretch(1, 10); /// Exemple basic layouts
+ tmp_layout->setColumnStretch(2, 20);
 
+
+/*
  if(ret_1 != nullptr && ret_2 != nullptr){
   /// Agencer le tableau
   QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -811,7 +825,7 @@ void BGrbGenTirages::MontrerResultat(void)
   QLabel *tmp = new QLabel("Erreur pas de resultats a montrer !!");
   tmp_layout->addWidget(tmp,0,0);
  }
-
+*/
  Resultats->setLayout(tmp_layout);
  show_results = Resultats;
 }

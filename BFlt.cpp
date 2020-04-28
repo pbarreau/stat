@@ -74,14 +74,8 @@ bool BFlt::displayTbvMenu_cell(const QPoint pos, BTbView *view)
  /// pour afficher un menu
  if(( b_retVal = chkThatCell(a_cell)) == true){
   if(inf_flt->val > 0){
-   /// regarder si connu
-   b_retVal = DB_Tools::tbFltGet(inf_flt,db_flt.connectionName());
-
-	 /// Verifier resultat
-	 if(b_retVal==false){
 		if(inf_flt->sta == Bp::E_Sta::Er_Result){
 		 b_retVal = DB_Tools::tbFltSet(inf_flt,db_flt.connectionName());
-		}
 	 }
 	}
 
@@ -221,6 +215,11 @@ bool BFlt::chkThatCell(QModelIndex a_cell) const
  ///
  if(b_retVal){
   b_retVal = DB_Tools::tbFltGet(inf_flt,db_flt.connectionName());
+
+	/// Regarder pourquoi on n'a pas pu la ramener
+	if((b_retVal == false) && (inf_flt->sta == Bp::E_Sta::Er_Result)){
+	 b_retVal = true;
+	}
  }
 
  return b_retVal;
