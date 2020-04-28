@@ -6,10 +6,13 @@
 #include <QSqlDatabase>
 #include <QMenu>
 #include <QPushButton>
+#include <QTabWidget>
 
 #include "BFlt.h"
 #include "BGpbMenu.h"
 #include "game.h"
+
+class BGrbGenTirages;
 
 class BTbView : public QTableView, BFlt
 {
@@ -37,6 +40,7 @@ class BTbView : public QTableView, BFlt
  private:
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);
  void construireMenu(void);
+ void showUsrGame(QWidget *une_selection, QString name);
 
  public:
  BFlt *lbflt;
@@ -48,6 +52,7 @@ class BTbView : public QTableView, BFlt
  QLayout *up;
  QMenu *menu;
  QPushButton *btn_usrGame;
+ QTabWidget *tab_usrGame;
 };
 
 #endif // BTBVIEW_H

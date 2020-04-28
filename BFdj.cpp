@@ -187,6 +187,7 @@ stGameConf * BFdj::init(stFdj *prm)
  ret->db_ref->ihm = prm;
  ret->db_ref->cnx = "";
  ret->db_ref->src = "";
+ ret->db_ref->flt = "B_flt";
 
  ret->slFlt = nullptr;
 

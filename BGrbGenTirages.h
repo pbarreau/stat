@@ -23,6 +23,8 @@ class BGrbGenTirages : public QGroupBox
 public:
 BGrbGenTirages(stGameConf *pGame, BTbView *parent, QString st_table="");
 BGrbGenTirages *addr;
+QWidget * getVisual(void);
+int getCounter(void);
 
 public slots:
 void slot_ShowNewTotal(const QString& lstBoules);
@@ -36,12 +38,13 @@ void slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckState &chk)
 
 private:
 void MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BTbView *parent, QString st_table="");
-void mkForm(stGameConf *pGame, BTbView *parent, QString st_table);
+QVBoxLayout *mkForm(stGameConf *pGame, BTbView *parent, QString st_table);
 QString chkData(stGameConf *pGame, BTbView * parent, QString cnx);
 QGroupBox *  LireBoule(stGameConf *pGame, QString tbl_cible);
 QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
 bool CreerTable(stGameConf *pGame, QString tbl);
 void analyserTirages(stGameConf *pGame);
+void MontrerResultat(void);
 
 private:
 static int total;
@@ -51,6 +54,10 @@ QGroupBox *gpb_Tirages;
 BSqlQmTirages_3 *sqm_resu;
 QSqlDatabase db_1;      /// base de donnees associee a cet objets
 QLabel *lb_Big;
+
+QVBoxLayout * ret_1;
+QWidget * ret_2;
+QWidget *show_results;
 
 BCountBrc *l_c0;
 BcElm *l_c1;

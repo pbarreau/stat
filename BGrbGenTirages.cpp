@@ -38,11 +38,26 @@
 /// https://www.promepar.fr/analyses/
 ///
 int BGrbGenTirages::total = 1;
+
 QList<QPair<QString, BGrbGenTirages*>*> *BGrbGenTirages::lstGenTir = nullptr;
+
+int BGrbGenTirages::getCounter(void)
+{
+ return  total-1;
+}
+
+QWidget * BGrbGenTirages::getVisual(void)
+{
+ return  show_results;
+}
 
 BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, BTbView *parent, QString st_table)
 {
  addr = nullptr;
+ ret_1 = nullptr;
+ ret_2 = nullptr;
+ show_results = nullptr;
+
  QString UsrCnp = st_table;
  QString cnx = pGame->db_ref->cnx;
 
@@ -66,7 +81,9 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, BTbView *parent, QString st_ta
 
 	/// A t on une selection utilisateur nouvelle
 	if(UsrCnp.size()){ /// oui
-	 mkForm(pGame,parent,UsrCnp); /// Faire visuel des infos
+	 pGame->db_ref->flt = UsrCnp+"_flt";
+
+	 ret_1 = mkForm(pGame,parent,UsrCnp); /// Faire visuel des infos
 
 	 pGame->db_ref->src = UsrCnp;
 	 analyserTirages(pGame); /// Analyser les tirages generes
@@ -159,15 +176,18 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BTbView *parent, QString cnx)
 
  QString st_zne = QString::number(cur_flt->zne);
  QString st_typ = QString::number(cur_flt->typ);
+ QString tb_flt = cur_flt->tb_flt;
  QString st_flt = QString::number(Bp::fltSelected,16);
 
  msg = "with   "
-       "somme as(select count(Choix.id)  as T from Filtres as Choix where(choix.zne="+st_zne+
+       "somme as(select count(Choix.id)  as T from "+tb_flt+
+       " as Choix where(choix.zne="+st_zne+
        " and choix.typ="+st_typ+
        " and ((choix.flt & 0x"+st_flt+
        ") = 0x"+st_flt+
        ") )),   "
-       "e1 as (select val from Filtres as Choix where(choix.zne="+st_zne+
+       "e1 as (select val from "+tb_flt+
+       " as Choix where(choix.zne="+st_zne+
        " and choix.typ="+st_typ+
        " and ((choix.flt & 0x"+st_flt+
        ") = 0x"+st_flt+
@@ -223,7 +243,8 @@ QString BGrbGenTirages::chkData(stGameConf *pGame, BTbView *parent, QString cnx)
  }
  else {
   /// Creer ce calcul et le montrer
-  UsrCnp = "E1_"+QString::number(total).rightJustified(3,'0')+"_C"+QString::number(n)+"_"+QString::number(p);
+  /// UsrCnp = "E1_"+QString::number(total).rightJustified(3,'0')+"_C"+QString::number(n)+"_"+QString::number(p);
+  UsrCnp = "E1_"+QString::number(total).rightJustified(2,'0');
 
 	if(CreerTable(pGame, UsrCnp)){
 	 // Rajouter cette table a la liste
@@ -443,11 +464,12 @@ bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
  QString st_zne = QString::number(0);///(cur_flt->zne);
  QString st_typ = QString::number(1);///(cur_flt->typ);
  QString st_flt = QString::number(Bp::fltSelected,16);
+ QString tb_flt = pGame->db_ref->flt;
 
  msg = "create table "+
        tbl+
        " as "
-       "with selection as (select ROW_NUMBER () OVER (ORDER by ROWID) id, val from (filtres) as tb1 "
+       "with selection as (select ROW_NUMBER () OVER (ORDER by ROWID) id, val from ("+tb_flt+") as tb1 "
        "where (tb1.zne="+st_zne+
        " and tb1.typ="+st_typ+
        " and ((tb1.flt & 0x"+st_flt+
@@ -612,7 +634,7 @@ void BGrbGenTirages::slot_UGL_SetFilters()
 
 }
 
-void BGrbGenTirages::mkForm(stGameConf *pGame, BTbView *parent, QString st_table)
+QVBoxLayout * BGrbGenTirages::mkForm(stGameConf *pGame, BTbView *parent, QString st_table)
 {
  QTabWidget *tab_Top = new QTabWidget;
 
@@ -663,6 +685,9 @@ void BGrbGenTirages::mkForm(stGameConf *pGame, BTbView *parent, QString st_table
 
  QVBoxLayout *mainLayout = new QVBoxLayout;
  mainLayout->addWidget(tab_Top);
+
+ return mainLayout;
+
  this->setLayout(mainLayout);
  this->setWindowTitle("Ensemble : "+ st_table);
 }
@@ -756,4 +781,37 @@ void BGrbGenTirages::analyserTirages(stGameConf *pGame)
   QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
   delete uneAnalyse;
  }
+ else {
+   ret_2 = uneAnalyse->getVisual();
+   MontrerResultat();
+ }
+}
+
+void BGrbGenTirages::MontrerResultat(void)
+{
+ QWidget * Resultats = new QWidget;
+ QGridLayout *tmp_layout = new QGridLayout;
+
+
+ if(ret_1 != nullptr && ret_2 != nullptr){
+  /// Agencer le tableau
+  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
+  QWidget * tmp = new QWidget;
+  tmp->setLayout(ret_1);
+  tmp_layout->addWidget(tmp,0,0,2,1);///,Qt::AlignTop|Qt::AlignLeft
+  tmp_layout->addWidget(ret_2,0,1,1,1);
+  tmp_layout->addItem(ecart,1,1);
+  tmp_layout->setRowStretch(0,10);
+  tmp_layout->setRowStretch(1,20);
+  tmp_layout->setColumnStretch(1, 10); /// Exemple basic layouts
+  tmp_layout->setColumnStretch(2, 20);
+
+ }
+ else {
+  QLabel *tmp = new QLabel("Erreur pas de resultats a montrer !!");
+  tmp_layout->addWidget(tmp,0,0);
+ }
+
+ Resultats->setLayout(tmp_layout);
+ show_results = Resultats;
 }

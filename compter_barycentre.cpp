@@ -468,7 +468,7 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const et
 
  /// ----------
  stTbFiltres a;
- a.tb_flt = "Filtres";
+ a.tb_flt = gm_def->db_ref->flt;
  a.sta = Bp::E_Sta::noSta;
  a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
  a.zne = zn;
@@ -523,6 +523,8 @@ void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int 
  QString key = "Bc";
  QString tb_ref = "B_ana_z"+QString::number(zn+1);
 
+ QString tb_flt = gm_def->db_ref->flt;
+
  /// Mettre info sur 2 derniers tirages
  for(int dec=0; (dec <2) && b_retVal ; dec++){
   int val = 1<<dec;
@@ -537,7 +539,7 @@ void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int 
 	 int key_val = query.value(0).toInt();
 
 	 /// check if Filtres
-	 QString mgs_2 = "Select count(*)  from Filtres where ("
+	 QString mgs_2 = "Select count(*)  from "+tb_flt+" where ("
 									 "zne="+QString::number(zn)+" and "+
 									 "typ="+QString::number(eType)+
 									 " and val="+QString::number(key_val)+")";
@@ -547,13 +549,13 @@ void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int 
 		int nbLigne = query_2.value(0).toInt();
 
 		if(nbLigne==1){
-		 mgs_2 = "update Filtres set pri=-1, flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
+		 mgs_2 = "update "+tb_flt+" set pri=-1, flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
 						 sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+" and "+
 						 "typ="+QString::number(eType)+
 						 " and val="+QString::number(key_val)+")";
 		}
 		else {
-		 mgs_2 ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
+		 mgs_2 ="insert into "+tb_flt+" (id, zne, typ,lgn,col,val,pri,flt)"
 						 " values (NULL,"+QString::number(zn)+","+QString::number(eType)+
 						 ","+QString::number(val)+
 						 ",0,"+QString::number(key_val)+",-1,"+sdec+");";
@@ -785,9 +787,9 @@ QString BCountBrc::getFilteringData(int zn)
  //QString msg = "";
  bool b_retVal = true;
 
- QString userFiltringTableData = "Filtres";
+ QString tb_flt = gm_def->db_ref->flt;
 
- QString flt = "select tb1.val from ("+userFiltringTableData
+ QString flt = "select tb1.val from ("+tb_flt
                +")as tb1 "
                  "where((tb1.flt>0) and (tb1.flt&0x"+QString::number(BFlags::isFiltred)+"=0x"+QString::number(BFlags::isFiltred)+
                ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=1)";

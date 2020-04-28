@@ -505,7 +505,7 @@ void BCountGroup::usr_TagLast(const stGameConf *pGame, QTableView *view, const e
  QString key = "";
  /// ----------
  stTbFiltres a;
- a.tb_flt = "Filtres";
+ a.tb_flt = gm_def->db_ref->flt;
  a.sta = Bp::E_Sta::noSta;
  a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
  a.zne = zn;
@@ -592,6 +592,7 @@ bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, in
  QSqlQuery query_1(dbCount);
  QSqlQuery query_2(dbCount);
  QSqlQuery query_3(dbCount);
+ QString tb_flt = gm_def->db_ref->flt;
 
  /// Lire table GRP
  QString  table_1 = "grp_z"+QString::number(zn+1);
@@ -629,7 +630,7 @@ bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, in
 					int val_cell = query_3.value(col_name).toInt();
 
 					/// check if Filtres
-					msg = "Select count(*)  from Filtres where ("
+					msg = "Select count(*)  from "+tb_flt+" where ("
 								"zne="+QString::number(zn)+
 								" and typ="+QString::number(eType)+
 								" and lgn="+QString::number(val_col)+
@@ -644,7 +645,7 @@ bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, in
 					 QString sdec = QString::number(cur_id|BFlags::isFiltred);
 					 int nbLigne = query_3.value(0).toInt();
 					 if(nbLigne==1){
-						msg = "update Filtres set  flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
+						msg = "update "+tb_flt+" set  flt=(case when flt is (NULL or 0 or flt<0) then 0x"+
 									sdec+" else(flt|0x"+sdec+") end) where (zne="+QString::number(zn)+
 									" and typ="+QString::number(eType)+
 									" and lgn="+QString::number(val_col)+
@@ -652,7 +653,7 @@ bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, in
 									" and val="+QString::number(val_cell)+")";
 					 }
 					 else {
-						msg="insert into Filtres (id,zne,typ,lgn,col,val,pri,flt) values (Null,"+
+						msg="insert into "+tb_flt+" (id,zne,typ,lgn,col,val,pri,flt) values (Null,"+
 									QString::number(zn)+","+QString::number(eType)+
 									","+QString::number(val_col)+","+
 									QString::number(col_id)+","+QString::number(val_cell)+",0,"+sdec+")";
@@ -1571,9 +1572,9 @@ QString BCountGroup::getFilteringData(int zn)
  QString useJonction_1 = " or ";
  QString useJonction_2 = " and ";
 
- QString userFiltringTableData = "Filtres";
+ QString tb_flt = gm_def->db_ref->flt;
 
- msg = "select tb1.* from ("+userFiltringTableData
+ msg = "select tb1.* from ("+tb_flt
        +")as tb1 "
          "where((tb1.flt&0x"+QString::number(BFlags::isFiltred)+"=0x"+QString::number(BFlags::isFiltred)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=3) order by tb1.col, tb1.lgn";

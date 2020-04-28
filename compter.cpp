@@ -804,7 +804,7 @@ QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
 
  int row = index.row();
  stTbFiltres a;
- a.tb_flt = "Filtres";
+ a.tb_flt = gm_def->db_ref->flt;
  a.sta = Bp::E_Sta::noSta;
  a.dbt = -1;
  a.b_flt = Bp::F_Flt::noFlt;
@@ -951,13 +951,14 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
  int pri = 0;
  int flt = 0;
 
+ QString tb_flt = gm_def->db_ref->flt;
  if(index.model()->index(index.row(),col).data().canConvert(QMetaType::Int))
  {
   val =  index.model()->index(index.row(),col).data().toInt();
  }
 
 
- msg="Select * from Filtres where(zne="+QString::number(zne)+
+ msg="Select * from "+tb_flt+" where(zne="+QString::number(zne)+
        " and typ="+QString::number(typ)+" and lgn="+QString::number(lgn)+" and col="+QString::number(col)+
        " and val="+QString::number(val)+
        +")";
@@ -1060,6 +1061,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
 
  QString st_from = cmd->objectName();
  QStringList def = st_from.split(",");
+ QString tb_flt = gm_def->db_ref->flt;
 
  /// Meme ligne pour off
  if(msg_2.compare(def[6])==0){
@@ -1075,11 +1077,11 @@ void BCount::slot_ChoosePriority(QAction *cmd)
    def[0]="NULL";
    def[6]=msg_2;
    st_from=def.join(",");
-   msg = "insert into Filtres (id, zne, typ,lgn,col,val,pri,flt) values ("
+   msg = "insert into "+tb_flt+" (id, zne, typ,lgn,col,val,pri,flt) values ("
          +st_from+");";
   }
   else {
-   msg = "update  Filtres set pri="+msg_2+
+   msg = "update  "+tb_flt+" set pri="+msg_2+
          " where("
          "id="+def[0]+
          ");";
@@ -1090,7 +1092,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
 
  if(b_retVal){
   /// compter les priorites
-  msg = "select count(*) from Filtres where ("
+  msg = "select count(*) from "+tb_flt+" where ("
         "zne="+def[1]+" and "+
         "typ="+def[2]+" and "+
         "pri=1)";
@@ -1141,8 +1143,9 @@ bool BCount::setUnifiedPriority(QString szn, QString sprio){
  bool isOk_2 = false;
  QString msg = "";
  int zn = szn.toInt();
+ QString tb_flt = gm_def->db_ref->flt;
 
- msg = "Select GROUP_CONCAT(val,',') as R from Filtres where (pri>0 and typ=0 and zne="+szn+")";
+ msg = "Select GROUP_CONCAT(val,',') as R from "+tb_flt+" where (pri>0 and typ=0 and zne="+szn+")";
  if((b_retVal = query.exec(msg))) {
   query.first();
   QString elem_1 ="0";
@@ -1150,7 +1153,7 @@ bool BCount::setUnifiedPriority(QString szn, QString sprio){
 	if(query.isValid()){
 	 elem_1 = query.value(0).toString();
 	 /// mettre la nouvelle priorite
-	 msg =  "update Filtres set pri="+sprio+" where(zne="+szn+" and typ=0 and val in ("+elem_1+") );";
+	 msg =  "update "+tb_flt+" set pri="+sprio+" where(zne="+szn+" and typ=0 and val in ("+elem_1+") );";
 	 if((b_retVal = query.exec(msg))) {
 		/// Verifier si il faut inserer les autres boules
 		QStringList nbValTab = elem_1.split(',');
@@ -1173,7 +1176,7 @@ bool BCount::setUnifiedPriority(QString szn, QString sprio){
 		 int boule = 0;
 		 do{
 			boule = query.value(0).toInt();
-			msg="Insert into Filtres (id,zne,typ,lgn,col,val,pri,flt) values(NULL,"+
+			msg="Insert into "+tb_flt+" (id,zne,typ,lgn,col,val,pri,flt) values(NULL,"+
 						szn+",0,"+QString::number(boule-1)+",0,"+QString::number(boule)+","+sprio+",-1)";
 			b_retVal=query_2.exec(msg);
 		 }while(b_retVal && query.next());
@@ -1394,6 +1397,7 @@ void BCount::slot_V2_wdaFilter(bool val)
  QSqlQuery query(dbCount);
  bool b_retVal = false;
  QString msg = "";
+ QString tb_flt = gm_def->db_ref->flt;
 
  QString st_from = chkFrom->objectName();
 
@@ -1415,7 +1419,7 @@ void BCount::slot_V2_wdaFilter(bool val)
  /// la meme valeur pour plusieurs colonnes
  if(def[0].toInt() && (def[3].toInt()==3)){
   /// Rechercher la ligne avec clef(val,colon)
-  msg="Select * from Filtres where(zne="+def[1]+
+  msg="Select * from "+tb_flt+" where(zne="+def[1]+
         " and typ="+def[2]+" and lgn="+def[3]+" and col="+def[4]+
         " and val="+def[5]+
         +")";
@@ -1435,7 +1439,7 @@ void BCount::slot_V2_wdaFilter(bool val)
   def[0]="NULL";
   def[7]=msg_2;
   st_from=def.join(",");
-  msg = "insert into Filtres (id, zne, typ,lgn,col,val,pri,flt) values ("
+  msg = "insert into "+tb_flt+" (id, zne, typ,lgn,col,val,pri,flt) values ("
         +st_from+");";
  }
  else {
@@ -1452,7 +1456,7 @@ void BCount::slot_V2_wdaFilter(bool val)
 	}
 	msg_2=QString::number(def[7].toInt()^ (BFlags::isFiltred));
 
-	msg = "update  Filtres set flt="+msg_2+
+	msg = "update  "+tb_flt+" set flt="+msg_2+
 				" where("
 				"id="+def[0]+
 				");";
@@ -1491,6 +1495,7 @@ void BCount::slot_wdaFilter(bool val)
  QSqlQuery query(dbCount);
  bool b_retVal = false;
  QString msg = "";
+ QString tb_flt = gm_def->db_ref->flt;
 
  QString st_from = chkFrom->objectName();
 
@@ -1512,7 +1517,7 @@ void BCount::slot_wdaFilter(bool val)
  /// la meme valeur pour plusieurs colonnes
  if(def[0].toInt() && (def[3].toInt()==3)){
   /// Rechercher la ligne avec clef(val,colon)
-  msg="Select * from Filtres where(zne="+def[1]+
+  msg="Select * from "+tb_flt+" where(zne="+def[1]+
         " and typ="+def[2]+" and lgn="+def[3]+" and col="+def[4]+
         " and val="+def[5]+
         +")";
@@ -1532,7 +1537,7 @@ void BCount::slot_wdaFilter(bool val)
   def[0]="NULL";
   def[7]=msg_2;
   st_from=def.join(",");
-  msg = "insert into Filtres (id, zne, typ,lgn,col,val,pri,flt) values ("
+  msg = "insert into "+tb_flt+" (id, zne, typ,lgn,col,val,pri,flt) values ("
         +st_from+");";
  }
  else {
@@ -1549,7 +1554,7 @@ void BCount::slot_wdaFilter(bool val)
 	}
 	msg_2=QString::number(def[7].toInt()^ (BFlags::isFiltred));
 
-	msg = "update  Filtres set flt="+msg_2+
+	msg = "update  "+tb_flt+" set flt="+msg_2+
 				" where("
 				"id="+def[0]+
 				");";

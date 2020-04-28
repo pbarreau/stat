@@ -13,6 +13,7 @@ class BAnalyserTirages
 public:
 BAnalyserTirages(stGameConf *pGame);
 BAnalyserTirages *self();
+QWidget *getVisual();
 static int getCounter(void);
 
 private:
@@ -41,8 +42,8 @@ typedef bool(BAnalyserTirages::*ptrFnUsr)(const stGameConf *, QString, QString, 
 private:
 static int total_analyses;
 BAnalyserTirages *addr;
+QWidget *show_results;
 QSqlDatabase db_1;
-//QStringList** slFlt;
 QMap<QString,ptrFnUsr> map_UsrFn;
 
 };

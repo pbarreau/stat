@@ -15,10 +15,11 @@
 #include "BTbView.h"
 #include "BMenu.h"
 #include "BGrbGenTirages.h"
+#include "BAnalyserTirages.h"
 #include "db_tools.h"
 
 BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ, QTableView * parent)
-    :QTableView(parent),BFlt(pGame, in_zn, in_typ), cur_game(pGame)
+    :QTableView(nullptr),BFlt(pGame, in_zn, in_typ), cur_game(pGame)
 {
  db_tbv = db_flt;
  lbflt = cur_bflt;
@@ -34,6 +35,7 @@ BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ, QTableView 
  myGpb = new BGpbMenu(cur_bflt, this);
  up = nullptr;
  btn_usrGame = nullptr;
+ tab_usrGame = nullptr;
 }
 
 BTbView::~BTbView()
@@ -142,7 +144,7 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
  bool b_retVal = true;
  QSqlQuery query(db_tbv);
  int memo_choisi = -1;
- QString tblFlt = "Filtres";
+ QString tblFlt = inf_flt->tb_flt;
  QString msg = "";
  QString msg_1 ="Select count(id) as T from "+
                  tblFlt+
@@ -263,9 +265,13 @@ void BTbView::setUpLayout(QLayout *usr_up)
  up = usr_up;
 }
 
+/// Cette fonction lie le bouton qui permettra de creer
+/// les jeux utilisateur
 void BTbView::setUsrGameButton(QPushButton *usr_game)
 {
  btn_usrGame = usr_game;
+ tab_usrGame = new QTabWidget;
+
 }
 
 QPushButton * BTbView::getUsrGameButton(void)
@@ -285,6 +291,7 @@ void  BTbView::slot_usrCreateGame()
  tmp->db_ref->src = ""; /// Sera renseignee par la suite
  tmp->db_ref->fdj = cur_game->db_ref->fdj;
  tmp->db_ref->cnx = cur_game->db_ref->cnx;
+ tmp->db_ref->flt = cur_game->db_ref->flt;
  tmp->db_ref->ihm = cur_game->db_ref->ihm;
 
  /// Partie commune
@@ -299,6 +306,8 @@ void  BTbView::slot_usrCreateGame()
 
  tmp->id = 0; /// A supprimer ?
 
+
+
  /// Temps de calcul
  QTime r;
  QTime t;
@@ -310,7 +319,8 @@ void  BTbView::slot_usrCreateGame()
  r = r.addMSecs(t.elapsed());
  t_human = r.toString("hh:mm:ss:zzz");
  if(calcul->addr != nullptr){
-  calcul->show();
+  QWidget * tmp_wdq = calcul->getVisual();
+  showUsrGame(tmp_wdq, tmp->db_ref->src);
  }
  else {
   delete calcul;
@@ -320,6 +330,17 @@ void  BTbView::slot_usrCreateGame()
                +t_human
                +QString (" (hh:mm:ss:ms)");
  QMessageBox::information(nullptr,"UsrGame",msg,QMessageBox::Ok);
+}
+
+void BTbView::showUsrGame(QWidget * une_selection, QString name)
+{
+ if(tab_usrGame != nullptr){
+  int item = BAnalyserTirages::getCounter() -1;
+  QString titre = QString::number(item).rightJustified(2,'0') + " : " + name;
+
+	tab_usrGame->addTab(une_selection, titre);
+	tab_usrGame->show();
+ }
 }
 
 QGroupBox * BTbView::getScreen()

@@ -187,7 +187,7 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 	if(b_retVal){
 	 /// ----------
 	 stTbFiltres a;
-	 a.tb_flt = "Filtres";
+	 a.tb_flt = gm_def->db_ref->flt;
 	 a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
 	 a.sta = Bp::E_Sta::noSta;
 	 a.zne = zn;
@@ -1031,10 +1031,10 @@ QString BcElm::getFilteringData(int zn)
  QString msg = "";
  QString useJonction = "and";
 
- QString userFiltringTableData = "Filtres";
+ QString tb_flt = gm_def->db_ref->flt;
  Bp::F_Flts tmp= Bp::F_Flt::fltWanted|Bp::F_Flt::fltFiltred;
 
- msg = "select tb1.val from ("+userFiltringTableData
+ msg = "select tb1.val from ("+tb_flt
        +")as tb1 "
          "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(tmp)+"=0x"+QString::number(tmp)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ="+QString::number(eCountElm)+" and tb1.pri=1)";

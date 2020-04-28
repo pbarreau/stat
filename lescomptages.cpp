@@ -63,7 +63,7 @@ void BPrevision::slot_changerTitreZone(QString le_titre)
  //selection[0].setText("Z:"+le_titre);
 }
 
-BPrevision::BPrevision(stGameConf *pGame, stPrmPrevision *prm)
+BPrevision::BPrevision(stGameConf *pGame_in, stPrmPrevision *prm):pGame(pGame_in)
 {
  cur_item = total_items;
  total_items++;
@@ -71,9 +71,9 @@ BPrevision::BPrevision(stGameConf *pGame, stPrmPrevision *prm)
 
  onGame = conf.gameInfo;
 
- if(ouvrirBase(pGame, prm->bddStore)==true)
+ if(ouvrirBase(pGame_in, prm->bddStore)==true)
  {
-  effectuerTraitement(pGame->eFdjType);
+  effectuerTraitement(pGame_in->eFdjType);
   //dbInUse.close();
  }
 }
@@ -344,7 +344,7 @@ bool BPrevision::creerTablesDeLaBase(void)
 
  stCreateTable creerTables[]={
   {C_TBL_3,&BPrevision::f3},   /// Table des tirages
-  {"Filtres",&BPrevision::f1_TbFiltre},   /// Table des nom des zones et abregees
+  {"B_flt",&BPrevision::f1_TbFiltre},   /// Table des nom des zones et abregees
   {C_TBL_1,&BPrevision::f1},   /// Table des nom des zones et abregees
   {C_TBL_2,&BPrevision::f2},   /// Liste des boules par zone
   {T_CMB,&BPrevision::f4},    /// Table des combinaisons
@@ -1996,7 +1996,9 @@ void BPrevision::slot_UGL_ClrFilters()
  QSqlQuery query(db_1);
  bool b_retVal = true;
  QString msg = "";
- msg = "update Filtres set flt=(case when ((flt&0x"+
+ QString tb_flt = pGame->db_ref->flt;
+
+ msg = "update "+tb_flt+" set flt=(case when ((flt&0x"+
        QString::number(BFlags::isFiltred)+")==0x"+QString::number(BFlags::isFiltred)+
        " and (flt>0)) then (flt&~(0x"+QString::number(BFlags::isFiltred)+")) ELSE flt END)";
 
@@ -2680,10 +2682,11 @@ QString BPrevision::ListeDesJeux(int zn, int n, int p)
 
  int loop = 0;
  int len = p;
+ QString tb_flt = pGame->db_ref->flt;
 
  /// Creation d'une table temporaire pour sauver choix utilisateur
  int selprio = 1;
- QString src_usr ="Filtres";
+ QString src_usr =tb_flt;
 
  QString tmp_tbl =src_usr
                    +"_p"+QString::number(selprio);

@@ -106,7 +106,7 @@ class BPrevision:public QGridLayout
 
  /// in : infos representant les tirages
  public:
- BPrevision(stGameConf *pGame, stPrmPrevision *prm);
+ BPrevision(stGameConf *pGame_in, stPrmPrevision *prm);
  ~BPrevision();
  BCountBrc* getC0();
  BcElm* getC1();

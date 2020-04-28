@@ -25,9 +25,16 @@ int BAnalyserTirages::getCounter(void)
  return  total_analyses;
 }
 
+QWidget * BAnalyserTirages::getVisual(void)
+{
+ return  show_results;
+}
+
 BAnalyserTirages::BAnalyserTirages(stGameConf *pGame)
 {
  addr = nullptr;
+ show_results = nullptr;
+
 
  QString cnx=pGame->db_ref->cnx;
  QString tbl_tirages = pGame->db_ref->src;
@@ -70,11 +77,13 @@ bool BAnalyserTirages::isPresentUsefullTables(stGameConf *pGame, QString tbl_tir
   bool (BAnalyserTirages::*ptrFunc)(stGameConf *pGame, QString tbl_tirages,QSqlQuery *query);
  }stdbMinLstTables;
 
+ QString tb_flt = pGame->db_ref->flt;
+
  stdbMinLstTables lstTable[]={
   {"B_elm", eDropNo, &BAnalyserTirages::mkTblLstElm},
   {"B_cmb", eDropNo, &BAnalyserTirages::mkTblLstCmb},
   {"B_def", eDropNo, &BAnalyserTirages::mkTblGmeDef},
-  {"Filtres", eDropOn, &BAnalyserTirages::mkTblFiltre}
+  {tb_flt, eDropOn, &BAnalyserTirages::mkTblFiltre}
  };
  int totTables = sizeof(lstTable)/sizeof(stdbMinLstTables);
 
@@ -224,9 +233,12 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
   tmp_layout->addWidget(tmp,0,0);
  }
 
- QString my_title = "A_"+QString::number(total_analyses).rightJustified(2,'0')+" : ("+tbName+")";
+ QString my_title = QString::number(total_analyses).rightJustified(2,'0')+" : ("+tbName+")";
  total_analyses++;
+
  Resultats->setLayout(tmp_layout);
+ show_results = Resultats;
+
  Resultats->setWindowTitle(my_title);
  Resultats->show();
 }
@@ -796,6 +808,7 @@ bool BAnalyserTirages::mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *
 
  msg =  "create table "+tbName
        +" (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
+
 
 
  b_retVal = query->exec(msg);

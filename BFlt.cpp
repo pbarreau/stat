@@ -32,7 +32,7 @@ BFlt::BFlt(const stGameConf *pGame, int in_zn, etCount in_typ, QString tb_flt)
  inf_flt = new stTbFiltres;
 
  /// initialisation
- inf_flt->tb_flt = tb_flt;
+ inf_flt->tb_flt = pGame->db_ref->flt;
  inf_flt->tb_ref = pGame->db_ref->src;
 
  inf_flt->pri = -1;
