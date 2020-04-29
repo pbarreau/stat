@@ -81,6 +81,10 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
   QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
   delete uneAnalyse;
  }
+ else{
+  uneAnalyse->show();
+ }
+
  return;
  EtudierJeu_v1(curConf, use_odb);
  EtudierJeu_v2(curConf);

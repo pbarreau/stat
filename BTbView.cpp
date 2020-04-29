@@ -280,7 +280,6 @@ QPushButton * BTbView::getUsrGameButton(void)
  return btn_usrGame;
 }
 
-#if 1
 void  BTbView::slot_usrCreateGame()
 {
  /// Temps de calcul
@@ -307,6 +306,9 @@ void  BTbView::slot_usrCreateGame()
 	 QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
 	 delete uneAnalyse;
 	}
+	else {
+	 uneAnalyse->show();
+	}
 
 
  }
@@ -315,62 +317,6 @@ void  BTbView::slot_usrCreateGame()
  }
 
 }
-
-#else
-void  BTbView::slot_usrCreateGame()
-{
- /// Caracteristique de la generation liste tirages utilistateur
- stGameConf * tmp = new stGameConf;
- /// Specificite de cette recherche
- tmp->znCount = 1;
- tmp->eTirType = eTirUsr; /// A supprimer ?
- tmp->eFdjType = cur_game->eFdjType;
- tmp->db_ref = new stParam_3;
- tmp->db_ref->src = ""; /// Sera renseignee par la suite
- tmp->db_ref->fdj = cur_game->db_ref->fdj;
- tmp->db_ref->cnx = cur_game->db_ref->cnx;
- tmp->db_ref->flt = cur_game->db_ref->flt;
- tmp->db_ref->ihm = cur_game->db_ref->ihm;
-
- /// Partie commune
- tmp->limites = cur_game->limites;
- tmp->names = cur_game->names;
-
- /// sera reconstruit par la classe Analyse
- /// mappage des fonctions utilisateurs speciales
- /// d'analyses
- tmp->slFlt = nullptr;
-
-
- tmp->id = 0; /// A supprimer ?
-
-
-
- /// Temps de calcul
- QTime r;
- QTime t;
- QString t_human = "";
-
- r.setHMS(0,0,0,0);
- t.start();
- BGrbGenTirages *calcul = new BGrbGenTirages(tmp, this);
- r = r.addMSecs(t.elapsed());
- t_human = r.toString("hh:mm:ss:zzz");
-
- if(calcul->addr != nullptr){
-
-	QString msg = " Calcul en : "+t_human+QString (" (hh:mm:ss:ms)");
-	QMessageBox::information(nullptr,"User Game",msg,QMessageBox::Ok);
-
-  ///QWidget * tmp_wdq = calcul->getVisual();
-  ///showUsrGame(tmp_wdq, tmp->db_ref->src);
- }
- else {
-  delete calcul;
- }
-
-}
-#endif
 
 void BTbView::showUsrGame(QWidget * une_selection, QString name)
 {

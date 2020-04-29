@@ -25,15 +25,17 @@ int BAnalyserTirages::getCounter(void)
  return  total_analyses;
 }
 
+/*
 QWidget * BAnalyserTirages::getVisual(void)
 {
  return  show_results;
 }
+*/
 
-BAnalyserTirages::BAnalyserTirages(stGameConf *pGame)
+BAnalyserTirages::BAnalyserTirages(stGameConf *pGame, QWidget *parent) : QWidget(parent)
 {
  addr = nullptr;
- show_results = nullptr;
+ //show_results = nullptr;
 
 
  QString cnx=pGame->db_ref->cnx;
@@ -221,7 +223,7 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
   }
  }
 
- QWidget * Resultats = new QWidget;
+ //QWidget * Resultats = new QWidget;
  QGridLayout *tmp_layout = new QGridLayout;
 
  /// faire test pour voir si production de calculs ?
@@ -236,11 +238,11 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
  QString my_title = QString::number(total_analyses).rightJustified(2,'0')+" : ("+tbName+")";
  total_analyses++;
 
- Resultats->setLayout(tmp_layout);
- show_results = Resultats;
+ this->setLayout(tmp_layout);
+ //show_results = this;
 
- Resultats->setWindowTitle(my_title);
- Resultats->show();
+ //Resultats->setWindowTitle(my_title);
+ //Resultats->show();
 }
 
 bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName)
