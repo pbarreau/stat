@@ -300,6 +300,14 @@ void  BTbView::slot_usrCreateGame()
 	QMessageBox::information(nullptr,"User Game",msg,QMessageBox::Ok);
 
 	calcul->show();
+	stGameConf * tmp = calcul->getGameConf();
+	BAnalyserTirages *uneAnalyse = new BAnalyserTirages(tmp);
+	if(uneAnalyse->self() == nullptr){
+	 QString msg = "Erreur de l'analyse des tirages :" + tmp->db_ref->src;
+	 QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
+	 delete uneAnalyse;
+	}
+
 
  }
  else {
