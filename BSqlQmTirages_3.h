@@ -16,6 +16,7 @@ class BSqlQmTirages_3 : public QSqlQueryModel
  Qt::ItemFlags flags(const QModelIndex & index) const override;
  QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
  bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
+ QTableView *getTbv();
 
  public:
  Q_SIGNALS:

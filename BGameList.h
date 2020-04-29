@@ -28,6 +28,7 @@ class BGameList : public QWidget
  QGroupBox *  LireBoule(stGameConf *pGame, QString tbl_cible);
  QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
  stGameConf *newGameConf(const stGameConf *pGame, QString gameId);
+ void updateTbv(QString msg);
 
  signals:
 

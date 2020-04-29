@@ -112,3 +112,8 @@ bool BSqlQmTirages_3::setVisualChk(int id, Qt::CheckState chk)
 
  return  b_retVal;
 }
+
+QTableView *BSqlQmTirages_3::getTbv()
+{
+ return db_tbv;
+}
