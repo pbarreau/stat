@@ -106,7 +106,9 @@ SOURCES += \
     BMenu.cpp \
     BTbView.cpp \
     BGpbMenu.cpp \
-    BFlt.cpp
+    BFlt.cpp \
+    BGameList.cpp \
+    BFpm_3.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -176,7 +178,9 @@ HEADERS  += \
     bstflt.h \
     BTbView.h \
     BGpbMenu.h \
-    BFlt.h
+    BFlt.h \
+    BGameList.h \
+    BFpm_3.h
 
 
 FORMS    += mainwindow.ui \

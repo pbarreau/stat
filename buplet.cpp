@@ -17,6 +17,8 @@
 
 #include "buplet.h"
 #include "BFpm_2.h"
+#include "BFpm_3.h"
+
 #include "db_tools.h"
 
 int BUplet::tot_upl = 0;

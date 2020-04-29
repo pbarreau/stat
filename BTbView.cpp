@@ -12,6 +12,7 @@
 
 #include <QTime>
 
+#include "BGameList.h"
 #include "BTbView.h"
 #include "BMenu.h"
 #include "BGrbGenTirages.h"
@@ -35,7 +36,7 @@ BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ, QTableView 
  myGpb = new BGpbMenu(cur_bflt, this);
  up = nullptr;
  btn_usrGame = nullptr;
- tab_usrGame = nullptr;
+ ///tab_usrGame = nullptr;
 }
 
 BTbView::~BTbView()
@@ -270,7 +271,7 @@ void BTbView::setUpLayout(QLayout *usr_up)
 void BTbView::setUsrGameButton(QPushButton *usr_game)
 {
  btn_usrGame = usr_game;
- tab_usrGame = new QTabWidget;
+ ///tab_usrGame = new QTabWidget;
 
 }
 
@@ -279,6 +280,35 @@ QPushButton * BTbView::getUsrGameButton(void)
  return btn_usrGame;
 }
 
+#if 1
+void  BTbView::slot_usrCreateGame()
+{
+ /// Temps de calcul
+ QTime r;
+ QTime t;
+ QString t_human = "";
+
+ r.setHMS(0,0,0,0);
+ t.start();
+ BGameList *calcul = new BGameList(cur_game);
+ r = r.addMSecs(t.elapsed());
+ t_human = r.toString("hh:mm:ss:zzz");
+
+ if(calcul->getGameConf() != nullptr){
+
+	QString msg = " Calcul en : "+t_human+QString (" (hh:mm:ss:ms)");
+	QMessageBox::information(nullptr,"User Game",msg,QMessageBox::Ok);
+
+	calcul->show();
+
+ }
+ else {
+  delete calcul;
+ }
+
+}
+
+#else
 void  BTbView::slot_usrCreateGame()
 {
  /// Caracteristique de la generation liste tirages utilistateur
@@ -318,29 +348,34 @@ void  BTbView::slot_usrCreateGame()
  BGrbGenTirages *calcul = new BGrbGenTirages(tmp, this);
  r = r.addMSecs(t.elapsed());
  t_human = r.toString("hh:mm:ss:zzz");
+
  if(calcul->addr != nullptr){
-  QWidget * tmp_wdq = calcul->getVisual();
-  showUsrGame(tmp_wdq, tmp->db_ref->src);
+
+	QString msg = " Calcul en : "+t_human+QString (" (hh:mm:ss:ms)");
+	QMessageBox::information(nullptr,"User Game",msg,QMessageBox::Ok);
+
+  ///QWidget * tmp_wdq = calcul->getVisual();
+  ///showUsrGame(tmp_wdq, tmp->db_ref->src);
  }
  else {
   delete calcul;
  }
 
- QString msg = " Calcul en : "
-               +t_human
-               +QString (" (hh:mm:ss:ms)");
- QMessageBox::information(nullptr,"UsrGame",msg,QMessageBox::Ok);
 }
+#endif
 
 void BTbView::showUsrGame(QWidget * une_selection, QString name)
 {
+ /*
  if(tab_usrGame != nullptr){
   int item = BAnalyserTirages::getCounter() -1;
   QString titre = QString::number(item).rightJustified(2,'0') + " : " + name;
 
 	tab_usrGame->addTab(une_selection, titre);
 	tab_usrGame->show();
+
  }
+*/
 }
 
 QGroupBox * BTbView::getScreen()

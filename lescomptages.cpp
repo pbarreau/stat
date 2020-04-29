@@ -27,6 +27,7 @@
 #include "BGrbGenTirages.h"
 #include "blineedit.h"
 #include "BFpm_2.h"
+#include "BFpm_3.h"
 
 #include "compter.h"
 #include "compter_zones.h"

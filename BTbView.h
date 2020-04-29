@@ -12,7 +12,7 @@
 #include "BGpbMenu.h"
 #include "game.h"
 
-class BGrbGenTirages;
+//class BGrbGenTirages;
 
 class BTbView : public QTableView, BFlt
 {
@@ -52,7 +52,7 @@ class BTbView : public QTableView, BFlt
  QLayout *up;
  QMenu *menu;
  QPushButton *btn_usrGame;
- QTabWidget *tab_usrGame;
+ ///QTabWidget *tab_usrGame;
 };
 
 #endif // BTBVIEW_H

@@ -24,6 +24,7 @@
 
 #include "blineedit.h"
 #include "BFpm_2.h"
+#include "BFpm_3.h"
 
 #include "compter_zones.h"
 #include "BPushButton.h"
@@ -38,25 +39,31 @@
 /// https://www.promepar.fr/analyses/
 ///
 int BGrbGenTirages::total = 1;
-
 QList<QPair<QString, BGrbGenTirages*>*> *BGrbGenTirages::lstGenTir = nullptr;
+QTabWidget * BGrbGenTirages::usr_Tabtop = nullptr;
 
 int BGrbGenTirages::getCounter(void)
 {
  return  total-1;
 }
 
-QWidget * BGrbGenTirages::getVisual(void)
+QTabWidget * BGrbGenTirages::getVisual(void)
 {
- return  show_results;
+ return  usr_Tabtop;
 }
 
+#if 1
+BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, BTbView *parent, QString st_table)
+{
+}
+
+#else
 BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, BTbView *parent, QString st_table)
 {
  addr = nullptr;
- ret_1 = nullptr;
- ret_2 = nullptr;
- show_results = nullptr;
+ //ret_1 = nullptr;
+ //ret_2 = nullptr;
+ ///show_results = nullptr;
 
  QString UsrCnp = st_table;
  QString cnx = pGame->db_ref->cnx;
@@ -68,12 +75,14 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, BTbView *parent, QString st_ta
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
  }
-
-
  addr=this; /// memo de cet objet
 
+ if(usr_Tabtop == nullptr){
+  usr_Tabtop = new QTabWidget;
+ }
+
  /// Verifier si il y a des calculs precedents
- MontrerRecherchePrecedentes(pGame,cnx,parent,st_table);
+ ///MontrerRecherchePrecedentes(pGame,cnx,parent,st_table);
 
  /// Analyse selection user
  if(!UsrCnp.size()){
@@ -83,7 +92,7 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, BTbView *parent, QString st_ta
 	if(UsrCnp.size()){ /// oui
 	 pGame->db_ref->flt = UsrCnp+"_flt";
 
-	 ret_1 = mkForm(pGame,parent,UsrCnp); /// Faire visuel des infos
+	 //ret_1 = mkForm(pGame,parent,UsrCnp); /// Faire visuel des infos
 
 	 pGame->db_ref->src = UsrCnp;
 	 analyserTirages(pGame); /// Analyser les tirages generes
@@ -93,6 +102,7 @@ BGrbGenTirages::BGrbGenTirages(stGameConf *pGame, BTbView *parent, QString st_ta
 	}
  }
 }
+#endif
 
 void BGrbGenTirages::MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BTbView *parent, QString st_table)
 {
@@ -445,8 +455,6 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  }
  qtv_tmp->setFixedWidth(l);
  qtv_tmp->hideColumn(0);
- //qtv_tmp->setFixedHeight(200);
- //qtv_tmp->setFixedWidth((nbCol+.2)*CEL2_L);
 
  gpb_Tirages = tmp_gpb;
 
@@ -456,7 +464,6 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
 bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
 {
  /// https://denishulo.developpez.com/tutoriels/access/combinatoire/#LIV-A
- Q_UNUSED(pGame);
  QSqlQuery query(db_1);
  bool b_retVal = true;
  QString msg = "";
@@ -797,7 +804,7 @@ void BGrbGenTirages::MontrerResultat(void)
 
  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
  QWidget * tmp = new QWidget;
- tmp->setLayout(ret_1);
+ //tmp->setLayout(ret_1);
  tmp_layout->addWidget(tmp,0,0,2,1);///,Qt::AlignTop|Qt::AlignLeft
  tmp_layout->addItem(ecart,1,1);
  tmp_layout->setRowStretch(0,10);
@@ -827,5 +834,5 @@ void BGrbGenTirages::MontrerResultat(void)
  }
 */
  Resultats->setLayout(tmp_layout);
- show_results = Resultats;
+ ///show_results = Resultats;
 }
