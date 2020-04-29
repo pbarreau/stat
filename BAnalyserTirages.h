@@ -6,6 +6,7 @@
 #include <QMap>
 
 #include "game.h"
+#include "bstflt.h"
 
 class BAnalyserTirages : public QWidget
 {
@@ -39,8 +40,10 @@ class BAnalyserTirages : public QWidget
  typedef bool(BAnalyserTirages::*ptrFnUsr)(const stGameConf *, QString, QString, int );
 
  signals:
+ void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
 
  public slots:
+ void bsl_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
 
  private:
  static int total_analyses;

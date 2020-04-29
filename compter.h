@@ -165,6 +165,8 @@ class BCount:public QWidget
  bool setPriorityToAll;
 
  protected slots:
+ void bsl_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
+
  ///void slot_AideToolTip(const QModelIndex & index);
  void slot_ClicDeSelectionTableau(const QModelIndex &index);
  void slot_ccmr_SetPriorityAndFilters(QPoint pos);
@@ -177,6 +179,7 @@ class BCount:public QWidget
 
 
  Q_SIGNALS:
+ void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
  void sig_TitleReady(const QString &title);
  void sig_ComptageReady(const B_RequeteFromTbv &my_answer);
 

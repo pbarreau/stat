@@ -221,6 +221,8 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
   QWidget *calcul = lstComptage.at(i)->startCount(pGame, type);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
+   connect(lstComptage.at(i), SIGNAL(bsg_clicked(const QModelIndex, const int, const etCount)),
+           this,SLOT(bsl_clicked(const QModelIndex, const int, const etCount)));
   }
  }
 
@@ -952,4 +954,9 @@ QString BAnalyserTirages::getFieldsFromZone(const stGameConf *pGame, int zn, QSt
   }
  }
  return   st_items;
+}
+
+void BAnalyserTirages::bsl_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp)
+{
+ emit bsg_clicked(index,zn,eTyp);
 }

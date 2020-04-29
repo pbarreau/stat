@@ -347,6 +347,9 @@ void  BTbView::slot_usrCreateGame()
 	 delete uneAnalyse;
 	}
 	else {
+	 connect(uneAnalyse, SIGNAL(bsg_clicked(const QModelIndex, const int, const etCount)),
+					 calcul, SLOT(slot_RequestFromAnalyse(const QModelIndex, const int, const etCount)));
+
 	 agencerResultats(calcul,uneAnalyse);
 	}
  }
@@ -408,4 +411,9 @@ QGroupBox * BTbView::getScreen()
  myGpb->setLayout(layout);
 
  return myGpb;
+}
+
+void BTbView::bsl_clicked(const QModelIndex &index)
+{
+ emit bsg_clicked(index, inf_flt->zne, inf_flt->typ);
 }

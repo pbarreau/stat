@@ -7,6 +7,7 @@
 #include <QLabel>
 
 #include "BSqlQmTirages_3.h"
+#include "bstflt.h"
 
 class BGameList : public QWidget
 {
@@ -32,6 +33,7 @@ class BGameList : public QWidget
 
  public slots:
  void slot_ShowNewTotal(const QString& lstBoules);
+ void slot_RequestFromAnalyse(const QModelIndex & index, const int &zn, const etCount &eTyp);
 
  private slots:
  void slot_Colorize(QLabel *l);

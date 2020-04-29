@@ -650,3 +650,49 @@ void BGameList::slot_ShowNewTotal(const QString& lstBoules)
  QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
  gpb_Tirages->setTitle(st_total);
 }
+
+void BGameList::slot_RequestFromAnalyse(const QModelIndex & index, const int &zn, const etCount &eTyp)
+{
+ QString str_key = "";
+ QString str_col = "";
+ QString msg = "";
+
+ str_key = index.sibling(index.row(),0).data().toString();
+
+ switch (eTyp) {
+  case eCountElm:
+   msg = "select t1.* from (E1_01) as t1 where ("+str_key+" in (t1.b1,t1.b2,t1.b3,t1.b4,t1.b5))";
+   break;
+  case eCountCmb:
+   msg= "select t1.* from (E1_01) as t1, (E1_01_ana_z1) as t2 where ((t2.idComb = "+str_key+") and (t1.id=t2.id))";
+   break;
+  case eCountBrc:
+   str_key = index.sibling(index.row(),1).data().toString();
+   msg= "select t1.* from (E1_01) as t1, (E1_01_ana_z1) as t2 where ((t2.bc = "+str_key+") and (t1.id=t2.id))";
+   break;
+
+	case eCountGrp:
+	{
+	 const QAbstractItemModel * pModel = index.model();
+
+	 QString headRef = pModel->headerData(0,Qt::Horizontal).toString();
+	 QString headTop= "";
+	 int col = index.column();
+	 QString s_nb = index.model()->index(index.row(),0).data().toString();
+
+	 if(col>0){
+		QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+		headTop = vCol.toString();
+		msg = "select t1.* from (E1_01) as t1, (E1_01_ana_z1) as t2 where ((t2."+headTop+" = "+s_nb+") and (t1.id=t2.id))";
+	 }
+	}
+	 break;
+
+	default:
+			;// Rien
+ }
+
+ sqm_resu->clear();
+ sqm_resu->setQuery(msg,db_gme);
+
+}

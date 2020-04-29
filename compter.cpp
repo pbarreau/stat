@@ -161,6 +161,11 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
   /// Mettre dans la base une info sur 2 derniers tirages
   usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
  }
+ else {
+  connect(qtv_tmp,SIGNAL(clicked(const QModelIndex)), qtv_tmp, SLOT(bsl_clicked(const QModelIndex)));
+  connect(qtv_tmp,SIGNAL(bsg_clicked(const QModelIndex, const int, const etCount)),
+          this, SLOT(bsl_clicked(const QModelIndex, const int, const etCount)));
+ }
 
 
  /// Agencer le tableau
@@ -1739,4 +1744,9 @@ QString BCount::FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString a
   }
  }
  return   st_items;
+}
+
+void BCount::bsl_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp)
+{
+ emit bsg_clicked(index,zn,eTyp);
 }
