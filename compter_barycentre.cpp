@@ -202,6 +202,7 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
  QString st_sql="";
 
  QString tbl_tirages = pGame->db_ref->src;
+ QString tbl_fdj = pGame->db_ref->fdj;
  QString st_critere = FN1_getFieldsFromZone(pGame, zn, "t2");
 
  st_sql = "with poids as  "
@@ -210,7 +211,7 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
           "cast (count(t1.z"+QString::number(zn+1)+
           ") as int) as T  "
           "from B_elm as t1  "
-          "LEFT join ("+tbl_tirages
+          "LEFT join ("+tbl_fdj
           +") as t2   "
             "where(t1.z"+QString::number(zn+1)+
           " in("+st_critere+

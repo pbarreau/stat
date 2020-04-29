@@ -156,8 +156,11 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  }
  qtv_tmp->setFixedWidth(l);
 
- /// Mettre dans la base une info sur 2 derniers tirages
- usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
+ /// Marquer pour les 2 derniers tirages de la fdj
+ if(qtv_tmp->isOnUsrGame() == false){
+  /// Mettre dans la base une info sur 2 derniers tirages
+  usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
+ }
 
 
  /// Agencer le tableau
@@ -170,26 +173,6 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  glay_tmp->setColumnStretch(2, 20);
  wdg_tmp->setLayout(glay_tmp);
 
-#if 0
- /// --------------------
- qtv_tmp->setMouseTracking(true);
- connect(qtv_tmp,
-         SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
-
- /// Selection & priorite
- qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
- connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
-         SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
-
- /// Click sur le group box
- BGpbMenu *tmp_gpb = qtv_tmp->getGpb();
- connect(tmp_gpb,
-         SIGNAL(sig_ShowMenu(const QGroupBox *, const QPoint)),
-         tmp_gpb,
-         SLOT(slot_ShowMenu(const QGroupBox *, const QPoint)));
-#endif
-
- /// --------------------
 
 
  return wdg_tmp;

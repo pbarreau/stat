@@ -27,6 +27,7 @@ class BTbView : public QTableView, BFlt
  void setUsrGameButton(QPushButton *usr_game);
  QPushButton *getUsrGameButton(void);
  stTbFiltres * getFlt(void);
+ bool isOnUsrGame(void);
 
  ~BTbView();
 
@@ -57,7 +58,6 @@ class BTbView : public QTableView, BFlt
  QLayout *up;
  QMenu *menu;
  QPushButton *btn_usrGame;
- ///QTabWidget *tab_usrGame;
 };
 
 #endif // BTBVIEW_H

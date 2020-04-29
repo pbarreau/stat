@@ -289,6 +289,20 @@ QPushButton * BTbView::getUsrGameButton(void)
  return btn_usrGame;
 }
 
+bool BTbView::isOnUsrGame(void)
+{
+ bool b_retVal;
+
+ if((tbw_calculs == nullptr) || (wdg_reponses == nullptr) || (gdl_all == nullptr)){
+  b_retVal = false;
+ }
+ else {
+  b_retVal = true;
+ }
+
+ return b_retVal;
+}
+
 void  BTbView::slot_usrCreateGame()
 {
 
@@ -352,7 +366,7 @@ void BTbView::agencerResultats(BGameList *lst, BAnalyserTirages* ana)
 
  tmp_layout->addItem(ecart,1,1);
  tmp_layout->setRowStretch(0,10);
- tmp_layout->setRowStretch(1,20);
+ tmp_layout->setRowStretch(1,10);
  tmp_layout->setColumnStretch(1, 10); /// Exemple basic layouts
  tmp_layout->setColumnStretch(2, 20);
 
