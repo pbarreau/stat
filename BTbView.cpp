@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 
 #include <QMessageBox>
+#include <QToolTip>
 
 #include <QTime>
 
@@ -19,24 +20,36 @@
 #include "BAnalyserTirages.h"
 #include "db_tools.h"
 
-BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ, QTableView * parent)
+QWidget * BTbView::wdg_reponses = nullptr;
+QGridLayout * BTbView::gdl_all = nullptr;
+QTabWidget * BTbView::tbw_calculs = nullptr;
+
+BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ)
     :QTableView(nullptr),BFlt(pGame, in_zn, in_typ), cur_game(pGame)
 {
  db_tbv = db_flt;
  lbflt = cur_bflt;
 
- /// Encapsulation sur cet objet
- this->setContextMenuPolicy(Qt::CustomContextMenu);
- connect(this, SIGNAL(customContextMenuRequested(QPoint)),
-         this, SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
-
-
- /// --------
- QString cnx = pGame->db_ref->cnx;
  myGpb = new BGpbMenu(cur_bflt, this);
+
+ if(wdg_reponses == nullptr){
+  /// Encapsulation sur cet objet
+  connect(myGpb,
+          SIGNAL(sig_ShowMenu(const QGroupBox *, const QPoint)),
+          myGpb,
+          SLOT(slot_ShowMenu(const QGroupBox *, const QPoint)));
+
+	this->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(this, SIGNAL(customContextMenuRequested(QPoint)),
+					this, SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
+ }
+
+ this->setMouseTracking(true);
+ connect(this,
+         SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
+
  up = nullptr;
  btn_usrGame = nullptr;
- ///tab_usrGame = nullptr;
 }
 
 BTbView::~BTbView()
@@ -67,13 +80,6 @@ stTbFiltres * BTbView::getFlt(void)
 
 void BTbView::slot_V2_AideToolTip(const QModelIndex & index)
 {
-
-}
-
-
-#if 0
-void BTbView::slot_V2_AideToolTip(const QModelIndex & index)
-{
  /// https://doc.qt.io/qt-5/qtooltip.html
  /// https://stackoverflow.com/questions/34197295/how-to-change-the-background-color-of-qtooltip-of-a-qtablewidget-item
 
@@ -86,7 +92,7 @@ void BTbView::slot_V2_AideToolTip(const QModelIndex & index)
  QString headRef = "";
 
  int start = 1;
- if(type == eCountGrp){
+ if(inf_flt->typ == eCountGrp){
   start = 0;
   vCol = pModel->headerData(col,Qt::Horizontal,Qt::ToolTipRole);
  }
@@ -104,7 +110,7 @@ void BTbView::slot_V2_AideToolTip(const QModelIndex & index)
 
  QToolTip::showText (QCursor::pos(), msg);
 }
-#endif
+
 
 QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
 {
@@ -222,7 +228,10 @@ void BTbView::updateTitle()
 {
  /// Mettre ensuite l'analyse du marquage
  QString st_total = mkTitle(inf_flt->zne,inf_flt->typ,this);
- myGpb->setTitle(st_total);
+
+ if(myGpb != nullptr){
+  myGpb->setTitle(st_total);
+ }
 }
 
 /*
@@ -282,40 +291,80 @@ QPushButton * BTbView::getUsrGameButton(void)
 
 void  BTbView::slot_usrCreateGame()
 {
+
+ /// Verifier premier passage
+ if((tbw_calculs == nullptr) || (wdg_reponses == nullptr) || (gdl_all == nullptr)){
+  wdg_reponses = new QWidget;
+  gdl_all = new QGridLayout;
+  tbw_calculs = new QTabWidget;
+ }
+
  /// Temps de calcul
  QTime r;
  QTime t;
- QString t_human = "";
+ QString t_human_1 = "";
+ QString t_human_2 = "";
 
  r.setHMS(0,0,0,0);
  t.start();
  BGameList *calcul = new BGameList(cur_game);
  r = r.addMSecs(t.elapsed());
- t_human = r.toString("hh:mm:ss:zzz");
+ t_human_1 = r.toString("hh:mm:ss:zzz");
 
  if(calcul->getGameConf() != nullptr){
 
-	QString msg = " Calcul en : "+t_human+QString (" (hh:mm:ss:ms)");
-	QMessageBox::information(nullptr,"User Game",msg,QMessageBox::Ok);
-
-	calcul->show();
+	r.setHMS(0,0,0,0);
+	t.restart();
 	stGameConf * tmp = calcul->getGameConf();
 	BAnalyserTirages *uneAnalyse = new BAnalyserTirages(tmp);
+	r = r.addMSecs(t.elapsed());
+	t_human_2 = r.toString("hh:mm:ss:zzz");
+
+	QString msg = " Generation du Cnp en : "+t_human_1+QString (" (hh:mm:ss:ms)");
+	msg = msg + "\n Analyse en : " +t_human_2+QString (" (hh:mm:ss:ms)");
+
+	QMessageBox::information(nullptr,"User Game",msg,QMessageBox::Ok);
+
+
+
 	if(uneAnalyse->self() == nullptr){
 	 QString msg = "Erreur de l'analyse des tirages :" + tmp->db_ref->src;
 	 QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
 	 delete uneAnalyse;
 	}
 	else {
-	 uneAnalyse->show();
+	 agencerResultats(calcul,uneAnalyse);
 	}
-
-
  }
  else {
   delete calcul;
  }
+}
 
+void BTbView::agencerResultats(BGameList *lst, BAnalyserTirages* ana)
+{
+ QGridLayout *tmp_layout = new QGridLayout;
+
+ QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+ tmp_layout->addWidget(lst,0,0,2,1);///,Qt::AlignTop|Qt::AlignLeft
+ tmp_layout->addWidget(ana,0,1,1,1);
+
+ tmp_layout->addItem(ecart,1,1);
+ tmp_layout->setRowStretch(0,10);
+ tmp_layout->setRowStretch(1,20);
+ tmp_layout->setColumnStretch(1, 10); /// Exemple basic layouts
+ tmp_layout->setColumnStretch(2, 20);
+
+ QWidget * tmp = new QWidget;
+ tmp->setLayout(tmp_layout);
+
+ QString name = lst->getGameId();
+ tbw_calculs->addTab(tmp, name);
+ gdl_all->addWidget(tbw_calculs);
+ wdg_reponses->setLayout(gdl_all);
+ wdg_reponses->setWindowTitle("Resultats");
+ wdg_reponses->show();
 }
 
 void BTbView::showUsrGame(QWidget * une_selection, QString name)

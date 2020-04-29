@@ -6,7 +6,6 @@
 #include <QMap>
 
 #include "game.h"
-#include "compter.h"
 
 class BAnalyserTirages : public QWidget
 {

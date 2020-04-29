@@ -6,7 +6,6 @@
 #include <QModelIndex>
 #include <QGroupBox>
 
-//#include "BTbView.h"
 #include "game.h"
 #include "bstflt.h"
 

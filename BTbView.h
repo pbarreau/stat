@@ -7,19 +7,19 @@
 #include <QMenu>
 #include <QPushButton>
 #include <QTabWidget>
+#include <QGridLayout>
 
 #include "BFlt.h"
 #include "BGpbMenu.h"
-#include "game.h"
-
-//class BGrbGenTirages;
+#include "BGameList.h"
+#include "BAnalyserTirages.h"
 
 class BTbView : public QTableView, BFlt
 {
  Q_OBJECT
 
  public :
- BTbView(const stGameConf *pGame, int in_zn, etCount in_typ, QTableView *parent=nullptr);
+ BTbView(const stGameConf *pGame, int in_zn, etCount in_typ);
  QGroupBox * getScreen();
  BGpbMenu * getGpb();
  void updateTitle();
@@ -41,11 +41,16 @@ class BTbView : public QTableView, BFlt
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);
  void construireMenu(void);
  void showUsrGame(QWidget *une_selection, QString name);
+ void agencerResultats(BGameList *lst,BAnalyserTirages * ana);
 
  public:
  BFlt *lbflt;
 
  private:
+ static QTabWidget * tbw_calculs;
+ static QWidget * wdg_reponses;
+ static QGridLayout *gdl_all;
+
  QSqlDatabase db_tbv;
  const stGameConf *cur_game;
  BGpbMenu *myGpb;

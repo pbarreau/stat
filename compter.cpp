@@ -170,17 +170,16 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  glay_tmp->setColumnStretch(2, 20);
  wdg_tmp->setLayout(glay_tmp);
 
+#if 0
  /// --------------------
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,
          SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
 
-#if 0
  /// Selection & priorite
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
-#endif
 
  /// Click sur le group box
  BGpbMenu *tmp_gpb = qtv_tmp->getGpb();
@@ -188,6 +187,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
          SIGNAL(sig_ShowMenu(const QGroupBox *, const QPoint)),
          tmp_gpb,
          SLOT(slot_ShowMenu(const QGroupBox *, const QPoint)));
+#endif
 
  /// --------------------
 
@@ -350,6 +350,7 @@ void BCount::RecupererConfiguration(void)
 #endif
 }
 
+#if 0
 void BCount::slot_V2_AideToolTip(const QModelIndex & index)
 {
  /// https://doc.qt.io/qt-5/qtooltip.html
@@ -402,6 +403,7 @@ void BCount::slot_AideToolTip(const QModelIndex & index)
  if(msg.length())
   QToolTip::showText (QCursor::pos(), msg);
 }
+#endif
 
 void BCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {

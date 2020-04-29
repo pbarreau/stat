@@ -6,7 +6,6 @@
 #include <QGroupBox>
 #include <QLabel>
 
-#include "game.h"
 #include "BSqlQmTirages_3.h"
 
 class BGameList : public QWidget
@@ -16,6 +15,7 @@ class BGameList : public QWidget
  explicit BGameList(const stGameConf *pGame, QWidget *parent = nullptr);
  ~BGameList();
  stGameConf * getGameConf(void);
+ QString getGameId(void);
 
  private:
  bool isNewUsrGame(const stGameConf *pGame, QString *gameId, QString *data);
@@ -41,10 +41,9 @@ class BGameList : public QWidget
 
  private:
  static int gme_counter;
- //BGameList *addr;
  stGameConf *gameDef;
  QSqlDatabase db_gme;
- //QString key;
+ QString cur_game;
 
  private:
  BSqlQmTirages_3 *sqm_resu;

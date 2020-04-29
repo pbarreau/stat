@@ -31,6 +31,8 @@ int BGameList::gme_counter = 1;
 BGameList::BGameList(const stGameConf *pGame, QWidget *parent) : QWidget(parent)
 {
  gameDef = nullptr;
+ cur_game = "";
+
  QString cnx=pGame->db_ref->cnx;
 
  // Etablir connexion a la base
@@ -45,6 +47,7 @@ BGameList::BGameList(const stGameConf *pGame, QWidget *parent) : QWidget(parent)
  QString data = "";
  if(isNewUsrGame(pGame,&game, &data)==true){
   game = "E1_"+QString::number(gme_counter).rightJustified(2,'0');
+  cur_game = game;
   if(createGame(pGame, game, data)==true){
    gameDef = newGameConf(pGame,game);
    mkGameWidget(gameDef);
@@ -56,6 +59,11 @@ BGameList::BGameList(const stGameConf *pGame, QWidget *parent) : QWidget(parent)
 stGameConf * BGameList::getGameConf(void)
 {
  return gameDef;
+}
+
+QString BGameList::getGameId(void)
+{
+ return cur_game;
 }
 
 void BGameList::mkGameWidget(stGameConf *current)

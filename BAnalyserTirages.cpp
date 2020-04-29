@@ -9,7 +9,6 @@
 #include <QTabWidget>
 #include <QVector>
 
-#include "BAnalyserTirages.h"
 #include "db_tools.h"
 #include "cnp_AvecRepetition.h"
 
@@ -17,6 +16,8 @@
 #include "compter_combinaisons.h"
 #include "compter_barycentre.h"
 #include "compter_groupes.h"
+
+#include "BAnalyserTirages.h"
 
 int BAnalyserTirages::total_analyses = 0;
 

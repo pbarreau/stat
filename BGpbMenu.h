@@ -9,7 +9,6 @@
 #include <QMenu>
 
 #include "BFlt.h"
-#include "bstflt.h"
 
 class BTbView;
 
