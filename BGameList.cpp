@@ -464,6 +464,8 @@ QGroupBox *BGameList::LireTable(stGameConf *pGame, QString tbl_cible)
  connect(my_btn, SIGNAL(clicked()), this, SLOT(slot_btnClicked()));
  seltir->addWidget(my_btn);
 
+ /// HORIZONTAL BAR
+ QHBoxLayout *inputs = new QHBoxLayout;
  //--------------
  QFormLayout *frm_chk = new QFormLayout;
  le_chk = new BLineEdit(qtv_tmp);
@@ -480,24 +482,48 @@ QGroupBox *BGameList::LireTable(stGameConf *pGame, QString tbl_cible)
  // Bouton filtre
  connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(setUplets(const QString)));
  connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(slot_ShowNewTotal(const QString)));
+ inputs->addLayout(frm_chk);
 
  //--------------
- tmp_ico = QIcon(":/images/flt_apply.png");
+ /// https://icon-icons.com/fr/icone/ensemble/849
+ /// spreadsheet_table_xls.png
+
+ //--------------
+ tmp_ico = QIcon(":/images/spreadsheet_table_xls.png");
  tmp_btn = new QPushButton;
  tmp_btn->setIcon(tmp_ico);
- //connect(tmp_btn, SIGNAL(clicked()), this, SLOT(slot_UGL_SetFilters()));
+ tmp_btn->setToolTip("Show All");
+ connect(tmp_btn, SIGNAL(clicked()), this, SLOT(slot_ShowAll()));
+ inputs->addWidget(tmp_btn);
 
+ //--------------
+ tmp_ico = QIcon(":/images/Checked_Checkbox.png");
+ tmp_btn = new QPushButton;
+ tmp_btn->setIcon(tmp_ico);
+ tmp_btn->setToolTip("Show Checked");
+ connect(tmp_btn, SIGNAL(clicked()), this, SLOT(slot_ShowChk()));
+ inputs->addWidget(tmp_btn);
 
- QHBoxLayout *inputs = new QHBoxLayout;
- inputs->addLayout(frm_chk);
+ //--------------
+ tmp_ico = QIcon(":/images/Unchecked_Checkbox.png");
+ tmp_btn = new QPushButton;
+ tmp_btn->setIcon(tmp_ico);
+ tmp_btn->setToolTip("Show Unchecked");
+ connect(tmp_btn, SIGNAL(clicked()), this, SLOT(slot_ShowNhk()));
  inputs->addWidget(tmp_btn);
 
  /// Necessaire pour compter toutes les lignes de reponses
- while (sqm_resu->canFetchMore())
+ /*while (sqm_resu->canFetchMore())
  {
   sqm_resu->fetchMore();
  }
-
+ */
+ QSqlQuery query = sqm_resu->query();
+ bool b_retVal = query.exec();
+ int tot = 0;
+ b_retVal = query.first();
+ b_retVal = query.last();
+ tot = query.at()+1;
 
  /// Determination nb ligne par proxymodel
  int nb_lgn_ftr = fpm_tmp->rowCount();
@@ -530,6 +556,39 @@ QGroupBox *BGameList::LireTable(stGameConf *pGame, QString tbl_cible)
  gpb_Tirages = tmp_gpb;
 
  return tmp_gpb;
+}
+
+void BGameList::slot_ShowAll(void)
+{
+ QString msg="select * from ("+cur_game+")";
+ sqm_resu->setQuery(msg,db_gme);
+
+ /// le fait d'effacer le line edit va declancher un signal
+ /// qui refera les calculs necessaires
+ le_chk->clear();
+ le_chk->textChanged("");
+}
+
+void BGameList::slot_ShowChk(void)
+{
+ QString msg="select * from ("+cur_game+") where (chk="+QString::number(Qt::CheckState::Checked)+")";
+ sqm_resu->setQuery(msg,db_gme);
+
+ /// le fait d'effacer le line edit va declancher un signal
+ /// qui refera les calculs necessaires
+ le_chk->clear();
+ le_chk->textChanged("");
+}
+
+void BGameList::slot_ShowNhk(void)
+{
+ QString msg="select * from ("+cur_game+") where (chk="+QString::number(Qt::CheckState::Unchecked)+")";
+ sqm_resu->setQuery(msg,db_gme);
+
+ /// le fait d'effacer le line edit va declancher un signal
+ /// qui refera les calculs necessaires
+ le_chk->clear();
+ le_chk->textChanged("");
 }
 
 void BGameList::slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckState &chk)

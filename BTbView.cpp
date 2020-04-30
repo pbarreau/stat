@@ -313,6 +313,7 @@ void  BTbView::slot_usrCreateGame()
   tbw_calculs = new QTabWidget;
  }
 
+ /// https://stackoverflow.com/questions/244646/get-elapsed-time-in-qt
  /// Temps de calcul
  QTime r;
  QTime t;

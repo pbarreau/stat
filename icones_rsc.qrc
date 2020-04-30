@@ -10,5 +10,8 @@
         <file>images/pri_none.png</file>
         <file>images/downloadFdj.png</file>
         <file>images/help.png</file>
+        <file>images/Checked_Checkbox.png</file>
+        <file>images/spreadsheet_table_xls.png</file>
+        <file>images/Unchecked_Checkbox.png</file>
     </qresource>
 </RCC>

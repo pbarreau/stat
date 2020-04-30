@@ -42,6 +42,9 @@ class BGameList : public QWidget
  void slot_btnClicked();
  void slot_tbvClicked(const QModelIndex &index);
  void slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckState &chk);
+ void slot_ShowAll(void);
+ void slot_ShowChk(void);
+ void slot_ShowNhk(void);
 
  private:
  static int gme_counter;
