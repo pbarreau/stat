@@ -25,7 +25,6 @@
 
 #include "BSqlQmTirages_3.h"
 #include "BFpm_3.h"
-#include "BTbView.h"
 
 int BGameList::gme_counter = 1;
 
@@ -467,7 +466,7 @@ QGroupBox *BGameList::LireTable(stGameConf *pGame, QString tbl_cible)
 
  //--------------
  QFormLayout *frm_chk = new QFormLayout;
- BLineEdit *le_chk = new BLineEdit(qtv_tmp);
+ le_chk = new BLineEdit(qtv_tmp);
  frm_chk->addRow("Rch :", le_chk);
  le_chk->setToolTip("Recherche");
 
@@ -654,54 +653,25 @@ void BGameList::slot_ShowNewTotal(const QString& lstBoules)
 
 void BGameList::slot_RequestFromAnalyse(const QModelIndex & index, const int &zn, const etCount &eTyp)
 {
- if(index == QModelIndex()){
-  return; /// invalid index
- }
-
- int row = index.row();
-
-#if 0
- QTableView *src = qobject_cast<QTableView*>(sender());
-
- QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
- QSqlQueryModel *A2 = qobject_cast<QSqlQueryModel*>(A1->sourceModel());
- QString s_tmp = A2->query().executedQuery();
-#endif
-
  QString str_key = "";
  QString str_col = "";
  QString msg = "";
 
- /// https://forum.qt.io/topic/25740/checkbox-in-qtableview/4
+ /// effacer filtrage precedent
+ le_chk->clear();
 
- const QAbstractItemModel *qtv_model = index.model();
- const QSortFilterProxyModel *A1 = qobject_cast<const QSortFilterProxyModel*>(qtv_model);
- QSqlQueryModel *A2 = qobject_cast<QSqlQueryModel*>(A1->sourceModel());
- QString s_tmp = A2->query().executedQuery();
-
-
- QModelIndex try_index;
- try_index = qtv_model->index(row,0, QModelIndex());
- str_key   = try_index.data().toString();
- str_key   = index.sibling(row,0).data().toString();
-
- str_key   = index.sibling(row,1).data().toString();
-
- QModelIndex try_index_2 =A2->index(row,0, QModelIndex());
- QString str_key_2 = try_index_2.data().toString();
-
+ str_key = index.sibling(index.row(),1).data().toString();
 
  switch (eTyp) {
   case eCountElm:
    msg = "select t1.* from (E1_01) as t1 where ("+str_key+" in (t1.b1,t1.b2,t1.b3,t1.b4,t1.b5))";
    break;
   case eCountCmb:
-   str_key   = index.sibling(row,0).data().toString();
+   str_key = index.sibling(index.row(),0).data().toString();
    msg= "select t1.* from (E1_01) as t1, (E1_01_ana_z1) as t2 where ((t2.idComb = "+str_key+") and (t1.id=t2.id))";
    break;
   case eCountBrc:
-   str_key = index.sibling(index.row(),1).data().toString();
-   msg= "select t1.* from (E1_01) as t1, (E1_01_ana_z1) as t2 where ((t2.bc = "+str_key+") and (t1.id=t2.id))";
+   msg= "select t1.* from (E1_01) as t1, (E1_01_ana_z1) as t2 where ((printf(\"%.2f\",t2.bc) = '"+str_key+"') and (t1.id=t2.id))";
    break;
 
 	case eCountGrp:
@@ -719,16 +689,16 @@ void BGameList::slot_RequestFromAnalyse(const QModelIndex & index, const int &zn
 		msg = "select t1.* from (E1_01) as t1, (E1_01_ana_z1) as t2 where ((t2."+headTop+" = "+s_nb+") and (t1.id=t2.id))";
 	 }
 	}
-	 break;
+	break;
 
 	default:
 			;// Rien
  }
 
- /*
-  *  A2->clear();
-  *  A2->setQuery(msg,db_gme);
-*/
+#ifndef QT_NO_DEBUG
+ qDebug() << "Key : " << str_key;
+ qDebug() << "Msg : " <<msg;
+#endif
 
  updateTbv(msg);
 }

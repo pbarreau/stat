@@ -350,6 +350,12 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 	 myTxt = QString::number(myOpt.text.toInt()).rightJustified(2,'0');
 	}
 
+	/*
+	 *
+	 * code corrige dans select sql par printf("%7.2f", avg())
+	 * le champ a 7 carateres :
+	 * 4 avant la virgule, la virgule puis 2 apres la virgule
+	 *
 	if(a->typ == eCountBrc){
 	 /// https://stackoverflow.com/questions/7234824/format-a-number-to-a-specific-qstring-format
 	 QStringList tmp_lst = myTxt.split(",");
@@ -360,6 +366,7 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 		myTxt=myTxt+","+"00";
 	 }
 	}
+ */
  }
 
  if((a->b_flt & Bp::F_Flt::fltWanted) == Bp::F_Flt::fltWanted){

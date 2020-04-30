@@ -8,6 +8,7 @@
 
 #include "BSqlQmTirages_3.h"
 #include "bstflt.h"
+#include "blineedit.h"
 
 class BGameList : public QWidget
 {
@@ -52,6 +53,7 @@ class BGameList : public QWidget
  BSqlQmTirages_3 *sqm_resu;
  QGroupBox *gpb_Tirages;
  QLabel *lb_Big;
+ BLineEdit *le_chk;
 
 
 

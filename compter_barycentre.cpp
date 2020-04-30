@@ -220,7 +220,7 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
           " "
           "tb_bc as "
           "( "
-          "SELECT t2.id, cast( avg(poids.T) as real) as bc, t2.J as J  "
+          "SELECT t2.id, cast(printf(\"%.2f\",avg(poids.T)) as text) as bc, t2.J as J  "
           "from ("+tbl_tirages
           +") as t2  "
             "left join poids where (poids.id in("+st_critere+
@@ -231,7 +231,7 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
           "( "
           "select  "
           "cast(row_number() over (order by count(tb_bc.bc) desc ) as int) as id,   "
-          "cast(tb_bc.bc as real) as R,  "
+          "cast(tb_bc.bc as text) as R,  "
           "cast (count(tb_bc.id) as int) as T "
           +db_jours+
           " from tb_bc GROUP by tb_bc.bc "

@@ -566,6 +566,8 @@ QString BAnalyserTirages::sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, in
  QString st_sql="";
 
  QString key = "t1.z"+QString::number(zn+1);
+
+#if 0
  QString ref = "t2."+pGame->names[zn].abv+"%1";
 
  int max = pGame->limites[zn].len;
@@ -576,13 +578,17 @@ QString BAnalyserTirages::sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, in
    st_cols=st_cols+",";
   }
  }
+#endif
+
+ QString st_cols = BCount::FN1_getFieldsFromZone(pGame, zn, "t2");
+ QString tbl_fdj = pGame->db_ref->fdj;
 
  st_sql= "with poids as (select cast(row_number() over ()as int) as id,"
           "cast (count("
           +key
           +") as int) as T "
             "from B_elm as t1 LEFT join ("
-          +tbl_tirages
+          +tbl_fdj
           +") as t2 "
             " where("
           +key
