@@ -127,7 +127,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
  if(eCalcul != eCountGrp){
   qtv_tmp->hideColumn(0);
-  qtv_tmp->sortByColumn(2,Qt::DescendingOrder);
+  qtv_tmp->sortByColumn(Bp::colTotal,Qt::DescendingOrder);
  }
  else {
   visual=0;

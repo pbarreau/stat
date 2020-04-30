@@ -166,7 +166,7 @@ bool BFlt::chkThatCell(QModelIndex a_cell) const
   case eCountElm:
   case eCountCmb:
   case eCountBrc:
-   if(a_cell.column()==1){
+   if((a_cell.column() == Bp::colTxt) || (a_cell.column()==Bp::colVisual)){
     inf_flt->lgn = 10 * inf_flt->typ;
     inf_flt->col = a_cell.sibling(cur_row,0).data().toInt();
     inf_flt->val = inf_flt->col;

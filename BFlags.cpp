@@ -327,20 +327,20 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 
  int cur_col = index.column();
 
- int painting_col = -1;
+ int painting_col = Bp::noCol;
  switch (a->typ) {
   case eCountElm:
   case eCountCmb:
   case eCountBrc:
-   painting_col = 1;
+   painting_col = Bp::colTxt;
    break;
 
 	case eCountGrp:
-	 painting_col = 0;
+	 painting_col = Bp::colId;
 	 break;
 
 	default:
-	 painting_col = -1;
+	 painting_col = Bp::noCol;
 	 break;
  }
 
@@ -391,7 +391,10 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 void BFlags::fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const
 {
 
- if((inf_flt->typ !=eCountGrp) && (myOpt.index.column() != 1)){
+ if(inf_flt->tb_ref.compare("B_fdj")!=0){
+  return;
+ }
+ else if((inf_flt->typ !=eCountGrp) && (myOpt.index.column() != Bp::colVisual)){
   return;
  }
 

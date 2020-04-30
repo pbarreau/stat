@@ -205,6 +205,11 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
  QString tbl_fdj = pGame->db_ref->fdj;
  QString st_critere = FN1_getFieldsFromZone(pGame, zn, "t2");
 
+ QString col_visu = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  col_visu = "NULL as I,";
+ }
+
  st_sql = "with poids as  "
           "( "
           "select cast(row_number() over ()as int) as id, "
@@ -231,7 +236,8 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
           "( "
           "select  "
           "cast(row_number() over (order by count(tb_bc.bc) desc ) as int) as id,   "
-          "cast(tb_bc.bc as text) as R,  "
+          "cast(tb_bc.bc as text) as R, "+
+          col_visu+
           "cast (count(tb_bc.id) as int) as T "
           +db_jours+
           " from tb_bc GROUP by tb_bc.bc "

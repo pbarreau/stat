@@ -404,27 +404,22 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
  QString st_sql="";
 
  QString key = "t1.z"+QString::number(zn+1);
- QString ref = "t2."+pGame->names[zn].abv+"%1";
+ QString st_cols = FN1_getFieldsFromZone(pGame, zn, "t2");
 
- int max = pGame->limites[zn].len;
- QString st_cols = "";
- for (int i=0;i<max;i++) {
-  st_cols = st_cols + ref.arg(i+1);
-  if(i<max-1){
-   st_cols=st_cols+",";
-  }
- }
-
- QString tbl_tirages = pGame->db_ref->src;
+ QString col_visu = "";
  QString tbl_key = "";
+ QString tbl_tirages = pGame->db_ref->src;
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
   tbl_key="_fdj";
+  col_visu = "NULL as I,";
  }
 
  st_sql= "with tbResultat as (select cast(row_number() over ()as int) as id,"
           "cast ("+key
-          +" as int) as R, cast (count("
+          +" as int) as R,"+
+          col_visu+
+          "cast (count("
           +key
           +") as int) as T "
           + db_jours

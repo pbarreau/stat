@@ -39,6 +39,14 @@ namespace Bp {
   Er_Result,
   lyend
  };
+
+ enum E_Col{
+  noCol = -1,
+  colId	=	0,
+  colTxt,
+  colVisual,
+  colTotal
+ };
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Bp::F_Flts)
