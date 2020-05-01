@@ -36,6 +36,7 @@ class BTbView : public QTableView, BFlt
 
  private slots:
  void bsl_clicked(const QModelIndex &index);
+ void slot_trackSelection(const QItemSelection &cur, const QItemSelection &last);
 
  private slots:
  void slot_V2_AideToolTip(const QModelIndex & index);
@@ -49,6 +50,8 @@ class BTbView : public QTableView, BFlt
  void construireMenu(void);
  void showUsrGame(QWidget *une_selection, QString name);
  void agencerResultats(BGameList *lst,BAnalyserTirages * ana);
+ void mouseMoveEvent( QMouseEvent * inEvent );
+ //void mousePressEvent(QMouseEvent *event);
 
  public:
  BFlt *lbflt;

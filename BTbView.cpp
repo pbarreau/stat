@@ -10,8 +10,9 @@
 
 #include <QMessageBox>
 #include <QToolTip>
-
+#include <QList>
 #include <QTime>
+#include <QEvent>
 
 #include "BGameList.h"
 #include "BTbView.h"
@@ -47,6 +48,14 @@ BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ)
  this->setMouseTracking(true);
  connect(this,
          SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
+
+ /// Suivit du click
+ connect(this,SIGNAL(pressed(const QModelIndex)), this, SLOT(bsl_clicked(const QModelIndex)));
+
+ /*
+ connect(this,SIGNAL(selectionChanged( QItemSelection ,  QItemSelection )),
+         this,SLOT(slot_trackSelection(QItemSelection ,  QItemSelection )));
+*/
 
  up = nullptr;
  btn_usrGame = nullptr;
@@ -414,7 +423,53 @@ QGroupBox * BTbView::getScreen()
  return myGpb;
 }
 
+void BTbView::slot_trackSelection(const QItemSelection &cur, const QItemSelection &last)
+{
+ QList<QModelIndex> indexes = cur.indexes();
+}
+
+void BTbView::mouseMoveEvent( QMouseEvent * inEvent )
+{
+ /// https://doc.qt.io/archives/4.6/eventsandfilters.html
+
+ if(inEvent->buttons() == Qt::MouseButton::LeftButton){
+  inEvent->accept();
+  return;
+ }
+
+ QTableView::mouseMoveEvent(inEvent);
+}
+
 void BTbView::bsl_clicked(const QModelIndex &index)
 {
- emit bsg_clicked(index, inf_flt->zne, inf_flt->typ);
+ BTbView *view = qobject_cast<BTbView *>(sender());
+ QItemSelectionModel *selectionModel = view->selectionModel();
+
+ int col = index.column();
+ bool do_return = false;
+
+ /// verifier la selection demandee
+ if(index == QModelIndex()){
+  return;
+ }
+
+ if((do_return == false) && (inf_flt->typ !=eCountGrp) && (col != Bp::colTxt)){
+  do_return = true;
+ }
+
+ if ((do_return == false) && (col == Bp::colId)) {
+  do_return = true;
+ }
+
+ if((do_return == false) && (!selectionModel->selectedIndexes().size())){
+  do_return = true;
+ }
+
+ if(do_return)
+ {
+  selectionModel->clearSelection();
+  return;
+ }
+
+ //emit bsg_clicked(index, inf_flt->zne, inf_flt->typ);
 }

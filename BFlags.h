@@ -50,7 +50,7 @@ class BFlags : public QStyledItemDelegate, BFlt
  void fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const;
  void setVisual(const bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &option,
                         const QModelIndex &index) const;
- void cellWrite(QPainter *painter, const QRect curCell, const QString myTxt, Qt::GlobalColor inPen=Qt::black,  bool up=false) const;
+ void cellWrite(QPainter *painter, QStyle::State state, const QRect curCell, const QString myTxt, Qt::GlobalColor inPen=Qt::black,  bool up=false) const;
 
 
  private:

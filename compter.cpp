@@ -123,15 +123,16 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  qtv_tmp->setSortingEnabled(true);
 
  int nbCol = sqm_tmp->columnCount();
- int visual = 1;
 
+ Bp::E_Col headRed = Bp::noCol;
  if(eCalcul != eCountGrp){
-  qtv_tmp->hideColumn(0);
+  headRed = Bp::colTxt;
+  qtv_tmp->hideColumn(Bp::colId);
   qtv_tmp->sortByColumn(Bp::colTotal,Qt::DescendingOrder);
  }
  else {
-  visual=0;
-  qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+  headRed=Bp::colId;
+  qtv_tmp->sortByColumn(Bp::colId,Qt::AscendingOrder);
 
 	QStringList tooltips=pGame->slFlt[zn][2];
 	tooltips.insert(0,"Total"); /// La colone Nb (0)
@@ -142,9 +143,13 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 	 m->setHeaderData(pos,Qt::Horizontal,tooltips.at(pos),Qt::ToolTipRole);
 	}
  }
- m->setHeaderData(visual,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
+ m->setHeaderData(headRed,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
 
  qtv_tmp->resizeColumnsToContents();
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
  //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
  int count=qtv_tmp->horizontalHeader()->count();
@@ -162,7 +167,6 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
   usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
  }
  else {
-  connect(qtv_tmp,SIGNAL(clicked(const QModelIndex)), qtv_tmp, SLOT(bsl_clicked(const QModelIndex)));
   connect(qtv_tmp,SIGNAL(bsg_clicked(const QModelIndex, const int, const etCount)),
           this, SLOT(bsl_clicked(const QModelIndex, const int, const etCount)));
  }

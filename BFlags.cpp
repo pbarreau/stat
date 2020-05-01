@@ -67,20 +67,19 @@ void BFlags::displayTbv_cell(QPainter *painter, const QStyleOptionViewItem &opti
  QStyleOptionViewItem myOpt = option;
  initStyleOption(&myOpt, index);
 
- if(( b_retVal = chkThatCell(index)) == true){
-  /// Gestion des graphiques
-  fltDraw(inf_flt,painter,myOpt);
+ /// Recupere les infos de la table filtre, champ flt
+ /// et indique si cette cellule doit etre
+ /// traite de facon particuliere
+ ///
+ b_retVal = chkThatCell(index);
 
- }
- /*
- else {
-  QRect curCell = myOpt.rect;
-  QString myTxt = myOpt.text;
-  cellWrite(painter,curCell,myTxt);
- }
-*/
  /// Il faut mettre notre texte
  fltWrite(inf_flt, painter, myOpt);
+
+ if(b_retVal){
+  /// Gestion des graphiques
+  fltDraw(inf_flt,painter,myOpt);
+ }
 
 }
 
@@ -266,13 +265,26 @@ bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelInde
 }
 
 //void BFlags::cellWrite(QPainter *painter, const QStyleOptionViewItem &myOpt, Qt::GlobalColor inPen, bool up)const
-void BFlags::cellWrite(QPainter *painter, const QRect curCell, const QString myTxt, Qt::GlobalColor inPen, bool up)const
+void BFlags::cellWrite(QPainter *painter, QStyle::State state, const QRect curCell, const QString myTxt, Qt::GlobalColor inPen, bool up)const
 {
+ bool selected = state & QStyle::State_Selected;
 
  QFont myFnt;
  QPalette myPal;
  Qt::Alignment myAlg;
  Qt::GlobalColor myPen=inPen;
+
+ if (selected)
+ {
+  /// https://www.qtcentre.org/threads/53498-QFontMetrics-boundingRect()-and-QPainter-draw()-differences
+  // Whitee pen while selection
+  //painter->setPen(Qt::white);
+  painter->setBrush(myPal.highlightedText());
+  painter->fillRect(curCell, COULEUR_FOND_FILTRE);
+  painter->setPen(selected
+                   ? myPal.highlightedText().color()
+                   : myPal.text().color());
+ }
 
  QString font_family = "ARIAL";
  int font_weight = QFont::Normal;
@@ -303,8 +315,12 @@ void BFlags::cellWrite(QPainter *painter, const QRect curCell, const QString myT
 
  painter->save();
 
+
  painter->setFont(myFnt);
  myPal.setColor(QPalette::Active, QPalette::Text, myPen);
+
+
+
  QApplication::style()->drawItemText(painter,space,alignment,myPal,true,myTxt,QPalette::ColorRole::Text);
 
  painter->restore();
@@ -319,6 +335,7 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
  QString myTxt = myOpt.text;
  QRect cur_rect = myOpt.rect;
  QModelIndex index = myOpt.index;
+ QStyle::State state =  myOpt.state;
 
  QFont myFnt;
  QPalette myPal;
@@ -384,7 +401,7 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 	myPen = Qt::red;
  }
 
- cellWrite(painter,cur_rect, myTxt,myPen,set_up);
+ cellWrite(painter,state,cur_rect, myTxt,myPen,set_up);
 
 }
 
