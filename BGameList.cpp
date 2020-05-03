@@ -505,11 +505,11 @@ QGroupBox *BGameList::LireTable(stGameConf *pGame, QString tbl_cible)
  {
   tmp_btn = new QPushButton;
 
-  QString icon_file = ":/images/"+lst_btn[i].name+".png";
-  tmp_ico = QIcon(icon_file);
+	QString icon_file = ":/images/"+lst_btn[i].name+".png";
+	tmp_ico = QIcon(icon_file);
 
-  tmp_btn->setIcon(tmp_ico);
-  tmp_btn->setToolTip(lst_btn[i].tooltips);
+	tmp_btn->setIcon(tmp_ico);
+	tmp_btn->setToolTip(lst_btn[i].tooltips);
 
 	inputs->addWidget(tmp_btn);
 	btn_grp->addButton(tmp_btn,i+1);
@@ -658,7 +658,7 @@ void BGameList::slot_ShowAll(int btn_id)
 void BGameList::slot_ShowChk(void)
 {
  QString msg= sqlVisualTable(cur_game) + "select t1.* from (tb1) as t1 ";
-  msg= msg + " where (chk="+QString::number(Qt::CheckState::Checked)+")";
+ msg= msg + " where (chk="+QString::number(Qt::CheckState::Checked)+")";
  sqm_resu->setQuery(msg,db_gme);
 
  /// le fait d'effacer le line edit va declancher un signal
@@ -809,7 +809,6 @@ void BGameList::slot_ShowNewTotal(const QString& lstBoules)
  gpb_Tirages->setTitle(st_total);
 }
 
-#if 1
 void BGameList::slot_RequestFromAnalyse(const Bp::E_Ana ana, const B2LstSel * sel)
 {
  QString usr_table = sqlVisualTable(cur_game);
@@ -820,7 +819,7 @@ void BGameList::slot_RequestFromAnalyse(const Bp::E_Ana ana, const B2LstSel * se
  switch (ana) {
   case Bp::anaRaz:
 
-  break;
+   break;
 
 	case Bp::anaFlt:
 	 clause = makeSqlFromSelection(sel, &tbl_lst);
@@ -831,8 +830,8 @@ void BGameList::slot_RequestFromAnalyse(const Bp::E_Ana ana, const B2LstSel * se
  }
 
 #ifndef QT_NO_DEBUG
- qDebug() << "Msg : " <<msg;
- qDebug() << "clause : " <<clause;
+ qDebug() << "\nMsg : " <<msg;
+ qDebug() << "\nclause : " <<clause;
 #endif
 
  if(clause.size()){
@@ -844,60 +843,6 @@ void BGameList::slot_RequestFromAnalyse(const Bp::E_Ana ana, const B2LstSel * se
 
  updateTbv(msg);
 }
-
-#else
-void BGameList::slot_RequestFromAnalyse(const QModelIndex & index, const int &zn, const etCount &eTyp)
-{
- QString str_key = "";
- QString str_col = "";
- QString msg = "";
-
- /// effacer filtrage precedent
- le_chk->clear();
-
- str_key = index.sibling(index.row(),1).data().toString();
-
- switch (eTyp) {
-  case eCountElm:
-   msg = "select t1.* from (E1_01) as t1 where ("+str_key+" in (t1.b1,t1.b2,t1.b3,t1.b4,t1.b5))";
-   break;
-  case eCountCmb:
-   str_key = index.sibling(index.row(),0).data().toString();
-   msg= "select t1.* from (E1_01) as t1, (E1_01_ana_z1) as t2 where ((t2.idComb = "+str_key+") and (t1.id=t2.id))";
-   break;
-  case eCountBrc:
-   msg= "select t1.* from (E1_01) as t1, (E1_01_ana_z1) as t2 where ((printf(\"%.2f\",t2.bc) = '"+str_key+"') and (t1.id=t2.id))";
-   break;
-
-	case eCountGrp:
-	{
-	 const QAbstractItemModel * pModel = index.model();
-
-	 QString headRef = pModel->headerData(0,Qt::Horizontal).toString();
-	 QString headTop= "";
-	 int col = index.column();
-	 QString s_nb = index.model()->index(index.row(),0).data().toString();
-
-	 if(col>0){
-		QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-		headTop = vCol.toString();
-		msg = "select t1.* from (E1_01) as t1, (E1_01_ana_z1) as t2 where ((t2."+headTop+" = "+s_nb+") and (t1.id=t2.id))";
-	 }
-	}
-	break;
-
-	default:
-			;// Rien
- }
-
-#ifndef QT_NO_DEBUG
- qDebug() << "Key : " << str_key;
- qDebug() << "Msg : " <<msg;
-#endif
-
- updateTbv(msg);
-}
-#endif
 
 QString BGameList::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 {
@@ -922,13 +867,13 @@ QString BGameList::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 	{
 	 BLstSelect *item = tmp->at(j);
 
-   switch (item->type) {
-    case eCountElm:
-     ret_elm = select_elm(item->indexes, item->zn);
-     break;
+	 switch (item->type) {
+		case eCountElm:
+		 ret_elm = select_elm(item->indexes, item->zn);
+		 break;
 
 		case eCountCmb:
-		 cur_tbl_id = cur_tbl_id + j;
+		 cur_tbl_id = cur_tbl_id + 1;
 		 local_list = local_list + "("+cur_game+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
 		 if(j<nb_zone-1){
 			local_list = local_list + ",";
@@ -937,7 +882,7 @@ QString BGameList::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 		 break;
 
 		case eCountBrc:
-		 cur_tbl_id = cur_tbl_id + j;
+		 cur_tbl_id = cur_tbl_id + 1;
 		 local_list = local_list + "("+cur_game+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
 		 if(j<nb_zone-1){
 			local_list = local_list + ",";
@@ -946,7 +891,7 @@ QString BGameList::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 		 break;
 
 		case eCountGrp:
-		 cur_tbl_id = cur_tbl_id + j;
+		 cur_tbl_id = cur_tbl_id + 1;
 		 local_list = local_list + "("+cur_game+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
 		 if(j<nb_zone-1){
 			local_list = local_list + ",";
@@ -954,8 +899,8 @@ QString BGameList::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 		 ret_elm = select_grp(item->indexes, item->zn, cur_tbl_id);
 		 break;
 		default:
-        ;
-   }
+				;
+	 }
 
 	 ret_add = ret_add + ret_elm;
 	 if(j <nb_zone -1){
@@ -976,7 +921,7 @@ QString BGameList::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
  }
 
 #ifndef QT_NO_DEBUG
- qDebug() << "ret : " <<ret_all;
+ qDebug() << "\n\nret :\n" <<ret_all;
 #endif
 
  return ret_all;
@@ -1000,7 +945,7 @@ QString BGameList::select_elm(const QModelIndexList &indexes, int zn)
  msg = "("+msg+")";
 
 #ifndef QT_NO_DEBUG
- qDebug() << "Msg : " <<msg;
+ qDebug() << "\n\nselect_elm :\n" <<msg;
 #endif
 
  return msg;
@@ -1016,9 +961,9 @@ QString BGameList::elmSel_1(const QModelIndexList &indexes, int zn)
  QString key = "%1 in("+st_cols+")";
 
  for(int i = 0; i< loop; i++){
-   QString val = indexes.at(i).data().toString();
-   msg = msg + key.arg(val);
-   if(i<loop-1){
+  QString val = indexes.at(i).data().toString();
+  msg = msg + key.arg(val);
+  if(i<loop-1){
    msg=msg+" and ";
   }
  }
@@ -1052,6 +997,7 @@ QString BGameList::elmSel_2(const QModelIndexList &indexes, int zn)
   }
  }
 
+
  return msg;
 }
 
@@ -1074,6 +1020,10 @@ QString BGameList::select_cmb(const QModelIndexList &indexes, int zn, int tbl_id
  }
 
  msg = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+key.arg(ret)+")";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "\n\nselect_cmb :\n" <<msg;
+#endif
 
  return msg;
 }
@@ -1098,39 +1048,72 @@ QString BGameList::select_brc(const QModelIndexList &indexes, int zn, int tbl_id
 
  msg = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+key.arg(ret)+")";
 
+#ifndef QT_NO_DEBUG
+ qDebug() << "\n\nselect_brc :\n" <<msg;
+#endif
+
  return msg;
 }
 
 QString BGameList::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
 {
  QString msg = "";
-
- QString key = "t"+QString::number(tbl_id)+".bc in(%1)";
-
  QString ret = "";
- int taille = indexes.size();
 
+
+ /// Tableau de memorisation choix usr
+ const QAbstractItemModel * p_aim = indexes.at(0).model();
+ int nb_col = 	p_aim->columnCount();
+ QString *tab_sel = new QString[nb_col];
+ for(int i=0; i< nb_col;i++){
+  tab_sel[i]="";
+ }
+
+ /// Recuperation de la valeur de nb pour chaque index
+ int col_usr = 0;
+ int taille = indexes.size();
  for(int i = 0; i< taille; i++){
   QModelIndex cur_index = indexes.at(i);
 
-	const QAbstractItemModel * pModel = cur_index.model();
-	QString headRef = pModel->headerData(Bp::colId,Qt::Horizontal).toString();
-	QString headTop= "";
 	int col = cur_index.column();
-	QString s_nb = cur_index.model()->index(cur_index.row(),Bp::colId).data().toString();
-
-	QString val = cur_index.sibling(cur_index.row(),cur_index.column()).data().toString();
-
-	if(i<taille-1){
-	 val=val+",";
+	if(col>0){
+	 QString s_nb = cur_index.model()->index(cur_index.row(),Bp::colId).data().toString();
+	 if(tab_sel[col-1].size()){
+		tab_sel[col-1]=tab_sel[col-1]+","+s_nb;
+	 }
+	 else {
+		tab_sel[col-1] = s_nb;
+		col_usr++;
+	 }
 	}
-	ret = ret+val;
  }
 
- msg = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+key.arg(ret)+")";
+ /// Construction de la requete de chaque colonne
+ QString ref = "(t"+QString::number(tbl_id)+".%1 in(%2))";
+ for (int i = 0; i<nb_col;i++) {
+  if(!tab_sel[i].size()){
+   continue;
+  }
+  QVariant vCol = p_aim->headerData(i+1,Qt::Horizontal);
+  QString colName = vCol.toString();
+  ret = ret + ref.arg(colName).arg(tab_sel[i]);
+  if(col_usr>1){
+   ret = ret + " and ";
+   col_usr--;
+  }
+
+ }
+
+ delete[] tab_sel;
+ msg = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+ret+")";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "\n\nselect_grp :\n" <<msg;
+#endif
 
  return msg;
 }
+
 QString BGameList::makeSqlForNextLine(const B2LstSel * sel)
 {
  QString ret = "";
@@ -1140,8 +1123,8 @@ QString BGameList::makeSqlForNextLine(const B2LstSel * sel)
 
 void BGameList::updateTbv(QString msg)
 {
-#ifndef QT_NO_DEBUG
- qDebug() << "Msg : " <<msg;
+#ifndef QT_NO_DEBUG ///<< "\033[2J" << "\033[3J"<<
+ qDebug()<< "\033\[2J" << "\033\[3J"<< "\n\nMsg :\n" <<msg;
 #endif
 
  sqm_resu->clear();
