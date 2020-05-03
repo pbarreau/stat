@@ -419,7 +419,10 @@ QGroupBox *BGameList::LireTable(stGameConf *pGame, QString tbl_cible)
  int chk_nb_col = pGame->limites[zn].len;
 
  /// Montrer resultats
- msg="select * from ("+tbl_cible+")";
+ msg= sqlVisualTable(tbl_cible) + "select t1.* from (tb1) as t1 ";
+#ifndef QT_NO_DEBUG
+ qDebug() <<msg;
+#endif
  QTableView *qtv_tmp = new QTableView;
 
  QString cnx = db_gme.connectionName();
@@ -587,9 +590,42 @@ QGroupBox *BGameList::LireTable(stGameConf *pGame, QString tbl_cible)
  return tmp_gpb;
 }
 
+QString BGameList::sqlVisualTable(QString tbl_src)
+{
+ int zn = 0;
+ QString str_cols = BCount::FN1_getFieldsFromZone(gameDef,zn, "t1");
+
+ QString msg = " with tb1 as (select t1.id,"+
+               str_cols+
+               ",t1.chk from ("+
+               tbl_src+
+               ") as t1)";
+ /*
+
+ QString msg = " with tb1 as (select t2.tip as C, "+
+               str_cols+
+               ",printf(\"%.2f\",t3.bc) as bc ,t1.chk "
+               " from ("+
+               tbl_src+
+               ") as t1, (B_cmb_z"+
+               QString::number(zn+1)+
+               ") as t2, ("+
+               tbl_src+
+               "_ana_z"+
+               QString::number(zn+1)+
+               ") as t3"
+               " where"
+               " ("
+               " (t1.id=t3.id) AND"
+               " (t2.id = t3.idComb)"
+               " )) ";
+*/
+ return msg;
+}
+
 void BGameList::slot_ShowAll(int btn_id)
 {
- QString msg = "select * from ("+cur_game+")";
+ QString msg= sqlVisualTable(cur_game) + "select t1.* from (tb1) as t1 ";
  bool with_where = false;
  Qt::CheckState val_chk = Qt::CheckState::Unchecked;
 
@@ -617,20 +653,12 @@ void BGameList::slot_ShowAll(int btn_id)
  le_chk->clear();
  le_chk->textChanged("");
 
- /*
- QString msg="select * from ("+cur_game+")";
- sqm_resu->setQuery(msg,db_gme);
-
- /// le fait d'effacer le line edit va declancher un signal
- /// qui refera les calculs necessaires
- le_chk->clear();
- le_chk->textChanged("");
-*/
 }
 
 void BGameList::slot_ShowChk(void)
 {
- QString msg="select * from ("+cur_game+") where (chk="+QString::number(Qt::CheckState::Checked)+")";
+ QString msg= sqlVisualTable(cur_game) + "select t1.* from (tb1) as t1 ";
+  msg= msg + " where (chk="+QString::number(Qt::CheckState::Checked)+")";
  sqm_resu->setQuery(msg,db_gme);
 
  /// le fait d'effacer le line edit va declancher un signal
@@ -641,7 +669,8 @@ void BGameList::slot_ShowChk(void)
 
 void BGameList::slot_ShowNhk(void)
 {
- QString msg="select * from ("+cur_game+") where (chk="+QString::number(Qt::CheckState::Unchecked)+")";
+ QString msg= sqlVisualTable(cur_game) + "select t1.* from (tb1) as t1 ";
+ msg= msg + " where (chk="+QString::number(Qt::CheckState::Unchecked)+")";
  sqm_resu->setQuery(msg,db_gme);
 
  /// le fait d'effacer le line edit va declancher un signal
@@ -676,13 +705,14 @@ void BGameList::slot_UsrChk(const QPersistentModelIndex &target, const Qt::Check
 
  /// Texte a mettre
  msg="";
- for (int i =2;i<2+5;i++) {
+ int zn = 0;
+ for (int i=Bp::ugmColZn;i<Bp::ugmColZn+gameDef->limites[zn].len;i++) {
   QModelIndex try_index;
   try_index= target.model()->index(row,i, QModelIndex());
 
 	QString val = try_index.data().toString().rightJustified(2,'0');
 	msg= msg + val;
-	if(i<2+5-1){
+	if(i<Bp::ugmColZn+gameDef->limites[zn].len-1){
 	 msg = msg + ",";
 	}
  }
@@ -732,7 +762,9 @@ void BGameList::slot_tbvClicked(const QModelIndex &index)
 
  /// https://forum.qt.io/topic/25740/checkbox-in-qtableview/4
  QModelIndex try_index;
- try_index= src->model()->index(row,7, QModelIndex());
+ int zn=0;
+ ///int col_chk = z1_start+gameDef->limites[zn].len + 1;
+ try_index= src->model()->index(row,Bp::ugmColChk, QModelIndex());
 
  QString msg = "";
  if(try_index.data(Qt::CheckStateRole) == Qt::Checked){
@@ -749,10 +781,10 @@ void BGameList::slot_tbvClicked(const QModelIndex &index)
 
  /// Texte a mettre
  msg="";
- for (int i =2;i<2+5;i++) {
+ for (int i =Bp::ugmColZn;i<Bp::ugmColZn+gameDef->limites[zn].len;i++) {
   QString val = index.model()->index(index.row(),i).data().toString().rightJustified(2,'0');
   msg= msg + val;
-  if(i<2+5-1){
+  if(i<Bp::ugmColZn+gameDef->limites[zn].len-1){
    msg = msg + ",";
   }
  }
@@ -780,7 +812,9 @@ void BGameList::slot_ShowNewTotal(const QString& lstBoules)
 #if 1
 void BGameList::slot_RequestFromAnalyse(const Bp::E_Ana ana, const B2LstSel * sel)
 {
- QString msg  = "select * from ("+cur_game+") as t1 ";
+ QString usr_table = sqlVisualTable(cur_game);
+ QString msg  = "select t1.* from ";
+ QString tbl_lst = "(tb1) as t1";
  QString clause = "";
 
  switch (ana) {
@@ -789,7 +823,7 @@ void BGameList::slot_RequestFromAnalyse(const Bp::E_Ana ana, const B2LstSel * se
   break;
 
 	case Bp::anaFlt:
-	 clause = makeSqlFromSelection(sel);
+	 clause = makeSqlFromSelection(sel, &tbl_lst);
 	 break;
 
 	case Bp::anaNxt:
@@ -802,7 +836,10 @@ void BGameList::slot_RequestFromAnalyse(const Bp::E_Ana ana, const B2LstSel * se
 #endif
 
  if(clause.size()){
-  msg = msg + " where("+clause+")";
+  msg = usr_table+ msg + tbl_lst + " where("+clause+")";
+ }
+ else {
+  msg = usr_table+ msg + tbl_lst;
  }
 
  updateTbv(msg);
@@ -862,35 +899,73 @@ void BGameList::slot_RequestFromAnalyse(const QModelIndex & index, const int &zn
 }
 #endif
 
-QString BGameList::makeSqlFromSelection(const B2LstSel * sel)
+QString BGameList::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 {
- QString ret = "";
+ QString ret_all = "";
+ QString ret_elm = "";
+ QString ret_cmb = "";
+ QString ret_add = "";
+
+ int cur_tbl_id = 3;
+ QString local_list = "";
 
  int nb_items = sel->size();
- for (int i=0;i<nb_items;i++) {
+ for (int i=0;i<nb_items;i++)
+ {
   QList<BLstSelect *> *tmp = sel->at(i);
-  int nb_zone = tmp->size();
-  for (int j=0;j<nb_zone;j++) {
-   BLstSelect *item = tmp->at(j);
+
+	ret_add = "";
+	ret_elm = "";
+	local_list = "";
+	int nb_zone = tmp->size();
+	for (int j=0;j<nb_zone;j++)
+	{
+	 BLstSelect *item = tmp->at(j);
+
    switch (item->type) {
     case eCountElm:
-     ret = selectOn_elm(item->indexes, item->zn);
+     ret_elm = select_elm(item->indexes, item->zn);
      break;
+
+		case eCountCmb:
+		 cur_tbl_id = cur_tbl_id + j;
+		 local_list = local_list + "("+cur_game+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
+		 if(j<nb_zone-1){
+			local_list = local_list + ",";
+		 }
+		 ret_elm = select_cmb(item->indexes, item->zn, cur_tbl_id);
+		 break;
+
     default:
         ;
    }
-  }
 
+	 ret_add = ret_add + ret_elm;
+	 if(j <nb_zone -1){
+		ret_add = ret_add  + " and ";
+	 }
+
+	}
+
+	ret_all = ret_all + ret_add;
+
+	if(local_list.size()){
+	 *tbl_lst = *tbl_lst+ "," + local_list;
+	}
+
+	if(i<nb_items -1){
+	 ret_all = ret_all + " and ";
+	}
  }
 
 #ifndef QT_NO_DEBUG
- qDebug() << "ret : " <<ret;
+ qDebug() << "ret : " <<ret_all;
 #endif
 
- return ret;
+ return ret_all;
 }
 
-QString BGameList::selectOn_elm(const QModelIndexList &indexes, int zn)
+QString BGameList::select_elm(const QModelIndexList &indexes, int zn)
 {
  int taille = indexes.size();
  int loop = gameDef->limites[zn].win;
@@ -963,6 +1038,28 @@ QString BGameList::elmSel_2(const QModelIndexList &indexes, int zn)
  return msg;
 }
 
+QString BGameList::select_cmb(const QModelIndexList &indexes, int zn, int tbl_id)
+{
+ QString msg = "";
+
+ QString key = "t"+QString::number(tbl_id)+".idComb in(%1)";
+
+ QString ret = "";
+ int taille = indexes.size();
+
+ for(int i = 0; i< taille; i++){
+  QModelIndex cur_index = indexes.at(i);
+  QString val = cur_index.sibling(cur_index.row(),Bp::colId).data().toString();
+  if(i<taille-1){
+   val=val+",";
+  }
+  ret = ret+val;
+ }
+
+ msg = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+key.arg(ret)+")";
+
+ return msg;
+}
 
 QString BGameList::makeSqlForNextLine(const B2LstSel * sel)
 {

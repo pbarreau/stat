@@ -31,9 +31,11 @@ class BGameList : public QWidget
  QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
  stGameConf *newGameConf(const stGameConf *pGame, QString gameId);
  void updateTbv(QString msg);
- QString makeSqlFromSelection(const B2LstSel * sel);
+ QString sqlVisualTable(QString tbl_src);
+ QString makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst);
  QString makeSqlForNextLine(const B2LstSel * sel);
- QString selectOn_elm(const QModelIndexList &indexes, int zn);
+ QString select_elm(const QModelIndexList &indexes, int zn);
+ QString select_cmb(const QModelIndexList &indexes, int zn, int tbl_id);
  QString elmSel_1(const QModelIndexList &indexes, int zn);
  QString elmSel_2(const QModelIndexList &indexes, int zn);
 

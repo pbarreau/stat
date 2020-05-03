@@ -58,12 +58,18 @@ namespace Bp {
   QString slot;
  };
 
+ enum E_Ugm{
+  ugmColZn=1,
+  ugmColChk=6
+ };
+
  enum E_Ana{
   anaFlt=1,	/// Show filtering
   anaRaz, /// Raz selection
   anaNxt	/// show next of filtering
  };
 }
+
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Bp::F_Flts)
 Q_DECLARE_METATYPE(Bp::F_Flts)
