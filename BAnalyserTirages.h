@@ -4,9 +4,15 @@
 #include <QString>
 #include <QSqlDatabase>
 #include <QMap>
+#include <QTabWidget>
+#include <QVector>
 
 #include "game.h"
 #include "bstflt.h"
+
+#include "BLstSelect.h"
+
+class BCount;
 
 class BAnalyserTirages : public QWidget
 {
@@ -33,25 +39,31 @@ class BAnalyserTirages : public QWidget
  bool AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName);
  bool SupprimerVueIntermediaires(void);
  void PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName);
+ QWidget *addFilterBar(QTabWidget *ana);
 
  bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn_in);
  QString getFieldsFromZone(const stGameConf *pGame, int zn, QString alias);
+ B2LstSel *construireSelection();
+ B2LstSel *effacerSelection(B2LstSel *sel);
 
  typedef bool(BAnalyserTirages::*ptrFnUsr)(const stGameConf *, QString, QString, int );
 
  signals:
  void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
+ void B_sig_filter(const Bp::E_Ana ana, const B2LstSel * sel);
 
  public slots:
  void bsl_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
 
+ private slots:
+ void slot_tstBtn(int btn_id);
+
  private:
  static int total_analyses;
  BAnalyserTirages *addr;
- //QWidget *show_results;
  QSqlDatabase db_1;
  QMap<QString,ptrFnUsr> map_UsrFn;
-
+ QVector<BCount *> mesComptages;
 };
 
 #endif // BANALYSERTIRAGES_H

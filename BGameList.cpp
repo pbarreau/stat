@@ -15,7 +15,9 @@
 #include <QHeaderView>
 #include <QFormLayout>
 #include <QScrollBar>
+#include <QButtonGroup>
 
+#include "compter.h"
 #include "BPushButton.h"
 #include "blineedit.h"
 
@@ -466,6 +468,7 @@ QGroupBox *BGameList::LireTable(stGameConf *pGame, QString tbl_cible)
 
  /// HORIZONTAL BAR
  QHBoxLayout *inputs = new QHBoxLayout;
+ QButtonGroup *btn_grp = new QButtonGroup(inputs);
  //--------------
  QFormLayout *frm_chk = new QFormLayout;
  le_chk = new BLineEdit(qtv_tmp);
@@ -488,6 +491,31 @@ QGroupBox *BGameList::LireTable(stGameConf *pGame, QString tbl_cible)
  /// https://icon-icons.com/fr/icone/ensemble/849
  /// spreadsheet_table_xls.png
 
+ Bp::Btn lst_btn[]=
+  {
+   {"spreadsheet_table_xls", "Show All", "slot_tstBtn"},
+   {"Checked_Checkbox", "Show Checked", "slot_tstBtn"},
+   {"Unchecked_Checkbox", "Show Unchecked", "slot_tstBtn"}
+  };
+ int nb_btn = sizeof(lst_btn)/sizeof(Bp::Btn);
+ for(int i = 0; i< nb_btn; i++)
+ {
+  tmp_btn = new QPushButton;
+
+  QString icon_file = ":/images/"+lst_btn[i].name+".png";
+  tmp_ico = QIcon(icon_file);
+
+  tmp_btn->setIcon(tmp_ico);
+  tmp_btn->setToolTip(lst_btn[i].tooltips);
+
+	inputs->addWidget(tmp_btn);
+	btn_grp->addButton(tmp_btn,i+1);
+
+ }
+ btn_grp->setExclusive(true);
+ connect(btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(slot_ShowAll(int)));
+
+ /*
  //--------------
  tmp_ico = QIcon(":/images/spreadsheet_table_xls.png");
  tmp_btn = new QPushButton;
@@ -511,6 +539,7 @@ QGroupBox *BGameList::LireTable(stGameConf *pGame, QString tbl_cible)
  tmp_btn->setToolTip("Show Unchecked");
  connect(tmp_btn, SIGNAL(clicked()), this, SLOT(slot_ShowNhk()));
  inputs->addWidget(tmp_btn);
+*/
 
  /// Necessaire pour compter toutes les lignes de reponses
  /*while (sqm_resu->canFetchMore())
@@ -558,8 +587,37 @@ QGroupBox *BGameList::LireTable(stGameConf *pGame, QString tbl_cible)
  return tmp_gpb;
 }
 
-void BGameList::slot_ShowAll(void)
+void BGameList::slot_ShowAll(int btn_id)
 {
+ QString msg = "select * from ("+cur_game+")";
+ bool with_where = false;
+ Qt::CheckState val_chk = Qt::CheckState::Unchecked;
+
+ switch (btn_id) {
+  case 1:
+   with_where = false;
+   break;
+
+	case 2:
+	 with_where = true;
+	 val_chk = Qt::CheckState::Checked;
+	 break;
+
+	case 3:
+	 with_where = true;
+	 val_chk = Qt::CheckState::Unchecked;
+	 break;
+ }
+
+ if(with_where){
+  msg = msg + "where(chk="+QString::number(val_chk)+")";
+ }
+
+ sqm_resu->setQuery(msg,db_gme);
+ le_chk->clear();
+ le_chk->textChanged("");
+
+ /*
  QString msg="select * from ("+cur_game+")";
  sqm_resu->setQuery(msg,db_gme);
 
@@ -567,6 +625,7 @@ void BGameList::slot_ShowAll(void)
  /// qui refera les calculs necessaires
  le_chk->clear();
  le_chk->textChanged("");
+*/
 }
 
 void BGameList::slot_ShowChk(void)
@@ -630,6 +689,14 @@ void BGameList::slot_UsrChk(const QPersistentModelIndex &target, const Qt::Check
 
  lb_Big->setText(msg);
 
+ QTableView *qtv_tmp = sqm_resu->getTbv();
+ BFpm_3 * fpm_tmp = qobject_cast<BFpm_3 *> (qtv_tmp->model());
+ int nb_lgn_ftr = fpm_tmp->rowCount();
+ int nb_lgn_rel = sqm_resu->rowCount();
+
+ //gpb_Tirages =new QGroupBox;
+ QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
+ gpb_Tirages->setTitle(st_total);
 
 }
 
@@ -710,6 +777,38 @@ void BGameList::slot_ShowNewTotal(const QString& lstBoules)
  gpb_Tirages->setTitle(st_total);
 }
 
+#if 1
+void BGameList::slot_RequestFromAnalyse(const Bp::E_Ana ana, const B2LstSel * sel)
+{
+ QString msg  = "select * from ("+cur_game+") as t1 ";
+ QString clause = "";
+
+ switch (ana) {
+  case Bp::anaRaz:
+
+  break;
+
+	case Bp::anaFlt:
+	 clause = makeSqlFromSelection(sel);
+	 break;
+
+	case Bp::anaNxt:
+	 clause = makeSqlForNextLine(sel);
+ }
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "Msg : " <<msg;
+ qDebug() << "clause : " <<clause;
+#endif
+
+ if(clause.size()){
+  msg = msg + " where("+clause+")";
+ }
+
+ updateTbv(msg);
+}
+
+#else
 void BGameList::slot_RequestFromAnalyse(const QModelIndex & index, const int &zn, const etCount &eTyp)
 {
  QString str_key = "";
@@ -761,9 +860,123 @@ void BGameList::slot_RequestFromAnalyse(const QModelIndex & index, const int &zn
 
  updateTbv(msg);
 }
+#endif
+
+QString BGameList::makeSqlFromSelection(const B2LstSel * sel)
+{
+ QString ret = "";
+
+ int nb_items = sel->size();
+ for (int i=0;i<nb_items;i++) {
+  QList<BLstSelect *> *tmp = sel->at(i);
+  int nb_zone = tmp->size();
+  for (int j=0;j<nb_zone;j++) {
+   BLstSelect *item = tmp->at(j);
+   switch (item->type) {
+    case eCountElm:
+     ret = selectOn_elm(item->indexes, item->zn);
+     break;
+    default:
+        ;
+   }
+  }
+
+ }
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "ret : " <<ret;
+#endif
+
+ return ret;
+}
+
+QString BGameList::selectOn_elm(const QModelIndexList &indexes, int zn)
+{
+ int taille = indexes.size();
+ int loop = gameDef->limites[zn].win;
+ QString msg = "";
+
+ if(taille <= loop){
+  msg = elmSel_1(indexes, zn);
+ }
+ else {
+  msg = elmSel_2(indexes, zn);
+ }
+
+
+
+ msg = "("+msg+")";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "Msg : " <<msg;
+#endif
+
+ return msg;
+}
+
+QString BGameList::elmSel_1(const QModelIndexList &indexes, int zn)
+{
+ QString msg = "";
+
+ int loop = indexes.size();
+
+ QString st_cols = BCount::FN1_getFieldsFromZone(gameDef, zn, "t1");
+ QString key = "%1 in("+st_cols+")";
+
+ for(int i = 0; i< loop; i++){
+   QString val = indexes.at(i).data().toString();
+   msg = msg + key.arg(val);
+   if(i<loop-1){
+   msg=msg+" and ";
+  }
+ }
+
+
+ return msg;
+}
+
+QString BGameList::elmSel_2(const QModelIndexList &indexes, int zn)
+{
+ QString msg = "";
+
+ QString key = "t1."+gameDef->names[zn].abv+"%1 in(%2)";
+
+ QString ret = "";
+ int taille = indexes.size();
+
+ for(int i = 0; i< taille; i++){
+  QString val = indexes.at(i).data().toString();
+  if(i<taille-1){
+   val=val+",";
+  }
+  ret = ret+val;
+ }
+
+ int loop = gameDef->limites[zn].win;
+ for(int i = 0; i< loop; i++){
+  msg = msg + key.arg(i+1).arg(ret);
+  if(i<loop-1){
+   msg=msg+" and ";
+  }
+ }
+
+ return msg;
+}
+
+
+QString BGameList::makeSqlForNextLine(const B2LstSel * sel)
+{
+ QString ret = "";
+
+ return ret;
+}
 
 void BGameList::updateTbv(QString msg)
 {
+#ifndef QT_NO_DEBUG
+ qDebug() << "Msg : " <<msg;
+#endif
+
  sqm_resu->clear();
  sqm_resu->setQuery(msg,db_gme);
  QTableView *qtv_tmp = sqm_resu->getTbv();

@@ -130,6 +130,12 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
  QString ref_info = "Initial : %1, R(%1), C(%1), F(%1), Disponible(s) : %1";
  QStringList tmp_lst = ref_info.split(",");
 
+ /// Choix usr ou fdj ?
+ if(inf_flt->tb_ref.compare("B_fdj")!=0){
+  title = "Repartition : ";
+  return title;
+ }
+
  Bp::F_Flts msk = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected|Bp::F_Flt::fltFiltred;
  Bp::F_Flts keys[]={Bp::F_Flt::fltWanted,Bp::F_Flt::fltSelected,Bp::F_Flt::fltFiltred};
  int nb_items = sizeof (keys)/sizeof(Bp::F_Flts);
@@ -357,8 +363,8 @@ void  BTbView::slot_usrCreateGame()
 	 delete uneAnalyse;
 	}
 	else {
-	 connect(uneAnalyse, SIGNAL(bsg_clicked(const QModelIndex, const int, const etCount)),
-					 calcul, SLOT(slot_RequestFromAnalyse(const QModelIndex, const int, const etCount)));
+	 connect(uneAnalyse, SIGNAL(B_sig_filter(const Bp::E_Ana , const B2LstSel * )),
+					 calcul, SLOT(slot_RequestFromAnalyse(const Bp::E_Ana , const B2LstSel *)));
 
 	 agencerResultats(calcul,uneAnalyse);
 	}

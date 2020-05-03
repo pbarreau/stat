@@ -9,6 +9,7 @@
 #include "BSqlQmTirages_3.h"
 #include "bstflt.h"
 #include "blineedit.h"
+#include "BLstSelect.h"
 
 class BGameList : public QWidget
 {
@@ -30,19 +31,24 @@ class BGameList : public QWidget
  QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
  stGameConf *newGameConf(const stGameConf *pGame, QString gameId);
  void updateTbv(QString msg);
+ QString makeSqlFromSelection(const B2LstSel * sel);
+ QString makeSqlForNextLine(const B2LstSel * sel);
+ QString selectOn_elm(const QModelIndexList &indexes, int zn);
+ QString elmSel_1(const QModelIndexList &indexes, int zn);
+ QString elmSel_2(const QModelIndexList &indexes, int zn);
 
  signals:
 
  public slots:
  void slot_ShowNewTotal(const QString& lstBoules);
- void slot_RequestFromAnalyse(const QModelIndex & index, const int &zn, const etCount &eTyp);
+ void slot_RequestFromAnalyse(const Bp::E_Ana ana, const B2LstSel *sel);
 
  private slots:
  void slot_Colorize(QLabel *l);
  void slot_btnClicked();
  void slot_tbvClicked(const QModelIndex &index);
  void slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckState &chk);
- void slot_ShowAll(void);
+ void slot_ShowAll(int btn_id);
  void slot_ShowChk(void);
  void slot_ShowNhk(void);
 

@@ -5,6 +5,10 @@
 #include <QMetaType>
 #include <QString>
 
+#include <QList>
+#include <QItemSelection>
+#include <QItemSelectionModel>
+
 /// -------------
 namespace Bp {
  /// https://wiki.qt.io/QFlags_tutorial
@@ -46,6 +50,18 @@ namespace Bp {
   colTxt,
   colVisual,
   colTotal
+ };
+
+ struct Btn{
+  QString name;
+  QString tooltips;
+  QString slot;
+ };
+
+ enum E_Ana{
+  anaFlt=1,	/// Show filtering
+  anaRaz, /// Raz selection
+  anaNxt	/// show next of filtering
  };
 }
 

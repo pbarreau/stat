@@ -91,6 +91,7 @@ class BCount:public QWidget
  BCount* ptr_self;
  const stGameConf *gm_def;
  etCount type; /// type de comptage en cours
+ BTbView **tabTbv;
  QSqlDatabase dbCount;
 
  public:
@@ -110,6 +111,7 @@ class BCount:public QWidget
  QWidget *startIhm(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)=0;
  virtual void usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)=0;
+ virtual QList<BLstSelect *> *getSelection(void);
 
 
  protected:

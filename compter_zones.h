@@ -56,6 +56,7 @@ class BcElm:public BCount//, public cFdjData
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
  virtual void usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn);
  virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
+ //virtual QList<BLstSelect *> *getSelection(void);
 
 
 

@@ -50,6 +50,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  stMkLocal prm;
  QLayout *up_qtv = nullptr; /// Bandeau audessu du tabview
  BTbView *qtv_tmp = new BTbView(pGame,zn,eCalcul);
+ tabTbv[zn] = qtv_tmp;
  qtv_tmp->setObjectName(QString::number(zn));
 
  /// Nom de la table resultat
@@ -187,6 +188,28 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  return wdg_tmp;
 }
 
+QList<BLstSelect *> *BCount::getSelection(void)
+{
+ QList<BLstSelect *> * ret = new QList<BLstSelect *>;
+
+ int nb_zn = gm_def->znCount;
+ for (int i=0;i<nb_zn;i++) {
+  QItemSelectionModel  *tmp = tabTbv[i]->selectionModel();
+  QList<QModelIndex> indexes = tmp->selectedIndexes();
+  if(indexes.size() !=0 ){
+   BLstSelect *zn_sel = new BLstSelect(type,i,tmp);
+   ret->append(zn_sel);
+  }
+ }
+
+ if(ret->size() == 0){
+  delete  ret;
+  ret = nullptr;
+ }
+
+ return ret;
+}
+
 
 etCount BCount::getType()
 {
@@ -211,6 +234,7 @@ BCount::BCount(const stGameConf *pGame, etCount genre):gm_def(pGame), type(genre
  }
 
  ptr_self = this;
+ tabTbv = new BTbView *[pGame->znCount];
 
  QString st_tmp = DB_Tools::getLstDays(cnx,tbl_tirages);
  db_jours = ","+st_tmp;

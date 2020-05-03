@@ -197,13 +197,15 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
  QString key = "t1.z"+QString::number(zn+1);
  QString st_cols = FN1_getFieldsFromZone(pGame, zn, "t2");
 
- QString col_visu = "";
+ QString col_vsl = "";
  QString tbl_key = "";
+ QString str_jrs = "";
  QString tbl_tirages = pGame->db_ref->src;
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
   tbl_key="_fdj";
-  col_visu = "NULL as I,";
+  col_vsl = "NULL as I,";
+  str_jrs = db_jours;
  }
 
  QString tbl_ref_cmb = "B";
@@ -216,9 +218,9 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
             "tbRes as (select "
             "cast(t1.id as int)as Id,"
             "cast(t1.R as text) as R,"+
-          col_visu+
+          col_vsl+
           "cast(count(t2.id) as int) as T"
-          + db_jours
+          + str_jrs
           +" from (tbCmb) as t1, ("
           +tbl_tirages
           +"_ana_z"

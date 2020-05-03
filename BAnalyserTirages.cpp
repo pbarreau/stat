@@ -8,6 +8,7 @@
 #include <QStringList>
 #include <QTabWidget>
 #include <QVector>
+#include <QButtonGroup>
 
 #include "db_tools.h"
 #include "cnp_AvecRepetition.h"
@@ -18,6 +19,7 @@
 #include "compter_groupes.h"
 
 #include "BAnalyserTirages.h"
+#include "BLstSelect.h"
 
 int BAnalyserTirages::total_analyses = 0;
 
@@ -210,6 +212,7 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
  int nb_item = lstComptage.size();
  if(nb_item){
   tab_Top = new QTabWidget;
+  mesComptages = lstComptage;
  }
 
  for(int i = 0; i< nb_item; i++)
@@ -231,7 +234,8 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
 
  /// faire test pour voir si production de calculs ?
  if(tab_Top!=nullptr){
-  tmp_layout->addWidget(tab_Top,0,0);
+  QWidget *flt_tab = addFilterBar(tab_Top);
+  tmp_layout->addWidget(flt_tab,0,0);
  }
  else {
   QLabel *tmp = new QLabel("Erreur pas de resultats a montrer !!");
@@ -242,10 +246,131 @@ void BAnalyserTirages::PresenterResultats(stGameConf *pGame, QStringList ** info
  total_analyses++;
 
  this->setLayout(tmp_layout);
- //show_results = this;
+}
 
- //Resultats->setWindowTitle(my_title);
- //Resultats->show();
+QWidget *BAnalyserTirages::addFilterBar(QTabWidget *ana)
+{
+ QWidget *tmp_wdg = new QWidget;
+ QHBoxLayout *inputs = new QHBoxLayout;
+ QButtonGroup *btn_grp = new QButtonGroup(inputs);
+
+ QIcon tmp_ico;
+ QPushButton *tmp_btn = nullptr;
+
+
+ Bp::Btn lst_btn[]=
+  {
+   {"flt_apply", "Apply filters", "slot_tstBtn"},
+   {"flt_clear", "Clear filters", "slot_tstBtn"},
+   {"run_32px", "Check next day", "slot_tstBtn"}
+  };
+ int nb_btn = sizeof(lst_btn)/sizeof(Bp::Btn);
+
+ /// https://stackoverflow.com/questions/25480599/how-to-resize-qpushbutton-according-to-the-size-of-its-icon
+ /// https://stackoverflow.com/questions/6639012/minimum-size-width-of-a-qpushbutton-that-is-created-from-code
+ ///
+ for(int i = 0; i< nb_btn; i++)
+ {
+  tmp_btn = new QPushButton;
+
+  QString icon_file = ":/images/"+lst_btn[i].name+".png";
+  tmp_ico = QIcon(icon_file);
+  QPixmap ico_small = tmp_ico.pixmap(22,22);
+
+
+	tmp_btn->setFixedSize(ico_small.size());
+	tmp_btn->setText("");
+	tmp_btn->setIcon(ico_small);
+	tmp_btn->setIconSize(ico_small.size());
+
+	/*
+	tmp_btn->setFixedSize(tmp_ico.actualSize(tmp_ico.availableSizes().first()));
+	tmp_btn->setText("");
+	tmp_btn->setIcon(tmp_ico);
+	tmp_btn->setIconSize(tmp_ico.availableSizes().first());
+*/
+	tmp_btn->setToolTip(lst_btn[i].tooltips);
+
+	inputs->addWidget(tmp_btn);
+	btn_grp->addButton(tmp_btn,i+1);
+
+ }
+ btn_grp->setExclusive(true);
+ connect(btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(slot_tstBtn(int)));
+
+ QVBoxLayout *ret_lay = new QVBoxLayout;
+ QSpacerItem *ecart = new QSpacerItem(16, 16, QSizePolicy::Expanding, QSizePolicy::Expanding);
+ inputs->addItem(ecart);
+
+ /// https://stackoverflow.com/questions/18433342/how-to-get-a-qhboxlayout-fixed-height/18433617
+ QWidget *tmp_2 = new QWidget;
+ tmp_2->setLayout(inputs);
+ tmp_2->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+
+ ret_lay->addWidget(tmp_2);
+ ret_lay->addWidget(ana);
+
+ tmp_wdg->setLayout(ret_lay);
+
+ return tmp_wdg;
+}
+
+void BAnalyserTirages::slot_tstBtn(int btn_id)
+{
+ B2LstSel *send = construireSelection();
+ Bp::E_Ana eVal = static_cast<Bp::E_Ana>(btn_id);
+
+ if((eVal == Bp::anaRaz) && (send != nullptr)){
+  send = effacerSelection(send);
+ }
+
+ emit B_sig_filter(eVal, send);
+}
+
+B2LstSel *BAnalyserTirages::construireSelection()
+{
+ int nb_items = mesComptages.size();
+
+ if(nb_items == 0){
+  return nullptr;
+ }
+
+ QList<QList<BLstSelect *>*> *ret = new QList<QList<BLstSelect *>*>;
+
+
+ for (int i=0; i< nb_items;i++) {
+  QList<BLstSelect *> * tmp = mesComptages.at(i)->getSelection();
+  if(tmp !=nullptr){
+   ret->append(tmp);
+  }
+ }
+
+ if(ret->size() == 0){
+  delete  ret;
+  ret = nullptr;
+ }
+
+ return ret;
+}
+
+B2LstSel *BAnalyserTirages::effacerSelection(B2LstSel *sel)
+{
+ int nb_items = sel->size();
+
+ if(nb_items != 0){
+
+ for (int i=0; i< nb_items;i++) {
+  QList<BLstSelect *> *tmp = sel->at(i);
+  while (!tmp->isEmpty()){
+   int nb_items = tmp->size();
+   BLstSelect * item = tmp->takeFirst();
+   item->clearSelection();
+   delete item;
+  }
+  }
+ }
+
+ return nullptr;
 }
 
 bool BAnalyserTirages::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName)
