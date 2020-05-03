@@ -459,6 +459,10 @@ void BTbView::bsl_clicked(const QModelIndex &index)
   return;
  }
 
+ if((do_return == false) && index.data().isNull()){
+  do_return = true;
+ }
+
  if((do_return == false) && (inf_flt->typ !=eCountGrp) && (col != Bp::colTxt)){
   do_return = true;
  }
@@ -467,7 +471,8 @@ void BTbView::bsl_clicked(const QModelIndex &index)
   do_return = true;
  }
 
- if((do_return == false) && (!selectionModel->selectedIndexes().size())){
+ int total = selectionModel->selectedIndexes().size();
+ if((do_return == false) && (!total)){
   do_return = true;
  }
 

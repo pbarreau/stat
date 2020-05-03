@@ -36,6 +36,8 @@ class BGameList : public QWidget
  QString makeSqlForNextLine(const B2LstSel * sel);
  QString select_elm(const QModelIndexList &indexes, int zn);
  QString select_cmb(const QModelIndexList &indexes, int zn, int tbl_id);
+ QString select_brc(const QModelIndexList &indexes, int zn, int tbl_id);
+ QString select_grp(const QModelIndexList &indexes, int zn, int tbl_id);
  QString elmSel_1(const QModelIndexList &indexes, int zn);
  QString elmSel_2(const QModelIndexList &indexes, int zn);
 

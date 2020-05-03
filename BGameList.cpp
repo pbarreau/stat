@@ -936,7 +936,24 @@ QString BGameList::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 		 ret_elm = select_cmb(item->indexes, item->zn, cur_tbl_id);
 		 break;
 
-    default:
+		case eCountBrc:
+		 cur_tbl_id = cur_tbl_id + j;
+		 local_list = local_list + "("+cur_game+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
+		 if(j<nb_zone-1){
+			local_list = local_list + ",";
+		 }
+		 ret_elm = select_brc(item->indexes, item->zn, cur_tbl_id);
+		 break;
+
+		case eCountGrp:
+		 cur_tbl_id = cur_tbl_id + j;
+		 local_list = local_list + "("+cur_game+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
+		 if(j<nb_zone-1){
+			local_list = local_list + ",";
+		 }
+		 ret_elm = select_grp(item->indexes, item->zn, cur_tbl_id);
+		 break;
+		default:
         ;
    }
 
@@ -1061,6 +1078,59 @@ QString BGameList::select_cmb(const QModelIndexList &indexes, int zn, int tbl_id
  return msg;
 }
 
+QString BGameList::select_brc(const QModelIndexList &indexes, int zn, int tbl_id)
+{
+ QString msg = "";
+
+ QString key = "t"+QString::number(tbl_id)+".bc in(%1)";
+
+ QString ret = "";
+ int taille = indexes.size();
+
+ for(int i = 0; i< taille; i++){
+  QModelIndex cur_index = indexes.at(i);
+  QString val = cur_index.sibling(cur_index.row(),Bp::colTxt).data().toString();
+  if(i<taille-1){
+   val=val+",";
+  }
+  ret = ret+val;
+ }
+
+ msg = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+key.arg(ret)+")";
+
+ return msg;
+}
+
+QString BGameList::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
+{
+ QString msg = "";
+
+ QString key = "t"+QString::number(tbl_id)+".bc in(%1)";
+
+ QString ret = "";
+ int taille = indexes.size();
+
+ for(int i = 0; i< taille; i++){
+  QModelIndex cur_index = indexes.at(i);
+
+	const QAbstractItemModel * pModel = cur_index.model();
+	QString headRef = pModel->headerData(Bp::colId,Qt::Horizontal).toString();
+	QString headTop= "";
+	int col = cur_index.column();
+	QString s_nb = cur_index.model()->index(cur_index.row(),Bp::colId).data().toString();
+
+	QString val = cur_index.sibling(cur_index.row(),cur_index.column()).data().toString();
+
+	if(i<taille-1){
+	 val=val+",";
+	}
+	ret = ret+val;
+ }
+
+ msg = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+key.arg(ret)+")";
+
+ return msg;
+}
 QString BGameList::makeSqlForNextLine(const B2LstSel * sel)
 {
  QString ret = "";
