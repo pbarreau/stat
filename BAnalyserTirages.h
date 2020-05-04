@@ -14,12 +14,12 @@
 
 class BCount;
 
-class BAnalyserTirages : public QWidget
+class BGameAna : public QWidget
 {
  Q_OBJECT
  public:
- explicit BAnalyserTirages(stGameConf *pGame, QWidget *parent=nullptr);
- BAnalyserTirages *self();
+ explicit BGameAna(stGameConf *pGame, QWidget *parent=nullptr);
+ BGameAna *self();
  QWidget *getVisual();
  static int getCounter(void);
 
@@ -46,7 +46,7 @@ class BAnalyserTirages : public QWidget
  B2LstSel *construireSelection();
  B2LstSel *effacerSelection(B2LstSel *sel);
 
- typedef bool(BAnalyserTirages::*ptrFnUsr)(const stGameConf *, QString, QString, int );
+ typedef bool(BGameAna::*ptrFnUsr)(const stGameConf *, QString, QString, int );
 
  signals:
  void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
@@ -60,7 +60,7 @@ class BAnalyserTirages : public QWidget
 
  private:
  static int total_analyses;
- BAnalyserTirages *addr;
+ BGameAna *addr;
  QSqlDatabase db_1;
  QMap<QString,ptrFnUsr> map_UsrFn;
  QVector<BCount *> mesComptages;

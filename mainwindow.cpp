@@ -75,7 +75,11 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 
  stGameConf *curConf = charge->getConfig();
 
- BAnalyserTirages *uneAnalyse = new BAnalyserTirages(curConf);
+ ///EtudierJeu_v1(curConf, use_odb);
+
+ //return;
+
+ BGameAna *uneAnalyse = new BGameAna(curConf);
  if(uneAnalyse->self() == nullptr){
   QString msg = "Erreur de l'analyse des tirages :" + curConf->db_ref->src;
   QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
@@ -85,12 +89,96 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
   uneAnalyse->show();
  }
 
+ if(use_odb==true){
+  AfficherAnciensCalcul(curConf);
+ }
+
  return;
  EtudierJeu_v1(curConf, use_odb);
  EtudierJeu_v2(curConf);
  return;
 }
 
+void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
+{
+ // Etablir connexion a la base
+ QString cnx=pGame->db_ref->cnx;
+ QSqlDatabase db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+
+
+ /// Verifier si la table de liste des jeux existe
+ if(DB_Tools::isDbGotTbl("E_lst",db_1.connectionName())==false){
+  return;
+ }
+
+/// recuperer la liste des jeux deja effectue
+ QSqlQuery query(db_1);
+ bool b_retVal = true;
+ QString msg = "select * from E_lst";
+
+ /// si il y a des reponses les faire toutes
+ if(((b_retVal=query.exec(msg))== true) && ((b_retVal=query.first())==true)){
+  stGameConf * tmp = new stGameConf;
+
+	tmp->znCount = 1;
+	tmp->eTirType = eTirUsr; /// A supprimer ?
+	tmp->db_ref = new stParam_3;
+
+	/// Partie commune
+	tmp->limites = pGame->limites;
+	tmp->names = pGame->names;
+	tmp->db_ref->fdj = pGame->db_ref->fdj;
+	tmp->db_ref->cnx = pGame->db_ref->cnx;
+	tmp->eFdjType = pGame->eFdjType;
+	tmp->db_ref->ihm = pGame->db_ref->ihm;
+
+	/// sera reconstruit par la classe Analyse
+	/// mappage des fonctions utilisateurs speciales
+	/// d'analyses
+	tmp->slFlt = nullptr;
+
+
+	do{
+	 QString gameId = query.value(1).toString();
+	 tmp->db_ref->src = gameId;
+	 tmp->db_ref->flt = gameId+"_flt";
+
+	 AfficheUsrGame(tmp);
+
+  }while((b_retVal=query.next()) != false);
+ }
+
+
+
+}
+
+void MainWindow::AfficheUsrGame(stGameConf *usrGame)
+{
+ BGameLst *calcul = new BGameLst(usrGame);
+
+ if(calcul->getGameConf() != nullptr){
+
+	BGameAna *uneAnalyse = new BGameAna(usrGame);
+	if(uneAnalyse->self() == nullptr){
+	 delete uneAnalyse;
+	}
+	else {
+	 connect(uneAnalyse, SIGNAL(B_sig_filter(const Bp::E_Ana , const B2LstSel * )),
+					 calcul, SLOT(slot_RequestFromAnalyse(const Bp::E_Ana , const B2LstSel *)));
+
+	 BTbView::agencerResultats(calcul,uneAnalyse);
+	}
+ }
+ else {
+  delete calcul;
+ }
+
+}
 void MainWindow::EtudierJeu_v1(stGameConf *curConf, bool dest_bdd)
 {
 

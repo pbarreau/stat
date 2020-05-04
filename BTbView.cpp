@@ -308,7 +308,7 @@ bool BTbView::isOnUsrGame(void)
 {
  bool b_retVal;
 
- if((tbw_calculs == nullptr) || (wdg_reponses == nullptr) || (gdl_all == nullptr)){
+ if(cur_game->db_ref->src.compare("B_fdj")==0){
   b_retVal = false;
  }
  else {
@@ -321,41 +321,43 @@ bool BTbView::isOnUsrGame(void)
 void  BTbView::slot_usrCreateGame()
 {
 
- /// Verifier premier passage
- if((tbw_calculs == nullptr) || (wdg_reponses == nullptr) || (gdl_all == nullptr)){
-  wdg_reponses = new QWidget;
-  gdl_all = new QGridLayout;
-  tbw_calculs = new QTabWidget;
- }
-
  /// https://stackoverflow.com/questions/244646/get-elapsed-time-in-qt
  /// Temps de calcul
  QTime r;
  QTime t;
  QString t_human_1 = "";
  QString t_human_2 = "";
+ QString name_ouput = "";
 
  r.setHMS(0,0,0,0);
  t.start();
- BGameList *calcul = new BGameList(cur_game);
+ ///stGameConf *tmp_game = BGameLst::gameUsrNew(cur_game);
+ BGameLst *calcul = new BGameLst(cur_game);
  r = r.addMSecs(t.elapsed());
  t_human_1 = r.toString("hh:mm:ss:zzz");
 
  if(calcul->getGameConf() != nullptr){
+  QSqlQuery query(db_tbv);
+  bool b_retVal = true;
+  name_ouput = calcul->getGameLabel();
+  QString msg = "update E_lst set t1='"+t_human_1+"' where(name='"+name_ouput+"')";
+  b_retVal = query.exec(msg);
 
 	r.setHMS(0,0,0,0);
 	t.restart();
 	stGameConf * tmp = calcul->getGameConf();
-	BAnalyserTirages *uneAnalyse = new BAnalyserTirages(tmp);
+	BGameAna *uneAnalyse = new BGameAna(tmp);
 	r = r.addMSecs(t.elapsed());
 	t_human_2 = r.toString("hh:mm:ss:zzz");
+	msg = "update E_lst set t2='"+t_human_2+"' where(name='"+name_ouput+"')";
+	b_retVal = query.exec(msg);
 
-	QString msg = " Generation du Cnp en : "+t_human_1+QString (" (hh:mm:ss:ms)");
+	/*
+	msg = " Generation du Cnp en : "+t_human_1+QString (" (hh:mm:ss:ms)");
 	msg = msg + "\n Analyse en : " +t_human_2+QString (" (hh:mm:ss:ms)");
 
 	QMessageBox::information(nullptr,"User Game",msg,QMessageBox::Ok);
-
-
+	*/
 
 	if(uneAnalyse->self() == nullptr){
 	 QString msg = "Erreur de l'analyse des tirages :" + tmp->db_ref->src;
@@ -374,8 +376,15 @@ void  BTbView::slot_usrCreateGame()
  }
 }
 
-void BTbView::agencerResultats(BGameList *lst, BAnalyserTirages* ana)
+void BTbView::agencerResultats(BGameLst *lst, BGameAna* ana)
 {
+ /// Verifier premier passage
+ if((tbw_calculs == nullptr) || (wdg_reponses == nullptr) || (gdl_all == nullptr)){
+  wdg_reponses = new QWidget;
+  gdl_all = new QGridLayout;
+  tbw_calculs = new QTabWidget;
+ }
+
  QGridLayout *tmp_layout = new QGridLayout;
 
  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -392,11 +401,18 @@ void BTbView::agencerResultats(BGameList *lst, BAnalyserTirages* ana)
  QWidget * tmp = new QWidget;
  tmp->setLayout(tmp_layout);
 
- QString name = lst->getGameId();
+ QString name = lst->getGameLabel();
  tbw_calculs->addTab(tmp, name);
  gdl_all->addWidget(tbw_calculs);
  wdg_reponses->setLayout(gdl_all);
  wdg_reponses->setWindowTitle("Resultats");
+ wdg_reponses->show();
+}
+
+void BTbView::activateTargetTab(QString id)
+{
+ int target = id.toInt()-1;
+ tbw_calculs->setCurrentIndex(target);
  wdg_reponses->show();
 }
 

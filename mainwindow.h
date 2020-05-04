@@ -95,6 +95,10 @@ public:
     void closeEvent(QCloseEvent *event);
     void getPgmVersion(void);
 
+private:
+void AfficherAnciensCalcul(stGameConf *pGame);
+void AfficheUsrGame(stGameConf *pGame);
+
 private slots:
     void pslot_newGame();
     void pslot_open();

@@ -11,14 +11,15 @@
 #include "blineedit.h"
 #include "BLstSelect.h"
 
-class BGameList : public QWidget
+class BGameLst : public QWidget
 {
  Q_OBJECT
  public:
- explicit BGameList(const stGameConf *pGame, QWidget *parent = nullptr);
- ~BGameList();
+ explicit BGameLst(const stGameConf *pGame, QWidget *parent = nullptr);
+ ~BGameLst();
  stGameConf * getGameConf(void);
- QString getGameId(void);
+ QString getGameLabel(void);
+ static stGameConf *gameUsrNew(const stGameConf *pGame, QString gameId="");
 
  private:
  bool isNewUsrGame(const stGameConf *pGame, QString *gameId, QString *data);
@@ -29,7 +30,6 @@ class BGameList : public QWidget
  void mkGameWidget(stGameConf * current);
  QGroupBox *  LireBoule(stGameConf *pGame, QString tbl_cible);
  QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
- stGameConf *newGameConf(const stGameConf *pGame, QString gameId);
  void updateTbv(QString msg);
  QString sqlVisualTable(QString tbl_src);
  QString makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst);
@@ -60,7 +60,7 @@ class BGameList : public QWidget
  static int gme_counter;
  stGameConf *gameDef;
  QSqlDatabase db_gme;
- QString cur_game;
+ QString game_lab;
 
  private:
  BSqlQmTirages_3 *sqm_resu;

@@ -153,14 +153,15 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
  //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
- int count=qtv_tmp->horizontalHeader()->count();
- int l = 0;
- l = qtv_tmp->verticalScrollBar()->width();
- for (int i = 0; i < count-2; ++i) {
-  if(!qtv_tmp->horizontalHeader()->isSectionHidden(i))
-   l+=qtv_tmp->horizontalHeader()->sectionSize(i);
- }
+ /// Largeur du tableau
+ int l = minTbvWidth(qtv_tmp);
  qtv_tmp->setFixedWidth(l);
+
+ /// Hauteur
+ if(eCalcul == eCountGrp){
+  int h = minTbvHeight(qtv_tmp);
+  qtv_tmp->setFixedHeight(h);
+ }
 
  /// Marquer pour les 2 derniers tirages de la fdj
  if(qtv_tmp->isOnUsrGame() == false){
@@ -186,6 +187,39 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
 
  return wdg_tmp;
+}
+
+int BCount::minTbvWidth(BTbView *qtv_tmp)
+{
+ int l = 0;
+ int count=qtv_tmp->horizontalHeader()->count();
+
+ int scrollBar = qtv_tmp->verticalScrollBar()->width();
+ int Header = qtv_tmp->verticalHeader()->width();
+ int col = 0;
+ for (int i = 0; i < count-3; ++i) {
+  if(!qtv_tmp->horizontalHeader()->isSectionHidden(i)){
+   col+=qtv_tmp->horizontalHeader()->sectionSize(i);
+  }
+ }
+ l= Header+col+scrollBar;
+ return l;
+}
+
+int BCount::minTbvHeight(BTbView *qtv_tmp)
+{
+ /// https://savolai.net/notes/how-do-i-adjust-a-qtableview-height-according-to-contents/
+ int l = 0;
+ int count=qtv_tmp->verticalHeader()->count();
+
+ int scrollBar=qtv_tmp->horizontalScrollBar()->height();
+ int Header=qtv_tmp->horizontalHeader()->height();
+ int row=0;
+ for (int i = 0; i < count; ++i) {
+  row+=qtv_tmp->verticalHeader()->sectionSize(i);
+ }
+ l= Header+row+scrollBar;
+ return l;
 }
 
 QList<BLstSelect *> *BCount::getSelection(void)

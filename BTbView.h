@@ -28,6 +28,8 @@ class BTbView : public QTableView, BFlt
  QPushButton *getUsrGameButton(void);
  stTbFiltres * getFlt(void);
  bool isOnUsrGame(void);
+ static void agencerResultats(BGameLst *lst,BGameAna * ana);
+ static void activateTargetTab(QString id);
 
  ~BTbView();
 
@@ -49,7 +51,6 @@ class BTbView : public QTableView, BFlt
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);
  void construireMenu(void);
  void showUsrGame(QWidget *une_selection, QString name);
- void agencerResultats(BGameList *lst,BAnalyserTirages * ana);
  void mouseMoveEvent( QMouseEvent * inEvent );
  //void mousePressEvent(QMouseEvent *event);
 

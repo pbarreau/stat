@@ -76,7 +76,6 @@ class BCount:public QWidget
 {
  Q_OBJECT
 
-
  public:
  BCount();
  BCount(const stGameConf *pGame, etCount genre);
@@ -86,6 +85,10 @@ class BCount:public QWidget
  BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
         QWidget *unParent, etCount genre);
  BCount(const stNeedsOfBary &param){Q_UNUSED(param)}
+
+ private:
+ int minTbvWidth(BTbView *qtv_tmp);
+ int minTbvHeight(BTbView *qtv_tmp);
 
  protected:
  BCount* ptr_self;

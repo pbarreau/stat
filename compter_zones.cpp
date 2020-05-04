@@ -87,7 +87,7 @@ QLayout * BcElm::usr_UpperItems(int zn, BTbView *cur_tbv)
  //QAction *tmp_act = nullptr;
 
 
- if((zn == 0) && (BAnalyserTirages::getCounter() == 0)){
+ if((zn == 0) && (BGameAna::getCounter() == 0)){
   ret_lay = new QHBoxLayout;
   QPushButton *tmp_btn = nullptr;
 
