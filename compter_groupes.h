@@ -33,6 +33,7 @@ class BCountGroup:public BCount
  void slot_ClicDeSelectionTableau(const QModelIndex &index);
  void slot_RequeteFromSelection(const QModelIndex &index);
  void slot_DecodeTirage(const QModelIndex & index);
+ void slot_AnaLgn(const int & l_id);
 
 
  private slots:
@@ -75,11 +76,16 @@ class BCountGroup:public BCount
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
  void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
  virtual void usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn);
+ //virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
+ QWidget *mainIhmGrp(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn);
+ QWidget *usr_GrpTb1(int zn);
 
  private:
  BCountGroup * addr;
  QSqlDatabase db_grp;
  QStringList **slFlt;
+ ///QSqlQueryModel *cur_lgn;
+ QTableView *tbvAnaLgn;
 
 };
 

@@ -204,6 +204,7 @@ void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QStrin
  }
  else {
   lstComptage.append(item_4);
+  connect(this,SIGNAL(sig_AnaLgn(int)),item_4,SLOT(slot_AnaLgn(int)));
  }
 
 
@@ -1090,4 +1091,9 @@ QString BGameAna::getFieldsFromZone(const stGameConf *pGame, int zn, QString ali
 void BGameAna::bsl_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp)
 {
  emit bsg_clicked(index,zn,eTyp);
+}
+
+void BGameAna::slot_AnaLgn(const int &lgn_id)
+{
+ emit sig_AnaLgn(lgn_id);
 }

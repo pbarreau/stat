@@ -367,7 +367,7 @@ void  BTbView::slot_usrCreateGame()
 	else {
 	 connect(uneAnalyse, SIGNAL(B_sig_filter(const Bp::E_Ana , const B2LstSel * )),
 					 calcul, SLOT(slot_RequestFromAnalyse(const Bp::E_Ana , const B2LstSel *)));
-
+	 connect(calcul,SIGNAL(sig_AnaLgn(int)), uneAnalyse,SLOT(slot_AnaLgn(int)));
 	 agencerResultats(calcul,uneAnalyse);
 	}
  }

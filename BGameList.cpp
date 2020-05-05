@@ -775,6 +775,8 @@ void BGameLst::slot_tbvClicked(const QModelIndex &index)
 
  QTableView *src = qobject_cast<QTableView*>(sender());
  int row = index.row();
+ /// pour analyse de la ligne
+ emit sig_AnaLgn(row+1);
 
  /// https://forum.qt.io/topic/25740/checkbox-in-qtableview/4
  QModelIndex try_index;

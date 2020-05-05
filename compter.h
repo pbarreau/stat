@@ -86,10 +86,6 @@ class BCount:public QWidget
         QWidget *unParent, etCount genre);
  BCount(const stNeedsOfBary &param){Q_UNUSED(param)}
 
- private:
- int minTbvWidth(BTbView *qtv_tmp);
- int minTbvHeight(BTbView *qtv_tmp);
-
  protected:
  BCount* ptr_self;
  const stGameConf *gm_def;
@@ -129,9 +125,11 @@ class BCount:public QWidget
  QMenu *mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
  bool showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
  //void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
-
  bool V2_showMyMenu(int col, etCount eSrc);
  QMenu *V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos);
+ int minTbvWidth(QTableView *qtv_tmp);
+ int minTbvHeight(QTableView *qtv_tmp);
+
 
  private:
  void RecupererConfiguration(void);

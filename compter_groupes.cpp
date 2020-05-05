@@ -47,8 +47,8 @@ QTabWidget * BCountGroup::startCount(const stGameConf *pGame, const etCount eCal
 
  QWidget *(BCountGroup::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
   {
-   &BCountGroup::startIhm,
-   &BCountGroup::startIhm
+   &BCountGroup::mainIhmGrp,
+   &BCountGroup::mainIhmGrp
   };
 
  for(int i = 0; i< nb_zones; i++)
@@ -60,6 +60,184 @@ QTabWidget * BCountGroup::startCount(const stGameConf *pGame, const etCount eCal
   }
  }
  return tab_Top;
+}
+
+QWidget *BCountGroup::mainIhmGrp(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn)
+{
+ QWidget *ret = new QWidget;
+ QVBoxLayout *ret_lay = new QVBoxLayout;
+
+ QWidget * tmp = usr_GrpTb1(zn);
+ ret_lay->addWidget(tmp);
+ tmp = startIhm(pGame,eCalcul,fn,zn);
+ ret_lay->addWidget(tmp);
+
+ ret->setLayout(ret_lay);
+
+ return ret;
+}
+
+QWidget * BCountGroup::usr_GrpTb1(int zn)
+{
+ /// Creation d'un bandeau pour selection utilisateur
+ /*
+  *
+  * select t1.tip as C, printf("%.2f",bc) as bc, p,g
+  * from (B_cmb_z1) as t1, (B_ana_z1) as t2
+  * where ((t2.id=1) and (t1.id=t2.idComb))
+  *
+  */
+
+ QString lst_cols = "";
+ QStringList cols = slFlt[zn][1] ;
+ int nb_cols = cols.size();
+ for (int i=0;i<nb_cols;i++)
+ {
+  QString cur_col = cols.at(i);
+
+  if((cur_col.contains("bc",Qt::CaseInsensitive)==true) ||
+      (cur_col.contains("idComb",Qt::CaseInsensitive)==true)){
+   continue;
+  }
+
+  lst_cols = lst_cols + "t2."+cur_col;
+
+	if(i<nb_cols){
+	 QString nex_col = cols.at(i+1);
+	 if((nex_col.contains("bc",Qt::CaseInsensitive)==false) &&
+			 (nex_col.contains("idComb",Qt::CaseInsensitive)==false)){
+		lst_cols = lst_cols + ",";
+	 }
+	 else {
+		continue;
+	 }
+	}
+ }
+
+ QString tbLabAna = "";
+ if(gm_def->db_ref->src.compare("B_fdj")==0){
+  tbLabAna = "B";
+ }
+ else{
+  tbLabAna = gm_def->db_ref->src;
+ }
+ tbLabAna = tbLabAna +"_ana_z"+QString::number(zn+1);
+
+ QString sql_msg = "select t1.tip as C, printf(\"%.2f\",t2.bc) as Bc,"+
+               lst_cols+
+               " from (B_cmb_z"+
+               QString::number(zn+1)+
+               ") as t1, ("+
+               tbLabAna+
+               ") as t2 "
+               "where((t2.id=-1) and(t1.id=t2.idComb))";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << sql_msg;
+#endif
+
+ QTableView *qtv_tmp = new QTableView;
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ sqm_tmp->setQuery(sql_msg, dbCount);
+ //cur_lgn = sqm_tmp;
+
+ qtv_tmp->setModel(sqm_tmp);
+ qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+ /// Largeur du tableau
+ int l = minTbvWidth(qtv_tmp);
+ qtv_tmp->setFixedWidth(l);
+
+
+ /// Hauteur
+ int h = minTbvHeight(qtv_tmp);
+ qtv_tmp->setFixedHeight(h);
+ tbvAnaLgn = qtv_tmp;
+
+ QGroupBox *tmp = new QGroupBox;
+ tmp->setTitle("Selection : ");
+ QHBoxLayout *tmp_lay = new QHBoxLayout;
+ tmp_lay->addWidget(qtv_tmp);
+ tmp->setLayout(tmp_lay);
+
+ //ret_lay = new QHBoxLayout;
+ //ret_lay->addWidget(tmp);
+
+ return tmp;
+}
+
+void BCountGroup::slot_AnaLgn(const int & l_id)
+{
+ QString lst_cols = "";
+ int zn = 0;
+ QStringList cols = slFlt[zn][1] ;
+ int nb_cols = cols.size();
+ for (int i=0;i<nb_cols;i++)
+ {
+  QString cur_col = cols.at(i);
+
+	if((cur_col.contains("bc",Qt::CaseInsensitive)==true) ||
+			(cur_col.contains("idComb",Qt::CaseInsensitive)==true)){
+	 continue;
+	}
+
+	lst_cols = lst_cols + "t2."+cur_col;
+
+	if(i<nb_cols){
+	 QString nex_col = cols.at(i+1);
+	 if((nex_col.contains("bc",Qt::CaseInsensitive)==false) &&
+			 (nex_col.contains("idComb",Qt::CaseInsensitive)==false)){
+		lst_cols = lst_cols + ",";
+	 }
+	 else {
+		continue;
+	 }
+	}
+ }
+
+
+ QString tbLabAna = "";
+ if(gm_def->db_ref->src.compare("B_fdj")==0){
+  tbLabAna = "B";
+ }
+ else{
+  tbLabAna = gm_def->db_ref->src;
+ }
+ tbLabAna = tbLabAna +"_ana_z"+QString::number(zn+1);
+
+ QString sql_msg = "select t1.tip as C, printf(\"%.2f\",t2.bc) as Bc,"+
+                   lst_cols+
+                   " from (B_cmb_z"+
+                   QString::number(zn+1)+
+                   ") as t1, ("+
+                   tbLabAna+
+                   ") as t2 "
+                   "where((t2.id="+QString::number(l_id)+") and(t1.id=t2.idComb))";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << sql_msg;
+#endif
+
+ QTableView *qtv_tmp= tbvAnaLgn;
+ QSqlQueryModel *cur_lgn = qobject_cast<QSqlQueryModel *> (qtv_tmp->model());
+ cur_lgn->clear();
+ cur_lgn->setQuery(sql_msg,db_grp);
+
+ /// Largeur du tableau
+ int l = minTbvWidth(qtv_tmp);
+ qtv_tmp->setFixedWidth(l);
+
+
+ /// Hauteur
+ int h = minTbvHeight(qtv_tmp);
+ qtv_tmp->setFixedHeight(h);
+
+
 }
 
 QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)

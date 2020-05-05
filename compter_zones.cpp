@@ -97,24 +97,6 @@ QLayout * BcElm::usr_UpperItems(int zn, BTbView *cur_tbv)
 	ret_lay->addWidget(tmp_btn);
 	cur_tbv->setUsrGameButton(tmp_btn);
 
-	/*
-	tmp_ico = QIcon(":/images/run_32px.png");
-	tmp_act = new QAction(tmp_ico,tr("&Creer liste"), ret_lay);
-	tmp_act->setShortcut(Qt::CTRL | Qt::Key_L );
-	tmp_act->setStatusTip(tr("Creer liste de jeux..."));
-
-	/// --- flt on
-	tmp_ico = QIcon(":/images/flt_apply.png");
-	tmp_act = new QAction(tmp_ico,tr("&Filtrer liste"), ret_lay);
-	tmp_act->setShortcut(Qt::CTRL | Qt::Key_F );
-	tmp_act->setStatusTip(tr("Appliquer Filtres sur la liste de jeux..."));
-
-	/// --- flt clear
-	tmp_ico = QIcon(":/images/flt_clear.png");
-	tmp_act = new QAction(tmp_ico,tr("&Effacer filtre"), ret_lay);
-	tmp_act->setShortcut(Qt::ALT | Qt::Key_F );
-	tmp_act->setStatusTip(tr("Supprimer tous les filtres..."));
-*/
  }
 
  return ret_lay;

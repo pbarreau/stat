@@ -151,7 +151,6 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
  qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
- //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
  /// Largeur du tableau
  int l = minTbvWidth(qtv_tmp);
@@ -162,6 +161,12 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
   int h = minTbvHeight(qtv_tmp);
   qtv_tmp->setFixedHeight(h);
  }
+
+ //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ //qtv_tmp->horizontalHeader()->setStretchLastSection(true);
+ ///qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+ qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+ ///qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
  /// Marquer pour les 2 derniers tirages de la fdj
  if(qtv_tmp->isOnUsrGame() == false){
@@ -189,7 +194,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  return wdg_tmp;
 }
 
-int BCount::minTbvWidth(BTbView *qtv_tmp)
+int BCount::minTbvWidth(QTableView *qtv_tmp)
 {
  int l = 0;
  int count=qtv_tmp->horizontalHeader()->count();
@@ -206,7 +211,7 @@ int BCount::minTbvWidth(BTbView *qtv_tmp)
  return l;
 }
 
-int BCount::minTbvHeight(BTbView *qtv_tmp)
+int BCount::minTbvHeight(QTableView *qtv_tmp)
 {
  /// https://savolai.net/notes/how-do-i-adjust-a-qtableview-height-according-to-contents/
  int l = 0;
