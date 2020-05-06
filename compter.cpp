@@ -91,6 +91,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 	}
  }
 
+ /*
  if(zn==0 && eCalcul == eCountElm){
   QPushButton * tmp_btn = qtv_tmp->getUsrGameButton();
   if(tmp_btn != nullptr){
@@ -98,11 +99,12 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
            qtv_tmp,SLOT(slot_usrCreateGame()));
   }
  }
-
+*/
  /// Bandeau superieur
-  if(up_qtv != nullptr){
-   qtv_tmp->setUpLayout(up_qtv);
-  }
+ if(up_qtv != nullptr){
+  ///qtv_tmp->setUpLayout(up_qtv);
+  qtv_tmp->addUpLayout(up_qtv);
+ }
 
  QString sql_msg = "select * from "+dstTbl;
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
@@ -117,6 +119,18 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  m->setDynamicSortFilter(true);
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
+
+ QSqlQuery tmp_query = sqm_tmp->query();
+ int tot = 0;
+ if(tmp_query.first()){
+  tmp_query.last();
+  tot = tmp_query.at() + 1;
+  qtv_tmp->setRowSourceModelCount(tot);
+  tmp_query.first();
+ }
+
+ tot = qtv_tmp->model()->rowCount();
+ qtv_tmp->setRowModelCount(tot);
 
  qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt)); /// Delegation
 
@@ -153,12 +167,12 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
 
  /// Largeur du tableau
- int l = minTbvWidth(qtv_tmp);
+ int l = qtv_tmp->getMinWidth();
  qtv_tmp->setFixedWidth(l);
 
  /// Hauteur
  if(eCalcul == eCountGrp){
-  int h = minTbvHeight(qtv_tmp);
+  int h = qtv_tmp->getMinHeight();
   qtv_tmp->setFixedHeight(h);
  }
 
@@ -170,12 +184,20 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
  /// Marquer pour les 2 derniers tirages de la fdj
  if(qtv_tmp->isOnUsrGame() == false){
-  /// Mettre dans la base une info sur 2 derniers tirages
-  usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
+  /// Pour activer ou non le bouton creation jeu utilisateur
+  if(zn==0 && eCalcul == eCountElm){
+   QItemSelectionModel *trackSelection = qtv_tmp->selectionModel();
+   connect(trackSelection,SIGNAL(selectionChanged( QItemSelection ,  QItemSelection )),
+           qtv_tmp,SLOT(slot_trackSelection(QItemSelection ,  QItemSelection )));
+  }
+
+	/// Mettre dans la base une info sur 2 derniers tirages
+	usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
  }
  else {
   connect(qtv_tmp,SIGNAL(bsg_clicked(const QModelIndex, const int, const etCount)),
           this, SLOT(bsl_clicked(const QModelIndex, const int, const etCount)));
+
  }
 
 
@@ -194,7 +216,8 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  return wdg_tmp;
 }
 
-int BCount::minTbvWidth(QTableView *qtv_tmp)
+/*
+int BCount::getMinWidth(QTableView *qtv_tmp)
 {
  int l = 0;
  int count=qtv_tmp->horizontalHeader()->count();
@@ -211,7 +234,7 @@ int BCount::minTbvWidth(QTableView *qtv_tmp)
  return l;
 }
 
-int BCount::minTbvHeight(QTableView *qtv_tmp)
+int BCount::getMinHeight(QTableView *qtv_tmp)
 {
  /// https://savolai.net/notes/how-do-i-adjust-a-qtableview-height-according-to-contents/
  int l = 0;
@@ -226,6 +249,7 @@ int BCount::minTbvHeight(QTableView *qtv_tmp)
  l= Header+row+scrollBar;
  return l;
 }
+*/
 
 QList<BLstSelect *> *BCount::getSelection(void)
 {
@@ -290,7 +314,7 @@ BCount::BCount()
 }
 
 BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb)
-    :BCount(pDef,in,useDb,nullptr,eCountToSet)
+		:BCount(pDef,in,useDb,nullptr,eCountToSet)
 {
 }
 
@@ -497,6 +521,7 @@ QString BCount::CriteresCreer(QString critere , QString operateur, int zone)
 
  return ret_msg;
 }
+
 QString BCount::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
 {
 }
@@ -572,9 +597,9 @@ void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int z
  emit sig_TitleReady(str_titre);
 }
 
-
-/// Cette fonction cherche dans la table designée si une valeur est presente
-/// auquel cas le champs situe a idColValue est aussi retourné
+/*
+/// Cette fonction cherche dans la table designee si une valeur est presente
+/// auquel cas le champs situe a idColValue est aussi retourne
 /// item : valeur a rechercher
 /// table : nom de la table dans laquelle il faut chercher
 /// idColValue colonne de la table ou se trouve la valeur
@@ -613,6 +638,7 @@ bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
  }
  return ret;
 }
+*/
 
 #if 0
 bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, const QModelIndex index)
@@ -683,6 +709,7 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
 }
 #endif
 
+/*
 bool BCount::flt_DbWrite(stTbFiltres *ret, QString cnx, bool update)
 {
  bool b_retVal = false;
@@ -749,7 +776,7 @@ bool BCount::flt_DbWrite(stTbFiltres *ret, QString cnx, bool update)
 
  return b_retVal;
 }
-
+*/
 
 #if 0
 void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
@@ -1150,7 +1177,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
  if(b_retVal){
   /// compter les priorites
   msg = "select count(*) from "+tb_flt+" where ("
-        "zne="+def[1]+" and "+
+                                           "zne="+def[1]+" and "+
         "typ="+def[2]+" and "+
         "pri=1)";
   int nbPrio = 0;

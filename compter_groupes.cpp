@@ -21,7 +21,6 @@
 #include "compter_groupes.h"
 #include "db_tools.h"
 
-//#include "delegate.h"
 #include "BFlags.h"
 
 int BCountGroup::total = 0;
@@ -35,7 +34,9 @@ BCountGroup::BCountGroup(const stGameConf *pGame,QStringList** lstCri):BCount(pG
 {
  /// appel du constructeur parent
  db_grp = dbCount;
+
  slFlt = lstCri;
+ tbvAnaLgn = new BGTbView;
 }
 
 QTabWidget * BCountGroup::startCount(const stGameConf *pGame, const etCount eCalcul)
@@ -136,7 +137,7 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
  qDebug() << sql_msg;
 #endif
 
- QTableView *qtv_tmp = new QTableView;
+ BGTbView *qtv_tmp = new BGTbView;
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
  //cur_lgn = sqm_tmp;
@@ -150,12 +151,12 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
  /// Largeur du tableau
- int l = minTbvWidth(qtv_tmp);
+ int l = qtv_tmp->getMinWidth();
  qtv_tmp->setFixedWidth(l);
 
 
  /// Hauteur
- int h = minTbvHeight(qtv_tmp);
+ int h = qtv_tmp->getMinHeight();
  qtv_tmp->setFixedHeight(h);
  tbvAnaLgn = qtv_tmp;
 
@@ -165,8 +166,6 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
  tmp_lay->addWidget(qtv_tmp);
  tmp->setLayout(tmp_lay);
 
- //ret_lay = new QHBoxLayout;
- //ret_lay->addWidget(tmp);
 
  return tmp;
 }
@@ -223,18 +222,18 @@ void BCountGroup::slot_AnaLgn(const int & l_id)
  qDebug() << sql_msg;
 #endif
 
- QTableView *qtv_tmp= tbvAnaLgn;
+ BGTbView *qtv_tmp= tbvAnaLgn;
  QSqlQueryModel *cur_lgn = qobject_cast<QSqlQueryModel *> (qtv_tmp->model());
  cur_lgn->clear();
  cur_lgn->setQuery(sql_msg,db_grp);
 
  /// Largeur du tableau
- int l = minTbvWidth(qtv_tmp);
+ int l = qtv_tmp->getMinWidth();
  qtv_tmp->setFixedWidth(l);
 
 
  /// Hauteur
- int h = minTbvHeight(qtv_tmp);
+ int h = qtv_tmp->getMinHeight();
  qtv_tmp->setFixedHeight(h);
 
 

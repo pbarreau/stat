@@ -776,6 +776,9 @@ void BGameLst::slot_tbvClicked(const QModelIndex &index)
  QTableView *src = qobject_cast<QTableView*>(sender());
  int row = index.row();
  /// pour analyse de la ligne
+ QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel*>(src->model());
+ int source_row = m->mapToSource(index).row();
+
  emit sig_AnaLgn(row+1);
 
  /// https://forum.qt.io/topic/25740/checkbox-in-qtableview/4

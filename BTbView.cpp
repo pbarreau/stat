@@ -26,18 +26,18 @@ QGridLayout * BTbView::gdl_all = nullptr;
 QTabWidget * BTbView::tbw_calculs = nullptr;
 
 BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ)
-    :QTableView(nullptr),BFlt(pGame, in_zn, in_typ), cur_game(pGame)
+    :BGTbView(nullptr),BFlt(pGame, in_zn, in_typ), cur_game(pGame)
 {
  db_tbv = db_flt;
  lbflt = cur_bflt;
 
- myGpb = new BGpbMenu(cur_bflt, this);
+ square = new BGpbMenu(cur_bflt, this);
 
  if(wdg_reponses == nullptr){
   /// Encapsulation sur cet objet
-  connect(myGpb,
+  connect(square,
           SIGNAL(sig_ShowMenu(const QGroupBox *, const QPoint)),
-          myGpb,
+          square,
           SLOT(slot_ShowMenu(const QGroupBox *, const QPoint)));
 
 	this->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -52,18 +52,13 @@ BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ)
  /// Suivit du click
  connect(this,SIGNAL(pressed(const QModelIndex)), this, SLOT(bsl_clicked(const QModelIndex)));
 
- /*
- connect(this,SIGNAL(selectionChanged( QItemSelection ,  QItemSelection )),
-         this,SLOT(slot_trackSelection(QItemSelection ,  QItemSelection )));
-*/
-
  up = nullptr;
  btn_usrGame = nullptr;
 }
 
 BTbView::~BTbView()
 {
- delete myGpb;
+ delete square;
 }
 
 void BTbView::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
@@ -120,7 +115,14 @@ void BTbView::slot_V2_AideToolTip(const QModelIndex & index)
  QToolTip::showText (QCursor::pos(), msg);
 }
 
+#if 1
+QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
+{
+ QString title = "";
+ return title;
+}
 
+#else
 QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
 {
  QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
@@ -237,16 +239,19 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
 
  return title;
 }
-
+#endif
 
 void BTbView::updateTitle()
 {
  /// Mettre ensuite l'analyse du marquage
  QString st_total = mkTitle(inf_flt->zne,inf_flt->typ,this);
 
- if(myGpb != nullptr){
-  myGpb->setTitle(st_total);
+ this->setTitle(st_total);
+ /*
+ if(square != nullptr){
+  square->setTitle(st_total);
  }
+*/
 }
 
 /*
@@ -280,10 +285,12 @@ void BTbView::construireMenu(void)
  isFiltred->setDisabled(true);
 }
 
+/*
 BGpbMenu *BTbView::getGpb()
 {
- return myGpb;
+ return square;
 }
+*/
 
 void BTbView::setUpLayout(QLayout *usr_up)
 {
@@ -295,13 +302,19 @@ void BTbView::setUpLayout(QLayout *usr_up)
 void BTbView::setUsrGameButton(QPushButton *usr_game)
 {
  btn_usrGame = usr_game;
- ///tab_usrGame = new QTabWidget;
-
 }
 
 QPushButton * BTbView::getUsrGameButton(void)
 {
  return btn_usrGame;
+}
+void BTbView::setRowModelCount(int nb)
+{
+ rowModelCount = nb;
+}
+void BTbView::setRowSourceModelCount(int nb)
+{
+ rowSourceModelCount = nb;
 }
 
 bool BTbView::isOnUsrGame(void)
@@ -430,6 +443,7 @@ void BTbView::showUsrGame(QWidget * une_selection, QString name)
 */
 }
 
+/*
 QGroupBox * BTbView::getScreen()
 {
  /// Mettre ensuite l'analyse du marquage
@@ -437,19 +451,41 @@ QGroupBox * BTbView::getScreen()
 
  QVBoxLayout *layout = new QVBoxLayout;
  if(up != nullptr){
-  layout->addLayout(up, Qt::AlignCenter|Qt::AlignTop);
+  ///layout->addLayout(up, Qt::AlignCenter|Qt::AlignTop);
+  this->addUpLayout(up);
  }
  layout->addWidget(this, Qt::AlignCenter|Qt::AlignTop);
- myGpb->setLayout(layout);
+ square->setLayout(layout);
 
- return myGpb;
+ return square;
 }
+*/
 
 void BTbView::slot_trackSelection(const QItemSelection &cur, const QItemSelection &last)
 {
- QList<QModelIndex> indexes = cur.indexes();
+ QItemSelectionModel *sel = qobject_cast<QItemSelectionModel *>(sender());
+
+ QList<QModelIndex> indexes_1 = cur.indexes();
+ QList<QModelIndex> indexes_2 = last.indexes();
+ int total = sel->selectedIndexes().size();
+
+ if((inf_flt->typ == eCountElm) && (inf_flt->zne == 0))
+ {
+  bool activate = false;
+  if(total >= cur_game->limites[0].win){
+   /// Activer le bouton creer liste !!!
+   activate = true;
+  }
+  else {
+   activate = false;
+  }
+  if(btn_usrGame != nullptr){
+   btn_usrGame->setEnabled(activate);
+  }
+ }
 }
 
+/*
 void BTbView::mouseMoveEvent( QMouseEvent * inEvent )
 {
  /// https://doc.qt.io/archives/4.6/eventsandfilters.html
@@ -461,6 +497,7 @@ void BTbView::mouseMoveEvent( QMouseEvent * inEvent )
 
  QTableView::mouseMoveEvent(inEvent);
 }
+*/
 
 void BTbView::bsl_clicked(const QModelIndex &index)
 {

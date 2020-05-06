@@ -120,15 +120,15 @@ class BCount:public QWidget
  QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
  QString CriteresCreer(QString operateur, QString critere,int zone);
  void LabelFromSelection(const QItemSelectionModel *selectionModel, int zn);
- bool VerifierValeur(int item, QString table,int idColValue,int *lev);
+ //bool VerifierValeur(int item, QString table,int idColValue,int *lev);
  //QMenu *ContruireMenu(QTableView *view, int val);
  QMenu *mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
  bool showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint pos);
  //void CompleteMenu(QMenu *LeMenu, QTableView *view, int clef);
  bool V2_showMyMenu(int col, etCount eSrc);
  QMenu *V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos);
- int minTbvWidth(QTableView *qtv_tmp);
- int minTbvHeight(QTableView *qtv_tmp);
+ ///int getMinWidth(QTableView *qtv_tmp);
+ ///int getMinHeight(QTableView *qtv_tmp);
 
 
  private:
@@ -139,7 +139,7 @@ class BCount:public QWidget
 
 
  //static bool DB_Tools::flt_DbRead(stTbFiltres *ret, QString cnx);
- static bool flt_DbWrite(stTbFiltres *ret, QString cnx, bool update=true);
+ //static bool flt_DbWrite(stTbFiltres *ret, QString cnx, bool update=true);
  //static QString DB_Tools::getLstDays(QString cnx_db_name, QString tbl_ref);
 
  public :

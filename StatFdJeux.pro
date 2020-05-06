@@ -109,7 +109,8 @@ SOURCES += \
     BFlt.cpp \
     BGameList.cpp \
     BFpm_3.cpp \
-    BLstSelect.cpp
+    BLstSelect.cpp \
+    BGTbView.cpp
 
 HEADERS  += \
 		mainwindow.h \
@@ -182,7 +183,8 @@ HEADERS  += \
     BFlt.h \
     BGameList.h \
     BFpm_3.h \
-    BLstSelect.h
+    BLstSelect.h \
+    BGTbView.h
 
 
 FORMS    += mainwindow.ui \

@@ -96,6 +96,8 @@ QLayout * BcElm::usr_UpperItems(int zn, BTbView *cur_tbv)
 	tmp_btn->setEnabled(false);
 	ret_lay->addWidget(tmp_btn);
 	cur_tbv->setUsrGameButton(tmp_btn);
+	connect(tmp_btn,SIGNAL(clicked()),
+					cur_tbv,SLOT(slot_usrCreateGame()));
 
  }
 

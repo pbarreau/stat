@@ -14,14 +14,16 @@
 #include "BGameList.h"
 #include "BAnalyserTirages.h"
 
-class BTbView : public QTableView, BFlt
+#include "BGTbView.h"
+
+class BTbView : public BGTbView, BFlt
 {
  Q_OBJECT
 
  public :
  BTbView(const stGameConf *pGame, int in_zn, etCount in_typ);
- QGroupBox * getScreen();
- BGpbMenu * getGpb();
+ //QGroupBox * getScreen();
+ //BGpbMenu * getGpb();
  void updateTitle();
  void setUpLayout(QLayout *usr_up);
  void setUsrGameButton(QPushButton *usr_game);
@@ -30,6 +32,8 @@ class BTbView : public QTableView, BFlt
  bool isOnUsrGame(void);
  static void agencerResultats(BGameLst *lst,BGameAna * ana);
  static void activateTargetTab(QString id);
+ void setRowModelCount(int nb);
+ void setRowSourceModelCount(int nb);
 
  ~BTbView();
 
@@ -51,7 +55,7 @@ class BTbView : public QTableView, BFlt
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);
  void construireMenu(void);
  void showUsrGame(QWidget *une_selection, QString name);
- void mouseMoveEvent( QMouseEvent * inEvent );
+ ///void mouseMoveEvent( QMouseEvent * inEvent );
  //void mousePressEvent(QMouseEvent *event);
 
  public:
@@ -64,10 +68,12 @@ class BTbView : public QTableView, BFlt
 
  QSqlDatabase db_tbv;
  const stGameConf *cur_game;
- BGpbMenu *myGpb;
+ //BGpbMenu *square;
  QLayout *up;
  QMenu *menu;
  QPushButton *btn_usrGame;
+ int rowModelCount;
+ int rowSourceModelCount;
 };
 
 #endif // BTBVIEW_H

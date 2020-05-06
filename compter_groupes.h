@@ -81,11 +81,9 @@ class BCountGroup:public BCount
  QWidget *usr_GrpTb1(int zn);
 
  private:
- BCountGroup * addr;
  QSqlDatabase db_grp;
  QStringList **slFlt;
- ///QSqlQueryModel *cur_lgn;
- QTableView *tbvAnaLgn;
+ BGTbView *tbvAnaLgn;
 
 };
 
