@@ -34,6 +34,7 @@ class BCountGroup:public BCount
  void slot_RequeteFromSelection(const QModelIndex &index);
  void slot_DecodeTirage(const QModelIndex & index);
  void slot_AnaLgn(const int & l_id);
+ void BSlot_RazSelection(void);
 
 
  private slots:
@@ -79,11 +80,14 @@ class BCountGroup:public BCount
  //virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
  QWidget *mainIhmGrp(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn);
  QWidget *usr_GrpTb1(int zn);
+ QString getSqlForLine(int l_id, int zn);
+ void showLineDetails(int l_id, QString sql_msg);
 
  private:
  QSqlDatabase db_grp;
  QStringList **slFlt;
  BGTbView *tbvAnaLgn;
+ int total_cells;
 
 };
 

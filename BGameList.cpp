@@ -534,31 +534,6 @@ QGroupBox *BGameLst::LireTable(stGameConf *pGame, QString tbl_cible)
  btn_grp->setExclusive(true);
  connect(btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(slot_ShowAll(int)));
 
- /*
- //--------------
- tmp_ico = QIcon(":/images/spreadsheet_table_xls.png");
- tmp_btn = new QPushButton;
- tmp_btn->setIcon(tmp_ico);
- tmp_btn->setToolTip("Show All");
- connect(tmp_btn, SIGNAL(clicked()), this, SLOT(slot_ShowAll()));
- inputs->addWidget(tmp_btn);
-
- //--------------
- tmp_ico = QIcon(":/images/Checked_Checkbox.png");
- tmp_btn = new QPushButton;
- tmp_btn->setIcon(tmp_ico);
- tmp_btn->setToolTip("Show Checked");
- connect(tmp_btn, SIGNAL(clicked()), this, SLOT(slot_ShowChk()));
- inputs->addWidget(tmp_btn);
-
- //--------------
- tmp_ico = QIcon(":/images/Unchecked_Checkbox.png");
- tmp_btn = new QPushButton;
- tmp_btn->setIcon(tmp_ico);
- tmp_btn->setToolTip("Show Unchecked");
- connect(tmp_btn, SIGNAL(clicked()), this, SLOT(slot_ShowNhk()));
- inputs->addWidget(tmp_btn);
-*/
 
  /// Necessaire pour compter toutes les lignes de reponses
  /*while (sqm_resu->canFetchMore())

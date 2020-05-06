@@ -37,6 +37,7 @@ BCountGroup::BCountGroup(const stGameConf *pGame,QStringList** lstCri):BCount(pG
 
  slFlt = lstCri;
  tbvAnaLgn = new BGTbView;
+ total_cells = 0;
 }
 
 QTabWidget * BCountGroup::startCount(const stGameConf *pGame, const etCount eCalcul)
@@ -89,6 +90,7 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
   *
   */
 
+ /*
  QString lst_cols = "";
  QStringList cols = slFlt[zn][1] ;
  int nb_cols = cols.size();
@@ -158,46 +160,85 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
  /// Hauteur
  int h = qtv_tmp->getMinHeight();
  qtv_tmp->setFixedHeight(h);
- tbvAnaLgn = qtv_tmp;
 
- QGroupBox *tmp = new QGroupBox;
- tmp->setTitle("Selection : ");
- QHBoxLayout *tmp_lay = new QHBoxLayout;
- tmp_lay->addWidget(qtv_tmp);
- tmp->setLayout(tmp_lay);
+*/
 
+ //tbvAnaLgn = qtv_tmp;
 
- return tmp;
+ //QGroupBox *tmp = new QGroupBox;
+ //tmp->setTitle("Selection : ");
+ //QHBoxLayout *tmp_lay = new QHBoxLayout;
+ //tmp_lay->addWidget(qtv_tmp);
+ //tmp->setLayout(tmp_lay);
+
+ int l_id = -1;
+ QString sql_msg = getSqlForLine(l_id, zn);
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ sqm_tmp->setQuery(sql_msg, dbCount);
+ tbvAnaLgn->setModel(sqm_tmp);
+
+ showLineDetails(l_id, sql_msg);
+
+ return tbvAnaLgn->getScreen();
 }
 
 void BCountGroup::slot_AnaLgn(const int & l_id)
 {
- QString lst_cols = "";
  int zn = 0;
- QStringList cols = slFlt[zn][1] ;
- int nb_cols = cols.size();
- for (int i=0;i<nb_cols;i++)
- {
-  QString cur_col = cols.at(i);
+ QString sql_msg = getSqlForLine(l_id, zn);
 
-	if((cur_col.contains("bc",Qt::CaseInsensitive)==true) ||
-			(cur_col.contains("idComb",Qt::CaseInsensitive)==true)){
-	 continue;
-	}
+ showLineDetails(l_id, sql_msg);
+}
 
-	lst_cols = lst_cols + "t2."+cur_col;
+void BCountGroup::BSlot_RazSelection(void)
+{
+ tbvAnaLgn->selectionModel()->clear();
+}
 
-	if(i<nb_cols){
-	 QString nex_col = cols.at(i+1);
-	 if((nex_col.contains("bc",Qt::CaseInsensitive)==false) &&
-			 (nex_col.contains("idComb",Qt::CaseInsensitive)==false)){
-		lst_cols = lst_cols + ",";
-	 }
-	 else {
-		continue;
-	 }
-	}
+
+void BCountGroup::showLineDetails(int l_id, QString sql_msg)
+{
+
+ BGTbView *qtv_tmp= tbvAnaLgn;
+ QSqlQueryModel *cur_lgn = qobject_cast<QSqlQueryModel *> (qtv_tmp->model());
+ cur_lgn->clear();
+ cur_lgn->setQuery(sql_msg,db_grp);
+
+ qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->verticalHeader()->hide();
+
+ /// Largeur du tableau
+ int l = qtv_tmp->getMinWidth();
+ qtv_tmp->setFixedWidth(l);
+
+
+ /// Hauteur
+ int h = qtv_tmp->getMinHeight();
+ qtv_tmp->setFixedHeight(h);
+
+ /// Titre
+ QString title = "";
+ if(l_id<=0){
+  qtv_tmp->setVisible(false);
+  title = "Selectionner une ligne tirage pour afficher details !!";
+  qtv_tmp->setTitle(title, false);
  }
+ else {
+  qtv_tmp->setVisible(true);
+  title = "Detail ligne : %1";
+  title = title.arg(l_id);
+  qtv_tmp->setTitle(title);
+ }
+}
+
+QString BCountGroup::getSqlForLine(int l_id, int zn)
+{
+ QString sql_msg = "";
+
+ QString lst_cols = BGameAna::getFilteringHeaders(gm_def,zn);
 
 
  QString tbLabAna = "";
@@ -209,7 +250,7 @@ void BCountGroup::slot_AnaLgn(const int & l_id)
  }
  tbLabAna = tbLabAna +"_ana_z"+QString::number(zn+1);
 
- QString sql_msg = "select t1.tip as C, printf(\"%.2f\",t2.bc) as Bc,"+
+ sql_msg = "select t1.tip as C, printf(\"%.2f\",t2.bc) as Bc,"+
                    lst_cols+
                    " from (B_cmb_z"+
                    QString::number(zn+1)+
@@ -222,21 +263,7 @@ void BCountGroup::slot_AnaLgn(const int & l_id)
  qDebug() << sql_msg;
 #endif
 
- BGTbView *qtv_tmp= tbvAnaLgn;
- QSqlQueryModel *cur_lgn = qobject_cast<QSqlQueryModel *> (qtv_tmp->model());
- cur_lgn->clear();
- cur_lgn->setQuery(sql_msg,db_grp);
-
- /// Largeur du tableau
- int l = qtv_tmp->getMinWidth();
- qtv_tmp->setFixedWidth(l);
-
-
- /// Hauteur
- int h = qtv_tmp->getMinHeight();
- qtv_tmp->setFixedHeight(h);
-
-
+ return sql_msg;
 }
 
 QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)

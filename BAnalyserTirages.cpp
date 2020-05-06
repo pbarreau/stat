@@ -137,7 +137,7 @@ void BGameAna::startAnalyse(stGameConf *pGame, QString tbl_tirages)
 	pGame->slFlt = new  QStringList * [nbZn] ;
 	for (int zn=0;zn < nbZn;zn++ )
 	{
-	 pGame->slFlt[zn] = CreateFilterForData(pGame, tbl_tirages, zn);
+	 pGame->slFlt[zn] = setFilteringRules(pGame, tbl_tirages, zn);
 	}
  }
 
@@ -205,6 +205,7 @@ void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QStrin
  else {
   lstComptage.append(item_4);
   connect(this,SIGNAL(sig_AnaLgn(int)),item_4,SLOT(slot_AnaLgn(int)));
+  connect(this,SIGNAL(BSig_RazSelection()),item_4,SLOT(BSlot_RazSelection()));
  }
 
 
@@ -325,6 +326,7 @@ void BGameAna::slot_tstBtn(int btn_id)
   send = effacerSelection(send);
  }
 
+ emit BSig_RazSelection();
  emit B_sig_filter(eVal, send);
 }
 
@@ -611,7 +613,38 @@ bool BGameAna::SupprimerVueIntermediaires(void)
  return b_retVal;
 }
 
-QStringList* BGameAna::CreateFilterForData(stGameConf *pGame, QString tbl_tirages, int zn)
+QString BGameAna::getFilteringHeaders(const stGameConf *pGame,int zn, QString msg_template, QString separator)
+{
+ QString lst_cols = "";
+
+ QStringList cols = pGame->slFlt[zn][1] ;
+ int nb_cols = cols.size();
+ for (int i=0;i<nb_cols;i++)
+ {
+  QString cur_col = cols.at(i);
+
+	if((cur_col.contains("bc",Qt::CaseInsensitive)==true) ||
+			(cur_col.contains("idComb",Qt::CaseInsensitive)==true)){
+	 continue;
+	}
+
+	lst_cols = lst_cols + msg_template.arg(cur_col);
+
+	if(i<nb_cols){
+	 QString nex_col = cols.at(i+1);
+	 if((nex_col.contains("bc",Qt::CaseInsensitive)==false) &&
+			 (nex_col.contains("idComb",Qt::CaseInsensitive)==false)){
+		lst_cols = lst_cols + separator;
+	 }
+	 else {
+		continue;
+	 }
+	}
+ }
+ return lst_cols;
+}
+
+QStringList* BGameAna::setFilteringRules(stGameConf *pGame, QString tbl_tirages, int zn)
 {
  // Cette fonction retourne un pointeur sur un tableau de QStringList
  // Ce tableau comporte 3 elements

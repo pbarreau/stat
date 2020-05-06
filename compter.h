@@ -136,6 +136,7 @@ class BCount:public QWidget
  bool setUnifiedPriority(QString szn, QString sprio);
  bool getFiltre(stTbFiltres *ret, const etCount origine, QTableView *view, const QModelIndex index);
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);
+ int getTotalCells(const stGameConf *pGame, int zn);
 
 
  //static bool DB_Tools::flt_DbRead(stTbFiltres *ret, QString cnx);
@@ -168,7 +169,7 @@ class BCount:public QWidget
  bool setPriorityToAll;
 
  protected slots:
- void bsl_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
+ void BSlotClicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
 
  ///void slot_AideToolTip(const QModelIndex & index);
  void slot_ClicDeSelectionTableau(const QModelIndex &index);
@@ -182,7 +183,7 @@ class BCount:public QWidget
 
 
  Q_SIGNALS:
- void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
+ void BSigClicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
  void sig_TitleReady(const QString &title);
  void sig_ComptageReady(const B_RequeteFromTbv &my_answer);
 

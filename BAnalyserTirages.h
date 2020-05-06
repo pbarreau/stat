@@ -22,6 +22,7 @@ class BGameAna : public QWidget
  BGameAna *self();
  QWidget *getVisual();
  static int getCounter(void);
+ static QString getFilteringHeaders(const stGameConf *pGame, int zn, QString msg_template="t2.%1", QString separator=",");
 
  private:
  bool isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QString cnx);
@@ -32,7 +33,7 @@ class BGameAna : public QWidget
  bool mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query);
  bool mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *query);
 
- QStringList* CreateFilterForData(stGameConf *pGame, QString tbl_tirages, int zn);
+ QStringList* setFilteringRules(stGameConf *pGame, QString tbl_tirages, int zn);
  QString sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, int zn);
  QString sqlMkAnaCmb(stGameConf *pGame, QString tbl_ana_tmp, int zn);
 
@@ -51,6 +52,7 @@ class BGameAna : public QWidget
  signals:
  void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
  void B_sig_filter(const Bp::E_Ana ana, const B2LstSel * sel);
+ void BSig_RazSelection();
  void sig_AnaLgn(const int &l_id);
 
  public slots:

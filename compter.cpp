@@ -91,15 +91,6 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 	}
  }
 
- /*
- if(zn==0 && eCalcul == eCountElm){
-  QPushButton * tmp_btn = qtv_tmp->getUsrGameButton();
-  if(tmp_btn != nullptr){
-   connect(tmp_btn,SIGNAL(clicked()),
-           qtv_tmp,SLOT(slot_usrCreateGame()));
-  }
- }
-*/
  /// Bandeau superieur
  if(up_qtv != nullptr){
   ///qtv_tmp->setUpLayout(up_qtv);
@@ -129,7 +120,12 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
   tmp_query.first();
  }
 
- tot = qtv_tmp->model()->rowCount();
+ if(eCalcul == eCountGrp){
+  tot = getTotalCells(pGame,zn);
+ }
+ else {
+  tot = qtv_tmp->model()->rowCount();
+ }
  qtv_tmp->setRowModelCount(tot);
 
  qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt)); /// Delegation
@@ -182,24 +178,22 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
  ///qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
+ QItemSelectionModel *trackSelection = qtv_tmp->selectionModel();
+ connect(trackSelection,SIGNAL(selectionChanged( QItemSelection ,  QItemSelection )),
+         qtv_tmp,SLOT(slot_trackSelection(QItemSelection ,  QItemSelection )));
+
  /// Marquer pour les 2 derniers tirages de la fdj
  if(qtv_tmp->isOnUsrGame() == false){
-  /// Pour activer ou non le bouton creation jeu utilisateur
-  if(zn==0 && eCalcul == eCountElm){
-   QItemSelectionModel *trackSelection = qtv_tmp->selectionModel();
-   connect(trackSelection,SIGNAL(selectionChanged( QItemSelection ,  QItemSelection )),
-           qtv_tmp,SLOT(slot_trackSelection(QItemSelection ,  QItemSelection )));
-  }
-
-	/// Mettre dans la base une info sur 2 derniers tirages
-	usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
+  /// Mettre dans la base une info sur 2 derniers tirages
+  usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
  }
+ /*
  else {
-  connect(qtv_tmp,SIGNAL(bsg_clicked(const QModelIndex, const int, const etCount)),
-          this, SLOT(bsl_clicked(const QModelIndex, const int, const etCount)));
+  connect(qtv_tmp,SIGNAL(BSigClicked(const QModelIndex, const int, const etCount)),
+          this, SLOT(BSlotClicked(const QModelIndex, const int, const etCount)));
 
  }
-
+*/
 
  /// Agencer le tableau
  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -214,6 +208,31 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
 
  return wdg_tmp;
+}
+
+int BCount::getTotalCells(const stGameConf *pGame, int zn)
+{
+ int ret = 0;
+ bool b_retVal = true;
+ QSqlQuery query(dbCount);
+
+ QString tbl = "r_"+pGame->db_ref->src+"_"+label[type]+"_z"+QString::number(zn+1);
+ QString lst_1 = BGameAna::getFilteringHeaders(pGame, zn, "count(t2.%1) as %1");
+ QString lst_2 = BGameAna::getFilteringHeaders(pGame, zn, "%1","+");
+
+ QString sql_msg = "with tb1 as (select "+lst_1+" from ("+tbl+")as t2) ";
+
+ sql_msg = sql_msg + "select ("+lst_2+") as T from tb1";
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<sql_msg;
+#endif
+
+ if((b_retVal = query.exec(sql_msg)) && (b_retVal = query.first())){
+  ret = query.value(0).toInt();
+ }
+
+ return ret;
 }
 
 /*
@@ -1840,7 +1859,7 @@ QString BCount::FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString a
  return   st_items;
 }
 
-void BCount::bsl_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp)
+void BCount::BSlotClicked(const QModelIndex & index, const int &zn, const etCount &eTyp)
 {
- emit bsg_clicked(index,zn,eTyp);
+ emit BSigClicked(index,zn,eTyp);
 }

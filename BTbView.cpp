@@ -463,11 +463,14 @@ QGroupBox * BTbView::getScreen()
 
 void BTbView::slot_trackSelection(const QItemSelection &cur, const QItemSelection &last)
 {
- QItemSelectionModel *sel = qobject_cast<QItemSelectionModel *>(sender());
-
  QList<QModelIndex> indexes_1 = cur.indexes();
  QList<QModelIndex> indexes_2 = last.indexes();
+
+ QItemSelectionModel *sel = qobject_cast<QItemSelectionModel *>(sender());
  int total = sel->selectedIndexes().size();
+
+ QString title = "Selection : " + QString::number(total).rightJustified(2,'0')+"/"+QString::number(rowModelCount);
+ this->setTitle(title);
 
  if((inf_flt->typ == eCountElm) && (inf_flt->zne == 0))
  {
@@ -484,20 +487,6 @@ void BTbView::slot_trackSelection(const QItemSelection &cur, const QItemSelectio
   }
  }
 }
-
-/*
-void BTbView::mouseMoveEvent( QMouseEvent * inEvent )
-{
- /// https://doc.qt.io/archives/4.6/eventsandfilters.html
-
- if(inEvent->buttons() == Qt::MouseButton::LeftButton){
-  inEvent->accept();
-  return;
- }
-
- QTableView::mouseMoveEvent(inEvent);
-}
-*/
 
 void BTbView::bsl_clicked(const QModelIndex &index)
 {
@@ -531,7 +520,9 @@ void BTbView::bsl_clicked(const QModelIndex &index)
 
  if(do_return)
  {
-  selectionModel->clearSelection();
+  selectionModel->select(index,QItemSelectionModel::SelectionFlag::Deselect);
+
+  //selectionModel->clearSelection();
   return;
  }
 

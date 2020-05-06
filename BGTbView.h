@@ -9,6 +9,8 @@ class BGTbView : public QTableView
 public:
 BGTbView(QWidget *parent = nullptr);
 ~BGTbView();
+void setTitle(QString title, bool visible=true);
+QGroupBox * getSquare(void);
 QGroupBox *getScreen();
 void addUpLayout(QLayout *up_in);
 int getMinWidth();
@@ -16,7 +18,6 @@ int getMinHeight();
 
 protected:
 void mouseMoveEvent( QMouseEvent * inEvent );
-void setTitle(QString title);
 
 protected:
 QGroupBox *square;

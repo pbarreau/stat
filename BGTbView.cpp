@@ -16,10 +16,16 @@ BGTbView::~BGTbView()
  delete square;
 }
 
-void BGTbView::setTitle(QString title)
+QGroupBox * BGTbView::getSquare(void)
+{
+ return square;
+}
+
+void BGTbView::setTitle(QString title, bool visible)
 {
  if(square != nullptr){
   square->setTitle(title);
+  square->setEnabled(visible);
  }
 }
 
