@@ -187,6 +187,7 @@ stGameConf * BFdj::init(stFdj *prm)
  ret->db_ref->ihm = prm;
  ret->db_ref->cnx = "";
  ret->db_ref->src = "";
+ ret->db_ref->jrs = "";
  ret->db_ref->flt = "B_flt";
 
  ret->slFlt = nullptr;
@@ -236,7 +237,10 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
 
  pGame->db_ref->fdj = tbName;
  pGame->db_ref->src = tbName;
- pGame->db_ref->cnx = fdj_db.connectionName();
+
+
+ QString cnx = fdj_db.connectionName();
+ pGame->db_ref->cnx = cnx;
 
  /// Utiliser anciennes tables
  if(pGame->db_ref->ihm->use_odb==true){
@@ -333,6 +337,9 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
 
   }
  }
+
+ QString jours = DB_Tools::getLstDays(cnx,tbName);
+ pGame->db_ref->jrs = jours;
 
 
  return b_retVal;

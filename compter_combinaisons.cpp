@@ -453,7 +453,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
  QString Def_comb = T_CMB;
  QString SelComb = U_CMB;
  QString prefix = "B_";
-
+ QString str_jrs = db_jours;
 
  if(myGame.eTirType == eTirGen)
  {
@@ -465,7 +465,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
  stTbAnalyse = prefix+stTbAnalyse + "_z"+QString::number(zn+1);
 
  QString arg1 = "tbLeft.id as Id, tbLeft.tip as Repartition, count(tbRight.id) as T "
-                + db_jours+
+                + str_jrs+
                 ",count(CASE when tbRight.id == 1 then 1 end) as L";
  QString arg2 = "select id,tip from "+Def_comb+"_z"+QString::number(zn+1);
 

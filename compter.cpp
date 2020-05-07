@@ -318,7 +318,8 @@ BCount::BCount(const stGameConf *pGame, etCount genre):gm_def(pGame), type(genre
  ptr_self = this;
  tabTbv = new BTbView *[pGame->znCount];
 
- QString st_tmp = DB_Tools::getLstDays(cnx,tbl_tirages);
+ //QString st_tmp = DB_Tools::getLstDays(cnx,tbl_tirages);
+ QString st_tmp = pGame->db_ref->jrs;
  db_jours = ","+st_tmp;
 
 }

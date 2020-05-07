@@ -686,6 +686,7 @@ QString BcElm::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
  QString SelElemt = C_TBL_6;
  QString st_cri_all = "";
  QStringList boules;
+ QString str_jrs = db_jours;
 
  if(lesSelections[zn].size())
  {
@@ -713,7 +714,7 @@ QString BcElm::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
  boules.clear();
 
  QString arg1 = "tbleft.boule as B, count(tbright.id) as T "
-                +db_jours;
+                +str_jrs;
  QString arg2 ="select id as boule from "
                 +QString::fromLatin1(C_TBL_2)+" where (z"
                 +QString::number(zn+1)
@@ -735,7 +736,7 @@ QString BcElm::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
 #ifndef QT_NO_DEBUG
  qDebug() << "PBAR_ReqComptage\n";
  qDebug() << "SQL 1:\n"<<st_cri_all<<"\n-------";
- qDebug() << "SQL 2:\n"<<db_jours<<"\n-------";
+ qDebug() << "SQL 2:\n"<<str_jrs<<"\n-------";
  qDebug() << "SQL 3:\n"<<ReqTirages<<"\n-------";
  qDebug() << "SQL msg:\n"<<msg<<"\n-------";
 #endif

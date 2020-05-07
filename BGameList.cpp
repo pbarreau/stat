@@ -536,11 +536,11 @@ QGroupBox *BGameLst::LireTable(stGameConf *pGame, QString tbl_cible)
 
 
  /// Necessaire pour compter toutes les lignes de reponses
- /*while (sqm_resu->canFetchMore())
+ while (sqm_resu->canFetchMore())
  {
   sqm_resu->fetchMore();
  }
- */
+
  QSqlQuery query = sqm_resu->query();
  bool b_retVal = query.exec();
  int tot = 0;
@@ -797,6 +797,12 @@ void BGameLst::slot_ShowNewTotal(const QString& lstBoules)
  QTableView *view = ble_tmp->getView();
  BFpm_3 *m = qobject_cast<BFpm_3 *>(view->model());
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+ /// Necessaire pour compter toutes les lignes de reponses
+ while (vl->canFetchMore())
+ {
+  vl->fetchMore();
+ }
 
  int nb_lgn_ftr = m->rowCount();
  int nb_lgn_rel = vl->rowCount();
