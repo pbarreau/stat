@@ -438,7 +438,7 @@ void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int 
 #endif
 }
 
-void BCountBrc::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCount eType, const int zn)
+void BCountBrc::usr_TagLast(const stGameConf *pGame,  BTbView *view, const etCount eType, const int zn)
 {
  Q_UNUSED(view)
 

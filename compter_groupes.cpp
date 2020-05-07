@@ -669,7 +669,7 @@ void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, in
 #endif
 }
 
-void BCountGroup::usr_TagLast(const stGameConf *pGame, QTableView *view, const etCount eType, const int zn)
+void BCountGroup::usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn)
 {
 
  /// Utiliser anciennes tables

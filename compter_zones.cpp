@@ -126,7 +126,7 @@ bool BcElm::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
  return b_retVal;
 }
 
-void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCount eType, const int zn)
+void BcElm::usr_TagLast(const stGameConf *pGame,  BTbView *view, const etCount eType, const int zn)
 {
  Q_UNUSED(view)
 
@@ -180,11 +180,17 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 	 a.col = -1;
 
 	 if(query.first()){
+		///QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(view->model());
+		///QSqlQueryModel  * sqm_tmp = qobject_cast <QSqlQueryModel  *>(m->sourceModel());
 		Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
+		view->sortByColumn(Bp::colId,Qt::SortOrder::AscendingOrder);
 		do{
 		 a.val = query.value(0).toInt();
 		 a.col = a.val;
 		 a.dbt = -1;
+		 ///QModelIndex index = sqm_tmp->index(a.val-1,Bp::colTxt,QModelIndex());
+		 QModelIndex index = view->model()->index(a.val-1,Bp::colTxt,QModelIndex());
+		 view->selectionModel()->select(index,QItemSelectionModel::SelectionFlag::Select);
 
 		 /// RECUPERER FLT DE CETTE LIGNE
 		 b_retVal = DB_Tools::tbFltGet(&a, db_elm.connectionName());
@@ -202,6 +208,9 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  QTableView *view, const etCoun
 			marquerProcheVoisin(pGame, zn, &a);
 		 }
 		}while(query.next() && b_retVal);
+
+		/// On remet le tri par defaut
+		view->sortByColumn(Bp::colTotal,Qt::DescendingOrder);
 	 }
 	}
  } /// fin for

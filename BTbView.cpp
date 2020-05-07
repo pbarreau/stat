@@ -341,6 +341,9 @@ void  BTbView::slot_usrCreateGame()
  QString t_human_1 = "";
  QString t_human_2 = "";
  QString name_ouput = "";
+ QItemSelectionModel *mysel = this->selectionModel();
+ QModelIndexList lst_cells = mysel->selectedIndexes();
+ int size = lst_cells.size();
 
  r.setHMS(0,0,0,0);
  t.start();

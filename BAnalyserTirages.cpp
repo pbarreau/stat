@@ -226,8 +226,10 @@ void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QStrin
   QWidget *calcul = lstComptage.at(i)->startCount(pGame, type);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
+   /*
    connect(lstComptage.at(i), SIGNAL(bsg_clicked(const QModelIndex, const int, const etCount)),
            this,SLOT(bsl_clicked(const QModelIndex, const int, const etCount)));
+   */
   }
  }
 
