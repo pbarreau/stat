@@ -204,7 +204,7 @@ void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QStrin
  }
  else {
   lstComptage.append(item_4);
-  connect(this,SIGNAL(BSig_AnaLgn(int)),item_4,SLOT(BSlot_AnaLgn(int)));
+  connect(this,SIGNAL(BSig_AnaLgn(int,int)),item_4,SLOT(BSlot_AnaLgn(int, int)));
   connect(this,SIGNAL(BSig_RazSelection()),item_4,SLOT(BSlot_RazSelection()));
  }
 
@@ -1128,7 +1128,7 @@ void BGameAna::BSlot_MousePressed(const QModelIndex & index, const int &zn, cons
  emit bsg_clicked(index,zn,eTyp);
 }
 
-void BGameAna::BSlot_AnaLgn(const int &lgn_id)
+void BGameAna::BSlot_AnaLgn(const int &lgn_id, const int &prx_id)
 {
- emit BSig_AnaLgn(lgn_id);
+ emit BSig_AnaLgn(lgn_id, prx_id);
 }

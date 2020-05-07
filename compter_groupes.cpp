@@ -182,12 +182,15 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
  return tbvAnaLgn->getScreen();
 }
 
-void BCountGroup::BSlot_AnaLgn(const int & l_id)
+void BCountGroup::BSlot_AnaLgn(const int & l_id, const int &prx_id)
 {
  int zn = 0;
+
+ /// On fait la requete avec le bon numero de ligne
  QString sql_msg = getSqlForLine(l_id, zn);
 
- showLineDetails(l_id, sql_msg);
+ /// on montre avec le numero de ligne du proxy
+ showLineDetails(prx_id, sql_msg);
 }
 
 void BCountGroup::BSlot_RazSelection(void)
@@ -234,7 +237,7 @@ void BCountGroup::showLineDetails(int l_id, QString sql_msg)
  }
 }
 
-QString BCountGroup::getSqlForLine(int l_id, int zn)
+QString BCountGroup::getSqlForLine(const int &l_id,int zn)
 {
  QString sql_msg = "";
 

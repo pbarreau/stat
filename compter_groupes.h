@@ -33,7 +33,7 @@ class BCountGroup:public BCount
  void slot_ClicDeSelectionTableau(const QModelIndex &index);
  void slot_RequeteFromSelection(const QModelIndex &index);
  void slot_DecodeTirage(const QModelIndex & index);
- void BSlot_AnaLgn(const int & l_id);
+ void BSlot_AnaLgn(const int & l_id, const int &prx_id);
  void BSlot_RazSelection(void);
 
 
@@ -80,7 +80,7 @@ class BCountGroup:public BCount
  //virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
  QWidget *mainIhmGrp(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn);
  QWidget *usr_GrpTb1(int zn);
- QString getSqlForLine(int l_id, int zn);
+ QString getSqlForLine(const int &l_id, int zn);
  void showLineDetails(int l_id, QString sql_msg);
 
  private:

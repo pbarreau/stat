@@ -14,6 +14,7 @@
 #include <QTime>
 #include <QEvent>
 
+#include "BFdj.h"
 #include "BGameList.h"
 #include "BTbView.h"
 #include "BMenu.h"
@@ -383,7 +384,7 @@ void  BTbView::BSlot_MakeCustomGame()
 	else {
 	 connect(uneAnalyse, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
 					 calcul, SLOT(BSlot_FilterRequest(const Bp::E_Ana , const B2LstSel *)));
-	 connect(calcul,SIGNAL(BSig_AnaLgn(int)), uneAnalyse,SLOT(BSlot_AnaLgn(int)));
+	 connect(calcul,SIGNAL(BSig_AnaLgn(int,int)), uneAnalyse,SLOT(BSlot_AnaLgn(int,int)));
 	 agencerResultats(calcul,uneAnalyse);
 	}
  }
@@ -421,7 +422,10 @@ void BTbView::agencerResultats(BGameLst *lst, BGameAna* ana)
  tbw_calculs->addTab(tmp, name);
  gdl_all->addWidget(tbw_calculs);
  wdg_reponses->setLayout(gdl_all);
- wdg_reponses->setWindowTitle("Resultats");
+
+
+ name = "Resultats : " + BFdj::getCurDbFile();
+ wdg_reponses->setWindowTitle(name);
  wdg_reponses->show();
 }
 

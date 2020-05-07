@@ -49,6 +49,7 @@ class BFdj
 public:
 BFdj(stFdj *prm, QString cnx = "");
 stGameConf *getConfig();
+static QString getCurDbFile(void);
 
 private:
  bool ouvrirBase(stFdj *prm);
@@ -65,6 +66,8 @@ private:
 
 private:
 static int total_items;
+static QString dsk_db;
+
 int cur_item;
 QSqlDatabase fdj_db;
 stGameConf *fdjConf;

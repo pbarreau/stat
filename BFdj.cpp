@@ -14,6 +14,7 @@
 
 
 int BFdj::total_items = 0;
+QString BFdj::dsk_db = "";
 
 BFdj::BFdj(stFdj *prm, QString cnx)
 {
@@ -87,6 +88,8 @@ bool BFdj::ouvrirBase(stFdj *prm)
   /// pas de selection de base pre remplie
   mabase = mk_IdDsk(game);
  }
+
+ dsk_db = mabase;
 
  /// definition de la base pour ce calcul
  fdj_db.setDatabaseName(mabase);
@@ -217,6 +220,11 @@ stGameConf * BFdj::init(stFdj *prm)
  }
 
  return ret;
+}
+
+QString BFdj::getCurDbFile(void)
+{
+ return dsk_db;
 }
 
 bool BFdj::crt_TblFdj(stGameConf *pGame)

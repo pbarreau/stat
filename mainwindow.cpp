@@ -67,9 +67,9 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 
  stFdj *prm = new stFdj;
  prm->typeJeu = curGame;
- prm->db_type = eDbDsk;
  prm->use_odb = use_odb;
  prm->fdj_new = fdj_new;
+ prm->db_type = eDbDsk;
 
  BFdj *charge = new BFdj(prm);
 
@@ -175,7 +175,7 @@ void MainWindow::AssemblerJeuxUsr(stGameConf *usrGame)
 	 connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
 					 lst_tirages, SLOT(BSlot_FilterRequest(const Bp::E_Ana , const B2LstSel *)));
 
-	 connect(lst_tirages,SIGNAL(BSig_AnaLgn(int)), ana_tirages,SLOT(BSlot_AnaLgn(int)));
+	 connect(lst_tirages,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
 
 	 BTbView::agencerResultats(lst_tirages,ana_tirages);
 	}

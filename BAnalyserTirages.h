@@ -53,11 +53,11 @@ class BGameAna : public QWidget
  void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
  void BSig_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel);
  void BSig_RazSelection();
- void BSig_AnaLgn(const int &l_id);
+ void BSig_AnaLgn(const int &l_id, const int &prx_id);
 
  public slots:
  void BSlot_MousePressed(const QModelIndex & index, const int &zn, const etCount &eTyp);
- void BSlot_AnaLgn(const int &lgn_id);
+ void BSlot_AnaLgn(const int &lgn_id, const int &prx_id);
 
  private slots:
  void BSlot_ActionButton(int btn_id);

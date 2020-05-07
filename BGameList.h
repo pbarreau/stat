@@ -44,7 +44,7 @@ class BGameLst : public QWidget
  QString elmSel_2(const QModelIndexList &indexes, int zn);
 
  signals:
- void BSig_AnaLgn(const int l_id);
+ void BSig_AnaLgn(const int &lgn_id, const int &prx_id);
 
  public slots:
  void BSlot_ShowTotal(const QString& lstBoules);

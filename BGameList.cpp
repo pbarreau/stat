@@ -754,13 +754,18 @@ void BGameLst::BSlot_Clicked(const QModelIndex &index)
   return; /// invalid index
  }
 
- QTableView *src = qobject_cast<QTableView*>(sender());
  int row = index.row();
- /// pour analyse de la ligne
- QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel*>(src->model());
- int source_row = m->mapToSource(index).row();
 
- emit BSig_AnaLgn(row+1);
+ ///int source_row_1 = index.model()->index(row,Bp::colId).data().toInt();
+ int source_row_2 = index.sibling(row,Bp::colId).data().toInt();
+
+
+ /// pour analyse de la ligne
+ emit BSig_AnaLgn(source_row_2, row+1);
+
+ QTableView *src = qobject_cast<QTableView*>(sender());
+ ///QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel*>(src->model());
+
 
  /// https://forum.qt.io/topic/25740/checkbox-in-qtableview/4
  QModelIndex try_index;
@@ -1137,7 +1142,12 @@ void BGameLst::updateTbv(QString msg)
 
  sqm_resu->clear();
  sqm_resu->setQuery(msg,db_gme);
+ while (sqm_resu->canFetchMore())
+ {
+  sqm_resu->fetchMore();
+ }
  QTableView *qtv_tmp = sqm_resu->getTbv();
+
 
  qtv_tmp->resizeColumnsToContents();
  int count=qtv_tmp->horizontalHeader()->count();
