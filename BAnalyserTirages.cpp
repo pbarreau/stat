@@ -204,7 +204,7 @@ void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QStrin
  }
  else {
   lstComptage.append(item_4);
-  connect(this,SIGNAL(sig_AnaLgn(int)),item_4,SLOT(slot_AnaLgn(int)));
+  connect(this,SIGNAL(BSig_AnaLgn(int)),item_4,SLOT(BSlot_AnaLgn(int)));
   connect(this,SIGNAL(BSig_RazSelection()),item_4,SLOT(BSlot_RazSelection()));
  }
 
@@ -228,7 +228,7 @@ void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QStrin
    tab_Top->addTab(calcul, name);
    /*
    connect(lstComptage.at(i), SIGNAL(bsg_clicked(const QModelIndex, const int, const etCount)),
-           this,SLOT(bsl_clicked(const QModelIndex, const int, const etCount)));
+           this,SLOT(BSlot_MousePressed(const QModelIndex, const int, const etCount)));
    */
   }
  }
@@ -264,9 +264,9 @@ QWidget *BGameAna::addFilterBar(QTabWidget *ana)
 
  Bp::Btn lst_btn[]=
   {
-   {"flt_apply", "Apply filters", "slot_tstBtn"},
-   {"flt_clear", "Clear filters", "slot_tstBtn"},
-   {"run_32px", "Check next day", "slot_tstBtn"}
+   {"flt_apply", "Apply filters", "BSlot_ActionButton"},
+   {"flt_clear", "Clear filters", "BSlot_ActionButton"},
+   {"run_32px", "Check next day", "BSlot_ActionButton"}
   };
  int nb_btn = sizeof(lst_btn)/sizeof(Bp::Btn);
 
@@ -300,7 +300,7 @@ QWidget *BGameAna::addFilterBar(QTabWidget *ana)
 
  }
  btn_grp->setExclusive(true);
- connect(btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(slot_tstBtn(int)));
+ connect(btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(BSlot_ActionButton(int)));
 
  QVBoxLayout *ret_lay = new QVBoxLayout;
  QSpacerItem *ecart = new QSpacerItem(16, 16, QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -319,7 +319,7 @@ QWidget *BGameAna::addFilterBar(QTabWidget *ana)
  return tmp_wdg;
 }
 
-void BGameAna::slot_tstBtn(int btn_id)
+void BGameAna::BSlot_ActionButton(int btn_id)
 {
  B2LstSel *send = construireSelection();
  Bp::E_Ana eVal = static_cast<Bp::E_Ana>(btn_id);
@@ -329,7 +329,7 @@ void BGameAna::slot_tstBtn(int btn_id)
  }
 
  emit BSig_RazSelection();
- emit B_sig_filter(eVal, send);
+ emit BSig_FilterRequest(eVal, send);
 }
 
 B2LstSel *BGameAna::construireSelection()
@@ -1123,12 +1123,12 @@ QString BGameAna::getFieldsFromZone(const stGameConf *pGame, int zn, QString ali
  return   st_items;
 }
 
-void BGameAna::bsl_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp)
+void BGameAna::BSlot_MousePressed(const QModelIndex & index, const int &zn, const etCount &eTyp)
 {
  emit bsg_clicked(index,zn,eTyp);
 }
 
-void BGameAna::slot_AnaLgn(const int &lgn_id)
+void BGameAna::BSlot_AnaLgn(const int &lgn_id)
 {
- emit sig_AnaLgn(lgn_id);
+ emit BSig_AnaLgn(lgn_id);
 }

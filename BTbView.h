@@ -41,15 +41,15 @@ class BTbView : public BGTbView, BFlt
  void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
 
  private slots:
- void bsl_clicked(const QModelIndex &index);
- void slot_trackSelection(const QItemSelection &cur, const QItemSelection &last);
+ void BSlot_MousePressed(const QModelIndex &index);
+ void BSlot_TrackSelection(const QItemSelection &cur, const QItemSelection &last);
 
  private slots:
- void slot_V2_AideToolTip(const QModelIndex & index);
+ void BSlot_ShowToolTip(const QModelIndex & index);
  void slot_V2_ccmr_SetPriorityAndFilters(QPoint pos);
 
  public slots:
- void slot_usrCreateGame();
+ void BSlot_MakeCustomGame();
 
  private:
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);

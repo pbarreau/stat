@@ -33,7 +33,7 @@ class BCountGroup:public BCount
  void slot_ClicDeSelectionTableau(const QModelIndex &index);
  void slot_RequeteFromSelection(const QModelIndex &index);
  void slot_DecodeTirage(const QModelIndex & index);
- void slot_AnaLgn(const int & l_id);
+ void BSlot_AnaLgn(const int & l_id);
  void BSlot_RazSelection(void);
 
 

@@ -97,7 +97,7 @@ QLayout * BcElm::usr_UpperItems(int zn, BTbView *cur_tbv)
 	ret_lay->addWidget(tmp_btn);
 	cur_tbv->setUsrGameButton(tmp_btn);
 	connect(tmp_btn,SIGNAL(clicked()),
-					cur_tbv,SLOT(slot_usrCreateGame()));
+					cur_tbv,SLOT(BSlot_MakeCustomGame()));
 
  }
 
@@ -339,7 +339,7 @@ QWidget *BcElm::fn_Count(const stGameConf *pGame, int zn)
  /// --------------------
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,
-         SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
+         SIGNAL(entered(QModelIndex)),this,SLOT(BSlot_ShowToolTip(QModelIndex)));
 
  /// Selection & priorite
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);

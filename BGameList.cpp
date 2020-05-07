@@ -445,9 +445,9 @@ QGroupBox *BGameLst::LireTable(stGameConf *pGame, QString tbl_cible)
  sqm_resu = new BSqlQmTirages_3(pGame,cnx,tbl_cible, qtv_tmp);
  sqm_resu->setQuery(msg,db_gme);
  connect(sqm_resu,
-         SIGNAL(sig_chkChanged(QPersistentModelIndex ,Qt::CheckState)),
+         SIGNAL(BSig_CheckBox(QPersistentModelIndex ,Qt::CheckState)),
          this,
-         SLOT(slot_UsrChk(QPersistentModelIndex, Qt::CheckState)));
+         SLOT(BSlot_CheckBox(QPersistentModelIndex, Qt::CheckState)));
 
  BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,2);
  fpm_tmp->setDynamicSortFilter(true);
@@ -471,18 +471,18 @@ QGroupBox *BGameLst::LireTable(stGameConf *pGame, QString tbl_cible)
  tmp_ico = QIcon(":/images/pri_all.png");
  BPushButton *my_btn = new BPushButton(lb_tir,"red", BPushButton::eOk);
  my_btn->setIcon(tmp_ico);
- connect(my_btn, SIGNAL(unSurvol(QLabel *)), this, SLOT(slot_Colorize(QLabel *)));
- connect(my_btn, SIGNAL(clicked()), this, SLOT(slot_btnClicked()));
+ connect(my_btn, SIGNAL(BSig_MouseOverLabel(QLabel *)), this, SLOT(BSlot_MouseOverLabel(QLabel *)));
+ connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked()));
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(slot_tbvClicked( QModelIndex) ) );
+         this, SLOT(BSlot_Clicked( QModelIndex) ) );
  // Creates a new QPersistentModelIndex that is a copy of the model index.
  seltir->addWidget(my_btn);
 
  tmp_ico = QIcon(":/images/pri_none.png");
  my_btn = new BPushButton(lb_tir,"green",BPushButton::eEsc);
  my_btn->setIcon(tmp_ico);
- connect(my_btn, SIGNAL(unSurvol(QLabel *)), this, SLOT(slot_Colorize(QLabel *)));
- connect(my_btn, SIGNAL(clicked()), this, SLOT(slot_btnClicked()));
+ connect(my_btn, SIGNAL(BSig_MouseOverLabel(QLabel *)), this, SLOT(BSlot_MouseOverLabel(QLabel *)));
+ connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked()));
  seltir->addWidget(my_btn);
 
  /// HORIZONTAL BAR
@@ -502,8 +502,8 @@ QGroupBox *BGameLst::LireTable(stGameConf *pGame, QString tbl_cible)
  le_chk->setValidator(validator);
 
  // Bouton filtre
- connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(setUplets(const QString)));
- connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(slot_ShowNewTotal(const QString)));
+ connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(BSlot_MakeUplets(const QString)));
+ connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(BSlot_ShowTotal(const QString)));
  inputs->addLayout(frm_chk);
 
  //--------------
@@ -512,9 +512,9 @@ QGroupBox *BGameLst::LireTable(stGameConf *pGame, QString tbl_cible)
 
  Bp::Btn lst_btn[]=
   {
-   {"spreadsheet_table_xls", "Show All", "slot_tstBtn"},
-   {"Checked_Checkbox", "Show Checked", "slot_tstBtn"},
-   {"Unchecked_Checkbox", "Show Unchecked", "slot_tstBtn"}
+   {"spreadsheet_table_xls", "Show All", "BSlot_ActionButton"},
+   {"Checked_Checkbox", "Show Checked", "BSlot_ActionButton"},
+   {"Unchecked_Checkbox", "Show Unchecked", "BSlot_ActionButton"}
   };
  int nb_btn = sizeof(lst_btn)/sizeof(Bp::Btn);
  for(int i = 0; i< nb_btn; i++)
@@ -532,7 +532,7 @@ QGroupBox *BGameLst::LireTable(stGameConf *pGame, QString tbl_cible)
 
  }
  btn_grp->setExclusive(true);
- connect(btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(slot_ShowAll(int)));
+ connect(btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(BSlot_ShowBtnId(int)));
 
 
  /// Necessaire pour compter toutes les lignes de reponses
@@ -614,7 +614,7 @@ QString BGameLst::sqlVisualTable(QString tbl_src)
  return msg;
 }
 
-void BGameLst::slot_ShowAll(int btn_id)
+void BGameLst::BSlot_ShowBtnId(int btn_id)
 {
  QString msg= sqlVisualTable(game_lab) + "select t1.* from (tb1) as t1 ";
  bool with_where = false;
@@ -670,7 +670,7 @@ void BGameLst::slot_ShowNhk(void)
  le_chk->textChanged("");
 }
 
-void BGameLst::slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckState &chk)
+void BGameLst::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::CheckState &chk)
 {
 
  if(target == QModelIndex()){
@@ -721,7 +721,7 @@ void BGameLst::slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckS
 
 }
 
-void BGameLst::slot_Colorize(QLabel *l)
+void BGameLst::BSlot_MouseOverLabel(QLabel *l)
 {
  BPushButton *btn = qobject_cast<BPushButton *>(sender());
 
@@ -731,7 +731,7 @@ void BGameLst::slot_Colorize(QLabel *l)
 
 }
 
-void BGameLst::slot_btnClicked()
+void BGameLst::BSlot_Clicked()
 {
  BPushButton *btn = qobject_cast<BPushButton *>(sender());
  BPushButton::eRole action = btn->getRole();
@@ -742,7 +742,13 @@ void BGameLst::slot_btnClicked()
 
 }
 
-void BGameLst::slot_tbvClicked(const QModelIndex &index)
+void BGameLst::ShowPreviousGames(stGameConf *pGame)
+{
+ /// existe t il des jeux precedent
+
+}
+
+void BGameLst::BSlot_Clicked(const QModelIndex &index)
 {
  if(index == QModelIndex()){
   return; /// invalid index
@@ -754,7 +760,7 @@ void BGameLst::slot_tbvClicked(const QModelIndex &index)
  QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel*>(src->model());
  int source_row = m->mapToSource(index).row();
 
- emit sig_AnaLgn(row+1);
+ emit BSig_AnaLgn(row+1);
 
  /// https://forum.qt.io/topic/25740/checkbox-in-qtableview/4
  QModelIndex try_index;
@@ -788,7 +794,7 @@ void BGameLst::slot_tbvClicked(const QModelIndex &index)
  lb_Big->setText(msg);
 }
 
-void BGameLst::slot_ShowNewTotal(const QString& lstBoules)
+void BGameLst::BSlot_ShowTotal(const QString& lstBoules)
 {
  //Q_UNUSED(lstBoules);
 
@@ -811,7 +817,7 @@ void BGameLst::slot_ShowNewTotal(const QString& lstBoules)
  gpb_Tirages->setTitle(st_total);
 }
 
-void BGameLst::slot_RequestFromAnalyse(const Bp::E_Ana ana, const B2LstSel * sel)
+void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
 {
  QString usr_table = sqlVisualTable(game_lab);
  QString msg  = "select t1.* from ";

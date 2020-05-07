@@ -27,14 +27,14 @@ QTabWidget *getVisual(void);
 int getCounter(void);
 
 public slots:
-void slot_ShowNewTotal(const QString& lstBoules);
+void BSlot_ShowTotal(const QString& lstBoules);
 void slot_UGL_SetFilters();
 
 private slots:
-void slot_Colorize(QLabel *l);
-void slot_btnClicked();
-void slot_tbvClicked(const QModelIndex &index);
-void slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckState &chk);
+void BSlot_MouseOverLabel(QLabel *l);
+void BSlot_Clicked();
+void BSlot_Clicked(const QModelIndex &index);
+void BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::CheckState &chk);
 
 private:
 void MontrerRecherchePrecedentes(stGameConf *pGame, QString cnx, BTbView *parent=nullptr, QString st_table="");

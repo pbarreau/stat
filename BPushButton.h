@@ -25,10 +25,10 @@ virtual void enterEvent( QEvent* e );
 
 public:
 Q_SIGNALS:
-void unSurvol(QLabel *target);
+void BSig_MouseOverLabel(QLabel *target);
 
 public slots:
-void slot_tbvClicked(const QModelIndex &index);
+void BSlot_Clicked(const QModelIndex &index);
 
 private:
 QLabel *lab;

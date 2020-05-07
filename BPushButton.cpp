@@ -25,14 +25,14 @@ BPushButton::eRole BPushButton::getRole()
 void BPushButton::enterEvent( QEvent * e )
 {
  if(e->type() == QEvent::Enter){
-  Q_EMIT unSurvol(lab);
+  Q_EMIT BSig_MouseOverLabel(lab);
  }
 
  // don't forget to forward the event
  QWidget::enterEvent( e );
 }
 
-void BPushButton::slot_tbvClicked(const QModelIndex &index)
+void BPushButton::BSlot_Clicked(const QModelIndex &index)
 {
  QTableView *src = qobject_cast<QTableView*>(sender());
  cible = src;

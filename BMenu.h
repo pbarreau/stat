@@ -27,7 +27,7 @@ class BMenu : public QMenu,BFlt
  ///bool chkShowMenu(void);
 
  public slots:
- void slot_showMenu();
+ void BSlot_Menu_1();
 
  private slots:
  void slot_isWanted(bool chk);

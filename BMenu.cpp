@@ -42,7 +42,7 @@ void BMenu::construireMenu(void)
 }
 
 
-void BMenu::slot_showMenu()
+void BMenu::BSlot_Menu_1()
 {
  /// ce slot est appele apres le constructeur
  /// les verifications de base sont deja faites

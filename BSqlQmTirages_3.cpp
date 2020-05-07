@@ -65,7 +65,7 @@ bool BSqlQmTirages_3::setData(const QModelIndex & index, const QVariant & value,
   Qt::CheckState chk = static_cast<Qt::CheckState>(chk_val);
   ret = setVisualChk(id,chk);
   QPersistentModelIndex per_index(index);
-  Q_EMIT sig_chkChanged(per_index,chk);
+  Q_EMIT BSig_CheckBox(per_index,chk);
  }
 
  return ret;

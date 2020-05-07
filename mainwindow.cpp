@@ -127,58 +127,65 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
 
 	tmp->znCount = 1;
 	tmp->eTirType = eTirUsr; /// A supprimer ?
-	tmp->db_ref = new stParam_3;
 
 	/// Partie commune
 	tmp->limites = pGame->limites;
 	tmp->names = pGame->names;
-	tmp->db_ref->fdj = pGame->db_ref->fdj;
-	tmp->db_ref->cnx = pGame->db_ref->cnx;
 	tmp->eFdjType = pGame->eFdjType;
-	tmp->db_ref->ihm = pGame->db_ref->ihm;
 
 	/// sera reconstruit par la classe Analyse
 	/// mappage des fonctions utilisateurs speciales
 	/// d'analyses
 	tmp->slFlt = nullptr;
 
+	tmp->db_ref = new stParam_3;
+	tmp->db_ref->fdj = pGame->db_ref->fdj;
+	tmp->db_ref->cnx = pGame->db_ref->cnx;
+	tmp->db_ref->ihm = pGame->db_ref->ihm;
 
 	do{
 	 QString gameId = query.value(1).toString();
 	 tmp->db_ref->src = gameId;
 	 tmp->db_ref->flt = gameId+"_flt";
 
-	 AfficheUsrGame(tmp);
+	 AssemblerJeuxUsr(tmp);
 
   }while((b_retVal=query.next()) != false);
+
+	delete tmp->db_ref;
+	delete tmp;
  }
 
 
 
 }
 
-void MainWindow::AfficheUsrGame(stGameConf *usrGame)
+void MainWindow::AssemblerJeuxUsr(stGameConf *usrGame)
 {
- BGameLst *calcul = new BGameLst(usrGame);
+ BGameLst *lst_tirages = new BGameLst(usrGame);
 
- if(calcul->getGameConf() != nullptr){
+ stGameConf * conf = lst_tirages->getGameConf();
+ if( conf != nullptr){
 
-	BGameAna *uneAnalyse = new BGameAna(usrGame);
-	if(uneAnalyse->self() == nullptr){
-	 delete uneAnalyse;
+	BGameAna *ana_tirages = new BGameAna(conf);
+	if(ana_tirages->self() == nullptr){
+	 delete ana_tirages;
 	}
 	else {
-	 connect(uneAnalyse, SIGNAL(B_sig_filter(const Bp::E_Ana , const B2LstSel * )),
-					 calcul, SLOT(slot_RequestFromAnalyse(const Bp::E_Ana , const B2LstSel *)));
+	 connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
+					 lst_tirages, SLOT(BSlot_FilterRequest(const Bp::E_Ana , const B2LstSel *)));
 
-	 BTbView::agencerResultats(calcul,uneAnalyse);
+	 connect(lst_tirages,SIGNAL(BSig_AnaLgn(int)), ana_tirages,SLOT(BSlot_AnaLgn(int)));
+
+	 BTbView::agencerResultats(lst_tirages,ana_tirages);
 	}
  }
  else {
-  delete calcul;
+  delete lst_tirages;
  }
 
 }
+
 void MainWindow::EtudierJeu_v1(stGameConf *curConf, bool dest_bdd)
 {
 

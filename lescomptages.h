@@ -165,7 +165,7 @@ class BPrevision:public QGridLayout
  void slot_CnpEnd(const BCnp::Status eStatus, const int val_n, const int val_p);
 
  public slots:
- void slot_ShowNewTotal(const QString& lstBoules);
+ void BSlot_ShowTotal(const QString& lstBoules);
  void slot_changerTitreZone(QString le_titre);
  void slot_UGL_Create();
  void slot_UGL_SetFilters();

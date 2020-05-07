@@ -47,10 +47,10 @@ BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ)
 
  this->setMouseTracking(true);
  connect(this,
-         SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
+         SIGNAL(entered(QModelIndex)),this,SLOT(BSlot_ShowToolTip(QModelIndex)));
 
  /// Suivit du click
- connect(this,SIGNAL(pressed(const QModelIndex)), this, SLOT(bsl_clicked(const QModelIndex)));
+ connect(this,SIGNAL(pressed(const QModelIndex)), this, SLOT(BSlot_MousePressed(const QModelIndex)));
 
  up = nullptr;
  btn_usrGame = nullptr;
@@ -69,7 +69,7 @@ void BTbView::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
  BMenu *a = new BMenu (pos, cur_bflt, this);
 
  if(a->addr != nullptr){
-  connect(a,SIGNAL(aboutToShow()), a, SLOT(slot_showMenu()));
+  connect(a,SIGNAL(aboutToShow()), a, SLOT(BSlot_Menu_1()));
   a->exec(this->viewport()->mapToGlobal(pos));
  }
  else {
@@ -82,7 +82,7 @@ stTbFiltres * BTbView::getFlt(void)
  return inf_flt;
 }
 
-void BTbView::slot_V2_AideToolTip(const QModelIndex & index)
+void BTbView::BSlot_ShowToolTip(const QModelIndex & index)
 {
  /// https://doc.qt.io/qt-5/qtooltip.html
  /// https://stackoverflow.com/questions/34197295/how-to-change-the-background-color-of-qtooltip-of-a-qtablewidget-item
@@ -331,7 +331,7 @@ bool BTbView::isOnUsrGame(void)
  return b_retVal;
 }
 
-void  BTbView::slot_usrCreateGame()
+void  BTbView::BSlot_MakeCustomGame()
 {
 
  /// https://stackoverflow.com/questions/244646/get-elapsed-time-in-qt
@@ -381,9 +381,9 @@ void  BTbView::slot_usrCreateGame()
 	 delete uneAnalyse;
 	}
 	else {
-	 connect(uneAnalyse, SIGNAL(B_sig_filter(const Bp::E_Ana , const B2LstSel * )),
-					 calcul, SLOT(slot_RequestFromAnalyse(const Bp::E_Ana , const B2LstSel *)));
-	 connect(calcul,SIGNAL(sig_AnaLgn(int)), uneAnalyse,SLOT(slot_AnaLgn(int)));
+	 connect(uneAnalyse, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
+					 calcul, SLOT(BSlot_FilterRequest(const Bp::E_Ana , const B2LstSel *)));
+	 connect(calcul,SIGNAL(BSig_AnaLgn(int)), uneAnalyse,SLOT(BSlot_AnaLgn(int)));
 	 agencerResultats(calcul,uneAnalyse);
 	}
  }
@@ -464,7 +464,7 @@ QGroupBox * BTbView::getScreen()
 }
 */
 
-void BTbView::slot_trackSelection(const QItemSelection &cur, const QItemSelection &last)
+void BTbView::BSlot_TrackSelection(const QItemSelection &cur, const QItemSelection &last)
 {
  QList<QModelIndex> indexes_1 = cur.indexes();
  QList<QModelIndex> indexes_2 = last.indexes();
@@ -491,7 +491,7 @@ void BTbView::slot_trackSelection(const QItemSelection &cur, const QItemSelectio
  }
 }
 
-void BTbView::bsl_clicked(const QModelIndex &index)
+void BTbView::BSlot_MousePressed(const QModelIndex &index)
 {
  BTbView *view = qobject_cast<BTbView *>(sender());
  QItemSelectionModel *selectionModel = view->selectionModel();

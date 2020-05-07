@@ -14,7 +14,7 @@ class BFpm_3:public QSortFilterProxyModel
  bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
 
  public slots:
- void setUplets(const QString& lstBoules);
+ void BSlot_MakeUplets(const QString& lstBoules);
 
  private:
  int col_deb;

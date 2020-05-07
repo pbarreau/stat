@@ -36,7 +36,7 @@ bool BFpm_3::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) co
  return ret;
 }
 
-void BFpm_3::setUplets(const QString& lstBoules)
+void BFpm_3::BSlot_MakeUplets(const QString& lstBoules)
 {
  if(lstBoules.size()){
   lst_usr = lstBoules.split(",");

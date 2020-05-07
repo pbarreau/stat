@@ -353,9 +353,9 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  sqm_resu = new BSqlQmTirages_3(pGame,cnx,tbl_cible, qtv_tmp);
  sqm_resu->setQuery(msg,db_1);
  connect(sqm_resu,
-         SIGNAL(sig_chkChanged(QPersistentModelIndex ,Qt::CheckState)),
+         SIGNAL(BSig_CheckBox(QPersistentModelIndex ,Qt::CheckState)),
          this,
-         SLOT(slot_UsrChk(QPersistentModelIndex, Qt::CheckState)));
+         SLOT(BSlot_CheckBox(QPersistentModelIndex, Qt::CheckState)));
 
  BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,2);
  fpm_tmp->setDynamicSortFilter(true);
@@ -379,18 +379,18 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  tmp_ico = QIcon(":/images/pri_all.png");
  BPushButton *my_btn = new BPushButton(lb_tir,"red", BPushButton::eOk);
  my_btn->setIcon(tmp_ico);
- connect(my_btn, SIGNAL(unSurvol(QLabel *)), this, SLOT(slot_Colorize(QLabel *)));
- connect(my_btn, SIGNAL(clicked()), this, SLOT(slot_btnClicked()));
+ connect(my_btn, SIGNAL(BSig_MouseOverLabel(QLabel *)), this, SLOT(BSlot_MouseOverLabel(QLabel *)));
+ connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked()));
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(slot_tbvClicked( QModelIndex) ) );
+         this, SLOT(BSlot_Clicked( QModelIndex) ) );
  // Creates a new QPersistentModelIndex that is a copy of the model index.
  seltir->addWidget(my_btn);
 
  tmp_ico = QIcon(":/images/pri_none.png");
  my_btn = new BPushButton(lb_tir,"green",BPushButton::eEsc);
  my_btn->setIcon(tmp_ico);
- connect(my_btn, SIGNAL(unSurvol(QLabel *)), this, SLOT(slot_Colorize(QLabel *)));
- connect(my_btn, SIGNAL(clicked()), this, SLOT(slot_btnClicked()));
+ connect(my_btn, SIGNAL(BSig_MouseOverLabel(QLabel *)), this, SLOT(BSlot_MouseOverLabel(QLabel *)));
+ connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked()));
  seltir->addWidget(my_btn);
 
  //--------------
@@ -407,8 +407,8 @@ QGroupBox *BGrbGenTirages::LireTable(stGameConf *pGame, QString tbl_cible)
  le_chk->setValidator(validator);
 
  // Bouton filtre
- connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(setUplets(const QString)));
- connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(slot_ShowNewTotal(const QString)));
+ connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(BSlot_MakeUplets(const QString)));
+ connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(BSlot_ShowTotal(const QString)));
 
  //--------------
  tmp_ico = QIcon(":/images/flt_apply.png");
@@ -505,7 +505,7 @@ bool BGrbGenTirages::CreerTable(stGameConf *pGame, QString tbl)
  return b_retVal;
 }
 
-void BGrbGenTirages::slot_ShowNewTotal(const QString& lstBoules)
+void BGrbGenTirages::BSlot_ShowTotal(const QString& lstBoules)
 {
  //Q_UNUSED(lstBoules);
 
@@ -522,7 +522,7 @@ void BGrbGenTirages::slot_ShowNewTotal(const QString& lstBoules)
  gpb_Tirages->setTitle(st_total);
 }
 
-void BGrbGenTirages::slot_btnClicked()
+void BGrbGenTirages::BSlot_Clicked()
 {
  BPushButton *btn = qobject_cast<BPushButton *>(sender());
  BPushButton::eRole action = btn->getRole();
@@ -533,7 +533,7 @@ void BGrbGenTirages::slot_btnClicked()
 
 }
 
-void BGrbGenTirages::slot_Colorize(QLabel *l)
+void BGrbGenTirages::BSlot_MouseOverLabel(QLabel *l)
 {
  BPushButton *btn = qobject_cast<BPushButton *>(sender());
 
@@ -699,7 +699,7 @@ QVBoxLayout * BGrbGenTirages::mkForm(stGameConf *pGame, BTbView *parent, QString
  this->setWindowTitle("Ensemble : "+ st_table);
 }
 
-void BGrbGenTirages::slot_tbvClicked(const QModelIndex &index)
+void BGrbGenTirages::BSlot_Clicked(const QModelIndex &index)
 {
  if(index == QModelIndex()){
   return; /// invalid index
@@ -738,7 +738,7 @@ void BGrbGenTirages::slot_tbvClicked(const QModelIndex &index)
  lb_Big->setText(msg);
 }
 
-void BGrbGenTirages::slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckState &chk)
+void BGrbGenTirages::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::CheckState &chk)
 {
 
  if(target == QModelIndex()){

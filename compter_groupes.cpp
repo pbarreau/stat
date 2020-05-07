@@ -182,7 +182,7 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
  return tbvAnaLgn->getScreen();
 }
 
-void BCountGroup::slot_AnaLgn(const int & l_id)
+void BCountGroup::BSlot_AnaLgn(const int & l_id)
 {
  int zn = 0;
  QString sql_msg = getSqlForLine(l_id, zn);
@@ -367,7 +367,7 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
 
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,
-         SIGNAL(entered(QModelIndex)),this,SLOT(slot_V2_AideToolTip(QModelIndex)));
+         SIGNAL(entered(QModelIndex)),this,SLOT(BSlot_ShowToolTip(QModelIndex)));
 
  /// Selection & priorite
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);

@@ -180,7 +180,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
  QItemSelectionModel *trackSelection = qtv_tmp->selectionModel();
  connect(trackSelection,SIGNAL(selectionChanged( QItemSelection ,  QItemSelection )),
-         qtv_tmp,SLOT(slot_trackSelection(QItemSelection ,  QItemSelection )));
+         qtv_tmp,SLOT(BSlot_TrackSelection(QItemSelection ,  QItemSelection )));
 
  /// Marquer pour les 2 derniers tirages de la fdj
  if(qtv_tmp->isOnUsrGame() == false){
@@ -450,7 +450,7 @@ void BCount::RecupererConfiguration(void)
 }
 
 #if 0
-void BCount::slot_V2_AideToolTip(const QModelIndex & index)
+void BCount::BSlot_ShowToolTip(const QModelIndex & index)
 {
  /// https://doc.qt.io/qt-5/qtooltip.html
  /// https://stackoverflow.com/questions/34197295/how-to-change-the-background-color-of-qtooltip-of-a-qtablewidget-item
@@ -810,13 +810,13 @@ void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 
  BMenu a(pos, cnx, eType, view);
 
- connect(&a,SIGNAL(aboutToShow()), &a, SLOT(slot_showMenu()));
+ connect(&a,SIGNAL(aboutToShow()), &a, SLOT(BSlot_Menu_1()));
  a.exec(view->viewport()->mapToGlobal(pos));
 
  /*
  BMenu *tmp = new BMenu(pos, cnx, eType, view);
 
- connect(tmp,SIGNAL(aboutToShow()), tmp, SLOT(slot_showMenu()));
+ connect(tmp,SIGNAL(aboutToShow()), tmp, SLOT(BSlot_Menu_1()));
  tmp->exec(view->viewport()->mapToGlobal(pos));
 */
 #if 0

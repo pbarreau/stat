@@ -20,6 +20,8 @@ class BGameLst : public QWidget
  stGameConf * getGameConf(void);
  QString getGameLabel(void);
  static stGameConf *gameUsrNew(const stGameConf *pGame, QString gameId="");
+ void ShowPreviousGames(stGameConf *pGame);
+
 
  private:
  bool isNewUsrGame(const stGameConf *pGame, QString *gameId, QString *data);
@@ -42,18 +44,18 @@ class BGameLst : public QWidget
  QString elmSel_2(const QModelIndexList &indexes, int zn);
 
  signals:
- void sig_AnaLgn(const int l_id);
+ void BSig_AnaLgn(const int l_id);
 
  public slots:
- void slot_ShowNewTotal(const QString& lstBoules);
- void slot_RequestFromAnalyse(const Bp::E_Ana ana, const B2LstSel *sel);
+ void BSlot_ShowTotal(const QString& lstBoules);
+ void BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel *sel);
 
  private slots:
- void slot_Colorize(QLabel *l);
- void slot_btnClicked();
- void slot_tbvClicked(const QModelIndex &index);
- void slot_UsrChk(const QPersistentModelIndex &target, const Qt::CheckState &chk);
- void slot_ShowAll(int btn_id);
+ void BSlot_MouseOverLabel(QLabel *l);
+ void BSlot_Clicked();
+ void BSlot_Clicked(const QModelIndex &index);
+ void BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::CheckState &chk);
+ void BSlot_ShowBtnId(int btn_id);
  void slot_ShowChk(void);
  void slot_ShowNhk(void);
 

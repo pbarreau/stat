@@ -20,7 +20,7 @@ class BSqlQmTirages_3 : public QSqlQueryModel
 
  public:
  Q_SIGNALS:
- void sig_chkChanged(const QPersistentModelIndex &target, const Qt::CheckState &chk);
+ void BSig_CheckBox(const QPersistentModelIndex &target, const Qt::CheckState &chk);
 
  private:
  bool setVisualChk(int id, Qt::CheckState chk);

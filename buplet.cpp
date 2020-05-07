@@ -156,7 +156,7 @@ QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne,
  QString nb_start = gpb_title + " : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
  gpb_upl->setTitle(nb_start);
 
- connect(bval,SIGNAL(textChanged(const QString)),qtv_upl->model(),SLOT(setUplets(const QString)));
+ connect(bval,SIGNAL(textChanged(const QString)),qtv_upl->model(),SLOT(BSlot_MakeUplets(const QString)));
  connect(bval,SIGNAL(textChanged(const QString)),this,SLOT(slot_Selection(const QString)));
 
  layout->addWidget(qtv_upl,2,1);

@@ -51,16 +51,16 @@ class BGameAna : public QWidget
 
  signals:
  void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
- void B_sig_filter(const Bp::E_Ana ana, const B2LstSel * sel);
+ void BSig_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel);
  void BSig_RazSelection();
- void sig_AnaLgn(const int &l_id);
+ void BSig_AnaLgn(const int &l_id);
 
  public slots:
- void bsl_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
- void slot_AnaLgn(const int &lgn_id);
+ void BSlot_MousePressed(const QModelIndex & index, const int &zn, const etCount &eTyp);
+ void BSlot_AnaLgn(const int &lgn_id);
 
  private slots:
- void slot_tstBtn(int btn_id);
+ void BSlot_ActionButton(int btn_id);
 
  private:
  static int total_analyses;

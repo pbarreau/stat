@@ -97,7 +97,7 @@ public:
 
 private:
 void AfficherAnciensCalcul(stGameConf *pGame);
-void AfficheUsrGame(stGameConf *pGame);
+void AssemblerJeuxUsr(stGameConf *pGame);
 
 private slots:
     void pslot_newGame();

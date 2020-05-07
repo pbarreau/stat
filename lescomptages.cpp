@@ -2454,7 +2454,7 @@ void BPrevision::creerJeuxUtilisateur(int n, int p)
 
 }
 
-void BPrevision::slot_ShowNewTotal(const QString& lstBoules)
+void BPrevision::BSlot_ShowTotal(const QString& lstBoules)
 {
  BLineEdit *ble_tmp = qobject_cast<BLineEdit *>(sender());
 
@@ -2513,8 +2513,8 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
  QValidator *validator = new QRegExpValidator(QRegExp(stPattern));
 
  le_chk->setValidator(validator);
- connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(setUplets(const QString)));
- connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(slot_ShowNewTotal(const QString)));
+ connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(BSlot_MakeUplets(const QString)));
+ connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(BSlot_ShowTotal(const QString)));
  //--------------
 
 
@@ -2612,8 +2612,8 @@ void BPrevision::ContinuerCreation(QString tbl_cible, QString tbl_cible_ana)
 	QValidator *validator = new QRegExpValidator(QRegExp(stPattern));
 
 	le_chk->setValidator(validator);
-	connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(setUplets(const QString)));
-	connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(slot_ShowNewTotal(const QString)));
+	connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(BSlot_MakeUplets(const QString)));
+	connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(BSlot_ShowTotal(const QString)));
 	//--------------
 
 
