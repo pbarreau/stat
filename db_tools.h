@@ -18,7 +18,7 @@ typedef struct _stJoinArgs{
 }stJoinArgs;
 
 namespace DB_Tools {
- typedef enum _tbTypes{
+ typedef enum E_TbType{
   etbNotSet,
   etbTempView,
   etbTempTbl,

@@ -42,6 +42,8 @@ class BGameLst : public QWidget
  QString select_grp(const QModelIndexList &indexes, int zn, int tbl_id);
  QString elmSel_1(const QModelIndexList &indexes, int zn);
  QString elmSel_2(const QModelIndexList &indexes, int zn);
+ void doLittleAna(const stGameConf *pGame, QString msg);
+
 
  signals:
  void BSig_AnaLgn(const int &lgn_id, const int &prx_id);
@@ -61,6 +63,8 @@ class BGameLst : public QWidget
 
  private:
  static int gme_counter;
+ int gme_id;
+ int sub_id;
  stGameConf *gameDef;
  QSqlDatabase db_gme;
  QString game_lab;

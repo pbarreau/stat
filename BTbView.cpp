@@ -59,7 +59,8 @@ BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ)
 
 BTbView::~BTbView()
 {
- delete square;
+	///appel du parent ligne suivante inutile
+	///delete square;
 }
 
 void BTbView::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)

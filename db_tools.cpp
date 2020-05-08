@@ -245,26 +245,34 @@ bool DB_Tools::isDbGotTbl(QString tbl, QString cnx, tbTypes etbTypes, bool silen
  QSqlQuery query(db);
  QString msg_err= "";
 
- QString type = "";
+ QString kind = "";
+ QString m_type = "";
+
+ if((etbTypes==etbTempView) || (etbTypes==etbTempTbl)){
+  m_type = "_temp_";
+ }
+ else {
+  m_type = "_";
+ }
 
  switch (etbTypes) {
   case etbTempView:
   case etbView:
-   type = "view";
+   kind = "view";
    break;
 
 	case etbTempTbl:
 	case etbTable:
-	 type = "table";
+	 kind = "table";
 	 break;
 
 	default:
-	 break;
+	 ;
  }
 
  QString msg[]{
-  {"SELECT name FROM sqlite_master "
-   "WHERE type='"+type+"' AND name='"+tbl+"';"}
+  {"SELECT name FROM sqlite"+m_type+"master "
+   "WHERE type='"+kind+"' AND name='"+tbl+"';"}
  };
 
  if((b_retVal = query.exec(msg[0])))

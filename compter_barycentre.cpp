@@ -206,10 +206,12 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
 
  QString col_vsl = "";
  QString str_jrs = "";
+ QString col_jrs = "";
  QString tbl_tirages = pGame->db_ref->src;
  if(tbl_tirages.compare("B_fdj")==0){
   col_vsl = "NULL as I,";
   str_jrs = db_jours;
+  col_jrs = ", t2.J as J";
  }
 
  st_sql = "with poids as  "
@@ -227,7 +229,8 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
           " "
           "tb_bc as "
           "( "
-          "SELECT t2.id, cast(printf(\"%.2f\",avg(poids.T)) as text) as bc, t2.J as J  "
+          "SELECT t2.id, cast(printf(\"%.2f\",avg(poids.T)) as text) as bc "+
+          col_jrs+ " "
           "from ("+tbl_tirages
           +") as t2  "
             "left join poids where (poids.id in("+st_critere+

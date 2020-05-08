@@ -94,9 +94,13 @@ bool BGameAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QS
 
 
  /// Verifier si on a bien la table des tirages
+ DB_Tools::tbTypes req = DB_Tools::E_TbType::etbTable;
+ if(pGame->db_ref->dad.size()!=0){
+  req = DB_Tools::E_TbType::etbTempTbl;
+ }
  if((b_retVal = DB_Tools::isDbGotTbl(tbl_tirages, cnx)) == false)
  {
-  QString str_error = "Missing table : " + tbl_tirages + "in DataBase";
+  QString str_error = "BGameAna::isPresentUsefullTables\nMissing table : " + tbl_tirages + " in DataBase";
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
  }
 
@@ -114,7 +118,7 @@ bool BGameAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QS
 	}
 
 	/// Verifier si la table est deja cree
-	if(b_retVal && (DB_Tools::isDbGotTbl(tbName, cnx)==false)){
+	if((b_retVal && (DB_Tools::isDbGotTbl(tbName, cnx))==false)){
 	 /// Fonction de traitement de la creation
 	 b_retVal=(this->*(lstTable[uneTable].ptrFunc))(pGame, tbName, &query);
 	}
@@ -910,13 +914,24 @@ bool BGameAna::mkTblLstCmb(stGameConf *pGame, QString tbName,QSqlQuery *query)
  Q_UNUSED(query);
 
  bool b_retVal = true;
+ int nb_zn = pGame->znCount;
+ QString cnx = pGame->db_ref->cnx;
 
- BGnp *combi = new BGnp(pGame, tbName);
+ for (int zn=0;(zn<nb_zn) && (b_retVal==true);zn++)
+ {
+  QString tbl = tbName + "_z"+QString::number(zn+1);
 
- if(combi->self()==nullptr){
-  delete combi;
-  b_retVal = false;
+	if((b_retVal && (DB_Tools::isDbGotTbl(tbl, cnx))==false)){
+	 /// Fonction de traitement de la creation
+	 BGnp *combi = new BGnp(pGame, tbName);
+
+	 if(combi->self()==nullptr){
+		delete combi;
+		b_retVal = false;
+	 }
+	}
  }
+
 
  return b_retVal;
 }
@@ -995,6 +1010,9 @@ bool BGameAna::usrFn_X1(const stGameConf *pGame, QString tblIn, QString tblOut, 
  QString msg = "";
 
  QString tbl_tirages = pGame->db_ref->src;
+ if(pGame->db_ref->dad.size()!=0){
+  ;//tbl_tirages = tbl_tirages;
+ }
  QString tblUse []= {"B_ana_z",tbl_tirages, "B_elm"};
 
  int nbZone = pGame->znCount;
@@ -1008,7 +1026,7 @@ bool BGameAna::usrFn_X1(const stGameConf *pGame, QString tblIn, QString tblOut, 
 
   if(nbwin>2){
 
-   msg = " select t1.*, cast(t2.X1 as int) as X1 from "+tblIn+ " as t1 left join (select 0 as X1) as t2 ";
+   msg = " select t1.*, cast(t2.X1 as int) as X1 from ("+tblIn+ ") as t1 left join (select 0 as X1) as t2 ";
 
 	 QString sql_msg[]={
 		"create table "+ tmp_tbl+ " as "+msg

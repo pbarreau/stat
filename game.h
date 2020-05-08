@@ -41,6 +41,7 @@ typedef struct _stParam_3 {
  QString cnx;    /// nom connexion a la base
  QString src;    /// nom Table liste des tirages a traiter
  QString fdj;    /// nom de la tables des tirages fdj
+ QString dad;    /// nom de la table pere de src
  QString jrs;    /// jours trouves dans les tirages a traiter
  QString flt;    /// nom de la tables des filtres des tirages
 }stParam_3;

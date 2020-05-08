@@ -34,6 +34,7 @@ BGameLst::BGameLst(const stGameConf *pGame, QWidget *parent) : QWidget(parent)
 {
  gameDef = nullptr;
  game_lab = "";
+ sub_id = 0;
 
  QString cnx=pGame->db_ref->cnx;
 
@@ -55,6 +56,8 @@ BGameLst::BGameLst(const stGameConf *pGame, QWidget *parent) : QWidget(parent)
   gme_counter++;
   return;
  }
+
+ gme_id = gme_counter;
 
  QString game="";
  QString data = "";
@@ -828,33 +831,43 @@ void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
  QString msg  = "select t1.* from ";
  QString tbl_lst = "(tb1) as t1";
  QString clause = "";
+ QString tb2 = "";
 
  switch (ana) {
   case Bp::anaRaz:
-
    break;
 
+	case Bp::anaNxt:
 	case Bp::anaFlt:
 	 clause = makeSqlFromSelection(sel, &tbl_lst);
-	 break;
-
-	case Bp::anaNxt:
-	 clause = makeSqlForNextLine(sel);
  }
 
 #ifndef QT_NO_DEBUG
- qDebug() << "\nMsg : " <<msg;
- qDebug() << "\nclause : " <<clause;
+ qDebug() << "\nMsg : " <<usr_table+ msg + tbl_lst;
+ qDebug() << "\nclause : where(" <<clause<<")";
 #endif
 
  if(clause.size()){
-  msg = usr_table+ msg + tbl_lst + " where("+clause+")";
+  msg = msg + tbl_lst + " where("+clause+")";
+
+	if(ana == Bp::anaNxt){
+	 tb2 = ", tb2 as ("+ msg +")";
+	 msg = usr_table + tb2 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
+	}
+	else {
+	 msg = usr_table + msg;
+	}
  }
  else {
   msg = usr_table+ msg + tbl_lst;
  }
 
+
  updateTbv(msg);
+
+ if(ana != Bp::anaRaz){
+  doLittleAna(gameDef,msg);
+ }
 }
 
 QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
@@ -1166,5 +1179,53 @@ void BGameLst::updateTbv(QString msg)
  //gpb_Tirages =new QGroupBox;
  QString st_total = "Total : " + QString::number(nb_lgn_rel)+" sur " + QString::number(nb_lgn_rel);
  gpb_Tirages->setTitle(st_total);
+}
 
+void BGameLst::doLittleAna(const stGameConf *pGame, QString msg)
+{
+ stGameConf *flt_game = new stGameConf;
+ flt_game->znCount = pGame->znCount;
+ flt_game->eTirType = eTirUsr; /// A supprimer ?
+
+ /// Partie commune
+ flt_game->limites = pGame->limites;
+ flt_game->names = pGame->names;
+ flt_game->eFdjType = pGame->eFdjType;
+
+ /// sera reconstruit par la classe Analyse
+ /// mappage des fonctions utilisateurs speciales
+ /// d'analyses
+ flt_game->slFlt = nullptr;
+
+ flt_game->db_ref = new stParam_3;
+ flt_game->db_ref->fdj = pGame->db_ref->fdj;
+ flt_game->db_ref->cnx = pGame->db_ref->cnx;
+ flt_game->db_ref->dad = pGame->db_ref->src;
+
+ flt_game->db_ref->ihm = pGame->db_ref->ihm;
+
+ QString sub_tirages  =  game_lab + "R" +QString::number(sub_id).rightJustified(2,'0');
+ flt_game->db_ref->src= sub_tirages;
+ flt_game->db_ref->flt= sub_tirages+"_flt";
+
+ QSqlQuery query(db_gme);
+ bool b_retVal = true;
+
+ msg = "create table if not exists " +
+       sub_tirages +
+       " as " + msg;
+
+#ifndef QT_NO_DEBUG
+ qDebug()<< "\nView :\n" <<msg;
+#endif
+
+ if((b_retVal = query.exec(msg)) == true){
+  BGameAna *uneAnalyse = new BGameAna(flt_game);
+  if(uneAnalyse->self() != nullptr){
+   uneAnalyse->show();
+  }
+  else {
+   delete uneAnalyse;
+  }
+ }
 }
