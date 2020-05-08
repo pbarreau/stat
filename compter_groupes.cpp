@@ -69,8 +69,13 @@ QWidget *BCountGroup::mainIhmGrp(const stGameConf *pGame, const etCount eCalcul,
  QWidget *ret = new QWidget;
  QVBoxLayout *ret_lay = new QVBoxLayout;
 
- QWidget * tmp = usr_GrpTb1(zn);
- ret_lay->addWidget(tmp);
+ QWidget * tmp = nullptr;
+
+ if(pGame->db_ref->dad.size() == 0){
+  tmp = usr_GrpTb1(zn);
+  ret_lay->addWidget(tmp);
+ }
+
  tmp = startIhm(pGame,eCalcul,fn,zn);
  ret_lay->addWidget(tmp);
 
@@ -450,14 +455,22 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
 
  bool b_retVal = true;
 
- QString tbl_tirages = pGame->db_ref->src;
  QString tbl_key = "";
+
+ QString tbl_tirages = pGame->db_ref->src;
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
   tbl_key="_fdj";
  }
 
- QString stCurTable = tbl_tirages + "_ana_z" + QString::number(zn+1);
+ QString tbl_ana = tbl_tirages;
+ if(pGame->db_ref->dad.size() != 0){
+  tbl_ana = pGame->db_ref->dad;
+ }
+ tbl_ana = tbl_ana + "_ana_z"+QString::number(zn+1);
+
+
+ ///QString tbl_ana = tbl_tirages + "_ana_z" + QString::number(zn+1);
  QString stDefBoules = "B_elm";
  QString prvName = "";
  QString curName = "";
@@ -498,7 +511,7 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
 					+slst[1].at(loop)
 					+ " from("+prvName+") as tbLeft "
 					+"left join ("
-					+stCurTable
+					+tbl_ana
 					+") as tbRight on (tbLeft.Nb = tbRight."
 					+slst[1].at(loop)+")group by tbLeft.Nb";
 #ifndef QT_NO_DEBUG

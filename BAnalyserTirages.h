@@ -40,7 +40,8 @@ class BGameAna : public QWidget
  bool AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName);
  bool SupprimerVueIntermediaires(void);
  void PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName);
- QWidget *addFilterBar(QTabWidget *ana);
+ QWidget *getVisual(stGameConf *pGame, QTabWidget *ana);
+ QWidget *setFilterBar();
 
  bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn_in);
  QString getFieldsFromZone(const stGameConf *pGame, int zn, QString alias);

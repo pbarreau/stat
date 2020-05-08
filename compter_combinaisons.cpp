@@ -200,6 +200,7 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
  QString col_vsl = "";
  QString tbl_key = "";
  QString str_jrs = "";
+
  QString tbl_tirages = pGame->db_ref->src;
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
@@ -207,6 +208,13 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
   col_vsl = "NULL as I,";
   str_jrs = db_jours;
  }
+
+ QString tbl_ana = tbl_tirages;
+ if(pGame->db_ref->dad.size() != 0){
+  tbl_ana = pGame->db_ref->dad;
+ }
+ tbl_ana = tbl_ana + "_ana_z"+QString::number(zn+1);
+
 
  QString tbl_ref_cmb = "B";
  st_sql= "with "
@@ -222,9 +230,7 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
           "cast(count(t2.id) as int) as T"
           + str_jrs
           +" from (tbCmb) as t1, ("
-          +tbl_tirages
-          +"_ana_z"
-          +QString::number(zn+1)
+          +tbl_ana
           +") as t2, ("
           +tbl_tirages+tbl_key
           +") as t3 "

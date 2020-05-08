@@ -1223,9 +1223,11 @@ void BGameLst::doLittleAna(const stGameConf *pGame, QString msg)
   BGameAna *uneAnalyse = new BGameAna(flt_game);
   if(uneAnalyse->self() != nullptr){
    uneAnalyse->show();
+   sub_id++;
   }
   else {
    delete uneAnalyse;
+   sub_id--;
   }
  }
 }

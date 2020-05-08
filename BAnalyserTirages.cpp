@@ -135,6 +135,8 @@ bool BGameAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QS
 void BGameAna::startAnalyse(stGameConf *pGame, QString tbl_tirages)
 {
  bool b_retVal = true;
+ bool b_parent = false;
+
  int nbZn = pGame->znCount;
 
  if(pGame->slFlt==nullptr){
@@ -145,8 +147,14 @@ void BGameAna::startAnalyse(stGameConf *pGame, QString tbl_tirages)
 	}
  }
 
+ if(pGame->db_ref->dad.size() !=0){
+  b_parent = true;
+ }
+
  QStringList ** info = pGame->slFlt;
- for (int zn=0; (zn < nbZn) && b_retVal;zn++ )
+ for (int zn=0; (b_parent == false)&&
+                  (b_retVal == true)&&
+                  (zn < nbZn) ;zn++ )
  {
   b_retVal = AnalyserEnsembleTirage(pGame, info, zn, tbl_tirages);
   if(!b_retVal){
@@ -167,7 +175,7 @@ void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QStrin
  ///
  QVector<BCount *> lstComptage; ///voir man de QList
 
- QTabWidget *tab_Top = nullptr;
+ QTabWidget *tabs_ana = nullptr;
 
  /// pour tester non importance variable globale
  /*
@@ -217,7 +225,7 @@ void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QStrin
  /// Les objets existent faire les calculs
  int nb_item = lstComptage.size();
  if(nb_item){
-  tab_Top = new QTabWidget;
+  tabs_ana = new QTabWidget;
   mesComptages = lstComptage;
  }
 
@@ -227,23 +235,18 @@ void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QStrin
   etCount type = lstComptage.at(i)->getType();
   QString name = BCount::onglet[type];
 
-  QWidget *calcul = lstComptage.at(i)->startCount(pGame, type);
-  if(calcul != nullptr){
-   tab_Top->addTab(calcul, name);
-   /*
-   connect(lstComptage.at(i), SIGNAL(bsg_clicked(const QModelIndex, const int, const etCount)),
-           this,SLOT(BSlot_MousePressed(const QModelIndex, const int, const etCount)));
-   */
-  }
+	QWidget *calcul = lstComptage.at(i)->startCount(pGame, type);
+	if(calcul != nullptr){
+	 tabs_ana->addTab(calcul, name);
+	}
  }
 
- //QWidget * Resultats = new QWidget;
  QGridLayout *tmp_layout = new QGridLayout;
 
  /// faire test pour voir si production de calculs ?
- if(tab_Top!=nullptr){
-  QWidget *flt_tab = addFilterBar(tab_Top);
-  tmp_layout->addWidget(flt_tab,0,0);
+ if(tabs_ana!=nullptr){
+  QWidget *wdg_ana = getVisual(pGame, tabs_ana);
+  tmp_layout->addWidget(wdg_ana,0,0);
  }
  else {
   QLabel *tmp = new QLabel("Erreur pas de resultats a montrer !!");
@@ -256,7 +259,7 @@ void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QStrin
  this->setLayout(tmp_layout);
 }
 
-QWidget *BGameAna::addFilterBar(QTabWidget *ana)
+QWidget *BGameAna::setFilterBar()
 {
  QWidget *tmp_wdg = new QWidget;
  QHBoxLayout *inputs = new QHBoxLayout;
@@ -281,9 +284,9 @@ QWidget *BGameAna::addFilterBar(QTabWidget *ana)
  {
   tmp_btn = new QPushButton;
 
-  QString icon_file = ":/images/"+lst_btn[i].name+".png";
-  tmp_ico = QIcon(icon_file);
-  QPixmap ico_small = tmp_ico.pixmap(22,22);
+	QString icon_file = ":/images/"+lst_btn[i].name+".png";
+	tmp_ico = QIcon(icon_file);
+	QPixmap ico_small = tmp_ico.pixmap(22,22);
 
 
 	tmp_btn->setFixedSize(ico_small.size());
@@ -306,16 +309,29 @@ QWidget *BGameAna::addFilterBar(QTabWidget *ana)
  btn_grp->setExclusive(true);
  connect(btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(BSlot_ActionButton(int)));
 
- QVBoxLayout *ret_lay = new QVBoxLayout;
  QSpacerItem *ecart = new QSpacerItem(16, 16, QSizePolicy::Expanding, QSizePolicy::Expanding);
  inputs->addItem(ecart);
 
- /// https://stackoverflow.com/questions/18433342/how-to-get-a-qhboxlayout-fixed-height/18433617
- QWidget *tmp_2 = new QWidget;
- tmp_2->setLayout(inputs);
- tmp_2->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
 
- ret_lay->addWidget(tmp_2);
+ tmp_wdg->setLayout(inputs);
+
+ /// https://stackoverflow.com/questions/18433342/how-to-get-a-qhboxlayout-fixed-height/18433617
+ tmp_wdg->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+
+ return tmp_wdg;
+}
+
+QWidget *BGameAna::getVisual(stGameConf *pGame, QTabWidget *ana)
+{
+ QWidget *tmp_wdg = new QWidget;
+
+ QVBoxLayout *ret_lay = new QVBoxLayout;
+
+ if(pGame->db_ref->dad.size() == 0){
+  QWidget *tmp_2 = setFilterBar();
+  ret_lay->addWidget(tmp_2);
+ }
+
  ret_lay->addWidget(ana);
 
  tmp_wdg->setLayout(ret_lay);
@@ -368,15 +384,15 @@ B2LstSel *BGameAna::effacerSelection(B2LstSel *sel)
 
  if(nb_items != 0){
 
- for (int i=0; i< nb_items;i++) {
-  QList<BLstSelect *> *tmp = sel->at(i);
-  while (!tmp->isEmpty()){
-   int nb_items = tmp->size();
-   BLstSelect * item = tmp->takeFirst();
-   item->clearSelection();
-   delete item;
-  }
-  }
+	for (int i=0; i< nb_items;i++) {
+	 QList<BLstSelect *> *tmp = sel->at(i);
+	 while (!tmp->isEmpty()){
+		int nb_items = tmp->size();
+		BLstSelect * item = tmp->takeFirst();
+		item->clearSelection();
+		delete item;
+	 }
+	}
  }
 
  return nullptr;
