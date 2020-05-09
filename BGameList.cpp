@@ -825,6 +825,48 @@ void BGameLst::BSlot_ShowTotal(const QString& lstBoules)
  gpb_Tirages->setTitle(st_total);
 }
 
+#if 1
+void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
+{
+ QString usr_table = sqlVisualTable(game_lab);
+ QString msg  = "select t1.* from ";
+ QString tbl_lst = "(tb1) as t1";
+ QString clause = "";
+ QString msg_1  = "";
+ QString msg_2  = "";
+
+ if(ana != Bp::anaRaz){
+  int nb_sel = sel->size();
+  if(nb_sel != 0){
+   QWidget **J = new QWidget *[2];
+   /// Creer la requete de filtrage
+   clause = makeSqlFromSelection(sel, &tbl_lst);
+   msg = msg + tbl_lst + " where("+clause+")";
+
+	 /// mettre la liste des tirages a jour
+	 msg_1 = usr_table + msg;
+	 updateTbv(msg_1);
+
+	 /// faire une analyse pour J
+	 J[0] = doLittleAna(gameDef,msg_1);
+
+	 /// recherche J+1
+	 msg_1 = ", tb2 as ("+ msg +")";
+	 msg_2 = usr_table + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
+	 J[1] = doLittleAna(gameDef,msg_2);
+
+	 QWidget * resu = ana_fltSelection(J);
+	 if(resu!=nullptr){
+		resu->show();
+	 }
+	}
+ }
+ else {
+  ; /// supprimer les reponses precedentes si elles existent
+ }
+}
+
+#else
 void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
 {
  QString usr_table = sqlVisualTable(game_lab);
@@ -863,12 +905,18 @@ void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
  }
 
 
+ /// Montrer les tirages obtenu par filtre
  updateTbv(msg);
 
+ /// faire les onglets a J et J+ du filtre en cours
+ /// sauf si il n'y a pas de filtre
  if(ana != Bp::anaRaz){
-  doLittleAna(gameDef,msg);
+  //doLittleAna(gameDef,msg);
+  QWidget * resu = ana_fltSelection(gameDef,msg);
+  resu->show();
  }
 }
+#endif
 
 QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 {
@@ -893,6 +941,30 @@ QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 	{
 	 BLstSelect *item = tmp->at(j);
 
+	 QString tbl_ana = "("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t";
+
+	 if((item->type) == eCountElm){
+		ret_elm = select_elm(item->indexes, item->zn);
+	 }
+	 else {
+		cur_tbl_id = cur_tbl_id + 1;
+		local_list = local_list + tbl_ana+QString::number(cur_tbl_id);///"("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
+		if(j<nb_zone-1){
+		 local_list = local_list + ",";
+		}
+
+		switch (item->type) {
+		 case eCountBrc:
+			ret_elm = select_brc(item->indexes, item->zn, cur_tbl_id);
+			break;
+		 case eCountGrp:
+			ret_elm = select_grp(item->indexes, item->zn, cur_tbl_id);
+			break;
+		 default:
+			QMessageBox::warning(nullptr, "Type calclul","Error:BGameLst::makeSqlFromSelection")	;
+		}
+	 }
+	 /*
 	 switch (item->type) {
 		case eCountElm:
 		 ret_elm = select_elm(item->indexes, item->zn);
@@ -900,7 +972,7 @@ QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 
 		case eCountCmb:
 		 cur_tbl_id = cur_tbl_id + 1;
-		 local_list = local_list + "("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
+		 local_list = local_list + tbl_ana+QString::number(cur_tbl_id);///"("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
 		 if(j<nb_zone-1){
 			local_list = local_list + ",";
 		 }
@@ -909,7 +981,7 @@ QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 
 		case eCountBrc:
 		 cur_tbl_id = cur_tbl_id + 1;
-		 local_list = local_list + "("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
+		 local_list = local_list + tbl_ana+QString::number(cur_tbl_id);///"("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
 		 if(j<nb_zone-1){
 			local_list = local_list + ",";
 		 }
@@ -918,7 +990,7 @@ QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 
 		case eCountGrp:
 		 cur_tbl_id = cur_tbl_id + 1;
-		 local_list = local_list + "("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
+		 local_list = local_list + tbl_ana+QString::number(cur_tbl_id);///"("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
 		 if(j<nb_zone-1){
 			local_list = local_list + ",";
 		 }
@@ -927,7 +999,7 @@ QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 		default:
 				;
 	 }
-
+	*/
 	 ret_add = ret_add + ret_elm;
 	 if(j <nb_zone -1){
 		ret_add = ret_add  + " and ";
@@ -1181,8 +1253,48 @@ void BGameLst::updateTbv(QString msg)
  gpb_Tirages->setTitle(st_total);
 }
 
-void BGameLst::doLittleAna(const stGameConf *pGame, QString msg)
+QWidget *BGameLst::ana_fltSelection(QWidget **J)
 {
+ QWidget *ret = new QWidget;
+ QTabWidget *tab_Top = new QTabWidget;
+
+ QString ongNames[]={"J","J+1"};
+ BGameAna * (BGameLst::*ptrFunc[])(const stGameConf *pGame, QString msg)=
+  {
+  &BGameLst::doLittleAna
+ };
+ int nb_func = sizeof(*ptrFunc)/sizeof(BGameAna *);
+
+ for (int i=0;i<nb_func;i++) {
+  QWidget *tmp_wdg = J[i];
+  if(tmp_wdg != nullptr){
+   tab_Top->addTab(tmp_wdg,ongNames[i]);
+  }
+ }
+
+ QVBoxLayout *tmp_lay = new QVBoxLayout;
+ if(tab_Top->count() !=0){
+  tmp_lay->addWidget(tab_Top);
+ }
+ else {
+  delete 	tab_Top;
+  QLabel *tmp = new QLabel("Erreur pas de resultats a montrer !!");
+  tmp_lay->addWidget(tmp);
+ }
+
+ QGroupBox *info = new QGroupBox;
+ info->setTitle("Analyse apres filtrage ...");
+ info->setLayout(tmp_lay);
+
+ ret = info;
+
+ return ret;
+}
+
+BGameAna * BGameLst::doLittleAna(const stGameConf *pGame, QString msg)
+{
+ BGameAna *uneAnalyse = nullptr;
+
  stGameConf *flt_game = new stGameConf;
  flt_game->znCount = pGame->znCount;
  flt_game->eTirType = eTirUsr; /// A supprimer ?
@@ -1220,14 +1332,17 @@ void BGameLst::doLittleAna(const stGameConf *pGame, QString msg)
 #endif
 
  if((b_retVal = query.exec(msg)) == true){
-  BGameAna *uneAnalyse = new BGameAna(flt_game);
+  uneAnalyse = new BGameAna(flt_game);
   if(uneAnalyse->self() != nullptr){
-   uneAnalyse->show();
+   //uneAnalyse->show();
    sub_id++;
   }
   else {
    delete uneAnalyse;
+   uneAnalyse = nullptr;
    sub_id--;
   }
  }
+
+ return uneAnalyse;
 }

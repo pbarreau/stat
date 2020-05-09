@@ -10,6 +10,7 @@
 #include "bstflt.h"
 #include "blineedit.h"
 #include "BLstSelect.h"
+#include "BAnalyserTirages.h"
 
 class BGameLst : public QWidget
 {
@@ -42,7 +43,8 @@ class BGameLst : public QWidget
  QString select_grp(const QModelIndexList &indexes, int zn, int tbl_id);
  QString elmSel_1(const QModelIndexList &indexes, int zn);
  QString elmSel_2(const QModelIndexList &indexes, int zn);
- void doLittleAna(const stGameConf *pGame, QString msg);
+ BGameAna *doLittleAna(const stGameConf *pGame, QString msg);
+ QWidget *ana_fltSelection(QWidget **J);
 
 
  signals:

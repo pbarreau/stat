@@ -465,9 +465,13 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
 
  QString tbl_ana = tbl_tirages;
  if(pGame->db_ref->dad.size() != 0){
-  tbl_ana = pGame->db_ref->dad;
+  QString dad_ana = pGame->db_ref->dad;
+  dad_ana = dad_ana + "_ana_z"+QString::number(zn+1);
+  tbl_ana = "select t1.* from ("+dad_ana+") as t1, ("+tbl_tirages+") as t2 where(t1.id=t2.id)";
  }
- tbl_ana = tbl_ana + "_ana_z"+QString::number(zn+1);
+ else {
+  tbl_ana = tbl_ana + "_ana_z"+QString::number(zn+1);
+ }
 
 
  ///QString tbl_ana = tbl_tirages + "_ana_z" + QString::number(zn+1);
