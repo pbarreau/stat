@@ -96,7 +96,8 @@ bool BGameAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QS
  /// Verifier si on a bien la table des tirages
  DB_Tools::tbTypes req = DB_Tools::E_TbType::etbTable;
  if(pGame->db_ref->dad.size()!=0){
-  req = DB_Tools::E_TbType::etbTempTbl;
+  req = DB_Tools::E_TbType::etbView;
+  ///tbl_tirages = "temp."+tbl_tirages;
  }
  if((b_retVal = DB_Tools::isDbGotTbl(tbl_tirages, cnx)) == false)
  {

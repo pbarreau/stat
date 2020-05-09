@@ -30,11 +30,13 @@
 
 int BGameLst::gme_counter = 1;
 
-BGameLst::BGameLst(const stGameConf *pGame, QWidget *parent) : QWidget(parent)
+BGameLst::BGameLst(const stGameConf *pGame, QWidget *parent) : BLstTirages(pGame,parent)
 {
- gameDef = nullptr;
  game_lab = "";
  sub_id = 0;
+ ///J=nullptr;
+ tab_resu = nullptr;
+ gameDef = nullptr;
 
  QString cnx=pGame->db_ref->cnx;
 
@@ -82,10 +84,12 @@ stGameConf * BGameLst::getGameConf(void)
  return gameDef;
 }
 
+/*
 QString BGameLst::getGameLabel(void)
 {
  return game_lab;
 }
+*/
 
 void BGameLst::mkGameWidget(stGameConf *current)
 {
@@ -145,6 +149,15 @@ void BGameLst::mkGameWidget(stGameConf *current)
 
 BGameLst::~BGameLst()
 {
+ /*
+ if(J != nullptr){
+  for (int i = 0; i<2;i++) {
+   delete J[i];
+  }
+  delete J;
+ }
+ */
+
  if(gameDef != nullptr){
   delete gameDef->db_ref;
   delete gameDef;
@@ -825,7 +838,6 @@ void BGameLst::BSlot_ShowTotal(const QString& lstBoules)
  gpb_Tirages->setTitle(st_total);
 }
 
-#if 1
 void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
 {
  QString usr_table = sqlVisualTable(game_lab);
@@ -839,6 +851,32 @@ void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
   int nb_sel = sel->size();
   if(nb_sel != 0){
    QWidget **J = new QWidget *[2];
+   QWidget * resu = nullptr;
+
+   if(tab_resu==nullptr){
+    tab_resu = new QTabWidget;
+    tab_resu->setTabsClosable(true);
+    connect(tab_resu,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
+   }
+   else {
+#if 0
+    resu->close();
+    this->setFocus();
+    delete resu;
+    deletePreviousResults(gameDef);
+    /*
+    resu->close();
+    this->setFocus();
+    delete resu;
+ */
+   /*
+    for (int i = 0; i<2;i++) {
+     delete J[i];
+    }
+  */
+    return;
+#endif
+   }
    /// Creer la requete de filtrage
    clause = makeSqlFromSelection(sel, &tbl_lst);
    msg = msg + tbl_lst + " where("+clause+")";
@@ -855,9 +893,12 @@ void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
 	 msg_2 = usr_table + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
 	 J[1] = doLittleAna(gameDef,msg_2);
 
-	 QWidget * resu = ana_fltSelection(J);
+	 resu = ana_fltSelection(J);
 	 if(resu!=nullptr){
-		resu->show();
+		QString st_id = "R-%1";
+		st_id = st_id.arg(QString::number(sub_id-2).rightJustified(2,'0'));
+		tab_resu->addTab(resu,st_id);
+		BTbView::addSubFlt(gme_id, tab_resu);
 	 }
 	}
  }
@@ -866,57 +907,50 @@ void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
  }
 }
 
-#else
-void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
+void BGameLst::BSlot_closeTab(int index)
 {
- QString usr_table = sqlVisualTable(game_lab);
- QString msg  = "select t1.* from ";
- QString tbl_lst = "(tb1) as t1";
- QString clause = "";
- QString tb2 = "";
+ tab_resu->removeTab(index);
+ /*
+ if(tab_resu->count() == 0){
+  //// CODE RAPIDE...
+  /// LE PREMIER peut etre reutilise ?
+  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
 
- switch (ana) {
-  case Bp::anaRaz:
-   break;
-
-	case Bp::anaNxt:
-	case Bp::anaFlt:
-	 clause = makeSqlFromSelection(sel, &tbl_lst);
+  BTbView::addSpacer(gme_id, ecart);
  }
+*/
+}
+void BGameLst::setAna(BGameAna * in_ana)
+{
+ cur_ana = in_ana;
+}
+
+void BGameLst::deletePreviousResults(const stGameConf *pGame)
+{
+ QSqlQuery query(db_gme);
+ bool b_retVal = true;
+
+ ///QString st_dad = pGame->db_ref->dad;
+ QString msg = "SELECT name FROM sqlite_master where type = 'table' and name like '%"+game_lab+"R%'";
 
 #ifndef QT_NO_DEBUG
- qDebug() << "\nMsg : " <<usr_table+ msg + tbl_lst;
- qDebug() << "\nclause : where(" <<clause<<")";
+ qDebug() << "\n\n msg :\n" <<msg;
 #endif
 
- if(clause.size()){
-  msg = msg + tbl_lst + " where("+clause+")";
+ if((b_retVal=query.exec(msg)) && (b_retVal=query.first())){
+  QSqlQuery query_2(db_gme);
+  do{
+   QString tbl_name = query.value(0).toString();
+   msg = "drop table if exists "+tbl_name;
+   b_retVal = query_2.exec(msg);
+  }while (b_retVal && query.next());
 
-	if(ana == Bp::anaNxt){
-	 tb2 = ", tb2 as ("+ msg +")";
-	 msg = usr_table + tb2 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
+	if(!b_retVal){
+	 DB_Tools::DisplayError("BGameLst::deletePreviousResults", &query_2, msg);
 	}
-	else {
-	 msg = usr_table + msg;
-	}
- }
- else {
-  msg = usr_table+ msg + tbl_lst;
  }
 
-
- /// Montrer les tirages obtenu par filtre
- updateTbv(msg);
-
- /// faire les onglets a J et J+ du filtre en cours
- /// sauf si il n'y a pas de filtre
- if(ana != Bp::anaRaz){
-  //doLittleAna(gameDef,msg);
-  QWidget * resu = ana_fltSelection(gameDef,msg);
-  resu->show();
- }
 }
-#endif
 
 QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 {
@@ -964,42 +998,6 @@ QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 			QMessageBox::warning(nullptr, "Type calclul","Error:BGameLst::makeSqlFromSelection")	;
 		}
 	 }
-	 /*
-	 switch (item->type) {
-		case eCountElm:
-		 ret_elm = select_elm(item->indexes, item->zn);
-		 break;
-
-		case eCountCmb:
-		 cur_tbl_id = cur_tbl_id + 1;
-		 local_list = local_list + tbl_ana+QString::number(cur_tbl_id);///"("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
-		 if(j<nb_zone-1){
-			local_list = local_list + ",";
-		 }
-		 ret_elm = select_cmb(item->indexes, item->zn, cur_tbl_id);
-		 break;
-
-		case eCountBrc:
-		 cur_tbl_id = cur_tbl_id + 1;
-		 local_list = local_list + tbl_ana+QString::number(cur_tbl_id);///"("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
-		 if(j<nb_zone-1){
-			local_list = local_list + ",";
-		 }
-		 ret_elm = select_brc(item->indexes, item->zn, cur_tbl_id);
-		 break;
-
-		case eCountGrp:
-		 cur_tbl_id = cur_tbl_id + 1;
-		 local_list = local_list + tbl_ana+QString::number(cur_tbl_id);///"("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
-		 if(j<nb_zone-1){
-			local_list = local_list + ",";
-		 }
-		 ret_elm = select_grp(item->indexes, item->zn, cur_tbl_id);
-		 break;
-		default:
-				;
-	 }
-	*/
 	 ret_add = ret_add + ret_elm;
 	 if(j <nb_zone -1){
 		ret_add = ret_add  + " and ";
@@ -1263,7 +1261,7 @@ QWidget *BGameLst::ana_fltSelection(QWidget **J)
   {
   &BGameLst::doLittleAna
  };
- int nb_func = sizeof(*ptrFunc)/sizeof(BGameAna *);
+ int nb_func = sizeof(ptrFunc)/sizeof(BGameAna *);
 
  for (int i=0;i<nb_func;i++) {
   QWidget *tmp_wdg = J[i];
@@ -1334,7 +1332,6 @@ BGameAna * BGameLst::doLittleAna(const stGameConf *pGame, QString msg)
  if((b_retVal = query.exec(msg)) == true){
   uneAnalyse = new BGameAna(flt_game);
   if(uneAnalyse->self() != nullptr){
-   //uneAnalyse->show();
    sub_id++;
   }
   else {

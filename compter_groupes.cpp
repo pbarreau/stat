@@ -464,12 +464,15 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
  }
 
  QString tbl_ana = tbl_tirages;
+ QString st_final_tbl= "";
  if(pGame->db_ref->dad.size() != 0){
+  st_final_tbl = "table";
   QString dad_ana = pGame->db_ref->dad;
   dad_ana = dad_ana + "_ana_z"+QString::number(zn+1);
   tbl_ana = "select t1.* from ("+dad_ana+") as t1, ("+tbl_tirages+") as t2 where(t1.id=t2.id)";
  }
  else {
+  st_final_tbl = "table";
   tbl_ana = tbl_ana + "_ana_z"+QString::number(zn+1);
  }
 
@@ -525,9 +528,11 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
 	 if(loop<nbCols-1)
 		curName ="vt_"+QString::number(loop+2-cnt_spe);
 	}
+
+
 	/// Rajouter a la fin une colonne pour fitrage
 	if(b_retVal){
-	 *msg = "create table if not exists "+dstTbl
+	 *msg = "create "+st_final_tbl+" if not exists "+dstTbl
 					+" as select tb1.* from ("+curName+") as tb1";
 #ifndef QT_NO_DEBUG
 	 qDebug() << *msg;

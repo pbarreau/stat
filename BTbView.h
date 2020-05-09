@@ -15,6 +15,7 @@
 #include "BAnalyserTirages.h"
 
 #include "BGTbView.h"
+#include "BLstTirages.h"
 
 class BTbView : public BGTbView, BFlt
 {
@@ -30,8 +31,10 @@ class BTbView : public BGTbView, BFlt
  QPushButton *getUsrGameButton(void);
  stTbFiltres * getFlt(void);
  bool isOnUsrGame(void);
- static void agencerResultats(BGameLst *lst,BGameAna * ana);
+ static void agencerResultats(BLstTirages *lst, BGameAna * ana);
  static void activateTargetTab(QString id);
+ static void addSubFlt(int id, QWidget *tab);
+ static void addSpacer(int id, QSpacerItem *space);
  void setRowModelCount(int nb);
  void setRowSourceModelCount(int nb);
 
@@ -65,6 +68,7 @@ class BTbView : public BGTbView, BFlt
  static QTabWidget * tbw_calculs;
  static QWidget * wdg_reponses;
  static QGridLayout *gdl_all;
+ static QList<QGridLayout *> *gdl_list;
 
  QSqlDatabase db_tbv;
  const stGameConf *cur_game;

@@ -11,17 +11,18 @@
 #include "blineedit.h"
 #include "BLstSelect.h"
 #include "BAnalyserTirages.h"
+#include "BLstTirages.h"
 
-class BGameLst : public QWidget
+class BGameLst : public BLstTirages
 {
  Q_OBJECT
  public:
  explicit BGameLst(const stGameConf *pGame, QWidget *parent = nullptr);
  ~BGameLst();
  stGameConf * getGameConf(void);
- QString getGameLabel(void);
  static stGameConf *gameUsrNew(const stGameConf *pGame, QString gameId="");
  void ShowPreviousGames(stGameConf *pGame);
+ void setAna(BGameAna * in_ana);
 
 
  private:
@@ -45,7 +46,7 @@ class BGameLst : public QWidget
  QString elmSel_2(const QModelIndexList &indexes, int zn);
  BGameAna *doLittleAna(const stGameConf *pGame, QString msg);
  QWidget *ana_fltSelection(QWidget **J);
-
+ void deletePreviousResults(const stGameConf *pGame);
 
  signals:
  void BSig_AnaLgn(const int &lgn_id, const int &prx_id);
@@ -62,6 +63,7 @@ class BGameLst : public QWidget
  void BSlot_ShowBtnId(int btn_id);
  void slot_ShowChk(void);
  void slot_ShowNhk(void);
+ void BSlot_closeTab(int index);
 
  private:
  static int gme_counter;
@@ -69,7 +71,10 @@ class BGameLst : public QWidget
  int sub_id;
  stGameConf *gameDef;
  QSqlDatabase db_gme;
- QString game_lab;
+ BGameAna *cur_ana;
+ //QWidget **J;
+ QWidget *resu;
+ QTabWidget * tab_resu;
 
  private:
  BSqlQmTirages_3 *sqm_resu;

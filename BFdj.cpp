@@ -151,13 +151,14 @@ bool BFdj::OPtimiseAccesBase(void)
  QSqlQuery query(fdj_db);
  QString msg = "";
 
+ /// https://www.sqlite.org/pragma.html#pragma_locking_mode
  QString stRequete[]={
   "PRAGMA synchronous = OFF",
   "PRAGMA page_size = 4096",
   "PRAGMA cache_size = 16384",
   "PRAGMA temp_store = MEMORY",
   "PRAGMA journal_mode = OFF",
-  "PRAGMA locking_mode = EXCLUSIVE"
+  "PRAGMA locking_mode = NORMAL" ///EXCLUSIVE
  };
  int items = sizeof(stRequete)/sizeof(QString);
 

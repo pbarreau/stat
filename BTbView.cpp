@@ -24,6 +24,8 @@
 
 QWidget * BTbView::wdg_reponses = nullptr;
 QGridLayout * BTbView::gdl_all = nullptr;
+QList<QGridLayout *> *BTbView::gdl_list = nullptr;
+
 QTabWidget * BTbView::tbw_calculs = nullptr;
 
 BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ)
@@ -383,6 +385,8 @@ void  BTbView::BSlot_MakeCustomGame()
 	 delete uneAnalyse;
 	}
 	else {
+	 calcul->setAna(uneAnalyse);
+
 	 connect(uneAnalyse, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
 					 calcul, SLOT(BSlot_FilterRequest(const Bp::E_Ana , const B2LstSel *)));
 	 connect(calcul,SIGNAL(BSig_AnaLgn(int,int)), uneAnalyse,SLOT(BSlot_AnaLgn(int,int)));
@@ -394,16 +398,18 @@ void  BTbView::BSlot_MakeCustomGame()
  }
 }
 
-void BTbView::agencerResultats(BGameLst *lst, BGameAna* ana)
+void BTbView::agencerResultats(BLstTirages *lst, BGameAna* ana)
 {
  /// Verifier premier passage
  if((tbw_calculs == nullptr) || (wdg_reponses == nullptr) || (gdl_all == nullptr)){
   wdg_reponses = new QWidget;
-  gdl_all = new QGridLayout;
   tbw_calculs = new QTabWidget;
+  gdl_all = new QGridLayout;
+  gdl_list = new QList<QGridLayout *>;
  }
 
  QGridLayout *tmp_layout = new QGridLayout;
+ gdl_list->append(tmp_layout);
 
  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -435,6 +441,16 @@ void BTbView::activateTargetTab(QString id)
  int target = id.toInt()-1;
  tbw_calculs->setCurrentIndex(target);
  wdg_reponses->show();
+}
+
+void BTbView::addSubFlt(int id, QWidget *tab)
+{
+ gdl_list->at(id-1)->addWidget(tab,1,1);
+}
+
+void BTbView::addSpacer(int id, QSpacerItem *space)
+{
+ gdl_list->at(id-1)->addItem(space,1,1);
 }
 
 void BTbView::showUsrGame(QWidget * une_selection, QString name)
