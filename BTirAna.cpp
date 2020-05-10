@@ -18,24 +18,24 @@
 #include "compter_barycentre.h"
 #include "compter_groupes.h"
 
-#include "BAnalyserTirages.h"
+#include "BTirAna.h"
 #include "BLstSelect.h"
 
-int BGameAna::total_analyses = 0;
+int BTirAna::total_analyses = 0;
 
-int BGameAna::getCounter(void)
+int BTirAna::getCounter(void)
 {
  return  total_analyses;
 }
 
 /*
-QWidget * BAnalyserTirages::getVisual(void)
+QWidget * BTirAna::getVisual(void)
 {
  return  show_results;
 }
 */
 
-BGameAna::BGameAna(stGameConf *pGame, QWidget *parent) : QWidget(parent)
+BTirAna::BTirAna(stGameConf *pGame, QWidget *parent) : QWidget(parent)
 {
  addr = nullptr;
  //show_results = nullptr;
@@ -62,12 +62,12 @@ BGameAna::BGameAna(stGameConf *pGame, QWidget *parent) : QWidget(parent)
  }
 }
 
-BGameAna * BGameAna::self()
+BTirAna * BTirAna::self()
 {
  return addr;
 }
 
-bool BGameAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QString cnx)
+bool BTirAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QString cnx)
 {
  bool b_retVal = true;
 
@@ -79,16 +79,16 @@ bool BGameAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QS
  typedef struct _stdbMinLstTables{
   QString tbName;
   etDrop drop;
-  bool (BGameAna::*ptrFunc)(stGameConf *pGame, QString tbl_tirages,QSqlQuery *query);
+  bool (BTirAna::*ptrFunc)(stGameConf *pGame, QString tbl_tirages,QSqlQuery *query);
  }stdbMinLstTables;
 
  QString tb_flt = pGame->db_ref->flt;
 
  stdbMinLstTables lstTable[]={
-  {"B_elm", eDropNo, &BGameAna::mkTblLstElm},
-  {"B_cmb", eDropNo, &BGameAna::mkTblLstCmb},
-  {"B_def", eDropNo, &BGameAna::mkTblGmeDef},
-  {tb_flt, eDropOn, &BGameAna::mkTblFiltre}
+  {"B_elm", eDropNo, &BTirAna::mkTblLstElm},
+  {"B_cmb", eDropNo, &BTirAna::mkTblLstCmb},
+  {"B_def", eDropNo, &BTirAna::mkTblGmeDef},
+  {tb_flt, eDropOn, &BTirAna::mkTblFiltre}
  };
  int totTables = sizeof(lstTable)/sizeof(stdbMinLstTables);
 
@@ -101,7 +101,7 @@ bool BGameAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QS
  }
  if((b_retVal = DB_Tools::isDbGotTbl(tbl_tirages, cnx)) == false)
  {
-  QString str_error = "BGameAna::isPresentUsefullTables\nMissing table : " + tbl_tirages + " in DataBase";
+  QString str_error = "BTirAna::isPresentUsefullTables\nMissing table : " + tbl_tirages + " in DataBase";
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
  }
 
@@ -133,7 +133,7 @@ bool BGameAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QS
  return b_retVal;
 }
 
-void BGameAna::startAnalyse(stGameConf *pGame, QString tbl_tirages)
+void BTirAna::startAnalyse(stGameConf *pGame, QString tbl_tirages)
 {
  bool b_retVal = true;
  bool b_parent = false;
@@ -170,7 +170,7 @@ void BGameAna::startAnalyse(stGameConf *pGame, QString tbl_tirages)
  }
 }
 
-void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName)
+void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName)
 {
  /// https://openclassrooms.com/fr/courses/1894236-programmez-avec-le-langage-c/1898632-mettez-en-oeuvre-le-polymorphisme
  ///
@@ -260,7 +260,7 @@ void BGameAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QStrin
  this->setLayout(tmp_layout);
 }
 
-QWidget *BGameAna::setFilterBar()
+QWidget *BTirAna::setFilterBar()
 {
  QWidget *tmp_wdg = new QWidget;
  QHBoxLayout *inputs = new QHBoxLayout;
@@ -322,7 +322,7 @@ QWidget *BGameAna::setFilterBar()
  return tmp_wdg;
 }
 
-QWidget *BGameAna::getVisual(stGameConf *pGame, QTabWidget *ana)
+QWidget *BTirAna::getVisual(stGameConf *pGame, QTabWidget *ana)
 {
  QWidget *tmp_wdg = new QWidget;
 
@@ -340,7 +340,7 @@ QWidget *BGameAna::getVisual(stGameConf *pGame, QTabWidget *ana)
  return tmp_wdg;
 }
 
-void BGameAna::BSlot_ActionButton(int btn_id)
+void BTirAna::BSlot_ActionButton(int btn_id)
 {
  B2LstSel *send = construireSelection();
  Bp::E_Ana eVal = static_cast<Bp::E_Ana>(btn_id);
@@ -353,7 +353,7 @@ void BGameAna::BSlot_ActionButton(int btn_id)
  emit BSig_FilterRequest(eVal, send);
 }
 
-B2LstSel *BGameAna::construireSelection()
+B2LstSel *BTirAna::construireSelection()
 {
  int nb_items = mesComptages.size();
 
@@ -379,7 +379,7 @@ B2LstSel *BGameAna::construireSelection()
  return ret;
 }
 
-B2LstSel *BGameAna::effacerSelection(B2LstSel *sel)
+B2LstSel *BTirAna::effacerSelection(B2LstSel *sel)
 {
  int nb_items = sel->size();
 
@@ -399,7 +399,7 @@ B2LstSel *BGameAna::effacerSelection(B2LstSel *sel)
  return nullptr;
 }
 
-bool BGameAna::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName)
+bool BTirAna::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName)
 {
  bool b_retVal = true;
  QString msg = "";
@@ -601,7 +601,7 @@ bool BGameAna::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, in
  return b_retVal;
 }
 
-bool BGameAna::SupprimerVueIntermediaires(void)
+bool BTirAna::SupprimerVueIntermediaires(void)
 {
  bool b_retVal = true;
  QString msg = "";
@@ -636,7 +636,7 @@ bool BGameAna::SupprimerVueIntermediaires(void)
  return b_retVal;
 }
 
-QString BGameAna::getFilteringHeaders(const stGameConf *pGame,int zn, QString msg_template, QString separator)
+QString BTirAna::getFilteringHeaders(const stGameConf *pGame,int zn, QString msg_template, QString separator)
 {
  QString lst_cols = "";
 
@@ -667,7 +667,7 @@ QString BGameAna::getFilteringHeaders(const stGameConf *pGame,int zn, QString ms
  return lst_cols;
 }
 
-QStringList* BGameAna::setFilteringRules(stGameConf *pGame, QString tbl_tirages, int zn)
+QStringList* BTirAna::setFilteringRules(stGameConf *pGame, QString tbl_tirages, int zn)
 {
  // Cette fonction retourne un pointeur sur un tableau de QStringList
  // Ce tableau comporte 3 elements
@@ -709,7 +709,7 @@ QStringList* BGameAna::setFilteringRules(stGameConf *pGame, QString tbl_tirages,
  sl_filter[0]<< "Fn";
  sl_filter[1] << "X1";
  sl_filter[2] << "Consecutifs sur 1 tirage";
- map_UsrFn.insert("X1",&BGameAna::usrFn_X1);
+ map_UsrFn.insert("X1",&BTirAna::usrFn_X1);
 
  QString sql_code = "";
 
@@ -730,7 +730,7 @@ QStringList* BGameAna::setFilteringRules(stGameConf *pGame, QString tbl_tirages,
  return sl_filter;
 }
 
-QString BGameAna::sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, int zn)
+QString BTirAna::sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, int zn)
 {
  /* exemple requete :
   *
@@ -793,7 +793,7 @@ QString BGameAna::sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, int zn)
  return st_sql;
 }
 
-QString BGameAna::sqlMkAnaCmb(stGameConf *pGame, QString tbl_ana_tmp, int zn)
+QString BTirAna::sqlMkAnaCmb(stGameConf *pGame, QString tbl_ana_tmp, int zn)
 {
 
  /* exemple requete :
@@ -836,7 +836,7 @@ QString BGameAna::sqlMkAnaCmb(stGameConf *pGame, QString tbl_ana_tmp, int zn)
  return st_sql;
 }
 
-bool BGameAna::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *query)
+bool BTirAna::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *query)
 {
  /// Creation des listes de reference des noms
  /// des boules et du nombre par zone
@@ -926,7 +926,7 @@ bool BGameAna::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *query)
  return b_retVal;
 }
 
-bool BGameAna::mkTblLstCmb(stGameConf *pGame, QString tbName,QSqlQuery *query)
+bool BTirAna::mkTblLstCmb(stGameConf *pGame, QString tbName,QSqlQuery *query)
 {
  Q_UNUSED(query);
 
@@ -953,7 +953,7 @@ bool BGameAna::mkTblLstCmb(stGameConf *pGame, QString tbName,QSqlQuery *query)
  return b_retVal;
 }
 
-bool BGameAna::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query)
+bool BTirAna::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query)
 {
  bool b_retVal= true;
  QString msg = "";
@@ -997,7 +997,7 @@ bool BGameAna::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query)
  return b_retVal;
 }
 
-bool BGameAna::mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *query)
+bool BTirAna::mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *query)
 {
  bool b_retVal= true;
  QString msg = "";
@@ -1019,7 +1019,7 @@ bool BGameAna::mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *query)
  return b_retVal;
 }
 
-bool BGameAna::usrFn_X1(const stGameConf *pGame, QString tblIn, QString tblOut, int zn_in)
+bool BTirAna::usrFn_X1(const stGameConf *pGame, QString tblIn, QString tblOut, int zn_in)
 {
 
  bool b_retVal = true;
@@ -1131,14 +1131,14 @@ bool BGameAna::usrFn_X1(const stGameConf *pGame, QString tblIn, QString tblOut, 
  if(!b_retVal)
  {
   QString ErrLoc = "cmb_table.cpp";
-  DB_Tools::DisplayError("BAnalyserTirages::usrFn_X1",&query,"do_SetFollower");
+  DB_Tools::DisplayError("BTirAna::usrFn_X1",&query,"do_SetFollower");
  }
 
 
  return b_retVal;
 }
 
-QString BGameAna::getFieldsFromZone(const stGameConf *pGame, int zn, QString alias)
+QString BTirAna::getFieldsFromZone(const stGameConf *pGame, int zn, QString alias)
 {
  int len_zn = pGame->limites[zn].len;
 
@@ -1158,12 +1158,12 @@ QString BGameAna::getFieldsFromZone(const stGameConf *pGame, int zn, QString ali
  return   st_items;
 }
 
-void BGameAna::BSlot_MousePressed(const QModelIndex & index, const int &zn, const etCount &eTyp)
+void BTirAna::BSlot_MousePressed(const QModelIndex & index, const int &zn, const etCount &eTyp)
 {
  emit bsg_clicked(index,zn,eTyp);
 }
 
-void BGameAna::BSlot_AnaLgn(const int &lgn_id, const int &prx_id)
+void BTirAna::BSlot_AnaLgn(const int &lgn_id, const int &prx_id)
 {
  emit BSig_AnaLgn(lgn_id, prx_id);
 }

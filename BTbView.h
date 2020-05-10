@@ -11,11 +11,11 @@
 
 #include "BFlt.h"
 #include "BGpbMenu.h"
-#include "BGameList.h"
-#include "BAnalyserTirages.h"
+#include "BTirGen.h"
+#include "BTirAna.h"
 
 #include "BGTbView.h"
-#include "BLstTirages.h"
+#include "BTirages.h"
 
 class BTbView : public BGTbView, BFlt
 {
@@ -31,7 +31,7 @@ class BTbView : public BGTbView, BFlt
  QPushButton *getUsrGameButton(void);
  stTbFiltres * getFlt(void);
  bool isOnUsrGame(void);
- static void agencerResultats(BLstTirages *lst, BGameAna * ana);
+ static void agencerResultats(BTirages *lst, BTirAna * ana);
  static void activateTargetTab(QString id);
  static void addSubFlt(int id, QWidget *tab);
  static void addSpacer(int id, QSpacerItem *space);

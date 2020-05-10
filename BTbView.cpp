@@ -15,11 +15,11 @@
 #include <QEvent>
 
 #include "BFdj.h"
-#include "BGameList.h"
+#include "BTirGen.h"
 #include "BTbView.h"
 #include "BMenu.h"
 #include "BGrbGenTirages.h"
-#include "BAnalyserTirages.h"
+#include "BTirAna.h"
 #include "db_tools.h"
 
 QWidget * BTbView::wdg_reponses = nullptr;
@@ -351,8 +351,8 @@ void  BTbView::BSlot_MakeCustomGame()
 
  r.setHMS(0,0,0,0);
  t.start();
- ///stGameConf *tmp_game = BGameLst::gameUsrNew(cur_game);
- BGameLst *calcul = new BGameLst(cur_game);
+ ///stGameConf *tmp_game = BTirGen::gameUsrNew(cur_game);
+ BTirGen *calcul = new BTirGen(cur_game);
  r = r.addMSecs(t.elapsed());
  t_human_1 = r.toString("hh:mm:ss:zzz");
 
@@ -366,7 +366,7 @@ void  BTbView::BSlot_MakeCustomGame()
 	r.setHMS(0,0,0,0);
 	t.restart();
 	stGameConf * tmp = calcul->getGameConf();
-	BGameAna *uneAnalyse = new BGameAna(tmp);
+	BTirAna *uneAnalyse = new BTirAna(tmp);
 	r = r.addMSecs(t.elapsed());
 	t_human_2 = r.toString("hh:mm:ss:zzz");
 	msg = "update E_lst set t2='"+t_human_2+"' where(name='"+name_ouput+"')";
@@ -398,7 +398,7 @@ void  BTbView::BSlot_MakeCustomGame()
  }
 }
 
-void BTbView::agencerResultats(BLstTirages *lst, BGameAna* ana)
+void BTbView::agencerResultats(BTirages *lst, BTirAna* ana)
 {
  /// Verifier premier passage
  if((tbw_calculs == nullptr) || (wdg_reponses == nullptr) || (gdl_all == nullptr)){
@@ -457,7 +457,7 @@ void BTbView::showUsrGame(QWidget * une_selection, QString name)
 {
  /*
  if(tab_usrGame != nullptr){
-  int item = BAnalyserTirages::getCounter() -1;
+  int item = BTirAna::getCounter() -1;
   QString titre = QString::number(item).rightJustified(2,'0') + " : " + name;
 
 	tab_usrGame->addTab(une_selection, titre);

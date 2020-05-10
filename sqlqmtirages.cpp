@@ -2,6 +2,11 @@
 
 #include "sqlqmtirages.h"
 
+sqlqmTirages::sqlqmTirages(const stGameConf *pGame):QSqlQueryModel(nullptr)
+{
+
+}
+
 sqlqmTirages::sqlqmTirages(const stTiragesDef &pDef, QObject *parent)
     :QSqlQueryModel(parent),leJeu(pDef)
 {

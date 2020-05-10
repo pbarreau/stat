@@ -13,7 +13,7 @@
 #include <QSqlQueryModel>
 
 #include "game.h"
-#include "compter.h"
+#include "BCount.h"
 #include "labelclickable.h"
 
 class BcElm:public BCount//, public cFdjData

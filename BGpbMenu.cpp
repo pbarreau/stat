@@ -8,7 +8,7 @@
 #include <QSqlQuery>
 
 #include "BGpbMenu.h"
-#include "compter.h"
+#include "BCount.h"
 #include "db_tools.h"
 /*
  * BGpbMenu::BGpbMenu(const int in_zn, const etCount in_typ, const QString cnx, BTbView *in_parent)

@@ -16,7 +16,7 @@
 #include "cnp_SansRepetition.h"
 #include "cnp_AvecRepetition.h"
 #include "db_tools.h"
-#include "compter.h"
+#include "BCount.h"
 
 extern QString ContruireRechercheCombi(int i,int zn,stTiragesDef *pRef);
 extern QString DetailsSomme(int zn, stTiragesDef *pRef);

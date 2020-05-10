@@ -16,7 +16,7 @@
 #include "compter_groupes.h"
 #include "compter_barycentre.h"
 
-#include "compter.h"
+#include "BCount.h"
 #include "db_tools.h"
 
 #include "cnp_SansRepetition.h"

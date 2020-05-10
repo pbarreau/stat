@@ -1,5 +1,5 @@
-#ifndef BTIRBAR_H
-#define BTIRBAR_H
+#ifndef BTbar1_H
+#define BTbar1_H
 
 #include <QWidget>
 #include <QGroupBox>
@@ -12,16 +12,17 @@
 #include <QTableView>
 
 #include "blineedit.h"
-#include "bfpm_1.h"
+#include "BFpm_1.h"
 #include "tirages.h"
 
-class BTirBar:public QWidget
+class BTbar1:public QWidget
 {
  Q_OBJECT
 
 public:
-//BTirBar(QWidget *parent=0);
-BTirBar(stTiragesDef *def, QTableView *p_tbv=nullptr);
+//bTbar1(QWidget *parent=0);
+BTbar1(stTiragesDef *def, QTableView *p_tbv=nullptr);
+BTbar1(const stGameConf *pGame, QTableView *p_tbv);
 
 public slots:
 void slot_FiltreSurNewCol(int colNum);
@@ -41,4 +42,4 @@ eFlt usrFlt;
 stTiragesDef *conf;
 };
 
-#endif // BTIRBAR_H
+#endif // BTbar1_H

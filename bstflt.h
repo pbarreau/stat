@@ -47,9 +47,12 @@ namespace Bp {
  enum E_Col{
   noCol = -1,
   colId	=	0,
-  colTxt,
-  colVisual,
-  colTotal
+  colTxt=1,
+  colDate=1,
+  colJour=2,
+  colVisual=2,
+  colZnStart=3,
+  colTotal=3
  };
 
  struct Btn{

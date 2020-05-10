@@ -5,7 +5,7 @@
 #include <QItemDelegate>
 #include <QSqlQueryModel>
 
-#include "compter.h"
+#include "BCount.h"
 #include "colors.h"
 
 class BDelegateStepper : public QItemDelegate

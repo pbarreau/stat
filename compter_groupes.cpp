@@ -246,7 +246,7 @@ QString BCountGroup::getSqlForLine(const int &l_id,int zn)
 {
  QString sql_msg = "";
 
- QString lst_cols = BGameAna::getFilteringHeaders(gm_def,zn);
+ QString lst_cols = BTirAna::getFilteringHeaders(gm_def,zn);
 
 
  QString tbLabAna = "";

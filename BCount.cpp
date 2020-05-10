@@ -22,7 +22,7 @@
 #include "BMenu.h"
 #include "BTbView.h"
 
-#include "compter.h"
+#include "BCount.h"
 #include "db_tools.h"
 
 QString BCount::label[eCountEnd]={"err","elm","cmb","grp","brc"};
@@ -217,8 +217,8 @@ int BCount::getTotalCells(const stGameConf *pGame, int zn)
  QSqlQuery query(dbCount);
 
  QString tbl = "r_"+pGame->db_ref->src+"_"+label[type]+"_z"+QString::number(zn+1);
- QString lst_1 = BGameAna::getFilteringHeaders(pGame, zn, "count(t2.%1) as %1");
- QString lst_2 = BGameAna::getFilteringHeaders(pGame, zn, "%1","+");
+ QString lst_1 = BTirAna::getFilteringHeaders(pGame, zn, "count(t2.%1) as %1");
+ QString lst_2 = BTirAna::getFilteringHeaders(pGame, zn, "%1","+");
 
  QString sql_msg = "with tb1 as (select "+lst_1+" from ("+tbl+")as t2) ";
 
@@ -1840,7 +1840,7 @@ void BCount::slot_wdaFilter(bool val)
 }
 #endif
 
-QString BCount::FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString alias)
+QString BCount::FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString alias, bool visual)
 {
  int len_zn = pGame->limites[zn].len;
 
@@ -1849,7 +1849,18 @@ QString BCount::FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString a
  if(alias.size()){
   use_alias = alias+".";
  }
- QString ref = use_alias+pGame->names[zn].abv+"%1";
+
+ QString ref="";
+ QString elm = pGame->names[zn].abv+"%1";
+ if(visual){
+  ref = "printf(\"%02d\","+use_alias+elm+") as "+elm;
+ }
+ else {
+  ref = use_alias+elm;
+ }
+ //QString ref = use_alias+pGame->names[zn].abv+"%1";
+
+
  QString st_items = "";
  for(int i=0;i<len_zn;i++){
   st_items = st_items + ref.arg(i+1);
@@ -1857,6 +1868,11 @@ QString BCount::FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString a
    st_items=st_items+QString(",");
   }
  }
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<st_items;
+#endif
+
  return   st_items;
 }
 

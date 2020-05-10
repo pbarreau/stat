@@ -11,7 +11,7 @@
 
 #include "BFlt.h"
 #include "BTbView.h"
-#include "compter.h"
+#include "BCount.h"
 
 class BMenu : public QMenu,BFlt
 {

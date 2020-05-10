@@ -17,20 +17,20 @@
 #include <QScrollBar>
 #include <QButtonGroup>
 
-#include "compter.h"
+#include "BCount.h"
 #include "BPushButton.h"
 #include "blineedit.h"
 
-#include "BGameList.h"
+#include "BTirGen.h"
 #include "bstflt.h"
 #include "db_tools.h"
 
 #include "BSqlQmTirages_3.h"
 #include "BFpm_3.h"
 
-int BGameLst::gme_counter = 1;
+int BTirGen::gme_counter = 1;
 
-BGameLst::BGameLst(const stGameConf *pGame, QWidget *parent) : BLstTirages(pGame,parent)
+BTirGen::BTirGen(const stGameConf *pGame, QWidget *parent) : BTirages(pGame,parent)
 {
  game_lab = "";
  sub_id = 0;
@@ -48,6 +48,8 @@ BGameLst::BGameLst(const stGameConf *pGame, QWidget *parent) : BLstTirages(pGame
   return;
  }
 
+ gme_id = gme_counter;
+
  /// charger base existante ?
  if((pGame->db_ref->ihm->use_odb == true) &&
       pGame->db_ref->src !="B_fdj" &&
@@ -59,7 +61,6 @@ BGameLst::BGameLst(const stGameConf *pGame, QWidget *parent) : BLstTirages(pGame
   return;
  }
 
- gme_id = gme_counter;
 
  QString game="";
  QString data = "";
@@ -79,19 +80,19 @@ BGameLst::BGameLst(const stGameConf *pGame, QWidget *parent) : BLstTirages(pGame
  }
 }
 
-stGameConf * BGameLst::getGameConf(void)
+stGameConf * BTirGen::getGameConf(void)
 {
  return gameDef;
 }
 
 /*
-QString BGameLst::getGameLabel(void)
+QString BTirGen::getGameLabel(void)
 {
  return game_lab;
 }
 */
 
-void BGameLst::mkGameWidget(stGameConf *current)
+void BTirGen::mkGameWidget(stGameConf *current)
 {
  QTabWidget *tab_Top = new QTabWidget;
 
@@ -104,10 +105,10 @@ void BGameLst::mkGameWidget(stGameConf *current)
  /// regroupement des tirages generes
  QString ongNames[]={"Boules","Tirages"};
  int maxOnglets = sizeof(ongNames)/sizeof(QString);
- QGroupBox * (BGameLst::*ptrFunc[])(stGameConf *current,QString tbl_name)=
+ QGroupBox * (BTirGen::*ptrFunc[])(stGameConf *current,QString tbl_name)=
   {
-   &BGameLst::LireBoule,
-   &BGameLst::LireTable
+   &BTirGen::LireBoule,
+   &BTirGen::LireTable
   };
 
  for (int i=0;i<maxOnglets;i++) {
@@ -147,7 +148,7 @@ void BGameLst::mkGameWidget(stGameConf *current)
  this->setLayout(mainLayout);
 }
 
-BGameLst::~BGameLst()
+BTirGen::~BTirGen()
 {
  /*
  if(J != nullptr){
@@ -164,7 +165,7 @@ BGameLst::~BGameLst()
  }
 }
 
-stGameConf *BGameLst::gameUsrNew(const stGameConf *pGame, QString gameId)
+stGameConf *BTirGen::gameUsrNew(const stGameConf *pGame, QString gameId)
 {
  stGameConf *tmp = new stGameConf;
 
@@ -190,7 +191,7 @@ stGameConf *BGameLst::gameUsrNew(const stGameConf *pGame, QString gameId)
  return tmp;
 }
 
-bool BGameLst::isNewUsrGame(const stGameConf *pGame, QString * gameId, QString *data)
+bool BTirGen::isNewUsrGame(const stGameConf *pGame, QString * gameId, QString *data)
 {
  bool b_retVal = true;
  QString key = "";
@@ -205,7 +206,7 @@ bool BGameLst::isNewUsrGame(const stGameConf *pGame, QString * gameId, QString *
  return b_retVal;
 }
 
-bool BGameLst::getGameKey(const stGameConf *pGame, QString *key)
+bool BTirGen::getGameKey(const stGameConf *pGame, QString *key)
 {
  QString ret = "";
 
@@ -252,7 +253,7 @@ bool BGameLst::getGameKey(const stGameConf *pGame, QString *key)
 #endif
 
  if((b_retVal = query.exec(msg))== false){
-  DB_Tools::DisplayError("BGameList::getGameKey",&query,msg);
+  DB_Tools::DisplayError("BTirGen::getGameKey",&query,msg);
  }
  else if((b_retVal = query.first()) == true){
   int tot_selection = query.value(0).toInt();
@@ -267,7 +268,7 @@ bool BGameLst::getGameKey(const stGameConf *pGame, QString *key)
  return b_retVal;
 }
 
-bool BGameLst::isSufficient(const stGameConf *pGame, int tot)
+bool BTirGen::isSufficient(const stGameConf *pGame, int tot)
 {
  bool b_retVal = true;
 
@@ -288,7 +289,7 @@ bool BGameLst::isSufficient(const stGameConf *pGame, int tot)
  return b_retVal;
 }
 
-bool BGameLst::isAlreadyKnown(QString key, QString * gameId)
+bool BTirGen::isAlreadyKnown(QString key, QString * gameId)
 {
  bool b_retVal = true;
  bool chk_db = true;
@@ -300,7 +301,7 @@ bool BGameLst::isAlreadyKnown(QString key, QString * gameId)
  if(DB_Tools::isDbGotTbl("E_lst",db_gme.connectionName())==false){
   msg = "CREATE TABLE if not EXISTS E_lst (id integer PRIMARY key, name text, lst TEXT, t1  text, t2  text)";
   if(!query.exec(msg)){
-   DB_Tools::DisplayError("BGameList::isAlreadyKnown (1)", &query, msg);
+   DB_Tools::DisplayError("BTirGen::isAlreadyKnown (1)", &query, msg);
    chk_db = false;
   }
  }
@@ -314,13 +315,13 @@ bool BGameLst::isAlreadyKnown(QString key, QString * gameId)
   }
  }
  else {
-  DB_Tools::DisplayError("BGameList::isAlreadyKnown (2)", &query, msg);
+  DB_Tools::DisplayError("BTirGen::isAlreadyKnown (2)", &query, msg);
  }
 
  return (b_retVal && chk_db);
 }
 
-bool BGameLst::createGame(const stGameConf *pGame, QString gameId, QString data)
+bool BTirGen::createGame(const stGameConf *pGame, QString gameId, QString data)
 {
  QString msg = "";
  bool b_retVal = true;
@@ -377,7 +378,7 @@ bool BGameLst::createGame(const stGameConf *pGame, QString gameId, QString data)
  return b_retVal;
 }
 
-QGroupBox *BGameLst::LireBoule(stGameConf *pGame, QString tbl_cible)
+QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
 {
  QGroupBox *tmp_gpb = new QGroupBox;
 
@@ -439,7 +440,7 @@ QGroupBox *BGameLst::LireBoule(stGameConf *pGame, QString tbl_cible)
  return tmp_gpb;
 }
 
-QGroupBox *BGameLst::LireTable(stGameConf *pGame, QString tbl_cible)
+QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_cible)
 {
  QGroupBox *tmp_gpb = new QGroupBox;
  QString msg = "";
@@ -597,7 +598,7 @@ QGroupBox *BGameLst::LireTable(stGameConf *pGame, QString tbl_cible)
  return tmp_gpb;
 }
 
-QString BGameLst::sqlVisualTable(QString tbl_src)
+QString BTirGen::sqlVisualTable(QString tbl_src)
 {
  int zn = 0;
  QString str_cols = BCount::FN1_getFieldsFromZone(gameDef,zn, "t1");
@@ -630,7 +631,7 @@ QString BGameLst::sqlVisualTable(QString tbl_src)
  return msg;
 }
 
-void BGameLst::BSlot_ShowBtnId(int btn_id)
+void BTirGen::BSlot_ShowBtnId(int btn_id)
 {
  QString msg= sqlVisualTable(game_lab) + "select t1.* from (tb1) as t1 ";
  bool with_where = false;
@@ -662,7 +663,7 @@ void BGameLst::BSlot_ShowBtnId(int btn_id)
 
 }
 
-void BGameLst::slot_ShowChk(void)
+void BTirGen::slot_ShowChk(void)
 {
  QString msg= sqlVisualTable(game_lab) + "select t1.* from (tb1) as t1 ";
  msg= msg + " where (chk="+QString::number(Qt::CheckState::Checked)+")";
@@ -674,7 +675,7 @@ void BGameLst::slot_ShowChk(void)
  le_chk->textChanged("");
 }
 
-void BGameLst::slot_ShowNhk(void)
+void BTirGen::slot_ShowNhk(void)
 {
  QString msg= sqlVisualTable(game_lab) + "select t1.* from (tb1) as t1 ";
  msg= msg + " where (chk="+QString::number(Qt::CheckState::Unchecked)+")";
@@ -686,7 +687,7 @@ void BGameLst::slot_ShowNhk(void)
  le_chk->textChanged("");
 }
 
-void BGameLst::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::CheckState &chk)
+void BTirGen::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::CheckState &chk)
 {
 
  if(target == QModelIndex()){
@@ -737,7 +738,7 @@ void BGameLst::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::Che
 
 }
 
-void BGameLst::BSlot_MouseOverLabel(QLabel *l)
+void BTirGen::BSlot_MouseOverLabel(QLabel *l)
 {
  BPushButton *btn = qobject_cast<BPushButton *>(sender());
 
@@ -747,7 +748,7 @@ void BGameLst::BSlot_MouseOverLabel(QLabel *l)
 
 }
 
-void BGameLst::BSlot_Clicked()
+void BTirGen::BSlot_Clicked()
 {
  BPushButton *btn = qobject_cast<BPushButton *>(sender());
  BPushButton::eRole action = btn->getRole();
@@ -758,13 +759,13 @@ void BGameLst::BSlot_Clicked()
 
 }
 
-void BGameLst::ShowPreviousGames(stGameConf *pGame)
+void BTirGen::ShowPreviousGames(stGameConf *pGame)
 {
  /// existe t il des jeux precedent
 
 }
 
-void BGameLst::BSlot_Clicked(const QModelIndex &index)
+void BTirGen::BSlot_Clicked(const QModelIndex &index)
 {
  if(index == QModelIndex()){
   return; /// invalid index
@@ -815,7 +816,7 @@ void BGameLst::BSlot_Clicked(const QModelIndex &index)
  lb_Big->setText(msg);
 }
 
-void BGameLst::BSlot_ShowTotal(const QString& lstBoules)
+void BTirGen::BSlot_ShowTotal(const QString& lstBoules)
 {
  //Q_UNUSED(lstBoules);
 
@@ -838,7 +839,7 @@ void BGameLst::BSlot_ShowTotal(const QString& lstBoules)
  gpb_Tirages->setTitle(st_total);
 }
 
-void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
+void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
 {
  QString usr_table = sqlVisualTable(game_lab);
  QString msg  = "select t1.* from ";
@@ -847,7 +848,7 @@ void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
  QString msg_1  = "";
  QString msg_2  = "";
 
- if(ana != Bp::anaRaz){
+ if((ana != Bp::anaRaz) && (sel !=nullptr)){
   int nb_sel = sel->size();
   if(nb_sel != 0){
    QWidget **J = new QWidget *[2];
@@ -907,7 +908,7 @@ void BGameLst::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
  }
 }
 
-void BGameLst::BSlot_closeTab(int index)
+void BTirGen::BSlot_closeTab(int index)
 {
  tab_resu->removeTab(index);
  /*
@@ -920,12 +921,12 @@ void BGameLst::BSlot_closeTab(int index)
  }
 */
 }
-void BGameLst::setAna(BGameAna * in_ana)
+void BTirGen::setAna(BTirAna * in_ana)
 {
  cur_ana = in_ana;
 }
 
-void BGameLst::deletePreviousResults(const stGameConf *pGame)
+void BTirGen::deletePreviousResults(const stGameConf *pGame)
 {
  QSqlQuery query(db_gme);
  bool b_retVal = true;
@@ -946,13 +947,13 @@ void BGameLst::deletePreviousResults(const stGameConf *pGame)
   }while (b_retVal && query.next());
 
 	if(!b_retVal){
-	 DB_Tools::DisplayError("BGameLst::deletePreviousResults", &query_2, msg);
+	 DB_Tools::DisplayError("BTirGen::deletePreviousResults", &query_2, msg);
 	}
  }
 
 }
 
-QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
+QString BTirGen::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 {
  QString ret_all = "";
  QString ret_elm = "";
@@ -995,7 +996,7 @@ QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 			ret_elm = select_grp(item->indexes, item->zn, cur_tbl_id);
 			break;
 		 default:
-			QMessageBox::warning(nullptr, "Type calclul","Error:BGameLst::makeSqlFromSelection")	;
+			QMessageBox::warning(nullptr, "Type calclul","Error:BTirGen::makeSqlFromSelection")	;
 		}
 	 }
 	 ret_add = ret_add + ret_elm;
@@ -1023,7 +1024,7 @@ QString BGameLst::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
  return ret_all;
 }
 
-QString BGameLst::select_elm(const QModelIndexList &indexes, int zn)
+QString BTirGen::select_elm(const QModelIndexList &indexes, int zn)
 {
  int taille = indexes.size();
  int loop = gameDef->limites[zn].win;
@@ -1047,7 +1048,7 @@ QString BGameLst::select_elm(const QModelIndexList &indexes, int zn)
  return msg;
 }
 
-QString BGameLst::elmSel_1(const QModelIndexList &indexes, int zn)
+QString BTirGen::elmSel_1(const QModelIndexList &indexes, int zn)
 {
  QString msg = "";
 
@@ -1068,7 +1069,7 @@ QString BGameLst::elmSel_1(const QModelIndexList &indexes, int zn)
  return msg;
 }
 
-QString BGameLst::elmSel_2(const QModelIndexList &indexes, int zn)
+QString BTirGen::elmSel_2(const QModelIndexList &indexes, int zn)
 {
  QString msg = "";
 
@@ -1097,7 +1098,7 @@ QString BGameLst::elmSel_2(const QModelIndexList &indexes, int zn)
  return msg;
 }
 
-QString BGameLst::select_cmb(const QModelIndexList &indexes, int zn, int tbl_id)
+QString BTirGen::select_cmb(const QModelIndexList &indexes, int zn, int tbl_id)
 {
  QString msg = "";
 
@@ -1124,7 +1125,7 @@ QString BGameLst::select_cmb(const QModelIndexList &indexes, int zn, int tbl_id)
  return msg;
 }
 
-QString BGameLst::select_brc(const QModelIndexList &indexes, int zn, int tbl_id)
+QString BTirGen::select_brc(const QModelIndexList &indexes, int zn, int tbl_id)
 {
  QString msg = "";
 
@@ -1151,7 +1152,7 @@ QString BGameLst::select_brc(const QModelIndexList &indexes, int zn, int tbl_id)
  return msg;
 }
 
-QString BGameLst::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
+QString BTirGen::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
 {
  QString msg = "";
  QString ret = "";
@@ -1210,14 +1211,14 @@ QString BGameLst::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  return msg;
 }
 
-QString BGameLst::makeSqlForNextLine(const B2LstSel * sel)
+QString BTirGen::makeSqlForNextLine(const B2LstSel * sel)
 {
  QString ret = "";
 
  return ret;
 }
 
-void BGameLst::updateTbv(QString msg)
+void BTirGen::updateTbv(QString msg)
 {
 #ifndef QT_NO_DEBUG ///<< "\033[2J" << "\033[3J"<<
  qDebug()<< "\n\nMsg :\n" <<msg;
@@ -1251,17 +1252,17 @@ void BGameLst::updateTbv(QString msg)
  gpb_Tirages->setTitle(st_total);
 }
 
-QWidget *BGameLst::ana_fltSelection(QWidget **J)
+QWidget *BTirGen::ana_fltSelection(QWidget **J)
 {
  QWidget *ret = new QWidget;
  QTabWidget *tab_Top = new QTabWidget;
 
  QString ongNames[]={"J","J+1"};
- BGameAna * (BGameLst::*ptrFunc[])(const stGameConf *pGame, QString msg)=
+ BTirAna * (BTirGen::*ptrFunc[])(const stGameConf *pGame, QString msg)=
   {
-  &BGameLst::doLittleAna
+  &BTirGen::doLittleAna
  };
- int nb_func = sizeof(ptrFunc)/sizeof(BGameAna *);
+ int nb_func = sizeof(ptrFunc)/sizeof(BTirAna *);
 
  for (int i=0;i<nb_func;i++) {
   QWidget *tmp_wdg = J[i];
@@ -1289,9 +1290,9 @@ QWidget *BGameLst::ana_fltSelection(QWidget **J)
  return ret;
 }
 
-BGameAna * BGameLst::doLittleAna(const stGameConf *pGame, QString msg)
+BTirAna * BTirGen::doLittleAna(const stGameConf *pGame, QString msg)
 {
- BGameAna *uneAnalyse = nullptr;
+ BTirAna *uneAnalyse = nullptr;
 
  stGameConf *flt_game = new stGameConf;
  flt_game->znCount = pGame->znCount;
@@ -1330,7 +1331,7 @@ BGameAna * BGameLst::doLittleAna(const stGameConf *pGame, QString msg)
 #endif
 
  if((b_retVal = query.exec(msg)) == true){
-  uneAnalyse = new BGameAna(flt_game);
+  uneAnalyse = new BTirAna(flt_game);
   if(uneAnalyse->self() != nullptr){
    sub_id++;
   }

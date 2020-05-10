@@ -1,5 +1,5 @@
-#ifndef BFPM_1_H
-#define BFPM_1_H
+#ifndef BFpm_1_H
+#define BFpm_1_H
 
 #include <QStandardItem>
 #include <QSortFilterProxyModel>
@@ -57,4 +57,4 @@ QStringList str_key;
 stTiragesDef *conf;
 };
 
-#endif // BFPM_1_H
+#endif // BFpm_1_H

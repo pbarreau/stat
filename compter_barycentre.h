@@ -6,7 +6,7 @@
 #include <QGridLayout>
 #include <QObject>
 
-#include "compter.h"
+#include "BCount.h"
 #include "game.h"
 
 

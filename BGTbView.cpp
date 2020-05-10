@@ -40,7 +40,7 @@ QGroupBox *BGTbView::getScreen()
  if(up != nullptr){
   layout->addLayout(up, Qt::AlignCenter|Qt::AlignTop);
  }
- layout->addWidget(this, Qt::AlignCenter|Qt::AlignTop);
+ layout->addWidget(this, Qt::AlignLeft|Qt::AlignTop);
  square->setLayout(layout);
 
  return square;
@@ -60,7 +60,7 @@ void BGTbView::mouseMoveEvent( QMouseEvent * inEvent )
  QTableView::mouseMoveEvent(inEvent);
 }
 
-int BGTbView::getMinWidth()
+int BGTbView::getMinWidth(int delta)
 {
  QTableView *qtv_tmp = this;
  int l = 0;
@@ -69,7 +69,7 @@ int BGTbView::getMinWidth()
  int scrollBar = qtv_tmp->verticalScrollBar()->width();
  int Header = qtv_tmp->verticalHeader()->width();
  int col = 0;
- for (int i = 0; i < count-3; ++i) {
+ for (int i = 0; i < count-delta; ++i) {
   if(!qtv_tmp->horizontalHeader()->isSectionHidden(i)){
    col+=qtv_tmp->horizontalHeader()->sectionSize(i);
   }

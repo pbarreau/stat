@@ -29,7 +29,7 @@
 #include "compter_zones.h"
 #include "BPushButton.h"
 #include "BFlt.h"
-#include "BAnalyserTirages.h"
+#include "BTirAna.h"
 
 #define CEL2_L 40
 
@@ -784,7 +784,7 @@ void BGrbGenTirages::analyserTirages(stGameConf *pGame)
 {
  MontrerResultat();
  /*
- BAnalyserTirages *uneAnalyse = new BAnalyserTirages(pGame);
+ BTirAna *uneAnalyse = new BTirAna(pGame);
  if(uneAnalyse->self() == nullptr){
   QString msg = "Erreur de l'analyse des tirages :" + pGame->db_ref->src;
   QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);

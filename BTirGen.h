@@ -1,5 +1,5 @@
-#ifndef BGAMELIST_H
-#define BGAMELIST_H
+#ifndef BTirGen_H
+#define BTirGen_H
 
 #include <QWidget>
 #include <QSqlDatabase>
@@ -10,19 +10,19 @@
 #include "bstflt.h"
 #include "blineedit.h"
 #include "BLstSelect.h"
-#include "BAnalyserTirages.h"
-#include "BLstTirages.h"
+#include "BTirAna.h"
+#include "BTirages.h"
 
-class BGameLst : public BLstTirages
+class BTirGen : public BTirages
 {
  Q_OBJECT
  public:
- explicit BGameLst(const stGameConf *pGame, QWidget *parent = nullptr);
- ~BGameLst();
+ explicit BTirGen(const stGameConf *pGame, QWidget *parent = nullptr);
+ ~BTirGen();
  stGameConf * getGameConf(void);
  static stGameConf *gameUsrNew(const stGameConf *pGame, QString gameId="");
  void ShowPreviousGames(stGameConf *pGame);
- void setAna(BGameAna * in_ana);
+ void setAna(BTirAna * in_ana);
 
 
  private:
@@ -44,7 +44,7 @@ class BGameLst : public BLstTirages
  QString select_grp(const QModelIndexList &indexes, int zn, int tbl_id);
  QString elmSel_1(const QModelIndexList &indexes, int zn);
  QString elmSel_2(const QModelIndexList &indexes, int zn);
- BGameAna *doLittleAna(const stGameConf *pGame, QString msg);
+ BTirAna *doLittleAna(const stGameConf *pGame, QString msg);
  QWidget *ana_fltSelection(QWidget **J);
  void deletePreviousResults(const stGameConf *pGame);
 
@@ -71,7 +71,7 @@ class BGameLst : public BLstTirages
  int sub_id;
  stGameConf *gameDef;
  QSqlDatabase db_gme;
- BGameAna *cur_ana;
+ BTirAna *cur_ana;
  //QWidget **J;
  QWidget *resu;
  QTabWidget * tab_resu;
@@ -86,4 +86,4 @@ class BGameLst : public BLstTirages
 
 };
 
-#endif // BGAMELIST_H
+#endif // BTirGen_H

@@ -23,7 +23,7 @@
 #include "compter_zones.h"
 #include "db_tools.h"
 
-#include "BAnalyserTirages.h"
+#include "BTirAna.h"
 #include "BFlags.h"
 
 int BcElm::tot_elm = 1;
@@ -87,7 +87,7 @@ QLayout * BcElm::usr_UpperItems(int zn, BTbView *cur_tbv)
  //QAction *tmp_act = nullptr;
 
 
- if((zn == 0) && (BGameAna::getCounter() == 0)){
+ if((zn == 0) && (BTirAna::getCounter() == 0)){
   ret_lay = new QHBoxLayout;
   QPushButton *tmp_btn = nullptr;
 

@@ -1,5 +1,5 @@
-#ifndef BANALYSERTIRAGES_H
-#define BANALYSERTIRAGES_H
+#ifndef BTirAna_H
+#define BTirAna_H
 
 #include <QString>
 #include <QSqlDatabase>
@@ -14,12 +14,12 @@
 
 class BCount;
 
-class BGameAna : public QWidget
+class BTirAna : public QWidget
 {
  Q_OBJECT
  public:
- explicit BGameAna(stGameConf *pGame, QWidget *parent=nullptr);
- BGameAna *self();
+ explicit BTirAna(stGameConf *pGame, QWidget *parent=nullptr);
+ BTirAna *self();
  QWidget *getVisual();
  static int getCounter(void);
  static QString getFilteringHeaders(const stGameConf *pGame, int zn, QString msg_template="t2.%1", QString separator=",");
@@ -48,7 +48,7 @@ class BGameAna : public QWidget
  B2LstSel *construireSelection();
  B2LstSel *effacerSelection(B2LstSel *sel);
 
- typedef bool(BGameAna::*ptrFnUsr)(const stGameConf *, QString, QString, int );
+ typedef bool(BTirAna::*ptrFnUsr)(const stGameConf *, QString, QString, int );
 
  signals:
  void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
@@ -65,10 +65,10 @@ class BGameAna : public QWidget
 
  private:
  static int total_analyses;
- BGameAna *addr;
+ BTirAna *addr;
  QSqlDatabase db_1;
  QMap<QString,ptrFnUsr> map_UsrFn;
  QVector<BCount *> mesComptages;
 };
 
-#endif // BANALYSERTIRAGES_H
+#endif // BTirAna_H

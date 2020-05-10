@@ -36,8 +36,8 @@
 #include "lescomptages.h"
 
 #include "buplet.h"
-#include "btirbar.h"
-
+#include "BTbar1.h"
+#include "BTirFdj.h"
 
 
 #include "chartwidget.h"
@@ -47,7 +47,7 @@
 #include "compter_zones.h"
 
 #include "BFdj.h"
-#include "BAnalyserTirages.h"
+#include "BTirAna.h"
 
 static stTiragesDef configJeu;
 
@@ -75,18 +75,21 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 
  stGameConf *curConf = charge->getConfig();
 
- ///EtudierJeu_v1(curConf, use_odb);
+ //EtudierJeu_v1(curConf, use_odb);
 
  //return;
 
- BGameAna *uneAnalyse = new BGameAna(curConf);
- if(uneAnalyse->self() == nullptr){
+ BTirFdj *lst_tirages = new BTirFdj(curConf);
+ BTirAna *ana_tirages = new BTirAna(curConf);
+ if(ana_tirages->self() == nullptr){
   QString msg = "Erreur de l'analyse des tirages :" + curConf->db_ref->src;
   QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
-  delete uneAnalyse;
+  delete ana_tirages;
  }
  else{
-  uneAnalyse->show();
+  //lst_tirages->show();
+  //ana_tirages->show();
+  lst_tirages->addAna(ana_tirages);
  }
 
  if(use_odb==true){
@@ -162,12 +165,12 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
 
 void MainWindow::AssemblerJeuxUsr(stGameConf *usrGame)
 {
- BGameLst *lst_tirages = new BGameLst(usrGame);
+ BTirGen *lst_tirages = new BTirGen(usrGame);
 
  stGameConf * conf = lst_tirages->getGameConf();
  if( conf != nullptr){
 
-	BGameAna *ana_tirages = new BGameAna(conf);
+	BTirAna *ana_tirages = new BTirAna(conf);
 	if(ana_tirages->self() == nullptr){
 	 delete ana_tirages;
 	}

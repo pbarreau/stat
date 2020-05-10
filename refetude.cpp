@@ -25,11 +25,11 @@
 #include "refetude.h"
 #include "SyntheseDetails.h"
 #include "tirages.h"
-#include "compter.h"
+#include "BCount.h"
 
 #include "sqlqmtirages.h"
 #include "idlgttirages.h"
-#include "btirbar.h"
+#include "BTbar1.h"
 #include "BFpm_1.h"
 
 // declaration de variable de classe
@@ -121,7 +121,7 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
 
  //QTableView *tbv_tmp0 = tbForBaseLigne();
  QTableView *tbv_tmp1 = tbForBaseRef();
- BTirBar *bar =new  BTirBar(p_conf, tbv_tmp1);
+ BTbar1 *bar =new  BTbar1(p_conf, tbv_tmp1);
 
  //QWidget *tbv_tmp2 = EcartOnglets();
 

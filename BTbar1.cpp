@@ -15,13 +15,17 @@
 #include <QTableView>
 
 #include "blineedit.h"
-#include "btirbar.h"
-#include "bfpm_1.h"
+#include "BTbar1.h"
+#include "BFpm_1.h"
 #include "tirages.h"
 
-int BTirBar::cnt_items = 0;
+int BTbar1::cnt_items = 0;
+BTbar1::BTbar1(const stGameConf *pGame, QTableView *p_tbv)//(QWidget *parent):QWidget (parent)
+{
 
-BTirBar::BTirBar(stTiragesDef *def, QTableView *p_tbv)//(QWidget *parent):QWidget (parent)
+}
+
+BTbar1::BTbar1(stTiragesDef *def, QTableView *p_tbv)//(QWidget *parent):QWidget (parent)
 {
  QTableView *pTbv_use = p_tbv;
  QHBoxLayout *layout= new QHBoxLayout;
@@ -29,7 +33,7 @@ BTirBar::BTirBar(stTiragesDef *def, QTableView *p_tbv)//(QWidget *parent):QWidge
  cnt_items++;
  usrFlt = eFlt::efltNone;
  conf = def;
- if(pTbv_use==NULL){
+ if(pTbv_use==nullptr){
   pTbv_use = new QTableView;
   QString dbg_name = "tbvDbg_"+QString::number(cnt_items).rightJustified(2,'0');
   pTbv_use->setObjectName(dbg_name);
@@ -43,7 +47,7 @@ BTirBar::BTirBar(stTiragesDef *def, QTableView *p_tbv)//(QWidget *parent):QWidge
  //tmp_gpb->show();
 }
 
-void BTirBar::slot_FiltreSurNewCol(int lgn)
+void BTbar1::slot_FiltreSurNewCol(int lgn)
 {
  QComboBox * tmp_combo = qobject_cast<QComboBox *>(sender());
  QStandardItemModel *model = qobject_cast<QStandardItemModel *>(tmp_combo->model());
@@ -114,7 +118,7 @@ void BTirBar::slot_FiltreSurNewCol(int lgn)
 	ble_rch->clear();
 }
 
-QComboBox *BTirBar::ComboPerso(int id)
+QComboBox *BTbar1::ComboPerso(int id)
 {
  QComboBox * tmp_combo = new QComboBox;
  QTreeView *sourceView = new QTreeView;
@@ -165,7 +169,7 @@ QComboBox *BTirBar::ComboPerso(int id)
  return tmp_combo;
 }
 
-QGroupBox * BTirBar::mkBarre(QTableView *tbv_cible)
+QGroupBox * BTbar1::mkBarre(QTableView *tbv_cible)
 {
  QGroupBox *tmp_gpb = new QGroupBox;
 
@@ -222,7 +226,7 @@ QGroupBox * BTirBar::mkBarre(QTableView *tbv_cible)
  return tmp_gpb;
 }
 
-void BTirBar::slot_Selection(const QString& usrString)
+void BTbar1::slot_Selection(const QString& usrString)
 {
  QTableView *view = ble_rch->getView();
  BFpm_1 *m = qobject_cast<BFpm_1 *>(view->model());

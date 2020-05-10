@@ -26,7 +26,7 @@
 #include "filtrecombinaisons.h"
 #include "monQview.h"
 #include "myqtableview.h"
-#include "compter.h"
+#include "BCount.h"
 
 int SyntheseDetails::detail_id = 0;
 int SyntheseDetails::vue_id = 0;

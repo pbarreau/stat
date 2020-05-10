@@ -29,7 +29,7 @@
 #include "BFpm_2.h"
 #include "BFpm_3.h"
 
-#include "compter.h"
+#include "BCount.h"
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"

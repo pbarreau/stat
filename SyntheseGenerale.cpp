@@ -42,7 +42,7 @@
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "lescomptages.h"
-#include "compter.h"
+#include "BCount.h"
 
 #include "bvisuresume.h"
 #include "bvisuresume_sql.h"

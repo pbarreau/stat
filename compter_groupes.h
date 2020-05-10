@@ -9,7 +9,7 @@
 #include <QStandardItemModel>
 #include <QPoint>
 
-#include "compter.h"
+#include "BCount.h"
 
 
 class BCountGroup:public BCount

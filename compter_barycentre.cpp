@@ -19,7 +19,7 @@
 #include <QHeaderView>
 
 #include "db_tools.h"
-#include "compter.h"
+#include "BCount.h"
 #include "compter_barycentre.h"
 //#include "delegate.h"
 #include "BFlags.h"

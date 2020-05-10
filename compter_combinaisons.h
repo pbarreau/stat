@@ -7,7 +7,7 @@
 #include <QStringList>
 #include <QGridLayout>
 
-#include "compter.h"
+#include "BCount.h"
 
 #define HCELL       55
 
