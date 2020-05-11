@@ -165,7 +165,7 @@ bool cFdjData::FillDataBase(void)
  return b_retVal;
 }
 
-QString cFdjData::mk_IdDsk(etFdj type, etTirType eTirtype)
+QString cFdjData::mk_IdDsk(etFdj type, etTir eTirtype)
 {
  QDate myDate = QDate::currentDate();
  QString toDay = myDate.toString("dd-MM-yyyy");
@@ -196,7 +196,7 @@ QString cFdjData::mk_IdDsk(etFdj type, etTirType eTirtype)
  return testName;
 }
 
-QString cFdjData::mk_IdCnx(etFdj type, etTirType eTirtype)
+QString cFdjData::mk_IdCnx(etFdj type, etTir eTirtype)
 {
  QString msg="cnx_NotSetYet";
 

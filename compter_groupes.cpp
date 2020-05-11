@@ -36,7 +36,6 @@ BCountGroup::BCountGroup(const stGameConf *pGame,QStringList** lstCri):BCount(pG
  db_grp = dbCount;
 
  slFlt = lstCri;
- tbvAnaLgn = new BGTbView;
  total_cells = 0;
 }
 
@@ -45,6 +44,7 @@ QTabWidget * BCountGroup::startCount(const stGameConf *pGame, const etCount eCal
  QTabWidget *tab_Top = new QTabWidget(this);
 
  int nb_zones = pGame->znCount;
+ tbvAnaLgn = new BGTbView * [nb_zones];
 
 
  QWidget *(BCountGroup::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
@@ -95,119 +95,45 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
   *
   */
 
- /*
- QString lst_cols = "";
- QStringList cols = slFlt[zn][1] ;
- int nb_cols = cols.size();
- for (int i=0;i<nb_cols;i++)
- {
-  QString cur_col = cols.at(i);
-
-  if((cur_col.contains("bc",Qt::CaseInsensitive)==true) ||
-      (cur_col.contains("idComb",Qt::CaseInsensitive)==true)){
-   continue;
-  }
-
-  lst_cols = lst_cols + "t2."+cur_col;
-
-	if(i<nb_cols){
-	 QString nex_col = cols.at(i+1);
-	 if((nex_col.contains("bc",Qt::CaseInsensitive)==false) &&
-			 (nex_col.contains("idComb",Qt::CaseInsensitive)==false)){
-		lst_cols = lst_cols + ",";
-	 }
-	 else {
-		continue;
-	 }
-	}
- }
-
- QString tbLabAna = "";
- if(gm_def->db_ref->src.compare("B_fdj")==0){
-  tbLabAna = "B";
- }
- else{
-  tbLabAna = gm_def->db_ref->src;
- }
- tbLabAna = tbLabAna +"_ana_z"+QString::number(zn+1);
-
- QString sql_msg = "select t1.tip as C, printf(\"%.2f\",t2.bc) as Bc,"+
-               lst_cols+
-               " from (B_cmb_z"+
-               QString::number(zn+1)+
-               ") as t1, ("+
-               tbLabAna+
-               ") as t2 "
-               "where((t2.id=-1) and(t1.id=t2.idComb))";
-
-#ifndef QT_NO_DEBUG
- qDebug() << sql_msg;
-#endif
-
- BGTbView *qtv_tmp = new BGTbView;
- QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
- sqm_tmp->setQuery(sql_msg, dbCount);
- //cur_lgn = sqm_tmp;
-
- qtv_tmp->setModel(sqm_tmp);
- qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
- qtv_tmp->setAlternatingRowColors(true);
- qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
- qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
- qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
- /// Largeur du tableau
- int l = qtv_tmp->getMinWidth();
- qtv_tmp->setFixedWidth(l);
-
-
- /// Hauteur
- int h = qtv_tmp->getMinHeight();
- qtv_tmp->setFixedHeight(h);
-
-*/
-
- //tbvAnaLgn = qtv_tmp;
-
- //QGroupBox *tmp = new QGroupBox;
- //tmp->setTitle("Selection : ");
- //QHBoxLayout *tmp_lay = new QHBoxLayout;
- //tmp_lay->addWidget(qtv_tmp);
- //tmp->setLayout(tmp_lay);
+ tbvAnaLgn[zn] = new BGTbView;
 
  int l_id = -1;
  QString sql_msg = getSqlForLine(l_id, zn);
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
- tbvAnaLgn->setModel(sqm_tmp);
+ tbvAnaLgn[zn]->setModel(sqm_tmp);
 
- showLineDetails(l_id, sql_msg);
+ showLineDetails(zn, l_id, sql_msg);
 
- return tbvAnaLgn->getScreen();
+ return tbvAnaLgn[zn]->getScreen();
 }
 
 void BCountGroup::BSlot_AnaLgn(const int & l_id, const int &prx_id)
 {
- int zn = 0;
+ int nb_zn = gm_def->znCount;
+ for (int zn=0;zn<nb_zn;zn++) {
+  /// On fait la requete avec le bon numero de ligne
+  QString sql_msg = getSqlForLine(l_id, zn);
 
- /// On fait la requete avec le bon numero de ligne
- QString sql_msg = getSqlForLine(l_id, zn);
+	/// on montre avec le numero de ligne du proxy
+	showLineDetails(zn, prx_id, sql_msg);
+ }
 
- /// on montre avec le numero de ligne du proxy
- showLineDetails(prx_id, sql_msg);
 }
 
 void BCountGroup::BSlot_RazSelection(void)
 {
- tbvAnaLgn->selectionModel()->clear();
+ int nb_zn = gm_def->znCount;
+ for (int zn=0;zn<nb_zn;zn++) {
+  tbvAnaLgn[zn]->selectionModel()->clear();
+ }
 }
 
 
-void BCountGroup::showLineDetails(int l_id, QString sql_msg)
+void BCountGroup::showLineDetails(int zn, int l_id, QString sql_msg)
 {
 
- BGTbView *qtv_tmp= tbvAnaLgn;
+ BGTbView *qtv_tmp= tbvAnaLgn[zn];
  QSqlQueryModel *cur_lgn = qobject_cast<QSqlQueryModel *> (qtv_tmp->model());
  cur_lgn->clear();
  cur_lgn->setQuery(sql_msg,db_grp);

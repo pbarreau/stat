@@ -87,9 +87,11 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
   delete ana_tirages;
  }
  else{
-  //lst_tirages->show();
-  //ana_tirages->show();
   lst_tirages->addAna(ana_tirages);
+  connect(lst_tirages,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
+  connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
+          lst_tirages, SLOT(BSlot_Filter_Fdj(const Bp::E_Ana , const B2LstSel *)));
+
  }
 
  if(use_odb==true){

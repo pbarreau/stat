@@ -10,7 +10,7 @@
 #include "BTirDelegate.h"
 #include "BCount.h"
 
-BTirFdj::BTirFdj(const stGameConf *pGame, QWidget *parent): BTirages(pGame,parent)
+BTirFdj::BTirFdj(const stGameConf *pGame, etTir gme_tir, QWidget *parent): BTirages(pGame, gme_tir, parent)
 {
  db_fdj = db_tir;
 
@@ -62,27 +62,30 @@ void BTirFdj::addAna(BTirAna* ana)
  wdg_visual->show();
 }
 
-QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
+void BTirFdj::BSlot_Clicked_Fdj(const QModelIndex &index)
 {
- ///QWidget *wdg_ret = new QWidget;
- BGTbView *qtv_tmp = new BGTbView;
- ///QVBoxLayout * vly = new QVBoxLayout;
-
- QSqlQueryModel *sqm_tmp = new QSqlQueryModel ;
-
- QString msg = "select t1.id, t1.D, t1.J,";
-
- QString st_tirages = pGame->db_ref->fdj;
- int nb_zn = pGame->znCount;
- QString st_zn = "";
- for (int zn=0;zn<nb_zn;zn++) {
-  st_zn = st_zn + BCount::FN1_getFieldsFromZone(pGame,zn,"t1",true);
-  if(zn<nb_zn-1){
-   st_zn = st_zn + ",";
-  }
+ if(index == QModelIndex()){
+  return; /// invalid index
  }
 
- msg = msg + st_zn + " from ("+st_tirages+") as t1";
+ int row = index.row();
+ int source_row_2 = index.sibling(row,Bp::colId).data().toInt();
+
+
+ /// pour analyse de la ligne
+ emit BSig_AnaLgn(source_row_2, row+1);
+}
+
+QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
+{
+ BGTbView *qtv_tmp = new BGTbView;
+ tir_tbv = qtv_tmp;
+ QSqlQueryModel *sqm_tmp = new QSqlQueryModel ;
+ sqm_resu=sqm_tmp;
+ QString msg = "";
+
+ QString tbl_tirages = pGame->db_ref->fdj;
+ msg= getTiragesList(pGame, tbl_tirages) + "select t1.* from (tb1) as t1 ";
 #ifndef QT_NO_DEBUG
  qDebug() <<"\nMsg : \n"<<msg;
 #endif
@@ -121,50 +124,9 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  qtv_tmp->setTitle(st_title);///
  qtv_tmp->setItemDelegate(new BTirDelegate(pGame));
 
-#if 0
- sqm_tmp->setQuery(st_tirages,db_fdj);
- BFpm_1 * fpm_tmp = new BFpm_1(p_conf);
- fpm_tmp->setDynamicSortFilter(true);
- fpm_tmp->setSourceModel(sqm_tmp);
-
- tbv_tmp->setModel(fpm_tmp);
-
- tbv_tmp->setSortingEnabled(false);
- tbv_tmp->setAlternatingRowColors(true);
- tbv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
- tbv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
- tbv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
- tbv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
- tbv_tmp->hideColumn(0);
- tbv_tmp->hideColumn(1);
-
- // Formattage de largeur de colonnes
- for(int j=0;j<=4;j++)
-  tbv_tmp->setColumnWidth(j,75);
-
- for(int j=5;j<=sqm_tmp->columnCount();j++)
-  tbv_tmp->setColumnWidth(j,LCELL);
-
- // Bloquer largeur des colonnes
- tbv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
- tbv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-
- // Taille tableau
- tbv_tmp->setFixedSize(XLenTir,2*CHauteur2);
- tbv_tmp->setItemDelegate(new idlgtTirages);
-
- // ----------------------
- // voir effet !!!
- //sqm_tmp->clear();
- while (sqm_tmp->canFetchMore())
- {
-  sqm_tmp->fetchMore();
- }
-
- //sqm_tmp->canFetchMore();
-
-
- // ---------------------
+ // click sur une ligne des tirages effectue l'analyse de la ligne
+ connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
+         this, SLOT( BSlot_Clicked_Fdj( QModelIndex) ) );
 
 #if 0
  p_tbv_0 = tbv_tmp;
@@ -183,10 +145,57 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
           this, SLOT( slot_ShowBoule( QModelIndex) ) );
 
 #endif
-#endif
 
- //vly->addWidget(qtv_tmp->getScreen());
- ///wdg_ret =
 
  return (qtv_tmp->getScreen());
+}
+
+void BTirFdj::BSlot_Filter_Fdj(const Bp::E_Ana ana, const B2LstSel * sel)
+{
+ QString lst_tirages = getTiragesList(gme_cnf, game_lab);
+ QString msg  = "select t1.* from ";
+ QString tbl_lst = "(tb1) as t1";
+ QString clause = "";
+ QString msg_1  = "";
+ QString msg_2  = "";
+
+ if((ana != Bp::anaRaz) && (sel !=nullptr)){
+  int nb_sel = sel->size();
+
+	if(tab_resu==nullptr){
+	 tab_resu = new QTabWidget;
+	 tab_resu->setTabsClosable(true);
+	 //connect(tab_resu,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
+	}
+
+  QWidget **J = new QWidget *[2];
+  QWidget * resu = nullptr;
+
+	 /// Creer la requete de filtrage
+	 clause = makeSqlFromSelection(sel, &tbl_lst);
+	 msg = msg + tbl_lst + " where("+clause+")";
+
+	 /// mettre la liste des tirages a jour
+	 msg_1 = lst_tirages + msg;
+	 updateTbv(msg_1);
+
+	 /// faire une analyse pour J
+	 J[0] = doLittleAna(gme_cnf,msg_1);
+
+	 /// recherche J+1
+	 msg_1 = ", tb2 as ("+ msg +")";
+	 msg_2 = lst_tirages + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
+	 J[1] = doLittleAna(gme_cnf,msg_2);
+
+	 resu = ana_fltSelection(J);
+	 if(resu!=nullptr){
+		QString st_id = "R-%1";
+		st_id = st_id.arg(QString::number(sub_id-2).rightJustified(2,'0'));
+		tab_resu->addTab(resu,st_id);
+		BTbView::addSubFlt(gme_id, tab_resu);
+	 }
+	}
+ else {
+  ; /// supprimer les reponses precedentes si elles existent
+ }
 }

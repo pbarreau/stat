@@ -69,7 +69,7 @@ class cFdjData//:public QObject
  void init(etFdj eFdjType);
 
  private:
- QString mk_IdDsk(etFdj type, etTirType eTirtype);
+ QString mk_IdDsk(etFdj type, etTir eTirtype);
  bool ouvrirBase(etFdj eFdjType);
  bool OPtimiseAccesBase(void);
 
@@ -100,7 +100,7 @@ class cFdjData//:public QObject
  bool SupprimerVueIntermediaires(void);
 
  protected:
- QString mk_IdCnx(etFdj type, etTirType eTirtype);
+ QString mk_IdCnx(etFdj type, etTir eTirtype);
  QString getFieldsFromZone(int zn, QString alias);
  bool isPresentInDataBase(QString table, QString schema="");
 

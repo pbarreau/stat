@@ -231,7 +231,7 @@ bool BPrevision::OPtimiseAccesBase(void)
 void BPrevision::effectuerTraitement(etFdj game)
 {
  QString source = "";//C_TBL_3;
- if(conf.gameInfo.eTirType==etTirType::eTirFdj){
+ if(conf.gameInfo.eTirType==etTir::eTirFdj){
   conf.tblFdj_dta = "B_fdj";
   source = conf.tblFdj_dta;
  }
@@ -2332,7 +2332,7 @@ void BPrevision::slot_UGL_Create()
 		 /// Creer une liste de jeux possibles
 		 if(n == m){
 			int memo_usr = onGame.limites[0].usr;
-			etTirType mem_from = onGame.eTirType;
+			etTir mem_from = onGame.eTirType;
 
 			onGame.limites[0].usr=m;
 			QString tbl_cible = a->getDbTblName();

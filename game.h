@@ -22,12 +22,12 @@ typedef enum _eFdjType{
 }etFdj;
 extern const QString gameLabel [eFdjEol];
 
-typedef enum _eAnaType{
+typedef enum _etTir{
  eTirNotSet, /// Lst tirages pas encore etablie
  eTirFdj,    /// Lst tirages de la Fdj
  eTirGen,    /// Lst tirages autogeneree
  eTirUsr     /// Lst tirages choix utilisateur
-}etTirType;
+}etTir;
 
 typedef  struct _stFdj{
  etFdj typeJeu;
@@ -65,7 +65,7 @@ typedef struct _stGameConf{
   int id;
   bool bUseMadeBdd;
   etFdj eFdjType; /// type du jeu
-  etTirType eTirType; /// origine
+  etTir eTirType; /// origine
   int znCount; /// nombre de zones a regarder
   stParam_1 *limites; /// bornes sur la zone
   stParam_2 *names; /// nom de la zone

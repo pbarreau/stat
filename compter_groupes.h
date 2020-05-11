@@ -81,12 +81,12 @@ class BCountGroup:public BCount
  QWidget *mainIhmGrp(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn);
  QWidget *usr_GrpTb1(int zn);
  QString getSqlForLine(const int &l_id, int zn);
- void showLineDetails(int l_id, QString sql_msg);
+ void showLineDetails(int zn, int l_id, QString sql_msg);
 
  private:
  QSqlDatabase db_grp;
  QStringList **slFlt;
- BGTbView *tbvAnaLgn;
+ BGTbView **tbvAnaLgn;
  int total_cells;
 
 };

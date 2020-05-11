@@ -1019,7 +1019,7 @@ bool BTirAna::mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *query)
  return b_retVal;
 }
 
-bool BTirAna::usrFn_X1(const stGameConf *pGame, QString tblIn, QString tblOut, int zn_in)
+bool BTirAna::usrFn_X1(const stGameConf *pGame, QString tblIn, QString tblOut, int zn)
 {
 
  bool b_retVal = true;
@@ -1032,82 +1032,78 @@ bool BTirAna::usrFn_X1(const stGameConf *pGame, QString tblIn, QString tblOut, i
  }
  QString tblUse []= {"B_ana_z",tbl_tirages, "B_elm"};
 
- int nbZone = pGame->znCount;
+ ///int nbZone = pGame->znCount;
  QString tmp_tbl = tblOut;
  tmp_tbl.remove("view");
  tmp_tbl = tmp_tbl.trimmed();
 
- for (int zn=0;(zn < nbZone) && b_retVal;zn++ )
- {
-  int nbwin = pGame->limites[zn].win;
+ msg = " select t1.*, cast(t2.X1 as int) as X1 from ("+tblIn+ ") as t1 left join (select 0 as X1) as t2 ";
 
-  if(nbwin>2){
+ QString sql_msg[]={
+  "create table "+ tmp_tbl+ " as "+msg
+ };
+ int nb_sql= sizeof(sql_msg)/sizeof(QString);
 
-   msg = " select t1.*, cast(t2.X1 as int) as X1 from ("+tblIn+ ") as t1 left join (select 0 as X1) as t2 ";
-
-	 QString sql_msg[]={
-		"create table "+ tmp_tbl+ " as "+msg
-	 };
-	 int nb_sql= sizeof(sql_msg)/sizeof(QString);
-
-	 /// Rajout de la colonne X1
-	 for (int current=0;(current < nb_sql) && b_retVal ; current++) {
+ /// Rajout de la colonne X1
+ for (int current=0;(current < nb_sql) && b_retVal ; current++) {
 #ifndef QT_NO_DEBUG
-		qDebug() << "msg["<<current<<"]="<<sql_msg[current];
+  qDebug() << "msg["<<current<<"]="<<sql_msg[current];
 #endif
-		b_retVal = query.exec(sql_msg[current]);
+  b_retVal = query.exec(sql_msg[current]);
+ }
+
+
+ int nbwin = pGame->limites[zn].win;
+
+ if(b_retVal && (nbwin>=2)){
+
+	/// la colonne est creee la remplir
+	/// du plus grand au plus petit
+	QString zn_field = BCount::FN1_getFieldsFromZone(pGame, zn,"t1");
+	QString ref="((r%2.z1=r%1.z1+1) and r%2.z1 in ("+zn_field+"))";
+	QString ref2="(r%1.z1 in ("+zn_field+"))";
+
+	for (int nbloop= nbwin;(nbloop>1) && b_retVal ;nbloop--) {
+
+	 QString aliasZn="";
+	 for (int k =1; k<=nbloop;k++) {
+		aliasZn =aliasZn + tblUse[2] + " as r" +QString::number(k);
+		if(k<nbloop){
+		 aliasZn = aliasZn + ",";
+		}
 	 }
 
+	 msg="";
+	 QString deb = "";
+	 QString msg1 = "";
 
-	 /// la colonne est creee la remplir
-	 /// du plus grand au plus petit
-	 //QString zn_field = getFieldsFromZone(pGame, zn,"t1");
-	 QString zn_field = BCount::FN1_getFieldsFromZone(pGame, zn,"t1");
-	 QString ref="((r%2.z1=r%1.z1+1) and r%2.z1 in ("+zn_field+"))";
-	 QString ref2="(r%1.z1 in ("+zn_field+"))";
+	 for(int i = nbloop; i>0; i--){
+		deb = "update "+ tmp_tbl+ " as t2 set X1 = " + QString::number(nbloop+1-i);
 
-	 for (int nbloop= nbwin;(nbloop>1) && b_retVal ;nbloop--) {
 
-		QString aliasZn="";
-		for (int k =1; k<=nbloop;k++) {
-		 aliasZn =aliasZn + tblUse[2] + " as r" +QString::number(k);
-		 if(k<nbloop){
-			aliasZn = aliasZn + ",";
-		 }
+		if(i>1){
+		 msg1 = ref.arg(i-1).arg(i);
+		 msg1 = " AND " + msg1;
+		}
+		else {
+		 msg1 = ref2.arg(i);
 		}
 
-		msg="";
-		QString deb = "";
-		QString msg1 = "";
-
-		for(int i = nbloop; i>0; i--){
-		 deb = "update "+ tmp_tbl+ " as t2 set X1 = " + QString::number(nbloop+1-i);
-
-
-		 if(i>1){
-			msg1 = ref.arg(i-1).arg(i);
-			msg1 = " AND " + msg1;
-		 }
-		 else {
-			msg1 = ref2.arg(i);
-		 }
-
-		 msg = msg1 + msg  ;
-		}
-
-		msg1 = deb + " where (t2.id in ( select t1.id from "
-					 + tblUse[1] + " as t1, " + aliasZn + " where ("
-					 + msg + ")) and t2.X1=0)";
-#ifndef QT_NO_DEBUG
-		qDebug() << "deb="<<deb;
-		qDebug() << "msg="<<msg;
-		qDebug() << "msg1="<<msg1;
-#endif
-
-		b_retVal = query.exec(msg1);
+		msg = msg1 + msg  ;
 	 }
 
-  }
+	 msg1 = deb + " where (t2.id in ( select t1.id from "
+					+ tblUse[1] + " as t1, " + aliasZn + " where ("
+					+ msg + ")) and t2.X1=0)";
+#ifndef QT_NO_DEBUG
+	 qDebug() << "deb="<<deb;
+	 qDebug() << "msg="<<msg;
+	 qDebug() << "msg1="<<msg1;
+#endif
+
+	 b_retVal = query.exec(msg1);
+	}
+
  }
 
 #if 0

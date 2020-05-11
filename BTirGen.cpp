@@ -31,12 +31,8 @@
 
 int BTirGen::gme_counter = 1;
 
-BTirGen::BTirGen(const stGameConf *pGame, QWidget *parent) : BTirages(pGame,parent)
+BTirGen::BTirGen(const stGameConf *pGame, etTir gme_tir, QWidget *parent) : BTirages(pGame,gme_tir,parent)
 {
- game_lab = "";
- sub_id = 0;
- ///J=nullptr;
- tab_resu = nullptr;
  gameDef = nullptr;
 
  QString cnx=pGame->db_ref->cnx;
@@ -441,7 +437,7 @@ QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
  return tmp_gpb;
 }
 
-QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_cible)
+QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_tirages)
 {
  QGroupBox *tmp_gpb = new QGroupBox;
  QString msg = "";
@@ -453,14 +449,14 @@ QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_cible)
  int chk_nb_col = pGame->limites[zn].len;
 
  /// Montrer resultats
- msg= sqlVisualTable(tbl_cible) + "select t1.* from (tb1) as t1 ";
+ msg= getTiragesList(pGame, tbl_tirages) + "select t1.* from (tb1) as t1 ";
 #ifndef QT_NO_DEBUG
  qDebug() <<msg;
 #endif
  QTableView *qtv_tmp = new QTableView;
 
  QString cnx = db_gme.connectionName();
- sqm_resu = new BSqlQmTirages_3(pGame,cnx,tbl_cible, qtv_tmp);
+ sqm_resu = new BSqlQmTirages_3(pGame,cnx,tbl_tirages, qtv_tmp);
  sqm_resu->setQuery(msg,db_gme);
  connect(sqm_resu,
          SIGNAL(BSig_CheckBox(QPersistentModelIndex ,Qt::CheckState)),
@@ -490,9 +486,9 @@ QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_cible)
  BPushButton *my_btn = new BPushButton(lb_tir,"red", BPushButton::eOk);
  my_btn->setIcon(tmp_ico);
  connect(my_btn, SIGNAL(BSig_MouseOverLabel(QLabel *)), this, SLOT(BSlot_MouseOverLabel(QLabel *)));
- connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked()));
+ connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked_Gen()));
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(BSlot_Clicked( QModelIndex) ) );
+         this, SLOT(BSlot_Clicked_Gen( QModelIndex) ) );
  // Creates a new QPersistentModelIndex that is a copy of the model index.
  seltir->addWidget(my_btn);
 
@@ -500,7 +496,7 @@ QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_cible)
  my_btn = new BPushButton(lb_tir,"green",BPushButton::eEsc);
  my_btn->setIcon(tmp_ico);
  connect(my_btn, SIGNAL(BSig_MouseOverLabel(QLabel *)), this, SLOT(BSlot_MouseOverLabel(QLabel *)));
- connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked()));
+ connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked_Gen()));
  seltir->addWidget(my_btn);
 
  /// HORIZONTAL BAR
@@ -600,42 +596,10 @@ QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_cible)
  return tmp_gpb;
 }
 
-QString BTirGen::sqlVisualTable(QString tbl_src)
-{
- int zn = 0;
- QString str_cols = BCount::FN1_getFieldsFromZone(gameDef,zn, "t1");
-
- QString msg = " with tb1 as (select t1.id,"+
-               str_cols+
-               ",t1.chk from ("+
-               tbl_src+
-               ") as t1)";
- /*
-
- QString msg = " with tb1 as (select t2.tip as C, "+
-               str_cols+
-               ",printf(\"%.2f\",t3.bc) as bc ,t1.chk "
-               " from ("+
-               tbl_src+
-               ") as t1, (B_cmb_z"+
-               QString::number(zn+1)+
-               ") as t2, ("+
-               tbl_src+
-               "_ana_z"+
-               QString::number(zn+1)+
-               ") as t3"
-               " where"
-               " ("
-               " (t1.id=t3.id) AND"
-               " (t2.id = t3.idComb)"
-               " )) ";
-*/
- return msg;
-}
 
 void BTirGen::BSlot_ShowBtnId(int btn_id)
 {
- QString msg= sqlVisualTable(game_lab) + "select t1.* from (tb1) as t1 ";
+ QString msg= getTiragesList(gameDef, game_lab) + "select t1.* from (tb1) as t1 ";
  bool with_where = false;
  Qt::CheckState val_chk = Qt::CheckState::Unchecked;
 
@@ -667,7 +631,7 @@ void BTirGen::BSlot_ShowBtnId(int btn_id)
 
 void BTirGen::slot_ShowChk(void)
 {
- QString msg= sqlVisualTable(game_lab) + "select t1.* from (tb1) as t1 ";
+ QString msg= getTiragesList(gameDef, game_lab) + "select t1.* from (tb1) as t1 ";
  msg= msg + " where (chk="+QString::number(Qt::CheckState::Checked)+")";
  sqm_resu->setQuery(msg,db_gme);
 
@@ -679,7 +643,7 @@ void BTirGen::slot_ShowChk(void)
 
 void BTirGen::slot_ShowNhk(void)
 {
- QString msg= sqlVisualTable(game_lab) + "select t1.* from (tb1) as t1 ";
+ QString msg= getTiragesList(gameDef, game_lab) + "select t1.* from (tb1) as t1 ";
  msg= msg + " where (chk="+QString::number(Qt::CheckState::Unchecked)+")";
  sqm_resu->setQuery(msg,db_gme);
 
@@ -750,7 +714,7 @@ void BTirGen::BSlot_MouseOverLabel(QLabel *l)
 
 }
 
-void BTirGen::BSlot_Clicked()
+void BTirGen::BSlot_Clicked_Gen()
 {
  BPushButton *btn = qobject_cast<BPushButton *>(sender());
  BPushButton::eRole action = btn->getRole();
@@ -767,7 +731,7 @@ void BTirGen::ShowPreviousGames(stGameConf *pGame)
 
 }
 
-void BTirGen::BSlot_Clicked(const QModelIndex &index)
+void BTirGen::BSlot_Clicked_Gen(const QModelIndex &index)
 {
  if(index == QModelIndex()){
   return; /// invalid index
@@ -841,9 +805,10 @@ void BTirGen::BSlot_ShowTotal(const QString& lstBoules)
  gpb_Tirages->setTitle(st_total);
 }
 
+
 void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
 {
- QString usr_table = sqlVisualTable(game_lab);
+ QString lst_tirages = getTiragesList(gameDef, game_lab);
  QString msg  = "select t1.* from ";
  QString tbl_lst = "(tb1) as t1";
  QString clause = "";
@@ -867,7 +832,7 @@ void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
    msg = msg + tbl_lst + " where("+clause+")";
 
 	 /// mettre la liste des tirages a jour
-	 msg_1 = usr_table + msg;
+	 msg_1 = lst_tirages + msg;
 	 updateTbv(msg_1);
 
 	 /// faire une analyse pour J
@@ -875,7 +840,7 @@ void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
 
 	 /// recherche J+1
 	 msg_1 = ", tb2 as ("+ msg +")";
-	 msg_2 = usr_table + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
+	 msg_2 = lst_tirages + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
 	 J[1] = doLittleAna(gameDef,msg_2);
 
 	 resu = ana_fltSelection(J);
@@ -937,6 +902,7 @@ void BTirGen::deletePreviousResults(const stGameConf *pGame)
 
 }
 
+/*
 QString BTirGen::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 {
  QString ret_all = "";
@@ -1195,12 +1161,14 @@ QString BTirGen::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  return msg;
 }
 
+
 QString BTirGen::makeSqlForNextLine(const B2LstSel * sel)
 {
  QString ret = "";
 
  return ret;
 }
+*/
 
 void BTirGen::updateTbv(QString msg)
 {
@@ -1236,6 +1204,7 @@ void BTirGen::updateTbv(QString msg)
  gpb_Tirages->setTitle(st_total);
 }
 
+/*
 QWidget *BTirGen::ana_fltSelection(QWidget **J)
 {
  QWidget *ret = new QWidget;
@@ -1328,3 +1297,4 @@ BTirAna * BTirGen::doLittleAna(const stGameConf *pGame, QString msg)
 
  return uneAnalyse;
 }
+*/

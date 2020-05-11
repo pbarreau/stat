@@ -12,12 +12,13 @@
 #include "BLstSelect.h"
 #include "BTirAna.h"
 #include "BTirages.h"
+#include "game.h"
 
 class BTirGen : public BTirages
 {
  Q_OBJECT
  public:
- explicit BTirGen(const stGameConf *pGame, QWidget *parent = nullptr);
+ explicit BTirGen(const stGameConf *pGame, etTir gme_tir = eTirGen, QWidget *parent = nullptr);
  ~BTirGen();
  stGameConf * getGameConf(void);
  static stGameConf *gameUsrNew(const stGameConf *pGame, QString gameId="");
@@ -35,7 +36,8 @@ class BTirGen : public BTirages
  QGroupBox *  LireBoule(stGameConf *pGame, QString tbl_cible);
  QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
  void updateTbv(QString msg);
- QString sqlVisualTable(QString tbl_src);
+ //QString getTiragesList(QString tbl_src);
+ /*
  QString makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst);
  QString makeSqlForNextLine(const B2LstSel * sel);
  QString select_elm(const QModelIndexList &indexes, int zn);
@@ -46,10 +48,11 @@ class BTirGen : public BTirages
  QString elmSel_2(const QModelIndexList &indexes, int zn);
  BTirAna *doLittleAna(const stGameConf *pGame, QString msg);
  QWidget *ana_fltSelection(QWidget **J);
+*/
  void deletePreviousResults(const stGameConf *pGame);
 
  signals:
- void BSig_AnaLgn(const int &lgn_id, const int &prx_id);
+ //void BSig_AnaLgn(const int &lgn_id, const int &prx_id);
 
  public slots:
  void BSlot_ShowTotal(const QString& lstBoules);
@@ -57,8 +60,8 @@ class BTirGen : public BTirages
 
  private slots:
  void BSlot_MouseOverLabel(QLabel *l);
- void BSlot_Clicked();
- void BSlot_Clicked(const QModelIndex &index);
+ void BSlot_Clicked_Gen();
+ void BSlot_Clicked_Gen(const QModelIndex &index);
  void BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::CheckState &chk);
  void BSlot_ShowBtnId(int btn_id);
  void slot_ShowChk(void);
@@ -67,14 +70,13 @@ class BTirGen : public BTirages
 
  private:
  static int gme_counter;
- int gme_id;
- int sub_id;
+ //int gme_id;
+ //int sub_id;
  stGameConf *gameDef;
  QSqlDatabase db_gme;
  BTirAna *cur_ana;
- //QWidget **J;
  QWidget *resu;
- QTabWidget * tab_resu;
+ //QTabWidget * tab_resu;
 
  private:
  BSqlQmTirages_3 *sqm_resu;

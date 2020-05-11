@@ -43,7 +43,7 @@ class BTirAna : public QWidget
  QWidget *getVisual(stGameConf *pGame, QTabWidget *ana);
  QWidget *setFilterBar();
 
- bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn_in);
+ bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn);
  QString getFieldsFromZone(const stGameConf *pGame, int zn, QString alias);
  B2LstSel *construireSelection();
  B2LstSel *effacerSelection(B2LstSel *sel);
