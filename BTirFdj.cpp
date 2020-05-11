@@ -7,6 +7,7 @@
 #include <QHeaderView>
 
 #include "BTirFdj.h"
+#include "BTirDelegate.h"
 #include "BCount.h"
 
 BTirFdj::BTirFdj(const stGameConf *pGame, QWidget *parent): BTirages(pGame,parent)
@@ -117,7 +118,8 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  qtv_tmp->setMinimumWidth(l);
  qtv_tmp->setMinimumHeight(l);
  QString st_title = "Nombre de tirages : "+QString::number(nb_rows);
- qtv_tmp->setTitle(st_title);
+ qtv_tmp->setTitle(st_title);///
+ qtv_tmp->setItemDelegate(new BTirDelegate(pGame));
 
 #if 0
  sqm_tmp->setQuery(st_tirages,db_fdj);

@@ -112,7 +112,8 @@ SOURCES += \
     SyntheseGenerale.cpp \
     tirages.cpp \
     version.cpp \ 
-    BTirFdj.cpp
+    BTirFdj.cpp \
+    BTirDelegate.cpp
 
 HEADERS  += \
     BColorPriority.h \
@@ -188,7 +189,8 @@ HEADERS  += \
     SyntheseGenerale.h \
     tirages.h \
     types_jeux.h \
-    BTirFdj.h
+    BTirFdj.h \
+    BTirDelegate.h
 
 
 FORMS    += mainwindow.ui \

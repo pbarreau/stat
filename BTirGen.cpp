@@ -27,6 +27,7 @@
 
 #include "BSqlQmTirages_3.h"
 #include "BFpm_3.h"
+#include "BTirDelegate.h"
 
 int BTirGen::gme_counter = 1;
 
@@ -591,7 +592,8 @@ QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_cible)
    l+=qtv_tmp->horizontalHeader()->sectionSize(i);
  }
  qtv_tmp->setFixedWidth(l);
- qtv_tmp->hideColumn(0);
+ qtv_tmp->hideColumn(Bp::colId);
+ qtv_tmp->setItemDelegate(new BTirDelegate(pGame,Bp::colGenZs));
 
  gpb_Tirages = tmp_gpb;
 
@@ -859,25 +861,7 @@ void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
     tab_resu->setTabsClosable(true);
     connect(tab_resu,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
    }
-   else {
-#if 0
-    resu->close();
-    this->setFocus();
-    delete resu;
-    deletePreviousResults(gameDef);
-    /*
-    resu->close();
-    this->setFocus();
-    delete resu;
- */
-   /*
-    for (int i = 0; i<2;i++) {
-     delete J[i];
-    }
-  */
-    return;
-#endif
-   }
+
    /// Creer la requete de filtrage
    clause = makeSqlFromSelection(sel, &tbl_lst);
    msg = msg + tbl_lst + " where("+clause+")";

@@ -49,9 +49,10 @@ namespace Bp {
   colId	=	0,
   colTxt=1,
   colDate=1,
+  colGenZs=1,  /// Colonne depart de zone def dans Tbl lst gene
   colJour=2,
   colVisual=2,
-  colZnStart=3,
+  colTirZs=3,  /// Colonne depart de zone def dans Tbl Tirages
   colTotal=3
  };
 
