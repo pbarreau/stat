@@ -40,6 +40,7 @@ void BSig_AnaLgn(const int &lgn_id, const int &prx_id);
 
 protected slots:
 void BSlot_closeTab(int index);
+void BSlot_Tir_flt(int index);
 void BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel);
 
 protected:

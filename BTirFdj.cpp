@@ -143,6 +143,7 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  return (qtv_tmp->getScreen());
 }
 
+/*
 void BTirFdj::BSlot_Filter_Fdj(const Bp::E_Ana ana, const B2LstSel * sel)
 {
  QString lst_tirages = getTiragesList(gme_cnf, game_lab);
@@ -209,6 +210,7 @@ void BTirFdj::BSlot_Filter_Fdj(const Bp::E_Ana ana, const B2LstSel * sel)
   updateTbv(box_title,msg);
  }
 }
+*/
 
 void BTirFdj::BSlot_Result_Fdj(const int index)
 {
@@ -229,6 +231,7 @@ void BTirFdj::BSlot_Result_Fdj(const int index)
  }
 }
 
+/*
 void BTirFdj::BSlot_Fdj_flt(int index)
 {
  if((index<0)){
@@ -242,3 +245,4 @@ void BTirFdj::BSlot_Fdj_flt(int index)
  QString box_title = og_AnaSel->tabText(id_AnaOnglet)+" ("+from->tabText(index)+"). ";
  updateTbv(box_title, msg);
 }
+*/

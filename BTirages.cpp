@@ -361,7 +361,7 @@ QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, QWidget **
  QVBoxLayout *tmp_lay = new QVBoxLayout;
  if(tab_Top->count() !=0){
   tmp_lay->addWidget(tab_Top);
-  connect(tab_Top,SIGNAL(tabBarClicked(int)),parent,SLOT(BSlot_Fdj_flt(int)));
+  connect(tab_Top,SIGNAL(tabBarClicked(int)),parent,SLOT(BSlot_Tir_flt(int)));
  }
  else {
   delete 	tab_Top;
@@ -530,4 +530,18 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
   msg =  lst_tirages + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent
   updateTbv(box_title,msg);
  }
+}
+
+void BTirages::BSlot_Tir_flt(int index)
+{
+ if((index<0)){
+  return;
+ }
+ QTabWidget * from = qobject_cast<QTabWidget *>(sender());
+ QWidget ** tmp = resu_usr->at(id_AnaOnglet);
+ BTirAna * tmp_ana = qobject_cast<BTirAna *>(tmp[index]);
+ QString msg = tmp_ana->getSql();
+
+ QString box_title = og_AnaSel->tabText(id_AnaOnglet)+" ("+from->tabText(index)+"). ";
+ updateTbv(box_title, msg);
 }

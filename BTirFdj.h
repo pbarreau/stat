@@ -19,9 +19,9 @@ signals:
 
 private slots:
 void BSlot_Clicked_Fdj(const QModelIndex &index);
-void BSlot_Filter_Fdj(const Bp::E_Ana ana, const B2LstSel *sel);
+//void BSlot_Filter_Fdj(const Bp::E_Ana ana, const B2LstSel *sel);
 void BSlot_Result_Fdj(const int index);
-void BSlot_Fdj_flt(const int index);
+//void BSlot_Fdj_flt(const int index);
 
 private:
 QWidget *tbForBaseRef(const stGameConf *pGame);

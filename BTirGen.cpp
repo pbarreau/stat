@@ -137,6 +137,7 @@ void BTirGen::mkGameWidget(stGameConf *current)
 
  QVBoxLayout *mainLayout = new QVBoxLayout;
  mainLayout->addWidget(tab_Top);
+ tab_Top->setCurrentIndex(1);
 
 
  this->setLayout(mainLayout);
