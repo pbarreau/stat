@@ -11,6 +11,7 @@
 #include "BCount.h"
 
 int BTirages::cnt_tirSrc = 1; /// Compteur des sources de tirages
+static QString  lab_ong = "R_%1";
 
 BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
     : QWidget(parent),gme_cnf(pGame),eTir(gme_tir)
@@ -464,3 +465,69 @@ void BTirages::BSlot_closeTab(int index)
  }
 }
 
+void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
+{
+ QString lst_tirages = getTiragesList(gme_cnf, game_lab);
+ QString msg  = "select t1.* from ";
+ QString tbl_lst = "(tb1) as t1";
+ QString clause = "";
+ QString msg_1  = "";
+ QString msg_2  = "";
+ QString flt_tirages = "";
+ QString box_title ="";
+
+ if((ana != Bp::anaRaz) && (sel !=nullptr)){
+  int nb_sel = sel->size();
+
+	if(og_AnaSel==nullptr){
+	 resu_usr = new QList<QWidget **>;
+	 og_AnaSel = new QTabWidget;
+	 QString st_obj = "pere_"+ QString::number(id_AnaSel).rightJustified(2,'0');
+	 og_AnaSel->setObjectName(st_obj);
+	 id_AnaOnglet = 0;
+	 og_AnaSel->setTabsClosable(true);
+	 connect(og_AnaSel,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
+	 connect(og_AnaSel,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Result_Fdj(int)));
+	}
+
+	QWidget **J = new QWidget *[2];
+	QWidget * resu = nullptr;
+
+	/// Creer la requete de filtrage
+	clause = makeSqlFromSelection(sel, &tbl_lst);
+	msg = msg + tbl_lst + " where("+clause+")";
+
+	/// mettre la liste des tirages a jour
+	flt_tirages = lst_tirages + msg;
+
+	/// faire une analyse pour J
+	J[0] = doLittleAna(gme_cnf,flt_tirages);
+
+	/// recherche J+1
+	msg_1 = ", tb2 as ("+ msg +")";
+	msg_2 = lst_tirages + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
+	J[1] = doLittleAna(gme_cnf,msg_2);
+
+	/// Nommage de l'onglet
+	int static counter = 0;
+	QString st_id = lab_ong;
+	st_id = st_id.arg(QString::number(counter).rightJustified(2,'0'));
+
+	resu = ana_fltSelection(st_id, this, J);
+	if(resu!=nullptr){
+	 counter++;
+	 resu_usr->append(J);
+	 int tab_index = og_AnaSel->addTab(resu,st_id);
+	 lay_fusion->addWidget(og_AnaSel,1,1);
+	 og_AnaSel->setCurrentIndex(tab_index);
+	 og_AnaSel->tabBarClicked(tab_index);
+	}
+	else {
+	 counter--;
+	}
+ }
+ else {
+  msg =  lst_tirages + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent
+  updateTbv(box_title,msg);
+ }
+}

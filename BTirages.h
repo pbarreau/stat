@@ -5,6 +5,7 @@
 #include <QSqlDatabase>
 #include <QTabWidget>
 #include <QSqlQueryModel>
+#include <QGridLayout>
 
 #include "game.h"
 #include "BLstSelect.h"
@@ -39,6 +40,7 @@ void BSig_AnaLgn(const int &lgn_id, const int &prx_id);
 
 protected slots:
 void BSlot_closeTab(int index);
+void BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel);
 
 protected:
 static int cnt_tirSrc;
@@ -54,6 +56,7 @@ BGTbView *tir_tbv;
 QSqlQueryModel * sqm_resu;
 QList<QWidget **> *resu_usr;
 QString lst_tirages;
+QGridLayout *lay_fusion;
 
 };
 

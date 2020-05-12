@@ -26,7 +26,6 @@ void BSlot_Fdj_flt(const int index);
 private:
 QWidget *tbForBaseRef(const stGameConf *pGame);
 QSqlDatabase db_fdj;
-QGridLayout *lay_fusion;
 
 };
 
