@@ -91,6 +91,7 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  qDebug() <<"\nMsg : \n"<<msg;
 #endif
  sqm_tmp->setQuery(msg,db_fdj);
+ lst_tirages = msg;
 
  QSortFilterProxyModel * fpm_tmp = new QSortFilterProxyModel;
  fpm_tmp->setDynamicSortFilter(true);
@@ -98,11 +99,13 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
 
  qtv_tmp->setModel(fpm_tmp);
 
+ /*
  while (sqm_tmp->canFetchMore())
  {
   sqm_tmp->fetchMore();
  }
- int nb_rows = sqm_tmp->rowCount();
+*/
+ //int nb_rows = sqm_tmp->rowCount();
 
  qtv_tmp->hideColumn(Bp::colId);
 
@@ -121,9 +124,11 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  int l=qtv_tmp->getMinWidth(0);
  qtv_tmp->setMinimumWidth(l);
  qtv_tmp->setMinimumHeight(l);
- QString st_title = "Nombre de tirages : "+QString::number(nb_rows);
- qtv_tmp->setTitle(st_title);///
+ //QString st_title = "Nombre de tirages : "+QString::number(nb_rows);
+ //qtv_tmp->setTitle(st_title);///
  qtv_tmp->setItemDelegate(new BTirDelegate(pGame));
+
+ updateTbv("",msg);
 
  // click sur une ligne des tirages effectue l'analyse de la ligne
  connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
@@ -196,14 +201,12 @@ void BTirFdj::BSlot_Filter_Fdj(const Bp::E_Ana ana, const B2LstSel * sel)
 
 	/// Nommage de l'onglet
 	int static counter = 0;
-	QString st_id = lab_ong;///"R-%1";
+	QString st_id = lab_ong;
 	st_id = st_id.arg(QString::number(counter).rightJustified(2,'0'));
 
 	resu = ana_fltSelection(st_id, this, J);
 	if(resu!=nullptr){
 	 counter++;
-	 //QString box_title = st_id+" (J). ";
-	 //updateTbv(box_title,flt_tirages);
 	 resu_usr->append(J);
 	 int tab_index = og_AnaSel->addTab(resu,st_id);
 	 lay_fusion->addWidget(og_AnaSel,1,1);
@@ -217,7 +220,6 @@ void BTirFdj::BSlot_Filter_Fdj(const Bp::E_Ana ana, const B2LstSel * sel)
  else {
   msg =  lst_tirages + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent
   updateTbv(box_title,msg);
-  //lay_fusion->setColumnStretch(0, 5);
  }
 }
 
@@ -228,7 +230,7 @@ void BTirFdj::BSlot_Result_Fdj(const int index)
  cur_ana = index;
 
  /// se Mettre sur l'onglet J
- QString ref = lab_ong;///"R-%1";
+ QString ref = lab_ong;
  ref = ref.arg(QString::number(index).rightJustified(2,'0'));
  QList<QTabWidget *> child_1 = from->findChildren<QTabWidget*>(ref);
  /// idem ligne precedente : QTabWidget * child_3 = from->findChild<QTabWidget *>(ref);

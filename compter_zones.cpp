@@ -410,6 +410,10 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
   str_jrs = db_jours;
  }
 
+ if(pGame->eTirType == eTirFdj){
+  str_jrs = db_jours;
+ }
+
  st_sql= "with tbResultat as (select cast(row_number() over ()as int) as id,"
           "cast ("+key
           +" as int) as R,"+

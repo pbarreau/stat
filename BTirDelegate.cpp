@@ -39,7 +39,7 @@ void BTirDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
 	}
 
 	painter->fillRect(maModif.rect, u[val]);
-	painter->drawText(maModif.rect,Qt::AlignCenter,maModif.text);
+	painter->drawText(maModif.rect,Qt::AlignCenter,maModif.text.rightJustified(2,'0'));
 
 	/// Tracer une ligne si checked
 	int col_chk = end_zn_0;
@@ -77,7 +77,7 @@ void BTirDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
    /// mettre le texte en rouge
    painter->save();
    painter->setPen(Qt::red);
-   painter->drawText(maModif.rect,Qt::AlignCenter,maModif.text);
+   painter->drawText(maModif.rect,Qt::AlignCenter,maModif.text.rightJustified(2,'0'));
    painter->restore();
    return;
   }

@@ -246,6 +246,7 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
 
  pGame->db_ref->fdj = tbName;
  pGame->db_ref->src = tbName;
+ pGame->eTirType = eTirFdj;
 
 
  QString cnx = fdj_db.connectionName();

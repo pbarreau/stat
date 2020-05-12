@@ -52,9 +52,7 @@ QTabWidget * og_AnaSel;
 BGTbView *tir_tbv;
 QSqlQueryModel * sqm_resu;
 QList<QWidget **> *resu_usr;
-
-
-
+QString lst_tirages;
 
 };
 

@@ -278,8 +278,8 @@ QWidget *BTirAna::setFilterBar()
  Bp::Btn lst_btn[]=
   {
    {"flt_apply", "Apply filters", "BSlot_ActionButton"},
-   {"flt_clear", "Clear filters", "BSlot_ActionButton"},
-   {"run_32px", "Check next day", "BSlot_ActionButton"}
+   {"flt_clear", "Clear filters", "BSlot_ActionButton"}///,
+   ///{"run_32px", "Check next day", "BSlot_ActionButton"}
   };
  int nb_btn = sizeof(lst_btn)/sizeof(Bp::Btn);
 

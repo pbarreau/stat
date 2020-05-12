@@ -26,6 +26,7 @@ BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
  }
 
  game_lab = pGame->db_ref->src;
+ lst_tirages = "";
  id_TirSrc = cnt_tirSrc;
  id_AnaSel = 0;
  og_AnaSel = nullptr; /// og: Onglet
@@ -381,12 +382,12 @@ BTirAna * BTirages::doLittleAna(const stGameConf *pGame, QString msg)
  BTirAna *uneAnalyse = nullptr;
 
  stGameConf *flt_game = new stGameConf;
- flt_game->znCount = pGame->znCount;
- flt_game->eTirType = eTirUsr; /// A supprimer ?
 
  /// Partie commune
  flt_game->limites = pGame->limites;
  flt_game->names = pGame->names;
+ flt_game->znCount = pGame->znCount;
+ flt_game->eTirType = pGame->eTirType;
  flt_game->eFdjType = pGame->eFdjType;
 
  /// sera reconstruit par la classe Analyse
@@ -398,6 +399,7 @@ BTirAna * BTirages::doLittleAna(const stGameConf *pGame, QString msg)
  flt_game->db_ref->fdj = pGame->db_ref->fdj;
  flt_game->db_ref->cnx = pGame->db_ref->cnx;
  flt_game->db_ref->dad = pGame->db_ref->src;
+ flt_game->db_ref->jrs = pGame->db_ref->jrs;
 
  flt_game->db_ref->ihm = pGame->db_ref->ihm;
 
@@ -446,22 +448,20 @@ void BTirages::updateTbv(QString box_title, QString msg)
  }
  int nb_rows = sqm_resu->rowCount();
  BGTbView *qtv_tmp = tir_tbv;
- QString st_title = box_title+"Nb tirages : "+QString::number(nb_rows);
+ int rows_proxy = qtv_tmp->model()->rowCount();
+ QString st_title = box_title+
+                    "Nb tirages : "+QString::number(nb_rows)+
+                    " sur " + QString::number(rows_proxy);
  qtv_tmp->setTitle(st_title);
- qtv_tmp->showMaximized();
 }
 
 void BTirages::BSlot_closeTab(int index)
 {
+ return;
  og_AnaSel->removeTab(index);
- /*
- if(tab_resu->count() == 0){
-  //// CODE RAPIDE...
-  /// LE PREMIER peut etre reutilise ?
-  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-  BTbView::addSpacer(gme_id, ecart);
+ if(og_AnaSel->count() == 0){
+  QString box_title = "";
+  updateTbv(box_title, lst_tirages);
  }
-*/
 }
 

@@ -176,6 +176,7 @@ stGameConf *BTirGen::gameUsrNew(const stGameConf *pGame, QString gameId)
  tmp->db_ref->cnx = pGame->db_ref->cnx;
  tmp->eFdjType = pGame->eFdjType;
  tmp->db_ref->ihm = pGame->db_ref->ihm;
+ tmp->eTirType = eTirGen;
 
  /// sera reconstruit par la classe Analyse
  /// mappage des fonctions utilisateurs speciales
