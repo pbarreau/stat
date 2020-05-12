@@ -60,7 +60,6 @@ class BTirGen : public BTirages
  private:
  stGameConf *gameDef;
  QSqlDatabase db_gme;
- BTirAna *cur_ana;
  QWidget *resu;
 
  private:

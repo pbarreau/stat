@@ -13,7 +13,7 @@ class BTirFdj : public BTirages
  Q_OBJECT
 public:
 explicit BTirFdj(const stGameConf *pGame, etTir gme_tir = eTirFdj, QWidget *parent = nullptr);
-void addAna(BTirAna* ana);
+QGridLayout *addAna(BTirAna* ana);
 
 signals:
 

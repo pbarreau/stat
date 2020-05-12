@@ -869,7 +869,7 @@ void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
 
 void BTirGen::setAna(BTirAna * in_ana)
 {
- cur_ana = in_ana;
+ ana_TirLst = in_ana;
 }
 
 void BTirGen::deletePreviousResults(const stGameConf *pGame)

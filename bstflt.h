@@ -28,6 +28,11 @@ namespace Bp {
  };
  Q_DECLARE_FLAGS(F_Flts, F_Flt)
 
+ enum E_Clk{
+  clkStop,
+  clkStart
+ };
+
  enum E_Sta{
   noSta,
   Ok_Query,

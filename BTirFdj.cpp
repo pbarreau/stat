@@ -29,38 +29,20 @@ BTirFdj::BTirFdj(const stGameConf *pGame, etTir gme_tir, QWidget *parent): BTira
  this->setLayout(lay_return);
 }
 
-void BTirFdj::addAna(BTirAna* ana)
+QGridLayout * BTirFdj::addAna(BTirAna* ana)
 {
- QWidget *wdg_visual = new QWidget;
- QWidget *wdg_fusion = new QWidget;
  lay_fusion = new QGridLayout;
  QVBoxLayout * vly = new QVBoxLayout;
  vly->addWidget(this);
 
- QGridLayout *lay_visual = new QGridLayout;
- QTabWidget *tbw_visual = new QTabWidget;
 
 
  lay_fusion->addLayout(vly,0,0,2,1);
- lay_fusion->addWidget(ana,0,1,1,1,Qt::AlignTop|Qt::AlignLeft);
+ lay_fusion->addWidget(ana,0,1,1,2);///,Qt::AlignTop|Qt::AlignLeft
  lay_fusion->setColumnStretch(0, 5); /// Exemple basic layouts
  lay_fusion->setColumnStretch(1, 20);
 
- /*
- QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
- lay_fdj->addItem(ecart,1,1);
- lay_fdj->setRowStretch(0,10);
- lay_fdj->setRowStretch(1,10);
- lay_fdj->setColumnStretch(1, 10); /// Exemple basic layouts
- lay_fdj->setColumnStretch(2, 20);
- */
-
- wdg_fusion->setLayout(lay_fusion);
- tbw_visual->addTab(wdg_fusion,"Base");
- lay_visual->addWidget(tbw_visual);
-
- wdg_visual->setLayout(lay_visual);
- wdg_visual->show();
+ return lay_fusion;
 }
 
 void BTirFdj::BSlot_Clicked_Fdj(const QModelIndex &index)

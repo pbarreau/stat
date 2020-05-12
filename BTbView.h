@@ -58,8 +58,7 @@ class BTbView : public BGTbView, BFlt
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);
  void construireMenu(void);
  void showUsrGame(QWidget *une_selection, QString name);
- ///void mouseMoveEvent( QMouseEvent * inEvent );
- //void mousePressEvent(QMouseEvent *event);
+ void saveTimeIntTable(Bp::E_Clk ref, QString tb_name, QString humanTime);
 
  public:
  BFlt *lbflt;
@@ -71,7 +70,7 @@ class BTbView : public BGTbView, BFlt
  static QList<QGridLayout *> *gdl_list;
 
  QSqlDatabase db_tbv;
- const stGameConf *cur_game;
+ const stGameConf *gme_current;
  //BGpbMenu *square;
  QLayout *up;
  QMenu *menu;

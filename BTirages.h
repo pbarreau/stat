@@ -56,9 +56,10 @@ int id_AnaOnglet;
 QTabWidget * og_AnaSel;
 BGTbView *tir_tbv;
 QSqlQueryModel * sqm_resu;
-QList<QWidget **> *resu_usr;
 QString lst_tirages;
 QGridLayout *lay_fusion;
+BTirAna *ana_TirLst;
+QList<QWidget **> *ana_TirFlt;
 
 };
 

@@ -345,9 +345,9 @@ QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, QWidget **
  tab_Top->setObjectName(st_obj);
 
  QString ongNames[]={"J","J+1"};
- BTirAna * (BTirGen::*ptrFunc[])(const stGameConf *pGame, QString msg)=
+ BTirAna * (BTirages::*ptrFunc[])(const stGameConf *pGame, QString msg)=
   {
-   &BTirGen::doLittleAna
+   &BTirages::doLittleAna
   };
  int nb_func = sizeof(ptrFunc)/sizeof(BTirAna *); //mauvais BUG
 
@@ -480,7 +480,7 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
   int nb_sel = sel->size();
 
 	if(og_AnaSel==nullptr){
-	 resu_usr = new QList<QWidget **>;
+	 ana_TirFlt = new QList<QWidget **>;
 	 og_AnaSel = new QTabWidget;
 	 QString st_obj = "pere_"+ QString::number(id_AnaSel).rightJustified(2,'0');
 	 og_AnaSel->setObjectName(st_obj);
@@ -516,7 +516,7 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
 	resu = ana_fltSelection(st_id, this, J);
 	if(resu!=nullptr){
 	 counter++;
-	 resu_usr->append(J);
+	 ana_TirFlt->append(J);
 	 int tab_index = og_AnaSel->addTab(resu,st_id);
 	 lay_fusion->addWidget(og_AnaSel,1,1);
 	 og_AnaSel->setCurrentIndex(tab_index);
@@ -538,7 +538,7 @@ void BTirages::BSlot_Tir_flt(int index)
   return;
  }
  QTabWidget * from = qobject_cast<QTabWidget *>(sender());
- QWidget ** tmp = resu_usr->at(id_AnaOnglet);
+ QWidget ** tmp = ana_TirFlt->at(id_AnaOnglet);
  BTirAna * tmp_ana = qobject_cast<BTirAna *>(tmp[index]);
  QString msg = tmp_ana->getSql();
 

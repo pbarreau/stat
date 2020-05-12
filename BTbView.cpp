@@ -29,7 +29,7 @@ QList<QGridLayout *> *BTbView::gdl_list = nullptr;
 QTabWidget * BTbView::tbw_calculs = nullptr;
 
 BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ)
-    :BGTbView(nullptr),BFlt(pGame, in_zn, in_typ), cur_game(pGame)
+    :BGTbView(nullptr),BFlt(pGame, in_zn, in_typ), gme_current(pGame)
 {
  db_tbv = db_flt;
  lbflt = cur_bflt;
@@ -325,7 +325,7 @@ bool BTbView::isOnUsrGame(void)
 {
  bool b_retVal;
 
- if(cur_game->db_ref->src.compare("B_fdj")==0){
+ if(gme_current->db_ref->src.compare("B_fdj")==0){
   b_retVal = false;
  }
  else {
@@ -342,61 +342,68 @@ void  BTbView::BSlot_MakeCustomGame()
  /// Temps de calcul
  QTime r;
  QTime t;
- QString t_human_1 = "";
- QString t_human_2 = "";
- QString name_ouput = "";
+ QString t_human = "";
+ QString gme_tbl = "";
  QItemSelectionModel *mysel = this->selectionModel();
  QModelIndexList lst_cells = mysel->selectedIndexes();
  int size = lst_cells.size();
 
  r.setHMS(0,0,0,0);
  t.start();
- ///stGameConf *tmp_game = BTirGen::gameUsrNew(cur_game);
- BTirGen *calcul = new BTirGen(cur_game);
+ BTirGen *lst_tirages = new BTirGen(gme_current);
  r = r.addMSecs(t.elapsed());
- t_human_1 = r.toString("hh:mm:ss:zzz");
+ t_human = r.toString("hh:mm:ss:zzz");
 
- if(calcul->getGameConf() != nullptr){
-  QSqlQuery query(db_tbv);
-  bool b_retVal = true;
-  name_ouput = calcul->getGameLabel();
-  QString msg = "update E_lst set t1='"+t_human_1+"' where(name='"+name_ouput+"')";
-  b_retVal = query.exec(msg);
+ stGameConf * tmp = lst_tirages->getGameConf();
+ if(tmp != nullptr){
+  gme_tbl = lst_tirages->getGameLabel();
+
+  saveTimeIntTable(Bp::clkStart,gme_tbl,t_human);
 
 	r.setHMS(0,0,0,0);
 	t.restart();
-	stGameConf * tmp = calcul->getGameConf();
-	BTirAna *uneAnalyse = new BTirAna(tmp);
+	BTirAna *ana_tirages = new BTirAna(tmp);
 	r = r.addMSecs(t.elapsed());
-	t_human_2 = r.toString("hh:mm:ss:zzz");
-	msg = "update E_lst set t2='"+t_human_2+"' where(name='"+name_ouput+"')";
-	b_retVal = query.exec(msg);
+	t_human = r.toString("hh:mm:ss:zzz");
+	saveTimeIntTable(Bp::clkStop,gme_tbl,t_human);
 
-	/*
-	msg = " Generation du Cnp en : "+t_human_1+QString (" (hh:mm:ss:ms)");
-	msg = msg + "\n Analyse en : " +t_human_2+QString (" (hh:mm:ss:ms)");
-
-	QMessageBox::information(nullptr,"User Game",msg,QMessageBox::Ok);
-	*/
-
-	if(uneAnalyse->self() == nullptr){
+	if(ana_tirages->self() == nullptr){
 	 QString msg = "Erreur de l'analyse des tirages :" + tmp->db_ref->src;
 	 QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
-	 delete uneAnalyse;
+	 delete ana_tirages;
 	}
 	else {
-	 calcul->setAna(uneAnalyse);
+	 lst_tirages->setAna(ana_tirages);
 
-	 connect(uneAnalyse, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
-					 calcul, SLOT(BSlot_FilterRequest(const Bp::E_Ana , const B2LstSel *)));
-	 connect(calcul,SIGNAL(BSig_AnaLgn(int,int)), uneAnalyse,SLOT(BSlot_AnaLgn(int,int)));
-	 agencerResultats(calcul,uneAnalyse);
+	 connect(lst_tirages,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
+	 connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
+					 lst_tirages, SLOT(BSlot_FilterRequest(const Bp::E_Ana , const B2LstSel *)));
+	 agencerResultats(lst_tirages,ana_tirages);
 	}
  }
  else {
-  delete calcul;
+  delete lst_tirages;
  }
 }
+
+void BTbView::saveTimeIntTable(Bp::E_Clk ref, QString tb_name, QString humanTime)
+{
+ QSqlQuery query(db_tbv);
+ bool b_retVal = true;
+ QString time_col = "";
+
+ if(ref==Bp::clkStart){
+  time_col = "t1";
+ }
+ else {
+  time_col = "t2";
+ }
+
+ QString msg = "update E_lst set "+time_col+"='"+humanTime+"' where(name='"+tb_name+"')";
+
+ b_retVal = query.exec(msg);
+}
+
 
 void BTbView::agencerResultats(BTirages *lst, BTirAna* ana)
 {
@@ -499,7 +506,7 @@ void BTbView::BSlot_TrackSelection(const QItemSelection &cur, const QItemSelecti
  if((inf_flt->typ == eCountElm) && (inf_flt->zne == 0))
  {
   bool activate = false;
-  if(total >= cur_game->limites[0].win){
+  if(total >= gme_current->limites[0].win){
    /// Activer le bouton creer liste !!!
    activate = true;
   }
