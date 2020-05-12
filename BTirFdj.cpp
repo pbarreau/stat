@@ -223,8 +223,9 @@ void BTirFdj::BSlot_Result_Fdj(const int index)
  /// idem ligne precedente : QTabWidget * child_3 = from->findChild<QTabWidget *>(ref);
 
  if(child_1.size()){
-  child_1.at(0)->setCurrentIndex(0);
-  child_1.at(0)->tabBarClicked(0);
+  int cur_index = child_1.at(0)->currentIndex();
+  //child_1.at(0)->setCurrentIndex(0);
+  child_1.at(0)->tabBarClicked(cur_index);
  }
 }
 
