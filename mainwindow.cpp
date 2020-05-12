@@ -87,24 +87,7 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
   delete ana_tirages;
  }
  else{
-  QString name = lst_tirages->getGameLabel();
-  QWidget *wdg_visual = new QWidget;
-  QWidget *wdg_fusion = new QWidget;
-  QGridLayout *lay_visual = new QGridLayout;
-  QTabWidget *tbw_visual = new QTabWidget;
-
-	QGridLayout *lay_fusion = lst_tirages->addAna(ana_tirages);
-	wdg_fusion->setLayout(lay_fusion);
-	tbw_visual->addTab(wdg_fusion,name);
-	lay_visual->addWidget(tbw_visual);
-
-	wdg_visual->setLayout(lay_visual);
-	wdg_visual->show();
-
-  connect(lst_tirages,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
-  connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
-          lst_tirages, SLOT(BSlot_Filter_Tir(const Bp::E_Ana , const B2LstSel *)));
-
+  lst_tirages->showFdj(ana_tirages);
  }
 
  if(use_odb==true){

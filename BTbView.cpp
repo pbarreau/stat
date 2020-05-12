@@ -348,9 +348,15 @@ void  BTbView::BSlot_MakeCustomGame()
  QModelIndexList lst_cells = mysel->selectedIndexes();
  int size = lst_cells.size();
 
+ /// On cree une config adapte a notre custom
+ stGameConf *tmp_usr = new stGameConf;
+ *tmp_usr = *gme_current;
+ tmp_usr->znCount = 1;
+ tmp_usr->eTirType= eTirGen;
+
  r.setHMS(0,0,0,0);
  t.start();
- BTirGen *lst_tirages = new BTirGen(gme_current);
+ BTirGen *lst_tirages = new BTirGen(tmp_usr);
  r = r.addMSecs(t.elapsed());
  t_human = r.toString("hh:mm:ss:zzz");
 
@@ -373,12 +379,15 @@ void  BTbView::BSlot_MakeCustomGame()
 	 delete ana_tirages;
 	}
 	else {
+	 lst_tirages->showGen(ana_tirages);
+	 /*
 	 lst_tirages->setAna(ana_tirages);
 
 	 connect(lst_tirages,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
 	 connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
 					 lst_tirages, SLOT(BSlot_FilterRequest(const Bp::E_Ana , const B2LstSel *)));
 	 agencerResultats(lst_tirages,ana_tirages);
+	 */
 	}
  }
  else {

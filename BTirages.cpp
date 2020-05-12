@@ -12,11 +12,17 @@
 
 int BTirages::cnt_tirSrc = 1; /// Compteur des sources de tirages
 static QString  lab_ong = "R_%1";
+QList<QGridLayout *> *BTirages::gdl_list = nullptr;
+
+QTabWidget * BTirages::tbw_calculs = nullptr;
+QGridLayout * BTirages::gdl_all = nullptr;
+QWidget * BTirages::wdg_reponses = nullptr;
 
 BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
     : QWidget(parent),gme_cnf(pGame),eTir(gme_tir)
 {
  QString cnx=pGame->db_ref->cnx;
+ //gme_cnf->eTirType = gme_tir;
 
  // Etablir connexion a la base
  db_tir = QSqlDatabase::database(cnx);
@@ -32,6 +38,69 @@ BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
  id_AnaSel = 0;
  og_AnaSel = nullptr; /// og: Onglet
 
+}
+
+void BTirages::showFdj(BTirAna *ana_tirages)
+{
+ QString name = this->getGameLabel();
+ QWidget *wdg_visual = new QWidget;
+ QWidget *wdg_fusion = new QWidget;
+ QGridLayout *lay_visual = new QGridLayout;
+ QTabWidget *tbw_visual = new QTabWidget;
+
+ QGridLayout *lay_fusion = this->addAna(ana_tirages);
+ wdg_fusion->setLayout(lay_fusion);
+ tbw_visual->addTab(wdg_fusion,"Etude");
+ lay_visual->addWidget(tbw_visual);
+
+ wdg_visual->setLayout(lay_visual);
+ wdg_visual->setWindowTitle("Tirages FDJ : ");
+ wdg_visual->show();
+
+ connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
+ connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
+         this, SLOT(BSlot_Filter_Tir(const Bp::E_Ana , const B2LstSel *)));
+}
+
+void BTirages::showGen(BTirAna *ana_tirages)
+{
+
+ if(tbw_calculs == nullptr){
+  tbw_calculs = new QTabWidget;
+  gdl_all = new QGridLayout;
+  wdg_reponses = new QWidget;
+  gdl_list = new QList<QGridLayout *>;
+ }
+
+ QGridLayout *lay_fusion = this->addAna(ana_tirages);
+ QWidget *wdg_fusion = new QWidget;
+ wdg_fusion->setLayout(lay_fusion);
+
+ QString name = this->getGameLabel();
+ int that_index = tbw_calculs->addTab(wdg_fusion, name);
+ tbw_calculs->setCurrentIndex(that_index);
+ gdl_all->addWidget(tbw_calculs);
+ wdg_reponses->setLayout(gdl_all);
+ wdg_reponses->setWindowTitle("Tirages Auto : ");
+ wdg_reponses->show();
+
+ connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
+ connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
+         this, SLOT(BSlot_Filter_Tir(const Bp::E_Ana , const B2LstSel *)));
+}
+
+QGridLayout * BTirages::addAna(BTirAna* ana)
+{
+ lay_fusion = new QGridLayout;
+ QVBoxLayout * vly = new QVBoxLayout;
+ vly->addWidget(this);
+
+ lay_fusion->addLayout(vly,0,0,2,1);
+ lay_fusion->addWidget(ana,0,1,1,2);///,Qt::AlignTop|Qt::AlignLeft
+ lay_fusion->setColumnStretch(0, 5); /// Exemple basic layouts
+ lay_fusion->setColumnStretch(1, 20);
+
+ return lay_fusion;
 }
 
 QString BTirages::getGameLabel(void)
@@ -441,12 +510,24 @@ void BTirages::updateTbv(QString box_title, QString msg)
  qDebug()<< "\n\nMsg :\n" <<msg;
 #endif
 
- sqm_resu->setQuery(msg,db_tir);
- while (sqm_resu->canFetchMore())
- {
-  sqm_resu->fetchMore();
+ QSqlQueryModel * cible = sqm_resu;
+
+ /*
+ if(gme_cnf->eTirType == eTirGen){
+  cible = qobject_cast<BSqlQmTirages_3 *>(sqm_resu);
  }
- int nb_rows = sqm_resu->rowCount();
+ else {
+  cible = sqm_resu;
+ }
+*/
+
+ cible->setQuery(msg,db_tir);
+ while (cible->canFetchMore())
+ {
+  cible->fetchMore();
+ }
+ int nb_rows = cible->rowCount();
+
  BGTbView *qtv_tmp = tir_tbv;
  int rows_proxy = qtv_tmp->model()->rowCount();
  QString st_title = box_title+

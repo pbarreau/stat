@@ -696,7 +696,7 @@ void BTirGen::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::Chec
 
  lb_Big->setText(msg);
 
- QTableView *qtv_tmp = sqm_resu->getTbv();
+ QTableView *qtv_tmp = qobject_cast<BSqlQmTirages_3 *>(sqm_resu)->getTbv();
  BFpm_3 * fpm_tmp = qobject_cast<BFpm_3 *> (qtv_tmp->model());
  int nb_lgn_ftr = fpm_tmp->rowCount();
  int nb_lgn_rel = sqm_resu->rowCount();
@@ -785,6 +785,7 @@ void BTirGen::BSlot_Clicked_Gen(const QModelIndex &index)
  lb_Big->setText(msg);
 }
 
+#if 0
 void BTirGen::BSlot_ShowTotal(const QString& lstBoules)
 {
  //Q_UNUSED(lstBoules);
@@ -807,8 +808,9 @@ void BTirGen::BSlot_ShowTotal(const QString& lstBoules)
  QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
  gpb_Tirages->setTitle(st_total);
 }
+#endif
 
-
+/*
 void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
 {
  QString lst_tirages = getTiragesList(gameDef, game_lab);
@@ -836,7 +838,7 @@ void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
 
 	 /// mettre la liste des tirages a jour
 	 msg_1 = lst_tirages + msg;
-	 updateTbv(msg_1);
+	 updateTbv("",msg_1);
 
 	 /// faire une analyse pour J
 	 J[0] = doLittleAna(gameDef,msg_1);
@@ -866,11 +868,14 @@ void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
   ; /// supprimer les reponses precedentes si elles existent
  }
 }
+*/
 
+/*
 void BTirGen::setAna(BTirAna * in_ana)
 {
  ana_TirLst = in_ana;
 }
+*/
 
 void BTirGen::deletePreviousResults(const stGameConf *pGame)
 {
@@ -1167,6 +1172,7 @@ QString BTirGen::makeSqlForNextLine(const B2LstSel * sel)
 }
 */
 
+/*
 void BTirGen::updateTbv(QString msg)
 {
 #ifndef QT_NO_DEBUG ///<< "\033[2J" << "\033[3J"<<
@@ -1181,18 +1187,6 @@ void BTirGen::updateTbv(QString msg)
  }
  QTableView *qtv_tmp = sqm_resu->getTbv();
 
-/*
- qtv_tmp->resizeColumnsToContents();
- int count=qtv_tmp->horizontalHeader()->count();
- int l = 0;
- l = qtv_tmp->verticalScrollBar()->width();
- for (int i = 0; i < count; ++i) {
-  if(!qtv_tmp->horizontalHeader()->isSectionHidden(i))
-   l+=qtv_tmp->horizontalHeader()->sectionSize(i);
- }
- qtv_tmp->setFixedWidth(l);
- qtv_tmp->hideColumn(0);
-*/
 
  /// Determination nb ligne
  int nb_lgn_rel = sqm_resu->rowCount();
@@ -1201,6 +1195,7 @@ void BTirGen::updateTbv(QString msg)
  QString st_total = "Total : " + QString::number(nb_lgn_rel)+" sur " + QString::number(nb_lgn_rel);
  gpb_Tirages->setTitle(st_total);
 }
+*/
 
 /*
 QWidget *BTirGen::ana_fltSelection(QWidget **J)

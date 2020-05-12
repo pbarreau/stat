@@ -19,6 +19,8 @@ class BTirages : public QWidget
 public:
 explicit BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent=nullptr);
 QString getGameLabel(void);
+void showFdj(BTirAna *ana_tirages);
+void showGen(BTirAna *ana_tirages);
 
 protected:
 QString getTiragesList(const stGameConf *pGame, QString tbl_src);
@@ -33,6 +35,9 @@ QString elmSel_2(const QModelIndexList &indexes, int zn);
 BTirAna *doLittleAna(const stGameConf *pGame, QString msg);
 QWidget *ana_fltSelection(QString st_obj, BTirages *parent, QWidget **J);
 void updateTbv(QString box_title, QString msg);
+
+private:
+QGridLayout *addAna(BTirAna* ana);
 
 protected:
 signals:
@@ -60,6 +65,12 @@ QString lst_tirages;
 QGridLayout *lay_fusion;
 BTirAna *ana_TirLst;
 QList<QWidget **> *ana_TirFlt;
+
+private:
+static QTabWidget * tbw_calculs;
+static QWidget * wdg_reponses;
+static QGridLayout *gdl_all;
+static QList<QGridLayout *> *gdl_list;
 
 };
 

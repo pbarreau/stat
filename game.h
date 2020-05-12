@@ -62,6 +62,28 @@ typedef struct _stParam_1{
 }stParam_1;
 
 /// Definition d'un jeu
+#if 1
+class stGameConf{
+ public:
+ stGameConf();
+ stGameConf* operator=(stGameConf * a);
+
+ public:
+ int id;
+ bool bUseMadeBdd;
+ etFdj eFdjType; /// type du jeu
+ etTir eTirType; /// origine
+ int znCount; /// nombre de zones a regarder
+ stParam_1 *limites; /// bornes sur la zone
+ stParam_2 *names; /// nom de la zone
+ stParam_3 *db_ref;
+ QStringList** slFlt;
+
+ private:
+ static int gmeConf_counter;
+
+};
+#else
 typedef struct _stGameConf{
   int id;
   bool bUseMadeBdd;
@@ -73,6 +95,7 @@ typedef struct _stGameConf{
   stParam_3 *db_ref;
   QStringList** slFlt;
 }stGameConf;
+#endif
 
 extern const stParam_1 loto_prm1_zn[];
 extern const stParam_1 euro_prm1_zn[];
