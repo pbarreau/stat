@@ -23,6 +23,8 @@ class BTirAna : public QWidget
  QWidget *getVisual();
  static int getCounter(void);
  static QString getFilteringHeaders(const stGameConf *pGame, int zn, QString msg_template="t2.%1", QString separator=",");
+ QString getTor(); ///get Table Of Result
+ QString getSql();
 
  private:
  bool isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QString cnx);
@@ -66,6 +68,8 @@ class BTirAna : public QWidget
  private:
  static int total_analyses;
  BTirAna *addr;
+ QString src_sql;
+ QString src_tbl;
  QSqlDatabase db_1;
  QMap<QString,ptrFnUsr> map_UsrFn;
  QVector<BCount *> mesComptages;

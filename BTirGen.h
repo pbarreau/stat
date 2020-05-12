@@ -66,10 +66,10 @@ class BTirGen : public BTirages
  void BSlot_ShowBtnId(int btn_id);
  void slot_ShowChk(void);
  void slot_ShowNhk(void);
- void BSlot_closeTab(int index);
+ //void BSlot_closeTab(int index);
 
  private:
- static int gme_counter;
+ //static int gme_counter;
  //int gme_id;
  //int sub_id;
  stGameConf *gameDef;

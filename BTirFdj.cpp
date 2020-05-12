@@ -10,13 +10,14 @@
 #include "BTirDelegate.h"
 #include "BCount.h"
 
+static QString  lab_ong = "R_%1";
+
 BTirFdj::BTirFdj(const stGameConf *pGame, etTir gme_tir, QWidget *parent): BTirages(pGame, gme_tir, parent)
 {
  db_fdj = db_tir;
 
  QVBoxLayout *lay_return = new QVBoxLayout;
  QWidget *tbv_tmp1 = tbForBaseRef(pGame);
-
 
  //BTbar1 *bar =new  BTbar1(pGame, tbv_tmp1);
 
@@ -32,7 +33,7 @@ void BTirFdj::addAna(BTirAna* ana)
 {
  QWidget *wdg_visual = new QWidget;
  QWidget *wdg_fusion = new QWidget;
- QGridLayout *lay_fusion = new QGridLayout;
+ lay_fusion = new QGridLayout;
  QVBoxLayout * vly = new QVBoxLayout;
  vly->addWidget(this);
 
@@ -40,7 +41,7 @@ void BTirFdj::addAna(BTirAna* ana)
  QTabWidget *tbw_visual = new QTabWidget;
 
 
- lay_fusion->addLayout(vly,0,0);
+ lay_fusion->addLayout(vly,0,0,2,1);
  lay_fusion->addWidget(ana,0,1,1,1,Qt::AlignTop|Qt::AlignLeft);
  lay_fusion->setColumnStretch(0, 5); /// Exemple basic layouts
  lay_fusion->setColumnStretch(1, 20);
@@ -158,44 +159,96 @@ void BTirFdj::BSlot_Filter_Fdj(const Bp::E_Ana ana, const B2LstSel * sel)
  QString clause = "";
  QString msg_1  = "";
  QString msg_2  = "";
+ QString flt_tirages = "";
+ QString box_title ="";
 
  if((ana != Bp::anaRaz) && (sel !=nullptr)){
   int nb_sel = sel->size();
 
-	if(tab_resu==nullptr){
-	 tab_resu = new QTabWidget;
-	 tab_resu->setTabsClosable(true);
-	 //connect(tab_resu,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
+	if(og_AnaSel==nullptr){
+	 resu_usr = new QList<QWidget **>;
+	 og_AnaSel = new QTabWidget;
+	 QString st_obj = "pere_"+ QString::number(id_AnaSel).rightJustified(2,'0');
+	 og_AnaSel->setObjectName(st_obj);
+	 cur_ana = 0;
+	 og_AnaSel->setTabsClosable(true);
+	 connect(og_AnaSel,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
+	 connect(og_AnaSel,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Result_Fdj(int)));
 	}
 
-  QWidget **J = new QWidget *[2];
-  QWidget * resu = nullptr;
+	QWidget **J = new QWidget *[2];
+	QWidget * resu = nullptr;
 
-	 /// Creer la requete de filtrage
-	 clause = makeSqlFromSelection(sel, &tbl_lst);
-	 msg = msg + tbl_lst + " where("+clause+")";
+	/// Creer la requete de filtrage
+	clause = makeSqlFromSelection(sel, &tbl_lst);
+	msg = msg + tbl_lst + " where("+clause+")";
 
-	 /// mettre la liste des tirages a jour
-	 msg_1 = lst_tirages + msg;
-	 updateTbv(msg_1);
+	/// mettre la liste des tirages a jour
+	flt_tirages = lst_tirages + msg;
 
-	 /// faire une analyse pour J
-	 J[0] = doLittleAna(gme_cnf,msg_1);
+	/// faire une analyse pour J
+	J[0] = doLittleAna(gme_cnf,flt_tirages);
 
-	 /// recherche J+1
-	 msg_1 = ", tb2 as ("+ msg +")";
-	 msg_2 = lst_tirages + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
-	 J[1] = doLittleAna(gme_cnf,msg_2);
+	/// recherche J+1
+	msg_1 = ", tb2 as ("+ msg +")";
+	msg_2 = lst_tirages + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
+	J[1] = doLittleAna(gme_cnf,msg_2);
 
-	 resu = ana_fltSelection(J);
-	 if(resu!=nullptr){
-		QString st_id = "R-%1";
-		st_id = st_id.arg(QString::number(sub_id-2).rightJustified(2,'0'));
-		tab_resu->addTab(resu,st_id);
-		BTbView::addSubFlt(gme_id, tab_resu);
-	 }
+	/// Nommage de l'onglet
+	int static counter = 0;
+	QString st_id = lab_ong;///"R-%1";
+	st_id = st_id.arg(QString::number(counter).rightJustified(2,'0'));
+
+	resu = ana_fltSelection(st_id, this, J);
+	if(resu!=nullptr){
+	 counter++;
+	 //QString box_title = st_id+" (J). ";
+	 //updateTbv(box_title,flt_tirages);
+	 resu_usr->append(J);
+	 int tab_index = og_AnaSel->addTab(resu,st_id);
+	 lay_fusion->addWidget(og_AnaSel,1,1);
+	 og_AnaSel->setCurrentIndex(tab_index);
+	 og_AnaSel->tabBarClicked(tab_index);
 	}
- else {
-  ; /// supprimer les reponses precedentes si elles existent
+	else {
+	 counter--;
+	}
  }
+ else {
+  msg =  lst_tirages + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent
+  updateTbv(box_title,msg);
+  //lay_fusion->setColumnStretch(0, 5);
+ }
+}
+
+void BTirFdj::BSlot_Result_Fdj(const int index)
+{
+ QTabWidget * from = qobject_cast<QTabWidget *>(sender());
+
+ cur_ana = index;
+
+ /// se Mettre sur l'onglet J
+ QString ref = lab_ong;///"R-%1";
+ ref = ref.arg(QString::number(index).rightJustified(2,'0'));
+ QList<QTabWidget *> child_1 = from->findChildren<QTabWidget*>(ref);
+ /// idem ligne precedente : QTabWidget * child_3 = from->findChild<QTabWidget *>(ref);
+
+ if(child_1.size()){
+  child_1.at(0)->setCurrentIndex(0);
+  child_1.at(0)->tabBarClicked(0);
+ }
+}
+
+void BTirFdj::BSlot_Fdj_flt(int index)
+{
+ if((index<0)){
+  return;
+ }
+ QTabWidget * from = qobject_cast<QTabWidget *>(sender());
+ QWidget ** tmp = resu_usr->at(cur_ana);
+ BTirAna * tmp_ana = qobject_cast<BTirAna *>(tmp[index]);
+ QString msg = tmp_ana->getSql();
+
+ QString box_title = og_AnaSel->tabText(cur_ana)+" ("+from->tabText(index)+"). ";
+ updateTbv(box_title, msg);
 }

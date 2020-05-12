@@ -29,7 +29,6 @@
 #include "BFpm_3.h"
 #include "BTirDelegate.h"
 
-int BTirGen::gme_counter = 1;
 
 BTirGen::BTirGen(const stGameConf *pGame, etTir gme_tir, QWidget *parent) : BTirages(pGame,gme_tir,parent)
 {
@@ -45,8 +44,6 @@ BTirGen::BTirGen(const stGameConf *pGame, etTir gme_tir, QWidget *parent) : BTir
   return;
  }
 
- gme_id = gme_counter;
-
  /// charger base existante ?
  if((pGame->db_ref->ihm->use_odb == true) &&
       pGame->db_ref->src !="B_fdj" &&
@@ -54,7 +51,7 @@ BTirGen::BTirGen(const stGameConf *pGame, etTir gme_tir, QWidget *parent) : BTir
   game_lab = pGame->db_ref->src;
   gameDef = gameUsrNew(pGame,game_lab);
   mkGameWidget(gameDef);
-  gme_counter++;
+  cnt_tirSrc++;
   return;
  }
 
@@ -62,12 +59,12 @@ BTirGen::BTirGen(const stGameConf *pGame, etTir gme_tir, QWidget *parent) : BTir
  QString game="";
  QString data = "";
  if(isNewUsrGame(pGame,&game, &data)==true){
-  game = "E1_"+QString::number(gme_counter).rightJustified(2,'0');
+  game = "E1_"+QString::number(cnt_tirSrc).rightJustified(2,'0');
   game_lab = game;
   if(createGame(pGame, game, data)==true){
    gameDef = gameUsrNew(pGame,game);
    mkGameWidget(gameDef);
-   gme_counter++;
+   cnt_tirSrc++;
   }
  }
  else {
@@ -821,10 +818,10 @@ void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
    QWidget **J = new QWidget *[2];
    QWidget * resu = nullptr;
 
-   if(tab_resu==nullptr){
-    tab_resu = new QTabWidget;
-    tab_resu->setTabsClosable(true);
-    connect(tab_resu,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
+   if(og_AnaSel==nullptr){
+    og_AnaSel = new QTabWidget;
+    og_AnaSel->setTabsClosable(true);
+    connect(og_AnaSel,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
    }
 
    /// Creer la requete de filtrage
@@ -843,12 +840,19 @@ void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
 	 msg_2 = lst_tirages + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
 	 J[1] = doLittleAna(gameDef,msg_2);
 
-	 resu = ana_fltSelection(J);
+	 /// Nommage de l'onglet
+	 int static counter = 0;
+	 QString st_id = "R-%1";
+	 st_id = st_id.arg(QString::number(counter).rightJustified(2,'0'));
+
+	 resu = ana_fltSelection(st_id, this, J);
 	 if(resu!=nullptr){
-		QString st_id = "R-%1";
-		st_id = st_id.arg(QString::number(sub_id-2).rightJustified(2,'0'));
-		tab_resu->addTab(resu,st_id);
-		BTbView::addSubFlt(gme_id, tab_resu);
+		counter++;
+		og_AnaSel->addTab(resu,st_id);
+		BTbView::addSubFlt(id_TirSrc, og_AnaSel);
+	 }
+	 else {
+		counter--;
 	 }
 	}
  }
@@ -857,19 +861,6 @@ void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
  }
 }
 
-void BTirGen::BSlot_closeTab(int index)
-{
- tab_resu->removeTab(index);
- /*
- if(tab_resu->count() == 0){
-  //// CODE RAPIDE...
-  /// LE PREMIER peut etre reutilise ?
-  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-  BTbView::addSpacer(gme_id, ecart);
- }
-*/
-}
 void BTirGen::setAna(BTirAna * in_ana)
 {
  cur_ana = in_ana;
@@ -1176,7 +1167,7 @@ void BTirGen::updateTbv(QString msg)
  qDebug()<< "\n\nMsg :\n" <<msg;
 #endif
 
- sqm_resu->clear();
+ //sqm_resu->clear();
  sqm_resu->setQuery(msg,db_gme);
  while (sqm_resu->canFetchMore())
  {
@@ -1184,7 +1175,7 @@ void BTirGen::updateTbv(QString msg)
  }
  QTableView *qtv_tmp = sqm_resu->getTbv();
 
-
+/*
  qtv_tmp->resizeColumnsToContents();
  int count=qtv_tmp->horizontalHeader()->count();
  int l = 0;
@@ -1195,6 +1186,7 @@ void BTirGen::updateTbv(QString msg)
  }
  qtv_tmp->setFixedWidth(l);
  qtv_tmp->hideColumn(0);
+*/
 
  /// Determination nb ligne
  int nb_lgn_rel = sqm_resu->rowCount();

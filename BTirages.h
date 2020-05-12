@@ -30,23 +30,28 @@ QString select_grp(const QModelIndexList &indexes, int zn, int tbl_id);
 QString elmSel_1(const QModelIndexList &indexes, int zn);
 QString elmSel_2(const QModelIndexList &indexes, int zn);
 BTirAna *doLittleAna(const stGameConf *pGame, QString msg);
-QWidget *ana_fltSelection(QWidget **J);
-void updateTbv(QString msg);
+QWidget *ana_fltSelection(QString st_obj, BTirages *parent, QWidget **J);
+void updateTbv(QString box_title, QString msg);
 
 protected:
 signals:
 void BSig_AnaLgn(const int &lgn_id, const int &prx_id);
 
+protected slots:
+void BSlot_closeTab(int index);
+
 protected:
+static int cnt_tirSrc;
 QString game_lab;
 QSqlDatabase db_tir;
 const stGameConf *gme_cnf;
 etTir eTir;
-int gme_id;
-int sub_id;
-QTabWidget * tab_resu;
+int id_TirSrc;
+int id_AnaSel;
+QTabWidget * og_AnaSel;
 BGTbView *tir_tbv;
 QSqlQueryModel * sqm_resu;
+QList<QWidget **> *resu_usr;
 
 
 

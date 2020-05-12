@@ -10,6 +10,8 @@
 #include "BTirages.h"
 #include "BCount.h"
 
+int BTirages::cnt_tirSrc = 1; /// Compteur des sources de tirages
+
 BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
     : QWidget(parent),gme_cnf(pGame),eTir(gme_tir)
 {
@@ -23,9 +25,10 @@ BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
   return;
  }
 
- game_lab = "";
- sub_id = 0;
- tab_resu = nullptr;
+ game_lab = pGame->db_ref->src;
+ id_TirSrc = cnt_tirSrc;
+ id_AnaSel = 0;
+ og_AnaSel = nullptr; /// og: Onglet
 
 }
 
@@ -40,7 +43,7 @@ QString BTirages::getTiragesList(const stGameConf *pGame, QString tbl_src)
  int nb_zn = pGame->znCount;
  QString str_cols = "";
  for (int zn=0;zn<nb_zn;zn++) {
-  str_cols = str_cols + BCount::FN1_getFieldsFromZone(pGame,zn,"t1",true);
+  str_cols = str_cols + BCount::FN1_getFieldsFromZone(pGame,zn,"t1");
   if(zn<nb_zn-1){
    str_cols = str_cols + ",";
   }
@@ -179,12 +182,17 @@ QString BTirages::elmSel_1(const QModelIndexList &indexes, int zn)
   }
  }
 
+#ifndef QT_NO_DEBUG
+ qDebug() <<"\n"<< "BTirages::elmSel_1 :\n" <<msg;
+#endif
 
  return msg;
 }
 
 QString BTirages::elmSel_2(const QModelIndexList &indexes, int zn)
 {
+ /// cette calcul le Cnp pour le cas nb selection > nb win de la zone
+
  QString msg = "";
 
  QString key = "t1."+gme_cnf->names[zn].abv+"%1 in(%2)";
@@ -208,6 +216,9 @@ QString BTirages::elmSel_2(const QModelIndexList &indexes, int zn)
   }
  }
 
+#ifndef QT_NO_DEBUG
+ qDebug() <<"\n"<< "BTirages::elmSel_2 :\n" <<msg;
+#endif
 
  return msg;
 }
@@ -325,17 +336,18 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  return msg;
 }
 
-QWidget *BTirages::ana_fltSelection(QWidget **J)
+QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, QWidget **J)
 {
  QWidget *ret = new QWidget;
  QTabWidget *tab_Top = new QTabWidget;
+ tab_Top->setObjectName(st_obj);
 
  QString ongNames[]={"J","J+1"};
  BTirAna * (BTirGen::*ptrFunc[])(const stGameConf *pGame, QString msg)=
   {
    &BTirGen::doLittleAna
   };
- int nb_func = sizeof(ptrFunc)/sizeof(BTirAna *);
+ int nb_func = sizeof(ptrFunc)/sizeof(BTirAna *); //mauvais BUG
 
  for (int i=0;i<nb_func;i++) {
   QWidget *tmp_wdg = J[i];
@@ -347,6 +359,7 @@ QWidget *BTirages::ana_fltSelection(QWidget **J)
  QVBoxLayout *tmp_lay = new QVBoxLayout;
  if(tab_Top->count() !=0){
   tmp_lay->addWidget(tab_Top);
+  connect(tab_Top,SIGNAL(tabBarClicked(int)),parent,SLOT(BSlot_Fdj_flt(int)));
  }
  else {
   delete 	tab_Top;
@@ -388,8 +401,9 @@ BTirAna * BTirages::doLittleAna(const stGameConf *pGame, QString msg)
 
  flt_game->db_ref->ihm = pGame->db_ref->ihm;
 
- QString sub_tirages  =  game_lab + "R" +QString::number(sub_id).rightJustified(2,'0');
+ QString sub_tirages  =  game_lab + "R" +QString::number(id_AnaSel).rightJustified(2,'0');
  flt_game->db_ref->src= sub_tirages;
+ flt_game->db_ref->sql = msg;
  flt_game->db_ref->flt= sub_tirages+"_flt";
 
  QSqlQuery query(db_tir);
@@ -406,44 +420,48 @@ BTirAna * BTirages::doLittleAna(const stGameConf *pGame, QString msg)
  if((b_retVal = query.exec(msg)) == true){
   uneAnalyse = new BTirAna(flt_game);
   if(uneAnalyse->self() != nullptr){
-   sub_id++;
+   id_AnaSel++;
   }
   else {
    delete uneAnalyse;
    uneAnalyse = nullptr;
-   sub_id--;
+   id_AnaSel--;
   }
  }
 
  return uneAnalyse;
 }
 
-void BTirages::updateTbv(QString msg)
+void BTirages::updateTbv(QString box_title, QString msg)
 {
-#ifndef QT_NO_DEBUG ///<< "\033[2J" << "\033[3J"<<
+#ifndef QT_NO_DEBUG
  qDebug()<< "\n\nMsg :\n" <<msg;
 #endif
 
- sqm_resu->clear();
+ //sqm_resu->clear();
  sqm_resu->setQuery(msg,db_tir);
  while (sqm_resu->canFetchMore())
  {
   sqm_resu->fetchMore();
  }
- BGTbView *qtv_tmp = tir_tbv;
  int nb_rows = sqm_resu->rowCount();
- qtv_tmp->hideColumn(Bp::colId);
-
-
- // Formattage de largeur de colonnes
- qtv_tmp->resizeColumnsToContents();
- for(int j=Bp::colDate;j<=Bp::colJour;j++){
-  qtv_tmp->setColumnWidth(j,75);
- }
- int l=qtv_tmp->getMinWidth(0);
- qtv_tmp->setMinimumWidth(l);
- qtv_tmp->setMinimumHeight(l);
- QString st_title = "Nombre de tirages : "+QString::number(nb_rows);
- qtv_tmp->setTitle(st_title);///
-
+ BGTbView *qtv_tmp = tir_tbv;
+ QString st_title = box_title+"Nb tirages : "+QString::number(nb_rows);
+ qtv_tmp->setTitle(st_title);
+ qtv_tmp->showMaximized();
 }
+
+void BTirages::BSlot_closeTab(int index)
+{
+ og_AnaSel->removeTab(index);
+ /*
+ if(tab_resu->count() == 0){
+  //// CODE RAPIDE...
+  /// LE PREMIER peut etre reutilise ?
+  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+  BTbView::addSpacer(gme_id, ecart);
+ }
+*/
+}
+

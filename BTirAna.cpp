@@ -28,12 +28,15 @@ int BTirAna::getCounter(void)
  return  total_analyses;
 }
 
-/*
-QWidget * BTirAna::getVisual(void)
+QString BTirAna::getTor(void)
 {
- return  show_results;
+ return  src_tbl;
 }
-*/
+
+QString BTirAna::getSql(void)
+{
+ return  src_sql;
+}
 
 BTirAna::BTirAna(stGameConf *pGame, QWidget *parent) : QWidget(parent)
 {
@@ -43,6 +46,8 @@ BTirAna::BTirAna(stGameConf *pGame, QWidget *parent) : QWidget(parent)
 
  QString cnx=pGame->db_ref->cnx;
  QString tbl_tirages = pGame->db_ref->src;
+ src_tbl = tbl_tirages;
+ src_sql = pGame->db_ref->sql;
 
  // Etablir connexion a la base
  db_1 = QSqlDatabase::database(cnx);
@@ -194,7 +199,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  else {
   lstComptage.append(item_1);
  }
-
+ /*
  BCountComb * item_2 = new BCountComb(pGame);
  if(item_2->mySefl() == nullptr){
   delete  item_2;
@@ -220,7 +225,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
   connect(this,SIGNAL(BSig_AnaLgn(int,int)),item_4,SLOT(BSlot_AnaLgn(int, int)));
   connect(this,SIGNAL(BSig_RazSelection()),item_4,SLOT(BSlot_RazSelection()));
  }
-
+*/
 
 
  /// Les objets existent faire les calculs
