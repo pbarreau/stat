@@ -5,6 +5,7 @@
 #include <QSqlDatabase>
 #include <QGroupBox>
 #include <QLabel>
+#include <QHBoxLayout>
 
 #include "BSqlQmTirages_3.h"
 #include "bstflt.h"
@@ -36,23 +37,12 @@ class BTirGen : public BTirages
  QGroupBox *  LireBoule(stGameConf *pGame, QString tbl_cible);
  QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
  void updateTbv(QString msg);
- //QString getTiragesList(QString tbl_src);
- /*
- QString makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst);
- QString makeSqlForNextLine(const B2LstSel * sel);
- QString select_elm(const QModelIndexList &indexes, int zn);
- QString select_cmb(const QModelIndexList &indexes, int zn, int tbl_id);
- QString select_brc(const QModelIndexList &indexes, int zn, int tbl_id);
- QString select_grp(const QModelIndexList &indexes, int zn, int tbl_id);
- QString elmSel_1(const QModelIndexList &indexes, int zn);
- QString elmSel_2(const QModelIndexList &indexes, int zn);
- BTirAna *doLittleAna(const stGameConf *pGame, QString msg);
- QWidget *ana_fltSelection(QWidget **J);
-*/
+ QHBoxLayout *getBarZoomTirages(BGTbView *qtv_tmp);
+ QHBoxLayout *getBarFltTirages(int chk_nb_col, BGTbView *qtv_tmp);
+
  void deletePreviousResults(const stGameConf *pGame);
 
  signals:
- //void BSig_AnaLgn(const int &lgn_id, const int &prx_id);
 
  public slots:
  void BSlot_ShowTotal(const QString& lstBoules);
@@ -66,17 +56,12 @@ class BTirGen : public BTirages
  void BSlot_ShowBtnId(int btn_id);
  void slot_ShowChk(void);
  void slot_ShowNhk(void);
- //void BSlot_closeTab(int index);
 
  private:
- //static int gme_counter;
- //int gme_id;
- //int sub_id;
  stGameConf *gameDef;
  QSqlDatabase db_gme;
  BTirAna *cur_ana;
  QWidget *resu;
- //QTabWidget * tab_resu;
 
  private:
  BSqlQmTirages_3 *sqm_resu;

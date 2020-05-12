@@ -48,6 +48,7 @@ const stGameConf *gme_cnf;
 etTir eTir;
 int id_TirSrc;
 int id_AnaSel;
+int id_AnaOnglet;
 QTabWidget * og_AnaSel;
 BGTbView *tir_tbv;
 QSqlQueryModel * sqm_resu;

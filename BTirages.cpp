@@ -440,7 +440,6 @@ void BTirages::updateTbv(QString box_title, QString msg)
  qDebug()<< "\n\nMsg :\n" <<msg;
 #endif
 
- //sqm_resu->clear();
  sqm_resu->setQuery(msg,db_tir);
  while (sqm_resu->canFetchMore())
  {

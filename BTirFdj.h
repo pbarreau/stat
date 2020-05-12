@@ -27,7 +27,6 @@ private:
 QWidget *tbForBaseRef(const stGameConf *pGame);
 QSqlDatabase db_fdj;
 QGridLayout *lay_fusion;
-int cur_ana;
 
 };
 

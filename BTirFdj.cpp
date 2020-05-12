@@ -87,9 +87,6 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
 
  QString tbl_tirages = pGame->db_ref->fdj;
  msg= getTiragesList(pGame, tbl_tirages) + "select t1.* from (tb1) as t1 ";
-#ifndef QT_NO_DEBUG
- qDebug() <<"\nMsg : \n"<<msg;
-#endif
  sqm_tmp->setQuery(msg,db_fdj);
  lst_tirages = msg;
 
@@ -98,14 +95,6 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  fpm_tmp->setSourceModel(sqm_tmp);
 
  qtv_tmp->setModel(fpm_tmp);
-
- /*
- while (sqm_tmp->canFetchMore())
- {
-  sqm_tmp->fetchMore();
- }
-*/
- //int nb_rows = sqm_tmp->rowCount();
 
  qtv_tmp->hideColumn(Bp::colId);
 
@@ -123,9 +112,7 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  }
  int l=qtv_tmp->getMinWidth(0);
  qtv_tmp->setMinimumWidth(l);
- qtv_tmp->setMinimumHeight(l);
- //QString st_title = "Nombre de tirages : "+QString::number(nb_rows);
- //qtv_tmp->setTitle(st_title);///
+ //qtv_tmp->setMinimumHeight(l);
  qtv_tmp->setItemDelegate(new BTirDelegate(pGame));
 
  updateTbv("",msg);
@@ -175,7 +162,7 @@ void BTirFdj::BSlot_Filter_Fdj(const Bp::E_Ana ana, const B2LstSel * sel)
 	 og_AnaSel = new QTabWidget;
 	 QString st_obj = "pere_"+ QString::number(id_AnaSel).rightJustified(2,'0');
 	 og_AnaSel->setObjectName(st_obj);
-	 cur_ana = 0;
+	 id_AnaOnglet = 0;
 	 og_AnaSel->setTabsClosable(true);
 	 connect(og_AnaSel,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
 	 connect(og_AnaSel,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Result_Fdj(int)));
@@ -227,7 +214,7 @@ void BTirFdj::BSlot_Result_Fdj(const int index)
 {
  QTabWidget * from = qobject_cast<QTabWidget *>(sender());
 
- cur_ana = index;
+ id_AnaOnglet = index;
 
  /// se Mettre sur l'onglet J
  QString ref = lab_ong;
@@ -247,10 +234,10 @@ void BTirFdj::BSlot_Fdj_flt(int index)
   return;
  }
  QTabWidget * from = qobject_cast<QTabWidget *>(sender());
- QWidget ** tmp = resu_usr->at(cur_ana);
+ QWidget ** tmp = resu_usr->at(id_AnaOnglet);
  BTirAna * tmp_ana = qobject_cast<BTirAna *>(tmp[index]);
  QString msg = tmp_ana->getSql();
 
- QString box_title = og_AnaSel->tabText(cur_ana)+" ("+from->tabText(index)+"). ";
+ QString box_title = og_AnaSel->tabText(id_AnaOnglet)+" ("+from->tabText(index)+"). ";
  updateTbv(box_title, msg);
 }

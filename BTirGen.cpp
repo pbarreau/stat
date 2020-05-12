@@ -435,71 +435,16 @@ QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
  return tmp_gpb;
 }
 
-QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_tirages)
+QHBoxLayout *BTirGen::getBarFltTirages(int chk_nb_col, BGTbView *qtv_tmp)
 {
- QGroupBox *tmp_gpb = new QGroupBox;
- QString msg = "";
-
- QIcon tmp_ico;
- QPushButton *tmp_btn = nullptr;
-
- int zn=0;
- int chk_nb_col = pGame->limites[zn].len;
-
- /// Montrer resultats
- msg= getTiragesList(pGame, tbl_tirages) + "select t1.* from (tb1) as t1 ";
-#ifndef QT_NO_DEBUG
- qDebug() <<msg;
-#endif
- QTableView *qtv_tmp = new QTableView;
-
- QString cnx = db_gme.connectionName();
- sqm_resu = new BSqlQmTirages_3(pGame,cnx,tbl_tirages, qtv_tmp);
- sqm_resu->setQuery(msg,db_gme);
- connect(sqm_resu,
-         SIGNAL(BSig_CheckBox(QPersistentModelIndex ,Qt::CheckState)),
-         this,
-         SLOT(BSlot_CheckBox(QPersistentModelIndex, Qt::CheckState)));
-
- BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,2);
- fpm_tmp->setDynamicSortFilter(true);
- fpm_tmp->setSourceModel(sqm_resu);
- qtv_tmp->setModel(fpm_tmp);
-
- // Label
- QHBoxLayout *seltir = new QHBoxLayout;
-
- QFormLayout *frm_lab = new QFormLayout;
-
- QLabel *lb_tir = new QLabel;
- lb_tir->setText("--,--,--,--,--");
- lb_tir->setStyleSheet("QLabel {color:green;font-weight: bold;font: 18pt;}"
-                       "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
- frm_lab->addRow("Tir :", lb_tir);
- seltir->addLayout(frm_lab);
- lb_tir->setToolTip("Tirage courant");
- lb_Big = lb_tir;
-
- tmp_ico = QIcon(":/images/pri_all.png");
- BPushButton *my_btn = new BPushButton(lb_tir,"red", BPushButton::eOk);
- my_btn->setIcon(tmp_ico);
- connect(my_btn, SIGNAL(BSig_MouseOverLabel(QLabel *)), this, SLOT(BSlot_MouseOverLabel(QLabel *)));
- connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked_Gen()));
- connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(BSlot_Clicked_Gen( QModelIndex) ) );
- // Creates a new QPersistentModelIndex that is a copy of the model index.
- seltir->addWidget(my_btn);
-
- tmp_ico = QIcon(":/images/pri_none.png");
- my_btn = new BPushButton(lb_tir,"green",BPushButton::eEsc);
- my_btn->setIcon(tmp_ico);
- connect(my_btn, SIGNAL(BSig_MouseOverLabel(QLabel *)), this, SLOT(BSlot_MouseOverLabel(QLabel *)));
- connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked_Gen()));
- seltir->addWidget(my_btn);
-
  /// HORIZONTAL BAR
  QHBoxLayout *inputs = new QHBoxLayout;
  QButtonGroup *btn_grp = new QButtonGroup(inputs);
+
+ QPushButton *tmp_btn = nullptr;
+ QIcon tmp_ico;
+
+
  //--------------
  QFormLayout *frm_chk = new QFormLayout;
  le_chk = new BLineEdit(qtv_tmp);
@@ -546,6 +491,73 @@ QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_tirages)
  btn_grp->setExclusive(true);
  connect(btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(BSlot_ShowBtnId(int)));
 
+ return inputs;
+}
+
+QHBoxLayout *BTirGen::getBarZoomTirages(BGTbView *qtv_tmp)
+{
+ QIcon tmp_ico;
+
+ // Label
+ QHBoxLayout *seltir = new QHBoxLayout;
+
+ QFormLayout *frm_lab = new QFormLayout;
+
+ QLabel *lb_tir = new QLabel;
+ lb_tir->setText("--,--,--,--,--");
+ lb_tir->setStyleSheet("QLabel {color:green;font-weight: bold;font: 18pt;}"
+                       "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
+ frm_lab->addRow("Tir :", lb_tir);
+ seltir->addLayout(frm_lab);
+ lb_tir->setToolTip("Tirage courant");
+ lb_Big = lb_tir;
+
+ tmp_ico = QIcon(":/images/pri_all.png");
+ BPushButton *my_btn = new BPushButton(lb_tir,"red", BPushButton::eOk);
+ my_btn->setIcon(tmp_ico);
+ connect(my_btn, SIGNAL(BSig_MouseOverLabel(QLabel *)), this, SLOT(BSlot_MouseOverLabel(QLabel *)));
+ connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked_Gen()));
+ connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+         this, SLOT(BSlot_Clicked_Gen( QModelIndex) ) );
+ // Creates a new QPersistentModelIndex that is a copy of the model index.
+ seltir->addWidget(my_btn);
+
+ tmp_ico = QIcon(":/images/pri_none.png");
+ my_btn = new BPushButton(lb_tir,"green",BPushButton::eEsc);
+ my_btn->setIcon(tmp_ico);
+ connect(my_btn, SIGNAL(BSig_MouseOverLabel(QLabel *)), this, SLOT(BSlot_MouseOverLabel(QLabel *)));
+ connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked_Gen()));
+ seltir->addWidget(my_btn);
+
+ return(seltir);
+}
+
+QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_tirages)
+{
+ BGTbView *qtv_tmp = new BGTbView;
+ tir_tbv = qtv_tmp;
+
+ QString msg = "";
+ msg= getTiragesList(pGame, tbl_tirages) + "select t1.* from (tb1) as t1 ";
+
+ QString cnx = db_gme.connectionName();
+ sqm_resu = new BSqlQmTirages_3(pGame,cnx,tbl_tirages, qtv_tmp);
+ sqm_resu->setQuery(msg,db_gme);
+ connect(sqm_resu,
+         SIGNAL(BSig_CheckBox(QPersistentModelIndex ,Qt::CheckState)),
+         this,
+         SLOT(BSlot_CheckBox(QPersistentModelIndex, Qt::CheckState)));
+
+ QHBoxLayout *seltir = getBarZoomTirages(qtv_tmp);
+
+ int zn=0;
+ int chk_nb_col = pGame->limites[zn].len;
+ QHBoxLayout *inputs = getBarFltTirages(chk_nb_col, qtv_tmp);
+
+ BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,2);
+ fpm_tmp->setDynamicSortFilter(true);
+ fpm_tmp->setSourceModel(sqm_resu);
+ qtv_tmp->setModel(fpm_tmp);
 
  /// Necessaire pour compter toutes les lignes de reponses
  while (sqm_resu->canFetchMore())
@@ -553,47 +565,39 @@ QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_tirages)
   sqm_resu->fetchMore();
  }
 
+#ifdef DBG_COUNT
  QSqlQuery query = sqm_resu->query();
  bool b_retVal = query.exec();
  int tot = 0;
  b_retVal = query.first();
  b_retVal = query.last();
  tot = query.at()+1;
+#endif
 
  /// Determination nb ligne par proxymodel
  int nb_lgn_ftr = fpm_tmp->rowCount();
  int nb_lgn_rel = sqm_resu->rowCount();
 
- //gpb_Tirages =new QGroupBox;
- QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
- tmp_gpb->setTitle(st_total);
-
  QVBoxLayout *layout = new QVBoxLayout;
  layout->addLayout(seltir,Qt::AlignLeft|Qt::AlignTop);
  layout->addLayout(inputs,Qt::AlignLeft|Qt::AlignTop);
- layout->addWidget(qtv_tmp, Qt::AlignLeft|Qt::AlignTop);
- tmp_gpb->setLayout(layout);
+ qtv_tmp->addUpLayout(layout);
 
- //int nbCol = sqm_resu->columnCount();
+ QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
+ qtv_tmp->setTitle(st_total);
+
  qtv_tmp->resizeColumnsToContents();
- //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-
- int count=qtv_tmp->horizontalHeader()->count();
- int l = 0;
- l = qtv_tmp->verticalScrollBar()->width();
- for (int i = 0; i < count-2; ++i) {
-  if(!qtv_tmp->horizontalHeader()->isSectionHidden(i))
-   l+=qtv_tmp->horizontalHeader()->sectionSize(i);
- }
- qtv_tmp->setFixedWidth(l);
  qtv_tmp->hideColumn(Bp::colId);
+
+ int l=qtv_tmp->getMinWidth(3);
+ qtv_tmp->setMinimumWidth(l);
  qtv_tmp->setItemDelegate(new BTirDelegate(pGame,Bp::colGenZs));
 
- gpb_Tirages = tmp_gpb;
 
- return tmp_gpb;
+ gpb_Tirages = qtv_tmp->getSquare();
+
+ return qtv_tmp->getScreen();
 }
-
 
 void BTirGen::BSlot_ShowBtnId(int btn_id)
 {
