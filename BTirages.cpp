@@ -487,7 +487,7 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
 	 id_AnaOnglet = 0;
 	 og_AnaSel->setTabsClosable(true);
 	 connect(og_AnaSel,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
-	 connect(og_AnaSel,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Result_Fdj(int)));
+	 connect(og_AnaSel,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Result_Tir(int)));
 	}
 
 	QWidget **J = new QWidget *[2];
@@ -544,4 +544,23 @@ void BTirages::BSlot_Tir_flt(int index)
 
  QString box_title = og_AnaSel->tabText(id_AnaOnglet)+" ("+from->tabText(index)+"). ";
  updateTbv(box_title, msg);
+}
+
+void BTirages::BSlot_Result_Tir(const int index)
+{
+ QTabWidget * from = qobject_cast<QTabWidget *>(sender());
+
+ id_AnaOnglet = index;
+
+ /// se Mettre sur l'onglet J
+ QString ref = lab_ong;
+ ref = ref.arg(QString::number(index).rightJustified(2,'0'));
+ QList<QTabWidget *> child_1 = from->findChildren<QTabWidget*>(ref);
+ /// idem ligne precedente : QTabWidget * child_3 = from->findChild<QTabWidget *>(ref);
+
+ if(child_1.size()){
+  int cur_index = child_1.at(0)->currentIndex();
+  //child_1.at(0)->setCurrentIndex(0);
+  child_1.at(0)->tabBarClicked(cur_index);
+ }
 }

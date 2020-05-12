@@ -10,7 +10,7 @@
 #include "BTirDelegate.h"
 #include "BCount.h"
 
-static QString  lab_ong = "R_%1";
+//static QString  lab_ong = "R_%1";
 
 BTirFdj::BTirFdj(const stGameConf *pGame, etTir gme_tir, QWidget *parent): BTirages(pGame, gme_tir, parent)
 {
@@ -212,6 +212,7 @@ void BTirFdj::BSlot_Filter_Fdj(const Bp::E_Ana ana, const B2LstSel * sel)
 }
 */
 
+/*
 void BTirFdj::BSlot_Result_Fdj(const int index)
 {
  QTabWidget * from = qobject_cast<QTabWidget *>(sender());
@@ -230,6 +231,7 @@ void BTirFdj::BSlot_Result_Fdj(const int index)
   child_1.at(0)->tabBarClicked(cur_index);
  }
 }
+*/
 
 /*
 void BTirFdj::BSlot_Fdj_flt(int index)
