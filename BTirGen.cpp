@@ -89,6 +89,7 @@ QString BTirGen::getGameLabel(void)
 void BTirGen::mkGameWidget(stGameConf *current)
 {
  QTabWidget *tab_Top = new QTabWidget;
+ tab_Top->setObjectName(tbw_TbvTirages);
 
  /// Tableau de pointeur vers ..
  QGridLayout ** grd_tmp = new QGridLayout*[2];

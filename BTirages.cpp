@@ -11,8 +11,12 @@
 #include "BCount.h"
 
 int BTirages::cnt_tirSrc = 1; /// Compteur des sources de tirages
+QString  BTirages::tbw_TbvTirages = "tbw_TirLst";
+QString  BTirages::tbw_FltTirages = "tbw_TirFlt";
+
 static QString  lab_ong = "R_%1";
-QList<QGridLayout *> *BTirages::gdl_list = nullptr;
+
+//QList<QGridLayout *> *BTirages::gdl_list = nullptr;
 
 QTabWidget * BTirages::tbw_calculs = nullptr;
 QGridLayout * BTirages::gdl_all = nullptr;
@@ -36,6 +40,7 @@ BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
  lst_tirages = "";
  id_TirSrc = cnt_tirSrc;
  id_AnaSel = 0;
+ usr_flt_counter = 0;
  og_AnaSel = nullptr; /// og: Onglet
 
 }
@@ -69,8 +74,13 @@ void BTirages::showGen(BTirAna *ana_tirages)
   tbw_calculs = new QTabWidget;
   gdl_all = new QGridLayout;
   wdg_reponses = new QWidget;
-  gdl_list = new QList<QGridLayout *>;
+  //gdl_list = new QList<QGridLayout *>;
  }
+
+ QString st_obj = "Ensemble_"+ QString::number(id_TirSrc).rightJustified(2,'0');
+ tbw_calculs->setObjectName(st_obj);
+ connect(tbw_calculs,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Ensemble_Tir(int)));
+
 
  QGridLayout *lay_fusion = this->addAna(ana_tirages);
  QWidget *wdg_fusion = new QWidget;
@@ -81,7 +91,7 @@ void BTirages::showGen(BTirAna *ana_tirages)
  tbw_calculs->setCurrentIndex(that_index);
  gdl_all->addWidget(tbw_calculs);
  wdg_reponses->setLayout(gdl_all);
- wdg_reponses->setWindowTitle("Tirages Auto : ");
+ wdg_reponses->setWindowTitle("Tirages AUTO : ");
  wdg_reponses->show();
 
  connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
@@ -563,8 +573,8 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
 	if(og_AnaSel==nullptr){
 	 ana_TirFlt = new QList<QWidget **>;
 	 og_AnaSel = new QTabWidget;
-	 QString st_obj = "pere_"+ QString::number(id_AnaSel).rightJustified(2,'0');
-	 og_AnaSel->setObjectName(st_obj);
+	 //QString st_obj = "pere_"+ QString::number(id_AnaSel).rightJustified(2,'0');
+	 og_AnaSel->setObjectName(tbw_FltTirages);
 	 id_AnaOnglet = 0;
 	 og_AnaSel->setTabsClosable(true);
 	 connect(og_AnaSel,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
@@ -590,13 +600,12 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
 	J[1] = doLittleAna(gme_cnf,msg_2);
 
 	/// Nommage de l'onglet
-	int static counter = 0;
 	QString st_id = lab_ong;
-	st_id = st_id.arg(QString::number(counter).rightJustified(2,'0'));
+	st_id = st_id.arg(QString::number(usr_flt_counter).rightJustified(2,'0'));
 
 	resu = ana_fltSelection(st_id, this, J);
 	if(resu!=nullptr){
-	 counter++;
+	 usr_flt_counter++;
 	 ana_TirFlt->append(J);
 	 int tab_index = og_AnaSel->addTab(resu,st_id);
 	 lay_fusion->addWidget(og_AnaSel,1,1);
@@ -604,7 +613,7 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
 	 og_AnaSel->tabBarClicked(tab_index);
 	}
 	else {
-	 counter--;
+	 usr_flt_counter--;
 	}
  }
  else {
@@ -637,6 +646,34 @@ void BTirages::BSlot_Result_Tir(const int index)
  QString ref = lab_ong;
  ref = ref.arg(QString::number(index).rightJustified(2,'0'));
  QList<QTabWidget *> child_1 = from->findChildren<QTabWidget*>(ref);
+ /// idem ligne precedente : QTabWidget * child_3 = from->findChild<QTabWidget *>(ref);
+
+ if(child_1.size()){
+  int cur_index = child_1.at(0)->currentIndex();
+  //child_1.at(0)->setCurrentIndex(0);
+  child_1.at(0)->tabBarClicked(cur_index);
+ }
+}
+
+void BTirages::BSlot_Ensemble_Tir(const int index)
+{
+ QTabWidget * from = qobject_cast<QTabWidget *>(sender());
+
+ QTabWidget * child_lstTir = from->findChild<QTabWidget *>(tbw_TbvTirages);
+ child_lstTir->setCurrentIndex(1);
+
+ QTabWidget * child_lstFlt = from->findChild<QTabWidget *>(tbw_FltTirages);
+ if(child_lstFlt == nullptr){
+  return;
+ }
+ int cur_index = child_lstFlt->currentIndex();
+
+ QList<QTabWidget *> child_0 = from->findChildren<QTabWidget*>();
+
+ /// se Mettre sur l'onglet J
+ QString ref = lab_ong;
+ ref = ref.arg(QString::number(cur_index).rightJustified(2,'0'));
+ QList<QTabWidget *> child_1 = child_lstFlt->findChildren<QTabWidget*>(ref);
  /// idem ligne precedente : QTabWidget * child_3 = from->findChild<QTabWidget *>(ref);
 
  if(child_1.size()){

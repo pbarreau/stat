@@ -49,8 +49,14 @@ void BSlot_Tir_flt(int index);
 void BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel);
 void BSlot_Result_Tir(const int index);
 
+private slots:
+void BSlot_Ensemble_Tir(const int index);
+
+
 protected:
 static int cnt_tirSrc;
+static QString  tbw_TbvTirages;
+static QString  tbw_FltTirages;
 QString game_lab;
 QSqlDatabase db_tir;
 const stGameConf *gme_cnf;
@@ -67,10 +73,11 @@ BTirAna *ana_TirLst;
 QList<QWidget **> *ana_TirFlt;
 
 private:
+int usr_flt_counter;
 static QTabWidget * tbw_calculs;
 static QWidget * wdg_reponses;
 static QGridLayout *gdl_all;
-static QList<QGridLayout *> *gdl_list;
+//static QList<QGridLayout *> *gdl_list;
 
 };
 
