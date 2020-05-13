@@ -13,9 +13,10 @@ public:
 BLstSelect();
 BLstSelect(etCount cur_type, int cur_zn, QItemSelectionModel *cur_sel);
 void clearSelection();
-const etCount type;
-const int zn;
+etCount type;
+int zn;
 QModelIndexList  indexes;
+//QList<QPersistentModelIndex> indexes;
 
 /*
 void setType(etCount cur_type);
@@ -36,5 +37,6 @@ int in_zn;
 };
 
 typedef QList<QList<BLstSelect *>*> B2LstSel;
+typedef QList<QPersistentModelIndex> QPersistentModelIndexList;
 
 #endif // BLSTSELECT_H

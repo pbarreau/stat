@@ -608,7 +608,7 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
 	if(resu!=nullptr){
 	 usr_flt_counter++;
 	 ana_TirFlt->append(J);
-	 save_sel = sel;
+	 save_sel = SauverSelection(sel);
 	 int tab_index = og_AnaSel->addTab(resu,st_id);
 	 lay_fusion->addWidget(og_AnaSel,1,1);
 	 og_AnaSel->setCurrentIndex(tab_index);
@@ -622,6 +622,37 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
   msg =  lst_tirages + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent
   updateTbv(box_title,msg);
  }
+}
+
+const B2LstSel *BTirages::SauverSelection(const B2LstSel * sel)
+{
+ B2LstSel * ret = new B2LstSel;
+
+ int nb_items = sel->size();
+ for (int i=0;i<nb_items;i++)
+ {
+  QList<BLstSelect *> *src = sel->at(i);
+  QList<BLstSelect *> *dst = new QList<BLstSelect *>;
+  ret->append(dst);
+
+	int nb_zone = src->size();
+	for (int j=0;j<nb_zone;j++)
+	{
+	 BLstSelect *item_src = src->at(j);
+	 BLstSelect *item_dst = new BLstSelect;
+	 item_dst->type = item_src->type;
+	 item_dst->zn = item_src->zn;
+
+	 QModelIndex un_index;
+	 foreach (un_index, item_src->indexes) {
+		QPersistentModelIndex ici(un_index);
+		item_dst->indexes.append(ici);
+	 }
+	 dst->append(item_dst);
+	}
+ }
+
+ return ret;
 }
 
 void BTirages::BSlot_Tir_flt(int index)

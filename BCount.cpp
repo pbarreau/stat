@@ -302,6 +302,9 @@ void BCount::BSlot_setSelection(const B2LstSel * lst_sel)
   for (int j=0;j<nb_zn;j++) {
    BLstSelect *item = tmp->at(j);
    if((type==item->type) && (j==item->zn)){
+    /// preparer le visuel proprement
+    tabTbv[j]->selectionModel()->clear();
+
     QModelIndexList lst_selection = item->indexes;
     QModelIndex un_index;
     foreach (un_index, lst_selection) {
