@@ -111,6 +111,7 @@ class BCount:public QWidget
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)=0;
  virtual void usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn)=0;
  virtual QList<BLstSelect *> *getSelection(void);
+ //virtual QList<QItemSelectionModel *> *getSelectionModel(void);
 
 
  protected:
@@ -170,6 +171,7 @@ class BCount:public QWidget
 
  protected slots:
  void BSlotClicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
+ virtual void BSlot_setSelection(const B2LstSel * lst_sel);
 
  ///void slot_AideToolTip(const QModelIndex & index);
  void slot_ClicDeSelectionTableau(const QModelIndex &index);

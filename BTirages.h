@@ -42,6 +42,7 @@ QGridLayout *addAna(BTirAna* ana);
 protected:
 signals:
 void BSig_AnaLgn(const int &lgn_id, const int &prx_id);
+void BSig_Show_Flt(const B2LstSel * sel);
 
 protected slots:
 void BSlot_closeTab(int index);
@@ -71,6 +72,7 @@ QString lst_tirages;
 QGridLayout *lay_fusion;
 BTirAna *ana_TirLst;
 QList<QWidget **> *ana_TirFlt;
+const B2LstSel * save_sel;
 
 private:
 int usr_flt_counter;

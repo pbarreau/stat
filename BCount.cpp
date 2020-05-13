@@ -292,7 +292,48 @@ QList<BLstSelect *> *BCount::getSelection(void)
  return ret;
 }
 
+void BCount::BSlot_setSelection(const B2LstSel * lst_sel)
+{
+ int nb_items = lst_sel->size();
+ for (int i=0;i<nb_items;i++)
+ {
+  QList<BLstSelect *> *tmp = lst_sel->at(i);
+  int nb_zn = tmp->size();
+  for (int j=0;j<nb_zn;j++) {
+   BLstSelect *item = tmp->at(j);
+   if((type==item->type) && (j==item->zn)){
+    QModelIndexList lst_selection = item->indexes;
+    QModelIndex un_index;
+    foreach (un_index, lst_selection) {
+     tabTbv[j]->selectionModel()->select(un_index,QItemSelectionModel::Select);
+    }
+   }
+  }
+ }
+}
 
+/*
+QList<QItemSelectionModel *> *BCount::getSelectionModel(void)
+{
+ QList<QItemSelectionModel *> * ret = new QList<QItemSelectionModel *>;
+
+ int nb_zn = gm_def->znCount;
+ for (int i=0;i<nb_zn;i++) {
+  QItemSelectionModel  *tmp = tabTbv[i]->selectionModel();
+  QList<QModelIndex> indexes = tmp->selectedIndexes();
+  if(indexes.size() !=0 ){
+   ret->append(tmp);
+  }
+ }
+
+ if(ret->size() == 0){
+  delete  ret;
+  ret = nullptr;
+ }
+
+ return ret;
+}
+*/
 etCount BCount::getType()
 {
  return type;

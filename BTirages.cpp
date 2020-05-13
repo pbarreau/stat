@@ -63,6 +63,7 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  wdg_visual->show();
 
  connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
+ connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)), ana_tirages,SLOT(BSlot_Show_Flt(const B2LstSel *)));
  connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
          this, SLOT(BSlot_Filter_Tir(const Bp::E_Ana , const B2LstSel *)));
 }
@@ -607,6 +608,7 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
 	if(resu!=nullptr){
 	 usr_flt_counter++;
 	 ana_TirFlt->append(J);
+	 save_sel = sel;
 	 int tab_index = og_AnaSel->addTab(resu,st_id);
 	 lay_fusion->addWidget(og_AnaSel,1,1);
 	 og_AnaSel->setCurrentIndex(tab_index);
@@ -632,6 +634,9 @@ void BTirages::BSlot_Tir_flt(int index)
  BTirAna * tmp_ana = qobject_cast<BTirAna *>(tmp[index]);
  QString msg = tmp_ana->getSql();
 
+ /// Pour rappeller la selection choisie
+ emit BSig_Show_Flt(save_sel);
+
  QString box_title = og_AnaSel->tabText(id_AnaOnglet)+" ("+from->tabText(index)+"). ";
  updateTbv(box_title, msg);
 }
@@ -642,7 +647,7 @@ void BTirages::BSlot_Result_Tir(const int index)
 
  id_AnaOnglet = index;
 
- /// se Mettre sur l'onglet J
+ /// se Mettre sur l'onglet J adequat
  QString ref = lab_ong;
  ref = ref.arg(QString::number(index).rightJustified(2,'0'));
  QList<QTabWidget *> child_1 = from->findChildren<QTabWidget*>(ref);
@@ -650,31 +655,36 @@ void BTirages::BSlot_Result_Tir(const int index)
 
  if(child_1.size()){
   int cur_index = child_1.at(0)->currentIndex();
-  //child_1.at(0)->setCurrentIndex(0);
   child_1.at(0)->tabBarClicked(cur_index);
  }
 }
 
 void BTirages::BSlot_Ensemble_Tir(const int index)
 {
+ Q_UNUSED(index)
+
  QTabWidget * from = qobject_cast<QTabWidget *>(sender());
 
+ /// Rechercher le tabwidget qui contient la liste des tirages
  QTabWidget * child_lstTir = from->findChild<QTabWidget *>(tbw_TbvTirages);
  child_lstTir->setCurrentIndex(1);
 
+ /// Rechercher le tabwidget qui contient la liste des analyses des filtrages
  QTabWidget * child_lstFlt = from->findChild<QTabWidget *>(tbw_FltTirages);
  if(child_lstFlt == nullptr){
   return;
  }
  int cur_index = child_lstFlt->currentIndex();
 
+#ifndef QT_NO_DEBUG
  QList<QTabWidget *> child_0 = from->findChildren<QTabWidget*>();
+#endif
 
- /// se Mettre sur l'onglet J
+ /// se Mettre sur l'onglet J adequat
  QString ref = lab_ong;
  ref = ref.arg(QString::number(cur_index).rightJustified(2,'0'));
  QList<QTabWidget *> child_1 = child_lstFlt->findChildren<QTabWidget*>(ref);
- /// idem ligne precedente : QTabWidget * child_3 = from->findChild<QTabWidget *>(ref);
+ /// idem ligne precedente : QTabWidget * child_3 = child_lstFlt->findChild<QTabWidget *>(ref);
 
  if(child_1.size()){
   int cur_index = child_1.at(0)->currentIndex();

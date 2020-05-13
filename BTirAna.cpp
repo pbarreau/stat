@@ -244,6 +244,8 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
 	QWidget *calcul = lstComptage.at(i)->startCount(pGame, type);
 	if(calcul != nullptr){
 	 tabs_ana->addTab(calcul, name);
+	 /// retour visu selection
+	 connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)),lstComptage.at(i),SLOT(BSlot_setSelection(const B2LstSel *)));
 	}
  }
 
@@ -1167,4 +1169,10 @@ void BTirAna::BSlot_MousePressed(const QModelIndex & index, const int &zn, const
 void BTirAna::BSlot_AnaLgn(const int &lgn_id, const int &prx_id)
 {
  emit BSig_AnaLgn(lgn_id, prx_id);
+}
+
+void BTirAna::BSlot_Show_Flt(const B2LstSel * sel)
+{
+ /// Envoyer au divers onglets
+ emit BSig_Show_Flt(sel);
 }
