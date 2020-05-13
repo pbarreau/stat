@@ -75,9 +75,12 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 
  stGameConf *curConf = charge->getConfig();
 
- EtudierJeu_v1(curConf, use_odb);
+ //EtudierJeu_v1(curConf, use_odb);
 
  //return;
+ if(use_odb==true){
+  AfficherAnciensCalcul(curConf);
+ }
 
  BTirFdj *lst_tirages = new BTirFdj(curConf);
  BTirAna *ana_tirages = new BTirAna(curConf);
@@ -90,9 +93,6 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
   lst_tirages->showFdj(ana_tirages);
  }
 
- if(use_odb==true){
-  AfficherAnciensCalcul(curConf);
- }
 
  return;
  EtudierJeu_v1(curConf, use_odb);
@@ -112,22 +112,33 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
  }
 
 
+
  /// Verifier si la table de liste des jeux existe
  if(DB_Tools::isDbGotTbl("E_lst",db_1.connectionName())==false){
   return;
  }
 
-/// recuperer la liste des jeux deja effectue
+ /// Pour les requetes
  QSqlQuery query(db_1);
  bool b_retVal = true;
- QString msg = "select * from E_lst";
+ QString msg = "";
 
+ /// Effacer anciens calculs des filtres
+ b_retVal = DB_Tools::SupprimerResultatsPrecedent(cnx);
+
+#if 0
+select 'drop table ' || name || ';' from sqlite_master
+    where(type='table' and name glob '*R[0-9]*');
+#endif
+
+ /// recuperer la liste des jeux deja effectue
+ msg = "select * from E_lst";
  /// si il y a des reponses les faire toutes
  if(((b_retVal=query.exec(msg))== true) && ((b_retVal=query.first())==true)){
   stGameConf * tmp = new stGameConf;
 
 	tmp->znCount = 1;
-	tmp->eTirType = eTirUsr; /// A supprimer ?
+	tmp->eTirType = eTirGen; /// A supprimer ?
 
 	/// Partie commune
 	tmp->limites = pGame->limites;
@@ -143,6 +154,7 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
 	tmp->db_ref->fdj = pGame->db_ref->fdj;
 	tmp->db_ref->cnx = pGame->db_ref->cnx;
 	tmp->db_ref->ihm = pGame->db_ref->ihm;
+	tmp->db_ref->jrs = pGame->db_ref->jrs;
 
 	do{
 	 QString gameId = query.value(1).toString();
@@ -173,12 +185,15 @@ void MainWindow::AssemblerJeuxUsr(stGameConf *usrGame)
 	 delete ana_tirages;
 	}
 	else {
+	 lst_tirages->showGen(ana_tirages);
+	 /*
 	 connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
 					 lst_tirages, SLOT(BSlot_FilterRequest(const Bp::E_Ana , const B2LstSel *)));
 
 	 connect(lst_tirages,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
 
 	 BTbView::agencerResultats(lst_tirages,ana_tirages);
+	*/
 	}
  }
  else {

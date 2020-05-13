@@ -381,7 +381,9 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
  /* exemple requete :
   *
   * with tbResultat as (select cast(row_number() over ()as int) as id,
+  * NULL as C1,
   * cast(t1.z1 as int) as R,
+  * NULL as I,
   * cast (count(t1.z1) as int) as T,
   * cast (count(CASE WHEN  t2.J like 'lundi%' then 1 end) as int) as LUN
   * from B_elm as t1
@@ -414,7 +416,9 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
   str_jrs = db_jours;
  }
 
- st_sql= "with tbResultat as (select cast(row_number() over ()as int) as id,"
+ st_sql= "with tbResultat as (select "
+          "cast(row_number() over ()as int) as id,"
+          "NULL as C1, "
           "cast ("+key
           +" as int) as R,"+
           col_vsl+

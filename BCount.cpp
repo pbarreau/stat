@@ -79,7 +79,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 	bool b_retVal = (this->*usr_fn)(pGame, prm, zn);
 
 	if(b_retVal == false){
-	 QString fnName = "BCount::V2_fn_Count : "+label[eCalcul];
+	 QString fnName = "BCount::startIhm : "+label[eCalcul];
 	 DB_Tools::DisplayError(fnName, &query, msg);
 	 if(up_qtv != nullptr){
 		delete up_qtv;
@@ -139,6 +139,11 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  if(eCalcul != eCountGrp){
   headRed = Bp::colTxt;
   qtv_tmp->hideColumn(Bp::colId);
+
+#ifdef QT_NO_DEBUG
+  qtv_tmp->hideColumn(Bp::colColor);
+#endif
+
   qtv_tmp->sortByColumn(Bp::colTotal,Qt::DescendingOrder);
  }
  else {
@@ -187,13 +192,6 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
   /// Mettre dans la base une info sur 2 derniers tirages
   usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
  }
- /*
- else {
-  connect(qtv_tmp,SIGNAL(BSigClicked(const QModelIndex, const int, const etCount)),
-          this, SLOT(BSlotClicked(const QModelIndex, const int, const etCount)));
-
- }
-*/
 
  /// Agencer le tableau
  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -234,41 +232,6 @@ int BCount::getTotalCells(const stGameConf *pGame, int zn)
 
  return ret;
 }
-
-/*
-int BCount::getMinWidth(QTableView *qtv_tmp)
-{
- int l = 0;
- int count=qtv_tmp->horizontalHeader()->count();
-
- int scrollBar = qtv_tmp->verticalScrollBar()->width();
- int Header = qtv_tmp->verticalHeader()->width();
- int col = 0;
- for (int i = 0; i < count-3; ++i) {
-  if(!qtv_tmp->horizontalHeader()->isSectionHidden(i)){
-   col+=qtv_tmp->horizontalHeader()->sectionSize(i);
-  }
- }
- l= Header+col+scrollBar;
- return l;
-}
-
-int BCount::getMinHeight(QTableView *qtv_tmp)
-{
- /// https://savolai.net/notes/how-do-i-adjust-a-qtableview-height-according-to-contents/
- int l = 0;
- int count=qtv_tmp->verticalHeader()->count();
-
- int scrollBar=qtv_tmp->horizontalScrollBar()->height();
- int Header=qtv_tmp->horizontalHeader()->height();
- int row=0;
- for (int i = 0; i < count; ++i) {
-  row+=qtv_tmp->verticalHeader()->sectionSize(i);
- }
- l= Header+row+scrollBar;
- return l;
-}
-*/
 
 QList<BLstSelect *> *BCount::getSelection(void)
 {
@@ -315,28 +278,6 @@ void BCount::BSlot_setSelection(const B2LstSel * lst_sel)
  }
 }
 
-/*
-QList<QItemSelectionModel *> *BCount::getSelectionModel(void)
-{
- QList<QItemSelectionModel *> * ret = new QList<QItemSelectionModel *>;
-
- int nb_zn = gm_def->znCount;
- for (int i=0;i<nb_zn;i++) {
-  QItemSelectionModel  *tmp = tabTbv[i]->selectionModel();
-  QList<QModelIndex> indexes = tmp->selectedIndexes();
-  if(indexes.size() !=0 ){
-   ret->append(tmp);
-  }
- }
-
- if(ret->size() == 0){
-  delete  ret;
-  ret = nullptr;
- }
-
- return ret;
-}
-*/
 etCount BCount::getType()
 {
  return type;

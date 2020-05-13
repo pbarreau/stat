@@ -242,7 +242,8 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
           "tb_out as "
           "( "
           "select  "
-          "cast(row_number() over (order by count(tb_bc.bc) desc ) as int) as id,   "
+          "cast(row_number() over (order by count(tb_bc.bc) desc ) as int) as id,"
+          "NULL as C1,"
           "cast(tb_bc.bc as text) as R, "+
           col_vsl+
           "cast (count(tb_bc.id) as int) as T "

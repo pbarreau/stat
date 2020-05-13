@@ -225,13 +225,16 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
 
  QString tbl_ref_cmb = "B";
  st_sql= "with "
-          "tbCmb as (select t1.id as Id, t1.tip as R from ("
+          "tbCmb as (select "
+          "t1.id as Id,"
+          "t1.tip as R from ("
           +tbl_ref_cmb
           +"_cmb_z"
           +QString::number(zn+1)
           +") as t1),"
             "tbRes as (select "
             "cast(t1.id as int)as Id,"
+            "NULL as C1,"
             "cast(t1.R as text) as R,"+
           col_vsl+
           "cast(count(t2.id) as int) as T"

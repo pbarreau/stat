@@ -50,6 +50,7 @@ BTirGen::BTirGen(const stGameConf *pGame, etTir gme_tir, QWidget *parent) : BTir
      pGame->db_ref->src !=""){
   game_lab = pGame->db_ref->src;
   gameDef = gameUsrNew(pGame,game_lab);
+  gme_cnf = gameDef;
   mkGameWidget(gameDef);
   cnt_tirSrc++;
   return;

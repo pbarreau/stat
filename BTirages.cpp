@@ -96,6 +96,7 @@ void BTirages::showGen(BTirAna *ana_tirages)
  wdg_reponses->show();
 
  connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
+ connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)), ana_tirages,SLOT(BSlot_Show_Flt(const B2LstSel *)));
  connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
          this, SLOT(BSlot_Filter_Tir(const Bp::E_Ana , const B2LstSel *)));
 }
@@ -159,6 +160,11 @@ QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
  QString ret_cmb = "";
  QString ret_add = "";
 
+ QString use_tirages = game_lab;
+ if(use_tirages.compare("B_fdj")==0){
+  use_tirages="B";
+ }
+
  int cur_tbl_id = 3;
  QString local_list = "";
 
@@ -170,12 +176,15 @@ QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 	ret_add = "";
 	ret_elm = "";
 	local_list = "";
+
+
 	int nb_zone = tmp->size();
 	for (int j=0;j<nb_zone;j++)
 	{
 	 BLstSelect *item = tmp->at(j);
 
-	 QString tbl_ana = "("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t";
+
+	 QString tbl_ana = "("+use_tirages+"_ana_z"+QString::number((item->zn)+1)+") as t";
 
 	 if((item->type) == eCountElm){
 		ret_elm = select_elm(item->indexes, item->zn);
@@ -188,6 +197,9 @@ QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 		}
 
 		switch (item->type) {
+		 case eCountCmb:
+			ret_elm = select_cmb(item->indexes, item->zn, cur_tbl_id);
+			break;
 		 case eCountBrc:
 			ret_elm = select_brc(item->indexes, item->zn, cur_tbl_id);
 			break;
@@ -195,7 +207,7 @@ QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 			ret_elm = select_grp(item->indexes, item->zn, cur_tbl_id);
 			break;
 		 default:
-			QMessageBox::warning(nullptr, "Type calclul","Error:BTirGen::makeSqlFromSelection")	;
+			QMessageBox::warning(nullptr, "Type calclul","Error:BTirages::makeSqlFromSelection")	;
 		}
 	 }
 	 ret_add = ret_add + ret_elm;
@@ -574,7 +586,6 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
 	if(og_AnaSel==nullptr){
 	 ana_TirFlt = new QList<QWidget **>;
 	 og_AnaSel = new QTabWidget;
-	 //QString st_obj = "pere_"+ QString::number(id_AnaSel).rightJustified(2,'0');
 	 og_AnaSel->setObjectName(tbw_FltTirages);
 	 id_AnaOnglet = 0;
 	 og_AnaSel->setTabsClosable(true);
@@ -587,7 +598,11 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
 
 	/// Creer la requete de filtrage
 	clause = makeSqlFromSelection(sel, &tbl_lst);
-	msg = msg + tbl_lst + " where("+clause+")";
+	msg = msg + tbl_lst;
+	if(clause.size()){
+	 msg = msg + " where("+clause+")";
+	}
+
 
 	/// mettre la liste des tirages a jour
 	flt_tirages = lst_tirages + msg;
@@ -608,7 +623,7 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
 	if(resu!=nullptr){
 	 usr_flt_counter++;
 	 ana_TirFlt->append(J);
-	 save_sel = sel;///SauverSelection(sel);
+	 //save_sel = sel;///SauverSelection(sel);
 	 int tab_index = og_AnaSel->addTab(resu,st_id);
 	 lay_fusion->addWidget(og_AnaSel,1,1);
 	 og_AnaSel->setCurrentIndex(tab_index);
@@ -666,7 +681,7 @@ void BTirages::BSlot_Tir_flt(int index)
  QString msg = tmp_ana->getSql();
 
  /// Pour rappeller la selection choisie
- emit BSig_Show_Flt(save_sel);
+ //emit BSig_Show_Flt(save_sel);
 
  QString box_title = og_AnaSel->tabText(id_AnaOnglet)+" ("+from->tabText(index)+"). ";
  updateTbv(box_title, msg);

@@ -158,7 +158,7 @@ bool BFdj::OPtimiseAccesBase(void)
   "PRAGMA cache_size = 16384",
   "PRAGMA temp_store = MEMORY",
   "PRAGMA journal_mode = OFF",
-  "PRAGMA locking_mode = NORMAL" ///EXCLUSIVE
+  "PRAGMA locking_mode = EXCLUSIVE" /// NORMAL
  };
  int items = sizeof(stRequete)/sizeof(QString);
 
@@ -255,6 +255,8 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
  /// Utiliser anciennes tables
  if(pGame->db_ref->ihm->use_odb==true){
   if(pGame->db_ref->ihm->fdj_new==false){
+   QString jours = DB_Tools::getLstDays(cnx,tbName);
+   pGame->db_ref->jrs = jours;
    return b_retVal;
   }
   else {

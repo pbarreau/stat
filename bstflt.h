@@ -52,13 +52,14 @@ namespace Bp {
  enum E_Col{
   noCol = -1,
   colId	=	0,
-  colTxt=1,
+  colColor=1,
   colDate=1,
   colGenZs=1,  /// Colonne depart de zone def dans Tbl lst gene
   colJour=2,
-  colVisual=2,
+  colTxt=2,
+  colVisual=3,
   colTirZs=3,  /// Colonne depart de zone def dans Tbl Tirages
-  colTotal=3
+  colTotal=4
  };
 
  struct Btn{

@@ -44,6 +44,7 @@ QString getLstDays(QString cnx_db_name, QString tbl_ref);
 bool tbFltGet(stTbFiltres *in_out, QString cnx);
 bool tbFltSet(stTbFiltres *in_out, QString cnx);
 void genStop(QString fnName);
+bool SupprimerResultatsPrecedent(QString cnx);
 
 }
 

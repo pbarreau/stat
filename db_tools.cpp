@@ -25,7 +25,7 @@
 QString DB_Tools::GEN_Where_3(int loop,
 															QString tb1,bool inc1,QString op1,
 															QStringList &tb2,bool inc2,QString op2
-																																																																																																																																																																																																																																	)
+																																																																																																																																																																																																																																																															)
 {
  QString ret_msg = "";
  QString ind_1 = "";
@@ -267,12 +267,12 @@ bool DB_Tools::isDbGotTbl(QString tbl, QString cnx, tbTypes etbTypes, bool silen
 	 break;
 
 	default:
-	 ;
+			;
  }
 
  QString msg[]{
   {"SELECT name FROM sqlite"+m_type+"master "
-   "WHERE type='"+kind+"' AND name='"+tbl+"';"}
+                                        "WHERE type='"+kind+"' AND name='"+tbl+"';"}
  };
 
  if((b_retVal = query.exec(msg[0])))
@@ -625,6 +625,62 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
  }
  //QCoreApplication::exit(-1);
  //QApplication::exit();
+}
+
+bool DB_Tools::SupprimerResultatsPrecedent(QString cnx)
+{
+ bool b_retVal = true;
+
+ // Etablir connexion a la base
+ QSqlDatabase db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  DB_Tools::DisplayError("DB_Tools::setdbFlt",nullptr,"");
+  return b_retVal;
+ }
+
+ QString msg = "";
+ QSqlQuery query(db_1);
+
+ msg = "SELECT name FROM sqlite_master "
+       "WHERE(type='table' AND name glob '*R[0-9]*');";
+ b_retVal = query.exec(msg);
+
+ if(b_retVal)
+ {
+  if(query.first())
+  {
+   QStringList lst_tbl;
+   QString target = "";
+   do
+   {
+    target = query.value("name").toString();
+    lst_tbl.append(target);
+   }while(query.next());
+
+	 /// Suppression des tables
+	 do{
+		target = lst_tbl.takeFirst();
+		msg = "drop table if exists " + target;
+		b_retVal = query.exec(msg);
+	 }while(b_retVal && lst_tbl.size());
+
+	 /// reorganisation de la base
+	 if(b_retVal){
+		msg = "vacuum";
+		b_retVal = query.exec(msg);
+	 }
+	}
+ }
+
+ if(!b_retVal)
+ {
+  QString ErrLoc = "Supprimer Resultats:";
+  DB_Tools::DisplayError(ErrLoc,&query,msg);
+ }
+
+ return b_retVal;
 }
 
 #if QT_LIB_DBG_ON
