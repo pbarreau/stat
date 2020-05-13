@@ -261,27 +261,15 @@ bool GererBase::LireFichiersDesTirages(bool autoLoad, stErr *retErr)
 #endif
 		tiragesFileFormat loto[]=
 		 {
-			{"loto2017.csv",eFdjLoto,
-			 {false,2,1,2,&p2Zn[0]}
-			},
-			{"superloto2017.csv",eFdjLoto,
-			 {false,2,1,2,&p2Zn[0]}
-			},
-			{"lotonoel2017.csv",eFdjLoto,
-			 {false,2,1,2,&p2Zn[0]}
-			},
-			{"nouveau_superloto.csv",eFdjLoto,
-			 {false,2,1,2,&p2Zn[0]}
-			},
-			{"nouveau_loto.csv",eFdjLoto,
-			 {false,2,1,2,&p2Zn[0]}
-			},
-			{"loto_201902.csv",eFdjLoto,
-			 {false,2,1,2,&p2Zn[0]}
-			},
-			{"loto_201911.csv",eFdjLoto,
-			 {false,2,1,2,&p2Zn[0]}
-			}
+			{"grandloto_201912.csv",eFdjLoto, {false,2,1,2,&p2Zn[0]} },
+			{"loto_201902.csv",eFdjLoto, {false,2,1,2,&p2Zn[0]} },
+			{"loto_201911.csv",eFdjLoto, {false,2,1,2,&p2Zn[0]} },
+			{"loto2017.csv",eFdjLoto, {false,2,1,2,&p2Zn[0]} },
+			{"lotonoel2017.csv",eFdjLoto, {false,2,1,2,&p2Zn[0]} },
+			{"nouveau_loto.csv",eFdjLoto, {false,2,1,2,&p2Zn[0]} },
+			{"nouveau_superloto.csv",eFdjLoto, {false,2,1,2,&p2Zn[0]} },
+			{"superloto_201907.csv",eFdjLoto, {false,2,1,2,&p2Zn[0]} },
+			{"superloto2017.csv",eFdjLoto, {false,2,1,2,&p2Zn[0]} }
 		 };
 
 
