@@ -75,7 +75,7 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 
  stGameConf *curConf = charge->getConfig();
 
- //EtudierJeu_v1(curConf, use_odb);
+ EtudierJeu_v1(curConf, use_odb);
 
  //return;
 

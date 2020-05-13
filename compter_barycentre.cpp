@@ -208,7 +208,9 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
  QString str_jrs = "";
  QString col_jrs = "";
  QString tbl_tirages = pGame->db_ref->src;
- if(tbl_tirages.compare("B_fdj")==0){
+ if(
+  (tbl_tirages.compare("B_fdj")==0)
+    ){
   col_vsl = "NULL as I,";
   str_jrs = db_jours;
   col_jrs = ", t2.J as J";

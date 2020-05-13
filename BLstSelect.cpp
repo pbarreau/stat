@@ -8,7 +8,11 @@ BLstSelect::BLstSelect():type(eCountToSet),zn(-1),sel(nullptr)
 BLstSelect::BLstSelect(etCount cur_type, int cur_zn, QItemSelectionModel *cur_sel)
     :type(cur_type),zn(cur_zn),sel(cur_sel)
 {
- indexes = sel->selectedIndexes();
+ QModelIndex un_index;
+ foreach (un_index, cur_sel->selectedIndexes()) {
+  //QPersistentModelIndex ici(un_index);
+  indexes.append(un_index);
+ }
 }
 
 void BLstSelect::clearSelection()

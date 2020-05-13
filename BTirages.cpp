@@ -608,7 +608,7 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
 	if(resu!=nullptr){
 	 usr_flt_counter++;
 	 ana_TirFlt->append(J);
-	 save_sel = SauverSelection(sel);
+	 save_sel = sel;///SauverSelection(sel);
 	 int tab_index = og_AnaSel->addTab(resu,st_id);
 	 lay_fusion->addWidget(og_AnaSel,1,1);
 	 og_AnaSel->setCurrentIndex(tab_index);
@@ -624,7 +624,7 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
  }
 }
 
-const B2LstSel *BTirages::SauverSelection(const B2LstSel * sel)
+B2LstSel *BTirages::SauverSelection(const B2LstSel * sel)
 {
  B2LstSel * ret = new B2LstSel;
 
@@ -645,8 +645,8 @@ const B2LstSel *BTirages::SauverSelection(const B2LstSel * sel)
 
 	 QModelIndex un_index;
 	 foreach (un_index, item_src->indexes) {
-		QPersistentModelIndex ici(un_index);
-		item_dst->indexes.append(ici);
+		//QPersistentModelIndex ici(un_index);
+		item_dst->indexes.append(un_index);
 	 }
 	 dst->append(item_dst);
 	}

@@ -199,7 +199,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  else {
   lstComptage.append(item_1);
  }
- /*
+
  BCountComb * item_2 = new BCountComb(pGame);
  if(item_2->mySefl() == nullptr){
   delete  item_2;
@@ -225,7 +225,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
   connect(this,SIGNAL(BSig_AnaLgn(int,int)),item_4,SLOT(BSlot_AnaLgn(int, int)));
   connect(this,SIGNAL(BSig_RazSelection()),item_4,SLOT(BSlot_RazSelection()));
  }
-*/
+
 
 
  /// Les objets existent faire les calculs

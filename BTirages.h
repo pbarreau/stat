@@ -38,7 +38,7 @@ void updateTbv(QString box_title, QString msg);
 
 private:
 QGridLayout *addAna(BTirAna* ana);
-const B2LstSel *SauverSelection(const B2LstSel * sel);
+B2LstSel *SauverSelection(const B2LstSel * sel);
 
 protected:
 signals:
