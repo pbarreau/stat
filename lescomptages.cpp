@@ -1,3 +1,4 @@
+#if 0
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #include <QSqlError>
@@ -3054,4 +3055,4 @@ QStringList * BPrevision::CreateFilterForData(int zn)
 
  return sl_filter;
 }
-
+#endif

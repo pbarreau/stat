@@ -21,7 +21,7 @@ class BTbar1:public QWidget
 
 public:
 //bTbar1(QWidget *parent=0);
-BTbar1(stTiragesDef *def, QTableView *p_tbv=nullptr);
+BTbar1(stTiragesDef *def, BGTbView *p_tbv=nullptr);
 BTbar1(const stGameConf *pGame, QTableView *p_tbv);
 
 public slots:
@@ -29,7 +29,7 @@ void slot_FiltreSurNewCol(int colNum);
 void slot_Selection(const QString& usrString);
 
 private:
-QGroupBox * mkBarre(QTableView *tbv_cible);
+QGroupBox * mkBarre(BGTbView *tbv_cible);
 QComboBox *ComboPerso(int id);
 
 private:

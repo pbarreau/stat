@@ -36,7 +36,6 @@ class BTirGen : public BTirages
  void mkGameWidget(stGameConf * current);
  QGroupBox *  LireBoule(stGameConf *pGame, QString tbl_cible);
  QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
- //void updateTbv(QString msg);
  QHBoxLayout *getBarZoomTirages(BGTbView *qtv_tmp);
  QHBoxLayout *getBarFltTirages(int chk_nb_col, BGTbView *qtv_tmp);
 
@@ -45,8 +44,7 @@ class BTirGen : public BTirages
  signals:
 
  public slots:
- //void BSlot_ShowTotal(const QString& lstBoules);
- //void BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel *sel);
+ void BSlot_ShowTotal(const QString& lstBoules);
 
  private slots:
  void BSlot_MouseOverLabel(QLabel *l);
@@ -63,13 +61,9 @@ class BTirGen : public BTirages
  QWidget *resu;
 
  private:
- //BSqlQmTirages_3 *sqm_resu;
- QGroupBox *gpb_Tirages;
+ //QGroupBox *gpb_Tirages;
  QLabel *lb_Big;
  BLineEdit *le_chk;
-
-
-
 };
 
 #endif // BTirGen_H

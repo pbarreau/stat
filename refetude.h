@@ -63,7 +63,7 @@ private:
 
     QTableView * DetailsLstcouv(int zn);
     //QTableView * tbForBaseLigne();
-    QTableView * tbForBaseRef();
+    BGTbView *tbForBaseRef();
     //QTableView * tbForBaseEcart(int zn);
     QTableView * TableMoisBase(int zn);
     QTableView * TableMoisCouv(int zn);

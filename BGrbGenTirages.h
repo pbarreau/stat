@@ -1,6 +1,6 @@
 #ifndef BGRBGENTIRAGES_H
 #define BGRBGENTIRAGES_H
-
+#if 0
 #include <QGroupBox>
 #include <QSqlQueryModel>
 #include <QPushButton>
@@ -66,5 +66,5 @@ BcElm *l_c1;
 BCountComb *l_c2;
 BCountGroup *l_c3;
 };
-
+#endif
 #endif // BGRBGENTIRAGES_H

@@ -597,7 +597,7 @@ QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_tirages)
  qtv_tmp->setItemDelegate(new BTirDelegate(pGame,Bp::colGenZs));
 
 
- gpb_Tirages = qtv_tmp->getSquare();
+ //gpb_Tirages = qtv_tmp->getSquare();
 
  return qtv_tmp->getScreen();
 }
@@ -698,14 +698,15 @@ void BTirGen::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::Chec
 
  lb_Big->setText(msg);
 
- QTableView *qtv_tmp = qobject_cast<BSqlQmTirages_3 *>(sqm_resu)->getTbv();
+ BGTbView *qtv_tmp = qobject_cast<BSqlQmTirages_3 *>(sqm_resu)->getTbv();
  BFpm_3 * fpm_tmp = qobject_cast<BFpm_3 *> (qtv_tmp->model());
  int nb_lgn_ftr = fpm_tmp->rowCount();
  int nb_lgn_rel = sqm_resu->rowCount();
 
  //gpb_Tirages =new QGroupBox;
  QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
- gpb_Tirages->setTitle(st_total);
+ qtv_tmp->setTitle(st_total);
+ //gpb_Tirages->setTitle(st_total);
 
 }
 
@@ -787,14 +788,14 @@ void BTirGen::BSlot_Clicked_Gen(const QModelIndex &index)
  lb_Big->setText(msg);
 }
 
-#if 0
+
 void BTirGen::BSlot_ShowTotal(const QString& lstBoules)
 {
  //Q_UNUSED(lstBoules);
 
  BLineEdit *ble_tmp = qobject_cast<BLineEdit *>(sender());
 
- QTableView *view = ble_tmp->getView();
+ BGTbView *view = ble_tmp->getView();
  BFpm_3 *m = qobject_cast<BFpm_3 *>(view->model());
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
@@ -808,9 +809,9 @@ void BTirGen::BSlot_ShowTotal(const QString& lstBoules)
  int nb_lgn_rel = vl->rowCount();
 
  QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
- gpb_Tirages->setTitle(st_total);
+ view->setTitle(st_total);
+ //gpb_Tirages->setTitle(st_total);
 }
-#endif
 
 /*
 void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)

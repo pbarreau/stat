@@ -59,6 +59,7 @@
 #include "buplet.h"
 
 #include "properties.h"
+#include "db_tools.h"
 
 //extern MainWindow w;
 #ifdef USE_SG_CODE

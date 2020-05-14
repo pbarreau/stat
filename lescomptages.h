@@ -1,6 +1,6 @@
 #ifndef LESCOMPTAGES_H
 #define LESCOMPTAGES_H
-
+#if 0
 #include <QString>
 #include <QGridLayout>
 #include <QSqlDatabase>
@@ -194,5 +194,5 @@ class BPrevision:public QGridLayout
  stPrmPrevision monJeu;     /// parametres pour filtration
 };
 
-
+#endif
 #endif // LESCOMPTAGES_H

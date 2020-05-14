@@ -248,7 +248,7 @@ private:
     GererBase *DB_tirages;
     QSqlDatabase db_0;
     QMdiArea *zoneCentrale;
-    BPrevision *tous;
+    //BPrevision *tous;
 
     QWidget *w_FenetreDetails;
     QTabWidget *gtab_Top;

@@ -2,12 +2,12 @@
 
 #include "blineedit.h"
 
-BLineEdit::BLineEdit(QTableView *view)
+BLineEdit::BLineEdit(BGTbView *view)
 {
  pView=view;
 }
 
-QTableView *BLineEdit::getView()
+BGTbView *BLineEdit::getView()
 {
  return pView;
 }

@@ -48,6 +48,7 @@
 
 #include "BFdj.h"
 #include "BTirAna.h"
+#include "db_tools.h"
 
 static stTiragesDef configJeu;
 
@@ -262,6 +263,7 @@ void MainWindow::EtudierJeu_v1(stGameConf *curConf, bool dest_bdd)
 
 void MainWindow::EtudierJeu_v2(stGameConf *curConf)
 {
+#if 0
  etFdj unJeu = curConf->eFdjType;
  bool usePrevBdd = curConf->bUseMadeBdd;
 
@@ -304,6 +306,7 @@ void MainWindow::EtudierJeu_v2(stGameConf *curConf)
          SIGNAL(sig_isClickedOnBall(QModelIndex)),
          syntheses->GetTabEcarts(),
          SLOT(slot_ShowBoule_2(QModelIndex)));
+#endif
 }
 
 QGridLayout *MainWindow::MonLayout_OldTbvTirage(int x, int y)

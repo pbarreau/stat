@@ -99,9 +99,9 @@ void BTbView::BSlot_ShowToolTip(const QModelIndex & index)
  QString headTop= "";
  QString headRef = "";
 
- int start = 1;
+ int start = Bp::colTxt;
  if(inf_flt->typ == eCountGrp){
-  start = 0;
+  start = Bp::colId;
   vCol = pModel->headerData(col,Qt::Horizontal,Qt::ToolTipRole);
  }
 

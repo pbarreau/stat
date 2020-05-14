@@ -281,8 +281,8 @@ QHBoxLayout *BTirAna::setFilterBar(stGameConf *pGame)
 
  Bp::Btn lst_btn_1[]=
   {
-   {"flt_clear", "Clear selection", Bp::icoRaz},
    {"flt_apply", "Filter selection", Bp::icoFlt},
+   {"flt_clear", "Clear selection", Bp::icoRaz},
    {"xmag_search_find", "Show selection", Bp::icoShow}///,
    ///{"run_32px", "Check next day",Bp::icoNext}
   };

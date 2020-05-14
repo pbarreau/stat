@@ -120,7 +120,7 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
  QGridLayout *lay_return = new QGridLayout;
 
  //QTableView *tbv_tmp0 = tbForBaseLigne();
- QTableView *tbv_tmp1 = tbForBaseRef();
+ BGTbView *tbv_tmp1 = tbForBaseRef();
  BTbar1 *bar =new  BTbar1(p_conf, tbv_tmp1);
 
  //QWidget *tbv_tmp2 = EcartOnglets();
@@ -178,9 +178,9 @@ QTableView *RefEtude::tbForBaseLigne()
 #endif
 
 
-QTableView *RefEtude::tbForBaseRef()
+BGTbView *RefEtude::tbForBaseRef()
 {
- QTableView *tbv_tmp = new QTableView;
+ BGTbView *tbv_tmp = new BGTbView;
  sqlqmTirages *sqm_tmp = new sqlqmTirages (*p_conf);//QSqlQueryModel;
  //p_qsim_3=sqm_tmp;
 

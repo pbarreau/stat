@@ -1,3 +1,4 @@
+#if 0
 #ifndef QT_NO_DEBUG
 #include<QDebug>
 #endif
@@ -836,3 +837,4 @@ void BGrbGenTirages::MontrerResultat(void)
  Resultats->setLayout(tmp_layout);
  ///show_results = Resultats;
 }
+#endif
