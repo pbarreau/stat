@@ -48,7 +48,7 @@ void BSig_Show_Flt(const B2LstSel * sel);
 protected slots:
 void BSlot_closeTab(int index);
 void BSlot_Tir_flt(int index);
-void BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel);
+void BSlot_Filter_Tir(const Bp::E_Ico ana, const B2LstSel * sel);
 void BSlot_Result_Tir(const int index);
 
 private slots:

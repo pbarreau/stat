@@ -62,22 +62,28 @@ namespace Bp {
   colTotal=4
  };
 
- struct Btn{
-  QString name;
-  QString tooltips;
-  QString slot;
- };
-
  enum E_Ugm{
   ugmColZn=1,
   ugmColChk=6
  };
 
- enum E_Ana{
-  anaFlt=1,	/// Show filtering
-  anaRaz, /// Raz selection
-  anaNxt	/// show next of filtering
+ enum E_Ico{
+  icoFlt,    /// Show filtering
+  icoRaz,    /// Raz selection
+  icoShow,   /// visu rapide
+  icoConfig, /// config courante
+  icoNext,	 /// show next of filtering
+  icoShowAll,
+  icoShowChk,
+  icoShowUhk
  };
+
+ struct Btn{
+  QString name;
+  QString tooltips;
+  E_Ico value;
+ };
+
 }
 
 

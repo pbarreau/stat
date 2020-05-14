@@ -9,6 +9,7 @@
 #include <QTabWidget>
 #include <QVector>
 #include <QButtonGroup>
+#include <QVBoxLayout>
 
 #include "db_tools.h"
 #include "cnp_AvecRepetition.h"
@@ -267,7 +268,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  this->setLayout(tmp_layout);
 }
 
-QWidget *BTirAna::setFilterBar()
+QHBoxLayout *BTirAna::setFilterBar(stGameConf *pGame)
 {
  QWidget *tmp_wdg = new QWidget;
  QHBoxLayout *inputs = new QHBoxLayout;
@@ -276,14 +277,33 @@ QWidget *BTirAna::setFilterBar()
  QIcon tmp_ico;
  QPushButton *tmp_btn = nullptr;
 
+ Bp::Btn *lst_btn = nullptr;
 
- Bp::Btn lst_btn[]=
+ Bp::Btn lst_btn_1[]=
   {
-   {"flt_apply", "Apply filters", "BSlot_ActionButton"},
-   {"flt_clear", "Clear filters", "BSlot_ActionButton"}///,
-   ///{"run_32px", "Check next day", "BSlot_ActionButton"}
+   {"flt_clear", "Clear selection", Bp::icoRaz},
+   {"flt_apply", "Filter selection", Bp::icoFlt},
+   {"xmag_search_find", "Show selection", Bp::icoShow}///,
+   ///{"run_32px", "Check next day",Bp::icoNext}
   };
- int nb_btn = sizeof(lst_btn)/sizeof(Bp::Btn);
+
+ Bp::Btn lst_btn_2[]=
+  {
+   {"document_config", "Show config", Bp::icoConfig},
+   {"flt_clear", "Clear selection", Bp::icoRaz},
+   {"xmag_search_find", "Show selection", Bp::icoShow}///,
+   ///{"run_32px", "Check next day",Bp::icoNext}
+  };
+
+ int nb_btn = -1;
+ if(pGame->db_ref->dad.size() == 0){
+  lst_btn = lst_btn_1;
+  nb_btn = sizeof(lst_btn_1)/sizeof(Bp::Btn);
+ }
+ else {
+  lst_btn = lst_btn_2;
+  nb_btn = sizeof(lst_btn_2)/sizeof(Bp::Btn);
+ }
 
  /// https://stackoverflow.com/questions/25480599/how-to-resize-qpushbutton-according-to-the-size-of-its-icon
  /// https://stackoverflow.com/questions/6639012/minimum-size-width-of-a-qpushbutton-that-is-created-from-code
@@ -311,9 +331,9 @@ QWidget *BTirAna::setFilterBar()
 	tmp_btn->setToolTip(lst_btn[i].tooltips);
 
 	inputs->addWidget(tmp_btn);
-	btn_grp->addButton(tmp_btn,i+1);
-
+	btn_grp->addButton(tmp_btn,lst_btn[i].value);
  }
+
  btn_grp->setExclusive(true);
  connect(btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(BSlot_ActionButton(int)));
 
@@ -321,12 +341,14 @@ QWidget *BTirAna::setFilterBar()
  inputs->addItem(ecart);
 
 
- tmp_wdg->setLayout(inputs);
+
+ //tmp_wdg->setLayout(inputs);
 
  /// https://stackoverflow.com/questions/18433342/how-to-get-a-qhboxlayout-fixed-height/18433617
- tmp_wdg->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+ //tmp_wdg->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+ //return tmp_wdg;
 
- return tmp_wdg;
+ return inputs;
 }
 
 QWidget *BTirAna::getVisual(stGameConf *pGame, QTabWidget *ana)
@@ -335,14 +357,17 @@ QWidget *BTirAna::getVisual(stGameConf *pGame, QTabWidget *ana)
 
  QVBoxLayout *ret_lay = new QVBoxLayout;
 
- if(pGame->db_ref->dad.size() == 0){
-  QWidget *tmp_2 = setFilterBar();
-  ret_lay->addWidget(tmp_2);
+ QHBoxLayout *tmp_2 = setFilterBar(pGame);
+ if(tmp_2 != nullptr){
+  //ret_lay->addWidget(tmp_2);
+  ret_lay->addLayout(tmp_2);
+  ret_lay->setAlignment(tmp_2,Qt::AlignTop|Qt::AlignLeft);
  }
 
- ret_lay->addWidget(ana);
+ ret_lay->addWidget(ana,1);
 
  tmp_wdg->setLayout(ret_lay);
+
 
  return tmp_wdg;
 }
@@ -350,9 +375,9 @@ QWidget *BTirAna::getVisual(stGameConf *pGame, QTabWidget *ana)
 void BTirAna::BSlot_ActionButton(int btn_id)
 {
  B2LstSel *send = construireSelection();
- Bp::E_Ana eVal = static_cast<Bp::E_Ana>(btn_id);
+ Bp::E_Ico eVal = static_cast<Bp::E_Ico>(btn_id);
 
- if((eVal == Bp::anaRaz) && (send != nullptr)){
+ if((eVal == Bp::icoRaz) && (send != nullptr)){
   send = effacerSelection(send);
  }
 

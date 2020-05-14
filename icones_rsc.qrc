@@ -13,5 +13,7 @@
         <file>images/Checked_Checkbox.png</file>
         <file>images/spreadsheet_table_xls.png</file>
         <file>images/Unchecked_Checkbox.png</file>
+        <file>images/document_config.png</file>
+        <file>images/xmag_search_find.png</file>
     </qresource>
 </RCC>

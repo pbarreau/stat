@@ -472,9 +472,9 @@ QHBoxLayout *BTirGen::getBarFltTirages(int chk_nb_col, BGTbView *qtv_tmp)
 
  Bp::Btn lst_btn[]=
   {
-   {"spreadsheet_table_xls", "Show All", "BSlot_ActionButton"},
-   {"Checked_Checkbox", "Show Checked", "BSlot_ActionButton"},
-   {"Unchecked_Checkbox", "Show Unchecked", "BSlot_ActionButton"}
+   {"spreadsheet_table_xls", "Show All", Bp::icoShowAll},
+   {"Checked_Checkbox", "Show Checked", Bp::icoShowChk},
+   {"Unchecked_Checkbox", "Show Unchecked", Bp::icoShowUhk}
   };
  int nb_btn = sizeof(lst_btn)/sizeof(Bp::Btn);
  for(int i = 0; i< nb_btn; i++)
@@ -488,7 +488,7 @@ QHBoxLayout *BTirGen::getBarFltTirages(int chk_nb_col, BGTbView *qtv_tmp)
 	tmp_btn->setToolTip(lst_btn[i].tooltips);
 
 	inputs->addWidget(tmp_btn);
-	btn_grp->addButton(tmp_btn,i+1);
+	btn_grp->addButton(tmp_btn,lst_btn[i].value);
 
  }
  btn_grp->setExclusive(true);

@@ -64,8 +64,8 @@ void BTirages::showFdj(BTirAna *ana_tirages)
 
  connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
  connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)), ana_tirages,SLOT(BSlot_Show_Flt(const B2LstSel *)));
- connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
-         this, SLOT(BSlot_Filter_Tir(const Bp::E_Ana , const B2LstSel *)));
+ connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ico , const B2LstSel * )),
+         this, SLOT(BSlot_Filter_Tir(const Bp::E_Ico , const B2LstSel *)));
 }
 
 void BTirages::showGen(BTirAna *ana_tirages)
@@ -97,8 +97,8 @@ void BTirages::showGen(BTirAna *ana_tirages)
 
  connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
  connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)), ana_tirages,SLOT(BSlot_Show_Flt(const B2LstSel *)));
- connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
-         this, SLOT(BSlot_Filter_Tir(const Bp::E_Ana , const B2LstSel *)));
+ connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ico , const B2LstSel * )),
+         this, SLOT(BSlot_Filter_Tir(const Bp::E_Ico , const B2LstSel *)));
 }
 
 QGridLayout * BTirages::addAna(BTirAna* ana)
@@ -569,7 +569,7 @@ void BTirages::BSlot_closeTab(int index)
  }
 }
 
-void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
+void BTirages::BSlot_Filter_Tir(const Bp::E_Ico ana, const B2LstSel * sel)
 {
  QString lst_tirages = getTiragesList(gme_cnf, game_lab);
  QString msg  = "select t1.* from ";
@@ -580,7 +580,7 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ana ana, const B2LstSel * sel)
  QString flt_tirages = "";
  QString box_title ="";
 
- if((ana != Bp::anaRaz) && (sel !=nullptr)){
+ if((ana != Bp::icoRaz) && (sel !=nullptr)){
   int nb_sel = sel->size();
 
 	if(og_AnaSel==nullptr){

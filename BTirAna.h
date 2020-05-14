@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QTabWidget>
 #include <QVector>
+#include <QHBoxLayout>
 
 #include "game.h"
 #include "bstflt.h"
@@ -43,7 +44,7 @@ class BTirAna : public QWidget
  bool SupprimerVueIntermediaires(void);
  void PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName);
  QWidget *getVisual(stGameConf *pGame, QTabWidget *ana);
- QWidget *setFilterBar();
+ QHBoxLayout *setFilterBar(stGameConf *pGame);
 
  bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn);
  QString getFieldsFromZone(const stGameConf *pGame, int zn, QString alias);
@@ -54,7 +55,7 @@ class BTirAna : public QWidget
 
  signals:
  void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
- void BSig_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel);
+ void BSig_FilterRequest(const Bp::E_Ico ana, const B2LstSel * sel);
  void BSig_RazSelection();
  void BSig_AnaLgn(const int &l_id, const int &prx_id);
  void BSig_Show_Flt(const B2LstSel * sel);

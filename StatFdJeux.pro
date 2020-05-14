@@ -200,4 +200,7 @@ RESOURCES += \
     icones_rsc.qrc
 
 DISTFILES += \
-    test_uml_qt.qmodel
+    test_uml_qt.qmodel \
+    images/document_config.png \
+    images/help.png \
+    images/xmag_search_find.png
