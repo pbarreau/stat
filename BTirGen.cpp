@@ -609,16 +609,16 @@ void BTirGen::BSlot_ShowBtnId(int btn_id)
  Qt::CheckState val_chk = Qt::CheckState::Unchecked;
 
  switch (btn_id) {
-  case 1:
+  case Bp::icoShowAll:
    with_where = false;
    break;
 
-	case 2:
+	case Bp::icoShowChk:
 	 with_where = true;
 	 val_chk = Qt::CheckState::Checked;
 	 break;
 
-	case 3:
+	case Bp::icoShowUhk:
 	 with_where = true;
 	 val_chk = Qt::CheckState::Unchecked;
 	 break;

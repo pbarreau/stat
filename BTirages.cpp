@@ -622,6 +622,7 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 	 msg = msg + " where("+clause+")";
 	}
 
+	msg_1 = ", tb2 as ("+ msg +")";
 
 	/// mettre la liste des tirages a jour
 	flt_tirages = lst_tirages + msg;
@@ -636,7 +637,6 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 	J[0] = doLittleAna(gme_cnf,flt_tirages);
 
 	/// recherche J+1
-	msg_1 = ", tb2 as ("+ msg +")";
 	msg_2 = lst_tirages + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
 	J[1] = doLittleAna(gme_cnf,msg_2);
 
