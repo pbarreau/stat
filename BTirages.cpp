@@ -491,7 +491,7 @@ BTirAna * BTirages::doLittleAna(const stGameConf *pGame, QString msg)
  flt_game->db_ref = new stParam_3;
  flt_game->db_ref->fdj = pGame->db_ref->fdj;
  flt_game->db_ref->cnx = pGame->db_ref->cnx;
- flt_game->db_ref->dad = pGame->db_ref->src;
+ flt_game->db_ref->dad = game_lab;///pGame->db_ref->src;
  flt_game->db_ref->jrs = pGame->db_ref->jrs;
 
  flt_game->db_ref->ihm = pGame->db_ref->ihm;

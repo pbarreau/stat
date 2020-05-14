@@ -216,6 +216,13 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
   col_jrs = ", t2.J as J";
  }
 
+ if(pGame->db_ref->dad.size() != 0){
+  if((pGame->db_ref->dad.compare("B_fdj")==0)){
+   str_jrs = db_jours;
+   col_jrs = ", t2.J as J";
+  }
+ }
+
  st_sql = "with poids as  "
           "( "
           "select cast(row_number() over ()as int) as id, "

@@ -216,6 +216,7 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
   tbl_ana = pGame->db_ref->dad;
   if((pGame->db_ref->dad.compare("B_fdj")==0)){
    tbl_ana = "B";
+   str_jrs = db_jours;
   }
  }
  tbl_ana = tbl_ana + "_ana_z"+QString::number(zn+1);

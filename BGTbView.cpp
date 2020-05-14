@@ -69,6 +69,24 @@ int BGTbView::getMinWidth(int delta)
  QTableView *qtv_tmp = this;
  int l = 0;
  int count=qtv_tmp->horizontalHeader()->count();
+ qtv_tmp->horizontalHeader()->setMinimumSectionSize(35);
+
+ /*
+ int invisible = 0;
+ for (int i = 0; i < count; ++i) {
+  if(!qtv_tmp->horizontalHeader()->isSectionHidden(i)){
+   invisible++;
+  }
+ }
+
+ int max_col = count - invisible;
+ if(max_col<3){
+  max_col = 2;
+ }
+ else {
+  max_col = count - delta;
+ }
+*/
 
  int scrollBar = qtv_tmp->verticalScrollBar()->width();
  int Header = qtv_tmp->verticalHeader()->width();

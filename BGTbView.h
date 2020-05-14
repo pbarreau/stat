@@ -13,7 +13,7 @@ void setTitle(QString title, bool visible=true);
 QGroupBox * getSquare(void);
 QGroupBox *getScreen(bool spacer=false);
 void addUpLayout(QLayout *up_in);
-int getMinWidth(int delta=3);
+int getMinWidth(int delta=2);
 int getMinHeight();
 
 protected:
