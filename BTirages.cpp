@@ -104,13 +104,13 @@ void BTirages::showGen(BTirAna *ana_tirages)
 QGridLayout * BTirages::addAna(BTirAna* ana)
 {
  lay_fusion = new QGridLayout;
- QVBoxLayout * vly = new QVBoxLayout;
- vly->addWidget(this);
+ //QVBoxLayout * vly = new QVBoxLayout;
+ //vly->addWidget(this);
 
- lay_fusion->addLayout(vly,0,0,2,1);
+ lay_fusion->addWidget(this,0,0,2,1);
  lay_fusion->addWidget(ana,0,1,1,2);///,Qt::AlignTop|Qt::AlignLeft
- lay_fusion->setColumnStretch(0, 5); /// Exemple basic layouts
- lay_fusion->setColumnStretch(1, 20);
+ lay_fusion->setColumnStretch(0, 0); /// Exemple basic layouts
+ lay_fusion->setColumnStretch(1, 1);
 
  return lay_fusion;
 }
@@ -561,9 +561,12 @@ void BTirages::updateTbv(QString box_title, QString msg)
 
 void BTirages::BSlot_closeTab(int index)
 {
- return;
  og_AnaSel->removeTab(index);
  if(og_AnaSel->count() == 0){
+  QWidget *tmp = og_AnaSel->widget(index);
+  delete tmp;
+  delete  og_AnaSel;
+  og_AnaSel = nullptr;
   QString box_title = "";
   updateTbv(box_title, lst_tirages);
  }
@@ -606,6 +609,12 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ico ana, const B2LstSel * sel)
 
 	/// mettre la liste des tirages a jour
 	flt_tirages = lst_tirages + msg;
+
+	/// verifier si simplement montrer tirages
+	if(ana == Bp::icoShow){
+	 updateTbv(box_title,flt_tirages);
+	 return;
+	}
 
 	/// faire une analyse pour J
 	J[0] = doLittleAna(gme_cnf,flt_tirages);

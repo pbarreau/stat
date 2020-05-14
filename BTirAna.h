@@ -43,7 +43,7 @@ class BTirAna : public QWidget
  bool AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName);
  bool SupprimerVueIntermediaires(void);
  void PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName);
- QWidget *getVisual(stGameConf *pGame, QTabWidget *ana);
+ QVBoxLayout *getVisual(stGameConf *pGame, QTabWidget *ana);
  QHBoxLayout *setFilterBar(stGameConf *pGame);
 
  bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn);

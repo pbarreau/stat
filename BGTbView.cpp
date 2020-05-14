@@ -34,13 +34,17 @@ void BGTbView::addUpLayout(QLayout *up_in)
  up = up_in;
 }
 
-QGroupBox *BGTbView::getScreen()
+QGroupBox *BGTbView::getScreen(bool spacer)
 {
  QVBoxLayout *layout = new QVBoxLayout;
  if(up != nullptr){
   layout->addLayout(up, Qt::AlignCenter|Qt::AlignTop);
  }
- layout->addWidget(this, Qt::AlignLeft|Qt::AlignTop);
+ layout->addWidget(this);
+ if(spacer==true){
+  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
+  layout->addItem(ecart);
+ }
  square->setLayout(layout);
 
  return square;

@@ -254,8 +254,8 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
 
  /// faire test pour voir si production de calculs ?
  if(tabs_ana!=nullptr){
-  QWidget *wdg_ana = getVisual(pGame, tabs_ana);
-  tmp_layout->addWidget(wdg_ana,0,0);
+  QVBoxLayout *wdg_ana = getVisual(pGame, tabs_ana);
+  tmp_layout->addLayout(wdg_ana,0,0);
  }
  else {
   QLabel *tmp = new QLabel("Erreur pas de resultats a montrer !!");
@@ -270,7 +270,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
 
 QHBoxLayout *BTirAna::setFilterBar(stGameConf *pGame)
 {
- QWidget *tmp_wdg = new QWidget;
+ ///QWidget *tmp_wdg = new QWidget;
  QHBoxLayout *inputs = new QHBoxLayout;
  QButtonGroup *btn_grp = new QButtonGroup(inputs);
 
@@ -342,18 +342,18 @@ QHBoxLayout *BTirAna::setFilterBar(stGameConf *pGame)
 
 
 
- //tmp_wdg->setLayout(inputs);
+ ///tmp_wdg->setLayout(inputs);
 
  /// https://stackoverflow.com/questions/18433342/how-to-get-a-qhboxlayout-fixed-height/18433617
- //tmp_wdg->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
- //return tmp_wdg;
+ ///tmp_wdg->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+ ///return tmp_wdg;
 
  return inputs;
 }
 
-QWidget *BTirAna::getVisual(stGameConf *pGame, QTabWidget *ana)
+QVBoxLayout *BTirAna::getVisual(stGameConf *pGame, QTabWidget *ana)
 {
- QWidget *tmp_wdg = new QWidget;
+ //QWidget *tmp_wdg = new QWidget;
 
  QVBoxLayout *ret_lay = new QVBoxLayout;
 
@@ -366,10 +366,10 @@ QWidget *BTirAna::getVisual(stGameConf *pGame, QTabWidget *ana)
 
  ret_lay->addWidget(ana,1);
 
- tmp_wdg->setLayout(ret_lay);
+ //tmp_wdg->setLayout(ret_lay);
 
 
- return tmp_wdg;
+ return ret_lay;
 }
 
 void BTirAna::BSlot_ActionButton(int btn_id)

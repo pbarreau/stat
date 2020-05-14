@@ -198,9 +198,14 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
  /// https://stackoverflow.com/questions/24005346/qgridlayout-remove-spacing
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);//,-1,Qt::AlignLeft|Qt::AlignTop
+ if(eCalcul==eCountGrp){
+  //glay_tmp->addItem(ecart,1,0);
+  glay_tmp->setRowStretch(0,0);
+  glay_tmp->setRowStretch(1,1);
+ }
  glay_tmp->addItem(ecart,0,1);
- glay_tmp->setColumnStretch(1, 10); /// Exemple basic layouts
- glay_tmp->setColumnStretch(2, 20);
+ glay_tmp->setColumnStretch(1, 0); /// Exemple basic layouts
+ glay_tmp->setColumnStretch(2, 1);
  wdg_tmp->setLayout(glay_tmp);
 
 

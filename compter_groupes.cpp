@@ -74,6 +74,7 @@ QWidget *BCountGroup::mainIhmGrp(const stGameConf *pGame, const etCount eCalcul,
  if(pGame->db_ref->dad.size() == 0){
   tmp = usr_GrpTb1(zn);
   ret_lay->addWidget(tmp);
+  ret_lay->setAlignment(tmp,Qt::AlignTop|Qt::AlignLeft);
  }
 
  tmp = startIhm(pGame,eCalcul,fn,zn);
