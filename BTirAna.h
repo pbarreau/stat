@@ -20,12 +20,12 @@ class BTirAna : public QWidget
  Q_OBJECT
  public:
  explicit BTirAna(stGameConf *pGame, QWidget *parent=nullptr);
+ QString getTor(); ///get Table Of Result
+ QString getSql();
  BTirAna *self();
  QWidget *getVisual();
  static int getCounter(void);
  static QString getFilteringHeaders(const stGameConf *pGame, int zn, QString msg_template="t2.%1", QString separator=",");
- QString getTor(); ///get Table Of Result
- QString getSql();
 
  private:
  bool isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QString cnx);
@@ -55,14 +55,14 @@ class BTirAna : public QWidget
 
  signals:
  void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
- void BSig_FilterRequest(const Bp::E_Ico ana, const B2LstSel * sel);
+ void BSig_FilterRequest(BTirAna *from,const Bp::E_Ico ana, const B2LstSel * sel);
  void BSig_RazSelection();
  void BSig_AnaLgn(const int &l_id, const int &prx_id);
  void BSig_Show_Flt(const B2LstSel * sel);
 
  public slots:
  void BSlot_MousePressed(const QModelIndex & index, const int &zn, const etCount &eTyp);
- void BSlot_AnaLgn(const int &lgn_id, const int &prx_id);
+ void BSlot_AnaLgnShow(const int &lgn_id, const int &prx_id);
  void BSlot_Show_Flt(const B2LstSel * sel);
 
  private slots:

@@ -9,6 +9,7 @@
 
 #include "BTirages.h"
 #include "BCount.h"
+#include "BTirAna.h"
 
 int BTirages::cnt_tirSrc = 1; /// Compteur des sources de tirages
 QString  BTirages::tbw_TbvTirages = "tbw_TirLst";
@@ -42,6 +43,7 @@ BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
  id_AnaSel = 0;
  usr_flt_counter = 0;
  og_AnaSel = nullptr; /// og: Onglet
+ ana_TirLst = nullptr;
 
 }
 
@@ -62,10 +64,10 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  wdg_visual->setWindowTitle("Tirages FDJ : ");
  wdg_visual->show();
 
- connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
+ connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgnShow(int,int)));
  connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)), ana_tirages,SLOT(BSlot_Show_Flt(const B2LstSel *)));
- connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ico , const B2LstSel * )),
-         this, SLOT(BSlot_Filter_Tir(const Bp::E_Ico , const B2LstSel *)));
+ connect(ana_tirages, SIGNAL(BSig_FilterRequest(BTirAna *, const Bp::E_Ico , const B2LstSel * )),
+         this, SLOT(BSlot_Filter_Tir(BTirAna *, const Bp::E_Ico , const B2LstSel *)));
 }
 
 void BTirages::showGen(BTirAna *ana_tirages)
@@ -95,10 +97,10 @@ void BTirages::showGen(BTirAna *ana_tirages)
  wdg_reponses->setWindowTitle("Tirages AUTO : ");
  wdg_reponses->show();
 
- connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
+ connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgnShow(int,int)));
  connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)), ana_tirages,SLOT(BSlot_Show_Flt(const B2LstSel *)));
- connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ico , const B2LstSel * )),
-         this, SLOT(BSlot_Filter_Tir(const Bp::E_Ico , const B2LstSel *)));
+ connect(ana_tirages, SIGNAL(BSig_FilterRequest(BTirAna *, const Bp::E_Ico , const B2LstSel * )),
+         this, SLOT(BSlot_Filter_Tir(BTirAna *, const Bp::E_Ico , const B2LstSel *)));
 }
 
 QGridLayout * BTirages::addAna(BTirAna* ana)
@@ -430,7 +432,7 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  return msg;
 }
 
-QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, QWidget **J)
+QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, BTirAna **J)
 {
  QWidget *ret = new QWidget;
  QTabWidget *tab_Top = new QTabWidget;
@@ -441,7 +443,8 @@ QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, QWidget **
   {
    &BTirages::doLittleAna
   };
- int nb_func = sizeof(ptrFunc)/sizeof(BTirAna *); //mauvais BUG
+ int nb_func_0 = sizeof(ptrFunc)/sizeof(BTirAna); //mauvais BUG
+ int nb_func = sizeof(ongNames)/sizeof(QString);
 
  for (int i=0;i<nb_func;i++) {
   QWidget *tmp_wdg = J[i];
@@ -491,7 +494,7 @@ BTirAna * BTirages::doLittleAna(const stGameConf *pGame, QString msg)
  flt_game->db_ref = new stParam_3;
  flt_game->db_ref->fdj = pGame->db_ref->fdj;
  flt_game->db_ref->cnx = pGame->db_ref->cnx;
- flt_game->db_ref->dad = game_lab;///pGame->db_ref->src;
+ flt_game->db_ref->dad = game_lab;
  flt_game->db_ref->jrs = pGame->db_ref->jrs;
 
  flt_game->db_ref->ihm = pGame->db_ref->ihm;
@@ -515,7 +518,10 @@ BTirAna * BTirages::doLittleAna(const stGameConf *pGame, QString msg)
  if((b_retVal = query.exec(msg)) == true){
   uneAnalyse = new BTirAna(flt_game);
   if(uneAnalyse->self() != nullptr){
-   id_AnaSel++;
+
+	 id_AnaSel++;
+	 connect(uneAnalyse, SIGNAL(BSig_FilterRequest(BTirAna *, const Bp::E_Ico , const B2LstSel * )),
+					 this, SLOT(BSlot_Filter_Tir(BTirAna *, const Bp::E_Ico , const B2LstSel *)));
   }
   else {
    delete uneAnalyse;
@@ -572,9 +578,10 @@ void BTirages::BSlot_closeTab(int index)
  }
 }
 
-void BTirages::BSlot_Filter_Tir(const Bp::E_Ico ana, const B2LstSel * sel)
+void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstSel * sel)
 {
- QString lst_tirages = getTiragesList(gme_cnf, game_lab);
+ if(from == nullptr) return;
+
  QString msg  = "select t1.* from ";
  QString tbl_lst = "(tb1) as t1";
  QString clause = "";
@@ -582,12 +589,21 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ico ana, const B2LstSel * sel)
  QString msg_2  = "";
  QString flt_tirages = "";
  QString box_title ="";
+ QString lst_tirages = "";
+
+ lst_tirages = from->getSql().simplified();
+ if(lst_tirages.size() == 0){
+  lst_tirages = getTiragesList(gme_cnf, game_lab);
+ }
+ else {
+  ; /// Juste un marqueur
+ }
 
  if((ana != Bp::icoRaz) && (sel !=nullptr)){
   int nb_sel = sel->size();
 
 	if(og_AnaSel==nullptr){
-	 ana_TirFlt = new QList<QWidget **>;
+	 ana_TirFlt = new QList<BTirAna **>;
 	 og_AnaSel = new QTabWidget;
 	 og_AnaSel->setObjectName(tbw_FltTirages);
 	 id_AnaOnglet = 0;
@@ -596,7 +612,7 @@ void BTirages::BSlot_Filter_Tir(const Bp::E_Ico ana, const B2LstSel * sel)
 	 connect(og_AnaSel,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Result_Tir(int)));
 	}
 
-	QWidget **J = new QWidget *[2];
+	BTirAna **J = new BTirAna *[2];
 	QWidget * resu = nullptr;
 
 	/// Creer la requete de filtrage
@@ -685,7 +701,7 @@ void BTirages::BSlot_Tir_flt(int index)
   return;
  }
  QTabWidget * from = qobject_cast<QTabWidget *>(sender());
- QWidget ** tmp = ana_TirFlt->at(id_AnaOnglet);
+ BTirAna ** tmp = ana_TirFlt->at(id_AnaOnglet);
  BTirAna * tmp_ana = qobject_cast<BTirAna *>(tmp[index]);
  QString msg = tmp_ana->getSql();
 

@@ -44,7 +44,12 @@ QTabWidget * BCountGroup::startCount(const stGameConf *pGame, const etCount eCal
  QTabWidget *tab_Top = new QTabWidget(this);
 
  int nb_zones = pGame->znCount;
- tbvAnaLgn = new BGTbView * [nb_zones];
+ if(pGame->db_ref->dad.size()==0){
+  tbvAnaLgn = new BGTbView * [nb_zones];
+ }
+ else {
+  tbvAnaLgn = nullptr;
+ }
 
 
  QWidget *(BCountGroup::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
@@ -96,6 +101,10 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
   *
   */
 
+ if(tbvAnaLgn == nullptr){
+  return nullptr;
+ }
+
  tbvAnaLgn[zn] = new BGTbView;
 
  int l_id = -1;
@@ -109,8 +118,12 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
  return tbvAnaLgn[zn]->getScreen();
 }
 
-void BCountGroup::BSlot_AnaLgn(const int & l_id, const int &prx_id)
+void BCountGroup::BSlot_AnaLgnShow(const int & l_id, const int &prx_id)
 {
+ if(tbvAnaLgn == nullptr){
+  return;
+ }
+
  int nb_zn = gm_def->znCount;
  for (int zn=0;zn<nb_zn;zn++) {
   /// On fait la requete avec le bon numero de ligne
@@ -122,8 +135,13 @@ void BCountGroup::BSlot_AnaLgn(const int & l_id, const int &prx_id)
 
 }
 
-void BCountGroup::BSlot_RazSelection(void)
+void BCountGroup::BSlot_AnaLgnRaz(void)
 {
+
+ if(tbvAnaLgn == nullptr){
+  return;
+ }
+
  int nb_zn = gm_def->znCount;
  for (int zn=0;zn<nb_zn;zn++) {
   tbvAnaLgn[zn]->selectionModel()->clear();
@@ -186,13 +204,13 @@ QString BCountGroup::getSqlForLine(const int &l_id,int zn)
  tbLabAna = tbLabAna +"_ana_z"+QString::number(zn+1);
 
  sql_msg = "select t1.tip as C, printf(\"%.2f\",t2.bc) as Bc,"+
-                   lst_cols+
-                   " from (B_cmb_z"+
-                   QString::number(zn+1)+
-                   ") as t1, ("+
-                   tbLabAna+
-                   ") as t2 "
-                   "where((t2.id="+QString::number(l_id)+") and(t1.id=t2.idComb))";
+           lst_cols+
+           " from (B_cmb_z"+
+           QString::number(zn+1)+
+           ") as t1, ("+
+           tbLabAna+
+           ") as t2 "
+           "where((t2.id="+QString::number(l_id)+") and(t1.id=t2.idComb))";
 
 #ifndef QT_NO_DEBUG
  qDebug() << sql_msg;
@@ -790,7 +808,7 @@ bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, in
 
 					/// check if Filtres
 					msg = "Select count(*)  from "+tb_flt+" where ("
-								"zne="+QString::number(zn)+
+																										"zne="+QString::number(zn)+
 								" and typ="+QString::number(eType)+
 								" and lgn="+QString::number(val_col)+
 								" and col="+QString::number(col_id)+

@@ -187,14 +187,6 @@ void MainWindow::AssemblerJeuxUsr(stGameConf *usrGame)
 	}
 	else {
 	 lst_tirages->showGen(ana_tirages);
-	 /*
-	 connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
-					 lst_tirages, SLOT(BSlot_FilterRequest(const Bp::E_Ana , const B2LstSel *)));
-
-	 connect(lst_tirages,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
-
-	 BTbView::agencerResultats(lst_tirages,ana_tirages);
-	*/
 	}
  }
  else {

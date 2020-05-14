@@ -223,8 +223,8 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  }
  else {
   lstComptage.append(item_4);
-  connect(this,SIGNAL(BSig_AnaLgn(int,int)),item_4,SLOT(BSlot_AnaLgn(int, int)));
-  connect(this,SIGNAL(BSig_RazSelection()),item_4,SLOT(BSlot_RazSelection()));
+  connect(this,SIGNAL(BSig_AnaLgn(int,int)),item_4,SLOT(BSlot_AnaLgnShow(int, int)));
+  connect(this,SIGNAL(BSig_RazSelection()),item_4,SLOT(BSlot_AnaLgnRaz()));
  }
 
 
@@ -382,7 +382,8 @@ void BTirAna::BSlot_ActionButton(int btn_id)
  }
 
  emit BSig_RazSelection();
- emit BSig_FilterRequest(eVal, send);
+
+ emit BSig_FilterRequest(this, eVal, send);
 }
 
 B2LstSel *BTirAna::construireSelection()
@@ -1191,7 +1192,7 @@ void BTirAna::BSlot_MousePressed(const QModelIndex & index, const int &zn, const
  emit bsg_clicked(index,zn,eTyp);
 }
 
-void BTirAna::BSlot_AnaLgn(const int &lgn_id, const int &prx_id)
+void BTirAna::BSlot_AnaLgnShow(const int &lgn_id, const int &prx_id)
 {
  emit BSig_AnaLgn(lgn_id, prx_id);
 }

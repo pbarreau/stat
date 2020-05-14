@@ -33,7 +33,7 @@ QString select_grp(const QModelIndexList &indexes, int zn, int tbl_id);
 QString elmSel_1(const QModelIndexList &indexes, int zn);
 QString elmSel_2(const QModelIndexList &indexes, int zn);
 BTirAna *doLittleAna(const stGameConf *pGame, QString msg);
-QWidget *ana_fltSelection(QString st_obj, BTirages *parent, QWidget **J);
+QWidget *ana_fltSelection(QString st_obj, BTirages *parent, BTirAna **J);
 void updateTbv(QString box_title, QString msg);
 
 private:
@@ -48,7 +48,7 @@ void BSig_Show_Flt(const B2LstSel * sel);
 protected slots:
 void BSlot_closeTab(int index);
 void BSlot_Tir_flt(int index);
-void BSlot_Filter_Tir(const Bp::E_Ico ana, const B2LstSel * sel);
+void BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstSel * sel);
 void BSlot_Result_Tir(const int index);
 
 private slots:
@@ -72,7 +72,7 @@ QSqlQueryModel * sqm_resu;
 QString lst_tirages;
 QGridLayout *lay_fusion;
 BTirAna *ana_TirLst;
-QList<QWidget **> *ana_TirFlt;
+QList<BTirAna **> *ana_TirFlt;
 const B2LstSel * save_sel;
 
 private:

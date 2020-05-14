@@ -380,14 +380,6 @@ void  BTbView::BSlot_MakeCustomGame()
 	}
 	else {
 	 lst_tirages->showGen(ana_tirages);
-	 /*
-	 lst_tirages->setAna(ana_tirages);
-
-	 connect(lst_tirages,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgn(int,int)));
-	 connect(ana_tirages, SIGNAL(BSig_FilterRequest(const Bp::E_Ana , const B2LstSel * )),
-					 lst_tirages, SLOT(BSlot_FilterRequest(const Bp::E_Ana , const B2LstSel *)));
-	 agencerResultats(lst_tirages,ana_tirages);
-	 */
 	}
  }
  else {
