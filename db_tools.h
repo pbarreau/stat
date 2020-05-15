@@ -45,7 +45,6 @@ bool tbFltGet(stTbFiltres *in_out, QString cnx);
 bool tbFltSet(stTbFiltres *in_out, QString cnx);
 void genStop(QString fnName);
 bool SupprimerResultatsPrecedent(QString cnx);
-
 }
 
 #endif // DB_TOOLS_H

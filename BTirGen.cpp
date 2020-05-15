@@ -29,6 +29,7 @@
 #include "BFpm_3.h"
 #include "BTirDelegate.h"
 
+/// https://denishulo.developpez.com/tutoriels/access/combinatoire/#LIV-A
 
 BTirGen::BTirGen(const stGameConf *pGame, etTir gme_tir, QWidget *parent) : BTirages(pGame,gme_tir,parent)
 {

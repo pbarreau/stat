@@ -13,6 +13,7 @@
 #include <QDialog>
 
 #include "bvtabbar.h"
+#include "game.h"
 
 class BUplet: public QWidget
 {
@@ -44,10 +45,12 @@ public:
 //BUplet(st_In const &param);
 //BUplet(st_In const &param, int index=0);
 //BUplet(st_In const &param, QString ensemble="");
+explicit BUplet(const stGameConf *pGame, const int nb);
 BUplet(st_In const &param, int index=0, eCalcul eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=0);
  ~BUplet();
  int getUpl(void);
  QString sql_UsrSelectedTirages(const QModelIndex & index, int pos);
+ QString findUplets(const stGameConf *pGame, const int nb, const int ref_day=1, const int delta=-1);
 
 public slots:
  void slot_Selection(const QString& lstBoules);

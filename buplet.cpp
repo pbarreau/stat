@@ -23,6 +23,224 @@
 
 int BUplet::tot_upl = 0;
 
+BUplet::BUplet(const stGameConf *pGame,const int nb):QWidget (nullptr)
+{
+ QString cnx=pGame->db_ref->cnx;
+
+ // Etablir connexion a la base
+ db_0 = QSqlDatabase::database(cnx);
+ if(db_0.isValid()==false){
+  QString str_error = db_0.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+
+
+ QString sql = findUplets(pGame,nb);
+}
+
+QString BUplet::findUplets(const stGameConf *pGame, const int nb, const int ref_day, const int delta)
+{
+ QString sql_msg = "";
+ int zn=0;
+ QString st_lstcols = "";
+
+ sql_msg = sql_msg +"WITH -- boules dernier tirages";
+ sql_msg = sql_msg +"tb0 AS (";
+ sql_msg = sql_msg +"  SELECT";
+ sql_msg = sql_msg +"    t1.id";
+ sql_msg = sql_msg +"  FROM";
+ sql_msg = sql_msg +"    (b_elm) as t1,";
+ sql_msg = sql_msg +"    (b_fdj) AS t2";
+ sql_msg = sql_msg +"  WHERE";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      (t2.id = 1)";
+ sql_msg = sql_msg +"      AND t1.z1 IN("+st_lstcols+")";
+ sql_msg = sql_msg +"    )";
+ sql_msg = sql_msg +"),";
+ sql_msg = sql_msg +"-- uplet 2 de ces boules";
+ sql_msg = sql_msg +"tb1 AS (";
+ sql_msg = sql_msg +"  SELECT";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      row_number() OVER()";
+ sql_msg = sql_msg +"    ) AS uid,";
+ sql_msg = sql_msg +"    t1.id AS b1,";
+ sql_msg = sql_msg +"    t2.id AS b2,";
+ sql_msg = sql_msg +"    t3.id AS b3";
+ sql_msg = sql_msg +"  FROM";
+ sql_msg = sql_msg +"    (tb0) AS t1,";
+ sql_msg = sql_msg +"    (tb0) AS t2,";
+ sql_msg = sql_msg +"    (tb0) AS t3";
+ sql_msg = sql_msg +"  WHERE";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      (t1.id < t2.id)";
+ sql_msg = sql_msg +"      AND (t2.id < t3.id)";
+ sql_msg = sql_msg +"    )";
+ sql_msg = sql_msg +"  ORDER BY";
+ sql_msg = sql_msg +"    t1.id,";
+ sql_msg = sql_msg +"    t2.id,";
+ sql_msg = sql_msg +"    t3.id";
+ sql_msg = sql_msg +"),";
+ sql_msg = sql_msg +"-- ligne contenant ces uplets";
+ sql_msg = sql_msg +"tb2 AS (";
+ sql_msg = sql_msg +"  SELECT";
+ sql_msg = sql_msg +"    t1.uid,";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      row_number() OVER(partition BY t1.uid)";
+ sql_msg = sql_msg +"    ) AS lgn,";
+ sql_msg = sql_msg +"    t2.*";
+ sql_msg = sql_msg +"  FROM";
+ sql_msg = sql_msg +"    (tb1) AS t1,";
+ sql_msg = sql_msg +"    (b_fdj) AS t2";
+ sql_msg = sql_msg +"  WHERE";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      (";
+ sql_msg = sql_msg +"        t1.b1 IN ("+st_lstcols+")";
+ sql_msg = sql_msg +"      )";
+ sql_msg = sql_msg +"      AND (";
+ sql_msg = sql_msg +"        t1.b2 IN ("+st_lstcols+")";
+ sql_msg = sql_msg +"      )";
+ sql_msg = sql_msg +"      AND (";
+ sql_msg = sql_msg +"        t1.b3 IN ("+st_lstcols+")";
+ sql_msg = sql_msg +"      )";
+ sql_msg = sql_msg +"    )";
+ sql_msg = sql_msg +"  ORDER BY";
+ sql_msg = sql_msg +"    t1.uid ASC";
+ sql_msg = sql_msg +"),";
+ sql_msg = sql_msg +"-- comptage";
+ sql_msg = sql_msg +"tb2count AS (";
+ sql_msg = sql_msg +"  SELECT";
+ sql_msg = sql_msg +"    t1.uid,";
+ sql_msg = sql_msg +"    t1.b1,";
+ sql_msg = sql_msg +"    t1.b2,";
+ sql_msg = sql_msg +"    t1.b3,";
+ sql_msg = sql_msg +"    count(t2.uid) AS t";
+ sql_msg = sql_msg +"  FROM";
+ sql_msg = sql_msg +"    (tb1) AS t1,";
+ sql_msg = sql_msg +"    (tb2) AS t2";
+ sql_msg = sql_msg +"  WHERE";
+ sql_msg = sql_msg +"    (t1.uid = t2.uid)";
+ sql_msg = sql_msg +"  GROUP BY";
+ sql_msg = sql_msg +"    t2.uid";
+ sql_msg = sql_msg +"  ORDER BY";
+ sql_msg = sql_msg +"    t DESC,";
+ sql_msg = sql_msg +"    t1.b1 ASC,";
+ sql_msg = sql_msg +"    t1.b2 ASC,";
+ sql_msg = sql_msg +"    t1.b3 ASC";
+ sql_msg = sql_msg +"),";
+ sql_msg = sql_msg +"-- jour suivant de ces uplets";
+ sql_msg = sql_msg +"tb3 AS (";
+ sql_msg = sql_msg +"  SELECT";
+ sql_msg = sql_msg +"    t1.uid,";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      row_number() OVER(partition BY t1.uid)";
+ sql_msg = sql_msg +"    ) AS lgn,";
+ sql_msg = sql_msg +"    t2.*";
+ sql_msg = sql_msg +"  FROM";
+ sql_msg = sql_msg +"    (tb2) AS t1,";
+ sql_msg = sql_msg +"    (b_fdj) AS t2";
+ sql_msg = sql_msg +"  WHERE";
+ sql_msg = sql_msg +"    (t2.id = t1.id - 1)";
+ sql_msg = sql_msg +"),";
+ sql_msg = sql_msg +"-- nouveaux uplets";
+ sql_msg = sql_msg +"-- creer une nouvelle liste de boules";
+ sql_msg = sql_msg +"-- pour chacun des uid du depart";
+ sql_msg = sql_msg +"tb4 AS (";
+ sql_msg = sql_msg +"  SELECT";
+ sql_msg = sql_msg +"    t2.uid,";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      row_number() OVER(partition BY t2.uid)";
+ sql_msg = sql_msg +"    ) AS lgn,";
+ sql_msg = sql_msg +"    t1.id";
+ sql_msg = sql_msg +"  FROM";
+ sql_msg = sql_msg +"    (b_elm) AS t1,";
+ sql_msg = sql_msg +"    (tb3) AS t2";
+ sql_msg = sql_msg +"  WHERE";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      t1.z1 IN("+st_lstcols+")";
+ sql_msg = sql_msg +"    )";
+ sql_msg = sql_msg +"  GROUP BY";
+ sql_msg = sql_msg +"    t2.uid,";
+ sql_msg = sql_msg +"    t1.id";
+ sql_msg = sql_msg +"),";
+ sql_msg = sql_msg +"-- pour chaque ensemble construit";
+ sql_msg = sql_msg +"-- creer la nouvelle liste uplets";
+ sql_msg = sql_msg +"tb5 AS (";
+ sql_msg = sql_msg +"  SELECT";
+ sql_msg = sql_msg +"    t1.uid,";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      row_number() OVER(partition BY t1.uid)";
+ sql_msg = sql_msg +"    ) AS lgn,";
+ sql_msg = sql_msg +"    t1.id AS b1,";
+ sql_msg = sql_msg +"    t2.id AS b2,";
+ sql_msg = sql_msg +"    t3.id AS b3";
+ sql_msg = sql_msg +"  FROM";
+ sql_msg = sql_msg +"    (tb4) AS t1,";
+ sql_msg = sql_msg +"    (tb4) AS t2,";
+ sql_msg = sql_msg +"    (tb4) AS t3";
+ sql_msg = sql_msg +"  WHERE";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      (t1.uid = t2.uid)";
+ sql_msg = sql_msg +"      AND (t2.uid = t3.uid)";
+ sql_msg = sql_msg +"      AND (t1.id < t2.id)";
+ sql_msg = sql_msg +"      AND (t2.id < t3.id)";
+ sql_msg = sql_msg +"    )";
+ sql_msg = sql_msg +"  ORDER BY";
+ sql_msg = sql_msg +"    t1.uid,";
+ sql_msg = sql_msg +"    t1.id,";
+ sql_msg = sql_msg +"    t2.id,";
+ sql_msg = sql_msg +"    t3.id";
+ sql_msg = sql_msg +"),";
+ sql_msg = sql_msg +"-- compter les nouveaux uplets";
+ sql_msg = sql_msg +"-- dans la listes des tirages futures";
+ sql_msg = sql_msg +"-- leurs correspondant";
+ sql_msg = sql_msg +"tb6 AS (";
+ sql_msg = sql_msg +"  SELECT";
+ sql_msg = sql_msg +"    t1.uid,";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      row_number() OVER(partition BY t1.uid)";
+ sql_msg = sql_msg +"    ) AS pos,";
+ sql_msg = sql_msg +"    t1.lgn,";
+ sql_msg = sql_msg +"    t1.b1,";
+ sql_msg = sql_msg +"    t1.b2,";
+ sql_msg = sql_msg +"    t1.b3,";
+ sql_msg = sql_msg +"    count(*) AS t";
+ sql_msg = sql_msg +"  FROM";
+ sql_msg = sql_msg +"    (tb5) AS t1,";
+ sql_msg = sql_msg +"    (tb3) AS t2";
+ sql_msg = sql_msg +"  WHERE";
+ sql_msg = sql_msg +"    (";
+ sql_msg = sql_msg +"      (t1.uid = t2.uid)";
+ sql_msg = sql_msg +"      AND (";
+ sql_msg = sql_msg +"        t1.b1 IN ("+st_lstcols+")";
+ sql_msg = sql_msg +"      )";
+ sql_msg = sql_msg +"      AND (";
+ sql_msg = sql_msg +"        t1.b2 IN ("+st_lstcols+")";
+ sql_msg = sql_msg +"      )";
+ sql_msg = sql_msg +"      AND (";
+ sql_msg = sql_msg +"        t1.b3 IN ("+st_lstcols+")";
+ sql_msg = sql_msg +"      )";
+ sql_msg = sql_msg +"    )";
+ sql_msg = sql_msg +"  GROUP BY";
+ sql_msg = sql_msg +"    t2.uid,";
+ sql_msg = sql_msg +"    t1.lgn";
+ sql_msg = sql_msg +"  ORDER BY";
+ sql_msg = sql_msg +"    t DESC,";
+ sql_msg = sql_msg +"    t1.uid ASC,";
+ sql_msg = sql_msg +"    t1.b1 ASC,";
+ sql_msg = sql_msg +"    t1.b2 ASC,";
+ sql_msg = sql_msg +"    t1.b3 ASC";
+ sql_msg = sql_msg +")";
+ sql_msg = sql_msg +"SELECT";
+ sql_msg = sql_msg +"  t1.*";
+ sql_msg = sql_msg +"FROM";
+ sql_msg = sql_msg +"  (tb6) AS t1";
+#ifndef QT_NO_DEBUG
+ qDebug() <<sql_msg;
+#endif
+ return sql_msg;
+}
+
 BUplet::BUplet(st_In const &param, int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
  input = param;

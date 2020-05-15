@@ -627,6 +627,7 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
  //QApplication::exit();
 }
 
+
 bool DB_Tools::SupprimerResultatsPrecedent(QString cnx)
 {
  bool b_retVal = true;

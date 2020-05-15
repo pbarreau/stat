@@ -49,6 +49,7 @@
 #include "BFdj.h"
 #include "BTirAna.h"
 #include "db_tools.h"
+#include "BTest.h"
 
 static stTiragesDef configJeu;
 
@@ -76,6 +77,8 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 
  stGameConf *curConf = charge->getConfig();
 
+ bool b_retVal = true;
+
  //EtudierJeu_v1(curConf, use_odb);
 
  //return;
@@ -93,6 +96,8 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
  else{
   lst_tirages->showFdj(ana_tirages);
  }
+
+ b_retVal = BTest::montestRapideSql(curConf,0);
 
 
  return;
@@ -112,7 +117,9 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
   return;
  }
 
+ bool b_retVal = true;
 
+ b_retVal = BTest::montestRapideSql(pGame,0);
 
  /// Verifier si la table de liste des jeux existe
  if(DB_Tools::isDbGotTbl("E_lst",db_1.connectionName())==false){
@@ -121,7 +128,6 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
 
  /// Pour les requetes
  QSqlQuery query(db_1);
- bool b_retVal = true;
  QString msg = "";
 
  /// Effacer anciens calculs des filtres
