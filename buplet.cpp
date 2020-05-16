@@ -91,7 +91,7 @@ QWidget *BUplet::getMainTbv(const stGameConf *pGame, int i)
 
 
  /// Largeur du tableau
- qtv_tmp->hideColumn(Bp::colId);
+ //qtv_tmp->hideColumn(Bp::colId);
  int l = qtv_tmp->getMinWidth();
  qtv_tmp->setFixedWidth(l);
 
@@ -151,12 +151,14 @@ QWidget *BUplet::getResuTbv(const stGameConf *pGame, int i)
 
  /// Largeur du tableau
  qtv_tmp->hideColumn(Bp::colId);
+ qtv_tmp->hideColumn(1);
+ qtv_tmp->hideColumn(2);
  int l = qtv_tmp->getMinWidth();
  qtv_tmp->setFixedWidth(l);
 
  wdg_tmp->setLayout(glay_tmp);
 
- return wdg_tmp;
+ return qtv_tmp->getScreen();
 }
 
 void BUplet::BSlot_clicked(const QModelIndex &index)
@@ -165,7 +167,7 @@ void BUplet::BSlot_clicked(const QModelIndex &index)
  int id = view->objectName().toInt();
  int selection = index.sibling(index.row(),Bp::colId).data().toInt();
 
- QString sql_msg = findUplets(gm_def,0,id,selection);
+ QString sql_msg = findUplets(gm_def,0,id+2,selection);
 
  QAbstractItemModel *model = tbvLevel[id]->model();
  QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
@@ -177,11 +179,21 @@ void BUplet::BSlot_clicked(const QModelIndex &index)
   sqm_tmp->fetchMore();
  }
  int nb_rows = sqm_tmp->rowCount();
- int rows_proxy = view->model()->rowCount();
- QString st_title = "Resu uplets : " + QString::number(id+2).rightJustified(2,'0')+
-                    " a J+1. Nb tirages : "+QString::number(nb_rows)+
+
+ QString src_uplets="";
+ for (int i = 1; i<= id+2; i++) {
+  QString val = index.sibling(index.row(),i).data().toString();
+  src_uplets = src_uplets + val;
+  if(i<id+2){
+   src_uplets = src_uplets+ ", ";
+  }
+ }
+
+ int rows_proxy = tbvLevel[id]->model()->rowCount();
+ QString st_title = "Apres uplets : " + src_uplets+
+                    ". Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);
- view->setTitle(st_title);
+ tbvLevel[id]->setTitle(st_title);
 
 }
 
