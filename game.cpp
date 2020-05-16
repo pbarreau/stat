@@ -13,6 +13,30 @@ stGameConf::stGameConf()
  gmeConf_counter++;
 }
 
+stGameConf::stGameConf(stGameConf *conf_in)
+{
+ this->id = conf_in->id;
+ this->bUseMadeBdd = conf_in->bUseMadeBdd;
+ this->eFdjType = conf_in->eFdjType;
+ this->eTirType = conf_in->eTirType;
+ this->znCount = conf_in->znCount;
+
+ this->limites = conf_in->limites;
+ this->names = conf_in->names;
+ this->slFlt = conf_in->slFlt;
+
+ /// https://stackoverflow.com/questions/7533833/view-array-contents-in-qt-creator-debugger
+ this->db_ref = new stParam_3;
+ this->db_ref->ihm = conf_in->db_ref->ihm;
+ this->db_ref->cnx = conf_in->db_ref->cnx;
+ this->db_ref->fdj = conf_in->db_ref->fdj;
+ this->db_ref->src = conf_in->db_ref->src;
+ this->db_ref->sql = conf_in->db_ref->sql;
+ this->db_ref->dad = conf_in->db_ref->dad;
+ this->db_ref->flt = conf_in->db_ref->flt;
+ this->db_ref->jrs = conf_in->db_ref->jrs;
+}
+
 stGameConf* stGameConf::operator=(stGameConf * a)
 {
  stGameConf* ret = new stGameConf;

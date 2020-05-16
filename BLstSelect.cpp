@@ -5,8 +5,8 @@ BLstSelect::BLstSelect():type(eCountToSet),zn(-1),sel(nullptr)
 
 }
 
-BLstSelect::BLstSelect(etCount cur_type, int cur_zn, QItemSelectionModel *cur_sel)
-    :type(cur_type),zn(cur_zn),indexes(cur_sel->selectedIndexes()),sel(cur_sel)
+BLstSelect::BLstSelect(etCount cur_type, int cur_zn, QItemSelectionModel *cur_sel, int cur_upl)
+    :type(cur_type),zn(cur_zn),indexes(cur_sel->selectedIndexes()),sel(cur_sel), upl(cur_upl)
 {
  //indexes = cur_sel->selectedIndexes();
  /*

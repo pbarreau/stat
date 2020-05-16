@@ -208,8 +208,16 @@ QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 		 case eCountGrp:
 			ret_elm = select_grp(item->indexes, item->zn, cur_tbl_id);
 			break;
+
+		 case eCountUpl:
+			int a = 12; /// Pas encore traite
+			return "";
+			break;
+/*
 		 default:
-			QMessageBox::warning(nullptr, "Type calclul","Error:BTirages::makeSqlFromSelection")	;
+			QString cal_err = QString::number(item->type)+" : label ?\n Fn: BTirages::makeSqlFromSelection";
+			QMessageBox::warning(nullptr, "Type calclul inconnu !!",cal_err)	;
+*/
 		}
 	 }
 	 ret_add = ret_add + ret_elm;

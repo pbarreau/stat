@@ -54,7 +54,7 @@ QWidget *BUplet::getMainTbv(const stGameConf *pGame, int i)
  QGridLayout *glay_tmp = new QGridLayout;
  BGTbView *qtv_tmp = new BGTbView;
  qtv_tmp->setObjectName(QString::number(i-2));
- tbvLevel[i-2] = new BGTbView;
+ upl_TbView[i-2] = new BGTbView;
 
  QString sql_msg = findUplets(pGame,0,i,-1,"tb2Count");
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
@@ -113,7 +113,7 @@ QWidget *BUplet::getResuTbv(const stGameConf *pGame, int i)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
- BGTbView *qtv_tmp = tbvLevel[i];
+ BGTbView *qtv_tmp = upl_TbView[i];
 
  QString sql_msg = findUplets(pGame,0,i+2,0);
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
@@ -169,7 +169,7 @@ void BUplet::BSlot_clicked(const QModelIndex &index)
 
  QString sql_msg = findUplets(gm_def,0,id+2,selection);
 
- QAbstractItemModel *model = tbvLevel[id]->model();
+ QAbstractItemModel *model = upl_TbView[id]->model();
  QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
  QSqlQueryModel * sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
@@ -189,11 +189,11 @@ void BUplet::BSlot_clicked(const QModelIndex &index)
   }
  }
 
- int rows_proxy = tbvLevel[id]->model()->rowCount();
+ int rows_proxy = upl_TbView[id]->model()->rowCount();
  QString st_title = "Apres uplets : " + src_uplets+
                     ". Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);
- tbvLevel[id]->setTitle(st_title);
+ upl_TbView[id]->setTitle(st_title);
 
 }
 
@@ -204,7 +204,7 @@ bool BUplet::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn
 }
 
 BUplet::BUplet(const stGameConf *pGame,const int zn, const int nb, const QString tbl)
-    :BCount (pGame, eCountUpl), nb_request(nb), cur_zn(zn), req_tbl(tbl)
+    :BCount (pGame, eCountUpl)
 {
  QString cnx=pGame->db_ref->cnx;
 
@@ -216,8 +216,10 @@ BUplet::BUplet(const stGameConf *pGame,const int zn, const int nb, const QString
   return;
  }
 
- tbvLevel = new BGTbView*[2];
- ///QString sql = findUplets(pGame,nb);
+ upl_TbView = new BGTbView*[2];
+ upl_items = nb;
+ upl_zn=zn;
+ upl_tbInternal=tbl;
 }
 
 #if 1

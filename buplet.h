@@ -71,11 +71,13 @@ class BUplet: public BCount
  QString ens_ref;
  static int tot_upl;
 
+ /*
  private:
- int nb_request;
- int cur_zn;
- QString req_tbl;
- BGTbView **tbvLevel;
+ int upl_items;
+ int upl_zn;
+ QString upl_tbInternal;
+ BGTbView **upl_TbView;
+ */
 
  private:
  QGroupBox *gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);

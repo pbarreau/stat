@@ -194,8 +194,6 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  BcElm * item_1 = new BcElm(&a);
  */
 
- BUplet * tmp = new BUplet (pGame);
- lstComptage.append(tmp);
 
  BcElm * item_1 = new BcElm(pGame);
  if(item_1->mySefl() == nullptr){
@@ -203,6 +201,13 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  }
  else {
   lstComptage.append(item_1);
+ }
+
+ if((pGame->db_ref->dad.size() == 0) && (pGame->eTirType == eTirFdj)){
+  stGameConf *for_uplet = new stGameConf(pGame);
+  for_uplet->znCount = 1;
+  BUplet * tmp = new BUplet (for_uplet);
+  lstComptage.append(tmp);
  }
 
  BCountComb * item_2 = new BCountComb(pGame);

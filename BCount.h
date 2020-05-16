@@ -93,6 +93,13 @@ class BCount:public QWidget
  BTbView **tabTbv;
  QSqlDatabase dbCount;
 
+ protected:
+ int upl_items;
+ int upl_zn;
+ QString upl_tbInternal;
+ BGTbView **upl_TbView;
+
+
  public:
  typedef struct _stMkLocal{
   QString dstTbl; /// table a creer

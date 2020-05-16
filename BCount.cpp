@@ -244,11 +244,25 @@ QList<BLstSelect *> *BCount::getSelection(void)
 
  int nb_zn = gm_def->znCount;
  for (int i=0;i<nb_zn;i++) {
-  QItemSelectionModel  *tmp = tabTbv[i]->selectionModel();
-  QList<QModelIndex> indexes = tmp->selectedIndexes();
-  if(indexes.size() !=0 ){
-   BLstSelect *zn_sel = new BLstSelect(type,i,tmp);
-   ret->append(zn_sel);
+  QItemSelectionModel  *tmp = nullptr;
+  QList<QModelIndex> indexes;
+  if(type != eCountUpl){
+   tmp = tabTbv[i]->selectionModel();
+   indexes = tmp->selectedIndexes();
+   if(indexes.size() !=0 ){
+    BLstSelect *zn_sel = new BLstSelect(type,i,tmp);
+    ret->append(zn_sel);
+   }
+  }
+  else {
+   for (int j=0; j< 2; j++) {
+    tmp = upl_TbView[i]->selectionModel();
+    indexes = tmp->selectedIndexes();
+    if(indexes.size() !=0 ){
+     BLstSelect *zn_sel = new BLstSelect(type,i,tmp,j);
+     ret->append(zn_sel);
+    }
+   }
   }
  }
 

@@ -402,7 +402,7 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
  QString key = "t1.z"+QString::number(zn+1);
  QString st_cols = FN1_getFieldsFromZone(pGame, zn, "t2");
 
- QString col_vsl = "";
+ QString col_vsl = ",COUNT(*) AS T\n";
  QString tbl_key = "";
  QString str_jrs = "";
  QString tbl_tirages = pGame->db_ref->src;

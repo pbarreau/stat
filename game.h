@@ -66,6 +66,7 @@ typedef struct _stParam_1{
 class stGameConf{
  public:
  stGameConf();
+ stGameConf(stGameConf * conf_in);
  stGameConf* operator=(stGameConf * a);
 
  public:
