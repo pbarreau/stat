@@ -1,6 +1,7 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #include <QSqlError>
+#include <QIODevice>
 
 #include "BTest.h"
 #include "db_tools.h"
@@ -41,7 +42,7 @@ QString BTest::getFieldsFromZone(const stGameConf *pGame, int zn, QString alias,
  return   st_items;
 }
 
-bool BTest::montestRapideSql(const stGameConf *pGame, int zn)
+bool BTest::montestRapideSql(const stGameConf *pGame, int zn, int loop)
 {
  bool b_retVal = true;
  QString cnx=pGame->db_ref->cnx;
@@ -79,7 +80,7 @@ bool BTest::montestRapideSql(const stGameConf *pGame, int zn)
  QString r7 = "";
  QString r8 = "";
 
- int nb_loop = 3;
+ int nb_loop = loop;
  for (int i = 0; i< nb_loop; i++) {
   r0 = r0 + ref_0.arg(i+1);
   r1 = r1 + ref_1.arg(i+1).arg(pGame->names[zn].abv).arg(i+1);
@@ -321,7 +322,7 @@ bool BTest::montestRapideSql(const stGameConf *pGame, int zn)
  sql_msg = sql_msg + "  -- tirages futures\n";
  sql_msg = sql_msg + "  -- leurs correspondant\n";
  sql_msg = sql_msg + tb6;
- sql_msg = sql_msg + "select\n";
+ sql_msg = sql_msg + "select \n";
  sql_msg = sql_msg + "  t1.*\n";
  sql_msg = sql_msg + "from\n";
  sql_msg = sql_msg + "  (tb6) as t1\n";
@@ -342,7 +343,30 @@ bool BTest::montestRapideSql(const stGameConf *pGame, int zn)
 #endif
  }
 
-
+ writetoFile("Mes_Requetes.txt", "\n\n------------\n");
+ writetoFile("Mes_Requetes.txt", sql_msg);
  return b_retVal;
+}
+
+void BTest::writetoFile(QString file_name, QString msg, bool append)
+{
+ QFile file(file_name);
+ QIODevice::OpenMode mode = QIODevice::OpenModeFlag::NotOpen;
+
+ if(append==true){
+  mode = QIODevice::OpenModeFlag::Append;
+ }
+ else {
+  mode = QIODevice::OpenModeFlag::WriteOnly;
+ }
+
+ if (!file.open(mode)){
+  /// WriteOnly ou Append
+  /// https://openclassrooms.com/forum/sujet/qt-ecrire-un-texte-dans-un-fichier-txt-75563
+  QMessageBox::information(nullptr, "Pgm", "BTest::writetoFile!!",QMessageBox::Yes);
+ }
+
+ QTextStream msg_logs(&file);
+ msg_logs << msg;
 }
 #endif

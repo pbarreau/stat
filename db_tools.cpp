@@ -567,6 +567,15 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
  QString sqlText = "";
  QString sqlGood = "";
 
+ /// Lournal des erreurs
+ QFile file("Sql_Errors.log");
+ if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
+  /// WriteOnly ou Append
+  /// https://openclassrooms.com/forum/sujet/qt-ecrire-un-texte-dans-un-fichier-txt-75563
+  QMessageBox::information(nullptr, "Pgm", "Fichiers des erreurs!!",QMessageBox::Yes);
+ }
+ QTextStream err_logs(&file);
+
  /// Analyse des connection ouvertes
  QStringList lst_cnx = QSqlDatabase::connectionNames();
  int nb_db = lst_cnx.size();
@@ -619,6 +628,7 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
 
 	QMessageBox::information(nullptr, "Pgm", msg,QMessageBox::Yes);
 #ifndef QT_NO_DEBUG
+	err_logs << "\n\n-------------\n"<<msg;
 	qDebug() <<msg;
 #endif
 

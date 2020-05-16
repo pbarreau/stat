@@ -72,6 +72,7 @@ class cFdjData//:public QObject
  QString mk_IdDsk(etFdj type, etTir eTirtype);
  bool ouvrirBase(etFdj eFdjType);
  bool OPtimiseAccesBase(void);
+ bool AuthoriseChargementExtension(void);
 
  bool FillDataBase(void);
  bool crt_TbGme(QString tbl_name,QSqlQuery *query);

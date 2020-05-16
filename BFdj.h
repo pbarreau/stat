@@ -53,9 +53,10 @@ static QString getCurDbFile(void);
 
 private:
  bool ouvrirBase(stFdj *prm);
+ bool AuthoriseChargementExtension(void);
+ bool OPtimiseAccesBase(void);
  QString mk_IdCnx(etFdj type);
  QString mk_IdDsk(etFdj type);
- bool OPtimiseAccesBase(void);
  stGameConf *init(stFdj *prm);
 
  bool crt_TblFdj(stGameConf *pGame);

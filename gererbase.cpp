@@ -538,14 +538,14 @@ bool GererBase::ouvrirBase(bool action,etFdj type)
 
             if(version < "3.25"){
                 st_query = QString("Version sqlite :") + version +QString(" < 3.25\n");
-                QMessageBox::critical(NULL,"Stat",st_query,QMessageBox::Ok);
+                QMessageBox::critical(nullptr,"Stat",st_query,QMessageBox::Ok);
                 b_retVal = false;
             }
             else{
                 /// Chargement librairie math
                 if(!(b_retVal=AuthoriseChargementExtension())){
                     st_query = QString("Chargement sqMath echec !!\n");
-                    QMessageBox::critical(NULL,"Stat",st_query,QMessageBox::Ok);
+                    QMessageBox::critical(nullptr,"Stat",st_query,QMessageBox::Ok);
                 }
             }
         }

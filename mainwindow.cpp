@@ -97,7 +97,8 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
   lst_tirages->showFdj(ana_tirages);
  }
 
- b_retVal = BTest::montestRapideSql(curConf,0);
+ //b_retVal = BTest::montestRapideSql(curConf,0,4);
+ //b_retVal = BTest::montestRapideSql(curConf,0,3);
 
 
  return;
@@ -118,8 +119,6 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
  }
 
  bool b_retVal = true;
-
- b_retVal = BTest::montestRapideSql(pGame,0);
 
  /// Verifier si la table de liste des jeux existe
  if(DB_Tools::isDbGotTbl("E_lst",db_1.connectionName())==false){

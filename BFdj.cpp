@@ -9,6 +9,10 @@
 #include <QFileDialog>
 #include <QDate>
 
+#include <QSqlDriver>
+#include "sqlExtensions/inc/sqlite3.h"
+#include "sqlExtensions/inc/sqlite3ext.h"
+
 #include "db_tools.h"
 #include "BFdj.h"
 
@@ -97,10 +101,90 @@ bool BFdj::ouvrirBase(stFdj *prm)
  // Open database
  b_retVal = fdj_db.open();
 
- if(b_retVal)
-  b_retVal = OPtimiseAccesBase();
+ if(b_retVal){
 
+	QSqlQuery query(fdj_db);
+	QString st_query = "select sqlite_version();";
+	if((b_retVal = query.exec(st_query))){
+	 query.first();
+	 QString version =query.value(0).toString();
 
+	 if(version < "3.25"){
+		st_query = QString("Version sqlite :") + version +QString(" < 3.25\n");
+		QMessageBox::critical(nullptr,"Stat",st_query,QMessageBox::Ok);
+		b_retVal = false;
+	 }
+	 else{
+		/// Chargement librairie math
+		if(!(b_retVal=AuthoriseChargementExtension())){
+		 st_query = QString("Chargement sqMath echec !!\n");
+		 QMessageBox::critical(nullptr,"Stat",st_query,QMessageBox::Ok);
+		}
+		else {
+		 /// On optimise les acces base
+		 b_retVal = OPtimiseAccesBase();
+		}
+	 }
+	}
+ }
+
+  return b_retVal;
+}
+
+bool BFdj::AuthoriseChargementExtension(void)
+{
+ bool b_retVal = true;
+ QSqlQuery query(fdj_db);
+ QString msg = "";
+
+ QString cur_rep = QCoreApplication::applicationDirPath();
+ QString MonDirLib = cur_rep + ".\\sqlExtensions\\lib";
+ QStringList mesLibs = QCoreApplication::libraryPaths();
+ mesLibs<<MonDirLib;
+ //QCoreApplication::addLibraryPath(MonDirLib);
+ QCoreApplication::setLibraryPaths(mesLibs);
+
+ /// http://sqlite.1065341.n5.nabble.com/Using-loadable-extension-with-Qt-td24872.html
+ /// https://arstechnica.com/civis/viewtopic.php?f=20&t=64150
+ QVariant v = fdj_db.driver()->handle();
+
+ if (v.isValid() && qstrcmp(v.typeName(), "sqlite3*")==0)
+
+ {
+
+	// v.data() returns a pointer to the handle
+	sqlite3_initialize();
+	sqlite3 *handle = *static_cast<sqlite3 **>(v.data());
+
+	if (handle != 0) { // check that it is not NULL
+
+	 //const char *loc = NULL;
+	 //loc = sqlite_version();
+
+	 int ret = sqlite3_enable_load_extension(handle,1);
+	 //int ret = loadExt(handle,1);
+
+	 /// Lancer la requete
+	 QString msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-sqMath.dll')";
+	 b_retVal = query.exec(msg);
+#ifndef QT_NO_DEBUG
+	 if (query.lastError() .isValid())
+	 {
+		foreach (const QString &path, QCoreApplication::libraryPaths())
+		 qDebug() << path;
+
+		qDebug() << "Error: cannot load extension (" << query.lastError().text()<<")";
+		b_retVal = false;
+	 }
+#endif
+
+  }
+
+ }
+ else
+ {
+  b_retVal = false;
+ }
  return b_retVal;
 }
 
