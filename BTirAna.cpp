@@ -195,6 +195,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  */
 
  BUplet * tmp = new BUplet (pGame);
+ lstComptage.append(tmp);
 
  BcElm * item_1 = new BcElm(pGame);
  if(item_1->mySefl() == nullptr){

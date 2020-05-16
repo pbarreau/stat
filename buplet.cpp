@@ -40,7 +40,149 @@ QTabWidget * BUplet::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
+ for (int i = 2; i<=3; i++) {
+  QWidget * wdg_tmp = getMainTbv(pGame,i);
+  tab_Top->addTab(wdg_tmp,QString::number(i).rightJustified(2,'0'));
+ }
+
  return tab_Top;
+}
+
+QWidget *BUplet::getMainTbv(const stGameConf *pGame, int i)
+{
+ QWidget * wdg_tmp = new QWidget;
+ QGridLayout *glay_tmp = new QGridLayout;
+ BGTbView *qtv_tmp = new BGTbView;
+ qtv_tmp->setObjectName(QString::number(i-2));
+ tbvLevel[i-2] = new BGTbView;
+
+ QString sql_msg = findUplets(pGame,0,i,-1,"tb2Count");
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ sqm_tmp->setQuery(sql_msg, dbCount);
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+ int nb_rows = sqm_tmp->rowCount();
+
+ QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+ qtv_tmp->setSortingEnabled(true);
+
+ int rows_proxy = qtv_tmp->model()->rowCount();
+ QString st_title = "Uplets : " + QString::number(i).rightJustified(2,'0')+
+                    ". Nb tirages : "+QString::number(nb_rows)+
+                    " sur " + QString::number(rows_proxy);
+ qtv_tmp->setTitle(st_title);
+
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+
+ int nbCol = sqm_tmp->columnCount();
+ qtv_tmp->resizeColumnsToContents();
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+
+ /// Largeur du tableau
+ qtv_tmp->hideColumn(Bp::colId);
+ int l = qtv_tmp->getMinWidth();
+ qtv_tmp->setFixedWidth(l);
+
+ // simple click dans fenetre  pour selectionner boule
+ connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+         this, SLOT(BSlot_clicked( QModelIndex) ) );
+
+
+ QWidget *tmp = getResuTbv(pGame,i-2);
+ glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
+ glay_tmp->addWidget(tmp,0,1);
+
+ wdg_tmp->setLayout(glay_tmp);
+
+ return wdg_tmp;
+}
+
+QWidget *BUplet::getResuTbv(const stGameConf *pGame, int i)
+{
+ QWidget * wdg_tmp = new QWidget;
+ QGridLayout *glay_tmp = new QGridLayout;
+ BGTbView *qtv_tmp = tbvLevel[i];
+
+ QString sql_msg = findUplets(pGame,0,i+2,0);
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ sqm_tmp->setQuery(sql_msg, dbCount);
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+ int nb_rows = sqm_tmp->rowCount();
+
+ QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+ qtv_tmp->setSortingEnabled(true);
+
+ int rows_proxy = qtv_tmp->model()->rowCount();
+ QString st_title = "Resu uplets : " + QString::number(i+2).rightJustified(2,'0')+
+                    " a J+1. Nb tirages : "+QString::number(nb_rows)+
+                    " sur " + QString::number(rows_proxy);
+ qtv_tmp->setTitle(st_title);
+
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+
+ int nbCol = sqm_tmp->columnCount();
+ qtv_tmp->resizeColumnsToContents();
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+
+ /// Largeur du tableau
+ qtv_tmp->hideColumn(Bp::colId);
+ int l = qtv_tmp->getMinWidth();
+ qtv_tmp->setFixedWidth(l);
+
+ wdg_tmp->setLayout(glay_tmp);
+
+ return wdg_tmp;
+}
+
+void BUplet::BSlot_clicked(const QModelIndex &index)
+{
+ BGTbView *view = qobject_cast<BGTbView *>(sender());
+ int id = view->objectName().toInt();
+ int selection = index.sibling(index.row(),Bp::colId).data().toInt();
+
+ QString sql_msg = findUplets(gm_def,0,id,selection);
+
+ QAbstractItemModel *model = tbvLevel[id]->model();
+ QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
+ QSqlQueryModel * sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+ sqm_tmp->setQuery(sql_msg,dbCount);
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+ int nb_rows = sqm_tmp->rowCount();
+ int rows_proxy = view->model()->rowCount();
+ QString st_title = "Resu uplets : " + QString::number(id+2).rightJustified(2,'0')+
+                    " a J+1. Nb tirages : "+QString::number(nb_rows)+
+                    " sur " + QString::number(rows_proxy);
+ view->setTitle(st_title);
+
 }
 
 bool BUplet::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
@@ -62,12 +204,12 @@ BUplet::BUplet(const stGameConf *pGame,const int zn, const int nb, const QString
   return;
  }
 
- tbvLevel = new BGTbView[2];
+ tbvLevel = new BGTbView*[2];
  ///QString sql = findUplets(pGame,nb);
 }
 
 #if 1
-QString BUplet::findUplets(const stGameConf *pGame, const int zn, const int loop, QString tb_def, const int ref_day, const int delta)
+QString BUplet::findUplets(const stGameConf *pGame, const int zn, const int loop, const int key, QString tb_def, const int ref_day, const int delta)
 {
  QSqlQuery query(db_0);
  QString sql_msg = "";
@@ -338,7 +480,7 @@ QString BUplet::findUplets(const stGameConf *pGame, const int zn, const int loop
  sql_msg = sql_msg + "select \n";
  sql_msg = sql_msg + "  t1.*\n";
  sql_msg = sql_msg + "from\n";
- sql_msg = sql_msg + "  ("+tb_def+") as t1\n";
+ sql_msg = sql_msg + "  ("+tb_def.simplified()+") as t1\n";
 
  bool b_retVal = true;
  if((b_retVal=query.exec(sql_msg))==false){
@@ -355,6 +497,10 @@ QString BUplet::findUplets(const stGameConf *pGame, const int zn, const int loop
 	qDebug() <<tb6;
 	qDebug() <<sql_msg;
 #endif
+ }
+
+ if(key !=-1){
+  sql_msg = sql_msg + "where (t1.uid="+QString::number(key)+")";
  }
 
  return sql_msg;

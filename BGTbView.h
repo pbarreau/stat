@@ -6,24 +6,26 @@
 
 class BGTbView : public QTableView
 {
-public:
-BGTbView(QWidget *parent = nullptr);
-~BGTbView();
-void setTitle(QString title, bool visible=true);
-QGroupBox * getSquare(void);
-QGroupBox *getScreen(bool spacer=false);
-void addUpLayout(QLayout *up_in);
-int getMinWidth(int delta=2);
-int getMinHeight();
+ Q_OBJECT
 
-protected:
-void mouseMoveEvent( QMouseEvent * inEvent );
+ public:
+ BGTbView(QWidget *parent = nullptr);
+ ~BGTbView();
+ void setTitle(QString title, bool visible=true);
+ QGroupBox * getSquare(void);
+ QGroupBox *getScreen(bool spacer=false);
+ void addUpLayout(QLayout *up_in);
+ int getMinWidth(int delta=2);
+ int getMinHeight();
 
-protected:
-QGroupBox *square;
+ protected:
+ void mouseMoveEvent( QMouseEvent * inEvent );
 
-private:
-QLayout *up;
+ protected:
+ QGroupBox *square;
+
+ private:
+ QLayout *up;
 
 };
 
