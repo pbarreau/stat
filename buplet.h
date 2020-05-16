@@ -14,8 +14,10 @@
 
 #include "bvtabbar.h"
 #include "game.h"
+#include "BGTbView.h"
+#include "BCount.h"
 
-class BUplet: public QWidget
+class BUplet: public BCount
 {
  Q_OBJECT
 
@@ -45,12 +47,12 @@ public:
 //BUplet(st_In const &param);
 //BUplet(st_In const &param, int index=0);
 //BUplet(st_In const &param, QString ensemble="");
-explicit BUplet(const stGameConf *pGame, const int nb);
-BUplet(st_In const &param, int index=0, eCalcul eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=0);
+explicit BUplet(const stGameConf *pGame, const int zn=0, const int nb=2, const QString tbl="tb6");
+BUplet(st_In const &param, int index=0, eCalcul eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=nullptr);
  ~BUplet();
  int getUpl(void);
  QString sql_UsrSelectedTirages(const QModelIndex & index, int pos);
- QString findUplets(const stGameConf *pGame, const int nb, const int ref_day=1, const int delta=-1);
+ QString findUplets(const stGameConf *pGame, const int zn =0, const int loop=2, QString tb_def="tb6", const int ref_day=1, const int delta=-1);
 
 public slots:
  void slot_Selection(const QString& lstBoules);
@@ -65,6 +67,12 @@ QString gpb_title;
 eEnsemble useData;
 QString ens_ref;
 static int tot_upl;
+
+private:
+int nb_request;
+int cur_zn;
+QString req_tbl;
+BGTbView *tbvLevel;
 
 private:
 QGroupBox *gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
@@ -84,6 +92,13 @@ bool do_SqlCnpCount(int uplet_id);
 QString sql_CnpMkUplet(int nb, QString col, QString tbl_in="B_elm");
 QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
 QString sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
+
+private:
+virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
+virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
+virtual void usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn);
+//virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
+QGridLayout *Compter(QString * pName, int zn);
 
 
 };

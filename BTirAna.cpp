@@ -21,6 +21,7 @@
 
 #include "BTirAna.h"
 #include "BLstSelect.h"
+#include "buplet.h"
 
 int BTirAna::total_analyses = 0;
 
@@ -192,6 +193,8 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  a.db_ref->cnx = "";
  BcElm * item_1 = new BcElm(&a);
  */
+
+ BUplet * tmp = new BUplet (pGame);
 
  BcElm * item_1 = new BcElm(pGame);
  if(item_1->mySefl() == nullptr){

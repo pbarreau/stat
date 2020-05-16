@@ -98,6 +98,7 @@ typedef enum{
  eCountCmb,      /// ... des combinaisons
  eCountGrp,       /// ... des regroupements
  eCountBrc,      /// ... des barycentres
+ eCountUpl,     /// Uplets (2 ou 3)
  eCountEnd
 }etCount;
 

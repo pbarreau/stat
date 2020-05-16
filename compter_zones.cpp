@@ -409,8 +409,15 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
   tbl_key="_fdj";
-  col_vsl = "NULL as I,";
   str_jrs = db_jours;
+  col_vsl = ",NULL as I,\n";
+  col_vsl = col_vsl + "min(t1.t_id-1) as Ec,\n";
+  col_vsl = col_vsl + "max((case when t1.lid=2 then t1.E end)) as Ep,\n";
+  col_vsl = col_vsl + "(PRINTF(\"%.1f\", AVG(E))) AS 'Eµ',\n";
+  col_vsl = col_vsl + "MAX(E) AS EM,\n";
+  col_vsl = col_vsl + "(PRINTF(\"%.1f\", SQRT(VARIANCE(E)))) AS Es,\n";
+  col_vsl = col_vsl + "(PRINTF(\"%.1f\", MEDIAN(E))) AS 'Esµ',\n";
+  col_vsl = col_vsl + "COUNT(*) AS T\n";
  }
 
  if(pGame->eTirType == eTirFdj){
@@ -442,14 +449,8 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
  sql_msg = sql_msg + " -- ie : Esperance et Moyenne de l'esperance\n";
  sql_msg = sql_msg + "tb2 as\n";
  sql_msg = sql_msg + "(\n";
- sql_msg = sql_msg + "select cast(row_number() over ()as int) as id, NULL as C1, t1.b_id as R, NULL as I,\n";
- sql_msg = sql_msg + "min(t1.t_id-1) as Ec,\n";
- sql_msg = sql_msg + "max((case when t1.lid=2 then t1.E end)) as Ep,\n";
- sql_msg = sql_msg + "(PRINTF(\"%.1f\", AVG(E))) AS 'Eµ',\n";
- sql_msg = sql_msg + "MAX(E) AS EM,\n";
- sql_msg = sql_msg + "(PRINTF(\"%.1f\", SQRT(VARIANCE(E)))) AS Es,\n";
- sql_msg = sql_msg + "(PRINTF(\"%.1f\", MEDIAN(E))) AS 'Esµ',\n";
- sql_msg = sql_msg + "COUNT(*) AS T\n";
+ sql_msg = sql_msg + "select cast(row_number() over ()as int) as id, NULL as C1, t1.b_id as R ";
+ sql_msg = sql_msg + col_vsl+"\n";
  sql_msg = sql_msg + str_jrs+"\n";
  sql_msg = sql_msg + "from (tb1) as t1 group by b_id\n";
  sql_msg = sql_msg + ")\n";
