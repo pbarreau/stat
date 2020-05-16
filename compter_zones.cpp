@@ -399,12 +399,13 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
   */
  QString sql_msg="";
 
- QString key = "t1.z"+QString::number(zn+1);
- QString st_cols = FN1_getFieldsFromZone(pGame, zn, "t2");
+ QString key = "t2.z"+QString::number(zn+1);
+ QString st_cols = FN1_getFieldsFromZone(pGame, zn, "t1");
 
  QString col_vsl = ",COUNT(*) AS T\n";
  QString tbl_key = "";
  QString str_jrs = "";
+ QString col_J = "";
  QString tbl_tirages = pGame->db_ref->src;
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
@@ -421,6 +422,7 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
  }
 
  if(pGame->eTirType == eTirFdj){
+  col_J = ", t1.J as J";
   str_jrs = db_jours;
  }
 
@@ -428,15 +430,15 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
  sql_msg = sql_msg + " -- Selection des boules composant les lignes de\n";
  sql_msg = sql_msg + " -- cet ensemble de tirages\n";
  sql_msg = sql_msg + "tb0 as\n";
- sql_msg = sql_msg + "(select t1.id as b_id, t2.id as t_id, t2.J as J from (B_elm)as t1, ("+ tbl_tirages + tbl_key +") as t2 \n";
+ sql_msg = sql_msg + "(select t2.id as b_id, t1.id as t_id"+col_J+" from (B_elm)as t2, ("+ tbl_tirages + tbl_key +") as t1 \n";
  sql_msg = sql_msg + "where (\n";
- sql_msg = sql_msg + "T1.Z"+QString::number(zn+1)+" IN ("+ st_cols +")\n";
+ sql_msg = sql_msg + key +" IN ("+ st_cols +")\n";
  sql_msg = sql_msg + "))\n";
  sql_msg = sql_msg + ",\n";
  sql_msg = sql_msg + " -- Calcul de la moyenne pour chaque boule\n";
  sql_msg = sql_msg + "tb1 as\n";
  sql_msg = sql_msg + "(\n";
- sql_msg = sql_msg + "select t1.b_id as b_id ,t1.t_id as t_id,t1.J as J,\n";
+ sql_msg = sql_msg + "select t1.b_id as b_id ,t1.t_id as t_id"+col_J+",\n";
  sql_msg = sql_msg + "ROW_NUMBER() OVER (PARTITION BY T1.b_id ORDER BY\n";
  sql_msg = sql_msg + "T1.t_id) AS LID,\n";
  sql_msg = sql_msg + "LAG(t1.t_id, 1, 0) OVER (PARTITION BY T1.b_id ORDER BY\n";

@@ -549,14 +549,14 @@ void BTirages::updateTbv(QString box_title, QString msg)
 
  QSqlQueryModel * cible = sqm_resu;
 
- /*
+
  if(gme_cnf->eTirType == eTirGen){
   cible = qobject_cast<BSqlQmTirages_3 *>(sqm_resu);
  }
  else {
   cible = sqm_resu;
  }
-*/
+
 
  cible->setQuery(msg,db_tir);
  while (cible->canFetchMore())
@@ -604,7 +604,7 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
   lst_tirages = getTiragesList(gme_cnf, game_lab);
  }
  else {
-  ; /// Juste un marqueur
+  return; /// Juste un marqueur
  }
 
  if((ana != Bp::icoRaz) && (sel !=nullptr)){

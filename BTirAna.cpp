@@ -386,6 +386,7 @@ void BTirAna::BSlot_ActionButton(int btn_id)
  B2LstSel *send = construireSelection();
  Bp::E_Ico eVal = static_cast<Bp::E_Ico>(btn_id);
 
+ /// Bug au niveau 2
  if((eVal == Bp::icoRaz) && (send != nullptr)){
   send = effacerSelection(send);
  }
