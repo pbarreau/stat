@@ -24,6 +24,7 @@
 
 #include "BCount.h"
 #include "db_tools.h"
+#include "BColorIndex_v2.h"
 
 QString BCount::label[eCountEnd]={"err","elm","cmb","grp","brc","upl"};
 QString BCount::onglet[eCountEnd]={"Erreur","Zones","Combinaisons","Groupes","Barycentres", "Uplets"};
@@ -128,7 +129,6 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  }
  qtv_tmp->setRowModelCount(tot);
 
- qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
  qtv_tmp->setSortingEnabled(true);
@@ -143,12 +143,53 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 #ifdef QT_NO_DEBUG
   qtv_tmp->hideColumn(Bp::colColor);
 #endif
-
-  qtv_tmp->sortByColumn(Bp::colTotal,Qt::DescendingOrder);
  }
- else {
-  headRed=Bp::colId;
-  qtv_tmp->sortByColumn(Bp::colId,Qt::AscendingOrder);
+ Bp::E_Col myColSort = Bp::noCol;
+ Bp::E_Col colEc = Bp::noCol;
+ Qt::SortOrder order;
+
+ switch (type) {
+  case eCountElm:
+   if(pGame->db_ref->dad.size()== 0){
+    myColSort = Bp::colTotalv1;
+    colEc = Bp::colEc;
+   }
+   else {
+    myColSort = Bp::colTotalv2;
+   }
+   order = Qt::DescendingOrder;
+   break;
+  case eCountBrc:
+  case eCountCmb:
+   if(pGame->db_ref->dad.size()== 0){
+    myColSort = Bp::colTotalv0;
+   }
+   else {
+    myColSort = Bp::colTotalv2;
+   }
+   order = Qt::DescendingOrder;
+   break;
+
+	case eCountGrp:
+	 order = Qt::AscendingOrder;
+	 headRed=Bp::colId;
+	 myColSort = Bp::colId;
+	 break;
+
+	default:
+	 order = Qt::AscendingOrder;
+	 myColSort = Bp::colTxt;
+	 break;
+ }
+
+ qtv_tmp->setColons(myColSort, colEc);
+ qtv_tmp->sortByColumn(myColSort,order);
+
+ qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt)); /// Delegation
+
+
+ if(type == eCountGrp) {
+  //qtv_tmp->sortByColumn(Bp::colId,Qt::AscendingOrder);
 
 	QStringList tooltips=pGame->slFlt[zn][2];
 	tooltips.insert(0,"Total"); /// La colone Nb (0)
@@ -159,6 +200,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 	 m->setHeaderData(pos,Qt::Horizontal,tooltips.at(pos),Qt::ToolTipRole);
 	}
  }
+
  m->setHeaderData(headRed,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
 
  qtv_tmp->resizeColumnsToContents();

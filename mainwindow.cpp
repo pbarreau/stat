@@ -217,7 +217,7 @@ void MainWindow::EtudierJeu_v1(stGameConf *curConf, bool dest_bdd)
 
  DB_tirages = new GererBase(&input,&NoErrors,&configJeu);
 
- EtudierJeu_MontrerUplet(curConf, DB_tirages);
+ //EtudierJeu_MontrerUplet(curConf, DB_tirages);
 
  configJeu.db_cnx = DB_tirages->get_IdCnx(0);
  db_0 = QSqlDatabase::database(configJeu.db_cnx);
@@ -2238,9 +2238,10 @@ QGridLayout * MainWindow::MonLayout_pFnNsr1(stTiragesDef *pConf)
  return(lay_return);
 }
 
-QGridLayout * MainWindow::MonLayout_pFnNsr2(stTiragesDef *pConf)
+QGridLayout * MainWindow::MonLayout_Graphes(stTiragesDef *pConf)
 {
  QGridLayout *lay_return = new QGridLayout;
+ //etFdj test;
 
  // Essai de mise en onglet des  graphiques
  QTabWidget *tabWidget = new QTabWidget;
@@ -2345,7 +2346,7 @@ QWidget * MainWindow::FEN_Analyses(stTiragesDef *pConf)
 
  // Tableau de pointeur de fonction
  QGridLayout *(MainWindow::*ptrFunc[2])(stTiragesDef *pConf)=
- {&MainWindow::MonLayout_pFnNsr1,&MainWindow::MonLayout_pFnNsr2};
+ {&MainWindow::MonLayout_pFnNsr1,&MainWindow::MonLayout_Graphes};
 
 
 #if (SET_DBG_LIVE&&SET_DBG_LEV1)

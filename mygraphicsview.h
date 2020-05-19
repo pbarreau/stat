@@ -3,9 +3,11 @@
 
 #include <QGraphicsView>
 #include <QGraphicsRectItem>
+#include <QSqlDatabase>
 
 #include <QGraphicsSceneMouseEvent>
-#include "tirages.h"
+//#include "tirages.h"
+#include "game.h"
 
 typedef enum _graph
 {
@@ -19,7 +21,7 @@ typedef enum _graph
 class MyGraphicsView: public QGraphicsView
 {
 public:
-    MyGraphicsView(QString db_cnx, eGType gtype = eNoGraph, QGraphicsView *ptr_view=NULL, QString titre="Tbd", QColor coul_fond = Qt::yellow);
+    MyGraphicsView(QString db_cnx, eGType gtype = eNoGraph, QGraphicsView *ptr_view=nullptr, QString titre="Tbd", QColor coul_fond = Qt::yellow);
     void DessineCourbeSql(QString msg_2, etFdj leJeu, QColor cpen, int sqlIdY =1, int scale_y=1, int delta_y=0);
     QGraphicsScene * GetScene();
 
@@ -38,7 +40,7 @@ private:
 class UnConteneurDessin: public QGraphicsView
 {
 public:
-    UnConteneurDessin(QWidget* parent = NULL);
+    UnConteneurDessin(QWidget* parent = nullptr);
 
 
 protected:

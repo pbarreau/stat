@@ -114,7 +114,10 @@ SOURCES += \
     version.cpp \ 
     BTirFdj.cpp \
     BTirDelegate.cpp \
-    BTest.cpp
+    BTest.cpp \
+    BColorIndex_v2.cpp \
+    BGraphicsView.cpp \
+    BPointTirage.cpp
 
 HEADERS  += \
     BColorPriority.h \
@@ -192,7 +195,10 @@ HEADERS  += \
     types_jeux.h \
     BTirFdj.h \
     BTirDelegate.h \
-    BTest.h
+    BTest.h \
+    BColorIndex_v2.h \
+    BGraphicsView.h \
+    BPointTirage.h
 
 
 FORMS    += mainwindow.ui \

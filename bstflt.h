@@ -57,9 +57,12 @@ namespace Bp {
   colGenZs=1,  /// Colonne depart de zone def dans Tbl lst gene
   colJour=2,
   colTxt=2,
+  colTotalv2=3,
   colVisual=3,
   colTirZs=3,  /// Colonne depart de zone def dans Tbl Tirages
-  colTotal=4
+  colEc=4,
+  colTotalv0=4,
+  colTotalv1=10
  };
 
  enum E_Ugm{
@@ -76,6 +79,13 @@ namespace Bp {
   icoShowAll,
   icoShowChk,
   icoShowUhk
+ };
+
+ enum E_Tbv{
+  noTbvSet,
+  tbvElm_v1,
+  tbvElm_v2,
+  tbvOth
  };
 
  struct Btn{

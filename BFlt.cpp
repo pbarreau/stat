@@ -52,6 +52,15 @@ BFlt::BFlt(const stGameConf *pGame, int in_zn, etCount in_typ, QString tb_flt)
  /// ---- init autre
  lview = nullptr;
  index = QModelIndex();
+ colEc = Bp::colEc;
+ colTotal = Bp::colTotalv1;
+
+}
+
+void BFlt::setColons(Bp::E_Col c_Tot, Bp::E_Col c_Ec)
+{
+ colEc = c_Ec;
+ colTotal = c_Tot;
 }
 
 bool BFlt::displayTbvMenu_cell(const QPoint pos, BTbView *view)

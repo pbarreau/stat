@@ -86,6 +86,11 @@ stTbFiltres * BTbView::getFlt(void)
  return inf_flt;
 }
 
+Bp::E_Col BTbView::getSortCol(void)
+{
+ return colTotal;
+}
+
 void BTbView::BSlot_ShowToolTip(const QModelIndex & index)
 {
  /// https://doc.qt.io/qt-5/qtooltip.html

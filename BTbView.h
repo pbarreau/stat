@@ -17,7 +17,7 @@
 #include "BGTbView.h"
 #include "BTirages.h"
 
-class BTbView : public BGTbView, BFlt
+class BTbView : public BGTbView, public BFlt
 {
  Q_OBJECT
 
@@ -30,6 +30,7 @@ class BTbView : public BGTbView, BFlt
  void setUsrGameButton(QPushButton *usr_game);
  QPushButton *getUsrGameButton(void);
  stTbFiltres * getFlt(void);
+ Bp::E_Col getSortCol(void);
  bool isOnUsrGame(void);
  static void agencerResultats(BTirages *lst, BTirAna * ana);
  static void activateTargetTab(QString id);

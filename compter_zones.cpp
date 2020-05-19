@@ -211,7 +211,8 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  BTbView *view, const etCount e
 		}while(query.next() && b_retVal);
 
 		/// On remet le tri par defaut
-		view->sortByColumn(Bp::colTotal,Qt::DescendingOrder);
+		Bp::E_Col mySortCol = view->getSortCol();
+		view->sortByColumn(mySortCol,Qt::DescendingOrder);
 	 }
 	}
  } /// fin for

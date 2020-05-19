@@ -228,7 +228,7 @@ private:
     QGridLayout * MonLayout_Nsur2();
 
     QGridLayout *MonLayout_pFnNsr1(stTiragesDef *pConf);
-    QGridLayout * MonLayout_pFnNsr2(stTiragesDef *pConf);
+    QGridLayout * MonLayout_Graphes(stTiragesDef *pConf);
 
     QGridLayout *MonLayout_OldTbvTirage(int x, int y);
     QGridLayout *MonLayout_OldTbvCouverture(int x, int y);

@@ -73,6 +73,11 @@ void BFlags::displayTbv_cell(QPainter *painter, const QStyleOptionViewItem &opti
  ///
  b_retVal = chkThatCell(index);
 
+ int col = index.column();
+ if((inf_flt->typ != eCountGrp) && (col == colTotal || col == colEc)){
+  painter->fillRect(option.rect, COULEUR_FOND_TOTAL);
+ }
+
  /// Il faut mettre notre texte
  fltWrite(inf_flt, painter, myOpt);
 
