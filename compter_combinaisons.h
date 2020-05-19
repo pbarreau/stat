@@ -28,6 +28,9 @@ class BCountComb:public BCount
  void slot_RequeteFromSelection(const QModelIndex &index);
 
 
+ private slots:
+ void BSlot_FilterCmb(const QString &flt_string);
+
  private:
  static int total;
  int hCommon;
@@ -44,11 +47,14 @@ class BCountComb:public BCount
  QWidget *fn_Count(const stGameConf *pGame, int zn);
  QString usr_doCount(const stGameConf *pGame, int zn);
  void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
+ QHBoxLayout *getBarFltTirages(int zn, BGTbView *qtv_tmp);
+
  private:
  //virtual QString getType();
  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
  virtual void usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn);
+ virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
 
 
  private:

@@ -256,6 +256,66 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
 
 }
 
+QLayout * BCountComb::usr_UpperItems(int zn, BTbView *cur_tbv)
+{
+
+ QHBoxLayout * search_bar = getBarFltTirages(zn,cur_tbv);
+
+ return search_bar;
+}
+
+QHBoxLayout *BCountComb::getBarFltTirages(int zn, BGTbView *qtv_tmp)
+{
+ /// HORIZONTAL BAR
+ QHBoxLayout *inputs = new QHBoxLayout;
+
+
+ //--------------
+ QFormLayout *frm_chk = new QFormLayout;
+ BLineEdit *le_chk = new BLineEdit(qtv_tmp);
+ frm_chk->addRow("Rch :", le_chk);
+ le_chk->setToolTip("Recherche");
+
+  /// Exemples:
+  /// 1/1/2/1/3
+  /// 1/1/2/1/3
+  /// 1/1/2/1/03
+  /// 1/01/2/1/3
+  /// */1/*/*/*
+  /// */*/*/*/*
+  /// */1/*/03/5
+
+ int len_data = gm_def->limites[zn].win;
+ int nb_10 = gm_def->limites[zn].max/10;
+ /// vim : g/\(*\/\|0\?[1-5]\/\)\{4\}\(\*\|0\?[1-5]\)
+ /// QString stPattern = "((\\*|(0?[1-5]))/){4}(\\*|(0?[1-5]))";
+ QString stPattern = "((\\*|(0?[1-"+
+                     QString::number(len_data)+
+                     "]))/){"+
+                     QString::number(nb_10)+
+                     "}(\\*|(0?[1-"+
+                     QString::number(len_data)+
+                     "]))";
+ QValidator *validator = new QRegExpValidator(QRegExp(stPattern,Qt::CaseInsensitive,QRegExp::RegExp));
+
+ le_chk->setValidator(validator);
+
+ // Bouton filtre
+ connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(BSlot_FilterCmb(const QString)));
+ inputs->addLayout(frm_chk);
+
+
+ return inputs;
+}
+
+void BCountComb::BSlot_FilterCmb(const QString &flt_string)
+{
+ BLineEdit *le_chk = qobject_cast<BLineEdit *>(sender());
+
+ /// effectuer le filtrage avec la clef fournie
+
+}
+
 BCountComb::BCountComb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountCmb)
 {

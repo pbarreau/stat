@@ -38,9 +38,10 @@ QGroupBox *BGTbView::getScreen(bool spacer)
 {
  QVBoxLayout *layout = new QVBoxLayout;
  if(up != nullptr){
-  layout->addLayout(up, Qt::AlignCenter|Qt::AlignTop);
+  layout->addLayout(up);
+  layout->setAlignment(up, Qt::AlignLeft|Qt::AlignTop);
  }
- layout->addWidget(this);
+ layout->addWidget(this,Qt::AlignCenter|Qt::AlignTop);
  if(spacer==true){
   QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
   layout->addItem(ecart);
