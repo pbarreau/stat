@@ -49,18 +49,30 @@ BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
 
 void BTirages::showFdj(BTirAna *ana_tirages)
 {
- QString name = this->getGameLabel();
  QWidget *wdg_visual = new QWidget;
- QWidget *wdg_fusion = new QWidget;
  QGridLayout *lay_visual = new QGridLayout;
+
+ lay_visual->addWidget(this,0,0,2,1);
+
  QTabWidget *tbw_visual = new QTabWidget;
 
- QGridLayout *lay_fusion = this->addAna(ana_tirages);
- wdg_fusion->setLayout(lay_fusion);
- tbw_visual->addTab(wdg_fusion,"Etude");
- lay_visual->addWidget(tbw_visual);
+ QWidget *wdg_tmp = new QWidget;
+ lay_fusion = new QGridLayout;
+
+ lay_fusion->addWidget(ana_tirages,0,0);
+ wdg_tmp->setLayout(lay_fusion);
+
+ tbw_visual->addTab(wdg_tmp,"Nombres");
+ wdg_tmp = new QWidget;
+ tbw_visual->addTab(wdg_tmp,"Graphiques");
+
+ lay_visual->addWidget(tbw_visual,0,1,1,2);
+ lay_visual->setColumnStretch(0, 0); /// Exemple basic layouts
+ lay_visual->setColumnStretch(1, 1);
+
 
  wdg_visual->setLayout(lay_visual);
+
  wdg_visual->setWindowTitle("Tirages FDJ : ");
  wdg_visual->show();
 
@@ -656,9 +668,13 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 	if(resu!=nullptr){
 	 usr_flt_counter++;
 	 ana_TirFlt->append(J);
-	 //save_sel = sel;///SauverSelection(sel);
 	 int tab_index = og_AnaSel->addTab(resu,st_id);
-	 lay_fusion->addWidget(og_AnaSel,1,1);
+	 if(gme_cnf->eTirType == eTirFdj){
+		lay_fusion->addWidget(og_AnaSel,1,0);
+	 }
+	 else {
+		lay_fusion->addWidget(og_AnaSel,1,1);
+	 }
 	 og_AnaSel->setCurrentIndex(tab_index);
 	 og_AnaSel->tabBarClicked(tab_index);
 	}

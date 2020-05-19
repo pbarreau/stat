@@ -73,6 +73,7 @@ class BTirAna : public QWidget
  BTirAna *addr;
  QString src_sql;
  QString src_tbl;
+ //QGridLayout src_lay;
  QSqlDatabase db_1;
  QMap<QString,ptrFnUsr> map_UsrFn;
  QVector<BCount *> mesComptages;
