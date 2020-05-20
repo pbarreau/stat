@@ -7,77 +7,69 @@
 #include "BGraphicsView.h"
 #include "BPointTirage.h"
 
-BGraphicsView::BGraphicsView(stGameConf *pGame, QGraphicsView *ptr_view, QString titre, QColor coul_fond )
+BGraphicsView::BGraphicsView(const stGameConf *pGame, etCount in_type, QBrush coul_fond )
+    :gme_conf(pGame), type(in_type)
 {
  db_0 = QSqlDatabase::database(pGame->db_ref->cnx);
- setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
  //Set-up the scene
  Scene = new QGraphicsScene;
- //scene_type = gtype;
+ Scene->setSceneRect(0,0,800,600);
+ this->setScene(Scene);
 
- ptr_view->setScene(Scene);
- ptr_view->setBackgroundBrush(coul_fond);
- ptr_view->setCacheMode(CacheBackground);
- ptr_view->setViewportUpdateMode(FullViewportUpdate);
- ptr_view->setRenderHint(QPainter::Antialiasing);
- ptr_view->setTransformationAnchor(AnchorUnderMouse);
- ptr_view->setDragMode(ScrollHandDrag);
- ptr_view->setWindowTitle(tr(titre.toLocal8Bit()));
+ this->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+ this->setRenderHint(QPainter::Antialiasing);
 
+#if 0
+ // a gradient background
+ QLinearGradient gradient(QPointF(0, 0), QPointF(800, 600));
+ gradient.setColorAt(0, Qt::lightGray);
+ gradient.setColorAt(1, Qt::yellow);
+ this->setBackgroundBrush(gradient);
+#endif
+
+ this->setBackgroundBrush(coul_fond);
+ this->setCacheMode(CacheBackground);
+
+ this->setViewportUpdateMode(FullViewportUpdate);
+ this->setTransformationAnchor(AnchorUnderMouse);
+ this->setDragMode(ScrollHandDrag);
 }
 
-void BGraphicsView::DessineCourbeSql(stGameConf *pGame, QString msg_2, QColor cpen, int sqlIdY, int scale_y, int delta_y)
+void BGraphicsView::DessineCourbeSql(const stGameConf *pGame, etCount in_type, QColor cpen, int sqlIdY, int scale_y, int delta_y)
 {
- QSqlQuery sql_2(db_0);
- bool status = false;
-#ifndef QT_NO_DEBUG
- qDebug() << msg_2;
-#endif
- status = sql_2.exec(msg_2);
- if(status)
- {
-  sql_2.first();
-  if(sql_2.isValid())
-  {
-   int sx = 0;
-   double sy = 0.0;
-   //QColor cpen = Qt::black;
-
-	 do
-	 {
-		int x = sql_2.value(0).toInt()* C_COEF_X;
-		int y_sql = sql_2.value(sqlIdY).toDouble();
-		double y = this->height();
-
-		y = y -  y_sql * C_COEF_Y* scale_y;
-		y -=delta_y;
-
-		// Ajout d'une boule representant un tirage
-		BPointTirage *ptir = new BPointTirage(pGame);
-
-		ptir->setPos(x,y);
-
-		Scene->addItem(ptir);
-
-		if(sx==0)
-		{
-		 // 1er point
-		 //sx=x;
-		 //sy=y;
-		 ; // rien car deja place
-		}
-		else
-		{
-		 // Courbe
-		 QLineF L1(x,y,sx,sy);
-		 Scene->addLine(L1,QPen(cpen));
-		}
-		sx=x;
-		sy=y;
-	 }while(sql_2.next());
-	}
+ switch (in_type) {
+  case eCountCmb:
+   draw_cmb(pGame);
+   break;
+  default:
+      ;
  }
+}
+
+void BGraphicsView::draw_cmb(const stGameConf *pGame)
+{
+ QString msg = "";
+ bool b_retVal = false;
+ QSqlQuery query(db_0);
+
+ BPointTirage *un_tirage = new BPointTirage(pGame);
+ un_tirage->setPos(4,4);
+ scene()->addItem(un_tirage);
+
+ un_tirage = new BPointTirage(pGame);
+ un_tirage->setPos(4,596);
+ scene()->addItem(un_tirage);
+
+ un_tirage = new BPointTirage(pGame);
+ un_tirage->setPos(796,596);
+ scene()->addItem(un_tirage);
+
+ un_tirage = new BPointTirage(pGame);
+ un_tirage->setPos(796,4);
+ scene()->addItem(un_tirage);
+
+ this->ensureVisible(this->rect());
 }
 
 void BGraphicsView::wheelEvent(QWheelEvent* event) {
@@ -97,3 +89,4 @@ void BGraphicsView::wheelEvent(QWheelEvent* event) {
  // Don't call superclass handler here
  // as wheel is normally used for moving scrollbars
 }
+

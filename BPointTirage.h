@@ -15,7 +15,7 @@
 class BPointTirage : public QGraphicsItem
 {
 public:
-BPointTirage(stGameConf *pGame);
+BPointTirage(const stGameConf *pGame);
 
 protected:
 QRectF boundingRect() const;

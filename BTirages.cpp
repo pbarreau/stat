@@ -11,6 +11,8 @@
 #include "BCount.h"
 #include "BTirAna.h"
 
+#include "BGraphicsView.h"
+
 int BTirages::cnt_tirSrc = 1; /// Compteur des sources de tirages
 QString  BTirages::tbw_TbvTirages = "tbw_TirLst";
 QString  BTirages::tbw_FltTirages = "tbw_TirFlt";
@@ -63,8 +65,15 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  wdg_tmp->setLayout(lay_fusion);
 
  tbw_visual->addTab(wdg_tmp,"Nombres");
- wdg_tmp = new QWidget;
- tbw_visual->addTab(wdg_tmp,"Graphiques");
+ //wdg_tmp = new QWidget;
+
+ QTabWidget *tbw_dessins = new QTabWidget;
+ BGraphicsView *tmp_view = new BGraphicsView(gme_cnf, eCountCmb);
+ tmp_view->DessineCourbeSql(gme_cnf, eCountCmb);
+ tbw_dessins->addTab(tmp_view,"Combinaison");
+
+ tbw_visual->addTab(tbw_dessins,"Graphiques");
+
 
  lay_visual->addWidget(tbw_visual,0,1,1,2);
  lay_visual->setColumnStretch(0, 0); /// Exemple basic layouts

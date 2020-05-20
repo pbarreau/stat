@@ -8,7 +8,7 @@
 
 QList<QGraphicsLineItem *> BPointTirage::lst_lignes;
 
-BPointTirage::BPointTirage(stGameConf *pGame)
+BPointTirage::BPointTirage(const stGameConf *pGame)
 {
  db_0 = QSqlDatabase::database(pGame->db_ref->cnx);
 

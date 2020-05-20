@@ -6,6 +6,8 @@
 #include <QWheelEvent>
 
 #include "game.h"
+#include "bstflt.h"
+
 
 #define C_COEF_X  10
 #define C_COEF_Y  1
@@ -14,15 +16,21 @@
 class BGraphicsView : public QGraphicsView
 {
 public:
-BGraphicsView(stGameConf *pGame, QGraphicsView *ptr_view=nullptr, QString titre="Tbd", QColor coul_fond = Qt::yellow);
-void DessineCourbeSql(stGameConf *pGame, QString msg_2, QColor cpen, int sqlIdY =1, int scale_y=1, int delta_y=0);
+BGraphicsView(const stGameConf *pGame, etCount in_type, QBrush coul_fond=Qt::lightGray);
+void DessineCourbeSql(const stGameConf *pGame, etCount in_type, QColor cpen=Qt::red, int sqlIdY =1, int scale_y=1, int delta_y=0);
 
 protected:
 virtual void wheelEvent(QWheelEvent* event);
+//virtual void	mousePressEvent ( QMouseEvent * event );
+
+private :
+void draw_cmb(const stGameConf *pGame);
 
 private:
 QSqlDatabase db_0;
 QGraphicsScene *Scene;
+const stGameConf *gme_conf;
+etCount type;
 
 };
 
