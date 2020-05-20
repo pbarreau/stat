@@ -14,7 +14,7 @@ BGraphicsView::BGraphicsView(const stGameConf *pGame, etCount in_type, QBrush co
 
  //Set-up the scene
  Scene = new QGraphicsScene;
- Scene->setSceneRect(0,0,800,600);
+ //Scene->setSceneRect(0,0,800,600);
  this->setScene(Scene);
 
  this->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
@@ -53,10 +53,42 @@ void BGraphicsView::draw_cmb(const stGameConf *pGame)
  bool b_retVal = false;
  QSqlQuery query(db_0);
 
- BPointTirage *un_tirage = new BPointTirage(pGame);
- un_tirage->setPos(4,4);
- scene()->addItem(un_tirage);
+ msg = "select min(t1.id) as min_x, max(t1.id) as max_x, min(t2.idcomb) as min_y, max (t2.idComb) as max_y from B_fdj as t1, B_ana_z1 as t2 where(t1.id=t2.id)";
+ b_retVal = query.exec(msg);
+ if(b_retVal && (b_retVal=query.first())){
+  int mx = query.value(1).toInt();
+  qreal kx = (800/mx)+4;
+  int my = query.value(3).toInt();
+  qreal ky = ((300/my)+4);
 
+	msg = "select t1.id as X, t2.idComb as Y from B_fdj as t1, B_ana_z1 as t2 where(t1.id=t2.id)";
+	b_retVal = query.exec(msg);
+	if(b_retVal && (b_retVal=query.first())){
+	 qreal sx = -1;
+	 qreal sy = -1;
+	 bool start_line = false;
+	 do{
+		int v_x = query.value(0).toInt()*15;
+		//qreal p_x = v_x * kx;
+		double v_y = this->height() - ((query.value(1).toInt()*0.5));
+		//qreal p_y = 600 - (v_y * ky);
+
+		BPointTirage *un_tirage = new BPointTirage(pGame);
+		un_tirage->setPos(v_x,v_y);
+		scene()->addItem(un_tirage);
+
+		if(start_line){
+		 QLineF L1(v_x,v_y,sx,sy);
+		 Scene->addLine(L1,QPen(Qt::red));
+		}
+		sx = v_x;
+		sy = v_y;
+		start_line = true;
+	 }while(query.next());
+	}
+ }
+
+/*
  un_tirage = new BPointTirage(pGame);
  un_tirage->setPos(4,596);
  scene()->addItem(un_tirage);
@@ -70,6 +102,7 @@ void BGraphicsView::draw_cmb(const stGameConf *pGame)
  scene()->addItem(un_tirage);
 
  this->ensureVisible(this->rect());
+*/
 }
 
 void BGraphicsView::wheelEvent(QWheelEvent* event) {
