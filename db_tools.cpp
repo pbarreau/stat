@@ -360,11 +360,11 @@ QString DB_Tools::getLstDays(QString cnx_db_name, QString tbl_ref)
 	 //count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,
 	 st_tmp = st_tmp + "cast (count(CASE WHEN  J like '"+
 						query.value(0).toString()+"%' then 1 end) as int) as "+
-						query.value(0).toString()+",";
+						query.value(0).toString()+",\n";
 	}while(query.next());
 
 	//supprimer derniere ','
-	st_tmp.remove(st_tmp.length()-1,1);
+	st_tmp.remove(st_tmp.length()-2,1);
 	st_tmp = st_tmp + " ";
  }
 

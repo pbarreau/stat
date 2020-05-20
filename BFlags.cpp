@@ -410,7 +410,7 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 void BFlags::fltFull(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const
 {
 
- if(inf_flt->tb_ref.compare("B_fdj")!=0 || (inf_flt->typ!=eCountElm)){
+ if(inf_flt->tb_ref.compare("B_fdj")!=0 && (inf_flt->typ==eCountGrp)){
   return;
  }
 

@@ -1,5 +1,6 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
+#include "BTest.h"
 #endif
 
 #include <QTableView>
@@ -192,14 +193,15 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
   * SELECT t1.* from tbRes as t1
   *
   */
- QString st_sql="";
+ QString sql_msg="";
 
  QString key = "t1.z"+QString::number(zn+1);
- QString st_cols = FN1_getFieldsFromZone(pGame, zn, "t2");
+ //QString st_cols = FN1_getFieldsFromZone(pGame, zn, "t2");
 
- QString col_vsl = "";
+ QString col_vsl = ",COUNT(*) AS T\n";
  QString tbl_key = "";
  QString str_jrs = "";
+ QString col_J = "";
 
  QString tbl_tirages = pGame->db_ref->src;
  if(
@@ -207,8 +209,15 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
   ){
   tbl_tirages="B";
   tbl_key="_fdj";
-  col_vsl = "NULL as I,";
   str_jrs = db_jours;
+  col_vsl = ",NULL as I,\n";
+  col_vsl = col_vsl + "min(t1.t_id-1) as Ec,\n";
+  col_vsl = col_vsl + "max((case when t1.lid=2 then t1.E end)) as Ep,\n";
+  col_vsl = col_vsl + "(PRINTF(\"%.1f\", AVG(E))) AS 'Eµ',\n";
+  col_vsl = col_vsl + "MAX(E) AS EM,\n";
+  col_vsl = col_vsl + "(PRINTF(\"%.1f\", SQRT(VARIANCE(E)))) AS Es,\n";
+  col_vsl = col_vsl + "(PRINTF(\"%.1f\", MEDIAN(E))) AS 'Esµ',\n";
+  col_vsl = col_vsl + "COUNT(*) AS T\n";
  }
 
  QString tbl_ana = tbl_tirages;
@@ -219,40 +228,63 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
    str_jrs = db_jours;
   }
  }
+ QString tbl_ref_cmb = tbl_ana + "_cmb_z"+QString::number(zn+1);;
  tbl_ana = tbl_ana + "_ana_z"+QString::number(zn+1);
 
 
 
 
- QString tbl_ref_cmb = "B";
- st_sql= "with "
-          "tbCmb as (select "
-          "t1.id as Id,"
-          "t1.tip as R from ("
-          +tbl_ref_cmb
-          +"_cmb_z"
-          +QString::number(zn+1)
-          +") as t1),"
-            "tbRes as (select "
-            "cast(t1.id as int)as Id,"
-            "NULL as C1,"
-            "cast(t1.R as text) as R,"+
-          col_vsl+
-          "cast(count(t2.id) as int) as T"
-          + str_jrs
-          +" from (tbCmb) as t1, ("
-          +tbl_ana
-          +") as t2, ("
-          +tbl_tirages+tbl_key
-          +") as t3 "
-            " where((t2.idComb = t1.id) AND (t2.id = t3.id) ) group by t1.id order by T desc)"
-            " SELECT t1.* from (tbRes) as t1";
+
+ sql_msg = sql_msg + "with \n";
+ sql_msg = sql_msg + "\n";
+
+
+ sql_msg = sql_msg + " -- Selection des boules composant les lignes de\n";
+ sql_msg = sql_msg + " -- cet ensemble de tirages\n";
+ sql_msg = sql_msg + "tb0 as\n";
+ sql_msg = sql_msg + "(select t3.id as b_id, t1.id as t_id, t3.tip, t1.J as J from (" + tbl_ana + ")as t2, (B_fdj) as t1, (" + tbl_ref_cmb + ") as t3 \n";
+ sql_msg = sql_msg + "where (\n";
+ sql_msg = sql_msg + "(t2.idComb = t3.id) and (t1.id=t2.id) \n";
+ sql_msg = sql_msg + "))\n";
+ sql_msg = sql_msg + ",\n";
+ sql_msg = sql_msg + "\n";
+
+
+ sql_msg = sql_msg + " -- Calcul de la moyenne pour chaque boule\n";
+ sql_msg = sql_msg + "tb1 as\n";
+ sql_msg = sql_msg + "(\n";
+ sql_msg = sql_msg + "select t1.b_id as b_id ,t1.t_id as t_id, t1.tip, t1.J as J,\n";
+ sql_msg = sql_msg + "ROW_NUMBER() OVER (PARTITION BY T1.b_id ORDER BY\n";
+ sql_msg = sql_msg + "T1.t_id) AS LID,\n";
+ sql_msg = sql_msg + "LAG(t1.t_id, 1, 0) OVER (PARTITION BY T1.b_id ORDER BY\n";
+ sql_msg = sql_msg + "T1.t_id) AS MY_ID,\n";
+ sql_msg = sql_msg + "(T1.t_id -(LAG(t1.t_id, 1, 0) OVER (PARTITION BY T1.B_id ORDER BY\n";
+ sql_msg = sql_msg + "T1.t_ID))) AS E\n";
+ sql_msg = sql_msg + "from (tb0) as t1\n";
+ sql_msg = sql_msg + "),\n";
+ sql_msg = sql_msg + "\n";
+
+
+ sql_msg = sql_msg + " -- suite des calculs et de ceux necessitant la valeur de la moyenne\n";
+ sql_msg = sql_msg + " -- ie : Esperance et Moyenne de l'esperance\n";
+ sql_msg = sql_msg + "tb2 as\n";
+ sql_msg = sql_msg + "(\n";
+ sql_msg = sql_msg + "select cast(row_number() over ()as int) as id, NULL as C1, t1.tip as R\n";
+ sql_msg = sql_msg + col_vsl+"\n";
+ sql_msg = sql_msg + str_jrs+"\n";
+ sql_msg = sql_msg + "from (tb1) as t1 group by b_id\n";
+ sql_msg = sql_msg + ")\n";
+ sql_msg = sql_msg + "\n";
+ sql_msg = sql_msg + "\n";
+ sql_msg = sql_msg + "select t1.* from (tb2) as t1\n";
+ sql_msg = sql_msg + "\n";
 
 #ifndef QT_NO_DEBUG
- qDebug() <<st_sql;
+ BTest::writetoFile("AF_dbg_cmb.txt",sql_msg,false);
+ qDebug() <<sql_msg;
 #endif
 
- return st_sql;
+ return sql_msg;
 
 }
 

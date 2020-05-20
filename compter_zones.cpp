@@ -427,7 +427,8 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
   str_jrs = db_jours;
  }
 
- sql_msg = sql_msg + "with \n";
+ sql_msg = sql_msg + "with \n\n";
+
  sql_msg = sql_msg + " -- Selection des boules composant les lignes de\n";
  sql_msg = sql_msg + " -- cet ensemble de tirages\n";
  sql_msg = sql_msg + "tb0 as\n";
@@ -435,7 +436,8 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
  sql_msg = sql_msg + "where (\n";
  sql_msg = sql_msg + key +" IN ("+ st_cols +")\n";
  sql_msg = sql_msg + "))\n";
- sql_msg = sql_msg + ",\n";
+ sql_msg = sql_msg + ",\n\n";
+
  sql_msg = sql_msg + " -- Calcul de la moyenne pour chaque boule\n";
  sql_msg = sql_msg + "tb1 as\n";
  sql_msg = sql_msg + "(\n";
@@ -447,43 +449,23 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
  sql_msg = sql_msg + "(T1.t_id -(LAG(t1.t_id, 1, 0) OVER (PARTITION BY T1.B_id ORDER BY\n";
  sql_msg = sql_msg + "T1.t_ID))) AS E\n";
  sql_msg = sql_msg + "from (tb0) as t1\n";
- sql_msg = sql_msg + "),\n";
+ sql_msg = sql_msg + "),\n\n";
+
  sql_msg = sql_msg + " -- suite des calculs et de ceux necessitant la valeur de la moyenne\n";
  sql_msg = sql_msg + " -- ie : Esperance et Moyenne de l'esperance\n";
  sql_msg = sql_msg + "tb2 as\n";
  sql_msg = sql_msg + "(\n";
- sql_msg = sql_msg + "select cast(row_number() over ()as int) as id, NULL as C1, t1.b_id as R ";
+ sql_msg = sql_msg + "select cast(row_number() over ()as int) as id, NULL as C1, t1.b_id as R\n";
  sql_msg = sql_msg + col_vsl+"\n";
  sql_msg = sql_msg + str_jrs+"\n";
  sql_msg = sql_msg + "from (tb1) as t1 group by b_id\n";
  sql_msg = sql_msg + ")\n";
- sql_msg = sql_msg + "\n";
+ sql_msg = sql_msg + "\n\n";
  sql_msg = sql_msg + "select t1.* from (tb2) as t1\n";
 
- /*
- st_sql= "with tbResultat as (select "
-          "cast(row_number() over ()as int) as id,"
-          "NULL as C1, "
-          "cast ("+key
-          +" as int) as R,"+
-          col_vsl+
-          "cast (count("
-          +key
-          +") as int) as T "
-          + str_jrs
-          +" from B_elm as t1 LEFT join ("
-          +tbl_tirages+tbl_key
-          +") as t2  where("
-          +key
-          +" in("
-          +st_cols
-          +")) group by "
-          +key
-          +" order by t1.id asc) SELECT t1.* from (tbResultat) as t1";
-*/
 
 #ifndef QT_NO_DEBUG
- BTest::writetoFile("A.txt",sql_msg,false);
+ BTest::writetoFile("AF_dbg_elm.txt",sql_msg,false);
  qDebug() <<sql_msg;
 #endif
 
