@@ -46,6 +46,7 @@ class BFlags : public QStyledItemDelegate, BFlt
                const QModelIndex &index) const;
  void setWanted(bool state, QPainter *painter, const QStyleOptionViewItem &opt, stTbFiltres *a, const QModelIndex &index) const;
  bool getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelIndex index) const;
+ void fltFull(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const;
  void fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const;
  void fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const;
  void setVisual(const bool isPresent, stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &option,

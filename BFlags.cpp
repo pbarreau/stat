@@ -73,10 +73,7 @@ void BFlags::displayTbv_cell(QPainter *painter, const QStyleOptionViewItem &opti
  ///
  b_retVal = chkThatCell(index);
 
- int col = index.column();
- if((inf_flt->typ != eCountGrp) && (col == colTotal || col == colEc)){
-  painter->fillRect(option.rect, COULEUR_FOND_TOTAL);
- }
+ fltFull(inf_flt,painter,myOpt);
 
  /// Il faut mettre notre texte
  fltWrite(inf_flt, painter, myOpt);
@@ -401,12 +398,61 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
   ||
   (a->b_flt & Bp::F_Flt::fltFiltred) == Bp::F_Flt::fltFiltred
 
-		 ) {
+			 ) {
 	set_up = false;
 	myPen = Qt::red;
  }
 
  cellWrite(painter,state,cur_rect, myTxt,myPen,set_up);
+
+}
+
+void BFlags::fltFull(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const
+{
+
+ if(inf_flt->tb_ref.compare("B_fdj")!=0 || (inf_flt->typ!=eCountElm)){
+  return;
+ }
+
+
+ int col = myOpt.index.column();
+ int row = myOpt.index.row();
+
+ if((col == colTotal) || (col == colEc)){
+  painter->fillRect(myOpt.rect, COULEUR_FOND_TOTAL);
+ }
+
+ int ec= myOpt.index.sibling(row,Bp::colEc).data().toInt();
+
+ if((col > Bp::colEc) && (col <Bp::colTotalv1))
+ {
+  const QColor tab[]={COULEUR_FOND_R0,COULEUR_FOND_R1,COULEUR_FOND_R2};
+  const QColor mul[]={COULEUR_FOND_R3,COULEUR_FOND_R4,COULEUR_FOND_R5};
+  QColor color=Qt::white;
+
+  double val = myOpt.index.data().toDouble();
+
+	int r = -1;
+	bool multiple = false;
+	if((val > 1.0) && (ec>(2*val))){
+	 r = static_cast<int>(fmod(ec,val));
+	 multiple = true;
+	}
+	else {
+	 r = static_cast<int>(fabs(val-ec));
+	}
+
+	if(r>=0 & r<=2){
+	 if(multiple == false){
+		color = tab[r];
+	 }
+	 else {
+		color = mul[r];
+	 }
+	}
+
+  painter->fillRect(myOpt.rect, color);
+ }
 
 }
 
