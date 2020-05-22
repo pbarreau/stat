@@ -40,7 +40,7 @@ QTabWidget * BUplet::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
- for (int i = 2; i<=3; i++) {
+ for (int i = 1; i<=3; i++) {
   QWidget * wdg_tmp = getMainTbv(pGame,i);
   tab_Top->addTab(wdg_tmp,QString::number(i).rightJustified(2,'0'));
  }
@@ -307,19 +307,20 @@ QString BUplet::findUplets(const stGameConf *pGame, const int zn, const int loop
  QString tb0 = sql_msg;
 
  sql_msg ="";
+ QString r3w = "";
+ if(r3.remove("\n").size()){
+  r3w = "WHERE("+r3+")\n";
+ }
  sql_msg = sql_msg + "  tb1 as\n";
  sql_msg = sql_msg + "  (\n";
  sql_msg = sql_msg + "    SELECT\n";
  sql_msg = sql_msg + "      (row_number() over()) as uid ,\n";
- sql_msg = sql_msg + r1;
+ sql_msg = sql_msg + r1+"\n";
  sql_msg = sql_msg + "    FROM\n";
- sql_msg = sql_msg + r2;
- sql_msg = sql_msg + "    WHERE\n";
- sql_msg = sql_msg + "      (\n";
- sql_msg = sql_msg + r3;
- sql_msg = sql_msg + "      )\n";
+ sql_msg = sql_msg + r2+"\n";
+ sql_msg = sql_msg + r3w+"\n";
  sql_msg = sql_msg + "    ORDER BY\n";
- sql_msg = sql_msg + r0;
+ sql_msg = sql_msg + r0+"\n";
  sql_msg = sql_msg + "  )\n";
  QString tb1 = sql_msg;
 
@@ -403,20 +404,22 @@ QString BUplet::findUplets(const stGameConf *pGame, const int zn, const int loop
  QString tb4 = sql_msg;
 
  sql_msg ="";
+ QString r8w = "";
+ if(r8.remove("\n").size()){
+  if(r3.remove("\n").size()){
+   r8=r8+" and\n"+r3;
+  }
+  r8w = " Where("+r8+")\n";
+ }
  sql_msg = sql_msg + "  tb5 as\n";
  sql_msg = sql_msg + "  (\n";
  sql_msg = sql_msg + "    SELECT\n";
  sql_msg = sql_msg + "      t1.uid                                             ,\n";
  sql_msg = sql_msg + "      (row_number() over ( partition by t1.uid )) as lgn ,\n";
- sql_msg = sql_msg + r1;
+ sql_msg = sql_msg + r1+"\n";
  sql_msg = sql_msg + "    FROM\n";
- sql_msg = sql_msg + r7;
- sql_msg = sql_msg + "    WHERE\n";
- sql_msg = sql_msg + "      (\n";
- sql_msg = sql_msg + r8;
- sql_msg = sql_msg + "        and\n";
- sql_msg = sql_msg + r3;
- sql_msg = sql_msg + "      )\n";
+ sql_msg = sql_msg + r7+"\n";
+ sql_msg = sql_msg + r8w+"\n";
  sql_msg = sql_msg + "    order by\n";
  sql_msg = sql_msg + r0;
  sql_msg = sql_msg + "  )\n";

@@ -131,7 +131,6 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
 
  qtv_tmp->verticalHeader()->hide();
- qtv_tmp->setSortingEnabled(true);
 
  int nbCol = sqm_tmp->columnCount();
 
@@ -162,7 +161,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
   case eCountBrc:
   case eCountCmb:
    if(pGame->db_ref->dad.size()== 0){
-    myColSort = Bp::colTotalv0;
+    myColSort = Bp::colTotalv1;
    }
    else {
     myColSort = Bp::colTotalv2;
@@ -184,6 +183,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
  qtv_tmp->setColons(myColSort, colEc);
  qtv_tmp->sortByColumn(myColSort,order);
+ qtv_tmp->setSortingEnabled(true);
 
  qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt)); /// Delegation
 
