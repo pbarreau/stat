@@ -17,6 +17,8 @@ class BGTbView : public QTableView
  void addUpLayout(QLayout *up_in);
  int getMinWidth(int delta=2);
  int getMinHeight();
+ int getZone();
+ void setZone(int zn_in);
 
  protected:
  void mouseMoveEvent( QMouseEvent * inEvent );
@@ -26,6 +28,7 @@ class BGTbView : public QTableView
 
  private:
  QLayout *up;
+ int zone;
 
 };
 

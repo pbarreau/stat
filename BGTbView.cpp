@@ -34,6 +34,16 @@ void BGTbView::addUpLayout(QLayout *up_in)
  up = up_in;
 }
 
+int BGTbView::getZone()
+{
+ return zone;
+}
+
+void BGTbView::setZone(int zn_in)
+{
+ zone = zn_in;
+}
+
 QGroupBox *BGTbView::getScreen(bool spacer)
 {
  QVBoxLayout *layout = new QVBoxLayout;

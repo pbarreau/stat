@@ -316,7 +316,7 @@ QString BTirages::elmSel_1(const QModelIndexList &indexes, int zn)
 
 QString BTirages::elmSel_2(const QModelIndexList &indexes, int zn)
 {
- /// cette calcul le Cnp pour le cas nb selection > nb win de la zone
+ /// cette fn calcul le Cnp pour le cas nb selection > nb win de la zone
 
  QString msg = "";
 

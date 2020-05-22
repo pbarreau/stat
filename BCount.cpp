@@ -23,6 +23,7 @@
 #include "BTbView.h"
 
 #include "BCount.h"
+#include "buplet.h"
 #include "db_tools.h"
 #include "BColorIndex_v2.h"
 
@@ -94,7 +95,6 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
  /// Bandeau superieur
  if(up_qtv != nullptr){
-  ///qtv_tmp->setUpLayout(up_qtv);
   qtv_tmp->addUpLayout(up_qtv);
  }
 
@@ -148,20 +148,12 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  Qt::SortOrder order;
 
  switch (type) {
+  case eCountBrc:
+  case eCountCmb:
   case eCountElm:
    if(pGame->db_ref->dad.size()== 0){
     myColSort = Bp::colTotalv1;
     colEc = Bp::colEc;
-   }
-   else {
-    myColSort = Bp::colTotalv2;
-   }
-   order = Qt::DescendingOrder;
-   break;
-  case eCountBrc:
-  case eCountCmb:
-   if(pGame->db_ref->dad.size()== 0){
-    myColSort = Bp::colTotalv1;
    }
    else {
     myColSort = Bp::colTotalv2;
@@ -189,7 +181,6 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
 
  if(type == eCountGrp) {
-  //qtv_tmp->sortByColumn(Bp::colId,Qt::AscendingOrder);
 
 	QStringList tooltips=pGame->slFlt[zn][2];
 	tooltips.insert(0,"Total"); /// La colone Nb (0)
@@ -285,23 +276,26 @@ QList<BLstSelect *> *BCount::getSelection(void)
  QList<BLstSelect *> * ret = new QList<BLstSelect *>;
 
  int nb_zn = gm_def->znCount;
- for (int i=0;i<nb_zn;i++) {
+ for (int zn_id=0;zn_id<nb_zn;zn_id++) {
   QItemSelectionModel  *tmp = nullptr;
   QList<QModelIndex> indexes;
   if(type != eCountUpl){
-   tmp = tabTbv[i]->selectionModel();
+   tmp = tabTbv[zn_id]->selectionModel();
    indexes = tmp->selectedIndexes();
    if(indexes.size() !=0 ){
-    BLstSelect *zn_sel = new BLstSelect(type,i,tmp);
+    BLstSelect *zn_sel = new BLstSelect(type,zn_id,tmp);
     ret->append(zn_sel);
    }
   }
   else {
-   for (int j=0; j< 2; j++) {
-    tmp = upl_TbView[i]->selectionModel();
+   for (int upl_id=0; upl_id< C_MAX_UPL; upl_id++) {
+    if((upl_id+C_MIN_UPL)>gm_def->limites[zn_id].win){
+     break;
+    }
+    tmp = upl_JP1[zn_id][upl_id]->selectionModel();
     indexes = tmp->selectedIndexes();
     if(indexes.size() !=0 ){
-     BLstSelect *zn_sel = new BLstSelect(type,i,tmp,j);
+     BLstSelect *zn_sel = new BLstSelect(type,zn_id,tmp,upl_id);
      ret->append(zn_sel);
     }
    }

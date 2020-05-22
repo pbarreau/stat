@@ -204,9 +204,9 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  }
 
  if((pGame->db_ref->dad.size() == 0) && (pGame->eTirType == eTirFdj)){
-  stGameConf *for_uplet = new stGameConf(pGame);
-  for_uplet->znCount = 1;
-  BUplet * tmp = new BUplet (for_uplet);
+  //stGameConf *for_uplet = new stGameConf(pGame);
+  //for_uplet->znCount = pGame->znCount;
+  BUplet * tmp = new BUplet (pGame);
   lstComptage.append(tmp);
  }
 

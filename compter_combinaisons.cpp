@@ -269,10 +269,10 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
  sql_msg = sql_msg + " -- ie : Esperance et Moyenne de l'esperance\n";
  sql_msg = sql_msg + "tb2 as\n";
  sql_msg = sql_msg + "(\n";
- sql_msg = sql_msg + "select cast(row_number() over ()as int) as id, NULL as C1, t1.tip as R\n";
+ sql_msg = sql_msg + "select cast(b_id as int) as id, NULL as C1, t1.tip as R\n";
  sql_msg = sql_msg + col_vsl+"\n";
  sql_msg = sql_msg + str_jrs+"\n";
- sql_msg = sql_msg + "from (tb1) as t1 group by b_id\n";
+ sql_msg = sql_msg + "from (tb1) as t1 group by b_id order by T desc\n";
  sql_msg = sql_msg + ")\n";
  sql_msg = sql_msg + "\n";
  sql_msg = sql_msg + "\n";
@@ -280,7 +280,7 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
  sql_msg = sql_msg + "\n";
 
 #ifndef QT_NO_DEBUG
- BTest::writetoFile("AF_dbg_cmb.txt",sql_msg,false);
+ BTest::writetoFile("AF_dbg_cmb.txt",sql_msg);
  qDebug() <<sql_msg;
 #endif
 

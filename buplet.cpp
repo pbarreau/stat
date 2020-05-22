@@ -38,25 +38,42 @@ void BUplet::usr_TagLast(const stGameConf *pGame,  BTbView *view, const etCount 
 
 QTabWidget * BUplet::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
- QTabWidget *tab_Top = new QTabWidget(this);
+ QTabWidget *tab_zones = new QTabWidget(this);
 
- for (int i = 1; i<=3; i++) {
-  QWidget * wdg_tmp = getMainTbv(pGame,i);
-  tab_Top->addTab(wdg_tmp,QString::number(i).rightJustified(2,'0'));
+ int nbZn = pGame->znCount;
+ for (int zn = 0; zn< nbZn; zn++) {
+  QTabWidget *tab_uplets = new QTabWidget(this);
+  QString title = pGame->names[zn].abv;
+
+	int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
+	upl_JP1[zn]=new BGTbView * [nb_recherche];
+	for (int upl = C_MIN_UPL; upl<=nb_recherche; upl++) {
+	 if(upl > pGame->limites[zn].win){
+		break;
+	 }
+	 else {
+		QWidget * wdg_tmp = getMainTbv(pGame,zn,upl);
+		if(wdg_tmp !=nullptr){
+		 tab_uplets->addTab(wdg_tmp,QString::number(upl).rightJustified(2,'0'));
+		}
+	 }
+	}
+	tab_zones->addTab(tab_uplets,title);
  }
 
- return tab_Top;
+ return tab_zones;
 }
 
-QWidget *BUplet::getMainTbv(const stGameConf *pGame, int i)
+QWidget *BUplet::getMainTbv(const stGameConf *pGame, int zn, int i)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
  BGTbView *qtv_tmp = new BGTbView;
- qtv_tmp->setObjectName(QString::number(i-2));
- upl_TbView[i-2] = new BGTbView;
+ qtv_tmp->setObjectName(QString::number(i-C_MIN_UPL));
+ qtv_tmp->setZone(zn);
+ upl_JP1[zn][i-C_MIN_UPL] = new BGTbView;
 
- QString sql_msg = findUplets(pGame,0,i,-1,"tb2Count");
+ QString sql_msg = findUplets(pGame,zn,i,-1,"tb2Count");
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
  while (sqm_tmp->canFetchMore())
@@ -69,11 +86,12 @@ QWidget *BUplet::getMainTbv(const stGameConf *pGame, int i)
  m->setDynamicSortFilter(true);
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
+ qtv_tmp->sortByColumn(i+1,Qt::DescendingOrder);
  qtv_tmp->setSortingEnabled(true);
 
  int rows_proxy = qtv_tmp->model()->rowCount();
- QString st_title = "Uplets : " + QString::number(i).rightJustified(2,'0')+
-                    ". Nb tirages : "+QString::number(nb_rows)+
+ QString st_title = "U_" + QString::number(i).rightJustified(2,'0')+
+                    " (J). Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);
  qtv_tmp->setTitle(st_title);
 
@@ -83,7 +101,7 @@ QWidget *BUplet::getMainTbv(const stGameConf *pGame, int i)
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 
- int nbCol = sqm_tmp->columnCount();
+ //int nbCol = sqm_tmp->columnCount();
  qtv_tmp->resizeColumnsToContents();
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
@@ -91,7 +109,7 @@ QWidget *BUplet::getMainTbv(const stGameConf *pGame, int i)
 
 
  /// Largeur du tableau
- //qtv_tmp->hideColumn(Bp::colId);
+ qtv_tmp->hideColumn(Bp::colId);
  int l = qtv_tmp->getMinWidth();
  qtv_tmp->setFixedWidth(l);
 
@@ -100,7 +118,7 @@ QWidget *BUplet::getMainTbv(const stGameConf *pGame, int i)
          this, SLOT(BSlot_clicked( QModelIndex) ) );
 
 
- QWidget *tmp = getResuTbv(pGame,i-2);
+ QWidget *tmp = showUpletJp1(pGame,zn,i-C_MIN_UPL);
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
  glay_tmp->addWidget(tmp,0,1);
 
@@ -109,13 +127,13 @@ QWidget *BUplet::getMainTbv(const stGameConf *pGame, int i)
  return wdg_tmp;
 }
 
-QWidget *BUplet::getResuTbv(const stGameConf *pGame, int i)
+QWidget *BUplet::showUpletJp1(const stGameConf *pGame, int zn, int i)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
- BGTbView *qtv_tmp = upl_TbView[i];
+ BGTbView *qtv_tmp = upl_JP1[zn][i];
 
- QString sql_msg = findUplets(pGame,0,i+2,0);
+ QString sql_msg = findUplets(pGame,zn,i+C_MIN_UPL,0);
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
  while (sqm_tmp->canFetchMore())
@@ -131,8 +149,8 @@ QWidget *BUplet::getResuTbv(const stGameConf *pGame, int i)
  qtv_tmp->setSortingEnabled(true);
 
  int rows_proxy = qtv_tmp->model()->rowCount();
- QString st_title = "Resu uplets : " + QString::number(i+2).rightJustified(2,'0')+
-                    " a J+1. Nb tirages : "+QString::number(nb_rows)+
+ QString st_title = "U_" + QString::number(i+C_MIN_UPL).rightJustified(2,'0')+
+                    " (J+1). Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);
  qtv_tmp->setTitle(st_title);
 
@@ -142,7 +160,7 @@ QWidget *BUplet::getResuTbv(const stGameConf *pGame, int i)
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 
- int nbCol = sqm_tmp->columnCount();
+ //int nbCol = sqm_tmp->columnCount();
  qtv_tmp->resizeColumnsToContents();
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
@@ -164,12 +182,13 @@ QWidget *BUplet::getResuTbv(const stGameConf *pGame, int i)
 void BUplet::BSlot_clicked(const QModelIndex &index)
 {
  BGTbView *view = qobject_cast<BGTbView *>(sender());
- int id = view->objectName().toInt();
+ int id_upl = view->objectName().toInt();
+ int zn = view->getZone();
  int selection = index.sibling(index.row(),Bp::colId).data().toInt();
 
- QString sql_msg = findUplets(gm_def,0,id+2,selection);
+ QString sql_msg = findUplets(gm_def,zn,id_upl+C_MIN_UPL,selection);
 
- QAbstractItemModel *model = upl_TbView[id]->model();
+ QAbstractItemModel *model = upl_JP1[zn][id_upl]->model();
  QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
  QSqlQueryModel * sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
@@ -181,19 +200,20 @@ void BUplet::BSlot_clicked(const QModelIndex &index)
  int nb_rows = sqm_tmp->rowCount();
 
  QString src_uplets="";
- for (int i = 1; i<= id+2; i++) {
+ for (int i = C_MIN_UPL; i<= id_upl+C_MIN_UPL; i++) {
   QString val = index.sibling(index.row(),i).data().toString();
   src_uplets = src_uplets + val;
-  if(i<id+2){
+  if(i<id_upl+C_MIN_UPL){
    src_uplets = src_uplets+ ", ";
   }
  }
 
- int rows_proxy = upl_TbView[id]->model()->rowCount();
- QString st_title = "Apres uplets : " + src_uplets+
+ int rows_proxy = upl_JP1[zn][id_upl]->model()->rowCount();
+ QString st_title = "U_" + QString::number(id_upl+C_MIN_UPL).rightJustified(2,'0')+
+                    " (J+1). Apres : " + src_uplets+
                     ". Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);
- upl_TbView[id]->setTitle(st_title);
+ upl_JP1[zn][id_upl]->setTitle(st_title);
 
 }
 
@@ -203,7 +223,7 @@ bool BUplet::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn
  return b_retVal;
 }
 
-BUplet::BUplet(const stGameConf *pGame,const int zn, const int nb, const QString tbl)
+BUplet::BUplet(const stGameConf *pGame,const int nb, const QString tbl)
     :BCount (pGame, eCountUpl)
 {
  QString cnx=pGame->db_ref->cnx;
@@ -216,13 +236,12 @@ BUplet::BUplet(const stGameConf *pGame,const int zn, const int nb, const QString
   return;
  }
 
- upl_TbView = new BGTbView*[2];
+ int nb_zn = pGame->znCount;
+ upl_JP1 = new BGTbView**[nb_zn];
  upl_items = nb;
- upl_zn=zn;
  upl_tbInternal=tbl;
 }
 
-#if 1
 QString BUplet::findUplets(const stGameConf *pGame, const int zn, const int loop, const int key, QString tb_def, const int ref_day, const int delta)
 {
  QSqlQuery query(db_0);
@@ -522,211 +541,6 @@ QString BUplet::findUplets(const stGameConf *pGame, const int zn, const int loop
 
  return sql_msg;
 }
-
-#else
-QString BUplet::findUplets(const stGameConf *pGame, const int nb, const int ref_day, const int delta)
-{
- QString sql_msg = "";
- int zn=0;
- QString st_lstcols = "";
-
- sql_msg = sql_msg +"WITH -- boules dernier tirages";
- sql_msg = sql_msg +"tb0 AS (";
- sql_msg = sql_msg +"  SELECT";
- sql_msg = sql_msg +"    t1.id";
- sql_msg = sql_msg +"  FROM";
- sql_msg = sql_msg +"    (b_elm) as t1,";
- sql_msg = sql_msg +"    (b_fdj) AS t2";
- sql_msg = sql_msg +"  WHERE";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      (t2.id = 1)";
- sql_msg = sql_msg +"      AND t1.z1 IN("+st_lstcols+")";
- sql_msg = sql_msg +"    )";
- sql_msg = sql_msg +"),";
- sql_msg = sql_msg +"-- uplet 2 de ces boules";
- sql_msg = sql_msg +"tb1 AS (";
- sql_msg = sql_msg +"  SELECT";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      row_number() OVER()";
- sql_msg = sql_msg +"    ) AS uid,";
- sql_msg = sql_msg +"    t1.id AS b1,";
- sql_msg = sql_msg +"    t2.id AS b2,";
- sql_msg = sql_msg +"    t3.id AS b3";
- sql_msg = sql_msg +"  FROM";
- sql_msg = sql_msg +"    (tb0) AS t1,";
- sql_msg = sql_msg +"    (tb0) AS t2,";
- sql_msg = sql_msg +"    (tb0) AS t3";
- sql_msg = sql_msg +"  WHERE";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      (t1.id < t2.id)";
- sql_msg = sql_msg +"      AND (t2.id < t3.id)";
- sql_msg = sql_msg +"    )";
- sql_msg = sql_msg +"  ORDER BY";
- sql_msg = sql_msg +"    t1.id,";
- sql_msg = sql_msg +"    t2.id,";
- sql_msg = sql_msg +"    t3.id";
- sql_msg = sql_msg +"),";
- sql_msg = sql_msg +"-- ligne contenant ces uplets";
- sql_msg = sql_msg +"tb2 AS (";
- sql_msg = sql_msg +"  SELECT";
- sql_msg = sql_msg +"    t1.uid,";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      row_number() OVER(partition BY t1.uid)";
- sql_msg = sql_msg +"    ) AS lgn,";
- sql_msg = sql_msg +"    t2.*";
- sql_msg = sql_msg +"  FROM";
- sql_msg = sql_msg +"    (tb1) AS t1,";
- sql_msg = sql_msg +"    (b_fdj) AS t2";
- sql_msg = sql_msg +"  WHERE";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      (";
- sql_msg = sql_msg +"        t1.b1 IN ("+st_lstcols+")";
- sql_msg = sql_msg +"      )";
- sql_msg = sql_msg +"      AND (";
- sql_msg = sql_msg +"        t1.b2 IN ("+st_lstcols+")";
- sql_msg = sql_msg +"      )";
- sql_msg = sql_msg +"      AND (";
- sql_msg = sql_msg +"        t1.b3 IN ("+st_lstcols+")";
- sql_msg = sql_msg +"      )";
- sql_msg = sql_msg +"    )";
- sql_msg = sql_msg +"  ORDER BY";
- sql_msg = sql_msg +"    t1.uid ASC";
- sql_msg = sql_msg +"),";
- sql_msg = sql_msg +"-- comptage";
- sql_msg = sql_msg +"tb2count AS (";
- sql_msg = sql_msg +"  SELECT";
- sql_msg = sql_msg +"    t1.uid,";
- sql_msg = sql_msg +"    t1.b1,";
- sql_msg = sql_msg +"    t1.b2,";
- sql_msg = sql_msg +"    t1.b3,";
- sql_msg = sql_msg +"    count(t2.uid) AS t";
- sql_msg = sql_msg +"  FROM";
- sql_msg = sql_msg +"    (tb1) AS t1,";
- sql_msg = sql_msg +"    (tb2) AS t2";
- sql_msg = sql_msg +"  WHERE";
- sql_msg = sql_msg +"    (t1.uid = t2.uid)";
- sql_msg = sql_msg +"  GROUP BY";
- sql_msg = sql_msg +"    t2.uid";
- sql_msg = sql_msg +"  ORDER BY";
- sql_msg = sql_msg +"    t DESC,";
- sql_msg = sql_msg +"    t1.b1 ASC,";
- sql_msg = sql_msg +"    t1.b2 ASC,";
- sql_msg = sql_msg +"    t1.b3 ASC";
- sql_msg = sql_msg +"),";
- sql_msg = sql_msg +"-- jour suivant de ces uplets";
- sql_msg = sql_msg +"tb3 AS (";
- sql_msg = sql_msg +"  SELECT";
- sql_msg = sql_msg +"    t1.uid,";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      row_number() OVER(partition BY t1.uid)";
- sql_msg = sql_msg +"    ) AS lgn,";
- sql_msg = sql_msg +"    t2.*";
- sql_msg = sql_msg +"  FROM";
- sql_msg = sql_msg +"    (tb2) AS t1,";
- sql_msg = sql_msg +"    (b_fdj) AS t2";
- sql_msg = sql_msg +"  WHERE";
- sql_msg = sql_msg +"    (t2.id = t1.id - 1)";
- sql_msg = sql_msg +"),";
- sql_msg = sql_msg +"-- nouveaux uplets";
- sql_msg = sql_msg +"-- creer une nouvelle liste de boules";
- sql_msg = sql_msg +"-- pour chacun des uid du depart";
- sql_msg = sql_msg +"tb4 AS (";
- sql_msg = sql_msg +"  SELECT";
- sql_msg = sql_msg +"    t2.uid,";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      row_number() OVER(partition BY t2.uid)";
- sql_msg = sql_msg +"    ) AS lgn,";
- sql_msg = sql_msg +"    t1.id";
- sql_msg = sql_msg +"  FROM";
- sql_msg = sql_msg +"    (b_elm) AS t1,";
- sql_msg = sql_msg +"    (tb3) AS t2";
- sql_msg = sql_msg +"  WHERE";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      t1.z1 IN("+st_lstcols+")";
- sql_msg = sql_msg +"    )";
- sql_msg = sql_msg +"  GROUP BY";
- sql_msg = sql_msg +"    t2.uid,";
- sql_msg = sql_msg +"    t1.id";
- sql_msg = sql_msg +"),";
- sql_msg = sql_msg +"-- pour chaque ensemble construit";
- sql_msg = sql_msg +"-- creer la nouvelle liste uplets";
- sql_msg = sql_msg +"tb5 AS (";
- sql_msg = sql_msg +"  SELECT";
- sql_msg = sql_msg +"    t1.uid,";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      row_number() OVER(partition BY t1.uid)";
- sql_msg = sql_msg +"    ) AS lgn,";
- sql_msg = sql_msg +"    t1.id AS b1,";
- sql_msg = sql_msg +"    t2.id AS b2,";
- sql_msg = sql_msg +"    t3.id AS b3";
- sql_msg = sql_msg +"  FROM";
- sql_msg = sql_msg +"    (tb4) AS t1,";
- sql_msg = sql_msg +"    (tb4) AS t2,";
- sql_msg = sql_msg +"    (tb4) AS t3";
- sql_msg = sql_msg +"  WHERE";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      (t1.uid = t2.uid)";
- sql_msg = sql_msg +"      AND (t2.uid = t3.uid)";
- sql_msg = sql_msg +"      AND (t1.id < t2.id)";
- sql_msg = sql_msg +"      AND (t2.id < t3.id)";
- sql_msg = sql_msg +"    )";
- sql_msg = sql_msg +"  ORDER BY";
- sql_msg = sql_msg +"    t1.uid,";
- sql_msg = sql_msg +"    t1.id,";
- sql_msg = sql_msg +"    t2.id,";
- sql_msg = sql_msg +"    t3.id";
- sql_msg = sql_msg +"),";
- sql_msg = sql_msg +"-- compter les nouveaux uplets";
- sql_msg = sql_msg +"-- dans la listes des tirages futures";
- sql_msg = sql_msg +"-- leurs correspondant";
- sql_msg = sql_msg +"tb6 AS (";
- sql_msg = sql_msg +"  SELECT";
- sql_msg = sql_msg +"    t1.uid,";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      row_number() OVER(partition BY t1.uid)";
- sql_msg = sql_msg +"    ) AS pos,";
- sql_msg = sql_msg +"    t1.lgn,";
- sql_msg = sql_msg +"    t1.b1,";
- sql_msg = sql_msg +"    t1.b2,";
- sql_msg = sql_msg +"    t1.b3,";
- sql_msg = sql_msg +"    count(*) AS t";
- sql_msg = sql_msg +"  FROM";
- sql_msg = sql_msg +"    (tb5) AS t1,";
- sql_msg = sql_msg +"    (tb3) AS t2";
- sql_msg = sql_msg +"  WHERE";
- sql_msg = sql_msg +"    (";
- sql_msg = sql_msg +"      (t1.uid = t2.uid)";
- sql_msg = sql_msg +"      AND (";
- sql_msg = sql_msg +"        t1.b1 IN ("+st_lstcols+")";
- sql_msg = sql_msg +"      )";
- sql_msg = sql_msg +"      AND (";
- sql_msg = sql_msg +"        t1.b2 IN ("+st_lstcols+")";
- sql_msg = sql_msg +"      )";
- sql_msg = sql_msg +"      AND (";
- sql_msg = sql_msg +"        t1.b3 IN ("+st_lstcols+")";
- sql_msg = sql_msg +"      )";
- sql_msg = sql_msg +"    )";
- sql_msg = sql_msg +"  GROUP BY";
- sql_msg = sql_msg +"    t2.uid,";
- sql_msg = sql_msg +"    t1.lgn";
- sql_msg = sql_msg +"  ORDER BY";
- sql_msg = sql_msg +"    t DESC,";
- sql_msg = sql_msg +"    t1.uid ASC,";
- sql_msg = sql_msg +"    t1.b1 ASC,";
- sql_msg = sql_msg +"    t1.b2 ASC,";
- sql_msg = sql_msg +"    t1.b3 ASC";
- sql_msg = sql_msg +")";
- sql_msg = sql_msg +"SELECT";
- sql_msg = sql_msg +"  t1.*";
- sql_msg = sql_msg +"FROM";
- sql_msg = sql_msg +"  (tb6) AS t1";
-
-#ifndef QT_NO_DEBUG
- qDebug() <<sql_msg;
-#endif
- return sql_msg;
-}
-#endif
 
 
 BUplet::BUplet(st_In const &param, int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)

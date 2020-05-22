@@ -17,6 +17,9 @@
 #include "BGTbView.h"
 #include "BCount.h"
 
+#define  C_MIN_UPL 1
+#define  C_MAX_UPL 3
+
 class BUplet: public BCount
 {
  Q_OBJECT
@@ -47,7 +50,7 @@ class BUplet: public BCount
  //BUplet(st_In const &param);
  //BUplet(st_In const &param, int index=0);
  //BUplet(st_In const &param, QString ensemble="");
- explicit BUplet(const stGameConf *pGame, const int zn=0, const int nb=2, const QString tbl="tb6");
+ explicit BUplet(const stGameConf *pGame, const int nb=2, const QString tbl="tb6");
  BUplet(st_In const &param, int index=0, eCalcul eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=nullptr);
  ~BUplet();
  int getUpl(void);
@@ -106,8 +109,8 @@ class BUplet: public BCount
  QGridLayout *Compter(QString * pName, int zn);
 
  private:
- QWidget *getMainTbv(const stGameConf *pGame, int i);
- QWidget *getResuTbv(const stGameConf *pGame, int i);
+ QWidget *getMainTbv(const stGameConf *pGame, int zn, int i);
+ QWidget *showUpletJp1(const stGameConf *pGame, int zn, int i);
 
 
 };

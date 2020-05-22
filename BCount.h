@@ -97,7 +97,7 @@ class BCount:public QWidget
  int upl_items;
  int upl_zn;
  QString upl_tbInternal;
- BGTbView **upl_TbView;
+ BGTbView ***upl_JP1;
 
 
  public:

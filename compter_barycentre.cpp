@@ -233,6 +233,7 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
 
  if(pGame->db_ref->dad.size() != 0){
   if((pGame->db_ref->dad.compare("B_fdj")==0)){
+   tbl_ana = "B";
    str_jrs = db_jours;
    col_jrs = ", t2.J as J";
   }
