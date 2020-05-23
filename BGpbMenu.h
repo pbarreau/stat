@@ -10,13 +10,13 @@
 
 #include "BFlt.h"
 
-class BTbView;
+class BView_1;
 
 class BGpbMenu : public QGroupBox, BFlt
 {
  Q_OBJECT
 public:
-explicit BGpbMenu(const BFlt *conf, BTbView *in_parent=nullptr);
+explicit BGpbMenu(const BFlt *conf, BView_1 *in_parent=nullptr);
 
 protected:
 void mousePressEvent ( QMouseEvent * event ) ;
@@ -35,7 +35,7 @@ void displayTbvMenu_gpb(void);
 void setNewFlt(Bp::F_Flts flt_def);
 
 private:
-BTbView *parent;
+BView_1 *parent;
 QSqlDatabase db_gbm; /// db group box menu
 QString tb_flt;
 QString tb_tirages;

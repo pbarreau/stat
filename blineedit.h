@@ -4,18 +4,18 @@
 #include <QLineEdit>
 #include <QTableView>
 
-#include "BGTbView.h"
+#include "BView.h"
 
 class BLineEdit: public QLineEdit
 {
  Q_OBJECT
 
  public:
- BLineEdit(BGTbView *view);
- BGTbView *getView();
+ BLineEdit(BView *view);
+ BView *getView();
 
  private:
- BGTbView *pView;
+ BView *pView;
 };
 
 

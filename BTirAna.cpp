@@ -14,14 +14,14 @@
 #include "db_tools.h"
 #include "cnp_AvecRepetition.h"
 
-#include "compter_zones.h"
-#include "compter_combinaisons.h"
-#include "compter_barycentre.h"
-#include "compter_groupes.h"
+#include "BcElm.h"
+#include "BcCmb.h"
+#include "BcBrc.h"
+#include "BcGrp.h"
 
 #include "BTirAna.h"
 #include "BLstSelect.h"
-#include "buplet.h"
+#include "BcUpl.h"
 
 int BTirAna::total_analyses = 0;
 
@@ -206,11 +206,11 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  if((pGame->db_ref->dad.size() == 0) && (pGame->eTirType == eTirFdj)){
   //stGameConf *for_uplet = new stGameConf(pGame);
   //for_uplet->znCount = pGame->znCount;
-  BUplet * tmp = new BUplet (pGame);
+  BcUpl * tmp = new BcUpl (pGame);
   lstComptage.append(tmp);
  }
 
- BCountComb * item_2 = new BCountComb(pGame);
+ BcCmb * item_2 = new BcCmb(pGame);
  if(item_2->mySefl() == nullptr){
   delete  item_2;
  }
@@ -218,7 +218,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
   lstComptage.append(item_2);
  }
 
- BCountBrc * item_3 = new BCountBrc(pGame);
+ BcBrc * item_3 = new BcBrc(pGame);
  if(item_3->mySefl() == nullptr){
   delete  item_3;
  }
@@ -226,7 +226,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
   lstComptage.append(item_3);
  }
 
- BCountGroup * item_4 = new BCountGroup(pGame, info);
+ BcGrp * item_4 = new BcGrp(pGame, info);
  if(item_4->mySefl() == nullptr){
   delete  item_4;
  }

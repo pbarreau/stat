@@ -16,24 +16,24 @@
 #include "BFlags.h"
 
 #include "filtrecombinaisons.h"
-#include "compter_combinaisons.h"
+#include "BcCmb.h"
 #include "cnp_SansRepetition.h"
 #include "db_tools.h"
 
-int BCountComb::total = 0;
+int BcCmb::total = 0;
 
-BCountComb::~BCountComb()
+BcCmb::~BcCmb()
 {
  total --;
 }
 
-BCountComb::BCountComb(const stGameConf *pGame):BCount(pGame,eCountCmb)
+BcCmb::BcCmb(const stGameConf *pGame):BCount(pGame,eCountCmb)
 {
  /// appel du constructeur parent
  db_cmb = dbCount;
 }
 
-QTabWidget * BCountComb::startCount(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BcCmb::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
@@ -57,7 +57,7 @@ QTabWidget * BCountComb::startCount(const stGameConf *pGame, const etCount eCalc
  return tab_Top;
 }
 
-QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
+QWidget *BcCmb::fn_Count(const stGameConf *pGame, int zn)
 {
  QWidget * wdg_tmp = new QWidget;
 #if 0
@@ -154,7 +154,7 @@ QWidget *BCountComb::fn_Count(const stGameConf *pGame, int zn)
  return wdg_tmp;
 }
 
-bool BCountComb::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
+bool BcCmb::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool b_retVal = true;
 
@@ -171,7 +171,7 @@ bool BCountComb::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const in
  return b_retVal;
 }
 
-QString BCountComb::getSqlMsg(const stGameConf *pGame, int zn)
+QString BcCmb::getSqlMsg(const stGameConf *pGame, int zn)
 {
  /* exemple requete :
   *
@@ -296,7 +296,7 @@ QString BCountComb::getSqlMsg(const stGameConf *pGame, int zn)
 
 }
 
-QLayout * BCountComb::usr_UpperItems(int zn, BTbView *cur_tbv)
+QLayout * BcCmb::usr_UpperItems(int zn, BView_1 *cur_tbv)
 {
 
  QHBoxLayout * search_bar = getBarFltTirages(zn,cur_tbv);
@@ -304,7 +304,7 @@ QLayout * BCountComb::usr_UpperItems(int zn, BTbView *cur_tbv)
  return search_bar;
 }
 
-QHBoxLayout *BCountComb::getBarFltTirages(int zn, BGTbView *qtv_tmp)
+QHBoxLayout *BcCmb::getBarFltTirages(int zn, BView *qtv_tmp)
 {
  /// HORIZONTAL BAR
  QHBoxLayout *inputs = new QHBoxLayout;
@@ -348,7 +348,7 @@ QHBoxLayout *BCountComb::getBarFltTirages(int zn, BGTbView *qtv_tmp)
  return inputs;
 }
 
-void BCountComb::BSlot_FilterCmb(const QString &flt_string)
+void BcCmb::BSlot_FilterCmb(const QString &flt_string)
 {
  BLineEdit *le_chk = qobject_cast<BLineEdit *>(sender());
 
@@ -356,7 +356,7 @@ void BCountComb::BSlot_FilterCmb(const QString &flt_string)
 
 }
 
-BCountComb::BCountComb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb)
+BcCmb::BcCmb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,NULL,eCountCmb)
 {
  //type=eCountCmb;
@@ -365,10 +365,10 @@ BCountComb::BCountComb(const stGameConf &pDef, const QString &in, QSqlDatabase f
  total++;
  QTabWidget *tab_Top = new QTabWidget(this);
 
- QGridLayout *(BCountComb::*ptrFunc[])(QString *, int) =
+ QGridLayout *(BcCmb::*ptrFunc[])(QString *, int) =
   {
-   &BCountComb::Compter,
-   &BCountComb::Compter
+   &BcCmb::Compter,
+   &BcCmb::Compter
 
   };
 
@@ -400,7 +400,7 @@ BCountComb::BCountComb(const stGameConf &pDef, const QString &in, QSqlDatabase f
 #endif
 }
 
-void BCountComb::slot_ClicDeSelectionTableau(const QModelIndex &index)
+void BcCmb::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
  // L'onglet implique le tableau...
  int tab_index = 0;
@@ -425,7 +425,7 @@ void BCountComb::slot_ClicDeSelectionTableau(const QModelIndex &index)
  SqlFromSelection(selectionModel,tab_index);
 }
 
-void BCountComb::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
+void BcCmb::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
 {
  QString str_titre =  "c[";
 
@@ -468,7 +468,7 @@ void BCountComb::LabelFromSelection(const QItemSelectionModel *selectionModel, i
  emit sig_TitleReady(str_titre);
 }
 
-void BCountComb::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
+void BcCmb::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
 {
  QModelIndexList indexes = selectionModel->selectedIndexes();
 
@@ -513,7 +513,7 @@ void BCountComb::SqlFromSelection (const QItemSelectionModel *selectionModel, in
  }
 }
 
-void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
+void BcCmb::slot_RequeteFromSelection(const QModelIndex &index)
 {
  QString st_critere = "";
  QString sqlReq ="";
@@ -549,7 +549,7 @@ void BCountComb::slot_RequeteFromSelection(const QModelIndex &index)
  emit sig_ComptageReady(a);
 }
 
-QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int dst)
+QString BcCmb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int dst)
 {
  QSqlQuery query(dbCount) ;
  QString msg = "";
@@ -645,7 +645,7 @@ QString BCountComb::RequetePourTrouverTotal_z1(QString st_baseUse,int zn, int ds
 }
 
 
-QString BCountComb::ConstruireCriteres(int zn)
+QString BcCmb::ConstruireCriteres(int zn)
 {
  /// critere a construire
  QString msg = "";
@@ -686,7 +686,7 @@ QString BCountComb::ConstruireCriteres(int zn)
  return msg;
 }
 
-QGridLayout *BCountComb::Compter(QString * pName, int zn)
+QGridLayout *BcCmb::Compter(QString * pName, int zn)
 {
  QGridLayout *lay_return = new QGridLayout;
 #if 0
@@ -790,7 +790,7 @@ QGridLayout *BCountComb::Compter(QString * pName, int zn)
  return lay_return;
 }
 
-void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
+void BcCmb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 {
 #if 0
  bool b_retVal = true;
@@ -843,7 +843,7 @@ void BCountComb::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int
 #endif
 }
 
-void BCountComb::usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn)
+void BcCmb::usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn)
 {
  Q_UNUSED(view)
 
@@ -920,7 +920,7 @@ void BCountComb::usr_TagLast(const stGameConf *pGame, BTbView *view, const etCou
 
 }
 
-void BCountComb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int zn)
+void BcCmb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int zn)
 {
  bool b_retVal = true;
  QSqlQuery query(dbCount);
@@ -976,7 +976,7 @@ void BCountComb::marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int
  }
 }
 
-QString BCountComb::getFilteringData(int zn)
+QString BcCmb::getFilteringData(int zn)
 {
  QSqlQuery query(dbCount);
  bool b_retVal = true;

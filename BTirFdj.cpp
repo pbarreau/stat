@@ -8,7 +8,7 @@
 
 #include "BTirFdj.h"
 #include "BTirDelegate.h"
-#include "BCount.h"
+#include "Bc.h"
 
 
 BTirFdj::BTirFdj(const stGameConf *pGame, etTir gme_tir, QWidget *parent): BTirages(pGame, gme_tir, parent)
@@ -44,7 +44,7 @@ void BTirFdj::BSlot_Clicked_Fdj(const QModelIndex &index)
 
 QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
 {
- BGTbView *qtv_tmp = new BGTbView;
+ BView *qtv_tmp = new BView;
  tir_tbv = qtv_tmp;
  QSqlQueryModel *sqm_tmp = new QSqlQueryModel ;
  sqm_resu=sqm_tmp;

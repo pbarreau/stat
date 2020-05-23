@@ -35,7 +35,7 @@
 #include "filtrecombinaisons.h"
 #include "lescomptages.h"
 
-#include "buplet.h"
+#include "BcUpl.h"
 #include "BTbar1.h"
 #include "BTirFdj.h"
 
@@ -43,8 +43,8 @@
 #include "chartwidget.h"
 
 
-#include "compter_groupes.h"
-#include "compter_zones.h"
+#include "BcGrp.h"
+#include "BcElm.h"
 
 #include "BFdj.h"
 #include "BTirAna.h"

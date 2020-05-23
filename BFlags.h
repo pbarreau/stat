@@ -8,7 +8,7 @@
 
 #include "bstflt.h"
 #include "colors.h"
-#include "BTbView.h"
+#include "BView_1.h"
 
 class BFlags : public QStyledItemDelegate, BFlt
 {
@@ -16,7 +16,7 @@ class BFlags : public QStyledItemDelegate, BFlt
 
  public:
  typedef struct _stPrmDlgt{
-  BTbView *parent;
+  BView_1 *parent;
   QString db_cnx;
   int start;
   int zne;

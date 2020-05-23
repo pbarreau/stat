@@ -39,11 +39,11 @@
 #include "SyntheseGenerale.h"
 #include "showstepper.h"
 
-#include "compter_groupes.h"
-#include "compter_zones.h"
-#include "compter_combinaisons.h"
+#include "BcGrp.h"
+#include "BcElm.h"
+#include "BcCmb.h"
 #include "lescomptages.h"
-#include "BCount.h"
+#include "Bc.h"
 
 #include "bvisuresume.h"
 #include "bvisuresume_sql.h"
@@ -52,12 +52,12 @@
 
 #include "mainwindow.h"
 
-#include "compter_barycentre.h"
+#include "BcBrc.h"
 #include "sqlqmdetails.h"
 #include "bvisuresume.h"
 #include "btbvrepartition.h"
 
-#include "buplet.h"
+#include "BcUpl.h"
 
 #include "properties.h"
 #include "db_tools.h"

@@ -14,13 +14,13 @@
 
 #include "bvtabbar.h"
 #include "game.h"
-#include "BGTbView.h"
-#include "BCount.h"
+#include "BView.h"
+#include "Bc.h"
 
 #define  C_MIN_UPL 1
 #define  C_MAX_UPL 3
 
-class BUplet: public BCount
+class BcUpl: public BCount
 {
  Q_OBJECT
 
@@ -50,9 +50,9 @@ class BUplet: public BCount
  //BUplet(st_In const &param);
  //BUplet(st_In const &param, int index=0);
  //BUplet(st_In const &param, QString ensemble="");
- explicit BUplet(const stGameConf *pGame, const int nb=2, const QString tbl="tb6");
- BUplet(st_In const &param, int index=0, eCalcul eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=nullptr);
- ~BUplet();
+ explicit BcUpl(const stGameConf *pGame, const int nb=2, const QString tbl="tb6");
+ BcUpl(st_In const &param, int index=0, eCalcul eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=nullptr);
+ ~BcUpl();
  int getUpl(void);
  QString sql_UsrSelectedTirages(const QModelIndex & index, int pos);
  QString findUplets(const stGameConf *pGame, const int zn =0, const int loop=2, const int key=-1, QString tb_def="tb6", const int ref_day=1, const int delta=-1);
@@ -104,7 +104,7 @@ class BUplet: public BCount
  private:
  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
- virtual void usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn);
+ virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn);
  //virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
  QGridLayout *Compter(QString * pName, int zn);
 
@@ -124,7 +124,7 @@ class BUplWidget: public QWidget
  //BUplWidget(QString cnx, QWidget *parent=0);
  //BUplWidget(QString cnx, int index, QWidget *parent=0);
  //BUplWidget(QString cnx, QString usr_ens, QWidget *parent=0);
- BUplWidget(QString cnx, int index=0, const QModelIndex & ligne=QModelIndex(), const QString & data="", BUplet *origine=0, QWidget *parent=0);
+ BUplWidget(QString cnx, int index=0, const QModelIndex & ligne=QModelIndex(), const QString & data="", BcUpl *origine=0, QWidget *parent=0);
 
  private:
  QString sql_lstTirCmb(int ligne, int dst);

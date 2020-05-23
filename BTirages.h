@@ -10,7 +10,7 @@
 #include "game.h"
 #include "BLstSelect.h"
 #include "BTirAna.h"
-#include "BGTbView.h"
+#include "BView.h"
 
 class BTirages : public QWidget
 {
@@ -67,7 +67,7 @@ int id_TirSrc;
 int id_AnaSel;
 int id_AnaOnglet;
 QTabWidget * og_AnaSel;
-BGTbView *tir_tbv;
+BView *tir_tbv;
 QSqlQueryModel * sqm_resu;
 QString lst_tirages;
 QGridLayout *lay_fusion;

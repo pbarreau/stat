@@ -16,27 +16,27 @@
 #include <QSqlQuery>
 #include <QGridLayout>
 
-#include "buplet.h"
+#include "BcUpl.h"
 #include "BFpm_2.h"
 #include "BFpm_3.h"
 
-#include "BCount.h"
+#include "Bc.h"
 #include "db_tools.h"
 
-int BUplet::tot_upl = 0;
+int BcUpl::tot_upl = 0;
 
-QGridLayout *BUplet::Compter(QString * pName, int zn)
+QGridLayout *BcUpl::Compter(QString * pName, int zn)
 {
  QGridLayout *lay_return = new QGridLayout;
 
  return lay_return;
 }
 
-void BUplet::usr_TagLast(const stGameConf *pGame,  BTbView *view, const etCount eType, const int zn)
+void BcUpl::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount eType, const int zn)
 {
 }
 
-QTabWidget * BUplet::startCount(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_zones = new QTabWidget(this);
 
@@ -46,7 +46,7 @@ QTabWidget * BUplet::startCount(const stGameConf *pGame, const etCount eCalcul)
   QString title = pGame->names[zn].abv;
 
 	int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
-	upl_JP1[zn]=new BGTbView * [nb_recherche];
+	upl_JP1[zn]=new BView * [nb_recherche];
 	for (int upl = C_MIN_UPL; upl<=nb_recherche; upl++) {
 	 if(upl > pGame->limites[zn].win){
 		break;
@@ -64,14 +64,14 @@ QTabWidget * BUplet::startCount(const stGameConf *pGame, const etCount eCalcul)
  return tab_zones;
 }
 
-QWidget *BUplet::getMainTbv(const stGameConf *pGame, int zn, int i)
+QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int i)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
- BGTbView *qtv_tmp = new BGTbView;
+ BView *qtv_tmp = new BView;
  qtv_tmp->setObjectName(QString::number(i-C_MIN_UPL));
  qtv_tmp->setZone(zn);
- upl_JP1[zn][i-C_MIN_UPL] = new BGTbView;
+ upl_JP1[zn][i-C_MIN_UPL] = new BView;
 
  QString sql_msg = findUplets(pGame,zn,i,-1,"tb2Count");
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
@@ -127,11 +127,11 @@ QWidget *BUplet::getMainTbv(const stGameConf *pGame, int zn, int i)
  return wdg_tmp;
 }
 
-QWidget *BUplet::showUpletJp1(const stGameConf *pGame, int zn, int i)
+QWidget *BcUpl::showUpletJp1(const stGameConf *pGame, int zn, int i)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
- BGTbView *qtv_tmp = upl_JP1[zn][i];
+ BView *qtv_tmp = upl_JP1[zn][i];
 
  QString sql_msg = findUplets(pGame,zn,i+C_MIN_UPL,0);
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
@@ -179,9 +179,9 @@ QWidget *BUplet::showUpletJp1(const stGameConf *pGame, int zn, int i)
  return qtv_tmp->getScreen();
 }
 
-void BUplet::BSlot_clicked(const QModelIndex &index)
+void BcUpl::BSlot_clicked(const QModelIndex &index)
 {
- BGTbView *view = qobject_cast<BGTbView *>(sender());
+ BView *view = qobject_cast<BView *>(sender());
  int id_upl = view->objectName().toInt();
  int zn = view->getZone();
  int selection = index.sibling(index.row(),Bp::colId).data().toInt();
@@ -217,13 +217,13 @@ void BUplet::BSlot_clicked(const QModelIndex &index)
 
 }
 
-bool BUplet::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
+bool BcUpl::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool b_retVal = true;
  return b_retVal;
 }
 
-BUplet::BUplet(const stGameConf *pGame,const int nb, const QString tbl)
+BcUpl::BcUpl(const stGameConf *pGame,const int nb, const QString tbl)
     :BCount (pGame, eCountUpl)
 {
  QString cnx=pGame->db_ref->cnx;
@@ -237,12 +237,12 @@ BUplet::BUplet(const stGameConf *pGame,const int nb, const QString tbl)
  }
 
  int nb_zn = pGame->znCount;
- upl_JP1 = new BGTbView**[nb_zn];
+ upl_JP1 = new BView**[nb_zn];
  upl_items = nb;
  upl_tbInternal=tbl;
 }
 
-QString BUplet::findUplets(const stGameConf *pGame, const int zn, const int loop, const int key, QString tb_def, const int ref_day, const int delta)
+QString BcUpl::findUplets(const stGameConf *pGame, const int zn, const int loop, const int key, QString tb_def, const int ref_day, const int delta)
 {
  QSqlQuery query(db_0);
  QString sql_msg = "";
@@ -543,7 +543,7 @@ QString BUplet::findUplets(const stGameConf *pGame, const int zn, const int loop
 }
 
 
-BUplet::BUplet(st_In const &param, int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
+BcUpl::BcUpl(st_In const &param, int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
  input = param;
  tot_upl++;
@@ -571,9 +571,9 @@ BUplet::BUplet(st_In const &param, int index, eCalcul eCal, const QModelIndex & 
  }
 
 }
-BUplet::~BUplet(){}
+BcUpl::~BcUpl(){}
 
-QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
+QGroupBox *BcUpl::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
  int nb_uplet = input.uplet;
  bool b_retVal = false;
@@ -604,7 +604,7 @@ QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne,
 
  QString usr_info = "";
  if((useData == eEnsUsr) && parent){
-  BUplet *p = qobject_cast<BUplet *>(parent);
+  BcUpl *p = qobject_cast<BcUpl *>(parent);
   int use_uplet = p->getUpl();
   usr_info = ligne.model()->index(ligne.row(),use_uplet).data().toString();
  }
@@ -685,7 +685,7 @@ QGroupBox *BUplet::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne,
  return gpb_upl;
 }
 
-int BUplet::getNbLines(QString tbl_src)
+int BcUpl::getNbLines(QString tbl_src)
 {
  int val =-1;
  bool b_retVal = false;
@@ -706,7 +706,7 @@ int BUplet::getNbLines(QString tbl_src)
  return val;
 }
 
-QString BUplet::getJourTirage(int index)
+QString BcUpl::getJourTirage(int index)
 {
  QString st_tmp = "";
  bool b_retVal = false;
@@ -728,7 +728,7 @@ QString BUplet::getJourTirage(int index)
  return st_tmp;
 }
 
-QString BUplet::getCmbTirage(int index)
+QString BcUpl::getCmbTirage(int index)
 {
  QString st_tmp = "";
  bool b_retVal = false;
@@ -759,7 +759,7 @@ QString BUplet::getCmbTirage(int index)
  return st_tmp;
 }
 
-QString BUplet::getBrcTirage(int index)
+QString BcUpl::getBrcTirage(int index)
 {
  QString st_tmp = "";
  bool b_retVal = false;
@@ -786,7 +786,7 @@ QString BUplet::getBrcTirage(int index)
  return st_tmp;
 }
 
-QString BUplet::getBoulesTirage(int index)
+QString BcUpl::getBoulesTirage(int index)
 {
  int zn=0;
  QString st_tmp = "";
@@ -801,7 +801,7 @@ QString BUplet::getBoulesTirage(int index)
  return st_tmp;
 }
 
-QString BUplet::getUpletFromIndex(int nb_uplet, int index, QString tbl_src)
+QString BcUpl::getUpletFromIndex(int nb_uplet, int index, QString tbl_src)
 {
  QString st_tmp = "";
 
@@ -854,7 +854,7 @@ QString BUplet::getUpletFromIndex(int nb_uplet, int index, QString tbl_src)
  return st_tmp;
 }
 
-QTableView *BUplet::doTabShowUplet(QString st_msg1,const QModelIndex & ligne)
+QTableView *BcUpl::doTabShowUplet(QString st_msg1,const QModelIndex & ligne)
 {
  QTableView *qtv_tmp = new  QTableView;
  QSqlQueryModel *sqm_tmp=new QSqlQueryModel;
@@ -938,7 +938,7 @@ QTableView *BUplet::doTabShowUplet(QString st_msg1,const QModelIndex & ligne)
  return qtv_tmp;
 }
 
-void BUplet::slot_FindNewUplet(const QModelIndex & index)
+void BcUpl::slot_FindNewUplet(const QModelIndex & index)
 {
  //QTableView *view = qobject_cast<QTableView *>(sender());
 
@@ -951,12 +951,12 @@ void BUplet::slot_FindNewUplet(const QModelIndex & index)
 
 }
 
-int BUplet::getUpl(void)
+int BcUpl::getUpl(void)
 {
  return (input.uplet);
 }
 
-QString BUplet::sql_UsrSelectedTirages(const QModelIndex & index, int pos)
+QString BcUpl::sql_UsrSelectedTirages(const QModelIndex & index, int pos)
 {
  QString st_where = "";
  QString tmp = "";
@@ -990,7 +990,7 @@ QString BUplet::sql_UsrSelectedTirages(const QModelIndex & index, int pos)
  return tmp;
 }
 
-void BUplet::slot_Selection(const QString& lstBoules)
+void BcUpl::slot_Selection(const QString& lstBoules)
 {
  QTableView *view = qtv_upl;
  BFpm_3 *m = qobject_cast<BFpm_3 *>(view->model());
@@ -1003,7 +1003,7 @@ void BUplet::slot_Selection(const QString& lstBoules)
  gpb_upl->setTitle(nb_start);
 }
 
-QString BUplet::FN2_getFieldsFromZone(int zn, QString alias)
+QString BcUpl::FN2_getFieldsFromZone(int zn, QString alias)
 {
  int len_zn = 5; //onGame.limites[zn].len;
 
@@ -1024,7 +1024,7 @@ QString BUplet::FN2_getFieldsFromZone(int zn, QString alias)
 }
 
 
-bool BUplet::do_SqlCnpCount(int uplet_id)
+bool BcUpl::do_SqlCnpCount(int uplet_id)
 {
  bool b_retVal = true;
  QString msg = "";
@@ -1075,7 +1075,7 @@ bool BUplet::do_SqlCnpCount(int uplet_id)
  return b_retVal;
 }
 
-QString BUplet::sql_CnpMkUplet(int nb, QString col, QString tbl_in)
+QString BcUpl::sql_CnpMkUplet(int nb, QString col, QString tbl_in)
 {
 
  // Selection numeros boule de la zone
@@ -1136,7 +1136,7 @@ QString BUplet::sql_CnpMkUplet(int nb, QString col, QString tbl_in)
  return sql_cnp;
 }
 
-QString BUplet::sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in)
+QString BcUpl::sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in)
 {
  QString msg = "";
  int zn=0;
@@ -1273,7 +1273,7 @@ QString BUplet::sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in)
  return msg;
 }
 
-QString BUplet::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
+QString BcUpl::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
 {
  QString msg = "";
  int zn = 0;
@@ -1421,10 +1421,10 @@ QString BUplet::sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in)
 //BUplWidget::BUplWidget(QString cnx, int index, QWidget *parent):QWidget(parent){BUplWidget(cnx,index,"B_fdj");}
 //BUplWidget::BUplWidget(QString cnx, QString usr_ens, QWidget *parent):QWidget(parent){BUplWidget(cnx,0,usr_ens);}
 
-BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const QString &data, BUplet * origine, QWidget *parent):QWidget(parent)
+BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const QString &data, BcUpl * origine, QWidget *parent):QWidget(parent)
 {
  QString str_data ="";
- BUplet::st_In cnf;
+ BcUpl::st_In cnf;
  cnf.cnx = cnx;
 
  int start = 0;
@@ -1452,10 +1452,10 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
   &BUplWidget::sql_lstTirBrc
  };
 
- BUplet::eCalcul valCal[]={
-  BUplet::eCalcul::eCalTot,
-  BUplet::eCalcul::eCalCmb,
-  BUplet::eCalcul::eCalBrc};
+ BcUpl::eCalcul valCal[]={
+  BcUpl::eCalcul::eCalTot,
+  BcUpl::eCalcul::eCalCmb,
+  BcUpl::eCalcul::eCalBrc};
 
  QString tbDay[] ={"Jour J", "Jour J+1"};
  QString lstTab[]={"tot","cmb","brc"};
@@ -1512,7 +1512,7 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
 	 cnf.dst = tir_pos;
 	 for (int i = start; i<stop; i++) {
 		cnf.uplet = i;
-		BUplet *tmp = new BUplet(cnf,index, valCal[tab], ligne, str_data, origine);
+		BcUpl *tmp = new BcUpl(cnf,index, valCal[tab], ligne, str_data, origine);
 		QString name ="Upl:"+QString::number(i);
 		tabEast->addTab(tmp,name);
 	 }

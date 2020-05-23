@@ -40,7 +40,6 @@ SOURCES += \
     bfpmtiragev1.cpp \
     BGpbMenu.cpp \
     BGrbGenTirages.cpp \
-    BGTbView.cpp \
     blineedit.cpp \
     BLstSelect.cpp \
     BMenu.cpp \
@@ -51,12 +50,10 @@ SOURCES += \
     BSqlQmTirages_3.cpp \
     btablevieweditor.cpp \
     BTbar1.cpp \
-    BTbView.cpp \
     btbvrepartition.cpp \
     BTirages.cpp \
     BTirAna.cpp \
     BTirGen.cpp \
-    buplet.cpp \
     bvisuresume.cpp \
     bvisuresume_sql.cpp \
     bvtabbar.cpp \
@@ -69,11 +66,6 @@ SOURCES += \
     cnp_AvecRepetition.cpp \
     cnp_SansRepetition.cpp \
     combinaison.cpp \
-    BCount.cpp \
-    compter_barycentre.cpp \
-    compter_combinaisons.cpp \
-    compter_groupes.cpp \
-    compter_zones.cpp \
     CreerTables.cpp \
     db_tools.cpp \
     delegate.cpp \
@@ -93,7 +85,6 @@ SOURCES += \
     monQview.cpp \
     monSqlEditable.cpp \
     mygraphicsview.cpp \
-    myqabstractitemviewofqtable.cpp \
     myqtableview.cpp \
     newdetails.cpp \
     pointtirage.cpp \
@@ -115,9 +106,16 @@ SOURCES += \
     BTirFdj.cpp \
     BTirDelegate.cpp \
     BTest.cpp \
-    BColorIndex_v2.cpp \
     BGraphicsView.cpp \
-    BPointTirage.cpp
+    BPointTirage.cpp \
+    BcElm.cpp \
+    Bc.cpp \
+    BcBrc.cpp \
+    BcCmb.cpp \
+    BcGrp.cpp \
+    BcUpl.cpp \
+    BView_1.cpp \
+    BView.cpp
 
 HEADERS  += \
     BColorPriority.h \
@@ -130,8 +128,6 @@ HEADERS  += \
     BFpm_3.h \
     bfpmtiragev1.h \
     BGpbMenu.h \
-    BGrbGenTirages.h \
-    BGTbView.h \
     blineedit.h \
     BLstSelect.h \
     BMenu.h \
@@ -143,12 +139,10 @@ HEADERS  += \
     bstflt.h \
     btablevieweditor.h \
     BTbar1.h \
-    BTbView.h \
     btbvrepartition.h \
     BTirages.h \
     BTirAna.h \
     BTirGen.h \
-    buplet.h \
     bvisuresume.h \
     bvisuresume_sql.h \
     bvtabbar.h \
@@ -160,11 +154,6 @@ HEADERS  += \
     cnp_AvecRepetition.h \
     cnp_SansRepetition.h \
     colors.h \
-    BCount.h \
-    compter_barycentre.h \
-    compter_combinaisons.h \
-    compter_groupes.h \
-    compter_zones.h \
     db_tools.h \
     delegate.h \
     distancepourtirage.h \
@@ -179,7 +168,6 @@ HEADERS  += \
     monQview.h \
     monSqlEditable.h \
     mygraphicsview.h \
-    myqabstractitemviewofqtable.h \
     myqtableview.h \
     pointtirage.h \
     properties.h \
@@ -196,9 +184,16 @@ HEADERS  += \
     BTirFdj.h \
     BTirDelegate.h \
     BTest.h \
-    BColorIndex_v2.h \
     BGraphicsView.h \
-    BPointTirage.h
+    BPointTirage.h \
+    BcElm.h \
+    Bc.h \
+    BcBrc.h \
+    BcCmb.h \
+    BcGrp.h \
+    BcUpl.h \
+    BView_1.h \
+    BView.h
 
 
 FORMS    += mainwindow.ui \

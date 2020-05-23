@@ -14,7 +14,7 @@
 #include "compter_zones.h"
 #include "compter_combinaisons.h"
 #include "compter_groupes.h"
-#include "compter_barycentre.h"
+#include "BCountBrc.h"
 
 #include "BCount.h"
 #include "db_tools.h"

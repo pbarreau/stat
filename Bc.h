@@ -90,14 +90,14 @@ class BCount:public QWidget
  BCount* ptr_self;
  const stGameConf *gm_def;
  etCount type; /// type de comptage en cours
- BTbView **tabTbv;
+ BView_1 **tabTbv;
  QSqlDatabase dbCount;
 
  protected:
  int upl_items;
  int upl_zn;
  QString upl_tbInternal;
- BGTbView ***upl_JP1;
+ BView ***upl_JP1;
 
 
  public:
@@ -106,7 +106,7 @@ class BCount:public QWidget
   QLayout **up;
   QSqlQuery *query;
   QString *sql;
-  BTbView *cur_tbv;
+  BView_1 *cur_tbv;
  }stMkLocal;
  typedef bool (BCount::*ptrFn_tbl)(const stGameConf *pDef, const stMkLocal prm, const int zn);
 
@@ -116,14 +116,14 @@ class BCount:public QWidget
  virtual QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul) = 0;
  QWidget *startIhm(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)=0;
- virtual void usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn)=0;
+ virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn)=0;
  virtual QList<BLstSelect *> *getSelection(void);
  //virtual QList<QItemSelectionModel *> *getSelectionModel(void);
 
 
  protected:
  virtual QGridLayout *Compter(QString * pName, int zn)=0;
- virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
+ virtual QLayout * usr_UpperItems(int zn, BView_1 *cur_tbv);
 
  QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
  QString CriteresCreer(QString operateur, QString critere,int zone);

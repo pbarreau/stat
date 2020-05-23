@@ -13,7 +13,7 @@
 #include <QSqlQueryModel>
 
 #include "game.h"
-#include "BCount.h"
+#include "Bc.h"
 #include "labelclickable.h"
 
 class BcElm:public BCount//, public cFdjData
@@ -54,8 +54,8 @@ class BcElm:public BCount//, public cFdjData
  void marquerProcheVoisin(const stGameConf *pGame, const int zn, stTbFiltres *a);
  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
- virtual void usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn);
- virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
+ virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn);
+ virtual QLayout * usr_UpperItems(int zn, BView_1 *cur_tbv);
  //virtual QList<BLstSelect *> *getSelection(void);
 
 

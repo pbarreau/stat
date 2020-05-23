@@ -32,7 +32,7 @@
 #include "SyntheseDetails.h"
 #include "cnp_SansRepetition.h"
 #include "cnp_AvecRepetition.h"
-#include "buplet.h"
+#include "BcUpl.h"
 
 int GererBase::total_items = 0;
 GererBase::GererBase(stParam *param, stErr *retErr, stTiragesDef *pConf)

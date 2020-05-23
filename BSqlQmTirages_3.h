@@ -5,7 +5,7 @@
 #include <QTableView>
 #include <QPersistentModelIndex>
 
-#include "BGTbView.h"
+#include "BView.h"
 #include "game.h"
 
 class BSqlQmTirages_3 : public QSqlQueryModel
@@ -13,11 +13,11 @@ class BSqlQmTirages_3 : public QSqlQueryModel
  Q_OBJECT
 
  public:
- explicit BSqlQmTirages_3(stGameConf *conf, QString cnx, QString tbl, BGTbView *tab, QObject * parent=nullptr);
+ explicit BSqlQmTirages_3(stGameConf *conf, QString cnx, QString tbl, BView *tab, QObject * parent=nullptr);
  Qt::ItemFlags flags(const QModelIndex & index) const override;
  QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
  bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
- BGTbView *getTbv();
+ BView *getTbv();
 
  public:
  Q_SIGNALS:
@@ -29,7 +29,7 @@ class BSqlQmTirages_3 : public QSqlQueryModel
  private:
  QString db_cnx;
  QString db_tbl;
- BGTbView *db_tbv;
+ BView *db_tbv;
 };
 
 #endif // BSQLQMTIRAGES_3_H

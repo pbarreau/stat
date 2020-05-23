@@ -3,25 +3,20 @@
 #include <QScrollBar>
 #include <QHeaderView>
 
-#include "BGTbView.h"
+#include "BView.h"
 
-BGTbView::BGTbView(QWidget *parent):QTableView(parent)
+BView::BView(QWidget *parent):QTableView(parent)
 {
  square = new QGroupBox;
  up = nullptr;
 }
 
-BGTbView::~BGTbView()
+BView::~BView()
 {
  delete square;
 }
 
-QGroupBox * BGTbView::getSquare(void)
-{
- return square;
-}
-
-void BGTbView::setTitle(QString title, bool visible)
+void BView::setTitle(QString title, bool visible)
 {
  if(square != nullptr){
   square->setTitle(title);
@@ -29,22 +24,22 @@ void BGTbView::setTitle(QString title, bool visible)
  }
 }
 
-void BGTbView::addUpLayout(QLayout *up_in)
+void BView::addUpLayout(QLayout *up_in)
 {
  up = up_in;
 }
 
-int BGTbView::getZone()
+int BView::getZone()
 {
  return zone;
 }
 
-void BGTbView::setZone(int zn_in)
+void BView::setZone(int zn_in)
 {
  zone = zn_in;
 }
 
-QGroupBox *BGTbView::getScreen(bool spacer)
+QGroupBox *BView::getScreen(bool spacer)
 {
  QVBoxLayout *layout = new QVBoxLayout;
  if(up != nullptr){
@@ -60,7 +55,7 @@ QGroupBox *BGTbView::getScreen(bool spacer)
 
  return square;
 }
-void BGTbView::mouseMoveEvent( QMouseEvent * inEvent )
+void BView::mouseMoveEvent( QMouseEvent * inEvent )
 {
  /// https://doc.qt.io/archives/4.6/eventsandfilters.html
 
@@ -75,7 +70,7 @@ void BGTbView::mouseMoveEvent( QMouseEvent * inEvent )
  QTableView::mouseMoveEvent(inEvent);
 }
 
-int BGTbView::getMinWidth(int delta)
+int BView::getMinWidth(int delta)
 {
  QTableView *qtv_tmp = this;
  int l = 0;
@@ -111,7 +106,7 @@ int BGTbView::getMinWidth(int delta)
  return l;
 }
 
-int BGTbView::getMinHeight()
+int BView::getMinHeight()
 {
  QTableView *qtv_tmp = this;
  /// https://savolai.net/notes/how-do-i-adjust-a-qtableview-height-according-to-contents/

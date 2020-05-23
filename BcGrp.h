@@ -9,19 +9,19 @@
 #include <QStandardItemModel>
 #include <QPoint>
 
-#include "BCount.h"
+#include "Bc.h"
 
 
-class BCountGroup:public BCount
+class BcGrp:public BCount
 {
  Q_OBJECT
  /// in : infos representant les tirages
  /// tb : nom de la table decrivant les zones
  public:
- BCountGroup(const stGameConf *pDef, QStringList** lstCri=nullptr);
+ BcGrp(const stGameConf *pDef, QStringList** lstCri=nullptr);
 
- BCountGroup(const stGameConf &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb);
- ~BCountGroup();
+ BcGrp(const stGameConf &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb);
+ ~BcGrp();
  bool AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn);
  bool SupprimerVueIntermediaires(void);
  QString getFilteringData(int zn);
@@ -76,7 +76,7 @@ class BCountGroup:public BCount
  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
  void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
- virtual void usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn);
+ virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn);
  //virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
  QWidget *mainIhmGrp(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn);
  QWidget *usr_GrpTb1(int zn);
@@ -86,7 +86,7 @@ class BCountGroup:public BCount
  private:
  QSqlDatabase db_grp;
  QStringList **slFlt;
- BGTbView **tbvAnaLgn;
+ BView **tbvAnaLgn;
  int total_cells;
 
 };

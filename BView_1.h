@@ -14,15 +14,15 @@
 #include "BTirGen.h"
 #include "BTirAna.h"
 
-#include "BGTbView.h"
+#include "BView.h"
 #include "BTirages.h"
 
-class BTbView : public BGTbView, public BFlt
+class BView_1 : public BView, public BFlt
 {
  Q_OBJECT
 
  public :
- BTbView(const stGameConf *pGame, int in_zn, etCount in_typ);
+ BView_1(const stGameConf *pGame, int in_zn, etCount in_typ);
  //QGroupBox * getScreen();
  //BGpbMenu * getGpb();
  void updateTitle();
@@ -39,7 +39,7 @@ class BTbView : public BGTbView, public BFlt
  void setRowModelCount(int nb);
  void setRowSourceModelCount(int nb);
 
- ~BTbView();
+ ~BView_1();
 
  Q_SIGNALS:
  void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);

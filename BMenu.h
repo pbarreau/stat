@@ -10,19 +10,19 @@
 #include <QModelIndex>
 
 #include "BFlt.h"
-#include "BTbView.h"
-#include "BCount.h"
+#include "BView_1.h"
+#include "Bc.h"
 
 class BMenu : public QMenu,BFlt
 {
  Q_OBJECT
 
  public:
- BMenu(const QPoint pos, const BFlt *conf, BTbView *view);
+ BMenu(const QPoint pos, const BFlt *conf, BView_1 *view);
 
  private:
  void construireMenu(void);
- QMenu *mnu_Priority(stTbFiltres *ret, const etCount eSrc, const BTbView *view, const QModelIndex index);
+ QMenu *mnu_Priority(stTbFiltres *ret, const etCount eSrc, const BView_1 *view, const QModelIndex index);
  ///bool getdbFlt(stTbFiltres *ret, const etCount origine, const BTbView *view, const QModelIndex index);
  ///bool chkShowMenu(void);
 

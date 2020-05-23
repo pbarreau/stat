@@ -36,8 +36,8 @@ class BTirGen : public BTirages
  void mkGameWidget(stGameConf * current);
  QGroupBox *  LireBoule(stGameConf *pGame, QString tbl_cible);
  QGroupBox *  LireTable(stGameConf *pGame, QString tbl_cible);
- QHBoxLayout *getBarZoomTirages(BGTbView *qtv_tmp);
- QHBoxLayout *getBarFltTirages(int chk_nb_col, BGTbView *qtv_tmp);
+ QHBoxLayout *getBarZoomTirages(BView *qtv_tmp);
+ QHBoxLayout *getBarFltTirages(int chk_nb_col, BView *qtv_tmp);
 
  void deletePreviousResults(const stGameConf *pGame);
 

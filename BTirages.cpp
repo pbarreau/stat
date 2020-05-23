@@ -8,7 +8,7 @@
 #include <QHeaderView>
 
 #include "BTirages.h"
-#include "BCount.h"
+#include "Bc.h"
 #include "BTirAna.h"
 
 #include "BGraphicsView.h"
@@ -586,7 +586,7 @@ void BTirages::updateTbv(QString box_title, QString msg)
  }
  int nb_rows = cible->rowCount();
 
- BGTbView *qtv_tmp = tir_tbv;
+ BView *qtv_tmp = tir_tbv;
  int rows_proxy = qtv_tmp->model()->rowCount();
  QString st_title = box_title+
                     "Nb tirages : "+QString::number(nb_rows)+

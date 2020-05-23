@@ -6,7 +6,7 @@
 #include <QGridLayout>
 #include <QObject>
 
-#include "BCount.h"
+#include "Bc.h"
 #include "game.h"
 
 
@@ -23,13 +23,13 @@ typedef struct _prmbary{
 }stNeedsOfBary;
 
 
-class BCountBrc:public BCount
+class BcBrc:public BCount
 {
  Q_OBJECT
  public:
- BCountBrc(const stGameConf *pDef);
+ BcBrc(const stGameConf *pDef);
 
- BCountBrc(const stNeedsOfBary &param);
+ BcBrc(const stNeedsOfBary &param);
  QString getFilteringData(int zn);
 
  private:
@@ -50,11 +50,11 @@ class BCountBrc:public BCount
  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
  void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
- virtual void usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn);
+ virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn);
 
 
  private:
- BCountBrc * addr;
+ BcBrc * addr;
  QSqlDatabase db_brc;
 
  private:

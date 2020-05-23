@@ -7,19 +7,19 @@
 #include <QStringList>
 #include <QGridLayout>
 
-#include "BCount.h"
+#include "Bc.h"
 
 #define HCELL       55
 
-class BCountComb:public BCount
+class BcCmb:public BCount
 {
  Q_OBJECT
  /// in : infos representant les tirages
  public:
- BCountComb(const stGameConf *pDef);
+ BcCmb(const stGameConf *pDef);
 
- BCountComb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb);
- ~BCountComb();
+ BcCmb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb);
+ ~BcCmb();
  void marquerDerniers_cmb(const stGameConf *pGame, etCount eType, int zn);
  QString getFilteringData(int zn);
 
@@ -47,18 +47,18 @@ class BCountComb:public BCount
  QWidget *fn_Count(const stGameConf *pGame, int zn);
  QString getSqlMsg(const stGameConf *pGame, int zn);
  void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
- QHBoxLayout *getBarFltTirages(int zn, BGTbView *qtv_tmp);
+ QHBoxLayout *getBarFltTirages(int zn, BView *qtv_tmp);
 
  private:
  //virtual QString getType();
  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
- virtual void usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn);
- virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
+ virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn);
+ virtual QLayout * usr_UpperItems(int zn, BView_1 *cur_tbv);
 
 
  private:
- BCountComb * addr;
+ BcCmb * addr;
  QSqlDatabase db_cmb;
 
 

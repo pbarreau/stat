@@ -20,30 +20,30 @@
 #include <QHeaderView>
 
 #include "db_tools.h"
-#include "BCount.h"
-#include "compter_barycentre.h"
+#include "Bc.h"
+#include "BcBrc.h"
 //#include "delegate.h"
 #include "BFlags.h"
 
-int BCountBrc::total = 0;
+int BcBrc::total = 0;
 
-BCountBrc::BCountBrc(const stGameConf *pGame):BCount(pGame,eCountBrc)
+BcBrc::BcBrc(const stGameConf *pGame):BCount(pGame,eCountBrc)
 {
  /// appel du constructeur parent
  db_brc = dbCount;
 }
 
-QTabWidget * BCountBrc::startCount(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BcBrc::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
  int nb_zones = pGame->znCount;
 
 
- QWidget *(BCountBrc::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
+ QWidget *(BcBrc::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
   {
-   &BCountBrc::startIhm,
-   &BCountBrc::startIhm
+   &BcBrc::startIhm,
+   &BcBrc::startIhm
   };
 
  for(int i = 0; i< nb_zones; i++)
@@ -57,7 +57,7 @@ QTabWidget * BCountBrc::startCount(const stGameConf *pGame, const etCount eCalcu
  return tab_Top;
 }
 
-QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
+QWidget *BcBrc::fn_Count(const stGameConf *pGame, int zn)
 {
  QWidget * wdg_tmp = new QWidget;
 #if 0
@@ -152,7 +152,7 @@ QWidget *BCountBrc::fn_Count(const stGameConf *pGame, int zn)
  return wdg_tmp;
 }
 
-bool BCountBrc::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
+bool BcBrc::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool b_retVal = true;
 
@@ -169,7 +169,7 @@ bool BCountBrc::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int
  return b_retVal;
 }
 
-QString BCountBrc::getSqlMsg(const stGameConf *pGame, int zn)
+QString BcBrc::getSqlMsg(const stGameConf *pGame, int zn)
 {
  /* exemple requete :
   * with poids as
@@ -308,7 +308,7 @@ QString BCountBrc::getSqlMsg(const stGameConf *pGame, int zn)
 
 }
 
-BCountBrc::BCountBrc(const stNeedsOfBary &param)
+BcBrc::BcBrc(const stNeedsOfBary &param)
     :BCount(param)
 {
  type = eCountBrc;
@@ -329,10 +329,10 @@ BCountBrc::BCountBrc(const stNeedsOfBary &param)
 
  hc_RechercheBarycentre(param.tbl_in);
 
- QGridLayout *(BCountBrc::*ptrFunc[])(QString) ={
-  &BCountBrc::AssocierTableau,
-  &BCountBrc::AssocierTableau,
-  &BCountBrc::AssocierTableau
+ QGridLayout *(BcBrc::*ptrFunc[])(QString) ={
+  &BcBrc::AssocierTableau,
+  &BcBrc::AssocierTableau,
+  &BcBrc::AssocierTableau
  };
  //int calc = sizeof (ptrFunc)/sizeof(void *);
 
@@ -347,7 +347,7 @@ BCountBrc::BCountBrc(const stNeedsOfBary &param)
 
 }
 
-QGridLayout *BCountBrc::Compter(QString * pName, int zn)
+QGridLayout *BcBrc::Compter(QString * pName, int zn)
 {
  Q_UNUSED(pName);
  Q_UNUSED(zn);
@@ -359,7 +359,7 @@ QGridLayout *BCountBrc::Compter(QString * pName, int zn)
  return lay_return;
 }
 
-QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
+QGridLayout *BcBrc::AssocierTableau(QString src_tbl)
 {
  QGridLayout *lay_return = new QGridLayout;
 #if 0
@@ -428,7 +428,7 @@ QGridLayout *BCountBrc::AssocierTableau(QString src_tbl)
 
 }
 
-void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
+void BcBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 {
 #if 0
  bool b_retVal = true;
@@ -490,7 +490,7 @@ void BCountBrc::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int 
 #endif
 }
 
-void BCountBrc::usr_TagLast(const stGameConf *pGame,  BTbView *view, const etCount eType, const int zn)
+void BcBrc::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount eType, const int zn)
 {
  Q_UNUSED(view)
 
@@ -576,7 +576,7 @@ void BCountBrc::usr_TagLast(const stGameConf *pGame,  BTbView *view, const etCou
 
 }
 
-void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int zn){
+void BcBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int zn){
  bool b_retVal = true;
  QSqlQuery query(dbCount);
  QSqlQuery query_2(dbCount);
@@ -632,7 +632,7 @@ void BCountBrc::marquerDerniers_bar(const stGameConf *pGame, etCount eType, int 
  }
 }
 
-void BCountBrc::hc_RechercheBarycentre(QString tbl_in)
+void BcBrc::hc_RechercheBarycentre(QString tbl_in)
 {
  QSqlQuery query(db_brc);
  bool b_retVal = true;
@@ -758,7 +758,7 @@ void BCountBrc::hc_RechercheBarycentre(QString tbl_in)
  }
 }
 
-bool BCountBrc::repereDernier(QString tbl_bary)
+bool BcBrc::repereDernier(QString tbl_bary)
 {
  bool isOK = true;
 #if 0
@@ -791,12 +791,12 @@ bool BCountBrc::repereDernier(QString tbl_bary)
  return isOK;
 }
 
-bool BCountBrc::isTableTotalBoulleReady(QString tbl_total)
+bool BcBrc::isTableTotalBoulleReady(QString tbl_total)
 {
  return true;
 }
 
-bool BCountBrc::mettreBarycentre(QString tbl_dst, QString src_data)
+bool BcBrc::mettreBarycentre(QString tbl_dst, QString src_data)
 {
  bool isOK = true;
  QSqlQuery query(db_brc);
@@ -828,7 +828,7 @@ bool BCountBrc::mettreBarycentre(QString tbl_dst, QString src_data)
  return isOK;
 }
 
-QString BCountBrc::getFilteringData(int zn)
+QString BcBrc::getFilteringData(int zn)
 {
 #if 0
     QString msg = "select tbLeft.* from ("+tbl_src+") as tbLeft "

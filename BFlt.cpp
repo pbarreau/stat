@@ -2,7 +2,7 @@
 #include <QMessageBox>
 
 #include "BFlt.h"
-#include "BTbView.h"
+#include "BView_1.h"
 #include "db_tools.h"
 
 BFlt::BFlt(BFlt *other)
@@ -63,7 +63,7 @@ void BFlt::setColons(Bp::E_Col c_Tot, Bp::E_Col c_Ec)
  colTotal = c_Tot;
 }
 
-bool BFlt::displayTbvMenu_cell(const QPoint pos, BTbView *view)
+bool BFlt::displayTbvMenu_cell(const QPoint pos, BView_1 *view)
 {
  bool b_retVal = false;
 

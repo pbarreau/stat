@@ -20,12 +20,11 @@
 #include "BFlags.h"
 
 #include "BMenu.h"
-#include "BTbView.h"
+#include "BView_1.h"
 
-#include "BCount.h"
-#include "buplet.h"
+#include "Bc.h"
+#include "BcUpl.h"
 #include "db_tools.h"
-#include "BColorIndex_v2.h"
 
 QString BCount::label[eCountEnd]={"err","elm","cmb","grp","brc","upl"};
 QString BCount::onglet[eCountEnd]={"Erreur","Zones","Combinaisons","Groupes","Barycentres", "Uplets"};
@@ -38,7 +37,7 @@ int BCount::nbChild = 0;
  * obtenue grace a la fonction utlisateur usr_fn
  */
 
-QLayout * BCount::usr_UpperItems(int zn, BTbView *cur_tbv)
+QLayout * BCount::usr_UpperItems(int zn, BView_1 *cur_tbv)
 {
  QLayout *ret_lay = nullptr;
  return ret_lay;
@@ -51,7 +50,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
  stMkLocal prm;
  QLayout *up_qtv = nullptr; /// Bandeau audessu du tabview
- BTbView *qtv_tmp = new BTbView(pGame,zn,eCalcul);
+ BView_1 *qtv_tmp = new BView_1(pGame,zn,eCalcul);
  tabTbv[zn] = qtv_tmp;
  qtv_tmp->setObjectName(QString::number(zn));
 
@@ -356,7 +355,7 @@ BCount::BCount(const stGameConf *pGame, etCount genre):gm_def(pGame), type(genre
  }
 
  ptr_self = this;
- tabTbv = new BTbView *[pGame->znCount];
+ tabTbv = new BView_1 *[pGame->znCount];
 
  if(pGame->eTirType == eTirFdj){
   QString st_tmp = pGame->db_ref->jrs;

@@ -8,7 +8,7 @@
 #include <QSqlQuery>
 
 #include "BGpbMenu.h"
-#include "BCount.h"
+#include "Bc.h"
 #include "db_tools.h"
 /*
  * BGpbMenu::BGpbMenu(const int in_zn, const etCount in_typ, const QString cnx, BTbView *in_parent)
@@ -24,7 +24,7 @@
  * sont directement effectuees ici
  */
 
-BGpbMenu::BGpbMenu(const BFlt *conf, BTbView *in_parent)
+BGpbMenu::BGpbMenu(const BFlt *conf, BView_1 *in_parent)
     :QGroupBox(nullptr),BFlt(*conf), parent(in_parent)
 {
  db_gbm = db_flt;

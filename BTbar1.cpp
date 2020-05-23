@@ -25,16 +25,16 @@ BTbar1::BTbar1(const stGameConf *pGame, QTableView *p_tbv)//(QWidget *parent):QW
 
 }
 
-BTbar1::BTbar1(stTiragesDef *def, BGTbView *p_tbv)//(QWidget *parent):QWidget (parent)
+BTbar1::BTbar1(stTiragesDef *def, BView *p_tbv)//(QWidget *parent):QWidget (parent)
 {
- BGTbView *pTbv_use = p_tbv;
+ BView *pTbv_use = p_tbv;
  QHBoxLayout *layout= new QHBoxLayout;
 
  cnt_items++;
  usrFlt = eFlt::efltNone;
  conf = def;
  if(pTbv_use==nullptr){
-  pTbv_use = new BGTbView;
+  pTbv_use = new BView;
   QString dbg_name = "tbvDbg_"+QString::number(cnt_items).rightJustified(2,'0');
   pTbv_use->setObjectName(dbg_name);
  }
@@ -169,7 +169,7 @@ QComboBox *BTbar1::ComboPerso(int id)
  return tmp_combo;
 }
 
-QGroupBox * BTbar1::mkBarre(BGTbView *tbv_cible)
+QGroupBox * BTbar1::mkBarre(BView *tbv_cible)
 {
  QGroupBox *tmp_gpb = new QGroupBox;
 

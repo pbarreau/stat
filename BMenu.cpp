@@ -13,9 +13,9 @@
 #include "BMenu.h"
 #include "BFlags.h"
 #include "db_tools.h"
-#include "BTbView.h"
+#include "BView_1.h"
 
-BMenu::BMenu(const QPoint pos, const BFlt *conf, BTbView *view):QMenu (nullptr),BFlt(*conf)
+BMenu::BMenu(const QPoint pos, const BFlt *conf, BView_1 *view):QMenu (nullptr),BFlt(*conf)
 {
  db_menu = db_flt;
  addr = nullptr;
@@ -117,7 +117,7 @@ void BMenu::presenterMenu()
 
 }
 
-QMenu *BMenu::mnu_Priority(stTbFiltres *ret, const etCount eSrc, const BTbView *view, const QModelIndex index)
+QMenu *BMenu::mnu_Priority(stTbFiltres *ret, const etCount eSrc, const BView_1 *view, const QModelIndex index)
 {
  Q_UNUSED(eSrc)
  Q_UNUSED(view)

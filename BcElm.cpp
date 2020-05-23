@@ -21,7 +21,7 @@
 
 #include <QPushButton>
 
-#include "compter_zones.h"
+#include "BcElm.h"
 #include "db_tools.h"
 
 #include "BTirAna.h"
@@ -75,7 +75,7 @@ QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)
  return tab_Top;
 }
 
-QLayout * BcElm::usr_UpperItems(int zn, BTbView *cur_tbv)
+QLayout * BcElm::usr_UpperItems(int zn, BView_1 *cur_tbv)
 {
  /// https://wiki.qt.io/PushButton_Based_On_Action
  /// https://wiki.qt.io/How_to_Use_QPushButton
@@ -127,7 +127,7 @@ bool BcElm::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
  return b_retVal;
 }
 
-void BcElm::usr_TagLast(const stGameConf *pGame,  BTbView *view, const etCount eType, const int zn)
+void BcElm::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount eType, const int zn)
 {
  Q_UNUSED(view)
 

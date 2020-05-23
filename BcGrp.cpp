@@ -18,19 +18,19 @@
 #include <QHeaderView>
 #include <QToolTip>
 
-#include "compter_groupes.h"
+#include "BcGrp.h"
 #include "db_tools.h"
 
 #include "BFlags.h"
 
-int BCountGroup::total = 0;
+int BcGrp::total = 0;
 
-BCountGroup::~BCountGroup()
+BcGrp::~BcGrp()
 {
  total --;
 }
 
-BCountGroup::BCountGroup(const stGameConf *pGame,QStringList** lstCri):BCount(pGame,eCountGrp)
+BcGrp::BcGrp(const stGameConf *pGame,QStringList** lstCri):BCount(pGame,eCountGrp)
 {
  /// appel du constructeur parent
  db_grp = dbCount;
@@ -39,23 +39,23 @@ BCountGroup::BCountGroup(const stGameConf *pGame,QStringList** lstCri):BCount(pG
  total_cells = 0;
 }
 
-QTabWidget * BCountGroup::startCount(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BcGrp::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
  int nb_zones = pGame->znCount;
  if(pGame->db_ref->dad.size()==0){
-  tbvAnaLgn = new BGTbView * [nb_zones];
+  tbvAnaLgn = new BView * [nb_zones];
  }
  else {
   tbvAnaLgn = nullptr;
  }
 
 
- QWidget *(BCountGroup::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
+ QWidget *(BcGrp::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
   {
-   &BCountGroup::mainIhmGrp,
-   &BCountGroup::mainIhmGrp
+   &BcGrp::mainIhmGrp,
+   &BcGrp::mainIhmGrp
   };
 
  for(int i = 0; i< nb_zones; i++)
@@ -69,7 +69,7 @@ QTabWidget * BCountGroup::startCount(const stGameConf *pGame, const etCount eCal
  return tab_Top;
 }
 
-QWidget *BCountGroup::mainIhmGrp(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn)
+QWidget *BcGrp::mainIhmGrp(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn)
 {
  QWidget *ret = new QWidget;
  QVBoxLayout *ret_lay = new QVBoxLayout;
@@ -90,7 +90,7 @@ QWidget *BCountGroup::mainIhmGrp(const stGameConf *pGame, const etCount eCalcul,
  return ret;
 }
 
-QWidget * BCountGroup::usr_GrpTb1(int zn)
+QWidget * BcGrp::usr_GrpTb1(int zn)
 {
  /// Creation d'un bandeau pour selection utilisateur
  /*
@@ -105,7 +105,7 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
   return nullptr;
  }
 
- tbvAnaLgn[zn] = new BGTbView;
+ tbvAnaLgn[zn] = new BView;
 
  int l_id = -1;
  QString sql_msg = getSqlForLine(l_id, zn);
@@ -118,7 +118,7 @@ QWidget * BCountGroup::usr_GrpTb1(int zn)
  return tbvAnaLgn[zn]->getScreen();
 }
 
-void BCountGroup::BSlot_AnaLgnShow(const int & l_id, const int &prx_id)
+void BcGrp::BSlot_AnaLgnShow(const int & l_id, const int &prx_id)
 {
  if(tbvAnaLgn == nullptr){
   return;
@@ -135,7 +135,7 @@ void BCountGroup::BSlot_AnaLgnShow(const int & l_id, const int &prx_id)
 
 }
 
-void BCountGroup::BSlot_AnaLgnRaz(void)
+void BcGrp::BSlot_AnaLgnRaz(void)
 {
 
  if(tbvAnaLgn == nullptr){
@@ -149,10 +149,10 @@ void BCountGroup::BSlot_AnaLgnRaz(void)
 }
 
 
-void BCountGroup::showLineDetails(int zn, int l_id, QString sql_msg)
+void BcGrp::showLineDetails(int zn, int l_id, QString sql_msg)
 {
 
- BGTbView *qtv_tmp= tbvAnaLgn[zn];
+ BView *qtv_tmp= tbvAnaLgn[zn];
  QSqlQueryModel *cur_lgn = qobject_cast<QSqlQueryModel *> (qtv_tmp->model());
  cur_lgn->clear();
  cur_lgn->setQuery(sql_msg,db_grp);
@@ -187,7 +187,7 @@ void BCountGroup::showLineDetails(int zn, int l_id, QString sql_msg)
  }
 }
 
-QString BCountGroup::getSqlForLine(const int &l_id,int zn)
+QString BcGrp::getSqlForLine(const int &l_id,int zn)
 {
  QString sql_msg = "";
 
@@ -219,7 +219,7 @@ QString BCountGroup::getSqlForLine(const int &l_id,int zn)
  return sql_msg;
 }
 
-QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
+QWidget *BcGrp::fn_Count(const stGameConf *pGame, int zn)
 {
  QWidget * wdg_tmp = new QWidget;
 
@@ -330,7 +330,7 @@ QWidget *BCountGroup::fn_Count(const stGameConf *pGame, int zn)
  return wdg_tmp;
 }
 
-bool BCountGroup::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
+bool BcGrp::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool b_retVal = true;
 
@@ -339,7 +339,7 @@ bool BCountGroup::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const i
  return b_retVal;
 }
 
-void BCountGroup::verticalResizeTableViewToContents(QTableView *tableView)
+void BcGrp::verticalResizeTableViewToContents(QTableView *tableView)
 {
  /// https://savolai.net/notes/how-do-i-adjust-a-qtableview-height-according-to-contents/
  ///
@@ -380,7 +380,7 @@ void BCountGroup::verticalResizeTableViewToContents(QTableView *tableView)
 #endif
 }
 
-bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl, QSqlQuery * query, QString * msg)
+bool BcGrp::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl, QSqlQuery * query, QString * msg)
 {
  /* exemple requete :
   *
@@ -498,7 +498,7 @@ bool BCountGroup::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl,
  return b_retVal;
 }
 
-BCountGroup::BCountGroup(const stGameConf &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb)
+BcGrp::BcGrp(const stGameConf &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb)
     :BCount(pDef,in,fromDb,nullptr,eCountGrp)
 {
  //type=eCountGrp;
@@ -513,10 +513,10 @@ BCountGroup::BCountGroup(const stGameConf &pDef, const QString &in, QStringList*
  maRef = lstCri;
  p_qsim_3 = new QStandardItemModel *[nb_zones];
 
- QGridLayout *(BCountGroup::*ptrFunc[])(QString *, int) =
+ QGridLayout *(BcGrp::*ptrFunc[])(QString *, int) =
   {
-   &BCountGroup::Compter,
-   &BCountGroup::Compter
+   &BcGrp::Compter,
+   &BcGrp::Compter
 
   };
 
@@ -539,7 +539,7 @@ BCountGroup::BCountGroup(const stGameConf &pDef, const QString &in, QStringList*
 #endif
 }
 
-QGridLayout *BCountGroup::Compter(QString * pName, int zn)
+QGridLayout *BcGrp::Compter(QString * pName, int zn)
 {
  QGridLayout *lay_return = new QGridLayout;
 
@@ -556,7 +556,7 @@ QGridLayout *BCountGroup::Compter(QString * pName, int zn)
  return lay_return;
 }
 
-void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
+void BcGrp::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
 {
 #if 0
  bool b_retVal = true;
@@ -642,7 +642,7 @@ void BCountGroup::marquerDerniers_tir(const stGameConf *pGame, etCount eType, in
 #endif
 }
 
-void BCountGroup::usr_TagLast(const stGameConf *pGame, BTbView *view, const etCount eType, const int zn)
+void BcGrp::usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn)
 {
 
  /// Utiliser anciennes tables
@@ -760,7 +760,7 @@ void BCountGroup::usr_TagLast(const stGameConf *pGame, BTbView *view, const etCo
  }
 }
 
-bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, int zn)
+bool BcGrp::marquerDerniers_grp(const stGameConf *pGame, etCount eType, int zn)
 {
  bool isOk_1 = true;
  //bool isOk_2 = true;
@@ -853,7 +853,7 @@ bool BCountGroup::marquerDerniers_grp(const stGameConf *pGame, etCount eType, in
  return(isOk_1);
 }
 
-bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
+bool BcGrp::AnalyserEnsembleTirage(QString InputTable, QString OutputTable, int zn)
 {
  /// Verifier si des vues temporaires precedentes sont encore presentes
  /// Si oui les effacer
@@ -937,7 +937,7 @@ bool BCountGroup::AnalyserEnsembleTirage(QString InputTable, QString OutputTable
  return b_retVal;
 }
 
-bool BCountGroup::SupprimerVueIntermediaires(void)
+bool BcGrp::SupprimerVueIntermediaires(void)
 {
  bool b_retVal = true;
  QString msg = "";
@@ -972,7 +972,7 @@ bool BCountGroup::SupprimerVueIntermediaires(void)
  return b_retVal;
 }
 
-QTableView *BCountGroup::CompterLigne(QString * pName, int zn)
+QTableView *BcGrp::CompterLigne(QString * pName, int zn)
 {
  QTableView *qtv_tmp = new QTableView;
 
@@ -1016,7 +1016,7 @@ QTableView *BCountGroup::CompterLigne(QString * pName, int zn)
  return qtv_tmp;
 }
 
-QTableView *BCountGroup::CompterEnsemble(QString * pName, int zn)
+QTableView *BcGrp::CompterEnsemble(QString * pName, int zn)
 {
  QTableView *qtv_tmp = new QTableView;
  (* pName) = myGame.names[zn].abv; /// BUG sur db_data
@@ -1153,7 +1153,7 @@ void BCountGroup::slot_wdaFilter(bool isChecked)
 }
 #endif
 
-bool BCountGroup::updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool isChecked, int zn)
+bool BcGrp::updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool isChecked, int zn)
 {
  bool b_retVal = true;
  QSqlQuery query(dbCount);
@@ -1189,7 +1189,7 @@ bool BCountGroup::updateOrInsertGrpSelection(int d_cell_id, bool isPresent,bool 
  return b_retVal;
 }
 
-bool BCountGroup::updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn)
+bool BcGrp::updateGrpTable(int d_lgn, int d_col, bool isChecked, int zn)
 {
  bool b_retVal = true;
  QSqlQuery query(dbCount);
@@ -1304,7 +1304,7 @@ void BCountGroup::slot_ccmr_SetPriorityAndFilters(QPoint pos)
 }
 #endif
 
-void BCountGroup::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp)
+void BcGrp::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tmp)
 {
  bool status = true;
  QSqlQuery query(dbCount) ;
@@ -1348,7 +1348,7 @@ void BCountGroup::RecalculGroupement(int zn,int nbCol,QStandardItemModel *sqm_tm
 
 }
 
-QString BCountGroup::sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri, int zn)
+QString BcGrp::sql_ComptePourUnTirage(int id,QString st_tirages, QString st_cri, int zn)
 {
 #if 0
     /* Req_1 : pour compter le nombre de boules pair par tirages */
@@ -1392,7 +1392,7 @@ QString BCountGroup::sql_ComptePourUnTirage(int id,QString st_tirages, QString s
 
 }
 
-void BCountGroup::slot_DecodeTirage(const QModelIndex & index)
+void BcGrp::slot_DecodeTirage(const QModelIndex & index)
 {
  static int sortir = 0;
 
@@ -1450,7 +1450,7 @@ void BCountGroup::slot_DecodeTirage(const QModelIndex & index)
 // Element 1 Liste des titres assosies a la requete
 // En fonction de la zone a etudier les requetes sont adaptees
 // pour integrer le nombre maxi de boules a prendre en compte
-QStringList * BCountGroup::CreateFilterForData(int zn)
+QStringList * BcGrp::CreateFilterForData(int zn)
 {
  QStringList *sl_filter = new QStringList [3];
  QString fields = "z"+QString::number(zn+1);
@@ -1484,7 +1484,7 @@ QStringList * BCountGroup::CreateFilterForData(int zn)
  return sl_filter;
 }
 
-QString BCountGroup::TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn)
+QString BcGrp::TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn)
 {
 
  QString st_tmp =  CriteresCreer("=","or",zn);
@@ -1520,7 +1520,7 @@ QString BCountGroup::TrouverTirages(int col, int nb, QString st_tirages, QString
  return(st_return);
 }
 
-QString BCountGroup::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
+QString BcGrp::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
 {
 #if 0
     --- Requete recherche parite sur base pour tirages
@@ -1576,7 +1576,7 @@ QString BCountGroup::CriteresAppliquer(QString st_tirages, QString st_cri, int z
  return(st_return);
 }
 
-void BCountGroup::slot_ClicDeSelectionTableau(const QModelIndex &index)
+void BcGrp::slot_ClicDeSelectionTableau(const QModelIndex &index)
 {
  // L'onglet implique le tableau...
  int tab_index = 0;
@@ -1600,7 +1600,7 @@ void BCountGroup::slot_ClicDeSelectionTableau(const QModelIndex &index)
  LabelFromSelection(selectionModel,tab_index);
 }
 
-void BCountGroup::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
+void BcGrp::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
 {
  QModelIndexList indexes = selectionModel->selectedIndexes();
 
@@ -1684,7 +1684,7 @@ void cCompterGroupes::slot_RequeteFromSelection(const QModelIndex &index)
 }
 #endif
 
-void BCountGroup::slot_RequeteFromSelection(const QModelIndex &index)
+void BcGrp::slot_RequeteFromSelection(const QModelIndex &index)
 {
  QString st_titre = "";
 
@@ -1739,7 +1739,7 @@ void BCountGroup::slot_RequeteFromSelection(const QModelIndex &index)
 
 }
 
-QString BCountGroup::getFilteringData(int zn)
+QString BcGrp::getFilteringData(int zn)
 {
  QSqlQuery query_1(dbCount);
  QSqlQuery query_2(dbCount);

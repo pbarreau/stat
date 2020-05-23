@@ -13,7 +13,7 @@
 #endif
 
 #include "gererbase.h"
-#include "compter_groupes.h"
+#include "BcGrp.h"
 #include "sCouv.h"
 
 class RefEtude: public QObject
@@ -63,7 +63,7 @@ private:
 
     QTableView * DetailsLstcouv(int zn);
     //QTableView * tbForBaseLigne();
-    BGTbView *tbForBaseRef();
+    BView *tbForBaseRef();
     //QTableView * tbForBaseEcart(int zn);
     QTableView * TableMoisBase(int zn);
     QTableView * TableMoisCouv(int zn);
@@ -121,7 +121,7 @@ private:
     QTabWidget *p_reponse;
     QTabWidget *p_vue;
     QTabWidget *tabTrackCouverture;
-    BCountGroup *unTest;
+    BcGrp *unTest;
 
 };
 

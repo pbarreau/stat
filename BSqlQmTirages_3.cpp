@@ -7,7 +7,7 @@
 #include "BSqlQmTirages_3.h"
 #include "bstflt.h"
 
-BSqlQmTirages_3::BSqlQmTirages_3(stGameConf *conf, QString cnx, QString tbl, BGTbView *tab, QObject *parent):QSqlQueryModel(parent)
+BSqlQmTirages_3::BSqlQmTirages_3(stGameConf *conf, QString cnx, QString tbl, BView *tab, QObject *parent):QSqlQueryModel(parent)
 {
  db_cnx = cnx;
  db_tbl = tbl;
@@ -114,7 +114,7 @@ bool BSqlQmTirages_3::setVisualChk(int id, Qt::CheckState chk)
  return  b_retVal;
 }
 
-BGTbView *BSqlQmTirages_3::getTbv()
+BView *BSqlQmTirages_3::getTbv()
 {
  return db_tbv;
 }

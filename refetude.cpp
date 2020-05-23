@@ -25,7 +25,7 @@
 #include "refetude.h"
 #include "SyntheseDetails.h"
 #include "tirages.h"
-#include "BCount.h"
+#include "Bc.h"
 
 #include "sqlqmtirages.h"
 #include "idlgttirages.h"
@@ -120,7 +120,7 @@ QGridLayout *RefEtude::MonLayout_TabTirages()
  QGridLayout *lay_return = new QGridLayout;
 
  //QTableView *tbv_tmp0 = tbForBaseLigne();
- BGTbView *tbv_tmp1 = tbForBaseRef();
+ BView *tbv_tmp1 = tbForBaseRef();
  BTbar1 *bar =new  BTbar1(p_conf, tbv_tmp1);
 
  //QWidget *tbv_tmp2 = EcartOnglets();
@@ -178,9 +178,9 @@ QTableView *RefEtude::tbForBaseLigne()
 #endif
 
 
-BGTbView *RefEtude::tbForBaseRef()
+BView *RefEtude::tbForBaseRef()
 {
- BGTbView *tbv_tmp = new BGTbView;
+ BView *tbv_tmp = new BView;
  sqlqmTirages *sqm_tmp = new sqlqmTirages (*p_conf);//QSqlQueryModel;
  //p_qsim_3=sqm_tmp;
 

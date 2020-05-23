@@ -9,7 +9,7 @@
 #include "game.h"
 #include "bstflt.h"
 
-class BTbView;
+class BView_1;
 class BFlt
 {
 public:
@@ -18,14 +18,14 @@ BFlt(BFlt *other);
 void setColons(Bp::E_Col c_Tot = Bp::colTotalv1, Bp::E_Col c_Ec=Bp::noCol);
 
 protected:
-bool displayTbvMenu_cell(const QPoint pos, BTbView *view);
+bool displayTbvMenu_cell(const QPoint pos, BView_1 *view);
 bool chkThatCell(QModelIndex a_cell) const;
 
 protected:
 BFlt *cur_bflt;
 QSqlDatabase db_flt;
 stTbFiltres *inf_flt;
-BTbView *lview;
+BView_1 *lview;
 Bp::E_Col colEc;
 Bp::E_Col colTotal;
 QModelIndex index;

@@ -4,15 +4,14 @@
 #include <QTableView>
 #include <QGroupBox>
 
-class BGTbView : public QTableView
+class BView : public QTableView
 {
  Q_OBJECT
 
  public:
- BGTbView(QWidget *parent = nullptr);
- ~BGTbView();
+ BView(QWidget *parent = nullptr);
+ ~BView();
  void setTitle(QString title, bool visible=true);
- QGroupBox * getSquare(void);
  QGroupBox *getScreen(bool spacer=false);
  void addUpLayout(QLayout *up_in);
  int getMinWidth(int delta=2);

@@ -17,7 +17,7 @@
 #include <QScrollBar>
 #include <QButtonGroup>
 
-#include "BCount.h"
+#include "Bc.h"
 #include "BPushButton.h"
 #include "blineedit.h"
 
@@ -72,7 +72,7 @@ BTirGen::BTirGen(const stGameConf *pGame, etTir gme_tir, QWidget *parent) : BTir
  else {
   QString msg = "Selection en cours\ncorrespond a : "+ game;
   QMessageBox::information(nullptr,"Jeux utilisateur",msg);
-  BTbView::activateTargetTab(game);
+  BView_1::activateTargetTab(game);
  }
 }
 
@@ -439,7 +439,7 @@ QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
  return tmp_gpb;
 }
 
-QHBoxLayout *BTirGen::getBarFltTirages(int chk_nb_col, BGTbView *qtv_tmp)
+QHBoxLayout *BTirGen::getBarFltTirages(int chk_nb_col, BView *qtv_tmp)
 {
  /// HORIZONTAL BAR
  QHBoxLayout *inputs = new QHBoxLayout;
@@ -498,7 +498,7 @@ QHBoxLayout *BTirGen::getBarFltTirages(int chk_nb_col, BGTbView *qtv_tmp)
  return inputs;
 }
 
-QHBoxLayout *BTirGen::getBarZoomTirages(BGTbView *qtv_tmp)
+QHBoxLayout *BTirGen::getBarZoomTirages(BView *qtv_tmp)
 {
  QIcon tmp_ico;
 
@@ -538,7 +538,7 @@ QHBoxLayout *BTirGen::getBarZoomTirages(BGTbView *qtv_tmp)
 
 QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_tirages)
 {
- BGTbView *qtv_tmp = new BGTbView;
+ BView *qtv_tmp = new BView;
  tir_tbv = qtv_tmp;
 
  QString msg = "";
@@ -699,7 +699,7 @@ void BTirGen::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::Chec
 
  lb_Big->setText(msg);
 
- BGTbView *qtv_tmp = qobject_cast<BSqlQmTirages_3 *>(sqm_resu)->getTbv();
+ BView *qtv_tmp = qobject_cast<BSqlQmTirages_3 *>(sqm_resu)->getTbv();
  BFpm_3 * fpm_tmp = qobject_cast<BFpm_3 *> (qtv_tmp->model());
  int nb_lgn_ftr = fpm_tmp->rowCount();
  int nb_lgn_rel = sqm_resu->rowCount();
@@ -796,7 +796,7 @@ void BTirGen::BSlot_ShowTotal(const QString& lstBoules)
 
  BLineEdit *ble_tmp = qobject_cast<BLineEdit *>(sender());
 
- BGTbView *view = ble_tmp->getView();
+ BView *view = ble_tmp->getView();
  BFpm_3 *m = qobject_cast<BFpm_3 *>(view->model());
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 

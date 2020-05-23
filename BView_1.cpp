@@ -16,20 +16,19 @@
 
 #include "BFdj.h"
 #include "BTirGen.h"
-#include "BTbView.h"
+#include "BView_1.h"
 #include "BMenu.h"
-#include "BGrbGenTirages.h"
 #include "BTirAna.h"
 #include "db_tools.h"
 
-QWidget * BTbView::wdg_reponses = nullptr;
-QGridLayout * BTbView::gdl_all = nullptr;
-QList<QGridLayout *> *BTbView::gdl_list = nullptr;
+QWidget * BView_1::wdg_reponses = nullptr;
+QGridLayout * BView_1::gdl_all = nullptr;
+QList<QGridLayout *> *BView_1::gdl_list = nullptr;
 
-QTabWidget * BTbView::tbw_calculs = nullptr;
+QTabWidget * BView_1::tbw_calculs = nullptr;
 
-BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ)
-    :BGTbView(nullptr),BFlt(pGame, in_zn, in_typ), gme_current(pGame)
+BView_1::BView_1(const stGameConf *pGame, int in_zn, etCount in_typ)
+    :BView(nullptr),BFlt(pGame, in_zn, in_typ), gme_current(pGame)
 {
  db_tbv = db_flt;
  lbflt = cur_bflt;
@@ -59,13 +58,13 @@ BTbView::BTbView(const stGameConf *pGame, int in_zn, etCount in_typ)
  btn_usrGame = nullptr;
 }
 
-BTbView::~BTbView()
+BView_1::~BView_1()
 {
 	///appel du parent ligne suivante inutile
 	///delete square;
 }
 
-void BTbView::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
+void BView_1::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 {
  /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
  /// https://stackoverflow.com/questions/2050462/prevent-a-qmenu-from-closing-when-one-of-its-qaction-is-triggered
@@ -81,17 +80,17 @@ void BTbView::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
  }
 }
 
-stTbFiltres * BTbView::getFlt(void)
+stTbFiltres * BView_1::getFlt(void)
 {
  return inf_flt;
 }
 
-Bp::E_Col BTbView::getSortCol(void)
+Bp::E_Col BView_1::getSortCol(void)
 {
  return colTotal;
 }
 
-void BTbView::BSlot_ShowToolTip(const QModelIndex & index)
+void BView_1::BSlot_ShowToolTip(const QModelIndex & index)
 {
  /// https://doc.qt.io/qt-5/qtooltip.html
  /// https://stackoverflow.com/questions/34197295/how-to-change-the-background-color-of-qtooltip-of-a-qtablewidget-item
@@ -125,7 +124,7 @@ void BTbView::BSlot_ShowToolTip(const QModelIndex & index)
 }
 
 #if 1
-QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
+QString BView_1::mkTitle(int zn, etCount eCalcul, QTableView *view)
 {
  QString title = "";
  return title;
@@ -250,7 +249,7 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
 }
 #endif
 
-void BTbView::updateTitle()
+void BView_1::updateTitle()
 {
  /// Mettre ensuite l'analyse du marquage
  QString st_total = mkTitle(inf_flt->zne,inf_flt->typ,this);
@@ -276,7 +275,7 @@ void BTbView::mousePressEvent ( QMouseEvent * event )
 }
 */
 
-void BTbView::construireMenu(void)
+void BView_1::construireMenu(void)
 {
 
  menu = new QMenu();
@@ -301,32 +300,32 @@ BGpbMenu *BTbView::getGpb()
 }
 */
 
-void BTbView::setUpLayout(QLayout *usr_up)
+void BView_1::setUpLayout(QLayout *usr_up)
 {
  up = usr_up;
 }
 
 /// Cette fonction lie le bouton qui permettra de creer
 /// les jeux utilisateur
-void BTbView::setUsrGameButton(QPushButton *usr_game)
+void BView_1::setUsrGameButton(QPushButton *usr_game)
 {
  btn_usrGame = usr_game;
 }
 
-QPushButton * BTbView::getUsrGameButton(void)
+QPushButton * BView_1::getUsrGameButton(void)
 {
  return btn_usrGame;
 }
-void BTbView::setRowModelCount(int nb)
+void BView_1::setRowModelCount(int nb)
 {
  rowModelCount = nb;
 }
-void BTbView::setRowSourceModelCount(int nb)
+void BView_1::setRowSourceModelCount(int nb)
 {
  rowSourceModelCount = nb;
 }
 
-bool BTbView::isOnUsrGame(void)
+bool BView_1::isOnUsrGame(void)
 {
  bool b_retVal;
 
@@ -340,7 +339,7 @@ bool BTbView::isOnUsrGame(void)
  return b_retVal;
 }
 
-void  BTbView::BSlot_MakeCustomGame()
+void  BView_1::BSlot_MakeCustomGame()
 {
 
  /// https://stackoverflow.com/questions/244646/get-elapsed-time-in-qt
@@ -392,7 +391,7 @@ void  BTbView::BSlot_MakeCustomGame()
  }
 }
 
-void BTbView::saveTimeIntTable(Bp::E_Clk ref, QString tb_name, QString humanTime)
+void BView_1::saveTimeIntTable(Bp::E_Clk ref, QString tb_name, QString humanTime)
 {
  QSqlQuery query(db_tbv);
  bool b_retVal = true;
@@ -411,7 +410,7 @@ void BTbView::saveTimeIntTable(Bp::E_Clk ref, QString tb_name, QString humanTime
 }
 
 
-void BTbView::agencerResultats(BTirages *lst, BTirAna* ana)
+void BView_1::agencerResultats(BTirages *lst, BTirAna* ana)
 {
  /// Verifier premier passage
  if((tbw_calculs == nullptr) || (wdg_reponses == nullptr) || (gdl_all == nullptr)){
@@ -449,24 +448,24 @@ void BTbView::agencerResultats(BTirages *lst, BTirAna* ana)
  wdg_reponses->show();
 }
 
-void BTbView::activateTargetTab(QString id)
+void BView_1::activateTargetTab(QString id)
 {
  int target = id.toInt()-1;
  tbw_calculs->setCurrentIndex(target);
  wdg_reponses->show();
 }
 
-void BTbView::addSubFlt(int id, QWidget *tab)
+void BView_1::addSubFlt(int id, QWidget *tab)
 {
  gdl_list->at(id-1)->addWidget(tab,1,1);
 }
 
-void BTbView::addSpacer(int id, QSpacerItem *space)
+void BView_1::addSpacer(int id, QSpacerItem *space)
 {
  gdl_list->at(id-1)->addItem(space,1,1);
 }
 
-void BTbView::showUsrGame(QWidget * une_selection, QString name)
+void BView_1::showUsrGame(QWidget * une_selection, QString name)
 {
  /*
  if(tab_usrGame != nullptr){
@@ -498,7 +497,7 @@ QGroupBox * BTbView::getScreen()
 }
 */
 
-void BTbView::BSlot_TrackSelection(const QItemSelection &cur, const QItemSelection &last)
+void BView_1::BSlot_TrackSelection(const QItemSelection &cur, const QItemSelection &last)
 {
  QList<QModelIndex> indexes_1 = cur.indexes();
  QList<QModelIndex> indexes_2 = last.indexes();
@@ -525,9 +524,9 @@ void BTbView::BSlot_TrackSelection(const QItemSelection &cur, const QItemSelecti
  }
 }
 
-void BTbView::BSlot_MousePressed(const QModelIndex &index)
+void BView_1::BSlot_MousePressed(const QModelIndex &index)
 {
- BTbView *view = qobject_cast<BTbView *>(sender());
+ BView_1 *view = qobject_cast<BView_1 *>(sender());
  QItemSelectionModel *selectionModel = view->selectionModel();
 
  int col = index.column();
