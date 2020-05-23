@@ -8,6 +8,7 @@
 #include <QString>
 #include <QFileDialog>
 #include <QDate>
+#include <QTextStream>
 
 #include <QSqlDriver>
 #include "sqlExtensions/inc/sqlite3.h"

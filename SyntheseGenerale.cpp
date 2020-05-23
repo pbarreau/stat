@@ -6214,17 +6214,9 @@ count(*)  as T,
   bool b_retVal = true;
   QString st_requete;
 
-	BTest::writetoFile("tot_Contruire_Tbl.txt", "\nA1_0_TrouverLignes\n");
 	st_requete = A1_0_TrouverLignes(zn,  tb_src, tb_ref ,  key);
-	BTest::writetoFile("tot_Contruire_Tbl.txt", st_requete);
-
-	BTest::writetoFile("tot_Contruire_Tbl.txt", "\n\nA1_1_CalculerEcart\n");
 	st_requete = A1_1_CalculerEcart(st_requete);
-	BTest::writetoFile("tot_Contruire_Tbl.txt", st_requete);
-
-	BTest::writetoFile("tot_Contruire_Tbl.txt", "\n\nA1_2_RegrouperEcart\n");
 	st_requete = A1_2_RegrouperEcart(st_requete);
-	BTest::writetoFile("tot_Contruire_Tbl.txt", st_requete);
 
 	if((b_retVal = Contruire_Executer(tbl_dst,st_requete))){
 	 b_retVal = tot_MarquerDerniers(zn,  tb_src, tb_ref ,  key,tbl_dst);
@@ -6393,7 +6385,6 @@ count(*)  as T,
 
 
 	 st_header = "create table if not exists "+tbl_dst+" " + st_header;
-	 BTest::writetoFile("tot_Contruire_Tbl.txt", st_header);
 
 	 if(b_retVal && (b_retVal = query.exec(st_header))){
 		/// mettre les donnees precedentes

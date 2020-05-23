@@ -10,6 +10,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QApplication>
+#include <QTextStream>
 
 #include "db_tools.h"
 
