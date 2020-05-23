@@ -569,7 +569,7 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
 
  /// Lournal des erreurs
  QFile file("Sql_Errors.log");
- if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
+ if (!file.open(QIODevice::Append | QIODevice::Text)){
   /// WriteOnly ou Append
   /// https://openclassrooms.com/forum/sujet/qt-ecrire-un-texte-dans-un-fichier-txt-75563
   QMessageBox::information(nullptr, "Pgm", "Fichiers des erreurs!!",QMessageBox::Yes);

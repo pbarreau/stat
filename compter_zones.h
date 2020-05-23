@@ -48,7 +48,7 @@ class BcElm:public BCount//, public cFdjData
 
  private:
  QWidget *fn_Count(const stGameConf *pGame, int zn);
- QString usr_doCount(const stGameConf *pGame, int zn);
+ QString getSqlMsg(const stGameConf *pGame, int zn);
 
  private:
  void marquerProcheVoisin(const stGameConf *pGame, const int zn, stTbFiltres *a);

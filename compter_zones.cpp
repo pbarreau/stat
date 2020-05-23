@@ -114,7 +114,7 @@ bool BcElm::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
   *prm.up = test_layout;
  }
 
- QString sql_msg = usr_doCount(pDef, zn);
+ QString sql_msg = getSqlMsg(pDef, zn);
  QString msg = "create table if not exists "
                + prm.dstTbl + " as "
                + sql_msg;
@@ -378,7 +378,7 @@ QWidget *BcElm::fn_Count(const stGameConf *pGame, int zn)
 }
 
 
-QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
+QString BcElm::getSqlMsg(const stGameConf *pGame, int zn)
 {
  /* exemple requete :
   *
@@ -404,10 +404,11 @@ QString BcElm::usr_doCount(const stGameConf *pGame, int zn)
  QString st_cols = FN1_getFieldsFromZone(pGame, zn, "t1");
 
  QString col_vsl = ",COUNT(*) AS T\n";
- QString tbl_key = "";
  QString str_jrs = "";
  QString col_J = "";
+
  QString tbl_tirages = pGame->db_ref->src;
+ QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
   tbl_key="_fdj";

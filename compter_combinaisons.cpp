@@ -158,7 +158,7 @@ bool BCountComb::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const in
 {
  bool b_retVal = true;
 
- QString sql_msg = usr_doCount(pDef, zn);
+ QString sql_msg = getSqlMsg(pDef, zn);
  QString msg = "create table if not exists "
                + prm.dstTbl + " as "
                + sql_msg;
@@ -171,7 +171,7 @@ bool BCountComb::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const in
  return b_retVal;
 }
 
-QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
+QString BCountComb::getSqlMsg(const stGameConf *pGame, int zn)
 {
  /* exemple requete :
   *
@@ -196,20 +196,20 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
  QString sql_msg="";
 
  QString key = "t1.z"+QString::number(zn+1);
- //QString st_cols = FN1_getFieldsFromZone(pGame, zn, "t2");
 
  QString col_vsl = ",COUNT(*) AS T\n";
- QString tbl_key = "";
  QString str_jrs = "";
  QString col_J = "";
 
  QString tbl_tirages = pGame->db_ref->src;
- if(
-  (tbl_tirages.compare("B_fdj")==0)
-  ){
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
   tbl_key="_fdj";
-  str_jrs = db_jours;
+
+	str_jrs = db_jours;
+	col_J = ", t1.J as J";
+
   col_vsl = ",NULL as I,\n";
   col_vsl = col_vsl + "min(t1.t_id-1) as Ec,\n";
   col_vsl = col_vsl + "max((case when t1.lid=2 then t1.E end)) as Ep,\n";
@@ -220,15 +220,23 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
   col_vsl = col_vsl + "COUNT(*) AS T\n";
  }
 
+ if(pGame->eTirType == eTirFdj){
+  //str_jrs = db_jours;
+ }
+
  QString tbl_ana = tbl_tirages;
  if(pGame->db_ref->dad.size() != 0){
   tbl_ana = pGame->db_ref->dad;
+
   if((pGame->db_ref->dad.compare("B_fdj")==0)){
    tbl_ana = "B";
    str_jrs = db_jours;
+   col_J = ", t1.J as J";
   }
  }
- QString tbl_ref_cmb = tbl_ana + "_cmb_z"+QString::number(zn+1);;
+
+ //QString tbl_ref_cmb = tbl_ana + "_cmb_z"+QString::number(zn+1);;
+ QString tbl_ref_cmb = "B_cmb_z"+QString::number(zn+1);
  tbl_ana = tbl_ana + "_ana_z"+QString::number(zn+1);
 
 
@@ -242,7 +250,7 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
  sql_msg = sql_msg + " -- Selection des boules composant les lignes de\n";
  sql_msg = sql_msg + " -- cet ensemble de tirages\n";
  sql_msg = sql_msg + "tb0 as\n";
- sql_msg = sql_msg + "(select t3.id as b_id, t1.id as t_id, t3.tip, t1.J as J from (" + tbl_ana + ")as t2, (B_fdj) as t1, (" + tbl_ref_cmb + ") as t3 \n";
+ sql_msg = sql_msg + "(select t3.id as b_id, t1.id as t_id, t3.tip"+col_J+" from (" + tbl_ana + ")as t2, (" + tbl_tirages + tbl_key + ") as t1, (" + tbl_ref_cmb + ") as t3 \n";
  sql_msg = sql_msg + "where (\n";
  sql_msg = sql_msg + "(t2.idComb = t3.id) and (t1.id=t2.id) \n";
  sql_msg = sql_msg + "))\n";
@@ -253,7 +261,7 @@ QString BCountComb::usr_doCount(const stGameConf *pGame, int zn)
  sql_msg = sql_msg + " -- Calcul de la moyenne pour chaque boule\n";
  sql_msg = sql_msg + "tb1 as\n";
  sql_msg = sql_msg + "(\n";
- sql_msg = sql_msg + "select t1.b_id as b_id ,t1.t_id as t_id, t1.tip, t1.J as J,\n";
+ sql_msg = sql_msg + "select t1.b_id as b_id ,t1.t_id as t_id, t1.tip"+col_J+",\n";
  sql_msg = sql_msg + "ROW_NUMBER() OVER (PARTITION BY T1.b_id ORDER BY\n";
  sql_msg = sql_msg + "T1.t_id) AS LID,\n";
  sql_msg = sql_msg + "LAG(t1.t_id, 1, 0) OVER (PARTITION BY T1.b_id ORDER BY\n";

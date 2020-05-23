@@ -156,7 +156,7 @@ bool BCountBrc::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int
 {
  bool b_retVal = true;
 
- QString sql_msg = sql_MkCountItems(pDef, zn);
+ QString sql_msg = getSqlMsg(pDef, zn);
  QString msg = "create table if not exists "
                + prm.dstTbl + " as "
                + sql_msg;
@@ -169,7 +169,7 @@ bool BCountBrc::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int
  return b_retVal;
 }
 
-QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
+QString BCountBrc::getSqlMsg(const stGameConf *pGame, int zn)
 {
  /* exemple requete :
   * with poids as
@@ -207,20 +207,19 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
 
  QString col_vsl = ",COUNT(*) AS T\n";
  QString str_jrs = "";
- QString col_jrs = "";
+ QString col_J = "";
  QString tbl_tirages = pGame->db_ref->src;
  QString tbl_key = "";
 
  QString tbl_ana = tbl_tirages;
- if(
-  (tbl_tirages.compare("B_fdj")==0)
-    ){
+ if(tbl_tirages.compare("B_fdj")==0){
   tbl_ana = "B";
   tbl_tirages="B";
   tbl_key="_fdj";
 
+  col_J = ", t1.J as J";
+
   str_jrs = db_jours;
-  col_jrs = ", t2.J as J";
   col_vsl = ",NULL as I,\n";
   col_vsl = col_vsl + "min(t1.t_id-1) as Ec,\n";
   col_vsl = col_vsl + "max((case when t1.lid=2 then t1.E end)) as Ep,\n";
@@ -231,11 +230,17 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
   col_vsl = col_vsl + "COUNT(*) AS T\n";
  }
 
+ if(pGame->eTirType == eTirFdj){
+  //str_jrs = db_jours;
+ }
+
  if(pGame->db_ref->dad.size() != 0){
+  tbl_ana = pGame->db_ref->dad;
+
   if((pGame->db_ref->dad.compare("B_fdj")==0)){
    tbl_ana = "B";
    str_jrs = db_jours;
-   col_jrs = ", t2.J as J";
+   col_J = ", t1.J as J";
   }
  }
 
@@ -255,7 +260,7 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
  sql_msg = sql_msg + " -- Selection des boules composant les lignes de\n";
  sql_msg = sql_msg + " -- cet ensemble de tirages\n";
  sql_msg = sql_msg + "tb1 as\n";
- sql_msg = sql_msg + "(select t2.id as b_id, t2.bc as bc, t1.id as t_id, t1.J as J from (tb0)as t2, ("+ tbl_tirages + tbl_key +") as t1, (" + tbl_ana + ") as t3\n";
+ sql_msg = sql_msg + "(select t2.id as b_id, t2.bc as bc, t1.id as t_id"+col_J+" from (tb0)as t2, ("+ tbl_tirages + tbl_key +") as t1, (" + tbl_ana + ") as t3\n";
  sql_msg = sql_msg + "where (\n";
  sql_msg = sql_msg + "(t3.id=t1.id) and(t3.bc=t2.bc) \n";
  sql_msg = sql_msg + "))\n";
@@ -266,7 +271,7 @@ QString BCountBrc::sql_MkCountItems(const stGameConf *pGame, int zn)
  sql_msg = sql_msg + " -- Calcul de la moyenne pour chaque boule\n";
  sql_msg = sql_msg + "tb2 as\n";
  sql_msg = sql_msg + "(\n";
- sql_msg = sql_msg + "select t1.b_id as b_id ,t1.t_id as t_id, t1.bc, t1.J as J,\n";
+ sql_msg = sql_msg + "select t1.b_id as b_id ,t1.t_id as t_id, t1.bc"+col_J+",\n";
  sql_msg = sql_msg + "ROW_NUMBER() OVER (PARTITION BY T1.b_id ORDER BY\n";
  sql_msg = sql_msg + "T1.t_id) AS LID,\n";
  sql_msg = sql_msg + "LAG(t1.t_id, 1, 0) OVER (PARTITION BY T1.b_id ORDER BY\n";

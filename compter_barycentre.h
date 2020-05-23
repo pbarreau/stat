@@ -43,7 +43,7 @@ class BCountBrc:public BCount
 
  private:
  QWidget *fn_Count(const stGameConf *pGame, int zn);
- QString sql_MkCountItems(const stGameConf *pGame, int zn);
+ QString getSqlMsg(const stGameConf *pGame, int zn);
 
  private:
  //virtual QString getType();
