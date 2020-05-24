@@ -21,6 +21,7 @@
 
 #include "BMenu.h"
 #include "BView_1.h"
+#include "BFpmCmb.h"
 
 #include "Bc.h"
 #include "BcUpl.h"
@@ -39,6 +40,9 @@ int BCount::nbChild = 0;
 
 QLayout * BCount::usr_UpperItems(int zn, BView_1 *cur_tbv)
 {
+ Q_UNUSED(zn)
+ Q_UNUSED(cur_tbv)
+
  QLayout *ret_lay = nullptr;
  return ret_lay;
 }
@@ -106,7 +110,14 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
- QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ QSortFilterProxyModel *m=nullptr;
+ switch (type) {
+  case eCountCmb:
+   m = new BFpmCmb(pGame, qtv_tmp);
+   break;
+  default:
+   m=new QSortFilterProxyModel();
+ }
  m->setDynamicSortFilter(true);
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);

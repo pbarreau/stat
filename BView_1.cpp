@@ -32,6 +32,7 @@ BView_1::BView_1(const stGameConf *pGame, int in_zn, etCount in_typ)
 {
  db_tbv = db_flt;
  lbflt = cur_bflt;
+ setZone(in_zn);
 
  square = new BGpbMenu(cur_bflt, this);
 

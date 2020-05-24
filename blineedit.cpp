@@ -2,9 +2,8 @@
 
 #include "blineedit.h"
 
-BLineEdit::BLineEdit(BView *view)
+BLineEdit::BLineEdit(BView *view):pView(view)
 {
- pView=view;
 }
 
 BView *BLineEdit::getView()

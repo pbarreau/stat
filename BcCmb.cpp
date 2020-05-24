@@ -17,6 +17,7 @@
 
 #include "filtrecombinaisons.h"
 #include "BcCmb.h"
+#include "BFpmCmb.h"
 #include "cnp_SansRepetition.h"
 #include "db_tools.h"
 
@@ -304,7 +305,7 @@ QLayout * BcCmb::usr_UpperItems(int zn, BView_1 *cur_tbv)
  return search_bar;
 }
 
-QHBoxLayout *BcCmb::getBarFltTirages(int zn, BView *qtv_tmp)
+QHBoxLayout *BcCmb::getBarFltTirages(int zn, BView_1 *qtv_tmp)
 {
  /// HORIZONTAL BAR
  QHBoxLayout *inputs = new QHBoxLayout;
@@ -327,13 +328,13 @@ QHBoxLayout *BcCmb::getBarFltTirages(int zn, BView *qtv_tmp)
 
  int len_data = gm_def->limites[zn].win;
  int nb_10 = gm_def->limites[zn].max/10;
- /// vim : g/\(*\/\|0\?[1-5]\/\)\{4\}\(\*\|0\?[1-5]\)
- /// QString stPattern = "((\\*|(0?[1-5]))/){4}(\\*|(0?[1-5]))";
- QString stPattern = "((\\*|(0?[1-"+
+ /// vim : g/\(*\/\|0\?[0-5]\/\)\{4\}\(\*\|0\?[0-5]\)
+ /// QString stPattern = "((\\*|(0?[0-5]))/){4}(\\*|(0?[0-5]))";
+ QString stPattern = "((\\*|(0?[0-"+
                      QString::number(len_data)+
                      "]))/){"+
                      QString::number(nb_10)+
-                     "}(\\*|(0?[1-"+
+                     "}(\\*|(0?[0-"+
                      QString::number(len_data)+
                      "]))";
  QValidator *validator = new QRegExpValidator(QRegExp(stPattern,Qt::CaseInsensitive,QRegExp::RegExp));
@@ -351,9 +352,68 @@ QHBoxLayout *BcCmb::getBarFltTirages(int zn, BView *qtv_tmp)
 void BcCmb::BSlot_FilterCmb(const QString &flt_string)
 {
  BLineEdit *le_chk = qobject_cast<BLineEdit *>(sender());
+ BView * tmp_v = le_chk->getView();
+ BView_1 *tmp_v1 = qobject_cast<BView_1 *>(tmp_v);
+ BFpmCmb *tmp_fpm= qobject_cast<BFpmCmb *>(tmp_v1->model());
 
  /// effectuer le filtrage avec la clef fournie
+ int gme_zn = tmp_v1->getZone();
+ QString dig = getFltRgx(gme_zn,flt_string);
+ tmp_fpm->setFilterRegExp(dig);
+ tmp_fpm->setFilterKeyColumn(Bp::colTxt);
 
+ /// Recherche du nombre filtre
+ QSqlQueryModel  * sqm_tmp = qobject_cast<QSqlQueryModel *>(tmp_fpm->sourceModel());
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+ int nb_lgn_ftr = tmp_fpm->rowCount();
+ int nb_lgn_rel = sqm_tmp->rowCount();
+
+ QString rch = "Recherche : "+
+               QString::number(nb_lgn_ftr)+
+               "/"+
+               QString::number(nb_lgn_rel);
+ tmp_v1->setTitle(rch);
+}
+
+QString BcCmb::getFltRgx(const int gme_zn, const QString &key)
+{
+ QString dig = "";
+ QStringList str_key;
+
+ if(key.simplified().size()){
+  str_key=key.split("/");
+ }
+ else {
+  return dig;
+ }
+
+
+ QString itm = "";
+ int max = gm_def->limites[gme_zn].win;
+ int len = str_key.size();
+ for (int pos=0; (pos < len) && (str_key[pos].simplified().size() != 0);pos++) {
+  if(str_key[pos].compare("*")==0){
+   itm = "[0-"+QString::number(max)+"]";
+  }
+  else{
+   int val = str_key[pos].toInt();
+   itm = QString::number(val);
+  }
+
+	if(pos<len-1){
+	 itm = itm+"/";
+	}
+	dig = dig + itm;
+ }
+
+ dig="^"+dig+".*$";
+
+ //setFilterRegExp(dig);
+
+ return dig;
 }
 
 BcCmb::BcCmb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb)

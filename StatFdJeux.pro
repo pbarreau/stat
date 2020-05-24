@@ -115,7 +115,8 @@ SOURCES += \
     BcGrp.cpp \
     BcUpl.cpp \
     BView_1.cpp \
-    BView.cpp
+    BView.cpp \
+    BFpmCmb.cpp
 
 HEADERS  += \
     BColorPriority.h \
@@ -193,7 +194,8 @@ HEADERS  += \
     BcGrp.h \
     BcUpl.h \
     BView_1.h \
-    BView.h
+    BView.h \
+    BFpmCmb.h
 
 
 FORMS    += mainwindow.ui \

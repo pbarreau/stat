@@ -46,7 +46,7 @@ BFpm_1(const BFpm_1 &);
 
 
 void setFlt(eFlt flt_value);
-void setStringKey(QString str_value);
+void setStringKey(QString key);
 
 protected:
 bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;

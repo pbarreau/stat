@@ -111,10 +111,10 @@ void BFpm_1::setFlt(eFlt flt_value)
  flt=flt_value;
 }
 
-void BFpm_1::setStringKey(QString str_value)
+void BFpm_1::setStringKey(QString key)
 {
- if(str_value.size()){
-  str_key=str_value.split(",");
+ if(key.simplified().size()){
+  str_key=key.split(",");
  }
  else {
   str_key.clear();

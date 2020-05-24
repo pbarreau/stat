@@ -47,7 +47,7 @@ class BcCmb:public BCount
  QWidget *fn_Count(const stGameConf *pGame, int zn);
  QString getSqlMsg(const stGameConf *pGame, int zn);
  void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
- QHBoxLayout *getBarFltTirages(int zn, BView *qtv_tmp);
+ QHBoxLayout *getBarFltTirages(int zn, BView_1 *qtv_tmp);
 
  private:
  //virtual QString getType();
@@ -55,6 +55,7 @@ class BcCmb:public BCount
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
  virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn);
  virtual QLayout * usr_UpperItems(int zn, BView_1 *cur_tbv);
+ QString getFltRgx(const int gme_zn, const QString &key);
 
 
  private:

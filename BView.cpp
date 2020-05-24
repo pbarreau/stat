@@ -9,6 +9,7 @@ BView::BView(QWidget *parent):QTableView(parent)
 {
  square = new QGroupBox;
  up = nullptr;
+ zone=0;
 }
 
 BView::~BView()
