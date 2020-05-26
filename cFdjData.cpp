@@ -1,3 +1,4 @@
+#if 0
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #include <QSqlError>
@@ -1841,3 +1842,4 @@ bool cFdjData::SupprimerVueIntermediaires(void)
 
  return b_retVal;
 }
+#endif

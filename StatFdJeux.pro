@@ -38,7 +38,6 @@ SOURCES += \
     BFpm_2.cpp \
     BFpm_3.cpp \
     BGpbMenu.cpp \
-    BGrbGenTirages.cpp \
     blineedit.cpp \
     BLstSelect.cpp \
     BMenu.cpp \
@@ -78,7 +77,6 @@ SOURCES += \
     ihm.cpp \
     ImportFdj.cpp \
     labelclickable.cpp \
-    lescomptages.cpp \
     main.cpp\
     mainwindow.cpp \
     monQview.cpp \

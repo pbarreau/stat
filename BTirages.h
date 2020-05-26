@@ -11,6 +11,7 @@
 #include "BLstSelect.h"
 #include "BTirAna.h"
 #include "BView.h"
+#include "blineedit.h"
 
 class BTirages : public QWidget
 {
@@ -74,6 +75,9 @@ QGridLayout *lay_fusion;
 BTirAna *ana_TirLst;
 QList<BTirAna **> *ana_TirFlt;
 const B2LstSel * save_sel;
+
+protected:
+BLineEdit *ble_rch;
 
 private:
 int usr_flt_counter;

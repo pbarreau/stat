@@ -1,6 +1,6 @@
 #ifndef CFDJDATA_H
 #define CFDJDATA_H
-
+#if 0
 #include "game.h"
 
 class cFdjData//:public QObject
@@ -124,5 +124,5 @@ class cFdjData//:public QObject
 
 };
 
-
+#endif
 #endif // CFDJDATA_H

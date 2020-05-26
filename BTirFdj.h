@@ -8,7 +8,6 @@
 
 #include "BTirages.h"
 #include "BTirAna.h"
-#include "blineedit.h"
 #include "BFpmFdj.h"
 
 class BTirFdj : public BTirages
@@ -33,7 +32,6 @@ void BSlot_setKey(QString keys);
 
 private:
 QSqlDatabase db_fdj;
-BLineEdit *ble_rch;
 
 };
 

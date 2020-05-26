@@ -21,9 +21,6 @@ BTirFdj::BTirFdj(const stGameConf *pGame, etTir gme_tir, QWidget *parent): BTira
  QVBoxLayout *lay_return = new QVBoxLayout;
  QWidget *tbv_tmp1 = tbForBaseRef(pGame);
 
- //BTbar1 *bar =new  BTbar1(pGame, tbv_tmp1);
-
- //lay_return->addWidget(bar,0,0,Qt::AlignLeft|Qt::AlignTop);
  if (tbv_tmp1 != nullptr){
   lay_return->addWidget(tbv_tmp1);
  }

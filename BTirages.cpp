@@ -570,6 +570,8 @@ void BTirages::updateTbv(QString box_title, QString msg)
 
  QSqlQueryModel * cible = sqm_resu;
 
+ /// Effacer le champ recherche (rapide)
+ ble_rch->clear();
 
  if(gme_cnf->eTirType == eTirGen){
   cible = qobject_cast<BSqlQmTirages_3 *>(sqm_resu);
