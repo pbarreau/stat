@@ -36,6 +36,17 @@ bool BFpm_3::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) co
  return ret;
 }
 
+void BFpm_3::setKeys(QString keys)
+{
+ if(keys.simplified().size()!=0){
+  lst_usr = keys.split(",");
+ }
+ else {
+  lst_usr.clear();
+ }
+ invalidateFilter();
+}
+
 void BFpm_3::BSlot_MakeUplets(const QString& lstBoules)
 {
  if(lstBoules.size()){

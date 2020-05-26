@@ -18,7 +18,7 @@ Qt::ItemFlags BSqlQmTirages_3::flags(const QModelIndex & index) const
 {
  Qt::ItemFlags l_Flags = QSqlQueryModel::flags(index);
 
- if(index.column() == Bp::ugmColChk){
+ if(index.column() == Bp::colTgenChk){
   l_Flags= (Qt::ItemIsUserCheckable) | l_Flags;
  }
 
@@ -29,7 +29,7 @@ QVariant BSqlQmTirages_3::data(const QModelIndex & index, int role) const
 {
  Qt::ItemDataRole l_role = static_cast<Qt::ItemDataRole>(role);
 
- if(index.column() == Bp::ugmColChk)
+ if(index.column() == Bp::colTgenChk)
  {
   if(role==Qt::CheckStateRole){
    int val = QSqlQueryModel::data(index,Qt::DisplayRole).toInt();
@@ -52,14 +52,14 @@ bool BSqlQmTirages_3::setData(const QModelIndex & index, const QVariant & value,
  Qt::ItemDataRole l_role = static_cast<Qt::ItemDataRole>(role);
  bool ret = true;
 
- if(index.column()<Bp::ugmColChk)
+ if(index.column()<Bp::colTgenChk)
   ret = QSqlQueryModel::setData(index, value, role);
 
  QModelIndex primaryKeyIndex = QSqlQueryModel::index(index.row(), 0);
  int id = data(primaryKeyIndex).toInt();
 
 
- if( (index.column() == Bp::ugmColChk) && (role == Qt::CheckStateRole) && (ret == true))
+ if( (index.column() == Bp::colTgenChk) && (role == Qt::CheckStateRole) && (ret == true))
  {
   int chk_val = value.toInt();
   Qt::CheckState chk = static_cast<Qt::CheckState>(chk_val);

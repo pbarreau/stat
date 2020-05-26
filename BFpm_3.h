@@ -9,6 +9,7 @@ class BFpm_3:public QSortFilterProxyModel
  Q_OBJECT
  public:
  explicit BFpm_3(int uplet, int start=0, QObject *parent = nullptr);
+ void setKeys(QString keys);
 
  protected:
  bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;

@@ -354,12 +354,26 @@ void BcCmb::BSlot_FilterCmb(const QString &flt_string)
  BLineEdit *le_chk = qobject_cast<BLineEdit *>(sender());
  BView * tmp_v = le_chk->getView();
  BView_1 *tmp_v1 = qobject_cast<BView_1 *>(tmp_v);
- BFpmCmb *tmp_fpm= qobject_cast<BFpmCmb *>(tmp_v1->model());
+ //BFpmCmb *tmp_fpm= qobject_cast<BFpmCmb *>(tmp_v1->model());
+ QSortFilterProxyModel *tmp_fpm=nullptr;
 
  /// effectuer le filtrage avec la clef fournie
+
+#define USE_DIG
+#ifdef USE_DIG
+ //tmp_fpm= qobject_cast<BFpmCmb *>(tmp_v1->model());
+ tmp_fpm= qobject_cast<QSortFilterProxyModel *>(tmp_v1->model());
  int gme_zn = tmp_v1->getZone();
  QString dig = getFltRgx(gme_zn,flt_string);
  tmp_fpm->setFilterRegExp(dig);
+#else
+ const QValidator *v = le_chk->validator();
+ const QRegExpValidator *bv = qobject_cast<const QRegExpValidator *>(v);
+ const QRegExp re = bv->regExp();
+
+ tmp_fpm->setFilterRegExp(re);
+#endif
+
  tmp_fpm->setFilterKeyColumn(Bp::colTxt);
 
  /// Recherche du nombre filtre

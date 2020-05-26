@@ -81,13 +81,6 @@ stGameConf * BTirGen::getGameConf(void)
  return gameDef;
 }
 
-/*
-QString BTirGen::getGameLabel(void)
-{
- return game_lab;
-}
-*/
-
 void BTirGen::mkGameWidget(stGameConf *current)
 {
  QTabWidget *tab_Top = new QTabWidget;
@@ -148,15 +141,6 @@ void BTirGen::mkGameWidget(stGameConf *current)
 
 BTirGen::~BTirGen()
 {
- /*
- if(J != nullptr){
-  for (int i = 0; i<2;i++) {
-   delete J[i];
-  }
-  delete J;
- }
- */
-
  if(gameDef != nullptr){
   delete gameDef->db_ref;
   delete gameDef;
@@ -463,7 +447,6 @@ QHBoxLayout *BTirGen::getBarFltTirages(int chk_nb_col, BView *qtv_tmp)
  le_chk->setValidator(validator);
 
  // Bouton filtre
- connect(le_chk,SIGNAL(textChanged(const QString)),qtv_tmp->model(),SLOT(BSlot_MakeUplets(const QString)));
  connect(le_chk,SIGNAL(textChanged(const QString)),this,SLOT(BSlot_ShowTotal(const QString)));
  inputs->addLayout(frm_chk);
 
@@ -558,7 +541,7 @@ QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_tirages)
  int chk_nb_col = pGame->limites[zn].len;
  QHBoxLayout *inputs = getBarFltTirages(chk_nb_col, qtv_tmp);
 
- BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,2);
+ BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,Bp::colTgenZs);
  fpm_tmp->setDynamicSortFilter(true);
  fpm_tmp->setSourceModel(sqm_resu);
  qtv_tmp->setModel(fpm_tmp);
@@ -595,7 +578,7 @@ QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_tirages)
 
  int l=qtv_tmp->getMinWidth(3);
  qtv_tmp->setMinimumWidth(l);
- qtv_tmp->setItemDelegate(new BTirDelegate(pGame,Bp::colGenZs));
+ qtv_tmp->setItemDelegate(new BTirDelegate(pGame,Bp::colTgenZs));
 
 
  //gpb_Tirages = qtv_tmp->getSquare();
@@ -686,13 +669,13 @@ void BTirGen::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::Chec
  /// Texte a mettre
  msg="";
  int zn = 0;
- for (int i=Bp::ugmColZn;i<Bp::ugmColZn+gameDef->limites[zn].len;i++) {
+ for (int i=Bp::colTgenZs;i<Bp::colTgenZs+gameDef->limites[zn].len;i++) {
   QModelIndex try_index;
   try_index= target.model()->index(row,i, QModelIndex());
 
 	QString val = try_index.data().toString().rightJustified(2,'0');
 	msg= msg + val;
-	if(i<Bp::ugmColZn+gameDef->limites[zn].len-1){
+	if(i<Bp::colTgenZs+gameDef->limites[zn].len-1){
 	 msg = msg + ",";
 	}
  }
@@ -704,11 +687,8 @@ void BTirGen::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::Chec
  int nb_lgn_ftr = fpm_tmp->rowCount();
  int nb_lgn_rel = sqm_resu->rowCount();
 
- //gpb_Tirages =new QGroupBox;
  QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
  qtv_tmp->setTitle(st_total);
- //gpb_Tirages->setTitle(st_total);
-
 }
 
 void BTirGen::BSlot_MouseOverLabel(QLabel *l)
@@ -761,7 +741,7 @@ void BTirGen::BSlot_Clicked_Gen(const QModelIndex &index)
  QModelIndex try_index;
  int zn=0;
  ///int col_chk = z1_start+gameDef->limites[zn].len + 1;
- try_index= src->model()->index(row,Bp::ugmColChk, QModelIndex());
+ try_index= src->model()->index(row,Bp::colTgenChk, QModelIndex());
 
  QString msg = "";
  if(try_index.data(Qt::CheckStateRole) == Qt::Checked){
@@ -778,10 +758,10 @@ void BTirGen::BSlot_Clicked_Gen(const QModelIndex &index)
 
  /// Texte a mettre
  msg="";
- for (int i =Bp::ugmColZn;i<Bp::ugmColZn+gameDef->limites[zn].len;i++) {
+ for (int i =Bp::colTgenZs;i<Bp::colTgenZs+gameDef->limites[zn].len;i++) {
   QString val = index.model()->index(index.row(),i).data().toString().rightJustified(2,'0');
   msg= msg + val;
-  if(i<Bp::ugmColZn+gameDef->limites[zn].len-1){
+  if(i<Bp::colTgenZs+gameDef->limites[zn].len-1){
    msg = msg + ",";
   }
  }
@@ -792,12 +772,12 @@ void BTirGen::BSlot_Clicked_Gen(const QModelIndex &index)
 
 void BTirGen::BSlot_ShowTotal(const QString& lstBoules)
 {
- //Q_UNUSED(lstBoules);
 
  BLineEdit *ble_tmp = qobject_cast<BLineEdit *>(sender());
 
  BView *view = ble_tmp->getView();
  BFpm_3 *m = qobject_cast<BFpm_3 *>(view->model());
+ m->setKeys(lstBoules);
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
  /// Necessaire pour compter toutes les lignes de reponses
@@ -811,7 +791,6 @@ void BTirGen::BSlot_ShowTotal(const QString& lstBoules)
 
  QString st_total = "Total : " + QString::number(nb_lgn_ftr)+" sur " + QString::number(nb_lgn_rel);
  view->setTitle(st_total);
- //gpb_Tirages->setTitle(st_total);
 }
 
 /*

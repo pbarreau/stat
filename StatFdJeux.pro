@@ -37,7 +37,6 @@ SOURCES += \
     BFpm_1.cpp \
     BFpm_2.cpp \
     BFpm_3.cpp \
-    bfpmtiragev1.cpp \
     BGpbMenu.cpp \
     BGrbGenTirages.cpp \
     blineedit.cpp \
@@ -116,7 +115,9 @@ SOURCES += \
     BcUpl.cpp \
     BView_1.cpp \
     BView.cpp \
-    BFpmCmb.cpp
+    BFpmCmb.cpp \
+    BValidator.cpp \
+    BFpmFdj.cpp
 
 HEADERS  += \
     BColorPriority.h \
@@ -127,7 +128,6 @@ HEADERS  += \
     BFpm_1.h \
     BFpm_2.h \
     BFpm_3.h \
-    bfpmtiragev1.h \
     BGpbMenu.h \
     blineedit.h \
     BLstSelect.h \
@@ -195,7 +195,9 @@ HEADERS  += \
     BcUpl.h \
     BView_1.h \
     BView.h \
-    BFpmCmb.h
+    BFpmCmb.h \
+    BValidator.h \
+    BFpmFdj.h
 
 
 FORMS    += mainwindow.ui \

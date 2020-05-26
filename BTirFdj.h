@@ -4,28 +4,36 @@
 #include <QTableView>
 #include <QSqlDatabase>
 #include <QGridLayout>
+#include <QComboBox>
 
 #include "BTirages.h"
 #include "BTirAna.h"
+#include "blineedit.h"
+#include "BFpmFdj.h"
 
 class BTirFdj : public BTirages
 {
  Q_OBJECT
 public:
 explicit BTirFdj(const stGameConf *pGame, etTir gme_tir = eTirFdj, QWidget *parent = nullptr);
-///QGridLayout *addAna(BTirAna* ana);
+
+private:
+QComboBox *getFltCombo(void);
+QHBoxLayout *getBarFltTirages(BView *qtv_tmp);
+QWidget *tbForBaseRef(const stGameConf *pGame);
+void setFltRgx(const stGameConf *pGame, BFpmFdj *tmp_fpm, QString key, int col);
+QString getRgx(QString key,QString sep);
 
 signals:
 
 private slots:
 void BSlot_Clicked_Fdj(const QModelIndex &index);
-//void BSlot_Filter_Fdj(const Bp::E_Ana ana, const B2LstSel *sel);
-//void BSlot_Result_Fdj(const int index);
-//void BSlot_Fdj_flt(const int index);
+void BSlot_setFltOnCol(int lgn);
+void BSlot_setKey(QString keys);
 
 private:
-QWidget *tbForBaseRef(const stGameConf *pGame);
 QSqlDatabase db_fdj;
+BLineEdit *ble_rch;
 
 };
 

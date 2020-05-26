@@ -53,21 +53,17 @@ namespace Bp {
   noCol = -1,
   colId	=	0,
   colColor=1,
-  colDate=1,
-  colGenZs=1,  /// Colonne depart de zone def dans Tbl lst gene
-  colJour=2,
+  colTfdjDate=1,
+  colTgenZs=1,  /// Colonne depart de zone def dans Tbl lst gene
+  colTfdjJour=2,
   colTxt=2,
   colTotalv2=3,
   colVisual=3,
-  colTirZs=3,  /// Colonne depart de zone def dans Tbl Tirages
+  colTfdjZs=3,  /// Colonne depart de zone def dans Tbl Tirages
   colEc=4,
   colTotalv0=4,
+  colTgenChk=6,
   colTotalv1=10
- };
-
- enum E_Ugm{
-  ugmColZn=1,
-  ugmColChk=6
  };
 
  enum E_Ico{
@@ -81,12 +77,14 @@ namespace Bp {
   icoShowUhk
  };
 
+ /*
  enum E_Tbv{
   noTbvSet,
   tbvElm_v1,
   tbvElm_v2,
   tbvOth
  };
+ */
 
  struct Btn{
   QString name;

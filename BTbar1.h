@@ -20,7 +20,6 @@ class BTbar1:public QWidget
  Q_OBJECT
 
 public:
-//bTbar1(QWidget *parent=0);
 BTbar1(stTiragesDef *def, BView *p_tbv=nullptr);
 BTbar1(const stGameConf *pGame, QTableView *p_tbv);
 

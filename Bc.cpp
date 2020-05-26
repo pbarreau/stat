@@ -113,7 +113,8 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  QSortFilterProxyModel *m=nullptr;
  switch (type) {
   case eCountCmb:
-   m = new BFpmCmb(pGame, qtv_tmp);
+   ///m = new BFpmCmb;
+   m = new QSortFilterProxyModel();
    break;
   default:
    m=new QSortFilterProxyModel();

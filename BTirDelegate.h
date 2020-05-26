@@ -9,7 +9,7 @@
 class BTirDelegate : public QStyledItemDelegate
 {
 public:
-BTirDelegate(const stGameConf *pGame, const Bp::E_Col start_zn=Bp::colTirZs, QWidget *parent = nullptr);
+BTirDelegate(const stGameConf *pGame, const Bp::E_Col start_zn=Bp::colTfdjZs, QWidget *parent = nullptr);
 void paint(QPainter *painter, const QStyleOptionViewItem &option,
            const QModelIndex &index) const;
 

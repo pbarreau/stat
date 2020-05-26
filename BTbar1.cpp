@@ -203,8 +203,8 @@ QGroupBox * BTbar1::mkBarre(BView *tbv_cible)
  connect(ble_rch,SIGNAL(textChanged(const QString)),this,SLOT(slot_Selection(const QString)));
 
 
- QTableView *view = tbv_cible;
- BFpm_1 *m = qobject_cast<BFpm_1 *>(view->model());
+ //QTableView *view = tbv_cible;
+ BFpm_1 *m = qobject_cast<BFpm_1 *>(tbv_cible->model());
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
  int nb_lgn_rel = vl->rowCount();

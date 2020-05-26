@@ -1,7 +1,7 @@
 #include "BFpmCmb.h"
 #include "bstflt.h"
 #include "BView_1.h"
-BFpmCmb::BFpmCmb(const stGameConf *pGame,BView_1 * in_tbview):gme_conf(pGame),use_view(in_tbview)
+BFpmCmb::BFpmCmb()
 {
 
 }
