@@ -1,5 +1,6 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
+#include "BTest.h"
 #endif
 
 #include <QGridLayout>
@@ -8,6 +9,7 @@
 #include <QStandardItemModel>
 #include <QTreeView>
 #include <QFormLayout>
+#include <QSqlQuery>
 
 #include "BTirFdj.h"
 #include "BTirDelegate.h"
@@ -47,7 +49,7 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  BView *qtv_tmp = new BView;
  tir_tbv = qtv_tmp;
 
- QHBoxLayout *bar_top = getBarFltTirages(qtv_tmp);
+ QHBoxLayout *bar_top = getBar_FltFdj(qtv_tmp);
  qtv_tmp->addUpLayout(bar_top);
 
  QSqlQueryModel *sqm_tmp = new QSqlQueryModel ;
@@ -112,16 +114,49 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  return (qtv_tmp->getScreen());
 }
 
-QHBoxLayout *BTirFdj::getBarFltTirages(BView *qtv_tmp)
+QHBoxLayout *BTirFdj::getBar_FltFdj(BView *qtv_tmp)
 {
  /// HORIZONTAL BAR
  QHBoxLayout *tmp_lay = new QHBoxLayout;
  QComboBox *tmp_combo = getFltCombo();
  BLineEdit *tmp_ble = new BLineEdit(qtv_tmp);
  ble_rch = tmp_ble;
- tmp_ble->setEnabled(false);
  QFormLayout *item = new QFormLayout[2];
 
+ ///--------- Icon
+ Bp::Btn lst_btn_1[]=
+  {
+   {"flt_apply", "Filter selection", Bp::icoFlt}
+  };
+
+ int nb_btn = sizeof(lst_btn_1)/sizeof(Bp::Btn);
+ QButtonGroup *tmp_btn_grp = new QButtonGroup(tmp_lay);
+
+ for(int i = 0; i< nb_btn; i++)
+ {
+  QPushButton *tmp_btn = new QPushButton;
+
+	QString icon_file = ":/images/"+lst_btn_1[i].name+".png";
+	QIcon tmp_ico = QIcon(icon_file);
+	QPixmap ico_small = tmp_ico.pixmap(22,22);
+
+
+	tmp_btn->setEnabled(false);
+	tmp_btn->setFixedSize(ico_small.size());
+	tmp_btn->setText("");
+	tmp_btn->setIcon(ico_small);
+	tmp_btn->setIconSize(ico_small.size());
+	tmp_btn->setToolTip(lst_btn_1[i].tooltips);
+
+	tmp_lay->addWidget(tmp_btn);
+	tmp_btn_grp->addButton(tmp_btn,lst_btn_1[i].value);
+ }
+
+ tmp_btn_grp->setExclusive(true);
+ connect(tmp_btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(BSlot_GrpBtnFdj(int)));
+ grp_btn = tmp_btn_grp;
+
+ ///--------- Combo
  item[0].addRow("Flt :",tmp_combo);
  tmp_combo->setToolTip("Selection filtre");
  tmp_lay->addLayout(&item[0]);
@@ -129,14 +164,58 @@ QHBoxLayout *BTirFdj::getBarFltTirages(BView *qtv_tmp)
  connect(tmp_combo, SIGNAL(currentIndexChanged(int)),
          this, SLOT(BSlot_setFltOnCol(int)));
 
+ ///--------- Line edit
  item[1].addRow("Rch :",tmp_ble);
+ tmp_ble->setEnabled(false);
  tmp_ble->setToolTip("Recherche");
  tmp_lay->addLayout(&item[1]);
+
  connect(tmp_ble,SIGNAL(textChanged(const QString)),this,SLOT(BSlot_setKey(const QString)));
 
  return tmp_lay;
 }
 
+void BTirFdj::BSlot_GrpBtnFdj(int btn_id)
+{
+ Bp::E_Ico eVal = static_cast<Bp::E_Ico>(btn_id);
+
+ QString sql_msg = sqm_resu->query().executedQuery();
+
+ const QValidator *v = ble_rch->validator();
+ if(v==nullptr) return;
+
+ const BValidator *v1 = qobject_cast<const BValidator *>(v);
+ Bst_FltJdj *tmp = new Bst_FltJdj;
+ tmp->sql_msg = sql_msg;
+ tmp->usr_txt = ble_rch->text();
+ tmp->cmb_col = v1->getCol();
+ tmp->src = this;
+
+ analyserSousSelection(tmp);
+}
+
+void BTirFdj::analyserSousSelection(const BTirages::Bst_FltJdj *data)
+{
+ QMap<int,QString> map_col;
+ map_col.insert(Bp::colTfdjJour,"J");
+ map_col.insert(Bp::colTfdjDate,"D");
+
+ QString key = map_col.value(data->cmb_col);
+ QString sql_msg = "";
+
+ QString upper = (data->usr_txt).toUpper();
+
+ sql_msg = sql_msg + "tb2 as (\n";
+ sql_msg = sql_msg + data->sql_msg + "\n";
+ sql_msg = sql_msg + "where(upper(" + key + ")\n";
+ sql_msg = sql_msg + "glob ('"+upper+"*'))\n";
+ sql_msg = sql_msg + ") select t1.* from (tb2) as t1";
+
+#ifndef QT_NO_DEBUG
+ //BTest::writetoFile("A0_req.txt", sql_msg);
+#endif
+ effectueAnalyses(sql_msg,1, ",");
+}
 
 QComboBox *BTirFdj::getFltCombo(void)
 {
@@ -199,14 +278,18 @@ void BTirFdj::BSlot_setFltOnCol(int lgn)
  if(validator == nullptr){ ///ble_rch->validator()
   validator = new BValidator(Bp::colId,str_fltMsk);
   ble_rch->setValidator(validator);
+  validator->setParent(ble_rch);
  }
 
  if(lgn>0){
   ble_rch->setEnabled(true);
+  validator->setCol(lgn);
  }
  else {
   //QRegExp tmp("");
   //validator->setRegExp(tmp);
+
+  grp_btn->button(Bp::icoFlt)->setEnabled(false);
   ble_rch->setEnabled(false);
   ble_rch->clear();
   return;
@@ -269,9 +352,11 @@ void BTirFdj::BSlot_setKey(QString keys)
  QString input = keys.simplified();
  int col = Bp::noCol;
  if(input.size()!=0){
+  grp_btn->button(Bp::icoFlt)->setEnabled(true);
   col = bv->getCol();
  }
  else {
+  grp_btn->button(Bp::icoFlt)->setEnabled(false);
   col = Bp::colId;
  }
  setFltRgx(gme_cnf,tmp_fpm,input, col);

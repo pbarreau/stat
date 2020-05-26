@@ -39,7 +39,7 @@ class BTirGen : public BTirages
  QHBoxLayout *getBarZoomTirages(BView *qtv_tmp);
  QHBoxLayout *getBarFltTirages(int chk_nb_col, BView *qtv_tmp);
 
- void deletePreviousResults(const stGameConf *pGame);
+ ///void deletePreviousResults(const stGameConf *pGame);
 
  signals:
 
@@ -52,8 +52,8 @@ class BTirGen : public BTirages
  void BSlot_Clicked_Gen(const QModelIndex &index);
  void BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::CheckState &chk);
  void BSlot_ShowBtnId(int btn_id);
- void slot_ShowChk(void);
- void slot_ShowNhk(void);
+ //void slot_ShowChk(void);
+ //void slot_ShowNhk(void);
 
  private:
  stGameConf *gameDef;

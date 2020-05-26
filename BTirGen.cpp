@@ -618,6 +618,7 @@ void BTirGen::BSlot_ShowBtnId(int btn_id)
 
 }
 
+/*
 void BTirGen::slot_ShowChk(void)
 {
  QString msg= getTiragesList(gameDef, game_lab) + "select t1.* from (tb1) as t1 ";
@@ -641,6 +642,7 @@ void BTirGen::slot_ShowNhk(void)
  le_chk->clear();
  le_chk->textChanged("");
 }
+*/
 
 void BTirGen::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::CheckState &chk)
 {
@@ -794,72 +796,6 @@ void BTirGen::BSlot_ShowTotal(const QString& lstBoules)
 }
 
 /*
-void BTirGen::BSlot_FilterRequest(const Bp::E_Ana ana, const B2LstSel * sel)
-{
- QString lst_tirages = getTiragesList(gameDef, game_lab);
- QString msg  = "select t1.* from ";
- QString tbl_lst = "(tb1) as t1";
- QString clause = "";
- QString msg_1  = "";
- QString msg_2  = "";
-
- if((ana != Bp::anaRaz) && (sel !=nullptr)){
-  int nb_sel = sel->size();
-  if(nb_sel != 0){
-   QWidget **J = new QWidget *[2];
-   QWidget * resu = nullptr;
-
-   if(og_AnaSel==nullptr){
-    og_AnaSel = new QTabWidget;
-    og_AnaSel->setTabsClosable(true);
-    connect(og_AnaSel,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
-   }
-
-   /// Creer la requete de filtrage
-   clause = makeSqlFromSelection(sel, &tbl_lst);
-   msg = msg + tbl_lst + " where("+clause+")";
-
-	 /// mettre la liste des tirages a jour
-	 msg_1 = lst_tirages + msg;
-	 updateTbv("",msg_1);
-
-	 /// faire une analyse pour J
-	 J[0] = doLittleAna(gameDef,msg_1);
-
-	 /// recherche J+1
-	 msg_1 = ", tb2 as ("+ msg +")";
-	 msg_2 = lst_tirages + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
-	 J[1] = doLittleAna(gameDef,msg_2);
-
-	 /// Nommage de l'onglet
-	 int static counter = 0;
-	 QString st_id = "R-%1";
-	 st_id = st_id.arg(QString::number(counter).rightJustified(2,'0'));
-
-	 resu = ana_fltSelection(st_id, this, J);
-	 if(resu!=nullptr){
-		counter++;
-		og_AnaSel->addTab(resu,st_id);
-		BTbView::addSubFlt(id_TirSrc, og_AnaSel);
-	 }
-	 else {
-		counter--;
-	 }
-	}
- }
- else {
-  ; /// supprimer les reponses precedentes si elles existent
- }
-}
-*/
-
-/*
-void BTirGen::setAna(BTirAna * in_ana)
-{
- ana_TirLst = in_ana;
-}
-*/
-
 void BTirGen::deletePreviousResults(const stGameConf *pGame)
 {
  QSqlQuery query(db_gme);
@@ -886,6 +822,7 @@ void BTirGen::deletePreviousResults(const stGameConf *pGame)
  }
 
 }
+*/
 
 /*
 QString BTirGen::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)

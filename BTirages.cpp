@@ -1,5 +1,6 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
+#include "BTest.h"
 #endif
 
 #include <QSqlQuery>
@@ -616,7 +617,7 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
  QString msg  = "select t1.* from ";
  QString tbl_lst = "(tb1) as t1";
  QString clause = "";
- QString msg_1  = "";
+ //QString msg_1  = "";
  QString msg_2  = "";
  QString flt_tirages = "";
  QString box_title ="";
@@ -633,18 +634,8 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
  if((ana != Bp::icoRaz) && (sel !=nullptr)){
   int nb_sel = sel->size();
 
-	if(og_AnaSel==nullptr){
-	 ana_TirFlt = new QList<BTirAna **>;
-	 og_AnaSel = new QTabWidget;
-	 og_AnaSel->setObjectName(tbw_FltTirages);
-	 id_AnaOnglet = 0;
-	 og_AnaSel->setTabsClosable(true);
-	 connect(og_AnaSel,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
-	 connect(og_AnaSel,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Result_Tir(int)));
-	}
+  //checkMemory();
 
-	BTirAna **J = new BTirAna *[2];
-	QWidget * resu = nullptr;
 
 	/// Creer la requete de filtrage
 	clause = makeSqlFromSelection(sel, &tbl_lst);
@@ -653,7 +644,7 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 	 msg = msg + " where("+clause+")";
 	}
 
-	msg_1 = ", tb2 as ("+ msg +")";
+	//msg_1 = ", tb2 as ("+ msg +")";
 
 	/// mettre la liste des tirages a jour
 	flt_tirages = lst_tirages + msg;
@@ -664,39 +655,81 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 	 return;
 	}
 
-	/// faire une analyse pour J
-	J[0] = doLittleAna(gme_cnf,flt_tirages);
-
-	/// recherche J+1
-	msg_2 = lst_tirages + msg_1 + "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-1)";
-	J[1] = doLittleAna(gme_cnf,msg_2);
-
-	/// Nommage de l'onglet
-	QString st_id = lab_ong;
-	st_id = st_id.arg(QString::number(usr_flt_counter).rightJustified(2,'0'));
-
-	resu = ana_fltSelection(st_id, this, J);
-	if(resu!=nullptr){
-	 usr_flt_counter++;
-	 ana_TirFlt->append(J);
-	 int tab_index = og_AnaSel->addTab(resu,st_id);
-	 if(gme_cnf->eTirType == eTirFdj){
-		lay_fusion->addWidget(og_AnaSel,1,0);
-	 }
-	 else {
-		lay_fusion->addWidget(og_AnaSel,1,1);
-	 }
-	 og_AnaSel->setCurrentIndex(tab_index);
-	 og_AnaSel->tabBarClicked(tab_index);
-	}
-	else {
-	 usr_flt_counter--;
-	}
+  effectueAnalyses(msg,1);
  }
  else {
   msg =  lst_tirages + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent
   updateTbv(box_title,msg);
  }
+}
+
+void BTirages::checkMemory()
+{
+ if(og_AnaSel==nullptr){
+  ana_TirFlt = new QList<BTirAna **>;
+  og_AnaSel = new QTabWidget;
+  og_AnaSel->setObjectName(tbw_FltTirages);
+  id_AnaOnglet = 0;
+  og_AnaSel->setTabsClosable(true);
+  connect(og_AnaSel,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
+  connect(og_AnaSel,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Result_Tir(int)));
+ }
+}
+
+void BTirages::effectueAnalyses(QString ref_sql, int distance,QString sep)
+{
+ BTirAna **J = new BTirAna *[2];
+ QWidget * resu = nullptr;
+
+ QString lst_tirages = getTiragesList(gme_cnf, game_lab);
+
+ QString st_with = "";
+ if(sep.simplified().compare(",")==0){
+  st_with = "with ";
+ }
+
+ QString flt_tirages = lst_tirages + sep+ ref_sql;
+ QString 	msg_1 = ", tb2 as ("+ st_with + ref_sql +")";
+ QString  msg_2 = lst_tirages + msg_1 +
+                 "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-"+
+                 QString::number(distance)+")";
+
+#ifndef QT_NO_DEBUG
+ //BTest::writetoFile("A1_req.txt", lst_tirages);
+ BTest::writetoFile("A2_req.txt", flt_tirages);
+ //BTest::writetoFile("A3_req.txt", msg_1);
+ BTest::writetoFile("A4_req.txt", msg_2);
+#endif
+
+ /// faire une analyse pour J
+ J[0] = doLittleAna(gme_cnf,flt_tirages);
+
+ /// recherche J+1
+ J[1] = doLittleAna(gme_cnf,msg_2);
+
+ /// Nommage de l'onglet
+ QString st_id = lab_ong;
+ st_id = st_id.arg(QString::number(usr_flt_counter).rightJustified(2,'0'));
+
+ resu = ana_fltSelection(st_id, this, J);
+ if(resu!=nullptr){
+  checkMemory();
+  usr_flt_counter++;
+  ana_TirFlt->append(J);
+  int tab_index = og_AnaSel->addTab(resu,st_id);
+  if(gme_cnf->eTirType == eTirFdj){
+   lay_fusion->addWidget(og_AnaSel,1,0);
+  }
+  else {
+   lay_fusion->addWidget(og_AnaSel,1,1);
+  }
+  og_AnaSel->setCurrentIndex(tab_index);
+  og_AnaSel->tabBarClicked(tab_index);
+ }
+ else {
+  usr_flt_counter--;
+ }
+
 }
 
 B2LstSel *BTirages::SauverSelection(const B2LstSel * sel)

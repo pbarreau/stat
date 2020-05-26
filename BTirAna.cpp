@@ -1,5 +1,6 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
+#include "BTest.h"
 #endif
 
 #include <QMessageBox>
@@ -277,7 +278,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  this->setLayout(tmp_layout);
 }
 
-QHBoxLayout *BTirAna::setFilterBar(stGameConf *pGame)
+QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame)
 {
  ///QWidget *tmp_wdg = new QWidget;
  QHBoxLayout *inputs = new QHBoxLayout;
@@ -366,7 +367,7 @@ QVBoxLayout *BTirAna::getVisual(stGameConf *pGame, QTabWidget *ana)
 
  QVBoxLayout *ret_lay = new QVBoxLayout;
 
- QHBoxLayout *tmp_2 = setFilterBar(pGame);
+ QHBoxLayout *tmp_2 = getBar_FltAna(pGame);
  if(tmp_2 != nullptr){
   //ret_lay->addWidget(tmp_2);
   ret_lay->addLayout(tmp_2);
@@ -1212,3 +1213,4 @@ void BTirAna::BSlot_Show_Flt(const B2LstSel * sel)
  /// Envoyer au divers onglets
  emit BSig_Show_Flt(sel);
 }
+

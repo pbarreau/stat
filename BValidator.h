@@ -10,10 +10,10 @@ class BValidator : public QRegExpValidator
  public:
  BValidator(int col_in, QString reg_ex);
  int getCol(void) const;
+ void setCol(int col_ref);
  void updateConfig(int col_id, QString reg_ex);
 
  private:
- void setCol(int col_ref);
  void setPattern(QString reg_ex);
 
  private:

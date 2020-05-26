@@ -9,10 +9,11 @@
 
 #include "game.h"
 #include "BLstSelect.h"
-#include "BTirAna.h"
+//#include "BTirAna.h"
 #include "BView.h"
 #include "blineedit.h"
 
+class BTirAna;
 class BTirages : public QWidget
 {
  Q_OBJECT
@@ -36,10 +37,12 @@ QString elmSel_2(const QModelIndexList &indexes, int zn);
 BTirAna *doLittleAna(const stGameConf *pGame, QString msg);
 QWidget *ana_fltSelection(QString st_obj, BTirages *parent, BTirAna **J);
 void updateTbv(QString box_title, QString msg);
+void effectueAnalyses(QString ref_sql, int distance, QString sep="");
 
 private:
 QGridLayout *addAna(BTirAna* ana);
 B2LstSel *SauverSelection(const B2LstSel * sel);
+void checkMemory();
 
 protected:
 signals:
@@ -55,6 +58,14 @@ void BSlot_Result_Tir(const int index);
 private slots:
 void BSlot_Ensemble_Tir(const int index);
 
+public:
+typedef struct Bst_FltJdj
+{
+ int cmb_col;
+ QString sql_msg;
+ QString usr_txt;
+ BTirages * src;
+}Bst_FltJdj;
 
 protected:
 static int cnt_tirSrc;
@@ -76,8 +87,10 @@ BTirAna *ana_TirLst;
 QList<BTirAna **> *ana_TirFlt;
 const B2LstSel * save_sel;
 
+
 protected:
 BLineEdit *ble_rch;
+Bst_FltJdj *data_flt;
 
 private:
 int usr_flt_counter;

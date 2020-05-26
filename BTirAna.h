@@ -12,9 +12,9 @@
 #include "bstflt.h"
 
 #include "BLstSelect.h"
+#include "BTirages.h"
 
 class BCount;
-
 class BTirAna : public QWidget
 {
  Q_OBJECT
@@ -44,7 +44,7 @@ class BTirAna : public QWidget
  bool SupprimerVueIntermediaires(void);
  void PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName);
  QVBoxLayout *getVisual(stGameConf *pGame, QTabWidget *ana);
- QHBoxLayout *setFilterBar(stGameConf *pGame);
+ QHBoxLayout *getBar_FltAna(stGameConf *pGame);
 
  bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn);
  QString getFieldsFromZone(const stGameConf *pGame, int zn, QString alias);
