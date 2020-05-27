@@ -103,16 +103,9 @@ QWidget * BTirages::Dessine()
  QWidget *wdg_tmp = new QWidget;
  QGridLayout *lay_visual = new QGridLayout;
 
- QVBoxLayout * left = selGraphTargets();
- //lay_visual->addLayout(left,0,0,2,1);
+ BGraphicsView * left = selGraphTargets();
 
- QTabWidget *tbw_dessins = new QTabWidget;
- BGraphicsView *tmp_view = new BGraphicsView(gme_cnf, eCountCmb);
- grp_screen = tmp_view;
- tmp_view->DessineCourbeSql(gme_cnf, eCountCmb);
- tbw_dessins->addTab(tmp_view,"Combinaison");
-
- lay_visual->addWidget(tbw_dessins);
+ lay_visual->addWidget(left);
 
  /*
  lay_visual->addWidget(tbw_dessins,0,1,1,2);
@@ -125,9 +118,10 @@ QWidget * BTirages::Dessine()
  return wdg_tmp;
 }
 
-QVBoxLayout *BTirages::selGraphTargets()
+BGraphicsView *BTirages::selGraphTargets()
 {
- QVBoxLayout * tmp_lay = new QVBoxLayout;
+ BGraphicsView *tmp_view = new BGraphicsView(gme_cnf);
+
  QTabWidget *tbw_zones = new QTabWidget;
 
  int nb_zn = gme_cnf->znCount;
@@ -159,10 +153,7 @@ QVBoxLayout *BTirages::selGraphTargets()
 	 tmp->setToolTip(info[a_key]);
 	 tmp->setData(a_key);
 
-	 if(a_key == nb_keys-1){
-		tmp->setChecked(true);
-	 }
-
+	 tmp_view->DessineCourbeSql(gme_cnf, zn, a_key);
 	}
 	tbw_zones->addTab(bar,title);
  }
@@ -170,7 +161,11 @@ QVBoxLayout *BTirages::selGraphTargets()
  tbw_zones->setWindowTitle("Selections Courbes");
  tbw_zones->show();
 
- return tmp_lay;
+ //lay_visual->addLayout(left,0,0,2,1);
+
+ grp_screen = tmp_view;
+
+ return tmp_view;
 }
 
 void BTirages::BSlot_Dessine(bool chk)
@@ -179,7 +174,7 @@ void BTirages::BSlot_Dessine(bool chk)
  int zn = action->objectName().toInt();
  int item = action->data().toInt();
  QGraphicsScene *cur_screen = grp_screen->getScene();
- QGraphicsItemGroup * lgn = grp_screen->getLine(0,0);
+ QGraphicsItemGroup * lgn = grp_screen->getLine(zn,item);
 
  if(chk == true){
   cur_screen->addItem(lgn);

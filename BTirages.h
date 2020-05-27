@@ -44,7 +44,7 @@ QGridLayout *addAna(BTirAna* ana);
 B2LstSel *SauverSelection(const B2LstSel * sel);
 void checkMemory();
 QWidget * Dessine();
-QVBoxLayout *selGraphTargets();
+BGraphicsView *selGraphTargets();
 
 protected:
 signals:
