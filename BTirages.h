@@ -9,7 +9,7 @@
 
 #include "game.h"
 #include "BLstSelect.h"
-//#include "BTirAna.h"
+#include "BGraphicsView.h"
 #include "BView.h"
 #include "blineedit.h"
 
@@ -43,6 +43,8 @@ private:
 QGridLayout *addAna(BTirAna* ana);
 B2LstSel *SauverSelection(const B2LstSel * sel);
 void checkMemory();
+QWidget * Dessine();
+QVBoxLayout *selGraphTargets();
 
 protected:
 signals:
@@ -57,6 +59,7 @@ void BSlot_Result_Tir(const int index);
 
 private slots:
 void BSlot_Ensemble_Tir(const int index);
+void BSlot_Dessine(bool chk);
 
 public:
 typedef struct Bst_FltJdj
@@ -97,8 +100,7 @@ int usr_flt_counter;
 static QTabWidget * tbw_calculs;
 static QWidget * wdg_reponses;
 static QGridLayout *gdl_all;
-//static QList<QGridLayout *> *gdl_list;
-
+BGraphicsView *grp_screen;
 };
 
 #endif // BTirages_H

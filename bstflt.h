@@ -52,10 +52,13 @@ namespace Bp {
  enum E_Col{
   noCol = -1,
   colId	=	0,
+  colDefRequetes=0,
   colColor=1,
   colTfdjDate=1,
   colTgenZs=1,  /// Colonne depart de zone def dans Tbl lst gene
+  colDefTitres=1,
   colTfdjJour=2,
+  colDefToolTips=2,
   colTxt=2,
   colTotalv2=3,
   colVisual=3,
@@ -92,6 +95,10 @@ namespace Bp {
   E_Ico value;
  };
 
+ struct Act{
+  int zn;
+  int id;
+ };
 }
 
 

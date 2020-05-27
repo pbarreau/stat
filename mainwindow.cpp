@@ -33,7 +33,7 @@
 //#include "SyntheseGenerale.h"
 #include "refetude.h"
 #include "filtrecombinaisons.h"
-#include "lescomptages.h"
+//#include "lescomptages.h"
 
 #include "BcUpl.h"
 #include "BTbar1.h"
@@ -79,7 +79,7 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 
  bool b_retVal = true;
 
- EtudierJeu_v1(curConf, use_odb);
+ //EtudierJeu_v1(curConf, use_odb);
 
  //return;
  if(use_odb==true){

@@ -162,7 +162,6 @@ HEADERS  += \
     gererbase.h \
     idlgttirages.h \
     labelclickable.h \
-    lescomptages.h \
     mainwindow.h \
     monQview.h \
     monSqlEditable.h \

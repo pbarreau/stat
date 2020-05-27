@@ -42,7 +42,6 @@
 #include "BcGrp.h"
 #include "BcElm.h"
 #include "BcCmb.h"
-#include "lescomptages.h"
 #include "Bc.h"
 
 #include "bvisuresume.h"

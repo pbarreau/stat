@@ -352,8 +352,10 @@ void BTirFdj::BSlot_setKey(QString keys)
  QString input = keys.simplified();
  int col = Bp::noCol;
  if(input.size()!=0){
-  grp_btn->button(Bp::icoFlt)->setEnabled(true);
   col = bv->getCol();
+  if((col ==Bp::colTfdjDate) || (col == Bp::colTfdjJour)){
+   grp_btn->button(Bp::icoFlt)->setEnabled(true);
+  }
  }
  else {
   grp_btn->button(Bp::icoFlt)->setEnabled(false);

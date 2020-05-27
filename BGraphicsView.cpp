@@ -12,6 +12,12 @@ BGraphicsView::BGraphicsView(const stGameConf *pGame, etCount in_type, QBrush co
 {
  db_0 = QSqlDatabase::database(pGame->db_ref->cnx);
 
+ int nb_zone = pGame->znCount;
+ dessin = new QMap<int,QGraphicsItemGroup *> *[nb_zone] ;
+ for (int i=0;i<nb_zone;i++) {
+  dessin[i]=new QMap<int,QGraphicsItemGroup *>;
+ }
+
  //Set-up the scene
  Scene = new QGraphicsScene;
  //Scene->setSceneRect(0,0,800,600);
@@ -36,22 +42,37 @@ BGraphicsView::BGraphicsView(const stGameConf *pGame, etCount in_type, QBrush co
  this->setDragMode(ScrollHandDrag);
 }
 
+QGraphicsItemGroup *BGraphicsView::getLine(int l_id, int zn)
+{
+ QGraphicsItemGroup *ret_ligne;
+
+ ret_ligne = dessin[zn]->value(l_id);
+
+ return ret_ligne;
+}
+
+QGraphicsScene *BGraphicsView::getScene()
+{
+ return Scene;
+}
+
 void BGraphicsView::DessineCourbeSql(const stGameConf *pGame, etCount in_type, QColor cpen, int sqlIdY, int scale_y, int delta_y)
 {
  switch (in_type) {
   case eCountCmb:
-   draw_cmb(pGame);
+   draw_cmb(pGame,0,0);
    break;
   default:
       ;
  }
 }
 
-void BGraphicsView::draw_cmb(const stGameConf *pGame)
+void BGraphicsView::draw_cmb(const stGameConf *pGame, int zn, int c_id)
 {
  QString msg = "";
  bool b_retVal = false;
  QSqlQuery query(db_0);
+ QGraphicsItemGroup* gr = new QGraphicsItemGroup;
 
  msg = "select min(t1.id) as min_x, max(t1.id) as max_x, min(t2.idcomb) as min_y, max (t2.idComb) as max_y from B_fdj as t1, B_ana_z1 as t2 where(t1.id=t2.id)";
  b_retVal = query.exec(msg);
@@ -75,11 +96,15 @@ void BGraphicsView::draw_cmb(const stGameConf *pGame)
 
 		BPointTirage *un_tirage = new BPointTirage(pGame);
 		un_tirage->setPos(v_x,v_y);
+		un_tirage->setZValue(c_id);
 		scene()->addItem(un_tirage);
+		gr->addToGroup(un_tirage);
 
 		if(start_line){
 		 QLineF L1(v_x,v_y,sx,sy);
-		 Scene->addLine(L1,QPen(Qt::red));
+		 QGraphicsLineItem *une_ligne = Scene->addLine(L1,QPen(Qt::red));
+		 une_ligne->setZValue(c_id);
+		 gr->addToGroup(une_ligne);
 		}
 		sx = v_x;
 		sy = v_y;
@@ -87,7 +112,8 @@ void BGraphicsView::draw_cmb(const stGameConf *pGame)
 	 }while(query.next());
 	}
  }
-
+ dessin[zn]->insert(c_id,gr);
+ scene()->addItem(gr);
 /*
  un_tirage = new BPointTirage(pGame);
  un_tirage->setPos(4,596);

@@ -7,6 +7,9 @@
 #include <QSqlError>
 #include <QMessageBox>
 #include <QHeaderView>
+//#include <QButtonGroup>
+#include <QToolBar>
+#include <QAction>
 
 #include "BTirages.h"
 #include "Bc.h"
@@ -54,35 +57,38 @@ void BTirages::showFdj(BTirAna *ana_tirages)
 {
  QWidget *wdg_visual = new QWidget;
  QGridLayout *lay_visual = new QGridLayout;
+ QTabWidget *tbw_visual = new QTabWidget;
 
  lay_visual->addWidget(this,0,0,2,1);
 
- QTabWidget *tbw_visual = new QTabWidget;
-
  QWidget *wdg_tmp = new QWidget;
  lay_fusion = new QGridLayout;
-
  lay_fusion->addWidget(ana_tirages,0,0);
  wdg_tmp->setLayout(lay_fusion);
-
  tbw_visual->addTab(wdg_tmp,"Nombres");
- //wdg_tmp = new QWidget;
 
- QTabWidget *tbw_dessins = new QTabWidget;
- BGraphicsView *tmp_view = new BGraphicsView(gme_cnf, eCountCmb);
- tmp_view->DessineCourbeSql(gme_cnf, eCountCmb);
- tbw_dessins->addTab(tmp_view,"Combinaison");
+ QString ongNames[]={"Graphiques"};
+ int nb_ong = sizeof(ongNames)/sizeof(QString);
+ QWidget * (BTirages::*ptrFunc[])()=
+  {
+   &BTirages::Dessine
+  };
 
- tbw_visual->addTab(tbw_dessins,"Graphiques");
+ wdg_tmp = nullptr;
+ for (int ong_id=0;ong_id<nb_ong;ong_id++) {
+  wdg_tmp = (this->*ptrFunc[ong_id])();
+  if(wdg_tmp !=nullptr){
+   tbw_visual->addTab(wdg_tmp,ongNames[ong_id]);
+  }
+ }
+
 
 
  lay_visual->addWidget(tbw_visual,0,1,1,2);
  lay_visual->setColumnStretch(0, 0); /// Exemple basic layouts
  lay_visual->setColumnStretch(1, 1);
 
-
  wdg_visual->setLayout(lay_visual);
-
  wdg_visual->setWindowTitle("Tirages FDJ : ");
  wdg_visual->show();
 
@@ -90,6 +96,98 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)), ana_tirages,SLOT(BSlot_Show_Flt(const B2LstSel *)));
  connect(ana_tirages, SIGNAL(BSig_FilterRequest(BTirAna *, const Bp::E_Ico , const B2LstSel * )),
          this, SLOT(BSlot_Filter_Tir(BTirAna *, const Bp::E_Ico , const B2LstSel *)));
+}
+
+QWidget * BTirages::Dessine()
+{
+ QWidget *wdg_tmp = new QWidget;
+ QGridLayout *lay_visual = new QGridLayout;
+
+ QVBoxLayout * left = selGraphTargets();
+ //lay_visual->addLayout(left,0,0,2,1);
+
+ QTabWidget *tbw_dessins = new QTabWidget;
+ BGraphicsView *tmp_view = new BGraphicsView(gme_cnf, eCountCmb);
+ grp_screen = tmp_view;
+ tmp_view->DessineCourbeSql(gme_cnf, eCountCmb);
+ tbw_dessins->addTab(tmp_view,"Combinaison");
+
+ lay_visual->addWidget(tbw_dessins);
+
+ /*
+ lay_visual->addWidget(tbw_dessins,0,1,1,2);
+ lay_visual->setColumnStretch(0, 0); /// Exemple basic layouts
+ lay_visual->setColumnStretch(1, 1);
+ */
+
+ wdg_tmp->setLayout(lay_visual);
+
+ return wdg_tmp;
+}
+
+QVBoxLayout *BTirages::selGraphTargets()
+{
+ QVBoxLayout * tmp_lay = new QVBoxLayout;
+ QTabWidget *tbw_zones = new QTabWidget;
+
+ int nb_zn = gme_cnf->znCount;
+ for (int zn=0;zn<nb_zn;zn++) {
+  QString title = gme_cnf->names[zn].abv;
+  QToolBar *bar = new QToolBar("Courbes",tbw_zones);
+  bar->setMovable(true);
+  bar->setFloatable(true);
+  bar->setOrientation(Qt::Orientation::Vertical);
+  bar->setObjectName(QString::number(zn));
+
+	QStringList *items = gme_cnf->slFlt[zn];
+	QStringList keys = items[Bp::colDefTitres];
+	QStringList info = items[Bp::colDefToolTips];
+
+	int nb_keys = keys.size();
+	for (int a_key=0;a_key<nb_keys;a_key++) {
+	 QString label = keys[a_key];
+	 label = label.toUpper();
+	 if(label.contains(",")){
+		QStringList items = label.split(",");
+		label = items[0];
+	 }
+	 if(a_key == nb_keys-1){
+		label = "C";
+	 }
+	 QAction *tmp = bar->addAction(label,this,SLOT(BSlot_Dessine(bool )));
+	 tmp->setCheckable(true);
+	 tmp->setToolTip(info[a_key]);
+	 tmp->setData(a_key);
+
+	 if(a_key == nb_keys-1){
+		tmp->setChecked(true);
+	 }
+
+	}
+	tbw_zones->addTab(bar,title);
+ }
+
+ tbw_zones->setWindowTitle("Selections Courbes");
+ tbw_zones->show();
+
+ return tmp_lay;
+}
+
+void BTirages::BSlot_Dessine(bool chk)
+{
+ QAction *action = qobject_cast<QAction *>(sender());
+ int zn = action->objectName().toInt();
+ int item = action->data().toInt();
+ QGraphicsScene *cur_screen = grp_screen->getScene();
+ QGraphicsItemGroup * lgn = grp_screen->getLine(0,0);
+
+ if(chk == true){
+  cur_screen->addItem(lgn);
+ }
+ else {
+  cur_screen->removeItem(lgn);
+ }
+
 }
 
 void BTirages::showGen(BTirAna *ana_tirages)

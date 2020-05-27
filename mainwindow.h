@@ -26,7 +26,6 @@
 
 #include "SyntheseDetails.h"
 #include "SyntheseGenerale.h"
-#include "lescomptages.h"
 
 #include "pointtirage.h"
 
