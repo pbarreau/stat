@@ -61,9 +61,8 @@ class BTirGen : public BTirages
  QWidget *resu;
 
  private:
- //QGroupBox *gpb_Tirages;
  QLabel *lb_Big;
- BLineEdit *le_chk;
+ //BLineEdit *ble_rch;
 };
 
 #endif // BTirGen_H
