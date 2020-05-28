@@ -74,9 +74,18 @@ void BGraphicsView::draw_cmb(const stGameConf *pGame, int zn, int lgn_id, QColor
   key = key.split(",").at(0);
  }
 
+ int nb_items_z0 = pGame->limites[0].len;
+ int nb_items_z1 = pGame->limites[1].len;
+
+ int on_lgn = lgn_id;
+
  QColor cur_pen_id = Qt::red;
  if(zn==1){
   cur_pen_id = Qt::magenta;
+  int delta = pGame->slFlt[0][0].size() - pGame->slFlt[1][0].size();
+  if(lgn_id > delta ){
+   on_lgn = lgn_id + delta;
+  }
  }
  //msg = "select min(t1.id) as min_x, max(t1.id) as max_x, min(t2.idcomb) as min_y, max (t2.idComb) as max_y from B_fdj as t1, B_ana_z1 as t2 where(t1.id=t2.id)";
  msg = "";
@@ -89,15 +98,13 @@ void BGraphicsView::draw_cmb(const stGameConf *pGame, int zn, int lgn_id, QColor
   int Max_x = query.value(1).toInt();
   int Max_y = query.value(3).toInt();
 
+	//scene()->setSceneRect(0,-800,Max_x*10,800);
 	if(Max_x == 0) Max_x = 1;
 	if(Max_y == 0) Max_y = 1;
 
-  qreal kx = (800/Max_x)+4;
-  qreal ky = 1;
+  qreal kx = 10;
+  qreal ky = 10;
 
-	if(Max_y == 5){
-	 ky=10;
-	}
 
 	//msg = "select t1.id as X, t2.idComb as Y from B_fdj as t1, B_ana_z1 as t2 where(t1.id=t2.id)";
 	msg = "";
@@ -110,11 +117,17 @@ void BGraphicsView::draw_cmb(const stGameConf *pGame, int zn, int lgn_id, QColor
 	 qreal sy = -1;
 	 bool start_line = false;
 	 do{
-		int v_x = query.value(0).toInt()*15;
+		int v_x = query.value(0).toInt()*10;
 		//qreal p_x = v_x * kx;
 		int hauteur = this->height();
-		double v_y = hauteur - ((query.value(1).toInt()*ky))-(lgn_id*10);
-		//qreal p_y = 600 - (v_y * ky);
+		//double v_y = hauteur - ((query.value(1).toInt()*ky))-(lgn_id*10);
+		int val = query.value(1).toInt();
+		int ref = pGame->limites[zn].len;
+		if(on_lgn > keys.size() -2){
+		 val = ref * val / Max_y;
+		 //val = log(val);
+		}
+		double v_y = hauteur - ((val*ky) - (nb_items_z0+1)*4*zn) + (10 * on_lgn*((nb_items_z0+1)+nb_items_z1+1));
 
 		BPointTirage *un_tirage = new BPointTirage(pGame);
 		un_tirage->setPos(v_x,v_y);
@@ -136,7 +149,8 @@ void BGraphicsView::draw_cmb(const stGameConf *pGame, int zn, int lgn_id, QColor
  }
  dessin[zn]->insert(lgn_id,gr);
  //scene()->addItem(gr);
-/*
+
+ /*
  un_tirage = new BPointTirage(pGame);
  un_tirage->setPos(4,596);
  scene()->addItem(un_tirage);

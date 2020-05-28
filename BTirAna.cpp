@@ -514,7 +514,7 @@ bool BTirAna::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int
 	 QString colName = slst[1].at(loop);
 	 QString ColType = "int";
 
-
+/*
 	 if(zn==1 && colName.contains("U")&&colId<znLen){
 		colId++;
 		msg = "create " + curTarget
@@ -524,9 +524,14 @@ bool BTirAna::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int
 					+" from("+curName+")as tbLeft "
 					+"left join ( "
 					+tbName+") as tbRight  on (tbRight.id = tbLeft.id)";
+#ifndef QT_NO_DEBUG
+		BTest::writetoFile("A0_req.txt", msg);
+#endif
+
 
 	 }
-	 else{
+	 else
+*/{
 		QString Key_usr_1 = slst[1].at(loop);
 		QString Key_usr_2 = slst[2].at(loop);
 
@@ -574,6 +579,10 @@ bool BTirAna::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int
 					 +QString::number(zn+1)+" not null and (c1."
 					 +slst[0].at(loop)+"))) as tbRight on ("
 					 +st_OnDef+") group by tbLeft.id";
+#ifndef QT_NO_DEBUG
+		 BTest::writetoFile("A1_req.txt", msg);
+#endif
+
 		}
 	 }
 

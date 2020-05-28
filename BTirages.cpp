@@ -149,6 +149,7 @@ BGraphicsView *BTirages::selGraphTargets()
 		label = "C";
 	 }
 	 QAction *tmp = bar->addAction(label,this,SLOT(BSlot_Dessine(bool )));
+	 tmp->setParent(bar);
 	 tmp->setCheckable(true);
 	 tmp->setToolTip(info[a_key]);
 	 tmp->setData(a_key);
@@ -171,7 +172,7 @@ BGraphicsView *BTirages::selGraphTargets()
 void BTirages::BSlot_Dessine(bool chk)
 {
  QAction *action = qobject_cast<QAction *>(sender());
- int zn = action->objectName().toInt();
+ int zn = action->parent()->objectName().toInt();
  int item = action->data().toInt();
  QGraphicsScene *cur_screen = grp_screen->getScene();
  QGraphicsItemGroup * lgn = grp_screen->getLine(zn,item);
