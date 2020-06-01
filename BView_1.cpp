@@ -306,6 +306,16 @@ void BView_1::setUpLayout(QLayout *usr_up)
  up = usr_up;
 }
 
+void BView_1::setParentLayout(QLayout *parent_lay)
+{
+ parent_layout = parent_lay;
+}
+
+QLayout * BView_1::getParentLayout()
+{
+ return parent_layout;
+}
+
 /// Cette fonction lie le bouton qui permettra de creer
 /// les jeux utilisateur
 void BView_1::setUsrGameButton(QPushButton *usr_game)

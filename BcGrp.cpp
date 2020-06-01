@@ -148,6 +148,68 @@ void BcGrp::BSlot_AnaLgnRaz(void)
  }
 }
 
+void BcGrp::BSlot_AnaKey(const QModelIndex &index)
+{
+ if(gm_def->db_ref->dad.size() !=0){
+  return;
+ }
+
+ BView_1 *from = qobject_cast<BView_1*>(sender());
+ QString key = from->model()->headerData(index.column(),Qt::Horizontal).toString();
+ QString val = from->model()->sibling(index.row(),Bp::colId,index).data().toString();
+ int zn = from->objectName().toInt();
+ QString tb_src = gm_def->db_ref->src;
+ QString tb_out = QString("r_")+tb_src + "_"+label[type]+"_"+key+"_z"+QString::number(zn+1);
+
+ /// Verifier si table existe deja
+ QString sql_msg = "";
+ bool b_retVal = true;
+ QString cnx = gm_def->db_ref->cnx;
+ if(DB_Tools::isDbGotTbl(tb_out,cnx)==false){
+  QSqlQuery query(dbCount);
+  sql_msg = getSqlForKey(gm_def,zn,key);
+  QString msg = "create table if not exists "
+                + tb_out + " as "
+                + sql_msg;
+
+  b_retVal = query.exec(msg);
+ }
+
+ sql_msg = "select * from "+tb_out;
+
+ /// Recherche table cible
+ BView_1 *qtv_tmp = from->parent()->parent()->findChild<BView_1 *>("Details");
+ if(qtv_tmp != nullptr){
+  QSortFilterProxyModel * m = qobject_cast<QSortFilterProxyModel *>(qtv_tmp->model());
+  QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+  sqm_tmp->setQuery(sql_msg,dbCount);
+  while (sqm_tmp->canFetchMore())
+  {
+   sqm_tmp->fetchMore();
+  }
+
+	qtv_tmp->verticalHeader()->hide();
+	qtv_tmp->hideColumn(Bp::colId);
+
+	qtv_tmp->resizeColumnsToContents();
+	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+	qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+	qtv_tmp->setColons(Bp::colTotalv1, Bp::colEc);
+	qtv_tmp->sortByColumn(Bp::colTxt,Qt::AscendingOrder);
+	qtv_tmp->setSortingEnabled(true);
+
+	qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt));
+
+
+	/// Largeur du tableau
+	int l = qtv_tmp->getMinWidth();
+	qtv_tmp->setMinimumWidth(l);
+
+  qtv_tmp->setTitle(key);
+ }
+}
 
 void BcGrp::showLineDetails(int zn, int l_id, QString sql_msg)
 {
@@ -336,6 +398,7 @@ bool BcGrp::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 
  b_retVal = db_MkTblItems(pDef, zn, prm.dstTbl, prm.query, prm.sql);
 
+ connect (prm.cur_tbv, SIGNAL(clicked(QModelIndex)),this,SLOT(BSlot_AnaKey(QModelIndex)));
  return b_retVal;
 }
 

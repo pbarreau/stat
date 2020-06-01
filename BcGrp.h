@@ -38,6 +38,8 @@ class BcGrp:public BCount
 
 
  private slots:
+ void BSlot_AnaKey(const QModelIndex &index);
+
  //void slot_ccmr_SetPriorityAndFilters(QPoint pos);
  //void slot_wdaFilter(bool isChecked);
 

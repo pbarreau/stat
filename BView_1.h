@@ -27,6 +27,8 @@ class BView_1 : public BView, public BFlt
  //BGpbMenu * getGpb();
  void updateTitle();
  void setUpLayout(QLayout *usr_up);
+ void setParentLayout(QLayout *parent_lay);
+ QLayout * getParentLayout();
  void setUsrGameButton(QPushButton *usr_game);
  QPushButton *getUsrGameButton(void);
  stTbFiltres * getFlt(void);
@@ -74,6 +76,7 @@ class BView_1 : public BView, public BFlt
  const stGameConf *gme_current;
  //BGpbMenu *square;
  QLayout *up;
+ QLayout *parent_layout;
  QMenu *menu;
  QPushButton *btn_usrGame;
  int rowModelCount;

@@ -124,6 +124,7 @@ class BCount:public QWidget
  protected:
  virtual QGridLayout *Compter(QString * pName, int zn)=0;
  virtual QLayout * usr_UpperItems(int zn, BView_1 *cur_tbv);
+ QString getSqlForKey(const stGameConf *pGame, int zn, QString key);
 
  QString CriteresAppliquer(QString st_tirages, QString st_cri,int zn);
  QString CriteresCreer(QString operateur, QString critere,int zone);
@@ -145,6 +146,7 @@ class BCount:public QWidget
  bool getFiltre(stTbFiltres *ret, const etCount origine, QTableView *view, const QModelIndex index);
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);
  int getTotalCells(const stGameConf *pGame, int zn);
+ QTabWidget *getDetailsTabs(const stGameConf *pGame, int in_zn, etCount in_typ);
 
 
  //static bool DB_Tools::flt_DbRead(stTbFiltres *ret, QString cnx);

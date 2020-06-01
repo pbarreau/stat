@@ -81,7 +81,7 @@ void BGraphicsView::draw_cmb(const stGameConf *pGame, int zn, int lgn_id, QColor
 
  QColor cur_pen_id = Qt::red;
  if(zn==1){
-  cur_pen_id = Qt::magenta;
+  cur_pen_id = Qt::blue;
   int delta = pGame->slFlt[0][0].size() - pGame->slFlt[1][0].size();
   if(lgn_id > delta ){
    on_lgn = lgn_id + delta;
