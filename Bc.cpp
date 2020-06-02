@@ -112,15 +112,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
- QSortFilterProxyModel *m=nullptr;
- switch (type) {
-  case eCountCmb:
-   ///m = new BFpmCmb;
-   m = new QSortFilterProxyModel();
-   break;
-  default:
-   m=new QSortFilterProxyModel();
- }
+ QSortFilterProxyModel *m=new QSortFilterProxyModel();
  m->setDynamicSortFilter(true);
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
@@ -190,7 +182,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  qtv_tmp->sortByColumn(myColSort,order);
  qtv_tmp->setSortingEnabled(true);
 
- qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt)); /// Delegation
+ qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt));
 
 
  if(type == eCountGrp) {
@@ -215,12 +207,14 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 
  /// Largeur du tableau
  int l = qtv_tmp->getMinWidth();
- qtv_tmp->setFixedWidth(l);
+ qtv_tmp->setMinimumWidth(l);
+ //qtv_tmp->setMaximumWidth(l);
+ //qtv_tmp->adjustSize();
 
  /// Hauteur
  if(eCalcul == eCountGrp){
   int h = qtv_tmp->getMinHeight();
-  qtv_tmp->setMinimumHeight(h);
+  qtv_tmp->setMaximumHeight(h);
  }
 
  //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
@@ -240,26 +234,28 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  }
 
  /// Agencer le tableau
- QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
+ QSpacerItem *ecart = new QSpacerItem(10, 10, QSizePolicy::Expanding, QSizePolicy::Expanding);
 
  /// https://stackoverflow.com/questions/24005346/qgridlayout-remove-spacing
- glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);//,-1,Qt::AlignLeft|Qt::AlignTop
+ glay_tmp->addWidget(qtv_tmp->getScreen(),0,0,1,1);//,-1,Qt::AlignLeft|Qt::AlignTop
+
  if(eCalcul==eCountGrp){
-  //glay_tmp->addItem(ecart,1,0);
   glay_tmp->setRowStretch(0,0);
   glay_tmp->setRowStretch(1,1);
  }
 
  if(gm_def->db_ref->dad.size() == 0 && eCalcul==eCountGrp){
+  qtv_tmp->setMaximumWidth(l);
   QTabWidget *tmp = getDetailsTabs(pGame,zn,eCalcul);
   glay_tmp->addWidget(tmp,0,1);
-  glay_tmp->setColumnStretch(0, 1); /// Exemple basic layouts
+  glay_tmp->setColumnStretch(0, 1);
   glay_tmp->setColumnStretch(1, 1);
  }
  else {
   glay_tmp->addItem(ecart,0,1);
-  glay_tmp->setColumnStretch(1, 0); /// Exemple basic layouts
-  glay_tmp->setColumnStretch(2, 1);
+  glay_tmp->setColumnStretch(0, 1); /// Exemple basic layouts
+  glay_tmp->setColumnStretch(1, 1);
+  //glay_tmp->setColumnStretch(2, 1);
  }
  wdg_tmp->setLayout(glay_tmp);
 
@@ -272,27 +268,49 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  {
   QTabWidget * ret = new QTabWidget;
   BView_1 *qtv_tmp = new BView_1(pGame,in_zn,in_typ);
-  qtv_tmp->setObjectName("Details");
+  qtv_tmp->setObjectName(BFlags::ViewDetails);
 
 	QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
-	QString sql_msg ="";
-
+	QString sql_msg = "";
 	sqm_tmp->setQuery(sql_msg, dbCount);
-	qtv_tmp->setAlternatingRowColors(true);
-	qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
-	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
 	QSortFilterProxyModel *m=new QSortFilterProxyModel();
 	m->setDynamicSortFilter(true);
 	m->setSourceModel(sqm_tmp);
 	qtv_tmp->setModel(m);
+
+	/*
+	QString a_key = (pGame->slFlt[in_zn][Bp::colDefTitres]).at(0);
+	QString sql_msg =getSqlForKey(pGame,in_zn,a_key) + " where (t1.I != null)";
+
+	qtv_tmp->verticalHeader()->hide();
+	qtv_tmp->hideColumn(Bp::colId);
+
+	qtv_tmp->resizeColumnsToContents();
+
+	qtv_tmp->setAlternatingRowColors(true);
+	qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+
+	/// Largeur du tableau
+	int l = qtv_tmp->getMinWidth();
+	qtv_tmp->setMinimumWidth(l);
+
+	/// Hauteur
+	int h = qtv_tmp->getMinHeight();
+	qtv_tmp->setMinimumHeight(h);
+ */
+
 	qtv_tmp->setColons(Bp::colTotalv1, Bp::colEc);
 	qtv_tmp->sortByColumn(Bp::colId,Qt::AscendingOrder);
 	qtv_tmp->setSortingEnabled(true);
 
-	qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt)); /// Delegation
+	qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt));
 
-	ret->addTab(qtv_tmp->getScreen(),"Details");
+
+  ret->addTab(qtv_tmp->getScreen(),BFlags::ViewDetails);
 
   return ret;
  }
@@ -463,7 +481,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 	 tmp->sqmDef = sqmZones;
 	 tmp->key = type;
 	 nbChild++; /// Nombre total d'enfants A SUPPRIMER ?
-	 /// Rajouter cet element �  la liste des requetes actives
+	 /// Rajouter cet element Ã  la liste des requetes actives
 	 int pos = -1;
 	 if(type==eCountElm) pos = 0;
 	 if(type==eCountCmb) pos = 1;
@@ -702,13 +720,13 @@ void BCount::slot_AideToolTip(const QModelIndex & index)
 	// retirer la derniere ','
 	str_titre.remove(str_titre.length()-1,1);
 
-	// Tout est deselectionné ?
+	// Tout est deselectionnÃ© ?
 	if(isVide == myGame.znCount)
 	{
 	 str_titre = "Aucun";
 	}
 
-	// informer disponibilité
+	// informer disponibilitÃ©
 	emit sig_TitleReady(str_titre);
  }
 
@@ -718,7 +736,7 @@ void BCount::slot_AideToolTip(const QModelIndex & index)
 /// item : valeur a rechercher
 /// table : nom de la table dans laquelle il faut chercher
 /// idColValue colonne de la table ou se trouve la valeur
-/// *lev : valeur de priorité trouvé
+/// *lev : valeur de prioritÃ© trouvÃ©
 bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
 {
  bool ret = false;
@@ -1787,6 +1805,7 @@ void BCount::slot_wdaFilter(bool val)
 }
 
 /// https://openclassrooms.com/forum/sujet/qt-inclure-check-box-dans-un-menu-deroulant-67907
+/// https://zestedesavoir.com/tutoriels/1114/comprendre-les-encodages/3-pratique/
 
 QString BCount::getSqlForKey(const stGameConf *pGame, int zn, QString key)
 {
@@ -1813,10 +1832,10 @@ QString BCount::getSqlForKey(const stGameConf *pGame, int zn, QString key)
 	col_vsl = ",NULL as I,\n";
 	col_vsl = col_vsl + "min(t1.t_id-1) as Ec,\n";
 	col_vsl = col_vsl + "max((case when t1.lid=2 then t1.E end)) as Ep,\n";
-	col_vsl = col_vsl + "(PRINTF(\"%.1f\", AVG(E))) AS 'E�',\n";
+	col_vsl = col_vsl + "(PRINTF(\"%.1f\", AVG(E))) AS 'Eµ',\n";
 	col_vsl = col_vsl + "MAX(E) AS EM,\n";
 	col_vsl = col_vsl + "(PRINTF(\"%.1f\", SQRT(VARIANCE(E)))) AS Es,\n";
-	col_vsl = col_vsl + "(PRINTF(\"%.1f\", MEDIAN(E))) AS 'Es�',\n";
+	col_vsl = col_vsl + "(PRINTF(\"%.1f\", MEDIAN(E))) AS 'Esµ',\n";
 	col_vsl = col_vsl + "COUNT(*) AS T\n";
  }
 

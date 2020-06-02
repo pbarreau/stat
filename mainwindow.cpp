@@ -821,7 +821,7 @@ QGridLayout *MainWindow::MonLayout_VoisinsPresent()
   connect( G_tbv_Voisins[zn], SIGNAL( doubleClicked(QModelIndex)) ,
            this, SLOT( slot_RechercherLesTirages( QModelIndex) ) );
 
-  // Double click sur libellé recherche boule
+  // Double click sur libellÃ© recherche boule
   connect( G_lab_nbSorties[zn], SIGNAL( clicked(QString)) ,
            this, SLOT( slot_RepererLesTirages(QString) ) );
 

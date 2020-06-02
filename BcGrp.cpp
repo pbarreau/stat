@@ -11,6 +11,7 @@
 #include <QStackedWidget>
 #include <QSortFilterProxyModel>
 #include <QAbstractItemView>
+#include <QSizePolicy>
 
 #include <QMenu>
 #include <QScrollBar>
@@ -178,7 +179,7 @@ void BcGrp::BSlot_AnaKey(const QModelIndex &index)
  sql_msg = "select * from "+tb_out;
 
  /// Recherche table cible
- BView_1 *qtv_tmp = from->parent()->parent()->findChild<BView_1 *>("Details");
+ BView_1 *qtv_tmp = from->parent()->parent()->findChild<BView_1 *>(BFlags::ViewDetails);
  if(qtv_tmp != nullptr){
   QSortFilterProxyModel * m = qobject_cast<QSortFilterProxyModel *>(qtv_tmp->model());
   QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
@@ -192,20 +193,21 @@ void BcGrp::BSlot_AnaKey(const QModelIndex &index)
 	qtv_tmp->hideColumn(Bp::colId);
 
 	qtv_tmp->resizeColumnsToContents();
-	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+	qtv_tmp->setAlternatingRowColors(true);
+	qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
 	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-	qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
-
-	qtv_tmp->setColons(Bp::colTotalv1, Bp::colEc);
-	qtv_tmp->sortByColumn(Bp::colTxt,Qt::AscendingOrder);
-	qtv_tmp->setSortingEnabled(true);
-
-	qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt));
+	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 
 	/// Largeur du tableau
 	int l = qtv_tmp->getMinWidth();
 	qtv_tmp->setMinimumWidth(l);
+	//qtv_tmp->setSizePolicy(QSizePolicy::Policy::MinimumExpanding,QSizePolicy::Policy::Maximum);
+
+	/// Hauteur
+	int h = qtv_tmp->getMinHeight();
+	qtv_tmp->setMinimumHeight(h);
 
   qtv_tmp->setTitle(key);
  }

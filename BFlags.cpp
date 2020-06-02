@@ -28,6 +28,8 @@
 #include "BFlags.h"
 #include "db_tools.h"
 
+QString BFlags::ViewDetails = "Details";
+
 BFlags::BFlags(const BFlt *conf) : QStyledItemDelegate(nullptr),BFlt(*conf)
 {
  db_1 = db_flt;
@@ -410,7 +412,8 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 void BFlags::fltFull(stTbFiltres *a, QPainter *painter, const QStyleOptionViewItem &myOpt) const
 {
 
- if(inf_flt->tb_ref.compare("B_fdj")!=0 || (inf_flt->typ==eCountGrp)){
+ if(inf_flt->tb_ref.compare("B_fdj")!=0 ||
+     ((inf_flt->typ==eCountGrp) && (lview->objectName().compare(ViewDetails) != 0))){
   return;
  }
 

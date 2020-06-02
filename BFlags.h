@@ -54,7 +54,10 @@ class BFlags : public QStyledItemDelegate, BFlt
  void cellWrite(QPainter *painter, QStyle::State state, const QRect curCell, const QString myTxt, Qt::GlobalColor inPen=Qt::black,  bool up=false) const;
 
 
- private:
+ public:
+ static QString ViewDetails;
+
+ private: 
  QSqlDatabase db_1;
  stPrmDlgt flt;
  QSqlQueryModel *model;
