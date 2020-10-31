@@ -85,7 +85,6 @@ QLayout * BcElm::usr_UpperItems(int zn, BView_1 *cur_tbv)
  QHBoxLayout *ret_lay = nullptr;
 
  QIcon tmp_ico;
- //QAction *tmp_act = nullptr;
 
 
  if((zn == 0) && (BTirAna::getCounter() == 0)){

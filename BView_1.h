@@ -61,7 +61,7 @@ class BView_1 : public BView, public BFlt
  QString mkTitle(int zn, etCount eCalcul, QTableView *view);
  void construireMenu(void);
  void showUsrGame(QWidget *une_selection, QString name);
- void saveTimeIntTable(Bp::E_Clk ref, QString tb_name, QString humanTime);
+ void saveTimeInTable(Bp::E_Clk ref, QString tb_name, QString humanTime);
 
  public:
  BFlt *lbflt;

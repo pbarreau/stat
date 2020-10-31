@@ -639,7 +639,7 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
 }
 
 
-bool DB_Tools::SupprimerResultatsPrecedent(QString cnx)
+bool DB_Tools::SupprimerResultatsPrecedent(QString cnx, QString type, QString key)
 {
  bool b_retVal = true;
 
@@ -656,7 +656,7 @@ bool DB_Tools::SupprimerResultatsPrecedent(QString cnx)
  QSqlQuery query(db_1);
 
  msg = "SELECT name FROM sqlite_master "
-       "WHERE(type='table' AND name glob '*R[0-9]*');";
+       "WHERE(type='"+type+"' AND name glob '"+key+"');";
  b_retVal = query.exec(msg);
 
  if(b_retVal)
@@ -674,14 +674,16 @@ bool DB_Tools::SupprimerResultatsPrecedent(QString cnx)
 	 /// Suppression des tables
 	 do{
 		target = lst_tbl.takeFirst();
-		msg = "drop table if exists " + target;
+		msg = "drop "+type+" if exists " + target;
 		b_retVal = query.exec(msg);
 	 }while(b_retVal && lst_tbl.size());
 
 	 /// reorganisation de la base
 	 if(b_retVal){
+		/*
 		msg = "vacuum";
 		b_retVal = query.exec(msg);
+		*/
 	 }
 	}
  }

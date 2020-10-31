@@ -45,6 +45,8 @@ B2LstSel *SauverSelection(const B2LstSel * sel);
 void checkMemory();
 QWidget * Dessine();
 BGraphicsView *selGraphTargets();
+QTabWidget *getTabedDetails();
+QWidget *usr_GrpTb2(int zn);
 
 protected:
 signals:
@@ -101,6 +103,8 @@ static QTabWidget * tbw_calculs;
 static QWidget * wdg_reponses;
 static QGridLayout *gdl_all;
 BGraphicsView *grp_screen;
+BView **graphAnaLgn;
+
 };
 
 #endif // BTirages_H

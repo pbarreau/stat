@@ -103,9 +103,16 @@ QWidget * BTirages::Dessine()
  QWidget *wdg_tmp = new QWidget;
  QGridLayout *lay_visual = new QGridLayout;
 
+ graphAnaLgn = nullptr;
+
+ QTabWidget *tbl = getTabedDetails();
+
  BGraphicsView * left = selGraphTargets();
 
- lay_visual->addWidget(left);
+ lay_visual->addWidget(tbl,0,0);
+ lay_visual->addWidget(left,1,0);
+ lay_visual->setRowStretch(0,1);
+ lay_visual->setRowStretch(1,5);
 
  /*
  lay_visual->addWidget(tbw_dessins,0,1,1,2);
@@ -168,6 +175,122 @@ BGraphicsView *BTirages::selGraphTargets()
 
  return tmp_view;
 }
+
+QTabWidget *BTirages::getTabedDetails()
+{
+ QTabWidget *ret = new QTabWidget;
+ int nb_zn = gme_cnf->znCount;
+
+ if(graphAnaLgn == nullptr){
+  graphAnaLgn = new BView * [nb_zn];
+ }
+
+
+ for (int zn=0;zn<nb_zn;zn++) {
+  QString title = gme_cnf->names[zn].abv;
+  QWidget * tbl = usr_GrpTb2(zn);
+  ret->addTab(tbl,title);
+ }
+ return ret;
+}
+
+QWidget * BTirages::usr_GrpTb2(int zn)
+{
+ /// Creation d'un bandeau pour selection utilisateur
+ /*
+  *
+  * select t1.tip as C, printf("%.2f",bc) as bc, p,g
+  * from (B_cmb_z1) as t1, (B_ana_z1) as t2
+  * where ((t2.id=1) and (t1.id=t2.idComb))
+  *
+  */
+
+ graphAnaLgn[zn] = new BView;
+
+ int l_id = -1;
+ //QString sql_msg = getSqlForLine(l_id, zn);
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ //sqm_tmp->setQuery(sql_msg, db_tir);
+ graphAnaLgn[zn]->setModel(sqm_tmp);
+
+ //showLineDetails(graphAnaLgn, zn, l_id, sql_msg);
+
+ return graphAnaLgn[zn]->getScreen();
+}
+
+/*
+QString BTirages::getSqlForLine(const int &l_id,int zn)
+{
+ QString sql_msg = "";
+
+ QString lst_cols = BTirAna::getFilteringHeaders(gme_cnf,zn);
+
+
+ QString tbLabAna = "";
+ if(gme_cnf->db_ref->src.compare("B_fdj")==0){
+  tbLabAna = "B";
+ }
+ else{
+  tbLabAna = gme_cnf->db_ref->src;
+ }
+ tbLabAna = tbLabAna +"_ana_z"+QString::number(zn+1);
+
+ sql_msg = "select t1.tip as C, printf(\"%.2f\",t2.bc) as Bc,"+
+           lst_cols+
+           " from (B_cmb_z"+
+           QString::number(zn+1)+
+           ") as t1, ("+
+           tbLabAna+
+           ") as t2 "
+           "where((t2.id="+QString::number(l_id)+") and(t1.id=t2.idComb))";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << sql_msg;
+#endif
+
+ return sql_msg;
+}
+
+void BTirages::showLineDetails(BView **tbl, int zn, int l_id, QString sql_msg)
+{
+
+ //BView *qtv_tmp= tbvAnaLgn[zn];
+ BView *qtv_tmp= tbl[zn];
+
+ QSqlQueryModel *cur_lgn = qobject_cast<QSqlQueryModel *> (qtv_tmp->model());
+ cur_lgn->clear();
+ cur_lgn->setQuery(sql_msg,db_tir);
+
+ qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->verticalHeader()->hide();
+
+ /// Largeur du tableau
+ int l = qtv_tmp->getMinWidth();
+ qtv_tmp->setFixedWidth(l);
+
+
+ /// Hauteur
+ int h = qtv_tmp->getMinHeight();
+ qtv_tmp->setFixedHeight(h);
+
+ /// Titre
+ QString title = "";
+ if(l_id<=0){
+  qtv_tmp->setVisible(false);
+  title = "Selectionner une ligne tirage pour afficher details !!";
+  qtv_tmp->setTitle(title, false);
+ }
+ else {
+  qtv_tmp->setVisible(true);
+  title = "Detail ligne : %1";
+  title = title.arg(l_id);
+  qtv_tmp->setTitle(title);
+ }
+}
+*/
 
 void BTirages::BSlot_Dessine(bool chk)
 {

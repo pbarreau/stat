@@ -131,6 +131,7 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
 
  /// Effacer anciens calculs des filtres
  b_retVal = DB_Tools::SupprimerResultatsPrecedent(cnx);
+ DB_Tools::SupprimerResultatsPrecedent(cnx,"view","vt*");
 
 #if 0
 select 'drop table ' || name || ';' from sqlite_master

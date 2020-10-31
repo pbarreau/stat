@@ -381,14 +381,14 @@ void  BView_1::BSlot_MakeCustomGame()
  if(tmp != nullptr){
   gme_tbl = lst_tirages->getGameLabel();
 
-  saveTimeIntTable(Bp::clkStart,gme_tbl,t_human);
+  saveTimeInTable(Bp::clkStart,gme_tbl,t_human);
 
 	r.setHMS(0,0,0,0);
 	t.restart();
 	BTirAna *ana_tirages = new BTirAna(tmp);
 	r = r.addMSecs(t.elapsed());
 	t_human = r.toString("hh:mm:ss:zzz");
-	saveTimeIntTable(Bp::clkStop,gme_tbl,t_human);
+	saveTimeInTable(Bp::clkStop,gme_tbl,t_human);
 
 	if(ana_tirages->self() == nullptr){
 	 QString msg = "Erreur de l'analyse des tirages :" + tmp->db_ref->src;
@@ -404,7 +404,7 @@ void  BView_1::BSlot_MakeCustomGame()
  }
 }
 
-void BView_1::saveTimeIntTable(Bp::E_Clk ref, QString tb_name, QString humanTime)
+void BView_1::saveTimeInTable(Bp::E_Clk ref, QString tb_name, QString humanTime)
 {
  QSqlQuery query(db_tbv);
  bool b_retVal = true;

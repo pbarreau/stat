@@ -656,6 +656,7 @@ bool BTirAna::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int
 
 bool BTirAna::SupprimerVueIntermediaires(void)
 {
+ /*
  bool b_retVal = true;
  QString msg = "";
  QSqlQuery query(db_1);
@@ -687,6 +688,9 @@ bool BTirAna::SupprimerVueIntermediaires(void)
  }
 
  return b_retVal;
+*/
+ QString cnx = db_1.connectionName();
+ return DB_Tools::SupprimerResultatsPrecedent(cnx,"view","vt_*");
 }
 
 QString BTirAna::getFilteringHeaders(const stGameConf *pGame,int zn, QString msg_template, QString separator)

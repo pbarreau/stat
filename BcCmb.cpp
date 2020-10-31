@@ -328,8 +328,31 @@ QHBoxLayout *BcCmb::getBarFltTirages(int zn, BView_1 *qtv_tmp)
 
  int len_data = gm_def->limites[zn].win;
  int nb_10 = gm_def->limites[zn].max/10;
+ /// syntaxe de recherche possible :
+ /// mettre 1 chiffre avec 0 ou non devant
+ /// mettre une etoile pour tous les chiffres
+ /// mettre un ou entre les chiffres
+ /// g/\(*\/
+ /// \|
+ /// 0\?[0-5]\/
+ /// \|
+ /// \(0\?[0-5]\|\)\{4\}\(0\?[0-5]\)
+ /// \)\{4\}\(\*\|0\?[0-5]\)
+ ///
  /// vim : g/\(*\/\|0\?[0-5]\/\)\{4\}\(\*\|0\?[0-5]\)
  /// QString stPattern = "((\\*|(0?[0-5]))/){4}(\\*|(0?[0-5]))";
+ /// "((\\*|(0?[0-5])|((0?[0-5]\|){4}(0?[0-5]))/){4}(\\*|(0?[0-5]))"
+
+ QString p1 = "*";
+ QString p2 = "(0?[0-"+QString::number(len_data)+"])";
+ QString p3 = "{,"+QString::number(nb_10)+"}";
+
+ QString p4 = "("+p2+"\\|)"+p3+p2;
+
+ QString p5 = "(\\"+p1+"|"+p2+"|"+p4+")";
+
+ QString stPattern = "("+p5+"/)"+p3+p5;
+ /*
  QString stPattern = "((\\*|(0?[0-"+
                      QString::number(len_data)+
                      "]))/){"+
@@ -337,6 +360,7 @@ QHBoxLayout *BcCmb::getBarFltTirages(int zn, BView_1 *qtv_tmp)
                      "}(\\*|(0?[0-"+
                      QString::number(len_data)+
                      "]))";
+*/
  QValidator *validator = new QRegExpValidator(QRegExp(stPattern,Qt::CaseInsensitive,QRegExp::RegExp));
 
  le_chk->setValidator(validator);
@@ -413,8 +437,27 @@ QString BcCmb::getFltRgx(const int gme_zn, const QString &key)
    itm = "[0-"+QString::number(max)+"]";
   }
   else{
-   int val = str_key[pos].toInt();
-   itm = QString::number(val);
+   // On a un chiffre ou une combinaison de chiffre
+   QStringList sel;
+   sel = str_key[pos].split("|");
+   int usr_len = sel.size();
+   if( usr_len >1){
+    QString sub_itm = "";
+
+    for (int sub_pos=0; (sub_pos < usr_len) && (sel[sub_pos].simplified().size() != 0);sub_pos++) {
+     int sub_val = sel[sub_pos].toInt();
+     itm = QString::number(sub_val);
+     if(sub_pos<usr_len-1){
+      itm = itm+"|";
+     }
+     sub_itm = sub_itm + itm;
+    }
+    itm = "("+sub_itm+")";
+   }
+   else {
+    int val = str_key[pos].toInt();
+    itm = QString::number(val);
+   }
   }
 
 	if(pos<len-1){
