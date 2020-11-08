@@ -1,6 +1,7 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #include <QSqlError>
+#include "BTest.h"
 #endif
 
 
@@ -46,7 +47,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
   QString title = pGame->names[zn].abv;
 
 	int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
-	upl_JP1[zn]=new BView * [nb_recherche];
+	upl_JP1[zn]=new BView ** [nb_recherche];
 	for (int upl = C_MIN_UPL; upl<=nb_recherche; upl++) {
 	 if(upl > pGame->limites[zn].win){
 		break;
@@ -71,7 +72,9 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int i)
  BView *qtv_tmp = new BView;
  qtv_tmp->setObjectName(QString::number(i-C_MIN_UPL));
  qtv_tmp->setZone(zn);
- upl_JP1[zn][i-C_MIN_UPL] = new BView;
+
+ int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
+ upl_JP1[zn][i-C_MIN_UPL] = new BView * [nb_recherche];
 
  QString sql_msg = findUplets(pGame,zn,i,-1,"tb2Count");
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
@@ -127,13 +130,13 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int i)
  return wdg_tmp;
 }
 
-QWidget *BcUpl::showUpletJp1(const stGameConf *pGame, int zn, int i)
+QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int dst_upl)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
- BView *qtv_tmp = upl_JP1[zn][i];
+ BView *qtv_tmp = upl_JP1[zn][src_upl][dst_upl];
 
- QString sql_msg = findUplets(pGame,zn,i+C_MIN_UPL,0);
+ QString sql_msg = findUplets(pGame,zn,src_upl+C_MIN_UPL,0);
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
  while (sqm_tmp->canFetchMore())
@@ -149,7 +152,7 @@ QWidget *BcUpl::showUpletJp1(const stGameConf *pGame, int zn, int i)
  qtv_tmp->setSortingEnabled(true);
 
  int rows_proxy = qtv_tmp->model()->rowCount();
- QString st_title = "U_" + QString::number(i+C_MIN_UPL).rightJustified(2,'0')+
+ QString st_title = "U_" + QString::number(src_upl+C_MIN_UPL).rightJustified(2,'0')+
                     " (J+1). Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);
  qtv_tmp->setTitle(st_title);
@@ -179,6 +182,36 @@ QWidget *BcUpl::showUpletJp1(const stGameConf *pGame, int zn, int i)
  return qtv_tmp->getScreen();
 }
 
+QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int zn, int src_upl, int relativeDay)
+{
+ QTabWidget *upl_details = new QTabWidget(this);
+
+ for (int tab=1;tab<4;tab++) {
+  QWidget * wdg_tmp = calUplFromDistance(pGame, zn, src_upl, relativeDay,tab);
+  if(wdg_tmp !=nullptr){
+   upl_details->addTab(wdg_tmp,"R_"+QString::number(tab).rightJustified(2,'0'));
+  }
+ }
+ return upl_details;
+}
+
+QWidget *BcUpl::showUpletJp1(const stGameConf *pGame, int zn, int i)
+{
+ QTabWidget *tab_Top = new QTabWidget(this);
+ tab_Top->setObjectName("tabRspAnaUpl");
+
+ QString ongNames[]={"J","J+1"};
+ int nb_ong= sizeof(ongNames)/sizeof(QString);
+
+ for (int day_anaUpl = 0;day_anaUpl<nb_ong;day_anaUpl++) {
+  QWidget * wdg_tmp = getUplDetails(pGame, zn, i, day_anaUpl);
+  if(wdg_tmp !=nullptr){
+   tab_Top->addTab(wdg_tmp,ongNames[day_anaUpl]);
+  }
+ }
+ return tab_Top;
+}
+
 void BcUpl::BSlot_clicked(const QModelIndex &index)
 {
  BView *view = qobject_cast<BView *>(sender());
@@ -188,7 +221,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
  QString sql_msg = findUplets(gm_def,zn,id_upl+C_MIN_UPL,selection);
 
- QAbstractItemModel *model = upl_JP1[zn][id_upl]->model();
+ QAbstractItemModel *model = upl_JP1[zn][id_upl][id_upl]->model(); /// A debuger
  QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
  QSqlQueryModel * sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
@@ -208,12 +241,12 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
   }
  }
 
- int rows_proxy = upl_JP1[zn][id_upl]->model()->rowCount();
+ int rows_proxy = upl_JP1[zn][id_upl][id_upl]->model()->rowCount();
  QString st_title = "U_" + QString::number(id_upl+C_MIN_UPL).rightJustified(2,'0')+
                     " (J+1). Apres : " + src_uplets+
                     ". Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);
- upl_JP1[zn][id_upl]->setTitle(st_title);
+ upl_JP1[zn][id_upl][id_upl]->setTitle(st_title);
 
 }
 
@@ -237,7 +270,7 @@ BcUpl::BcUpl(const stGameConf *pGame,const int nb, const QString tbl)
  }
 
  int nb_zn = pGame->znCount;
- upl_JP1 = new BView**[nb_zn];
+ upl_JP1 = new BView***[nb_zn];
  upl_items = nb;
  upl_tbInternal=tbl;
 }
@@ -518,6 +551,7 @@ QString BcUpl::findUplets(const stGameConf *pGame, const int zn, const int loop,
  sql_msg = sql_msg + "from\n";
  sql_msg = sql_msg + "  ("+tb_def.simplified()+") as t1\n";
 
+
  bool b_retVal = true;
  if((b_retVal=query.exec(sql_msg))==false){
   DB_Tools::DisplayError("BTest::montestRapideSql",&query,sql_msg);
@@ -538,6 +572,12 @@ QString BcUpl::findUplets(const stGameConf *pGame, const int zn, const int loop,
  if(key !=-1){
   sql_msg = sql_msg + "where (t1.uid="+QString::number(key)+")";
  }
+
+#ifndef QT_NO_DEBUG
+ QString target = "AF_dbg_findUplets.txt";
+ BTest::writetoFile(target,sql_msg,false);
+ qDebug() <<sql_msg;
+#endif
 
  return sql_msg;
 }

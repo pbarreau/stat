@@ -151,6 +151,11 @@ void BcGrp::BSlot_AnaLgnRaz(void)
 
 void BcGrp::BSlot_AnaKey(const QModelIndex &index)
 {
+ /// Pas d'analyse pour tirage genere
+ if(gm_def->eTirType == eTirGen){
+  return;
+ }
+
  if(gm_def->db_ref->dad.size() !=0){
   return;
  }
