@@ -110,8 +110,8 @@ class BcUpl: public BCount
 
  private:
  QWidget *getMainTbv(const stGameConf *pGame, int zn, int i);
- QWidget *showUpletJp1(const stGameConf *pGame, int zn, int i);
- QWidget *getUplDetails(const stGameConf *pGame, int zn, int src_upl, int relativeDay);
+ QWidget *showUplFromRef(const stGameConf *pGame, int zn, int upl_ref);
+ QWidget *getUplDetails(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int nb_recherche);
  QWidget *calUplFromDistance(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int dst_upl);
 
 

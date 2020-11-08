@@ -361,7 +361,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 		 if((upl_id+C_MIN_UPL)>gm_def->limites[zn_id].win){
 			break;
 		 }
-		 tmp = upl_JP1[zn_id][upl_id][1][upl_id]->selectionModel();
+		 tmp = upl_SHOW[zn_id][upl_id][upl_id][0]->selectionModel();
 		 indexes = tmp->selectedIndexes();
 		 if(indexes.size() !=0 ){
 			BLstSelect *zn_sel = new BLstSelect(type,zn_id,tmp,upl_id);
