@@ -246,14 +246,11 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  int zn = view->getZone();
  int selection = index.sibling(index.row(),Bp::colId).data().toInt();
 
+
  QString sql_msg = findUplets(gm_def,zn,id_upl+C_MIN_UPL,selection);
 
- //BView *qtv_tmp = upl_SHOW[0][0][0][0];
- //BView *target = qtv_tmp; //t4[0];//upl_SHOW[0][0][0][0];
  QAbstractItemModel *model = upl_SHOW[zn][id_upl][0][0]->model(); /// A debuger
 
- //QSortFilterProxyModel *m1= qobject_cast<QSortFilterProxyModel *>(target->model());
- //QAbstractItemModel *model = target->model();
 
  QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
  QSqlQueryModel * sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
