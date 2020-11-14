@@ -297,38 +297,68 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, EC
  QString sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
  QString sql_src = "tb_"+QString::number(tbl_src).rightJustified(2,'0');
 
- QString ref_0 = "(t%1.id)";
+ QString key_1 = "";
+ QString key_2 = "";
+ QString t0 = "";
+ QString t1 = "";
+ QString t2 = "";
+ QString ref_4 = "";
+ if(sql_step == ELstUpl){
+  key_1="id";
+  key_2="uid";
+ }
+ else {
+  t0="\tt1.uid,\n";
+  t2 = "partition by t1.uid";
+  key_1=pGame->names[zn].abv+"1";;
+  key_2="nid";
+  ref_4 = "(t%1.uid = t%2.uid)";
+ };
+
+ QString ref_0 = "(t%1."+key_1+")";
  QString ref_1 = ref_0 + " as %2%3";
  QString ref_2 = "("+sql_src+") as t%1";
- QString ref_3 = "(" + ref_0 + " < (t%2.id))";
+ QString ref_3 = "(" + ref_0 + " < (t%2."+key_1+"))";
 
  QString r0 = "";
- QString r1 = "";
  QString r2 = "";
  QString r3 = "";
+ QString r4 = "";
+
 
  int nb_loop = upl_ref_in;
  for (int i = 0; i< nb_loop; i++) {
   r0 = r0 + ref_0.arg(i+1);
-  r1 = r1 + ref_1.arg(i+1).arg(pGame->names[zn].abv).arg(i+1);
+  t1 = t1 + ref_1.arg(i+1).arg(pGame->names[zn].abv).arg(i+1);
   r2 = r2 + ref_2.arg(i+1);
+
+	/*
+	if(ref_4.simplified().size()){
+	 r4 = r4 + ref_4.arg(i).arg(i+1);
+	}
+	*/
 
 	if(i<nb_loop-1){
 	 r0 = r0+",";
-	 r1 = r1+",";
+	 t1 = t1+",";
 	 r2 = r2+",";
 	}
 
 	if(i<=nb_loop-2){
 	 r3 = r3 + ref_3.arg(i+1).arg(i+2);
+	 r4 = r4 + ref_4.arg(i+1).arg(i+2);
 
 	 if((i+2)< nb_loop){
 		r3 = r3 + " and";
+
+		if(r4.simplified().size()){
+		 r4 = r4 + " and";
+		}
 	 }
 	}
 
 	r0 = r0 + "\n\t";
-	r1 = r1 + "\n\t";
+	t1 = t1 + "\n\t";
 	r2 = r2 + "\n\t";
 	r3 = r3 + "\n";
 
@@ -337,8 +367,15 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, EC
  sql_msg ="";
  QString r3w = "";
  if(r3.remove("\n").size()){
-  r3w = "    WHERE("+r3+")\n";
+  if(r4.simplified().size()){
+   r3w = r4 + " and " + r3;
+  }
+  else {
+   r3w = r3;
+  }
+  r3w = "    WHERE("+r3w+")\n";
  }
+
  //QString sql_tbl = "tb_"+QString::number(ELstUpl).rightJustified(2,'0');
  tabInOut[sql_step][0] = sql_tbl;
 
@@ -347,13 +384,14 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, EC
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
  sql_msg = sql_msg + "    SELECT\n";
- sql_msg = sql_msg + "\t(row_number() over()) as uid ,\n";
- sql_msg = sql_msg + "\t"+r1+"\n";
+ sql_msg = sql_msg + t0;
+ sql_msg = sql_msg + "\t(row_number() over("+t2+")) as "+key_2+" ,\n";
+ sql_msg = sql_msg + "\t"+t1+"\n";
  sql_msg = sql_msg + "    FROM\n";
  sql_msg = sql_msg + "\t"+r2+"\n";
  sql_msg = sql_msg + r3w+"\n";
  sql_msg = sql_msg + "    ORDER BY\n";
- sql_msg = sql_msg + "\tuid,\n";
+ sql_msg = sql_msg + t0;
  sql_msg = sql_msg + "\t"+r0+"\n";
  sql_msg = sql_msg + "  )\n";
  QString tb1 = sql_msg;
