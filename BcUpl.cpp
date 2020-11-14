@@ -71,8 +71,73 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
 {
  QWidget * wdg_tmp = new QWidget;
+ QGridLayout *glay_tmp = new QGridLayout;
+ BView *qtv_tmp = new BView;
+ qtv_tmp->setObjectName(QString::number(upl_ref_in-C_MIN_UPL));
+ qtv_tmp->setZone(zn);
 
- QSqlQuery query(db_0);
+ QString sql_msg = getSqlTbv(pGame,zn,upl_ref_in, ELstUplTot);
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ sqm_tmp->setQuery(sql_msg, dbCount);
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+ int nb_rows = sqm_tmp->rowCount();
+
+ QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+ qtv_tmp->sortByColumn(upl_ref_in+1,Qt::DescendingOrder);
+ qtv_tmp->setSortingEnabled(true);
+
+ int rows_proxy = qtv_tmp->model()->rowCount();
+ QString st_title = "U_" + QString::number(upl_ref_in).rightJustified(2,'0')+
+                    " (J). Nb tirages : "+QString::number(nb_rows)+
+                    " sur " + QString::number(rows_proxy);
+ qtv_tmp->setTitle(st_title);
+
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+
+ //int nbCol = sqm_tmp->columnCount();
+ qtv_tmp->resizeColumnsToContents();
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+
+ /// Largeur du tableau
+ qtv_tmp->hideColumn(Bp::colId);
+ int l = qtv_tmp->getMinWidth();
+ qtv_tmp->setFixedWidth(l);
+
+ // simple click dans fenetre  pour selectionner boule
+ connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+         this, SLOT(BSlot_clicked( QModelIndex) ) );
+
+
+ QWidget *tmp = showUplFromRef(pGame,zn,upl_ref_in-C_MIN_UPL);
+ //QWidget *tmp = new QWidget;
+ glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
+ glay_tmp->addWidget(tmp,0,1);
+
+ wdg_tmp->setLayout(glay_tmp);
+
+ return wdg_tmp;
+}
+
+QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages target)
+{
+ QString sql_msg="";
+
+ if(target == ELstCal){
+  return sql_msg;
+ }
 
  int max_items = ELstCal;
  QString *moreArgs = new QString [C_MAX_ARGS];
@@ -84,7 +149,7 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
   ConstruireSql(pGame,zn,upl_ref_in,item, moreArgs, SqlData);
  }
 
- QString sql_msg = "with\n";
+ sql_msg = "with\n";
  for (int item=0;item<max_items;item++) {
   sql_msg = sql_msg + SqlData[item][1];
   sql_msg = sql_msg + SqlData[item][2];
@@ -95,20 +160,25 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
  }
 
  /// Dernier select
+ QString tbl_target = SqlData[target][0];
  sql_msg = sql_msg + "\n";
  sql_msg = sql_msg + "select \n";
  sql_msg = sql_msg + "  t1.*\n";
  sql_msg = sql_msg + "from\n";
- sql_msg = sql_msg + "  (Remplacer_par_table_cible) as t1\n";
+ sql_msg = sql_msg + "  ("+tbl_target+") as t1\n";
 
 #ifndef QT_NO_DEBUG
- QString target = "AF_dbg_findUplets_v2.txt";
- BTest::writetoFile(target,sql_msg,false);
+ QString dbg_target = "AF_dbg_getSqlTbv_"
+                      +tbl_target
+                      +"_"
+                      +QString::number(upl_ref_in).rightJustified(2,'0')
+                      +".txt";
+ BTest::writetoFile(dbg_target,sql_msg,false);
  qDebug() <<sql_msg;
 #endif
 
 
- return wdg_tmp;
+ return sql_msg;
 }
 
 void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int step, QString *moreArgs, QString tabInOut[][3])
@@ -553,8 +623,6 @@ QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, EC
  }
 
  int tbl_src = -1;
- //QString key_1 = "";
- //QString key_2 = "";
 
  int tbl_tir = ELstTirUpl;
  switch(sql_step)
@@ -751,7 +819,8 @@ QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int src_upl,
  QGridLayout *glay_tmp = new QGridLayout;
  BView *qtv_tmp = upl_SHOW[zn][src_upl][relativeDay][dst_upl];
 
- QString sql_msg = findUplets(pGame,zn,src_upl+C_MIN_UPL,0);
+ QString sql_msg = getSqlTbv(pGame,zn,src_upl+C_MIN_UPL,ELstCal);
+
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
  while (sqm_tmp->canFetchMore())

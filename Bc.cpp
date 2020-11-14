@@ -357,6 +357,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 		}
 	 }
 	 else {
+		/*
 		for (int upl_id=0; upl_id< C_MAX_UPL; upl_id++) {
 		 if((upl_id+C_MIN_UPL)>gm_def->limites[zn_id].win){
 			break;
@@ -368,6 +369,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 			ret->append(zn_sel);
 		 }
 		}
+		*/
 	 }
 	}
 
