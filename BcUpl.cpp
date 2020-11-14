@@ -78,6 +78,8 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
  QString *moreArgs = new QString [C_MAX_ARGS];
  QString SqlData[C_TOT_CAL][3];
 
+ sql_FillTabArgs(pGame, zn, upl_ref_in, moreArgs, SqlData);
+
  for (int item=0;item<max_items;item++) {
   ConstruireSql(pGame,zn,upl_ref_in,item, moreArgs, SqlData);
  }
@@ -124,8 +126,16 @@ void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int s
   break;
 
 	case ELstUpl:
+	case ELstUplNot:
 	{
-	 sql_msg = sql_UplFrmElm(pGame,zn,upl_ref_in,moreArgs,tabInOut);
+	 int tbl_src = -1;
+	 if(sql_step == ELstUpl){
+		tbl_src = ELstBle;
+	 }
+	 else {
+		tbl_src = ELstBleNot;
+	 }
+	 sql_msg = sql_UplFrmElm(pGame,zn,upl_ref_in,sql_step, tbl_src, tabInOut);
 	}
 	break;
 
@@ -146,6 +156,8 @@ void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int s
 	 sql_msg = sql_ElmNotFrmTir(pGame,zn, moreArgs, tabInOut);
 	}
 	break;
+	default:
+	 sql_msg = "AVERIFIER";
  }
 
 
@@ -163,7 +175,7 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, int tir_id,QString
  QString sql_msg = "";
  QString st_cols = BCount::FN1_getFieldsFromZone(pGame,zn,"t2");
 
- sql_tbl = "tb_"+QString::number(ELstBle).rightJustified(2,'0');
+ sql_tbl = "tb_"+QString::number(ELstBle).rightJustified(2,'0'); //tabInOut[ELstBle][0];
  tabInOut[ELstBle][0] = sql_tbl;
  tabInOut[ELstBle][1] = " -- Liste des boules tirage : "+QString::number(tir_id).rightJustified(4,'0')+"\n";
 
@@ -186,10 +198,11 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, int tir_id,QString
  return sql_msg;
 }
 
-QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, QString *tab_arg, QString tabInOut[][3])
+void BcUpl::sql_FillTabArgs(const stGameConf *pGame, int zn, int upl_ref_in, QString *tab_arg, QString tabInOut[][3])
 {
- QString sql_msg = "";
  QString st_cols = BCount::FN1_getFieldsFromZone(pGame,zn,"t2");
+ //tabInOut[ELstBle][0] = "tb_"+QString::number(ELstBle).rightJustified(2,'0');
+ tabInOut[ELstBle][0] = "TBS : sql_FillTabArgs";
 
  QString ref_0 = "(t%1.id)";
  QString ref_1 = ref_0 + " as %2%3";
@@ -255,22 +268,81 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, QS
 	r7 = r7 + "\n";
  }
 
+ /*
  tab_arg[0]=r4;
  tab_arg[1]=r5;
  tab_arg[2]=r6;
  tab_arg[3]=r7;
  tab_arg[4]=r8;
  tab_arg[5]=r9;
+*/
+ tab_arg[0]=r0;
+ tab_arg[1]=r1;
+ tab_arg[2]=r2;
+ tab_arg[3]=r3;
+ tab_arg[4]=r4;
+ tab_arg[5]=r5;
+ tab_arg[6]=r6;
+ tab_arg[7]=r7;
+ tab_arg[8]=r8;
+ tab_arg[9]=r9;
+
+}
+
+QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, int tbl_src, QString tabInOut[][3])
+{
+ QString sql_msg = "";
+
+
+ QString sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
+ QString sql_src = "tb_"+QString::number(tbl_src).rightJustified(2,'0');
+
+ QString ref_0 = "(t%1.id)";
+ QString ref_1 = ref_0 + " as %2%3";
+ QString ref_2 = "("+sql_src+") as t%1";
+ QString ref_3 = "(" + ref_0 + " < (t%2.id))";
+
+ QString r0 = "";
+ QString r1 = "";
+ QString r2 = "";
+ QString r3 = "";
+
+ int nb_loop = upl_ref_in;
+ for (int i = 0; i< nb_loop; i++) {
+  r0 = r0 + ref_0.arg(i+1);
+  r1 = r1 + ref_1.arg(i+1).arg(pGame->names[zn].abv).arg(i+1);
+  r2 = r2 + ref_2.arg(i+1);
+
+	if(i<nb_loop-1){
+	 r0 = r0+",";
+	 r1 = r1+",";
+	 r2 = r2+",";
+	}
+
+	if(i<=nb_loop-2){
+	 r3 = r3 + ref_3.arg(i+1).arg(i+2);
+
+	 if((i+2)< nb_loop){
+		r3 = r3 + " and";
+	 }
+	}
+
+	r0 = r0 + "\n\t";
+	r1 = r1 + "\n\t";
+	r2 = r2 + "\n\t";
+	r3 = r3 + "\n";
+
+ }
 
  sql_msg ="";
  QString r3w = "";
  if(r3.remove("\n").size()){
   r3w = "    WHERE("+r3+")\n";
  }
- QString sql_tbl = "tb_"+QString::number(ELstUpl).rightJustified(2,'0');
- tabInOut[ELstUpl][0] = sql_tbl;
+ //QString sql_tbl = "tb_"+QString::number(ELstUpl).rightJustified(2,'0');
+ tabInOut[sql_step][0] = sql_tbl;
 
- tabInOut[ELstUpl][1] = " -- Liste des "+QString::number(upl_ref_in)+" uplets\n";
+ tabInOut[sql_step][1] = " -- Liste des "+QString::number(upl_ref_in)+" uplets depuis : "+sql_src+"\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
@@ -293,7 +365,7 @@ QString BcUpl::sql_TirFrmUpl(const stGameConf *pGame, int zn,QString *moreArgs ,
 {
  QString sql_tbl = "";
  QString sql_msg = "";
- QString r5 = moreArgs[1];
+ QString r5 = moreArgs[5];
 
  sql_tbl = "tb_"+QString::number(ELstTirUpl).rightJustified(2,'0');
  tabInOut[ELstTirUpl][0] = sql_tbl;
@@ -324,8 +396,8 @@ QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn,QString *moreArgs ,
  QString sql_tbl = "";
  QString sql_msg = "";
 
- QString r4 = moreArgs[0];
- QString r6 = moreArgs[2];
+ QString r4 = moreArgs[4];
+ QString r6 = moreArgs[6];
 
  sql_tbl = "tb_"+QString::number(ELstUplTot).rightJustified(2,'0');
  tabInOut[ELstUplTot][0] = sql_tbl;
@@ -359,6 +431,8 @@ QString BcUpl::sql_ElmNotFrmTir(const stGameConf *pGame, int zn, QString *moreAr
  QString sql_tbl = "";
  QString sql_msg = "";
 
+ QString r9 = moreArgs[9];
+
  QString target = "t1.z"+QString::number(zn+1);
  QString alias = target + " as " + pGame->names[zn].abv + "1";
 
@@ -376,7 +450,7 @@ QString BcUpl::sql_ElmNotFrmTir(const stGameConf *pGame, int zn, QString *moreAr
  sql_msg = sql_msg + "    (B_elm) as t1,\n";
  sql_msg = sql_msg + "    ("+tabInOut[ELstUpl][0]+") as t2\n";
  sql_msg = sql_msg + "    WHERE(\n";
- sql_msg = sql_msg + " \t"+target+" not in ("+moreArgs[5]+")\n";
+ sql_msg = sql_msg + " \t"+target+" not in ("+r9+")\n";
  sql_msg = sql_msg + "    )\n";
  sql_msg = sql_msg + "  )\n";
 
