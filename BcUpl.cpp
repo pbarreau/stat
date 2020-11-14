@@ -129,13 +129,7 @@ void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int s
 	case ELstUpl:
 	case ELstUplNot:
 	{
-	 if(sql_step == ELstUpl){
-		tbl_src = ELstBle;
-	 }
-	 else {
-		tbl_src = ELstBleNot;
-	 }
-	 sql_msg = sql_UplFrmElm(pGame,zn,upl_ref_in,sql_step, tbl_src, tabInOut);
+	 sql_msg = sql_UplFrmElm(pGame,zn,upl_ref_in,sql_step, tabInOut);
 	}
 	break;
 
@@ -146,6 +140,7 @@ void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int s
 	break;
 
 	case ELstUplTot:
+	case ELstUplTotNot:
 	{
 	 if(sql_step == ELstUplTot){
 		tbl_src = ELstUpl;
@@ -295,31 +290,38 @@ void BcUpl::sql_FillTabArgs(const stGameConf *pGame, int zn, int upl_ref_in, QSt
 
 }
 
-QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, int tbl_src, QString tabInOut[][3])
+QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, QString tabInOut[][3])
 {
  QString sql_msg = "";
 
 
- QString sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
- QString sql_src = "tb_"+QString::number(tbl_src).rightJustified(2,'0');
 
+ int tbl_src = -1;
  QString key_1 = "";
  QString key_2 = "";
  QString t0 = "";
  QString t1 = "";
  QString t2 = "";
  QString ref_4 = "";
+
  if(sql_step == ELstUpl){
+  tbl_src = ELstBle;
+
   key_1="id";
   key_2="uid";
  }
  else {
+  tbl_src = ELstBleNot;
+
   t0="\tt1.uid,\n";
   t2 = "partition by t1.uid";
   key_1=pGame->names[zn].abv+"1";;
   key_2="nid";
   ref_4 = "(t%1.uid = t%2.uid)";
  };
+
+ QString sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
+ QString sql_src = "tb_"+QString::number(tbl_src).rightJustified(2,'0');
 
  QString ref_0 = "(t%1."+key_1+")";
  QString ref_1 = ref_0 + " as %2%3";
@@ -460,7 +462,7 @@ QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, EC
 
  sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
  tabInOut[sql_step][0] = sql_tbl;
- tabInOut[sql_step][1] = " -- Total pour chaque Uplets trouve dans les tirage (Req :"+tabInOut[ELstTirUpl][0]+")\n";
+ tabInOut[sql_step][1] = " -- Total pour chaque Uplets ("+tabInOut[tbl_src][0]+") trouve dans les tirage (Req :"+tabInOut[ELstTirUpl][0]+")\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";

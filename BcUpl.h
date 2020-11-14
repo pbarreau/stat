@@ -47,7 +47,7 @@ class BcUpl: public BCount
  }eCalcul;
 
  private:
- typedef enum _eCalTirages{ELstBle, ELstUpl, ELstTirUpl, ELstUplTot, ELstBleNot, ELstUplNot, ELstCal}ECalTirages;//ELstUplNot,
+ typedef enum _eCalTirages{ELstBle, ELstUpl, ELstTirUpl, ELstUplTot, ELstBleNot, ELstUplNot, ELstUplTotNot, ELstCal}ECalTirages;//ELstUplNot,
 #define C_TOT_CAL ELstCal
 #define C_MAX_ARGS 10
 
@@ -125,7 +125,7 @@ class BcUpl: public BCount
  QString sql_ElmFrmTir(const stGameConf *pGame, int zn, int tir_id,QString tabInOut[][3]);
  QString sql_ElmNotFrmTir(const stGameConf *pGame, int zn, QString *moreArgs, QString tabInOut[][3]);
 
- QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, int tbl_src, QString tabInOut[][3]);
+ QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, QString tabInOut[][3]);
  QString sql_TirFrmUpl(const stGameConf *pGame, int zn, QString *moreArgs,QString tabInOut[][3]);
  //QString sql_TotFrmTir(const stGameConf *pGame, int zn, QString *moreArgs,QString tabInOut[][3]);
  QString sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, int tbl_src, QString tabInOut[][3]);
