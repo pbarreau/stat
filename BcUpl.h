@@ -46,6 +46,11 @@ class BcUpl: public BCount
   eCalBrc  /// Calcul sur barycentre
  }eCalcul;
 
+ private:
+ typedef enum _eCalTirages{ELstBle, ELstUpl, ELstTirUpl, ELstUplTot, ELstBleNot,  ELstCal}ECalTirages;//ELstUplNot,
+#define C_TOT_CAL ELstCal
+#define C_MAX_ARGS 6
+
  public:
  //BUplet(st_In const &param);
  //BUplet(st_In const &param, int index=0);
@@ -113,8 +118,16 @@ class BcUpl: public BCount
  QWidget *showUplFromRef(const stGameConf *pGame, int zn, int upl_ref);
  QWidget *getUplDetails(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int nb_recherche);
  QWidget *calUplFromDistance(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int dst_upl);
+ void ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int step, QString *moreArgs, QString tabInOut[][3]);
 
+ QString sql_ElmFrmTir(const stGameConf *pGame, int zn, int tir_id,QString tabInOut[][3]);
+ QString sql_ElmNotFrmTir(const stGameConf *pGame, int zn, QString *moreArgs, QString tabInOut[][3]);
 
+ QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, QString *tab_arg, QString tabInOut[][3]);
+ QString sql_TirFrmUpl(const stGameConf *pGame, int zn, QString *moreArgs,QString tabInOut[][3]);
+ QString sql_TotFrmTir(const stGameConf *pGame, int zn, QString *moreArgs,QString tabInOut[][3]);
+
+ void sql_RepartitionVoisin(QString tabInOut[][3], int jour, int upl, int ref_id, int delta=0);
 };
 
 #endif // BUPLET_H
