@@ -118,6 +118,7 @@ void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int s
 
  ECalTirages sql_step = static_cast<ECalTirages>(step);
 
+ int tbl_src = -1;
  switch (sql_step) {
   case ELstBle:
   {
@@ -128,7 +129,6 @@ void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int s
 	case ELstUpl:
 	case ELstUplNot:
 	{
-	 int tbl_src = -1;
 	 if(sql_step == ELstUpl){
 		tbl_src = ELstBle;
 	 }
@@ -147,7 +147,13 @@ void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int s
 
 	case ELstUplTot:
 	{
-	 sql_msg = sql_TotFrmTir(pGame,zn,moreArgs,tabInOut);
+	 if(sql_step == ELstUplTot){
+		tbl_src = ELstUpl;
+	 }
+	 else {
+		tbl_src = ELstUplNot;
+	 }
+	 sql_msg = sql_TotFrmTir(pGame,zn,upl_ref_in,sql_step, tbl_src,tabInOut);
 	}
 	break;
 
@@ -429,17 +435,32 @@ QString BcUpl::sql_TirFrmUpl(const stGameConf *pGame, int zn,QString *moreArgs ,
  return sql_msg;
 }
 
-QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn,QString *moreArgs , QString tabInOut[][3])
+QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, int tbl_src, QString tabInOut[][3])
 {
  QString sql_tbl = "";
  QString sql_msg = "";
 
- QString r4 = moreArgs[4];
- QString r6 = moreArgs[6];
+ QString ref_4 = "t1.%1%2";
+ QString ref_6 = ref_4 + " asc";
 
- sql_tbl = "tb_"+QString::number(ELstUplTot).rightJustified(2,'0');
- tabInOut[ELstUplTot][0] = sql_tbl;
- tabInOut[ELstUplTot][1] = " -- Total pour chaque Uplets trouve dans les tirage (Req :"+tabInOut[ELstTirUpl][0]+")\n";
+ QString r4 = "\t";
+ QString r6 = "\t";
+
+ int nb_loop = upl_ref_in;
+ for (int i = 0; i< nb_loop; i++) {
+  r4 = r4 + ref_4.arg(pGame->names[zn].abv).arg(i+1);
+  r6 = r6 + ref_6.arg(pGame->names[zn].abv).arg(i+1);
+
+	if(i<nb_loop-1){
+	 r4 = r4+",";
+	 r6 = r6+",";
+	}
+	r6 = r6 + "\n\t";
+ }
+
+ sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
+ tabInOut[sql_step][0] = sql_tbl;
+ tabInOut[sql_step][1] = " -- Total pour chaque Uplets trouve dans les tirage (Req :"+tabInOut[ELstTirUpl][0]+")\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
@@ -448,7 +469,7 @@ QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn,QString *moreArgs ,
  sql_msg = sql_msg + r4+",\n";
  sql_msg = sql_msg + "\tcount(t2.uid) as T\n";
  sql_msg = sql_msg + "    FROM\n";
- sql_msg = sql_msg + "      ("+tabInOut[ELstUpl][0]+") as t1 ,\n";
+ sql_msg = sql_msg + "      ("+tabInOut[tbl_src][0]+") as t1 ,\n";
  sql_msg = sql_msg + "      ("+tabInOut[ELstTirUpl][0]+") as t2\n";
  sql_msg = sql_msg + "    WHERE\n";
  sql_msg = sql_msg + "      (\n";

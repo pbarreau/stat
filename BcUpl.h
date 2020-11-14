@@ -127,7 +127,8 @@ class BcUpl: public BCount
 
  QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, int tbl_src, QString tabInOut[][3]);
  QString sql_TirFrmUpl(const stGameConf *pGame, int zn, QString *moreArgs,QString tabInOut[][3]);
- QString sql_TotFrmTir(const stGameConf *pGame, int zn, QString *moreArgs,QString tabInOut[][3]);
+ //QString sql_TotFrmTir(const stGameConf *pGame, int zn, QString *moreArgs,QString tabInOut[][3]);
+ QString sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, int tbl_src, QString tabInOut[][3]);
 
  void sql_RepartitionVoisin(QString tabInOut[][3], int jour, int upl, int ref_id, int delta=0);
 };
