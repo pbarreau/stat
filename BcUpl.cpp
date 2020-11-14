@@ -120,35 +120,37 @@ void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int s
 
  int tbl_src = -1;
  switch (sql_step) {
+
+  /// Trouver la liste des boules
   case ELstBle:
+  case ELstBleNext:
   {
-   sql_msg = sql_ElmFrmTir(pGame,zn,ref_day,tabInOut);
+   sql_msg = sql_ElmFrmTir(pGame,zn,sql_step,ref_day,tabInOut);
   }
   break;
 
+	 /// Trouver la liste des uplets
 	case ELstUpl:
 	case ELstUplNot:
+	case ELstUplNext:
 	{
 	 sql_msg = sql_UplFrmElm(pGame,zn,upl_ref_in,sql_step, tabInOut);
 	}
 	break;
 
+	/// Trouver la liste des tirages pour les uplets
 	case ELstTirUpl:
 	{
 	 sql_msg = sql_TirFrmUpl(pGame,zn,moreArgs,tabInOut);
 	}
 	break;
 
+	/// Comptabiler les uplets
 	case ELstUplTot:
 	case ELstUplTotNot:
+	case ELstUplTotNext:
 	{
-	 if(sql_step == ELstUplTot){
-		tbl_src = ELstUpl;
-	 }
-	 else {
-		tbl_src = ELstUplNot;
-	 }
-	 sql_msg = sql_TotFrmTir(pGame,zn,upl_ref_in,sql_step, tbl_src,tabInOut);
+	 sql_msg = sql_TotFrmTir(pGame,zn,upl_ref_in,sql_step,tabInOut);
 	}
 	break;
 
@@ -157,6 +159,15 @@ void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int s
 	 sql_msg = sql_ElmNotFrmTir(pGame,zn, moreArgs, tabInOut);
 	}
 	break;
+
+	/// Lister les tirages apres ceux contenant les uplets
+	case ELstTirUplNext:
+	{
+	 sql_msg = sql_NxtTirUpl(pGame,zn, 1, tabInOut);
+	}
+	break;
+
+	/// ERREUR
 	default:
 	 sql_msg = "AVERIFIER";
  }
@@ -170,30 +181,55 @@ void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int s
  tabInOut[sql_step][2]= sql_msg;
 }
 
-QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, int tir_id,QString tabInOut[][3])
+QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_step, int tir_id,QString tabInOut[][3])
 {
  QString sql_tbl = "";
  QString sql_msg = "";
  QString st_cols = BCount::FN1_getFieldsFromZone(pGame,zn,"t2");
 
- sql_tbl = "tb_"+QString::number(ELstBle).rightJustified(2,'0'); //tabInOut[ELstBle][0];
- tabInOut[ELstBle][0] = sql_tbl;
- tabInOut[ELstBle][1] = " -- Liste des boules tirage : "+QString::number(tir_id).rightJustified(4,'0')+"\n";
+ QString arg_1 = "";
+ QString arg_2 = "";
+ QString arg_3 = "";
+ QString arg_4 = "";
+ if(sql_step == ELstBle){
+  tabInOut[sql_step][1] = " -- Liste des boules tirage : "+QString::number(tir_id).rightJustified(4,'0')+"\n";
+  arg_1 = arg_1 + "      t1.id\n";
+
+	arg_2 = arg_2 + "      (B_elm) as t1 ,\n";
+	arg_2 = arg_2 + "      (B_fdj) as t2\n";
+
+	arg_3 = arg_3 + "        (t2.id="+QString::number(tir_id)+")\n";
+	arg_3 = arg_3 + "        and t1.z1 in(" + st_cols + " )\n";
+ }
+ else {
+  tabInOut[sql_step][1] = " -- Liste des boules depuis ref : ("+tabInOut[ELstTirUplNext][0]+")\n";
+  arg_1 = arg_1 + "\tt2.uid,\n";
+  arg_1 = arg_1 + "\t(row_number() over ( partition by t2.uid )) as lgn,\n";
+  arg_1 = arg_1 + "\tt1.id as b1\n";
+
+	arg_2 = arg_2 + "      (B_elm) as t1 ,\n";
+	arg_2 = arg_2 + "      ("+tabInOut[ELstTirUplNext][0]+") as t2\n";
+
+	arg_3 = arg_3 + "        t1.z1 in(" + st_cols + " )\n";
+
+	arg_4 = arg_4 + "\tGROUP BY\n";
+	arg_4 = arg_4 + "\tt2.uid,\n";
+	arg_4 = arg_4 + "\tt1.id\n";
+}
+ sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0'); //tabInOut[ELstBle][0];
+ tabInOut[sql_step][0] = sql_tbl;
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
- sql_msg = sql_msg + "    select\n";
- sql_msg = sql_msg + "      t1.id\n";
- sql_msg = sql_msg + "    from\n";
- sql_msg = sql_msg + "      (B_elm) as t1 ,\n";
- sql_msg = sql_msg + "      (B_fdj) as t2\n";
- sql_msg = sql_msg + "    where\n";
+ sql_msg = sql_msg + "    SELECT\n";
+ sql_msg = sql_msg + arg_1;
+ sql_msg = sql_msg + "    FROM\n";
+ sql_msg = sql_msg + arg_2;
+ sql_msg = sql_msg + "    WHERE\n";
  sql_msg = sql_msg + "      (\n";
- sql_msg = sql_msg + "        (\n";
- sql_msg = sql_msg + "          t2.id="+QString::number(tir_id)+"\n";
- sql_msg = sql_msg + "        )\n";
- sql_msg = sql_msg + "        and t1.z1 in(" + st_cols + " )\n";
+ sql_msg = sql_msg + arg_3;
  sql_msg = sql_msg + "      )\n";
+ sql_msg = sql_msg + arg_4;
  sql_msg = sql_msg + "  )\n";
 
  return sql_msg;
@@ -296,26 +332,51 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, EC
 
 
 
- int tbl_src = -1;
- QString key_1 = "";
+ int tbl_src = -2;
+ //QString key_1 = "";
  QString key_2 = "";
  QString t0 = "";
  QString t1 = "";
  QString t2 = "";
  QString ref_4 = "";
 
- if(sql_step == ELstUpl){
-  tbl_src = ELstBle;
+ switch(sql_step)
+ {
+  case ELstUpl:
+  {
+   tbl_src = ELstBle;
+  }
+  break;
 
-  key_1="id";
+	case ELstUplNot:
+	{
+	 tbl_src = ELstBleNot;
+	}
+	break;
+
+	case ELstUplNext:
+	{
+	 tbl_src = ELstBleNext;
+	}
+	break;
+
+	default:
+	 tbl_src = -1;
+ }
+
+ QString ref_0 = "";
+ QString ref_3 = "";
+ if(sql_step == ELstUpl){
+  ref_0 = "(t%1.id)";
+  ref_3 = "(" + ref_0 + " < (t%2.id))";
+
   key_2="uid";
  }
  else {
-  tbl_src = ELstBleNot;
-
   t0="\tt1.uid,\n";
   t2 = "partition by t1.uid";
-  key_1=pGame->names[zn].abv+"1";;
+  ref_0 = "(t%1."+pGame->names[zn].abv+"1)";
+  ref_3 = "(" + ref_0 + " < (t%2."+pGame->names[zn].abv+"1))";
   key_2="nid";
   ref_4 = "(t%1.uid = t%2.uid)";
  };
@@ -323,10 +384,8 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, EC
  QString sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
  QString sql_src = "tb_"+QString::number(tbl_src).rightJustified(2,'0');
 
- QString ref_0 = "(t%1."+key_1+")";
  QString ref_1 = ref_0 + " as %2%3";
  QString ref_2 = "("+sql_src+") as t%1";
- QString ref_3 = "(" + ref_0 + " < (t%2."+key_1+"))";
 
  QString r0 = "";
  QString r2 = "";
@@ -339,12 +398,6 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, EC
   r0 = r0 + ref_0.arg(i+1);
   t1 = t1 + ref_1.arg(i+1).arg(pGame->names[zn].abv).arg(i+1);
   r2 = r2 + ref_2.arg(i+1);
-
-	/*
-	if(ref_4.simplified().size()){
-	 r4 = r4 + ref_4.arg(i).arg(i+1);
-	}
-	*/
 
 	if(i<nb_loop-1){
 	 r0 = r0+",";
@@ -384,9 +437,7 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, EC
   r3w = "    WHERE("+r3w+")\n";
  }
 
- //QString sql_tbl = "tb_"+QString::number(ELstUpl).rightJustified(2,'0');
  tabInOut[sql_step][0] = sql_tbl;
-
  tabInOut[sql_step][1] = " -- Liste des "+QString::number(upl_ref_in)+" uplets depuis : "+sql_src+"\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
@@ -437,51 +488,152 @@ QString BcUpl::sql_TirFrmUpl(const stGameConf *pGame, int zn,QString *moreArgs ,
  return sql_msg;
 }
 
-QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, int tbl_src, QString tabInOut[][3])
+QString BcUpl::sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString tabInOut[][3])
 {
  QString sql_tbl = "";
  QString sql_msg = "";
 
+ QString day = QString::number(offset);
+ if(offset>0){
+  day = day + " Jour apres ";
+ }
+ else {
+  day = day + " Jour avant ";
+ }
+ sql_tbl = "tb_"+QString::number(ELstTirUplNext).rightJustified(2,'0');
+ tabInOut[ELstTirUplNext][0] = sql_tbl;
+ tabInOut[ELstTirUplNext][1] = " -- Liste des tirages "+day+"  (ref :"+tabInOut[ELstTirUpl][0]+")\n";
+
+ sql_msg = sql_msg + "  "+sql_tbl+" as\n";
+ sql_msg = sql_msg + "  (\n";
+ sql_msg = sql_msg + "    SELECT\n";
+ sql_msg = sql_msg + "     t1.uid                                             ,\n";
+ sql_msg = sql_msg + "     (row_number() over ( partition by t1.uid )) as lgn ,\n";
+ sql_msg = sql_msg + "     t2.*\n";
+ sql_msg = sql_msg + "    FROM\n";
+ sql_msg = sql_msg + "     ("+tabInOut[ELstTirUpl][0]+") as t1 ,\n";
+ sql_msg = sql_msg + "     (B_fdj) as t2\n";
+ sql_msg = sql_msg + "    WHERE\n";
+ sql_msg = sql_msg + "    (\n";
+ sql_msg = sql_msg + "    t2.id=t1.id+-"+QString::number(offset);
+ sql_msg = sql_msg + ")\n";
+ sql_msg = sql_msg + "  )\n";
+
+ return sql_msg;
+}
+
+QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, QString tabInOut[][3])
+{
+ QString sql_tbl = "";
+ QString sql_msg = "";
+
+ QString st_cols = BCount::FN1_getFieldsFromZone(pGame,zn,"t2");
+
  QString ref_4 = "t1.%1%2";
+ QString ref_5 = ref_4 + " in (" + st_cols + ")";
  QString ref_6 = ref_4 + " asc";
 
  QString r4 = "\t";
+ QString r5 = "\t";
  QString r6 = "\t";
 
  int nb_loop = upl_ref_in;
  for (int i = 0; i< nb_loop; i++) {
   r4 = r4 + ref_4.arg(pGame->names[zn].abv).arg(i+1);
+  r5 = r5 + ref_5.arg(pGame->names[zn].abv).arg(i+1);
   r6 = r6 + ref_6.arg(pGame->names[zn].abv).arg(i+1);
 
 	if(i<nb_loop-1){
 	 r4 = r4+",";
+	 r5 = r5+" and";
 	 r6 = r6+",";
 	}
+	r5 = r5 + "\n\t";
 	r6 = r6 + "\n\t";
+ }
+
+ int tbl_src = -1;
+ //QString key_1 = "";
+ //QString key_2 = "";
+
+ int tbl_tir = ELstTirUpl;
+ switch(sql_step)
+ {
+  case ELstUplTot:
+  {
+   tbl_src = ELstUpl;
+  }
+  break;
+
+	case ELstUplTotNot:
+	{
+	 tbl_src = ELstUplNot;
+	}
+	break;
+
+	case ELstUplTotNext:
+	{
+	 tbl_src = ELstUplNext;
+	 tbl_tir = ELstTirUplNext;
+	}
+	break;
+
+	default:
+	 tbl_src = -1;
+ }
+
+ QString arg_1 = "";
+ QString arg_2 = "";
+ QString arg_3 = "";
+ QString arg_4 = "";
+ if(sql_step == ELstUplTot){
+  arg_1 = arg_1 + "\tt1.uid ,\n";
+  arg_1 = arg_1 + r4 + ",\n";
+  arg_1 = arg_1 + "\tcount(t2.uid) as T\n";
+
+  arg_2 = arg_2 + "        t1.uid=t2.uid\n";
+
+  arg_3 = arg_3 + "      t2.uid\n";
+
+	arg_4 = arg_4 + "      T desc,\n";
+	arg_4 = arg_4 + r6;
+ }
+ else {
+  arg_1 = arg_1 + "\tt1.uid ,\n";
+  arg_1 = arg_1 + "\tt1.nid ,\n";
+  arg_1 = arg_1 + r4 + ",\n";
+  arg_1 = arg_1 + "\tcount(t2.uid) as T\n";
+
+	arg_2 = arg_2 + "        (t1.uid=t2.uid) and \n";
+	arg_2 = arg_2 + +" (" + r5 + ")\n";
+
+	arg_3 = arg_3 + "      t2.uid,\n";
+	arg_3 = arg_3 + "      t1.nid\n";
+
+	arg_4 = arg_4 + "      t1.uid asc,\n";
+	arg_4 = arg_4 + "      T desc,\n";
+	arg_4 = arg_4 + r6;
  }
 
  sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
  tabInOut[sql_step][0] = sql_tbl;
- tabInOut[sql_step][1] = " -- Total pour chaque Uplets ("+tabInOut[tbl_src][0]+") trouve dans les tirage (Req :"+tabInOut[ELstTirUpl][0]+")\n";
+ tabInOut[sql_step][1] = " -- Total pour chaque Uplets ("+tabInOut[tbl_src][0]+") trouve dans les tirage (Req :"+tabInOut[tbl_tir][0]+")\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
  sql_msg = sql_msg + "    SELECT\n";
- sql_msg = sql_msg + "\tt1.uid ,\n";
- sql_msg = sql_msg + r4+",\n";
- sql_msg = sql_msg + "\tcount(t2.uid) as T\n";
+ sql_msg = sql_msg + arg_1;
  sql_msg = sql_msg + "    FROM\n";
  sql_msg = sql_msg + "      ("+tabInOut[tbl_src][0]+") as t1 ,\n";
- sql_msg = sql_msg + "      ("+tabInOut[ELstTirUpl][0]+") as t2\n";
+ sql_msg = sql_msg + "      ("+tabInOut[tbl_tir][0]+") as t2\n";
  sql_msg = sql_msg + "    WHERE\n";
  sql_msg = sql_msg + "      (\n";
- sql_msg = sql_msg + "        t1.uid=t2.uid\n";
+ sql_msg = sql_msg + arg_2;
  sql_msg = sql_msg + "      )\n";
  sql_msg = sql_msg + "    GROUP BY\n";
- sql_msg = sql_msg + "      t2.uid\n";
+ sql_msg = sql_msg + arg_3;
  sql_msg = sql_msg + "    ORDER BY\n";
- sql_msg = sql_msg + "      T desc,\n";
- sql_msg = sql_msg + r6;
+ sql_msg = sql_msg + arg_4;
  sql_msg = sql_msg + "  )\n";
 
  return sql_msg;

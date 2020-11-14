@@ -47,7 +47,22 @@ class BcUpl: public BCount
  }eCalcul;
 
  private:
- typedef enum _eCalTirages{ELstBle, ELstUpl, ELstTirUpl, ELstUplTot, ELstBleNot, ELstUplNot, ELstUplTotNot, ELstCal}ECalTirages;//ELstUplNot,
+ typedef enum _eCalTirages
+ {
+  ELstBle,  /// Liste des boules
+  ELstUpl,	/// Liste des uplets apartir des boules
+  ELstTirUpl,	/// Liste des tirages ayant cest uplets (J0)
+  ELstUplTot,	/// Total de chacun des uplets
+  ELstBleNot,	/// Ensemble complementaire des boules ( refa uplet 1, 2, 3)
+  ELstUplNot,	/// Uplet 1,2,3 cree apartir de l'ensemble complementaire
+  ELstUplTotNot, /// Total de chacun des uplets
+  ELstTirUplNext, /// Liste des tirages apres les uplets initiaux
+  ELstBleNext, /// Liste des boules jour  != 0
+  ELstUplNext, /// Liste des uplets apartir des boules next day
+  ELstUplTotNext, /// Total de chacun des uplets
+  ELstCal
+ }ECalTirages;
+
 #define C_TOT_CAL ELstCal
 #define C_MAX_ARGS 10
 
@@ -122,13 +137,14 @@ class BcUpl: public BCount
 
  void sql_FillTabArgs(const stGameConf *pGame, int zn,int upl_ref_in, QString *tab_arg, QString tabInOut[][3]);
 
- QString sql_ElmFrmTir(const stGameConf *pGame, int zn, int tir_id,QString tabInOut[][3]);
+ QString sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_step, int tir_id, QString tabInOut[][3]);
  QString sql_ElmNotFrmTir(const stGameConf *pGame, int zn, QString *moreArgs, QString tabInOut[][3]);
 
  QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, QString tabInOut[][3]);
  QString sql_TirFrmUpl(const stGameConf *pGame, int zn, QString *moreArgs,QString tabInOut[][3]);
- //QString sql_TotFrmTir(const stGameConf *pGame, int zn, QString *moreArgs,QString tabInOut[][3]);
- QString sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, int tbl_src, QString tabInOut[][3]);
+ QString sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, QString tabInOut[][3]);
+
+ QString sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString tabInOut[][3]);
 
  void sql_RepartitionVoisin(QString tabInOut[][3], int jour, int upl, int ref_id, int delta=0);
 };
