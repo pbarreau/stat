@@ -130,20 +130,21 @@ class BcUpl: public BCount
 
  private:
  QWidget *getMainTbv(const stGameConf *pGame, int zn, int i);
- QString getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages target, int item=-1);
+ QString getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub=-1, ECalTirages target=ELstCal, int sel_item=-1);
  QWidget *showUplFromRef(const stGameConf *pGame, int zn, int upl_ref);
  QWidget *getUplDetails(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int nb_recherche);
  QWidget *calUplFromDistance(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int dst_upl);
- void ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int step, QString *moreArgs, QString tabInOut[][3]);
+ void ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, int step, QString tabInOut[][3]);
+ void ConstruSubSql(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, QString tabInOut[][C_TOT_CAL][3]);
 
  void sql_FillTabArgs(const stGameConf *pGame, int zn,int upl_ref_in, QString *tab_arg, QString tabInOut[][3]);
 
  QString sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_step, int tir_id, QString tabInOut[][3]);
- QString sql_ElmNotFrmTir(const stGameConf *pGame, int zn, QString *moreArgs, QString tabInOut[][3]);
+ QString sql_ElmNotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, QString tabInOut[][3]);
 
- QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, QString tabInOut[][3]);
- QString sql_TirFrmUpl(const stGameConf *pGame, int zn, QString *moreArgs,QString tabInOut[][3]);
- QString sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, ECalTirages sql_step, QString tabInOut[][3]);
+ QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, ECalTirages sql_step, QString tabInOut[][3]);
+ QString sql_TirFrmUpl(const stGameConf *pGame, int zn, int upl_ref_in, QString tabInOut[][3]);
+ QString sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, ECalTirages sql_step, QString tabInOut[][3]);
 
  QString sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString tabInOut[][3]);
 

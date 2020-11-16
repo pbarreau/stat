@@ -98,10 +98,16 @@ int BView::getMinWidth(int delta)
  int scrollBar = qtv_tmp->verticalScrollBar()->width();
  int Header = qtv_tmp->verticalHeader()->width();
  int col = 0;
- for (int i = 0; i < count-delta; ++i) {
-  if(!qtv_tmp->horizontalHeader()->isSectionHidden(i)){
-   col+=qtv_tmp->horizontalHeader()->sectionSize(i);
+
+ if(count){
+  for (int i = 0; i < count-delta; ++i) {
+   if(!qtv_tmp->horizontalHeader()->isSectionHidden(i)){
+    col+=qtv_tmp->horizontalHeader()->sectionSize(i);
+   }
   }
+ }
+ else {
+  col = 25;
  }
  l= Header+col+scrollBar;
  return l;
