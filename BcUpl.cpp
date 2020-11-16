@@ -156,7 +156,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int up
  ///Etape 1 : partie commune
  for (int item=0;item<=ELstUplTot;item++) {
   ConstruireSql(pGame,zn,upl_ref_in, -1,item, SqlData);
-  SqlSubData[upl_sub-C_MIN_UPL][item][0]=SqlData[item][0];
+  SqlSubData[0][item][0]=SqlData[item][0];
  }
 
  /// Etape 2 : sous ensemble
@@ -176,8 +176,8 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int up
  /// Partie calcul
  for (int sub_ong=0;sub_ong<3;sub_ong++) {
   for (int item=ELstBleNot;item<ELstCal;item++) {
-   sql_msg = sql_msg + 	SqlSubData[upl_sub][item-ELstBleNot][1];
-   sql_msg = sql_msg + 	SqlSubData[upl_sub][item-ELstBleNot][2];
+   sql_msg = sql_msg + 	SqlSubData[sub_ong][item][1];
+   sql_msg = sql_msg + 	SqlSubData[sub_ong][item][2];
 
 	 if(item < ELstCal -1){
 		sql_msg = sql_msg + ",";
@@ -226,15 +226,15 @@ void BcUpl::ConstruSubSql(const stGameConf *pGame, int zn, int upl_ref_in, int u
 
  /// Recopier le non des tables precedentes
  for (int item=0;item<=ELstUplTot;item++) {
-  SqlData[item][0]=tabInOut[upl_sub-C_MIN_UPL][item][0];
+  SqlData[item][0]=tabInOut[0][item][0];
  }
 
  /// Poursuivre la creation
  for (int item=ELstBleNot;item<ELstCal;item++) {
   ConstruireSql(pGame,zn,upl_ref_in, upl_sub,item, SqlData);
-  tabInOut[upl_sub-C_MIN_UPL][item-ELstBleNot][0]= SqlData[item][0];
-  tabInOut[upl_sub-C_MIN_UPL][item-ELstBleNot][1]= SqlData[item][1];
-  tabInOut[upl_sub-C_MIN_UPL][item-ELstBleNot][2]= SqlData[item][2];
+  tabInOut[upl_sub-C_MIN_UPL][item][0]= SqlData[item][0];
+  tabInOut[upl_sub-C_MIN_UPL][item][1]= SqlData[item][1];
+  tabInOut[upl_sub-C_MIN_UPL][item][2]= SqlData[item][2];
  }
 }
 
