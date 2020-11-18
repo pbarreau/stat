@@ -80,7 +80,7 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
 #define DBG_PASCAL
 #ifdef DBG_PASCAL
  QString tmp_msg = "";
- for(int ong=0; ong <3; ong++){
+ for(int ong=0; ong <C_NB_ONG; ong++){
   tmp_msg = getSqlTbv(pGame,zn,ong + C_MIN_UPL,-1,ELstUplTot);
  }
 #endif
@@ -148,40 +148,54 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int up
   return sql_msg;
  }
 
+
  //int max_items = BMIN_2(target+1, ELstCal);
  int max_items = ELstCal;
  QString SqlData[C_TOT_CAL][3];
- QString SqlSubData[3][C_TOT_CAL][3];
+ QString SqlSubData[C_NB_SUB_ONG][C_TOT_CAL][3];
 
+ /// ---------- Creation du code SQL dans les tableaux ----
  ///Etape 1 : partie commune
- for (int item=0;item<=ELstBleNot;item++) {
+ for (int item=0;item<=ELstBleNext;item++) {
   ConstruireSql(pGame,zn,upl_ref_in, -1,item, SqlData);
   SqlSubData[0][item][0]=SqlData[item][0];
  }
 
  /// Etape 2 : sous ensemble
- for (int sub_ong=0;sub_ong<3;sub_ong++) {
+ for (int sub_ong=0;sub_ong<C_NB_SUB_ONG;sub_ong++) {
    ConstruSubSql(pGame,zn,upl_ref_in, sub_ong + C_MIN_UPL, SqlSubData);
  }
 
- sql_msg = "with\n";
+ /// --- Recuperation des portions de code pour finalisation
+ sql_msg = " -- Code SQL onglet principal : " + QString::number(upl_ref_in).rightJustified(2,'0')+"\n";
+ sql_msg = sql_msg+"with\n";
 
  /// Partie commune
- for (int item=0;item<=ELstBleNot;item++) {
+ for (int item=0;item<=ELstBleNext;item++) {
   sql_msg = sql_msg + SqlData[item][1];
   sql_msg = sql_msg + SqlData[item][2];
   sql_msg = sql_msg + ",\n";
  }
 
  /// Partie calcul
- for (int sub_ong=0;sub_ong<3;sub_ong++) {
-  for (int item=ELstBleNot+1;item<ELstCal;item++) {
+ for (int sub_ong=0;sub_ong<C_NB_SUB_ONG;sub_ong++) {
+  if(sub_ong<C_NB_SUB_ONG){
+   sql_msg = sql_msg + " -- Debut sous onglet : "
+             +QString::number(sub_ong+1).rightJustified(2,'0')+"\n";
+  }
+  for (int item=ELstBleNext+1;item<ELstCal;item++) {
    sql_msg = sql_msg + 	SqlSubData[sub_ong][item][1];
    sql_msg = sql_msg + 	SqlSubData[sub_ong][item][2];
 
-	 if(item < ELstCal -1){
-		sql_msg = sql_msg + ",";
+	 /// -- mettre , SQL pour separer etapes code
+	 if((item < ELstCal -1)){
+		sql_msg = sql_msg + ",\n";
 	 }
+	}
+
+	/// -- mettre , SQL pour separer code des onglets
+	if(sub_ong<C_NB_SUB_ONG-1 ){
+	 sql_msg = sql_msg + "\n,\n";
 	}
  }
 
@@ -225,12 +239,12 @@ void BcUpl::ConstruSubSql(const stGameConf *pGame, int zn, int upl_ref_in, int u
  QString SqlData[C_TOT_CAL][3];
 
  /// Recopier le nom des tables precedentes
- for (int item=0;item<=ELstBleNot;item++) {
+ for (int item=0;item<=ELstBleNext;item++) {
   SqlData[item][0]=tabInOut[0][item][0];
  }
 
  /// Poursuivre la creation
- for (int item=ELstBleNot+1;item<ELstCal;item++) {
+ for (int item=ELstBleNext+1;item<ELstCal;item++) {
   ConstruireSql(pGame,zn,upl_ref_in, upl_sub,item, SqlData);
   tabInOut[upl_sub-C_MIN_UPL][item][0]= SqlData[item][0];
   tabInOut[upl_sub-C_MIN_UPL][item][1]= SqlData[item][1];
@@ -515,10 +529,6 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, in
  };
 
  QString sql_tbl = "";
- if(sql_step == ELstUplNot && upl_sub > 0){
- }
- else {
- }
  QString sql_src = "tb_"+QString::number(tbl_src).rightJustified(2,'0');
 
  QString ref_1 = ref_0 + " as %2%3";
@@ -697,7 +707,15 @@ QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, in
  QString r5 = "\t";
  QString r6 = "\t";
 
- int nb_loop = upl_ref_in;
+ int nb_loop = 0;
+ if(upl_sub<0){
+  nb_loop = upl_ref_in;
+  sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
+ }
+ else {
+  nb_loop = upl_sub;
+  sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0')+"_"+QString::number(upl_sub);
+ }
  for (int i = 0; i< nb_loop; i++) {
   r4 = r4 + ref_4.arg(pGame->names[zn].abv).arg(i+1);
   r5 = r5 + ref_5.arg(pGame->names[zn].abv).arg(i+1);
@@ -745,7 +763,7 @@ QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, in
  QString arg_3 = "";
  QString arg_4 = "";
  if(sql_step == ELstUplTot){
-  sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
+ // sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
 
   arg_1 = arg_1 + "\tt1.uid ,\n";
   arg_1 = arg_1 + r4 + ",\n";
@@ -775,9 +793,11 @@ QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, in
 	arg_4 = arg_4 + r6;
  }
 
+ /*
  if(upl_sub > 0){
   sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0')+"_"+QString::number(upl_sub);
  }
+*/
 
  tabInOut[sql_step][0] = sql_tbl;
  tabInOut[sql_step][1] = " -- Total pour chaque Uplets ("+tabInOut[tbl_src][0]+") trouve dans les tirage (Req :"+tabInOut[tbl_tir][0]+")\n";

@@ -54,10 +54,10 @@ class BcUpl: public BCount
   ELstTirUpl,	/// Liste des tirages ayant cest uplets (J0)
   ELstUplTot,	/// Total de chacun des uplets
   ELstBleNot,	/// Ensemble complementaire des boules ( refa uplet 1, 2, 3)
-  ELstUplNot,	/// Uplet 1,2,3 cree apartir de l'ensemble complementaire
-  ELstUplTotNot, /// Total de chacun des uplets
   ELstTirUplNext, /// Liste des tirages apres les uplets initiaux
   ELstBleNext, /// Liste des boules jour  != 0
+  ELstUplNot,	/// Uplet 1,2,3 cree apartir de l'ensemble complementaire
+  ELstUplTotNot, /// Total de chacun des uplets
   ELstUplNext, /// Liste des uplets apartir des boules next day
   ELstUplTotNext, /// Total de chacun des uplets
   ELstCal
@@ -65,6 +65,9 @@ class BcUpl: public BCount
 
 #define C_TOT_CAL ELstCal
 #define C_MAX_ARGS 10
+
+#define C_NB_ONG     3
+#define C_NB_SUB_ONG 3
 
  public:
  //BUplet(st_In const &param);
