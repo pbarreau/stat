@@ -154,7 +154,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int up
  QString SqlSubData[3][C_TOT_CAL][3];
 
  ///Etape 1 : partie commune
- for (int item=0;item<=ELstUplTot;item++) {
+ for (int item=0;item<=ELstBleNot;item++) {
   ConstruireSql(pGame,zn,upl_ref_in, -1,item, SqlData);
   SqlSubData[0][item][0]=SqlData[item][0];
  }
@@ -167,7 +167,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int up
  sql_msg = "with\n";
 
  /// Partie commune
- for (int item=0;item<=ELstUplTot;item++) {
+ for (int item=0;item<=ELstBleNot;item++) {
   sql_msg = sql_msg + SqlData[item][1];
   sql_msg = sql_msg + SqlData[item][2];
   sql_msg = sql_msg + ",\n";
@@ -175,7 +175,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int up
 
  /// Partie calcul
  for (int sub_ong=0;sub_ong<3;sub_ong++) {
-  for (int item=ELstBleNot;item<ELstCal;item++) {
+  for (int item=ELstBleNot+1;item<ELstCal;item++) {
    sql_msg = sql_msg + 	SqlSubData[sub_ong][item][1];
    sql_msg = sql_msg + 	SqlSubData[sub_ong][item][2];
 
@@ -224,13 +224,13 @@ void BcUpl::ConstruSubSql(const stGameConf *pGame, int zn, int upl_ref_in, int u
 {
  QString SqlData[C_TOT_CAL][3];
 
- /// Recopier le non des tables precedentes
- for (int item=0;item<=ELstUplTot;item++) {
+ /// Recopier le nom des tables precedentes
+ for (int item=0;item<=ELstBleNot;item++) {
   SqlData[item][0]=tabInOut[0][item][0];
  }
 
  /// Poursuivre la creation
- for (int item=ELstBleNot;item<ELstCal;item++) {
+ for (int item=ELstBleNot+1;item<ELstCal;item++) {
   ConstruireSql(pGame,zn,upl_ref_in, upl_sub,item, SqlData);
   tabInOut[upl_sub-C_MIN_UPL][item][0]= SqlData[item][0];
   tabInOut[upl_sub-C_MIN_UPL][item][1]= SqlData[item][1];
@@ -283,7 +283,14 @@ void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int u
 
 	case ELstBleNot:
 	{
-	 sql_msg = sql_ElmNotFrmTir(pGame,zn, upl_ref_in, tabInOut);
+	 int targetUpl=-2;
+	 if (upl_sub == -1){
+		targetUpl = upl_ref_in;
+	 }
+	 else {
+		targetUpl = upl_sub;
+	 }
+	 sql_msg = sql_ElmNotFrmTir(pGame,zn, targetUpl, tabInOut);
 	}
 	break;
 
@@ -576,7 +583,7 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, in
  }
 
  tabInOut[sql_step][0] = sql_tbl;
- tabInOut[sql_step][1] = " -- Liste des "+QString::number(upl_ref_in)+" uplets depuis : "+sql_src+"\n";
+ tabInOut[sql_step][1] = " -- Liste des "+QString::number(nb_loop)+" uplets depuis : "+sql_src+"\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
