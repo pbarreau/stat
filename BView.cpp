@@ -14,7 +14,7 @@ BView::BView(QWidget *parent):QTableView(parent)
 
 BView::~BView()
 {
- delete square;
+ //delete square;
 }
 
 void BView::setTitle(QString title, bool visible)
