@@ -68,6 +68,7 @@ class BcUpl: public BCount
 
 #define C_NB_ONG     3
 #define C_NB_SUB_ONG 3
+#define C_NB_SUB_ONG_CAL C_NB_SUB_ONG - 1
 
  public:
  //BUplet(st_In const &param);
@@ -86,6 +87,7 @@ class BcUpl: public BCount
 
  private slots:
  void BSlot_clicked(const QModelIndex &index);
+ void BSlot_Tab(int);
 
  private:
  QSqlDatabase db_0;

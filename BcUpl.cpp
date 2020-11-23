@@ -77,8 +77,8 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
  qtv_tmp->setObjectName(QString::number(upl_ref_in-C_MIN_UPL));
  qtv_tmp->setZone(zn);
 
-#define DBG_PASCAL
-#ifdef DBG_PASCAL
+#define DBG_PASCAL 0
+#if DBG_PASCAL
  QString tmp_msg = "";
  for(int ong=0; ong <C_NB_ONG; ong++){
   tmp_msg = getSqlTbv(pGame,zn,ong + C_MIN_UPL,-1,ELstUplTot);
@@ -131,7 +131,6 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
 
 
  QWidget *tmp = showUplFromRef(pGame,zn,upl_ref_in-C_MIN_UPL);
- //QWidget *tmp = new QWidget;
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
  glay_tmp->addWidget(tmp,0,1);
 
@@ -200,8 +199,16 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int up
  }
 
  /// Dernier select
- QString tbl_target = SqlData[target][0];
-
+ QString tbl_target = "";
+ if(upl_sub<0){
+  tbl_target = SqlData[target][0];
+ }
+ else {
+  tbl_target = "tb_"
+               +QString::number(target).rightJustified(2,'0')
+               +"_"
+               +QString::number(upl_sub);
+ }
 
  QString str_item = "";
  if(upl_sub>=0){
@@ -353,7 +360,7 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_st
   tabInOut[sql_step][1] = " -- Liste des boules depuis ref : ("+tabInOut[ELstTirUplNext][0]+")\n";
   arg_1 = arg_1 + "\tt2.uid,\n";
   arg_1 = arg_1 + "\t(row_number() over ( partition by t2.uid )) as lgn,\n";
-  arg_1 = arg_1 + "\tt1.id as b1\n";
+  arg_1 = arg_1 + "\tt1.id as " + pGame->names[zn].abv + "1\n";
 
 	arg_2 = arg_2 + "      (B_elm) as t1 ,\n";
 	arg_2 = arg_2 + "      ("+tabInOut[ELstTirUplNext][0]+") as t2\n";
@@ -828,7 +835,7 @@ QString BcUpl::sql_ElmNotFrmTir(const stGameConf *pGame, int zn, int  upl_ref_in
  QString sql_msg = "";
 
  QString r9 = "";
- QString ref_9 = "(t2.b%1)";
+ QString ref_9 = "(t2."+pGame->names[zn].abv+"%1)";
 
  int nb_loop = upl_ref_in;
  for (int i = 0; i< nb_loop; i++) {
@@ -1008,9 +1015,19 @@ QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int src_upl,
  return qtv_tmp->getScreen();
 }
 
+void BcUpl::BSlot_Tab(int index)
+{
+ int t =0;
+}
+
 QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int nb_recherche)
 {
  QTabWidget *upl_details = new QTabWidget(this);
+
+#define DBG_PASCAL 0
+#if DBG_PASCAL
+ connect(upl_details, SIGNAL(tabBarClicked(int)), this, SLOT(BSlot_Tab(int)));
+#endif
 
  for (int tab=0;tab<nb_recherche;tab++) {
   BView * tst = new BView ;
@@ -1031,7 +1048,7 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int zn, int upl_ref)
  QString ongNames[]={"J","J+1"};
  int nb_ong= sizeof(ongNames)/sizeof(QString);
 
- int nb_days = BMIN_2(pGame->limites[zn].win, nb_ong);
+ int nb_days = nb_ong;//BMIN_2(pGame->limites[zn].win, nb_ong);
  upl_SHOW[zn][upl_ref]= new BView **[nb_days];
 
  int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
@@ -1040,10 +1057,11 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int zn, int upl_ref)
   upl_SHOW[zn][upl_ref][day_anaUpl]= new BView *[nb_recherche];
   QString ongLabel = ongNames[day_anaUpl];
 
+	/*
 	if((day_anaUpl==0) && (nb_recherche<=1)){
 	 ongLabel = ongNames[day_anaUpl+1];
 	}
-
+*/
 	QWidget * wdg_tmp =getUplDetails(pGame, zn, upl_ref, day_anaUpl, nb_recherche);
 	if(wdg_tmp !=nullptr){
 	 tab_Top->addTab(wdg_tmp,ongLabel);
@@ -1070,8 +1088,18 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
+ int nb_recherche = gm_def->limites[zn].win;
  for (int day_anaUpl = 0;day_anaUpl<2;day_anaUpl++) {
-  for (int tab=0;tab<2;tab++) {
+  /// C_NB_SUB_ONG_CAL
+  for (int tab=0;tab<C_NB_SUB_ONG;tab++) {
+   if(tab>=nb_recherche){
+    continue;
+   }
+/*
+	 if((day_anaUpl==1) && (nb_recherche<=1)){
+		continue;
+	 }
+*/
    ECalTirages resu = tabCal[day_anaUpl][tab];
 
    QString sql_msg = getSqlTbv(gm_def, zn, ref, tab+C_MIN_UPL, resu,selection);
