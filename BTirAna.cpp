@@ -266,6 +266,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  if(tabs_ana!=nullptr){
   QVBoxLayout *wdg_ana = getVisual(pGame, tabs_ana);
   tmp_layout->addLayout(wdg_ana,0,0);
+  //tmp_layout->addLayout(wdg_ana,0,1);
  }
  else {
   QLabel *tmp = new QLabel("Erreur pas de resultats a montrer !!");

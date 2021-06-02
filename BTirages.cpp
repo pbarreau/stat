@@ -16,6 +16,7 @@
 #include "BTirAna.h"
 
 #include "BGraphicsView.h"
+#include "db_tools.h"
 
 int BTirages::cnt_tirSrc = 1; /// Compteur des sources de tirages
 QString  BTirages::tbw_TbvTirages = "tbw_TirLst";
@@ -30,7 +31,7 @@ QGridLayout * BTirages::gdl_all = nullptr;
 QWidget * BTirages::wdg_reponses = nullptr;
 
 BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
-    : QWidget(parent),gme_cnf(pGame),eTir(gme_tir)
+ : QWidget(parent),gme_cnf(pGame),eTir(gme_tir)
 {
  QString cnx=pGame->db_ref->cnx;
  //gme_cnf->eTirType = gme_tir;
@@ -70,9 +71,9 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  QString ongNames[]={"Graphiques"};
  int nb_ong = sizeof(ongNames)/sizeof(QString);
  QWidget * (BTirages::*ptrFunc[])()=
-  {
+ {
    &BTirages::Dessine
-  };
+};
 
  wdg_tmp = nullptr;
  for (int ong_id=0;ong_id<nb_ong;ong_id++) {
@@ -140,30 +141,30 @@ BGraphicsView *BTirages::selGraphTargets()
   bar->setOrientation(Qt::Orientation::Vertical);
   bar->setObjectName(QString::number(zn));
 
-	QStringList *items = gme_cnf->slFlt[zn];
-	QStringList keys = items[Bp::colDefTitres];
-	QStringList info = items[Bp::colDefToolTips];
+  QStringList *items = gme_cnf->slFlt[zn];
+  QStringList keys = items[Bp::colDefTitres];
+  QStringList info = items[Bp::colDefToolTips];
 
-	int nb_keys = keys.size();
-	for (int a_key=0;a_key<nb_keys;a_key++) {
-	 QString label = keys[a_key];
-	 label = label.toUpper();
-	 if(label.contains(",")){
-		QStringList items = label.split(",");
-		label = items[0];
-	 }
-	 if(a_key == nb_keys-1){
-		label = "C";
-	 }
-	 QAction *tmp = bar->addAction(label,this,SLOT(BSlot_Dessine(bool )));
-	 tmp->setParent(bar);
-	 tmp->setCheckable(true);
-	 tmp->setToolTip(info[a_key]);
-	 tmp->setData(a_key);
+  int nb_keys = keys.size();
+  for (int a_key=0;a_key<nb_keys;a_key++) {
+   QString label = keys[a_key];
+   label = label.toUpper();
+   if(label.contains(",")){
+    QStringList items = label.split(",");
+    label = items[0];
+   }
+   if(a_key == nb_keys-1){
+    label = "C";
+   }
+   QAction *tmp = bar->addAction(label,this,SLOT(BSlot_Dessine(bool )));
+   tmp->setParent(bar);
+   tmp->setCheckable(true);
+   tmp->setToolTip(info[a_key]);
+   tmp->setData(a_key);
 
-	 tmp_view->DessineCourbeSql(gme_cnf, zn, a_key);
-	}
-	tbw_zones->addTab(bar,title);
+   tmp_view->DessineCourbeSql(gme_cnf, zn, a_key);
+  }
+  tbw_zones->addTab(bar,title);
  }
 
  tbw_zones->setWindowTitle("Selections Courbes");
@@ -394,6 +395,52 @@ QString BTirages::getTiragesList(const stGameConf *pGame, QString tbl_src)
  return msg;
 }
 
+void BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
+{
+ bool chk_db =true;
+ QString msg = "";
+ QSqlQuery query(db_tir);
+
+ /// Verifier si la table de liste des reponses existe
+ if(DB_Tools::isDbGotTbl("B_lst",db_tir.connectionName())==false){
+  msg = "CREATE TABLE if not EXISTS B_lst (id integer PRIMARY key, name text, id_onglet int, id_zn int, lst TEXT)";
+  if(!query.exec(msg)){
+   DB_Tools::DisplayError("BTirages::memoriserSelectionUtilisateur (1)", &query, msg);
+   chk_db = false;
+  }
+ }
+
+ int nb_items = sel->size();
+ if(nb_items != 0){
+
+  for (int i=0; i< nb_items;i++) {
+   QList<BLstSelect *> *tmp = sel->at(i);
+   int nb_Subitems = tmp->size();
+   int val =0;
+   for (int j=0; j< nb_Subitems;j++) {
+    BLstSelect * item = tmp->at(j);
+
+    switch (item->type) {
+     case eCountElm:
+     case eCountCmb:
+     case eCountGrp:
+     case eCountBrc:
+     {
+      QModelIndex un_index;
+      foreach (un_index, item->indexes) {
+       val = un_index.data().toInt();
+      }
+
+     }
+      break;
+     default:
+      break;
+    }
+   }
+  }
+ }
+}
+
 QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 {
  QString ret_all = "";
@@ -414,48 +461,48 @@ QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
  {
   QList<BLstSelect *> *tmp = sel->at(i);
 
-	ret_add = "";
-	ret_elm = "";
-	local_list = "";
+  ret_add = "";
+  ret_elm = "";
+  local_list = "";
 
 
-	int nb_zone = tmp->size();
-	for (int j=0;j<nb_zone;j++)
-	{
-	 BLstSelect *item = tmp->at(j);
+  int nb_zone = tmp->size();
+  for (int j=0;j<nb_zone;j++)
+  {
+   BLstSelect *item = tmp->at(j);
 
 
-	 QString tbl_ana = "("+use_tirages+"_ana_z"+QString::number((item->zn)+1)+") as t";
+   QString tbl_ana = "("+use_tirages+"_ana_z"+QString::number((item->zn)+1)+") as t";
 
-	 if((item->type) == eCountElm){
-		ret_elm = select_elm(item->indexes, item->zn);
-	 }
-	 else {
-		cur_tbl_id = cur_tbl_id + 1;
-		local_list = local_list + tbl_ana+QString::number(cur_tbl_id);///"("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
-		if(j<nb_zone-1){
-		 local_list = local_list + ",";
-		}
+   if((item->type) == eCountElm){
+    ret_elm = select_elm(item->indexes, item->zn);
+   }
+   else {
+    cur_tbl_id = cur_tbl_id + 1;
+    local_list = local_list + tbl_ana+QString::number(cur_tbl_id);///"("+game_lab+"_ana_z"+QString::number((item->zn)+1)+") as t"+QString::number(cur_tbl_id);
+    if(j<nb_zone-1){
+     local_list = local_list + ",";
+    }
 
-		switch (item->type) {
-		 case eCountCmb:
-			ret_elm = select_cmb(item->indexes, item->zn, cur_tbl_id);
-			break;
-		 case eCountBrc:
-			ret_elm = select_brc(item->indexes, item->zn, cur_tbl_id);
-			break;
-		 case eCountGrp:
-			ret_elm = select_grp(item->indexes, item->zn, cur_tbl_id);
-			break;
+    switch (item->type) {
+     case eCountCmb:
+      ret_elm = select_cmb(item->indexes, item->zn, cur_tbl_id);
+      break;
+     case eCountBrc:
+      ret_elm = select_brc(item->indexes, item->zn, cur_tbl_id);
+      break;
+     case eCountGrp:
+      ret_elm = select_grp(item->indexes, item->zn, cur_tbl_id);
+      break;
 
-		 case eCountUpl:
-			int a = 12; /// Pas encore traite
-			return "";
-			break;
-/*
-		 default:
-			QString cal_err = QString::number(item->type)+" : label ?\n Fn: BTirages::makeSqlFromSelection";
-			QMessageBox::warning(nullptr, "Type calclul inconnu !!",cal_err)	;
+     case eCountUpl:
+      int a = 12; /// Pas encore traite
+      return "";
+      break;
+      /*
+     default:
+      QString cal_err = QString::number(item->type)+" : label ?\n Fn: BTirages::makeSqlFromSelection";
+      QMessageBox::warning(nullptr, "Type calclul inconnu !!",cal_err)	;
 */
 		}
 	 }
@@ -640,17 +687,17 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  for(int i = 0; i< taille; i++){
   QModelIndex cur_index = indexes.at(i);
 
-	int col = cur_index.column();
-	if(col>0){
-	 QString s_nb = cur_index.model()->index(cur_index.row(),Bp::colId).data().toString();
-	 if(tab_sel[col-1].size()){
-		tab_sel[col-1]=tab_sel[col-1]+","+s_nb;
-	 }
-	 else {
-		tab_sel[col-1] = s_nb;
-		col_usr++;
-	 }
-	}
+  int col = cur_index.column();
+  if(col>0){
+   QString s_nb = cur_index.model()->index(cur_index.row(),Bp::colId).data().toString();
+   if(tab_sel[col-1].size()){
+    tab_sel[col-1]=tab_sel[col-1]+","+s_nb;
+   }
+   else {
+    tab_sel[col-1] = s_nb;
+    col_usr++;
+   }
+  }
  }
 
  /// Construction de la requete de chaque colonne
@@ -687,9 +734,9 @@ QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, BTirAna **
 
  QString ongNames[]={"J","J+1"};
  BTirAna * (BTirages::*ptrFunc[])(const stGameConf *pGame, QString msg)=
-  {
+ {
    &BTirages::doLittleAna
-  };
+};
  int nb_func_0 = sizeof(ptrFunc)/sizeof(BTirAna); //mauvais BUG
  int nb_func = sizeof(ongNames)/sizeof(QString);
 
@@ -701,6 +748,7 @@ QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, BTirAna **
  }
 
  QVBoxLayout *tmp_lay = new QVBoxLayout;
+ QGridLayout *tmp_lay_2 = new QGridLayout;
  if(tab_Top->count() !=0){
   tmp_lay->addWidget(tab_Top);
   connect(tab_Top,SIGNAL(tabBarClicked(int)),parent,SLOT(BSlot_Tir_flt(int)));
@@ -712,8 +760,19 @@ QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, BTirAna **
  }
 
  QGroupBox *info = new QGroupBox;
- info->setTitle("Analyse apres filtrage ...");
- info->setLayout(tmp_lay);
+ info->setTitle("Analyse apres selection utilisateur");
+
+ QGroupBox *info_a = new QGroupBox;
+ info_a->setTitle("Selection");
+
+ QGroupBox *info_b = new QGroupBox;
+ info_b->setTitle("Résultats");
+ info_b->setLayout(tmp_lay);
+
+ tmp_lay_2 ->addWidget(info_a,0,0);
+ tmp_lay_2 ->addWidget(info_b,0,1);
+
+ info->setLayout(tmp_lay_2);
 
  ret = info;
 
@@ -766,9 +825,9 @@ BTirAna * BTirages::doLittleAna(const stGameConf *pGame, QString msg)
   uneAnalyse = new BTirAna(flt_game);
   if(uneAnalyse->self() != nullptr){
 
-	 id_AnaSel++;
-	 connect(uneAnalyse, SIGNAL(BSig_FilterRequest(BTirAna *, const Bp::E_Ico , const B2LstSel * )),
-					 this, SLOT(BSlot_Filter_Tir(BTirAna *, const Bp::E_Ico , const B2LstSel *)));
+   id_AnaSel++;
+   connect(uneAnalyse, SIGNAL(BSig_FilterRequest(BTirAna *, const Bp::E_Ico , const B2LstSel * )),
+           this, SLOT(BSlot_Filter_Tir(BTirAna *, const Bp::E_Ico , const B2LstSel *)));
   }
   else {
    delete uneAnalyse;
@@ -853,24 +912,25 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 
   //checkMemory();
 
+  memoriserSelectionUtilisateur(sel);
 
-	/// Creer la requete de filtrage
-	clause = makeSqlFromSelection(sel, &tbl_lst);
-	msg = msg + tbl_lst;
-	if(clause.size()){
-	 msg = msg + " where("+clause+")";
-	}
+  /// Creer la requete de filtrage
+  clause = makeSqlFromSelection(sel, &tbl_lst);
+  msg = msg + tbl_lst;
+  if(clause.size()){
+   msg = msg + " where("+clause+")";
+  }
 
-	//msg_1 = ", tb2 as ("+ msg +")";
+  //msg_1 = ", tb2 as ("+ msg +")";
 
-	/// mettre la liste des tirages a jour
-	flt_tirages = lst_tirages + msg;
+  /// mettre la liste des tirages a jour
+  flt_tirages = lst_tirages + msg;
 
-	/// verifier si simplement montrer tirages
-	if(ana == Bp::icoShow){
-	 updateTbv(box_title,flt_tirages);
-	 return;
-	}
+  /// verifier si simplement montrer tirages
+  if(ana == Bp::icoShow){
+   updateTbv(box_title,flt_tirages);
+   return;
+  }
 
   effectueAnalyses(msg,1);
  }
@@ -908,8 +968,8 @@ void BTirages::effectueAnalyses(QString ref_sql, int distance,QString sep)
  QString flt_tirages = lst_tirages + sep+ ref_sql;
  QString 	msg_1 = ", tb2 as ("+ st_with + ref_sql +")";
  QString  msg_2 = lst_tirages + msg_1 +
-                 "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-"+
-                 QString::number(distance)+")";
+                  "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-"+
+                  QString::number(distance)+")";
 
 #ifndef QT_NO_DEBUG
  //BTest::writetoFile("A1_req.txt", lst_tirages);
@@ -936,6 +996,7 @@ void BTirages::effectueAnalyses(QString ref_sql, int distance,QString sep)
   int tab_index = og_AnaSel->addTab(resu,st_id);
   if(gme_cnf->eTirType == eTirFdj){
    lay_fusion->addWidget(og_AnaSel,1,0);
+   //lay_fusion->addWidget(og_AnaSel,1,1);
   }
   else {
    lay_fusion->addWidget(og_AnaSel,1,1);
@@ -960,21 +1021,21 @@ B2LstSel *BTirages::SauverSelection(const B2LstSel * sel)
   QList<BLstSelect *> *dst = new QList<BLstSelect *>;
   ret->append(dst);
 
-	int nb_zone = src->size();
-	for (int j=0;j<nb_zone;j++)
-	{
-	 BLstSelect *item_src = src->at(j);
-	 BLstSelect *item_dst = new BLstSelect;
-	 item_dst->type = item_src->type;
-	 item_dst->zn = item_src->zn;
+  int nb_zone = src->size();
+  for (int j=0;j<nb_zone;j++)
+  {
+   BLstSelect *item_src = src->at(j);
+   BLstSelect *item_dst = new BLstSelect;
+   item_dst->type = item_src->type;
+   item_dst->zn = item_src->zn;
 
-	 QModelIndex un_index;
-	 foreach (un_index, item_src->indexes) {
-		//QPersistentModelIndex ici(un_index);
-		item_dst->indexes.append(un_index);
-	 }
-	 dst->append(item_dst);
-	}
+   QModelIndex un_index;
+   foreach (un_index, item_src->indexes) {
+    //QPersistentModelIndex ici(un_index);
+    item_dst->indexes.append(un_index);
+   }
+   dst->append(item_dst);
+  }
  }
 
  return ret;

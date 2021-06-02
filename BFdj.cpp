@@ -480,6 +480,12 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  fId = 0;
  stFdjData euroMillions[]=
   {
+   {"euromillions_202002.csv",fId++,
+    {false,2,1,2,&p4Zn[0]}
+   },
+   {"euromillions_201902.csv",fId++,
+    {false,2,1,2,&p4Zn[0]}
+   },
    {"euromillions_4.csv",fId++,
     {false,2,1,2,&p4Zn[0]}
    },

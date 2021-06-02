@@ -100,6 +100,7 @@ void MainWindow::pslot_GetFromFdj()
     };
 #endif
 		QString urlEuro[] = {
+		 "https://media.fdj.fr/static/csv/euromillions/euromillions_202002.zip",
 		 "https://media.fdj.fr/static/csv/euromillions/euromillions_201902.zip",
 		 "https://media.fdj.fr/static/csv/euromillions/euromillions_201609.zip",
 		 "https://media.fdj.fr/static/csv/euromillions/euromillions_201402.zip",

@@ -370,7 +370,10 @@ QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
  bool b_retVal = true;
 
  QStringList sel_boules;
+
  QTableView *qtv_tmp = new QTableView;
+ qtv_tmp->setAlternatingRowColors(true);
+
  int nb_row = 10;
  int nb_col = (pGame->limites[0].max/nb_row)+1;
 
@@ -387,7 +390,10 @@ QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
 	 int val = sel_boules.at(i).toInt();
 	 int col_id = val/10;
 	 int row_id = val%10;
-	 tmp = new QStandardItem(QString::number(val).rightJustified(2,'0'));
+
+	 QString cel_val = QString::number(val).rightJustified(2,'0');
+	 tmp = new QStandardItem(cel_val);
+	 tmp->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
 	 visu->setItem(row_id,col_id,tmp);
 	}
 
@@ -396,6 +402,7 @@ QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
 	 qtv_tmp->setColumnWidth(i,30);
 	}
 
+
 	/// faire disparaite barres
 	qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 	qtv_tmp->horizontalHeader()->hide();
@@ -403,7 +410,7 @@ QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
 	qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 	qtv_tmp->verticalHeader()->hide();
 
-	qtv_tmp->setAlternatingRowColors(true);
+
 
 	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);

@@ -27,6 +27,7 @@ void showGen(BTirAna *ana_tirages);
 protected:
 QString getTiragesList(const stGameConf *pGame, QString tbl_src);
 QString makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst);
+void memoriserSelectionUtilisateur(const B2LstSel * sel);
 ///QString makeSqlForNextLine(const B2LstSel * sel);
 QString select_elm(const QModelIndexList &indexes, int zn);
 QString select_cmb(const QModelIndexList &indexes, int zn, int tbl_id);
