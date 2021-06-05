@@ -395,8 +395,10 @@ QString BTirages::getTiragesList(const stGameConf *pGame, QString tbl_src)
  return msg;
 }
 
-void BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
+QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
 {
+ QTabWidget *tbw_visual = nullptr;
+ QTabWidget *tt5 = nullptr;
  bool chk_db =true;
  QString msg = "";
  QSqlQuery query(db_tir);
@@ -412,22 +414,55 @@ void BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
 
  int nb_items = sel->size();
  if(nb_items != 0){
-
+  tbw_visual = new QTabWidget;
+  // nb_items en lien avec BCount::onglet[eCountEnd]
+  // type de calcul
   for (int i=0; i< nb_items;i++) {
+
    QList<BLstSelect *> *tmp = sel->at(i);
+   etCount type = tmp->at(0)->type;
+   QString name = BCount::onglet[type];
+
    int nb_Subitems = tmp->size();
+
    int val =0;
+   tt5 = new QTabWidget;
    for (int j=0; j< nb_Subitems;j++) {
+    /// nb_Subitems en relation avec la zone
     BLstSelect * item = tmp->at(j);
+    QString title = gme_cnf->names[item->zn].abv;
 
     switch (item->type) {
      case eCountElm:
+     {
+      /// analyse de chaque element selectionné dans la zone concernée
+      /// pour le calcul en cours
+      QModelIndex un_index;
+      foreach (un_index, item->indexes) {
+       val = un_index.data().toInt();
+       val = un_index.sibling(un_index.row(),0).data().toInt();
+      }
+
+     }
+      break;
      case eCountCmb:
-     case eCountGrp:
      case eCountBrc:
      {
       QModelIndex un_index;
       foreach (un_index, item->indexes) {
+       val = un_index.sibling(un_index.row(),0).data().toInt();
+      }
+
+     }
+      break;
+     case eCountGrp:
+     {
+      QModelIndex un_index;
+      int col = -1;
+      int lgn = -1;
+      foreach (un_index, item->indexes) {
+       lgn = un_index.sibling(un_index.row(),0).data().toInt();
+       col = un_index.column();
        val = un_index.data().toInt();
       }
 
@@ -436,9 +471,16 @@ void BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
      default:
       break;
     }
+
+    QWidget *calcul = new QWidget;
+    tt5->addTab(calcul,title);
    }
+
+   tbw_visual->addTab(tt5,name);
   }
  }
+
+ return tbw_visual;
 }
 
 QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
@@ -726,7 +768,7 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  return msg;
 }
 
-QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, BTirAna **J)
+QWidget *BTirages::ana_fltSelection(QTabWidget *tbw_flt, QString st_obj, BTirages *parent, BTirAna **J)
 {
  QWidget *ret = new QWidget;
  QTabWidget *tab_Top = new QTabWidget;
@@ -747,6 +789,7 @@ QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, BTirAna **
   }
  }
 
+ QVBoxLayout *tmp_l_0 = new QVBoxLayout;
  QVBoxLayout *tmp_lay = new QVBoxLayout;
  QGridLayout *tmp_lay_2 = new QGridLayout;
  if(tab_Top->count() !=0){
@@ -764,6 +807,9 @@ QWidget *BTirages::ana_fltSelection(QString st_obj, BTirages *parent, BTirAna **
 
  QGroupBox *info_a = new QGroupBox;
  info_a->setTitle("Selection");
+ tmp_l_0->addWidget(tbw_flt);
+ info_a->setLayout(tmp_l_0);
+
 
  QGroupBox *info_b = new QGroupBox;
  info_b->setTitle("Résultats");
@@ -912,7 +958,7 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 
   //checkMemory();
 
-  memoriserSelectionUtilisateur(sel);
+  QTabWidget *tab_SelUsr =memoriserSelectionUtilisateur(sel);
 
   /// Creer la requete de filtrage
   clause = makeSqlFromSelection(sel, &tbl_lst);
@@ -932,7 +978,7 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
    return;
   }
 
-  effectueAnalyses(msg,1);
+  effectueAnalyses(tab_SelUsr,msg,1);
  }
  else {
   msg =  lst_tirages + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent
@@ -953,7 +999,7 @@ void BTirages::checkMemory()
  }
 }
 
-void BTirages::effectueAnalyses(QString ref_sql, int distance,QString sep)
+void BTirages::effectueAnalyses(QTabWidget *tbw_flt, QString ref_sql, int distance,QString sep)
 {
  BTirAna **J = new BTirAna *[2];
  QWidget * resu = nullptr;
@@ -988,7 +1034,7 @@ void BTirages::effectueAnalyses(QString ref_sql, int distance,QString sep)
  QString st_id = lab_ong;
  st_id = st_id.arg(QString::number(usr_flt_counter).rightJustified(2,'0'));
 
- resu = ana_fltSelection(st_id, this, J);
+ resu = ana_fltSelection(tbw_flt, st_id, this, J);
  if(resu!=nullptr){
   checkMemory();
   usr_flt_counter++;

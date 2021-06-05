@@ -27,7 +27,7 @@ void showGen(BTirAna *ana_tirages);
 protected:
 QString getTiragesList(const stGameConf *pGame, QString tbl_src);
 QString makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst);
-void memoriserSelectionUtilisateur(const B2LstSel * sel);
+QTabWidget * memoriserSelectionUtilisateur(const B2LstSel * sel);
 ///QString makeSqlForNextLine(const B2LstSel * sel);
 QString select_elm(const QModelIndexList &indexes, int zn);
 QString select_cmb(const QModelIndexList &indexes, int zn, int tbl_id);
@@ -36,9 +36,9 @@ QString select_grp(const QModelIndexList &indexes, int zn, int tbl_id);
 QString elmSel_1(const QModelIndexList &indexes, int zn);
 QString elmSel_2(const QModelIndexList &indexes, int zn);
 BTirAna *doLittleAna(const stGameConf *pGame, QString msg);
-QWidget *ana_fltSelection(QString st_obj, BTirages *parent, BTirAna **J);
+QWidget *ana_fltSelection(QTabWidget *tbw_flt, QString st_obj, BTirages *parent, BTirAna **J);
 void updateTbv(QString box_title, QString msg);
-void effectueAnalyses(QString ref_sql, int distance, QString sep="");
+void effectueAnalyses(QTabWidget *tbw_flt, QString ref_sql, int distance, QString sep="");
 
 private:
 QGridLayout *addAna(BTirAna* ana);

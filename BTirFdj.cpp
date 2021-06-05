@@ -214,7 +214,7 @@ void BTirFdj::analyserSousSelection(const BTirages::Bst_FltJdj *data)
 #ifndef QT_NO_DEBUG
  //BTest::writetoFile("A0_req.txt", sql_msg);
 #endif
- effectueAnalyses(sql_msg,1, ",");
+ effectueAnalyses(NULL,sql_msg,1, ",");
 }
 
 QComboBox *BTirFdj::getFltCombo(void)
