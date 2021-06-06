@@ -28,6 +28,7 @@ protected:
 QString getTiragesList(const stGameConf *pGame, QString tbl_src);
 QString makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst);
 QTabWidget * memoriserSelectionUtilisateur(const B2LstSel * sel);
+QTableView * FillUsrSelectionTbv(etCount typ_usr, QList <QVariant> lst_usr);
 ///QString makeSqlForNextLine(const B2LstSel * sel);
 QString select_elm(const QModelIndexList &indexes, int zn);
 QString select_cmb(const QModelIndexList &indexes, int zn, int tbl_id);

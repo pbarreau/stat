@@ -5,6 +5,8 @@
 
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QStandardItemModel>
+
 #include <QMessageBox>
 #include <QHeaderView>
 //#include <QButtonGroup>
@@ -415,6 +417,10 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
  int nb_items = sel->size();
  if(nb_items != 0){
   tbw_visual = new QTabWidget;
+  QTableView *qtv_tmp = nullptr;
+  QStandardItemModel *visu = nullptr;
+  QStandardItem * std_tmp = nullptr;
+
   // nb_items en lien avec BCount::onglet[eCountEnd]
   // type de calcul
   for (int i=0; i< nb_items;i++) {
@@ -432,27 +438,130 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
     BLstSelect * item = tmp->at(j);
     QString title = gme_cnf->names[item->zn].abv;
 
+    /// ---------------------------
     switch (item->type) {
      case eCountElm:
      {
+      QList <int> lst_value;
+
       /// analyse de chaque element selectionné dans la zone concernée
       /// pour le calcul en cours
       QModelIndex un_index;
+
       foreach (un_index, item->indexes) {
        val = un_index.data().toInt();
-       val = un_index.sibling(un_index.row(),0).data().toInt();
+       //val = un_index.sibling(un_index.row(),0).data().toInt();
+       lst_value << val;
+      }
+      std::sort(lst_value.begin(), lst_value.end());
+
+      qtv_tmp = new QTableView;
+      int nb_row = 10;
+      int nb_col = (gme_cnf->limites[j].max/nb_row)+1;
+      visu = new QStandardItemModel(nb_row, nb_col);
+      qtv_tmp->setModel(visu);
+
+      for (int i=0;i<lst_value.size();i++) {
+
+
+       int val = lst_value.at(i);
+       int col_id = val/10;
+       int row_id = val%10;
+
+       QString cel_val = QString::number(val).rightJustified(2,'0');
+       std_tmp = new QStandardItem(cel_val);
+       std_tmp->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
+       visu->setItem(row_id,col_id,std_tmp);
       }
 
+      /// alterner couleur ligne
+      qtv_tmp->setAlternatingRowColors(true);
+
+      /// Fixer largeur colonne
+      for (int i = 0; i< nb_col; i++) {
+       qtv_tmp->setColumnWidth(i,30);
+      }
+
+      /// faire disparaite barres
+      qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+      qtv_tmp->horizontalHeader()->hide();
+
+      qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+      qtv_tmp->verticalHeader()->hide();
+
+      qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+      qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+
+      qtv_tmp->setFixedWidth((nb_col+0.5) * 30);;
+      qtv_tmp->setFixedHeight((nb_row+0.5) * 30);
      }
       break;
+
      case eCountCmb:
-     case eCountBrc:
      {
+      QStringList lst_value;
+
+      QString test_b = "";
       QModelIndex un_index;
       foreach (un_index, item->indexes) {
-       val = un_index.sibling(un_index.row(),0).data().toInt();
+       //val = un_index.sibling(un_index.row(),0).data().toInt();
+       lst_value << un_index.data().toString();
+      }
+      std::sort(lst_value.begin(), lst_value.end());
+      test_b = lst_value.join(",");
+
+      qtv_tmp = new QTableView;
+      int nb_row = lst_value.size();
+      int nb_col = 1;
+      visu = new QStandardItemModel(nb_row, nb_col);
+      qtv_tmp->setModel(visu);
+      visu->setHeaderData(0,Qt::Horizontal,"R");
+      visu->setHeaderData(0,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
+
+      for (int i=0;i<lst_value.size();i++) {
+       QString cel_val = lst_value.at(i);
+       std_tmp = new QStandardItem(cel_val);
+       std_tmp->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
+       visu->setItem(i,0,std_tmp);
+      }
+     }
+      break;
+
+     case eCountBrc:
+     {
+      QList <double> lst_value;
+
+      QModelIndex un_index;
+      foreach (un_index, item->indexes) {
+       //val = un_index.sibling(un_index.row(),0).data().toInt();
+       lst_value << un_index.data().toDouble();
+      }
+      std::sort(lst_value.begin(), lst_value.end());
+
+      QString test_a = "";
+      int tot_items = lst_value.size();
+
+      for(int one_item=0; one_item<tot_items;one_item++){
+       test_a = test_a + QString::number(lst_value.at(one_item));
+       if(one_item<tot_items-1){
+        test_a=test_a+",";
+       }
       }
 
+      qtv_tmp = new QTableView;
+      int nb_row = lst_value.size();
+      int nb_col = 1;
+      visu = new QStandardItemModel(nb_row, nb_col);
+      qtv_tmp->setModel(visu);
+      visu->setHeaderData(0,Qt::Horizontal,"R");
+      visu->setHeaderData(0,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
+
+      for (int i=0;i<lst_value.size();i++) {
+       QString cel_val = QString::number(lst_value.at(i));
+       std_tmp = new QStandardItem(cel_val);
+       std_tmp->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
+       visu->setItem(i,0,std_tmp);
+      }
      }
       break;
      case eCountGrp:
@@ -471,9 +580,10 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
      default:
       break;
     }
+    /// --------------
 
     QWidget *calcul = new QWidget;
-    tt5->addTab(calcul,title);
+    tt5->addTab(qtv_tmp,title);
    }
 
    tbw_visual->addTab(tt5,name);
@@ -482,6 +592,70 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
 
  return tbw_visual;
 }
+
+QTableView * BTirages::FillUsrSelectionTbv(etCount typ_usr, QList <QVariant> lst_usr)
+{
+ QTableView *qtv_tmp = new QTableView;
+ QStandardItemModel *visu = nullptr;
+ QStandardItem *tmp = nullptr;
+
+ int nb_row = lst_usr.size();
+ int nb_col = -1;
+
+ switch (typ_usr) {
+  case eCountElm:
+  {
+   QList <int> lst_value ;//= lst_usr.value().value<QList<int>>;
+
+   nb_col = (gme_cnf->limites[0].max/nb_row)+1;
+   visu = new QStandardItemModel(nb_row,nb_col);
+
+   for (int i=0;i<nb_row;i++) {
+    //lst_value.at(i)=lst_usr.value(i).value<QList<int>>;
+    //int val = ();//lst_value.at(i).toInt();
+    int val = 0;
+    int col_id = val/10;
+    int row_id = val%10;
+
+    QString cel_val = QString::number(val).rightJustified(2,'0');
+    tmp = new QStandardItem(cel_val);
+    tmp->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
+    visu->setItem(row_id,col_id,tmp);
+   }
+
+   /// alterner couleur ligne
+   qtv_tmp->setAlternatingRowColors(true);
+
+   /// Fixer largeur colonne
+   for (int i = 0; i< nb_col; i++) {
+    qtv_tmp->setColumnWidth(i,30);
+   }
+
+   /// faire disparaite barres
+   qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+   qtv_tmp->horizontalHeader()->hide();
+
+   qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+   qtv_tmp->verticalHeader()->hide();
+
+   qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+   qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+
+   qtv_tmp->setFixedWidth((nb_col+0.5) * 30);;
+   qtv_tmp->setFixedHeight((nb_row+0.5) * 30);
+
+  }
+   break;
+
+  default:
+   break;
+
+ }
+
+ return qtv_tmp;
+}
+
+
 
 QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 {
@@ -958,7 +1132,7 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 
   //checkMemory();
 
-  QTabWidget *tab_SelUsr =memoriserSelectionUtilisateur(sel);
+  QTabWidget *tab_SelUsr = memoriserSelectionUtilisateur(sel);
 
   /// Creer la requete de filtrage
   clause = makeSqlFromSelection(sel, &tbl_lst);
