@@ -439,6 +439,12 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
     QString title = gme_cnf->names[item->zn].abv;
 
     /// ---------------------------
+    qtv_tmp = new QTableView;
+
+    qtv_tmp->setAlternatingRowColors(true);
+    qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+
     switch (item->type) {
      case eCountElm:
      {
@@ -455,7 +461,6 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
       }
       std::sort(lst_value.begin(), lst_value.end());
 
-      qtv_tmp = new QTableView;
       int nb_row = 10;
       int nb_col = (gme_cnf->limites[j].max/nb_row)+1;
       visu = new QStandardItemModel(nb_row, nb_col);
@@ -474,8 +479,6 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
        visu->setItem(row_id,col_id,std_tmp);
       }
 
-      /// alterner couleur ligne
-      qtv_tmp->setAlternatingRowColors(true);
 
       /// Fixer largeur colonne
       for (int i = 0; i< nb_col; i++) {
@@ -488,9 +491,6 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
 
       qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
       qtv_tmp->verticalHeader()->hide();
-
-      qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-      qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
 
       qtv_tmp->setFixedWidth((nb_col+0.5) * 30);;
       qtv_tmp->setFixedHeight((nb_row+0.5) * 30);
@@ -510,7 +510,7 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
       std::sort(lst_value.begin(), lst_value.end());
       test_b = lst_value.join(",");
 
-      qtv_tmp = new QTableView;
+      //qtv_tmp = new QTableView;
       int nb_row = lst_value.size();
       int nb_col = 1;
       visu = new QStandardItemModel(nb_row, nb_col);
@@ -548,7 +548,7 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
        }
       }
 
-      qtv_tmp = new QTableView;
+      //qtv_tmp = new QTableView;
       int nb_row = lst_value.size();
       int nb_col = 1;
       visu = new QStandardItemModel(nb_row, nb_col);
@@ -566,6 +566,14 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
       break;
      case eCountGrp:
      {
+      typedef struct _grp_item
+      {
+        int x;
+        int y;
+        int v;
+      }grp_itemp;
+      QList <grp_itemp *> lst_value;
+
       QModelIndex un_index;
       int col = -1;
       int lgn = -1;
@@ -573,10 +581,52 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
        lgn = un_index.sibling(un_index.row(),0).data().toInt();
        col = un_index.column();
        val = un_index.data().toInt();
+
+       grp_itemp *tmp_data = new grp_itemp;
+       tmp_data->x = col;
+       tmp_data->y = lgn;
+       tmp_data->v = val;
+       lst_value << tmp_data;
       }
 
+      QStringList cols = gme_cnf->slFlt[item->zn][Bp::colDefTitres] ;
+      //qtv_tmp = new QTableView;
+      //qtv_tmp->alternatingRowColors();
+
+      int nb_row = gme_cnf->limites[item->zn].win + 1;
+      int nb_col = cols.indexOf("X1");
+
+      visu = new QStandardItemModel(nb_row, nb_col+2);
+      qtv_tmp->setModel(visu);
+
+      /// Titre des colonnes
+      visu->setHeaderData(0,Qt::Horizontal,"Nb");
+      visu->setHeaderData(0,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
+      for(int i = 1; i<= nb_col+1;i++){
+       visu->setHeaderData(i,Qt::Horizontal,cols.at(i-1));
+       qtv_tmp->setColumnWidth(i,30);
+      }
+
+      //Titre des lignes
+      qtv_tmp->verticalHeader()->hide();
+      for(int i = 0; i< nb_row;i++){
+       QString cel_val = QString::number(i).rightJustified(2,'0');
+       std_tmp = new QStandardItem(cel_val);
+       std_tmp->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
+       visu->setItem(i,0,std_tmp);
+      }
+
+      /// Valeurs
+      for(int i = 0; i< lst_value.size();i++){
+       QString cel_val = QString::number((lst_value.at(i))->v);
+       std_tmp = new QStandardItem(cel_val);
+       std_tmp->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
+       visu->setItem((lst_value.at(i))->y,(lst_value.at(i))->x,std_tmp);
+      }
+      qtv_tmp->resizeColumnsToContents();
      }
       break;
+
      default:
       break;
     }
