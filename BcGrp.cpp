@@ -196,6 +196,13 @@ void BcGrp::BSlot_AnaKey(const QModelIndex &index)
 
 	qtv_tmp->verticalHeader()->hide();
 	qtv_tmp->hideColumn(Bp::colId);
+	m->setHeaderData(Bp::colTxt,Qt::Horizontal,"Nb");
+	m->setHeaderData(Bp::colTxt,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
+	qtv_tmp->hideColumn(Bp::colColor);
+
+#ifdef QT_NO_DEBUG
+	//qtv_tmp->hideColumn(Bp::colColor);
+#endif
 
 	qtv_tmp->resizeColumnsToContents();
 
@@ -522,7 +529,7 @@ bool BcGrp::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl, QSqlQ
 	QString stGenre = "view";
 	int cnt_spe = 0;
 	for(int loop = 0; (loop < nbCols)&& b_retVal; loop ++){
-	 if(slst[2].at(loop).compare("special") == 0){
+	 if(slst[2].at(loop).contains("special") == true){
 		prvName="vt_"+QString::number(loop-cnt_spe);
 		curName=prvName;
 		cnt_spe++;
@@ -766,7 +773,7 @@ void BcGrp::usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eT
 	for(int loop = 0; (loop < nbCols)&& b_retVal; loop ++)
 	{
 
-	 if(slst[2].at(loop).compare("special") == 0){
+	 if(slst[2].at(loop).contains("special") == true){
 		continue;
 	 }
 

@@ -14,7 +14,7 @@ QVariant BColorPriority::data(const QModelIndex &index, int role) const
   Qt::black,
   Qt::red,
   Qt::green,
-  QColor(255,216,0,255),
+  COULEUR_FOND_AVANTDER,//QColor(255,216,0,255),
   QColor(255,106,0,255),
   QColor(178,0,255,255),
   QColor(211,255,204,255)

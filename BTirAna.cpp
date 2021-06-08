@@ -550,7 +550,7 @@ bool BTirAna::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int
 			b_retVal = false;
 		 }
 		}
-		else if(Key_usr_2.compare("special")==0){
+		else if(Key_usr_2.contains("special")==true){
 		 if(slst[1].at(loop).contains(',') == true){
 			QStringList def = slst[1].at(loop).split(",");
 			if(def.size()>1){
@@ -775,7 +775,7 @@ QStringList* BTirAna::setFilteringRules(stGameConf *pGame, QString tbl_tirages, 
  sql_code = sqlMkAnaBrc(pGame, tbl_tirages, zn);
  sl_filter[0]<< sql_code;
  sl_filter[1] << "bc,real";
- sl_filter[2] << "special";
+ sl_filter[2] << "special, Barycentre";
 
  // Indication de Combinaison
  int cur_tmp = sl_filter[0].size()-1;
@@ -783,7 +783,7 @@ QStringList* BTirAna::setFilteringRules(stGameConf *pGame, QString tbl_tirages, 
  sql_code = sqlMkAnaCmb(pGame, tbl_tirages, zn);
  sl_filter[0]<< sql_code;
  sl_filter[1] << "idComb";
- sl_filter[2] << "special";
+ sl_filter[2] << "special, Combinaison";
 
  return sl_filter;
 }

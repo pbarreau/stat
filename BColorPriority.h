@@ -1,5 +1,6 @@
 #ifndef BCOLORPRIORITY_H
 #define BCOLORPRIORITY_H
+#include "colors.h"
 
 #include <QSqlQueryModel>
 

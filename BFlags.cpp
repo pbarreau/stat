@@ -77,14 +77,13 @@ void BFlags::displayTbv_cell(QPainter *painter, const QStyleOptionViewItem &opti
 
  fltFull(inf_flt,painter,myOpt);
 
- /// Il faut mettre notre texte
- fltWrite(inf_flt, painter, myOpt);
-
  if(b_retVal){
   /// Gestion des graphiques
   fltDraw(inf_flt,painter,myOpt);
  }
 
+ /// Il faut mettre notre texte
+ fltWrite(inf_flt, painter, myOpt);
 }
 
 void BFlags::setVisual(const bool isPresent, stTbFiltres *a,QPainter *painter, const QStyleOptionViewItem &option,
@@ -402,7 +401,12 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 
 			 ) {
 	set_up = false;
-	myPen = Qt::red;
+	if(a->typ == eCountGrp){
+	 myPen = Qt::black;
+	}
+	else{
+	 myPen = Qt::red;
+	}
  }
 
  cellWrite(painter,state,cur_rect, myTxt,myPen,set_up);
@@ -472,7 +476,7 @@ void BFlags::fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
  QRect cur_rect = myOpt.rect;
 
  QColor v[]= {
-  QColor(255,106,0,255),
+  COULEUR_FOND_AVANTDER, //QColor(255,106,0,255),
   Qt::red,
   Qt::green,
   QColor(255,216,0,255),

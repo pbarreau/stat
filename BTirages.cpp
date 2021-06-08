@@ -132,6 +132,7 @@ BGraphicsView *BTirages::selGraphTargets()
 {
  BGraphicsView *tmp_view = new BGraphicsView(gme_cnf);
 
+#if 0
  QTabWidget *tbw_zones = new QTabWidget;
 
  int nb_zn = gme_cnf->znCount;
@@ -171,8 +172,18 @@ BGraphicsView *BTirages::selGraphTargets()
 
  tbw_zones->setWindowTitle("Selections Courbes");
  tbw_zones->show();
+#endif
 
- //lay_visual->addLayout(left,0,0,2,1);
+ int nb_zn = gme_cnf->znCount;
+ for (int zn=0;zn<nb_zn;zn++) {
+  QStringList *items = gme_cnf->slFlt[zn];
+  QStringList keys = items[Bp::colDefTitres];
+  int nb_keys = keys.size();
+
+  for (int a_key=0;a_key<nb_keys;a_key++) {
+   tmp_view->DessineCourbeSql(gme_cnf, zn, a_key);
+  }
+ }
 
  grp_screen = tmp_view;
 
@@ -181,7 +192,9 @@ BGraphicsView *BTirages::selGraphTargets()
 
 QTabWidget *BTirages::getTabedDetails()
 {
- QTabWidget *ret = new QTabWidget;
+ QTabWidget *tbw_zones = new QTabWidget;
+
+#if 0
  int nb_zn = gme_cnf->znCount;
 
  if(graphAnaLgn == nullptr){
@@ -190,11 +203,57 @@ QTabWidget *BTirages::getTabedDetails()
 
 
  for (int zn=0;zn<nb_zn;zn++) {
-  QString title = gme_cnf->names[zn].abv;
+  QString title = "Ong-"+gme_cnf->names[zn].abv;
   QWidget * tbl = usr_GrpTb2(zn);
   ret->addTab(tbl,title);
  }
- return ret;
+#endif
+
+ /// -------------
+ int nb_zn = gme_cnf->znCount;
+ for (int zn=0;zn<nb_zn;zn++) {
+  QString title = gme_cnf->names[zn].abv;
+  QToolBar *bar = new QToolBar("Courbes",tbw_zones);
+  //bar->setMovable(true);
+  //bar->setFloatable(true);
+  bar->setOrientation(Qt::Orientation::Horizontal);
+  bar->setObjectName(QString::number(zn));
+
+  QStringList *items = gme_cnf->slFlt[zn];
+  QStringList keys = items[Bp::colDefTitres];
+  QStringList info = items[Bp::colDefToolTips];
+
+  int nb_keys = keys.size();
+  for (int a_key=0;a_key<nb_keys;a_key++) {
+   QString label = keys[a_key];
+   label = label.toUpper();
+   if(label.contains(",")){
+    QStringList items = label.split(",");
+    label = items[0];
+   }
+   if(a_key == nb_keys-1){
+    label = "C";
+   }
+   QAction *tmp = bar->addAction(label,this,SLOT(BSlot_Dessine(bool )));
+   tmp->setParent(bar);
+   tmp->setCheckable(true);
+   if(info[a_key].contains("special")==true){
+    QStringList tips = info[a_key].split(",");
+    tmp->setToolTip(tips[1]);
+   }
+   else{
+    tmp->setToolTip(info[a_key]);
+   }
+   tmp->setData(a_key);
+
+   ///tmp_view->DessineCourbeSql(gme_cnf, zn, a_key);
+  }
+  tbw_zones->addTab(bar,title);
+ }
+
+ /// -------------
+
+ return tbw_zones;
 }
 
 QWidget * BTirages::usr_GrpTb2(int zn)
