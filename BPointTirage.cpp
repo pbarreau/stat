@@ -8,14 +8,42 @@
 
 QList<QGraphicsLineItem *> BPointTirage::lst_lignes;
 
-BPointTirage::BPointTirage(const stGameConf *pGame)
+BPointTirage::BPointTirage(const stGameConf *pGame,
+                           int zn,
+                           int lgn_id,
+                           int pos_x,
+                           double pos_y): zn_id(zn),lgn_id(lgn_id),v_x(pos_x), v_y(pos_y)
 {
  db_0 = QSqlDatabase::database(pGame->db_ref->cnx);
 
+ setPos(pos_x*SCALE_X,pos_y);
+
  setFlags(ItemIsSelectable);
  setCacheMode(DeviceCoordinateCache);
+ setCursor(Qt::CrossCursor);
+ grabMouse();
  setZValue(-1);
 
+}
+
+int BPointTirage::x(void)
+{
+ return v_x;
+}
+
+double BPointTirage::y(void)
+{
+ return v_y;
+}
+
+int BPointTirage::lgn(void)
+{
+ return lgn_id;
+}
+
+int BPointTirage::zn(void)
+{
+ return zn_id;
 }
 
 void BPointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)

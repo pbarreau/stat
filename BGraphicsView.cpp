@@ -4,11 +4,13 @@
 
 #include <QSqlQuery>
 
+#include "BFpmFdj.h"
 #include "BGraphicsView.h"
 #include "BPointTirage.h"
+#include "pointtirage.h"
 
-BGraphicsView::BGraphicsView(const stGameConf *pGame, QBrush coul_fond )
-    :gme_conf(pGame)
+BGraphicsView::BGraphicsView(const stGameConf *pGame, BView *lesTirages, QBrush coul_fond )
+    :gme_conf(pGame), tirages(lesTirages)
 {
  db_0 = QSqlDatabase::database(pGame->db_ref->cnx);
 
@@ -117,7 +119,8 @@ void BGraphicsView::draw_cmb(const stGameConf *pGame, int zn, int lgn_id, QColor
 	 qreal sy = -1;
 	 bool start_line = false;
 	 do{
-		int v_x = query.value(0).toInt()*10;
+		int pos_x = query.value(0).toInt();
+		int v_x = pos_x*10;
 		//qreal p_x = v_x * kx;
 		int hauteur = this->height();
 		//double v_y = hauteur - ((query.value(1).toInt()*ky))-(lgn_id*10);
@@ -129,9 +132,7 @@ void BGraphicsView::draw_cmb(const stGameConf *pGame, int zn, int lgn_id, QColor
 		}
 		double v_y = hauteur - ((val*ky) - (nb_items_z0+1)*4*zn) + (10 * on_lgn*((nb_items_z0+1)+nb_items_z1+1));
 
-		BPointTirage *un_tirage = new BPointTirage(pGame);
-		un_tirage->setPos(v_x,v_y);
-		un_tirage->setZValue(lgn_id);
+		BPointTirage *un_tirage = new BPointTirage(pGame,zn,lgn_id,pos_x,v_y);
 		scene()->addItem(un_tirage);
 		gr->addToGroup(un_tirage);
 
@@ -183,5 +184,81 @@ void BGraphicsView::wheelEvent(QWheelEvent* event) {
 
  // Don't call superclass handler here
  // as wheel is normally used for moving scrollbars
+}
+
+void BGraphicsView::mousePressEvent(QMouseEvent *event)
+{
+ QGraphicsItem *un_item = nullptr;
+ BPointTirage *un_tirage = nullptr;
+
+ QList<QGraphicsItem *> lst_items;
+ int nbr_items = 0;
+
+ QPoint click_pos = event->pos();
+
+ lst_items = items(click_pos);
+ nbr_items = lst_items.size();
+
+ if(nbr_items == 0) return;
+
+ /// On se positionne sur notre classe BPointTirage
+ un_item = lst_items.at(nbr_items-2);
+
+ this->centerOn(un_item);
+ un_item->setFocus();
+ QPointF value = un_item->scenePos();
+
+ un_tirage = static_cast<BPointTirage *>(un_item);
+ static int prev_x = -1;
+
+ int cur_x = un_tirage->x();
+ double cur_y = un_tirage->y();
+ int cur_zn = un_tirage->zn();
+ int cur_lgn = un_tirage->lgn();
+
+ Qt::MouseButtons la_souris = event->button();
+
+ if(event->button() == Qt::LeftButton)
+ {
+  BView * ptr_qtv = tirages;
+
+
+  //ptr_qtv->setSelectionBehavior(QAbstractItemView::SelectItems);
+
+  BFpmFdj * fpm_tmp = qobject_cast<BFpmFdj *>( ptr_qtv->model());
+  fpm_tmp->sort(0);
+  ptr_qtv->scrollTo(fpm_tmp->index(cur_x-1,0));
+
+  QAbstractItemView::SelectionBehavior prevBehav = ptr_qtv->selectionBehavior();
+  ptr_qtv->setStyleSheet("QTableView {selection-background-color: red;}");
+  ptr_qtv->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  ptr_qtv->setSelectionMode(QAbstractItemView::SingleSelection);
+  ptr_qtv->setSelectionBehavior(QAbstractItemView::SelectRows);
+  ptr_qtv->selectRow(cur_x-1);
+  ptr_qtv->setSelectionBehavior(prevBehav);
+#if 0
+  //QAbstractItemModel *mon_model = ptr_qtv->model();
+  //QModelIndex item1 = mon_model->index(cur_x,0, QModelIndex());
+
+  ptr_qtv->setAutoScroll(true);
+  ptr_qtv->setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
+
+  ptr_qtv->setCurrentIndex(item1);
+  ptr_qtv->scrollTo(item1);
+  ptr_qtv->selectRow(cur_x);
+#endif
+
+ }
+
+ if(event->button() == Qt::RightButton)
+ {
+  //TST_TracerLigne(event);
+ }
+
+ if(event->button() == Qt::MiddleButton)
+ {
+ }
+ update();
+ QGraphicsView::mousePressEvent(event);
 }
 

@@ -56,6 +56,11 @@ BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
 
 }
 
+BView *BTirages::getTbvTirages()
+{
+ return tir_tbv;
+}
+
 void BTirages::showFdj(BTirAna *ana_tirages)
 {
  QWidget *wdg_visual = new QWidget;
@@ -130,58 +135,16 @@ QWidget * BTirages::Dessine()
 
 BGraphicsView *BTirages::selGraphTargets()
 {
- BGraphicsView *tmp_view = new BGraphicsView(gme_cnf);
-
-#if 0
- QTabWidget *tbw_zones = new QTabWidget;
-
- int nb_zn = gme_cnf->znCount;
- for (int zn=0;zn<nb_zn;zn++) {
-  QString title = gme_cnf->names[zn].abv;
-  QToolBar *bar = new QToolBar("Courbes",tbw_zones);
-  bar->setMovable(true);
-  bar->setFloatable(true);
-  bar->setOrientation(Qt::Orientation::Vertical);
-  bar->setObjectName(QString::number(zn));
-
-  QStringList *items = gme_cnf->slFlt[zn];
-  QStringList keys = items[Bp::colDefTitres];
-  QStringList info = items[Bp::colDefToolTips];
-
-  int nb_keys = keys.size();
-  for (int a_key=0;a_key<nb_keys;a_key++) {
-   QString label = keys[a_key];
-   label = label.toUpper();
-   if(label.contains(",")){
-    QStringList items = label.split(",");
-    label = items[0];
-   }
-   if(a_key == nb_keys-1){
-    label = "C";
-   }
-   QAction *tmp = bar->addAction(label,this,SLOT(BSlot_Dessine(bool )));
-   tmp->setParent(bar);
-   tmp->setCheckable(true);
-   tmp->setToolTip(info[a_key]);
-   tmp->setData(a_key);
-
-   tmp_view->DessineCourbeSql(gme_cnf, zn, a_key);
-  }
-  tbw_zones->addTab(bar,title);
- }
-
- tbw_zones->setWindowTitle("Selections Courbes");
- tbw_zones->show();
-#endif
+ BGraphicsView *tmp_view = new BGraphicsView(gme_cnf, tir_tbv);
 
  int nb_zn = gme_cnf->znCount;
  for (int zn=0;zn<nb_zn;zn++) {
   QStringList *items = gme_cnf->slFlt[zn];
-  QStringList keys = items[Bp::colDefTitres];
-  int nb_keys = keys.size();
+  QStringList lst_courbes = items[Bp::colDefTitres];
+  int nb_courbes = lst_courbes.size();
 
-  for (int a_key=0;a_key<nb_keys;a_key++) {
-   tmp_view->DessineCourbeSql(gme_cnf, zn, a_key);
+  for (int id_courbe=0;id_courbe<nb_courbes;id_courbe++) {
+   tmp_view->DessineCourbeSql(gme_cnf, zn, id_courbe);
   }
  }
 

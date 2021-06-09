@@ -7,6 +7,7 @@
 #include <QGraphicsItemGroup>
 #include <QMap>
 
+#include "BView.h"
 #include "game.h"
 #include "bstflt.h"
 
@@ -18,14 +19,14 @@
 class BGraphicsView : public QGraphicsView
 {
 public:
-BGraphicsView(const stGameConf *pGame, QBrush coul_fond=Qt::lightGray);
+BGraphicsView(const stGameConf *pGame, BView *lesTirages, QBrush coul_fond=Qt::lightGray);
 void DessineCourbeSql(const stGameConf *pGame, int zn, int lgn_id, QColor pen_id=Qt::red, int sqlIdY =1, int scale_y=1, int delta_y=0);
 QGraphicsItemGroup *getLine(int zn, int l_id);
 QGraphicsScene *getScene();
 
 protected:
 virtual void wheelEvent(QWheelEvent* event);
-//virtual void	mousePressEvent ( QMouseEvent * event );
+virtual void mousePressEvent(QMouseEvent *event);
 
 private :
 void draw_cmb(const stGameConf *pGame, int zn, int lgn_id, QColor pen_id=Qt::red);
@@ -34,6 +35,7 @@ private:
 QSqlDatabase db_0;
 QGraphicsScene *Scene;
 const stGameConf *gme_conf;
+BView *tirages;
 etCount type;
 QMap<int, QGraphicsItemGroup *> **dessin;
 

@@ -9,11 +9,12 @@
 
 #include "game.h"
 #include "BLstSelect.h"
-#include "BGraphicsView.h"
+//#include "BGraphicsView.h"
 #include "BView.h"
 #include "blineedit.h"
 
 class BTirAna;
+class BGraphicsView;
 class BTirages : public QWidget
 {
  Q_OBJECT
@@ -23,6 +24,7 @@ explicit BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent=nullpt
 QString getGameLabel(void);
 void showFdj(BTirAna *ana_tirages);
 void showGen(BTirAna *ana_tirages);
+BView *getTbvTirages();
 
 protected:
 QString getTiragesList(const stGameConf *pGame, QString tbl_src);

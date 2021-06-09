@@ -12,10 +12,16 @@
 #include <QList>
 #include "game.h"
 
+#define SCALE_X 10
+
 class BPointTirage : public QGraphicsItem
 {
  public:
- BPointTirage(const stGameConf *pGame);
+ BPointTirage(const stGameConf *pGame, int zn, int lgn_id, int pos_x, double pos_y);
+ int x(void);
+ double y(void);
+ int lgn(void);
+ int zn(void);
 
  protected:
  QRectF boundingRect() const;
@@ -25,7 +31,10 @@ class BPointTirage : public QGraphicsItem
  void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 
  private:
- //QPointF curPos;
+ int zn_id;
+ int lgn_id;
+ int v_x;
+ double v_y;
  static QList<QGraphicsLineItem *> lst_lignes;
  QSqlDatabase db_0;
 
