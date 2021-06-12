@@ -3,6 +3,7 @@
 #endif
 
 #include <QSqlQuery>
+#include <QToolTip>
 
 #include "BFpmFdj.h"
 #include "BGraphicsView.h"
@@ -191,6 +192,11 @@ void BGraphicsView::mousePressEvent(QMouseEvent *event)
  QGraphicsItem *un_item = nullptr;
  BPointTirage *un_tirage = nullptr;
 
+#if 0
+ QGraphicsScene *monDessin = scene();
+ QGraphicsItem * mon_item = monDessin->mouseGrabberItem();
+#endif
+
  QList<QGraphicsItem *> lst_items;
  int nbr_items = 0;
 
@@ -199,12 +205,15 @@ void BGraphicsView::mousePressEvent(QMouseEvent *event)
  lst_items = items(click_pos);
  nbr_items = lst_items.size();
 
- if(nbr_items == 0) return;
+ if(nbr_items <= 1){
+  QGraphicsView::mousePressEvent(event);
+  return;
+ }
 
  /// On se positionne sur notre classe BPointTirage
  un_item = lst_items.at(nbr_items-2);
 
- this->centerOn(un_item);
+ //this->centerOn(un_item);
  un_item->setFocus();
  QPointF value = un_item->scenePos();
 
@@ -220,6 +229,14 @@ void BGraphicsView::mousePressEvent(QMouseEvent *event)
 
  if(event->button() == Qt::LeftButton)
  {
+  if(prev_x == cur_x){
+   return;
+  }
+  else
+  {
+   prev_x = cur_x;
+  }
+
   BView * ptr_qtv = tirages;
 
 
@@ -252,7 +269,18 @@ void BGraphicsView::mousePressEvent(QMouseEvent *event)
 
  if(event->button() == Qt::RightButton)
  {
-  //TST_TracerLigne(event);
+  QGraphicsLineItem *lgn_tmp=NULL;
+  if(un_item->cursor()==Qt::SizeHorCursor){
+  scene()->removeItem(un_item);
+  }
+  else
+  {
+   int taille = scene()->width();
+   QPen crayon = QPen(Qt::yellow);
+   crayon.setStyle(Qt::DashLine);
+   lgn_tmp = scene()->addLine(0,cur_y,taille,cur_y,crayon);
+   lgn_tmp->setCursor(Qt::SizeHorCursor);
+  }
  }
 
  if(event->button() == Qt::MiddleButton)
@@ -262,3 +290,80 @@ void BGraphicsView::mousePressEvent(QMouseEvent *event)
  QGraphicsView::mousePressEvent(event);
 }
 
+void BGraphicsView::mouseMoveEvent(QMouseEvent *event)
+{
+ //static bool hide = false;
+
+ static BPointTirage *prv_item = nullptr;
+ BPointTirage *un_item = nullptr;
+
+ QList<QGraphicsItem *> lst_items;
+ int nbr_items = 0;
+
+
+ QPoint mouse_pos = event->pos();
+ lst_items = items(mouse_pos);
+ nbr_items = lst_items.size();
+
+ if(nbr_items <= 1){
+  QToolTip::hideText();
+  QGraphicsView::mouseMoveEvent(event);
+  return;
+ }
+
+ if(lst_items.at(nbr_items-2)->acceptHoverEvents() == false){
+  QToolTip::hideText();
+  QGraphicsView::mouseMoveEvent(event);
+  return;
+ }
+
+ /// On se positionne sur notre classe BPointTirage
+ un_item = static_cast<BPointTirage *>(lst_items.at(nbr_items-2));
+
+#if 0
+ if(un_item==prv_item){
+  QGraphicsView::mouseMoveEvent(event);
+  return;
+ }else
+ {
+  prv_item=un_item;
+  //QToolTip::hideText();
+  QToolTip::showText (QCursor::pos(), "msgOK");
+ }
+#endif
+
+ int zn = un_item->zn();
+ int id_col = un_item->lgn();
+ int id_lgn = un_item->x();
+ QStringList keys = gme_conf->slFlt[zn][Bp::colDefTitres];
+ int mx_col = keys.size();
+ QString key = keys[id_col];
+ if(key.contains(",")){
+  key = key.split(",").at(0);
+ }
+
+ bool b_retVal = false;
+ QSqlQuery query(db_0);
+ QString msg = "";
+
+ if(id_col == mx_col-1){
+  msg = "select tip from b_cmb_z"+QString::number(zn+1)
+        + " as t1, b_ana_z"+QString::number(zn+1)
+        +" as t2 where (t2.id="
+        +QString::number(id_lgn)+" and t1.id=t2."+key+")";
+ }
+ else
+ {
+  msg = "select " + key
+        + " from b_ana_z"+QString::number(zn+1)
+        +" as t2 where (t2.id="
+        +QString::number(id_lgn)+")";
+ }
+
+ b_retVal = query.exec(msg);
+ if(b_retVal && (b_retVal=query.first())){
+  msg = gme_conf->names[zn].std+ ", "+ key + " : " + query.value(0).toString();
+ }
+ QToolTip::showText (QCursor::pos(), msg);
+ QGraphicsView::mouseMoveEvent(event);
+}

@@ -6,13 +6,14 @@
 
 #include "BPointTirage.h"
 
+//stGameConf *BPointTirage::curConf;
 QList<QGraphicsLineItem *> BPointTirage::lst_lignes;
 
 BPointTirage::BPointTirage(const stGameConf *pGame,
                            int zn,
                            int lgn_id,
                            int pos_x,
-                           double pos_y): zn_id(zn),lgn_id(lgn_id),v_x(pos_x), v_y(pos_y)
+                           double pos_y): curConf(pGame),zn_id(zn),lgn_id(lgn_id),v_x(pos_x), v_y(pos_y)
 {
  db_0 = QSqlDatabase::database(pGame->db_ref->cnx);
 
@@ -22,8 +23,8 @@ BPointTirage::BPointTirage(const stGameConf *pGame,
  setCacheMode(DeviceCoordinateCache);
  setCursor(Qt::CrossCursor);
  grabMouse();
+ setAcceptHoverEvents(true);
  setZValue(-1);
-
 }
 
 int BPointTirage::x(void)
@@ -46,6 +47,7 @@ int BPointTirage::zn(void)
  return zn_id;
 }
 
+#if 0
 void BPointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
  if(event->button() == Qt::LeftButton)
@@ -73,7 +75,6 @@ void BPointTirage::mousePressEvent(QGraphicsSceneMouseEvent *event)
  QGraphicsItem::mousePressEvent(event);
 
 }
-
 void BPointTirage::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
 #ifndef QT_NO_DEBUG
@@ -82,6 +83,16 @@ void BPointTirage::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
  update();
  QGraphicsItem::mouseReleaseEvent(event);
 }
+void BPointTirage::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+ QGraphicsItem::hoverEnterEvent(event);
+}
+
+void BPointTirage::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+ QGraphicsItem::hoverLeaveEvent(event);
+}
+#endif
 
 QRectF BPointTirage::boundingRect() const
 {

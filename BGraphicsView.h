@@ -27,6 +27,7 @@ QGraphicsScene *getScene();
 protected:
 virtual void wheelEvent(QWheelEvent* event);
 virtual void mousePressEvent(QMouseEvent *event);
+virtual void mouseMoveEvent(QMouseEvent *event);
 
 private :
 void draw_cmb(const stGameConf *pGame, int zn, int lgn_id, QColor pen_id=Qt::red);
