@@ -214,7 +214,7 @@ void BGraphicsView::mousePressEvent(QMouseEvent *event)
  un_item = lst_items.at(nbr_items-2);
 
  //this->centerOn(un_item);
- un_item->setFocus();
+ //un_item->setFocus();
  QPointF value = un_item->scenePos();
 
  un_tirage = static_cast<BPointTirage *>(un_item);
@@ -275,11 +275,23 @@ void BGraphicsView::mousePressEvent(QMouseEvent *event)
   }
   else
   {
+   foreach (QGraphicsItem *piece, lst_items) {
+    int un_type=piece->type();
+
+    if(piece->zValue() == 30){
+     scene()->removeItem(piece);
+     return;
+    }
+   }
+
+   int value = un_item->type();
    int taille = scene()->width();
    QPen crayon = QPen(Qt::yellow);
    crayon.setStyle(Qt::DashLine);
    lgn_tmp = scene()->addLine(0,cur_y,taille,cur_y,crayon);
+   value = lgn_tmp->type();
    lgn_tmp->setCursor(Qt::SizeHorCursor);
+   lgn_tmp->setZValue(30);
   }
  }
 
@@ -293,6 +305,7 @@ void BGraphicsView::mousePressEvent(QMouseEvent *event)
 void BGraphicsView::mouseMoveEvent(QMouseEvent *event)
 {
  //static bool hide = false;
+ static QGraphicsLineItem *lgn_tmp=NULL;
 
  static BPointTirage *prv_item = nullptr;
  BPointTirage *un_item = nullptr;
@@ -307,18 +320,34 @@ void BGraphicsView::mouseMoveEvent(QMouseEvent *event)
 
  if(nbr_items <= 1){
   QToolTip::hideText();
+  if(lgn_tmp){
+   scene()->removeItem(lgn_tmp);
+   lgn_tmp = nullptr;
+  }
   QGraphicsView::mouseMoveEvent(event);
   return;
  }
 
  if(lst_items.at(nbr_items-2)->acceptHoverEvents() == false){
   QToolTip::hideText();
+  if(lgn_tmp){
+   scene()->removeItem(lgn_tmp);
+   lgn_tmp = nullptr;
+  }
   QGraphicsView::mouseMoveEvent(event);
   return;
  }
 
  /// On se positionne sur notre classe BPointTirage
  un_item = static_cast<BPointTirage *>(lst_items.at(nbr_items-2));
+
+#if 0
+ /// On trace une droite
+ QPen crayon = QPen(Qt::magenta);
+ crayon.setStyle(Qt::DotLine);
+ int hauteur = scene()->height();
+ lgn_tmp = scene()->addLine(un_item->x()*10,0,un_item->x()*10,hauteur,crayon);
+#endif
 
 #if 0
  if(un_item==prv_item){
