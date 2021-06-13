@@ -98,6 +98,7 @@ private:
 void AfficherAnciensCalcul(stGameConf *pGame);
 void AssemblerJeuxUsr(stGameConf *pGame);
 
+
 private slots:
     void pslot_newGame();
     void pslot_open();

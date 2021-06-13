@@ -6,7 +6,7 @@
 
 QT       += core gui sql network
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = StatFdJeux
 TEMPLATE = app
@@ -115,7 +115,9 @@ SOURCES += \
     BView.cpp \
     BFpmCmb.cpp \
     BValidator.cpp \
-    BFpmFdj.cpp
+    BFpmFdj.cpp \
+    BCustomPlot.cpp \
+    customPlot/qcustomplot.cpp
 
 HEADERS  += \
     BColorPriority.h \
@@ -194,7 +196,9 @@ HEADERS  += \
     BView.h \
     BFpmCmb.h \
     BValidator.h \
-    BFpmFdj.h
+    BFpmFdj.h \
+    BCustomPlot.h \
+    customPlot/qcustomplot.h
 
 
 FORMS    += mainwindow.ui \

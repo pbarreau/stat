@@ -33,9 +33,9 @@ typedef struct _demande
  teClicFrom origine;
  int cur_dst;
  int req_niv;
- int lgn[3];
- int col[3];
- int val[3];
+ int lgn[4];
+ int col[4];
+ int val[4];
  int barycentre;
  QString st_titre;
  QString db_cnx;
