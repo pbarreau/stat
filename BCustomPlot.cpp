@@ -38,7 +38,7 @@ BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn):tir
   ptr_self = this;
   int total= 0;
   if(query.last()){
-   total=query.at();
+   total=query.at()+1;
    query.first();
   }
 
