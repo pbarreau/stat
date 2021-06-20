@@ -92,6 +92,9 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
          this, SLOT( BSlot_Clicked_Fdj( QModelIndex) ) );
 
+ /// changement d'index
+
+
 #if 0
  p_tbv_0 = tbv_tmp;
 

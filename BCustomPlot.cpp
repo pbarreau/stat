@@ -2,11 +2,120 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QFrame>
+#include <QMessageBox>
+#include <QSqlQuery>
+#include <QSqlError>
 
 #include "BCustomPlot.h"
+#include "game.h"
+#include "bstflt.h"
 
-BCustomPlot::BCustomPlot(int fn)
+//#include "BView.h"
+#include "BFpmFdj.h"
+
+BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn):tirages(lesTirages)
 {
+ ptr_self = nullptr;
+ QString cnx=pGame->db_ref->cnx;
+ QString tbLabAna = "B_ana_z"+QString::number(zn+1);;
+
+ // Etablir connexion a la base
+ db_1 = QSqlDatabase::database(cnx);
+ if(db_1.isValid()==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+
+
+ bool b_retVal = true;
+ QString msg = "select * from " + tbLabAna;
+ QSqlQuery query(db_1);
+
+ b_retVal = query.exec(msg);
+ QString str_error = db_1.lastError().text();
+ if(b_retVal && query.first()){
+  ptr_self = this;
+  int total= 0;
+  if(query.last()){
+   total=query.at();
+   query.first();
+  }
+
+  QStringList keys = pGame->slFlt[zn][Bp::colDefTitres];
+  QStringList tips = pGame->slFlt[zn][Bp::colDefToolTips];
+  int tot_keys = keys.size();
+  QVector<double> x(total+2), y(total+2);
+
+  plotLayout()->clear();
+
+  setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
+                                    QCP::iSelectLegend | QCP::iSelectPlottables);
+
+  /// Parcourir chaque resultat pour dessiner les courbes.
+  //QCPLayoutGrid *subLayout = new QCPLayoutGrid;
+  QCPMarginGroup *marginGroup = new QCPMarginGroup(this);
+
+  bool haveNext = true;
+  int start_loop=1;//tot_keys-2;
+  int stop_loop = tot_keys;
+  for(int j=1;j<=2;j++){
+   query.first();
+
+   for(int i=1;(i<=total) && haveNext ;i++){
+    x[i]=i;
+    y[i]=query.value(j).toDouble();
+    haveNext = query.next();
+   }
+
+   QCPAxisRect *wideAxisRect = new QCPAxisRect(this);
+
+   wideAxisRect->setupFullAxesBox(false);
+   wideAxisRect->setRangeDrag(Qt::Horizontal);
+   wideAxisRect->setMarginGroup(QCP::msLeft | QCP::msRight, marginGroup);
+
+   wideAxisRect->axis(QCPAxis::atRight, 0)->setTickLabels(true);
+   wideAxisRect->axis(QCPAxis::atLeft)->setLabel(keys[j-1]);
+   if(j<tot_keys-1){
+    wideAxisRect->axis(QCPAxis::atLeft)->setRange(0,pGame->limites[zn].win);
+   }
+
+   wideAxisRect->axis(QCPAxis::atBottom)->setLabel("Tirage id");
+   wideAxisRect->axis(QCPAxis::atBottom)->setRange(1,total);
+   wideAxisRect->axis(QCPAxis::atBottom, 0)->setTickLabels(true);
+
+   //wideAxisRect->axis(QCPAxis::atBottom, 0)->setRangeLower(1);
+   //wideAxisRect->axis(QCPAxis::atBottom)->setRange(1,total);
+   //wideAxisRect->axis(tmp_plot->xAxis)->setRange(1,total);
+   //my_axys->setLabel("Tirage id");
+   //my_axys->setRange(1,total);
+   //wideAxisRect->setupFullAxesBox(true);
+
+   //wideAxisRect->axis(QCPAxis::atBottom)->setRangeLower(1);
+   //wideAxisRect->axis(QCPAxis::atBottom)->setOffset(1);
+
+   plotLayout()->addElement(j-start_loop, 0, wideAxisRect);
+
+   QCPGraph *tmp = addGraph(wideAxisRect->axis(QCPAxis::atBottom), wideAxisRect->axis(QCPAxis::atLeft));
+   QString graph_name = tips[j-1];
+   graph(j-start_loop)->setName(graph_name);
+   graph(j-start_loop)->setData(x,y);
+   graph(j-start_loop)->setLineStyle(QCPGraph::lsLine);
+   graph(j-start_loop)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+   tmp->rescaleKeyAxis();
+
+   // connect slot that shows a message in the status bar when a graph is clicked:
+   connect(this, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(BSLOT_graphClicked(QCPAbstractPlottable*,int, QMouseEvent*)));
+
+  }
+
+  //BCP_Tst_04(this);
+
+ }
+
+
+
+#if 0
  QWidget *centralWidget= nullptr;
  QVBoxLayout *verticalLayout_3= nullptr;
  QFrame *frame_2= nullptr;
@@ -25,6 +134,45 @@ BCustomPlot::BCustomPlot(int fn)
 
  (this->*ptrFunc[fn])(this);
  replot();
+#endif
+}
+
+void   BCustomPlot::BSLOT_graphClicked(QCPAbstractPlottable *plottable, int dataIndex, QMouseEvent* event)
+{
+ if (dataIndex>1)
+ {
+  if(event->button() == Qt::LeftButton){
+   double dataValue = plottable->interface1D()->dataMainValue(dataIndex);
+   QString titre = plottable->name();
+   titre = plottable->valueAxis()->label();
+   QString message = QString("'%1'\nTirage n° %2\nTotal %3").arg(plottable->name()).arg(dataIndex-1).arg(dataValue);
+   QToolTip::showText (QCursor::pos(), message);
+   titre = "";
+
+   BView * ptr_qtv = tirages;
+   BFpmFdj * fpm_tmp = qobject_cast<BFpmFdj *>( ptr_qtv->model());
+   fpm_tmp->sort(0);
+   ptr_qtv->scrollTo(fpm_tmp->index(dataIndex-2,0));
+   ptr_qtv->clicked(fpm_tmp->index(dataIndex-2,0)); /// pour mettre a jour onglet grp
+
+   QAbstractItemView::SelectionBehavior prevBehav = ptr_qtv->selectionBehavior();
+   ptr_qtv->setStyleSheet("QTableView {selection-background-color: red;}");
+   ptr_qtv->setEditTriggers(QAbstractItemView::NoEditTriggers);
+   ptr_qtv->setSelectionMode(QAbstractItemView::SingleSelection);
+   ptr_qtv->setSelectionBehavior(QAbstractItemView::SelectRows);
+   ptr_qtv->selectRow(dataIndex-2);
+   ptr_qtv->setSelectionBehavior(prevBehav);
+  }
+ }
+
+}
+
+void BCustomPlot::BCP_Tst_04(QCustomPlot *customPlot)
+{
+ // create graph and assign data to it:
+ customPlot->addGraph();
+ //customPlot->graph(0)->setData(x, y);
+
 }
 
 void BCustomPlot::BCP_Tst_01(QCustomPlot *customPlot)

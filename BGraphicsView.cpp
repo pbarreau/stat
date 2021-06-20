@@ -5,6 +5,7 @@
 #include <QSqlQuery>
 #include <QToolTip>
 
+#include "BCustomPlot.h"
 #include "BFpmFdj.h"
 #include "BGraphicsView.h"
 #include "BPointTirage.h"

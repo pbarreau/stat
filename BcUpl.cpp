@@ -26,6 +26,7 @@
 #include "db_tools.h"
 
 int BcUpl::tot_upl = 0;
+static QString gpb_key_sel = "my_selection";
 
 QGridLayout *BcUpl::Compter(QString * pName, int zn)
 {
@@ -132,7 +133,15 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
 
  QWidget *tmp = showUplFromRef(pGame,zn,upl_ref_in-C_MIN_UPL);
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
- glay_tmp->addWidget(tmp,0,1);
+
+ QGroupBox *tmp_gpb = new QGroupBox;
+ tmp_gpb->setObjectName(gpb_key_sel);
+ tmp_gpb->setTitle("Selection :");
+ QVBoxLayout *layout = new QVBoxLayout;
+ layout->addWidget(tmp, Qt::AlignCenter|Qt::AlignTop);
+ tmp_gpb->setLayout(layout);
+
+ glay_tmp->addWidget(tmp_gpb,0,1);
 
  wdg_tmp->setLayout(glay_tmp);
 
@@ -1077,8 +1086,32 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  int zn = view->getZone();
  int selection = index.sibling(index.row(),Bp::colId).data().toInt();
 
-
  int ref = id_upl+C_MIN_UPL;
+
+ QList<QGroupBox *> child_1 = view->parent()->parent()->findChildren<QGroupBox*>(gpb_key_sel);
+
+ if(child_1.size()==1){
+  QString title ="";
+  for(int itm=1;itm<=ref;itm++){
+   title = title + index.sibling(index.row(),Bp::colId+itm).data().toString();
+   if(itm<=ref-1){
+    title=title+", ";
+   }
+  }
+  //QSortFilterProxyModel *m=qobject_cast<QSortFilterProxyModel*>(view->model());
+
+  //int tbv_id_sel = m->index(m->mapToSource(index).row(),0).data().toInt();
+
+  //title = "Selection ( "+QString::number(tbv_id_sel)+" ): " + title;
+  title = "Selection : " + title;
+
+  if(child_1.at(0)->title().compare(title)!=0){
+   child_1.at(0)->setTitle(title);
+  }
+  else{
+   return;
+  }
+ }
 
  ECalTirages tabCal[2][3]=
   {

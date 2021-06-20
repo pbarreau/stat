@@ -67,17 +67,6 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
 
 void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 {
- /// Test Custom Plot
-
- QTabWidget * try_01 = new QTabWidget;
- try_01->setGeometry(400, 250, 542, 390);
-
- for(int i=0; i<3;i++){
-  BCustomPlot *monTest = new BCustomPlot(i);
-  try_01->addTab(monTest,QString::number(i+1));
- }
- try_01->show();
- return;
 
  stFdj *prm = new stFdj;
  prm->typeJeu = curGame;

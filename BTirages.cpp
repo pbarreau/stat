@@ -16,6 +16,7 @@
 #include "BTirages.h"
 #include "Bc.h"
 #include "BTirAna.h"
+#include "BCustomPlot.h"
 
 #include "BGraphicsView.h"
 #include "db_tools.h"
@@ -136,6 +137,19 @@ QWidget * BTirages::Dessine()
 BGraphicsView *BTirages::selGraphTargets()
 {
  BGraphicsView *tmp_view = new BGraphicsView(gme_cnf, tir_tbv);
+#if 1
+ /// Test Custom Plot
+ QTabWidget * try_01 = new QTabWidget;
+ try_01->setGeometry(400, 250, 542, 390);
+
+ int tot_zn = gme_cnf->znCount;
+ for(int i=0; i<tot_zn;i++){
+  BCustomPlot *monTest = new BCustomPlot(gme_cnf, tir_tbv, i);
+  try_01->addTab(monTest,gme_cnf->names[i].std);
+ }
+ try_01->show();
+ //return;
+#endif
 
  int nb_zn = gme_cnf->znCount;
  for (int zn=0;zn<nb_zn;zn++) {
