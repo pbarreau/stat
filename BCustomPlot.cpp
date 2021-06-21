@@ -71,7 +71,7 @@ BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn):tir
    QCPAxisRect *wideAxisRect = new QCPAxisRect(this);
 
    wideAxisRect->setupFullAxesBox(false);
-   wideAxisRect->setRangeDrag(Qt::Horizontal);
+   //wideAxisRect->setRangeDrag(Qt::Horizontal);
    wideAxisRect->setMarginGroup(QCP::msLeft | QCP::msRight, marginGroup);
 
    wideAxisRect->axis(QCPAxis::atRight, 0)->setTickLabels(true);
@@ -80,7 +80,7 @@ BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn):tir
     wideAxisRect->axis(QCPAxis::atLeft)->setRange(0,pGame->limites[zn].win);
    }
 
-   wideAxisRect->axis(QCPAxis::atBottom)->setLabel("Tirage id");
+   //wideAxisRect->axis(QCPAxis::atBottom)->setLabel("Tirage id");
    wideAxisRect->axis(QCPAxis::atBottom)->setRange(1,total);
    wideAxisRect->axis(QCPAxis::atBottom, 0)->setTickLabels(true);
 
