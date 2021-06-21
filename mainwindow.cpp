@@ -51,6 +51,7 @@
 #include "BTirAna.h"
 #include "db_tools.h"
 #include "BTest.h"
+#include "BXmlFdj.h"
 
 static stTiragesDef configJeu;
 
@@ -67,6 +68,9 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
 
 void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 {
+
+ BXmlFdj();
+ return;
 
  stFdj *prm = new stFdj;
  prm->typeJeu = curGame;

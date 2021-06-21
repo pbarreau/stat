@@ -22,6 +22,27 @@ typedef enum _eFdjType{
 }etFdj;
 extern const QString gameLabel [eFdjEol];
 
+typedef enum _eFdjCname{
+ eCnameLoto,
+ eCnameSuperLoto,
+ eCnameGrandLotoNoel,
+ eCnameGrandLoto,
+ eFdjEndCnames_1,
+ eCnameEuroMillionsMyMillion,
+ eCnameEuroMillion,
+ eFdjEndCnames_2
+}eFCname;
+extern const QString FdjCnames_1 [eFdjEndCnames_1];
+extern const QString FdjCnames_2 [eFdjEndCnames_2 - eFdjEndCnames_1 -1];
+
+typedef struct _stSrcHistoJeux{
+  eFCname type;
+  QString memo;
+  QString http;
+  QString file;
+}stSrcHistoJeux;
+extern const stSrcHistoJeux HistoLoto[];
+
 typedef enum _etTir{
  eTirNotSet, /// Lst tirages pas encore etablie
  eTirFdj,    /// Lst tirages de la Fdj
