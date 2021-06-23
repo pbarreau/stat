@@ -70,7 +70,7 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 {
 
  BXmlFdj();
- return;
+ //return;
 
  stFdj *prm = new stFdj;
  prm->typeJeu = curGame;

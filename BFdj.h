@@ -22,7 +22,7 @@ class BFdj
 
  typedef struct _stZnDef
  {
-  int start;  /// offset de debut zone dans fichier
+  int pos;    /// offset de debut zone dans fichier
   int len;    /// taille dans la zone
   int min;    /// valeur mini possible
   int max;    /// valeur maxi possible

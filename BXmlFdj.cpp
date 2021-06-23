@@ -64,7 +64,66 @@ void BXmlFdj::mkDomGame(etFdj game, QDomDocument *doc, QDomElement target)
    QDomElement CName = doc->createElement("Appelation"); // nom commercial
    CName.setAttribute("Id",j);
    CName.setAttribute("Nom",FdjCnames_1[j]);
+   mkDomHisto((eFCname)j,doc,CName);
    cible.appendChild(CName);
   }
  }
+}
+
+void BXmlFdj::mkDomHisto(eFCname game, QDomDocument *doc, QDomElement target)
+{
+ int nbItems = (int)(sizeof(HistoLoto)/sizeof(stSrcHistoJeux));
+ int i = 0;
+ //int s = 0;
+ int p = 0;
+
+ for(i=0;i<nbItems;i++){
+  if(HistoLoto[i].type != game){
+   continue;
+  }
+
+  if(HistoLoto[i].type == game){
+   int j=i;
+   do{
+    QDomElement file = doc->createElement("Fichier");
+    file.setAttribute("Id",p);
+    file.setAttribute("Nom",HistoLoto[j].file);
+    file.setAttribute("Txt",HistoLoto[j].memo);
+    file.setAttribute("Url",HistoLoto[j].http);
+    target.appendChild(file);
+    mkDomFichier(j,doc,file);
+    p++;
+    j++;
+   }while((HistoLoto[j].type == game) && (j<nbItems));
+   i=j;
+  }
+ }
+}
+
+void BXmlFdj::mkDomFichier(int file, QDomDocument *doc, QDomElement target)
+{
+ QDomElement tirage = doc->createElement("Tirage");
+ tirage.setAttribute("Id_pos",4);
+ tirage.setAttribute("Id_len",4);
+ tirage.setAttribute("Date_pos",4);
+ tirage.setAttribute("Date_len",4);
+ tirage.setAttribute("Day_pos",4);
+ tirage.setAttribute("Day_len",4);
+
+ QDomElement resu = doc->createElement("Resu");
+ resu.setAttribute("Id",0);
+
+ QDomElement zone = doc->createElement("Zone");
+ zone.setAttribute("Id",0);
+ zone.setAttribute("Std","boules");
+ zone.setAttribute("Abv","b");
+ zone.setAttribute("Pos",4);
+ zone.setAttribute("Len",4);
+ zone.setAttribute("Min",4);
+ zone.setAttribute("Max",4);
+ zone.setAttribute("Win",4);
+
+ resu.appendChild(zone);
+ tirage.appendChild(resu);
+ target.appendChild(tirage);
 }

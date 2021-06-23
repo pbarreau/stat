@@ -41,7 +41,7 @@ typedef struct _stSrcHistoJeux{
   QString http;
   QString file;
 }stSrcHistoJeux;
-extern const stSrcHistoJeux HistoLoto[];
+extern const stSrcHistoJeux HistoLoto[11];
 
 typedef enum _etTir{
  eTirNotSet, /// Lst tirages pas encore etablie
@@ -75,12 +75,14 @@ typedef struct _stParam_2 {
 }stParam_2;
 
 typedef struct _stParam_1{
+  int pos;    /// offset de debut zone dans fichier
   int len;    /// nombre d'elements composant la zone
   int min;    /// valeur mini possible pour un element
   int max;    /// valeur maxi possible pour un element
   int win;    /// nb elements a avoir pour jackpot
   int usr;    /// nb elements choisi par utilisateur
 }stParam_1;
+extern const stParam_1 defParam_1[];
 
 /// Definition d'un jeu
 #if 1

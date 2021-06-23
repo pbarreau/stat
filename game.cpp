@@ -1,8 +1,8 @@
 #include "game.h"
 
-const stParam_1 loto_prm1_zn[]={{5,1,49,5,0},{1,1,10,1,0}};
+const stParam_1 loto_prm1_zn[]={{5,5,1,49,5,0},{10,1,1,10,1,0}};
 const stParam_2 loto_prm2_zn[]={{"boules","b","none"},{"etoiles","e","none"}};
-const stParam_1 euro_prm1_zn[]={{5,1,50,5,0},{2,1,12,2,0}};
+const stParam_1 euro_prm1_zn[]={{5,5,1,50,5,0},{10,2,1,12,2,0}};
 const stParam_2 euro_prm2_zn[]={{"boules","b","none"},{"etoiles","e","none"}};
 
 const QString gameLabel [eFdjEol]={"NonDefini","Loto","Euro"};
@@ -24,6 +24,9 @@ const stSrcHistoJeux HistoLoto[]={
  {eCnameGrandLoto,"Depuis decembre 2019","https://media.fdj.fr/static/csv/loto/grandloto_201912.zip","grandloto_201912.csv"}
 };
 
+const stParam_1 defParam_1[]={
+ {}
+};
 int stGameConf::gmeConf_counter = 1;
 stGameConf::stGameConf()
 {

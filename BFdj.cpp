@@ -608,7 +608,7 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 	 for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
 	 {
 		// Recuperation de la valeur
-		int val1 = list1.at(def->param.pZn[zone].start+ElmZone).toInt();
+		int val1 = list1.at(def->param.pZn[zone].pos+ElmZone).toInt();
 
 		// verification coherence
 		if((val1 >= minValZone)
