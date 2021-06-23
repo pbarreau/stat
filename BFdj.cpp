@@ -515,16 +515,19 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  fId = 0;
  stFdjData loto[]=
   {
-   {"grandloto_201912.csv",fId++, {false,2,1,1,&resLoto[0]} },
-   {"loto_201902.csv",fId++, {false,2,1,1,&resLoto[0]} },
-   {"loto2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
-   {"lotonoel2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
-   {"nouveau_loto.csv",fId++, {false,2,1,1,&resLoto[0]} },
-   {"nouveau_superloto.csv",fId++, {false,2,1,1,&resLoto[0]} },
-   {"superloto_201907.csv",fId++, {false,2,1,1,&resLoto[0]} },
-   {"superloto2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
+  {"grandloto_201912.csv",fId++, {false,2,1,1,&resLoto[0]} },
+  {"lotonoel2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
+  {"nouveau_superloto.csv",fId++, {false,2,1,1,&resLoto[0]} },
+  {"superloto2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
+  {"superloto_201907.csv",fId++, {false,2,1,1,&resLoto[0]} },
+  {"nouveau_loto.csv",fId++, {false,2,1,1,&resLoto[0]} },
+  {"loto2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
+  {"loto_201902.csv",fId++, {false,2,1,1,&resLoto[0]} },
   {"loto_201911.csv",fId++, {false,2,1,2,&resLoto[0]} }
   };
+
+ ///   {"loto.csv",fId++, {false,2,1,1,&resLoto[0]} }, 6B+1E
+ ///   {"sloto.csv",fId++, {false,2,1,1,&resLoto[0]} },
 
 #if 0
  if(pGame->eFdjType == eFdjEuro){
