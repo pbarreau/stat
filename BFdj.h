@@ -22,20 +22,26 @@ class BFdj
 
  typedef struct _stZnDef
  {
-  int pos;    /// offset de debut zone dans fichier
+  int pos;    /// colonne de debut zone
   int len;    /// taille dans la zone
   int min;    /// valeur mini possible
   int max;    /// valeur maxi possible
  }stZnDef;
 
- typedef struct _stConfFdjData
- {
-  bool wget;  /// A telecharger ?
-  int ofdate; /// Offset dans fichier pour avoir la date
-  int ofday;  /// Offset dans fichier pour avoir le jour
-  int nbZone; /// Nb zone a lire
-  stZnDef *pZn; /// Pointeur vers caracteristique de chacune des zones
- }stConfFdjData;
+  typedef struct _stRes
+  {
+    int nbZone;   /// Nb zone a lire
+    stZnDef *pZn; /// Pointeur vers caracteristique de chacune des zones
+  }stRes;
+
+  typedef struct _stConfFdjData
+  {
+    bool wget;     /// A telecharger ?
+    int colDate;   /// Colonne date
+    int colDay;    /// Colonne jour
+    int nbResu;    /// Nombre de resultat sur une ligne du fichier
+    stRes *tabRes; /// Pointeur sur description des resultats
+  }stConfFdjData;
 
  /// Tirage file format
  typedef struct _stFdjData

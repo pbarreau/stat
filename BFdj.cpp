@@ -476,8 +476,14 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
    {10,2,1,12}
   };
 
+ stRes resLoto[]=
+ {
+  {2, &p2Zn[0]}
+ };
+
  /// Liste des fichiers pour Euromillions
  fId = 0;
+#if 0
  stFdjData euroMillions[]=
   {
    {"euromillions_202002.csv",fId++,
@@ -499,27 +505,29 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
     {false,2,1,2,&p1Zn[0]}
    }
   };
-
+#endif
  /// Liste des fichiers pour loto
  fId = 0;
  stFdjData loto[]=
   {
-   {"grandloto_201912.csv",fId++, {false,2,1,2,&p2Zn[0]} },
-   {"loto_201902.csv",fId++, {false,2,1,2,&p2Zn[0]} },
-   {"loto_201911.csv",fId++, {false,2,1,2,&p2Zn[0]} },
-   {"loto2017.csv",fId++, {false,2,1,2,&p2Zn[0]} },
-   {"lotonoel2017.csv",fId++, {false,2,1,2,&p2Zn[0]} },
-   {"nouveau_loto.csv",fId++, {false,2,1,2,&p2Zn[0]} },
-   {"nouveau_superloto.csv",fId++, {false,2,1,2,&p2Zn[0]} },
-   {"superloto_201907.csv",fId++, {false,2,1,2,&p2Zn[0]} },
-   {"superloto2017.csv",fId++, {false,2,1,2,&p2Zn[0]} }
+   {"grandloto_201912.csv",fId++, {false,2,1,1,&resLoto[0]} },
+   {"loto_201902.csv",fId++, {false,2,1,1,&resLoto[0]} },
+   {"loto_201911.csv",fId++, {false,2,1,1,&resLoto[0]} },
+   {"loto2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
+   {"lotonoel2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
+   {"nouveau_loto.csv",fId++, {false,2,1,1,&resLoto[0]} },
+   {"nouveau_superloto.csv",fId++, {false,2,1,1,&resLoto[0]} },
+   {"superloto_201907.csv",fId++, {false,2,1,1,&resLoto[0]} },
+   {"superloto2017.csv",fId++, {false,2,1,1,&resLoto[0]} }
   };
 
+#if 0
  if(pGame->eFdjType == eFdjEuro){
   nbelemt = sizeof(euroMillions)/sizeof(stFdjData);
   LesFichiers = euroMillions;
  }
  else
+#endif
  {
   nbelemt = sizeof(loto)/sizeof(stFdjData);
   LesFichiers = loto;
@@ -579,14 +587,14 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 	list1 = ligne.split(";");
 
 	// Recuperation du date_tirage (D)
-	data = DateAnormer(list1.at(2));
+	data = DateAnormer(list1.at(def->param.colDate));
 	// Presentation de la date
 	reqCols = reqCols + "D,";
 	reqValues = reqValues + "'"
 							+ data+ "',";
 
 	// Recuperation et verification du jour (J) en fonction de la date
-	data = JourFromDate(data, list1.at(1),&retErr);
+	data = JourFromDate(data, list1.at(def->param.colDay),&retErr);
 	if(retErr.status == false)
 	{
 	 msg = retErr.msg;
@@ -597,61 +605,73 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 	reqCols = reqCols + "J,";
 	reqValues = reqValues + "'"+data + "',";
 
-	// Recuperation des boules
-	int max_zone = pGame->znCount;
-	for(int zone=0;zone< max_zone;zone++)
+	/// Parcour de chacun des resultats d'une ligne
+	int nbResuLgn = def->param.nbResu;
+	for(int un_resu=0;(un_resu<nbResuLgn) && b_retVal; un_resu++)
 	{
-	 int maxValZone = def->param.pZn[zone].max;
-	 int minValZone = def->param.pZn[zone].min;
-	 int maxElmZone = def->param.pZn[zone].len;
+	 stRes *ptrResu = &(def->param.tabRes[un_resu]);
 
-	 for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
+	 // Nombre de zones composanrt ce resultat
+	 int max_zone = ptrResu->nbZone;
+
+	 /// Parcourir chacune des zones pour lires les boules
+	 for(int zone=0;zone< max_zone;zone++)
 	 {
-		// Recuperation de la valeur
-		int val1 = list1.at(def->param.pZn[zone].pos+ElmZone).toInt();
+		stZnDef *curZn = &(ptrResu->pZn[zone]);
 
-		// verification coherence
-		if((val1 >= minValZone)
-				&&
-				(val1 <=maxValZone))
-		{
-		 /// On rajoute a Req values
-		 reqCols = reqCols+pGame->names[zone].abv+QString::number(ElmZone+1);
-		 reqValues = reqValues + QString::number(val1);
-		}
-		else
-		{
-		 /// Bug pour la valeur lue
-		 msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1);
-		 msg= msg +"\nzn:"+QString::number(zone)+",el:"+QString::number(ElmZone);
-		 msg= msg +",val:"+QString::number(val1);
-		 QMessageBox::critical(nullptr, "LireLesTirages", msg,QMessageBox::Yes);
-		 return false;
-		}
+		int maxValZone = curZn->max;
+		int minValZone = curZn->min;
+		int maxElmZone = curZn->len;
 
-		/// tous les elements sont vus ?
-		if(ElmZone < maxElmZone-1){
-		 reqCols = reqCols + ",";
-		 reqValues = reqValues + ",";
-		}
-	 }
+    for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
+    {
+     // Recuperation de la valeur
+     int val1 = list1.at(curZn->pos+ElmZone).toInt();
 
-	 /// voir si passage a nouvelle zone
-	 if(zone< max_zone-1){
-		reqCols = reqCols + ",";
-		reqValues = reqValues + ",";
-	 }
-	}
-	/// Toutes les zones sont faites, ecrire dans la base
-	msg = "insert into "
-				+tblName+"("
-				+reqCols+",file)values("
-				+ reqValues +","+QString::number(def->id)
-				+ ")";
-#ifndef QT_NO_DEBUG
-	qDebug() <<msg;
-#endif
-	b_retVal = query.exec(msg);
+     // verification coherence
+     if((val1 >= minValZone)
+         &&
+         (val1 <=maxValZone))
+     {
+      /// On rajoute a Req values
+      reqCols = reqCols+pGame->names[zone].abv+QString::number(ElmZone+1);
+      reqValues = reqValues + QString::number(val1);
+     }
+     else
+     {
+      /// Bug pour la valeur lue
+      msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1);
+      msg= msg +"\nzn:"+QString::number(zone)+",el:"+QString::number(ElmZone);
+      msg= msg +",val:"+QString::number(val1);
+      QMessageBox::critical(nullptr, "LireLesTirages", msg,QMessageBox::Yes);
+      return false;
+     }
+
+     /// tous les elements sont vus ?
+     if(ElmZone < maxElmZone-1){
+      reqCols = reqCols + ",";
+      reqValues = reqValues + ",";
+     }
+    }
+
+    /// voir si passage a nouvelle zone
+    if(zone< max_zone-1){
+     reqCols = reqCols + ",";
+     reqValues = reqValues + ",";
+    }
+   }
+   ///------------------------------
+   /// Toutes les zones sont faites, ecrire dans la base
+   msg = "insert into "
+         +tblName+"("
+         +reqCols+",file)values("
+         + reqValues +","+QString::number(def->id)
+         + ")";
+ #ifndef QT_NO_DEBUG
+   qDebug() <<msg;
+ #endif
+   b_retVal = query.exec(msg);
+  }
 
  }  /// Fin while
 
