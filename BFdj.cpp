@@ -464,6 +464,10 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
    {4,5,1,49},
    {9,1,1,10}
   };
+ stZnDef p2BisZn[] =
+  {
+   {32,5,1,49}
+  };
 
  stZnDef p3Zn[] =
   {
@@ -478,7 +482,8 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
 
  stRes resLoto[]=
  {
-  {2, &p2Zn[0]}
+  {2, &p2Zn[0]},
+  {1, &p2BisZn[0]}
  };
 
  /// Liste des fichiers pour Euromillions
@@ -512,13 +517,13 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
   {
    {"grandloto_201912.csv",fId++, {false,2,1,1,&resLoto[0]} },
    {"loto_201902.csv",fId++, {false,2,1,1,&resLoto[0]} },
-   {"loto_201911.csv",fId++, {false,2,1,1,&resLoto[0]} },
    {"loto2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
    {"lotonoel2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
    {"nouveau_loto.csv",fId++, {false,2,1,1,&resLoto[0]} },
    {"nouveau_superloto.csv",fId++, {false,2,1,1,&resLoto[0]} },
    {"superloto_201907.csv",fId++, {false,2,1,1,&resLoto[0]} },
-   {"superloto2017.csv",fId++, {false,2,1,1,&resLoto[0]} }
+   {"superloto2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
+  {"loto_201911.csv",fId++, {false,2,1,2,&resLoto[0]} }
   };
 
 #if 0
@@ -564,8 +569,8 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
  QTextStream flux(&fichier);
  QString ligne = "";
  QStringList list1;
- QString reqCols = "";
- QString reqValues = "";
+ QString msgDateJour = "";
+ QString valDateJour = "";
  QString data = "";
  QString msg = "";
  stErr2 retErr;
@@ -580,8 +585,8 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
  {
   ligne = flux.readLine();
   nb_lignes++;
-  reqCols = "";
-  reqValues = "";
+  msgDateJour = "";
+  valDateJour = "";
 
 	//traitement de la ligne
 	list1 = ligne.split(";");
@@ -589,8 +594,8 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 	// Recuperation du date_tirage (D)
 	data = DateAnormer(list1.at(def->param.colDate));
 	// Presentation de la date
-	reqCols = reqCols + "D,";
-	reqValues = reqValues + "'"
+	msgDateJour = msgDateJour + "D,";
+	valDateJour = valDateJour + "'"
 							+ data+ "',";
 
 	// Recuperation et verification du jour (J) en fonction de la date
@@ -602,14 +607,16 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 	 QMessageBox::critical(nullptr, "cLesComptages::LireLesTirages", msg,QMessageBox::Yes);
 	 return false;
 	}
-	reqCols = reqCols + "J,";
-	reqValues = reqValues + "'"+data + "',";
+	msgDateJour = msgDateJour + "J,";
+	valDateJour = valDateJour + "'"+data + "',";
 
 	/// Parcour de chacun des resultats d'une ligne
 	int nbResuLgn = def->param.nbResu;
 	for(int un_resu=0;(un_resu<nbResuLgn) && b_retVal; un_resu++)
 	{
 	 stRes *ptrResu = &(def->param.tabRes[un_resu]);
+	 QString msgColZn = "";
+	 QString msgValZn = "";
 
 	 // Nombre de zones composanrt ce resultat
 	 int max_zone = ptrResu->nbZone;
@@ -634,8 +641,8 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
          (val1 <=maxValZone))
      {
       /// On rajoute a Req values
-      reqCols = reqCols+pGame->names[zone].abv+QString::number(ElmZone+1);
-      reqValues = reqValues + QString::number(val1);
+      msgColZn = msgColZn+pGame->names[zone].abv+QString::number(ElmZone+1);
+      msgValZn = msgValZn + QString::number(val1);
      }
      else
      {
@@ -649,28 +656,35 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 
      /// tous les elements sont vus ?
      if(ElmZone < maxElmZone-1){
-      reqCols = reqCols + ",";
-      reqValues = reqValues + ",";
+      msgColZn = msgColZn + ",";
+      msgValZn = msgValZn + ",";
      }
+
     }
 
     /// voir si passage a nouvelle zone
     if(zone< max_zone-1){
-     reqCols = reqCols + ",";
-     reqValues = reqValues + ",";
+     msgColZn = msgColZn + ",";
+     msgValZn = msgValZn + ",";
     }
+
    }
+
    ///------------------------------
    /// Toutes les zones sont faites, ecrire dans la base
+   msgColZn = msgDateJour + msgColZn;
+   msgValZn = valDateJour + msgValZn;
    msg = "insert into "
          +tblName+"("
-         +reqCols+",file)values("
-         + reqValues +","+QString::number(def->id)
+         +msgColZn+",file)values("
+         + msgValZn +","+QString::number(def->id)
          + ")";
  #ifndef QT_NO_DEBUG
    qDebug() <<msg;
  #endif
    b_retVal = query.exec(msg);
+
+   /// Voir reultat suivant de la ligne
   }
 
  }  /// Fin while
