@@ -53,6 +53,8 @@
 #include "BTest.h"
 #include "BXmlFdj.h"
 
+#include "BStepper.h"
+
 static stTiragesDef configJeu;
 
 void MainWindow::pslot_closeTabDetails(int index)
@@ -105,6 +107,8 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
  //b_retVal = BTest::montestRapideSql(curConf,0,4);
  //b_retVal = BTest::montestRapideSql(curConf,0,3);
 
+ BStepper *t1 = new BStepper(curConf);
+ t1->show();
 
  return;
  EtudierJeu_v1(curConf, use_odb);

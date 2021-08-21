@@ -118,7 +118,8 @@ SOURCES += \
     BFpmFdj.cpp \
     BCustomPlot.cpp \
     customPlot/qcustomplot.cpp \
-    BXmlFdj.cpp
+    BXmlFdj.cpp \
+    BStepper.cpp
 
 HEADERS  += \
     BColorPriority.h \
@@ -200,7 +201,8 @@ HEADERS  += \
     BFpmFdj.h \
     BCustomPlot.h \
     customPlot/qcustomplot.h \
-    BXmlFdj.h
+    BXmlFdj.h \
+    BStepper.h
 
 
 FORMS    += mainwindow.ui \
