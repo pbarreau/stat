@@ -1,5 +1,6 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
+#include "BTest.h"
 #endif
 
 #include <QMessageBox>
@@ -11,11 +12,52 @@
 #include <QObject>
 
 #include "BStepper.h"
+#include "BView.h"
 #include "Bc.h"
 
 BStepper::BStepper(const stGameConf *pGame):pGDef(pGame)
 {
+ QWidget *ecran = Ihm();
+ ecran->show();
+}
 
+QWidget *BStepper::Ihm(void)
+{
+ QWidget *tmp_widget = new QWidget;
+ QGridLayout *tmp_layout = new QGridLayout;
+
+ QWidget *qtv_tmp_1 = Ihm_left(100);
+ QWidget *qtv_tmp_2 = Ihm_right(10);
+
+ tmp_layout->addWidget(qtv_tmp_1,0,0);
+ tmp_layout->addWidget(qtv_tmp_2,0,1);
+
+ tmp_widget->setLayout(tmp_layout);
+
+ return tmp_widget;
+}
+
+QWidget *BStepper::Ihm_left(int id_tir)
+{
+ BView *qtv_tmp = new BView;
+ qtv_tmp->setTitle("Totaux");
+
+ QString msg = getSqlMsg(pGDef,0,id_tir);
+
+ return (qtv_tmp->getScreen());
+}
+
+QWidget *BStepper::Ihm_right(int id_step)
+{
+ BView *qtv_tmp = new BView;
+ qtv_tmp->setTitle("Répartitions");
+
+ return (qtv_tmp->getScreen());
+}
+
+void BStepper::Kernel(void)
+{
+#if 0
  int zn=0;
  int ballLimits = pGame->limites[zn].len;
  int ballMax = pGame->limites[zn].max;
@@ -86,6 +128,7 @@ BStepper::BStepper(const stGameConf *pGame):pGDef(pGame)
   distribution->append(d_start);
   tir_id.append(distribution);
  }
+#endif
 }
 
 void BStepper::BSLOT_MoveUp(void)
@@ -225,4 +268,81 @@ int ballMax = pGDef->limites[zn].max;
 
   }
  }
+}
+
+
+/// --------------------------------------
+QString BStepper::getSqlMsg(const stGameConf *pGame, int zn, int id_tir)
+{
+ QString sql_msg="";
+
+ QString key = "t2.z"+QString::number(zn+1);
+ QString st_cols = BCount::FN1_getFieldsFromZone(pGame, zn, "t1");
+
+ QString col_vsl = ",COUNT(*) AS T\n";
+ QString str_jrs = "";
+ QString col_J = "";
+
+ QString tbl_tirages = pGame->db_ref->src;
+ QString tbl_key = "";
+ if(tbl_tirages.compare("B_fdj")==0){
+  tbl_tirages="B";
+  tbl_key="_fdj";
+  //str_jrs = db_jours;
+  col_vsl = ",\n";
+  col_vsl = col_vsl + "min(t1.t_id-"+QString::number(id_tir)+") as Ec,\n";
+  col_vsl = col_vsl + "max((case when t1.lid=2 then t1.E end)) as Ep,\n";
+  col_vsl = col_vsl + "COUNT(*) AS T\n";
+ }
+
+ /*
+ if(pGame->eTirType == eTirFdj){
+  col_J = ", t1.J as J";
+  str_jrs = db_jours;
+ }
+*/
+
+ sql_msg = sql_msg + "with \n\n";
+
+ sql_msg = sql_msg + " -- Selection des boules composant les lignes de\n";
+ sql_msg = sql_msg + " -- cet ensemble de tirages\n";
+ sql_msg = sql_msg + "tb0 as\n";
+ sql_msg = sql_msg + "(select t2.id as b_id, t1.id as t_id"+col_J+" from (B_elm)as t2, ("+ tbl_tirages + tbl_key +") as t1 \n";
+ sql_msg = sql_msg + "where (\n";
+ sql_msg = sql_msg + key +" IN ("+ st_cols +") and (t1.id >= "+QString::number(id_tir)+")\n";
+ sql_msg = sql_msg + "))\n";
+ sql_msg = sql_msg + ",\n\n";
+
+ sql_msg = sql_msg + " -- Calcul de la moyenne pour chaque boule\n";
+ sql_msg = sql_msg + "tb1 as\n";
+ sql_msg = sql_msg + "(\n";
+ sql_msg = sql_msg + "select t1.b_id as b_id ,t1.t_id as t_id"+col_J+",\n";
+ sql_msg = sql_msg + "ROW_NUMBER() OVER (PARTITION BY T1.b_id ORDER BY\n";
+ sql_msg = sql_msg + "T1.t_id) AS LID,\n";
+ sql_msg = sql_msg + "LAG(t1.t_id, 1, 0) OVER (PARTITION BY T1.b_id ORDER BY\n";
+ sql_msg = sql_msg + "T1.t_id) AS MY_ID,\n";
+ sql_msg = sql_msg + "(T1.t_id -(LAG(t1.t_id, 1, 0) OVER (PARTITION BY T1.B_id ORDER BY\n";
+ sql_msg = sql_msg + "T1.t_ID))) AS E\n";
+ sql_msg = sql_msg + "from (tb0) as t1\n";
+ sql_msg = sql_msg + "),\n\n";
+
+ sql_msg = sql_msg + " -- suite des calculs et de ceux necessitant la valeur de la moyenne\n";
+ sql_msg = sql_msg + " -- ie : Esperance et Moyenne de l'esperance\n";
+ sql_msg = sql_msg + "tb2 as\n";
+ sql_msg = sql_msg + "(\n";
+ sql_msg = sql_msg + "select cast(row_number() over ()as int) as id, t1.b_id as R\n";
+ sql_msg = sql_msg + col_vsl+"\n";
+ sql_msg = sql_msg + str_jrs+"\n";
+ sql_msg = sql_msg + "from (tb1) as t1 group by b_id\n";
+ sql_msg = sql_msg + ")\n";
+ sql_msg = sql_msg + "\n\n";
+ sql_msg = sql_msg + "select t1.* from (tb2) as t1 ORDER by T DESC, Ec DESC, Ep DESC, Id DESC\n";
+
+
+#ifndef QT_NO_DEBUG
+ BTest::writetoFile("AF_dbg_stepper.txt",sql_msg,false);
+ qDebug() <<sql_msg;
+#endif
+
+ return sql_msg;
 }

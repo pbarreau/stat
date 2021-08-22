@@ -33,6 +33,12 @@ class BStepper : public QWidget
   BStepper(const stGameConf *pGame);
 
  private :
+  QWidget *Ihm(void);
+  QWidget *Ihm_left(int id_tir);
+  QWidget *Ihm_right(int id_step);
+
+  QString getSqlMsg(const stGameConf *pGame, int zn, int id_tir);
+  void Kernel(void);
   void TableauRecopier(int l_id);
   void TableauActualiser(int l_id, QSqlQuery query);
 
@@ -46,7 +52,6 @@ class BStepper : public QWidget
   int *posY;
   int ballCounter;
   int origin; /// Id tirage de depart
-  //QList <QStringList *> distribution;
   QList<QList <QStringList *>*> tir_id;
 };
 

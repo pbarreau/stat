@@ -85,7 +85,7 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
  stGameConf *curConf = charge->getConfig();
 
  BStepper *t1 = new BStepper(curConf);
- t1->show();
+ //t1->show();
 
  return;
 
