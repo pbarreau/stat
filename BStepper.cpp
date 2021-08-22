@@ -41,7 +41,7 @@ BStepper::BStepper(const stGameConf *pGame):pGDef(pGame)
 
  /// determiner le tirage de depart
  QSqlQuery query(db_tirages);
- int start=10;
+ int start=100;
  origin=start;
 
  /// Test Click bouton
@@ -162,6 +162,7 @@ void BStepper::TableauActualiser(int l_id, QSqlQuery query)
  QString stBall = "";
  int zn=0;
  int ballLimits = pGDef->limites[zn].len;
+int ballMax = pGDef->limites[zn].max;
 
  for(int i=0;i<ballLimits;i++){
   oneBall = query.value(i).toInt();
@@ -188,22 +189,37 @@ void BStepper::TableauActualiser(int l_id, QSqlQuery query)
      int index = cur_lst->at(a_list)->indexOf(stBall);
      cur_lst->at(a_list)->removeAt(index);
 
-     /// 2 : A t'on une liste existante pour la mettre
-     if((a_list+1) < nb_lst){
-      /// Oui
-      cur_lst->at(a_list+1)->append(stBall);
+     /// 2 : Toutes les boules sont connues ?
+     if(ballCounter == ballMax){
+      /// mettre en 0 ou a liste + 1
+      if(a_list+1<nb_lst){
+       /// Oui
+       cur_lst->at(a_list+1)->append(stBall);
+      }
+      else{
+       /// non on boucle
+       cur_lst->at(0)->append(stBall);
+      }
      }
      else{
-      /// Non
-      QStringList *d_new = new QStringList;
-      d_new->append(stBall);
+      /// 3 : A t'on une liste existante pour la mettre
+      if((a_list+1) < nb_lst){
+       /// Oui
+       cur_lst->at(a_list+1)->append(stBall);
+      }
+      else{
+       /// Non
+       QStringList *d_new = new QStringList;
+       d_new->append(stBall);
 
-      /// Rajouter cette liste a l'ensemble des listes
-      cur_lst->append(d_new);
+       /// Rajouter cette liste a l'ensemble des listes
+       cur_lst->append(d_new);
+      }
      }
 
      /// Eviter de boucler sur cette boule
      stBall="";
+     break;
     }
    }
 
