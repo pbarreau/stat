@@ -5,6 +5,7 @@
 
 #include <QSqlDatabase>
 #include <QLinkedList>
+#include <QList>
 #include <QMap>
 
 #include "game.h"
@@ -31,6 +32,10 @@ class BStepper : public QWidget
  public:
   BStepper(const stGameConf *pGame);
 
+ private :
+  void TableauRecopier(int l_id);
+  void TableauActualiser(int l_id, QSqlQuery query);
+
  private slots:
   void BSLOT_MoveUp(void);
 
@@ -41,7 +46,8 @@ class BStepper : public QWidget
   int *posY;
   int ballCounter;
   int origin; /// Id tirage de depart
-  QLinkedList<stStepList *> tirages;
+  //QList <QStringList *> distribution;
+  QList<QList <QStringList *>*> tir_id;
 };
 
 #endif // BSTEPPER_H

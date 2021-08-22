@@ -84,6 +84,11 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 
  stGameConf *curConf = charge->getConfig();
 
+ BStepper *t1 = new BStepper(curConf);
+ t1->show();
+
+ return;
+
  bool b_retVal = true;
 
  //EtudierJeu_v1(curConf, use_odb);
@@ -107,8 +112,8 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
  //b_retVal = BTest::montestRapideSql(curConf,0,4);
  //b_retVal = BTest::montestRapideSql(curConf,0,3);
 
- BStepper *t1 = new BStepper(curConf);
- t1->show();
+ //BStepper *t1 = new BStepper(curConf);
+ //t1->show();
 
  return;
  EtudierJeu_v1(curConf, use_odb);

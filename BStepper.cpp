@@ -39,8 +39,6 @@ BStepper::BStepper(const stGameConf *pGame):pGDef(pGame)
   return;
  }
 
-
-
  /// determiner le tirage de depart
  QSqlQuery query(db_tirages);
  int start=10;
@@ -72,44 +70,38 @@ BStepper::BStepper(const stGameConf *pGame):pGDef(pGame)
   query.first();
 
   //recuperer les valeurs des boules
-  stStepList *list = new stStepList;
-  QMap<int,stStepData *>* ids = new QMap<int,stStepData *>;
-  QLinkedList <stStepData *>* values = new QLinkedList <stStepData *>;
-  list->key = ids;
-  list->data = values;
   int oneBall = 0;
 
+  QStringList * d_start = new QStringList;
+  QList <QStringList *> *distribution = new QList <QStringList *>;
   for(int i=0;i<ballLimits;i++){
-   stStepData *cur = new stStepData;
    oneBall = query.value(i).toInt();
    if(!isKnown[oneBall-1]){
     isKnown[oneBall-1]=true;
     ballCounter++;
-
-    cur->x = 0;
-    cur->y = posY[cur->x];
-    posY[cur->x]++;
-
-    cur->isCurrent=true;
-    cur->isNext=false;
-    cur->isPrevious=false;
-
-    ids->insert(oneBall,cur);
-    values->append(cur);
+    d_start->append(QString::number(oneBall));
    }
   }
-  tirages.append(list);
+
+  distribution->append(d_start);
+  tir_id.append(distribution);
  }
 }
 
 void BStepper::BSLOT_MoveUp(void)
 {
+ QPushButton *btn = qobject_cast<QPushButton *>(sender());
+
  static int cur_tir = origin;
 
- cur_tir--;
-
- if(cur_tir == 0)
+ if(cur_tir>0){
+  cur_tir--;
+ }
+ else
+ {
+  btn->setDisabled(true);
   return;
+ }
 
  QSqlQuery query(db_tirages);
  int zn=0;
@@ -133,35 +125,88 @@ void BStepper::BSLOT_MoveUp(void)
 
  if(b_retVal){
   query.first();
+  TableauRecopier(cur_tir+1);
+  TableauActualiser(cur_tir,query);
+ }
+}
 
-  stStepList * tmp = tirages.last();
-  stStepList *list = new stStepList;
-  //QMap<int,stStepData *> *ids = QMap<int,stStepData *>( &(tmp->key));
+void BStepper::TableauRecopier(int l_id)
+{
+ QList <QStringList *>  src_full(*tir_id.at(origin-l_id));
 
-  QMap<int,stStepData *> *ids(tmp->key);
+ QList <QStringList *> *dst_full = new QList <QStringList *>;
 
-  QLinkedList <stStepData *>* values = new QLinkedList <stStepData *>;
-  list->key = ids;
-  list->data = values;
-  int oneBall = 0;
+ //int n1 = tir_id.at(origin-l_id)->size();
+ int n1 = src_full.size();
+ for(int i =0; i< n1; i++){
+  QStringList * l1 = new QStringList;
 
-  for(int i=0;i<ballLimits;i++){
-   oneBall = query.value(i).toInt();
-   if(!isKnown[oneBall-1]){
+  int nbItem = (src_full.at(i))->size();
+  for(int j=0; j<nbItem;j++){
+   QString item = (src_full.at(i))->at(j);
+   l1->append(item);
+  }
+  dst_full->append(l1);
+ }
+ tir_id.append(dst_full);
+}
 
-   }
-   else{
-    /// La boule actuelle est connue arranger les listes
-    /// Prendre analyse précédente
+void BStepper::TableauActualiser(int l_id, QSqlQuery query)
+{
+ /// Analyse de ce tirage
+ QList <QStringList *>  *cur_lst(tir_id.at(origin-l_id));
 
+ QStringList *d_one(cur_lst->at(0));
 
-    /// Recuperer info de cette boule
-    stStepData * tmp_data = tmp->key->value(oneBall-1,nullptr);
-    if(tmp_data){
-     /// Deplacer
+ int oneBall = 0;
+ QString stBall = "";
+ int zn=0;
+ int ballLimits = pGDef->limites[zn].len;
+
+ for(int i=0;i<ballLimits;i++){
+  oneBall = query.value(i).toInt();
+  stBall = QString::number(oneBall);
+
+  if(!isKnown[oneBall-1]){
+   isKnown[oneBall-1]=true;
+   ballCounter++;
+   d_one->append(stBall);
+  }
+  else{
+   int nb_lst = cur_lst->size();
+
+   /// Trouver la stringlist ayant cette boule
+   for(int a_list = 0; a_list < nb_lst; a_list++){
+    if(!(cur_lst->at(a_list)->contains(stBall))){
+     /// Cette liste n'a pas la boule
+     continue;
+    }
+    else{
+     /// On a trouve la liste
+
+     /// 1 : Retirer la boule de la liste
+     int index = cur_lst->at(a_list)->indexOf(stBall);
+     cur_lst->at(a_list)->removeAt(index);
+
+     /// 2 : A t'on une liste existante pour la mettre
+     if((a_list+1) < nb_lst){
+      /// Oui
+      cur_lst->at(a_list+1)->append(stBall);
+     }
+     else{
+      /// Non
+      QStringList *d_new = new QStringList;
+      d_new->append(stBall);
+
+      /// Rajouter cette liste a l'ensemble des listes
+      cur_lst->append(d_new);
+     }
+
+     /// Eviter de boucler sur cette boule
+     stBall="";
     }
    }
+
   }
  }
-
 }
