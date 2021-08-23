@@ -4,8 +4,10 @@
 #endif
 
 #include <QMessageBox>
+
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QSortFilterProxyModel>
 
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -17,17 +19,46 @@
 
 BStepper::BStepper(const stGameConf *pGame):pGDef(pGame)
 {
- QWidget *ecran = Ihm();
+ QString cnx=pGame->db_ref->cnx;
+
+ // Etablir connexion a la base
+ db_tirages = QSqlDatabase::database(cnx);
+
+ if(db_tirages.isValid()==false){
+  QString str_error = db_tirages.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+
+
+ /// Initialisation connaissance des boules
+ int zn = 0;
+ int ballMax = pGame->limites[zn].max;
+ ballCounter = 0;
+ isKnown=new bool[ballMax];
+
+ for(int i=0;i<ballMax;i++){
+  isKnown[i]=false;
+ }
+
+ /// determiner le tirage de depart
+ int start=100;
+ origin=start;
+
+ /// Rechercher la progression des boules
+ Kernel(pGame,start);
+
+ QWidget *ecran = Ihm(pGame);
  ecran->show();
 }
 
-QWidget *BStepper::Ihm(void)
+QWidget *BStepper::Ihm(const stGameConf *pGame)
 {
  QWidget *tmp_widget = new QWidget;
  QGridLayout *tmp_layout = new QGridLayout;
 
- QWidget *qtv_tmp_1 = Ihm_left(100);
- QWidget *qtv_tmp_2 = Ihm_right(10);
+ QWidget *qtv_tmp_1 = Ihm_left(pGame, 100);
+ QWidget *qtv_tmp_2 = Ihm_right(pGame, 10);
 
  tmp_layout->addWidget(qtv_tmp_1,0,0);
  tmp_layout->addWidget(qtv_tmp_2,0,1);
@@ -37,17 +68,58 @@ QWidget *BStepper::Ihm(void)
  return tmp_widget;
 }
 
-QWidget *BStepper::Ihm_left(int id_tir)
+QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
 {
- BView *qtv_tmp = new BView;
- qtv_tmp->setTitle("Totaux");
+ int zn = 0;
 
- QString msg = getSqlMsg(pGDef,0,id_tir);
+ QSqlQuery query(db_tirages);
+ QString msg = "";
+ QSqlQueryModel *sqm_tmp = new QSqlQueryModel ;
+
+ BView *qtv_tmp = new BView;
+ QString title = "Totaux";
+
+ /// Determination de la date
+ msg = "Select J, D from B_fdj where (id = "+QString::number(id_tir)+")";
+ if(query.exec(msg)){
+  query.first();
+  title = title + " jusqu'au "
+          + query.value(0).toString()
+          + " "
+          + query.value(1).toString();
+ }
+ qtv_tmp->setTitle(title);
+
+ /// Determination des totaux
+ msg = getSqlMsg(pGame,zn,id_tir);
+ sqm_tmp->setQuery(msg,db_tirages);
+
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
+ qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+ QSortFilterProxyModel * fpm_tmp = new QSortFilterProxyModel;
+ fpm_tmp->setDynamicSortFilter(true);
+ fpm_tmp->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(fpm_tmp);
+
+ qtv_tmp->hideColumn(Bp::colId);
+
+ qtv_tmp->sortByColumn(Bp::colTotalv0, Qt::DescendingOrder);
+ qtv_tmp->setSortingEnabled(true);
+
+ /// Formattage de largeur de colonnes
+ qtv_tmp->resizeColumnsToContents();
+
+ int l=qtv_tmp->getMinWidth(0);
+ qtv_tmp->setMinimumWidth(l);
+
 
  return (qtv_tmp->getScreen());
 }
 
-QWidget *BStepper::Ihm_right(int id_step)
+QWidget *BStepper::Ihm_right(const stGameConf *pGame, int id_tir)
 {
  BView *qtv_tmp = new BView;
  qtv_tmp->setTitle("Répartitions");
@@ -55,8 +127,46 @@ QWidget *BStepper::Ihm_right(int id_step)
  return (qtv_tmp->getScreen());
 }
 
-void BStepper::Kernel(void)
+void BStepper::Kernel(const stGameConf *pGame, int id_tir)
 {
+
+ QSqlQuery query(db_tirages);
+
+ int zn=0;
+ QString tbl_tirages = pGame->db_ref->src;
+ QString st_cols = BCount::FN1_getFieldsFromZone(pGame, zn, "t1");
+
+ int cur_tir = id_tir;
+ bool b_retVal = true;
+
+ do{
+  /// selectionner les boules de la zone
+  QString msg = "Select "+ st_cols
+                + " from "
+                + tbl_tirages
+                + " as t1 where(t1.id = "+QString::number(cur_tir)+")";
+#ifndef QT_NO_DEBUG
+  qDebug() <<msg;
+#endif
+
+  b_retVal = query.exec(msg);
+
+  if(b_retVal){
+   query.first();
+
+   if(cur_tir != origin){
+    TableauRecopier(cur_tir+1);
+   }
+
+   TableauActualiser(cur_tir,query);
+   cur_tir--;
+  }
+
+ }while(b_retVal && (cur_tir >0));
+
+
+
+
 #if 0
  int zn=0;
  int ballLimits = pGame->limites[zn].len;
@@ -196,6 +306,15 @@ void BStepper::TableauRecopier(int l_id)
 
 void BStepper::TableauActualiser(int l_id, QSqlQuery query)
 {
+ if(!tir_id.size()){
+  QList <QStringList *> *init= new QList <QStringList *>;
+
+  QStringList *start_lst = new QStringList;
+  init->append(start_lst);
+
+  tir_id.append(init);
+ }
+
  /// Analyse de ce tirage
  QList <QStringList *>  *cur_lst(tir_id.at(origin-l_id));
 
@@ -205,7 +324,7 @@ void BStepper::TableauActualiser(int l_id, QSqlQuery query)
  QString stBall = "";
  int zn=0;
  int ballLimits = pGDef->limites[zn].len;
-int ballMax = pGDef->limites[zn].max;
+ int ballMax = pGDef->limites[zn].max;
 
  for(int i=0;i<ballLimits;i++){
   oneBall = query.value(i).toInt();
@@ -336,7 +455,7 @@ QString BStepper::getSqlMsg(const stGameConf *pGame, int zn, int id_tir)
  sql_msg = sql_msg + "from (tb1) as t1 group by b_id\n";
  sql_msg = sql_msg + ")\n";
  sql_msg = sql_msg + "\n\n";
- sql_msg = sql_msg + "select t1.* from (tb2) as t1 ORDER by T DESC, Ec DESC, Ep DESC, Id DESC\n";
+ sql_msg = sql_msg + "select t1.* from (tb2) as t1 ORDER by T DESC, Ec DESC, Ep DESC\n";
 
 
 #ifndef QT_NO_DEBUG

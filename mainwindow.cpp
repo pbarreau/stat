@@ -84,10 +84,10 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 
  stGameConf *curConf = charge->getConfig();
 
- BStepper *t1 = new BStepper(curConf);
+ //BStepper *t1 = new BStepper(curConf);
  //t1->show();
 
- return;
+ //return;
 
  bool b_retVal = true;
 
@@ -112,10 +112,9 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
  //b_retVal = BTest::montestRapideSql(curConf,0,4);
  //b_retVal = BTest::montestRapideSql(curConf,0,3);
 
- //BStepper *t1 = new BStepper(curConf);
- //t1->show();
-
+ BStepper *t1 = new BStepper(curConf);
  return;
+
  EtudierJeu_v1(curConf, use_odb);
  EtudierJeu_v2(curConf);
  return;
@@ -148,8 +147,8 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
  DB_Tools::SupprimerResultatsPrecedent(cnx,"view","vt*");
 
 #if 0
-select 'drop table ' || name || ';' from sqlite_master
-    where(type='table' and name glob '*R[0-9]*');
+ select 'drop table ' || name || ';' from sqlite_master
+   where(type='table' and name glob '*R[0-9]*');
 #endif
 
  /// recuperer la liste des jeux deja effectue
@@ -158,36 +157,36 @@ select 'drop table ' || name || ';' from sqlite_master
  if(((b_retVal=query.exec(msg))== true) && ((b_retVal=query.first())==true)){
   stGameConf * tmp = new stGameConf;
 
-	tmp->znCount = 1;
-	tmp->eTirType = eTirGen; /// A supprimer ?
+  tmp->znCount = 1;
+  tmp->eTirType = eTirGen; /// A supprimer ?
 
-	/// Partie commune
-	tmp->limites = pGame->limites;
-	tmp->names = pGame->names;
-	tmp->eFdjType = pGame->eFdjType;
+  /// Partie commune
+  tmp->limites = pGame->limites;
+  tmp->names = pGame->names;
+  tmp->eFdjType = pGame->eFdjType;
 
-	/// sera reconstruit par la classe Analyse
-	/// mappage des fonctions utilisateurs speciales
-	/// d'analyses
-	tmp->slFlt = nullptr;
+  /// sera reconstruit par la classe Analyse
+  /// mappage des fonctions utilisateurs speciales
+  /// d'analyses
+  tmp->slFlt = nullptr;
 
-	tmp->db_ref = new stParam_3;
-	tmp->db_ref->fdj = pGame->db_ref->fdj;
-	tmp->db_ref->cnx = pGame->db_ref->cnx;
-	tmp->db_ref->ihm = pGame->db_ref->ihm;
-	tmp->db_ref->jrs = pGame->db_ref->jrs;
+  tmp->db_ref = new stParam_3;
+  tmp->db_ref->fdj = pGame->db_ref->fdj;
+  tmp->db_ref->cnx = pGame->db_ref->cnx;
+  tmp->db_ref->ihm = pGame->db_ref->ihm;
+  tmp->db_ref->jrs = pGame->db_ref->jrs;
 
-	do{
-	 QString gameId = query.value(1).toString();
-	 tmp->db_ref->src = gameId;
-	 tmp->db_ref->flt = gameId+"_flt";
+  do{
+   QString gameId = query.value(1).toString();
+   tmp->db_ref->src = gameId;
+   tmp->db_ref->flt = gameId+"_flt";
 
-	 AssemblerJeuxUsr(tmp);
+   AssemblerJeuxUsr(tmp);
 
   }while((b_retVal=query.next()) != false);
 
-	delete tmp->db_ref;
-	delete tmp;
+  delete tmp->db_ref;
+  delete tmp;
  }
 
 
@@ -201,13 +200,13 @@ void MainWindow::AssemblerJeuxUsr(stGameConf *usrGame)
  stGameConf * conf = lst_tirages->getGameConf();
  if( conf != nullptr){
 
-	BTirAna *ana_tirages = new BTirAna(conf);
-	if(ana_tirages->self() == nullptr){
-	 delete ana_tirages;
-	}
-	else {
-	 lst_tirages->showGen(ana_tirages);
-	}
+  BTirAna *ana_tirages = new BTirAna(conf);
+  if(ana_tirages->self() == nullptr){
+   delete ana_tirages;
+  }
+  else {
+   lst_tirages->showGen(ana_tirages);
+  }
  }
  else {
   delete lst_tirages;
@@ -244,7 +243,7 @@ void MainWindow::EtudierJeu_v1(stGameConf *curConf, bool dest_bdd)
   QApplication::quit();
  }
 
-  /// ICI Commence le calcul
+ /// ICI Commence le calcul
  RechercheProgressionBoules(&configJeu);
 
 
@@ -261,7 +260,7 @@ void MainWindow::EtudierJeu_v1(stGameConf *curConf, bool dest_bdd)
  FEN_NewTirages(&configJeu);
 }
 
- void MainWindow::EtudierJeu_MontrerUplet(stGameConf *curConf, GererBase *use_db)
+void MainWindow::EtudierJeu_MontrerUplet(stGameConf *curConf, GererBase *use_db)
 {
  bool usePrevBdd = curConf->bUseMadeBdd;
 
@@ -2297,7 +2296,7 @@ void MainWindow::FEN_NewTirages(stTiragesDef *pConf)
 
  // Tableau de pointeur de fonction
  QWidget *(MainWindow::*ptrFunc[2])(stTiragesDef *pConf)=
-  {&MainWindow::FEN_Analyses,&MainWindow::FEN_Recherches};
+ {&MainWindow::FEN_Analyses,&MainWindow::FEN_Recherches};
 
  for(int i =0; i<2;i++)
  {

@@ -33,12 +33,12 @@ class BStepper : public QWidget
   BStepper(const stGameConf *pGame);
 
  private :
-  QWidget *Ihm(void);
-  QWidget *Ihm_left(int id_tir);
-  QWidget *Ihm_right(int id_step);
+  QWidget *Ihm(const stGameConf *pGame);
+  QWidget *Ihm_left(const stGameConf *pGame, int id_tir);
+  QWidget *Ihm_right(const stGameConf *pGame, int id_tir);
 
   QString getSqlMsg(const stGameConf *pGame, int zn, int id_tir);
-  void Kernel(void);
+  void Kernel(const stGameConf *pGame, int id_tir);
   void TableauRecopier(int l_id);
   void TableauActualiser(int l_id, QSqlQuery query);
 
