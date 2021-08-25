@@ -77,7 +77,15 @@ namespace Bp {
   icoNext,	 /// show next of filtering
   icoShowAll,
   icoShowChk,
-  icoShowUhk
+  icoShowUhk,
+  icoDbgTbsn, /// tir_ball_step_next
+  icoDbgTbso, /// in
+  icoDbgTbsi, /// out
+  icoDbgTgf,  /// go first
+  icoDbgTge,  /// go end
+  icoDbgTgp,  /// previous
+  icoDbgTgn,  /// next
+  icoDbgTga   /// at
  };
 
  /*

@@ -78,15 +78,15 @@ bool BFdj::ouvrirBase(stFdj *prm)
    mabase = ":memory:";
    break;
 
-	case eDbDsk:
-	default:
-	 /// Reutiliser existant ?
-	 if(prm->use_odb){
-		QString myTitle = "Selectionnner un fichier " + gameLabel[game];
-		QString myFilter = gameLabel[game]+QString(DB_VER)+"*.sqlite";
-		mabase = QFileDialog::getOpenFileName(nullptr,myTitle,".",myFilter);
-	 }
-	 break;
+  case eDbDsk:
+  default:
+   /// Reutiliser existant ?
+   if(prm->use_odb){
+    QString myTitle = "Selectionnner un fichier " + gameLabel[game];
+    QString myFilter = gameLabel[game]+QString(DB_VER)+"*.sqlite";
+    mabase = QFileDialog::getOpenFileName(nullptr,myTitle,".",myFilter);
+   }
+   break;
  }
 
  if(mabase.isEmpty()){
@@ -104,32 +104,32 @@ bool BFdj::ouvrirBase(stFdj *prm)
 
  if(b_retVal){
 
-	QSqlQuery query(fdj_db);
-	QString st_query = "select sqlite_version();";
-	if((b_retVal = query.exec(st_query))){
-	 query.first();
-	 QString version =query.value(0).toString();
+  QSqlQuery query(fdj_db);
+  QString st_query = "select sqlite_version();";
+  if((b_retVal = query.exec(st_query))){
+   query.first();
+   QString version =query.value(0).toString();
 
-	 if(version < "3.25"){
-		st_query = QString("Version sqlite :") + version +QString(" < 3.25\n");
-		QMessageBox::critical(nullptr,"Stat",st_query,QMessageBox::Ok);
-		b_retVal = false;
-	 }
-	 else{
-		/// Chargement librairie math
-		if(!(b_retVal=AuthoriseChargementExtension())){
-		 st_query = QString("Chargement sqMath echec !!\n");
-		 QMessageBox::critical(nullptr,"Stat",st_query,QMessageBox::Ok);
-		}
-		else {
-		 /// On optimise les acces base
-		 b_retVal = OPtimiseAccesBase();
-		}
-	 }
-	}
+   if(version < "3.25"){
+    st_query = QString("Version sqlite :") + version +QString(" < 3.25\n");
+    QMessageBox::critical(nullptr,"Stat",st_query,QMessageBox::Ok);
+    b_retVal = false;
+   }
+   else{
+    /// Chargement librairie math
+    if(!(b_retVal=AuthoriseChargementExtension())){
+     st_query = QString("Chargement sqMath echec !!\n");
+     QMessageBox::critical(nullptr,"Stat",st_query,QMessageBox::Ok);
+    }
+    else {
+     /// On optimise les acces base
+     b_retVal = OPtimiseAccesBase();
+    }
+   }
+  }
  }
 
-  return b_retVal;
+ return b_retVal;
 }
 
 bool BFdj::AuthoriseChargementExtension(void)
@@ -153,21 +153,21 @@ bool BFdj::AuthoriseChargementExtension(void)
 
  {
 
-	// v.data() returns a pointer to the handle
-	sqlite3_initialize();
-	sqlite3 *handle = *static_cast<sqlite3 **>(v.data());
+  // v.data() returns a pointer to the handle
+  sqlite3_initialize();
+  sqlite3 *handle = *static_cast<sqlite3 **>(v.data());
 
-	if (handle != 0) { // check that it is not NULL
+  if (handle != 0) { // check that it is not NULL
 
-	 //const char *loc = NULL;
-	 //loc = sqlite_version();
+   //const char *loc = NULL;
+   //loc = sqlite_version();
 
-	 int ret = sqlite3_enable_load_extension(handle,1);
-	 //int ret = loadExt(handle,1);
+   int ret = sqlite3_enable_load_extension(handle,1);
+   //int ret = loadExt(handle,1);
 
-	 /// Lancer la requete
-	 QString msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-sqMath.dll')";
-	 b_retVal = query.exec(msg);
+   /// Lancer la requete
+   QString msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-sqMath.dll')";
+   b_retVal = query.exec(msg);
 #ifndef QT_NO_DEBUG
 	 if (query.lastError() .isValid())
 	 {
@@ -222,7 +222,7 @@ QString BFdj::mk_IdDsk(etFdj type)
  int counter = 0;
  do{
   testName = game + QString::number(counter).rightJustified(3,'0')+ ext;
-   myFileName.setFileName(testName);
+  myFileName.setFileName(testName);
   counter = (counter + 1)%999;
  }while(myFileName.exists());
 
@@ -287,10 +287,10 @@ stGameConf * BFdj::init(stFdj *prm)
   ret->limites = new stParam_1[nbZn];
   ret->names = new stParam_2[nbZn];
 
-	for(int i =0; i<nbZn;i++){
-	 ret->limites[i]=loto_prm1_zn[i];
-	 ret->names[i]=loto_prm2_zn[i];
-	}
+  for(int i =0; i<nbZn;i++){
+   ret->limites[i]=loto_prm1_zn[i];
+   ret->names[i]=loto_prm2_zn[i];
+  }
  }
 
  if(eFdjType == eFdjEuro){
@@ -299,10 +299,10 @@ stGameConf * BFdj::init(stFdj *prm)
   ret->limites = new stParam_1[nbZn];
   ret->names = new stParam_2[nbZn];
 
-	for(int i =0; i<nbZn;i++){
-	 ret->limites[i]=euro_prm1_zn[i];
-	 ret->names[i]=euro_prm2_zn[i];
-	}
+  for(int i =0; i<nbZn;i++){
+   ret->limites[i]=euro_prm1_zn[i];
+   ret->names[i]=euro_prm2_zn[i];
+  }
  }
 
  return ret;
@@ -389,14 +389,14 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
   if (i==1)
    stKeyOn = "id integer primary key,";
 
-	msg = "create table if not exists "
-				+ tables[i]
-				+ "("+ stKeyOn +"D text, J text,"
-				+ colsDef
-				+",file int);";
+  msg = "create table if not exists "
+        + tables[i]
+        + "("+ stKeyOn +"D text, J text,"
+        + colsDef
+        +",file int);";
 
 #ifndef QT_NO_DEBUG
-	qDebug() <<msg;
+  qDebug() <<msg;
 #endif
 
   b_retVal = query.exec(msg);
@@ -408,20 +408,20 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
   /// mettre les infos brut dans la table temporaire
   b_retVal = chargerDonneesFdjeux(pGame, tables[0]);
 
-	if(b_retVal)
-	{
-	 /// mettre les infos triees dans la table de reference
-	 colsDef.remove("int");
-	 /// trier les resultats pour la table finale
-	 msg = "insert into "
-				 + tables[1] + " "
-				 + "select NULL,"
-				 + "substr(src.D,-2,2)||'/'||substr(src.D,6,2)||'/'||substr(src.D,1,4) as D,"
-				 + "src.J,"
-				 + cAsDef + ",file from("
-				 + tables[0] + " as src)order by date(src.D) desc,src.J desc";
+  if(b_retVal)
+  {
+   /// mettre les infos triees dans la table de reference
+   colsDef.remove("int");
+   /// trier les resultats pour la table finale
+   msg = "insert into "
+         + tables[1] + " "
+         + "select NULL,"
+         + "substr(src.D,-2,2)||'/'||substr(src.D,6,2)||'/'||substr(src.D,1,4) as D,"
+         + "src.J,"
+         + cAsDef + ",file from("
+         + tables[0] + " as src)order by date(src.D) desc,src.J desc";
 #ifndef QT_NO_DEBUG
-	 qDebug() <<msg;
+   qDebug() <<msg;
 #endif
 
 	 b_retVal = query.exec(msg);
@@ -455,30 +455,30 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  /// le format des fichiers repertoriant les resultats
  /// a change
  stZnDef p1Zn[] =
-  {
-   {4,5,1,50},
-   {9,2,1,10}
-  };
+ {
+  {4,5,1,50},
+  {9,2,1,10}
+ };
  stZnDef p2Zn[] =
-  {
-   {4,5,1,49},
-   {9,1,1,10}
-  };
+ {
+  {4,5,1,49},
+  {9,1,1,10}
+ };
  stZnDef p2BisZn[] =
-  {
-   {32,5,1,49}
-  };
+ {
+  {32,5,1,49}
+ };
 
  stZnDef p3Zn[] =
-  {
-   {4,5,1,50},
-   {9,2,1,11}
-  };
+ {
+  {4,5,1,50},
+  {9,2,1,11}
+ };
  stZnDef p4Zn[] =
-  {
-   {5,5,1,50},
-   {10,2,1,12}
-  };
+ {
+  {5,5,1,50},
+  {10,2,1,12}
+ };
 
  stRes resLoto[]=
  {
@@ -490,31 +490,31 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  fId = 0;
 #if 0
  stFdjData euroMillions[]=
-  {
-   {"euromillions_202002.csv",fId++,
-    {false,2,1,2,&p4Zn[0]}
-   },
-   {"euromillions_201902.csv",fId++,
-    {false,2,1,2,&p4Zn[0]}
-   },
-   {"euromillions_4.csv",fId++,
-    {false,2,1,2,&p4Zn[0]}
-   },
-   {"euromillions_3.csv",fId++,
-    {false,2,1,2,&p3Zn[0]}
-   },
-   {"euromillions_2.csv",fId++,
-    {false,2,1,2,&p3Zn[0]}
-   },
-   {"euromillions.csv",fId++,
-    {false,2,1,2,&p1Zn[0]}
-   }
-  };
+ {
+  {"euromillions_202002.csv",fId++,
+   {false,2,1,2,&p4Zn[0]}
+  },
+  {"euromillions_201902.csv",fId++,
+   {false,2,1,2,&p4Zn[0]}
+  },
+  {"euromillions_4.csv",fId++,
+   {false,2,1,2,&p4Zn[0]}
+  },
+  {"euromillions_3.csv",fId++,
+   {false,2,1,2,&p3Zn[0]}
+  },
+  {"euromillions_2.csv",fId++,
+   {false,2,1,2,&p3Zn[0]}
+  },
+  {"euromillions.csv",fId++,
+   {false,2,1,2,&p1Zn[0]}
+  }
+ };
 #endif
  /// Liste des fichiers pour loto
  fId = 0;
  stFdjData loto[]=
-  {
+ {
   {"grandloto_201912.csv",fId++, {false,2,1,1,&resLoto[0]} },
   {"lotonoel2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
   {"nouveau_superloto.csv",fId++, {false,2,1,1,&resLoto[0]} },
@@ -524,7 +524,7 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
   {"loto2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
   {"loto_201902.csv",fId++, {false,2,1,1,&resLoto[0]} },
   {"loto_201911.csv",fId++, {false,2,1,2,&resLoto[0]} }
-  };
+ };
 
  ///   {"loto.csv",fId++, {false,2,1,1,&resLoto[0]} }, 6B+1E
  ///   {"sloto.csv",fId++, {false,2,1,1,&resLoto[0]} },
@@ -564,7 +564,7 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
  // On ouvre notre fichier en lecture seule et on verifie l'ouverture
  if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))
  {
-  QMessageBox::critical(nullptr, "LireLesTirages", "Erreur chargement !:\n"+fileName_2,QMessageBox::Yes);
+  QMessageBox::critical(nullptr, "BFdj::LireLesTirages", "Erreur chargement !:\n"+fileName_2,QMessageBox::Yes);
   return false;
  }
 
@@ -579,8 +579,10 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
  stErr2 retErr;
 
  // --- DEBUT ANALYSE DU FICHIER
- // Passer la premiere ligne
+ // Passer la premiere ligne description des champs du fichier
  ligne = flux.readLine();
+
+ int refNbFields = ligne.split(";").size();
 
  // Analyse des suivantes
  int nb_lignes=0;
@@ -591,47 +593,55 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
   msgDateJour = "";
   valDateJour = "";
 
-	//traitement de la ligne
-	list1 = ligne.split(";");
+  //traitement de la ligne
+  list1 = ligne.split(";");
 
-	// Recuperation du date_tirage (D)
-	data = DateAnormer(list1.at(def->param.colDate));
-	// Presentation de la date
-	msgDateJour = msgDateJour + "D,";
-	valDateJour = valDateJour + "'"
-							+ data+ "',";
+  if(list1.size() != refNbFields){
+   msg = "Fichier :"+fileName_2
+         +"\nErreur taille ligne !!\n\nLigne : "
+         +QString::number(nb_lignes);
+   QMessageBox::critical(nullptr, "BFdj::LireLesTirages", msg,QMessageBox::Yes);
+   return false;
+  }
 
-	// Recuperation et verification du jour (J) en fonction de la date
-	data = JourFromDate(data, list1.at(def->param.colDay),&retErr);
-	if(retErr.status == false)
-	{
-	 msg = retErr.msg;
-	 msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1)+"\n"+msg;
-	 QMessageBox::critical(nullptr, "cLesComptages::LireLesTirages", msg,QMessageBox::Yes);
-	 return false;
-	}
-	msgDateJour = msgDateJour + "J,";
-	valDateJour = valDateJour + "'"+data + "',";
+  // Recuperation du date_tirage (D)
+  data = DateAnormer(list1.at(def->param.colDate));
+  // Presentation de la date
+  msgDateJour = msgDateJour + "D,";
+  valDateJour = valDateJour + "'"
+                + data+ "',";
 
-	/// Parcour de chacun des resultats d'une ligne
-	int nbResuLgn = def->param.nbResu;
-	for(int un_resu=0;(un_resu<nbResuLgn) && b_retVal; un_resu++)
-	{
-	 stRes *ptrResu = &(def->param.tabRes[un_resu]);
-	 QString msgColZn = "";
-	 QString msgValZn = "";
+  // Recuperation et verification du jour (J) en fonction de la date
+  data = JourFromDate(data, list1.at(def->param.colDay),&retErr);
+  if(retErr.status == false)
+  {
+   msg = retErr.msg;
+   msg = "Fic:"+fileName_2+",lg:"+QString::number(nb_lignes-1)+"\n"+msg;
+   QMessageBox::critical(nullptr, "cLesComptages::LireLesTirages", msg,QMessageBox::Yes);
+   return false;
+  }
+  msgDateJour = msgDateJour + "J,";
+  valDateJour = valDateJour + "'"+data + "',";
 
-	 // Nombre de zones composanrt ce resultat
-	 int max_zone = ptrResu->nbZone;
+  /// Parcour de chacun des resultats d'une ligne
+  int nbResuLgn = def->param.nbResu;
+  for(int un_resu=0;(un_resu<nbResuLgn) && b_retVal; un_resu++)
+  {
+   stRes *ptrResu = &(def->param.tabRes[un_resu]);
+   QString msgColZn = "";
+   QString msgValZn = "";
 
-	 /// Parcourir chacune des zones pour lires les boules
-	 for(int zone=0;zone< max_zone;zone++)
-	 {
-		stZnDef *curZn = &(ptrResu->pZn[zone]);
+   // Nombre de zones composanrt ce resultat
+   int max_zone = ptrResu->nbZone;
 
-		int maxValZone = curZn->max;
-		int minValZone = curZn->min;
-		int maxElmZone = curZn->len;
+   /// Parcourir chacune des zones pour lires les boules
+   for(int zone=0;zone< max_zone;zone++)
+   {
+    stZnDef *curZn = &(ptrResu->pZn[zone]);
+
+    int maxValZone = curZn->max;
+    int minValZone = curZn->min;
+    int maxElmZone = curZn->len;
 
     for(int ElmZone=0;ElmZone < maxElmZone;ElmZone++)
     {
@@ -640,8 +650,8 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 
      // verification coherence
      if((val1 >= minValZone)
-         &&
-         (val1 <=maxValZone))
+        &&
+        (val1 <=maxValZone))
      {
       /// On rajoute a Req values
       msgColZn = msgColZn+pGame->names[zone].abv+QString::number(ElmZone+1);
@@ -682,9 +692,9 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
          +msgColZn+",file)values("
          + msgValZn +","+QString::number(def->id)
          + ")";
- #ifndef QT_NO_DEBUG
+#ifndef QT_NO_DEBUG
    qDebug() <<msg;
- #endif
+#endif
    b_retVal = query.exec(msg);
 
    /// Voir reultat suivant de la ligne
@@ -730,8 +740,8 @@ QString BFdj::DateAnormer(QString input)
   {
    // fdj euro million v1 -> AAAAMMJJ
    ladate =input.left(4) + "-"
-            + input.mid(4,2)+ "-"
-            + input.right(2);
+           + input.mid(4,2)+ "-"
+           + input.right(2);
 
   }
  }
