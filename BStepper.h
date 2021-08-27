@@ -6,9 +6,14 @@
 #include <QHBoxLayout>
 
 #include <QSqlDatabase>
+#include <QSqlQueryModel>
+
 #include <QLinkedList>
 #include <QList>
 #include <QMap>
+
+#include "BView.h"
+#include "Bc.h"
 
 #include "game.h"
 
@@ -28,6 +33,15 @@ typedef struct _stStepList
   QLinkedList <stStepData *> *data;
 }stStepList;
 #endif
+
+class BTrackStepper:public QSqlQueryModel
+{
+ Q_OBJECT
+
+ public: ///
+ explicit BTrackStepper(QObject *parent = nullptr):QSqlQueryModel(parent){}
+ QVariant data(const QModelIndex &index, int role) const;
+};
 
 typedef struct _stTabSteps
 {
@@ -54,8 +68,10 @@ class BStepper : public QWidget
   void TableauRecopier(int l_id);
   void TableauActualiser(int l_id, QSqlQuery query);
 
+  void TirageGoFirt(int id_tir);
+  QString GetLeftTitle(const stGameConf *pGame, int zn, int id_tir);
+
  private slots:
-  void BSLOT_MoveUp(void);
   void BSlot_ActionButton(int btn_id);
 
 
@@ -66,6 +82,8 @@ class BStepper : public QWidget
   int ballCounter;
   int origin; /// Id tirage de depart
   QList<QList <QStringList *>*> tir_id;
+  BView *ptrTbvL;
+  BView *ptrTbvR;
 };
 
 #endif // BSTEPPER_H

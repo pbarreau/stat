@@ -21,8 +21,6 @@
 #include <QObject>
 
 #include "BStepper.h"
-#include "BView.h"
-#include "Bc.h"
 
 BStepper::BStepper(const stGameConf *pGame):pGDef(pGame)
 {
@@ -83,6 +81,12 @@ QWidget *BStepper::Ihm(const stGameConf *pGame, int start_tir,stTabSteps defStep
 
  return tmp_widget;
 }
+/// -----------------------------
+QVariant BTrackStepper::data(const QModelIndex &index, int role) const
+{
+ return QSqlQueryModel::data(index,role);
+}
+/// -----------------------------
 
 QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
 {
@@ -90,20 +94,14 @@ QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
 
  QSqlQuery query(db_tirages);
  QString msg = "";
- QSqlQueryModel *sqm_tmp = new QSqlQueryModel ;
+ BTrackStepper *sqm_tmp = new BTrackStepper ;
 
  BView *qtv_tmp = new BView;
- QString title = "Totaux";
+ QString title = "";
+ ptrTbvL =qtv_tmp;
 
- /// Determination de la date
- msg = "Select J, D from B_fdj where (id = "+QString::number(id_tir)+")";
- if(query.exec(msg)){
-  query.first();
-  title = title + " jusqu'au "
-          + query.value(0).toString()
-          + " "
-          + query.value(1).toString();
- }
+ /// Determination de la date + tirage
+ title = GetLeftTitle(pGame,zn,id_tir);
  qtv_tmp->setTitle(title);
 
  /// Determination des totaux
@@ -132,6 +130,8 @@ QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
  qtv_tmp->setMinimumWidth(l);
 
 
+ /// Mettre en rouge la premiere boule du tirage
+
  return (qtv_tmp->getScreen());
 }
 
@@ -151,12 +151,13 @@ QWidget *BStepper::Ihm_right(const stGameConf *pGame, stTabSteps defSteps)
  for(int row = 0; row < defSteps.maxItems; row++){
   for(int col=0; col<defSteps.maxSteps;col++){
    QStandardItem *item = new QStandardItem();
-
+#if 0
    if((row<d_one->size() && (col== 0))){
     QString tmp = d_one->at(row);
     item->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
     item->setData(tmp,Qt::DisplayRole);
    }
+#endif
    visu->setItem(row, col, item);
   }
  }
@@ -231,48 +232,6 @@ stTabSteps BStepper::Kernel(const stGameConf *pGame, int id_tir)
  dataBack.maxSteps = lMax;
 
  return dataBack;
-}
-
-void BStepper::BSLOT_MoveUp(void)
-{
- QPushButton *btn = qobject_cast<QPushButton *>(sender());
-
- static int cur_tir = origin;
-
- if(cur_tir>0){
-  cur_tir--;
- }
- else
- {
-  btn->setDisabled(true);
-  return;
- }
-
- QSqlQuery query(db_tirages);
- int zn=0;
- int ballLimits = pGDef->limites[zn].len;
- int ballMax = pGDef->limites[zn].max;
- QString cnx=pGDef->db_ref->cnx;
- QString tbl_tirages = pGDef->db_ref->src;
-
- /// selectionner les boules de la zone
- QString st_cols = BCount::FN1_getFieldsFromZone(pGDef, zn, "t1");
- QString msg = "Select "+ st_cols
-               + " from "
-               + tbl_tirages
-               + " as t1 where(t1.id = "+QString::number(cur_tir)+")";
-#ifndef QT_NO_DEBUG
- qDebug() <<msg;
-#endif
-
- bool b_retVal = true;
- b_retVal = query.exec(msg);
-
- if(b_retVal){
-  query.first();
-  TableauRecopier(cur_tir+1);
-  TableauActualiser(cur_tir,query);
- }
 }
 
 void BStepper::TableauRecopier(int l_id)
@@ -411,20 +370,20 @@ QHBoxLayout *BStepper::GetBtnSteps(void)
  {
   tmp_btn = new QPushButton;
 
-	QString icon_file = ":/images/"+lst_btn[i].name+".png";
-	tmp_ico = QIcon(icon_file);
-	QPixmap ico_small = tmp_ico.pixmap(22,22);
+  QString icon_file = ":/images/"+lst_btn[i].name+".png";
+  tmp_ico = QIcon(icon_file);
+  QPixmap ico_small = tmp_ico.pixmap(22,22);
 
 
-	tmp_btn->setFixedSize(ico_small.size());
-	tmp_btn->setText("");
-	tmp_btn->setIcon(ico_small);
-	tmp_btn->setIconSize(ico_small.size());
+  tmp_btn->setFixedSize(ico_small.size());
+  tmp_btn->setText("");
+  tmp_btn->setIcon(ico_small);
+  tmp_btn->setIconSize(ico_small.size());
 
-	tmp_btn->setToolTip(lst_btn[i].tooltips);
+  tmp_btn->setToolTip(lst_btn[i].tooltips);
 
-	inputs->addWidget(tmp_btn);
-	btn_grp->addButton(tmp_btn,lst_btn[i].value);
+  inputs->addWidget(tmp_btn);
+  btn_grp->addButton(tmp_btn,lst_btn[i].value);
  }
 
  btn_grp->setExclusive(true);
@@ -439,9 +398,94 @@ QHBoxLayout *BStepper::GetBtnSteps(void)
 
 void BStepper::BSlot_ActionButton(int btn_id)
 {
+ BView * ptr_qtv = ptrTbvL;
+ static int id_tir = 1;
+
  Bp::E_Ico eVal = static_cast<Bp::E_Ico>(btn_id);
 
- int a=0;
+ switch (eVal) {
+  case Bp::icoDbgTgf:
+   id_tir = origin;
+   break;
+
+  case Bp::icoDbgTge:
+   id_tir = 1;
+   break;
+
+  case Bp::icoDbgTgn:
+   if((id_tir >= 1) && (id_tir < origin)){
+    id_tir++;
+   }
+   break;
+
+  case Bp::icoDbgTgp:
+   if((id_tir > 1) && (id_tir < origin)){
+    id_tir--;
+   }
+   break;
+  default:
+   id_tir = origin;
+   break;
+ }
+
+ TirageGoFirt(id_tir);
+
+ /// Determination de la date
+ int zn =0;
+ QString title = GetLeftTitle(pGDef,zn,id_tir);
+ ptr_qtv->setTitle(title);
+}
+
+void BStepper::TirageGoFirt(int id_tir)
+{
+ const stGameConf *pGame = pGDef;
+ int zn = 0;
+ //int id_tir = 2;///origin;
+ BView * ptr_qtv = ptrTbvL;
+
+ QString msg = getSqlMsg(pGame,zn,id_tir);
+ QSortFilterProxyModel * fpm_tmp = qobject_cast<QSortFilterProxyModel *>( ptr_qtv->model());
+ BTrackStepper *sqm_tmp = qobject_cast<BTrackStepper*>(fpm_tmp->sourceModel());
+ QString s_tmp = sqm_tmp->query().executedQuery();
+
+ sqm_tmp->query().clear();
+ sqm_tmp->setQuery(msg,db_tirages);
+}
+
+QString BStepper::GetLeftTitle(const stGameConf *pGame, int zn, int id_tir)
+{
+ QSqlQuery query(db_tirages);
+QString st_cols = BCount::FN1_getFieldsFromZone(pGame, zn, "t1");
+
+ QString title = "";
+ QString msg = "";
+
+ /// Determination de la date
+ msg = "Select J, D,"+
+       st_cols+" from B_fdj as t1 where (t1.id = "+QString::number(id_tir)+")";
+
+ if(query.exec(msg)){
+  query.first();
+
+  title = "Tot a "
+          + query.value(0).toString()
+          + " "
+          + query.value(1).toString() + " : ";
+
+  st_cols="";
+  int maxBoules = pGame->limites[zn].len;
+  for(int i =0; i< maxBoules;i++){
+   st_cols = st_cols + query.value(2+i).toString();
+
+   if(i< maxBoules -1){
+    st_cols = st_cols + ", ";
+   }
+  }
+ }
+
+ title = title + st_cols;
+
+ return(title);
 }
 
 /// --------------------------------------
