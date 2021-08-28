@@ -12,6 +12,8 @@
 #include <QList>
 #include <QMap>
 
+#include <QStyledItemDelegate>
+
 #include "BView.h"
 #include "Bc.h"
 
@@ -34,6 +36,8 @@ typedef struct _stStepList
 }stStepList;
 #endif
 
+/// -------------------------------------
+/// Class helper 1
 class BTrackStepper:public QSqlQueryModel
 {
   Q_OBJECT
@@ -47,6 +51,29 @@ class BTrackStepper:public QSqlQueryModel
   int *ptrVal;
   int ptrPos;
 };
+/// -------------------------------------
+/// Class helper 2
+class BStepPaint : public QStyledItemDelegate
+{
+ public:
+ BStepPaint(const stGameConf *pGame, int zone, int *cur, int *prev);
+ virtual void paint(QPainter *painter, const QStyleOptionViewItem &option,
+            const QModelIndex &index) const;
+
+ private:
+ void paintDraw(QPainter *painter, const QStyleOptionViewItem &myOpt) const;
+ void paintWrite(QPainter *painter, const QStyleOptionViewItem &myOpt) const;
+ void cellWrite(QPainter *painter, QStyle::State state, const QRect curCell, const QString myTxt, Qt::GlobalColor inPen=Qt::black,  bool up=false) const;
+
+ private:
+ const stGameConf *pGDef;
+ int zn;
+ int lenTab;
+ int *curTir;
+ int *prvTir;
+};
+
+/// -------------------------------------
 
 typedef struct _stTabSteps
 {
@@ -89,7 +116,8 @@ class BStepper : public QWidget
   const stGameConf *pGDef;
   bool *isKnown;
   int ballCounter;
-  int *tirageValues;
+  int *curTirVal;
+  int *prvTirVal;
   stTabSteps defMax;
   int origin; /// Id tirage de depart
   QList<QList <QStringList *>*> tir_id;

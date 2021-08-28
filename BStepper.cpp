@@ -5,6 +5,9 @@
 
 #include <QMessageBox>
 
+#include <QPainter>
+#include <QApplication>
+
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSortFilterProxyModel>
@@ -42,8 +45,8 @@ BStepper::BStepper(const stGameConf *pGame):pGDef(pGame)
  int ballVal = pGame->limites[zn].len;
 
  ballCounter = 0;
- tirageValues = new int[ballVal];
- //ptrBallVal = 0;
+ curTirVal = new int[ballVal];
+ prvTirVal = new int[ballVal];
  isKnown=new bool[ballMax];
 
  for(int i=0;i<ballMax;i++){
@@ -177,7 +180,7 @@ QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
  title = GetLeftTitle(pGame,zn,id_tir);
  qtv_tmp->setTitle(title);
 
- BTrackStepper *sqm_tmp = new BTrackStepper (tirageValues,0);
+ BTrackStepper *sqm_tmp = new BTrackStepper (curTirVal,0);
 
 
  /// Determination des totaux
@@ -213,6 +216,7 @@ QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
 
 QWidget *BStepper::Ihm_right(const stGameConf *pGame, stTabSteps defSteps)
 {
+ int zn = 0;
  QList <QStringList *>  *cur_lst(tir_id.at(0));
  QStringList *d_one(cur_lst->at(0));
 
@@ -240,6 +244,7 @@ QWidget *BStepper::Ihm_right(const stGameConf *pGame, stTabSteps defSteps)
  }
 
  qtv_tmp->setModel(visu);
+ qtv_tmp->setItemDelegate(new BStepPaint(pGame, zn, curTirVal, prvTirVal));
 
  /// Titre/taille des colonnes
  for(int col=0;col<visu->columnCount();col++){
@@ -431,12 +436,12 @@ QHBoxLayout *BStepper::GetBtnSteps(void)
 
  Bp::Btn lst_btn_1[]=
  {
-  {"tir_go_at","Tirage aller a numero",Bp::icoDbgTga},
+  ///{"tir_go_at","Tirage aller a numero",Bp::icoDbgTga},
   {"tir_go_first","Fin",Bp::icoDbgTgf},
   {"tir_go_next","Precedent",Bp::icoDbgTgn},
-  {"tir_ball_step_out","Quitter Detail",Bp::icoDbgTbso},
-  {"tir_ball_step_next","boule suivante",Bp::icoDbgTbsn},
-  {"tir_ball_step_in","Voir Detail",Bp::icoDbgTbsi},
+  ///{"tir_ball_step_out","Quitter Detail",Bp::icoDbgTbso},
+  ///{"tir_ball_step_next","boule suivante",Bp::icoDbgTbsn},
+  ///{"tir_ball_step_in","Voir Detail",Bp::icoDbgTbsi},
   {"tir_go_prev","Suivant",Bp::icoDbgTgp},
   {"tir_go_end","Debut",Bp::icoDbgTge}
  };
@@ -483,7 +488,7 @@ void BStepper::BSlot_ActionButton(int btn_id)
  BView * ptr_qtv = ptrTbvL;
  int zn = 0;
  static bool doStep = false;
- static int id_tir = 1;
+ static int id_tir = origin;
  static int id_bal = 0;
 
  Bp::E_Ico eVal = static_cast<Bp::E_Ico>(btn_id);
@@ -582,12 +587,15 @@ void BStepper::Fill_Right(int id_tir, int id_bal)
 
  QStandardItemModel * sqm_tmp = qobject_cast<QStandardItemModel *>( ptr_qtv->model());
 
- if(ptr_tir == 0) return;
+ RazTbvR();
+
+ if(ptr_tir == 0){
+  return;
+ }
 
  /// positionnement des infos
  QList <QStringList *>  *cur_lst(tir_id.at(ptr_tir-1));
 
- RazTbvR();
 
  /// Parcours axe X
  int nbCols = cur_lst->size();
@@ -611,17 +619,26 @@ void BStepper::Fill_Right(int id_tir, int id_bal)
 
 QString BStepper::GetLeftTitle(const stGameConf *pGame, int zn, int id_tir)
 {
+ int maxBoules = pGame->limites[zn].len;
+
  QSqlQuery query(db_tirages);
+
  QString st_cols = BCount::FN1_getFieldsFromZone(pGame, zn, "t1");
 
  QString title = "";
- QString msg = "";
+ QString msg_1 = "";
+ QString msg_2 = "";
 
  /// Determination de la date
- msg = "Select J, D,"+
-       st_cols+" from B_fdj as t1 where (t1.id = "+QString::number(id_tir)+")";
+ msg_1 = "Select J, D,"+
+         st_cols+" from B_fdj as t1 where (t1.id = "+QString::number(id_tir)+")";
 
- if(query.exec(msg)){
+ /// Memo tirage precedent
+ if(id_tir<origin){
+  msg_2 = "Select " +st_cols+" from B_fdj as t1 where (t1.id = "+QString::number(id_tir+1)+")";
+ }
+
+ if(query.exec(msg_1)){
   query.first();
 
   title = "Tot a "
@@ -630,10 +647,9 @@ QString BStepper::GetLeftTitle(const stGameConf *pGame, int zn, int id_tir)
           + query.value(1).toString() + " : ";
 
   st_cols="";
-  int maxBoules = pGame->limites[zn].len;
   for(int i =0; i< maxBoules;i++){
    st_cols = st_cols + query.value(2+i).toString();
-   tirageValues[i]= query.value(2+i).toInt();
+   curTirVal[i]= query.value(2+i).toInt();
 
    if(i< maxBoules -1){
     st_cols = st_cols + ", ";
@@ -642,6 +658,19 @@ QString BStepper::GetLeftTitle(const stGameConf *pGame, int zn, int id_tir)
  }
 
  title = title + st_cols;
+
+ /// On memorise les boules du tirage precedent
+ if(query.exec(msg_2)){
+  query.first();
+  for(int i =0; i< maxBoules;i++){
+   prvTirVal[i]= query.value(i).toInt();
+  }
+ }
+ else{
+  for(int i =0; i< maxBoules;i++){
+   prvTirVal[i]= -1;
+  }
+ }
 
  return(title);
 }
@@ -720,4 +749,208 @@ QString BStepper::getSqlMsg(const stGameConf *pGame, int zn, int id_tir)
 #endif
 
  return sql_msg;
+}
+
+/// ---------------------------------
+///  CLASS
+///
+BStepPaint::BStepPaint(const stGameConf *pGame, int zone, int *cur, int *prev)
+{
+ pGDef =pGame;
+ zn = zone;
+ lenTab = pGame->limites[zone].len;
+ curTir = cur;
+ prvTir = prev;
+}
+
+void BStepPaint::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                       const QModelIndex &index) const
+{
+ Q_ASSERT(index.isValid());
+
+ int my_col = index.column();
+ int my_row = index.row();
+
+ QStyleOptionViewItem myOpt = option;
+ initStyleOption(&myOpt, index);
+
+ paintDraw(painter,myOpt);
+ paintWrite(painter,myOpt);
+}
+
+
+void BStepPaint::paintDraw(QPainter *painter, const QStyleOptionViewItem &myOpt) const
+{
+ QModelIndex index = myOpt.index;
+ QRect cur_rect = myOpt.rect;
+
+ int my_col = index.column();
+ int my_row = index.row();
+
+ QColor v[]= {
+  COULEUR_FOND_AVANTDER,
+  Qt::red,
+  Qt::green,
+  QColor(255,216,0,255),
+  Qt::black,
+  QColor(178,0,255,255),
+  QColor(211,255,204,255)
+ };
+ int nbColors = sizeof (v)/sizeof (QColor);
+
+ int refx = cur_rect.topLeft().x();
+ int refy = cur_rect.topLeft().y();
+ int ctw = cur_rect.width();  /// largeur cellule
+ int cth = cur_rect.height(); /// Hauteur cellule
+ int cx = ctw/4;
+ int cy = cth/2;
+
+ QPoint c_ru(refx +(ctw/5)*4,refy + (cth/6));   /// Center Right up
+
+ QPoint c_rm(refx +(ctw/5)*1,refy + (cth*3/6)); /// Center Right middle
+ QPoint c_rd(refx +(ctw/5)*1,refy + (cth*5/6)); /// Center Right down
+
+ QRect r1; /// priorite
+ QRect r2; /// Last
+ QRect r3; /// previous
+ QRect r4; /// Selected
+
+ QPoint p1(refx,refy);
+ QPoint p2(refx +(ctw/3),refy+cth);
+ QPoint p3(refx+ctw,refy+(cth*2/3));
+ QPoint p4(refx +(ctw/3),refy+(cth/3));
+ QPoint p5(refx + ctw,refy);
+
+ /// Priorite
+ r1.setTopLeft(p1);
+ r1.setBottomRight(p2);
+
+ /// Last
+ r2.setBottomLeft(p2);
+ r2.setTopRight(p3);
+
+ /// Previous
+ r3.setBottomRight(p3);
+ r3.setTopLeft(p4);
+
+ ///Selected
+ r4.setBottomLeft(p4);
+ r4.setTopRight(p5);
+
+ int cell_val = -1;
+ if(index.data().canConvert(QMetaType::Int)){
+  cell_val = index.data().toInt();
+ }
+
+ /// ------------------
+ painter->save();
+ /// ------------------
+ painter->setRenderHint(QPainter::Antialiasing, true);
+
+ ///CODE GESTION ICI
+ if(cell_val > 0){
+  /// Recherche dans les tableaux des boules
+  for(int i = 0 ; i < lenTab; i++){
+   if(cell_val==curTir[i]){
+    /// mettre rectangle dernier
+    painter->fillRect(r2, COULEUR_FOND_DERNIER);
+    break;
+   }
+  }
+
+  for(int i = 0 ; i < lenTab; i++){
+   if(cell_val==prvTir[i]){
+    /// mettre rectangle avant dernier
+    painter->fillRect(r3, COULEUR_FOND_AVANTDER);
+    break;
+   }
+  }
+
+ }
+ /// ------------------
+ painter->restore();
+ /// ------------------
+}
+
+void BStepPaint::paintWrite(QPainter *painter, const QStyleOptionViewItem &myOpt)const
+{
+ QString myTxt = myOpt.text;
+ QRect cur_rect = myOpt.rect;
+ QModelIndex index = myOpt.index;
+ QStyle::State state =  myOpt.state;
+
+ QFont myFnt;
+ QPalette myPal;
+ Qt::GlobalColor myPen=Qt::black;
+ bool set_up = false;
+
+ int my_col = index.column();
+ int my_row = index.row();
+
+ if(myTxt.size()){
+  myTxt = QString::number(myOpt.text.toInt()).rightJustified(2,'0');
+ }
+
+ cellWrite(painter,state,cur_rect, myTxt,myPen,set_up);
+}
+
+void BStepPaint::cellWrite(QPainter *painter, QStyle::State state, const QRect curCell, const QString myTxt, Qt::GlobalColor inPen, bool up)const
+{
+ bool selected = state & QStyle::State_Selected;
+
+ QFont myFnt;
+ QPalette myPal;
+ Qt::Alignment myAlg;
+ Qt::GlobalColor myPen=inPen;
+
+ if (selected)
+ {
+  /// https://www.qtcentre.org/threads/53498-QFontMetrics-boundingRect()-and-QPainter-draw()-differences
+  // Whitee pen while selection
+  //painter->setPen(Qt::white);
+  painter->setBrush(myPal.highlightedText());
+  painter->fillRect(curCell, COULEUR_FOND_FILTRE);
+  painter->setPen(selected
+                   ? myPal.highlightedText().color()
+                   : myPal.text().color());
+ }
+
+ QString font_family = "ARIAL";
+ int font_weight = QFont::Normal;
+ int alignment = 0;
+ int size = 0;
+ bool b_italic = false;
+
+ if(up==true){
+  size= 7;
+  myAlg = Qt::AlignTop|Qt::AlignLeft;
+  b_italic = true;
+ }
+ else {
+  size = 10;
+  myAlg = Qt::AlignCenter | Qt::AlignVCenter;
+  b_italic = false;
+ }
+
+ myFnt.setPointSize(size);
+ myFnt.setWeight(font_weight);
+ myFnt.setItalic(b_italic);
+ alignment = static_cast<int>(myAlg);
+
+
+ /// Calcul de l'espace pour le texte
+ QFontMetrics qfm(myFnt);
+ QRect space = QApplication::style()->itemTextRect(qfm, curCell, alignment, true, myTxt);
+
+ painter->save();
+
+
+ painter->setFont(myFnt);
+ myPal.setColor(QPalette::Active, QPalette::Text, myPen);
+
+
+
+ QApplication::style()->drawItemText(painter,space,alignment,myPal,true,myTxt,QPalette::ColorRole::Text);
+
+ painter->restore();
 }
