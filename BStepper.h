@@ -36,8 +36,17 @@ typedef struct _stStepList
 }stStepList;
 #endif
 
+typedef struct _stTabSteps
+{
+  int maxSteps;
+  int maxItems;
+}stTabSteps;
+
+//typedef enum _enumTbv{none,left,right}ETbvId;
+
 /// -------------------------------------
 /// Class helper 1
+#if 0
 class BTrackStepper:public QSqlQueryModel
 {
   Q_OBJECT
@@ -51,12 +60,13 @@ class BTrackStepper:public QSqlQueryModel
   int *ptrVal;
   int ptrPos;
 };
+#endif
 /// -------------------------------------
 /// Class helper 2
 class BStepPaint : public QStyledItemDelegate
 {
  public:
- BStepPaint(const stGameConf *pGame, int zone, int *cur, int *prev);
+ BStepPaint(const stGameConf *pGame, int zone, Bp::ETbvId tbvId, int *cur, int *prev);
  virtual void paint(QPainter *painter, const QStyleOptionViewItem &option,
             const QModelIndex &index) const;
 
@@ -69,17 +79,12 @@ class BStepPaint : public QStyledItemDelegate
  const stGameConf *pGDef;
  int zn;
  int lenTab;
+ Bp::ETbvId tbv;
  int *curTir;
  int *prvTir;
 };
 
 /// -------------------------------------
-
-typedef struct _stTabSteps
-{
-  int maxSteps;
-  int maxItems;
-}stTabSteps;
 
 class BStepper : public QWidget
 {

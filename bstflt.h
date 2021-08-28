@@ -96,6 +96,7 @@ namespace Bp {
   tbvOth
  };
  */
+ enum ETbvId{noTbv,tbvLeft,TbvRight};
 
  struct Btn{
   QString name;

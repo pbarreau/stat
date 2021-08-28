@@ -112,6 +112,7 @@ void BStepper::RazTbvR(void)
  }
 }
 /// -----------------------------
+#if 0
 BTrackStepper::BTrackStepper(int *val, int pos, QObject *parent):ptrVal(val),ptrPos(pos),QSqlQueryModel(parent)
 {
 
@@ -164,6 +165,7 @@ QVariant BTrackStepper::data(const QModelIndex &index, int role) const
  }
  return QSqlQueryModel::data(index,role);
 }
+#endif
 /// -----------------------------
 
 QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
@@ -180,7 +182,7 @@ QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
  title = GetLeftTitle(pGame,zn,id_tir);
  qtv_tmp->setTitle(title);
 
- BTrackStepper *sqm_tmp = new BTrackStepper (curTirVal,0);
+ QSqlQueryModel *sqm_tmp = new QSqlQueryModel;
 
 
  /// Determination des totaux
@@ -196,6 +198,7 @@ QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
  fpm_tmp->setDynamicSortFilter(true);
  fpm_tmp->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(fpm_tmp);
+ qtv_tmp->setItemDelegate(new BStepPaint(pGame, zn, Bp::tbvLeft, curTirVal, prvTirVal));
 
  qtv_tmp->hideColumn(Bp::colId);
 
@@ -244,7 +247,7 @@ QWidget *BStepper::Ihm_right(const stGameConf *pGame, stTabSteps defSteps)
  }
 
  qtv_tmp->setModel(visu);
- qtv_tmp->setItemDelegate(new BStepPaint(pGame, zn, curTirVal, prvTirVal));
+ qtv_tmp->setItemDelegate(new BStepPaint(pGame, zn, Bp::TbvRight, curTirVal, prvTirVal));
 
  /// Titre/taille des colonnes
  for(int col=0;col<visu->columnCount();col++){
@@ -569,11 +572,11 @@ void BStepper::Fill_Left(int id_tir, int id_bal)
 
  QString msg = getSqlMsg(pGame,zn,id_tir);
  QSortFilterProxyModel * fpm_tmp = qobject_cast<QSortFilterProxyModel *>( ptr_qtv->model());
- BTrackStepper *sqm_tmp = qobject_cast<BTrackStepper*>(fpm_tmp->sourceModel());
+ QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel*>(fpm_tmp->sourceModel());
  QString s_tmp = sqm_tmp->query().executedQuery();
 
  sqm_tmp->query().clear();
- sqm_tmp->setPtr(id_bal);
+ //sqm_tmp->setPtr(id_bal);
  sqm_tmp->setQuery(msg,db_tirages);
 }
 
@@ -754,11 +757,12 @@ QString BStepper::getSqlMsg(const stGameConf *pGame, int zn, int id_tir)
 /// ---------------------------------
 ///  CLASS
 ///
-BStepPaint::BStepPaint(const stGameConf *pGame, int zone, int *cur, int *prev)
+BStepPaint::BStepPaint(const stGameConf *pGame, int zone, Bp::ETbvId tbvId, int *cur, int *prev)
 {
  pGDef =pGame;
  zn = zone;
  lenTab = pGame->limites[zone].len;
+ tbv = tbvId;
  curTir = cur;
  prvTir = prev;
 }
@@ -774,7 +778,14 @@ void BStepPaint::paint(QPainter *painter, const QStyleOptionViewItem &option,
  QStyleOptionViewItem myOpt = option;
  initStyleOption(&myOpt, index);
 
- paintDraw(painter,myOpt);
+ if(my_col==1 && tbv==Bp::tbvLeft){
+  paintDraw(painter,myOpt);
+ }
+
+ if(tbv==Bp::TbvRight){
+  paintDraw(painter,myOpt);
+ }
+
  paintWrite(painter,myOpt);
 }
 
@@ -850,6 +861,16 @@ void BStepPaint::paintDraw(QPainter *painter, const QStyleOptionViewItem &myOpt)
  ///CODE GESTION ICI
  if(cell_val > 0){
   /// Recherche dans les tableaux des boules
+
+  /// --- Dessin des rectangles
+  for(int i = 0 ; i < lenTab; i++){
+   if(cell_val==prvTir[i]){
+    /// mettre rectangle avant dernier
+    painter->fillRect(r3, COULEUR_FOND_AVANTDER);
+    break;
+   }
+  }
+
   for(int i = 0 ; i < lenTab; i++){
    if(cell_val==curTir[i]){
     /// mettre rectangle dernier
@@ -858,11 +879,23 @@ void BStepPaint::paintDraw(QPainter *painter, const QStyleOptionViewItem &myOpt)
    }
   }
 
+  /// --- Dessin des cercles
   for(int i = 0 ; i < lenTab; i++){
-   if(cell_val==prvTir[i]){
-    /// mettre rectangle avant dernier
-    painter->fillRect(r3, COULEUR_FOND_AVANTDER);
-    break;
+   if(cell_val==curTir[i]){
+    /// Rechercher dans les precedents si cette celle est a +- 1
+    for(int j = 0 ; j < lenTab; j++){
+     if((cell_val-1)==prvTir[j]){
+      /// boule -1
+      painter->setBrush(Qt::green);
+      painter->drawEllipse(c_rd,cx/2,cy/4);
+     }
+
+     if((cell_val+1)==prvTir[j]){
+      /// boule +1
+      painter->setBrush(QColor(0,100,255,255));
+      painter->drawEllipse(c_rm,cx/2,cy/4);
+     }
+    }
    }
   }
 
@@ -911,8 +944,8 @@ void BStepPaint::cellWrite(QPainter *painter, QStyle::State state, const QRect c
   painter->setBrush(myPal.highlightedText());
   painter->fillRect(curCell, COULEUR_FOND_FILTRE);
   painter->setPen(selected
-                   ? myPal.highlightedText().color()
-                   : myPal.text().color());
+                  ? myPal.highlightedText().color()
+                  : myPal.text().color());
  }
 
  QString font_family = "ARIAL";
