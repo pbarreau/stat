@@ -63,26 +63,6 @@ class BTrackStepper:public QSqlQueryModel
 #endif
 /// -------------------------------------
 /// Class helper 2
-class BStepPaint : public QStyledItemDelegate
-{
- public:
- BStepPaint(const stGameConf *pGame, int zone, Bp::ETbvId tbvId, int *cur, int *prev);
- virtual void paint(QPainter *painter, const QStyleOptionViewItem &option,
-            const QModelIndex &index) const;
-
- private:
- void paintDraw(QPainter *painter, const QStyleOptionViewItem &myOpt) const;
- void paintWrite(QPainter *painter, const QStyleOptionViewItem &myOpt) const;
- void cellWrite(QPainter *painter, QStyle::State state, const QRect curCell, const QString myTxt, Qt::GlobalColor inPen=Qt::black,  bool up=false) const;
-
- private:
- const stGameConf *pGDef;
- int zn;
- int lenTab;
- Bp::ETbvId tbv;
- int *curTir;
- int *prvTir;
-};
 
 /// -------------------------------------
 
@@ -92,6 +72,9 @@ class BStepper : public QWidget
 
  public:
   BStepper(const stGameConf *pGame);
+
+ public slots:
+  void BSlot_FindBall(BView *tbvTarget, int id);
 
  private :
   QWidget *Ihm(const stGameConf *pGame, int start_tir, stTabSteps defSteps);
@@ -115,7 +98,11 @@ class BStepper : public QWidget
  private slots:
   void BSlot_ActionButton(int btn_id);
   void BSlotTirId(void);
+  void BSlot_ShowBall(const QModelIndex &index);
 
+ public:
+ Q_SIGNALS:
+  void BSig_FindBall(BView *tbvTarget, int id);
 
  private:
   QSqlDatabase db_tirages;
