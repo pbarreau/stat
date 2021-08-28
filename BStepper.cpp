@@ -11,7 +11,7 @@
 
 #include <QHeaderView>
 #include <QStandardItemModel>
-
+#include <QStringList>
 #include <QSpacerItem>
 
 #include <QHBoxLayout>
@@ -39,7 +39,11 @@ BStepper::BStepper(const stGameConf *pGame):pGDef(pGame)
  /// Initialisation connaissance des boules
  int zn = 0;
  int ballMax = pGame->limites[zn].max;
+ int ballVal = pGame->limites[zn].len;
+
  ballCounter = 0;
+ tirageValues = new int[ballVal];
+ //ptrBallVal = 0;
  isKnown=new bool[ballMax];
 
  for(int i=0;i<ballMax;i++){
@@ -68,6 +72,8 @@ QWidget *BStepper::Ihm(const stGameConf *pGame, int start_tir,stTabSteps defStep
  QWidget *qtv_tmp_1 = Ihm_left(pGame, start_tir);
  QWidget *qtv_tmp_2 = Ihm_right(pGame, defSteps);
 
+ defMax = defSteps;
+
  tmp_layout->addWidget(qtv_tmp_1,0,0);
  //tmp_layout->setColumnMinimumWidth(1,40);
  //tmp_layout->addItem(ecart,0,1);
@@ -81,9 +87,78 @@ QWidget *BStepper::Ihm(const stGameConf *pGame, int start_tir,stTabSteps defStep
 
  return tmp_widget;
 }
+
+void BStepper::RazTbvR(void)
+{
+ int zn = 0;
+ BView * ptr_qtv = ptrTbvR;
+
+ QStandardItemModel * sqm_tmp = qobject_cast<QStandardItemModel *>( ptr_qtv->model());
+
+ /// Parcours axe X
+ int nbCols = defMax.maxSteps;
+ for(int col = 0; col < nbCols; col++){
+  /// Parcours axe Y
+  int nbRows = defMax.maxItems;
+  for(int row = 0; row < nbRows; row++){
+   QStandardItem *item = sqm_tmp->item(row,col);
+   QString sval = "";
+   item->setData(sval,Qt::DisplayRole);
+   sqm_tmp->setItem(row,col,item);
+  }
+ }
+}
 /// -----------------------------
+BTrackStepper::BTrackStepper(int *val, int pos, QObject *parent):ptrVal(val),ptrPos(pos),QSqlQueryModel(parent)
+{
+
+}
+void BTrackStepper::setPtr(int pos)
+{
+ ptrPos = pos;
+}
+
 QVariant BTrackStepper::data(const QModelIndex &index, int role) const
 {
+ /// centrer le text
+ if(role == Qt::TextAlignmentRole){
+  return(Qt::AlignCenter);
+ }
+
+ /// Changer couleur de la boule
+ if(index.column()== 1 )
+ {
+  int val = QSqlQueryModel::data(index,Qt::DisplayRole).toInt();
+
+  int current = ptrVal[ptrPos];
+  int previous=-1;
+
+  if(role == Qt::DisplayRole)
+  {
+   if(val <=9)
+   {
+    QString sval = QString::number(val).rightJustified(2,'0');
+    return sval;
+   }
+  }
+
+  if(ptrPos >0){
+   previous = ptrVal[ptrPos-1];
+  }
+
+  if(val == previous){
+   if (role == Qt::TextColorRole){
+    return QColor(Qt::green);
+   }
+  }
+
+  if(val == current){
+   if (role == Qt::TextColorRole){
+    return QColor(Qt::red);
+   }
+  }
+
+ }
  return QSqlQueryModel::data(index,role);
 }
 /// -----------------------------
@@ -92,9 +167,7 @@ QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
 {
  int zn = 0;
 
- QSqlQuery query(db_tirages);
  QString msg = "";
- BTrackStepper *sqm_tmp = new BTrackStepper ;
 
  BView *qtv_tmp = new BView;
  QString title = "";
@@ -103,6 +176,9 @@ QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
  /// Determination de la date + tirage
  title = GetLeftTitle(pGame,zn,id_tir);
  qtv_tmp->setTitle(title);
+
+ BTrackStepper *sqm_tmp = new BTrackStepper (tirageValues,0);
+
 
  /// Determination des totaux
  msg = getSqlMsg(pGame,zn,id_tir);
@@ -141,6 +217,7 @@ QWidget *BStepper::Ihm_right(const stGameConf *pGame, stTabSteps defSteps)
  QStringList *d_one(cur_lst->at(0));
 
  BView *qtv_tmp = new BView;
+ ptrTbvR = qtv_tmp;
  qtv_tmp->setTitle("Répartitions");
  QHBoxLayout *tmp_2 = GetBtnSteps();
  qtv_tmp->addUpLayout(tmp_2);
@@ -355,13 +432,13 @@ QHBoxLayout *BStepper::GetBtnSteps(void)
  Bp::Btn lst_btn_1[]=
  {
   {"tir_go_at","Tirage aller a numero",Bp::icoDbgTga},
-  {"tir_go_first","Tirage aller debut",Bp::icoDbgTgf},
-  {"tir_go_next","Tirage aller suivant",Bp::icoDbgTgn},
-  {"tir_ball_step_in","Tirage Voir Detail",Bp::icoDbgTbsi},
-  {"tir_ball_step_next","Tirage voir boule suivante",Bp::icoDbgTbsn},
-  {"tir_ball_step_out","Tirage Quitter Detail",Bp::icoDbgTbso},
-  {"tir_go_prev","Tirage aller precedent",Bp::icoDbgTgp},
-  {"tir_go_end","Tirage aller fin",Bp::icoDbgTge}
+  {"tir_go_first","Fin",Bp::icoDbgTgf},
+  {"tir_go_next","Precedent",Bp::icoDbgTgn},
+  {"tir_ball_step_out","Quitter Detail",Bp::icoDbgTbso},
+  {"tir_ball_step_next","boule suivante",Bp::icoDbgTbsn},
+  {"tir_ball_step_in","Voir Detail",Bp::icoDbgTbsi},
+  {"tir_go_prev","Suivant",Bp::icoDbgTgp},
+  {"tir_go_end","Debut",Bp::icoDbgTge}
  };
  int nb_btn = sizeof(lst_btn_1)/sizeof(Bp::Btn);
 
@@ -382,6 +459,9 @@ QHBoxLayout *BStepper::GetBtnSteps(void)
 
   tmp_btn->setToolTip(lst_btn[i].tooltips);
 
+  if(lst_btn[i].value == Bp::icoDbgTbsn){
+   tmp_btn->setVisible(false);
+  }
   inputs->addWidget(tmp_btn);
   btn_grp->addButton(tmp_btn,lst_btn[i].value);
  }
@@ -398,18 +478,23 @@ QHBoxLayout *BStepper::GetBtnSteps(void)
 
 void BStepper::BSlot_ActionButton(int btn_id)
 {
+ QButtonGroup *btn = qobject_cast<QButtonGroup *>(sender());
+
  BView * ptr_qtv = ptrTbvL;
+ int zn = 0;
+ static bool doStep = false;
  static int id_tir = 1;
+ static int id_bal = 0;
 
  Bp::E_Ico eVal = static_cast<Bp::E_Ico>(btn_id);
 
  switch (eVal) {
-  case Bp::icoDbgTgf:
-   id_tir = origin;
+  case Bp::icoDbgTgf: /// Tirage de fin d'analyse
+   id_tir = 1;
    break;
 
-  case Bp::icoDbgTge:
-   id_tir = 1;
+  case Bp::icoDbgTge: /// Tirage debut analyse
+   id_tir = origin;
    break;
 
   case Bp::icoDbgTgn:
@@ -418,29 +503,63 @@ void BStepper::BSlot_ActionButton(int btn_id)
    }
    break;
 
-  case Bp::icoDbgTgp:
-   if((id_tir > 1) && (id_tir < origin)){
+  case Bp::icoDbgTgp: /// suite Analyse
+   if((id_tir > 1) && (id_tir <= origin)){
     id_tir--;
    }
    break;
+
+  case Bp::icoDbgTbsi:
+   doStep = true;
+   id_bal = 0;
+   btn->button(Bp::icoDbgTbsn)->setVisible(true);
+   break;
+
+  case Bp::icoDbgTbso:
+   doStep = false;
+   id_bal = 0;
+   btn->button(Bp::icoDbgTbsn)->setVisible(false);
+   if((id_tir > 1) && (id_tir <= origin)){
+    id_tir--;
+   }
+   break;
+
+  case Bp::icoDbgTbsn:
+   if(doStep){
+    id_bal++;
+    if(id_bal == pGDef->limites[zn].len){
+     id_bal=0;
+
+     if((id_tir >= 1) && (id_tir < origin)){
+      id_tir++;
+     }
+    }
+   }
+   break;
+
   default:
    id_tir = origin;
    break;
  }
 
- TirageGoFirt(id_tir);
+ //ptrBallVal = id_bal;
+ FillTbViews(id_tir, id_bal);
 
  /// Determination de la date
- int zn =0;
  QString title = GetLeftTitle(pGDef,zn,id_tir);
  ptr_qtv->setTitle(title);
 }
 
-void BStepper::TirageGoFirt(int id_tir)
+void BStepper::FillTbViews(int id_tir, int id_bal)
+{
+ Fill_Left(id_tir,id_bal);
+ Fill_Right(id_tir,id_bal);
+}
+
+void BStepper::Fill_Left(int id_tir, int id_bal)
 {
  const stGameConf *pGame = pGDef;
  int zn = 0;
- //int id_tir = 2;///origin;
  BView * ptr_qtv = ptrTbvL;
 
  QString msg = getSqlMsg(pGame,zn,id_tir);
@@ -449,13 +568,51 @@ void BStepper::TirageGoFirt(int id_tir)
  QString s_tmp = sqm_tmp->query().executedQuery();
 
  sqm_tmp->query().clear();
+ sqm_tmp->setPtr(id_bal);
  sqm_tmp->setQuery(msg,db_tirages);
+}
+
+void BStepper::Fill_Right(int id_tir, int id_bal)
+{
+ int ptr_tir = origin - id_tir;
+
+ const stGameConf *pGame = pGDef;
+ int zn = 0;
+ BView * ptr_qtv = ptrTbvR;
+
+ QStandardItemModel * sqm_tmp = qobject_cast<QStandardItemModel *>( ptr_qtv->model());
+
+ if(ptr_tir == 0) return;
+
+ /// positionnement des infos
+ QList <QStringList *>  *cur_lst(tir_id.at(ptr_tir-1));
+
+ RazTbvR();
+
+ /// Parcours axe X
+ int nbCols = cur_lst->size();
+ for(int col = 0; col < nbCols; col++){
+  QStringList *tmpList = cur_lst->at(col);
+  /// Parcours axe Y
+  int nbRows = cur_lst->at(col)->size();
+  for(int row = 0; row < nbRows; row++){
+   QStandardItem *item = sqm_tmp->item(row,col);
+
+   QString sval = tmpList->at(row);
+   int val = sval.toInt();
+   sval = QString::number(val).rightJustified(2,'0');
+   item->setData(val,Qt::DisplayRole);
+   item->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
+   sqm_tmp->setItem(row,col,item);
+  }
+ }
+
 }
 
 QString BStepper::GetLeftTitle(const stGameConf *pGame, int zn, int id_tir)
 {
  QSqlQuery query(db_tirages);
-QString st_cols = BCount::FN1_getFieldsFromZone(pGame, zn, "t1");
+ QString st_cols = BCount::FN1_getFieldsFromZone(pGame, zn, "t1");
 
  QString title = "";
  QString msg = "";
@@ -476,6 +633,7 @@ QString st_cols = BCount::FN1_getFieldsFromZone(pGame, zn, "t1");
   int maxBoules = pGame->limites[zn].len;
   for(int i =0; i< maxBoules;i++){
    st_cols = st_cols + query.value(2+i).toString();
+   tirageValues[i]= query.value(2+i).toInt();
 
    if(i< maxBoules -1){
     st_cols = st_cols + ", ";

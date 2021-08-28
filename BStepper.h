@@ -36,11 +36,16 @@ typedef struct _stStepList
 
 class BTrackStepper:public QSqlQueryModel
 {
- Q_OBJECT
+  Q_OBJECT
 
  public: ///
- explicit BTrackStepper(QObject *parent = nullptr):QSqlQueryModel(parent){}
- QVariant data(const QModelIndex &index, int role) const;
+  explicit BTrackStepper(int *val, int pos, QObject *parent = nullptr);
+  void setPtr(int pos);
+  QVariant data(const QModelIndex &index, int role) const;
+
+ private:
+  int *ptrVal;
+  int ptrPos;
 };
 
 typedef struct _stTabSteps
@@ -68,7 +73,11 @@ class BStepper : public QWidget
   void TableauRecopier(int l_id);
   void TableauActualiser(int l_id, QSqlQuery query);
 
-  void TirageGoFirt(int id_tir);
+  void FillTbViews(int id_tir, int id_bal);
+  void Fill_Left(int id_tir, int id_bal);
+  void Fill_Right(int id_tir, int id_bal);
+  void RazTbvR(void);
+
   QString GetLeftTitle(const stGameConf *pGame, int zn, int id_tir);
 
  private slots:
@@ -80,6 +89,8 @@ class BStepper : public QWidget
   const stGameConf *pGDef;
   bool *isKnown;
   int ballCounter;
+  int *tirageValues;
+  stTabSteps defMax;
   int origin; /// Id tirage de depart
   QList<QList <QStringList *>*> tir_id;
   BView *ptrTbvL;

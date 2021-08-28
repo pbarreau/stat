@@ -78,9 +78,9 @@ namespace Bp {
   icoShowAll,
   icoShowChk,
   icoShowUhk,
+  icoDbgTbsi, /// tir_ball_step_in
   icoDbgTbsn, /// tir_ball_step_next
-  icoDbgTbso, /// in
-  icoDbgTbsi, /// out
+  icoDbgTbso, /// tir_ball_step_out
   icoDbgTgf,  /// go first
   icoDbgTge,  /// go end
   icoDbgTgp,  /// previous
