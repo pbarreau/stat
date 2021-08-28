@@ -17,6 +17,9 @@
 #include <QStringList>
 #include <QSpacerItem>
 
+#include <QSpinBox>
+#include <QSlider>
+
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QButtonGroup>
@@ -56,6 +59,7 @@ BStepper::BStepper(const stGameConf *pGame):pGDef(pGame)
  /// determiner le tirage de depart
  int start=100;
  origin=start;
+ ptrCurTir = start;
 
  /// Rechercher la progression des boules
  stTabSteps defSteps = Kernel(pGame,start);
@@ -480,8 +484,59 @@ QHBoxLayout *BStepper::GetBtnSteps(void)
  QSpacerItem *ecart = new QSpacerItem(16, 16, QSizePolicy::Expanding, QSizePolicy::Expanding);
  inputs->addItem(ecart);
 
+ /// Rajout spinBox
+ QSpinBox *valueSpinBox = new QSpinBox;
+ valueSpinBox->setRange(1, 100);
+ valueSpinBox->setSingleStep(1);
+ valueSpinBox->setValue(ptrCurTir);
+
+ /// Rajout d'un slider
+ QSlider *slider = new QSlider(Qt::Horizontal);
+ showPos = slider;
+ slider->setFocusPolicy(Qt::StrongFocus);
+ slider->setTickPosition(QSlider::TicksBothSides);
+ slider->setRange(1,100);
+ slider->setTickInterval(20);
+ slider->setSingleStep(1);
+ slider->setPageStep(10);
+ slider->setValue(ptrCurTir);
+
+ connect(valueSpinBox, SIGNAL(valueChanged(int)),
+         slider, SLOT(setValue(int)));
+
+ connect(slider, SIGNAL(valueChanged(int)),
+         valueSpinBox, SLOT(setValue(int)));
+
+ connect(slider, SIGNAL(sliderReleased()),
+         this, SLOT(BSlotTirId()));
+
+ inputs->addWidget(valueSpinBox);
+ inputs->addWidget(slider);
+ inputs->addItem(ecart);
+
  return inputs;
 
+}
+
+void BStepper::BSlotTirId(void)
+{
+ BView * ptr_qtv = ptrTbvL;
+ int zn = 0;
+ int id_bal = 0;
+
+ QSlider *slider = qobject_cast<QSlider *>(sender());
+
+ int value = slider->value();
+ ptrCurTir = value;
+
+ slider->setValue(value);
+
+
+ FillTbViews(value, id_bal);
+
+ /// Determination de la date
+ QString title = GetLeftTitle(pGDef,zn,value);
+ ptr_qtv->setTitle(title);
 }
 
 void BStepper::BSlot_ActionButton(int btn_id)
@@ -491,8 +546,8 @@ void BStepper::BSlot_ActionButton(int btn_id)
  BView * ptr_qtv = ptrTbvL;
  int zn = 0;
  static bool doStep = false;
- static int id_tir = origin;
- static int id_bal = 0;
+ int id_tir = ptrCurTir;
+ int id_bal = 0;
 
  Bp::E_Ico eVal = static_cast<Bp::E_Ico>(btn_id);
 
@@ -550,7 +605,9 @@ void BStepper::BSlot_ActionButton(int btn_id)
    break;
  }
 
- //ptrBallVal = id_bal;
+ ptrCurTir = id_tir;
+ showPos->setValue(ptrCurTir);
+
  FillTbViews(id_tir, id_bal);
 
  /// Determination de la date

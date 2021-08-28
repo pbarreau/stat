@@ -114,6 +114,7 @@ class BStepper : public QWidget
 
  private slots:
   void BSlot_ActionButton(int btn_id);
+  void BSlotTirId(void);
 
 
  private:
@@ -125,6 +126,8 @@ class BStepper : public QWidget
   int *prvTirVal;
   stTabSteps defMax;
   int origin; /// Id tirage de depart
+  int ptrCurTir;
+  QSlider *showPos;
   QList<QList <QStringList *>*> tir_id;
   BView *ptrTbvL;
   BView *ptrTbvR;
