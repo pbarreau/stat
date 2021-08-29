@@ -87,7 +87,6 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
  //BStepper *t1 = new BStepper(curConf);
  //t1->show();
 
- //return;
 
  bool b_retVal = true;
 
@@ -99,6 +98,7 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
  }
 
  BTirFdj *lst_tirages = new BTirFdj(curConf);
+
  BTirAna *ana_tirages = new BTirAna(curConf);
  if(ana_tirages->self() == nullptr){
   QString msg = "Erreur de l'analyse des tirages :" + curConf->db_ref->src;

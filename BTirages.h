@@ -25,6 +25,7 @@ QString getGameLabel(void);
 void showFdj(BTirAna *ana_tirages);
 void showGen(BTirAna *ana_tirages);
 BView *getTbvTirages();
+void DrawCustomPlot();
 
 protected:
 QString getTiragesList(const stGameConf *pGame, QString tbl_src);
@@ -51,6 +52,7 @@ QWidget * Dessine();
 BGraphicsView *selGraphTargets();
 QTabWidget *getTabedDetails();
 QWidget *usr_GrpTb2(int zn);
+///void DrawCustomPlot();
 
 protected:
 signals:

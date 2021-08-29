@@ -13,7 +13,7 @@
 //#include "BView.h"
 #include "BFpmFdj.h"
 
-BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn):tirages(lesTirages)
+BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn, int my_start, int my_end):tirages(lesTirages)
 {
  ptr_self = nullptr;
  QString cnx=pGame->db_ref->cnx;
@@ -57,9 +57,13 @@ BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn):tir
   QCPMarginGroup *marginGroup = new QCPMarginGroup(this);
 
   bool haveNext = true;
-  int start_loop=1;//tot_keys-2;
-  int stop_loop = tot_keys;
-  for(int j=1;j<=2;j++){
+
+  if(my_start<1) my_start =1;
+  if(my_end> tot_keys) my_end = tot_keys -1;
+  int start_loop=my_start;//tot_keys-2;
+  //int stop_loop = tot_keys;
+
+  for(int j=my_start;j<=my_end;j++){
    query.first();
 
    for(int i=1;(i<=total) && haveNext ;i++){

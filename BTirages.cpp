@@ -134,22 +134,81 @@ QWidget * BTirages::Dessine()
  return wdg_tmp;
 }
 
-BGraphicsView *BTirages::selGraphTargets()
+void BTirages::DrawCustomPlot()
 {
- BGraphicsView *tmp_view = new BGraphicsView(gme_cnf, tir_tbv);
-#if 1
  /// Test Custom Plot
+ QWidget *wdg_tmp = new QWidget;
+ QGridLayout *lay_visual = new QGridLayout;
+
  QTabWidget * try_01 = new QTabWidget;
  try_01->setGeometry(400, 250, 542, 390);
 
+ /// Courbes P et G
  int tot_zn = gme_cnf->znCount;
  for(int i=0; i<tot_zn;i++){
   BCustomPlot *monTest = new BCustomPlot(gme_cnf, tir_tbv, i);
   try_01->addTab(monTest,gme_cnf->names[i].std);
  }
- try_01->show();
- //return;
-#endif
+
+
+ /// Courbes dizaines
+
+
+ QTabWidget * try_02 = new QTabWidget;
+ //try_02->setGeometry(400, 250, 542, 390);
+
+ for(int i=0; i<tot_zn;i++){
+  /// determination du maximum de la zone
+  int min=2;
+  int draw_step = 1;
+  int max=min+((gme_cnf->limites[i].max)/10);
+
+  QWidget *bloc_2 = new QWidget;
+  bloc_2->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+
+
+  QScrollArea *scrol_2 = new QScrollArea();
+  scrol_2->setBackgroundRole(QPalette::Window);
+  scrol_2->setFrameShadow(QFrame::Plain);
+  scrol_2->setFrameShape(QFrame::NoFrame);
+  scrol_2->setWidgetResizable(true);
+
+  QVBoxLayout *vb_2 = new QVBoxLayout ();
+  bloc_2->setLayout(vb_2);
+
+  for (int item=min;item<max;item=item+draw_step){
+   int start = item+1;
+   int stop = item + draw_step;
+   QHBoxLayout *layout = new QHBoxLayout();
+   vb_2->addLayout(layout);
+   BCustomPlot *monTest = new BCustomPlot(gme_cnf, tir_tbv, i,start,stop);
+   monTest->setFixedHeight(200);
+   layout->addWidget(monTest);
+  }
+  ///bloc_2->setLayout(vb_2);
+
+  scrol_2->setWidget(bloc_2);
+  try_02->addTab(scrol_2,gme_cnf->names[i].std);
+ }
+
+ lay_visual->addWidget(try_01,0,0);
+ lay_visual->addWidget(try_02,0,1);
+
+ wdg_tmp->setLayout(lay_visual);
+ wdg_tmp->show();
+}
+
+
+BGraphicsView *BTirages::selGraphTargets()
+{
+
+ /// -----------------
+ /// TEST BCustomPlot
+ DrawCustomPlot();
+ /// ----------------
+
+
+ BGraphicsView *tmp_view = new BGraphicsView(gme_cnf, tir_tbv);
 
  int nb_zn = gme_cnf->znCount;
  for (int zn=0;zn<nb_zn;zn++) {
