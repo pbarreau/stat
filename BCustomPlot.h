@@ -5,7 +5,8 @@
 #include <QFrame>
 #include <QSqlDatabase>
 
-#include "BView.h"
+//#include "BView.h"
+#include "BTirages.h"
 #include "game.h"
 #include "customPlot/qcustomplot.h"
 
@@ -14,7 +15,7 @@ class BCustomPlot : public QCustomPlot
   Q_OBJECT
 
  public:
-  BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn, QString fn_key, QString fn_tips);
+  BCustomPlot(const stGameConf *pGame, BTirages *lesTirages, int zn, QString fn_key, QString fn_tips);
 
  private:
   void BCP_Tst_01(QCustomPlot *customPlot);
@@ -28,7 +29,7 @@ class BCustomPlot : public QCustomPlot
  private:
   BCustomPlot* ptr_self;
   QSqlDatabase db_1;
-  BView *tirages;
+  BTirages *tirages;
 };
 
 #endif // BCUSTOMPLOT_H

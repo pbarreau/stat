@@ -14,6 +14,8 @@
 #include <QAction>
 
 #include "BTirages.h"
+#include "BFpmFdj.h"
+
 #include "Bc.h"
 #include "BTirAna.h"
 #include "BCustomPlot.h"
@@ -55,6 +57,33 @@ BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
  og_AnaSel = nullptr; /// og: Onglet
  ana_TirLst = nullptr;
 
+}
+
+void BTirages::HighLightTirId(int tir_id)
+{
+ BView * ptr_qtv = tir_tbv;
+ BFpmFdj * fpm_tmp = qobject_cast<BFpmFdj *>( ptr_qtv->model());
+ fpm_tmp->sort(0);
+
+ int sel_row_id = tir_id;
+ QAbstractItemView::SelectionBehavior prevBehav = ptr_qtv->selectionBehavior();
+ ptr_qtv->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ if(tir_id<0){
+  ptr_qtv->selectionModel()->clear();
+  sel_row_id = 0;
+  ptr_qtv->setSelectionMode(QAbstractItemView::NoSelection);
+ }
+ else{
+  ptr_qtv->setSelectionMode(QAbstractItemView::SingleSelection);
+  ptr_qtv->setStyleSheet("QTableView {selection-background-color: red;}");
+  ptr_qtv->setSelectionBehavior(QAbstractItemView::SelectRows);
+  ptr_qtv->selectRow(sel_row_id);
+
+  ptr_qtv->clicked(fpm_tmp->index(sel_row_id,0)); /// pour mettre a jour onglet grp
+ }
+ ptr_qtv->scrollTo(fpm_tmp->index(sel_row_id,0));
+
+ ptr_qtv->setSelectionBehavior(prevBehav);
 }
 
 BView *BTirages::getTbvTirages()
@@ -109,6 +138,8 @@ void BTirages::showFdj(BTirAna *ana_tirages)
 
 QWidget * BTirages::Dessine()
 {
+ QWidget *wdg_tmp = DrawCustomPlot();
+#if 0
  QWidget *wdg_tmp = new QWidget;
  QGridLayout *lay_visual = new QGridLayout;
 
@@ -130,11 +161,11 @@ QWidget * BTirages::Dessine()
  */
 
  wdg_tmp->setLayout(lay_visual);
-
+#endif
  return wdg_tmp;
 }
 
-void BTirages::DrawCustomPlot()
+QWidget * BTirages::DrawCustomPlot()
 {
  int tot_zn = gme_cnf->znCount;
 
@@ -172,7 +203,7 @@ void BTirages::DrawCustomPlot()
    QHBoxLayout *layout = new QHBoxLayout();
    vb_2->addLayout(layout);
 
-   BCustomPlot *monTest = new BCustomPlot(gme_cnf, tir_tbv, zn,stKey,stTip);
+   BCustomPlot *monTest = new BCustomPlot(gme_cnf, this, zn,stKey,stTip);
    monTest->setFixedHeight(200);
    layout->addWidget(monTest);
   }
@@ -183,7 +214,8 @@ void BTirages::DrawCustomPlot()
 
  lay_visual->addWidget(try_01,0,0);
  wdg_toShow->setLayout(lay_visual);
- wdg_toShow->show();
+ ///wdg_toShow->show();
+ return (wdg_toShow);
 }
 
 

@@ -28,7 +28,7 @@
 #include "BStepper.h"
 #include "BStepPaint.h"
 
-BStepper::BStepper(const stGameConf *pGame):pGDef(pGame)
+BStepper::BStepper(const stGameConf *pGame, BTirFdj *lst_tirages):pGDef(pGame),tirages(lst_tirages)
 {
  QString cnx=pGame->db_ref->cnx;
 
@@ -558,7 +558,7 @@ void BStepper::BSlotTirId(void)
  ptrCurTir = value;
 
  slider->setValue(value);
-
+ tirages->HighLightTirId(value-1);
 
  FillTbViews(value, id_bal);
 
@@ -633,6 +633,7 @@ void BStepper::BSlot_ActionButton(int btn_id)
    break;
  }
 
+ tirages->HighLightTirId(id_tir-1);
  ptrCurTir = id_tir;
  showPos->setValue(ptrCurTir);
 

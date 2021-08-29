@@ -17,6 +17,7 @@
 #include "BView.h"
 #include "Bc.h"
 
+#include "BTirFdj.h"
 #include "game.h"
 
 #if 0
@@ -71,7 +72,7 @@ class BStepper : public QWidget
   Q_OBJECT
 
  public:
-  BStepper(const stGameConf *pGame);
+  BStepper(const stGameConf *pGame, BTirFdj *lst_tirages);
 
  public slots:
   void BSlot_FindBall(BView *tbvTarget, int id);
@@ -118,6 +119,7 @@ class BStepper : public QWidget
   QList<QList <QStringList *>*> tir_id;
   BView *ptrTbvL;
   BView *ptrTbvR;
+  BTirFdj *tirages; /// Tableau contenant tous les tirages
 };
 
 #endif // BSTEPPER_H

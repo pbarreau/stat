@@ -13,7 +13,7 @@
 //#include "BView.h"
 #include "BFpmFdj.h"
 
-BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn, QString fn_key, QString fn_tips):tirages(lesTirages)
+BCustomPlot::BCustomPlot(const stGameConf *pGame, BTirages *lesTirages, int zn, QString fn_key, QString fn_tips):tirages(lesTirages)
 {
  ptr_self = nullptr;
  QString cnx=pGame->db_ref->cnx;
@@ -32,6 +32,7 @@ BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn, QSt
 
  /// Recuperer les valeurs pour la clef en cour
  QString msg = "select "+fn_key+" from " + tbLabAna;
+
  QSqlQuery query(db_1);
 
  b_retVal = query.exec(msg);
@@ -136,6 +137,8 @@ void   BCustomPlot::BSLOT_graphClicked(QCPAbstractPlottable *plottable, int data
    QToolTip::showText (QCursor::pos(), message);
    titre = "";
 
+    tirages->HighLightTirId(dataIndex-2);
+#if 0
    BView * ptr_qtv = tirages;
    BFpmFdj * fpm_tmp = qobject_cast<BFpmFdj *>( ptr_qtv->model());
    fpm_tmp->sort(0);
@@ -149,6 +152,7 @@ void   BCustomPlot::BSLOT_graphClicked(QCPAbstractPlottable *plottable, int data
    ptr_qtv->setSelectionBehavior(QAbstractItemView::SelectRows);
    ptr_qtv->selectRow(dataIndex-2);
    ptr_qtv->setSelectionBehavior(prevBehav);
+#endif
   }
  }
 

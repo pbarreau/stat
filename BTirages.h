@@ -25,7 +25,8 @@ QString getGameLabel(void);
 void showFdj(BTirAna *ana_tirages);
 void showGen(BTirAna *ana_tirages);
 BView *getTbvTirages();
-void DrawCustomPlot();
+QWidget *DrawCustomPlot();
+void HighLightTirId(int tir_id);
 
 protected:
 QString getTiragesList(const stGameConf *pGame, QString tbl_src);
