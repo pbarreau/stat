@@ -13,7 +13,7 @@
 //#include "BView.h"
 #include "BFpmFdj.h"
 
-BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn, int my_start, int my_end):tirages(lesTirages)
+BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn, QString fn_key, QString fn_tips):tirages(lesTirages)
 {
  ptr_self = nullptr;
  QString cnx=pGame->db_ref->cnx;
@@ -29,7 +29,9 @@ BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn, int
 
 
  bool b_retVal = true;
- QString msg = "select * from " + tbLabAna;
+
+ /// Recuperer les valeurs pour la clef en cour
+ QString msg = "select "+fn_key+" from " + tbLabAna;
  QSqlQuery query(db_1);
 
  b_retVal = query.exec(msg);
@@ -42,79 +44,60 @@ BCustomPlot::BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn, int
    query.first();
   }
 
-  QStringList keys = pGame->slFlt[zn][Bp::colDefTitres];
-  QStringList tips = pGame->slFlt[zn][Bp::colDefToolTips];
-  int tot_keys = keys.size();
+  /// Debut info pour graphique
   QVector<double> x(total+2), y(total+2);
 
+  /// Ecran vide
   plotLayout()->clear();
 
   setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
-                                    QCP::iSelectLegend | QCP::iSelectPlottables);
+                  QCP::iSelectLegend | QCP::iSelectPlottables);
 
   /// Parcourir chaque resultat pour dessiner les courbes.
-  //QCPLayoutGrid *subLayout = new QCPLayoutGrid;
   QCPMarginGroup *marginGroup = new QCPMarginGroup(this);
 
-  bool haveNext = true;
-
-  if(my_start<1) my_start =1;
-  if(my_end> tot_keys) my_end = tot_keys -1;
-  int start_loop=my_start;//tot_keys-2;
-  //int stop_loop = tot_keys;
-
-  for(int j=my_start;j<=my_end;j++){
-   query.first();
-
-   for(int i=1;(i<=total) && haveNext ;i++){
-    x[i]=i;
-    y[i]=query.value(j).toDouble();
-    haveNext = query.next();
-   }
-
-   QCPAxisRect *wideAxisRect = new QCPAxisRect(this);
-
-   wideAxisRect->setupFullAxesBox(false);
-   //wideAxisRect->setRangeDrag(Qt::Horizontal);
-   wideAxisRect->setMarginGroup(QCP::msLeft | QCP::msRight, marginGroup);
-
-   wideAxisRect->axis(QCPAxis::atRight, 0)->setTickLabels(true);
-   wideAxisRect->axis(QCPAxis::atLeft)->setLabel(keys[j-1]);
-   if(j<tot_keys-1){
-    wideAxisRect->axis(QCPAxis::atLeft)->setRange(0,pGame->limites[zn].win);
-   }
-
-   //wideAxisRect->axis(QCPAxis::atBottom)->setLabel("Tirage id");
-   wideAxisRect->axis(QCPAxis::atBottom)->setRange(1,total);
-   wideAxisRect->axis(QCPAxis::atBottom, 0)->setTickLabels(true);
-
-   //wideAxisRect->axis(QCPAxis::atBottom, 0)->setRangeLower(1);
-   //wideAxisRect->axis(QCPAxis::atBottom)->setRange(1,total);
-   //wideAxisRect->axis(tmp_plot->xAxis)->setRange(1,total);
-   //my_axys->setLabel("Tirage id");
-   //my_axys->setRange(1,total);
-   //wideAxisRect->setupFullAxesBox(true);
-
-   //wideAxisRect->axis(QCPAxis::atBottom)->setRangeLower(1);
-   //wideAxisRect->axis(QCPAxis::atBottom)->setOffset(1);
-
-   plotLayout()->addElement(j-start_loop, 0, wideAxisRect);
-
-   QCPGraph *tmp = addGraph(wideAxisRect->axis(QCPAxis::atBottom), wideAxisRect->axis(QCPAxis::atLeft));
-   QString graph_name = tips[j-1];
-   graph(j-start_loop)->setName(graph_name);
-   graph(j-start_loop)->setData(x,y);
-   graph(j-start_loop)->setLineStyle(QCPGraph::lsLine);
-   graph(j-start_loop)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
-   tmp->rescaleKeyAxis();
-
-   // connect slot that shows a message in the status bar when a graph is clicked:
-   connect(this, SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)), this, SLOT(BSLOT_graphClicked(QCPAbstractPlottable*,int, QMouseEvent*)));
-
+  bool haveNext=true;
+  for(int i=1;(i<=total) && haveNext ;i++){
+   x[i]=i;
+   y[i]=query.value(fn_key).toDouble();
+   haveNext = query.next();
   }
 
-  //BCP_Tst_04(this);
+  QCPAxisRect *wideAxisRect = new QCPAxisRect(this);
 
+  wideAxisRect->setupFullAxesBox(false);
+  wideAxisRect->setMarginGroup(QCP::msLeft | QCP::msRight, marginGroup);
+
+  wideAxisRect->axis(QCPAxis::atLeft)->setLabel(fn_key);
+  wideAxisRect->axis(QCPAxis::atLeft)->setRange(0,pGame->limites[zn].win);
+
+  wideAxisRect->axis(QCPAxis::atBottom)->setRange(1,total);
+  wideAxisRect->axis(QCPAxis::atBottom, 0)->setTickLabels(true);
+
+  //wideAxisRect->axis(QCPAxis::atBottom, 0)->setRangeLower(1);
+  //wideAxisRect->axis(QCPAxis::atBottom)->setRange(1,total);
+  //wideAxisRect->axis(tmp_plot->xAxis)->setRange(1,total);
+  //my_axys->setLabel("Tirage id");
+  //my_axys->setRange(1,total);
+  wideAxisRect->setupFullAxesBox(true);
+
+  //wideAxisRect->axis(QCPAxis::atBottom)->setRangeLower(1);
+  //wideAxisRect->axis(QCPAxis::atBottom)->setOffset(1);
+
+  plotLayout()->addElement(0, 0, wideAxisRect);
+
+  QCPGraph *tmp = addGraph(wideAxisRect->axis(QCPAxis::atBottom), wideAxisRect->axis(QCPAxis::atLeft));
+  graph(0)->setName(fn_tips);
+  graph(0)->setData(x,y);
+  graph(0)->setLineStyle(QCPGraph::lsLine);
+  graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+  tmp->rescaleKeyAxis();
+
+  // connect slot that shows a message in the status bar when a graph is clicked:
+  connect(this,
+          SIGNAL(plottableClick(QCPAbstractPlottable*,int,QMouseEvent*)),
+          this,
+          SLOT(BSLOT_graphClicked(QCPAbstractPlottable*,int, QMouseEvent*)));
  }
 
 
@@ -330,9 +313,9 @@ void BCustomPlot::BCP_Tst_03(QCustomPlot *customPlot)
  QVector<double> x(251), y0(251), y1(251);
  for (int i=0; i<251; ++i)
  {
-   x[i] = i;
-   y0[i] = qExp(-i/150.0)*qCos(i/10.0); // exponentially decaying cosine
-   y1[i] = qExp(-i/150.0);              // exponential envelope
+  x[i] = i;
+  y0[i] = qExp(-i/150.0)*qCos(i/10.0); // exponentially decaying cosine
+  y1[i] = qExp(-i/150.0);              // exponential envelope
  }
  // configure right and top axis to show ticks but no labels:
  // (see QCPAxisRect::setupFullAxesBox for a quicker method to do this)

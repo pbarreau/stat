@@ -14,7 +14,7 @@ class BCustomPlot : public QCustomPlot
   Q_OBJECT
 
  public:
-  BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn, int my_start=1, int my_end=2);
+  BCustomPlot(const stGameConf *pGame, BView *lesTirages, int zn, QString fn_key, QString fn_tips);
 
  private:
   void BCP_Tst_01(QCustomPlot *customPlot);

@@ -136,36 +136,20 @@ QWidget * BTirages::Dessine()
 
 void BTirages::DrawCustomPlot()
 {
- /// Test Custom Plot
- QWidget *wdg_tmp = new QWidget;
- QGridLayout *lay_visual = new QGridLayout;
-
- QTabWidget * try_01 = new QTabWidget;
- try_01->setGeometry(400, 250, 542, 390);
-
- /// Courbes P et G
  int tot_zn = gme_cnf->znCount;
- for(int i=0; i<tot_zn;i++){
-  BCustomPlot *monTest = new BCustomPlot(gme_cnf, tir_tbv, i);
-  try_01->addTab(monTest,gme_cnf->names[i].std);
- }
+
+ QWidget *wdg_toShow = new QWidget;
+ QGridLayout *lay_visual = new QGridLayout;
+ QTabWidget * try_01 = new QTabWidget;
 
 
- /// Courbes dizaines
+ /// pour chacune des cles faire le graphe de chacune des zones
+ for(int zn=0; zn<tot_zn;zn++){
+  QStringList keys = gme_cnf->slFlt[zn][Bp::colDefTitres];
+  QStringList tips = gme_cnf->slFlt[zn][Bp::colDefToolTips];
 
-
- QTabWidget * try_02 = new QTabWidget;
- //try_02->setGeometry(400, 250, 542, 390);
-
- for(int i=0; i<tot_zn;i++){
-  /// determination du maximum de la zone
-  int min=2;
-  int draw_step = 1;
-  int max=min+((gme_cnf->limites[i].max)/10);
-
-  QWidget *bloc_2 = new QWidget;
-  bloc_2->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-
+  QWidget *wdg_tmp = new QWidget;
+  wdg_tmp->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
   QScrollArea *scrol_2 = new QScrollArea();
   scrol_2->setBackgroundRole(QPalette::Window);
@@ -174,28 +158,32 @@ void BTirages::DrawCustomPlot()
   scrol_2->setWidgetResizable(true);
 
   QVBoxLayout *vb_2 = new QVBoxLayout ();
-  bloc_2->setLayout(vb_2);
+  wdg_tmp->setLayout(vb_2);
 
-  for (int item=min;item<max;item=item+draw_step){
-   int start = item+1;
-   int stop = item + draw_step;
+  int max_keys = keys.size();
+  for(int a_key=0;a_key<max_keys; a_key++){
+   QString stKey = keys.at(a_key);
+   QString stTip = tips.at(a_key);
+
+   if(stTip.contains("special")){
+    continue;
+   }
+
    QHBoxLayout *layout = new QHBoxLayout();
    vb_2->addLayout(layout);
-   BCustomPlot *monTest = new BCustomPlot(gme_cnf, tir_tbv, i,start,stop);
+
+   BCustomPlot *monTest = new BCustomPlot(gme_cnf, tir_tbv, zn,stKey,stTip);
    monTest->setFixedHeight(200);
    layout->addWidget(monTest);
   }
-  ///bloc_2->setLayout(vb_2);
-
-  scrol_2->setWidget(bloc_2);
-  try_02->addTab(scrol_2,gme_cnf->names[i].std);
+  scrol_2->setWidget(wdg_tmp);
+  try_01->addTab(scrol_2,gme_cnf->names[zn].std);
  }
 
- lay_visual->addWidget(try_01,0,0);
- lay_visual->addWidget(try_02,0,1);
 
- wdg_tmp->setLayout(lay_visual);
- wdg_tmp->show();
+ lay_visual->addWidget(try_01,0,0);
+ wdg_toShow->setLayout(lay_visual);
+ wdg_toShow->show();
 }
 
 
