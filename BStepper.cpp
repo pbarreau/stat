@@ -28,7 +28,8 @@
 #include "BStepper.h"
 #include "BStepPaint.h"
 
-BStepper::BStepper(const stGameConf *pGame, BTirFdj *lst_tirages):pGDef(pGame),tirages(lst_tirages)
+BStepper::BStepper(const stGameConf *pGame, int zn, BTirages *lst_tirages):
+  pGDef(pGame),that_zn(zn), tirages(lst_tirages)
 {
  QString cnx=pGame->db_ref->cnx;
 
@@ -43,8 +44,7 @@ BStepper::BStepper(const stGameConf *pGame, BTirFdj *lst_tirages):pGDef(pGame),t
 
 
  /// Initialisation connaissance des boules
- int zn = 0;
- int ballMax = pGame->limites[zn].max;
+  int ballMax = pGame->limites[zn].max;
  int ballVal = pGame->limites[zn].len;
 
  ballCounter = 0;
@@ -62,22 +62,23 @@ BStepper::BStepper(const stGameConf *pGame, BTirFdj *lst_tirages):pGDef(pGame),t
  ptrCurTir = start;
 
  /// Rechercher la progression des boules
- stTabSteps defSteps = Kernel(pGame,start);
+ stTabSteps defSteps = Kernel(pGame,zn,start);
 
 
- QWidget *ecran = Ihm(pGame, start, defSteps);
- ecran->show();
+ QGridLayout *ecran = Ihm(pGame, zn , start, defSteps);
+ this->setLayout(ecran);
+ //ecran->show();
 }
 
-QWidget *BStepper::Ihm(const stGameConf *pGame, int start_tir,stTabSteps defSteps)
+QGridLayout *BStepper::Ihm(const stGameConf *pGame, int zn, int start_tir,stTabSteps defSteps)
 {
- QWidget *tmp_widget = new QWidget;
+ ///QWidget *tmp_widget = new QWidget;
  QGridLayout *tmp_layout = new QGridLayout;
 
  //QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
 
- QWidget *qtv_tmp_1 = Ihm_left(pGame, start_tir);
- QWidget *qtv_tmp_2 = Ihm_right(pGame, defSteps);
+ QWidget *qtv_tmp_1 = Ihm_left(pGame, zn, start_tir);
+ QWidget *qtv_tmp_2 = Ihm_right(pGame, zn,defSteps);
 
  defMax = defSteps;
 
@@ -90,14 +91,13 @@ QWidget *BStepper::Ihm(const stGameConf *pGame, int start_tir,stTabSteps defStep
  tmp_layout->setColumnStretch(1, 0); /// Exemple basic layouts
  tmp_layout->setColumnStretch(2, 10);
 
- tmp_widget->setLayout(tmp_layout);
+ ///tmp_widget->setLayout(tmp_layout);
 
- return tmp_widget;
+ return tmp_layout;
 }
 
-void BStepper::RazTbvR(void)
+void BStepper::RazTbvR(int zn)
 {
- int zn = 0;
  BView * ptr_qtv = ptrTbvR;
 
  QStandardItemModel * sqm_tmp = qobject_cast<QStandardItemModel *>( ptr_qtv->model());
@@ -172,10 +172,8 @@ QVariant BTrackStepper::data(const QModelIndex &index, int role) const
 #endif
 /// -----------------------------
 
-QWidget *BStepper::Ihm_left(const stGameConf *pGame, int id_tir)
+QWidget *BStepper::Ihm_left(const stGameConf *pGame, int zn, int id_tir)
 {
- int zn = 0;
-
  QString msg = "";
 
  BView *qtv_tmp = new BView;
@@ -242,9 +240,8 @@ void BStepper::BSlot_ShowBall(const QModelIndex &index)
 
 }
 
-QWidget *BStepper::Ihm_right(const stGameConf *pGame, stTabSteps defSteps)
+QWidget *BStepper::Ihm_right(const stGameConf *pGame, int zn,stTabSteps defSteps)
 {
- int zn = 0;
  QList <QStringList *>  *cur_lst(tir_id.at(0));
  QStringList *d_one(cur_lst->at(0));
 
@@ -285,13 +282,12 @@ QWidget *BStepper::Ihm_right(const stGameConf *pGame, stTabSteps defSteps)
  return (qtv_tmp->getScreen());
 }
 
-stTabSteps BStepper::Kernel(const stGameConf *pGame, int id_tir)
+stTabSteps BStepper::Kernel(const stGameConf *pGame, int zn, int id_tir)
 {
  stTabSteps dataBack;
 
  QSqlQuery query(db_tirages);
 
- int zn=0;
  QString tbl_tirages = pGame->db_ref->src;
  QString st_cols = BCount::FN1_getFieldsFromZone(pGame, zn, "t1");
 
@@ -549,7 +545,7 @@ QHBoxLayout *BStepper::GetBtnSteps(void)
 void BStepper::BSlotTirId(void)
 {
  BView * ptr_qtv = ptrTbvL;
- int zn = 0;
+ int zn = that_zn;
  int id_bal = 0;
 
  QSlider *slider = qobject_cast<QSlider *>(sender());
@@ -560,7 +556,7 @@ void BStepper::BSlotTirId(void)
  slider->setValue(value);
  tirages->HighLightTirId(value-1);
 
- FillTbViews(value, id_bal);
+ FillTbViews(value, zn, id_bal);
 
  /// Determination de la date
  QString title = GetLeftTitle(pGDef,zn,value);
@@ -571,8 +567,8 @@ void BStepper::BSlot_ActionButton(int btn_id)
 {
  QButtonGroup *btn = qobject_cast<QButtonGroup *>(sender());
 
+ int zn= that_zn;
  BView * ptr_qtv = ptrTbvL;
- int zn = 0;
  static bool doStep = false;
  int id_tir = ptrCurTir;
  int id_bal = 0;
@@ -637,23 +633,22 @@ void BStepper::BSlot_ActionButton(int btn_id)
  ptrCurTir = id_tir;
  showPos->setValue(ptrCurTir);
 
- FillTbViews(id_tir, id_bal);
+ FillTbViews(id_tir, that_zn, id_bal);
 
  /// Determination de la date
  QString title = GetLeftTitle(pGDef,zn,id_tir);
  ptr_qtv->setTitle(title);
 }
 
-void BStepper::FillTbViews(int id_tir, int id_bal)
+void BStepper::FillTbViews(int id_tir, int zn, int id_bal)
 {
- Fill_Left(id_tir,id_bal);
- Fill_Right(id_tir,id_bal);
+ Fill_Left(id_tir,zn,id_bal);
+ Fill_Right(id_tir,zn,id_bal);
 }
 
-void BStepper::Fill_Left(int id_tir, int id_bal)
+void BStepper::Fill_Left(int id_tir, int zn, int id_bal)
 {
  const stGameConf *pGame = pGDef;
- int zn = 0;
  BView * ptr_qtv = ptrTbvL;
 
  QString msg = getSqlMsg(pGame,zn,id_tir);
@@ -666,17 +661,16 @@ void BStepper::Fill_Left(int id_tir, int id_bal)
  sqm_tmp->setQuery(msg,db_tirages);
 }
 
-void BStepper::Fill_Right(int id_tir, int id_bal)
+void BStepper::Fill_Right(int id_tir, int zn, int id_bal)
 {
  int ptr_tir = origin - id_tir;
 
  const stGameConf *pGame = pGDef;
- int zn = 0;
  BView * ptr_qtv = ptrTbvR;
 
  QStandardItemModel * sqm_tmp = qobject_cast<QStandardItemModel *>( ptr_qtv->model());
 
- RazTbvR();
+ RazTbvR(zn);
 
  if(ptr_tir == 0){
   return;

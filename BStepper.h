@@ -72,27 +72,27 @@ class BStepper : public QWidget
   Q_OBJECT
 
  public:
-  BStepper(const stGameConf *pGame, BTirFdj *lst_tirages);
+  BStepper(const stGameConf *pGame, int zn, BTirages *lst_tirages);
 
  public slots:
   void BSlot_FindBall(BView *tbvTarget, int id);
 
  private :
-  QWidget *Ihm(const stGameConf *pGame, int start_tir, stTabSteps defSteps);
-  QWidget *Ihm_left(const stGameConf *pGame, int id_tir);
-  QWidget *Ihm_right(const stGameConf *pGame, stTabSteps defSteps);
+  QGridLayout *Ihm(const stGameConf *pGame, int zn, int start_tir, stTabSteps defSteps);
+  QWidget *Ihm_left(const stGameConf *pGame, int zn, int id_tir);
+  QWidget *Ihm_right(const stGameConf *pGame, int zn, stTabSteps defSteps);
 
   QHBoxLayout *GetBtnSteps(void);
 
   QString getSqlMsg(const stGameConf *pGame, int zn, int id_tir);
-  stTabSteps Kernel(const stGameConf *pGame, int id_tir);
+  stTabSteps Kernel(const stGameConf *pGame, int zn, int id_tir);
   void TableauRecopier(int l_id);
   void TableauActualiser(int l_id, QSqlQuery query);
 
-  void FillTbViews(int id_tir, int id_bal);
-  void Fill_Left(int id_tir, int id_bal);
-  void Fill_Right(int id_tir, int id_bal);
-  void RazTbvR(void);
+  void FillTbViews(int id_tir, int zn, int id_bal);
+  void Fill_Left(int id_tir, int zn, int id_bal);
+  void Fill_Right(int id_tir, int zn, int id_bal);
+  void RazTbvR(int zn);
 
   QString GetLeftTitle(const stGameConf *pGame, int zn, int id_tir);
 
@@ -112,6 +112,7 @@ class BStepper : public QWidget
   int ballCounter;
   int *curTirVal;
   int *prvTirVal;
+  int that_zn;
   stTabSteps defMax;
   int origin; /// Id tirage de depart
   int ptrCurTir;
@@ -119,7 +120,7 @@ class BStepper : public QWidget
   QList<QList <QStringList *>*> tir_id;
   BView *ptrTbvL;
   BView *ptrTbvR;
-  BTirFdj *tirages; /// Tableau contenant tous les tirages
+  BTirages *tirages; /// Tableau contenant tous les tirages
 };
 
 #endif // BSTEPPER_H

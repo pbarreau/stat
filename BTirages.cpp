@@ -19,6 +19,7 @@
 #include "Bc.h"
 #include "BTirAna.h"
 #include "BCustomPlot.h"
+#include "BStepper.h"
 
 #include "BGraphicsView.h"
 #include "db_tools.h"
@@ -105,11 +106,12 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  wdg_tmp->setLayout(lay_fusion);
  tbw_visual->addTab(wdg_tmp,"Nombres");
 
- QString ongNames[]={"Graphiques"};
+ QString ongNames[]={"Graphiques", "Steppers"};
  int nb_ong = sizeof(ongNames)/sizeof(QString);
  QWidget * (BTirages::*ptrFunc[])()=
  {
-   &BTirages::Dessine
+   &BTirages::DrawCustomPlot,
+   &BTirages::ShowSteppers
 };
 
  wdg_tmp = nullptr;
@@ -163,6 +165,23 @@ QWidget * BTirages::Dessine()
  wdg_tmp->setLayout(lay_visual);
 #endif
  return wdg_tmp;
+}
+
+QWidget * BTirages::ShowSteppers()
+{
+ QWidget *wdg_toShow = new QWidget;
+ QGridLayout *lay_visual = new QGridLayout;
+ QTabWidget * try_01 = new QTabWidget;
+
+ int max_zn = gme_cnf->znCount;
+ for(int zn=0;zn<max_zn;zn++){
+  BStepper *t1 = new BStepper(gme_cnf, zn, this);
+  try_01->addTab(t1,gme_cnf->names[zn].std);
+ }
+ lay_visual->addWidget(try_01,0,0);
+ wdg_toShow->setLayout(lay_visual);
+
+ return(wdg_toShow);
 }
 
 QWidget * BTirages::DrawCustomPlot()

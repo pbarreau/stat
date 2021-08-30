@@ -25,7 +25,7 @@ QString getGameLabel(void);
 void showFdj(BTirAna *ana_tirages);
 void showGen(BTirAna *ana_tirages);
 BView *getTbvTirages();
-QWidget *DrawCustomPlot();
+///QWidget *DrawCustomPlot();
 void HighLightTirId(int tir_id);
 
 protected:
@@ -50,6 +50,8 @@ QGridLayout *addAna(BTirAna* ana);
 B2LstSel *SauverSelection(const B2LstSel * sel);
 void checkMemory();
 QWidget * Dessine();
+QWidget * DrawCustomPlot();
+QWidget * ShowSteppers();
 BGraphicsView *selGraphTargets();
 QTabWidget *getTabedDetails();
 QWidget *usr_GrpTb2(int zn);

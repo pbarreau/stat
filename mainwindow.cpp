@@ -113,7 +113,8 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
  //b_retVal = BTest::montestRapideSql(curConf,0,3);
 
  //BView *tabDesTirages = lst_tirages->getTbvTirages();
- BStepper *t1 = new BStepper(curConf, lst_tirages);
+
+
  return;
 
  EtudierJeu_v1(curConf, use_odb);
