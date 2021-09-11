@@ -98,6 +98,7 @@ class stGameConf{
  etFdj eFdjType; /// type du jeu
  etTir eTirType; /// origine
  int znCount; /// nombre de zones a regarder
+ int nbInDay; /// nombre de tirage sur un jour
  stParam_1 *limites; /// bornes sur la zone
  stParam_2 *names; /// nom de la zone
  stParam_3 *db_ref;

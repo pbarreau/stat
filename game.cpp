@@ -40,6 +40,7 @@ stGameConf::stGameConf(stGameConf *conf_in)
  this->eFdjType = conf_in->eFdjType;
  this->eTirType = conf_in->eTirType;
  this->znCount = conf_in->znCount;
+ this->nbInDay = conf_in->nbInDay;
 
  this->limites = conf_in->limites;
  this->names = conf_in->names;
@@ -66,6 +67,7 @@ stGameConf* stGameConf::operator=(stGameConf * a)
  ret->eFdjType = a->eFdjType;
  ret->eTirType = a->eTirType;
  ret->znCount = a->znCount;
+ ret->nbInDay = a->nbInDay;
 
  ret->limites = a->limites;
  ret->names = a->names;

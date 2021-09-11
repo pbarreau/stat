@@ -283,6 +283,8 @@ stGameConf * BFdj::init(stFdj *prm)
 
  if(eFdjType == eFdjLoto){
   int nbZn = 2;
+  int nbTirDay = 2;
+  ret->nbInDay = nbTirDay;
   ret->znCount = nbZn;
   ret->limites = new stParam_1[nbZn];
   ret->names = new stParam_2[nbZn];

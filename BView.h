@@ -18,6 +18,8 @@ class BView : public QTableView
  int getMinHeight();
  int getZone();
  void setZone(int zn_in);
+ int getTirId();
+ void setTirId(int zn_in);
 
  protected:
  void mouseMoveEvent( QMouseEvent * inEvent );
@@ -28,6 +30,7 @@ class BView : public QTableView
  private:
  QLayout *up;
  int zone;
+ int tir_id;
 
 };
 

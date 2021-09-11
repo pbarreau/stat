@@ -134,7 +134,7 @@ class BcUpl: public BCount
  QGridLayout *Compter(QString * pName, int zn);
 
  private:
- QWidget *getMainTbv(const stGameConf *pGame, int zn, int i);
+ QWidget *getMainTbv(const stGameConf *pGame, int tirId, int zn, int i);
  QString getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub=-1, ECalTirages target=ELstCal, int sel_item=-1);
  QWidget *showUplFromRef(const stGameConf *pGame, int zn, int upl_ref);
  QWidget *getUplDetails(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int nb_recherche);

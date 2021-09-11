@@ -40,6 +40,16 @@ void BView::setZone(int zn_in)
  zone = zn_in;
 }
 
+int BView::getTirId()
+{
+ return tir_id;
+}
+
+void BView::setTirId(int id)
+{
+ tir_id = id;
+}
+
 QGroupBox *BView::getScreen(bool spacer)
 {
  QVBoxLayout *layout = new QVBoxLayout;
