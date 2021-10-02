@@ -47,7 +47,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  int nbTirJour = pGame->nbInDay;
 
  QString refTir = "";
- for(int jtirId = 0; jtirId<nbTirJour;jtirId){
+ for(int jtirId = 0; jtirId<nbTirJour;jtirId++){
 
   upl_GET[jtirId]=new BView** [nbZn];
   upl_SHOW[jtirId]=new BView**** [nbZn];
@@ -79,7 +79,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
   }
 
   /// ------------------
-  refTir = QString("Tirage-")+ QString::number(jtirId).rightJustified(2,'0');
+  refTir = QString("Tirage-")+ QString::number(jtirId+1).rightJustified(2,'0');
   tab_tirId->addTab(tab_zones,refTir);
  }
 
@@ -94,7 +94,7 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int tirId, int zn, int upl_r
  BView *qtv_tmp = new BView;
  qtv_tmp->setObjectName(QString::number(upl_ref_in-C_MIN_UPL));
  qtv_tmp->setZone(zn);
- qtv_tmp->setTirId(tirId);
+ qtv_tmp->setTirId(0);
 
 #define DBG_PASCAL 0
 #if DBG_PASCAL
