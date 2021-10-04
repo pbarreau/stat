@@ -42,6 +42,7 @@ void BcUpl::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
 QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_zones = new QTabWidget(this);
+ int tirLgnId = 1;
 
  int nbZn = pGame->znCount;
  for (int zn = 0; zn< nbZn; zn++) {
@@ -57,7 +58,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 		break;
 	 }
 	 else {
-		QWidget * wdg_tmp = getMainTbv(pGame,zn,upl);
+		QWidget * wdg_tmp = getMainTbv(pGame,zn,tirLgnId,upl);
 		if(wdg_tmp !=nullptr){
 		 tab_uplets->addTab(wdg_tmp,QString::number(upl).rightJustified(2,'0'));
 		}
@@ -70,7 +71,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 }
 
 #if 1
-QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
+QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
@@ -86,7 +87,7 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
  }
 #endif
 
- QString sql_msg = getSqlTbv(pGame,zn,upl_ref_in, -1, ELstUplTot);
+ QString sql_msg = getSqlTbv(pGame,zn,tirLgnId,upl_ref_in, -1, ELstUplTot);
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
  while (sqm_tmp->canFetchMore())
@@ -131,7 +132,7 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
          this, SLOT(BSlot_clicked( QModelIndex) ) );
 
 
- QWidget *tmp = showUplFromRef(pGame,zn,upl_ref_in-C_MIN_UPL);
+ QWidget *tmp = showUplFromRef(pGame,zn,tirLgnId,upl_ref_in-C_MIN_UPL);
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
 
  QGroupBox *tmp_gpb = new QGroupBox;
@@ -148,7 +149,7 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
  return wdg_tmp;
 }
 
-QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, ECalTirages target, int sel_item)
+QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int upl_ref_in, int upl_sub, ECalTirages target, int sel_item)
 {
  QString sql_msg="";
 
@@ -165,13 +166,13 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int up
  /// ---------- Creation du code SQL dans les tableaux ----
  ///Etape 1 : partie commune
  for (int item=0;item<=ELstBleNext;item++) {
-  ConstruireSql(pGame,zn,upl_ref_in, -1,item, SqlData);
+  ConstruireSql(pGame,zn,tirLgnId,upl_ref_in, -1,item, SqlData);
   SqlSubData[0][item][0]=SqlData[item][0];
  }
 
  /// Etape 2 : sous ensemble
  for (int sub_ong=0;sub_ong<C_NB_SUB_ONG;sub_ong++) {
-   ConstruSubSql(pGame,zn,upl_ref_in, sub_ong + C_MIN_UPL, SqlSubData);
+   ConstruSubSql(pGame,zn,tirLgnId,upl_ref_in, sub_ong + C_MIN_UPL, SqlSubData);
  }
 
  /// --- Recuperation des portions de code pour finalisation
@@ -250,7 +251,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int up
  return sql_msg;
 }
 
-void BcUpl::ConstruSubSql(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub,  QString tabInOut[][C_TOT_CAL][3])
+void BcUpl::ConstruSubSql(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub,  QString tabInOut[][C_TOT_CAL][3])
 {
  QString SqlData[C_TOT_CAL][3];
 
@@ -261,17 +262,17 @@ void BcUpl::ConstruSubSql(const stGameConf *pGame, int zn, int upl_ref_in, int u
 
  /// Poursuivre la creation
  for (int item=ELstBleNext+1;item<ELstCal;item++) {
-  ConstruireSql(pGame,zn,upl_ref_in, upl_sub,item, SqlData);
+  ConstruireSql(pGame,zn,tirLgnId,upl_ref_in, upl_sub,item, SqlData);
   tabInOut[upl_sub-C_MIN_UPL][item][0]= SqlData[item][0];
   tabInOut[upl_sub-C_MIN_UPL][item][1]= SqlData[item][1];
   tabInOut[upl_sub-C_MIN_UPL][item][2]= SqlData[item][2];
  }
 }
 
-void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, int step, QString tabInOut[][3])
+void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub, int step, QString tabInOut[][3])
 {
  QString sql_msg = "";
- int ref_day = 1;
+ int ref_day = tirLgnId;
 
  ECalTirages sql_step = static_cast<ECalTirages>(step);
 
@@ -954,13 +955,13 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
 }
 #endif
 
-QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int dst_upl)
+QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int dst_upl)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
  BView *qtv_tmp = upl_SHOW[zn][src_upl][relativeDay][dst_upl];
 
- QString sql_msg = getSqlTbv(pGame, zn, src_upl+C_MIN_UPL, dst_upl+C_MIN_UPL, ELstCal);
+ QString sql_msg = getSqlTbv(pGame, zn,tirLgnId, src_upl+C_MIN_UPL, dst_upl+C_MIN_UPL, ELstCal);
 
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
@@ -1029,7 +1030,7 @@ void BcUpl::BSlot_Tab(int index)
  int t =0;
 }
 
-QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int nb_recherche)
+QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int nb_recherche)
 {
  QTabWidget *upl_details = new QTabWidget(this);
 
@@ -1041,7 +1042,7 @@ QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int zn, int src_upl, int 
  for (int tab=0;tab<nb_recherche;tab++) {
   BView * tst = new BView ;
   upl_SHOW[zn][src_upl][relativeDay][tab]= tst;
-  QWidget * wdg_tmp = calUplFromDistance(pGame, zn, src_upl, relativeDay,tab);
+  QWidget * wdg_tmp = calUplFromDistance(pGame, zn,tirLgnId, src_upl, relativeDay,tab);
   if(wdg_tmp !=nullptr){
    upl_details->addTab(wdg_tmp,"R_"+QString::number(tab+1).rightJustified(2,'0'));
   }
@@ -1049,7 +1050,7 @@ QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int zn, int src_upl, int 
  return upl_details;
 }
 
-QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int zn, int upl_ref)
+QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
  tab_Top->setObjectName("tabRspAnaUpl");
@@ -1071,7 +1072,7 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int zn, int upl_ref)
 	 ongLabel = ongNames[day_anaUpl+1];
 	}
 */
-	QWidget * wdg_tmp =getUplDetails(pGame, zn, upl_ref, day_anaUpl, nb_recherche);
+	QWidget * wdg_tmp =getUplDetails(pGame, zn, tirLgnId, upl_ref, day_anaUpl, nb_recherche);
 	if(wdg_tmp !=nullptr){
 	 tab_Top->addTab(wdg_tmp,ongLabel);
 	}
@@ -1087,6 +1088,10 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  int selection = index.sibling(index.row(),Bp::colId).data().toInt();
 
  int ref = id_upl+C_MIN_UPL;
+
+ /// Trouver l'onglet conteneur
+ /// le nom correspond à la ligne du tirage
+ int id_tirage = 1;
 
  QList<QGroupBox *> child_1 = view->parent()->parent()->findChildren<QGroupBox*>(gpb_key_sel);
 
@@ -1135,7 +1140,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 */
    ECalTirages resu = tabCal[day_anaUpl][tab];
 
-   QString sql_msg = getSqlTbv(gm_def, zn, ref, tab+C_MIN_UPL, resu,selection);
+   QString sql_msg = getSqlTbv(gm_def, zn, id_tirage, ref, tab+C_MIN_UPL, resu,selection);
 
 	 /// Largeur du tableau
 	 BView *qtv_tmp = upl_SHOW[zn][id_upl][day_anaUpl][tab];

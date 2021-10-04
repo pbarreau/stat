@@ -134,13 +134,13 @@ class BcUpl: public BCount
  QGridLayout *Compter(QString * pName, int zn);
 
  private:
- QWidget *getMainTbv(const stGameConf *pGame, int zn, int i);
- QString getSqlTbv(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub=-1, ECalTirages target=ELstCal, int sel_item=-1);
- QWidget *showUplFromRef(const stGameConf *pGame, int zn, int upl_ref);
- QWidget *getUplDetails(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int nb_recherche);
- QWidget *calUplFromDistance(const stGameConf *pGame, int zn, int src_upl, int relativeDay, int dst_upl);
- void ConstruireSql(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, int step, QString tabInOut[][3]);
- void ConstruSubSql(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, QString tabInOut[][C_TOT_CAL][3]);
+ QWidget *getMainTbv(const stGameConf *pGame, int zn, int tirLgnId, int i);
+ QString getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub=-1, ECalTirages target=ELstCal, int sel_item=-1);
+ QWidget *showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref);
+ QWidget *getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int nb_recherche);
+ QWidget *calUplFromDistance(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int dst_upl);
+ void ConstruireSql(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub, int step, QString tabInOut[][3]);
+ void ConstruSubSql(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub, QString tabInOut[][C_TOT_CAL][3]);
 
  void sql_FillTabArgs(const stGameConf *pGame, int zn,int upl_ref_in, QString *tab_arg, QString tabInOut[][3]);
 
