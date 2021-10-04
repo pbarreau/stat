@@ -3,13 +3,14 @@
 #include "BStepPaint.h"
 #include "colors.h"
 
-BStepPaint::BStepPaint(const stGameConf *pGame, int zone, Bp::ETbvId tbvId, int *cur, int *prev)
+BStepPaint::BStepPaint(const stGameConf *pGame, int zone, Bp::ETbvId tbvId, int *nxt, int *cur, int *prev)
 {
  pGDef =pGame;
  zn = zone;
  lenTab = pGame->limites[zone].len;
  eTbv = tbvId;
  dig_ball = -1;
+ nxtTir = nxt;
  curTir = cur;
  prvTir = prev;
 }
@@ -68,10 +69,10 @@ void BStepPaint::paintDraw(QPainter *painter, const QStyleOptionViewItem &myOpt)
  QPoint c_rm(refx +(ctw/5)*1,refy + (cth*3/6)); /// Center Right middle
  QPoint c_rd(refx +(ctw/5)*1,refy + (cth*5/6)); /// Center Right down
 
- QRect r1; /// priorite
- QRect r2; /// Last
- QRect r3; /// previous
- QRect r4; /// Selected
+ QRect rl; /// priorite
+ QRect rr_top; /// Next
+ QRect rr_mdl; /// Current
+ QRect rr_btm; /// Previous
 
  QPoint p1(refx,refy);
  QPoint p2(refx +(ctw/3),refy+cth);
@@ -79,21 +80,21 @@ void BStepPaint::paintDraw(QPainter *painter, const QStyleOptionViewItem &myOpt)
  QPoint p4(refx +(ctw/3),refy+(cth/3));
  QPoint p5(refx + ctw,refy);
 
- /// Priorite
- r1.setTopLeft(p1);
- r1.setBottomRight(p2);
+ /// Priorite (rectangle left)
+ rl.setTopLeft(p1);
+ rl.setBottomRight(p2);
 
- /// Last
- r2.setBottomLeft(p2);
- r2.setTopRight(p3);
+ /// Last (rectangle middle)
+ rr_mdl.setBottomLeft(p2);
+ rr_mdl.setTopRight(p3);
 
- /// Previous
- r3.setBottomRight(p3);
- r3.setTopLeft(p4);
+ /// Previous (rectangle bottom)
+ rr_btm.setBottomRight(p3);
+ rr_btm.setTopLeft(p4);
 
- ///Selected
- r4.setBottomLeft(p4);
- r4.setTopRight(p5);
+ ///Selected (rectangle top)
+ rr_top.setBottomLeft(p4);
+ rr_top.setTopRight(p5);
 
  int cell_val = -1;
  if(index.data().canConvert(QMetaType::Int)){
@@ -118,9 +119,9 @@ void BStepPaint::paintDraw(QPainter *painter, const QStyleOptionViewItem &myOpt)
 
   /// --- Dessin des rectangles
   for(int i = 0 ; i < lenTab; i++){
-   if(cell_val==prvTir[i]){
-    /// mettre rectangle avant dernier
-    painter->fillRect(r3, COULEUR_FOND_AVANTDER);
+   if(cell_val==nxtTir[i]){
+    /// mettre rectangle suivant
+    painter->fillRect(rr_top, COULEUR_FOND_R1);
     break;
    }
   }
@@ -128,10 +129,19 @@ void BStepPaint::paintDraw(QPainter *painter, const QStyleOptionViewItem &myOpt)
   for(int i = 0 ; i < lenTab; i++){
    if(cell_val==curTir[i]){
     /// mettre rectangle dernier
-    painter->fillRect(r2, COULEUR_FOND_DERNIER);
+    painter->fillRect(rr_mdl, COULEUR_FOND_R0);
     break;
    }
   }
+
+  for(int i = 0 ; i < lenTab; i++){
+   if(cell_val==prvTir[i]){
+    /// mettre rectangle avant dernier
+    painter->fillRect(rr_btm, COULEUR_FOND_R2);
+    break;
+   }
+  }
+
 
   /// --- Dessin des cercles
   for(int i = 0 ; i < lenTab; i++){

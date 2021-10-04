@@ -17,7 +17,7 @@ class BStepPaint : public QStyledItemDelegate
   Q_OBJECT
 
  public:
-  BStepPaint(const stGameConf *pGame, int zone, Bp::ETbvId tbvId, int *cur, int *prev);
+  BStepPaint(const stGameConf *pGame, int zone, Bp::ETbvId tbvId, int *nxt, int *cur, int *prev);
   virtual void paint(QPainter *painter, const QStyleOptionViewItem &option,
                      const QModelIndex &index) const;
 
@@ -35,6 +35,7 @@ class BStepPaint : public QStyledItemDelegate
   int lenTab;
   int dig_ball;
   Bp::ETbvId eTbv;
+  int *nxtTir;
   int *curTir;
   int *prvTir;
 };

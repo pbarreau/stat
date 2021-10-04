@@ -48,6 +48,7 @@ BStepper::BStepper(const stGameConf *pGame, int zn, BTirages *lst_tirages):
  int ballVal = pGame->limites[zn].len;
 
  ballCounter = 0;
+ nxtTirVal = new int[ballVal];
  curTirVal = new int[ballVal];
  prvTirVal = new int[ballVal];
  isKnown=new bool[ballMax];
@@ -200,7 +201,7 @@ QWidget *BStepper::Ihm_left(const stGameConf *pGame, int zn, int id_tir)
  fpm_tmp->setDynamicSortFilter(true);
  fpm_tmp->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(fpm_tmp);
- qtv_tmp->setItemDelegate(new BStepPaint(pGame, zn, Bp::tbvLeft, curTirVal, prvTirVal));
+ qtv_tmp->setItemDelegate(new BStepPaint(pGame, zn, Bp::tbvLeft, nxtTirVal, curTirVal, prvTirVal));
 
  qtv_tmp->hideColumn(Bp::colId);
 
@@ -269,7 +270,7 @@ QWidget *BStepper::Ihm_right(const stGameConf *pGame, int zn,stTabSteps defSteps
  }
 
  qtv_tmp->setModel(visu);
- BStepPaint *delegate = new BStepPaint(pGame, zn, Bp::TbvRight, curTirVal, prvTirVal);
+ BStepPaint *delegate = new BStepPaint(pGame, zn, Bp::TbvRight, nxtTirVal, curTirVal, prvTirVal);
  qtv_tmp->setItemDelegate(delegate);
  connect(this,SIGNAL(BSig_FindBall(BView *,int)),delegate,SLOT(BSlot_FindBall(BView *, int)));
 
@@ -711,6 +712,7 @@ QString BStepper::GetLeftTitle(const stGameConf *pGame, int zn, int id_tir)
  QString title = "";
  QString msg_1 = "";
  QString msg_2 = "";
+ QString msg_3 = "";
 
  /// Determination de la date
  msg_1 = "Select J, D,"+
@@ -719,6 +721,10 @@ QString BStepper::GetLeftTitle(const stGameConf *pGame, int zn, int id_tir)
  /// Memo tirage precedent
  if(id_tir<origin){
   msg_2 = "Select " +st_cols+" from B_fdj as t1 where (t1.id = "+QString::number(id_tir+1)+")";
+
+  if(id_tir>1){
+   msg_3 = "Select " +st_cols+" from B_fdj as t1 where (t1.id = "+QString::number(id_tir-1)+")";
+  }
  }
 
  if(query.exec(msg_1)){
@@ -752,6 +758,19 @@ QString BStepper::GetLeftTitle(const stGameConf *pGame, int zn, int id_tir)
  else{
   for(int i =0; i< maxBoules;i++){
    prvTirVal[i]= -1;
+  }
+ }
+
+ /// On memorise les boules du tirage suivant
+ if(query.exec(msg_3)){
+  query.first();
+  for(int i =0; i< maxBoules;i++){
+   nxtTirVal[i]= query.value(i).toInt();
+  }
+ }
+ else{
+  for(int i =0; i< maxBoules;i++){
+   nxtTirVal[i]= -1;
   }
  }
 
