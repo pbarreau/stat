@@ -41,33 +41,49 @@ void BcUpl::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
 
 QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
- QTabWidget *tab_zones = new QTabWidget(this);
- int tirLgnId = 1;
 
+ QTabWidget *tab_tirId = new QTabWidget(this);
  int nbZn = pGame->znCount;
- for (int zn = 0; zn< nbZn; zn++) {
-  QTabWidget *tab_uplets = new QTabWidget(this);
-  QString title = pGame->names[zn].abv;
+ int nbTirJour = 2;
 
-	int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
-	upl_GET[zn]=new BView* [nb_recherche];
-	upl_SHOW[zn]=new BView*** [nb_recherche];
 
-	for (int upl = C_MIN_UPL; upl<=nb_recherche; upl++) {
-	 if(upl > pGame->limites[zn].win){
-		break;
-	 }
-	 else {
-		QWidget * wdg_tmp = getMainTbv(pGame,zn,tirLgnId,upl);
-		if(wdg_tmp !=nullptr){
-		 tab_uplets->addTab(wdg_tmp,QString::number(upl).rightJustified(2,'0'));
-		}
-	 }
-	}
-	tab_zones->addTab(tab_uplets,title);
- }
 
- return tab_zones;
+  QString refTir = "";
+  for(int tirLgnId = 1; tirLgnId<=nbTirJour;tirLgnId++){
+   upl_GET[tirLgnId-1]=new BView** [nbZn];
+   upl_SHOW[tirLgnId-1]=new BView**** [nbZn];
+
+   QTabWidget *tab_zones = new QTabWidget(this);
+
+   for (int zn = 0; zn< nbZn; zn++) {
+    QTabWidget *tab_uplets = new QTabWidget(this);
+    QString title = pGame->names[zn].abv;
+
+    int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
+    upl_GET[tirLgnId-1][zn]=new BView* [nb_recherche];
+    upl_SHOW[tirLgnId-1][zn]=new BView*** [nb_recherche];
+
+    for (int upl = C_MIN_UPL; upl<=nb_recherche; upl++) {
+     if(upl > pGame->limites[zn].win){
+      break;
+     }
+     else {
+      QWidget * wdg_tmp = getMainTbv(pGame,zn,tirLgnId,upl);
+      if(wdg_tmp !=nullptr){
+       tab_uplets->addTab(wdg_tmp,QString::number(upl).rightJustified(2,'0'));
+      }
+     }
+    }
+    tab_zones->addTab(tab_uplets,title);
+   }
+
+   /// ------------------
+   refTir = QString("Tirage-")+ QString::number(tirLgnId).rightJustified(2,'0');
+   tab_tirId->addTab(tab_zones,refTir);
+  }
+
+
+ return tab_tirId;
 }
 
 #if 1
@@ -959,7 +975,7 @@ QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int tirLgnId
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
- BView *qtv_tmp = upl_SHOW[zn][src_upl][relativeDay][dst_upl];
+ BView *qtv_tmp = upl_SHOW[tirLgnId-1][zn][src_upl][relativeDay][dst_upl];
 
  QString sql_msg = getSqlTbv(pGame, zn,tirLgnId, src_upl+C_MIN_UPL, dst_upl+C_MIN_UPL, ELstCal);
 
@@ -1041,7 +1057,7 @@ QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int
 
  for (int tab=0;tab<nb_recherche;tab++) {
   BView * tst = new BView ;
-  upl_SHOW[zn][src_upl][relativeDay][tab]= tst;
+  upl_SHOW[tirLgnId-1][zn][src_upl][relativeDay][tab]= tst;
   QWidget * wdg_tmp = calUplFromDistance(pGame, zn,tirLgnId, src_upl, relativeDay,tab);
   if(wdg_tmp !=nullptr){
    upl_details->addTab(wdg_tmp,"R_"+QString::number(tab+1).rightJustified(2,'0'));
@@ -1059,12 +1075,12 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, in
  int nb_ong= sizeof(ongNames)/sizeof(QString);
 
  int nb_days = nb_ong;//BMIN_2(pGame->limites[zn].win, nb_ong);
- upl_SHOW[zn][upl_ref]= new BView **[nb_days];
+ upl_SHOW[tirLgnId-1][zn][upl_ref]= new BView **[nb_days];
 
  int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
 
  for (int day_anaUpl = 0;day_anaUpl<nb_days;day_anaUpl++) {
-  upl_SHOW[zn][upl_ref][day_anaUpl]= new BView *[nb_recherche];
+  upl_SHOW[tirLgnId-1][zn][upl_ref][day_anaUpl]= new BView *[nb_recherche];
   QString ongLabel = ongNames[day_anaUpl];
 
 	/*
@@ -1091,7 +1107,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
  /// Trouver l'onglet conteneur
  /// le nom correspond à la ligne du tirage
- int id_tirage = 1;
+ int tirLgnId = 1;
 
  QList<QGroupBox *> child_1 = view->parent()->parent()->findChildren<QGroupBox*>(gpb_key_sel);
 
@@ -1140,10 +1156,10 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 */
    ECalTirages resu = tabCal[day_anaUpl][tab];
 
-   QString sql_msg = getSqlTbv(gm_def, zn, id_tirage, ref, tab+C_MIN_UPL, resu,selection);
+   QString sql_msg = getSqlTbv(gm_def, zn, tirLgnId, ref, tab+C_MIN_UPL, resu,selection);
 
 	 /// Largeur du tableau
-	 BView *qtv_tmp = upl_SHOW[zn][id_upl][day_anaUpl][tab];
+	 BView *qtv_tmp = upl_SHOW[tirLgnId-1][zn][id_upl][day_anaUpl][tab];
 
 	 QAbstractItemModel *model = qtv_tmp->model(); /// A debuger
 	 QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
@@ -1180,7 +1196,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  /// Remplir chaque qtview dans les onglets
  QString sql_msg = findUplets(gm_def,zn,id_upl+C_MIN_UPL,selection);
 
- QAbstractItemModel *model = upl_SHOW[zn][id_upl][0][0]->model(); /// A debuger
+ QAbstractItemModel *model = upl_SHOW[tirLgnId-1][zn][id_upl][0][0]->model(); /// A debuger
 
 
  QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
@@ -1202,12 +1218,12 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
   }
  }
 
- int rows_proxy = upl_SHOW[zn][id_upl][0][0]->model()->rowCount();
+ int rows_proxy = upl_SHOW[tirLgnId-1][zn][id_upl][0][0]->model()->rowCount();
  QString st_title = "U_" + QString::number(id_upl+C_MIN_UPL).rightJustified(2,'0')+
                     " (J+1). Apres : " + src_uplets+
                     ". Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);
- upl_SHOW[zn][id_upl][0][0]->setTitle(st_title);
+ upl_SHOW[tirLgnId-1][zn][id_upl][0][0]->setTitle(st_title);
 
 }
 
@@ -1231,8 +1247,9 @@ BcUpl::BcUpl(const stGameConf *pGame,const int nb, const QString tbl)
  }
 
  int nb_zn = pGame->znCount;
- upl_GET = new BView**[nb_zn];
- upl_SHOW = new BView**** [nb_zn];
+ int nbana = 2;
+ upl_GET = new BView***[nbana];
+ upl_SHOW = new BView*****[nbana];
  upl_items = nb;
  upl_tbInternal=tbl;
 }
