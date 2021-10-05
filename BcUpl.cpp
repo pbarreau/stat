@@ -27,6 +27,7 @@
 
 int BcUpl::tot_upl = 0;
 static QString gpb_key_sel = "my_selection";
+static QString gpb_key_tab = "my_tirId";
 
 QGridLayout *BcUpl::Compter(QString * pName, int zn)
 {
@@ -43,20 +44,20 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
 
  QTabWidget *tab_tirId = new QTabWidget(this);
+ tab_tirId->setObjectName(gpb_key_tab);
+
  int nbZn = pGame->znCount;
  int nbTirJour = 2;
-
-
 
   QString refTir = "";
   for(int tirLgnId = 1; tirLgnId<=nbTirJour;tirLgnId++){
    upl_GET[tirLgnId-1]=new BView** [nbZn];
    upl_SHOW[tirLgnId-1]=new BView**** [nbZn];
 
-   QTabWidget *tab_zones = new QTabWidget(this);
+   QTabWidget *tab_zones = new QTabWidget(tab_tirId);
 
    for (int zn = 0; zn< nbZn; zn++) {
-    QTabWidget *tab_uplets = new QTabWidget(this);
+    QTabWidget *tab_uplets = new QTabWidget(tab_zones);
     QString title = pGame->names[zn].abv;
 
     int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
@@ -1107,8 +1108,15 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
  /// Trouver l'onglet conteneur
  /// le nom correspond à la ligne du tirage
- int tirLgnId = 1;
+ QObject *parent = view->parent();
+ while(parent->objectName() != gpb_key_tab){
+  parent = parent->parent();
+ }
+ QTabWidget * tmp_tab = static_cast<QTabWidget *>(parent);
+ int tirLgnId = tmp_tab->currentIndex() + 1;
 
+
+ /// suite ..
  QList<QGroupBox *> child_1 = view->parent()->parent()->findChildren<QGroupBox*>(gpb_key_sel);
 
  if(child_1.size()==1){
