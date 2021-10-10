@@ -60,7 +60,9 @@ class BcUpl: public BCount
   ELstUplTotNot, /// Total de chacun des uplets
   ELstUplNext, /// Liste des uplets apartir des boules next day
   ELstUplTotNext, /// Total de chacun des uplets
-  ELstCal
+  ELstCal,        /// Fin de calculs possible
+  ELstShowCal,    /// Requete montrant les calculs
+  ELstShowUnion   /// Requete synthese de chacque boule
  }ECalTirages;
 
 #define C_TOT_CAL ELstCal
@@ -125,6 +127,7 @@ class BcUpl: public BCount
  QString sql_CnpMkUplet(int nb, QString col, QString tbl_in="B_elm");
  QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
  QString sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
+ QString sqlShowItems(const stGameConf *pGame, int zn, ECalTirages sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
 
  private:
  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);

@@ -99,6 +99,7 @@ class BCount:public QWidget
  QString upl_tbInternal;
  BView ****upl_GET;    /// idtirage, zone, nbItemsZone,ptrValItem
  BView ******upl_SHOW; /// up +
+ BView ******upl_MEMO; ///
 
 
  public:
