@@ -1086,7 +1086,7 @@ QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int tirLgnId
 
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
 if(dst_upl>0){
- BView *qtv_bilan = new BView;
+ BView *qtv_bilan = upl_MEMO[tirLgnId-1][zn][src_upl][relativeDay][dst_upl-1];;
  qtv_bilan->setTitle("Bilan local");
  glay_tmp->addWidget(qtv_bilan->getScreen(),0,1);
 }
@@ -1113,6 +1113,10 @@ QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int
  for (int tab=0;tab<nb_recherche;tab++) {
   BView * tst = new BView ;
   upl_SHOW[tirLgnId-1][zn][src_upl][relativeDay][tab]= tst;
+  if(tab>0){
+   BView * bilan = new BView ;
+   upl_MEMO[tirLgnId-1][zn][src_upl][relativeDay][tab-1]= bilan;
+  }
   QWidget * wdg_tmp = calUplFromDistance(pGame, zn,tirLgnId, src_upl, relativeDay,tab);
   if(wdg_tmp !=nullptr){
    upl_details->addTab(wdg_tmp,"R_"+QString::number(tab+1).rightJustified(2,'0'));
@@ -1137,14 +1141,17 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, in
 
  for (int day_anaUpl = 0;day_anaUpl<nb_days;day_anaUpl++) {
   upl_SHOW[tirLgnId-1][zn][upl_ref][day_anaUpl]= new BView *[nb_recherche];
+  upl_MEMO[tirLgnId-1][zn][upl_ref][day_anaUpl]= new BView *[nb_recherche-1];
   QString ongLabel = ongNames[day_anaUpl];
 
+  /*
   if(nb_recherche>1){
    upl_MEMO[tirLgnId-1][zn][upl_ref][day_anaUpl]= new BView *[nb_recherche-1];
   }
   else{
    upl_MEMO[tirLgnId-1][zn][upl_ref][day_anaUpl]= new BView *[1];
   }
+*/
 
   QWidget * wdg_tmp =getUplDetails(pGame, zn, tirLgnId, upl_ref, day_anaUpl, nb_recherche);
   if(wdg_tmp !=nullptr){
