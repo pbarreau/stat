@@ -198,12 +198,14 @@ QString BcUpl::sqlShowItems(const stGameConf *pGame, int zn, ECalTirages sql_sho
 
   sql_msg = cur_sql + ",\n tb_union as (\n" +
             sql_msg
-            + ")\n Select b, sum(T) as T from tb_union group by b order by T desc";
- }
+            + ")\n Select b, sum(T) as T from tb_union group by b order by T desc, b desc";
 
 #ifndef QT_NO_DEBUG
- qDebug() <<sql_msg;
+ BTest::writetoFile("dbg_localBilan.txt",sql_msg,false);
 #endif
+
+ }
+
 
  return sql_msg;
 }
@@ -1023,8 +1025,9 @@ QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int tirLgnId
  BView *qtv_tmp = upl_SHOW[tirLgnId-1][zn][src_upl][relativeDay][dst_upl];
  int upl_ref_in = src_upl+C_MIN_UPL;
 
- QString sql_msg = getSqlTbv(pGame, zn,tirLgnId, src_upl+C_MIN_UPL, dst_upl+C_MIN_UPL, ELstCal);
- sql_msg = sqlShowItems(pGame,zn,ELstShowCal,upl_ref_in,sql_msg);
+ QString sql_ref = getSqlTbv(pGame, zn,tirLgnId, src_upl+C_MIN_UPL, dst_upl+C_MIN_UPL, ELstCal);
+ QString sql_msg = "";
+ sql_msg = sqlShowItems(pGame,zn,ELstShowCal,upl_ref_in,sql_ref);
 
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
@@ -1086,14 +1089,65 @@ QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int tirLgnId
 
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
 if(dst_upl>0){
- BView *qtv_bilan = upl_MEMO[tirLgnId-1][zn][src_upl][relativeDay][dst_upl-1];;
- qtv_bilan->setTitle("Bilan local");
+ sql_msg = sqlShowItems(pGame,zn,ELstShowUnion,upl_ref_in,sql_ref);
+ BView *qtv_tmp = upl_MEMO[tirLgnId-1][zn][src_upl][relativeDay][dst_upl-1];
+
+ BView *qtv_bilan = getLocalBilan(qtv_tmp, sql_msg);
  glay_tmp->addWidget(qtv_bilan->getScreen(),0,1);
 }
  wdg_tmp->setLayout(glay_tmp);
 
  return (wdg_tmp);
  //return qtv_tmp->getScreen();
+}
+
+BView *BcUpl::getLocalBilan(BView *qtv_tmp, QString sql_msg)
+{
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ sqm_tmp->setQuery(sql_msg, dbCount);
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+
+ QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+ qtv_tmp->sortByColumn(1,Qt::DescendingOrder);
+ qtv_tmp->setSortingEnabled(true);
+
+
+ int nb_rows = sqm_tmp->rowCount();
+ int rows_proxy = qtv_tmp->model()->rowCount();
+
+ QString my_title = "Bilan local : " + QString::number(nb_rows).rightJustified(2,'0')+" boules.";
+ qtv_tmp->setTitle(my_title);
+
+
+ qtv_tmp->setAlternatingRowColors(true);
+ //qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+ //qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ //qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+
+ int nbCol = sqm_tmp->columnCount();
+ qtv_tmp->resizeColumnsToContents();
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+
+ /// Largeur du tableau
+ if(nbCol){
+  int l = qtv_tmp->getMinWidth(0);
+  qtv_tmp->setFixedWidth(l);
+ }
+ else {
+  ;
+ }
+
+ return qtv_tmp;
 }
 
 void BcUpl::BSlot_Tab(int index)
@@ -1214,6 +1268,8 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  QGuiApplication::changeOverrideCursor(myCursor);
 
  int nb_recherche = gm_def->limites[zn].win;
+ QString st_title = "";
+ int nb_rows = 0;
  for (int day_anaUpl = 0;day_anaUpl<2;day_anaUpl++) {
   if(day_anaUpl == 0){
    strDay = "J";
@@ -1230,12 +1286,52 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
    ECalTirages resu = tabCal[day_anaUpl][tab];
 
-   QString sql_msg = getSqlTbv(gm_def, zn, tirLgnId, ref, tab+C_MIN_UPL, resu,selection);
-   sql_msg = sqlShowItems(gm_def,zn,ELstShowCal,ref,sql_msg);
+   /// -------
+   QString sql_ref = getSqlTbv(gm_def, zn, tirLgnId, ref, tab+C_MIN_UPL, resu,selection);
+   QString sql_msg = sqlShowItems(gm_def,zn,ELstShowCal,ref,sql_ref);
 
-   /// Largeur du tableau
    BView *qtv_tmp = upl_SHOW[tirLgnId-1][zn][id_upl][day_anaUpl][tab];
+   nb_rows = fillTabUpletFromSelection(qtv_tmp, sql_msg);
+   st_title = "U_" + QString::number(ref).rightJustified(2,'0')+
+                      " "+strDay+". Nb tirages : "+QString::number(nb_rows);
+   qtv_tmp->setTitle(st_title);
 
+#ifndef QT_NO_DEBUG
+   QString sql_file = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
+                      gm_def->names[zn].abv+
+                      QString::number(ref).rightJustified(2,'0')+
+                      "-"+QString::number(index.row()+1).rightJustified(2,'0')+
+                      "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
+                      "R"+QString::number(tab+1).rightJustified(2,'0')+
+                      "V-"+QString::number(nb_rows).rightJustified(4,'0')+".txt";
+   BTest::writetoFile(sql_file,sql_msg,false);
+#endif
+
+   /// ------------------
+
+   if(tab>0){
+    sql_msg = sqlShowItems(gm_def,zn,ELstShowUnion,ref,sql_ref);
+    BView *qtv_bilan = upl_MEMO[tirLgnId-1][zn][id_upl][day_anaUpl][tab-1];
+    nb_rows = fillTabBilanFromSelection(qtv_bilan, sql_msg);
+    QString my_title = "Bilan local : " + QString::number(nb_rows).rightJustified(2,'0')+" boules.";
+    qtv_bilan->setTitle(my_title);
+
+#ifndef QT_NO_DEBUG
+   QString sql_file = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
+                      gm_def->names[zn].abv+
+                      QString::number(ref).rightJustified(2,'0')+
+                      "-"+QString::number(index.row()+1).rightJustified(2,'0')+
+                      "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
+                      "R"+QString::number(tab+1).rightJustified(2,'0')+
+                      "B-"+QString::number(nb_rows).rightJustified(4,'0')+".txt";
+   BTest::writetoFile(sql_file,sql_msg,false);
+#endif
+
+   }
+
+
+
+#if 0
    QAbstractItemModel *model = qtv_tmp->model(); /// A debuger
    QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
    QSqlQueryModel * sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
@@ -1263,16 +1359,6 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
    QString st_title = "U_" + QString::number(ref).rightJustified(2,'0')+
                       " "+strDay+". Nb tirages : "+QString::number(nb_rows);
    qtv_tmp->setTitle(st_title);
-
-#ifndef QT_NO_DEBUG
-   QString sql_file = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
-                      gm_def->names[zn].abv+
-                      QString::number(ref).rightJustified(2,'0')+
-                      "-"+QString::number(index.row()+1).rightJustified(2,'0')+
-                      "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
-                      "R"+QString::number(tab+1).rightJustified(2,'0')+
-                      "V-"+QString::number(nb_rows).rightJustified(4,'0')+".txt";
-   BTest::writetoFile(sql_file,sql_msg,false);
 #endif
 
   }
@@ -1280,6 +1366,65 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  }
 
  QApplication::restoreOverrideCursor();
+}
+
+int BcUpl::fillTabUpletFromSelection(BView *qtv_tmp, QString sql_msg)
+{
+
+ QAbstractItemModel *model = qtv_tmp->model(); /// A debuger
+ QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
+ QSqlQueryModel * sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+
+ //sqm_tmp->query().clear();
+ sqm_tmp->setQuery(sql_msg,dbCount);
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+ int nb_rows = sqm_tmp->rowCount();
+ int nb_cols = sqm_tmp->columnCount();
+
+ /// Largeur du tableau
+ qtv_tmp->hideColumn(0);
+ qtv_tmp->hideColumn(1);
+ int l = qtv_tmp->getMinWidth(0) +25;
+ qtv_tmp->setFixedWidth(l);
+
+ for (int col=0;col<nb_cols;col++) {
+  qtv_tmp->resizeColumnToContents(col);
+ }
+
+ return nb_rows;
+}
+
+int BcUpl::fillTabBilanFromSelection(BView *qtv_tmp, QString sql_msg)
+{
+
+ QAbstractItemModel *model = qtv_tmp->model(); /// A debuger
+ QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
+ QSqlQueryModel * sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+
+ //sqm_tmp->query().clear();
+ sqm_tmp->setQuery(sql_msg,dbCount);
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+ int nb_rows = sqm_tmp->rowCount();
+ int nb_cols = sqm_tmp->columnCount();
+
+ /// Largeur du tableau
+ int l = qtv_tmp->getMinWidth(0) +25;
+ qtv_tmp->setFixedWidth(l);
+
+ for (int col=0;col<nb_cols;col++) {
+  qtv_tmp->resizeColumnToContents(col);
+ }
+
+
+ return nb_rows;
 }
 
 bool BcUpl::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)

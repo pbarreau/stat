@@ -137,6 +137,7 @@ class BcUpl: public BCount
  QGridLayout *Compter(QString * pName, int zn);
 
  private:
+ BView * getLocalBilan(BView *qtv_tmp, QString sql_msg);
  QWidget *getMainTbv(const stGameConf *pGame, int zn, int tirLgnId, int i);
  QString getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub=-1, ECalTirages target=ELstCal, int sel_item=-1);
  QWidget *showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref);
@@ -157,6 +158,9 @@ class BcUpl: public BCount
  QString sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString tabInOut[][3]);
 
  void sql_RepartitionVoisin(QString tabInOut[][3], int jour, int upl, int ref_id, int delta=0);
+
+ int fillTabUpletFromSelection(BView *qtv_tmp, QString sql_msg);
+ int fillTabBilanFromSelection(BView *qtv_tmp, QString sql_msg);
 };
 
 #endif // BUPLET_H
