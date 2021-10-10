@@ -1083,12 +1083,13 @@ QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int tirLgnId
   ;
  }
 
- BView *qtv_bilan = new BView;
- qtv_bilan->setTitle("Bilan local");
 
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
+if(dst_upl>0){
+ BView *qtv_bilan = new BView;
+ qtv_bilan->setTitle("Bilan local");
  glay_tmp->addWidget(qtv_bilan->getScreen(),0,1);
-
+}
  wdg_tmp->setLayout(glay_tmp);
 
  return (wdg_tmp);
