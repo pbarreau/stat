@@ -97,9 +97,10 @@ class BCount:public QWidget
  int upl_items;
  int upl_zn;
  QString upl_tbInternal;
- BView ****upl_GET;    /// idtirage, zone, nbItemsZone,ptrValItem
- BView ******upl_SHOW; /// up +
- BView ******upl_MEMO; ///
+ BView ****upl_Bview_1;   /// Selection d'un uplet
+ BView ******upl_Bview_2; /// Resultat pour la selection
+ BView ******upl_Bview_3; /// Bilan de resultat
+ BView ******upl_Bview_4; /// complementaire de resultat
 
 
  public:

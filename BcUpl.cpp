@@ -51,9 +51,10 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
  QString refTir = "";
  for(int tirLgnId = 1; tirLgnId<=nbTirJour;tirLgnId++){
-  upl_GET[tirLgnId-1]=new BView** [nbZn];
-  upl_SHOW[tirLgnId-1]=new BView**** [nbZn];
-  upl_MEMO[tirLgnId-1]=new BView**** [nbZn]; /// S2
+  upl_Bview_1[tirLgnId-1]=new BView** [nbZn];
+  upl_Bview_2[tirLgnId-1]=new BView**** [nbZn];
+  upl_Bview_3[tirLgnId-1]=new BView**** [nbZn]; /// S2
+  upl_Bview_4[tirLgnId-1]=new BView**** [nbZn]; /// S2
 
   QTabWidget *tab_zones = new QTabWidget(tab_tirId);
 
@@ -62,16 +63,17 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
    QString title = pGame->names[zn].abv;
 
    int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
-   upl_GET[tirLgnId-1][zn]=new BView* [nb_recherche];
-   upl_SHOW[tirLgnId-1][zn]=new BView*** [nb_recherche];
-   upl_MEMO[tirLgnId-1][zn]=new BView*** [nb_recherche]; ///S3
+   upl_Bview_1[tirLgnId-1][zn]=new BView* [nb_recherche];
+   upl_Bview_2[tirLgnId-1][zn]=new BView*** [nb_recherche];
+   upl_Bview_3[tirLgnId-1][zn]=new BView*** [nb_recherche]; ///S3
+   upl_Bview_4[tirLgnId-1][zn]=new BView*** [nb_recherche]; ///S3
 
    for (int upl = C_MIN_UPL; upl<=nb_recherche; upl++) {
     if(upl > pGame->limites[zn].win){
      break;
     }
     else {
-     QWidget * wdg_tmp = getMainTbv(pGame,zn,tirLgnId,upl);
+     QWidget * wdg_tmp = fill_Bview_1(pGame,zn,tirLgnId,upl);
      if(wdg_tmp !=nullptr){
       tab_uplets->addTab(wdg_tmp,QString::number(upl).rightJustified(2,'0'));
      }
@@ -90,7 +92,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 }
 
 #if 1
-QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in)
+QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
@@ -107,7 +109,7 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int tirLgnId, int up
 #endif
 
  QString sql_msg = getSqlTbv(pGame,zn,tirLgnId,upl_ref_in, -1, ELstUplTot);
- sql_msg = sqlShowItems(pGame,zn,ELstShowCal,upl_ref_in,sql_msg);
+ sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_ref_in,sql_msg);
 
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
@@ -146,7 +148,7 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int tirLgnId, int up
  /// Largeur du tableau
  qtv_tmp->hideColumn(Bp::colId);
  int l = qtv_tmp->getMinWidth();
- qtv_tmp->setFixedWidth(l);
+ //qtv_tmp->setFixedWidth(l);
 
  // simple click dans fenetre  pour selectionner boule
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
@@ -175,27 +177,32 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int tirLgnId, int up
  return wdg_tmp;
 }
 
-QString BcUpl::sqlShowItems(const stGameConf *pGame, int zn, ECalTirages sql_show, int cur_upl, QString cur_sql, int upl_sub)
+QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, ECalTirages sql_show, int cur_upl, QString cur_sql, int upl_sub)
 {
  QString sql_msg="";
+ QString key = "";
 
+ /// choix 1
  if(sql_show == ELstShowCal){
   sql_msg=cur_sql;
   sql_msg = sql_msg +"\n";
   sql_msg = sql_msg + "select t1.* from (tb_uplets) as t1 ";
  }
- else{
-  QString key = pGame->names[zn].abv;
-  int cal_upl = cur_upl;
+
+ /// choix 2
+ if((sql_show == ELstShowUnion) && (upl_sub != 0)){
+  key = pGame->names[zn].abv;
+  int cal_upl = upl_sub;
   if(cal_upl==1){
-   cal_upl=2;
+   //cal_upl=2;
+   ;
   }
-  for(int loop = 0; loop < cal_upl-1; loop++){
+  for(int loop = 1; loop <= cal_upl+1; loop++){
    sql_msg = sql_msg +
-             "Select "+key+QString::number(loop+1) +
+             "Select "+key+QString::number(loop) +
              " as b, sum(T) as T from tb_uplets group by " +
-             key+QString::number(loop+1)+"\n";
-   if(loop+1 < cal_upl-1){
+             key+QString::number(loop)+"\n";
+   if(loop <= cal_upl){
     sql_msg = sql_msg + "union all\n";
    }
   }
@@ -203,13 +210,16 @@ QString BcUpl::sqlShowItems(const stGameConf *pGame, int zn, ECalTirages sql_sho
   sql_msg = cur_sql + ",\n tb_union as (\n" +
             sql_msg
             + ")\n Select b, sum(T) as T from tb_union group by b order by T desc, b desc";
-
-#ifndef QT_NO_DEBUG
- BTest::writetoFile("dbg_localBilan.txt",sql_msg,false);
-#endif
-
  }
 
+ /// choix 3
+ if(sql_show == ELstShowNotInUnion){
+  key = "t1.z"+QString::number(zn+1);
+  sql_msg = "Select " + key +
+            " from b_elm as t1 where ( "+
+            key + " not in (select b from "+cur_sql+"B)) order by " +
+            key + " asc";
+ }
 
  return sql_msg;
 }
@@ -1022,16 +1032,16 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
 }
 #endif
 
-QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int dst_upl)
+QWidget *BcUpl::Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int dst_upl)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
- BView *qtv_tmp = upl_SHOW[tirLgnId-1][zn][src_upl][relativeDay][dst_upl];
+ BView *qtv_tmp = upl_Bview_2[tirLgnId-1][zn][src_upl][relativeDay][dst_upl];
  int upl_ref_in = src_upl+C_MIN_UPL;
 
  QString sql_ref = getSqlTbv(pGame, zn,tirLgnId, src_upl+C_MIN_UPL, dst_upl+C_MIN_UPL, ELstCal);
  QString sql_msg = "";
- sql_msg = sqlShowItems(pGame,zn,ELstShowCal,upl_ref_in,sql_ref);
+ sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_ref_in,sql_ref);
 
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
@@ -1084,7 +1094,7 @@ QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int tirLgnId
   qtv_tmp->hideColumn(1);
   qtv_tmp->hideColumn(2);
   int l = qtv_tmp->getMinWidth(0);
-  qtv_tmp->setFixedWidth(l);
+  //qtv_tmp->setFixedWidth(l);
  }
  else {
   ;
@@ -1092,20 +1102,24 @@ QWidget *BcUpl::calUplFromDistance(const stGameConf *pGame, int zn, int tirLgnId
 
 
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
-if(dst_upl>0){
- sql_msg = sqlShowItems(pGame,zn,ELstShowUnion,upl_ref_in,sql_ref);
- BView *qtv_tmp = upl_MEMO[tirLgnId-1][zn][src_upl][relativeDay][dst_upl-1];
+ if(dst_upl>0){
+  sql_msg = sql_ShowItems(pGame,zn,ELstShowUnion,upl_ref_in,sql_ref);
+  BView *qtv_tmp_3 = upl_Bview_3[tirLgnId-1][zn][src_upl][relativeDay][dst_upl-1];
+  BView *qtv_r_1 = Bview_3_fill_1(qtv_tmp_3, sql_msg);
 
- BView *qtv_bilan = getLocalBilan(qtv_tmp, sql_msg);
- glay_tmp->addWidget(qtv_bilan->getScreen(),0,1);
-}
+  BView *qtv_tmp_4 = upl_Bview_4[tirLgnId-1][zn][src_upl][relativeDay][dst_upl-1];
+  BView *qtv_r_2 = Bview_4_fill_1(qtv_tmp_4, sql_msg);
+
+  glay_tmp->addWidget(qtv_r_1->getScreen(),0,1);
+  glay_tmp->addWidget(qtv_r_2->getScreen(),0,2);
+ }
  wdg_tmp->setLayout(glay_tmp);
 
  return (wdg_tmp);
  //return qtv_tmp->getScreen();
 }
 
-BView *BcUpl::getLocalBilan(BView *qtv_tmp, QString sql_msg)
+BView *BcUpl::Bview_3_fill_1(BView *qtv_tmp, QString sql_msg)
 {
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
@@ -1145,7 +1159,53 @@ BView *BcUpl::getLocalBilan(BView *qtv_tmp, QString sql_msg)
  /// Largeur du tableau
  if(nbCol){
   int l = qtv_tmp->getMinWidth(0);
-  qtv_tmp->setFixedWidth(l);
+  //qtv_tmp->setFixedWidth(l);
+ }
+ else {
+  ;
+ }
+
+ return qtv_tmp;
+}
+
+BView *BcUpl::Bview_4_fill_1(BView *qtv_tmp, QString sql_msg)
+{
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ sqm_tmp->setQuery(sql_msg, dbCount);
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+
+ QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+ qtv_tmp->sortByColumn(1,Qt::DescendingOrder);
+ qtv_tmp->setSortingEnabled(true);
+
+
+ int nb_rows = sqm_tmp->rowCount();
+ int rows_proxy = qtv_tmp->model()->rowCount();
+
+ QString my_title = "Absent local : " + QString::number(nb_rows).rightJustified(2,'0')+" boules.";
+ qtv_tmp->setTitle(my_title);
+
+
+ qtv_tmp->setAlternatingRowColors(true);
+
+
+ int nbCol = sqm_tmp->columnCount();
+ qtv_tmp->resizeColumnsToContents();
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+
+ /// Largeur du tableau
+ if(nbCol){
+  int l = qtv_tmp->getMinWidth(0);
+  //qtv_tmp->setFixedWidth(l);
  }
  else {
   ;
@@ -1168,18 +1228,25 @@ QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int
  connect(upl_details, SIGNAL(tabBarClicked(int)), this, SLOT(BSlot_Tab(int)));
 #endif
 
+ /// Creation des Table View pour chaque onglets resultat
  for (int tab=0;tab<nb_recherche;tab++) {
-  BView * tst = new BView ;
-  upl_SHOW[tirLgnId-1][zn][src_upl][relativeDay][tab]= tst;
+  BView * bv_2 = new BView ;
+  upl_Bview_2[tirLgnId-1][zn][src_upl][relativeDay][tab]= bv_2;
+
   if(tab>0){
-   BView * bilan = new BView ;
-   upl_MEMO[tirLgnId-1][zn][src_upl][relativeDay][tab-1]= bilan;
+   BView * bv_3 = new BView ;
+   upl_Bview_3[tirLgnId-1][zn][src_upl][relativeDay][tab-1]= bv_3;
+
+   BView * bv_4 = new BView ;
+   upl_Bview_4[tirLgnId-1][zn][src_upl][relativeDay][tab-1]= bv_4;
   }
-  QWidget * wdg_tmp = calUplFromDistance(pGame, zn,tirLgnId, src_upl, relativeDay,tab);
+
+  QWidget * wdg_tmp = Bview_init(pGame, zn,tirLgnId, src_upl, relativeDay,tab);
   if(wdg_tmp !=nullptr){
    upl_details->addTab(wdg_tmp,"R_"+QString::number(tab+1).rightJustified(2,'0'));
   }
  }
+
  return upl_details;
 }
 
@@ -1192,14 +1259,16 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, in
  int nb_ong= sizeof(ongNames)/sizeof(QString);
 
  int nb_days = nb_ong;//BMIN_2(pGame->limites[zn].win, nb_ong);
- upl_SHOW[tirLgnId-1][zn][upl_ref]= new BView **[nb_days];
- upl_MEMO[tirLgnId-1][zn][upl_ref]= new BView **[nb_days]; /// S4
+ upl_Bview_2[tirLgnId-1][zn][upl_ref]= new BView **[nb_days];
+ upl_Bview_3[tirLgnId-1][zn][upl_ref]= new BView **[nb_days]; /// S4
+ upl_Bview_4[tirLgnId-1][zn][upl_ref]= new BView **[nb_days]; /// S4
 
  int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
 
  for (int day_anaUpl = 0;day_anaUpl<nb_days;day_anaUpl++) {
-  upl_SHOW[tirLgnId-1][zn][upl_ref][day_anaUpl]= new BView *[nb_recherche];
-  upl_MEMO[tirLgnId-1][zn][upl_ref][day_anaUpl]= new BView *[nb_recherche-1];
+  upl_Bview_2[tirLgnId-1][zn][upl_ref][day_anaUpl]= new BView *[nb_recherche];
+  upl_Bview_3[tirLgnId-1][zn][upl_ref][day_anaUpl]= new BView *[nb_recherche-1];
+  upl_Bview_4[tirLgnId-1][zn][upl_ref][day_anaUpl]= new BView *[nb_recherche-1];
   QString ongLabel = ongNames[day_anaUpl];
 
   /*
@@ -1275,8 +1344,8 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  int nb_recherche = gm_def->limites[zn].win;
  QString st_title = "";
  int nb_rows = 0;
- QString targetName[2];
- QString sql_file = "";
+ QString tableRef="";
+ QString tableName="";
  for (int day_anaUpl = 0;day_anaUpl<2;day_anaUpl++) {
   if(day_anaUpl == 0){
    strDay = "J";
@@ -1291,108 +1360,59 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
     continue;
    }
 
-   targetName[0] = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
-                      gm_def->names[zn].abv+
-                      QString::number(ref).rightJustified(2,'0')+
-                      "_S"+QString::number(index.row()+1).rightJustified(2,'0')+
-                      "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
-                      "R"+QString::number(tab+1).rightJustified(2,'0')+
-                      "V";
-
    ECalTirages resu = tabCal[day_anaUpl][tab];
 
-   /// Verifier si cette table est connue dans la base
+   /// initialisation msg sql
    QString sql_ref = getSqlTbv(gm_def, zn, tirLgnId, ref, tab+C_MIN_UPL, resu,selection);
    QString sql_msg = "";
    QString cnx = gm_def->db_ref->cnx;
-   if(DB_Tools::isDbGotTbl(targetName[0],cnx)==false){
-    sql_msg = sqlShowItems(gm_def,zn,ELstShowCal,ref,sql_ref);
-    sql_msg = "Create table if not exists \"" +
-              targetName[0] +"\" as "+ sql_msg;
+   tableRef = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
+              gm_def->names[zn].abv+
+              QString::number(ref).rightJustified(2,'0')+
+              "_S"+QString::number(index.row()+1).rightJustified(2,'0')+
+              "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
+              "R"+QString::number(tab+1).rightJustified(2,'0');
 
-
-    if(!query.exec(sql_msg)){
-#ifndef QT_NO_DEBUG
-   sql_file = targetName[0]+"_err.txt";
-   BTest::writetoFile(sql_file,sql_msg,false);
-#endif
-   return;
-    }
-    else{
-#ifndef QT_NO_DEBUG
-   sql_file = targetName[0]+"_ok.txt";
-   BTest::writetoFile(sql_file,sql_msg,false);
-#endif
-    }
+   /// Verifier si cette table est connue dans la base
+   tableName = tableRef + "V";
+   sql_msg = sql_ShowItems(gm_def,zn,ELstShowCal,ref,sql_ref);
+   if (DB_Tools::createOrReadTable(tableName,cnx,sql_msg,&sql_msg)==DB_Tools::eCort_Ok){
+    BView *qtv_tmp = upl_Bview_2[tirLgnId-1][zn][id_upl][day_anaUpl][tab];
+    nb_rows = Bview_UpdateAndCount(ELstShowCal, qtv_tmp, sql_msg);
+    st_title = "U_" + QString::number(ref).rightJustified(2,'0')+
+               " "+strDay+". Nb tirages : "+QString::number(nb_rows);
+    qtv_tmp->setTitle(st_title);
    }
-   /// ici la table est cree on va lire les données
-   sql_msg = "select * from \"" + targetName[0]+"\"";
-#ifndef QT_NO_DEBUG
-   sql_file = targetName[0]+"_use.txt";
-   BTest::writetoFile(sql_file,sql_msg,false);
-#endif
-
-   /// -------
-
-   BView *qtv_tmp = upl_SHOW[tirLgnId-1][zn][id_upl][day_anaUpl][tab];
-   nb_rows = fillTabUpletFromSelection(qtv_tmp, sql_msg);
-   st_title = "U_" + QString::number(ref).rightJustified(2,'0')+
-                      " "+strDay+". Nb tirages : "+QString::number(nb_rows);
-   qtv_tmp->setTitle(st_title);
-
-
-   /// ------------------
 
    if(tab>0){
-    targetName[1] = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
-                       gm_def->names[zn].abv+
-                       QString::number(ref).rightJustified(2,'0')+
-                       "_S"+QString::number(index.row()+1).rightJustified(2,'0')+
-                       "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
-                       "R"+QString::number(tab+1).rightJustified(2,'0')+
-                       "B";
-
-
-    if(DB_Tools::isDbGotTbl(targetName[1],cnx)==false){
-     sql_msg = sqlShowItems(gm_def,zn,ELstShowUnion,ref,sql_ref);
-     sql_msg = "Create table if not exists \"" +
-               targetName[1] +"\" as "+ sql_msg;
-     if(!query.exec(sql_msg)){
- #ifndef QT_NO_DEBUG
-    QString sql_file = targetName[1]+"_err.txt";
-    BTest::writetoFile(sql_file,sql_msg,false);
- #endif
-    return;
-     }
-     else{
- #ifndef QT_NO_DEBUG
-    sql_file = targetName[1]+"_ok.txt";
-    BTest::writetoFile(sql_file,sql_msg,false);
- #endif
-     }
+    /// Verifier si cette table est connue dans la base
+    tableName = tableRef + "B";
+    sql_msg = sql_ShowItems(gm_def,zn,ELstShowUnion,ref,sql_ref,tab);
+    if (DB_Tools::createOrReadTable(tableName,cnx,sql_msg,&sql_msg)==DB_Tools::eCort_Ok){
+     BView *qtv_tmp = upl_Bview_3[tirLgnId-1][zn][id_upl][day_anaUpl][tab-1];
+     nb_rows = Bview_UpdateAndCount(ELstShowUnion,qtv_tmp, sql_msg);
+     QString my_title = "Bilan local : " + QString::number(nb_rows).rightJustified(2,'0')+" boules.";
+     qtv_tmp->setTitle(my_title);
     }
-    /// ici la table est cree on va lire les données
-    sql_msg = "select * from \"" + targetName[1]+"\"";
-#ifndef QT_NO_DEBUG
-   sql_file = targetName[1]+"_use.txt";
-   BTest::writetoFile(sql_file,sql_msg,false);
-#endif
-    /// -------
-    BView *qtv_bilan = upl_MEMO[tirLgnId-1][zn][id_upl][day_anaUpl][tab-1];
-    nb_rows = fillTabBilanFromSelection(qtv_bilan, sql_msg);
-    QString my_title = "Bilan local : " + QString::number(nb_rows).rightJustified(2,'0')+" boules.";
-    qtv_bilan->setTitle(my_title);
+
+    /// Verifier si cette table est connue dans la base
+    tableName = tableRef + "C";
+    sql_msg = sql_ShowItems(gm_def,zn,ELstShowNotInUnion,ref,tableRef);
+    if (DB_Tools::createOrReadTable(tableName,cnx,sql_msg,&sql_msg)==DB_Tools::eCort_Ok){
+     BView *qtv_tmp = upl_Bview_4[tirLgnId-1][zn][id_upl][day_anaUpl][tab-1];
+     nb_rows = Bview_UpdateAndCount(ELstShowNotInUnion,qtv_tmp, sql_msg);
+     QString my_title = "Absent local : " + QString::number(nb_rows).rightJustified(2,'0')+" boules.";
+     qtv_tmp->setTitle(my_title);
+    }
 
    }
-
   }
-
  }
 
  QApplication::restoreOverrideCursor();
 }
 
-int BcUpl::fillTabUpletFromSelection(BView *qtv_tmp, QString sql_msg)
+int BcUpl::Bview_UpdateAndCount(ECalTirages id, BView *qtv_tmp, QString sql_msg)
 {
 
  QAbstractItemModel *model = qtv_tmp->model(); /// A debuger
@@ -1409,11 +1429,12 @@ int BcUpl::fillTabUpletFromSelection(BView *qtv_tmp, QString sql_msg)
  int nb_rows = sqm_tmp->rowCount();
  int nb_cols = sqm_tmp->columnCount();
 
- /// Largeur du tableau
- qtv_tmp->hideColumn(0);
- qtv_tmp->hideColumn(1);
- int l = qtv_tmp->getMinWidth(0) +25;
- qtv_tmp->setFixedWidth(l);
+ if(id == ELstShowCal){
+  qtv_tmp->hideColumn(0);
+  qtv_tmp->hideColumn(1);
+ }
+ //int l = qtv_tmp->getMinWidth(0) +25;
+ //qtv_tmp->setFixedWidth(l);
 
  for (int col=0;col<nb_cols;col++) {
   qtv_tmp->resizeColumnToContents(col);
@@ -1422,34 +1443,6 @@ int BcUpl::fillTabUpletFromSelection(BView *qtv_tmp, QString sql_msg)
  return nb_rows;
 }
 
-int BcUpl::fillTabBilanFromSelection(BView *qtv_tmp, QString sql_msg)
-{
-
- QAbstractItemModel *model = qtv_tmp->model(); /// A debuger
- QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
- QSqlQueryModel * sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
-
-
- //sqm_tmp->query().clear();
- sqm_tmp->setQuery(sql_msg,dbCount);
- while (sqm_tmp->canFetchMore())
- {
-  sqm_tmp->fetchMore();
- }
- int nb_rows = sqm_tmp->rowCount();
- int nb_cols = sqm_tmp->columnCount();
-
- /// Largeur du tableau
- int l = qtv_tmp->getMinWidth(0) +25;
- qtv_tmp->setFixedWidth(l);
-
- for (int col=0;col<nb_cols;col++) {
-  qtv_tmp->resizeColumnToContents(col);
- }
-
-
- return nb_rows;
-}
 
 bool BcUpl::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
@@ -1472,9 +1465,10 @@ BcUpl::BcUpl(const stGameConf *pGame,const int nb, const QString tbl)
 
  int nb_zn = pGame->znCount;
  int nbana = 2; /// Tirages number
- upl_GET = new BView***[nbana];
- upl_SHOW = new BView*****[nbana];
- upl_MEMO = new BView*****[nbana]; /// S1
+ upl_Bview_1 = new BView***[nbana];
+ upl_Bview_2 = new BView*****[nbana];
+ upl_Bview_3 = new BView*****[nbana]; /// S1
+ upl_Bview_4 = new BView*****[nbana]; /// S1
  upl_items = nb;
  upl_tbInternal=tbl;
 }

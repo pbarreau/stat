@@ -62,7 +62,8 @@ class BcUpl: public BCount
   ELstUplTotNext, /// Total de chacun des uplets
   ELstCal,        /// Fin de calculs possible
   ELstShowCal,    /// Requete montrant les calculs
-  ELstShowUnion   /// Requete synthese de chacque boule
+  ELstShowUnion,   /// Requete synthese de chacque boule
+  ELstShowNotInUnion /// Requete ensemble complementaire
  }ECalTirages;
 
 #define C_TOT_CAL ELstCal
@@ -127,7 +128,7 @@ class BcUpl: public BCount
  QString sql_CnpMkUplet(int nb, QString col, QString tbl_in="B_elm");
  QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
  QString sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
- QString sqlShowItems(const stGameConf *pGame, int zn, ECalTirages sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
+ QString sql_ShowItems(const stGameConf *pGame, int zn, ECalTirages sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
 
  private:
  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
@@ -137,12 +138,9 @@ class BcUpl: public BCount
  QGridLayout *Compter(QString * pName, int zn);
 
  private:
- BView * getLocalBilan(BView *qtv_tmp, QString sql_msg);
- QWidget *getMainTbv(const stGameConf *pGame, int zn, int tirLgnId, int i);
  QString getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub=-1, ECalTirages target=ELstCal, int sel_item=-1);
  QWidget *showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref);
  QWidget *getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int nb_recherche);
- QWidget *calUplFromDistance(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int dst_upl);
  void ConstruireSql(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub, int step, QString tabInOut[][3]);
  void ConstruSubSql(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub, QString tabInOut[][C_TOT_CAL][3]);
 
@@ -159,8 +157,13 @@ class BcUpl: public BCount
 
  void sql_RepartitionVoisin(QString tabInOut[][3], int jour, int upl, int ref_id, int delta=0);
 
- int fillTabUpletFromSelection(BView *qtv_tmp, QString sql_msg);
- int fillTabBilanFromSelection(BView *qtv_tmp, QString sql_msg);
+ QWidget *Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int dst_upl);
+ BView * Bview_3_fill_1(BView *qtv_tmp, QString sql_msg);
+ BView * Bview_4_fill_1(BView *qtv_tmp, QString sql_msg);
+ QWidget *fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int i);
+ int Bview_UpdateAndCount(ECalTirages id, BView *qtv_tmp, QString sql_msg);
+ int Bview_3_fill_2(BView *qtv_tmp, QString sql_msg);
+ int Bview_4_fill_2(BView *qtv_tmp, QString sql_msg);
 };
 
 #endif // BUPLET_H

@@ -1,6 +1,7 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #include <QSqlError>
+#include "BTest.h"
 #endif
 
 
@@ -26,7 +27,7 @@
 QString DB_Tools::GEN_Where_3(int loop,
 															QString tb1,bool inc1,QString op1,
 															QStringList &tb2,bool inc2,QString op2
-																																																																																																																																																																																																																																																															)
+															)
 {
  QString ret_msg = "";
  QString ind_1 = "";
@@ -49,28 +50,28 @@ QString DB_Tools::GEN_Where_3(int loop,
     ind_1 = tb1;
    }
 
-	 // Mettre un nombre apres  2eme table
-	 if(inc2)
-	 {
-		ind_2 = tb2.at(j)+QString::number(i+1);
-	 }
-	 else
-	 {
-		ind_2 = tb2.at(j);
-	 }
+   // Mettre un nombre apres  2eme table
+   if(inc2)
+   {
+    ind_2 = tb2.at(j)+QString::number(i+1);
+   }
+   else
+   {
+    ind_2 = tb2.at(j);
+   }
 
-	 // Construire message
-	 ret_msg = ret_msg
-						 + ind_1
-						 + op1
-						 + ind_2
-						 + " " + op2 + " ";
-	}
-	// retirer le dernier operateur (op2)
-	ret_msg.remove(ret_msg.length()-op2.length()-1, op2.length()+1);
+   // Construire message
+   ret_msg = ret_msg
+             + ind_1
+             + op1
+             + ind_2
+             + " " + op2 + " ";
+  }
+  // retirer le dernier operateur (op2)
+  ret_msg.remove(ret_msg.length()-op2.length()-1, op2.length()+1);
 
-	ret_msg =  ret_msg + ")";
-	ret_msg = ret_msg + flag;
+  ret_msg =  ret_msg + ")";
+  ret_msg = ret_msg + flag;
  }
  // retirer le dernier operateur
  ret_msg.remove(ret_msg.length()-flag.length(),flag.length());
@@ -92,17 +93,17 @@ bool DB_Tools::myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QS
                tblName+"'); ";
  //QString msg_s = "";
 #if 0
-  QString atomic[]=
-  {
-    {"PRAGMA foreign_keys=off;"},
-    {"BEGIN TRANSACTION;"},
-    {"ALTER TABLE "+tblName+" RENAME TO old_"+tblName+";"},
-    {msg+";"},
-    {"INSERT INTO "+tblName+" SELECT * FROM old_"+tblName+";"},
-    {"drop table if exists old_"+tblName+";"},
-    {"COMMIT;"},
-    {"PRAGMA foreign_keys=on;"}
-  };
+ QString atomic[]=
+ {
+  {"PRAGMA foreign_keys=off;"},
+  {"BEGIN TRANSACTION;"},
+  {"ALTER TABLE "+tblName+" RENAME TO old_"+tblName+";"},
+  {msg+";"},
+  {"INSERT INTO "+tblName+" SELECT * FROM old_"+tblName+";"},
+  {"drop table if exists old_"+tblName+";"},
+  {"COMMIT;"},
+  {"PRAGMA foreign_keys=on;"}
+ };
 
 #endif
 
@@ -117,16 +118,16 @@ bool DB_Tools::myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QS
     msg = msg.replace(","," integer,");
     msg = msg.replace(")"," integer, primary key ("+pid+"))");
     QString atomic[]=
-     {
-      {"PRAGMA foreign_keys=off;"},
-      {"BEGIN TRANSACTION;"},
-      {"ALTER TABLE "+tblName+" RENAME TO old_"+tblName+";"},
-      {msg+";"},
-      {"INSERT INTO "+tblName+" SELECT * FROM old_"+tblName+";"},
-      {"drop table if exists old_"+tblName+";"},
-      {"COMMIT;"},
-      {"PRAGMA foreign_keys=on;"}
-     };
+    {
+     {"PRAGMA foreign_keys=off;"},
+     {"BEGIN TRANSACTION;"},
+     {"ALTER TABLE "+tblName+" RENAME TO old_"+tblName+";"},
+     {msg+";"},
+     {"INSERT INTO "+tblName+" SELECT * FROM old_"+tblName+";"},
+     {"drop table if exists old_"+tblName+";"},
+     {"COMMIT;"},
+     {"PRAGMA foreign_keys=on;"}
+    };
     int items = sizeof(atomic)/sizeof(QString);
     for(int item=0; (item<items) && b_retVal; item++){
      msg = atomic[item];
@@ -135,9 +136,9 @@ bool DB_Tools::myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QS
 #endif
      b_retVal = q_atom.exec(msg);
 
-		}
-	 }
-	}
+    }
+   }
+  }
  }
 #ifndef QT_NO_DEBUG
  qDebug() << "SQL msg:\n"<<msg<<"\n-------";
@@ -153,12 +154,12 @@ bool DB_Tools::myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QS
 #if 0
 QString DB_Tools::makeTableFromSelect(QString select)
 {
-  QString msg = "";
-  msg = select.simplified();
-  msg = msg.remove("INT");
-  msg = msg.replace(","," integer,");
-  msg = msg + tr(",primary key (id)");
-  return msg;
+ QString msg = "";
+ msg = select.simplified();
+ msg = msg.remove("INT");
+ msg = msg.replace(","," integer,");
+ msg = msg + tr(",primary key (id)");
+ return msg;
 }
 #endif
 
@@ -171,8 +172,8 @@ QString DB_Tools::innerJoin(stJoinArgs ja)
  QString msg = "";
 
  msg = "select " + arg1 + " from ("+arg2+")as tbLeft "
-                                             "inner join ("+arg3+")as tbRight "
-              "on ("+arg4+")";
+                                         "inner join ("+arg3+")as tbRight "
+                                                             "on ("+arg4+")";
 
 #ifndef QT_NO_DEBUG
  qDebug() << "DB_Tools::innerJoin\n";
@@ -195,10 +196,10 @@ QString DB_Tools::leftJoin(stJoinArgs ja)
        + " from ("
        +arg2
        +")as tbLeft "
-         "left join ("
+        "left join ("
        +arg3
        +")as tbRight "
-         "on ("
+        "on ("
        +arg4
        +")";
 
@@ -239,6 +240,48 @@ QString DB_Tools::leftJoinFiltered(stJoinArgs ja,QString arg5)
  return msg;
 }
 
+DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QString tbl_code, QString *tbl_read)
+{
+ DB_Tools::eCort ret_val = eCort_NotSet;
+
+ QSqlDatabase db = QSqlDatabase::database(cnx);
+ QSqlQuery query(db);
+
+ QString sql_msg = tbl_code;
+
+ if(isDbGotTbl(tbl_name,cnx)==false){
+  sql_msg = "Create table if not exists \"" +
+            tbl_name +"\" as "+ sql_msg;
+
+  QString filePrefix = "DBT_Cort_" +tbl_name;
+  QString dbgFile  = "";
+  if(!query.exec(sql_msg)){
+#ifndef QT_NO_DEBUG
+   dbgFile = filePrefix +"_err.txt";
+   BTest::writetoFile(dbgFile,sql_msg,false);
+   DisplayError(tbl_name, nullptr, dbgFile);
+#endif
+   *tbl_read = sql_msg;
+   ret_val=eCort_ErrCreate;
+  }
+  else{
+#ifndef QT_NO_DEBUG
+   dbgFile = filePrefix+"_ok.txt";
+   BTest::writetoFile(dbgFile,sql_msg,false);
+#endif
+   sql_msg = "Select * from '"+tbl_name+"'";
+   *tbl_read = sql_msg;
+
+#ifndef QT_NO_DEBUG
+   dbgFile = filePrefix+"_use.txt";
+   BTest::writetoFile(dbgFile,sql_msg,false);
+#endif
+   ret_val=eCort_Ok;
+  }
+ }
+ return ret_val;
+}
+
 bool DB_Tools::isDbGotTbl(QString tbl, QString cnx, tbTypes etbTypes, bool silence)
 {
  bool b_retVal = false;
@@ -262,34 +305,34 @@ bool DB_Tools::isDbGotTbl(QString tbl, QString cnx, tbTypes etbTypes, bool silen
    kind = "view";
    break;
 
-	case etbTempTbl:
-	case etbTable:
-	 kind = "table";
-	 break;
+  case etbTempTbl:
+  case etbTable:
+   kind = "table";
+   break;
 
-	default:
-			;
+  default:
+   ;
  }
 
  QString msg[]{
   {"SELECT name FROM sqlite"+m_type+"master "
-                                        "WHERE type='"+kind+"' AND name='"+tbl+"';"}
+                                    "WHERE type='"+kind+"' AND name='"+tbl+"';"}
  };
 
  if((b_retVal = query.exec(msg[0])))
  {
 
-	if((b_retVal=query.first()))
-	{
-	 msg_err = QString("Presence Table ")+tbl;
-	}
-	else{
-	 msg_err = QString("Absence Table ")+tbl;
-	}
+  if((b_retVal=query.first()))
+  {
+   msg_err = QString("Presence Table ")+tbl;
+  }
+  else{
+   msg_err = QString("Absence Table ")+tbl;
+  }
 
-	if(!silence){
-	 QMessageBox::information(NULL,"Test :",msg_err,QMessageBox::Ok);
-	}
+  if(!silence){
+   QMessageBox::information(NULL,"Test :",msg_err,QMessageBox::Ok);
+  }
  }
  return b_retVal;
 }
@@ -356,17 +399,17 @@ QString DB_Tools::getLstDays(QString cnx_db_name, QString tbl_ref)
   nb_items= query.at()+1;
   query.first();
 
-	do
-	{
-	 //count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,
-	 st_tmp = st_tmp + "cast (count(CASE WHEN  J like '"+
-						query.value(0).toString()+"%' then 1 end) as int) as "+
-						query.value(0).toString()+",\n";
-	}while(query.next());
+  do
+  {
+   //count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,
+   st_tmp = st_tmp + "cast (count(CASE WHEN  J like '"+
+            query.value(0).toString()+"%' then 1 end) as int) as "+
+            query.value(0).toString()+",\n";
+  }while(query.next());
 
-	//supprimer derniere ','
-	st_tmp.remove(st_tmp.length()-2,1);
-	st_tmp = st_tmp + " ";
+  //supprimer derniere ','
+  st_tmp.remove(st_tmp.length()-2,1);
+  st_tmp = st_tmp + " ";
  }
 
 #ifndef QT_NO_DEBUG
@@ -433,24 +476,24 @@ bool DB_Tools::tbFltGet(stTbFiltres *in_out, QString cnx)
  if(b_retVal){
   in_out->sta = Bp::E_Sta::Ok_Query;
 
-	if((b_retVal = query.first())){
-	 in_out->sta = Bp::E_Sta::Ok_Result;
+  if((b_retVal = query.first())){
+   in_out->sta = Bp::E_Sta::Ok_Result;
 
-	 /// comptage des reponses
-	 query.last();
-	 in_out->dbt = query.at() +1;
-	 query.first();
-	 in_out->id = query.value("id").toInt();
+   /// comptage des reponses
+   query.last();
+   in_out->dbt = query.at() +1;
+   query.first();
+   in_out->id = query.value("id").toInt();
 
-	 int int_flt = query.value("flt").toInt();
-	 Bp::F_Flts tmp = static_cast<Bp::F_Flts>(int_flt);
-	 in_out->b_flt = tmp;
-	 in_out->pri = query.value("pri").toInt();
-	}
-	else {
-	 in_out->dbt = -1;
-	 in_out->sta = Bp::E_Sta::Er_Result;
-	}
+   int int_flt = query.value("flt").toInt();
+   Bp::F_Flts tmp = static_cast<Bp::F_Flts>(int_flt);
+   in_out->b_flt = tmp;
+   in_out->pri = query.value("pri").toInt();
+  }
+  else {
+   in_out->dbt = -1;
+   in_out->sta = Bp::E_Sta::Er_Result;
+  }
  }
  else {
   in_out->sta = Bp::E_Sta::Er_Query;
@@ -514,16 +557,16 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
  else if(in_out->dbt<=0){
   /// Faire message insert
   msg ="insert into "+
-        tbFiltre+
-        " (id, zne, typ,lgn,col,val,pri,flt)"
-        " values (NULL,"
-        +QString::number(in_out->zne)+","
-        +QString::number(in_out->typ)+","
-        +QString::number(in_out->lgn)+","
-        +QString::number(in_out->col)+","
-        +QString::number(in_out->val)+","
-        +QString::number(in_out->pri)+","
-        +QString::number(in_out->b_flt)+")";
+       tbFiltre+
+       " (id, zne, typ,lgn,col,val,pri,flt)"
+       " values (NULL,"
+       +QString::number(in_out->zne)+","
+       +QString::number(in_out->typ)+","
+       +QString::number(in_out->lgn)+","
+       +QString::number(in_out->col)+","
+       +QString::number(in_out->val)+","
+       +QString::number(in_out->pri)+","
+       +QString::number(in_out->b_flt)+")";
   /// BUG ? : in_out pas de mise a jour de id
   in_out->dbt=1;
  }
@@ -586,48 +629,48 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
   QString cnx = lst_cnx.at(i).simplified();
   QSqlDatabase db = QSqlDatabase::database(cnx);
 
-	if(cnx.isEmpty()){
-	 cnx = "default";
-	}
+  if(cnx.isEmpty()){
+   cnx = "default";
+  }
 
-	QString cnx_id = err_id.arg(i+1).arg(nb_db).arg(cnx);
-	QString db_err = db.lastError().text();
+  QString cnx_id = err_id.arg(i+1).arg(nb_db).arg(cnx);
+  QString db_err = db.lastError().text();
 
-	db_err = db_err.simplified();
-	if(db_err.isEmpty()){
-	 db_err = "Aucune a priori";
-	}
+  db_err = db_err.simplified();
+  if(db_err.isEmpty()){
+   db_err = "Aucune a priori";
+  }
 
-	if(pCurrent !=nullptr)
-	{
-	 sqlGood = pCurrent->executedQuery();
-	 sqlText = pCurrent->lastQuery();
+  if(pCurrent !=nullptr)
+  {
+   sqlGood = pCurrent->executedQuery();
+   sqlText = pCurrent->lastQuery();
 
-	 sqlError = pCurrent->lastError().text();
-	 sqlError = sqlError.simplified();
-	 if(sqlError.isEmpty()){
-		sqlError = "Aucune a priori";
-	 }
-	}
-	else
-	{
-	 sqlText = sqlCode.simplified();
-	 if(sqlText.isEmpty()){
-		sqlText = "Code usr absent";
-	 }
+   sqlError = pCurrent->lastError().text();
+   sqlError = sqlError.simplified();
+   if(sqlError.isEmpty()){
+    sqlError = "Aucune a priori";
+   }
+  }
+  else
+  {
+   sqlText = sqlCode.simplified();
+   if(sqlText.isEmpty()){
+    sqlText = "Code usr absent";
+   }
 
-	 sqlError = "QSqlQuery non renseignee";
-	}
+   sqlError = "QSqlQuery non renseignee";
+  }
 
-	QString msg = cnx_id
-								+QString("\ndb error :\n")+db_err + "\n"
-								+QString("\nSql considere bon :\n")+sqlGood + "\n"
-								+QString("\nSql en cours :\n")+sqlText + "\n"
-								+QString("\n\nFn usr : ")+fnName + "\n"
-								+QString("\nSql demande :\n")+sqlCode + "\n"
-								+QString("\nSql Error :\n")+sqlError + "\n";
+  QString msg = cnx_id
+                +QString("\ndb error :\n")+db_err + "\n"
+                +QString("\nSql considere bon :\n")+sqlGood + "\n"
+                +QString("\nSql en cours :\n")+sqlText + "\n"
+                +QString("\n\nFn usr : ")+fnName + "\n"
+                +QString("\nSql demande :\n")+sqlCode + "\n"
+                +QString("\nSql Error :\n")+sqlError + "\n";
 
-	QMessageBox::information(nullptr, "Pgm", msg,QMessageBox::Yes);
+  QMessageBox::information(nullptr, "Pgm", msg,QMessageBox::Yes);
 #ifndef QT_NO_DEBUG
 	err_logs << "\n\n-------------\n"<<msg;
 	qDebug() <<msg;
@@ -671,21 +714,21 @@ bool DB_Tools::SupprimerResultatsPrecedent(QString cnx, QString type, QString ke
     lst_tbl.append(target);
    }while(query.next());
 
-	 /// Suppression des tables
-	 do{
-		target = lst_tbl.takeFirst();
-		msg = "drop "+type+" if exists " + target;
-		b_retVal = query.exec(msg);
-	 }while(b_retVal && lst_tbl.size());
+   /// Suppression des tables
+   do{
+    target = lst_tbl.takeFirst();
+    msg = "drop "+type+" if exists " + target;
+    b_retVal = query.exec(msg);
+   }while(b_retVal && lst_tbl.size());
 
-	 /// reorganisation de la base
-	 if(b_retVal){
-		/*
-		msg = "vacuum";
-		b_retVal = query.exec(msg);
-		*/
-	 }
-	}
+   /// reorganisation de la base
+   if(b_retVal){
+    /*
+    msg = "vacuum";
+    b_retVal = query.exec(msg);
+    */
+   }
+  }
  }
 
  if(!b_retVal)
@@ -705,7 +748,7 @@ void DB_Tools::dumpAllObjectTrees()
 }
 
 void DB_Tools::dumpRecursive( const QObjectList *list,
-                             QListViewItem *parent )
+                              QListViewItem *parent )
 {
  if ( list == 0 )
   return;
@@ -732,8 +775,8 @@ void DB_Tools::dumpRecursive( const QObjectList *list,
    QWidget *w = (QWidget *) obj;
    if ( w->isVisible() ) {
     flags.sprintf( "<%d,%d,%d,%d>", w->x(),
-                  w->y(), w->width(),
-                  w->height() );
+                   w->y(), w->width(),
+                   w->height() );
    } else {
     flags = "invisible";
    }

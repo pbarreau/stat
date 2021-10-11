@@ -27,11 +27,20 @@ namespace DB_Tools {
   etbEnd
  }tbTypes;
 
+ typedef enum E_CORT{ /// Create or Read Table
+  eCort_NotSet,
+  eCort_Read,
+  eCort_Ok,
+  eCort_ErrCreate
+ }eCort;
+
 QString GEN_Where_3(int loop,
                     QString tb1,bool inc1,QString op1,
                     QStringList &tb2,bool inc2,QString op2
                     );
 bool myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QString asCode);
+eCort createOrReadTable(QString tbl_name, QString cnx, QString tbl_code, QString *tbl_read);
+
 QString innerJoin(stJoinArgs ja);
 QString leftJoin(stJoinArgs ja);
 QString innerJoinFiltered(stJoinArgs ja,QString arg5);
