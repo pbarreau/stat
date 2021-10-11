@@ -1218,6 +1218,7 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, in
 void BcUpl::BSlot_clicked(const QModelIndex &index)
 {
  BView *view = qobject_cast<BView *>(sender());
+ QSqlQuery query(dbCount);
  int id_upl = view->objectName().toInt();
  int zn = view->getZone();
  int selection = index.sibling(index.row(),Bp::colId).data().toInt();
@@ -1270,6 +1271,8 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  int nb_recherche = gm_def->limites[zn].win;
  QString st_title = "";
  int nb_rows = 0;
+ QString targetName[2];
+ QString sql_file = "";
  for (int day_anaUpl = 0;day_anaUpl<2;day_anaUpl++) {
   if(day_anaUpl == 0){
    strDay = "J";
@@ -1284,11 +1287,48 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
     continue;
    }
 
+   targetName[0] = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
+                      gm_def->names[zn].abv+
+                      QString::number(ref).rightJustified(2,'0')+
+                      "_S"+QString::number(index.row()+1).rightJustified(2,'0')+
+                      "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
+                      "R"+QString::number(tab+1).rightJustified(2,'0')+
+                      "V";
+
    ECalTirages resu = tabCal[day_anaUpl][tab];
 
-   /// -------
+   /// Verifier si cette table est connue dans la base
    QString sql_ref = getSqlTbv(gm_def, zn, tirLgnId, ref, tab+C_MIN_UPL, resu,selection);
-   QString sql_msg = sqlShowItems(gm_def,zn,ELstShowCal,ref,sql_ref);
+   QString sql_msg = "";
+   QString cnx = gm_def->db_ref->cnx;
+   if(DB_Tools::isDbGotTbl(targetName[0],cnx)==false){
+    sql_msg = sqlShowItems(gm_def,zn,ELstShowCal,ref,sql_ref);
+    sql_msg = "Create table if not exists \"" +
+              targetName[0] +"\" as "+ sql_msg;
+
+
+    if(!query.exec(sql_msg)){
+#ifndef QT_NO_DEBUG
+   sql_file = targetName[0]+"_err.txt";
+   BTest::writetoFile(sql_file,sql_msg,false);
+#endif
+   return;
+    }
+    else{
+#ifndef QT_NO_DEBUG
+   sql_file = targetName[0]+"_ok.txt";
+   BTest::writetoFile(sql_file,sql_msg,false);
+#endif
+    }
+   }
+   /// ici la table est cree on va lire les données
+   sql_msg = "select * from \"" + targetName[0]+"\"";
+#ifndef QT_NO_DEBUG
+   sql_file = targetName[0]+"_use.txt";
+   BTest::writetoFile(sql_file,sql_msg,false);
+#endif
+
+   /// -------
 
    BView *qtv_tmp = upl_SHOW[tirLgnId-1][zn][id_upl][day_anaUpl][tab];
    nb_rows = fillTabUpletFromSelection(qtv_tmp, sql_msg);
@@ -1296,70 +1336,50 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
                       " "+strDay+". Nb tirages : "+QString::number(nb_rows);
    qtv_tmp->setTitle(st_title);
 
-#ifndef QT_NO_DEBUG
-   QString sql_file = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
-                      gm_def->names[zn].abv+
-                      QString::number(ref).rightJustified(2,'0')+
-                      "-"+QString::number(index.row()+1).rightJustified(2,'0')+
-                      "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
-                      "R"+QString::number(tab+1).rightJustified(2,'0')+
-                      "V-"+QString::number(nb_rows).rightJustified(4,'0')+".txt";
-   BTest::writetoFile(sql_file,sql_msg,false);
-#endif
 
    /// ------------------
 
    if(tab>0){
-    sql_msg = sqlShowItems(gm_def,zn,ELstShowUnion,ref,sql_ref);
+    targetName[1] = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
+                       gm_def->names[zn].abv+
+                       QString::number(ref).rightJustified(2,'0')+
+                       "_S"+QString::number(index.row()+1).rightJustified(2,'0')+
+                       "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
+                       "R"+QString::number(tab+1).rightJustified(2,'0')+
+                       "B";
+
+
+    if(DB_Tools::isDbGotTbl(targetName[1],cnx)==false){
+     sql_msg = sqlShowItems(gm_def,zn,ELstShowUnion,ref,sql_ref);
+     sql_msg = "Create table if not exists \"" +
+               targetName[1] +"\" as "+ sql_msg;
+     if(!query.exec(sql_msg)){
+ #ifndef QT_NO_DEBUG
+    QString sql_file = targetName[1]+"_err.txt";
+    BTest::writetoFile(sql_file,sql_msg,false);
+ #endif
+    return;
+     }
+     else{
+ #ifndef QT_NO_DEBUG
+    sql_file = targetName[1]+"_ok.txt";
+    BTest::writetoFile(sql_file,sql_msg,false);
+ #endif
+     }
+    }
+    /// ici la table est cree on va lire les données
+    sql_msg = "select * from \"" + targetName[1]+"\"";
+#ifndef QT_NO_DEBUG
+   sql_file = targetName[1]+"_use.txt";
+   BTest::writetoFile(sql_file,sql_msg,false);
+#endif
+    /// -------
     BView *qtv_bilan = upl_MEMO[tirLgnId-1][zn][id_upl][day_anaUpl][tab-1];
     nb_rows = fillTabBilanFromSelection(qtv_bilan, sql_msg);
     QString my_title = "Bilan local : " + QString::number(nb_rows).rightJustified(2,'0')+" boules.";
     qtv_bilan->setTitle(my_title);
 
-#ifndef QT_NO_DEBUG
-   QString sql_file = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
-                      gm_def->names[zn].abv+
-                      QString::number(ref).rightJustified(2,'0')+
-                      "-"+QString::number(index.row()+1).rightJustified(2,'0')+
-                      "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
-                      "R"+QString::number(tab+1).rightJustified(2,'0')+
-                      "B-"+QString::number(nb_rows).rightJustified(4,'0')+".txt";
-   BTest::writetoFile(sql_file,sql_msg,false);
-#endif
-
    }
-
-
-
-#if 0
-   QAbstractItemModel *model = qtv_tmp->model(); /// A debuger
-   QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(model);
-   QSqlQueryModel * sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
-
-
-   //sqm_tmp->query().clear();
-   sqm_tmp->setQuery(sql_msg,dbCount);
-   while (sqm_tmp->canFetchMore())
-   {
-    sqm_tmp->fetchMore();
-   }
-   int nb_rows = sqm_tmp->rowCount();
-   int nb_cols = sqm_tmp->columnCount();
-
-   /// Largeur du tableau
-   qtv_tmp->hideColumn(0);
-   qtv_tmp->hideColumn(1);
-   int l = qtv_tmp->getMinWidth(0) +25;
-   qtv_tmp->setFixedWidth(l);
-
-   for (int col=0;col<nb_cols;col++) {
-    qtv_tmp->resizeColumnToContents(col);
-   }
-
-   QString st_title = "U_" + QString::number(ref).rightJustified(2,'0')+
-                      " "+strDay+". Nb tirages : "+QString::number(nb_rows);
-   qtv_tmp->setTitle(st_title);
-#endif
 
   }
 
