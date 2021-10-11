@@ -186,11 +186,11 @@ QString BcUpl::sqlShowItems(const stGameConf *pGame, int zn, ECalTirages sql_sho
  }
  else{
   QString key = pGame->names[zn].abv;
-  for(int loop = 1; loop < cur_upl; loop++){
+  for(int loop = 0; loop < cur_upl; loop++){
    sql_msg = sql_msg +
-             "Select "+key+QString::number(loop) +
+             "Select "+key+QString::number(loop+1) +
              " as b, sum(T) as T from tb_uplets group by " +
-             key+QString::number(loop)+"\n";
+             key+QString::number(loop+1)+"\n";
    if(loop < cur_upl-1){
     sql_msg = sql_msg + "union all\n";
    }
