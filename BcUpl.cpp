@@ -216,7 +216,7 @@ QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, ECalTirages sql_sh
  if(sql_show == ELstShowNotInUnion){
   key = "t1.z"+QString::number(zn+1);
   sql_msg = "Select " + key +
-            " from b_elm as t1 where ( "+
+            " as b from b_elm as t1 where ( "+
             key + " not in (select b from "+cur_sql+"B)) order by " +
             key + " asc";
  }

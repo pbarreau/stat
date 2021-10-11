@@ -279,6 +279,12 @@ DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QStri
    ret_val=eCort_Ok;
   }
  }
+ else{
+  ret_val = eCort_Ok;
+  sql_msg = "Select * from \""+tbl_name+"\"";
+  *tbl_read = sql_msg;
+ }
+
  return ret_val;
 }
 
