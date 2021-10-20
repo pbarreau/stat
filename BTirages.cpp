@@ -600,14 +600,20 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
       visu = new QStandardItemModel(nb_row, nb_col);
       qtv_tmp->setModel(visu);
 
+      QString memo_boules = "";
       for (int i=0;i<lst_value.size();i++) {
 
 
        int val = lst_value.at(i);
+       QString cel_val = QString::number(val).rightJustified(2,'0');
+       memo_boules = memo_boules + cel_val;
+       if(i<lst_value.size()-1){
+        memo_boules=memo_boules+",";
+       }
+
        int col_id = val/10;
        int row_id = val%10;
 
-       QString cel_val = QString::number(val).rightJustified(2,'0');
        std_tmp = new QStandardItem(cel_val);
        std_tmp->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
        visu->setItem(row_id,col_id,std_tmp);
@@ -769,6 +775,9 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
     QWidget *calcul = new QWidget;
     tt5->addTab(qtv_tmp,title);
    }
+   /// Verifier si bConnue = true
+   /// auquel cas montrer le calcul deja effectué
+   /// sinon continuer avec le tt5 nouvellement cree
 
    tbw_visual->addTab(tt5,name);
   }

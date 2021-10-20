@@ -29,6 +29,61 @@ int BcUpl::tot_upl = 0;
 static QString gpb_key_sel = "my_selection";
 static QString gpb_key_tab = "my_tirId";
 
+BcUpl::BcUpl(const stGameConf *pGame,const int nb, const QString tbl)
+ :BCount (pGame, eCountUpl)
+{
+ QString cnx=pGame->db_ref->cnx;
+
+ // Etablir connexion a la base
+ db_0 = QSqlDatabase::database(cnx);
+ if(db_0.isValid()==false){
+  QString str_error = db_0.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+
+ ///int nb_zn = pGame->znCount;
+ int nbana = 2; /// Tirages number
+ upl_Bview_0 = new BView***[nbana];
+ upl_Bview_1 = new BView***[nbana];
+ upl_Bview_2 = new BView*****[nbana];
+ upl_Bview_3 = new BView*****[nbana]; /// S1
+ upl_Bview_4 = new BView*****[nbana]; /// S1
+ ///upl_items = nb;
+ ///upl_tbInternal=tbl;
+}
+
+BcUpl::BcUpl(st_In const &param, int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
+{
+ input = param;
+ tot_upl++;
+
+ if((ligne==QModelIndex())&&(!data.size())){
+  useData = eEnsFdj;
+ }
+ else {
+  useData = eEnsUsr;
+ }
+
+ bool b_retVal = false;
+
+ db_0 = QSqlDatabase::database(input.cnx);
+
+ if((b_retVal=db_0.isValid()) == true){
+  QGroupBox *info = gpbCreate(index, eCal, ligne, data, parent);
+  QVBoxLayout *mainLayout = new QVBoxLayout;
+
+  mainLayout->addWidget(info);
+  this->setLayout(mainLayout);
+  this->setWindowTitle("Uplets");
+
+  //show();
+ }
+
+}
+
+BcUpl::~BcUpl(){}
+
 QGridLayout *BcUpl::Compter(QString * pName, int zn)
 {
  QGridLayout *lay_return = new QGridLayout;
@@ -51,6 +106,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
  QString refTir = "";
  for(int tirLgnId = 1; tirLgnId<=nbTirJour;tirLgnId++){
+  upl_Bview_0[tirLgnId-1]=new BView** [nbZn];
   upl_Bview_1[tirLgnId-1]=new BView** [nbZn];
   upl_Bview_2[tirLgnId-1]=new BView**** [nbZn];
   upl_Bview_3[tirLgnId-1]=new BView**** [nbZn]; /// S2
@@ -63,6 +119,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
    QString title = pGame->names[zn].abv;
 
    int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
+   upl_Bview_0[tirLgnId-1][zn]=new BView* [nb_recherche];
    upl_Bview_1[tirLgnId-1][zn]=new BView* [nb_recherche];
    upl_Bview_2[tirLgnId-1][zn]=new BView*** [nb_recherche];
    upl_Bview_3[tirLgnId-1][zn]=new BView*** [nb_recherche]; ///S3
@@ -158,6 +215,7 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int 
  QWidget *tmp = showUplFromRef(pGame,zn,tirLgnId,upl_ref_in-C_MIN_UPL);
 
  BView *qtv_bilan = new BView;
+ upl_Bview_0[tirLgnId-1][zn][upl_ref_in-C_MIN_UPL]=qtv_bilan;
  qtv_bilan->setTitle("Bilan total");
 
  glay_tmp->addWidget(qtv_bilan->getScreen(),0,0);
@@ -210,6 +268,12 @@ QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, ECalTirages sql_sh
   sql_msg = cur_sql + ",\n tb_union as (\n" +
             sql_msg
             + ")\n Select b, sum(T) as T from tb_union group by b order by T desc, b desc";
+
+#ifndef QT_NO_DEBUG
+ QString target = "dbg_sql_ShowItems.txt";
+ BTest::writetoFile(target,sql_msg,false);
+#endif
+
  }
 
  /// choix 3
@@ -976,7 +1040,7 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
  qtv_tmp->setObjectName(QString::number(upl_ref_in-C_MIN_UPL));
  qtv_tmp->setZone(zn);
 
- QString sql_msg = findUplets(pGame,zn,upl_ref_in,-1,"tb2Count");
+ QString sql_msg = """;///findUplets(pGame,zn,upl_ref_in,-1,"tb2Count");
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
  while (sqm_tmp->canFetchMore())
@@ -1367,11 +1431,11 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
    QString sql_msg = "";
    QString cnx = gm_def->db_ref->cnx;
    tableRef = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
-              gm_def->names[zn].abv+
-              QString::number(ref).rightJustified(2,'0')+
+              "_z"+QString::number(zn+1).rightJustified(2,'0') + ///gm_def->names[zn].abv+
+              "_U"+QString::number(ref).rightJustified(2,'0')+
               "_S"+QString::number(index.row()+1).rightJustified(2,'0')+
               "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
-              "R"+QString::number(tab+1).rightJustified(2,'0');
+              "_R"+QString::number(tab+1).rightJustified(2,'0')+"_";
 
    /// Verifier si cette table est connue dans la base
    tableName = tableRef + "V";
@@ -1448,29 +1512,6 @@ bool BcUpl::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool b_retVal = true;
  return b_retVal;
-}
-
-BcUpl::BcUpl(const stGameConf *pGame,const int nb, const QString tbl)
- :BCount (pGame, eCountUpl)
-{
- QString cnx=pGame->db_ref->cnx;
-
- // Etablir connexion a la base
- db_0 = QSqlDatabase::database(cnx);
- if(db_0.isValid()==false){
-  QString str_error = db_0.lastError().text();
-  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-  return;
- }
-
- int nb_zn = pGame->znCount;
- int nbana = 2; /// Tirages number
- upl_Bview_1 = new BView***[nbana];
- upl_Bview_2 = new BView*****[nbana];
- upl_Bview_3 = new BView*****[nbana]; /// S1
- upl_Bview_4 = new BView*****[nbana]; /// S1
- upl_items = nb;
- upl_tbInternal=tbl;
 }
 
 QString BcUpl::findUplets(const stGameConf *pGame, const int zn, const int loop, const int key, QString tb_def, const int ref_day, const int delta)
@@ -1781,35 +1822,6 @@ QString BcUpl::findUplets(const stGameConf *pGame, const int zn, const int loop,
 }
 
 
-BcUpl::BcUpl(st_In const &param, int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
-{
- input = param;
- tot_upl++;
-
- if((ligne==QModelIndex())&&(!data.size())){
-  useData = eEnsFdj;
- }
- else {
-  useData = eEnsUsr;
- }
-
- bool b_retVal = false;
-
- db_0 = QSqlDatabase::database(input.cnx);
-
- if((b_retVal=db_0.isValid()) == true){
-  QGroupBox *info = gpbCreate(index, eCal, ligne, data, parent);
-  QVBoxLayout *mainLayout = new QVBoxLayout;
-
-  mainLayout->addWidget(info);
-  this->setLayout(mainLayout);
-  this->setWindowTitle("Uplets");
-
-  //show();
- }
-
-}
-BcUpl::~BcUpl(){}
 
 QGroupBox *BcUpl::gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {

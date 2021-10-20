@@ -94,9 +94,10 @@ class BCount:public QWidget
  QSqlDatabase dbCount;
 
  protected:
- int upl_items;
+ ///int upl_items;
  int upl_zn;
- QString upl_tbInternal;
+ ///QString upl_tbInternal;
+ BView ****upl_Bview_0;   /// Bilan d'un uplet
  BView ****upl_Bview_1;   /// Selection d'un uplet
  BView ******upl_Bview_2; /// Resultat pour la selection
  BView ******upl_Bview_3; /// Bilan de resultat

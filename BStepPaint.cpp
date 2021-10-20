@@ -150,13 +150,14 @@ void BStepPaint::paintDraw(QPainter *painter, const QStyleOptionViewItem &myOpt)
     for(int j = 0 ; j < lenTab; j++){
      if((cell_val-1)==prvTir[j]){
       /// boule -1
-      painter->setBrush(Qt::green);
+      painter->setBrush(Qt::green); /// Cette boule =+1 parmis une des boules Tir-1
       painter->drawEllipse(c_rd,cx/2,cy/4);
      }
 
      if((cell_val+1)==prvTir[j]){
       /// boule +1
-      painter->setBrush(QColor(0,100,255,255));
+      ///painter->setBrush(QColor(0,100,255,255));
+      painter->setBrush(COULEUR_FOND_R2);
       painter->drawEllipse(c_rm,cx/2,cy/4);
      }
     }
