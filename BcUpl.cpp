@@ -29,7 +29,7 @@ int BcUpl::tot_upl = 0;
 static QString gpb_key_sel = "my_selection";
 static QString gpb_key_tab = "my_tirId";
 
-BcUpl::BcUpl(const stGameConf *pGame,const int nb, const QString tbl)
+BcUpl::BcUpl(const stGameConf *pGame, eEnsemble eUpl, QItemSelectionModel *cur_sel)
  :BCount (pGame, eCountUpl)
 {
  QString cnx=pGame->db_ref->cnx;
@@ -43,7 +43,17 @@ BcUpl::BcUpl(const stGameConf *pGame,const int nb, const QString tbl)
  }
 
  ///int nb_zn = pGame->znCount;
- int nbana = 2; /// Tirages number
+ ///
+ useData=eEnsFdj;
+ int nbana = 0; /// Tirages number
+
+ if(eUpl==eEnsFdj){
+  nbana=2;
+ }
+ else{
+  nbana=1;
+  my_indexes=cur_sel->selectedIndexes();
+ }
  upl_Bview_0 = new BView***[nbana];
  upl_Bview_1 = new BView***[nbana];
  upl_Bview_2 = new BView*****[nbana];
@@ -101,8 +111,17 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  QTabWidget *tab_tirId = new QTabWidget(this);
  tab_tirId->setObjectName(gpb_key_tab);
 
- int nbZn = pGame->znCount;
- int nbTirJour = 2;
+ int nbZn = -1;
+ int nbTirJour = -1;
+
+ if(useData==eEnsFdj){
+  nbZn = pGame->znCount;
+  nbTirJour = 2;
+ }
+ else{
+  nbZn = 1;
+  nbTirJour = 1;
+ }
 
  QString refTir = "";
  for(int tirLgnId = 1; tirLgnId<=nbTirJour;tirLgnId++){
@@ -305,13 +324,13 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int upl_r
  /// ---------- Creation du code SQL dans les tableaux ----
  ///Etape 1 : partie commune
  for (int item=0;item<=ELstBleNext;item++) {
-  ConstruireSql(pGame,zn,tirLgnId,upl_ref_in, -1,item, SqlData);
+  sql_upl_lev_1(pGame,zn,tirLgnId,upl_ref_in, -1,item, SqlData);
   SqlSubData[0][item][0]=SqlData[item][0];
  }
 
  /// Etape 2 : sous ensemble
  for (int sub_ong=0;sub_ong<C_NB_SUB_ONG;sub_ong++) {
-  ConstruSubSql(pGame,zn,tirLgnId,upl_ref_in, sub_ong + C_MIN_UPL, SqlSubData);
+  sql_upl_lev_2(pGame,zn,tirLgnId,upl_ref_in, sub_ong + C_MIN_UPL, SqlSubData);
  }
 
  /// --- Recuperation des portions de code pour finalisation
@@ -392,7 +411,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int upl_r
  return sql_msg;
 }
 
-void BcUpl::ConstruSubSql(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub,  QString tabInOut[][C_TOT_CAL][3])
+void BcUpl::sql_upl_lev_2(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub,  QString tabInOut[][C_TOT_CAL][3])
 {
  QString SqlData[C_TOT_CAL][3];
 
@@ -403,14 +422,14 @@ void BcUpl::ConstruSubSql(const stGameConf *pGame, int zn, int tirLgnId, int upl
 
  /// Poursuivre la creation
  for (int item=ELstBleNext+1;item<ELstCal;item++) {
-  ConstruireSql(pGame,zn,tirLgnId,upl_ref_in, upl_sub,item, SqlData);
+  sql_upl_lev_1(pGame,zn,tirLgnId,upl_ref_in, upl_sub,item, SqlData);
   tabInOut[upl_sub-C_MIN_UPL][item][0]= SqlData[item][0];
   tabInOut[upl_sub-C_MIN_UPL][item][1]= SqlData[item][1];
   tabInOut[upl_sub-C_MIN_UPL][item][2]= SqlData[item][2];
  }
 }
 
-void BcUpl::ConstruireSql(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub, int step, QString tabInOut[][3])
+void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub, int step, QString tabInOut[][3])
 {
  QString sql_msg = "";
  int ref_day = tirLgnId;
@@ -493,16 +512,37 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_st
  QString sql_msg = "";
  QString st_cols = BCount::FN1_getFieldsFromZone(pGame,zn,"t2");
 
+ QString arg_0 = "";
  QString arg_1 = "";
  QString arg_2 = "";
  QString arg_3 = "";
  QString arg_4 = "";
  if(sql_step == ELstBle){
   tabInOut[sql_step][1] = " -- Liste des boules tirage : "+QString::number(tir_id).rightJustified(4,'0')+"\n";
+  QString tb_usr = "B_fdj";
+
+  if(useData == eEnsUsr){
+   QString usr_data = "";
+   int len_data = my_indexes.size();
+   int max_len = pGame->limites[zn].win;
+   if(len_data<=max_len){
+    tb_usr = "tb_usr";
+    for(int i = 1;i<max_len;i++){
+     int value = my_indexes.at(i-1).data().toInt();
+     usr_data = usr_data + QString::number(value) +
+                " as " + pGame->names[zn].abv + QString::number(i);
+     if(i<max_len-1){
+      usr_data = usr_data + ",";
+     }
+    }
+    usr_data = "(select "+usr_data+")";
+   }
+   arg_0 = tb_usr + " as("+usr_data+"),";
+  }
   arg_1 = arg_1 + "      t1.id\n";
 
   arg_2 = arg_2 + "      (B_elm) as t1 ,\n";
-  arg_2 = arg_2 + "      (B_fdj) as t2\n";
+  arg_2 = arg_2 + "      ("+tb_usr+") as t2\n";
 
   arg_3 = arg_3 + "        (t2.id="+QString::number(tir_id)+")\n";
   arg_3 = arg_3 + "        and t1.z1 in(" + st_cols + " )\n";
