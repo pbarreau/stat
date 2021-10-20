@@ -30,6 +30,7 @@ class BMenu : public QMenu,BFlt
  void BSlot_Menu_1();
 
  private slots:
+ void slot_isUplets(bool chk);
  void slot_isWanted(bool chk);
  void slot_isChoosed(bool chk);
  void slot_isFiltred(bool chk);
@@ -42,6 +43,9 @@ class BMenu : public QMenu,BFlt
  ///void gererMenu_v1();
  void gererMenu_v2();
  void presenterMenu();
+
+ Q_SIGNALS:
+ void BSig_MkUsrUplets_L1(const QItemSelectionModel *cur_sel);
 
  public:
  BMenu *addr;

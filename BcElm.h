@@ -32,6 +32,7 @@ class BcElm:public BCount//, public cFdjData
  public slots:
  void slot_ClicDeSelectionTableau(const QModelIndex &index);
  void slot_RequeteFromSelection(const QModelIndex &index);
+ void BSlot_MkUsrUplets_L3(const QItemSelectionModel *cur_sel);
 
  public:
  static int tot_elm;
@@ -66,6 +67,7 @@ class BcElm:public BCount//, public cFdjData
 
  Q_SIGNALS:
  void sig_isClickedOnBall(const QModelIndex &index);
+ void BSig_MkUsrUplets_L4(const QItemSelectionModel *cur_sel);
 
 };
 

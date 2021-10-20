@@ -67,6 +67,11 @@ BView_1::~BView_1()
 	///delete square;
 }
 
+void BView_1::BSlot_MkUsrUplets_L1(const QItemSelectionModel *cur_sel)
+{
+ emit BSig_MkUsrUplets_L2(cur_sel);
+}
+
 void BView_1::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 {
  /// http://www.qtcentre.org/threads/7388-Checkboxes-in-menu-items
@@ -76,6 +81,8 @@ void BView_1::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
 
  if(a->addr != nullptr){
   connect(a,SIGNAL(aboutToShow()), a, SLOT(BSlot_Menu_1()));
+  connect(a,SIGNAL(BSig_MkUsrUplets_L1(const QItemSelectionModel*)),
+          this,SLOT(BSlot_MkUsrUplets_L1(const QItemSelectionModel*)));
   a->exec(this->viewport()->mapToGlobal(pos));
  }
  else {

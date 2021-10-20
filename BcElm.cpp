@@ -46,6 +46,11 @@ BcElm::BcElm(const stGameConf *pGame):BCount(pGame,eCountElm)
  db_elm = dbCount;
 }
 
+void BcElm::BSlot_MkUsrUplets_L3(const QItemSelectionModel *cur_sel)
+{
+ emit BSig_MkUsrUplets_L4(cur_sel);
+}
+
 QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
@@ -70,6 +75,8 @@ QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)
   QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::usr_MkTbl, i);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
+   connect(tabTbv[i],SIGNAL(BSig_MkUsrUplets_L2(const QItemSelectionModel*)),
+     SLOT(BSlot_MkUsrUplets_L3(const QItemSelectionModel*)));
   }
  }
  return tab_Top;

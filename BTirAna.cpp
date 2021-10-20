@@ -205,10 +205,14 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  }
 
  if((pGame->db_ref->dad.size() == 0) && (pGame->eTirType == eTirFdj)){
-  //stGameConf *for_uplet = new stGameConf(pGame);
-  //for_uplet->znCount = pGame->znCount;
   BcUpl * tmp = new BcUpl (pGame);
   lstComptage.append(tmp);
+
+  /// connection click calcul uplet avec BcElm
+  if(item_1 != nullptr){
+   connect(item_1,SIGNAL(BSig_MkUsrUplets_L4(const QItemSelectionModel *)),
+           tmp,SLOT(BSlot_MkUsrUpletsShow(const QItemSelectionModel *)));
+  }
  }
 
  BcCmb * item_2 = new BcCmb(pGame);

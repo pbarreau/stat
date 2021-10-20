@@ -79,7 +79,7 @@ class BcUpl: public BCount
   //BUplet(st_In const &param);
   //BUplet(st_In const &param, int index=0);
   //BUplet(st_In const &param, QString ensemble="");
-  explicit BcUpl(const stGameConf *pGame, eEnsemble eUpl=eEnsFdj,QItemSelectionModel *cur_sel=nullptr);
+  explicit BcUpl(const stGameConf *pGame, eEnsemble eUpl=eEnsFdj, const QItemSelectionModel *cur_sel=nullptr, QTabWidget *ptrUplRsp=nullptr);
   BcUpl(st_In const &param, int index=0, eCalcul eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=nullptr);
   ~BcUpl();
   int getUpl(void);
@@ -89,6 +89,7 @@ class BcUpl: public BCount
  public slots:
   void slot_Selection(const QString& lstBoules);
   void slot_FindNewUplet(const QModelIndex & index);
+  void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel);
 
  private slots:
   void BSlot_clicked(const QModelIndex &index);
@@ -102,6 +103,7 @@ class BcUpl: public BCount
   QString gpb_title;
   eEnsemble useData;
   QModelIndexList my_indexes;
+  QTabWidget *uplTirTab;
   ///QString ens_ref;
   static int tot_upl;
 
@@ -124,6 +126,7 @@ class BcUpl: public BCount
   QString getCmbTirage(int index);
   QString getBrcTirage(int index);
 
+  QTabWidget * getTabUplRsp(void);
   //bool DoCreateTblUplet(QString tbl);
   QString FN2_getFieldsFromZone(int zn, QString alias);
 

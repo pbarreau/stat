@@ -29,7 +29,7 @@ int BcUpl::tot_upl = 0;
 static QString gpb_key_sel = "my_selection";
 static QString gpb_key_tab = "my_tirId";
 
-BcUpl::BcUpl(const stGameConf *pGame, eEnsemble eUpl, QItemSelectionModel *cur_sel)
+BcUpl::BcUpl(const stGameConf *pGame, eEnsemble eUpl, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
  :BCount (pGame, eCountUpl)
 {
  QString cnx=pGame->db_ref->cnx;
@@ -49,11 +49,15 @@ BcUpl::BcUpl(const stGameConf *pGame, eEnsemble eUpl, QItemSelectionModel *cur_s
 
  if(eUpl==eEnsFdj){
   nbana=2;
+  uplTirTab = nullptr;
  }
  else{
   nbana=1;
   my_indexes=cur_sel->selectedIndexes();
+  uplTirTab = ptrUplRsp;
  }
+
+
  upl_Bview_0 = new BView***[nbana];
  upl_Bview_1 = new BView***[nbana];
  upl_Bview_2 = new BView*****[nbana];
@@ -61,6 +65,11 @@ BcUpl::BcUpl(const stGameConf *pGame, eEnsemble eUpl, QItemSelectionModel *cur_s
  upl_Bview_4 = new BView*****[nbana]; /// S1
  ///upl_items = nb;
  ///upl_tbInternal=tbl;
+}
+
+QTabWidget * BcUpl::getTabUplRsp(void)
+{
+ return uplTirTab;
 }
 
 BcUpl::BcUpl(st_In const &param, int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
@@ -108,11 +117,18 @@ void BcUpl::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
 QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
 
- QTabWidget *tab_tirId = new QTabWidget(this);
+ Q_UNUSED(eCalcul)
+
+ QTabWidget *tab_tirId = nullptr;
+ if(uplTirTab == nullptr){
+  uplTirTab = new QTabWidget(this);
+ }
+ tab_tirId = uplTirTab;
  tab_tirId->setObjectName(gpb_key_tab);
 
  int nbZn = -1;
  int nbTirJour = -1;
+ static int usrCounter = 0;
 
  if(useData==eEnsFdj){
   nbZn = pGame->znCount;
@@ -159,7 +175,13 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
   }
 
   /// ------------------
-  refTir = QString("Tirage-")+ QString::number(tirLgnId).rightJustified(2,'0');
+  if(useData==eEnsFdj){
+   refTir = QString("Tirage-")+ QString::number(tirLgnId).rightJustified(2,'0');
+  }
+  else{
+   refTir = QString("Select-")+ QString::number(usrCounter).rightJustified(2,'0');
+   usrCounter++;
+  }
   tab_tirId->addTab(tab_zones,refTir);
  }
 
@@ -504,6 +526,14 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
 #endif
 
  tabInOut[sql_step][2]= sql_msg;
+}
+
+void BcUpl::BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel)
+{
+ QModelIndexList my_indexes = cur_sel->selectedIndexes();
+ int len_data = my_indexes.size();
+
+ BcUpl *tmp = new BcUpl(gm_def,eEnsUsr,cur_sel,uplTirTab);
 }
 
 QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_step, int tir_id,QString tabInOut[][3])
@@ -1470,7 +1500,16 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
    QString sql_ref = getSqlTbv(gm_def, zn, tirLgnId, ref, tab+C_MIN_UPL, resu,selection);
    QString sql_msg = "";
    QString cnx = gm_def->db_ref->cnx;
-   tableRef = "T"+QString::number(tirLgnId).rightJustified(2,'0')+
+
+   QString TableType = "";
+   if(useData == eEnsFdj){
+    TableType = "T";
+   }
+   else{
+    TableType = "S";
+   }
+
+   tableRef = TableType+QString::number(tirLgnId).rightJustified(2,'0')+
               "_z"+QString::number(zn+1).rightJustified(2,'0') + ///gm_def->names[zn].abv+
               "_U"+QString::number(ref).rightJustified(2,'0')+
               "_S"+QString::number(index.row()+1).rightJustified(2,'0')+

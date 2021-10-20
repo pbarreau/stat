@@ -45,10 +45,12 @@ class BView_1 : public BView, public BFlt
 
  Q_SIGNALS:
  void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
+ void BSig_MkUsrUplets_L2(const QItemSelectionModel *cur_sel);
 
  private slots:
  void BSlot_MousePressed(const QModelIndex &index);
  void BSlot_TrackSelection(const QItemSelection &cur, const QItemSelection &last);
+ void BSlot_MkUsrUplets_L1(const QItemSelectionModel *cur_sel);
 
  private slots:
  void BSlot_ShowToolTip(const QModelIndex & index);

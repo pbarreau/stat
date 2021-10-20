@@ -12,9 +12,12 @@
 #include "bstflt.h"
 
 #include "BLstSelect.h"
+//#include "BcUpl.h"
 #include "BTirages.h"
 
+class BcUpl;
 class BCount;
+
 class BTirAna : public QWidget
 {
  Q_OBJECT
@@ -71,6 +74,7 @@ class BTirAna : public QWidget
  private:
  static int total_analyses;
  BTirAna *addr;
+ BcUpl *tabsUpl;
  QString src_sql;
  QString src_tbl;
  //QGridLayout src_lay;

@@ -39,6 +39,11 @@ void BMenu::construireMenu(void)
  QAction *isFiltred = main_menu->addAction("Filtrer",this,SLOT(slot_isFiltred(bool)));
  isFiltred->setCheckable(true);
  isFiltred->setDisabled(true);
+
+ QAction *isUplets = main_menu->addAction("Uplets",this,SLOT(slot_isUplets(bool)));
+ isUplets->setCheckable(false);
+ isUplets->setEnabled(true);
+
 }
 
 
@@ -152,6 +157,16 @@ QMenu *BMenu::mnu_Priority(stTbFiltres *ret, const etCount eSrc, const BView_1 *
  }
 
  return menu;
+}
+
+void BMenu::slot_isUplets(bool chk)
+{
+ Q_UNUSED(chk)
+
+ QItemSelectionModel *cur_sel = lview->selectionModel();
+ QModelIndexList my_indexes = cur_sel->selectedIndexes();
+ int len_data = my_indexes.size();
+ BSig_MkUsrUplets_L1(cur_sel);
 }
 
 void BMenu::slot_isWanted(bool chk)
