@@ -569,10 +569,11 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_st
       usr_data = usr_data + ",";
      }
     }
-    usr_data = "(select "+usr_data+")";
+    usr_data = "(\n\tselect 1 as id,"+usr_data+"\n)";
    }
-   arg_0 = tb_usr + " as("+usr_data+"),";
+   arg_0 = tb_usr + " as "+usr_data+",\n";
   }
+
   arg_1 = arg_1 + "      t1.id\n";
 
   arg_2 = arg_2 + "      (B_elm) as t1 ,\n";
@@ -599,6 +600,9 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_st
  sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0'); //tabInOut[ELstBle][0];
  tabInOut[sql_step][0] = sql_tbl;
 
+ if(arg_0.size()){
+  sql_msg = sql_msg + arg_0;
+ }
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
  sql_msg = sql_msg + "    SELECT\n";
@@ -611,6 +615,16 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_st
  sql_msg = sql_msg + "      )\n";
  sql_msg = sql_msg + arg_4;
  sql_msg = sql_msg + "  )\n";
+
+#ifndef QT_NO_DEBUG
+ if(useData == eEnsUsr){
+  static int counter = 0;
+  QString target = "A_"+ QString::number(counter).rightJustified(2,'0')
+                   +"_dbg_eEnsUsr.txt";
+  BTest::writetoFile(target,sql_msg,false);
+  counter++;
+ }
+#endif
 
  return sql_msg;
 }
@@ -1511,6 +1525,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
    }
    else{
     TableType = "S";
+    tirLgnId = 1; ////?????
    }
 
    tableRef = TableType+QString::number(tirLgnId).rightJustified(2,'0')+
