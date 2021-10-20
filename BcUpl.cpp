@@ -44,7 +44,7 @@ BcUpl::BcUpl(const stGameConf *pGame, eEnsemble eUpl, const QItemSelectionModel 
 
  ///int nb_zn = pGame->znCount;
  ///
- useData=eEnsFdj;
+ useData=eUpl;//eEnsFdj;
  int nbana = 0; /// Tirages number
 
  if(eUpl==eEnsFdj){
@@ -534,6 +534,10 @@ void BcUpl::BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel)
  int len_data = my_indexes.size();
 
  BcUpl *tmp = new BcUpl(gm_def,eEnsUsr,cur_sel,uplTirTab);
+ if(tmp !=nullptr){
+  etCount type = tmp->getType();
+  tmp->startCount(gm_def,type);
+ }
 }
 
 QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_step, int tir_id,QString tabInOut[][3])
@@ -557,11 +561,11 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_st
    int max_len = pGame->limites[zn].win;
    if(len_data<=max_len){
     tb_usr = "tb_usr";
-    for(int i = 1;i<max_len;i++){
+    for(int i = 1;i<=len_data;i++){
      int value = my_indexes.at(i-1).data().toInt();
      usr_data = usr_data + QString::number(value) +
                 " as " + pGame->names[zn].abv + QString::number(i);
-     if(i<max_len-1){
+     if(i<=len_data-1){
       usr_data = usr_data + ",";
      }
     }
