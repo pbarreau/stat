@@ -29,6 +29,22 @@ int BcUpl::tot_upl = 0;
 static QString gpb_key_sel = "my_selection";
 static QString gpb_key_tab = "my_tirId";
 
+#ifndef QT_NO_DEBUG
+const QString BcUpl::sqlStepText[ELstCal]={
+ "ELstBle",
+ "ELstUpl",
+ "ELstTirUpl",
+ "ELstUplTot",
+ "ELstBleNot",
+ "ELstTirUplNext",
+ "ELstBleNext",
+ "ELstUplNot",
+ "ELstUplTotNot",
+ "ELstUplNext",
+ "ELstUplTotNext"
+};
+#endif
+
 BcUpl::BcUpl(const stGameConf *pGame, eEnsemble eUpl, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
  :BCount (pGame, eCountUpl)
 {
@@ -311,8 +327,8 @@ QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, ECalTirages sql_sh
             + ")\n Select b, sum(T) as T from tb_union group by b order by T desc, b desc";
 
 #ifndef QT_NO_DEBUG
- QString target = "dbg_sql_ShowItems.txt";
- BTest::writetoFile(target,sql_msg,false);
+  QString target = "dbg_sql_ShowItems.txt";
+  BTest::writetoFile(target,sql_msg,false);
 #endif
 
  }
@@ -418,15 +434,36 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int upl_r
  sql_msg = sql_msg + ")\n";
 
 #ifndef QT_NO_DEBUG
+ QString dbg_target =tbl_target +
+                     "Z_"+QString::number(zn).rightJustified(2,'0')+"_"+
+                     "O_"+ QString::number(upl_ref_in).rightJustified(2,'0')+"_"+
+                     str_item ;
+
+ static int counter = 0;
+ dbg_target =  dbg_target +
+           "_"+ QString::number(counter).rightJustified(2,'0')
+           +".txt";
+ counter++;
+
+ QString stype = "";
+ if(useData == eEnsUsr){
+  stype = "Usr";
+ }
+ else {
+  stype = "Fdj";
+ }
+ dbg_target = "Dbg_"+stype+dbg_target;
+
 #if 0
  QString dbg_target = "Zone_"+QString::number(zn).rightJustified(2,'0')+"_"
                       +"Ong_"+ QString::number(upl_ref_in).rightJustified(2,'0')+"-"
                       +str_item
                       +tbl_target
                       +".txt";
+ #endif
  BTest::writetoFile(dbg_target,sql_msg,false);
- qDebug() <<sql_msg;
-#endif
+ //qDebug() <<sql_msg;
+
 #endif
 
 
@@ -459,6 +496,14 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
  ECalTirages sql_step = static_cast<ECalTirages>(step);
 
  int tbl_src = -1;
+
+#ifndef QT_NO_DEBUG
+ QString target = "";
+ if(sql_step<ELstCal){
+  target = "_"+sqlStepText[sql_step];
+ }
+#endif
+
  switch (sql_step) {
 
   /// Trouver la liste des boules
@@ -466,6 +511,13 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
   case ELstBleNext:
   {
    sql_msg = sql_ElmFrmTir(pGame,zn,sql_step,ref_day,tabInOut);
+#ifndef QT_NO_DEBUG
+   static int counter = 0;
+   target =  target +
+             "_"+ QString::number(counter).rightJustified(2,'0')
+             +".txt";
+   counter++;
+#endif
   }
    break;
 
@@ -475,6 +527,13 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
   case ELstUplNext:
   {
    sql_msg = sql_UplFrmElm(pGame,zn,upl_ref_in,upl_sub,sql_step, tabInOut);
+#ifndef QT_NO_DEBUG
+   static int counter = 0;
+   target =  target +
+             "_"+ QString::number(counter).rightJustified(2,'0')
+             +".txt";
+   counter++;
+#endif
   }
    break;
 
@@ -482,6 +541,13 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
   case ELstTirUpl:
   {
    sql_msg = sql_TirFrmUpl(pGame,zn,upl_ref_in,tabInOut);
+#ifndef QT_NO_DEBUG
+   static int counter = 0;
+   target =  target +
+             "_"+ QString::number(counter).rightJustified(2,'0')
+             +".txt";
+   counter++;
+#endif
   }
    break;
 
@@ -491,6 +557,13 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
   case ELstUplTotNext:
   {
    sql_msg = sql_TotFrmTir(pGame, zn, upl_ref_in, upl_sub, sql_step,tabInOut);
+#ifndef QT_NO_DEBUG
+   static int counter = 0;
+   target =  target +
+             "_"+ QString::number(counter).rightJustified(2,'0')
+             +".txt";
+   counter++;
+#endif
   }
    break;
 
@@ -504,6 +577,13 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
     targetUpl = upl_sub;
    }
    sql_msg = sql_ElmNotFrmTir(pGame,zn, targetUpl, tabInOut);
+#ifndef QT_NO_DEBUG
+   static int counter = 0;
+   target =  target +
+             "_"+ QString::number(counter).rightJustified(2,'0')
+             +".txt";
+   counter++;
+#endif
   }
    break;
 
@@ -511,18 +591,45 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
   case ELstTirUplNext:
   {
    sql_msg = sql_NxtTirUpl(pGame,zn, 1, tabInOut);
+#ifndef QT_NO_DEBUG
+   static int counter = 0;
+   target =  target +
+             "_"+ QString::number(counter).rightJustified(2,'0')
+             +".txt";
+   counter++;
+#endif
   }
    break;
 
    /// ERREUR
   default:
    sql_msg = "AVERIFIER";
+#ifndef QT_NO_DEBUG
+   target = "_sql_step";
+#endif
+ } /// End switch
+
+#ifndef QT_NO_DEBUG
+ QString stype = "";
+ if(useData == eEnsUsr){
+  stype = "Usr";
  }
+ else {
+  stype = "Fdj";
+ }
+ target = "Dbg_"+stype+target;
+ BTest::writetoFile(target,tabInOut[sql_step][0],false);
+ BTest::writetoFile(target, "\n\n------------\n",true);
+ BTest::writetoFile(target,tabInOut[sql_step][1],true);
+ BTest::writetoFile(target, "\n\n------------\n",true);
+ BTest::writetoFile(target,sql_msg,true);
+#endif
 
-
+#if 0
 #ifndef QT_NO_DEBUG
  qDebug() <<tabInOut[sql_step][0];
  qDebug() <<sql_msg;
+#endif
 #endif
 
  tabInOut[sql_step][2]= sql_msg;
@@ -616,6 +723,7 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_st
  sql_msg = sql_msg + arg_4;
  sql_msg = sql_msg + "  )\n";
 
+#if 0
 #ifndef QT_NO_DEBUG
  if(useData == eEnsUsr){
   static int counter = 0;
@@ -624,6 +732,7 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_st
   BTest::writetoFile(target,sql_msg,false);
   counter++;
  }
+#endif
 #endif
 
  return sql_msg;
@@ -1129,7 +1238,7 @@ QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
  qtv_tmp->setZone(zn);
 
  QString sql_msg = """;///findUplets(pGame,zn,upl_ref_in,-1,"tb2Count");
- QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+                   QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
  while (sqm_tmp->canFetchMore())
  {
@@ -1910,10 +2019,12 @@ QString BcUpl::findUplets(const stGameConf *pGame, const int zn, const int loop,
   sql_msg = sql_msg + "where (t1.uid="+QString::number(key)+")";
  }
 
+#if 0
 #ifndef QT_NO_DEBUG
  QString target = "AF_dbg_findUplets.txt";
  BTest::writetoFile(target,sql_msg,false);
  qDebug() <<sql_msg;
+#endif
 #endif
 
  return sql_msg;

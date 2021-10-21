@@ -51,7 +51,7 @@ class BcUpl: public BCount
   {
    ELstBle,  /// Liste des boules
    ELstUpl,	/// Liste des uplets apartir des boules
-   ELstTirUpl,	/// Liste des tirages ayant cest uplets (J0)
+   ELstTirUpl,	/// Liste des tirages ayant ces uplets (J0)
    ELstUplTot,	/// Total de chacun des uplets
    ELstBleNot,	/// Ensemble complementaire des boules ( refa uplet 1, 2, 3)
    ELstTirUplNext, /// Liste des tirages apres les uplets initiaux
@@ -60,13 +60,17 @@ class BcUpl: public BCount
    ELstUplTotNot, /// Total de chacun des uplets
    ELstUplNext, /// Liste des uplets apartir des boules next day
    ELstUplTotNext, /// Total de chacun des uplets
-   ELstCal,        /// Fin de calculs possible
+   ELstCal,        /// Fin des calculs possible
    ELstShowCal,    /// Requete montrant les calculs
    ELstShowUnion,   /// Requete synthese de chacque boule
    ELstShowNotInUnion /// Requete ensemble complementaire
    ///ELstCalUsr,
    ///ELstCalFdj,
   }ECalTirages;
+
+#ifndef QT_NO_DEBUG
+  static const QString sqlStepText[ELstCal];
+#endif
 
 #define C_TOT_CAL ELstCal
 #define C_MAX_ARGS 10
