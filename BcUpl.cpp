@@ -435,14 +435,14 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int upl_r
 
 #ifndef QT_NO_DEBUG
  QString dbg_target =tbl_target +
-                     "Z_"+QString::number(zn).rightJustified(2,'0')+"_"+
+                     "_z"+QString::number(zn).rightJustified(2,'0')+"_"+
                      "O_"+ QString::number(upl_ref_in).rightJustified(2,'0')+"_"+
                      str_item ;
 
  static int counter = 0;
  dbg_target =  dbg_target +
-           "_"+ QString::number(counter).rightJustified(2,'0')
-           +".txt";
+               "_"+ QString::number(counter).rightJustified(2,'0')
+               +".txt";
  counter++;
 
  QString stype = "";
@@ -452,7 +452,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int upl_r
  else {
   stype = "Fdj";
  }
- dbg_target = "Dbg_"+stype+dbg_target;
+ dbg_target = "Dbg_"+stype+"_"+dbg_target;
 
 #if 0
  QString dbg_target = "Zone_"+QString::number(zn).rightJustified(2,'0')+"_"
@@ -460,7 +460,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int upl_r
                       +str_item
                       +tbl_target
                       +".txt";
- #endif
+#endif
  BTest::writetoFile(dbg_target,sql_msg,false);
  //qDebug() <<sql_msg;
 
@@ -618,19 +618,15 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
   stype = "Fdj";
  }
  target = "Dbg_"+stype+target;
+#if 0
  BTest::writetoFile(target,tabInOut[sql_step][0],false);
  BTest::writetoFile(target, "\n\n------------\n",true);
  BTest::writetoFile(target,tabInOut[sql_step][1],true);
  BTest::writetoFile(target, "\n\n------------\n",true);
  BTest::writetoFile(target,sql_msg,true);
 #endif
+#endif
 
-#if 0
-#ifndef QT_NO_DEBUG
- qDebug() <<tabInOut[sql_step][0];
- qDebug() <<sql_msg;
-#endif
-#endif
 
  tabInOut[sql_step][2]= sql_msg;
 }
@@ -653,30 +649,32 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_st
  QString sql_msg = "";
  QString st_cols = BCount::FN1_getFieldsFromZone(pGame,zn,"t2");
 
+ QString tb_usr = "";
  QString arg_0 = "";
  QString arg_1 = "";
  QString arg_2 = "";
  QString arg_3 = "";
  QString arg_4 = "";
+
  if(sql_step == ELstBle){
   tabInOut[sql_step][1] = " -- Liste des boules tirage : "+QString::number(tir_id).rightJustified(4,'0')+"\n";
-  QString tb_usr = "B_fdj";
+  tb_usr = "B_fdj";
 
   if(useData == eEnsUsr){
    QString usr_data = "";
    int len_data = my_indexes.size();
-   int max_len = pGame->limites[zn].win;
+   int max_len = pGame->limites[zn].max; /// 9 boules maxi pour jeux multiple ///pGame->limites[zn].win;
    if(len_data<=max_len){
     tb_usr = "tb_usr";
     for(int i = 1;i<=len_data;i++){
      int value = my_indexes.at(i-1).data().toInt();
-     usr_data = usr_data + QString::number(value) +
-                " as " + pGame->names[zn].abv + QString::number(i);
+     usr_data = usr_data + "\tSelect "+ QString::number(value) +
+                " as id\n" ;
      if(i<=len_data-1){
-      usr_data = usr_data + ",";
+      usr_data = usr_data + "\tunion ALL\n";
      }
     }
-    usr_data = "(\n\tselect 1 as id,"+usr_data+"\n)";
+    usr_data = "(\n"+usr_data+"\n)";
    }
    arg_0 = tb_usr + " as "+usr_data+",\n";
   }
@@ -709,21 +707,29 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_st
 
  if(arg_0.size()){
   sql_msg = sql_msg + arg_0;
- }
- sql_msg = sql_msg + "  "+sql_tbl+" as\n";
- sql_msg = sql_msg + "  (\n";
- sql_msg = sql_msg + "    SELECT\n";
- sql_msg = sql_msg + arg_1;
- sql_msg = sql_msg + "    FROM\n";
- sql_msg = sql_msg + arg_2;
- sql_msg = sql_msg + "    WHERE\n";
- sql_msg = sql_msg + "      (\n";
- sql_msg = sql_msg + arg_3;
- sql_msg = sql_msg + "      )\n";
- sql_msg = sql_msg + arg_4;
- sql_msg = sql_msg + "  )\n";
 
-#if 0
+  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
+  sql_msg = sql_msg + "  (\n";
+  sql_msg = sql_msg + "    SELECT * From " + tb_usr;
+  sql_msg = sql_msg + "  )\n";
+
+ }
+ else{
+  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
+  sql_msg = sql_msg + "  (\n";
+  sql_msg = sql_msg + "    SELECT\n";
+  sql_msg = sql_msg + arg_1;
+  sql_msg = sql_msg + "    FROM\n";
+  sql_msg = sql_msg + arg_2;
+  sql_msg = sql_msg + "    WHERE\n";
+  sql_msg = sql_msg + "      (\n";
+  sql_msg = sql_msg + arg_3;
+  sql_msg = sql_msg + "      )\n";
+  sql_msg = sql_msg + arg_4;
+  sql_msg = sql_msg + "  )\n";
+ }
+
+
 #ifndef QT_NO_DEBUG
  if(useData == eEnsUsr){
   static int counter = 0;
@@ -733,7 +739,7 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_st
   counter++;
  }
 #endif
-#endif
+
 
  return sql_msg;
 }
