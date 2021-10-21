@@ -224,7 +224,19 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int 
 #endif
 
  QString sql_msg = getSqlTbv(pGame,zn,tirLgnId,upl_ref_in, -1, ELstUplTot);
+#ifndef QT_NO_DEBUG
+  QString target = "dbg_sql_req_1.txt";
+  BTest::writetoFile(target,sql_msg,false);
+#endif
+
+  QString sql_tot = sql_msg + "\n" + "Select count(*) as T from tb_00";
+
  sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_ref_in,sql_msg);
+
+#ifndef QT_NO_DEBUG
+  target = "dbg_sql_req_2.txt";
+  BTest::writetoFile(target,sql_msg,false);
+#endif
 
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
@@ -242,8 +254,16 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int 
  qtv_tmp->setSortingEnabled(true);
 
  /// Remplacer par le calcul du Cnp
+ int tot_val = 0;
+ QSqlQuery query(db_0);
+ bool b_retVal = false;
+ if((b_retVal=query.exec(sql_tot))){
+  if(query.first()){
+   tot_val = query.value(0).toInt();
+  }
+ }
  //int rows_proxy = qtv_tmp->model()->rowCount();
- BCnp *b = new BCnp(9,upl_ref_in);
+ BCnp *b = new BCnp(tot_val,upl_ref_in,pGame->db_ref->cnx);
  int rows_proxy = b->BP_count();
 
  QString st_title = "U_" + QString::number(upl_ref_in).rightJustified(2,'0')+
