@@ -18,6 +18,7 @@
 #include <QSqlQuery>
 #include <QGridLayout>
 
+#include "cnp_SansRepetition.h"
 #include "BcUpl.h"
 #include "BFpm_2.h"
 #include "BFpm_3.h"
@@ -240,7 +241,11 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int 
  qtv_tmp->sortByColumn(upl_ref_in+1,Qt::DescendingOrder);
  qtv_tmp->setSortingEnabled(true);
 
- int rows_proxy = qtv_tmp->model()->rowCount();
+ /// Remplacer par le calcul du Cnp
+ //int rows_proxy = qtv_tmp->model()->rowCount();
+ BCnp *b = new BCnp(9,upl_ref_in);
+ int rows_proxy = b->BP_count();
+
  QString st_title = "U_" + QString::number(upl_ref_in).rightJustified(2,'0')+
                     " (J). Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);
@@ -1339,7 +1344,7 @@ QWidget *BcUpl::Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int sr
 
  int rows_proxy = qtv_tmp->model()->rowCount();
  QString st_title = "U_" + QString::number(src_upl+C_MIN_UPL).rightJustified(2,'0')+
-                    " "+strDay+". Nb tirages : "+QString::number(nb_rows);
+                    " ("+strDay+"). Nb tirages : "+QString::number(nb_rows);
  qtv_tmp->setTitle(st_title);
 
  qtv_tmp->setAlternatingRowColors(true);
@@ -1657,7 +1662,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
     BView *qtv_tmp = upl_Bview_2[tirLgnId-1][zn][id_upl][day_anaUpl][tab];
     nb_rows = Bview_UpdateAndCount(ELstShowCal, qtv_tmp, sql_msg);
     st_title = "U_" + QString::number(ref).rightJustified(2,'0')+
-               " "+strDay+". Nb tirages : "+QString::number(nb_rows);
+               " ("+strDay+"). Nb tirages : "+QString::number(nb_rows);
     qtv_tmp->setTitle(st_title);
    }
 
