@@ -287,8 +287,13 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int 
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
  BView *qtv_tmp = new BView;
+
  qtv_tmp->setObjectName(QString::number(upl_ref_in-C_MIN_UPL));
  qtv_tmp->setZone(zn);
+ QHBoxLayout *bar_top_1 = getBar_Rch(qtv_tmp,upl_ref_in-C_MIN_UPL);
+ qtv_tmp->addUpLayout(bar_top_1);
+
+ QString cnx = gm_def->db_ref->cnx;
 
 #define DBG_PASCAL 0
 #if DBG_PASCAL
@@ -307,6 +312,15 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int 
  QString sql_tot = sql_msg + "\n" + "Select count(*) as T from tb_00";
 
  sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_ref_in,sql_msg);
+#if 0
+ if (DB_Tools::createOrReadTable(tableName,cnx,sql_msg,&sql_msg)==DB_Tools::eCort_Ok){
+  BView *qtv_tmp = upl_Bview_2[tirLgnId-1][zn][id_upl][day_anaUpl][tab];
+  nb_rows = Bview_UpdateAndCount(ELstShowCal, qtv_tmp, sql_msg);
+  st_title = "U_" + QString::number(ref).rightJustified(2,'0')+
+             " ("+strDay+"). Nb Uplets : "+QString::number(nb_rows);
+  qtv_tmp->setTitle(st_title);
+ }
+#endif
 
 #ifndef QT_NO_DEBUG
  target = "dbg_sql_req_2.txt";
@@ -315,18 +329,29 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int 
 
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, dbCount);
+
+ /// On effectue la liasion avec le proxy model
+ BFpm_upl * m = new BFpm_upl(1, upl_ref_in);
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+ qtv_tmp->sortByColumn(upl_ref_in+1,Qt::DescendingOrder);
+ qtv_tmp->setSortingEnabled(true);
+
  while (sqm_tmp->canFetchMore())
  {
   sqm_tmp->fetchMore();
  }
  int nb_rows = sqm_tmp->rowCount();
 
+#if 0
  QSortFilterProxyModel *m=new QSortFilterProxyModel();
  m->setDynamicSortFilter(true);
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
  qtv_tmp->sortByColumn(upl_ref_in+1,Qt::DescendingOrder);
  qtv_tmp->setSortingEnabled(true);
+#endif
 
  /// Remplacer par le calcul du Cnp
  int tot_val = 0;
@@ -337,8 +362,8 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int 
    tot_val = query.value(0).toInt();
   }
  }
- //int rows_proxy = qtv_tmp->model()->rowCount();
- //BCnp *b = new BCnp(tot_val,upl_ref_in,pGame->db_ref->cnx);
+
+ /// Calcul du Cnp
  BCnp *b = new BCnp(tot_val,upl_ref_in);
  int rows_proxy = b->BP_count();
 
@@ -1485,17 +1510,6 @@ QWidget *BcUpl::Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int sr
  }
  int nb_rows = sqm_tmp->rowCount();
 
-#if 0
- ///QSortFilterProxyModel *m=new QSortFilterProxyModel();
- ///BFpm_3 * m = new BFpm_3(upl_ref_in,Bp::colTgenZs);
- BFpmFdj *m = new BFpmFdj();
-
- m->setDynamicSortFilter(true);
- m->setSourceModel(sqm_tmp);
- qtv_tmp->setModel(m);
- qtv_tmp->setSortingEnabled(true);
-#endif
-
  QString strDay= "";
  int showDay = relativeDay;
 
@@ -1672,11 +1686,11 @@ QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int
  for (int tab=0;tab<nb_recherche;tab++) {
   BView * bv_2 = new BView ;
   upl_Bview_2[tirLgnId-1][zn][src_upl][relativeDay][tab]= bv_2;
-  QHBoxLayout *bar_top = getBar_Rch(bv_2,tab);
+  QHBoxLayout *bar_top_2 = getBar_Rch(bv_2,tab);
   ///BFpm_3 * fpm_tmp = new BFpm_3(tab+1,Bp::colTgenZs);
   ///fpm_tmp->setDynamicSortFilter(true);
   ///bv_2->setModel(fpm_tmp);
-  bv_2->addUpLayout(bar_top);
+  bv_2->addUpLayout(bar_top_2);
 
   if(tab>0){
    BView * bv_3 = new BView ;
