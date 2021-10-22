@@ -486,6 +486,12 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
   {1, &p2BisZn[0]}
  };
 
+ stRes resLoto_1[]=
+ {
+  {1, &p2BisZn[0]},
+  {2, &p2Zn[0]}
+ };
+
  /// Liste des fichiers pour Euromillions
  fId = 0;
 #if 0
@@ -523,7 +529,7 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
   {"nouveau_loto.csv",fId++, {false,2,1,1,&resLoto[0]} },
   {"loto2017.csv",fId++, {false,2,1,1,&resLoto[0]} },
   {"loto_201902.csv",fId++, {false,2,1,1,&resLoto[0]} },
-  {"loto_201911.csv",fId++, {false,2,1,2,&resLoto[0]} }
+  {"loto_201911.csv",fId++, {false,2,1,2,&resLoto_1[0]} }
  };
 
  ///   {"loto.csv",fId++, {false,2,1,1,&resLoto[0]} }, 6B+1E
