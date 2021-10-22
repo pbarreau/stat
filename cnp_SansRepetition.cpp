@@ -30,6 +30,7 @@ BCnp::BCnp(stGameConf *pGame, QString tb_dest)
 
 BCnp::BCnp(int n_in, int p_in)
 {
+#if 0
     QString cnx_bdd = "cnxTableCnp";
     if(creerCnpBdd(cnx_bdd)==true){
         BCnp(n_in,p_in,cnx_bdd);
@@ -38,6 +39,15 @@ BCnp::BCnp(int n_in, int p_in)
         QMessageBox::critical(NULL,"Cnp","Creation BddCnp echec !!",QMessageBox::Ok);
         QApplication::quit();
     }
+#endif
+
+    n = n_in;
+    p = p_in;
+
+    //int cnp_v1 = Cardinal_np();
+    int cnp_v2 = CalculerCnp_v2();
+
+    cnp = cnp_v2;
 }
 
 BCnp::BCnp(int n, int p, QString cnx_bdd):BCnp(n,p,cnx_bdd,"")

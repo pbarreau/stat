@@ -96,6 +96,7 @@ class BcUpl: public BCount
   void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel);
 
  private slots:
+  void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_clicked(const QModelIndex &index);
   void BSlot_Tab(int);
 
@@ -120,6 +121,9 @@ class BcUpl: public BCount
  */
 
  private:
+  QString getTablePrefixFromSelection(QString items);
+  QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
+
   QGroupBox *gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
   QTableView *doTabShowUplet(QString tbl_src, const QModelIndex &ligne);
   int  getNbLines(QString tbl_src);

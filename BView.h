@@ -12,6 +12,7 @@ class BView : public QTableView
  BView(QWidget *parent = nullptr);
  ~BView();
  void setTitle(QString title, bool visible=true);
+ QString getTitle(void);
  QGroupBox *getScreen(bool spacer=false);
  void addUpLayout(QLayout *up_in);
  int getMinWidth(int delta=2);

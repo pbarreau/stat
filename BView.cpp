@@ -25,6 +25,17 @@ void BView::setTitle(QString title, bool visible)
  }
 }
 
+QString BView::getTitle(void)
+{
+ QString ret_val ="";
+
+ if(square != nullptr){
+  ret_val = square->title();
+ }
+
+ return ret_val;
+}
+
 void BView::addUpLayout(QLayout *up_in)
 {
  up = up_in;
