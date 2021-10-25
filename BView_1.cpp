@@ -14,6 +14,9 @@
 #include <QTime>
 #include <QEvent>
 
+#include <QApplication>
+#include <QGuiApplication>
+
 #include "BFdj.h"
 #include "BTirGen.h"
 #include "BView_1.h"
@@ -361,6 +364,9 @@ bool BView_1::isOnUsrGame(void)
 
 void  BView_1::BSlot_MakeCustomGame()
 {
+ QCursor myCursor = QCursor(Qt::BusyCursor);
+ QApplication::setOverrideCursor(myCursor);
+ QGuiApplication::changeOverrideCursor(myCursor);
 
  /// https://stackoverflow.com/questions/244646/get-elapsed-time-in-qt
  /// Temps de calcul
@@ -409,6 +415,7 @@ void  BView_1::BSlot_MakeCustomGame()
  else {
   delete lst_tirages;
  }
+ QApplication::restoreOverrideCursor();
 }
 
 void BView_1::saveTimeInTable(Bp::E_Clk ref, QString tb_name, QString humanTime)

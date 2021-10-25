@@ -21,6 +21,8 @@
 int BFdj::total_items = 0;
 QString BFdj::dsk_db = "";
 
+extern QString FdjDbZip;
+
 BFdj::BFdj(stFdj *prm, QString cnx)
 {
 
@@ -564,7 +566,7 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
  bool b_retVal= true;
  QSqlQuery query(fdj_db);
 
- QString fileName_2 = def->fname;
+ QString fileName_2 = FdjDbZip+ "\\" +def->fname;
  QFile fichier(fileName_2);
 
  // On ouvre notre fichier en lecture seule et on verifie l'ouverture

@@ -121,7 +121,8 @@ SOURCES += \
     BXmlFdj.cpp \
     BStepper.cpp \
     BStepPaint.cpp \
-    BFpm_upl.cpp
+    BFpm_upl.cpp \
+    BCompress.cpp
 
 HEADERS  += \
     BColorPriority.h \
@@ -206,7 +207,8 @@ HEADERS  += \
     BXmlFdj.h \
     BStepper.h \
     BStepPaint.h \
-    BFpm_upl.h
+    BFpm_upl.h \
+    BCompress.h
 
 
 FORMS    += mainwindow.ui \

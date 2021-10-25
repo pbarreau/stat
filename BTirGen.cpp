@@ -26,7 +26,8 @@
 #include "db_tools.h"
 
 #include "BSqlQmTirages_3.h"
-#include "BFpm_3.h"
+///#include "BFpm_3.h"
+#include "BFpm_upl.h"
 #include "BTirDelegate.h"
 
 /// https://denishulo.developpez.com/tutoriels/access/combinatoire/#LIV-A
@@ -548,10 +549,18 @@ QGroupBox *BTirGen::LireTable(stGameConf *pGame, QString tbl_tirages)
  int chk_nb_col = pGame->limites[zn].len;
  QHBoxLayout *inputs = getBarFltTirages(chk_nb_col, qtv_tmp);
 
+ /// On effectue la liasion avec le proxy model
+ BFpm_upl * fpm_tmp = new BFpm_upl(1, chk_nb_col);
+ fpm_tmp->setDynamicSortFilter(true);
+ fpm_tmp->setSourceModel(sqm_resu);
+ qtv_tmp->setModel(fpm_tmp);
+
+#if 0
  BFpm_3 * fpm_tmp = new BFpm_3(chk_nb_col,Bp::colTgenZs);
  fpm_tmp->setDynamicSortFilter(true);
  fpm_tmp->setSourceModel(sqm_resu);
  qtv_tmp->setModel(fpm_tmp);
+#endif
 
  /// Necessaire pour compter toutes les lignes de reponses
  while (sqm_resu->canFetchMore())
@@ -667,7 +676,8 @@ void BTirGen::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::Chec
  lb_Big->setText(msg);
 
  BView *qtv_tmp = qobject_cast<BSqlQmTirages_3 *>(sqm_resu)->getTbv();
- BFpm_3 * fpm_tmp = qobject_cast<BFpm_3 *> (qtv_tmp->model());
+ ///BFpm_3 * fpm_tmp = qobject_cast<BFpm_3 *> (qtv_tmp->model());
+ BFpm_upl *fpm_tmp = qobject_cast<BFpm_upl *>(qtv_tmp->model());
  int nb_lgn_ftr = fpm_tmp->rowCount();
  int nb_lgn_rel = sqm_resu->rowCount();
 
@@ -760,8 +770,13 @@ void BTirGen::BSlot_ShowTotal(const QString& lstBoules)
  BLineEdit *ble_tmp = qobject_cast<BLineEdit *>(sender());
 
  BView *view = ble_tmp->getView();
+#if 0
  BFpm_3 *m = qobject_cast<BFpm_3 *>(view->model());
  m->setKeys(lstBoules);
+#endif
+ BFpm_upl *m = qobject_cast<BFpm_upl *>(view->model());
+ m->setSearchItems(lstBoules);
+
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
  /// Necessaire pour compter toutes les lignes de reponses
