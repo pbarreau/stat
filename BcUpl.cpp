@@ -1426,6 +1426,7 @@ QHBoxLayout *BcUpl::getBar_Rch(BView *qtv_tmp,int tab_id)
  QHBoxLayout *tmp_lay = new QHBoxLayout;
  QFormLayout *frm_chk = new QFormLayout;
  BLineEdit *tmp_ble = new BLineEdit(qtv_tmp);
+ tmp_ble->setObjectName(QString::number(tab_id));
 
  frm_chk->addRow("Rch :", tmp_ble);
  tmp_ble->setToolTip("Recherche");
@@ -1452,11 +1453,15 @@ void BcUpl::BSlot_ShowTotal(const QString& lstBoules)
 {
 
  BLineEdit *ble_tmp = qobject_cast<BLineEdit *>(sender());
+ int tab_id = ble_tmp->objectName().toInt();
 
  BView *view = ble_tmp->getView();
  BFpm_upl *m = qobject_cast<BFpm_upl *>(view->model());
  m->setSearchItems(lstBoules);
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+ int nb_col = vl->columnCount();
+ view->sortByColumn(nb_col-1,Qt::SortOrder::DescendingOrder);
 
  QString st_title = view->getTitle();
  QStringList lst = st_title.split('.');
@@ -1464,7 +1469,7 @@ void BcUpl::BSlot_ShowTotal(const QString& lstBoules)
 
  st_title = lst.at(0);
 
-  /// Necessaire pour compter toutes les lignes de reponses
+ /// Necessaire pour compter toutes les lignes de reponses
  while (vl->canFetchMore())
  {
   vl->fetchMore();
@@ -1835,12 +1840,12 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
    }
 
 #if 0
-tableRef = TableType+QString::number(tirLgnId).rightJustified(2,'0')+
-   "_z"+QString::number(zn+1).rightJustified(2,'0') + ///gm_def->names[zn].abv+
-   "_U"+QString::number(ref).rightJustified(2,'0')+
-   "_S"+QString::number(index.row()+1).rightJustified(2,'0')+
-   "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
-   "_R"+QString::number(tab+1).rightJustified(2,'0')+"_";
+   tableRef = TableType+QString::number(tirLgnId).rightJustified(2,'0')+
+              "_z"+QString::number(zn+1).rightJustified(2,'0') + ///gm_def->names[zn].abv+
+              "_U"+QString::number(ref).rightJustified(2,'0')+
+              "_S"+QString::number(index.row()+1).rightJustified(2,'0')+
+              "J"+QString::number(day_anaUpl).rightJustified(2,'0')+
+              "_R"+QString::number(tab+1).rightJustified(2,'0')+"_";
 #endif
    tableRef = tblPrefix +
               "_z"+QString::number(zn+1).rightJustified(2,'0') + ///gm_def->names[zn].abv+
