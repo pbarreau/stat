@@ -351,7 +351,7 @@ private:
 public:
     QString saveFileName(const QUrl &url);
     void doDownload(const QUrl &url);
-    bool saveToDisk(const QString &filename, QIODevice *data);
+    bool saveToDisk(const QString &filename, QNetworkReply *data);
     bool isHttpRedirect(QNetworkReply *reply);
 
 public slots:

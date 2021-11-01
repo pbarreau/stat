@@ -152,11 +152,11 @@ class BcUpl: public BCount
   QGridLayout *Compter(QString * pName, int zn);
 
  private:
-  QString getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub=-1, ECalTirages target=ELstCal, int sel_item=-1);
+  QString getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId, int offset, int upl_ref_in, int upl_sub=-1, ECalTirages target=ELstCal, int sel_item=-1);
   QWidget *showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref);
   QWidget *getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int nb_recherche);
-  void sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub, int step, QString tabInOut[][3]);
-  void sql_upl_lev_2(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub, QString tabInOut[][C_TOT_CAL][3]);
+  void sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int offset, int upl_sub, int step, QString tabInOut[][3]);
+  void sql_upl_lev_2(const stGameConf *pGame, int zn, int tirLgnId, int offset, int upl_ref_in, int upl_sub, QString tabInOut[][C_TOT_CAL][3]);
 
   void sql_FillTabArgs(const stGameConf *pGame, int zn,int upl_ref_in, QString *tab_arg, QString tabInOut[][3]);
 
@@ -171,7 +171,7 @@ class BcUpl: public BCount
 
   void sql_RepartitionVoisin(QString tabInOut[][3], int jour, int upl, int ref_id, int delta=0);
 
-  QWidget *Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int dst_upl);
+  QWidget *Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int offset, int src_upl, int relativeDay, int dst_upl);
   BView * Bview_3_fill_1(BView *qtv_tmp, QString sql_msg);
   BView * Bview_4_fill_1(BView *qtv_tmp, QString sql_msg);
   QWidget *fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int i);

@@ -303,7 +303,7 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int 
  }
 #endif
 
- QString sql_msg = getSqlTbv(pGame,zn,tirLgnId,upl_ref_in, -1, ELstUplTot);
+ QString sql_msg = getSqlTbv(pGame,zn,tirLgnId,0,upl_ref_in, -1, ELstUplTot);
 #ifndef QT_NO_DEBUG
  QString target = "dbg_sql_req_1.txt";
  BTest::writetoFile(target,sql_msg,false);
@@ -472,7 +472,7 @@ QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, ECalTirages sql_sh
  return sql_msg;
 }
 
-QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int upl_ref_in, int upl_sub, ECalTirages target, int sel_item)
+QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int offset,int upl_ref_in, int upl_sub, ECalTirages target, int sel_item)
 {
  QString sql_msg="";
 
@@ -480,6 +480,9 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int upl_r
   return sql_msg;
  }
 
+ if(target > ELstCal){
+  ;
+ }
 
  //int max_items = BMIN_2(target+1, ELstCal);
  int max_items = ELstCal;
@@ -489,13 +492,13 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int upl_r
  /// ---------- Creation du code SQL dans les tableaux ----
  ///Etape 1 : partie commune
  for (int item=0;item<=ELstBleNext;item++) {
-  sql_upl_lev_1(pGame,zn,tirLgnId,upl_ref_in, -1,item, SqlData);
+  sql_upl_lev_1(pGame,zn,tirLgnId,upl_ref_in, offset,-1,item, SqlData);
   SqlSubData[0][item][0]=SqlData[item][0];
  }
 
  /// Etape 2 : sous ensemble
  for (int sub_ong=0;sub_ong<C_NB_SUB_ONG;sub_ong++) {
-  sql_upl_lev_2(pGame,zn,tirLgnId,upl_ref_in, sub_ong + C_MIN_UPL, SqlSubData);
+  sql_upl_lev_2(pGame,zn,tirLgnId,offset, upl_ref_in, sub_ong + C_MIN_UPL, SqlSubData);
  }
 
  /// --- Recuperation des portions de code pour finalisation
@@ -581,23 +584,14 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int upl_r
  }
  dbg_target = "Dbg_"+stype+"_"+dbg_target;
 
-#if 0
- QString dbg_target = "Zone_"+QString::number(zn).rightJustified(2,'0')+"_"
-                      +"Ong_"+ QString::number(upl_ref_in).rightJustified(2,'0')+"-"
-                      +str_item
-                      +tbl_target
-                      +".txt";
-#endif
  BTest::writetoFile(dbg_target,sql_msg,false);
- //qDebug() <<sql_msg;
-
 #endif
 
 
  return sql_msg;
 }
 
-void BcUpl::sql_upl_lev_2(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub,  QString tabInOut[][C_TOT_CAL][3])
+void BcUpl::sql_upl_lev_2(const stGameConf *pGame, int zn, int tirLgnId, int offset, int upl_ref_in, int upl_sub,  QString tabInOut[][C_TOT_CAL][3])
 {
  QString SqlData[C_TOT_CAL][3];
 
@@ -608,14 +602,14 @@ void BcUpl::sql_upl_lev_2(const stGameConf *pGame, int zn, int tirLgnId, int upl
 
  /// Poursuivre la creation
  for (int item=ELstBleNext+1;item<ELstCal;item++) {
-  sql_upl_lev_1(pGame,zn,tirLgnId,upl_ref_in, upl_sub,item, SqlData);
+  sql_upl_lev_1(pGame,zn,tirLgnId,upl_ref_in, offset, upl_sub,item, SqlData);
   tabInOut[upl_sub-C_MIN_UPL][item][0]= SqlData[item][0];
   tabInOut[upl_sub-C_MIN_UPL][item][1]= SqlData[item][1];
   tabInOut[upl_sub-C_MIN_UPL][item][2]= SqlData[item][2];
  }
 }
 
-void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int upl_sub, int step, QString tabInOut[][3])
+void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int offset, int upl_sub, int step, QString tabInOut[][3])
 {
  QString sql_msg = "";
  int ref_day = tirLgnId;
@@ -717,7 +711,7 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
    /// Lister les tirages apres ceux contenant les uplets
   case ELstTirUplNext:
   {
-   sql_msg = sql_NxtTirUpl(pGame,zn, 1, tabInOut);
+   sql_msg = sql_NxtTirUpl(pGame,zn, offset, tabInOut);
 #ifndef QT_NO_DEBUG
    static int counter = 0;
    target =  target +
@@ -1483,14 +1477,14 @@ void BcUpl::BSlot_ShowTotal(const QString& lstBoules)
  view->setTitle(st_total);
 }
 
-QWidget *BcUpl::Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int dst_upl)
+QWidget *BcUpl::Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int offset, int src_upl, int relativeDay, int dst_upl)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
  BView *qtv_tmp = upl_Bview_2[tirLgnId-1][zn][src_upl][relativeDay][dst_upl];
  int upl_ref_in = src_upl+C_MIN_UPL;
 
- QString sql_ref = getSqlTbv(pGame, zn,tirLgnId, src_upl+C_MIN_UPL, dst_upl+C_MIN_UPL, ELstCal);
+ QString sql_ref = getSqlTbv(pGame, zn,tirLgnId, offset, src_upl+C_MIN_UPL, dst_upl+C_MIN_UPL, ELstCal);
  QString sql_msg = "";
  sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_ref_in,sql_ref);
 
@@ -1510,22 +1504,24 @@ QWidget *BcUpl::Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int sr
  }
  int nb_rows = sqm_tmp->rowCount();
 
- QString strDay= "";
+ QString strDay[]={"J","J+1","J+?"};
  int showDay = relativeDay;
 
- if((relativeDay==0) && (pGame->limites[zn].win==1)){
+ if((showDay==0) && (pGame->limites[zn].win==1)){
   showDay++;
  }
+#if 0
  if(showDay == 0){
   strDay = "J";
  }
  else {
   strDay = "J+1";
  }
+#endif
 
  ///int rows_proxy = qtv_tmp->model()->rowCount();
  QString st_title = "U_" + QString::number(src_upl+C_MIN_UPL).rightJustified(2,'0')+
-                    " ("+strDay+"). Nb Uplets : 0 sur " + QString::number(nb_rows);
+                    " ("+strDay[showDay]+"). Nb Uplets : 0 sur " + QString::number(nb_rows);
 
  qtv_tmp->setTitle(st_title);
 
@@ -1700,7 +1696,7 @@ QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int
    upl_Bview_4[tirLgnId-1][zn][src_upl][relativeDay][tab-1]= bv_4;
   }
 
-  QWidget * wdg_tmp = Bview_init(pGame, zn,tirLgnId, src_upl, relativeDay,tab);
+  QWidget * wdg_tmp = Bview_init(pGame, zn,tirLgnId,relativeDay, src_upl, relativeDay,tab);
   if(wdg_tmp !=nullptr){
    upl_details->addTab(wdg_tmp,"R_"+QString::number(tab+1).rightJustified(2,'0'));
   }
@@ -1714,9 +1710,10 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, in
  QTabWidget *tab_Top = new QTabWidget(this);
  tab_Top->setObjectName("tabRspAnaUpl");
 
- QString ongNames[]={"J","J+1"};
+ QString ongNames[]={"J","J+1","J+?"};
  int nb_ong= sizeof(ongNames)/sizeof(QString);
 
+ /// Indication de l'interval de comptage
  int nb_days = nb_ong;//BMIN_2(pGame->limites[zn].win, nb_ong);
  upl_Bview_2[tirLgnId-1][zn][upl_ref]= new BView **[nb_days];
  upl_Bview_3[tirLgnId-1][zn][upl_ref]= new BView **[nb_days]; /// S4
@@ -1756,7 +1753,6 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  int selection = index.sibling(index.row(),Bp::colId).data().toInt();
 
  int ref = id_upl+C_MIN_UPL;
- QString strDay= "";
 
  /// Trouver l'onglet conteneur
  /// le nom correspond à la ligne du tirage
@@ -1797,9 +1793,10 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
   }
  }
 
- ECalTirages tabCal[2][3]=
+ ECalTirages tabCal[][3]=
  {
   {ELstUplTotNot,ELstUplTotNot,ELstUplTotNot},
+  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext},
   {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext}
  };
 
@@ -1812,13 +1809,8 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  QString st_title = "";
  int nb_rows = 0;
  QString tableName="";
- for (int day_anaUpl = 0;day_anaUpl<2;day_anaUpl++) {
-  if(day_anaUpl == 0){
-   strDay = "J";
-  }
-  else {
-   strDay = "J+1";
-  }
+ QString strDay[]= {"J","J+1","J+?"};
+ for (int day_anaUpl = 0;day_anaUpl<=2;day_anaUpl++) {
 
   /// C_NB_SUB_ONG_CAL
   for (int tab=0;tab<C_NB_SUB_ONG;tab++) {
@@ -1829,7 +1821,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
    ECalTirages resu = tabCal[day_anaUpl][tab];
 
    /// initialisation msg sql
-   QString sql_ref = getSqlTbv(gm_def, zn, tirLgnId, ref, tab+C_MIN_UPL, resu,selection);
+   QString sql_ref = getSqlTbv(gm_def, zn, tirLgnId, day_anaUpl, ref, tab+C_MIN_UPL, resu,selection);
    QString sql_msg = "";
    QString cnx = gm_def->db_ref->cnx;
 
@@ -1862,7 +1854,7 @@ tableRef = TableType+QString::number(tirLgnId).rightJustified(2,'0')+
     BView *qtv_tmp = upl_Bview_2[tirLgnId-1][zn][id_upl][day_anaUpl][tab];
     nb_rows = Bview_UpdateAndCount(ELstShowCal, qtv_tmp, sql_msg);
     st_title = "U_" + QString::number(ref).rightJustified(2,'0')+
-               " ("+strDay+"). Nb Uplets : "+QString::number(nb_rows);
+               " ("+strDay[day_anaUpl]+"). Nb Uplets : "+QString::number(nb_rows);
     qtv_tmp->setTitle(st_title);
    }
 

@@ -141,7 +141,8 @@ void MainWindow::doDownload(const QUrl &url)
  QNetworkRequest request(url);
  QNetworkReply *m_reply;
 
- QString localFile = FdjDbZip+ "\\" + QFileInfo(url.path()).fileName();
+ QString filename = QFileInfo(url.path()).fileName();
+ QString localFile = FdjDbZip+ "\\" + filename;
 
  // Si fichier deja present telecharger le plus recent
  if (QFile::exists(localFile)) {
@@ -186,10 +187,16 @@ void MainWindow::BSLOT_DownloadProgress(qint64 in_byte, qint64 tot_byte)
 // Analyse de la reponse a la demande de telechargement
 void MainWindow::slot_replyFinished(QNetworkReply *reply)
 {
- BCompress fichier;
+ //BCompress fichier;
 
  QUrl url = reply->url();
  QString msg = "";
+
+ QString filename = QFileInfo(url.path()).fileName();
+ QString localFile = FdjDbZip+ "\\" + filename;
+ int content_length = reply->header(QNetworkRequest::ContentLengthHeader).toInt();
+ QDateTime remoteDate = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+ QDateTime localDate = QFileInfo(localFile).lastModified();
 
  if (reply->error()) {
   msg = url.toEncoded().constData()
@@ -199,7 +206,8 @@ void MainWindow::slot_replyFinished(QNetworkReply *reply)
   fprintf(stderr, "Download of %s failed: %s\n",
           url.toEncoded().constData(),
           qPrintable(reply->errorString()));
- } else {
+ }
+ else {
   if (isHttpRedirect(reply)) {
    // https://www.meetingcpp.com/blog/items/http-and-https-in-qt.html
    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
@@ -214,33 +222,37 @@ void MainWindow::slot_replyFinished(QNetworkReply *reply)
    }
    msg = "Request was redirected.\n";
    QMessageBox::information(this, "slot_replyFinished", msg,QMessageBox::Yes);
-  } else {// info fichier
-
-
+  }
+  else {// info fichier
    // C'est une demande HEAD
    if (reply->operation() == QNetworkAccessManager::HeadOperation){
-    QString filename = QFileInfo(url.path()).fileName();
-    int content_length = reply->header(QNetworkRequest::ContentLengthHeader).toInt();
-    QDateTime remoteDate = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
-    QDateTime localDate = QFileInfo(filename).lastModified();
+
+
     // effectuer get si serveur plus recent
     if(remoteDate > localDate){
-     //QNetworkRequest request_2(url);
      QNetworkReply *reply_2 = manager->get(QNetworkRequest(url));
-     //reply_2 = manager->get(request_2);
      currentDownloads.append(reply_2);
     }
-   }else{
+   }
+   else{
     // C'est une demande GET
     if (reply->operation() == QNetworkAccessManager::GetOperation){
-     QString filename = saveFileName(url);
+#if 0
+     int content_length = reply->header(QNetworkRequest::ContentLengthHeader).toInt();
+     QDateTime remoteDate = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+     QDateTime localDate = QFileInfo(localFile).lastModified();
+#endif
+     // effectuer get si serveur plus recent
+     if(remoteDate > localDate){
+      QString filename = saveFileName(url);
 
-     if (saveToDisk(filename, reply)) {
-      printf("Download of %s succeeded (saved to %s)\n",
-             url.toEncoded().constData(), qPrintable(filename));
+      if (saveToDisk(filename, reply)) {
+       printf("Download of %s succeeded (saved to %s)\n",
+              url.toEncoded().constData(), qPrintable(filename));
 
-      /// decompression du ficher
-      ///fichier.decompressFolder(filename,FdjDbUse);
+       /// decompression du ficher
+       ///fichier.decompressFolder(filename,FdjDbUse);
+      }
      }
     }
    }
@@ -304,7 +316,7 @@ QString MainWindow::saveFileName(const QUrl &url)
  return localFile;
 }
 
-bool MainWindow::saveToDisk(const QString &filename, QIODevice *data)
+bool MainWindow::saveToDisk(const QString &filename, QNetworkReply *data)
 {
  QFile file(filename);
  if (!file.open(QIODevice::WriteOnly)) {
