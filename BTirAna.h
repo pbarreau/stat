@@ -25,8 +25,9 @@ class BTirAna : public QWidget
  explicit BTirAna(stGameConf *pGame, QWidget *parent=nullptr);
  QString getTor(); ///get Table Of Result
  QString getSql();
+ etTir getNature();
  BTirAna *self();
- QWidget *getVisual();
+
  static int getCounter(void);
  static QString getFilteringHeaders(const stGameConf *pGame, int zn, QString msg_template="t2.%1", QString separator=",");
 
@@ -46,8 +47,8 @@ class BTirAna : public QWidget
  bool AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName);
  bool SupprimerVueIntermediaires(void);
  void PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName);
- QVBoxLayout *getVisual(stGameConf *pGame, QTabWidget *ana);
- QHBoxLayout *getBar_FltAna(stGameConf *pGame);
+ QVBoxLayout *getVisual(stGameConf *pGame, QTabWidget *ana, etTir info = eTirFdj);
+ QHBoxLayout *getBar_FltAna(stGameConf *pGame, etTir info = eTirFdj);
 
  bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn);
  QString getFieldsFromZone(const stGameConf *pGame, int zn, QString alias);
@@ -74,10 +75,10 @@ class BTirAna : public QWidget
  private:
  static int total_analyses;
  BTirAna *addr;
+ etTir typeAnalyse;
  BcUpl *tabsUpl;
  QString src_sql;
  QString src_tbl;
- //QGridLayout src_lay;
  QSqlDatabase db_1;
  QMap<QString,ptrFnUsr> map_UsrFn;
  QVector<BCount *> mesComptages;

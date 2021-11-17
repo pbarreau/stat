@@ -1355,6 +1355,8 @@ void BcUpl::sql_RepartitionVoisin(QString tabInOut[][3],int jour, int upl, int r
  // inout_2 uplet upl de inout_1
 
 }
+
+
 #else
 QWidget *BcUpl::getMainTbv(const stGameConf *pGame, int zn, int upl_ref_in)
 {

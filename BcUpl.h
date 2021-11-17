@@ -171,6 +171,7 @@ class BcUpl: public BCount
 
   void sql_RepartitionVoisin(QString tabInOut[][3], int jour, int upl, int ref_id, int delta=0);
 
+  void tryUneFn();
   QWidget *Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int offset, int src_upl, int relativeDay, int dst_upl);
   BView * Bview_3_fill_1(BView *qtv_tmp, QString sql_msg);
   BView * Bview_4_fill_1(BView *qtv_tmp, QString sql_msg);
@@ -179,6 +180,7 @@ class BcUpl: public BCount
   int Bview_3_fill_2(BView *qtv_tmp, QString sql_msg);
   int Bview_4_fill_2(BView *qtv_tmp, QString sql_msg);
 };
+
 
 #endif // BUPLET_H
 

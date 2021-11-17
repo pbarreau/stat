@@ -915,9 +915,9 @@ QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 */
 		}
 	 }
-	 ret_add = ret_add + ret_elm;
+	 ret_add = ret_add + ret_elm + "\n";
 	 if(j <nb_zone -1){
-		ret_add = ret_add  + " and ";
+		ret_add = ret_add  + "\tand\n";
 	 }
 
 	}
@@ -929,7 +929,7 @@ QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 	}
 
 	if(i<nb_items -1){
-	 ret_all = ret_all + " and ";
+	 ret_all = ret_all + "\tand\n";
 	}
  }
 
@@ -955,7 +955,7 @@ QString BTirages::select_elm(const QModelIndexList &indexes, int zn)
 
 
 
- msg = "("+msg+")";
+ msg = "(\n"+msg+"\n)";
 
 #ifndef QT_NO_DEBUG
  qDebug() << "\n\nselect_elm :\n" <<msg;
@@ -971,13 +971,13 @@ QString BTirages::elmSel_1(const QModelIndexList &indexes, int zn)
  int loop = indexes.size();
 
  QString st_cols = BCount::FN1_getFieldsFromZone(gme_cnf, zn, "t1");
- QString key = "%1 in("+st_cols+")";
+ QString key = "\t%1 in("+st_cols+")";
 
  for(int i = 0; i< loop; i++){
   QString val = indexes.at(i).data().toString();
   msg = msg + key.arg(val);
   if(i<loop-1){
-   msg=msg+" and ";
+   msg=msg+"\nand ";
   }
  }
 
@@ -994,7 +994,7 @@ QString BTirages::elmSel_2(const QModelIndexList &indexes, int zn)
 
  QString msg = "";
 
- QString key = "t1."+gme_cnf->names[zn].abv+"%1 in(%2)";
+ QString key = "\tt1."+gme_cnf->names[zn].abv+"%1 in(%2)";
 
  QString ret = "";
  int taille = indexes.size();
@@ -1011,7 +1011,7 @@ QString BTirages::elmSel_2(const QModelIndexList &indexes, int zn)
  for(int i = 0; i< loop; i++){
   msg = msg + key.arg(i+1).arg(ret);
   if(i<loop-1){
-   msg=msg+" and ";
+   msg=msg+"\nand\n";
   }
  }
 
@@ -1303,22 +1303,33 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 {
  if(from == nullptr) return;
 
- QString msg  = "select t1.* from ";
+ QString msg  = "\nselect t1.* from ";
  QString tbl_lst = "(tb1) as t1";
  QString clause = "";
  //QString msg_1  = "";
  QString msg_2  = "";
  QString flt_tirages = "";
  QString box_title ="";
- QString lst_tirages = "";
+ QString start_1 = "";
+ QString lst_tirages = ""; /// masque variable global !!
 
- lst_tirages = from->getSql().simplified();
+ start_1 = from->getSql().simplified();
+#ifndef QT_NO_DEBUG
+ BTest::writetoFile("0-BSlot_Filter_Tir-0.txt", start_1,false);
+#endif
+
+#if 1
  if(lst_tirages.size() == 0){
   lst_tirages = getTiragesList(gme_cnf, game_lab);
+  start_1 = lst_tirages;
+#ifndef QT_NO_DEBUG
+ BTest::writetoFile("0-BSlot_Filter_Tir-1.txt", start_1,false);
+#endif
  }
  else {
-  return; /// Juste un marqueur
+  //return; /// Juste un marqueur
  }
+
 
  if((ana != Bp::icoRaz) && (sel !=nullptr)){
   int nb_sel = sel->size();
@@ -1331,13 +1342,22 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
   clause = makeSqlFromSelection(sel, &tbl_lst);
   msg = msg + tbl_lst;
   if(clause.size()){
-   msg = msg + " where("+clause+")";
+   msg = msg + "\nwhere(\n"+clause+"\n)";
+   start_1 = msg;
+#ifndef QT_NO_DEBUG
+   BTest::writetoFile("0-BSlot_Filter_Tir-2.txt", start_1,false);
+#endif
   }
+
 
   //msg_1 = ", tb2 as ("+ msg +")";
 
   /// mettre la liste des tirages a jour
   flt_tirages = lst_tirages + msg;
+  start_1 = flt_tirages;
+#ifndef QT_NO_DEBUG
+  BTest::writetoFile("0-BSlot_Filter_Tir-3.txt", start_1,false);
+#endif
 
   /// verifier si simplement montrer tirages
   if(ana == Bp::icoShow){
@@ -1349,8 +1369,56 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
  }
  else {
   msg =  lst_tirages + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent
+  start_1 = msg;
+#ifndef QT_NO_DEBUG
+  BTest::writetoFile("0-BSlot_Filter_Tir-4.txt", start_1,false);
+#endif
   updateTbv(box_title,msg);
  }
+
+#else
+ QString initial = "";
+ if(start_1.size() == 0){
+  initial = getTiragesList(gme_cnf, game_lab);
+ }
+ start_1 = "with tb0 as ("+initial+"),";
+
+ if((ana != Bp::icoRaz) && (sel !=nullptr)){
+  int nb_sel = sel->size();
+
+  etTir typeAnalyse = from->getNature();
+  QTabWidget *tab_SelUsr = nullptr;
+  if((typeAnalyse == eTirFdj) || (typeAnalyse == eTirGen) ){
+   tab_SelUsr = memoriserSelectionUtilisateur(sel);
+  }
+
+  /// Creer la requete de filtrage
+  clause = makeSqlFromSelection(sel, &tbl_lst);
+  msg = msg + tbl_lst;
+  if(clause.size()){
+   msg = msg + " where("+clause+")";
+  }
+
+  //msg_1 = ", tb2 as ("+ msg +")";
+
+  /// mettre la liste des tirages a jour
+  flt_tirages = start_1 + msg;
+
+  /// verifier si simplement montrer tirages
+  if(ana == Bp::icoShow){
+   updateTbv(box_title,flt_tirages);
+   return;
+  }
+
+  if(tab_SelUsr){
+   effectueAnalyses(tab_SelUsr,msg,1);
+  }
+ }
+ else {
+  msg =  start_1 + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent
+  updateTbv(box_title,msg);
+ }
+#endif
 }
 
 void BTirages::checkMemory()
@@ -1379,16 +1447,14 @@ void BTirages::effectueAnalyses(QTabWidget *tbw_flt, QString ref_sql, int distan
  }
 
  QString flt_tirages = lst_tirages + sep+ ref_sql;
- QString 	msg_1 = ", tb2 as ("+ st_with + ref_sql +")";
+ QString 	msg_1 = ",\ntb2 as ("+ st_with + ref_sql +"\n)";
  QString  msg_2 = lst_tirages + msg_1 +
-                  "select tb1.* from tb1,tb2 where(tb1.id=tb2.id-"+
+                  "\nselect tb1.* from tb1,tb2 where(tb1.id=tb2.id-"+
                   QString::number(distance)+")";
 
 #ifndef QT_NO_DEBUG
- //BTest::writetoFile("A1_req.txt", lst_tirages);
- BTest::writetoFile("A2_req.txt", flt_tirages);
- //BTest::writetoFile("A3_req.txt", msg_1);
- BTest::writetoFile("A4_req.txt", msg_2);
+ BTest::writetoFile("0-A2_req.txt", flt_tirages,false);
+ BTest::writetoFile("0-A4_req.txt", msg_2,false);
 #endif
 
  /// faire une analyse pour J

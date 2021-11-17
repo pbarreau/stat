@@ -41,9 +41,16 @@ QString BTirAna::getSql(void)
  return  src_sql;
 }
 
+etTir BTirAna::getNature()
+{
+ return typeAnalyse;
+}
+
 BTirAna::BTirAna(stGameConf *pGame, QWidget *parent) : QWidget(parent)
 {
  addr = nullptr;
+ typeAnalyse = eTirNotSet;
+
  //show_results = nullptr;
 
 
@@ -270,7 +277,6 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  if(tabs_ana!=nullptr){
   QVBoxLayout *wdg_ana = getVisual(pGame, tabs_ana);
   tmp_layout->addLayout(wdg_ana,0,0);
-  //tmp_layout->addLayout(wdg_ana,0,1);
  }
  else {
   QLabel *tmp = new QLabel("Erreur pas de resultats a montrer !!");
@@ -283,7 +289,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  this->setLayout(tmp_layout);
 }
 
-QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame)
+QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame, etTir info)
 {
  ///QWidget *tmp_wdg = new QWidget;
  QHBoxLayout *inputs = new QHBoxLayout;
@@ -294,6 +300,7 @@ QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame)
 
  Bp::Btn *lst_btn = nullptr;
 
+#if 0
  Bp::Btn lst_btn_1[]=
   {
    {"flt_apply", "Filter selection", Bp::icoFlt},
@@ -319,7 +326,31 @@ QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame)
   lst_btn = lst_btn_2;
   nb_btn = sizeof(lst_btn_2)/sizeof(Bp::Btn);
  }
+#else
+ Bp::Btn lst_btn_1[]=
+  {
+  {"flt_apply", "Filter selection", Bp::icoFlt},
+  {"flt_clear", "Clear selection", Bp::icoRaz},
+  {"xmag_search_find", "Show selection", Bp::icoShow}
+  };
 
+ Bp::Btn lst_btn_2[]=
+  {
+  {"xmag_search_find", "Show selection", Bp::icoShow}
+  };
+
+ int nb_btn = -1;
+ if(pGame->db_ref->dad.size() == 0){
+  typeAnalyse = eTirFdj;
+  lst_btn = lst_btn_1;
+  nb_btn = sizeof(lst_btn_1)/sizeof(Bp::Btn);
+ }
+ else {
+  typeAnalyse = eTirUsr;
+  lst_btn = lst_btn_2;
+  nb_btn = sizeof(lst_btn_2)/sizeof(Bp::Btn);
+ }
+#endif
  /// https://stackoverflow.com/questions/25480599/how-to-resize-qpushbutton-according-to-the-size-of-its-icon
  /// https://stackoverflow.com/questions/6639012/minimum-size-width-of-a-qpushbutton-that-is-created-from-code
  ///
@@ -366,23 +397,17 @@ QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame)
  return inputs;
 }
 
-QVBoxLayout *BTirAna::getVisual(stGameConf *pGame, QTabWidget *ana)
+QVBoxLayout *BTirAna::getVisual(stGameConf *pGame, QTabWidget *ana, etTir info)
 {
- //QWidget *tmp_wdg = new QWidget;
-
  QVBoxLayout *ret_lay = new QVBoxLayout;
 
- QHBoxLayout *tmp_2 = getBar_FltAna(pGame);
+ QHBoxLayout *tmp_2 = getBar_FltAna(pGame, info);
  if(tmp_2 != nullptr){
-  //ret_lay->addWidget(tmp_2);
   ret_lay->addLayout(tmp_2);
   ret_lay->setAlignment(tmp_2,Qt::AlignTop|Qt::AlignLeft);
  }
 
  ret_lay->addWidget(ana,1);
-
- //tmp_wdg->setLayout(ret_lay);
-
 
  return ret_lay;
 }
