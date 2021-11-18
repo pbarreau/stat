@@ -122,7 +122,8 @@ SOURCES += \
     BStepper.cpp \
     BStepPaint.cpp \
     BFpm_upl.cpp \
-    BCompress.cpp
+    BCompress.cpp \
+    BAction_1.cpp
 
 HEADERS  += \
     BColorPriority.h \
@@ -208,7 +209,8 @@ HEADERS  += \
     BStepper.h \
     BStepPaint.h \
     BFpm_upl.h \
-    BCompress.h
+    BCompress.h \
+    BAction_1.h
 
 
 FORMS    += mainwindow.ui \

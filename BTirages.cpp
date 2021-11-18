@@ -60,30 +60,44 @@ BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
 
 }
 
-void BTirages::HighLightTirId(int tir_id)
+void BTirages::HighLightTirId(int tir_id, QColor color)
 {
  BView * ptr_qtv = tir_tbv;
  BFpmFdj * fpm_tmp = qobject_cast<BFpmFdj *>( ptr_qtv->model());
  fpm_tmp->sort(0);
 
+ QString colorLine = "QTableView {selection-color: black;selection-background-color: "+
+                     color.name()+
+                     ";}";
+
  int sel_row_id = tir_id;
+
  QAbstractItemView::SelectionBehavior prevBehav = ptr_qtv->selectionBehavior();
+
  ptr_qtv->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ ptr_qtv->selectionModel()->clear();
+
  if(tir_id<0){
-  ptr_qtv->selectionModel()->clear();
   sel_row_id = 0;
   ptr_qtv->setSelectionMode(QAbstractItemView::NoSelection);
  }
  else{
-  ptr_qtv->setSelectionMode(QAbstractItemView::SingleSelection);
-  ptr_qtv->setStyleSheet("QTableView {selection-background-color: red;}");
-  ptr_qtv->setSelectionBehavior(QAbstractItemView::SelectRows);
-  ptr_qtv->selectRow(sel_row_id);
-
+  /// Click change la couleur !!!
   ptr_qtv->clicked(fpm_tmp->index(sel_row_id,0)); /// pour mettre a jour onglet grp
- }
- ptr_qtv->scrollTo(fpm_tmp->index(sel_row_id,0));
 
+  ptr_qtv->setSelectionMode(QAbstractItemView::SingleSelection);
+  ptr_qtv->setSelectionBehavior(QAbstractItemView::SelectRows);
+  ptr_qtv->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  ptr_qtv->setStyleSheet(colorLine);
+  ptr_qtv->selectRow(sel_row_id);
+ }
+
+ QAbstractItemView::ScrollHint mode = QAbstractItemView::PositionAtTop;
+ //PositionAtCenter;//EnsureVisible;
+ //ptr_qtv->scrollTo(fpm_tmp->sourceModel()->index(sel_row_id,mode));
+ ptr_qtv->scrollTo(fpm_tmp->index(sel_row_id,mode));
+
+ /// Remettre config initiale
  ptr_qtv->setSelectionBehavior(prevBehav);
 }
 
@@ -1272,17 +1286,26 @@ void BTirages::updateTbv(QString box_title, QString msg)
 
 
  cible->setQuery(msg,db_tir);
- while (cible->canFetchMore())
+ QModelIndex fake = QModelIndex();
+ while (cible->canFetchMore(fake))
  {
   cible->fetchMore();
  }
  int nb_rows = cible->rowCount();
 
  BView *qtv_tmp = tir_tbv;
+ BFpmFdj * fpm_tmp = qobject_cast<BFpmFdj *>(qtv_tmp->model());
+
  int rows_proxy = qtv_tmp->model()->rowCount();
  QString st_title = box_title+
                     "Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);
+
+ QAbstractItemView::ScrollHint mode = QAbstractItemView::PositionAtTop;//EnsureVisible;
+ ///qtv_tmp->scrollTo(fpm_tmp->sourceModel()->index(0,mode));
+ qtv_tmp->scrollTo(fpm_tmp->index(0,mode));
+
+
  qtv_tmp->setTitle(st_title);
 }
 
@@ -1319,15 +1342,15 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 #endif
 
 #if 1
- if(lst_tirages.size() == 0){
+ if(start_1.size() == 0){
   lst_tirages = getTiragesList(gme_cnf, game_lab);
   start_1 = lst_tirages;
 #ifndef QT_NO_DEBUG
- BTest::writetoFile("0-BSlot_Filter_Tir-1.txt", start_1,false);
+  BTest::writetoFile("0-BSlot_Filter_Tir-1.txt", start_1,false);
 #endif
  }
  else {
-  //return; /// Juste un marqueur
+  lst_tirages = "with\ntb1 as(\n--Start\n"+start_1+"\n--Stop\n)\n\n";
  }
 
 
@@ -1336,8 +1359,10 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 
   //checkMemory();
 
-  QTabWidget *tab_SelUsr = memoriserSelectionUtilisateur(sel);
-
+  QTabWidget *tab_SelUsr = nullptr;
+  if(from->getNature() != eTirUsr){
+   tab_SelUsr = memoriserSelectionUtilisateur(sel);
+  }
   /// Creer la requete de filtrage
   clause = makeSqlFromSelection(sel, &tbl_lst);
   msg = msg + tbl_lst;
@@ -1365,7 +1390,9 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
    return;
   }
 
-  effectueAnalyses(tab_SelUsr,msg,1);
+  if(tab_SelUsr){
+   effectueAnalyses(tab_SelUsr,msg,1);
+  }
  }
  else {
   msg =  lst_tirages + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent

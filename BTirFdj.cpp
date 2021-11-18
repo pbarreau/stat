@@ -13,6 +13,7 @@
 
 #include "BTirFdj.h"
 #include "BTirDelegate.h"
+#include "BAction_1.h"
 #include "Bc.h"
 #include "BValidator.h"
 
@@ -30,11 +31,14 @@ BTirFdj::BTirFdj(const stGameConf *pGame, etTir gme_tir, QWidget *parent): BTira
  this->setLayout(lay_return);
 }
 
-void BTirFdj::BSlot_Clicked_Fdj(const QModelIndex &index)
+void BTirFdj::BSlot_Fdj_Clicked(const QModelIndex &index)
 {
  if(index == QModelIndex()){
   return; /// invalid index
  }
+
+ BView * from = qobject_cast<BView *>(sender());
+ from->setStyleSheet("QTableView {selection-color: black;selection-background-color: red;}");
 
  int row = index.row();
  int source_row_2 = index.sibling(row,Bp::colId).data().toInt();
@@ -62,7 +66,8 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
 
  sqm_tmp->setQuery(msg,db_fdj);
  qtv_tmp->setAlternatingRowColors(true);
- qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
+ //qtv_tmp->setStyleSheet("QTableView {selection-background-color: red;}");
+ //qtv_tmp->setStyleSheet("QTableView {selection-color: black;}");
  qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -90,9 +95,12 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
 
  /// click sur une ligne des tirages effectue l'analyse de la ligne
  connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
-         this, SLOT( BSlot_Clicked_Fdj( QModelIndex) ) );
+          this, SLOT( BSlot_Fdj_Clicked( QModelIndex) ) );
 
  /// changement d'index
+ qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(BSlot_Fdj_CM1(QPoint)));
 
 
 #if 0
@@ -117,6 +125,50 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  return (qtv_tmp->getScreen());
 }
 
+void BTirFdj::BSlot_Fdj_CM1(QPoint pos)
+{
+ QTableView *view = qobject_cast<QTableView *>(sender());
+
+ QMenu MonMenu;
+ QAction *cmd_1 = new BAction_1("Localiser",view,pos);
+ connect(cmd_1, SIGNAL(BSig_ActionAt(QModelIndex)),
+         this, SLOT(BSlot_Fdj_CM1_A1(QModelIndex)) );
+ MonMenu.addAction(cmd_1);
+
+ MonMenu.exec(view->viewport()->mapToGlobal(pos));
+}
+void BTirFdj::BSlot_Fdj_CM1_A1(const QModelIndex & index)
+{
+ BView * ptr_qtv = tir_tbv;
+ QSqlQueryModel *sqm_tmp =sqm_resu;
+
+ BFpmFdj * fpm_tmp = qobject_cast<BFpmFdj *>(ptr_qtv->model());
+ //fpm_tmp->setSourceModel(sqm_tmp);
+ //ptr_qtv->setModel(fpm_tmp);
+
+ int col = index.column();
+ int row = index.row();
+ int cid = index.sibling(row,0).data().toInt();
+ cid = index.model()->index(index.row(),0).data().toInt();
+ sqm_tmp->setQuery(lst_tirages,db_fdj);
+
+
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+
+ int nb_lgn_rel = sqm_tmp->rowCount();
+
+ QString rch = "Localisation tirage id : "+
+               QString::number(cid)+
+               " sur "+
+               QString::number(nb_lgn_rel);
+ ptr_qtv->setTitle(rch);
+
+ HighLightTirId(cid-1, Qt::green);
+}
+
 QHBoxLayout *BTirFdj::getBar_FltFdj(BView *qtv_tmp)
 {
  /// HORIZONTAL BAR
@@ -128,9 +180,9 @@ QHBoxLayout *BTirFdj::getBar_FltFdj(BView *qtv_tmp)
 
  ///--------- Icon
  Bp::Btn lst_btn_1[]=
-  {
-   {"flt_apply", "Filter selection", Bp::icoFlt}
-  };
+ {
+  {"flt_apply", "Filter selection", Bp::icoFlt}
+ };
 
  int nb_btn = sizeof(lst_btn_1)/sizeof(Bp::Btn);
  QButtonGroup *tmp_btn_grp = new QButtonGroup(tmp_lay);
@@ -139,20 +191,20 @@ QHBoxLayout *BTirFdj::getBar_FltFdj(BView *qtv_tmp)
  {
   QPushButton *tmp_btn = new QPushButton;
 
-	QString icon_file = ":/images/"+lst_btn_1[i].name+".png";
-	QIcon tmp_ico = QIcon(icon_file);
-	QPixmap ico_small = tmp_ico.pixmap(22,22);
+  QString icon_file = ":/images/"+lst_btn_1[i].name+".png";
+  QIcon tmp_ico = QIcon(icon_file);
+  QPixmap ico_small = tmp_ico.pixmap(22,22);
 
 
-	tmp_btn->setEnabled(false);
-	tmp_btn->setFixedSize(ico_small.size());
-	tmp_btn->setText("");
-	tmp_btn->setIcon(ico_small);
-	tmp_btn->setIconSize(ico_small.size());
-	tmp_btn->setToolTip(lst_btn_1[i].tooltips);
+  tmp_btn->setEnabled(false);
+  tmp_btn->setFixedSize(ico_small.size());
+  tmp_btn->setText("");
+  tmp_btn->setIcon(ico_small);
+  tmp_btn->setIconSize(ico_small.size());
+  tmp_btn->setToolTip(lst_btn_1[i].tooltips);
 
-	tmp_lay->addWidget(tmp_btn);
-	tmp_btn_grp->addButton(tmp_btn,lst_btn_1[i].value);
+  tmp_lay->addWidget(tmp_btn);
+  tmp_btn_grp->addButton(tmp_btn,lst_btn_1[i].value);
  }
 
  tmp_btn_grp->setExclusive(true);
@@ -234,20 +286,20 @@ QComboBox *BTirFdj::getFltCombo(void)
  sourceView->setAutoScroll(false);
 
  typedef struct _stCouple {
-  QString msg;
-  int col_id;
+   QString msg;
+   int col_id;
  }stCouple;
 
  int zn = 0;
  int lenZ0 = gme_cnf->limites[zn].len;
  stCouple def[] =
-  {
-   {"--", Bp::noCol},
-   {"Date", Bp::colTfdjDate},
-   {"Jour", Bp::colTfdjJour},
-   {"Boules", Bp::colTfdjZs},
-   {"Etoiles", (Bp::colTfdjZs+lenZ0)}
-  };
+ {
+  {"--", Bp::noCol},
+  {"Date", Bp::colTfdjDate},
+  {"Jour", Bp::colTfdjJour},
+  {"Boules", Bp::colTfdjZs},
+  {"Etoiles", (Bp::colTfdjZs+lenZ0)}
+ };
 
  int nbChoix = sizeof(def)/sizeof(stCouple);
 
@@ -258,11 +310,11 @@ QComboBox *BTirFdj::getFltCombo(void)
  {
   QStandardItem *item_1 = new QStandardItem(def[row].msg);
 
-	int val = static_cast<int>(def[row].col_id);
-	QStandardItem *item_2 = new QStandardItem(QString::number(val));
+  int val = static_cast<int>(def[row].col_id);
+  QStandardItem *item_2 = new QStandardItem(QString::number(val));
 
-	sim_tmp->setItem(row,0, item_1);
-	sim_tmp->setItem(row,1, item_2);
+  sim_tmp->setItem(row,0, item_1);
+  sim_tmp->setItem(row,1, item_2);
 
  }
  sourceView->resizeColumnToContents(1);
@@ -314,8 +366,8 @@ void BTirFdj::BSlot_setFltOnCol(int lgn)
  QModelIndex item_lib = model->index(lgn,0);
  QString r="";
  r=item_lib.data().toString();
- int t = -1;
- t = item_key.data().toInt();
+ //int t = -1;
+ //t = item_key.data().toInt();
 
  //col=qvariant_cast<Bp::E_Col>(item_key.data().toInt());
  col=item_key.data().toInt();
@@ -436,10 +488,10 @@ QString BTirFdj::getRgx(QString key,QString sep)
    }
   }
 
-	if(pos<2){
-		itm = itm+sep;
-	}
-	dig = dig + itm;
+  if(pos<2){
+   itm = itm+sep;
+  }
+  dig = dig + itm;
  }
 
  return dig;

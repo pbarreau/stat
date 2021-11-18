@@ -336,6 +336,7 @@ QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame, etTir info)
 
  Bp::Btn lst_btn_2[]=
   {
+  {"flt_clear", "Clear selection", Bp::icoRaz},
   {"xmag_search_find", "Show selection", Bp::icoShow}
   };
 

@@ -29,7 +29,9 @@ signals:
 //void BSig_FilterRequest(const Bst_FltJdj *data);
 
 private slots:
-void BSlot_Clicked_Fdj(const QModelIndex &index);
+void BSlot_Fdj_Clicked(const QModelIndex &index);
+void BSlot_Fdj_CM1(QPoint pos);
+void BSlot_Fdj_CM1_A1(const QModelIndex &index);
 void BSlot_setFltOnCol(int lgn);
 void BSlot_setKey(QString keys);
 void BSlot_GrpBtnFdj(int btn_id);
