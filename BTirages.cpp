@@ -72,10 +72,10 @@ void BTirages::HighLightTirId(int tir_id, QColor color)
 
  int sel_row_id = tir_id;
 
- QAbstractItemView::SelectionBehavior prevBehav = ptr_qtv->selectionBehavior();
+ ///QAbstractItemView::SelectionBehavior prevBehav = ptr_qtv->selectionBehavior();
 
- ptr_qtv->setEditTriggers(QAbstractItemView::NoEditTriggers);
- ptr_qtv->selectionModel()->clear();
+ //ptr_qtv->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ //ptr_qtv->selectionModel()->clear();
 
  if(tir_id<0){
   sel_row_id = 0;
@@ -90,15 +90,11 @@ void BTirages::HighLightTirId(int tir_id, QColor color)
   ptr_qtv->setEditTriggers(QAbstractItemView::NoEditTriggers);
   ptr_qtv->setStyleSheet(colorLine);
   ptr_qtv->selectRow(sel_row_id);
+  QAbstractItemView::ScrollHint mode = QAbstractItemView::PositionAtTop;
+  //PositionAtCenter;//EnsureVisible;
+  ptr_qtv->scrollTo(fpm_tmp->index(sel_row_id,0),mode);
  }
 
- QAbstractItemView::ScrollHint mode = QAbstractItemView::PositionAtTop;
- //PositionAtCenter;//EnsureVisible;
- //ptr_qtv->scrollTo(fpm_tmp->sourceModel()->index(sel_row_id,mode));
- ptr_qtv->scrollTo(fpm_tmp->index(sel_row_id,mode));
-
- /// Remettre config initiale
- ptr_qtv->setSelectionBehavior(prevBehav);
 }
 
 BView *BTirages::getTbvTirages()
@@ -1301,9 +1297,7 @@ void BTirages::updateTbv(QString box_title, QString msg)
                     "Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);
 
- QAbstractItemView::ScrollHint mode = QAbstractItemView::PositionAtTop;//EnsureVisible;
- ///qtv_tmp->scrollTo(fpm_tmp->sourceModel()->index(0,mode));
- qtv_tmp->scrollTo(fpm_tmp->index(0,mode));
+ qtv_tmp->scrollToTop();
 
 
  qtv_tmp->setTitle(st_title);

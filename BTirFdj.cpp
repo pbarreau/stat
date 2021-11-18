@@ -37,8 +37,6 @@ void BTirFdj::BSlot_Fdj_Clicked(const QModelIndex &index)
   return; /// invalid index
  }
 
- BView * from = qobject_cast<BView *>(sender());
- from->setStyleSheet("QTableView {selection-color: black;selection-background-color: red;}");
 
  int row = index.row();
  int source_row_2 = index.sibling(row,Bp::colId).data().toInt();
@@ -46,6 +44,12 @@ void BTirFdj::BSlot_Fdj_Clicked(const QModelIndex &index)
 
  /// pour analyse de la ligne
  emit BSig_AnaLgn(source_row_2, row+1);
+}
+
+void BTirFdj::BSlot_Fdj_Pressed(const QModelIndex &index)
+{
+ BView * from = qobject_cast<BView *>(sender());
+ from->setStyleSheet("QTableView {selection-color: black;selection-background-color: red;}");
 }
 
 QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
@@ -94,6 +98,8 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  updateTbv("",msg);
 
  /// click sur une ligne des tirages effectue l'analyse de la ligne
+ connect( qtv_tmp, SIGNAL(pressed (QModelIndex)) ,
+          this, SLOT( BSlot_Fdj_Pressed( QModelIndex) ) );
  connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
           this, SLOT( BSlot_Fdj_Clicked( QModelIndex) ) );
 
