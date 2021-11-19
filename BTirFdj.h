@@ -26,6 +26,7 @@ QString getRgx(QString key,QString sep);
 void analyserSousSelection(const BTirages::Bst_FltJdj *data);
 
 signals:
+void BSig_Zoom(const BView *tbv=nullptr, const QModelIndex &index = QModelIndex());
 //void BSig_FilterRequest(const Bst_FltJdj *data);
 
 private slots:

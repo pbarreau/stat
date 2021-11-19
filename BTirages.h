@@ -10,11 +10,13 @@
 #include "game.h"
 #include "BLstSelect.h"
 //#include "BGraphicsView.h"
+//#include "BCustomPlot.h"
 #include "BView.h"
 #include "blineedit.h"
 
 class BTirAna;
 class BGraphicsView;
+class BCustomPlot;
 class BTirages : public QWidget
 {
  Q_OBJECT
@@ -71,6 +73,7 @@ void BSlot_Result_Tir(const int index);
 private slots:
 void BSlot_Ensemble_Tir(const int index);
 void BSlot_Dessine(bool chk);
+void BSlot_ZoomMyPlot(const BView *tbv=nullptr, const QModelIndex &index = QModelIndex());
 
 public:
 typedef struct Bst_FltJdj
@@ -113,6 +116,7 @@ static QWidget * wdg_reponses;
 static QGridLayout *gdl_all;
 BGraphicsView *grp_screen;
 BView **graphAnaLgn;
+QList<BCustomPlot *> *lstGraph;
 
 };
 

@@ -33,17 +33,21 @@ BTirFdj::BTirFdj(const stGameConf *pGame, etTir gme_tir, QWidget *parent): BTira
 
 void BTirFdj::BSlot_Fdj_Clicked(const QModelIndex &index)
 {
+ BView * tmp_tbv = qobject_cast<BView *>(sender());
  if(index == QModelIndex()){
   return; /// invalid index
  }
 
 
- int row = index.row();
- int source_row_2 = index.sibling(row,Bp::colId).data().toInt();
+ int row_visual = index.row();
+ int row_tirage = index.sibling(row_visual,Bp::colId).data().toInt();
 
 
  /// pour analyse de la ligne
- emit BSig_AnaLgn(source_row_2, row+1);
+ emit BSig_AnaLgn(row_tirage, row_visual+1);
+
+ /// Zoom dans BcustomPlot
+ emit BSig_Zoom(tmp_tbv,index);
 }
 
 void BTirFdj::BSlot_Fdj_Pressed(const QModelIndex &index)

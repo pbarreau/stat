@@ -142,6 +142,9 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  wdg_visual->setWindowTitle("Tirages FDJ : ");
  wdg_visual->show();
 
+ connect(this,SIGNAL(BSig_Zoom(const BView *, const QModelIndex )),
+         this, SLOT(BSlot_ZoomMyPlot(const BView *, const QModelIndex)));
+
  connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgnShow(int,int)));
  connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)), ana_tirages,SLOT(BSlot_Show_Flt(const B2LstSel *)));
  connect(ana_tirages, SIGNAL(BSig_FilterRequest(BTirAna *, const Bp::E_Ico , const B2LstSel * )),
@@ -198,6 +201,8 @@ QWidget * BTirages::DrawCustomPlot()
 {
  int tot_zn = gme_cnf->znCount;
 
+ lstGraph = new QList<BCustomPlot *>[tot_zn];
+
  QWidget *wdg_toShow = new QWidget;
  QGridLayout *lay_visual = new QGridLayout;
  QTabWidget * try_01 = new QTabWidget;
@@ -235,6 +240,7 @@ QWidget * BTirages::DrawCustomPlot()
    BCustomPlot *monTest = new BCustomPlot(gme_cnf, this, zn,stKey,stTip);
    monTest->setFixedHeight(200);
    layout->addWidget(monTest);
+   lstGraph[zn].append(monTest);
   }
   scrol_2->setWidget(wdg_tmp);
   try_01->addTab(scrol_2,gme_cnf->names[zn].std);
@@ -247,6 +253,39 @@ QWidget * BTirages::DrawCustomPlot()
  return (wdg_toShow);
 }
 
+void BTirages::BSlot_ZoomMyPlot(const BView *tbv, const QModelIndex &index)
+{
+ BTirFdj *tmp_tir = qobject_cast<BTirFdj *>(sender());
+ int nb_zn = gme_cnf->znCount;
+
+ int row_visual = index.row();
+ int row_tirage = index.sibling(row_visual,Bp::colId).data().toInt();
+
+ int zn = 0;
+
+ for(int zn=0;zn<nb_zn;zn++){
+  int max_graph = lstGraph[zn].size();
+  for(int graph=0;graph<max_graph;graph++){
+   /// recuperer le graphe
+   BCustomPlot *tmp_plot = lstGraph[zn].at(graph);
+   tmp_plot->setInteraction(QCP::Interaction::iSelectPlottables);
+
+   QCPGraph * tmp_grp = tmp_plot->graph(0);
+
+   tmp_grp->setSelectable(QCP::SelectionType::stSingleData);
+
+   QCPSelectionDecorator *flash = tmp_grp->selectionDecorator();
+   QBrush my_brush(Qt::GlobalColor::red,Qt::SolidPattern);
+   QPen my_pen(my_brush,6);
+   flash->setPen(my_pen);
+
+   QCPDataRange r_target (row_tirage+1,row_tirage+2);
+   QCPDataSelection selection(r_target);
+   tmp_grp->setSelection(selection);
+   tmp_plot->replot();
+  }
+ }
+}
 
 BGraphicsView *BTirages::selGraphTargets()
 {
@@ -1449,8 +1488,8 @@ void BTirages::checkMemory()
   og_AnaSel = new QTabWidget;
   og_AnaSel->setObjectName(tbw_FltTirages);
   id_AnaOnglet = 0;
-  og_AnaSel->setTabsClosable(true);
-  connect(og_AnaSel,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
+  ///og_AnaSel->setTabsClosable(true);
+  ///connect(og_AnaSel,SIGNAL(tabCloseRequested(int)),this,SLOT(BSlot_closeTab(int)));
   connect(og_AnaSel,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Result_Tir(int)));
  }
 }
