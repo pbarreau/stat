@@ -456,11 +456,9 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  /// avec les differentes version des jeux
  /// le format des fichiers repertoriant les resultats
  /// a change
- stZnDef ff_euro_1[] =
- {
-  {4,5,1,50},
-  {9,2,1,10}
- };
+
+ /// File format description : Loto
+ ///pour une zone : {col depart, longueur, val_min, val_max}
  stZnDef ff_loto_1[] =
  {
   {4,5,1,49},
@@ -471,17 +469,7 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
   {32,5,1,49}
  };
 
- stZnDef p3Zn[] =
- {
-  {4,5,1,50},
-  {9,2,1,11}
- };
- stZnDef p4Zn[] =
- {
-  {5,5,1,50},
-  {10,2,1,12}
- };
-
+ /// Nombre de tirage par jour et ptr vers description
  stRes resLoto[]=
  {
   {2, &ff_loto_1[0]},
@@ -494,31 +482,65 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
   {2, &ff_loto_1[0]}
  };
 
+ /// File format description : Euro
+ stZnDef fd_euro_1[] =
+ {
+  {4,5,1,50},
+  {9,2,1,10}
+ };
+ stRes resEuro_1[]={{2,&fd_euro_1[0]}};
+
+ stZnDef fd_euro_2[] =
+ {
+  {4,5,1,50},
+  {9,2,1,11}
+ };
+ stRes resEuro_2[]={{2,&fd_euro_2[0]}};
+
+ stZnDef fd_euro_3[] =
+ {
+  {5,5,1,50},
+  {10,2,1,12}
+ };
+ stRes resEuro_3[]={{2,&fd_euro_3[0]}};
+
  /// Liste des fichiers pour Euromillions
  fId = 0;
 #if 0
  stFdjData euroMillions[]=
  {
   {"euromillions_202002.csv",fId++,
-   {false,2,1,2,&p4Zn[0]}
+   {false,2,1,2,&fd_euro_3[0]}
   },
   {"euromillions_201902.csv",fId++,
-   {false,2,1,2,&p4Zn[0]}
+   {false,2,1,2,&fd_euro_3[0]}
   },
   {"euromillions_4.csv",fId++,
-   {false,2,1,2,&p4Zn[0]}
+   {false,2,1,2,&fd_euro_3[0]}
   },
   {"euromillions_3.csv",fId++,
-   {false,2,1,2,&p3Zn[0]}
+   {false,2,1,2,&fd_euro_2[0]}
   },
   {"euromillions_2.csv",fId++,
-   {false,2,1,2,&p3Zn[0]}
+   {false,2,1,2,&fd_euro_2[0]}
   },
   {"euromillions.csv",fId++,
-   {false,2,1,2,&p1Zn[0]}
+   {false,2,1,2,&fd_euro_1[0]}
   }
  };
 #endif
+
+ stFdjData euroMillions[]=
+ {
+  /// {filename, uid,{dowload,colDate,ColJour,nbTirageJour,ptrDescTirage}}
+  {"euromillions_202002.csv",fId++,{false,2,1,1,&resEuro_3[0]}},
+  {"euromillions_201902.csv",fId++,{false,2,1,1,&resEuro_3[0]}},
+  {"euromillions_4.csv",fId++,{false,2,1,1,&resEuro_3[0]}},
+  {"euromillions_3.csv",fId++,{false,2,1,1,&resEuro_2[0]}},
+  {"euromillions_2.csv",fId++,{false,2,1,1,&resEuro_2[0]}},
+  {"euromillions.csv",fId++,{false,2,1,1,&resEuro_1[0]}}
+ };
+
  /// Liste des fichiers pour loto
  fId = 0;
  stFdjData loto[]=
@@ -537,13 +559,11 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  ///   {"loto.csv",fId++, {false,2,1,1,&resLoto[0]} }, 6B+1E
  ///   {"sloto.csv",fId++, {false,2,1,1,&resLoto[0]} },
 
-#if 0
  if(pGame->eFdjType == eFdjEuro){
   nbelemt = sizeof(euroMillions)/sizeof(stFdjData);
   LesFichiers = euroMillions;
  }
  else
-#endif
  {
   nbelemt = sizeof(loto)/sizeof(stFdjData);
   LesFichiers = loto;
@@ -590,7 +610,8 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
  // Passer la premiere ligne description des champs du fichier
  ligne = flux.readLine();
 
- int refNbFields = ligne.split(";").size();
+ list1 = ligne.split(";");
+ int refNbFields = list1.size();
 
  // Analyse des suivantes
  int nb_lignes=0;
