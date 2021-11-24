@@ -8,11 +8,11 @@
 class BXmlFdj
 {
  public:
-  BXmlFdj();
+  BXmlFdj(etFdj rungame=eFdjLoto);
 
  private:
   void mkDomGame(etFdj game, QDomDocument *doc, QDomElement target);
-  void mkDomHisto(eFCname game, QDomDocument *doc, QDomElement target);
+  void mkDomHisto(eFCname game, QDomDocument *doc, QDomElement target, int tot, const stSrcHistoJeux *ptr_histo);
   void mkDomFichier(int file, QDomDocument *doc, QDomElement target);
 };
 

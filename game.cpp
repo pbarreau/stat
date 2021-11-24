@@ -24,6 +24,14 @@ const stSrcHistoJeux HistoLoto[]={
  {eCnameGrandLoto,"Depuis decembre 2019","https://media.fdj.fr/static/csv/loto/grandloto_201912.zip","grandloto_201912.csv"}
 };
 
+const stSrcHistoJeux HistoEuro[]={
+ {eCnameEuroMillionsMyMillion,"Depuis février 2020","https://media.fdj.fr/static/csv/euromillions/euromillions_202002.zip","euromillions_202002.csv"},
+ {eCnameEuroMillionsMyMillion,"De février 2019 à février 2020","https://media.fdj.fr/static/csv/euromillions/euromillions_201902.zip","euromillions_201902.csv"},
+ {eCnameEuroMillionsMyMillion,"De septembre 2016 à février 2020","https://media.fdj.fr/static/csv/euromillions/euromillions_201609.zip","euromillions_4.csv"},
+ {eCnameEuroMillionsMyMillion,"De février 2014 à septembre 2016","https://media.fdj.fr/static/csv/euromillions/euromillions_201402.zip","euromillions_3.csv"},
+ {eCnameEuroMillion,"De mai 2011 à janvier 2014","https://media.fdj.fr/static/csv/euromillions/euromillions_201105.zip","euromillions_2.csv"},
+ {eCnameEuroMillion,"De février 2004 à avril 2011","https://media.fdj.fr/static/csv/euromillions/euromillions_200402.zip","euromillions.csv"}
+};
 const stParam_1 defParam_1[]={
  {}
 };

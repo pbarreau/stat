@@ -42,6 +42,7 @@ typedef struct _stSrcHistoJeux{
   QString file;
 }stSrcHistoJeux;
 extern const stSrcHistoJeux HistoLoto[11];
+extern const stSrcHistoJeux HistoEuro[6];
 
 typedef enum _etTir{
  eTirNotSet, /// Lst tirages pas encore etablie

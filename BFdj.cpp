@@ -456,12 +456,12 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  /// avec les differentes version des jeux
  /// le format des fichiers repertoriant les resultats
  /// a change
- stZnDef p1Zn[] =
+ stZnDef ff_euro_1[] =
  {
   {4,5,1,50},
   {9,2,1,10}
  };
- stZnDef p2Zn[] =
+ stZnDef ff_loto_1[] =
  {
   {4,5,1,49},
   {9,1,1,10}
@@ -484,14 +484,14 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
 
  stRes resLoto[]=
  {
-  {2, &p2Zn[0]},
+  {2, &ff_loto_1[0]},
   {1, &p2BisZn[0]}
  };
 
  stRes resLoto_1[]=
  {
   {1, &p2BisZn[0]},
-  {2, &p2Zn[0]}
+  {2, &ff_loto_1[0]}
  };
 
  /// Liste des fichiers pour Euromillions

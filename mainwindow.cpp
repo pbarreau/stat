@@ -71,8 +71,8 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
 void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
 {
 
- //BXmlFdj();
- //return;
+ BXmlFdj my_xml = BXmlFdj(curGame);
+ return;
 
  stFdj *prm = new stFdj;
  prm->typeJeu = curGame;
