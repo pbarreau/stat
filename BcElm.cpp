@@ -48,6 +48,10 @@ BcElm::BcElm(const stGameConf *pGame):BCount(pGame,eCountElm)
 
 void BcElm::BSlot_MkUsrUplets_L3(const QItemSelectionModel *cur_sel)
 {
+ BView_1 *view = qobject_cast<BView_1 *>(sender());
+ int id_upl = view->objectName().toInt();
+ int zn = view->getZone();
+
  emit BSig_MkUsrUplets_L4(cur_sel);
 }
 
@@ -58,10 +62,10 @@ QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)
  int nb_zones = pGame->znCount;
 
  QWidget *(BCount::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
-  {
+ {
    &BCount::startIhm,
    &BCount::startIhm
-  };
+};
 
  /*
   * BCount::usr_MkTbl est une fonction virtuelle pure (virtual .... =0;)
@@ -75,8 +79,9 @@ QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)
   QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::usr_MkTbl, i);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
-   connect(tabTbv[i],SIGNAL(BSig_MkUsrUplets_L2(const QItemSelectionModel*)),
-     SLOT(BSlot_MkUsrUplets_L3(const QItemSelectionModel*)));
+   connect(
+      tabTbv[i],SIGNAL(BSig_MkUsrUplets_L2(const QItemSelectionModel*)),
+      this,SLOT(BSlot_MkUsrUplets_L3(const QItemSelectionModel*)));
   }
  }
  return tab_Top;
@@ -98,13 +103,13 @@ QLayout * BcElm::usr_UpperItems(int zn, BView_1 *cur_tbv)
   ret_lay = new QHBoxLayout;
   QPushButton *tmp_btn = nullptr;
 
-	tmp_ico = QIcon(":/images/run_32px.png");
-	tmp_btn = new QPushButton(tmp_ico,tr("&Creer liste"));
-	tmp_btn->setEnabled(false);
-	ret_lay->addWidget(tmp_btn);
-	cur_tbv->setUsrGameButton(tmp_btn);
-	connect(tmp_btn,SIGNAL(clicked()),
-					cur_tbv,SLOT(BSlot_MakeCustomGame()));
+  tmp_ico = QIcon(":/images/run_32px.png");
+  tmp_btn = new QPushButton(tmp_ico,tr("&Creer liste"));
+  tmp_btn->setEnabled(false);
+  ret_lay->addWidget(tmp_btn);
+  cur_tbv->setUsrGameButton(tmp_btn);
+  connect(tmp_btn,SIGNAL(clicked()),
+          cur_tbv,SLOT(BSlot_MakeCustomGame()));
 
  }
 
@@ -157,11 +162,11 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
   * )
   */
  QString 	 msg_1 = "select t1.z"+QString::number(zn+1)+
-                 " as b from (B_elm) as t1, ("+st_tirages+
-                 " )as t2 where ("
-                 "(t1.z"+QString::number(zn+1)+
-                 " in ("+st_critere+
-                 "))";
+                   " as b from (B_elm) as t1, ("+st_tirages+
+                   " )as t2 where ("
+                   "(t1.z"+QString::number(zn+1)+
+                   " in ("+st_critere+
+                   "))";
 
 
  QString msg  = "";
@@ -171,56 +176,56 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
         "))";
 
 #ifndef QT_NO_DEBUG
-	qDebug() << "msg: "<<msg;
+  qDebug() << "msg: "<<msg;
 #endif
-	b_retVal = query.exec(msg);
+  b_retVal = query.exec(msg);
 
-	if(b_retVal){
-	 /// ----------
-	 stTbFiltres a;
-	 a.tb_flt = gm_def->db_ref->flt;
-	 a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
-	 a.sta = Bp::E_Sta::noSta;
-	 a.zne = zn;
-	 a.typ = eType;
-	 a.lgn = 10 * eType;
-	 a.col = -1;
+  if(b_retVal){
+   /// ----------
+   stTbFiltres a;
+   a.tb_flt = gm_def->db_ref->flt;
+   a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
+   a.sta = Bp::E_Sta::noSta;
+   a.zne = zn;
+   a.typ = eType;
+   a.lgn = 10 * eType;
+   a.col = -1;
 
-	 if(query.first()){
-		///QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(view->model());
-		///QSqlQueryModel  * sqm_tmp = qobject_cast <QSqlQueryModel  *>(m->sourceModel());
-		Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
-		view->sortByColumn(Bp::colId,Qt::SortOrder::AscendingOrder);
-		do{
-		 a.val = query.value(0).toInt();
-		 a.col = a.val;
-		 a.dbt = -1;
-		 ///QModelIndex index = sqm_tmp->index(a.val-1,Bp::colTxt,QModelIndex());
-		 QModelIndex index = view->model()->index(a.val-1,Bp::colTxt,QModelIndex());
-		 view->selectionModel()->select(index,QItemSelectionModel::SelectionFlag::Select);
+   if(query.first()){
+    ///QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel *>(view->model());
+    ///QSqlQueryModel  * sqm_tmp = qobject_cast <QSqlQueryModel  *>(m->sourceModel());
+    Bp::F_Flts tmp = static_cast<Bp::F_Flts>(lgn);
+    view->sortByColumn(Bp::colId,Qt::SortOrder::AscendingOrder);
+    do{
+     a.val = query.value(0).toInt();
+     a.col = a.val;
+     a.dbt = -1;
+     ///QModelIndex index = sqm_tmp->index(a.val-1,Bp::colTxt,QModelIndex());
+     QModelIndex index = view->model()->index(a.val-1,Bp::colTxt,QModelIndex());
+     view->selectionModel()->select(index,QItemSelectionModel::SelectionFlag::Select);
 
-		 /// RECUPERER FLT DE CETTE LIGNE
-		 b_retVal = DB_Tools::tbFltGet(&a, db_elm.connectionName());
+     /// RECUPERER FLT DE CETTE LIGNE
+     b_retVal = DB_Tools::tbFltGet(&a, db_elm.connectionName());
 
-		 a.pri = 1; /// ICI  on force la priorite meme si deja present
-		 a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
-		 a.b_flt = a.b_flt|tmp;
+     a.pri = 1; /// ICI  on force la priorite meme si deja present
+     a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
+     a.b_flt = a.b_flt|tmp;
 
 
-		 b_retVal = DB_Tools::tbFltSet(&a,db_elm.connectionName());
+     b_retVal = DB_Tools::tbFltSet(&a,db_elm.connectionName());
 
-		 /// Pour le dernier tirage
-		 /// marquer les boules a (+ ou -) 1
-		 if(lgn == 1){
-			marquerProcheVoisin(pGame, zn, &a);
-		 }
-		}while(query.next() && b_retVal);
+     /// Pour le dernier tirage
+     /// marquer les boules a (+ ou -) 1
+     if(lgn == 1){
+      marquerProcheVoisin(pGame, zn, &a);
+     }
+    }while(query.next() && b_retVal);
 
-		/// On remet le tri par defaut
-		Bp::E_Col mySortCol = view->getSortCol();
-		view->sortByColumn(mySortCol,Qt::DescendingOrder);
-	 }
-	}
+    /// On remet le tri par defaut
+    Bp::E_Col mySortCol = view->getSortCol();
+    view->sortByColumn(mySortCol,Qt::DescendingOrder);
+   }
+  }
  } /// fin for
 
  if(!b_retVal){
@@ -240,12 +245,12 @@ void BcElm::marquerProcheVoisin(const stGameConf *pGame, const int zn, stTbFiltr
  for (int i = -1, j = 0;(i<2) ; i=i+2,j++)
  {
 
-	/// Verification borne inferieures et superieures
-	if( ((ref_val+i) < pGame->limites[zn].min) ||
-			((ref_val+i) > pGame->limites[zn].max) )
-	{
-	 continue;
-	}
+  /// Verification borne inferieures et superieures
+  if( ((ref_val+i) < pGame->limites[zn].min) ||
+      ((ref_val+i) > pGame->limites[zn].max) )
+  {
+   continue;
+  }
 
   a->val = ref_val + i;
   a->col = a->val;
@@ -287,13 +292,13 @@ QWidget *BcElm::fn_Count(const stGameConf *pGame, int zn)
   QSqlQuery query(db_elm);
   bool b_retVal = query.exec(msg);
 
-	if(b_retVal == false){
-	 DB_Tools::DisplayError("BCountElem::fn_Count", &query, msg);
-	 delete wdg_tmp;
-	 delete glay_tmp;
-	 delete qtv_tmp;
-	 return nullptr;
-	}
+  if(b_retVal == false){
+   DB_Tools::DisplayError("BCountElem::fn_Count", &query, msg);
+   delete wdg_tmp;
+   delete glay_tmp;
+   delete qtv_tmp;
+   return nullptr;
+  }
  }
 
  QString sql_msg = "select * from "+dstTbl;
@@ -357,11 +362,11 @@ QWidget *BcElm::fn_Count(const stGameConf *pGame, int zn)
 #if 0
  // simple click dans fenetre  pour selectionner boules
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+          this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
  // Double click dans fenetre  pour creer requete
  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-         this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
+          this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
 
  /// Selection & priorite
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -371,7 +376,7 @@ QWidget *BcElm::fn_Count(const stGameConf *pGame, int zn)
  /// Mettre dans la base une info sur 2 derniers tirages
  marquerDerniers_tir(pGame, eCountElm, zn);
 
-/*
+ /*
  static int oneShotParZn = pGame->znCount; //
  if(oneShotParZn > 0){
   oneShotParZn--;
@@ -481,7 +486,7 @@ QString BcElm::getSqlMsg(const stGameConf *pGame, int zn)
 }
 
 BcElm::BcElm(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent)
-    :BCount(pDef,in,fromDb,LeParent,eCountElm)//,cFdjData()
+ :BCount(pDef,in,fromDb,LeParent,eCountElm)//,cFdjData()
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
@@ -500,10 +505,10 @@ BcElm::BcElm(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWi
 
 
  QGridLayout *(BcElm::*ptrFunc[])(QString *, int) =
-  {
+ {
    &BcElm::Compter,
    &BcElm::Compter
-  };
+};
 
  int nb_zones = myGame.znCount;
  for(int i = 0; i< nb_zones; i++)
@@ -516,11 +521,11 @@ BcElm::BcElm(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWi
     hCommon = CEL2_H * BMAX_2((floor(myGame.limites[i].max/10)+1),(floor(myGame.limites[i+1].max/10)+1));
   }
 
-	QString *name = new QString;
-	QWidget *tmpw = new QWidget;
-	QGridLayout *calcul = (this->*ptrFunc[i])(name, i);
-	tmpw->setLayout(calcul);
-	tab_Top->addTab(tmpw,tr((*name).toUtf8()));
+  QString *name = new QString;
+  QWidget *tmpw = new QWidget;
+  QGridLayout *calcul = (this->*ptrFunc[i])(name, i);
+  tmpw->setLayout(calcul);
+  tab_Top->addTab(tmpw,tr((*name).toUtf8()));
  }
 
 
@@ -528,12 +533,12 @@ BcElm::BcElm(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWi
  tab_Top->setWindowTitle("Test2-"+QString::number(tot_elm));
  emit(sig_TitleReady("Pascal"));
 #if 0
-    QWidget * Resultats = new QWidget;
-    QGridLayout *layout = new QGridLayout();
-    layout->addWidget(tab_Top);
-    Resultats->setLayout(layout);
-    Resultats->setWindowTitle("Test2-"+QString::number(total));
-    Resultats->show();
+ QWidget * Resultats = new QWidget;
+ QGridLayout *layout = new QGridLayout();
+ layout->addWidget(tab_Top);
+ Resultats->setLayout(layout);
+ Resultats->setWindowTitle("Test2-"+QString::number(total));
+ Resultats->show();
 #endif
 }
 
@@ -556,10 +561,10 @@ void BcElm::slot_ClicDeSelectionTableau(const QModelIndex &index)
   /// oui alors deselectionner l'element
   selectionModel->select(index, QItemSelectionModel::Deselect);
 
-	/// si on est sur la partie boule indiquer a synthese generale
-	if(tab_index==0){
-	 emit sig_isClickedOnBall(index);
-	}
+  /// si on est sur la partie boule indiquer a synthese generale
+  if(tab_index==0){
+   emit sig_isClickedOnBall(index);
+  }
 
   return;
  }
@@ -576,35 +581,35 @@ void BcElm::slot_ClicDeSelectionTableau(const QModelIndex &index)
   /// combien d'elements deja selectionne ?
   int tot_items = selectionModel->selectedIndexes().size();
 
-	if(tot_items >1)
-	{
-	 /// plus d'un elements
-	 /// verifier si le nouvel element choisi
-	 /// est aussi sur la meme colonne
-	 if(col != memo[tab_index])
-	 {
-		/// non alors deselectionner l'element
-		selectionModel->select(index, QItemSelectionModel::Deselect);
-		return;
-	 }
-	}
-	else
-	{
-	 /// c'est un changement de colonne
-	 /// ou une deselection d'element
-	 if(!tot_items)
-	 {
-		/// c'est une deselection
-		/// prochain coup on peut prendre
-		/// ou l'on veut
-		memo[tab_index]=-1;
-	 }
-	 else
-	 {
-		/// on a changer de colonne
-		memo[tab_index]=col;
-	 }
-	}
+  if(tot_items >1)
+  {
+   /// plus d'un elements
+   /// verifier si le nouvel element choisi
+   /// est aussi sur la meme colonne
+   if(col != memo[tab_index])
+   {
+    /// non alors deselectionner l'element
+    selectionModel->select(index, QItemSelectionModel::Deselect);
+    return;
+   }
+  }
+  else
+  {
+   /// c'est un changement de colonne
+   /// ou une deselection d'element
+   if(!tot_items)
+   {
+    /// c'est une deselection
+    /// prochain coup on peut prendre
+    /// ou l'on veut
+    memo[tab_index]=-1;
+   }
+   else
+   {
+    /// on a changer de colonne
+    memo[tab_index]=col;
+   }
+  }
  }
 
 
@@ -615,9 +620,9 @@ void BcElm::slot_ClicDeSelectionTableau(const QModelIndex &index)
   //un message d'information
   QMessageBox::warning(0, myGame.names[tab_index].std, "Attention, maximum element atteind !",QMessageBox::Yes);
 
-	// deselectionner l'element
-	selectionModel->select(index, QItemSelectionModel::Deselect);
-	return;
+  // deselectionner l'element
+  selectionModel->select(index, QItemSelectionModel::Deselect);
+  return;
  }
 
  //lesSelections[tab_index]= selectionModel->selectedIndexes();
@@ -635,39 +640,39 @@ void BcElm::SqlFromSelection (const QItemSelectionModel *selectionModel, int zn)
   QModelIndex un_index;
   QStringList lstBoules;
 
-	QVariant vCol;
-	QString headName;
-	int curCol = 0;
-	int occure = 0;
+  QVariant vCol;
+  QString headName;
+  int curCol = 0;
+  int occure = 0;
 
 
-	/// Parcourir les selections
-	foreach(un_index, indexes)
-	{
-	 const QAbstractItemModel * pModel = un_index.model();
-	 curCol = pModel->index(un_index.row(), un_index.column()).column();
-	 occure = pModel->index(un_index.row(), 0).data().toInt();
+  /// Parcourir les selections
+  foreach(un_index, indexes)
+  {
+   const QAbstractItemModel * pModel = un_index.model();
+   curCol = pModel->index(un_index.row(), un_index.column()).column();
+   occure = pModel->index(un_index.row(), 0).data().toInt();
 
-	 // si on n'est pas sur la premiere colonne
-	 if(curCol)
-	 {
-		vCol = pModel->headerData(curCol,Qt::Horizontal);
-		headName = vCol.toString();
+   // si on n'est pas sur la premiere colonne
+   if(curCol)
+   {
+    vCol = pModel->headerData(curCol,Qt::Horizontal);
+    headName = vCol.toString();
 
-		// Construire la liste des boules
-		lstBoules << QString::number(occure);
-	 }
-	}
+    // Construire la liste des boules
+    lstBoules << QString::number(occure);
+   }
+  }
 
-	// Creation du critere de filtre
-	int loop = myGame.limites[zn].len;
-	QString tab = "tbz."+myGame.names[zn].abv;
-	QString scritere = DB_Tools::GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
-	if(headName != "T" and headName !="")
-	{
-	 scritere = scritere + " and (J like '%" + headName +"%')";
-	}
-	sqlSelection[zn] = scritere;
+  // Creation du critere de filtre
+  int loop = myGame.limites[zn].len;
+  QString tab = "tbz."+myGame.names[zn].abv;
+  QString scritere = DB_Tools::GEN_Where_3(loop,tab,true,"=",lstBoules,false,"or");
+  if(headName != "T" and headName !="")
+  {
+   scritere = scritere + " and (J like '%" + headName +"%')";
+  }
+  sqlSelection[zn] = scritere;
  }
 }
 
@@ -760,9 +765,9 @@ QString BcElm::PBAR_ReqComptage(QString ReqTirages, int zn,int distance)
  QString arg1 = "tbleft.boule as B, count(tbright.id) as T "
                 +str_jrs;
  QString arg2 ="select id as boule from "
-                +QString::fromLatin1(C_TBL_2)+" where (z"
-                +QString::number(zn+1)
-                +" not null )";
+               +QString::fromLatin1(C_TBL_2)+" where (z"
+               +QString::number(zn+1)
+               +" not null )";
 
  QString arg3 = ReqTirages.remove(";");
  QString arg4 = st_cri_all;
@@ -883,11 +888,11 @@ QGridLayout *BcElm::Compter(QString * pName, int zn)
 
  // simple click dans fenetre  pour selectionner boules
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+          this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
  // Double click dans fenetre  pour creer requete
  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-         this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
+          this, SLOT(slot_RequeteFromSelection( QModelIndex) ) );
 
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,
@@ -929,38 +934,38 @@ void BcElm::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn)
   * )
   */
  QString 	 msg_1 = "select t1.z"+QString::number(zn+1)+
-               " as b from (B_elm) as t1, ("+st_tirages+
-               " )as t2 where ("
-               "(t1.z"+QString::number(zn+1)+
-               " in ("+st_critere+
-               "))";
+                   " as b from (B_elm) as t1, ("+st_tirages+
+                   " )as t2 where ("
+                   "(t1.z"+QString::number(zn+1)+
+                   " in ("+st_critere+
+                   "))";
 
  for (int lgn=1;(lgn<3) && b_retVal;lgn++) {
   QString msg = msg_1+
-        " and (t2.id="+QString::number(lgn)+
-        "))";
+                " and (t2.id="+QString::number(lgn)+
+                "))";
 
 #ifndef QT_NO_DEBUG
-	 qDebug() << "msg: "<<msg;
+  qDebug() << "msg: "<<msg;
 #endif
-	 b_retVal = query.exec(msg);
+  b_retVal = query.exec(msg);
 
-	 if(b_retVal){
-		if(query.first()){
-		 stTbFiltres a;
-		 a.tbName = "Filtres";
-		 a.zne = zn;
-		 a.typ = eType;
-		 a.lgn = lgn;
-		 a.col = 1;
-		 a.pri = 1;
-		 do{
-			a.val = query.value(0).toInt();
-			b_retVal = DB_Tools::setdbFlt(&a,db_elm.connectionName());
-			a.col++;
-		 }while(query.next() && b_retVal);
-		}
-	 }
+  if(b_retVal){
+   if(query.first()){
+    stTbFiltres a;
+    a.tbName = "Filtres";
+    a.zne = zn;
+    a.typ = eType;
+    a.lgn = lgn;
+    a.col = 1;
+    a.pri = 1;
+    do{
+     a.val = query.value(0).toInt();
+     b_retVal = DB_Tools::setdbFlt(&a,db_elm.connectionName());
+     a.col++;
+    }while(query.next() && b_retVal);
+   }
+  }
  } /// fin for
 #endif
 }
@@ -993,14 +998,14 @@ void BCountElem::marquerDerniers_tir(const stGameConf *pGame, etCount eType, int
    }
   };
 #if 0
-msg [ 0 ]:  "SELECT t2.b1,t2.b2,t2.b3,t2.b4,t2.b5 from (B_fdj) as t2 where(id = 1)"
+  msg [ 0 ]:  "SELECT t2.b1,t2.b2,t2.b3,t2.b4,t2.b5 from (B_fdj) as t2 where(id = 1)"
 
-msg [ 1 ]:  "select t1.z1 as B from (B_elm) as t1,"
-msg [ 1 ]:  "(SELECT t2.b1,t2.b2,t2.b3,t2.b4,t2.b5 from (B_fdj) as t2 where(id = 1)) as t2 "
-msg [ 1 ]:  "where(t1.z1 in (t2.b1,t2.b2,t2.b3,t2.b4,t2.b5))"
-#endif
+    msg [ 1 ]:  "select t1.z1 as B from (B_elm) as t1,"
+    msg [ 1 ]:  "(SELECT t2.b1,t2.b2,t2.b3,t2.b4,t2.b5 from (B_fdj) as t2 where(id = 1)) as t2 "
+    msg [ 1 ]:  "where(t1.z1 in (t2.b1,t2.b2,t2.b3,t2.b4,t2.b5))"
+  #endif
 
-	int taille = sizeof(msg)/sizeof(QString);
+    int taille = sizeof(msg)/sizeof(QString);
 #ifndef QT_NO_DEBUG
 	for(int i = 0; i< taille;i++){
 	 qDebug() << "msg ["<<i<<"]: "<<msg[i];
@@ -1035,10 +1040,10 @@ msg [ 1 ]:  "where(t1.z1 in (t2.b1,t2.b2,t2.b3,t2.b4,t2.b5))"
 			}
 			else {
 			 mgs_2 ="insert into Filtres (id, zne, typ,lgn,col,val,pri,flt)"
-							 " values (NULL,"+QString::number(zn)+","
-							 +QString::number(eType)+","
-							 +QString::number(boule-1)+
-							 ",0,"+QString::number(boule)+",1,"+sdec+")";
+							" values (NULL,"+QString::number(zn)+","
+							+QString::number(eType)+","
+							+QString::number(boule-1)+
+							",0,"+QString::number(boule)+",1,"+sdec+")";
 			}
 #ifndef QT_NO_DEBUG
 			qDebug() << "mgs_2: "<<mgs_2;
@@ -1071,7 +1076,7 @@ QString BcElm::getFilteringData(int zn)
 
  msg = "select tb1.val from ("+tb_flt
        +")as tb1 "
-         "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(tmp)+"=0x"+QString::number(tmp)+
+        "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(tmp)+"=0x"+QString::number(tmp)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ="+QString::number(eCountElm)+" and tb1.pri=1)";
  b_retVal = query.exec(msg);
 #ifndef QT_NO_DEBUG
@@ -1092,7 +1097,7 @@ QString BCountElem::getFilteringData(int zn)
 
  msg = "select tb1.val from ("+userFiltringTableData
        +")as tb1 "
-         "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(BFlags::isFiltred)+"=0x"+QString::number(BFlags::isFiltred)+
+        "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(BFlags::isFiltred)+"=0x"+QString::number(BFlags::isFiltred)+
        ") AND tb1.zne="+QString::number(zn)+" and tb1.typ=0 and tb1.pri=1)";
  b_retVal = query.exec(msg);
 #ifndef QT_NO_DEBUG
@@ -1103,30 +1108,30 @@ QString BCountElem::getFilteringData(int zn)
   msg="";
   QString key_to_use = myGame.names[zn].abv;
 
-	if(st_LstTirages.contains("Cnp")){
-	 key_to_use="c";
-	}
-	/// requete a ete execute
-	QString ref = "("+key_to_use+"%1=%2)";
-	int nb_items = myGame.limites[zn].len;
+  if(st_LstTirages.contains("Cnp")){
+   key_to_use="c";
+  }
+  /// requete a ete execute
+  QString ref = "("+key_to_use+"%1=%2)";
+  int nb_items = myGame.limites[zn].len;
 
-	b_retVal = query.first();
-	if(query.isValid()){
-	 /// requete a au moins une reponse
-	 do{
-		int value = query.value(0).toInt();
-		QString tmp = "";
-		for(int item=0;item<nb_items;item++){
-		 tmp = tmp + ref.arg(item+1).arg(value);
-		 if(item < nb_items -1){
-			tmp = tmp + "or";
-		 }
-		}
-		msg = msg + "("+tmp+")"+useJonction;
-	 }while(query.next());
-	 /// supression du dernier useJonction
-	 msg=msg.remove(msg.length()-useJonction.length(),useJonction.length());
-	}
+  b_retVal = query.first();
+  if(query.isValid()){
+   /// requete a au moins une reponse
+   do{
+    int value = query.value(0).toInt();
+    QString tmp = "";
+    for(int item=0;item<nb_items;item++){
+     tmp = tmp + ref.arg(item+1).arg(value);
+     if(item < nb_items -1){
+      tmp = tmp + "or";
+     }
+    }
+    msg = msg + "("+tmp+")"+useJonction;
+   }while(query.next());
+   /// supression du dernier useJonction
+   msg=msg.remove(msg.length()-useJonction.length(),useJonction.length());
+  }
  }
 #ifndef QT_NO_DEBUG
  qDebug() << "msg:"<<msg;

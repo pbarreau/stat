@@ -754,6 +754,12 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
 
 void BcUpl::BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel)
 {
+ /*
+ BView *view = qobject_cast<BView *>(sender());
+ int id_upl = view->objectName().toInt();
+ int zn = view->getZone();
+ */
+
  QModelIndexList my_indexes = cur_sel->selectedIndexes();
  int len_data = my_indexes.size();
 
