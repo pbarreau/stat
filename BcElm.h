@@ -67,7 +67,7 @@ class BcElm:public BCount//, public cFdjData
 
  Q_SIGNALS:
  void sig_isClickedOnBall(const QModelIndex &index);
- void BSig_MkUsrUplets_L4(const QItemSelectionModel *cur_sel);
+ void BSig_MkUsrUplets_L4(const QItemSelectionModel *cur_sel, const int zn_id);
 
 };
 

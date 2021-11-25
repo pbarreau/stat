@@ -50,7 +50,7 @@ const QString BcUpl::sqlStepText[ELstCal]={
 };
 #endif
 
-BcUpl::BcUpl(const stGameConf *pGame, eEnsemble eUpl, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
+BcUpl::BcUpl(const stGameConf *pGame, eEnsemble eUpl, int zn, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
  :BCount (pGame, eCountUpl)
 {
  QString cnx=pGame->db_ref->cnx;
@@ -85,6 +85,7 @@ BcUpl::BcUpl(const stGameConf *pGame, eEnsemble eUpl, const QItemSelectionModel 
  }
  else{
   nbana=1;
+  upl_zn = zn;
   my_indexes=cur_sel->selectedIndexes();
   uplTirTab = ptrUplRsp;
  }
@@ -218,16 +219,23 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  tab_tirId = uplTirTab;
  tab_tirId->setObjectName(gpb_key_tab);
 
- int nbZn = -1;
+ int nbZn = pGame->znCount;
+ int zn_start = -1;
  int nbTirJour = -1;
+ int zn_stop = -1;
+
  static int usrCounter = 0;
 
  if(useData==eEnsFdj){
-  nbZn = pGame->znCount;
+  zn_start = 0;
+  zn_stop = nbZn;
+  //nbZn = pGame->znCount;
   nbTirJour = 2;
  }
  else{
-  nbZn = 1;
+  zn_start = upl_zn;
+  zn_stop = zn_start +1;
+  //nbZn = 1;
   nbTirJour = 1;
  }
 
@@ -241,11 +249,12 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
   QTabWidget *tab_zones = new QTabWidget(tab_tirId);
 
-  for (int zn = 0; zn< nbZn; zn++) {
+  for (int zn = zn_start; zn< zn_stop; zn++) {
    QTabWidget *tab_uplets = new QTabWidget(tab_zones);
-   QString title = pGame->names[zn].abv;
 
+   QString title = pGame->names[zn].abv;
    int nb_recherche = BMIN_2(pGame->limites[zn].win, C_MAX_UPL);
+
    upl_Bview_0[tirLgnId-1][zn]=new BView* [nb_recherche];
    upl_Bview_1[tirLgnId-1][zn]=new BView* [nb_recherche];
    upl_Bview_2[tirLgnId-1][zn]=new BView*** [nb_recherche];
@@ -752,7 +761,7 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
  tabInOut[sql_step][2]= sql_msg;
 }
 
-void BcUpl::BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel)
+void BcUpl::BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int zn)
 {
  /*
  BView *view = qobject_cast<BView *>(sender());
@@ -763,7 +772,7 @@ void BcUpl::BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel)
  QModelIndexList my_indexes = cur_sel->selectedIndexes();
  int len_data = my_indexes.size();
 
- BcUpl *tmp = new BcUpl(gm_def,eEnsUsr,cur_sel,uplTirTab);
+ BcUpl *tmp = new BcUpl(gm_def,eEnsUsr,zn,cur_sel,uplTirTab);
  if(tmp !=nullptr){
   etCount type = tmp->getType();
   tmp->startCount(gm_def,type);

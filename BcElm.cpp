@@ -52,7 +52,7 @@ void BcElm::BSlot_MkUsrUplets_L3(const QItemSelectionModel *cur_sel)
  int id_upl = view->objectName().toInt();
  int zn = view->getZone();
 
- emit BSig_MkUsrUplets_L4(cur_sel);
+ emit BSig_MkUsrUplets_L4(cur_sel, zn);
 }
 
 QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)

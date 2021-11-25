@@ -217,8 +217,8 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
 
   /// connection click calcul uplet avec BcElm
   if(item_1 != nullptr){
-   connect(item_1,SIGNAL(BSig_MkUsrUplets_L4(const QItemSelectionModel *)),
-           tmp,SLOT(BSlot_MkUsrUpletsShow(const QItemSelectionModel *)));
+   connect(item_1,SIGNAL(BSig_MkUsrUplets_L4(const QItemSelectionModel *, const int)),
+           tmp,SLOT(BSlot_MkUsrUpletsShow(const QItemSelectionModel *, const int)));
   }
  }
 
