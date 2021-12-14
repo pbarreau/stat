@@ -61,27 +61,48 @@ void BGpbMenu::mousePressEvent ( QMouseEvent * event )
 
 void BGpbMenu::displayTbvMenu_gpb(void)
 {
- menu = new QMenu("All");
+ QMenu *menu_1 = new QMenu("Selections");
+ menu_1->setObjectName("menu_1");
 
- QString choix[]={"tous : Reset","tous : Reserver", "tous : Choisir", "tous : Filtrer"};
+ QMenu *menu_2 = new QMenu("Tous");
+ menu_2->setObjectName("menu_2");
+
+ menu = new QMenu("User commandes");
+ menu->addMenu(menu_1);
+ menu->addSeparator();
+ menu->addMenu(menu_2);
+
+ QString choix[]={"Reset","Reserver", "Choisir", "Filtrer"};
  int nb_chx = sizeof(choix)/sizeof(QString);
 
- menu->addSection("ALL");
- menu->addSeparator();
- QActionGroup *usr_sel = new  QActionGroup(menu);
+ //menu->addSection("ALL");
+ //menu->addSeparator();
+ QActionGroup *usr_sel_1 = new  QActionGroup(menu_1);
+ usr_sel_1->setObjectName("grp_1");
+ QActionGroup *usr_sel_2 = new  QActionGroup(menu_2);
+ usr_sel_2->setObjectName("grp_2");
 
  for(int i =1; i<=nb_chx;i++)
  {
-  QAction *radio = new QAction(choix[i-1],usr_sel);
+  QAction *radio = new QAction(choix[i-1],usr_sel_1);
   radio->setCheckable(true);
-  menu->addAction(radio);
-  usr_sel->addAction(radio)->setData(i);
+  menu_1->addAction(radio);
+  usr_sel_1->addAction(radio)->setData(i);
+
+  radio = new QAction(choix[i-1],usr_sel_2);
+  radio->setCheckable(true);
+  menu_2->addAction(radio);
+  usr_sel_2->addAction(radio)->setData(i);
  }
- connect(usr_sel,SIGNAL(triggered(QAction*)),this,SLOT(slot_ManageFlts(QAction*)));
+ connect(usr_sel_1,SIGNAL(triggered(QAction*)),this,SLOT(slot_ManageFlts(QAction*)));
+ connect(usr_sel_2,SIGNAL(triggered(QAction*)),this,SLOT(slot_ManageFlts(QAction*)));
 }
 
 void BGpbMenu::slot_ManageFlts(QAction *all_cmd)
 {
+ QActionGroup *origin = qobject_cast<QActionGroup *>(sender());
+ QString name = origin->objectName();
+
  Bp::F_Flts flt_def = Bp::noFlt;
 
  int req = all_cmd->data().toInt();
