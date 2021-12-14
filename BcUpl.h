@@ -36,7 +36,7 @@ class BcUpl: public BCount
    eEnsNotSet, /// Ensemble non defini
    eEnsFdj,    /// Liste des tirages de la fdj
    eEnsUsr     /// Selection de l'utilisateur
-  }eEnsemble;
+  }eUpl_Ens;
 
   typedef enum _eCalcul
   {
@@ -44,7 +44,7 @@ class BcUpl: public BCount
    eCalTot, /// Calcul sur boule
    eCalCmb, /// Calcul sur Combinaison
    eCalBrc  /// Calcul sur barycentre
-  }eCalcul;
+  }eUpl_Cal;
 
  private:
   typedef enum _eCalTirages
@@ -66,7 +66,7 @@ class BcUpl: public BCount
    ELstShowNotInUnion /// Requete ensemble complementaire
    ///ELstCalUsr,
    ///ELstCalFdj,
-  }ECalTirages;
+  }eUpl_Lst;
 
 #ifndef QT_NO_DEBUG
   static const QString sqlStepText[ELstCal];
@@ -83,8 +83,8 @@ class BcUpl: public BCount
   //BUplet(st_In const &param);
   //BUplet(st_In const &param, int index=0);
   //BUplet(st_In const &param, QString ensemble="");
-  explicit BcUpl(const stGameConf *pGame, eEnsemble eUpl=eEnsFdj, int zn=0, const QItemSelectionModel *cur_sel=nullptr, QTabWidget *ptrUplRsp=nullptr);
-  BcUpl(st_In const &param, int index=0, eCalcul eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=nullptr);
+  explicit BcUpl(const stGameConf *pGame, eUpl_Ens eUpl=eEnsFdj, int zn=0, const QItemSelectionModel *cur_sel=nullptr, QTabWidget *ptrUplRsp=nullptr);
+  BcUpl(st_In const &param, int index=0, eUpl_Cal eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=nullptr);
   ~BcUpl();
   int getUpl(void);
   QString sql_UsrSelectedTirages(const QModelIndex & index, int pos);
@@ -107,7 +107,7 @@ class BcUpl: public BCount
   QTableView *qtv_upl;
   int upl_zn;
   QString gpb_title;
-  eEnsemble useData;
+  eUpl_Ens useData;
   QModelIndexList my_indexes;
   QTabWidget *uplTirTab;
   ///QString ens_ref;
@@ -125,7 +125,7 @@ class BcUpl: public BCount
   QString getTablePrefixFromSelection(QString items);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
 
-  QGroupBox *gpbCreate(int index, eCalcul eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
+  QGroupBox *gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
   QTableView *doTabShowUplet(QString tbl_src, const QModelIndex &ligne);
   int  getNbLines(QString tbl_src);
   QString getUpletFromIndex(int nb_uplet, int index, QString tbl_src);
@@ -143,17 +143,17 @@ class BcUpl: public BCount
   QString sql_CnpMkUplet(int nb, QString col, QString tbl_in="B_elm");
   QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
   QString sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
-  QString sql_ShowItems(const stGameConf *pGame, int zn, ECalTirages sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
+  QString sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
 
  private:
-  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
+  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eUpl_Cal);
   virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
   virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn);
   //virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
   QGridLayout *Compter(QString * pName, int zn);
 
  private:
-  QString getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId, int offset, int upl_ref_in, int upl_sub=-1, ECalTirages target=ELstCal, int sel_item=-1);
+  QString getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId, int offset, int upl_ref_in, int upl_sub=-1, eUpl_Lst target=ELstCal, int sel_item=-1);
   QWidget *showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref);
   QWidget *getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int nb_recherche);
   void sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int offset, int upl_sub, int step, QString tabInOut[][3]);
@@ -161,12 +161,12 @@ class BcUpl: public BCount
 
   void sql_FillTabArgs(const stGameConf *pGame, int zn,int upl_ref_in, QString *tab_arg, QString tabInOut[][3]);
 
-  QString sql_ElmFrmTir(const stGameConf *pGame, int zn, ECalTirages sql_step, int tir_id, QString tabInOut[][3]);
+  QString sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_step, int tir_id, QString tabInOut[][3]);
   QString sql_ElmNotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, QString tabInOut[][3]);
 
-  QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, ECalTirages sql_step, QString tabInOut[][3]);
+  QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3]);
   QString sql_TirFrmUpl(const stGameConf *pGame, int zn, int upl_ref_in, QString tabInOut[][3]);
-  QString sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, ECalTirages sql_step, QString tabInOut[][3]);
+  QString sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3]);
 
   QString sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString tabInOut[][3]);
 
@@ -177,9 +177,10 @@ class BcUpl: public BCount
   BView * Bview_3_fill_1(BView *qtv_tmp, QString sql_msg);
   BView * Bview_4_fill_1(BView *qtv_tmp, QString sql_msg);
   QWidget *fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int i);
-  int Bview_UpdateAndCount(ECalTirages id, BView *qtv_tmp, QString sql_msg);
+  int Bview_UpdateAndCount(eUpl_Lst id, BView *qtv_tmp, QString sql_msg);
   int Bview_3_fill_2(BView *qtv_tmp, QString sql_msg);
   int Bview_4_fill_2(BView *qtv_tmp, QString sql_msg);
+  bool effectueRecherche(eUpl_Ens upl_type, QString upl_sql, int upl_id,int zn_id, int nb_items);
 };
 
 
