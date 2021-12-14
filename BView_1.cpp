@@ -262,10 +262,17 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
 }
 #endif
 
-void BView_1::updateTitle()
+void BView_1::updateTitle(QString a_tile)
 {
  /// Mettre ensuite l'analyse du marquage
- QString st_total = mkTitle(inf_flt->zne,inf_flt->typ,this);
+ QString st_total = "";
+
+ if(a_tile.size() != 0 ){
+  st_total = a_tile;
+ }
+ else{
+  st_total = mkTitle(inf_flt->zne,inf_flt->typ,this);
+ }
 
  this->setTitle(st_total);
  /*

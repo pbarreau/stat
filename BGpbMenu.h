@@ -31,8 +31,8 @@ private slots:
 void slot_ManageFlts(QAction *all_cmd);
 
 private:
-void displayTbvMenu_gpb(void);
-void setNewFlt(Bp::F_Flts flt_def);
+void prepareMenuData(void);
+void setNewFlt(Bp::F_Flts flt_def, bool only_selection=false);
 
 private:
 BView_1 *parent;

@@ -25,7 +25,7 @@ class BView_1 : public BView, public BFlt
  BView_1(const stGameConf *pGame, int in_zn, etCount in_typ);
  //QGroupBox * getScreen();
  //BGpbMenu * getGpb();
- void updateTitle();
+ void updateTitle(QString a_tile="");
  void setUpLayout(QLayout *usr_up);
  void setParentLayout(QLayout *parent_lay);
  QLayout * getParentLayout();
