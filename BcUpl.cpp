@@ -566,7 +566,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int offse
  QString with_clause = "";
  if(sel_item >= 0){
   with_clause = "WHERE(uid="+QString::number(sel_item)+")";
-  str_item = str_item+"E_"+QString::number(sel_item).rightJustified(2,'0')+"_";
+  str_item = str_item+"Elm_"+QString::number(sel_item).rightJustified(2,'0');
  }
 
  sql_msg = sql_msg + ",\n";
@@ -578,7 +578,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int offse
 
 #ifndef QT_NO_DEBUG
  QString dbg_target =tbl_target +
-                     "_z"+QString::number(zn).rightJustified(2,'0')+"_"+
+                     "_z_"+QString::number(zn).rightJustified(2,'0')+"_"+
                      "O_"+ QString::number(upl_ref_in).rightJustified(2,'0')+"_"+
                      str_item ;
 
@@ -1869,7 +1869,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
               "_R"+QString::number(tab+1).rightJustified(2,'0')+"_";
 #endif
    tableRef = tblPrefix +
-              "_z"+QString::number(zn+1).rightJustified(2,'0') + ///gm_def->names[zn].abv+
+              "_z_"+QString::number(zn+1).rightJustified(2,'0') + ///gm_def->names[zn].abv+
               "_J"+QString::number(day_anaUpl).rightJustified(2,'0')+
               "_R"+QString::number(tab+1).rightJustified(2,'0')+"_";
 
@@ -1957,12 +1957,12 @@ bool BcUpl::effectueRecherche(BcUpl::eUpl_Ens upl_type, QString upl_sql, int upl
 
 
  /// https://stackoverflow.com/questions/9996253/qtconcurrent-with-member-function
- QFuture<bool> t1 = QtConcurrent::run(this,&BcUpl::tsk_upl,gm_def, param);
+ QFuture<bool> t1 = QtConcurrent::run(this,&BcUpl::tsk_upl_1,gm_def, param);
 
  return retVal;
 }
 
-bool BcUpl::tsk_upl (const stGameConf *pGame, const stParam_tsk *param)
+bool BcUpl::tsk_upl_1 (const stGameConf *pGame, const stParam_tsk *param)
 {
  bool retVal = true;
 
@@ -1975,16 +1975,28 @@ bool BcUpl::tsk_upl (const stGameConf *pGame, const stParam_tsk *param)
   return retVal;
  }
 
+ int zn = param->zn;
+
+#ifndef QT_NO_DEBUG
+ QString st_zn = "_"+pGame->names[zn].abv+"_";
+ QString info = "u_" +
+                QString::number(param->id).rightJustified(2,'0') +
+                st_zn +
+                "nb_" + QString::number(param->items).rightJustified(4,'0');
+ QString target = "tsk_data_"+info+".txt";
+ BTest::writetoFile(target,param->sql,false);
+#endif
+
  QSqlQuery query_1(db_1);
- //QSqlQuery query_2(db_1);
  if((retVal=query_1.exec(param->sql))){
   if(query_1.first()){
    QString val = "";
    QString tbl = "";
    int nb_items = param->items;
-   int selection = 1;
+   int selection = -1;
    do{
     val = "";
+    selection = query_1.value(0).toInt();
     for(int i=1;i<=nb_items;i++){
      val = val + query_1.value(i).toString().simplified();
      if(i<nb_items){
@@ -1993,11 +2005,8 @@ bool BcUpl::tsk_upl (const stGameConf *pGame, const stParam_tsk *param)
     }
 
     /// Regarder si la table upl a deja cette information
-    int zn = param->zn;
     tbl = getTablePrefixFromSelection(val, zn);
-    param->fake_sel = selection;
-    rechercheUplet(tbl,pGame,param);
-    selection++;
+    rechercheUplet(tbl, pGame, param, selection);
    }while (query_1.next());
   }
  }
@@ -2005,7 +2014,7 @@ bool BcUpl::tsk_upl (const stGameConf *pGame, const stParam_tsk *param)
  return retVal;
 }
 
-void BcUpl::rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param)
+void BcUpl::rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param, int fake_sel)
 {
  eUpl_Lst tabCal[][3]=
  {
@@ -2019,6 +2028,7 @@ void BcUpl::rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const st
  int nb_recherche = pGame->limites[zn].win;
  QString cnx = pGame->db_ref->cnx;
  QString tableRef = "";
+ QString tableName = "";
 
  for (int day_anaUpl = 0;day_anaUpl<=2;day_anaUpl++) {
   for (int tab=0;tab<C_NB_SUB_ONG;tab++) {
@@ -2029,14 +2039,30 @@ void BcUpl::rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const st
    eUpl_Lst resu = tabCal[day_anaUpl][tab];
 
    tableRef = tbl_prefix +
-              "_z"+QString::number(zn+1).rightJustified(2,'0') + ///gm_def->names[zn].abv+
+              "_z_"+QString::number(zn+1).rightJustified(2,'0') + ///gm_def->names[zn].abv+
               "_J"+QString::number(day_anaUpl).rightJustified(2,'0')+
               "_R"+QString::number(tab+1).rightJustified(2,'0')+"_";
 
 
+   /// initialisation msg sql
+   int selection = fake_sel;
+   int tirLgnId = param->id;
+   QString sql_ref = getSqlTbv(pGame, zn, tirLgnId, day_anaUpl, ref, tab+C_MIN_UPL, resu,selection);
+   QString sql_msg = "";
+
+   /// -----------------
+   tableName = tableRef + "V";
+   sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,ref,sql_ref);
+   QFuture<void> t1 = QtConcurrent::run(this,&BcUpl::tsk_upl_2,cnx,tableName,sql_msg);
+   /// -----------------
   } /// For Lev_2
  } /// For lev_1
 
+}
+
+void BcUpl::tsk_upl_2(QString cnx, QString tbl, QString sql)
+{
+ DB_Tools::createOrReadTable(tbl,cnx,sql);
 }
 
 bool BcUpl::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)

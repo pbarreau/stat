@@ -192,8 +192,9 @@ class BcUpl: public BCount
   int Bview_3_fill_2(BView *qtv_tmp, QString sql_msg);
   int Bview_4_fill_2(BView *qtv_tmp, QString sql_msg);
   bool effectueRecherche(eUpl_Ens upl_type, QString upl_sql, int upl_id,int zn_id, int nb_items);
-  bool tsk_upl (const stGameConf *pGame, const stParam_tsk *param);
-  void rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param);
+  bool tsk_upl_1 (const stGameConf *pGame, const stParam_tsk *param);
+  void rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param, int fake_sel);
+  void tsk_upl_2(QString cnx, QString tbl, QString sql);
 };
 
 
