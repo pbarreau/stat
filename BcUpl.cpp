@@ -5,6 +5,7 @@
 #endif
 
 #include <QApplication>
+#include <QtConcurrent>
 
 #include <QSqlDatabase>
 #include <QVBoxLayout>
@@ -105,7 +106,7 @@ QTabWidget * BcUpl::getTabUplRsp(void)
  return uplTirTab;
 }
 
-QString BcUpl::getTablePrefixFromSelection(QString items)
+QString BcUpl::getTablePrefixFromSelection(QString items, int zn)
 {
  QSqlQuery query_1(db_0);
  QSqlQuery query_2(db_0);
@@ -125,7 +126,9 @@ QString BcUpl::getTablePrefixFromSelection(QString items)
  lst.sort();
  ord_itm = lst.join(',');
 
- sql_m1 = "Select id, count(id)as T from "+tbl_upl+" where(items like '"+ord_itm+"');";
+ sql_m1 = "Select id, count(id)as T from " +
+          tbl_upl +
+          " where((items like '"+ord_itm+"') and (zn="+QString::number(zn)+"));";
 
  if(query_1.exec(sql_m1)){
   if(query_1.first()){
@@ -135,7 +138,7 @@ QString BcUpl::getTablePrefixFromSelection(QString items)
 
    switch(total){
     case 0:
-     sql_m2 = "insert into "+tbl_upl+" (id,zn,items) values(NULL,0,'"+ord_itm+"')";
+     sql_m2 = "insert into "+tbl_upl+" (id,zn,items) values(NULL,"+QString::number(zn)+",'"+ord_itm+"')";
      if(query_1.exec(sql_m2)){
       if(query_1.exec(sql_m1)){
        query_1.first();
@@ -1944,13 +1947,65 @@ bool BcUpl::effectueRecherche(BcUpl::eUpl_Ens upl_type, QString upl_sql, int upl
 {
  bool retVal = true;
 
+ stParam_tsk *param = new stParam_tsk;
+ param->type = upl_type;
+ param->sql = upl_sql;
+ param->id = upl_id;
+ param->zn = zn_id;
+ param->items = nb_items;
+
+
+ /// https://stackoverflow.com/questions/9996253/qtconcurrent-with-member-function
+ QFuture<bool> t1 = QtConcurrent::run(this,&BcUpl::tsk_upl,gm_def, param);
+
  return retVal;
 }
 
+bool BcUpl::tsk_upl (const stGameConf *pGame, const stParam_tsk *param)
+{
+ bool retVal = true;
+
+ QString cnx=pGame->db_ref->cnx;
+ QSqlDatabase db_1 = QSqlDatabase::database(cnx);
+
+ if((retVal = db_1.isValid())==false){
+  QString str_error = db_1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return retVal;
+ }
+
+ QSqlQuery query_1(db_1);
+ //QSqlQuery query_2(db_1);
+ if((retVal=query_1.exec(param->sql))){
+  if(query_1.first()){
+   QString val = "";
+   QString tbl = "";
+   int nb_items = param->items;
+   do{
+    val = "";
+    for(int i=1;i<=nb_items;i++){
+     val = query_1.value(i).toString().simplified();
+     if(i<nb_items){
+      val=val+",";
+     }
+    }
+
+    /// Regarder si la table upl a deja cette information
+    int zn = param->zn;
+    tbl = getTablePrefixFromSelection(val, zn);
+
+   }while (query_1.next());
+  }
+ }
+
+ return retVal;
+}
 
 bool BcUpl::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
 {
  bool b_retVal = true;
+
+
  return b_retVal;
 }
 

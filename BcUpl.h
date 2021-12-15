@@ -46,6 +46,16 @@ class BcUpl: public BCount
    eCalBrc  /// Calcul sur barycentre
   }eUpl_Cal;
 
+  typedef struct _param_tsk
+  {
+    BcUpl::eUpl_Ens type;
+    QString sql;
+    int id;
+    int zn;
+    int items;
+  }stParam_tsk;
+
+
  private:
   typedef enum _eCalTirages
   {
@@ -122,7 +132,7 @@ class BcUpl: public BCount
  */
 
  private:
-  QString getTablePrefixFromSelection(QString items);
+  QString getTablePrefixFromSelection(QString items, int zn=0);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
 
   QGroupBox *gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
@@ -181,6 +191,7 @@ class BcUpl: public BCount
   int Bview_3_fill_2(BView *qtv_tmp, QString sql_msg);
   int Bview_4_fill_2(BView *qtv_tmp, QString sql_msg);
   bool effectueRecherche(eUpl_Ens upl_type, QString upl_sql, int upl_id,int zn_id, int nb_items);
+  bool tsk_upl (const stGameConf *pGame, const stParam_tsk *param);
 };
 
 
