@@ -429,6 +429,8 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int 
 
  wdg_tmp->setLayout(glay_tmp);
 
+ effectueRecherche(useData,sql_msg,tirLgnId,zn,upl_ref_in);
+
  return wdg_tmp;
 }
 
