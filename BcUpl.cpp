@@ -1953,6 +1953,7 @@ bool BcUpl::effectueRecherche(BcUpl::eUpl_Ens upl_type, QString upl_sql, int upl
  param->id = upl_id;
  param->zn = zn_id;
  param->items = nb_items;
+ param->fake_sel = -1;
 
 
  /// https://stackoverflow.com/questions/9996253/qtconcurrent-with-member-function
@@ -1981,10 +1982,11 @@ bool BcUpl::tsk_upl (const stGameConf *pGame, const stParam_tsk *param)
    QString val = "";
    QString tbl = "";
    int nb_items = param->items;
+   int selection = 1;
    do{
     val = "";
     for(int i=1;i<=nb_items;i++){
-     val = query_1.value(i).toString().simplified();
+     val = val + query_1.value(i).toString().simplified();
      if(i<nb_items){
       val=val+",";
      }
@@ -1993,12 +1995,48 @@ bool BcUpl::tsk_upl (const stGameConf *pGame, const stParam_tsk *param)
     /// Regarder si la table upl a deja cette information
     int zn = param->zn;
     tbl = getTablePrefixFromSelection(val, zn);
-
+    param->fake_sel = selection;
+    rechercheUplet(tbl,pGame,param);
+    selection++;
    }while (query_1.next());
   }
  }
 
  return retVal;
+}
+
+void BcUpl::rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param)
+{
+ eUpl_Lst tabCal[][3]=
+ {
+  {ELstUplTotNot,ELstUplTotNot,ELstUplTotNot},
+  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext},
+  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext}
+ };
+
+ int zn = param->zn;
+ int ref = param->id;
+ int nb_recherche = pGame->limites[zn].win;
+ QString cnx = pGame->db_ref->cnx;
+ QString tableRef = "";
+
+ for (int day_anaUpl = 0;day_anaUpl<=2;day_anaUpl++) {
+  for (int tab=0;tab<C_NB_SUB_ONG;tab++) {
+   if(tab>=nb_recherche){
+    continue;
+   }
+
+   eUpl_Lst resu = tabCal[day_anaUpl][tab];
+
+   tableRef = tbl_prefix +
+              "_z"+QString::number(zn+1).rightJustified(2,'0') + ///gm_def->names[zn].abv+
+              "_J"+QString::number(day_anaUpl).rightJustified(2,'0')+
+              "_R"+QString::number(tab+1).rightJustified(2,'0')+"_";
+
+
+  } /// For Lev_2
+ } /// For lev_1
+
 }
 
 bool BcUpl::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
