@@ -4,7 +4,7 @@
 #include "BTest.h"
 #endif
 
-
+#include <QFile>
 #include <QString>
 #include <QStringList>
 #include <QMessageBox>

@@ -3,6 +3,8 @@
 #include <QSqlError>
 #include <QIODevice>
 
+#include <QFile>
+
 #include "BTest.h"
 #include "db_tools.h"
 

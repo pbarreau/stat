@@ -1,9 +1,8 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #endif
-#ifndef QT_NO_DEBUG
-#include <QDebug>
-#endif
+
+#include <math.h>
 
 #include <QMessageBox>
 #include <QSqlDatabase>

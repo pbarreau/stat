@@ -2,6 +2,8 @@
 #include <QDebug>
 #endif
 
+#include <math.h>
+
 #include <QGridLayout>
 #include <QTableView>
 #include <QSqlQuery>

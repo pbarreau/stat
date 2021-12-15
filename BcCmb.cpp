@@ -3,6 +3,8 @@
 #include "BTest.h"
 #endif
 
+#include <math.h>
+
 #include <QTableView>
 #include <QHeaderView>
 #include <QString>
