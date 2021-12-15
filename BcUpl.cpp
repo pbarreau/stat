@@ -583,9 +583,9 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId,int offse
                      str_item ;
 
  static int counter = 0;
- dbg_target =  dbg_target +
-               "_"+ QString::number(counter).rightJustified(2,'0')
-               +".txt";
+ dbg_target =  QString::number(counter).rightJustified(4,'0')+ "_" +
+               dbg_target +
+               ".txt";
  counter++;
 
  QString stype = "";
@@ -1804,7 +1804,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
     title=title+", ";
    }
   }
-  tblPrefix = getTablePrefixFromSelection(title);
+  tblPrefix = getTablePrefixFromSelection(title,zn);
 
   QString tot_title = ") : trouve " +
                       index.sibling(index.row(),Bp::colId+ref+1).data().toString()+
@@ -1884,6 +1884,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
     qtv_tmp->setTitle(st_title);
    }
 
+#if 0
    if(tab>0){
     /// Verifier si cette table est connue dans la base
     tableName = tableRef + "B";
@@ -1906,6 +1907,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
     }
 
    }
+#endif
   }
  }
 
@@ -1958,6 +1960,7 @@ bool BcUpl::effectueRecherche(BcUpl::eUpl_Ens upl_type, QString upl_sql, int upl
 
  /// https://stackoverflow.com/questions/9996253/qtconcurrent-with-member-function
  QFuture<bool> t1 = QtConcurrent::run(this,&BcUpl::tsk_upl_1,gm_def, param);
+ retVal = t1.result();
 
  return retVal;
 }
@@ -1998,7 +2001,8 @@ bool BcUpl::tsk_upl_1 (const stGameConf *pGame, const stParam_tsk *param)
     val = "";
     selection = query_1.value(0).toInt();
     for(int i=1;i<=nb_items;i++){
-     val = val + query_1.value(i).toString().simplified();
+     int value = query_1.value(i).toInt();
+     val = val + QString::number(value).rightJustified(2,'0');
      if(i<nb_items){
       val=val+",";
      }
@@ -2053,7 +2057,9 @@ void BcUpl::rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const st
    /// -----------------
    tableName = tableRef + "V";
    sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,ref,sql_ref);
-   QFuture<void> t1 = QtConcurrent::run(this,&BcUpl::tsk_upl_2,cnx,tableName,sql_msg);
+   ///QFuture<void> t1 = QtConcurrent::run(this,&BcUpl::tsk_upl_2,cnx,tableName,sql_msg);
+   ///t1.waitForFinished();
+   DB_Tools::createOrReadTable(tableName,cnx,sql_msg);
    /// -----------------
   } /// For Lev_2
  } /// For lev_1
