@@ -2,6 +2,8 @@
 #include <QDebug>
 #endif
 
+#include <math.h>
+
 #include <QMessageBox>
 
 #include <QSqlError>
