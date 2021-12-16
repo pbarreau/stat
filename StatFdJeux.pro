@@ -6,7 +6,7 @@
 
 QT       += core gui sql network
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += xml widgets printsupport
+greaterThan(QT_MAJOR_VERSION, 4): QT += xml widgets printsupport concurrent
 
 TARGET = StatFdJeux
 TEMPLATE = app

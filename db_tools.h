@@ -39,7 +39,7 @@ QString GEN_Where_3(int loop,
                     QStringList &tb2,bool inc2,QString op2
                     );
 bool myCreateTableAs(QSqlQuery query, QString tblName, QString pid, QString asCode);
-eCort createOrReadTable(QString tbl_name, QString cnx, QString tbl_code, QString *tbl_read);
+eCort createOrReadTable(QString tbl_name, QString cnx, QString tbl_code, QString *tbl_read=nullptr);
 
 QString innerJoin(stJoinArgs ja);
 QString leftJoin(stJoinArgs ja);

@@ -251,7 +251,7 @@ DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QStri
 
  if(isDbGotTbl(tbl_name,cnx)==false){
   sql_msg = "Create table if not exists \"" +
-            tbl_name +"\" as "+ sql_msg;
+            tbl_name +"\" as \n"+ sql_msg;
 
   QString filePrefix = "DBT_Cort_" +tbl_name;
   QString dbgFile  = "";
@@ -261,7 +261,7 @@ DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QStri
    BTest::writetoFile(dbgFile,sql_msg,false);
    DisplayError(tbl_name, nullptr, dbgFile);
 #endif
-   *tbl_read = sql_msg;
+   if(tbl_read != nullptr){*tbl_read = sql_msg;}
    ret_val=eCort_ErrCreate;
   }
   else{
@@ -270,7 +270,7 @@ DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QStri
    BTest::writetoFile(dbgFile,sql_msg,false);
 #endif
    sql_msg = "Select * from '"+tbl_name+"'";
-   *tbl_read = sql_msg;
+   if(tbl_read != nullptr){*tbl_read = sql_msg;}
 
 #ifndef QT_NO_DEBUG
    dbgFile = filePrefix+"_use.txt";
@@ -282,7 +282,7 @@ DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QStri
  else{
   ret_val = eCort_Ok;
   sql_msg = "Select * from \""+tbl_name+"\"";
-  *tbl_read = sql_msg;
+  if(tbl_read != nullptr){*tbl_read = sql_msg;}
  }
 
  return ret_val;
