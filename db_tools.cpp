@@ -251,7 +251,7 @@ DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QStri
 
  if(isDbGotTbl(tbl_name,cnx)==false){
   sql_msg = "Create table if not exists \"" +
-            tbl_name +"\" as "+ sql_msg;
+            tbl_name +"\" as \n"+ sql_msg;
 
   QString filePrefix = "DBT_Cort_" +tbl_name;
   QString dbgFile  = "";

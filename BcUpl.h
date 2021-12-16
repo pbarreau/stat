@@ -164,7 +164,7 @@ class BcUpl: public BCount
   QGridLayout *Compter(QString * pName, int zn);
 
  private:
-  QString getSqlTbv(const stGameConf *pGame, int zn, int tirLgnId, int offset, int upl_ref_in, int upl_sub=-1, eUpl_Lst target=ELstCal, int sel_item=-1);
+  QString getSqlTbv(const stGameConf *pGame, int zn, int tir_Id, int day_Delta, int upl_Grp, int upl_Sub=-1, eUpl_Lst target=ELstCal, int sel_item=-1);
   QWidget *showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref);
   QWidget *getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int nb_recherche);
   void sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int offset, int upl_sub, int step, QString tabInOut[][3]);
@@ -195,6 +195,7 @@ class BcUpl: public BCount
   bool tsk_upl_1 (const stGameConf *pGame, const stParam_tsk *param);
   void rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param, int fake_sel);
   void tsk_upl_2(QString cnx, QString tbl, QString sql);
+  void tsk_upl_0(const stGameConf *pGame, int zn, int tir_LgnId, int upl_GrpId);
 };
 
 
