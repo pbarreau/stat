@@ -307,44 +307,37 @@ void BcUpl::tsk_upl_0(const stGameConf *pGame, int zn, int tir_LgnId, int upl_Gr
  sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_GrpId,sql_msg);
 
 #ifndef QT_NO_DEBUG
- QString tbl_radical = "";
- QString dbg_file = "dbg_tsk-"
-                    "T-" + QString::number(tir_LgnId).rightJustified(2,'0') +
+ QString dbg_file = "dbg_tsk-" +
+                    gameLabel[pGame->eFdjType]+
+                    "-T-" + QString::number(tir_LgnId).rightJustified(2,'0') +
                     "-" + pGame->names[zn].abv +
                     "-" + QString::number(upl_GrpId).rightJustified(2,'0') +
                     "-D-" + QString::number(day_delta).rightJustified(2,'0') +
-                    "-k-" + QString::number(100).rightJustified(4,'0') +
-                    ".txt"
+                    "-full.txt"
                     ;
- /*
- QString dbg_data = tbl_radical +
-                    "-"+
-                    QString::number(uid).rightJustified(4,'0') +
-                    ":'"+upl_cur+"'";
-*/
  BTest::writetoFile(dbg_file,sql_msg,false);
 #endif
 
-#if 0
  if((status=query.exec(sql_msg))){
   if(status = query.first()){
-   QString upl_cur = "";
-   int uid = query.value(0).toInt();
+   do{
+    QString upl_cur = "";
+    int uid = query.value(0).toInt();
 
-   for(int id_val=1;id_val<=upl_GrpId;id_val++){
-    int val = query.value(1).toInt();
-    upl_cur = upl_cur + QString::number(val).rightJustified(2,'0');
-    if(id_val<upl_GrpId-1){
-     upl_cur = upl_cur + ",";
+    for(int id_val=1;id_val<=upl_GrpId;id_val++){
+     int val = query.value(id_val).toInt();
+     upl_cur = upl_cur + QString::number(val).rightJustified(2,'0');
+     if(id_val<upl_GrpId){
+      upl_cur = upl_cur + ",";
+     }
     }
     /// On a un uplet, obetenir le radical de table
     QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn);
 
-
-   }
+    /// Faire les recherches a stocker dans la table
+   }while(query.next());
   }
  }
-#endif
 }
 
 #if 1
