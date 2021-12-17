@@ -1997,11 +1997,14 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
  if(isPresent == false){
   /// Faire la recherche pour cet uplet
-  FillBdd(tbl_fill, tsk_param);
+  ///FillBdd(tbl_fill, tsk_param);
+  QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::FillBdd,tbl_fill,tsk_param);
+ }
+ else{
+  /// Montrer les resultats
+  FillTbv(tbl_fill, tsk_param);
  }
 
- /// Montrer les resultats
- FillTbv(tbl_fill, tsk_param);
 
  ///QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::FillTbv,tbl_fill,tsk_param);
 }
@@ -2067,8 +2070,11 @@ void BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
  QString tbl_use = "";
  DB_Tools::eCort eTblStatus = DB_Tools::eCort_NotSet;
 
+ /// Creation des resultats en //
+ QFutureSynchronizer<DB_Tools::eCort> synchronizer;
+
  for (int day_anaUpl = 0;day_anaUpl< C_NB_OFFSET;day_anaUpl++) {
-  for (int tab=0;tab<C_NB_SUB_ONG;tab++) {
+  for (int tab=0;tab < C_NB_SUB_ONG;tab++) {
    if(tab>=nb_recherche){
     continue;
    }
@@ -2087,9 +2093,13 @@ void BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
    sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_GrpId,sql_ref);
 
    /// On force une creation
-   eTblStatus = DB_Tools::createOrReadTable(tbl_use,cnx,sql_msg);
+   ///eTblStatus = DB_Tools::createOrReadTable(tbl_use,cnx,sql_msg);
+   QFuture<DB_Tools::eCort> Bdd_tsk = QtConcurrent::run(DB_Tools::createOrReadTable,tbl_use,cnx,sql_msg,nullptr);
+   synchronizer.addFuture(Bdd_tsk);
   }
  }
+
+ synchronizer.waitForFinished();
 }
 
 
