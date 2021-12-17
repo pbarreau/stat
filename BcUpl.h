@@ -67,6 +67,7 @@ class BcUpl: public BCount
     int g_id;  /// Groupe id (Cnp)
     int g_lm;  /// Groupe element (indice element dans Groupe id)
     QString tbl_ref;
+    bool clear; /// Effacer resultat dans tbv
   }stParam_tsk;
 
 

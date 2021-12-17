@@ -1836,10 +1836,6 @@ QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int ong_zn, int ong_tir, 
 {
  QTabWidget *upl_details = new QTabWidget(this);
 
-#define DBG_PASCAL 0
-#if DBG_PASCAL
- connect(upl_details, SIGNAL(tabBarClicked(int)), this, SLOT(BSlot_Tab(int)));
-#endif
 
  /// Creation des Table View pour chaque onglets resultat
  for (int ong_tab=0;ong_tab<nb_recherche;ong_tab++) {
@@ -1982,6 +1978,8 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  tsk_param->g_id = upl_GrpId;
  tsk_param->g_lm = g_lm;
  tsk_param->tbl_ref = "";
+ tsk_param->clear = false;
+
 
  QString tbl_name = "Upl_" +
                     Txt_eUpl_Ens[useData] + QString::number(tir_LgnId).rightJustified(2,'0') +
@@ -1996,6 +1994,11 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
                     tbl_radical;
 
  if(isPresent == false){
+  /// Effacer calcul
+  tsk_param->clear = true;
+  FillTbv(tbl_fill, tsk_param);
+  tsk_param->clear = false;
+
   /// Preparer la surveillance des calculs
   QFutureWatcher<stParam_tsk *> *watcher = new QFutureWatcher<stParam_tsk *>();
   connect(watcher, &QFutureWatcher<stParam_tsk *>::finished, this, &BcUpl::BSlot_tsk_finished);
@@ -2033,11 +2036,10 @@ void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
  int gru_elemt = tsk_param->g_lm; /// Group uplet element
  eUpl_Ens eEns = tsk_param->eEns_id;
 
- bool status = true;
- QString cnx=pGame->db_ref->cnx;
 
 
  QString strDay[]= {"J","J+1","J+?"};
+ QString sql_msg = "";
 
  for (int ong_day = 0; ong_day < C_NB_OFFSET;ong_day++) {
   for (int ong_tab=0;ong_tab<C_NB_SUB_ONG;ong_tab++) {
@@ -2045,8 +2047,15 @@ void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
                      "_D" + QString::number(ong_day).rightJustified(2,'0') +
                      "_R" + QString::number(ong_tab+1).rightJustified(2,'0') +
                      "_V";
-   QString sql_msg = "select * from " + tbl_use;
-
+   if(tsk_param->clear == false){
+    sql_msg = "select * from " + tbl_use;
+   }
+   else{
+    int offset = 0;
+    int ong_tab = 0;
+    QString sql_ref = getSqlTbv(pGame, ong_zn,ong_tir, offset, ong_upl, ong_tab+C_MIN_UPL, ELstCal);
+    sql_msg = sql_ShowItems(pGame,ong_zn,ELstShowCal,ong_upl,sql_ref);
+   }
 
    /// Montrer les resultats
    BView *qtv_tmp = upl_Bview_2[ong_tir-1][ong_zn][ong_upl-1][ong_day][ong_tab];
