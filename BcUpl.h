@@ -35,8 +35,10 @@ class BcUpl: public BCount
   {
    eEnsNotSet, /// Ensemble non defini
    eEnsFdj,    /// Liste des tirages de la fdj
-   eEnsUsr     /// Selection de l'utilisateur
+   eEnsUsr,    /// Selection de l'utilisateur
+   eEnsEnd     /// Fin enumeration
   }eUpl_Ens;
+  static const QString Txt_eUpl_Ens[eEnsEnd];
 
   typedef enum _eCalcul
   {
@@ -48,12 +50,13 @@ class BcUpl: public BCount
 
   typedef struct _param_tsk
   {
-    BcUpl::eUpl_Ens type;
-    QString sql;
-    int id;
-    int zn;
-    int items;
-    int fake_sel;
+    BcUpl::eUpl_Ens eEns_id; /// type d'ensemble
+    const stGameConf *ptr_gmCf; /// ptr config du jeu
+    int z_id;  /// Zone id
+    int l_id;  /// Ligne id (dans base ou user)
+    int g_id;  /// Groupe id (Cnp)
+    int g_lm;  /// Groupe element (indice element dans Groupe id)
+    QString qstr_sql;
   }stParam_tsk;
 
 
@@ -195,7 +198,14 @@ class BcUpl: public BCount
   bool tsk_upl_1 (const stGameConf *pGame, const stParam_tsk *param);
   void rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param, int fake_sel);
   void tsk_upl_2(QString cnx, QString tbl, QString sql);
-  void tsk_upl_0(const stGameConf *pGame, int zn, int tir_LgnId, int upl_GrpId);
+  void tsk_upl_0(stParam_tsk *tsk_param);
+  void FillTable(QString tbl, stParam_tsk *tsk_param);
+  void FillTbv(QString tbl, stParam_tsk *tsk_param);
+  int getFromView_Lid(const BView *view);
+  QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId);
+  void BSlot_clicked_old(const QModelIndex &index);
+
+
 };
 
 

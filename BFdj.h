@@ -8,8 +8,6 @@
 
 #define DB_VER "_V3_"
 
-
-
 class BFdj
 {
  private:
