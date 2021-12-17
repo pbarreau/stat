@@ -1904,7 +1904,7 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int ong_zn, int ong_tir,
  return tab_Top;
 }
 
-QString BcUpl::getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId)
+QString BcUpl::getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb)
 {
  QString str_tmp = "";
 
@@ -1912,6 +1912,7 @@ QString BcUpl::getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId)
  QList<QGroupBox *> child_1 = view->parent()->parent()->findChildren<QGroupBox*>(gpb_key_sel);
 
  if(child_1.size()==1){
+  *grb = child_1.at(0);
   for(int itm=1;itm<=upl_GrpId;itm++){
    int value = index.sibling(index.row(),Bp::colId+itm).data().toInt();
    str_tmp = str_tmp + QString::number(value).rightJustified(2,'0');
@@ -1928,13 +1929,15 @@ QString BcUpl::getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId)
                  index.sibling(index.row(),Bp::colId+upl_GrpId+1).data().toString()+
                  " fois.";
 #endif
+
+#if 0
  int total = index.sibling(index.row(),Bp::colId+upl_GrpId+1).data().toInt();
  QString str_nb = QString::number(total).rightJustified(2,'0');
  QString title = QString(ref_lupl[1]).arg(str_tmp).arg(str_nb);
  if(child_1.at(0)->title().compare(title)!=0){
   child_1.at(0)->setTitle(title);
  }
-
+#endif
  return str_tmp;
 }
 
@@ -1965,7 +1968,9 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  int zn = view->getZone();
  int g_lm =  index.sibling(index.row(),Bp::colId).data().toInt();
  int tir_LgnId = getFromView_Lid(view);
- QString upl_cur = getFromIndex_CurUpl(index,upl_GrpId);
+ int upl_tot =  index.sibling(index.row(),Bp::colId+upl_GrpId+1).data().toInt();
+ QGroupBox *target;
+ QString upl_cur = getFromIndex_CurUpl(index,upl_GrpId, &target);
  QString cnx=gm_def->db_ref->cnx;
  bool status = true;
 
@@ -1979,7 +1984,12 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  tsk_param->g_lm = g_lm;
  tsk_param->tbl_ref = "";
  tsk_param->clear = false;
+ tsk_param->upl_txt = upl_cur;
+ tsk_param->upl_tot = upl_tot;
+ tsk_param->grb_target = target;
 
+
+ QString title = QString(ref_lupl[1]).arg(upl_cur).arg(upl_tot);
 
  QString tbl_name = "Upl_" +
                     Txt_eUpl_Ens[useData] + QString::number(tir_LgnId).rightJustified(2,'0') +
@@ -2021,10 +2031,12 @@ void BcUpl::BSlot_tsk_finished(){
 
  stParam_tsk * res = watcher->result();
 
- QString tbl = res->tbl_ref;
-
  /// Montrer les resultats
+ QString tbl = res->tbl_ref;
  FillTbv(tbl, res);
+
+ /// parametre peut etre detruit
+ delete res;
 }
 
 void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
@@ -2037,6 +2049,15 @@ void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
  eUpl_Ens eEns = tsk_param->eEns_id;
 
 
+ /// Titre de la recherche
+ QString title = "";
+ if(tsk_param->clear == false){
+  title = QString(ref_lupl[1]).arg(tsk_param->upl_txt).arg(tsk_param->upl_tot);
+ }
+ else{
+  title = ref_lupl[0];
+ }
+ tsk_param->grb_target->setTitle(title);
 
  QString strDay[]= {"J","J+1","J+?"};
  QString sql_msg = "";

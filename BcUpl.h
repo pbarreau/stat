@@ -68,6 +68,9 @@ class BcUpl: public BCount
     int g_lm;  /// Groupe element (indice element dans Groupe id)
     QString tbl_ref;
     bool clear; /// Effacer resultat dans tbv
+    QString upl_txt; /// valeur du uplet
+    int upl_tot;  /// total de cette valeur
+    QGroupBox *grb_target;
   }stParam_tsk;
 
 
@@ -206,7 +209,7 @@ class BcUpl: public BCount
   stParam_tsk *FillBdd(QString tbl, stParam_tsk *tsk_param);
   void FillTbv(QString tbl, stParam_tsk *tsk_param);
   int getFromView_Lid(const BView *view);
-  QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId);
+  QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb);
   void BSlot_clicked_old(const QModelIndex &index);
 
 
