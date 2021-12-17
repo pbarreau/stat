@@ -308,7 +308,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
      tsk_param->z_id = ong_zn;
      tsk_param->g_id = upl_set;
      tsk_param->g_lm = -1;
-     tsk_param->qstr_sql = "";
+     tsk_param->tbl_ref = "";
 
      ///QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::tsk_upl_0,tsk_param);
      /// ----------------------
@@ -1981,7 +1981,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  tsk_param->z_id = zn;
  tsk_param->g_id = upl_GrpId;
  tsk_param->g_lm = g_lm;
- tsk_param->qstr_sql = "";
+ tsk_param->tbl_ref = "";
 
  QString tbl_name = "Upl_" +
                     Txt_eUpl_Ens[useData] + QString::number(tir_LgnId).rightJustified(2,'0') +
@@ -1996,19 +1996,33 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
                     tbl_radical;
 
  if(isPresent == false){
-  /// Faire la recherche pour cet uplet
-  ///FillBdd(tbl_fill, tsk_param);
-  QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::FillBdd,tbl_fill,tsk_param);
+  /// Preparer la surveillance des calculs
+  QFutureWatcher<stParam_tsk *> *watcher = new QFutureWatcher<stParam_tsk *>();
+  connect(watcher, &QFutureWatcher<stParam_tsk *>::finished, this, &BcUpl::BSlot_tsk_finished);
+
+  /// Faire les calculs
+  QFuture<stParam_tsk *> f_task = QtConcurrent::run(this,&BcUpl::FillBdd,tbl_fill,tsk_param);
+
+  /// Surveiller la fin des calculs
+  watcher->setFuture(f_task);
  }
  else{
   /// Montrer les resultats
   FillTbv(tbl_fill, tsk_param);
  }
-
-
- ///QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::FillTbv,tbl_fill,tsk_param);
 }
 
+void BcUpl::BSlot_tsk_finished(){
+ QFutureWatcher<stParam_tsk *> * watcher;
+ watcher = reinterpret_cast<QFutureWatcher<stParam_tsk *>*>(sender());
+
+ stParam_tsk * res = watcher->result();
+
+ QString tbl = res->tbl_ref;
+
+ /// Montrer les resultats
+ FillTbv(tbl, res);
+}
 
 void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
 {
@@ -2045,14 +2059,14 @@ void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
  }
 }
 
-void BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
+BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->ptr_gmCf;
  int zn = tsk_param->z_id;
  int tir_LgnId = tsk_param->l_id;
  int upl_GrpId = tsk_param->g_id;
  int gru_elemt = tsk_param->g_lm; /// Group uplet element
- eUpl_Ens eEns = tsk_param->eEns_id;
+ //eUpl_Ens eEns = tsk_param->eEns_id;
 
  bool status = true;
  QString cnx=pGame->db_ref->cnx;
@@ -2068,7 +2082,7 @@ void BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
  QString sql_ref ="";
  QString sql_msg = "";
  QString tbl_use = "";
- DB_Tools::eCort eTblStatus = DB_Tools::eCort_NotSet;
+ //DB_Tools::eCort eTblStatus = DB_Tools::eCort_NotSet;
 
  /// Creation des resultats en //
  QFutureSynchronizer<DB_Tools::eCort> synchronizer;
@@ -2100,6 +2114,8 @@ void BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
  }
 
  synchronizer.waitForFinished();
+ tsk_param->tbl_ref = tbl;
+ return(tsk_param);
 }
 
 
@@ -2286,7 +2302,7 @@ bool BcUpl::effectueRecherche(BcUpl::eUpl_Ens upl_type, QString upl_sql, int upl
 
  stParam_tsk *param = new stParam_tsk;
  param->eEns_id = upl_type;
- param->qstr_sql = upl_sql;
+ param->tbl_ref = upl_sql;
  param->ptr_gmCf = gm_def;
  param->l_id = upl_id;
  param->z_id = zn_id;
@@ -2323,11 +2339,11 @@ bool BcUpl::tsk_upl_1 (const stGameConf *pGame, const stParam_tsk *param)
                 st_zn +
                 "nb_" + QString::number(param->g_id).rightJustified(4,'0');
  QString target = "tsk_data_"+info+".txt";
- BTest::writetoFile(target,param->qstr_sql,false);
+ BTest::writetoFile(target,param->tbl_ref,false);
 #endif
 
  QSqlQuery query_1(db_1);
- if((retVal=query_1.exec(param->qstr_sql))){
+ if((retVal=query_1.exec(param->tbl_ref))){
   if(query_1.first()){
    QString val = "";
    QString tbl = "";

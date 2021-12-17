@@ -66,7 +66,7 @@ class BcUpl: public BCount
     int l_id;  /// Ligne id (dans base ou user)
     int g_id;  /// Groupe id (Cnp)
     int g_lm;  /// Groupe element (indice element dans Groupe id)
-    QString qstr_sql;
+    QString tbl_ref;
   }stParam_tsk;
 
 
@@ -119,6 +119,8 @@ class BcUpl: public BCount
  private slots:
   void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_clicked(const QModelIndex &index);
+  void BSlot_tsk_finished();
+
   //void BSlot_Tab(int);
 
  private:
@@ -200,7 +202,7 @@ class BcUpl: public BCount
   void rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param, int fake_sel);
   void tsk_upl_2(QString cnx, QString tbl, QString sql);
   void tsk_upl_0(stParam_tsk *tsk_param);
-  void FillBdd(QString tbl, stParam_tsk *tsk_param);
+  stParam_tsk *FillBdd(QString tbl, stParam_tsk *tsk_param);
   void FillTbv(QString tbl, stParam_tsk *tsk_param);
   int getFromView_Lid(const BView *view);
   QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId);
