@@ -31,13 +31,14 @@ class BcUpl: public BCount
   Q_OBJECT
 
  public:
-  /*
-  typedef struct _stIn{
-    int uplet;   /// Valeur du n-uplet
-    QString cnx; /// Nom de la connexion
-    int dst;     /// distance vis a vis uplet
-  }st_In;
-*/
+  typedef struct _stDays
+  {
+    int delta;
+    QString onglet;
+    QString tbl;
+  }stDays;
+  static const stDays defDays[C_NB_ONG];
+
   typedef enum _eEnsemble /// Ensemble dans lequel chercher les uplets
   {
    eEnsNotSet, /// Ensemble non defini
