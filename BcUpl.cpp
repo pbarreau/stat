@@ -2022,7 +2022,7 @@ void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
 
  QString strDay[]= {"J","J+1","J+?"};
 
- for (int ong_day = 0;ong_day<=2;ong_day++) {
+ for (int ong_day = 0; ong_day < C_NB_OFFSET;ong_day++) {
   for (int ong_tab=0;ong_tab<C_NB_SUB_ONG;ong_tab++) {
    QString tbl_use = tbl +
                      "_D" + QString::number(ong_day).rightJustified(2,'0') +
@@ -2067,7 +2067,7 @@ void BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
  QString tbl_use = "";
  DB_Tools::eCort eTblStatus = DB_Tools::eCort_NotSet;
 
- for (int day_anaUpl = 0;day_anaUpl<=2;day_anaUpl++) {
+ for (int day_anaUpl = 0;day_anaUpl< C_NB_OFFSET;day_anaUpl++) {
   for (int tab=0;tab<C_NB_SUB_ONG;tab++) {
    if(tab>=nb_recherche){
     continue;

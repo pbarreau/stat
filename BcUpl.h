@@ -20,6 +20,8 @@
 #define  C_MIN_UPL    1
 #define  C_MAX_UPL    3
 #define  C_NB_ONG     3
+
+#define  C_NB_OFFSET  3
 #define  C_NB_SUB_ONG 3
 #define  C_NB_SUB_ONG_CAL C_NB_SUB_ONG - 1
 #define  C_NB_TIR_LIR 2
