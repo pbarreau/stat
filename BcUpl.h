@@ -24,6 +24,8 @@
 #define  C_NB_SUB_ONG_CAL C_NB_SUB_ONG - 1
 #define  C_NB_TIR_LIR 2
 
+#define  C_TBL_UPL "Upl_lst"
+
 class BcUpl: public BCount
 {
   Q_OBJECT
@@ -132,7 +134,7 @@ class BcUpl: public BCount
 
 
  private:
-  QString getTablePrefixFromSelection(QString items, int zn=0);
+  QString getTablePrefixFromSelection(QString items, int zn=0, bool *wasPresent=nullptr);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
 
   // QGroupBox *gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
@@ -195,7 +197,7 @@ class BcUpl: public BCount
   void rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param, int fake_sel);
   void tsk_upl_2(QString cnx, QString tbl, QString sql);
   void tsk_upl_0(stParam_tsk *tsk_param);
-  void FillTable(QString tbl, stParam_tsk *tsk_param);
+  void FillBdd(QString tbl, stParam_tsk *tsk_param);
   void FillTbv(QString tbl, stParam_tsk *tsk_param);
   int getFromView_Lid(const BView *view);
   QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId);

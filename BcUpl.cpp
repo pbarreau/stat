@@ -72,7 +72,7 @@ BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectio
 
  /// creer la table des uplets
  QSqlQuery query(db_0);
- QString tbl_upl = "Upl_lst";
+ QString tbl_upl = C_TBL_UPL;
  QString sql_msg = "create table if not exists "+tbl_upl+
                    " (id integer primary key, zn int, items text not null);";
  if(!query.exec(sql_msg)){
@@ -114,13 +114,11 @@ QTabWidget * BcUpl::getTabUplRsp(void)
 }
 #endif
 
-QString BcUpl::getTablePrefixFromSelection(QString items, int zn)
+QString BcUpl::getTablePrefixFromSelection(QString items, int zn, bool *wasPresent)
 {
  QSqlQuery query_1(db_0);
- QSqlQuery query_2(db_0);
- bool setName = false;
 
- QString tbl_upl = "Upl_lst";
+ QString tbl_upl = C_TBL_UPL;
 
  QString ret_val = "";
  QString ord_itm = "";
@@ -146,6 +144,7 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn)
 
    switch(total){
     case 0:
+     if(wasPresent!=nullptr){*wasPresent = false;}
      sql_m2 = "insert into "+tbl_upl+" (id,zn,items) values(NULL,"+QString::number(zn)+",'"+ord_itm+"')";
      if(query_1.exec(sql_m2)){
       if(query_1.exec(sql_m1)){
@@ -154,6 +153,7 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn)
      }
      break;
     case 1:
+     if(wasPresent!=nullptr){*wasPresent = true;}
      break;
     default:
      id=-2;
@@ -162,6 +162,12 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn)
    if(id==-1){
     id = query_1.value(0).toInt();
     ret_val = "U" + QString::number(id).rightJustified(2,'0');
+   }
+   else{
+    static int counter = 0;
+    if(wasPresent!=nullptr){*wasPresent = true;}
+    ret_val = "Err_" + QString::number(counter).rightJustified(3,'0');
+    counter++;
    }
   }
  }
@@ -292,9 +298,6 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
      ///QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::tsk_upl_0,tsk_param);
      /// ----------------------
 
-     const int num = QThread::idealThreadCount();
-     QThread cpuInfo(this);
-
      QWidget * wdg_tmp = fill_Bview_1(pGame,zn,tirLgnId,upl_set);
      if(wdg_tmp !=nullptr){
       tab_uplets->addTab(wdg_tmp,QString::number(upl_set).rightJustified(2,'0'));
@@ -373,62 +376,13 @@ void BcUpl::tsk_upl_0(stParam_tsk *tsk_param)
     if((status = DB_Tools::isDbGotTbl(tbl_fill, cnx)) == false)
     {
      /// Faire les recherches a stocker dans la table
-     FillTable(tbl_fill,tsk_param);
+     FillBdd(tbl_fill,tsk_param);
     }
    }while(query.next());
   }
  }
 }
 
-void BcUpl::FillTable(QString tbl, stParam_tsk *tsk_param)
-{
- const stGameConf *pGame = tsk_param->ptr_gmCf;
- int zn = tsk_param->z_id;
- int tir_LgnId = tsk_param->l_id;
- int upl_GrpId = tsk_param->g_id;
- int gru_elemt = tsk_param->g_lm; /// Group uplet element
- eUpl_Ens eEns = tsk_param->eEns_id;
-
- bool status = true;
- QString cnx=pGame->db_ref->cnx;
-
- eUpl_Lst tabCal[][3]=
- {
-  {ELstUplTotNot,ELstUplTotNot,ELstUplTotNot},
-  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext},
-  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext}
- };
-
- int nb_recherche = pGame->limites[zn].win;
- QString sql_ref ="";
- QString sql_msg = "";
- QString tbl_use = "";
- DB_Tools::eCort eTblStatus = DB_Tools::eCort_NotSet;
-
- for (int day_anaUpl = 0;day_anaUpl<=2;day_anaUpl++) {
-  for (int tab=0;tab<C_NB_SUB_ONG;tab++) {
-   if(tab>=nb_recherche){
-    continue;
-   }
-
-   eUpl_Lst resu = tabCal[day_anaUpl][tab];
-
-   /// initialisation msg sql
-   sql_ref = getSqlTbv(pGame, zn,
-                       tir_LgnId, day_anaUpl,
-                       upl_GrpId, tab+C_MIN_UPL,
-                       resu,gru_elemt);
-   tbl_use = tbl +
-             "_D" + QString::number(day_anaUpl).rightJustified(2,'0') +
-             "_R" + QString::number(tab+1).rightJustified(2,'0') +
-             "_V";
-   sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_GrpId,sql_ref);
-
-   /// On force une creation
-   eTblStatus = DB_Tools::createOrReadTable(tbl_use,cnx,sql_msg);
-  }
- }
-}
 
 #if 1
 QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tir_LgnId, int upl_GrpId)
@@ -477,7 +431,7 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int zn, int tir_LgnId, int
 #endif
 
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
- sqm_tmp->setQuery(sql_msg, dbCount);
+ sqm_tmp->setQuery(sql_msg, db_0);
  ///effectueRecherche(useData,sql_msg,tir_LgnId,zn,upl_GrpId);
 
  /// On effectue la liasion avec le proxy model
@@ -1661,7 +1615,7 @@ QWidget *BcUpl::Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int of
  sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_ref_in,sql_ref);
 
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
- sqm_tmp->setQuery(sql_msg, dbCount);
+ sqm_tmp->setQuery(sql_msg, db_0);
 
  /// On effectue la liasion avec le proxy model
  BFpm_upl * m = new BFpm_upl(2, dst_upl+1);
@@ -1744,7 +1698,7 @@ QWidget *BcUpl::Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int of
 BView *BcUpl::Bview_3_fill_1(BView *qtv_tmp, QString sql_msg)
 {
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
- sqm_tmp->setQuery(sql_msg, dbCount);
+ sqm_tmp->setQuery(sql_msg, db_0);
  while (sqm_tmp->canFetchMore())
  {
   sqm_tmp->fetchMore();
@@ -1793,7 +1747,7 @@ BView *BcUpl::Bview_3_fill_1(BView *qtv_tmp, QString sql_msg)
 BView *BcUpl::Bview_4_fill_1(BView *qtv_tmp, QString sql_msg)
 {
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
- sqm_tmp->setQuery(sql_msg, dbCount);
+ sqm_tmp->setQuery(sql_msg, db_0);
  while (sqm_tmp->canFetchMore())
  {
   sqm_tmp->fetchMore();
@@ -1995,13 +1949,20 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
                     "_C" + QString::number(upl_GrpId).rightJustified(2,'0');
 
  /// On a un uplet, obtenir le radical de table
- QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn);
+ bool isPresent = false;
+ QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn, &isPresent);
  QString tbl_fill = tbl_name +
                     "_K"+
                     tbl_radical;
 
+ if(isPresent == false){
+  /// Faire la recherche pour cet uplet
+  FillBdd(tbl_fill, tsk_param);
+ }
 
+ /// Montrer les resultats
  FillTbv(tbl_fill, tsk_param);
+
  ///QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::FillTbv,tbl_fill,tsk_param);
 }
 
@@ -2029,12 +1990,14 @@ void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
                      "_V";
    QString sql_msg = "select * from " + tbl_use;
 
+#if 0
    /// Verifier si table existe
    if((status = DB_Tools::isDbGotTbl(tbl_use, cnx)) == false)
    {
-    /// Faire les recherches a stocker dans la table
-    FillTable(tbl,tsk_param);
+    /// Faire les recherches a stocker dans la table dans une tache
+    FillBdd(tbl,tsk_param);
    }
+#endif
 
    /// Montrer les resultats
    BView *qtv_tmp = upl_Bview_2[tir_LgnId-1][zn][upl_GrpId-1][day_anaUpl][tab];
@@ -2047,11 +2010,61 @@ void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
  }
 }
 
+void BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
+{
+ const stGameConf *pGame = tsk_param->ptr_gmCf;
+ int zn = tsk_param->z_id;
+ int tir_LgnId = tsk_param->l_id;
+ int upl_GrpId = tsk_param->g_id;
+ int gru_elemt = tsk_param->g_lm; /// Group uplet element
+ eUpl_Ens eEns = tsk_param->eEns_id;
+
+ bool status = true;
+ QString cnx=pGame->db_ref->cnx;
+
+ eUpl_Lst tabCal[][3]=
+ {
+  {ELstUplTotNot,ELstUplTotNot,ELstUplTotNot},
+  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext},
+  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext}
+ };
+
+ int nb_recherche = pGame->limites[zn].win;
+ QString sql_ref ="";
+ QString sql_msg = "";
+ QString tbl_use = "";
+ DB_Tools::eCort eTblStatus = DB_Tools::eCort_NotSet;
+
+ for (int day_anaUpl = 0;day_anaUpl<=2;day_anaUpl++) {
+  for (int tab=0;tab<C_NB_SUB_ONG;tab++) {
+   if(tab>=nb_recherche){
+    continue;
+   }
+
+   eUpl_Lst resu = tabCal[day_anaUpl][tab];
+
+   /// initialisation msg sql
+   sql_ref = getSqlTbv(pGame, zn,
+                       tir_LgnId, day_anaUpl,
+                       upl_GrpId, tab+C_MIN_UPL,
+                       resu,gru_elemt);
+   tbl_use = tbl +
+             "_D" + QString::number(day_anaUpl).rightJustified(2,'0') +
+             "_R" + QString::number(tab+1).rightJustified(2,'0') +
+             "_V";
+   sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_GrpId,sql_ref);
+
+   /// On force une creation
+   eTblStatus = DB_Tools::createOrReadTable(tbl_use,cnx,sql_msg);
+  }
+ }
+}
+
 
 void BcUpl::BSlot_clicked_old(const QModelIndex &index)
 {
  BView *view = qobject_cast<BView *>(sender());
- QSqlQuery query(dbCount);
+ QSqlQuery query(db_0);
  int id_upl = view->objectName().toInt();
  int zn = view->getZone();
  int selection = index.sibling(index.row(),Bp::colId).data().toInt();
@@ -2203,7 +2216,7 @@ int BcUpl::Bview_UpdateAndCount(eUpl_Lst id, BView *qtv_tmp, QString sql_msg)
 
 
  //sqm_tmp->query().clear();
- sqm_tmp->setQuery(sql_msg,dbCount);
+ sqm_tmp->setQuery(sql_msg,db_0);
  while (sqm_tmp->canFetchMore())
  {
   sqm_tmp->fetchMore();
