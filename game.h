@@ -8,8 +8,6 @@
 #include "properties.h"
 
 
-#define C_NBTIRJOUR 2
-
 /// Localisation de la base de donnees
 typedef enum _eBddType{
  eDbRam, /// en memoire

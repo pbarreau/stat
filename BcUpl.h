@@ -17,20 +17,25 @@
 #include "BView.h"
 #include "Bc.h"
 
-#define  C_MIN_UPL 1
-#define  C_MAX_UPL 3
+#define  C_MIN_UPL    1
+#define  C_MAX_UPL    3
+#define  C_NB_ONG     3
+#define  C_NB_SUB_ONG 3
+#define  C_NB_SUB_ONG_CAL C_NB_SUB_ONG - 1
+#define  C_NB_TIR_LIR 2
 
 class BcUpl: public BCount
 {
   Q_OBJECT
 
  public:
+  /*
   typedef struct _stIn{
     int uplet;   /// Valeur du n-uplet
     QString cnx; /// Nom de la connexion
     int dst;     /// distance vis a vis uplet
   }st_In;
-
+*/
   typedef enum _eEnsemble /// Ensemble dans lequel chercher les uplets
   {
    eEnsNotSet, /// Ensemble non defini
@@ -50,8 +55,8 @@ class BcUpl: public BCount
 
   typedef struct _param_tsk
   {
-    BcUpl::eUpl_Ens eEns_id; /// type d'ensemble
     const stGameConf *ptr_gmCf; /// ptr config du jeu
+    eUpl_Ens eEns_id; /// type d'ensemble
     int z_id;  /// Zone id
     int l_id;  /// Ligne id (dans base ou user)
     int g_id;  /// Groupe id (Cnp)
@@ -87,76 +92,67 @@ class BcUpl: public BCount
 #endif
 
 #define C_TOT_CAL ELstCal
-#define C_MAX_ARGS 10
 
-#define C_NB_ONG     3
-#define C_NB_SUB_ONG 3
-#define C_NB_SUB_ONG_CAL C_NB_SUB_ONG - 1
+
 
  public:
   //BUplet(st_In const &param);
   //BUplet(st_In const &param, int index=0);
   //BUplet(st_In const &param, QString ensemble="");
+  //BcUpl(st_In const &param, int index=0, eUpl_Cal eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=nullptr);
   explicit BcUpl(const stGameConf *pGame, eUpl_Ens eUpl=eEnsFdj, int zn=0, const QItemSelectionModel *cur_sel=nullptr, QTabWidget *ptrUplRsp=nullptr);
-  BcUpl(st_In const &param, int index=0, eUpl_Cal eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=nullptr);
   ~BcUpl();
-  int getUpl(void);
-  QString sql_UsrSelectedTirages(const QModelIndex & index, int pos);
+  //int getUpl(void);
+  //QString sql_UsrSelectedTirages(const QModelIndex & index, int pos);
   QString findUplets(const stGameConf *pGame, const int zn =0, const int loop=2, const int key=-1, QString tb_def="tb6", const int ref_day=1, const int delta=-1);
 
  public slots:
-  void slot_Selection(const QString& lstBoules);
-  void slot_FindNewUplet(const QModelIndex & index);
+  //void slot_Selection(const QString& lstBoules);
+  //void slot_FindNewUplet(const QModelIndex & index);
   void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int zn);
 
  private slots:
   void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_clicked(const QModelIndex &index);
-  void BSlot_Tab(int);
+  //void BSlot_Tab(int);
 
  private:
   QSqlDatabase db_0;
-  st_In input;
-  QGroupBox *gpb_upl;
-  QTableView *qtv_upl;
-  int upl_zn;
-  QString gpb_title;
-  eUpl_Ens useData;
   QModelIndexList my_indexes;
   QTabWidget *uplTirTab;
-  ///QString ens_ref;
-  static int tot_upl;
+  int upl_zn;
+  eUpl_Ens useData;
 
-  /*
- private:
- int upl_items;
- int upl_zn;
- QString upl_tbInternal;
- BGTbView **upl_TbView;
- */
+  //QString gpb_title;
+  //st_In input;
+  //QGroupBox *gpb_upl;
+  //QTableView *qtv_upl;
+  //QString ens_ref;
+  //static int tot_upl;
+
 
  private:
   QString getTablePrefixFromSelection(QString items, int zn=0);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
 
-  QGroupBox *gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
-  QTableView *doTabShowUplet(QString tbl_src, const QModelIndex &ligne);
-  int  getNbLines(QString tbl_src);
-  QString getUpletFromIndex(int nb_uplet, int index, QString tbl_src);
-  QString getBoulesTirage(int index);
+  // QGroupBox *gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
+  //QTableView *doTabShowUplet(QString tbl_src, const QModelIndex &ligne);
+  //int  getNbLines(QString tbl_src);
+  //QString getUpletFromIndex(int nb_uplet, int index, QString tbl_src);
+  //QString getBoulesTirage(int index);
 
-  QString getJourTirage(int index);
-  QString getCmbTirage(int index);
-  QString getBrcTirage(int index);
+  //QString getJourTirage(int index);
+  //QString getCmbTirage(int index);
+  //QString getBrcTirage(int index);
 
-  QTabWidget * getTabUplRsp(void);
+  //QTabWidget * getTabUplRsp(void);
   //bool DoCreateTblUplet(QString tbl);
-  QString FN2_getFieldsFromZone(int zn, QString alias);
+  //QString FN2_getFieldsFromZone(int zn, QString alias);
 
-  bool do_SqlCnpCount(int uplet_id);
-  QString sql_CnpMkUplet(int nb, QString col, QString tbl_in="B_elm");
-  QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
-  QString sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
+  //bool do_SqlCnpCount(int uplet_id);
+  //QString sql_CnpMkUplet(int nb, QString col, QString tbl_in="B_elm");
+  //QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
+  //QString sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
   QString sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
 
  private:
@@ -186,7 +182,7 @@ class BcUpl: public BCount
 
   void sql_RepartitionVoisin(QString tabInOut[][3], int jour, int upl, int ref_id, int delta=0);
 
-  void tryUneFn();
+  //void tryUneFn();
   QWidget *Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int offset, int src_upl, int relativeDay, int dst_upl);
   BView * Bview_3_fill_1(BView *qtv_tmp, QString sql_msg);
   BView * Bview_4_fill_1(BView *qtv_tmp, QString sql_msg);
@@ -211,6 +207,7 @@ class BcUpl: public BCount
 
 #endif // BUPLET_H
 
+#if 0
 class BUplWidget: public QWidget
 {
 
@@ -226,3 +223,4 @@ class BUplWidget: public QWidget
 
 };
 
+#endif

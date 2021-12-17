@@ -3162,8 +3162,8 @@ QGridLayout* SyntheseGenerale::tot_VbInfo(param_2 prm)
 
  // Rajout du tableau des uplets
  QString cnx = db_1newDb.connectionName();
- BUplWidget *visu = new BUplWidget(cnx);
- lay_tmp->addWidget(visu,0,1,Qt::AlignLeft|Qt::AlignTop);
+ ///BUplWidget *visu = new BUplWidget(cnx);
+ ///lay_tmp->addWidget(visu,0,1,Qt::AlignLeft|Qt::AlignTop);
 
 
  return lay_tmp;
