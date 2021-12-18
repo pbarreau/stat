@@ -28,6 +28,27 @@ BAnimateCell::BAnimateCell(BView *view):m_view(view),QStyledItemDelegate(nullptr
  //timer->start( TIME_RESOLUTION );
 }
 
+void BAnimateCell::addKey(int key)
+{
+ mapTimeout.insert( key , QDateTime::currentDateTime() );
+ emit BSig_Repaint(m_view);
+}
+
+void BAnimateCell::delKey(int key)
+{
+ mapTimeout.remove(key);
+ emit BSig_Repaint(m_view);
+}
+
+bool BAnimateCell::gotKey(int key)
+{
+ emit BSig_Repaint(m_view);
+
+ QMap<int, QVariant>::const_iterator it = mapTimeout.find( key );
+
+ return (it == mapTimeout.end() ?  false : true);
+}
+
 void BAnimateCell::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
  QStyleOptionViewItem myOpt = option;
@@ -39,7 +60,11 @@ void BAnimateCell::paint(QPainter *painter, const QStyleOptionViewItem &option, 
  int row = myOpt.index.row();
 
  if((col == nb_col-1)){
-  painter->fillRect(myOpt.rect, COULEUR_FOND_R0);
+  int key = index.sibling(index.row(),0).data().toInt();;
+  QMap<int, QVariant>::const_iterator it = mapTimeout.find( key );
+  if(it !=mapTimeout.end() ){
+   painter->fillRect(cur_rect, COULEUR_FOND_R0);
+  }
  }
 
  QStyledItemDelegate::paint(painter,myOpt,index);
