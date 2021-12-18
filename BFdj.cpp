@@ -240,8 +240,13 @@ bool BFdj::OPtimiseAccesBase(void)
  QSqlQuery query(fdj_db);
  QString msg = "";
 
+#undef DBG_SQLITE_COMPILATION
+
  /// https://www.sqlite.org/pragma.html#pragma_locking_mode
  QString stRequete[]={
+ #ifdef DBG_SQLITE_COMPILATION
+  "PRAGMA compile_options",
+ #endif
   "PRAGMA synchronous = OFF",
   "PRAGMA page_size = 4096",
   "PRAGMA cache_size = 16384",
@@ -254,6 +259,15 @@ bool BFdj::OPtimiseAccesBase(void)
  for(int i=0; (i<items)&& b_retVal ;i++){
   msg = stRequete[i];
   b_retVal = query.exec(msg);
+
+#ifdef DBG_SQLITE_COMPILATION
+  if(i==0 && b_retVal){
+   query.first();
+   do{
+    QString value = query.value(0).toString();
+   }while(query.next());
+  }
+#endif
  }
 
  if(!b_retVal)

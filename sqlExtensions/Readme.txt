@@ -4,6 +4,7 @@ Necessaire pour compiler sqlite sous l'environnement QT :
 - https://www.sqlite.org/loadext.html
 - https://www.sqlite.org/src/file/ext/misc
 - https://www.sqlite.org/contrib
+- https://www.sqlite.org/compile.html
 - https://wiki.openssl.org/index.php/Binaries
 
 SRC :
@@ -11,6 +12,12 @@ SRC :
 - https://github.com/dlfcn-win32/dlfcn-win32
 - https://www.sqlite.org/contrib/download/extension-functions.c?get=25
 - https://indy.fulgan.com/SSL/
+
+Executer le makefile avec mingw32
+verifier executable cli dans out
+
+tester:
+PRAGMA compile_options;
 
 Finalement pour reussir de l'utilisation dans le programme :
 

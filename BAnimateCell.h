@@ -21,9 +21,10 @@ class BAnimateCell: public QStyledItemDelegate
 
  public:
   explicit  BAnimateCell(BView * view);
-  void addKey(int key);
-  void delKey(int key);
-  bool gotKey(int key);
+  void addKey(int key, bool refresh = true);
+  void delKey(int key, bool refresh = true);
+  bool gotKey(int key, bool refresh = true);
+  void setModel(BView *view);
   void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
  signals:

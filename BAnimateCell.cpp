@@ -17,9 +17,6 @@
 
 BAnimateCell::BAnimateCell(BView *view):m_view(view),QStyledItemDelegate(nullptr)
 {
- BFpm_upl *m = qobject_cast<BFpm_upl *>(view->model());
- QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
- nb_col = vl->columnCount();
 
  QTimer * timer = new QTimer( this );
  connect( timer, &QTimer::timeout, this, &BAnimateCell::BSlot_animate);
@@ -28,25 +25,37 @@ BAnimateCell::BAnimateCell(BView *view):m_view(view),QStyledItemDelegate(nullptr
  //timer->start( TIME_RESOLUTION );
 }
 
-void BAnimateCell::addKey(int key)
+void BAnimateCell::addKey(int key, bool refresh)
 {
  mapTimeout.insert( key , QDateTime::currentDateTime() );
- emit BSig_Repaint(m_view);
+
+ if(refresh)
+  emit BSig_Repaint(m_view);
 }
 
-void BAnimateCell::delKey(int key)
+void BAnimateCell::delKey(int key, bool refresh)
 {
  mapTimeout.remove(key);
- emit BSig_Repaint(m_view);
+ if(refresh)
+  emit BSig_Repaint(m_view);
 }
 
-bool BAnimateCell::gotKey(int key)
+bool BAnimateCell::gotKey(int key, bool refresh)
 {
- emit BSig_Repaint(m_view);
+ if(refresh)
+  emit BSig_Repaint(m_view);
 
  QMap<int, QVariant>::const_iterator it = mapTimeout.find( key );
 
  return (it == mapTimeout.end() ?  false : true);
+}
+
+void BAnimateCell::setModel(BView *view)
+{
+ BFpm_upl *m = qobject_cast<BFpm_upl *>(view->model());
+ QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+ nb_col = vl->columnCount();
+
 }
 
 void BAnimateCell::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -73,7 +82,7 @@ void BAnimateCell::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 QVariant BAnimateCell::data(const QModelIndex &idx, int role) const
 {
  if( role != ItemModifiedRole );
-     //return BView::data( idx, role );
+ //return BView::data( idx, role );
 
 }
 

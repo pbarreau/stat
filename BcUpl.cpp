@@ -306,27 +306,33 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
    upl_Bview_3[ong_tir-1][ong_zn]=new BView*** [nb_recherche]; ///S3
    upl_Bview_4[ong_tir-1][ong_zn]=new BView*** [nb_recherche]; ///S3
 
-   for (int upl_set = C_MIN_UPL; upl_set<=nb_recherche; upl_set++) {
-    if(upl_set > pGame->limites[ong_zn].win){
+   for (int ong_upl = C_MIN_UPL; ong_upl<=nb_recherche; ong_upl++) {
+    BView * qtv_tmp = new BView;
+    upl_Bview_1[ong_tir-1][ong_zn][ong_upl-C_MIN_UPL] = qtv_tmp;
+    tbv_Anim[ong_tir-1][ong_zn][ong_upl-C_MIN_UPL] = new BAnimateCell(qtv_tmp);
+
+    /// ----------------------
+    stParam_tsk *tsk_param = new stParam_tsk;
+    tsk_param->eEns_id = useData;
+    tsk_param->ptr_gmCf = gm_def;
+    tsk_param->l_id = ong_tir;
+    tsk_param->z_id = ong_zn;
+    tsk_param->g_id = ong_upl;
+    tsk_param->g_lm = -1;
+    tsk_param->tbl_ref = "";
+
+    QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::tsk_upl_0,tsk_param);
+    /// ----------------------
+
+    if(ong_upl > pGame->limites[ong_zn].win){
      break;
     }
     else {
-     /// ----------------------
-     stParam_tsk *tsk_param = new stParam_tsk;
-     tsk_param->eEns_id = useData;
-     tsk_param->ptr_gmCf = gm_def;
-     tsk_param->l_id = ong_tir;
-     tsk_param->z_id = ong_zn;
-     tsk_param->g_id = upl_set;
-     tsk_param->g_lm = -1;
-     tsk_param->tbl_ref = "";
 
-     QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::tsk_upl_0,tsk_param);
-     /// ----------------------
-
-     QWidget * wdg_tmp = fill_Bview_1(pGame,ong_zn,ong_tir,upl_set);
+     QWidget * wdg_tmp = fill_Bview_1(pGame,ong_zn,ong_tir,ong_upl);
      if(wdg_tmp !=nullptr){
-      tab_uplets->addTab(wdg_tmp,QString::number(upl_set).rightJustified(2,'0'));
+      tab_uplets->addTab(wdg_tmp,QString::number(ong_upl).rightJustified(2,'0'));
+
      }
     }
    }
@@ -407,11 +413,11 @@ void BcUpl::tsk_upl_0(stParam_tsk *tsk_param)
      tsk_param->upl_txt = upl_cur;
      tsk_param->upl_tot = query.value("T").toInt();;
      tsk_param->grb_target = nullptr;
-     tsk_param->ani_tbv = tbv_Anim[ong_tir-1][ong_zn][upl_set-C_MIN_UPL];
+     tsk_param->ani_tbv = nullptr;//tbv_Anim[ong_tir-1][ong_zn][upl_set-C_MIN_UPL];
 
      /// Faire les calculs
      QFuture<stParam_tsk *> f_task = QtConcurrent::run(this,&BcUpl::FillBdd,tbl_fill,tsk_param);
-
+     f_task.waitForFinished();
     }
    }while(query.next());
   }
@@ -425,8 +431,7 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int ong_zn, int ong_tir, i
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
 
- BView *qtv_tmp = new BView;
- upl_Bview_1[ong_tir-1][ong_zn][ong_upl-C_MIN_UPL] = qtv_tmp;
+ BView *qtv_tmp = upl_Bview_1[ong_tir-1][ong_zn][ong_upl-C_MIN_UPL];
 
  qtv_tmp->setObjectName(QString::number(ong_upl-C_MIN_UPL));
  qtv_tmp->setZone(ong_zn);
@@ -550,9 +555,9 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int ong_zn, int ong_tir, i
  // survol des lignes
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,&BView::entered, this, &BcUpl::BSlot_over);
- BAnimateCell * ani_tbv = new BAnimateCell(qtv_tmp);
- tbv_Anim[ong_tir-1][ong_zn][ong_upl-C_MIN_UPL] = ani_tbv;
+ BAnimateCell * ani_tbv = tbv_Anim[ong_tir-1][ong_zn][ong_upl-C_MIN_UPL];
  qtv_tmp->setItemDelegate(ani_tbv);
+ ani_tbv->setModel(qtv_tmp);
  connect(ani_tbv,&BAnimateCell::BSig_Repaint,this,&BcUpl::BSlot_Repaint);
 
  /// -------------
@@ -2140,7 +2145,9 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
  BAnimateCell *ani = tsk_param->ani_tbv;
 
  /// indiquer en cours
- ani->addKey(gru_elemt);
+ if(ani !=nullptr){
+  ani->addKey(gru_elemt);
+ }
 
  QString cnx=pGame->db_ref->cnx;
 
@@ -2180,6 +2187,8 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
    sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_GrpId,sql_ref);
 
    /// On force une creation
+   /// https://stackoverflow.com/questions/37741279/crash-when-doing-multi-thread-operation-on-sqlite-database-using-qt
+   /// https://lnj.gitlab.io/post/async-databases-with-qtsql/
    QFuture<DB_Tools::eCort> Bdd_tsk = QtConcurrent::run(DB_Tools::createOrReadTable,tbl_use,cnx,sql_msg,nullptr);
    synchronizer.addFuture(Bdd_tsk);
   }

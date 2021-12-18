@@ -55,10 +55,13 @@ ARCH_TYPE=32
 else
 ARCH_TYPE=64
 fi
+echo $ARCH_TYPE
 
 #MYQTPATH=`pwd`
 MYPATH=`cygpath.exe  --unix C:/Devel`
 echo $MYPATH
+echo ---------
+echo $PATH
 
 # export MYDEVPATH=/c/Devel
 # 
