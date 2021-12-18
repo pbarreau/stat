@@ -13,6 +13,8 @@
 #include <QApplication>
 #include <QTextStream>
 
+#include <QThread>
+
 #include "db_tools.h"
 
 /// cette fonction construit une chaine sous contrainte
@@ -243,9 +245,18 @@ QString DB_Tools::leftJoinFiltered(stJoinArgs ja,QString arg5)
 DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QString tbl_code, QString *tbl_read)
 {
  DB_Tools::eCort ret_val = eCort_NotSet;
+ bool status = false;
 
- QSqlDatabase db = QSqlDatabase::database(cnx);
- QSqlQuery query(db);
+ QSqlDatabase db_1 = QSqlDatabase::database(cnx);
+
+ const QString cnx_2 = "cnxCreate_" + QString::number((quintptr)QThread::currentThreadId());
+ QSqlDatabase db_2 = QSqlDatabase::cloneDatabase(db_1, cnx_2);
+ if (!(status = db_2.open())) {
+      QString err = "Failed to open db connection" + cnx_2;
+      qCritical() << err;
+  }
+
+ QSqlQuery query(db_2);
 
  QString sql_msg = tbl_code;
 

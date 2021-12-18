@@ -6,6 +6,7 @@
 
 #include <QApplication>
 #include <QtConcurrent>
+#include <QThread>
 
 #include <QSqlDatabase>
 #include <QVBoxLayout>
@@ -321,7 +322,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
     tsk_param->g_lm = -1;
     tsk_param->tbl_ref = "";
 
-    QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::tsk_upl_0,tsk_param);
+    //QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::tsk_upl_0,tsk_param);
     /// ----------------------
 
     if(ong_upl > pGame->limites[ong_zn].win){
@@ -366,7 +367,14 @@ void BcUpl::tsk_upl_0(stParam_tsk *tsk_param)
  QString cnx=pGame->db_ref->cnx;
  QSqlDatabase db_1 = QSqlDatabase::database(cnx);
 
- QSqlQuery query(db_1);
+ const QString connName = "cnxTsk0_" + QString::number((quintptr)QThread::currentThreadId());
+ QSqlDatabase db_2 = QSqlDatabase::cloneDatabase(db_1, connName);
+ if (!(status = db_2.open())) {
+      QString err = "Failed to open db connection" + connName;
+      qCritical() << err;
+  }
+
+ QSqlQuery query(db_2);
 
  int day_delta = 0;
  QString sql_msg = getSqlTbv(pGame,ong_zn,ong_tir,day_delta,upl_set, -1, ELstUplTot);
@@ -417,7 +425,7 @@ void BcUpl::tsk_upl_0(stParam_tsk *tsk_param)
 
      /// Faire les calculs
      QFuture<stParam_tsk *> f_task = QtConcurrent::run(this,&BcUpl::FillBdd,tbl_fill,tsk_param);
-     f_task.waitForFinished();
+     //f_task.waitForFinished();
     }
    }while(query.next());
   }
@@ -2149,7 +2157,18 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
   ani->addKey(gru_elemt);
  }
 
- QString cnx=pGame->db_ref->cnx;
+ bool status = true;
+ QString cnx_1=pGame->db_ref->cnx;
+ QSqlDatabase db_1 = QSqlDatabase::database(cnx_1);
+
+ const QString cnx_2 = "cnxFill_" + QString::number((quintptr)QThread::currentThreadId());
+ QSqlDatabase db_2 = QSqlDatabase::cloneDatabase(db_1, cnx_2);
+ if (!(status = db_2.open())) {
+      QString err = "Failed to open db connection" + cnx_2;
+      qCritical() << err;
+  }
+
+ QSqlQuery query(db_2);
 
  eUpl_Lst tabCal[][3]=
  {
@@ -2189,7 +2208,7 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
    /// On force une creation
    /// https://stackoverflow.com/questions/37741279/crash-when-doing-multi-thread-operation-on-sqlite-database-using-qt
    /// https://lnj.gitlab.io/post/async-databases-with-qtsql/
-   QFuture<DB_Tools::eCort> Bdd_tsk = QtConcurrent::run(DB_Tools::createOrReadTable,tbl_use,cnx,sql_msg,nullptr);
+   QFuture<DB_Tools::eCort> Bdd_tsk = QtConcurrent::run(DB_Tools::createOrReadTable,tbl_use,cnx_2,sql_msg,nullptr);
    synchronizer.addFuture(Bdd_tsk);
   }
  }
