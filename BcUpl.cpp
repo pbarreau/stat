@@ -321,7 +321,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
      tsk_param->g_lm = -1;
      tsk_param->tbl_ref = "";
 
-     ///QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::tsk_upl_0,tsk_param);
+     QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::tsk_upl_0,tsk_param);
      /// ----------------------
 
      QWidget * wdg_tmp = fill_Bview_1(pGame,ong_zn,ong_tir,upl_set);
@@ -351,9 +351,9 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 void BcUpl::tsk_upl_0(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->ptr_gmCf;
- int zn = tsk_param->z_id;
- int tir_LgnId = tsk_param->l_id;
- int upl_GrpId = tsk_param->g_id;
+ int ong_zn = tsk_param->z_id;
+ int ong_tir = tsk_param->l_id;
+ int upl_set = tsk_param->g_id;
  eUpl_Ens eEns = tsk_param->eEns_id;
 
  bool status = true;
@@ -363,20 +363,20 @@ void BcUpl::tsk_upl_0(stParam_tsk *tsk_param)
  QSqlQuery query(db_1);
 
  int day_delta = 0;
- QString sql_msg = getSqlTbv(pGame,zn,tir_LgnId,day_delta,upl_GrpId, -1, ELstUplTot);
- sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_GrpId,sql_msg);
+ QString sql_msg = getSqlTbv(pGame,ong_zn,ong_tir,day_delta,upl_set, -1, ELstUplTot);
+ sql_msg = sql_ShowItems(pGame,ong_zn,ELstShowCal,upl_set,sql_msg);
 
  QString tbl_name = "Upl_" +
-                    Txt_eUpl_Ens[eEns] + QString::number(tir_LgnId).rightJustified(2,'0') +
-                    "_Z" + QString::number(zn).rightJustified(2,'0') +
-                    "_C" + QString::number(upl_GrpId).rightJustified(2,'0');
+                    Txt_eUpl_Ens[eEns] + QString::number(ong_tir).rightJustified(2,'0') +
+                    "_Z" + QString::number(ong_zn).rightJustified(2,'0') +
+                    "_C" + QString::number(upl_set).rightJustified(2,'0');
 #ifndef QT_NO_DEBUG
  QString dbg_file = "dbg_tsk-" +
                     gameLabel[pGame->eFdjType]+
                     tbl_name +
                     "-start.txt"
                     ;
- BTest::writetoFile(dbg_file,sql_msg,false);
+ //BTest::writetoFile(dbg_file,sql_msg,false);
 #endif
 
  if((status=query.exec(sql_msg))){
@@ -386,23 +386,32 @@ void BcUpl::tsk_upl_0(stParam_tsk *tsk_param)
     int uid = query.value(0).toInt();
     tsk_param->g_lm = uid;
 
-    for(int id_val=1;id_val<=upl_GrpId;id_val++){
+    for(int id_val=1;id_val<=upl_set;id_val++){
      int val = query.value(id_val).toInt();
      upl_cur = upl_cur + QString::number(val).rightJustified(2,'0');
-     if(id_val<upl_GrpId){
+     if(id_val<upl_set){
       upl_cur = upl_cur + ",";
      }
     }
+
     /// On a un uplet, obtenir le radical de table
-    QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn);
+    bool isPresent = false;
+    QString tbl_radical = getTablePrefixFromSelection(upl_cur,ong_zn, &isPresent);
     QString tbl_fill = tbl_name +
                        "_K"+
                        tbl_radical;
-    /// Verifier si table existe
-    if((status = DB_Tools::isDbGotTbl(tbl_fill, cnx)) == false)
-    {
-     /// Faire les recherches a stocker dans la table
-     FillBdd(tbl_fill,tsk_param);
+
+    if(isPresent == false){
+
+     tsk_param->clear = false;
+     tsk_param->upl_txt = upl_cur;
+     tsk_param->upl_tot = query.value("T").toInt();;
+     tsk_param->grb_target = nullptr;
+     tsk_param->ani_tbv = tbv_Anim[ong_tir-1][ong_zn][upl_set-C_MIN_UPL];
+
+     /// Faire les calculs
+     QFuture<stParam_tsk *> f_task = QtConcurrent::run(this,&BcUpl::FillBdd,tbl_fill,tsk_param);
+
     }
    }while(query.next());
   }
@@ -1989,15 +1998,15 @@ int BcUpl::getFromView_Lid(const BView *view)
 void BcUpl::BSlot_clicked(const QModelIndex &index)
 {
  BView *view = qobject_cast<BView *>(sender());
- int upl_GrpId = (view->objectName().toInt()) + C_MIN_UPL;
- int zn = view->getZone();
+ int upl_set = (view->objectName().toInt()) + C_MIN_UPL;
+ int ong_zn = view->getZone();
  int g_lm =  index.sibling(index.row(),Bp::colId).data().toInt();
- int tir_LgnId = getFromView_Lid(view);
- int upl_tot =  index.sibling(index.row(),Bp::colId+upl_GrpId+1).data().toInt();
+ int ong_tir = getFromView_Lid(view);
+ int upl_tot =  index.sibling(index.row(),Bp::colId+upl_set+1).data().toInt();
  QGroupBox *target;
- QString upl_cur = getFromIndex_CurUpl(index,upl_GrpId, &target);
+ QString upl_cur = getFromIndex_CurUpl(index,upl_set, &target);
  QString cnx=gm_def->db_ref->cnx;
- BAnimateCell *ani = tbv_Anim[tir_LgnId-1][zn][upl_GrpId-C_MIN_UPL];
+ BAnimateCell *ani = tbv_Anim[ong_tir-1][ong_zn][upl_set-C_MIN_UPL];
 
  /// Calcul de cette element en cours ?
  if(ani->gotKey(g_lm)){return;}
@@ -2006,9 +2015,9 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  stParam_tsk *tsk_param = new stParam_tsk;
  tsk_param->eEns_id = useData;
  tsk_param->ptr_gmCf = gm_def;
- tsk_param->l_id = tir_LgnId;
- tsk_param->z_id = zn;
- tsk_param->g_id = upl_GrpId;
+ tsk_param->l_id = ong_tir;
+ tsk_param->z_id = ong_zn;
+ tsk_param->g_id = upl_set;
  tsk_param->g_lm = g_lm;
  tsk_param->tbl_ref = "";
  tsk_param->clear = false;
@@ -2017,16 +2026,15 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  tsk_param->grb_target = target;
  tsk_param->ani_tbv = ani;
 
- QString title = QString(ref_lupl[1]).arg(upl_cur).arg(upl_tot);
 
  QString tbl_name = "Upl_" +
-                    Txt_eUpl_Ens[useData] + QString::number(tir_LgnId).rightJustified(2,'0') +
-                    "_Z" + QString::number(zn).rightJustified(2,'0') +
-                    "_C" + QString::number(upl_GrpId).rightJustified(2,'0');
+                    Txt_eUpl_Ens[useData] + QString::number(ong_tir).rightJustified(2,'0') +
+                    "_Z" + QString::number(ong_zn).rightJustified(2,'0') +
+                    "_C" + QString::number(upl_set).rightJustified(2,'0');
 
  /// On a un uplet, obtenir le radical de table
  bool isPresent = false;
- QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn, &isPresent);
+ QString tbl_radical = getTablePrefixFromSelection(upl_cur,ong_zn, &isPresent);
  QString tbl_fill = tbl_name +
                     "_K"+
                     tbl_radical;
@@ -2087,7 +2095,10 @@ void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
  else{
   title = ref_lupl[0];
  }
- tsk_param->grb_target->setTitle(title);
+
+ if(tsk_param->grb_target != nullptr){
+  tsk_param->grb_target->setTitle(title);
+ }
 
  QString strDay[]= {"J","J+1","J+?"};
  QString sql_msg = "";
