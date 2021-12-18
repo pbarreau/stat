@@ -124,6 +124,7 @@ class BcUpl: public BCount
   void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_clicked(const QModelIndex &index);
   void BSlot_tsk_finished();
+  void BSlot_over(const QModelIndex &index);
 
   //void BSlot_Tab(int);
 

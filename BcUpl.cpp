@@ -27,6 +27,8 @@
 #include "BFpm_3.h"
 #include "BFpm_upl.h"
 
+#include "BAnimateCell.h"
+
 #include "BValidator.h"
 #include "Bc.h"
 #include "db_tools.h"
@@ -447,6 +449,8 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int ong_zn, int ong_tir, i
 
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, db_0);
+ int nb_col = sqm_tmp->columnCount();
+
  ///effectueRecherche(useData,sql_msg,tir_LgnId,zn,upl_GrpId);
 
  /// On effectue la liasion avec le proxy model
@@ -523,7 +527,12 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int ong_zn, int ong_tir, i
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
           this, SLOT(BSlot_clicked( QModelIndex) ) );
 
+ // survol des lignes
+ qtv_tmp->setMouseTracking(true);
+ connect(qtv_tmp,&BView::entered, this, &BcUpl::BSlot_over);
+ qtv_tmp->setItemDelegate(new BAnimateCell(qtv_tmp));
 
+ /// -------------
  QWidget *tmp = showUplFromRef(pGame,ong_zn,ong_tir,ong_upl-C_MIN_UPL);
 
  BView *qtv_bilan = new BView;
@@ -548,6 +557,12 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int ong_zn, int ong_tir, i
  ///effectueRecherche(useData,sql_msg,tir_LgnId,zn,upl_GrpId);
 
  return wdg_tmp;
+}
+
+void BcUpl::BSlot_over(const QModelIndex &index)
+{
+ int lgn = index.row();
+
 }
 
 QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub)
@@ -2096,9 +2111,7 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
  int tir_LgnId = tsk_param->l_id;
  int upl_GrpId = tsk_param->g_id;
  int gru_elemt = tsk_param->g_lm; /// Group uplet element
- //eUpl_Ens eEns = tsk_param->eEns_id;
 
- bool status = true;
  QString cnx=pGame->db_ref->cnx;
 
  eUpl_Lst tabCal[][3]=
@@ -2137,12 +2150,12 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
    sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_GrpId,sql_ref);
 
    /// On force une creation
-   ///eTblStatus = DB_Tools::createOrReadTable(tbl_use,cnx,sql_msg);
    QFuture<DB_Tools::eCort> Bdd_tsk = QtConcurrent::run(DB_Tools::createOrReadTable,tbl_use,cnx,sql_msg,nullptr);
    synchronizer.addFuture(Bdd_tsk);
   }
  }
 
+ /// On attend la terminaison de tous les threads
  synchronizer.waitForFinished();
  tsk_param->tbl_ref = tbl;
  return(tsk_param);
