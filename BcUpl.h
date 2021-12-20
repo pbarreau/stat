@@ -30,7 +30,7 @@
 
 #define  C_TBL_UPL "Upl_lst"
 
-#define C_PGM_THREADED 0
+#define C_PGM_THREADED 1
 
 class BcUpl: public BCount
 {

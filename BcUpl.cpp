@@ -2020,7 +2020,9 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  BAnimateCell *ani = tbv_Anim[tir_LgnId-1][zn][upl_GrpId-C_MIN_UPL];
 
  /// Calcul de cette element en cours ?
- if(ani->gotKey(g_lm)){return;}
+ if(ani->gotKey(g_lm)){
+  return;
+ }
 
  /// ----------------------
  stParam_tsk *tsk_param = new stParam_tsk;
@@ -2037,7 +2039,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  tsk_param->grb_target = target;
  tsk_param->ani_tbv = ani;
 
- QString title = QString(ref_lupl[1]).arg(upl_cur).arg(upl_tot);
+ //QString title = QString(ref_lupl[1]).arg(upl_cur).arg(upl_tot);
 
  QString tbl_name = "Upl_" +
                     Txt_eUpl_Ens[useData] + QString::number(tir_LgnId).rightJustified(2,'0') +
@@ -2175,7 +2177,7 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
 
  QString cnx_1=pGame->db_ref->cnx;
 
-#if C_PGM_THREADED
+#if C_PGM_THREADED_L2
  bool status = true;
  QSqlDatabase db_1 = QSqlDatabase::database(cnx_1);
 
@@ -2201,9 +2203,14 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
  QString tbl_use = "";
  //DB_Tools::eCort eTblStatus = DB_Tools::eCort_NotSet;
 
-#if C_PGM_THREADED
+#if C_PGM_THREADED_L2
  /// Creation des resultats en //
  QFutureSynchronizer<DB_Tools::eCort> synchronizer;
+ QThreadPool pool;
+ // limit to one thread
+ pool.setMaxThreadCount(1);
+ // prevent automatic deletion and recreation
+ pool.setExpiryTimeout(-1);
 #endif
 
  for (int day_anaUpl = 0;day_anaUpl< C_NB_OFFSET;day_anaUpl++) {
@@ -2225,7 +2232,7 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
              "_V";
    sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_GrpId,sql_ref);
 
-#if C_PGM_THREADED
+#if C_PGM_THREADED_L2
    /// On force une creation
    /// https://stackoverflow.com/questions/37741279/crash-when-doing-multi-thread-operation-on-sqlite-database-using-qt
    /// https://lnj.gitlab.io/post/async-databases-with-qtsql/
@@ -2237,13 +2244,13 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
   }
  }
 
-#if C_PGM_THREADED
+#if C_PGM_THREADED_L2
  /// On attend la terminaison de tous les threads
  synchronizer.waitForFinished();
- tsk_param->tbl_ref = tbl;
- return(tsk_param);
 #endif
 
+ //tsk_param->tbl_ref = tbl;
+ return(tsk_param);
 }
 
 

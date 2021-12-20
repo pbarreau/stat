@@ -151,6 +151,9 @@ bool BFdj::AuthoriseChargementExtension(void)
 
  /// http://sqlite.1065341.n5.nabble.com/Using-loadable-extension-with-Qt-td24872.html
  /// https://arstechnica.com/civis/viewtopic.php?f=20&t=64150
+ /// https://lnj.gitlab.io/post/async-databases-with-qtsql/
+ /// https://stackoverflow.com/questions/35717263/how-threadsafe-is-sqlite3
+ /// https://webdevdesigner.com/q/difference-between-pthread-and-lpthread-while-compiling-52088/
  QVariant v = fdj_db.driver()->handle();
 
  if (v.isValid() && qstrcmp(v.typeName(), "sqlite3*")==0)
