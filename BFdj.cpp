@@ -241,7 +241,7 @@ bool BFdj::OPtimiseAccesBase(void)
  QSqlQuery query(fdj_db);
  QString msg = "";
 
-#define DBG_SQLITE_COMPILATION
+#undef DBG_SQLITE_COMPILATION
 
  /// https://www.sqlite.org/pragma.html#pragma_locking_mode
  QString stRequete[]={

@@ -13,6 +13,8 @@
 #include <QApplication>
 #include <QTextStream>
 
+#include <QThread>
+
 #include "db_tools.h"
 
 /// cette fonction construit une chaine sous contrainte

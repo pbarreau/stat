@@ -123,7 +123,8 @@ SOURCES += \
     BStepPaint.cpp \
     BFpm_upl.cpp \
     BCompress.cpp \
-    BAction_1.cpp
+    BAction_1.cpp \
+    BAnimateCell.cpp
 
 HEADERS  += \
     BColorPriority.h \
@@ -210,7 +211,8 @@ HEADERS  += \
     BStepPaint.h \
     BFpm_upl.h \
     BCompress.h \
-    BAction_1.h
+    BAction_1.h \
+    BAnimateCell.h
 
 
 FORMS    += mainwindow.ui \

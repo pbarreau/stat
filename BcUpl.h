@@ -17,6 +17,8 @@
 #include "BView.h"
 #include "Bc.h"
 
+#include "BAnimateCell.h"
+
 #define  C_MIN_UPL    1
 #define  C_MAX_UPL    3
 #define  C_NB_ONG     3
@@ -71,6 +73,7 @@ class BcUpl: public BCount
     QString upl_txt; /// valeur du uplet
     int upl_tot;  /// total de cette valeur
     QGroupBox *grb_target;
+    BAnimateCell *ani_tbv;
   }stParam_tsk;
 
 
@@ -124,6 +127,8 @@ class BcUpl: public BCount
   void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_clicked(const QModelIndex &index);
   void BSlot_tsk_finished();
+  void BSlot_over(const QModelIndex &index);
+  void BSlot_Repaint(const BView * tbv);
 
   //void BSlot_Tab(int);
 
@@ -133,6 +138,7 @@ class BcUpl: public BCount
   QTabWidget *uplTirTab;
   int upl_zn;
   eUpl_Ens useData;
+  BAnimateCell ****tbv_Anim;   /// Selection d'un uplet
 
   //QString gpb_title;
   //st_In input;
