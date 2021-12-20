@@ -589,7 +589,7 @@ void BcUpl::BSlot_over(const QModelIndex &index)
 
 void BcUpl::BSlot_Repaint(const BView *tbv)
 {
- //tbv->viewport()->repaint();
+ tbv->viewport()->repaint();
 }
 
 QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub)
@@ -2038,6 +2038,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  tsk_param->upl_tot = upl_tot;
  tsk_param->grb_target = target;
  tsk_param->ani_tbv = ani;
+ tsk_param->cupl = view;
 
  //QString title = QString(ref_lupl[1]).arg(upl_cur).arg(upl_tot);
 
@@ -2144,8 +2145,6 @@ void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
     sql_msg = "select * from " + tbl_use;
    }
    else{
-    //int ong_day = 0;
-    //int ong_tab = 0;
     QString sql_ref = getSqlTbv(pGame, ong_zn, ong_tir, ong_day, ong_upl, ong_tab+C_MIN_UPL, ELstCal);
     sql_msg = sql_ShowItems(pGame,ong_zn,ELstShowCal,ong_upl,sql_ref);
    }
@@ -2173,6 +2172,8 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
  /// indiquer en cours
  if(ani !=nullptr){
   ani->addKey(gru_elemt);
+  //tsk_param->cupl->viewport()->repaint();
+  //tsk_param->cupl->viewport()->setFocus();
  }
 
  QString cnx_1=pGame->db_ref->cnx;
@@ -2249,7 +2250,12 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
  synchronizer.waitForFinished();
 #endif
 
- //tsk_param->tbl_ref = tbl;
+ if(ani !=nullptr){
+  ani->delKey(gru_elemt);
+  //tsk_param->cupl->viewport()->repaint();
+ }
+
+ tsk_param->tbl_ref = tbl;
  return(tsk_param);
 }
 

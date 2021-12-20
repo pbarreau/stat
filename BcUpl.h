@@ -76,6 +76,7 @@ class BcUpl: public BCount
     int upl_tot;  /// total de cette valeur
     QGroupBox *grb_target;
     BAnimateCell *ani_tbv;
+    BView *cupl;
   }stParam_tsk;
 
 
