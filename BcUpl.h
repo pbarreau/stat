@@ -30,6 +30,8 @@
 
 #define  C_TBL_UPL "Upl_lst"
 
+#define C_PGM_THREADED 0
+
 class BcUpl: public BCount
 {
   Q_OBJECT
@@ -124,9 +126,11 @@ class BcUpl: public BCount
   void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int zn);
 
  private slots:
+#if C_PGM_THREADED
+  void BSlot_tsk_finished();
+#endif
   void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_clicked(const QModelIndex &index);
-  void BSlot_tsk_finished();
   void BSlot_over(const QModelIndex &index);
   void BSlot_Repaint(const BView * tbv);
 
