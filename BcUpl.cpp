@@ -2100,6 +2100,16 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
 
  bool status = true;
  QString cnx=pGame->db_ref->cnx;
+ QSqlDatabase db_1 = QSqlDatabase::database(cnx);
+
+ const QString cnx_2 = "cnxCreate_" + QString::number((quintptr)QThread::currentThreadId());
+ QSqlDatabase db_2 = QSqlDatabase::cloneDatabase(db_1, cnx_2);
+ if (!(status = db_2.open())) {
+      QString err = "Failed to open db connection" + cnx_2;
+      qCritical() << err;
+  }
+
+ //QSqlQuery query(db_2);
 
  eUpl_Lst tabCal[][3]=
  {
@@ -2112,7 +2122,6 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
  QString sql_ref ="";
  QString sql_msg = "";
  QString tbl_use = "";
- //DB_Tools::eCort eTblStatus = DB_Tools::eCort_NotSet;
 
  /// Creation des resultats en //
  QFutureSynchronizer<DB_Tools::eCort> synchronizer;
@@ -2137,9 +2146,10 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
    sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_GrpId,sql_ref);
 
    /// On force une creation
-   ///eTblStatus = DB_Tools::createOrReadTable(tbl_use,cnx,sql_msg);
-   QFuture<DB_Tools::eCort> Bdd_tsk = QtConcurrent::run(DB_Tools::createOrReadTable,tbl_use,cnx,sql_msg,nullptr);
-   synchronizer.addFuture(Bdd_tsk);
+   DB_Tools::eCort eTblStatus = DB_Tools::eCort_NotSet;
+   eTblStatus = DB_Tools::createOrReadTable(tbl_use,cnx_2,sql_msg);
+   ///QFuture<DB_Tools::eCort> Bdd_tsk = QtConcurrent::run(DB_Tools::createOrReadTable,tbl_use,cnx_2,sql_msg,nullptr);
+   ///synchronizer.addFuture(Bdd_tsk);
   }
  }
 
