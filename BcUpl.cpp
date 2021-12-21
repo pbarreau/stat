@@ -2255,7 +2255,7 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
 
  if(ani !=nullptr){
   ani->delKey(gru_elemt);
-  //tsk_param->cupl->viewport()->repaint();
+  ani->setCalReady(gru_elemt);
  }
 
  tsk_param->tbl_ref = tbl;

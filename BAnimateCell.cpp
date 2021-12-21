@@ -1,3 +1,5 @@
+#include <QApplication>
+
 #include <QTimer>
 #include <QDateTime>
 #include <QSqlQueryModel>
@@ -56,6 +58,20 @@ bool BAnimateCell::gotKey(int key)
  return (it == mapTimeout.end() ?  false : true);
 }
 
+void BAnimateCell::setCalReady(int key)
+{
+ st_cellData conf;
+ conf.color = Qt::white;
+ QVariant info;
+ info.setValue(conf);
+
+ /// ----------------
+ mapCal_Ready.insert(key,info);
+ /// ----------------
+
+ emit BSig_Repaint(m_view);
+}
+
 ///
 ////// \brief BAnimateCell::setKey
 ////// \param key
@@ -79,13 +95,18 @@ void BAnimateCell::paint(QPainter *painter, const QStyleOptionViewItem &option, 
  int col = myOpt.index.column();
  ///int row = myOpt.index.row();
 
+ /// Traitement particulier pour la colonne resultat
  if((col == nb_col-1)){
   int key = index.sibling(index.row(),0).data().toInt();
 
   FormalizeCell(key, painter, myOpt, index);
  }
 
- QStyledItemDelegate::paint(painter,myOpt,index);
+ {
+  /// Revenir sur le traitement par defaut pour les autres
+  QStyledItemDelegate::paint(painter,myOpt,index);
+ }
+
 }
 
 void BAnimateCell::FormalizeCell(int key, QPainter *painter, const QStyleOptionViewItem &myOpt, const QModelIndex &index) const
@@ -93,6 +114,7 @@ void BAnimateCell::FormalizeCell(int key, QPainter *painter, const QStyleOptionV
  QRect cur_rect = myOpt.rect;
 
 
+ /// Mettre la couleur dans la cellule selon l'etat
  QMap<int, QVariant>::const_iterator it = mapTimeout.find( key );
  if(it !=mapTimeout.end() ){
   st_cellData conf;
@@ -101,6 +123,38 @@ void BAnimateCell::FormalizeCell(int key, QPainter *painter, const QStyleOptionV
   painter->fillRect(cur_rect, conf.color);
  }
 
+ /// Adapter le texte pour Montrer les calculs termines
+ it = mapCal_Ready.find( key );
+ if(it != mapCal_Ready.end()){
+  /// ------
+  QString myTxt = myOpt.text;
+  QFont myFnt;
+  QPalette myPal;
+  Qt::GlobalColor myPen = Qt::black;
+  Qt::Alignment myAlg = Qt::AlignCenter | Qt::AlignVCenter;
+  int alignment = static_cast<int>(myAlg);
+  int font_weight = QFont::Normal;
+  int size = 10;
+
+  myFnt.setPointSize(size);
+  myFnt.setWeight(font_weight);
+  myFnt.setItalic(false);
+  myFnt.setBold(true);
+
+  /// Calcul de l'espace pour le texte
+  QFontMetrics qfm(myFnt);
+  QRect space = QApplication::style()->itemTextRect(qfm, cur_rect, alignment, true, myTxt);
+
+  /// -----------
+  //painter->save();
+
+  painter->setFont(myFnt);
+  myPal.setColor(QPalette::Active, QPalette::Text, myPen);
+  QApplication::style()->drawItemText(painter,space,alignment,myPal,true,myTxt,QPalette::ColorRole::Text);
+
+  //painter->restore();
+  /// -----------
+ }
 }
 
 QVariant BAnimateCell::data(const QModelIndex &idx, int role) const
