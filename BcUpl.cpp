@@ -2055,6 +2055,10 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
                     tbl_radical;
 
  if(isPresent == false){
+  if(ani !=nullptr){
+   ani->addKey(g_lm);
+  }
+
   /// Effacer calcul
   tsk_param->clear = true;
   FillTbv(tbl_fill, tsk_param);
@@ -2171,9 +2175,8 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
 
  /// indiquer en cours
  if(ani !=nullptr){
-  ani->addKey(gru_elemt);
-  //tsk_param->cupl->viewport()->repaint();
-  //tsk_param->cupl->viewport()->setFocus();
+  ///ani->addKey(gru_elemt);
+  ani->startKey(gru_elemt);
  }
 
  QString cnx_1=pGame->db_ref->cnx;

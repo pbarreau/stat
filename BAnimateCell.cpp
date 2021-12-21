@@ -34,6 +34,13 @@ BAnimateCell::BAnimateCell(BView *view):m_view(view),QStyledItemDelegate(nullptr
 void BAnimateCell::addKey(int key)
 {
  mapTimeout.insert( key , QDateTime::currentDateTime() );
+ id_color = Qt::green;
+ emit BSig_Repaint(m_view);
+}
+
+void BAnimateCell::startKey(int key)
+{
+ id_color = Qt::red;
  emit BSig_Repaint(m_view);
 }
 
@@ -66,7 +73,7 @@ void BAnimateCell::paint(QPainter *painter, const QStyleOptionViewItem &option, 
   int key = index.sibling(index.row(),0).data().toInt();;
   QMap<int, QVariant>::const_iterator it = mapTimeout.find( key );
   if(it !=mapTimeout.end() ){
-   painter->fillRect(cur_rect, COULEUR_FOND_R0);
+   painter->fillRect(cur_rect, id_color);
   }
  }
 

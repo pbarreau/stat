@@ -22,6 +22,7 @@ class BAnimateCell: public QStyledItemDelegate
  public:
   explicit  BAnimateCell(BView * view);
   void addKey(int key);
+  void startKey(int key);
   void delKey(int key);
   bool gotKey(int key);
   void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
@@ -41,6 +42,7 @@ class BAnimateCell: public QStyledItemDelegate
   //mutable BView * m_view;
   const BView * m_view;
   QMap<int, QVariant > mapTimeout;
+  QColor id_color;
 };
 
 #endif // BANIMATECELL_H
