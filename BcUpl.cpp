@@ -2037,7 +2037,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  tsk_param->upl_txt = upl_cur;
  tsk_param->upl_tot = upl_tot;
  tsk_param->grb_target = target;
- tsk_param->ani_tbv = ani;
+ tsk_param->a_tbv = ani;
  tsk_param->cupl = view;
 
  //QString title = QString(ref_lupl[1]).arg(upl_cur).arg(upl_tot);
@@ -2113,7 +2113,7 @@ void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
  int ong_upl = tsk_param->g_id;
  int gru_elemt = tsk_param->g_lm; /// Group uplet element
  eUpl_Ens eEns = tsk_param->eEns_id;
- BAnimateCell *ani = tsk_param->ani_tbv;
+ BAnimateCell *ani = tsk_param->a_tbv;
 
 
  /// Titre de la recherche
@@ -2167,32 +2167,14 @@ void BcUpl::FillTbv(QString tbl, stParam_tsk *tsk_param)
 BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->ptr_gmCf;
- int zn = tsk_param->z_id;
- int tir_LgnId = tsk_param->l_id;
- int upl_GrpId = tsk_param->g_id;
- int gru_elemt = tsk_param->g_lm; /// Group uplet element
- BAnimateCell *ani = tsk_param->ani_tbv;
+ int z_id = tsk_param->z_id;
+ int g_lm = tsk_param->g_lm; /// Group uplet element
+ BAnimateCell *a_tbv = tsk_param->a_tbv;
 
  /// indiquer en cours
- if(ani !=nullptr){
-  ///ani->addKey(gru_elemt);
-  ani->startKey(gru_elemt);
+ if(a_tbv !=nullptr){
+  a_tbv->startKey(g_lm);
  }
-
- QString cnx_1=pGame->db_ref->cnx;
-
-#if C_PGM_THREADED_L2
- bool status = true;
- QSqlDatabase db_1 = QSqlDatabase::database(cnx_1);
-
- const QString cnx_2 = "cnxFill_" + QString::number((quintptr)QThread::currentThreadId());
- QSqlDatabase db_2 = QSqlDatabase::cloneDatabase(db_1, cnx_2);
- if (!(status = db_2.open())) {
-  QString err = "Failed to open db connection" + cnx_2;
-  qCritical() << err;
- }
- cnx_1 = cnx_2;
-#endif
 
  eUpl_Lst tabCal[][3]=
  {
@@ -2201,50 +2183,22 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
   {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext}
  };
 
- int nb_recherche = pGame->limites[zn].win;
- QString sql_ref ="";
- QString sql_msg = "";
- QString tbl_use = "";
- //DB_Tools::eCort eTblStatus = DB_Tools::eCort_NotSet;
+ int nb_recherche = pGame->limites[z_id].win;
 
-#if C_PGM_THREADED_L2
- /// Creation des resultats en //
- QFutureSynchronizer<DB_Tools::eCort> synchronizer;
- QThreadPool pool;
- // limit to one thread
- pool.setMaxThreadCount(1);
- // prevent automatic deletion and recreation
- pool.setExpiryTimeout(-1);
-#endif
-
- for (int day_anaUpl = 0;day_anaUpl< C_NB_OFFSET;day_anaUpl++) {
-  for (int tab=0;tab < C_NB_SUB_ONG;tab++) {
-   if(tab>=nb_recherche){
+ for (int o_id = 0;o_id< C_NB_OFFSET;o_id++) {
+  for (int r_id=0;r_id < C_NB_SUB_ONG;r_id++) {
+   if(r_id>=nb_recherche){
     continue;
    }
 
-   eUpl_Lst resu = tabCal[day_anaUpl][tab];
+   eUpl_Lst c_id = tabCal[o_id][r_id];
 
-   /// initialisation msg sql
-   sql_ref = getSqlTbv(pGame, zn,
-                       tir_LgnId, day_anaUpl,
-                       upl_GrpId, tab+C_MIN_UPL,
-                       resu,gru_elemt);
-   tbl_use = tbl +
-             "_D" + QString::number(day_anaUpl).rightJustified(2,'0') +
-             "_R" + QString::number(tab+1).rightJustified(2,'0') +
-             "_V";
-   sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_GrpId,sql_ref);
+   tsk_param->o_id = o_id;
+   tsk_param->r_id = r_id;
+   tsk_param->c_id = c_id;
 
-#if C_PGM_THREADED_L2
-   /// On force une creation
-   /// https://stackoverflow.com/questions/37741279/crash-when-doing-multi-thread-operation-on-sqlite-database-using-qt
-   /// https://lnj.gitlab.io/post/async-databases-with-qtsql/
-   QFuture<DB_Tools::eCort> Bdd_tsk = QtConcurrent::run(DB_Tools::createOrReadTable,tbl_use,cnx_1,sql_msg,nullptr);
-   synchronizer.addFuture(Bdd_tsk);
-#else
-   DB_Tools::createOrReadTable(tbl_use,cnx_1,sql_msg);
-#endif
+   FillBdd_BView_2(tbl,tsk_param);
+
   }
  }
 
@@ -2253,15 +2207,46 @@ BcUpl::stParam_tsk * BcUpl::FillBdd(QString tbl, stParam_tsk *tsk_param)
  synchronizer.waitForFinished();
 #endif
 
- if(ani !=nullptr){
-  ani->delKey(gru_elemt);
-  ani->setCalReady(gru_elemt);
+ if(a_tbv !=nullptr){
+  a_tbv->delKey(g_lm);
+  a_tbv->setCalReady(g_lm);
  }
 
  tsk_param->tbl_ref = tbl;
  return(tsk_param);
 }
 
+void BcUpl::FillBdd_BView_2(QString tbl, stParam_tsk *tsk_param)
+{
+ const stGameConf *pGame = tsk_param->ptr_gmCf;
+
+ QString cnx_1=pGame->db_ref->cnx;
+
+ int z_id = tsk_param->z_id;
+ int g_lm = tsk_param->g_lm;
+ int l_id = tsk_param->l_id;
+ int g_id = tsk_param->g_id;
+ int o_id = tsk_param->o_id;
+ int r_id = tsk_param->r_id;
+ eUpl_Lst c_id = tsk_param->c_id;
+
+ QString sql_ref ="";
+ QString sql_msg = "";
+ QString tbl_use = "";
+
+ /// initialisation msg sql
+ sql_ref = getSqlTbv(pGame, z_id,
+                     l_id, o_id,
+                     g_id, r_id+C_MIN_UPL,
+                     c_id,g_lm);
+ tbl_use = tbl +
+           "_D" + QString::number(o_id).rightJustified(2,'0') +
+           "_R" + QString::number(r_id+1).rightJustified(2,'0') +
+           "_V";
+ sql_msg = sql_ShowItems(pGame,z_id,ELstShowCal,g_id,sql_ref);
+
+ DB_Tools::createOrReadTable(tbl_use,cnx_1,sql_msg);
+}
 
 void BcUpl::BSlot_clicked_old(const QModelIndex &index)
 {

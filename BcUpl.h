@@ -62,24 +62,6 @@ class BcUpl: public BCount
    eCalBrc  /// Calcul sur barycentre
   }eUpl_Cal;
 
-  typedef struct _param_tsk
-  {
-    const stGameConf *ptr_gmCf; /// ptr config du jeu
-    eUpl_Ens eEns_id; /// type d'ensemble
-    int z_id;  /// Zone id
-    int l_id;  /// Ligne id (dans base ou user)
-    int g_id;  /// Groupe id (Cnp)
-    int g_lm;  /// Groupe element (indice element dans Groupe id)
-    QString tbl_ref;
-    bool clear; /// Effacer resultat dans tbv
-    QString upl_txt; /// valeur du uplet
-    int upl_tot;  /// total de cette valeur
-    QGroupBox *grb_target;
-    BAnimateCell *ani_tbv;
-    BView *cupl;
-  }stParam_tsk;
-
-
  private:
   typedef enum _eCalTirages
   {
@@ -101,6 +83,29 @@ class BcUpl: public BCount
    ///ELstCalUsr,
    ///ELstCalFdj,
   }eUpl_Lst;
+
+
+  typedef struct _param_tsk
+  {
+    const stGameConf *ptr_gmCf; /// ptr config du jeu
+    eUpl_Ens eEns_id; /// type d'ensemble
+    int z_id;  /// Zone id
+    int l_id;  /// Ligne id (dans base ou user)
+    int g_id;  /// Groupe id (Cnp)
+    int g_lm;  /// Groupe element (indice element dans Groupe id)
+    QString tbl_ref;
+    bool clear; /// Effacer resultat dans tbv
+    QString upl_txt; /// valeur du uplet
+    int upl_tot;  /// total de cette valeur
+    QGroupBox *grb_target;
+    BAnimateCell *a_tbv;
+    BView *cupl;
+    int o_id; /// Offset from day value
+    int r_id; /// Response id
+    eUpl_Lst c_id; /// Calcul type id
+  }stParam_tsk;
+
+
 
 #ifndef QT_NO_DEBUG
   static const QString sqlStepText[ELstCal];
@@ -218,6 +223,7 @@ class BcUpl: public BCount
   void tsk_upl_2(QString cnx, QString tbl, QString sql);
   void tsk_upl_0(stParam_tsk *tsk_param);
   stParam_tsk *FillBdd(QString tbl, stParam_tsk *tsk_param);
+  void FillBdd_BView_2(QString tbl, stParam_tsk *tsk_param);
   void FillTbv(QString tbl, stParam_tsk *tsk_param);
   int getFromView_Lid(const BView *view);
   QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb);
