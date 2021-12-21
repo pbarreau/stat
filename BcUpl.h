@@ -224,7 +224,12 @@ class BcUpl: public BCount
   void tsk_upl_0(stParam_tsk *tsk_param);
   stParam_tsk *FillBdd(QString tbl, stParam_tsk *tsk_param);
   void FillBdd_BView_2(QString tbl, stParam_tsk *tsk_param);
+  void FillBdd_BView_3(QString tbl, stParam_tsk *tsk_param);
+  void FillBdd_BView_4(QString tbl, stParam_tsk *tsk_param);
   void FillTbv(QString tbl, stParam_tsk *tsk_param);
+  void FillTbv_BView_2(QString tbl, stParam_tsk *tsk_param);
+  void FillTbv_BView_3(QString tbl, stParam_tsk *tsk_param);
+  void FillTbv_BView_4(QString tbl, stParam_tsk *tsk_param);
   int getFromView_Lid(const BView *view);
   QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb);
   void BSlot_clicked_old(const QModelIndex &index);
