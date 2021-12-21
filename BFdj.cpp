@@ -165,6 +165,10 @@ bool BFdj::AuthoriseChargementExtension(void)
   int sqlite_status = SQLITE_ERROR;
 
   /// https://www.sqlite.org/c3ref/config.html
+  /// https://www.sqlite.org/c3ref/c_config_covering_index_scan.html
+  /// SQLITE_CONFIG_SINGLETHREAD
+  /// SQLITE_CONFIG_MULTITHREAD
+  /// SQLITE_CONFIG_SERIALIZED
   sqlite_status = sqlite3_config(SQLITE_CONFIG_SERIALIZED);
 
   if(sqlite_status != SQLITE_ERROR){

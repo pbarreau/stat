@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QStyledItemDelegate>
+#include <QMetaType>
 
 #include "BView.h"
 
@@ -14,6 +15,13 @@
 enum MyDataRole {
  ItemModifiedRole = Qt::UserRole + 1
 };
+
+typedef struct _cellData
+{
+  QColor color;
+  QVariant timer;
+}st_cellData;
+Q_DECLARE_METATYPE(st_cellData)
 
 class BAnimateCell: public QStyledItemDelegate
 {
@@ -31,6 +39,9 @@ class BAnimateCell: public QStyledItemDelegate
   void BSig_Repaint(const BView *tbv);
 
  private:
+  void setKey(int key,QColor color);
+  void FormalizeCell(int key, QPainter *painter, const QStyleOptionViewItem &myOpt, const QModelIndex &index) const;
+
   QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const;
 
  private slots:

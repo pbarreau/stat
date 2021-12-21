@@ -33,15 +33,12 @@ BAnimateCell::BAnimateCell(BView *view):m_view(view),QStyledItemDelegate(nullptr
 
 void BAnimateCell::addKey(int key)
 {
- mapTimeout.insert( key , QDateTime::currentDateTime() );
- id_color = Qt::green;
- emit BSig_Repaint(m_view);
+ setKey(key,Qt::green);
 }
 
 void BAnimateCell::startKey(int key)
 {
- id_color = Qt::red;
- emit BSig_Repaint(m_view);
+ setKey(key,Qt::red);
 }
 
 void BAnimateCell::delKey(int key)
@@ -59,31 +56,57 @@ bool BAnimateCell::gotKey(int key)
  return (it == mapTimeout.end() ?  false : true);
 }
 
+///
+////// \brief BAnimateCell::setKey
+////// \param key
+////// \param color
+void BAnimateCell::setKey(int key, QColor color)
+{
+ st_cellData conf;
+ conf.color = color;
+ QVariant info;
+ info.setValue(conf);
+
+ mapTimeout.insert(key,info);
+ emit BSig_Repaint(m_view);
+}
+
 void BAnimateCell::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
  QStyleOptionViewItem myOpt = option;
  initStyleOption(&myOpt, index);
 
- QRect cur_rect = myOpt.rect;
-
  int col = myOpt.index.column();
- int row = myOpt.index.row();
+ ///int row = myOpt.index.row();
 
  if((col == nb_col-1)){
-  int key = index.sibling(index.row(),0).data().toInt();;
-  QMap<int, QVariant>::const_iterator it = mapTimeout.find( key );
-  if(it !=mapTimeout.end() ){
-   painter->fillRect(cur_rect, id_color);
-  }
+  int key = index.sibling(index.row(),0).data().toInt();
+
+  FormalizeCell(key, painter, myOpt, index);
  }
 
  QStyledItemDelegate::paint(painter,myOpt,index);
 }
 
+void BAnimateCell::FormalizeCell(int key, QPainter *painter, const QStyleOptionViewItem &myOpt, const QModelIndex &index) const
+{
+ QRect cur_rect = myOpt.rect;
+
+
+ QMap<int, QVariant>::const_iterator it = mapTimeout.find( key );
+ if(it !=mapTimeout.end() ){
+  st_cellData conf;
+  QVariant item = it.value();
+  conf = item.value<st_cellData>();
+  painter->fillRect(cur_rect, conf.color);
+ }
+
+}
+
 QVariant BAnimateCell::data(const QModelIndex &idx, int role) const
 {
  if( role != ItemModifiedRole );
-     //return BView::data( idx, role );
+ //return BView::data( idx, role );
 
 }
 
