@@ -101,8 +101,7 @@ void BAnimateCell::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 
   FormalizeCell(key, painter, myOpt, index);
  }
-
- {
+ else{
   /// Revenir sur le traitement par defaut pour les autres
   QStyledItemDelegate::paint(painter,myOpt,index);
  }
@@ -146,14 +145,17 @@ void BAnimateCell::FormalizeCell(int key, QPainter *painter, const QStyleOptionV
   QRect space = QApplication::style()->itemTextRect(qfm, cur_rect, alignment, true, myTxt);
 
   /// -----------
-  //painter->save();
+  painter->save();
 
   painter->setFont(myFnt);
   myPal.setColor(QPalette::Active, QPalette::Text, myPen);
   QApplication::style()->drawItemText(painter,space,alignment,myPal,true,myTxt,QPalette::ColorRole::Text);
 
-  //painter->restore();
+  painter->restore();
   /// -----------
+ }
+ else {
+  QStyledItemDelegate::paint(painter,myOpt,index);
  }
 }
 
