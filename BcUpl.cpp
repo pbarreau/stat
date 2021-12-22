@@ -5,6 +5,8 @@
 #endif
 
 #include <QApplication>
+#include <QMessageBox>
+
 #include <QtConcurrent>
 #include <QThread>
 
@@ -93,7 +95,7 @@ BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectio
  QSqlQuery query(db_0);
  QString tbl_upl = C_TBL_UPL;
  QString sql_msg = "create table if not exists "+tbl_upl+
-                   " (id integer primary key, zn int, items text not null);";
+                   " (id integer primary key, state int, zn int, items text not null);";
  if(!query.exec(sql_msg)){
   QString str_error = db_0.lastError().text();
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
@@ -141,7 +143,7 @@ QTabWidget * BcUpl::getTabUplRsp(void)
 }
 #endif
 
-QString BcUpl::getTablePrefixFromSelection(QString items, int zn, bool *wasPresent)
+QString BcUpl::getTablePrefixFromSelection(QString items, int zn, bool *wasPresent, int *id_db)
 {
  QSqlQuery query_1(db_0);
 
@@ -172,7 +174,8 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, bool *wasPrese
    switch(total){
     case 0:
      if(wasPresent!=nullptr){*wasPresent = false;}
-     sql_m2 = "insert into "+tbl_upl+" (id,zn,items) values(NULL,"+QString::number(zn)+",'"+ord_itm+"')";
+     sql_m2 = "insert into "+tbl_upl+" (id, state, zn, items) values(NULL,"+
+              QString::number(eCalNotSet) + ","+QString::number(zn)+",'"+ord_itm+"')";
      if(query_1.exec(sql_m2)){
       if(query_1.exec(sql_m1)){
        query_1.first();
@@ -188,6 +191,7 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, bool *wasPrese
 
    if(id==-1){
     id = query_1.value(0).toInt();
+    if(id_db!=nullptr){*id_db = id;}
     ret_val = "U" + QString::number(id).rightJustified(2,'0');
    }
    else{
@@ -2070,14 +2074,23 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
  /// On a un uplet, obtenir le radical de table
  bool isPresent = false;
- QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn, &isPresent);
+ int id_db=-1;
+ QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn, &isPresent, &id_db);
  QString tbl_fill = tbl_name +
                     "_K"+
                     tbl_radical;
 
  if(isPresent == false){
+  tsk_param->d_id = id_db;
+
   if(ani !=nullptr){
    ani->addKey(g_lm);
+
+   if(!updateTracking(id_db, eCalPending)){
+    QString str_error = db_0.lastError().text();
+    QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+    return;
+   }
   }
 
   /// Effacer calcul
@@ -2301,16 +2314,41 @@ void BcUpl::FillTbv_BView_4(QString tbl, stParam_tsk *tsk_param)
  qtv_tmp->setTitle(st_title);
 }
 
+bool BcUpl::updateTracking(int v_key, eUpl_Cal v_cal)
+{
+ QSqlQuery query_1(db_0);
+ bool status = false;
+
+ QString tbl_upl = C_TBL_UPL;
+ QString sql_msg = "update " + tbl_upl +
+                   " set state = " + QString::number(v_cal) +
+                   " where (id = " + QString::number(v_key) + ")";
+
+ status = query_1.exec(sql_msg);
+
+ return status;
+}
+
 BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->ptr_gmCf;
  int z_id = tsk_param->z_id;
  int g_lm = tsk_param->g_lm; /// Group uplet element
+ int id_db = tsk_param->d_id;
+
  BAnimateCell *a_tbv = tsk_param->a_tbv;
+ QString cnx = tsk_param->ptr_gmCf->db_ref->cnx;
 
  /// indiquer en cours
  if(a_tbv !=nullptr){
   a_tbv->startKey(g_lm);
+
+  if(!updateTracking(id_db, eCalStarted)){
+   QString str_error = db_0.lastError().text();
+   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+   return tsk_param;
+  }
+
  }
 
  eUpl_Lst tabCal[][3]=
@@ -2352,6 +2390,13 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_par
  if(a_tbv !=nullptr){
   a_tbv->delKey(g_lm);
   a_tbv->setCalReady(g_lm);
+
+  if(!updateTracking(id_db, eCalReady)){
+   QString str_error = db_0.lastError().text();
+   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+   return tsk_param;
+  }
+
  }
 
  tsk_param->tbl_ref = tbl;

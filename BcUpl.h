@@ -56,10 +56,13 @@ class BcUpl: public BCount
 
   typedef enum _eCalcul
   {
-   eCalNotSet,
-   eCalTot, /// Calcul sur boule
-   eCalCmb, /// Calcul sur Combinaison
-   eCalBrc  /// Calcul sur barycentre
+   eCalNotSet,     /// Non traite
+   eCalPending,    /// Sur liste des prochains
+   eCalStarted,    /// Calcul encours
+   eCalReady,      /// Calcul disponible
+   eCalPaused,     /// Calcul mis en pause
+   eCalInterrupted,/// Calcul interrompu
+   eCalTerminated  /// Calcul termine
   }eUpl_Cal;
 
  private:
@@ -93,6 +96,7 @@ class BcUpl: public BCount
     int l_id;  /// Ligne id (dans base ou user)
     int g_id;  /// Groupe id (Cnp)
     int g_lm;  /// Groupe element (indice element dans Groupe id)
+    int d_id;  /// index dans la base pour cet indice
     QString tbl_ref;
     bool clear; /// Effacer resultat dans tbv
     QString upl_txt; /// valeur du uplet
@@ -159,7 +163,7 @@ class BcUpl: public BCount
 
 
  private:
-  QString getTablePrefixFromSelection(QString items, int zn=0, bool *wasPresent=nullptr);
+  QString getTablePrefixFromSelection(QString items, int zn=0, bool *wasPresent=nullptr, int *id_db=nullptr);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
 
   // QGroupBox *gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
@@ -183,7 +187,7 @@ class BcUpl: public BCount
   QString sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
 
  private:
-  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eUpl_Cal);
+  virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
   virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
   virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn);
   //virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
@@ -222,14 +226,19 @@ class BcUpl: public BCount
   void rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param, int fake_sel);
   void tsk_upl_2(QString cnx, QString tbl, QString sql);
   void tsk_upl_0(stParam_tsk *tsk_param);
+
+  bool updateTracking(int v_key, eUpl_Cal v_cal);
+
   stParam_tsk *FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_param);
   void FillBdd_BView_2(QString tbl, stParam_tsk *tsk_param);
   void FillBdd_BView_3(QString tbl, stParam_tsk *tsk_param);
   void FillBdd_BView_4(QString tbl, stParam_tsk *tsk_param);
+
   void FillTbv_StartPoint(QString tbl, stParam_tsk *tsk_param);
   void FillTbv_BView_2(QString tbl, stParam_tsk *tsk_param);
   void FillTbv_BView_3(QString tbl, stParam_tsk *tsk_param);
   void FillTbv_BView_4(QString tbl, stParam_tsk *tsk_param);
+
   int getFromView_Lid(const BView *view);
   QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb);
   void BSlot_clicked_old(const QModelIndex &index);
