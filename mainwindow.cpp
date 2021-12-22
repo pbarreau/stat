@@ -3,6 +3,9 @@
 #endif
 
 #include <QtGui>
+
+#include <QThread>
+
 #include <QMdiSubWindow>
 #include <QFormLayout>
 #include <QLineEdit>

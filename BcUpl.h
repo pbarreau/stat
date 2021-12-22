@@ -2,6 +2,9 @@
 #define BUPLET_H
 
 #include <QObject>
+
+#include <QThreadPool>
+
 #include <QWidget>
 #include <QSqlDatabase>
 #include <QGroupBox>
@@ -88,6 +91,13 @@ class BcUpl: public BCount
   }eUpl_Lst;
 
 
+  typedef struct _dbUpdl{
+    int id_db;
+    eUpl_Cal id_cal;
+    bool isPresent;
+    int id_zn;
+  }stUpdData;
+
   typedef struct _param_tsk
   {
     const stGameConf *ptr_gmCf; /// ptr config du jeu
@@ -96,7 +106,7 @@ class BcUpl: public BCount
     int l_id;  /// Ligne id (dans base ou user)
     int g_id;  /// Groupe id (Cnp)
     int g_lm;  /// Groupe element (indice element dans Groupe id)
-    int d_id;  /// index dans la base pour cet indice
+    stUpdData d_info;  /// index dans la base pour cet indice et +
     QString tbl_ref;
     bool clear; /// Effacer resultat dans tbv
     QString upl_txt; /// valeur du uplet
@@ -147,6 +157,7 @@ class BcUpl: public BCount
   //void BSlot_Tab(int);
 
  private:
+  QThreadPool pool;
   QSqlDatabase db_0;
   QModelIndexList my_indexes;
   QTabWidget *uplTirTab;
@@ -163,7 +174,7 @@ class BcUpl: public BCount
 
 
  private:
-  QString getTablePrefixFromSelection(QString items, int zn=0, bool *wasPresent=nullptr, int *id_db=nullptr);
+  QString getTablePrefixFromSelection(QString items, int zn=0, stUpdData *upl_data=nullptr);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
 
   // QGroupBox *gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);

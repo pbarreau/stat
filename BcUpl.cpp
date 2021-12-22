@@ -81,6 +81,14 @@ const QString BcUpl::Txt_eUpl_Ens[BcUpl::eEnsEnd]={
 BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
  :BCount (pGame, eCountUpl)
 {
+ QThread cpuInfo(this); //get CPU info
+ int info = cpuInfo.idealThreadCount();
+
+ if(info > 1){
+  pool.setMaxThreadCount(info -1);
+ }
+
+
  QString cnx=pGame->db_ref->cnx;
 
  // Etablir connexion a la base
@@ -143,9 +151,21 @@ QTabWidget * BcUpl::getTabUplRsp(void)
 }
 #endif
 
-QString BcUpl::getTablePrefixFromSelection(QString items, int zn, bool *wasPresent, int *id_db)
+QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl_data)
 {
- QSqlQuery query_1(db_0);
+ /// https://www.linuxjournal.com/article/9602
+ /// https://forum.qt.io/topic/106080/executing-query-after-cloned-connection-is-used-in-another-thread/13
+ ///
+ const QString connName = "FillBdd_Tsk_" + QString::number((quintptr)QThread::currentThreadId());
+ bool status = false;
+ QSqlDatabase db_2 = QSqlDatabase::cloneDatabase(db_0, connName);
+ if (!(status = db_2.open())) {
+  QString err = "Failed to open db connection" + connName;
+  QString str_error = db_2.lastError().text();
+  QMessageBox::critical(nullptr, connName, str_error,QMessageBox::Yes);
+ }
+
+ QSqlQuery query_1(db_2);
 
  QString tbl_upl = C_TBL_UPL;
 
@@ -161,19 +181,26 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, bool *wasPrese
  lst.sort();
  ord_itm = lst.join(',');
 
- sql_m1 = "Select id, count(id)as T from " +
+ sql_m1 = "Select id, state, zn, count(id)as T from " +
           tbl_upl +
           " where((items like '"+ord_itm+"') and (zn="+QString::number(zn)+"));";
 
  if(query_1.exec(sql_m1)){
   if(query_1.first()){
-   int id=-1;
+   //int id=-1;
    /// verifier unicite
    int total = query_1.value("T").toInt();
 
    switch(total){
     case 0:
-     if(wasPresent!=nullptr){*wasPresent = false;}
+    {
+     if(upl_data!=nullptr)
+     {
+      upl_data->isPresent = false;
+      upl_data->id_db = -1;
+      upl_data->id_zn = -1;
+      upl_data->id_cal = eCalNotSet;
+     }
      sql_m2 = "insert into "+tbl_upl+" (id, state, zn, items) values(NULL,"+
               QString::number(eCalNotSet) + ","+QString::number(zn)+",'"+ord_itm+"')";
      if(query_1.exec(sql_m2)){
@@ -181,14 +208,35 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, bool *wasPrese
        query_1.first();
       }
      }
+    }
      break;
+
     case 1:
-     if(wasPresent!=nullptr){*wasPresent = true;}
+    {
+     int id = query_1.value(0).toInt();
+     eUpl_Cal cal = static_cast<eUpl_Cal>(query_1.value(1).toInt());
+     int zn = query_1.value(2).toInt();
+
+     if(upl_data!=nullptr)
+     {
+      upl_data->isPresent = true;
+      upl_data->id_db = id;
+      upl_data->id_zn = zn;
+      upl_data->id_cal = cal;
+     }
+     ret_val = "U" + QString::number(id).rightJustified(2,'0');
+    }
      break;
+
     default:
-     id=-2;
+    {
+     static int counter = 0;
+     ret_val = "Err_" + QString::number(counter).rightJustified(3,'0');
+     counter++;
+    }
    }
 
+#if 0
    if(id==-1){
     id = query_1.value(0).toInt();
     if(id_db!=nullptr){*id_db = id;}
@@ -196,10 +244,11 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, bool *wasPrese
    }
    else{
     static int counter = 0;
-    if(wasPresent!=nullptr){*wasPresent = true;}
+    if(upl_data!=nullptr){*upl_data = true;}
     ret_val = "Err_" + QString::number(counter).rightJustified(3,'0');
     counter++;
    }
+#endif
   }
  }
 
@@ -1911,22 +1960,22 @@ QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int ong_2_zn, int ong_1_t
    BView * bv_3 = new BView ;
    upl_Bview_3[ong_1_tir-1][ong_2_zn][ong_3_upl][ong_4_day][ong_5_tab-1]= bv_3;
    objName = "bv3_T" +
-                     QString::number(ong_1_tir).rightJustified(2,'0')+
-                     "-"+pGame->names[ong_2_zn].abv +
-                     "-U"+QString::number(ong_3_upl+1).rightJustified(2,'0')+
-                     "_"+ defDays[ong_4_day].onglet+
-                     "_R" +QString::number(ong_5_tab+1).rightJustified(2,'0');
+             QString::number(ong_1_tir).rightJustified(2,'0')+
+             "-"+pGame->names[ong_2_zn].abv +
+             "-U"+QString::number(ong_3_upl+1).rightJustified(2,'0')+
+             "_"+ defDays[ong_4_day].onglet+
+             "_R" +QString::number(ong_5_tab+1).rightJustified(2,'0');
    bv_3->setObjectName(objName);
 
 
    BView * bv_4 = new BView ;
    upl_Bview_4[ong_1_tir-1][ong_2_zn][ong_3_upl][ong_4_day][ong_5_tab-1]= bv_4;
    objName = "bv4_T" +
-                     QString::number(ong_1_tir).rightJustified(2,'0')+
-                     "-"+pGame->names[ong_2_zn].abv +
-                     "-U"+QString::number(ong_3_upl+1).rightJustified(2,'0')+
-                     "_"+ defDays[ong_4_day].onglet+
-                     "_R" +QString::number(ong_5_tab+1).rightJustified(2,'0');
+             QString::number(ong_1_tir).rightJustified(2,'0')+
+             "-"+pGame->names[ong_2_zn].abv +
+             "-U"+QString::number(ong_3_upl+1).rightJustified(2,'0')+
+             "_"+ defDays[ong_4_day].onglet+
+             "_R" +QString::number(ong_5_tab+1).rightJustified(2,'0');
    bv_4->setObjectName(objName);
   }
 
@@ -2073,15 +2122,17 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
                     "_C" + QString::number(upl_GrpId).rightJustified(2,'0');
 
  /// On a un uplet, obtenir le radical de table
- bool isPresent = false;
- int id_db=-1;
- QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn, &isPresent, &id_db);
+ stUpdData upl_data;
+ QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn, &upl_data);
+ bool isPresent = upl_data.isPresent;
+ int id_db=upl_data.id_db;
+
  QString tbl_fill = tbl_name +
                     "_K"+
                     tbl_radical;
 
  if(isPresent == false){
-  tsk_param->d_id = id_db;
+  tsk_param->d_info = upl_data;
 
   if(ani !=nullptr){
    ani->addKey(g_lm);
@@ -2105,7 +2156,8 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
   /// Faire les calculs
   /// https://lnj.gitlab.io/post/async-databases-with-qtsql/
-  QFuture<stParam_tsk *> f_task = QtConcurrent::run(this,&BcUpl::FillBdd_StartPoint,tbl_fill,tsk_param);
+  QFuture<stParam_tsk *> f_task = QtConcurrent::run(&pool,
+                                                    this,&BcUpl::FillBdd_StartPoint,tbl_fill,tsk_param);
 
   /// Surveiller la fin des calculs
   watcher->setFuture(f_task);
@@ -2119,7 +2171,9 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  }
  else{
   /// Montrer les resultats
-  FillTbv_StartPoint(tbl_fill, tsk_param);
+  if(upl_data.id_cal == eCalReady){
+   FillTbv_StartPoint(tbl_fill, tsk_param);
+  }
  }
 }
 
@@ -2143,6 +2197,11 @@ void BcUpl::FillTbv_StartPoint(QString tbl, stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->ptr_gmCf;
  int z_id = tsk_param->z_id;
+ stUpdData d_info = tsk_param->d_info;
+
+ if(d_info.id_cal != eCalReady){
+  return;
+ }
 
  int nb_recherche = pGame->limites[z_id].win;
 
@@ -2329,15 +2388,44 @@ bool BcUpl::updateTracking(int v_key, eUpl_Cal v_cal)
  return status;
 }
 
+
 BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->ptr_gmCf;
  int z_id = tsk_param->z_id;
  int g_lm = tsk_param->g_lm; /// Group uplet element
- int id_db = tsk_param->d_id;
+ int id_db = tsk_param->d_info.id_db;
 
  BAnimateCell *a_tbv = tsk_param->a_tbv;
  QString cnx = tsk_param->ptr_gmCf->db_ref->cnx;
+
+#define C_PGM_THREADED_L2 0
+#if  C_PGM_THREADED_L2
+#endif
+
+#if 0
+ /// Attendre la fin des calculs
+ int val_pool = pool.activeThreadCount();
+ if(val_pool == 3){
+  pool.waitForDone();
+ }
+
+
+ /// Dupliquer la connexion pour ce process
+ QSqlDatabase db_1 = QSqlDatabase::database(cnx);
+ bool status = false;
+ const QString connName = "FillBdd_Tsk_" + QString::number((quintptr)QThread::currentThreadId());
+ QSqlDatabase db_2 = QSqlDatabase::cloneDatabase(db_1, connName);
+ if (!(status = db_2.open())) {
+  QString err = "Failed to open db connection" + connName;
+  QString str_error = db_2.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return tsk_param;
+ }
+ else{
+  tsk_param->ptr_gmCf->db_ref->cnx = connName;
+ }
+#endif
 
  /// indiquer en cours
  if(a_tbv !=nullptr){
@@ -2361,15 +2449,16 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_par
  int nb_recherche = pGame->limites[z_id].win;
 
  for (int o_id = 0;o_id< C_NB_OFFSET;o_id++) {
+  tsk_param->o_id = o_id;
+
   for (int r_id=0;r_id < C_NB_SUB_ONG;r_id++) {
    if(r_id>=nb_recherche){
     continue;
    }
 
-   eUpl_Lst c_id = tabCal[o_id][r_id];
-
-   tsk_param->o_id = o_id;
    tsk_param->r_id = r_id;
+
+   eUpl_Lst c_id = tabCal[o_id][r_id];
    tsk_param->c_id = c_id;
 
    FillBdd_BView_2(tbl,tsk_param);
@@ -2381,7 +2470,6 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_par
 
   }
  }
-
 #if C_PGM_THREADED_L2
  /// On attend la terminaison de tous les threads
  synchronizer.waitForFinished();
