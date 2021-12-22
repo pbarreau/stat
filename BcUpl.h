@@ -222,11 +222,11 @@ class BcUpl: public BCount
   void rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param, int fake_sel);
   void tsk_upl_2(QString cnx, QString tbl, QString sql);
   void tsk_upl_0(stParam_tsk *tsk_param);
-  stParam_tsk *FillBdd(QString tbl, stParam_tsk *tsk_param);
+  stParam_tsk *FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_param);
   void FillBdd_BView_2(QString tbl, stParam_tsk *tsk_param);
   void FillBdd_BView_3(QString tbl, stParam_tsk *tsk_param);
   void FillBdd_BView_4(QString tbl, stParam_tsk *tsk_param);
-  void FillTbv(QString tbl, stParam_tsk *tsk_param);
+  void FillTbv_StartPoint(QString tbl, stParam_tsk *tsk_param);
   void FillTbv_BView_2(QString tbl, stParam_tsk *tsk_param);
   void FillTbv_BView_3(QString tbl, stParam_tsk *tsk_param);
   void FillTbv_BView_4(QString tbl, stParam_tsk *tsk_param);
