@@ -7,6 +7,11 @@ const stParam_2 euro_prm2_zn[]={{"boules","b","none"},{"etoiles","e","none"}};
 
 const QString gameLabel [eFdjEol]={"NonDefini","Loto","Euro"};
 
+const QString lstTirDef[eTirEol]={"TirUndef",
+                                  "TirFdj","TirGen","TirUsr",
+                                  "TirUplFdj","TirUplGen","TirUplUsr"
+                                 };
+
 const QString FdjCnames_1[eFdjEndCnames_1]={"Loto", "Super loto", "Grand Loto de Noel", "Grand Loto"};
 const QString FdjCnames_2[eFdjEndCnames_2 - eFdjEndCnames_1 - 1]={"Euro Millions My Million", "Euro Millions"};
 

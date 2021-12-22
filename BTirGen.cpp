@@ -48,8 +48,8 @@ BTirGen::BTirGen(const stGameConf *pGame, etTir gme_tir, QWidget *parent) : BTir
 
  /// charger base existante ?
  if((pGame->db_ref->ihm->use_odb == true) &&
-      pGame->db_ref->src !="B_fdj" &&
-     pGame->db_ref->src !=""){
+    pGame->db_ref->src !="B_fdj" &&
+    pGame->db_ref->src !=""){
   game_lab = pGame->db_ref->src;
   gameDef = gameUsrNew(pGame,game_lab);
   gme_cnf = gameDef;
@@ -97,35 +97,35 @@ void BTirGen::mkGameWidget(stGameConf *current)
  QString ongNames[]={"Boules","Tirages"};
  int maxOnglets = sizeof(ongNames)/sizeof(QString);
  QGroupBox * (BTirGen::*ptrFunc[])(stGameConf *current,QString tbl_name)=
-  {
+ {
    &BTirGen::LireBoule,
    &BTirGen::LireTable
-  };
+};
 
  for (int i=0;i<maxOnglets;i++) {
   QGridLayout *gdl_here = new QGridLayout;
 
-	/// Agencer le tableau
-	QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
+  /// Agencer le tableau
+  QSpacerItem *ecart = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-	/// Function faisant le groupebox
-	QGroupBox *info = (this->*ptrFunc[i])(current, tbl_name);
+  /// Function faisant le groupebox
+  QGroupBox *info = (this->*ptrFunc[i])(current, tbl_name);
 
-	gdl_here->addWidget(info,0,0);
-	gdl_here->addItem(ecart,0,1);
-	if(i==0){
-	 gdl_here->addItem(ecart,1,0);
-	 gdl_here->setRowStretch(0,10);
-	 gdl_here->setRowStretch(1,20);
-	}
-	gdl_here->setColumnStretch(1, 10); /// Exemple basic layouts
-	gdl_here->setColumnStretch(2, 20);
+  gdl_here->addWidget(info,0,0);
+  gdl_here->addItem(ecart,0,1);
+  if(i==0){
+   gdl_here->addItem(ecart,1,0);
+   gdl_here->setRowStretch(0,10);
+   gdl_here->setRowStretch(1,20);
+  }
+  gdl_here->setColumnStretch(1, 10); /// Exemple basic layouts
+  gdl_here->setColumnStretch(2, 20);
 
-	grd_tmp[i]=gdl_here;
+  grd_tmp[i]=gdl_here;
 
-	QWidget *wid_here = new QWidget;
-	wid_here->setLayout(grd_tmp[i]);
-	wid_tmp[i]=wid_here;
+  QWidget *wid_here = new QWidget;
+  wid_here->setLayout(grd_tmp[i]);
+  wid_tmp[i]=wid_here;
 
   tab_Top->addTab(wid_tmp[i],ongNames[i]);
  }
@@ -242,10 +242,10 @@ bool BTirGen::getGameKey(const stGameConf *pGame, QString *key)
  else if((b_retVal = query.first()) == true){
   int tot_selection = query.value(0).toInt();
 
-	if((b_retVal = isSufficient(pGame, tot_selection)) == true){
-	 ret = query.value(1).toString();
-	 ret = ret.trimmed();
-	}
+  if((b_retVal = isSufficient(pGame, tot_selection)) == true){
+   ret = query.value(1).toString();
+   ret = ret.trimmed();
+  }
  }
 
  *key = ret;
@@ -283,7 +283,7 @@ bool BTirGen::isAlreadyKnown(QString key, QString * gameId)
 
  /// Verifier si la table de liste des jeux existe
  if(DB_Tools::isDbGotTbl("E_lst",db_gme.connectionName())==false){
-  msg = "CREATE TABLE if not EXISTS E_lst (id integer PRIMARY key, name text, lst TEXT, t1  text, t2  text)";
+  msg = "CREATE TABLE if not EXISTS E_lst (id integer PRIMARY key, type text, zn int, name text, lst TEXT, t1  text, t2  text)";
   if(!query.exec(msg)){
    DB_Tools::DisplayError("BTirGen::isAlreadyKnown (1)", &query, msg);
    chk_db = false;
@@ -353,13 +353,118 @@ bool BTirGen::createGame(const stGameConf *pGame, QString gameId, QString data)
  }
  else {
   // Rajouter cette table a la liste
-  msg = "insert into E_lst values(NULL,'"+gameId+"','"+data+"', NULL,NULL)";
+  msg = "insert into E_lst values(NULL,'"
+        + lstTirDef[eTirGen] + "',"
+        + QString::number(zn) + ",'"+
+        gameId +"','"+data+"', NULL,NULL)";
   if((b_retVal = query.exec(msg))== false){
    DB_Tools::DisplayError("createGame",&query,msg);
   }
  }
 
  return b_retVal;
+}
+
+QString BTirGen::showOrderedSelection(QString sql_msg)
+{
+#if 0
+ with
+   tb_01 as
+   (
+    select t1.id, t1.b1, t1.b2, t1.b3, t1.b4, t1.b5 from B_fdj as t1 LIMIT 10
+    )
+   ,
+   tb_02 as
+   (
+    SELECT
+    t2.id, t1.id as B
+    FROM
+    (B_elm) as t1,
+    (tb_01) as t2
+    WHERE
+    (
+     t1.z1 in(t2.b1,t2.b2,t2.b3,t2.b4,t2.b5 )
+     )
+    ORDER by t2.id ASC, t1.id ASC
+    )
+   ,
+
+   tb_03 as
+   (
+    SELECT * FROM (
+     SELECT t1.id as Id, GROUP_CONCAT(printf('%02d',B))
+     OVER (PARTITION BY t1.ID ORDER BY t1.B ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as My_lst
+     FROM tb_02 as t1
+     )
+    GROUP BY id
+    )
+   ,
+
+   tb_04 as
+   (
+    SELECT t1.id as Id,
+    substr(t1.My_lst,1,2) as b1 ,
+    substr(t1.My_lst,4,2) as b2,
+    substr(t1.My_lst,7,2) as b3,
+    substr(t1.My_lst,10,2) as b4,
+    substr(t1.My_lst,13,2) as b5
+    FROM tb_03 as t1
+    )
+
+   select * from tb_04
+  #endif
+
+   QString sql_new = "";
+
+ sql_new = sql_new + "with\n";
+ sql_new = sql_new + "tb_01 as\n";
+ sql_new = sql_new + "(\n";
+
+ /// ----------------------
+ sql_new = sql_new + sql_msg;
+ /// ----------------------
+
+ sql_new = sql_new + ")\n";
+ sql_new = sql_new + ",\n";
+ sql_new = sql_new + "tb_02 as\n";
+ sql_new = sql_new + "(\n";
+ sql_new = sql_new + "SELECT\n";
+ sql_new = sql_new + "t2.id, t1.id as B, t2.chk\n";
+ sql_new = sql_new + "FROM\n";
+ sql_new = sql_new + "(B_elm) as t1,\n";
+ sql_new = sql_new + "(tb_01) as t2\n";
+ sql_new = sql_new + "WHERE\n";
+ sql_new = sql_new + "(\n";
+ sql_new = sql_new + "t1.z1 in(t2.b1,t2.b2,t2.b3,t2.b4,t2.b5 )\n";
+ sql_new = sql_new + ")\n";
+ sql_new = sql_new + "ORDER by t2.id ASC, t1.id ASC\n";
+ sql_new = sql_new + ")\n";
+ sql_new = sql_new + ",\n";
+ sql_new = sql_new + "tb_03 as\n";
+ sql_new = sql_new + "(\n";
+ sql_new = sql_new + "SELECT * FROM (\n";
+ sql_new = sql_new + "SELECT t1.id as Id, GROUP_CONCAT(printf('%02d',B))\n";
+ sql_new = sql_new + "OVER (PARTITION BY t1.ID ORDER BY t1.B ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as My_lst, t1.chk as chk\n";
+ sql_new = sql_new + "FROM tb_02 as t1\n";
+ sql_new = sql_new + ")\n";
+ sql_new = sql_new + "GROUP BY id\n";
+ sql_new = sql_new + ")\n";
+ sql_new = sql_new + ",\n";
+ sql_new = sql_new + "tb_04 as\n";
+ sql_new = sql_new + "(\n";
+ sql_new = sql_new + "SELECT t1.id as Id,\n";
+ sql_new = sql_new + "substr(t1.My_lst,1,2) as b1 ,\n";
+ sql_new = sql_new + "substr(t1.My_lst,4,2) as b2,\n";
+ sql_new = sql_new + "substr(t1.My_lst,7,2) as b3,\n";
+ sql_new = sql_new + "substr(t1.My_lst,10,2) as b4,\n";
+ sql_new = sql_new + "substr(t1.My_lst,13,2) as b5,\n";
+ sql_new = sql_new + "t1.chk\n";
+ sql_new = sql_new + "FROM tb_03 as t1\n";
+ sql_new = sql_new + ")\n";
+ sql_new = sql_new + "select * from tb_04\n";
+
+ return sql_new;
+
 }
 
 QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
@@ -387,37 +492,37 @@ QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
   sel_boules = query.value(0).toString().split(",");
   QStandardItem *tmp = nullptr;
 
-	for (int i=0;i<sel_boules.size();i++) {
-	 int val = sel_boules.at(i).toInt();
-	 int col_id = val/10;
-	 int row_id = val%10;
+  for (int i=0;i<sel_boules.size();i++) {
+   int val = sel_boules.at(i).toInt();
+   int col_id = val/10;
+   int row_id = val%10;
 
-	 QString cel_val = QString::number(val).rightJustified(2,'0');
-	 tmp = new QStandardItem(cel_val);
-	 tmp->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
-	 visu->setItem(row_id,col_id,tmp);
-	}
+   QString cel_val = QString::number(val).rightJustified(2,'0');
+   tmp = new QStandardItem(cel_val);
+   tmp->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
+   visu->setItem(row_id,col_id,tmp);
+  }
 
-	/// Fixer largeur colonne
-	for (int i = 0; i< nb_col; i++) {
-	 qtv_tmp->setColumnWidth(i,30);
-	}
-
-
-	/// faire disparaite barres
-	qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-	qtv_tmp->horizontalHeader()->hide();
-
-	qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-	qtv_tmp->verticalHeader()->hide();
+  /// Fixer largeur colonne
+  for (int i = 0; i< nb_col; i++) {
+   qtv_tmp->setColumnWidth(i,30);
+  }
 
 
+  /// faire disparaite barres
+  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->horizontalHeader()->hide();
 
-	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->verticalHeader()->hide();
 
-	qtv_tmp->setFixedWidth((nb_col+0.5) * 30);;
-	qtv_tmp->setFixedHeight((nb_row+0.5) * 30);
+
+
+  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+
+  qtv_tmp->setFixedWidth((nb_col+0.5) * 30);;
+  qtv_tmp->setFixedHeight((nb_row+0.5) * 30);
  }
 
 
@@ -463,24 +568,24 @@ QHBoxLayout *BTirGen::getBarFltTirages(int chk_nb_col, BView *qtv_tmp)
  /// spreadsheet_table_xls.png
 
  Bp::Btn lst_btn[]=
-  {
-   {"spreadsheet_table_xls", "Show All", Bp::icoShowAll},
-   {"Checked_Checkbox", "Show Checked", Bp::icoShowChk},
-   {"Unchecked_Checkbox", "Show Unchecked", Bp::icoShowUhk}
-  };
+ {
+  {"spreadsheet_table_xls", "Show All", Bp::icoShowAll},
+  {"Checked_Checkbox", "Show Checked", Bp::icoShowChk},
+  {"Unchecked_Checkbox", "Show Unchecked", Bp::icoShowUhk}
+ };
  int nb_btn = sizeof(lst_btn)/sizeof(Bp::Btn);
  for(int i = 0; i< nb_btn; i++)
  {
   tmp_btn = new QPushButton;
 
-	QString icon_file = ":/images/"+lst_btn[i].name+".png";
-	tmp_ico = QIcon(icon_file);
+  QString icon_file = ":/images/"+lst_btn[i].name+".png";
+  tmp_ico = QIcon(icon_file);
 
-	tmp_btn->setIcon(tmp_ico);
-	tmp_btn->setToolTip(lst_btn[i].tooltips);
+  tmp_btn->setIcon(tmp_ico);
+  tmp_btn->setToolTip(lst_btn[i].tooltips);
 
-	inputs->addWidget(tmp_btn);
-	btn_grp->addButton(tmp_btn,lst_btn[i].value);
+  inputs->addWidget(tmp_btn);
+  btn_grp->addButton(tmp_btn,lst_btn[i].value);
 
  }
  btn_grp->setExclusive(true);
@@ -513,7 +618,7 @@ QHBoxLayout *BTirGen::getBarZoomTirages(BView *qtv_tmp)
  connect(my_btn, SIGNAL(BSig_MouseOverLabel(QLabel *)), this, SLOT(BSlot_MouseOverLabel(QLabel *)));
  connect(my_btn, SIGNAL(clicked()), this, SLOT(BSlot_Clicked_Gen()));
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(BSlot_Clicked_Gen( QModelIndex) ) );
+          this, SLOT(BSlot_Clicked_Gen( QModelIndex) ) );
  // Creates a new QPersistentModelIndex that is a copy of the model index.
  seltir->addWidget(my_btn);
 
@@ -613,15 +718,20 @@ void BTirGen::BSlot_ShowBtnId(int btn_id)
    with_where = false;
    break;
 
-	case Bp::icoShowChk:
-	 with_where = true;
-	 val_chk = Qt::CheckState::Checked;
-	 break;
+  case Bp::icoShowChk:
+  {
+   /// Reorganiser la table en boule ordre croissant
+   QString arrange = showOrderedSelection(msg);
+   msg = arrange ;
+   with_where = true;
+   val_chk = Qt::CheckState::Checked;
+  }
+   break;
 
-	case Bp::icoShowUhk:
-	 with_where = true;
-	 val_chk = Qt::CheckState::Unchecked;
-	 break;
+  case Bp::icoShowUhk:
+   with_where = true;
+   val_chk = Qt::CheckState::Unchecked;
+   break;
  }
 
  if(with_where){
@@ -666,11 +776,11 @@ void BTirGen::BSlot_CheckBox(const QPersistentModelIndex &target, const Qt::Chec
   QModelIndex try_index;
   try_index= target.model()->index(row,i, QModelIndex());
 
-	QString val = try_index.data().toString().rightJustified(2,'0');
-	msg= msg + val;
-	if(i<Bp::colTgenZs+gameDef->limites[zn].len-1){
-	 msg = msg + ",";
-	}
+  QString val = try_index.data().toString().rightJustified(2,'0');
+  msg= msg + val;
+  if(i<Bp::colTgenZs+gameDef->limites[zn].len-1){
+   msg = msg + ",";
+  }
  }
 
  lb_Big->setText(msg);
@@ -690,7 +800,7 @@ void BTirGen::BSlot_MouseOverLabel(QLabel *l)
  BPushButton *btn = qobject_cast<BPushButton *>(sender());
 
  l->setStyleSheet("QLabel {color:"+btn->getColor()+";font-weight: bold;font: 18pt;}"
-                                                       "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
+                                                   "QLabel:hover {color: #000000; background-color: #FFFFFF;}");
  l->setToolTip("Tirage courant");
 
 }

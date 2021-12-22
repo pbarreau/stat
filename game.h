@@ -48,26 +48,31 @@ extern const stSrcHistoJeux HistoEuro[6];
 typedef enum _etTir{
  eTirNotSet, /// Lst tirages pas encore etablie
  eTirFdj,    /// Lst tirages de la Fdj
- eTirGen,    /// Lst tirages autogeneree
- eTirUsr     /// Lst tirages choix utilisateur
+ eTirGen,    /// Lst tirages autogeneree par calcul
+ eTirUsr,    /// Lst tirages choix utilisateur
+ eTirUplFdj, /// Lst Uplet depuis un tirage Fdj
+ eTirUplGen, /// Lst Uplet construit par calcul
+ eTirUplUsr, /// Lst Uplet par choix utilisateur
+ eTirEol     /// End of list
 }etTir;
+extern const QString lstTirDef [eTirEol];
 
 typedef  struct _stFdj{
- etFdj typeJeu;
- etDb db_type;
- bool use_odb;			/// utilisation ancien fichier *.sqlite
- bool fdj_new;			/// Recharger info base de la fdj
+  etFdj typeJeu;
+  etDb db_type;
+  bool use_odb;			/// utilisation ancien fichier *.sqlite
+  bool fdj_new;			/// Recharger info base de la fdj
 }stFdj;
 
 typedef struct _stParam_3 {
- stFdj *ihm;
- QString cnx;    /// nom connexion a la base
- QString sql;    /// requete permettant liste des tirages a traiter
- QString src;    /// nom Table liste des tirages a traiter
- QString fdj;    /// nom de la tables des tirages fdj
- QString dad;    /// nom de la table pere de src
- QString jrs;    /// jours trouves dans les tirages a traiter
- QString flt;    /// nom de la tables des filtres des tirages
+  stFdj *ihm;
+  QString cnx;    /// nom connexion a la base
+  QString sql;    /// requete permettant liste des tirages a traiter
+  QString src;    /// nom Table liste des tirages a traiter
+  QString fdj;    /// nom de la tables des tirages fdj
+  QString dad;    /// nom de la table pere de src
+  QString jrs;    /// jours trouves dans les tirages a traiter
+  QString flt;    /// nom de la tables des filtres des tirages
 }stParam_3;
 
 typedef struct _stParam_2 {
@@ -90,23 +95,23 @@ extern const stParam_1 defParam_1[];
 #if 1
 class stGameConf{
  public:
- stGameConf();
- stGameConf(stGameConf * conf_in);
- stGameConf* operator=(stGameConf * a);
+  stGameConf();
+  stGameConf(stGameConf * conf_in);
+  stGameConf* operator=(stGameConf * a);
 
  public:
- int id;
- bool bUseMadeBdd;
- etFdj eFdjType; /// type du jeu
- etTir eTirType; /// origine
- int znCount; /// nombre de zones a regarder
- stParam_1 *limites; /// bornes sur la zone
- stParam_2 *names; /// nom de la zone
- stParam_3 *db_ref;
- QStringList** slFlt;
+  int id;
+  bool bUseMadeBdd;
+  etFdj eFdjType; /// type du jeu
+  etTir eTirType; /// origine
+  int znCount; /// nombre de zones a regarder
+  stParam_1 *limites; /// bornes sur la zone
+  stParam_2 *names; /// nom de la zone
+  stParam_3 *db_ref;
+  QStringList** slFlt;
 
  private:
- static int gmeConf_counter;
+  static int gmeConf_counter;
 
 };
 #else

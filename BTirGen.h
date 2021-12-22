@@ -28,6 +28,7 @@ class BTirGen : public BTirages
 
 
  private:
+ QString showOrderedSelection(QString sql_msg);
  bool isNewUsrGame(const stGameConf *pGame, QString *gameId, QString *data);
  bool getGameKey(const stGameConf *pGame, QString *key);
  bool isSufficient(const stGameConf *pGame, int tot);

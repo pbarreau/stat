@@ -577,6 +577,15 @@ QString BTirages::getTiragesList(const stGameConf *pGame, QString tbl_src)
                " from ("+
                tbl_src+
                ") as t1)";
+
+#ifndef QT_NO_DEBUG
+  static int counter = 0;
+  QString target = "ATirGen_"+ QString::number(counter).rightJustified(2,'0')
+                   +"_dbgr.txt";
+  BTest::writetoFile(target,msg,false);
+  counter++;
+#endif
+
  return msg;
 }
 
