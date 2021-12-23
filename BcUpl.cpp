@@ -177,6 +177,7 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
  QString ord_itm = "";
  QString sql_m1 = "";
  QString sql_m2 = "";
+ int id = -1;
 
 
 
@@ -191,7 +192,6 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
 
  if(query_1.exec(sql_m1)){
   if(query_1.first()){
-   //int id=-1;
    /// verifier unicite
    int total = query_1.value("T").toInt();
 
@@ -210,8 +210,7 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
      if(query_1.exec(sql_m2)){
       if(query_1.exec(sql_m1)){
        query_1.first();
-       int id = query_1.value(0).toInt();
-       upl_data->id_db = id;
+       id = query_1.value(0).toInt();
       }
      }
     }
@@ -219,7 +218,7 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
 
     case 1:
     {
-     int id = query_1.value(0).toInt();
+     id = query_1.value(0).toInt();
      eUpl_Cal cal = static_cast<eUpl_Cal>(query_1.value(1).toInt());
      int zn = query_1.value(2).toInt();
 
@@ -230,7 +229,6 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
       upl_data->id_zn = zn;
       upl_data->id_cal = cal;
      }
-     ret_val = "U" + QString::number(id).rightJustified(2,'0');
     }
      break;
 
@@ -256,6 +254,11 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
    }
 #endif
   }
+ }
+
+ upl_data->id_db = id;
+ if(ret_val.trimmed().length() ==0){
+  ret_val = "_U" + QString::number(id).rightJustified(2,'0');
  }
 
  return ret_val;
@@ -2134,8 +2137,9 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  int id_db=d_info.id_db;
 
  QString tbl_fill = tbl_name +
-                    "_K"+
                     tbl_radical;
+
+ tsk_param->tbl_ref = tbl_fill;
 
  if(isPresent == false){
   tsk_param->d_info = d_info;
@@ -2163,7 +2167,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
   /// Faire les calculs
   /// https://lnj.gitlab.io/post/async-databases-with-qtsql/
   QFuture<stParam_tsk *> f_task = QtConcurrent::run(&pool,
-                                                    this,&BcUpl::FillBdd_StartPoint,tbl_fill,tsk_param);
+                                                    this,&BcUpl::FillBdd_StartPoint, tbl_fill, tsk_param);
 
   /// Surveiller la fin des calculs
   watcher->setFuture(f_task);
@@ -2397,7 +2401,7 @@ bool BcUpl::updateTracking(int v_key, eUpl_Cal v_cal)
 }
 
 
-BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_param)
+BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl_fill, stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->ptr_gmCf;
  int z_id = tsk_param->z_id;
@@ -2471,11 +2475,11 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_par
    eUpl_Lst c_id = tabCal[o_id][r_id];
    tsk_param->c_id = c_id;
 
-   FillBdd_BView_2(tbl,tsk_param);
+   FillBdd_BView_2(tbl_fill,tsk_param);
 
    if(r_id > 0){
-    FillBdd_BView_3(tbl,tsk_param);
-    FillBdd_BView_4(tbl,tsk_param);
+    FillBdd_BView_3(tbl_fill,tsk_param);
+    FillBdd_BView_4(tbl_fill,tsk_param);
    }
 
   }
@@ -2499,7 +2503,7 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_par
 
  }
 
- tsk_param->tbl_ref = tbl;
+ //tsk_param->tbl_ref = tbl;
  return(tsk_param);
 }
 
