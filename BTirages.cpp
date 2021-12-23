@@ -579,11 +579,11 @@ QString BTirages::getTiragesList(const stGameConf *pGame, QString tbl_src)
                ") as t1)";
 
 #ifndef QT_NO_DEBUG
-  static int counter = 0;
-  QString target = "ATirGen_"+ QString::number(counter).rightJustified(2,'0')
-                   +"_dbgr.txt";
-  BTest::writetoFile(target,msg,false);
-  counter++;
+ static int counter = 0;
+ QString target = "ATirGen_"+ QString::number(counter).rightJustified(2,'0')
+                  +"_dbgr.txt";
+ BTest::writetoFile(target,msg,false);
+ counter++;
 #endif
 
  return msg;
@@ -1169,22 +1169,108 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
 
  /// Construction de la requete de chaque colonne
  QString ref = "(t"+QString::number(tbl_id)+".%1 in(%2))";
+ QMap <QString,QString> selection;
+
  for (int i = 0; i<nb_col;i++) {
   if(!tab_sel[i].size()){
    continue;
   }
   QVariant vCol = p_aim->headerData(i+1,Qt::Horizontal);
-  QString colName = vCol.toString();
-  ret = ret + ref.arg(colName).arg(tab_sel[i]);
-  if(col_usr>1){
-   ret = ret + " and ";
+  QString colName = vCol.toString().trimmed();
+  QString data = ref.arg(colName).arg(tab_sel[i]);
+  if(col_usr>0){
+   selection.insertMulti(colName.at(0), data);
+   //selection.insert(colName,data);
    col_usr--;
   }
-
  }
 
+ QMap <QString,QString>::const_iterator it_1=selection.begin();
+ QMap <QString,QString>::const_iterator it_2;
+ QString use_operator = "";
+
+ static bool start_operator = false;
+
+ ret= "(";
+ do{
+  QString key_1 = it_1.key();
+  QString val = it_1.value();
+
+  if(it_1 != selection.end()-1){
+   it_2 = it_1 + 1;
+   QString key_2 = it_2.key().at(0);
+
+   if(key_1 == key_2){
+    use_operator = " OR ";
+   }
+   else{
+    use_operator = ") AND (";
+   }
+  }
+  else{
+   use_operator = ")";
+  }
+
+  ret = ret + val + use_operator;
+  it_1++;
+
+ }while(it_1!=selection.end());
+
+
+
+#if 0
+ int l = use_operator.size();
+ ret = ret.remove(ret.size()-l,l);
+#endif
+
  delete[] tab_sel;
- msg = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+ret+")";
+ QString use_tbl = "t"+QString::number(tbl_id);
+ int max_win = gme_cnf->limites[zn].win;
+ int max_elm = gme_cnf->limites[zn].max;
+ int dizaine = (max_elm/10)+1;
+
+ typedef struct _tmp_def{
+   int start;
+   int stop;
+   QString key;
+ }st_tmp_def;
+
+ st_tmp_def conf[] =
+ {
+  {0,dizaine-1,"U"},
+  {0,9,"F"}
+ };
+ int nb_loop = sizeof(conf)/sizeof(st_tmp_def);
+
+ QString str_tmp_1 = "";
+ for(int a_loop = 0; a_loop < nb_loop; a_loop ++)
+ {
+  QString str_tmp_2 = "";
+
+  for(int j=conf[a_loop].start;j<=conf[a_loop].stop;j++)
+  {
+   str_tmp_2 = str_tmp_2 + use_tbl + "."+conf[a_loop].key+QString::number(j);
+   if(j<conf[a_loop].stop){
+    str_tmp_2 = str_tmp_2 + " + ";
+   }
+  }
+
+  str_tmp_1 = str_tmp_1 + "("+ str_tmp_2 + " = " + QString::number(max_win)+")";
+  if(a_loop<nb_loop-1){
+   str_tmp_1 = str_tmp_1 + " and ";
+  }
+ }
+
+#ifndef QT_NO_DEBUG
+ qDebug() <<str_tmp_1;
+#endif
+
+ if(str_tmp_1.trimmed().length() != 0 ){
+  msg = "("+use_tbl+".id = t1.id) and ("+ret+") and ("+str_tmp_1+")";
+ }
+ else{
+  msg = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+ret+") ";
+ }
 
 #ifndef QT_NO_DEBUG
  qDebug() << "\n\nselect_grp :\n" <<msg;
