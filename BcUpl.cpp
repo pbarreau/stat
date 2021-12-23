@@ -202,7 +202,7 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
      {
       upl_data->isPresent = false;
       upl_data->id_db = -1;
-      upl_data->id_zn = -1;
+      upl_data->id_zn = zn;
       upl_data->id_cal = eCalNotSet;
      }
      sql_m2 = "insert into "+tbl_upl+" (id, state, zn, items) values(NULL,"+
@@ -210,6 +210,8 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
      if(query_1.exec(sql_m2)){
       if(query_1.exec(sql_m1)){
        query_1.first();
+       int id = query_1.value(0).toInt();
+       upl_data->id_db = id;
       }
      }
     }
@@ -2126,17 +2128,17 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
                     "_C" + QString::number(upl_GrpId).rightJustified(2,'0');
 
  /// On a un uplet, obtenir le radical de table
- stUpdData upl_data;
- QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn, &upl_data);
- bool isPresent = upl_data.isPresent;
- int id_db=upl_data.id_db;
+ stUpdData d_info;
+ QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn, &d_info);
+ bool isPresent = d_info.isPresent;
+ int id_db=d_info.id_db;
 
  QString tbl_fill = tbl_name +
                     "_K"+
                     tbl_radical;
 
  if(isPresent == false){
-  tsk_param->d_info = upl_data;
+  tsk_param->d_info = d_info;
 
   if(ani !=nullptr){
    ani->addKey(g_lm);
@@ -2175,7 +2177,8 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  }
  else{
   /// Montrer les resultats
-  if(upl_data.id_cal == eCalReady){
+  if(d_info.id_cal == eCalReady){
+   tsk_param->d_info = d_info;
    FillTbv_StartPoint(tbl_fill, tsk_param);
   }
  }
@@ -2436,6 +2439,8 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_par
  if(a_tbv !=nullptr){
   a_tbv->startKey(g_lm);
 
+  tsk_param->d_info.id_cal = eCalStarted;
+
   if(!updateTracking(id_db, eCalStarted)){
    QString str_error = db_0.lastError().text();
    QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
@@ -2483,6 +2488,8 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_par
  if(a_tbv !=nullptr){
   a_tbv->delKey(g_lm);
   a_tbv->setCalReady(g_lm);
+
+  tsk_param->d_info.id_cal = eCalReady;
 
   if(!updateTracking(id_db, eCalReady)){
    QString str_error = db_0.lastError().text();
