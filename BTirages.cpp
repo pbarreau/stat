@@ -1139,6 +1139,9 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  QString msg = "";
  QString ret = "";
 
+ int max_win = gme_cnf->limites[zn].win;
+ int max_elm = gme_cnf->limites[zn].max;
+ int dizaine = (max_elm/10)+1;
 
  /// Tableau de memorisation choix usr
  const QAbstractItemModel * p_aim = indexes.at(0).model();
@@ -1192,16 +1195,25 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  static bool start_operator = false;
 
  ret= "(";
+ QString default_operator = "";
  do{
   QString key_1 = it_1.key();
   QString val = it_1.value();
+
+  int total = selection.count(key_1);
+  if(total<max_win){
+   default_operator = " AND ";
+  }
+  else{
+   default_operator = " OR ";
+  }
 
   if(it_1 != selection.end()-1){
    it_2 = it_1 + 1;
    QString key_2 = it_2.key().at(0);
 
    if(key_1 == key_2){
-    use_operator = " OR ";
+    use_operator = default_operator ;
    }
    else{
     use_operator = ") AND (";
@@ -1225,9 +1237,6 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
 
  delete[] tab_sel;
  QString use_tbl = "t"+QString::number(tbl_id);
- int max_win = gme_cnf->limites[zn].win;
- int max_elm = gme_cnf->limites[zn].max;
- int dizaine = (max_elm/10)+1;
 
  typedef struct _tmp_def{
    int start;
