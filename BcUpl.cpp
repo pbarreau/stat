@@ -85,7 +85,10 @@ BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectio
  int info = cpuInfo.idealThreadCount();
 
  if(info > 1){
-  pool.setMaxThreadCount(info -1);
+  // limit to one thread
+  pool.setMaxThreadCount(1);
+  // prevent automatic deletion and recreation
+  pool.setExpiryTimeout(-1);
  }
 
 
@@ -153,9 +156,10 @@ QTabWidget * BcUpl::getTabUplRsp(void)
 
 QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl_data)
 {
+#if 0
  /// https://www.linuxjournal.com/article/9602
  /// https://forum.qt.io/topic/106080/executing-query-after-cloned-connection-is-used-in-another-thread/13
- ///
+ /// https://lnj.gitlab.io/post/async-databases-with-qtsql/
  const QString connName = "FillBdd_Tsk_" + QString::number((quintptr)QThread::currentThreadId());
  bool status = false;
  QSqlDatabase db_2 = QSqlDatabase::cloneDatabase(db_0, connName);
@@ -164,8 +168,8 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
   QString str_error = db_2.lastError().text();
   QMessageBox::critical(nullptr, connName, str_error,QMessageBox::Yes);
  }
-
- QSqlQuery query_1(db_2);
+#endif
+ QSqlQuery query_1(db_0);
 
  QString tbl_upl = C_TBL_UPL;
 
@@ -2190,6 +2194,7 @@ void BcUpl::BSlot_tsk_finished(){
 
  /// parametre peut etre detruit
  delete res;
+ watcher->deleteLater();
 }
 #endif
 

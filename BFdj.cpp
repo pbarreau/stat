@@ -66,6 +66,12 @@ stGameConf * BFdj::getConfig()
 
 
 /// ---------------- PRIVATE FUNCTIONS -----------------
+/// https://github.com/featureNull/QtAsyncSql
+/// https://www.sqlite.org/asyncvfs.html
+/// https://www.ee.ryerson.ca/~courses/coe518/LinuxJournal/elj2007-158-asynQt.pdf
+/// https://lnj.gitlab.io/post/async-databases-with-qtsql/
+/// https://www.linuxjournal.com/article/9602
+/// https://forum.qt.io/topic/106080/executing-query-after-cloned-connection-is-used-in-another-thread
 bool BFdj::ouvrirBase(stFdj *prm)
 {
  bool b_retVal = true;
