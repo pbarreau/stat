@@ -1178,6 +1178,9 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
   }
 
  }
+ /// Terminateur de Fin de liste
+ selection.insert("#",nullptr);
+
  /// -------------------------
  QMap <QString,QString> use_operator;
  QMap <QString, QList<int>*>::const_iterator sub_item = nullptr;
@@ -1213,7 +1216,67 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  }
 
  /// -------------------------
+ QString sql_ref = "\n\t(\n\t t"+QString::number(tbl_id)+".%1 in (%2)\n\t)\n";
 
+ keep_key = "";
+ msg = "--- Debut critere\n(\n (\n";
+ for(item = selection.begin(); item != selection.end(); item++){
+  QString colName = item.key();
+  QString colKey = colName.at(0);
+
+  QString colPerator = "";
+  QString value = "";
+
+  int tot_info = item.value()->size();
+  for(int i=0; i< tot_info; i++){
+
+   int cur_val = item.value()->at(i);
+   value = value + QString::number(cur_val).rightJustified(2,'0');
+   if(i<tot_info-1){
+    value = value + ", ";
+   }
+  }
+  QString one_sql = sql_ref.arg(colName).arg(value);
+
+  if(keep_key == ""){
+   keep_key = colKey;
+
+   msg = msg + one_sql;
+   continue;
+  }
+
+  if(keep_key != colKey){
+   keep_key = colKey;
+
+   if(item != selection.end()-1){
+    QString prev_key = (item - 1).key().at(0);
+
+    if(prev_key == colKey){
+     colPerator = use_operator.find(colKey).value();
+     msg = msg  + "\t)\n\t"+colPerator+"\n\t(\n" + one_sql;
+    }
+    else{
+     msg = msg  + " )\nAND\n (" + one_sql;
+    }
+   }
+   else{
+    msg = msg  + " )\n)\n--- Fin\n";
+   }
+  }
+  else{
+   colPerator = use_operator.find(colKey).value();
+   msg = msg  + "\t"+colPerator + one_sql;
+  }
+
+ }
+
+#ifndef QT_NO_DEBUG
+ BTest::writetoFile("0-select_grp.txt", msg,false);
+#endif
+
+ /// -------------------------
+
+#if 0
  /// Construire la requette
  QString sql_ref = " (t"+QString::number(tbl_id)+".%1 in (%2)) ";
  item = selection.begin();
@@ -1240,7 +1303,7 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  }while (item != selection.end());
 
 
-#if 0
+
  QString ret = "";
 
 
@@ -1388,7 +1451,7 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
 
 
 
- return msg;
+ return ""; //msg;
 }
 
 QString BTirages::get_OperatorFromKey(QString key, QMap <QString, QList<int> *> sel_grp)
