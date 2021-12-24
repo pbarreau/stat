@@ -992,7 +992,7 @@ QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
  }
 
 #ifndef QT_NO_DEBUG
- qDebug() << "\n\nret :\n" <<ret_all;
+ BTest::writetoFile("0-select-full.txt", ret_all,false);
 #endif
 
  return ret_all;
@@ -1136,13 +1136,16 @@ QString BTirages::select_brc(const QModelIndexList &indexes, int zn, int tbl_id)
 
 QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
 {
- QString msg = "";
+ QString grp_sql_start = "\n--- Debut code sql onglet GRP\n";
+ QString grp_sql_stop = "\n--- Fin code sql onglet GRP\n";
+ QString grp_sql_code = "";
  int max_win = gme_cnf->limites[zn].win;
  int max_elm = gme_cnf->limites[zn].max;
  int dizaine = (max_elm/10)+1;
 
  QMap <QString, QList<int> *> selection;
  int nb_selection = indexes.size();
+
 
  /// -------------------------
  const QAbstractItemModel * p_aim = indexes.at(0).model();
@@ -1219,7 +1222,7 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  QString sql_ref = "\n\t(\n\t t"+QString::number(tbl_id)+".%1 in (%2)\n\t)\n";
 
  keep_key = "";
- msg = "--- Debut critere\n(\n (\n";
+ grp_sql_code = grp_sql_code + "--- Debut analyse choix utilisateur\n(\n (\n";
  for(item = selection.begin(); item.key().at(0) != stop_key; item++){
   QString colName = item.key();
   QString colKey = colName.at(0);
@@ -1241,7 +1244,7 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
   if(keep_key == ""){
    keep_key = colKey;
 
-   msg = msg + one_sql;
+   grp_sql_code = grp_sql_code + one_sql;
    continue;
   }
 
@@ -1253,156 +1256,26 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
 
     if(prev_key == colKey){
      colPerator = use_operator.find(colKey).value();
-     msg = msg  + "\t)\n\t"+colPerator+"\n\t(\n" + one_sql;
+     grp_sql_code = grp_sql_code  + "\t)\n\t"+colPerator+"\n\t(\n" + one_sql;
     }
     else{
-     msg = msg  + " )\nAND\n (" + one_sql;
+     grp_sql_code = grp_sql_code  + " )\nAND\n (" + one_sql;
     }
    }
   }
   else{
    colPerator = use_operator.find(colKey).value();
-   msg = msg  + "\t"+colPerator + one_sql;
+   grp_sql_code = grp_sql_code  + "\t"+colPerator + one_sql;
   }
 
  }
 
  /// Code de fin
- msg = msg  + " )\n)\n--- Fin\n";
+ grp_sql_code = grp_sql_code  + " )\n)\n--- Fin analyse choix utilisateur\n";
 
-
-#ifndef QT_NO_DEBUG
- BTest::writetoFile("0-select_grp.txt", msg,false);
-#endif
 
  /// -------------------------
-
-#if 0
- /// Construire la requette
- QString sql_ref = " (t"+QString::number(tbl_id)+".%1 in (%2)) ";
- item = selection.begin();
- do{
-  QString key = item.key();
-  QString value = "";
-
-  QString key_operator = get_OperatorFromKey(key, selection);
-
-  int tot_info = item.value()->size();
-  for(int i=0; i< tot_info; i++){
-   int cur_val = item.value()->at(i);
-   value = value + QString::number(cur_val).rightJustified(2,'0');
-   if(i<tot_info-1){
-    value = value + ", ";
-   }
-  }
-
-  QString one_sql = sql_ref.arg(key).arg(value);
-  if(item != selection.end()-1){
-   msg = msg + one_sql + " And ";
-  }
-  item++;
- }while (item != selection.end());
-
-
-
- QString ret = "";
-
-
- /// Tableau de memorisation choix usr
- const QAbstractItemModel * p_aim = indexes.at(0).model();
- int nb_col = 	p_aim->columnCount();
- QString *tab_sel = new QString[nb_col];
- for(int i=0; i< nb_col;i++){
-  tab_sel[i]="";
- }
-
- /// Recuperation de la valeur de nb pour chaque index
- int col_usr = 0;
- int taille = indexes.size();
- for(int i = 0; i< taille; i++){
-  QModelIndex cur_index = indexes.at(i);
-
-  int col = cur_index.column();
-  if(col>0){
-   QString s_nb = cur_index.model()->index(cur_index.row(),Bp::colId).data().toString();
-   if(tab_sel[col-1].size()){
-    tab_sel[col-1]=tab_sel[col-1]+","+s_nb;
-   }
-   else {
-    tab_sel[col-1] = s_nb;
-    col_usr++;
-   }
-  }
- }
-
- /// Construction de la requete de chaque colonne
- QString ref = "(t"+QString::number(tbl_id)+".%1 in(%2))";
- QMap <QString,QString> selection;
-
- for (int i = 0; i<nb_col;i++) {
-  if(!tab_sel[i].size()){
-   continue;
-  }
-  QVariant vCol = p_aim->headerData(i+1,Qt::Horizontal);
-  QString colName = vCol.toString().trimmed();
-  QString data = ref.arg(colName).arg(tab_sel[i]);
-  if(col_usr>0){
-   selection.insertMulti(colName.at(0), data);
-   //selection.insert(colName,data);
-   col_usr--;
-  }
- }
-
- QMap <QString,QString>::const_iterator it_1=selection.begin();
- QMap <QString,QString>::const_iterator it_2;
- QString use_operator = "";
-
- static bool start_operator = false;
-
- ret= "(";
- QString default_operator = "";
- do{
-  QString key_1 = it_1.key();
-  QString val = it_1.value();
-
-  int total = selection.count(key_1);
-  if(total<max_win){
-   default_operator = " AND ";
-  }
-  else{
-   default_operator = " OR ";
-  }
-
-  if(it_1 != selection.end()-1){
-   it_2 = it_1 + 1;
-   QString key_2 = it_2.key().at(0);
-
-   if(key_1 == key_2){
-    use_operator = default_operator ;
-   }
-   else{
-    use_operator = ") AND (";
-   }
-  }
-  else{
-   use_operator = ")";
-  }
-
-  ret = ret + val + use_operator;
-  it_1++;
-
- }while(it_1!=selection.end());
-
-
-
-#if 0
- int l = use_operator.size();
- ret = ret.remove(ret.size()-l,l);
-#endif
-
- delete[] tab_sel;
  QString use_tbl = "t"+QString::number(tbl_id);
-
  typedef struct _tmp_def{
    int start;
    int stop;
@@ -1416,7 +1289,7 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  };
  int nb_loop = sizeof(conf)/sizeof(st_tmp_def);
 
- QString str_tmp_1 = "";
+ QString str_tmp_1 = "\n";
  for(int a_loop = 0; a_loop < nb_loop; a_loop ++)
  {
   QString str_tmp_2 = "";
@@ -1429,30 +1302,27 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
    }
   }
 
-  str_tmp_1 = str_tmp_1 + "("+ str_tmp_2 + " = " + QString::number(max_win)+")";
+  str_tmp_1 = str_tmp_1 + "\t("+ str_tmp_2 + " = " + QString::number(max_win)+")";
   if(a_loop<nb_loop-1){
-   str_tmp_1 = str_tmp_1 + " and ";
+   str_tmp_1 = str_tmp_1 + "\nand\n";
   }
  }
 
-#ifndef QT_NO_DEBUG
- qDebug() <<str_tmp_1;
-#endif
-
+ /// -------------------------
  if(str_tmp_1.trimmed().length() != 0 ){
-  msg = "("+use_tbl+".id = t1.id) and ("+ret+") and ("+str_tmp_1+")";
+  grp_sql_code = "("+use_tbl+".id = t1.id)\nAnd\n"+grp_sql_code+"\nAnd\n("+str_tmp_1+"\n)";
  }
  else{
-  msg = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+ret+") ";
+  grp_sql_code = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+grp_sql_code+") ";
  }
-#endif
+
+ grp_sql_code = grp_sql_start + grp_sql_code + grp_sql_stop;
+
 #ifndef QT_NO_DEBUG
- qDebug() << "\n\nselect_grp :\n" <<msg;
+ BTest::writetoFile("0-select_grp.txt", grp_sql_code,false);
 #endif
 
-
-
- return ""; //msg;
+ return grp_sql_code;
 }
 
 QString BTirages::get_OperatorFromKey(QString key, QMap <QString, QList<int> *> sel_grp)
