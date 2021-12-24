@@ -72,6 +72,12 @@ stGameConf * BFdj::getConfig()
 /// https://lnj.gitlab.io/post/async-databases-with-qtsql/
 /// https://www.linuxjournal.com/article/9602
 /// https://forum.qt.io/topic/106080/executing-query-after-cloned-connection-is-used-in-another-thread
+///
+/// https://doc.qt.io/qt-5/threads-modules.html#threads-and-the-sql-module
+///
+/// https://stackoverflow.com/questions/37741279/crash-when-doing-multi-thread-operation-on-sqlite-database-using-qt
+/// https://forum.qt.io/topic/36197/what-does-it-mean-to-clone-database-connection
+/// https://www.qtcentre.org/threads/71838-Close-and-reopen-connection-to-database
 bool BFdj::ouvrirBase(stFdj *prm)
 {
  bool b_retVal = true;

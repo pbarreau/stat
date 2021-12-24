@@ -39,7 +39,10 @@ QTableView * FillUsrSelectionTbv(etCount typ_usr, QList <QVariant> lst_usr);
 QString select_elm(const QModelIndexList &indexes, int zn);
 QString select_cmb(const QModelIndexList &indexes, int zn, int tbl_id);
 QString select_brc(const QModelIndexList &indexes, int zn, int tbl_id);
+
 QString select_grp(const QModelIndexList &indexes, int zn, int tbl_id);
+QString get_OperatorFromKey(QString key, QMap <QString, QList<int> *> sel_grp);
+
 QString elmSel_1(const QModelIndexList &indexes, int zn);
 QString elmSel_2(const QModelIndexList &indexes, int zn);
 BTirAna *doLittleAna(const stGameConf *pGame, QString msg);

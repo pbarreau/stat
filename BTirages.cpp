@@ -1137,11 +1137,112 @@ QString BTirages::select_brc(const QModelIndexList &indexes, int zn, int tbl_id)
 QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
 {
  QString msg = "";
- QString ret = "";
-
  int max_win = gme_cnf->limites[zn].win;
  int max_elm = gme_cnf->limites[zn].max;
  int dizaine = (max_elm/10)+1;
+
+ QMap <QString, QList<int> *> selection;
+ int nb_selection = indexes.size();
+
+ /// -------------------------
+ const QAbstractItemModel * p_aim = indexes.at(0).model();
+ QMap <QString, QList<int>*>::const_iterator item = nullptr;
+ for(int i = 0; i< nb_selection; i++){
+  QModelIndex cur_index = indexes.at(i);
+
+  int cur_col = cur_index.column();
+  int cur_row = cur_index.row();
+
+  QVariant vCol = p_aim->headerData(cur_col,Qt::Horizontal);
+  QString colName = vCol.toString().trimmed();
+  QString colKey = colName.at(0);
+
+  int nb = cur_index.model()->index(cur_row,Bp::colId).data().toInt();
+
+  item = selection.find(colName);
+
+  QList<int> * tmp_list = nullptr;
+  if(item == selection.end()){
+   tmp_list = new QList<int>;
+   tmp_list->append(nb);
+   selection.insert(colName,tmp_list);
+  }
+  else{
+   tmp_list = item.value();
+   tmp_list->append(nb);
+   /// https://www.developpez.net/forums/d2026172/c-cpp/bibliotheques/qt/tri-qlist-std-sort/
+   /// https://stackoverflow.com/questions/46804220/how-to-sort-qlist-according-to-a-certain-order-not-alphabetical
+   /// https://doc.qt.io/qt-5/qtalgorithms.html
+   std::sort(tmp_list->begin(), tmp_list->end(),
+             [](const int a, const int b){return(a > b);});
+  }
+
+ }
+ /// -------------------------
+ QMap <QString,QString> use_operator;
+ QMap <QString, QList<int>*>::const_iterator sub_item = nullptr;
+
+ QString keep_key = "";
+ for(item = selection.begin(); item != selection.end(); item++){
+  QString colName = item.key();
+  QString colKey = colName.at(0);
+
+  int tot_key = use_operator.count(colKey);
+  if(tot_key == 0){
+   use_operator.insert(colKey," AND ");
+  }
+  else{
+   if(keep_key != colKey){
+    int cur_val = 0;
+    for(sub_item = item-1; sub_item != selection.end(); sub_item++){
+     if(sub_item.key().at(0) == colKey){
+      int max_set = sub_item.value()->at(0);
+      cur_val = cur_val + max_set;
+     }
+    }
+    keep_key = colKey;
+
+    if(cur_val > max_win){
+     use_operator.insert(colKey, " OR ");
+    }
+    else{
+     use_operator.insert(colKey, " AND ");
+    }
+   }
+  }
+ }
+
+ /// -------------------------
+
+ /// Construire la requette
+ QString sql_ref = " (t"+QString::number(tbl_id)+".%1 in (%2)) ";
+ item = selection.begin();
+ do{
+  QString key = item.key();
+  QString value = "";
+
+  QString key_operator = get_OperatorFromKey(key, selection);
+
+  int tot_info = item.value()->size();
+  for(int i=0; i< tot_info; i++){
+   int cur_val = item.value()->at(i);
+   value = value + QString::number(cur_val).rightJustified(2,'0');
+   if(i<tot_info-1){
+    value = value + ", ";
+   }
+  }
+
+  QString one_sql = sql_ref.arg(key).arg(value);
+  if(item != selection.end()-1){
+   msg = msg + one_sql + " And ";
+  }
+  item++;
+ }while (item != selection.end());
+
+
+#if 0
+ QString ret = "";
+
 
  /// Tableau de memorisation choix usr
  const QAbstractItemModel * p_aim = indexes.at(0).model();
@@ -1280,12 +1381,20 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
  else{
   msg = "(t"+QString::number(tbl_id)+".id = t1.id) and ("+ret+") ";
  }
-
+#endif
 #ifndef QT_NO_DEBUG
  qDebug() << "\n\nselect_grp :\n" <<msg;
 #endif
 
+
+
  return msg;
+}
+
+QString BTirages::get_OperatorFromKey(QString key, QMap <QString, QList<int> *> sel_grp)
+{
+ QString ret_val = "";
+ return ret_val;
 }
 
 QWidget *BTirages::ana_fltSelection(QTabWidget *tbw_flt, QString st_obj, BTirages *parent, BTirAna **J)

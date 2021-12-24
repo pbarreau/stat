@@ -2411,20 +2411,12 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl_fill, stParam_tsk *ts
  BAnimateCell *a_tbv = tsk_param->a_tbv;
  QString cnx = tsk_param->ptr_gmCf->db_ref->cnx;
 
-#define C_PGM_THREADED_L2 0
-#if  C_PGM_THREADED_L2
-#endif
-
-#if 0
- /// Attendre la fin des calculs
- int val_pool = pool.activeThreadCount();
- if(val_pool == 3){
-  pool.waitForDone();
- }
-
-
  /// Dupliquer la connexion pour ce process
  QSqlDatabase db_1 = QSqlDatabase::database(cnx);
+
+#define C_PGM_THREADED_L2 0
+
+#if C_PGM_THREADED_L2
  bool status = false;
  const QString connName = "FillBdd_Tsk_" + QString::number((quintptr)QThread::currentThreadId());
  QSqlDatabase db_2 = QSqlDatabase::cloneDatabase(db_1, connName);
@@ -2435,6 +2427,8 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl_fill, stParam_tsk *ts
   return tsk_param;
  }
  else{
+  cnx = connName;
+  db_1 = db_2;
   tsk_param->ptr_gmCf->db_ref->cnx = connName;
  }
 #endif
@@ -2446,7 +2440,7 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl_fill, stParam_tsk *ts
   tsk_param->d_info.id_cal = eCalStarted;
 
   if(!updateTracking(id_db, eCalStarted)){
-   QString str_error = db_0.lastError().text();
+   QString str_error = db_1.lastError().text();
    QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
    return tsk_param;
   }
@@ -2484,10 +2478,6 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl_fill, stParam_tsk *ts
 
   }
  }
-#if C_PGM_THREADED_L2
- /// On attend la terminaison de tous les threads
- synchronizer.waitForFinished();
-#endif
 
  if(a_tbv !=nullptr){
   a_tbv->delKey(g_lm);
@@ -2496,7 +2486,7 @@ BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint(QString tbl_fill, stParam_tsk *ts
   tsk_param->d_info.id_cal = eCalReady;
 
   if(!updateTracking(id_db, eCalReady)){
-   QString str_error = db_0.lastError().text();
+   QString str_error = db_1.lastError().text();
    QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
    return tsk_param;
   }
@@ -2598,7 +2588,8 @@ void BcUpl::FillBdd_BView_4(QString tbl, stParam_tsk *tsk_param)
 #endif
  tbl_use = tbl +
            "_D" + QString::number(o_id).rightJustified(2,'0') +
-           "_R" + QString::number(r_id+1).rightJustified(2,'0');
+           "_R" + QString::number(r_id+1).rightJustified(2,'0')+
+           "_C";
 
  sql_msg = sql_ShowItems(pGame,z_id,ELstShowNotInUnion,g_id,tbl_use);
 
