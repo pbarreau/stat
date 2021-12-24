@@ -1179,8 +1179,8 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
 
  }
  /// Terminateur de Fin de liste
- selection.insert("#",nullptr);
-
+ QString stop_key = "Z";
+ selection.insert(stop_key,nullptr);
  /// -------------------------
  QMap <QString,QString> use_operator;
  QMap <QString, QList<int>*>::const_iterator sub_item = nullptr;
@@ -1220,7 +1220,7 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
 
  keep_key = "";
  msg = "--- Debut critere\n(\n (\n";
- for(item = selection.begin(); item != selection.end(); item++){
+ for(item = selection.begin(); item.key().at(0) != stop_key; item++){
   QString colName = item.key();
   QString colKey = colName.at(0);
 
@@ -1248,7 +1248,7 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
   if(keep_key != colKey){
    keep_key = colKey;
 
-   if(item != selection.end()-1){
+   if(item != selection.end() -1){
     QString prev_key = (item - 1).key().at(0);
 
     if(prev_key == colKey){
@@ -1259,9 +1259,6 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
      msg = msg  + " )\nAND\n (" + one_sql;
     }
    }
-   else{
-    msg = msg  + " )\n)\n--- Fin\n";
-   }
   }
   else{
    colPerator = use_operator.find(colKey).value();
@@ -1269,6 +1266,10 @@ QString BTirages::select_grp(const QModelIndexList &indexes, int zn, int tbl_id)
   }
 
  }
+
+ /// Code de fin
+ msg = msg  + " )\n)\n--- Fin\n";
+
 
 #ifndef QT_NO_DEBUG
  BTest::writetoFile("0-select_grp.txt", msg,false);
