@@ -100,23 +100,30 @@ class BcUpl: public BCount
 
   typedef struct _param_tsk
   {
-    const stGameConf *ptr_gmCf; /// ptr config du jeu
-    eUpl_Ens eEns_id; /// type d'ensemble
-    int z_id;  /// Zone id
+    const stGameConf *p_gm; /// ptr config du jeu
     int l_id;  /// Ligne id (dans base ou user)
+    int z_id;  /// Zone id
     int g_id;  /// Groupe id (Cnp)
     int g_lm;  /// Groupe element (indice element dans Groupe id)
-    stUpdData d_info;  /// index dans la base pour cet indice et +
-    QString tbl_ref;
-    bool clear; /// Effacer resultat dans tbv
-    QString upl_txt; /// valeur du uplet
+    int o_id;  /// Offset from day value
+    int r_id;  /// Response id
+
     int upl_tot;  /// total de cette valeur
+    bool clear;   /// Effacer resultat dans tbv
+
+    QString t_rf; /// Nom de la table de reference
+    QString t_on; /// nom de la table actuelle
+
+    QString upl_txt; /// valeur du uplet
     QGroupBox *grb_target;
+
+    eUpl_Lst c_id; /// Calcul type id
+    eUpl_Ens e_id; /// type d'ensemble
+
+    stUpdData d_info;  /// index dans la base pour cet indice et +
+
     BAnimateCell *a_tbv;
     BView *cupl;
-    int o_id; /// Offset from day value
-    int r_id; /// Response id
-    eUpl_Lst c_id; /// Calcul type id
   }stParam_tsk;
 
 
@@ -158,11 +165,12 @@ class BcUpl: public BCount
 
  private:
   QThreadPool pool;
+  static int obj_upl;
   QSqlDatabase db_0;
   QModelIndexList my_indexes;
   QTabWidget *uplTirTab;
   int upl_zn;
-  eUpl_Ens useData;
+  eUpl_Ens e_id;
   BAnimateCell ****tbv_Anim;   /// Selection d'un uplet
 
   //QString gpb_title;
@@ -240,12 +248,17 @@ class BcUpl: public BCount
 
   bool updateTracking(int v_key, eUpl_Cal v_cal);
 
-  stParam_tsk *FillBdd_StartPoint(QString tbl, stParam_tsk *tsk_param);
-  void FillBdd_BView_2(QString tbl, stParam_tsk *tsk_param);
-  void FillBdd_BView_3(QString tbl, stParam_tsk *tsk_param);
-  void FillBdd_BView_4(QString tbl, stParam_tsk *tsk_param);
+  stParam_tsk *FillBdd_StartPoint(stParam_tsk *tsk_param);
+  bool T1_Fill_Bdd(stParam_tsk *tsk_param);
+  void T1_Scan(stParam_tsk *tsk_param);
+  void T2_Fill_Bdd(stParam_tsk *tsk_param);
+  void T3_Fill_Bdd(stParam_tsk *tsk_param);
+  void T4_Fill_Bdd(stParam_tsk *tsk_param);
 
   void FillTbv_StartPoint(QString tbl, stParam_tsk *tsk_param);
+
+  void FillTbv_BView_1(stParam_tsk *tsk_param);
+
   void FillTbv_BView_2(QString tbl, stParam_tsk *tsk_param);
   void FillTbv_BView_3(QString tbl, stParam_tsk *tsk_param);
   void FillTbv_BView_4(QString tbl, stParam_tsk *tsk_param);

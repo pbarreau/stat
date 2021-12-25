@@ -244,10 +244,17 @@ QString DB_Tools::leftJoinFiltered(stJoinArgs ja,QString arg5)
 
 DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QString tbl_code, QString *tbl_read)
 {
+ static int track = 0;
+ QString filePrefix = QString::number(track).rightJustified(3,'0') +
+                      "_" + tbl_name;
+ track++;
+
  DB_Tools::eCort ret_val = eCort_NotSet;
 
  QSqlDatabase db = QSqlDatabase::database(cnx);
  QSqlQuery query(db);
+
+ QString dbgFile  = "";
 
  QString sql_msg = tbl_code;
 
@@ -255,9 +262,12 @@ DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QStri
   sql_msg = "Create table if not exists \"" +
             tbl_name +"\" as \n"+ sql_msg;
 
-  QString filePrefix = "DBT_Cort_" +tbl_name;
-  QString dbgFile  = "";
-  if(!query.exec(sql_msg)){
+#ifndef QT_NO_DEBUG
+   dbgFile = filePrefix+"_start.txt";
+   BTest::writetoFile(dbgFile,sql_msg,false);
+#endif
+
+   if(!query.exec(sql_msg)){
 #ifndef QT_NO_DEBUG
    dbgFile = filePrefix +"_err.txt";
    BTest::writetoFile(dbgFile,sql_msg,false);
@@ -267,10 +277,6 @@ DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QStri
    ret_val=eCort_ErrCreate;
   }
   else{
-#ifndef QT_NO_DEBUG
-   dbgFile = filePrefix+"_ok.txt";
-   BTest::writetoFile(dbgFile,sql_msg,false);
-#endif
    sql_msg = "Select * from '"+tbl_name+"'";
    if(tbl_read != nullptr){*tbl_read = sql_msg;}
 
@@ -613,8 +619,8 @@ bool DB_Tools::tbFltSet(stTbFiltres *in_out, QString cnx)
 
 void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
 {
- QString db_list = QSqlDatabase::connectionNames().join(", ");
- QString dbError = "";
+ //QString db_list = QSqlDatabase::connectionNames().join(", ");
+ //QString dbError = "";
  QString sqlError = "";
  QString sqlText = "";
  QString sqlGood = "";
