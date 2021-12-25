@@ -80,6 +80,7 @@ const QString BcUpl::Txt_eUpl_Ens[BcUpl::eEnsEnd]={
 };
 
 int BcUpl::obj_upl = 0;
+QThreadPool *BcUpl::pool = nullptr;
 
 BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
  :BCount (pGame, eCountUpl)
@@ -89,10 +90,15 @@ BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectio
  int info = cpuInfo.idealThreadCount();
 
  if(info > 1){
+
+  if(pool == nullptr){
+   pool = new QThreadPool;
+  }
+
   // limit to one thread
-  pool.setMaxThreadCount(1);
+  pool->setMaxThreadCount(1);
   // prevent automatic deletion and recreation
-  pool.setExpiryTimeout(-1);
+  pool->setExpiryTimeout(-1);
  }
 
 
@@ -406,7 +412,14 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
      if(T1_Fill_Bdd(tsk_param) == true)
      {
+#define NO_USE_TASKS 0
+
+#if C_PGM_THREADED
+      QFuture<void> f_task = QtConcurrent::run(pool,this,&BcUpl::T1_Scan,tsk_param);
+#else
       T1_Scan(tsk_param);
+#endif
+
       QWidget * wdg_tmp = MkMainUplet(tsk_param);
 
       if(wdg_tmp !=nullptr){
@@ -2188,7 +2201,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
   /// Faire les calculs
   /// https://lnj.gitlab.io/post/async-databases-with-qtsql/
-  QFuture<stParam_tsk *> f_task = QtConcurrent::run(&pool,
+  QFuture<stParam_tsk *> f_task = QtConcurrent::run(pool,
                                                     this,&BcUpl::FillBdd_StartPoint, tsk_param);
 
   /// Surveiller la fin des calculs

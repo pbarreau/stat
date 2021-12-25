@@ -164,7 +164,7 @@ class BcUpl: public BCount
   //void BSlot_Tab(int);
 
  private:
-  QThreadPool pool;
+  static QThreadPool *pool;
   static int obj_upl;
   QSqlDatabase db_0;
   QModelIndexList my_indexes;
