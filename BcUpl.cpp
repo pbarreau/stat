@@ -80,6 +80,7 @@ const QString BcUpl::Txt_eUpl_Ens[BcUpl::eEnsEnd]={
 };
 
 int BcUpl::obj_upl = 0;
+int BcUpl::nb_max_recherche = 0;
 QThreadPool *BcUpl::pool = nullptr;
 
 BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
@@ -415,7 +416,13 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 #define NO_USE_TASKS 0
 
 #if C_PGM_THREADED
-      QFuture<void> f_task = QtConcurrent::run(pool,this,&BcUpl::T1_Scan,tsk_param);
+      QFutureWatcher<stParam_tsk *> * watcher = new QFutureWatcher;
+      connect(watcher, &QFutureWatcher<stParam_tsk *>::finished, this, &BcUpl::BSlot_tsk_finished);
+
+      QFuture<stParam_tsk *> f_task = QtConcurrent::run(pool,this,&BcUpl::T1_Scan,tsk_param);
+
+      /// Surveiller la fin des calculs
+      watcher->setFuture(f_task);
 #else
       T1_Scan(tsk_param);
 #endif
@@ -2768,7 +2775,7 @@ bool BcUpl::T1_Fill_Bdd(stParam_tsk *tsk_param)
  return ret_val;
 }
 
-void BcUpl::T1_Scan(stParam_tsk *tsk_param)
+stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
  QString cnx_1=pGame->db_ref->cnx;
@@ -2786,6 +2793,13 @@ void BcUpl::T1_Scan(stParam_tsk *tsk_param)
  if((status = query.exec(sql_msg))){
   if(query.first()){
    do{
+    do{
+     ; //attendre
+    }while(nb_max_recherche > C_MAX_SCAN_ITEMS);
+    mutex.lock();
+    nb_max_recherche++;
+    mutex.unlock();
+
     g_lm = query.value(0).toInt();
 
     QStringList my_list;
@@ -2804,17 +2818,29 @@ void BcUpl::T1_Scan(stParam_tsk *tsk_param)
     tsk_param->t_on = t_on;
     tsk_param->d_info = d_info;
     tsk_param->g_lm = g_lm;
-    tsk_param->a_tbv = nullptr;
+    //tsk_param->a_tbv = nullptr;
 
     if((d_info.isPresent == false) && (d_info.id_cal == eCalNotSet)){
      updateTracking(d_info.id_db, eCalPending);
     }
     if(d_info.id_cal != eCalReady){
      FillBdd_StartPoint(tsk_param);
+
+     mutex.lock();
+     nb_max_recherche--;
+     mutex.unlock();
+
+     if (nb_max_recherche<0){
+      mutex.lock();
+      nb_max_recherche = 0;
+      mutex.unlock();
+     }
     }
    }while (query.next());
   }
  }
+
+ return tsk_param;
 }
 
 void BcUpl::T2_Fill_Bdd(stParam_tsk *tsk_param)

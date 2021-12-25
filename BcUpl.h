@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include <QThreadPool>
+#include <QMutex>
 
 #include <QWidget>
 #include <QSqlDatabase>
@@ -34,6 +35,7 @@
 #define  C_TBL_UPL "Upl_lst"
 
 #define C_PGM_THREADED 1
+#define C_MAX_SCAN_ITEMS 20
 
 class BcUpl: public BCount
 {
@@ -164,6 +166,8 @@ class BcUpl: public BCount
   //void BSlot_Tab(int);
 
  private:
+  static int nb_max_recherche;
+  QMutex mutex;
   static QThreadPool *pool;
   static int obj_upl;
   QSqlDatabase db_0;
@@ -253,7 +257,7 @@ class BcUpl: public BCount
 
   stParam_tsk *FillBdd_StartPoint(stParam_tsk *tsk_param);
   bool T1_Fill_Bdd(stParam_tsk *tsk_param);
-  void T1_Scan(stParam_tsk *tsk_param);
+  stParam_tsk *T1_Scan(stParam_tsk *tsk_param);
   void T2_Fill_Bdd(stParam_tsk *tsk_param);
   void T3_Fill_Bdd(stParam_tsk *tsk_param);
   void T4_Fill_Bdd(stParam_tsk *tsk_param);
