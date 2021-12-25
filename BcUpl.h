@@ -258,13 +258,13 @@ class BcUpl: public BCount
   void T3_Fill_Bdd(stParam_tsk *tsk_param);
   void T4_Fill_Bdd(stParam_tsk *tsk_param);
 
-  void FillTbv_StartPoint(QString tbl, stParam_tsk *tsk_param);
+  void FillTbv_StartPoint(stParam_tsk *tsk_param);
 
   BView *FillTbv_BView_1(stParam_tsk *tsk_param);
 
-  void FillTbv_BView_2(QString tbl, stParam_tsk *tsk_param);
-  void FillTbv_BView_3(QString tbl, stParam_tsk *tsk_param);
-  void FillTbv_BView_4(QString tbl, stParam_tsk *tsk_param);
+  void FillTbv_BView_2(stParam_tsk *tsk_param);
+  void FillTbv_BView_3(stParam_tsk *tsk_param);
+  void FillTbv_BView_4(stParam_tsk *tsk_param);
 
   int getFromView_Lid(const BView *view);
   QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb);

@@ -2117,15 +2117,15 @@ int BcUpl::getFromView_Lid(const BView *view)
 void BcUpl::BSlot_clicked(const QModelIndex &index)
 {
  BView *view = qobject_cast<BView *>(sender());
- int upl_GrpId = (view->objectName().toInt()) + C_MIN_UPL;
- int zn = view->getZone();
+ int g_id = (view->objectName().toInt()) + C_MIN_UPL;
+ int z_id = view->getZone();
  int g_lm =  index.sibling(index.row(),Bp::colId).data().toInt();
- int tir_LgnId = getFromView_Lid(view);
- int upl_tot =  index.sibling(index.row(),Bp::colId+upl_GrpId+1).data().toInt();
+ int l_id = getFromView_Lid(view);
+ int upl_tot =  index.sibling(index.row(),Bp::colId+g_id+1).data().toInt();
  QGroupBox *target;
- QString upl_cur = getFromIndex_CurUpl(index,upl_GrpId, &target);
+ QString upl_cur = getFromIndex_CurUpl(index,g_id, &target);
  QString cnx=gm_def->db_ref->cnx;
- BAnimateCell *ani = tbv_Anim[tir_LgnId-1][zn][upl_GrpId-C_MIN_UPL];
+ BAnimateCell *ani = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
 
  /// Calcul de cette element en cours ?
  if(ani->gotKey(g_lm)){
@@ -2136,9 +2136,9 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  stParam_tsk *tsk_param = new stParam_tsk;
  tsk_param->e_id = e_id;
  tsk_param->p_gm = gm_def;
- tsk_param->l_id = tir_LgnId;
- tsk_param->z_id = zn;
- tsk_param->g_id = upl_GrpId;
+ tsk_param->l_id = l_id;
+ tsk_param->z_id = z_id;
+ tsk_param->g_id = g_id;
  tsk_param->g_lm = g_lm;
  tsk_param->t_rf = "";
  tsk_param->clear = false;
@@ -2150,29 +2150,25 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
  //QString title = QString(ref_lupl[1]).arg(upl_cur).arg(upl_tot);
 
- QString tbl_name = "Upl_" +
-                    Txt_eUpl_Ens[e_id] + QString::number(tir_LgnId).rightJustified(2,'0') +
-                    "_Z" + QString::number(zn).rightJustified(2,'0') +
-                    "_C" + QString::number(upl_GrpId).rightJustified(2,'0');
+ QString t_rf = "UT_" +
+                QString::number(obj_upl).rightJustified(2,'0') + "_" +
+                Txt_eUpl_Ens[e_id] + QString::number(l_id).rightJustified(2,'0') +
+                "_Z" + QString::number(z_id).rightJustified(2,'0');
+ tsk_param->t_rf = t_rf;
 
  /// On a un uplet, obtenir le radical de table
  stUpdData d_info;
- QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn, &d_info);
- bool isPresent = d_info.isPresent;
- int id_db=d_info.id_db;
+ QString tbl_radical = getTablePrefixFromSelection(upl_cur,z_id, &d_info);
 
- QString tbl_fill = tbl_name +
-                    tbl_radical;
+ tsk_param->t_on = tbl_radical;
 
- tsk_param->t_rf = tbl_fill;
-
- if(isPresent == false){
+ if(d_info.isPresent == false){
   tsk_param->d_info = d_info;
 
   if(ani !=nullptr){
    ani->addKey(g_lm);
 
-   if(!updateTracking(id_db, eCalPending)){
+   if(!updateTracking(d_info.id_db, eCalPending)){
     QString str_error = db_0.lastError().text();
     QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
     return;
@@ -2181,7 +2177,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
   /// Effacer calcul
   tsk_param->clear = true;
-  FillTbv_StartPoint(tbl_fill, tsk_param);
+  FillTbv_StartPoint(tsk_param);
   tsk_param->clear = false;
 
 #if C_PGM_THREADED
@@ -2208,7 +2204,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
   /// Montrer les resultats
   if(d_info.id_cal == eCalReady){
    tsk_param->d_info = d_info;
-   FillTbv_StartPoint(tbl_fill, tsk_param);
+   FillTbv_StartPoint(tsk_param);
   }
  }
 }
@@ -2218,19 +2214,19 @@ void BcUpl::BSlot_tsk_finished(){
  QFutureWatcher<stParam_tsk *> * watcher;
  watcher = reinterpret_cast<QFutureWatcher<stParam_tsk *>*>(sender());
 
- stParam_tsk * res = watcher->result();
+ stParam_tsk * tsk_param = watcher->result();
 
  /// Montrer les resultats
- QString tbl = res->t_rf;
- FillTbv_StartPoint(tbl, res);
+ QString tbl = tsk_param->t_rf;
+ FillTbv_StartPoint(tsk_param);
 
  /// parametre peut etre detruit
- delete res;
+ delete tsk_param;
  watcher->deleteLater();
 }
 #endif
 
-void BcUpl::FillTbv_StartPoint(QString tbl, stParam_tsk *tsk_param)
+void BcUpl::FillTbv_StartPoint(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
  int z_id = tsk_param->z_id;
@@ -2251,11 +2247,11 @@ void BcUpl::FillTbv_StartPoint(QString tbl, stParam_tsk *tsk_param)
    tsk_param->o_id = o_id;
    tsk_param->r_id = r_id;
 
-   FillTbv_BView_2(tbl,tsk_param);
+   FillTbv_BView_2(tsk_param);
 
    if(r_id > 0){
-    FillTbv_BView_3(tbl,tsk_param);
-    FillTbv_BView_4(tbl,tsk_param);
+    FillTbv_BView_3(tsk_param);
+    FillTbv_BView_4(tsk_param);
    }
 
   }
@@ -2395,7 +2391,7 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  return qtv_tmp;
 }
 
-void BcUpl::FillTbv_BView_2(QString tbl, stParam_tsk *tsk_param)
+void BcUpl::FillTbv_BView_2(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
  int l_id = tsk_param->l_id;
@@ -2442,7 +2438,7 @@ void BcUpl::FillTbv_BView_2(QString tbl, stParam_tsk *tsk_param)
 }
 
 
-void BcUpl::FillTbv_BView_3(QString tbl, stParam_tsk *tsk_param)
+void BcUpl::FillTbv_BView_3(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
  int z_id = tsk_param->z_id;
@@ -2488,7 +2484,7 @@ void BcUpl::FillTbv_BView_3(QString tbl, stParam_tsk *tsk_param)
  qtv_tmp->setTitle(st_title);
 }
 
-void BcUpl::FillTbv_BView_4(QString tbl, stParam_tsk *tsk_param)
+void BcUpl::FillTbv_BView_4(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
  int z_id = tsk_param->z_id;
@@ -2665,7 +2661,6 @@ bool BcUpl::T1_Fill_Bdd(stParam_tsk *tsk_param)
  int l_id = tsk_param->l_id;
  int z_id = tsk_param->z_id;
  int g_id = tsk_param->g_id;
- int g_lm = tsk_param->g_lm;
  int o_id = tsk_param->o_id;
  int r_id = tsk_param->r_id;
  QString t_rf = tsk_param->t_rf;
