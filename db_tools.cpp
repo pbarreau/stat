@@ -282,7 +282,7 @@ DB_Tools::eCort DB_Tools::createOrReadTable(QString tbl_name, QString cnx, QStri
 
 #ifndef QT_NO_DEBUG
    dbgFile = filePrefix+"_use.txt";
-   BTest::writetoFile(dbgFile,sql_msg,false);
+   //BTest::writetoFile(dbgFile,sql_msg,false);
 #endif
    ret_val=eCort_Ok;
   }

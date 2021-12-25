@@ -236,7 +236,10 @@ class BcUpl: public BCount
   QWidget *Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int offset, int src_upl, int relativeDay, int dst_upl);
   BView * Bview_3_fill_1(BView *qtv_tmp, QString sql_msg);
   BView * Bview_4_fill_1(BView *qtv_tmp, QString sql_msg);
+
   QWidget *fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int i);
+  QWidget *MkMainUplet(stParam_tsk *tsk_param);
+
   int Bview_UpdateAndCount(eUpl_Lst id, BView *qtv_tmp, QString sql_msg);
   int Bview_3_fill_2(BView *qtv_tmp, QString sql_msg);
   int Bview_4_fill_2(BView *qtv_tmp, QString sql_msg);
@@ -257,7 +260,7 @@ class BcUpl: public BCount
 
   void FillTbv_StartPoint(QString tbl, stParam_tsk *tsk_param);
 
-  void FillTbv_BView_1(stParam_tsk *tsk_param);
+  BView *FillTbv_BView_1(stParam_tsk *tsk_param);
 
   void FillTbv_BView_2(QString tbl, stParam_tsk *tsk_param);
   void FillTbv_BView_3(QString tbl, stParam_tsk *tsk_param);
