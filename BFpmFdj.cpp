@@ -1,5 +1,6 @@
 #include "BFpmFdj.h"
 
+
 BFpmFdj::BFpmFdj()
 {
  def_col=0;
@@ -69,7 +70,18 @@ void BFpmFdj::setFltRules(QString rules, int col_id)
  //setFilterKeyColumn(col_id);
  def_rules = rules;
  def_col = col_id;
+
+ /// Voir comment sauvegarder le proxymodel en  cours ???
+ /// https://stackoverflow.com/questions/19835618/how-to-make-transparent-proxy-model-qabstractproxymodel
+ /// https://doc.qt.io/archives/qt-4.8/qidentityproxymodel.html
+ ///
  invalidateFilter();
+}
+
+void BFpmFdj::saveSourceProxy(QAbstractItemModel *newSourceModel)
+{
+ prox = new TTransparentProxyModel();
+ prox->setSourceModel(newSourceModel);
 }
 
 void BFpmFdj::setLenZone(int len)

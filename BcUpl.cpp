@@ -406,8 +406,9 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
      if(T1_Fill_Bdd(tsk_param) == true)
      {
-      //T1_Scan(tsk_param);
+      T1_Scan(tsk_param);
       QWidget * wdg_tmp = MkMainUplet(tsk_param);
+
       if(wdg_tmp !=nullptr){
        tab_uplets->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
       }
@@ -2285,6 +2286,10 @@ QWidget *BcUpl::MkMainUplet(stParam_tsk *tsk_param)
  tmp_gpb->setTitle(ref_lupl[0]);
 
  BView *qtv_tmp = FillTbv_BView_1(tsk_param);
+ BAnimateCell *ani = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
+ tsk_param->a_tbv = ani;
+ startAnimation(tsk_param);
+
  QWidget *tmp = showUplFromRef(pGame,z_id,l_id,g_id - C_MIN_UPL);
 
  QVBoxLayout *layout = new QVBoxLayout;
@@ -2400,6 +2405,62 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
 
  return qtv_tmp;
 }
+
+void BcUpl::startAnimation(stParam_tsk *tsk_param)
+{
+ const stGameConf *pGame = tsk_param->p_gm;
+ QString cnx_1=pGame->db_ref->cnx;
+ QSqlDatabase db = QSqlDatabase::database(cnx_1);
+ QSqlQuery query(db);
+
+ int z_id = tsk_param->z_id;
+ int g_id = tsk_param->g_id;
+ int g_lm = tsk_param->g_lm;
+ BAnimateCell *a_tbv = tsk_param->a_tbv;
+
+ QString t_on = tsk_param->t_on;
+ QString sql_msg = "select * from " + t_on;
+ bool status = false;
+
+ if((status = query.exec(sql_msg))){
+  if(query.first()){
+   do{
+    g_lm = query.value(0).toInt();
+
+    QStringList my_list;
+    for(int i = 1; i<=g_id;i++){
+     int val = query.value(i).toInt();
+     my_list << QString::number(val).rightJustified(2,'0');
+    }
+    std::sort(my_list.begin(), my_list.end());
+    QString upl_cur = my_list.join(',');
+
+    /// On a un uplet, obtenir le radical de table
+    stUpdData d_info;
+    QString tbl_radical = getTablePrefixFromSelection(upl_cur, z_id, &d_info);
+    t_on = tbl_radical;
+
+    if(a_tbv != nullptr){
+     switch (d_info.id_cal) {
+      case eCalNotSet:
+       a_tbv->addKey(g_lm);
+       break;
+      case eCalStarted:
+       a_tbv->startKey(g_lm);
+       break;
+      case eCalReady:
+       a_tbv->delKey(g_lm);
+       a_tbv->setCalReady(g_lm);
+       break;
+      default:
+       break;
+     }
+    }
+   }while (query.next());
+  }
+ }
+}
+
 
 void BcUpl::FillTbv_BView_2(stParam_tsk *tsk_param)
 {

@@ -1521,10 +1521,10 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
  BTest::writetoFile("0-BSlot_Filter_Tir-0.txt", start_1,false);
 #endif
 
-#if 1
  if(start_1.size() == 0){
   lst_tirages = getTiragesList(gme_cnf, game_lab);
   start_1 = lst_tirages;
+
 #ifndef QT_NO_DEBUG
   BTest::writetoFile("0-BSlot_Filter_Tir-1.txt", start_1,false);
 #endif
@@ -1583,49 +1583,6 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
   updateTbv(box_title,msg);
  }
 
-#else
- QString initial = "";
- if(start_1.size() == 0){
-  initial = getTiragesList(gme_cnf, game_lab);
- }
- start_1 = "with tb0 as ("+initial+"),";
-
- if((ana != Bp::icoRaz) && (sel !=nullptr)){
-  int nb_sel = sel->size();
-
-  etTir typeAnalyse = from->getNature();
-  QTabWidget *tab_SelUsr = nullptr;
-  if((typeAnalyse == eTirFdj) || (typeAnalyse == eTirGen) ){
-   tab_SelUsr = memoriserSelectionUtilisateur(sel);
-  }
-
-  /// Creer la requete de filtrage
-  clause = makeSqlFromSelection(sel, &tbl_lst);
-  msg = msg + tbl_lst;
-  if(clause.size()){
-   msg = msg + " where("+clause+")";
-  }
-
-  //msg_1 = ", tb2 as ("+ msg +")";
-
-  /// mettre la liste des tirages a jour
-  flt_tirages = start_1 + msg;
-
-  /// verifier si simplement montrer tirages
-  if(ana == Bp::icoShow){
-   updateTbv(box_title,flt_tirages);
-   return;
-  }
-
-  if(tab_SelUsr){
-   effectueAnalyses(tab_SelUsr,msg,1);
-  }
- }
- else {
-  msg =  start_1 + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent
-  updateTbv(box_title,msg);
- }
-#endif
 }
 
 void BTirages::checkMemory()
@@ -1758,6 +1715,8 @@ void BTirages::BSlot_Result_Tir(const int index)
 
  if(child_1.size()){
   int cur_index = child_1.at(0)->currentIndex();
+
+  // Emission du signal on a cliquer sur l'onglet
   child_1.at(0)->tabBarClicked(cur_index);
  }
 }

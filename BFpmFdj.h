@@ -2,6 +2,8 @@
 #define BFPMFDJ_H
 
 #include <QSortFilterProxyModel>
+#include "TTransparentProxyModel.h"
+
 #include "bstflt.h"
 
 class BFpmFdj : public QSortFilterProxyModel
@@ -13,6 +15,7 @@ class BFpmFdj : public QSortFilterProxyModel
  void setLenZone(int len);
  void setSearchInZone(QString lst_items);
  void setFltRules(QString rules, int col_id);
+ void saveSourceProxy(QAbstractItemModel* newSourceModel);
 
  protected:
  bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
@@ -26,6 +29,7 @@ class BFpmFdj : public QSortFilterProxyModel
  QString def_rules;
  QString def_sel;
  int def_col;
+ TTransparentProxyModel *prox;
 
 };
 

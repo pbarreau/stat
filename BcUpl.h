@@ -261,6 +261,7 @@ class BcUpl: public BCount
   void FillTbv_StartPoint(stParam_tsk *tsk_param);
 
   BView *FillTbv_BView_1(stParam_tsk *tsk_param);
+  void startAnimation(stParam_tsk *tsk_param);
 
   void FillTbv_BView_2(stParam_tsk *tsk_param);
   void FillTbv_BView_3(stParam_tsk *tsk_param);

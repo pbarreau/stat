@@ -1,6 +1,6 @@
 #include "BAction_1.h"
 
-BAction_1::BAction_1(const QString &label, const QTableView *view, QPoint pos):
+BAction_1::BAction_1(const QString &label, const BView *view, QPoint pos):
   QAction(label),tbv(view),point(pos)
 {
  connect(this, SIGNAL(triggered()), this, SLOT(BSlot_onTriggered()));

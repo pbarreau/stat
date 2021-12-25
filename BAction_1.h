@@ -3,15 +3,17 @@
 
 #include <QObject>
 #include <QAction>
-#include <QTableView>
+//#include <QTableView>
 #include <QPoint>
+
+#include "BView.h"
 
 class BAction_1:public QAction
 {
   Q_OBJECT
 
  public:
-  BAction_1(const QString &label, const QTableView *view, QPoint pos);
+  BAction_1(const QString &label, const BView *view, QPoint pos);
 
  public slots:
   void BSlot_onTriggered(void);
@@ -20,7 +22,7 @@ class BAction_1:public QAction
   void BSig_ActionAt(const QModelIndex &index);
 
  private:
-  const QTableView *tbv;
+  const BView *tbv;
   const QPoint point;
 };
 
