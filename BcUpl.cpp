@@ -2229,7 +2229,10 @@ void BcUpl::BSlot_tsk_finished(){
 void BcUpl::FillTbv_StartPoint(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
+
  int z_id = tsk_param->z_id;
+ QString t_on = tsk_param->t_on;
+
  stUpdData d_info = tsk_param->d_info;
 
  if(d_info.id_cal != eCalReady){
@@ -2247,6 +2250,10 @@ void BcUpl::FillTbv_StartPoint(stParam_tsk *tsk_param)
    tsk_param->o_id = o_id;
    tsk_param->r_id = r_id;
 
+   tsk_param->t_on = t_on +
+                     "_D" + QString::number(o_id).rightJustified(2,'0') +
+                     "_R" + QString::number(r_id+1).rightJustified(2,'0');
+
    FillTbv_BView_2(tsk_param);
 
    if(r_id > 0){
@@ -2256,6 +2263,9 @@ void BcUpl::FillTbv_StartPoint(stParam_tsk *tsk_param)
 
   }
  }
+
+ /// Remettre la valeur initiale
+ tsk_param->t_on = t_on;
 }
 
 QWidget *BcUpl::MkMainUplet(stParam_tsk *tsk_param)
