@@ -2415,17 +2415,21 @@ void BcUpl::startAnimation(stParam_tsk *tsk_param)
 
  int z_id = tsk_param->z_id;
  int g_id = tsk_param->g_id;
- int g_lm = tsk_param->g_lm;
+
+ QString t_rf = tsk_param->t_rf;
+ QString t_use = t_rf + "_C" +
+                 QString::number(g_id).rightJustified(2,'0');
+
  BAnimateCell *a_tbv = tsk_param->a_tbv;
 
- QString t_on = tsk_param->t_on;
- QString sql_msg = "select * from " + t_on;
+ //QString t_on = tsk_param->t_on;
+ QString sql_msg = "select * from " + t_use;
  bool status = false;
 
  if((status = query.exec(sql_msg))){
   if(query.first()){
    do{
-    g_lm = query.value(0).toInt();
+    int g_lm = query.value(0).toInt();
 
     QStringList my_list;
     for(int i = 1; i<=g_id;i++){
@@ -2438,7 +2442,6 @@ void BcUpl::startAnimation(stParam_tsk *tsk_param)
     /// On a un uplet, obtenir le radical de table
     stUpdData d_info;
     QString tbl_radical = getTablePrefixFromSelection(upl_cur, z_id, &d_info);
-    t_on = tbl_radical;
 
     if(a_tbv != nullptr){
      switch (d_info.id_cal) {
@@ -2790,11 +2793,12 @@ void BcUpl::T1_Scan(stParam_tsk *tsk_param)
     tsk_param->g_lm = g_lm;
     tsk_param->a_tbv = nullptr;
 
-    if(d_info.isPresent == false){
+    if((d_info.isPresent == false) && (d_info.id_cal == eCalNotSet)){
      updateTracking(d_info.id_db, eCalPending);
     }
-
-    FillBdd_StartPoint(tsk_param);
+    if(d_info.id_cal != eCalReady){
+     FillBdd_StartPoint(tsk_param);
+    }
    }while (query.next());
   }
  }
