@@ -37,6 +37,89 @@
 #define C_PGM_THREADED 1
 #define C_MAX_SCAN_ITEMS 20
 
+typedef enum _eEnsemble /// Ensemble dans lequel chercher les uplets
+{
+ eEnsNotSet, /// Ensemble non defini
+ eEnsFdj,    /// Liste des tirages de la fdj
+ eEnsUsr,    /// Selection de l'utilisateur
+ eEnsEnd     /// Fin enumeration
+}eUpl_Ens;
+extern const QString Txt_eUpl_Ens[eEnsEnd];
+
+typedef enum _eCalTirages
+{
+ ELstBle,  /// Liste des boules
+ ELstUpl,	/// Liste des uplets apartir des boules
+ ELstTirUpl,	/// Liste des tirages ayant ces uplets (J0)
+ ELstUplTot,	/// Total de chacun des uplets
+ ELstBleNot,	/// Ensemble complementaire des boules ( refa uplet 1, 2, 3)
+ ELstTirUplNext, /// Liste des tirages apres les uplets initiaux
+ ELstBleNext, /// Liste des boules jour  != 0
+ ELstUplNot,	/// Uplet 1,2,3 cree apartir de l'ensemble complementaire
+ ELstUplTotNot, /// Total de chacun des uplets
+ ELstUplNext, /// Liste des uplets apartir des boules next day
+ ELstUplTotNext, /// Total de chacun des uplets
+ ELstCal,        /// Fin des calculs possible
+ ELstShowCal,    /// Requete montrant les calculs
+ ELstShowUnion,   /// Requete synthese de chacque boule
+ ELstShowNotInUnion /// Requete ensemble complementaire
+ ///ELstCalUsr,
+ ///ELstCalFdj,
+}eUpl_Lst;
+#ifndef QT_NO_DEBUG
+extern const QString sqlStepText[ELstCal];
+#endif
+
+#define C_TOT_CAL ELstCal
+
+typedef enum _eCalcul
+{
+ eCalNotSet,     /// Non traite
+ eCalPending,    /// Sur liste des prochains
+ eCalStarted,    /// Calcul encours
+ eCalReady,      /// Calcul disponible
+ eCalPaused,     /// Calcul mis en pause
+ eCalInterrupted,/// Calcul interrompu
+ eCalTerminated  /// Calcul termine
+}eUpl_Cal;
+
+typedef struct _dbUpdl{
+  int id_db;
+  eUpl_Cal id_cal;
+  bool isPresent;
+  int id_zn;
+}stUpdData;
+
+
+typedef struct _param_tsk
+{
+  const stGameConf *p_gm; /// ptr config du jeu
+  int l_id;  /// Ligne id (dans base ou user)
+  int z_id;  /// Zone id
+  int g_id;  /// Groupe id (Cnp)
+  int g_lm;  /// Groupe element (indice element dans Groupe id)
+  int o_id;  /// Offset from day value
+  int r_id;  /// Response id
+
+  int upl_tot;  /// total de cette valeur
+  bool clear;   /// Effacer resultat dans tbv
+
+  QString t_rf; /// Nom de la table de reference
+  QString t_on; /// nom de la table actuelle
+
+  QString upl_txt; /// valeur du uplet
+  QGroupBox *grb_target;
+
+  eUpl_Lst c_id; /// Calcul type id
+  eUpl_Ens e_id; /// type d'ensemble
+
+  stUpdData d_info;  /// index dans la base pour cet indice et +
+
+  BAnimateCell *a_tbv;
+  BView *cupl;
+}stParam_tsk;
+
+
 class BcUpl: public BCount
 {
   Q_OBJECT
@@ -50,108 +133,12 @@ class BcUpl: public BCount
   }stDays;
   static const stDays defDays[C_NB_ONG];
 
-  typedef enum _eEnsemble /// Ensemble dans lequel chercher les uplets
-  {
-   eEnsNotSet, /// Ensemble non defini
-   eEnsFdj,    /// Liste des tirages de la fdj
-   eEnsUsr,    /// Selection de l'utilisateur
-   eEnsEnd     /// Fin enumeration
-  }eUpl_Ens;
-  static const QString Txt_eUpl_Ens[eEnsEnd];
-
-  typedef enum _eCalcul
-  {
-   eCalNotSet,     /// Non traite
-   eCalPending,    /// Sur liste des prochains
-   eCalStarted,    /// Calcul encours
-   eCalReady,      /// Calcul disponible
-   eCalPaused,     /// Calcul mis en pause
-   eCalInterrupted,/// Calcul interrompu
-   eCalTerminated  /// Calcul termine
-  }eUpl_Cal;
-
- private:
-  typedef enum _eCalTirages
-  {
-   ELstBle,  /// Liste des boules
-   ELstUpl,	/// Liste des uplets apartir des boules
-   ELstTirUpl,	/// Liste des tirages ayant ces uplets (J0)
-   ELstUplTot,	/// Total de chacun des uplets
-   ELstBleNot,	/// Ensemble complementaire des boules ( refa uplet 1, 2, 3)
-   ELstTirUplNext, /// Liste des tirages apres les uplets initiaux
-   ELstBleNext, /// Liste des boules jour  != 0
-   ELstUplNot,	/// Uplet 1,2,3 cree apartir de l'ensemble complementaire
-   ELstUplTotNot, /// Total de chacun des uplets
-   ELstUplNext, /// Liste des uplets apartir des boules next day
-   ELstUplTotNext, /// Total de chacun des uplets
-   ELstCal,        /// Fin des calculs possible
-   ELstShowCal,    /// Requete montrant les calculs
-   ELstShowUnion,   /// Requete synthese de chacque boule
-   ELstShowNotInUnion /// Requete ensemble complementaire
-   ///ELstCalUsr,
-   ///ELstCalFdj,
-  }eUpl_Lst;
-
-
-  typedef struct _dbUpdl{
-    int id_db;
-    eUpl_Cal id_cal;
-    bool isPresent;
-    int id_zn;
-  }stUpdData;
-
-  typedef struct _param_tsk
-  {
-    const stGameConf *p_gm; /// ptr config du jeu
-    int l_id;  /// Ligne id (dans base ou user)
-    int z_id;  /// Zone id
-    int g_id;  /// Groupe id (Cnp)
-    int g_lm;  /// Groupe element (indice element dans Groupe id)
-    int o_id;  /// Offset from day value
-    int r_id;  /// Response id
-
-    int upl_tot;  /// total de cette valeur
-    bool clear;   /// Effacer resultat dans tbv
-
-    QString t_rf; /// Nom de la table de reference
-    QString t_on; /// nom de la table actuelle
-
-    QString upl_txt; /// valeur du uplet
-    QGroupBox *grb_target;
-
-    eUpl_Lst c_id; /// Calcul type id
-    eUpl_Ens e_id; /// type d'ensemble
-
-    stUpdData d_info;  /// index dans la base pour cet indice et +
-
-    BAnimateCell *a_tbv;
-    BView *cupl;
-  }stParam_tsk;
-
-
-
-#ifndef QT_NO_DEBUG
-  static const QString sqlStepText[ELstCal];
-#endif
-
-#define C_TOT_CAL ELstCal
-
-
 
  public:
-  //BUplet(st_In const &param);
-  //BUplet(st_In const &param, int index=0);
-  //BUplet(st_In const &param, QString ensemble="");
-  //BcUpl(st_In const &param, int index=0, eUpl_Cal eCal=eCalNotSet,const QModelIndex &ligne=QModelIndex(), const QString & data="", QWidget *parent=nullptr);
   explicit BcUpl(const stGameConf *pGame, eUpl_Ens eUpl=eEnsFdj, int zn=0, const QItemSelectionModel *cur_sel=nullptr, QTabWidget *ptrUplRsp=nullptr);
   ~BcUpl();
-  //int getUpl(void);
-  //QString sql_UsrSelectedTirages(const QModelIndex & index, int pos);
-  //QString findUplets(const stGameConf *pGame, const int zn =0, const int loop=2, const int key=-1, QString tb_def="tb6", const int ref_day=1, const int delta=-1);
 
  public slots:
-  //void slot_Selection(const QString& lstBoules);
-  //void slot_FindNewUplet(const QModelIndex & index);
   void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int zn);
 
  private slots:
@@ -164,7 +151,6 @@ class BcUpl: public BCount
   void BSlot_over(const QModelIndex &index);
   void BSlot_Repaint(const BView * tbv);
 
-  //void BSlot_Tab(int);
 
  private:
   static int nb_max_recherche;
@@ -178,36 +164,12 @@ class BcUpl: public BCount
   eUpl_Ens e_id;
   BAnimateCell ****tbv_Anim;   /// Selection d'un uplet
 
-  //QString gpb_title;
-  //st_In input;
-  //QGroupBox *gpb_upl;
-  //QTableView *qtv_upl;
-  //QString ens_ref;
-  //static int tot_upl;
 
 
  private:
   QString getTablePrefixFromSelection(QString items, int zn=0, stUpdData *upl_data=nullptr);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
 
-  // QGroupBox *gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne, const QString &data, QWidget *parent);
-  //QTableView *doTabShowUplet(QString tbl_src, const QModelIndex &ligne);
-  //int  getNbLines(QString tbl_src);
-  //QString getUpletFromIndex(int nb_uplet, int index, QString tbl_src);
-  //QString getBoulesTirage(int index);
-
-  //QString getJourTirage(int index);
-  //QString getCmbTirage(int index);
-  //QString getBrcTirage(int index);
-
-  //QTabWidget * getTabUplRsp(void);
-  //bool DoCreateTblUplet(QString tbl);
-  //QString FN2_getFieldsFromZone(int zn, QString alias);
-
-  //bool do_SqlCnpCount(int uplet_id);
-  //QString sql_CnpMkUplet(int nb, QString col, QString tbl_in="B_elm");
-  //QString sql_CnpCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
-  //QString sql_UsrCountUplet(int nb, QString tbl_cnp, QString tbl_in="B_fdj");
   QString sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
 
  private:
@@ -237,7 +199,6 @@ class BcUpl: public BCount
 
   void sql_RepartitionVoisin(QString tabInOut[][3], int jour, int upl, int ref_id, int delta=0);
 
-  //void tryUneFn();
   QWidget *Bview_init(const stGameConf *pGame, int zn, int tirLgnId, int offset, int src_upl, int relativeDay, int dst_upl);
   BView * Bview_3_fill_1(BView *qtv_tmp, QString sql_msg);
   BView * Bview_4_fill_1(BView *qtv_tmp, QString sql_msg);
@@ -281,21 +242,3 @@ class BcUpl: public BCount
 
 
 #endif // BUPLET_H
-
-#if 0
-class BUplWidget: public QWidget
-{
-
- public:
-  //BUplWidget(QString cnx, QWidget *parent=0);
-  //BUplWidget(QString cnx, int index, QWidget *parent=0);
-  //BUplWidget(QString cnx, QString usr_ens, QWidget *parent=0);
-  BUplWidget(QString cnx, int index=0, const QModelIndex & ligne=QModelIndex(), const QString & data="", BcUpl *origine=0, QWidget *parent=0);
-
- private:
-  QString sql_lstTirCmb(int ligne, int dst);
-  QString sql_lstTirBrc(int ligne, int dst);
-
-};
-
-#endif

@@ -58,7 +58,7 @@ const BcUpl::stDays BcUpl::defDays[]={
 };
 
 #ifndef QT_NO_DEBUG
-const QString BcUpl::sqlStepText[BcUpl::ELstCal]={
+const QString sqlStepText[ELstCal]={
  "ELstBle",
  "ELstUpl",
  "ELstTirUpl",
@@ -73,7 +73,7 @@ const QString BcUpl::sqlStepText[BcUpl::ELstCal]={
 };
 #endif
 
-const QString BcUpl::Txt_eUpl_Ens[BcUpl::eEnsEnd]={
+const QString Txt_eUpl_Ens[eEnsEnd]={
  "TBD", /// To be define
  "T",   /// Dans base des tirages
  "U"    /// Utilisateur
@@ -2767,7 +2767,7 @@ bool BcUpl::updateTracking(int v_key, eUpl_Cal v_cal)
 }
 
 
-BcUpl::stParam_tsk * BcUpl::FillBdd_StartPoint( stParam_tsk *tsk_param)
+stParam_tsk * BcUpl::FillBdd_StartPoint( stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
  int z_id = tsk_param->z_id;
@@ -2901,7 +2901,7 @@ bool BcUpl::T1_Fill_Bdd(stParam_tsk *tsk_param)
  return ret_val;
 }
 
-BcUpl::stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
+stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
 {
  const QString connName = "Scan_Tsk_" + QString::number((quintptr)QThread::currentThreadId());
 
@@ -3261,7 +3261,7 @@ int BcUpl::Bview_UpdateAndCount(eUpl_Lst id, BView *qtv_tmp, QString sql_msg)
  return nb_rows;
 }
 
-bool BcUpl::effectueRecherche(BcUpl::eUpl_Ens upl_type, QString upl_sql, int upl_id, int zn_id, int nb_items)
+bool BcUpl::effectueRecherche(eUpl_Ens upl_type, QString upl_sql, int upl_id, int zn_id, int nb_items)
 {
  bool retVal = true;
 
