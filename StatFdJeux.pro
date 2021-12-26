@@ -125,7 +125,8 @@ SOURCES += \
     BCompress.cpp \
     BAction_1.cpp \
     BAnimateCell.cpp \
-    TTransparentProxyModel.cpp
+    TTransparentProxyModel.cpp \
+    BThread_1.cpp
 
 HEADERS  += \
     BColorPriority.h \
@@ -214,7 +215,8 @@ HEADERS  += \
     BCompress.h \
     BAction_1.h \
     BAnimateCell.h \
-    TTransparentProxyModel.h
+    TTransparentProxyModel.h \
+    BThread_1.h
 
 
 FORMS    += mainwindow.ui \

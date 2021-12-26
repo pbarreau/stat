@@ -311,7 +311,140 @@ void BcUpl::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
  Q_UNUSED(eType)
  Q_UNUSED(zn)
 }
+#if 1
+QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
+{
+Q_UNUSED(eCalcul)
 
+ QTabWidget *tab_tirId = nullptr;
+ if(uplTirTab == nullptr){
+  uplTirTab = new QTabWidget(this);
+ }
+ tab_tirId = uplTirTab;
+ tab_tirId->setObjectName(gpb_key_tab);
+
+ int nb_zn = pGame->znCount;
+ int zn_start = -1;
+ int nbTirJour = -1;
+ int zn_stop = -1;
+
+ static int usrCounter = 0;
+
+ if(e_id==eEnsFdj){
+  zn_start = 0;
+  zn_stop = nb_zn;
+  nbTirJour = C_NB_TIR_LIR;
+ }
+ else{
+  zn_start = upl_zn;
+  zn_stop = zn_start +1;
+  nbTirJour = 1;
+ }
+
+ QString refTir = "";
+
+ for(int l_id = 1; l_id<=nbTirJour;l_id++){
+
+  upl_Bview_0[l_id-1]=new BView** [nb_zn];
+
+  upl_Bview_1[l_id-1]=new BView** [nb_zn];
+  tbv_Anim[l_id-1]=new BAnimateCell** [nb_zn];
+
+  upl_Bview_2[l_id-1]=new BView**** [nb_zn];
+  upl_Bview_3[l_id-1]=new BView**** [nb_zn]; /// S2
+  upl_Bview_4[l_id-1]=new BView**** [nb_zn]; /// S2
+
+  QTabWidget *tab_zones = new QTabWidget(tab_tirId);
+
+  for (int z_id = zn_start; z_id< zn_stop; z_id++) {
+   QTabWidget *tab_uplets = new QTabWidget(tab_zones);
+
+   QString title = pGame->names[z_id].abv;
+   int nb_recherche = BMIN_2(pGame->limites[z_id].win, C_MAX_UPL);
+
+   upl_Bview_0[l_id-1][z_id]=new BView* [nb_recherche];
+
+   upl_Bview_1[l_id-1][z_id]=new BView* [nb_recherche];
+   tbv_Anim[l_id-1][z_id]=new BAnimateCell* [nb_recherche];
+
+   upl_Bview_2[l_id-1][z_id]=new BView*** [nb_recherche];
+   upl_Bview_3[l_id-1][z_id]=new BView*** [nb_recherche];
+   upl_Bview_4[l_id-1][z_id]=new BView*** [nb_recherche];
+
+   for (int g_id = C_MIN_UPL; g_id<=nb_recherche; g_id++) {
+    if(g_id > pGame->limites[z_id].win){
+     break;
+    }
+    else {
+     /// ----------------------
+     QString t_rf = "UT_" +
+                    QString::number(obj_upl).rightJustified(2,'0') + "_" +
+                    Txt_eUpl_Ens[e_id] + QString::number(l_id).rightJustified(2,'0') +
+                    "_Z" + QString::number(z_id).rightJustified(2,'0');
+
+     stParam_tsk *tsk_param = new stParam_tsk;
+     tsk_param->p_gm = gm_def;
+     tsk_param->l_id = l_id;
+     tsk_param->z_id = z_id;
+     tsk_param->g_id = g_id;
+     tsk_param->g_lm = -1;
+     tsk_param->o_id = 0;
+     tsk_param->r_id = -1;
+     tsk_param->c_id = ELstBle;
+     tsk_param->e_id = e_id;
+     tsk_param->t_rf = t_rf;
+     tsk_param->t_on = "";
+     tsk_param->a_tbv = nullptr;
+
+     QWidget * wdg_tmp = MkMainUplet(tsk_param);
+     if(wdg_tmp !=nullptr){
+      wdg_tmp->setDisabled(true);
+      tab_uplets->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
+     }
+
+#if 0
+     if(T1_Fill_Bdd(tsk_param) == true)
+     {
+#if C_PGM_THREADED
+      QFutureWatcher<BcUpl::stParam_tsk *> * watcher = new QFutureWatcher <BcUpl::stParam_tsk *> ();
+      //connect(watcher, &QFutureWatcher<stParam_tsk *>::started, this, &BcUpl::BSlot_tsk_started);
+      connect(watcher, &QFutureWatcher<stParam_tsk *>::finished, this, &BcUpl::BSlot_tsk_finished);
+
+      QFuture<stParam_tsk *> f_task = QtConcurrent::run(pool, this, &BcUpl::T1_Scan, tsk_param);
+
+      /// Surveiller la fin des calculs
+      watcher->setFuture(f_task);
+#else
+      T1_Scan(tsk_param);
+#endif
+
+      QWidget * wdg_tmp = MkMainUplet(tsk_param);
+      if(wdg_tmp !=nullptr){
+       tab_uplets->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
+      }
+     }
+#endif
+    }
+   }
+
+   tab_zones->addTab(tab_uplets,title);
+  }
+
+  /// ------------------
+  if(e_id==eEnsFdj){
+   refTir = QString("Tirage-")+ QString::number(l_id).rightJustified(2,'0');
+  }
+  else{
+   refTir = QString("Select-")+ QString::number(usrCounter).rightJustified(2,'0');
+   usrCounter++;
+  }
+  tab_tirId->addTab(tab_zones,refTir);
+ }
+
+ return tab_tirId;
+}
+
+#else
 QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
 
@@ -414,7 +547,6 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 #endif
 
       QWidget * wdg_tmp = MkMainUplet(tsk_param);
-
       if(wdg_tmp !=nullptr){
        tab_uplets->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
       }
@@ -436,9 +568,9 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
   tab_tirId->addTab(tab_zones,refTir);
  }
 
-
  return tab_tirId;
 }
+#endif
 
 void BcUpl::tsk_upl_0(stParam_tsk *tsk_param)
 {
@@ -2332,12 +2464,14 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  QString t_use = t_rf + "_C" +
                  QString::number(g_id).rightJustified(2,'0');
 
-
+ QString sql_msg = "select * from " + t_use;
+#if 0
  QString sql_ref = getSqlTbv(pGame,z_id,l_id,o_id,g_id, r_id, ELstUplTot);
  QString sql_msg = sql_ShowItems(pGame,z_id,ELstShowCal,g_id,sql_ref);
 
  DB_Tools::eCort my_response = DB_Tools::eCort_NotSet;
  my_response = DB_Tools::createOrReadTable(t_use, cnx_1, sql_msg, &sql_msg);
+#endif
 
  BView *qtv_tmp = new BView;
  upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL] = qtv_tmp;
@@ -2369,7 +2503,8 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  int tot_val = 0;
  QSqlQuery query(db_0);
  bool b_retVal = false;
- QString sql_tot = sql_ref + "\n" + "Select count(*) as T from tb_00";
+ //QString sql_tot = sql_ref + "\n" + "Select count(*) as T from tb_00";
+ QString sql_tot = "Select count(*) as T from " + t_use;
  if((b_retVal=query.exec(sql_tot))){
   if(query.first()){
    tot_val = query.value(0).toInt();
@@ -3261,6 +3396,7 @@ bool BcUpl::usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)
  return b_retVal;
 }
 
+#if 0
 QString BcUpl::findUplets(const stGameConf *pGame, const int zn, const int loop, const int key, QString tb_def, const int ref_day, const int delta)
 {
  QSqlQuery query(db_0);
@@ -3571,7 +3707,7 @@ QString BcUpl::findUplets(const stGameConf *pGame, const int zn, const int loop,
 }
 
 
-#if 0
+
 QGroupBox *BcUpl::gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
  int nb_uplet = input.uplet;

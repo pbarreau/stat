@@ -157,7 +157,9 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
 #endif
 
  /// recuperer la liste des jeux deja effectue
- msg = "select * from E_lst";
+ msg = "select * from E_lst "
+       "where ( (type = '" + lstTirDef[eTirGen] + "')) ";
+
  /// si il y a des reponses les faire toutes
  if(((b_retVal=query.exec(msg))== true) && ((b_retVal=query.first())==true)){
   stGameConf * tmp = new stGameConf;

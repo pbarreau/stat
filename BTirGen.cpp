@@ -32,7 +32,7 @@
 
 /// https://denishulo.developpez.com/tutoriels/access/combinatoire/#LIV-A
 
-BTirGen::BTirGen(const stGameConf *pGame, etTir gme_tir, QWidget *parent) : BTirages(pGame,gme_tir,parent)
+BTirGen::BTirGen(const stGameConf *pGame, BView_1 *bv1, etTir gme_tir, QWidget *parent) : cible(bv1), BTirages(pGame,gme_tir,parent)
 {
  gameDef = nullptr;
 
@@ -73,7 +73,19 @@ BTirGen::BTirGen(const stGameConf *pGame, etTir gme_tir, QWidget *parent) : BTir
  else {
   QString msg = "Selection en cours\ncorrespond a : "+ game;
   QMessageBox::information(nullptr,"Jeux utilisateur",msg);
-  BView_1::activateTargetTab(game);
+  //bv1->activateTargetTab(game);
+  int target = -1;
+  for(int i = 0; i<tbw_BtirCalculs->count();i++){
+   QString label = tbw_BtirCalculs->tabText(i);
+   if(label == game ){
+    target = i;
+   }
+  }
+  if(target >= 0){
+   tbw_BtirCalculs->setCurrentIndex(target);
+   wdg_BtirReponses->show();
+  }
+
  }
 }
 
@@ -283,7 +295,10 @@ bool BTirGen::isAlreadyKnown(QString key, QString * gameId)
 
  /// Verifier si la table de liste des jeux existe
  if(DB_Tools::isDbGotTbl("E_lst",db_gme.connectionName())==false){
-  msg = "CREATE TABLE if not EXISTS E_lst (id integer PRIMARY key, type text, zn int, name text, lst TEXT, t1  text, t2  text)";
+  msg = "CREATE TABLE if not EXISTS E_lst"
+        "(id integer PRIMARY key, type text, zn int,"
+        " name text, lst TEXT, nb int,"
+        " t1  text, t2  text)";
   if(!query.exec(msg)){
    DB_Tools::DisplayError("BTirGen::isAlreadyKnown (1)", &query, msg);
    chk_db = false;
@@ -291,11 +306,12 @@ bool BTirGen::isAlreadyKnown(QString key, QString * gameId)
  }
 
  /// Recherche de la clef
- msg = "select * from E_lst where(lst='"+key+"')";
+ msg = "select * from E_lst where((lst='"+key+"') and (type='"+
+       lstTirDef[eTirGen]+"'))";
 
  if(chk_db && (b_retVal = query.exec(msg))){
   if((b_retVal = query.first()) == true){
-   *gameId = query.value(0).toString();
+   *gameId = query.value("name").toString();
   }
  }
  else {
@@ -315,11 +331,11 @@ bool BTirGen::createGame(const stGameConf *pGame, QString gameId, QString data)
 
  /// preparation de la recherche config utilisateur
  int zn = 0;
+ int nb_items = data.split(',').size();
  QString st_zne = QString::number(zn);
  QString st_typ = QString::number(eCountElm);
  QString tb_flt = pGame->db_ref->flt;
  QString st_flt = QString::number(Bp::fltSelected,16);
-
 
  msg = "create table "+
        gameId+
@@ -356,7 +372,8 @@ bool BTirGen::createGame(const stGameConf *pGame, QString gameId, QString data)
   msg = "insert into E_lst values(NULL,'"
         + lstTirDef[eTirGen] + "',"
         + QString::number(zn) + ",'"+
-        gameId +"','"+data+"', NULL,NULL)";
+        gameId +"','"+data+"',"+ QString::number(nb_items)+
+        ",NULL, NULL)";
   if((b_retVal = query.exec(msg))== false){
    DB_Tools::DisplayError("createGame",&query,msg);
   }
@@ -485,7 +502,8 @@ QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
 
  QStandardItemModel *visu = new QStandardItemModel(nb_row,nb_col);
 
- msg = "select lst from e_lst where(name = '"+tbl_cible+"')";
+ msg = "select lst from e_lst where( (name = '"+tbl_cible+"') and (type='"+
+       lstTirDef[eTirGen]+"'))";
  b_retVal= query.exec(msg);
  if(query.first()){
   qtv_tmp->setModel(visu);

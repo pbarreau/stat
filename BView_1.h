@@ -35,7 +35,7 @@ class BView_1 : public BView, public BFlt
  Bp::E_Col getSortCol(void);
  bool isOnUsrGame(void);
  static void agencerResultats(BTirages *lst, BTirAna * ana);
- static void activateTargetTab(QString id);
+ //static void activateTargetTab(QString id);
  static void addSubFlt(int id, QWidget *tab);
  static void addSpacer(int id, QSpacerItem *space);
  void setRowModelCount(int nb);

@@ -147,7 +147,7 @@ class BcUpl: public BCount
   ~BcUpl();
   //int getUpl(void);
   //QString sql_UsrSelectedTirages(const QModelIndex & index, int pos);
-  QString findUplets(const stGameConf *pGame, const int zn =0, const int loop=2, const int key=-1, QString tb_def="tb6", const int ref_day=1, const int delta=-1);
+  //QString findUplets(const stGameConf *pGame, const int zn =0, const int loop=2, const int key=-1, QString tb_def="tb6", const int ref_day=1, const int delta=-1);
 
  public slots:
   //void slot_Selection(const QString& lstBoules);

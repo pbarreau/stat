@@ -88,6 +88,8 @@ typedef struct Bst_FltJdj
 }Bst_FltJdj;
 
 protected:
+static QTabWidget * tbw_BtirCalculs;
+static QWidget * wdg_BtirReponses;
 static int cnt_tirSrc;
 static QString  tbw_TbvTirages;
 static QString  tbw_FltTirages;
@@ -114,8 +116,6 @@ Bst_FltJdj *data_flt;
 
 private:
 int usr_flt_counter;
-static QTabWidget * tbw_calculs;
-static QWidget * wdg_reponses;
 static QGridLayout *gdl_all;
 BGraphicsView *grp_screen;
 BView **graphAnaLgn;

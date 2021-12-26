@@ -31,7 +31,7 @@ QList<QGridLayout *> *BView_1::gdl_list = nullptr;
 QTabWidget * BView_1::tbw_calculs = nullptr;
 
 BView_1::BView_1(const stGameConf *pGame, int in_zn, etCount in_typ)
-    :BView(nullptr),BFlt(pGame, in_zn, in_typ), gme_current(pGame)
+ :BView(nullptr),BFlt(pGame, in_zn, in_typ), gme_current(pGame)
 {
  db_tbv = db_flt;
  lbflt = cur_bflt;
@@ -48,9 +48,9 @@ BView_1::BView_1(const stGameConf *pGame, int in_zn, etCount in_typ)
           square,
           SLOT(slot_ShowMenu(const QGroupBox *, const QPoint)));
 
-	this->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(this, SIGNAL(customContextMenuRequested(QPoint)),
-					this, SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
+  this->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(this, SIGNAL(customContextMenuRequested(QPoint)),
+          this, SLOT(slot_V2_ccmr_SetPriorityAndFilters(QPoint)));
  }
 
  this->setMouseTracking(true);
@@ -62,12 +62,21 @@ BView_1::BView_1(const stGameConf *pGame, int in_zn, etCount in_typ)
 
  up = nullptr;
  btn_usrGame = nullptr;
+
+#if 0
+ if((tbw_calculs == nullptr) || (wdg_reponses == nullptr) || (gdl_all == nullptr)){
+  wdg_reponses = new QWidget;
+  tbw_calculs = new QTabWidget;
+  gdl_all = new QGridLayout;
+  gdl_list = new QList<QGridLayout *>;
+ }
+#endif
 }
 
 BView_1::~BView_1()
 {
-	///appel du parent ligne suivante inutile
-	///delete square;
+ ///appel du parent ligne suivante inutile
+ ///delete square;
 }
 
 void BView_1::BSlot_MkUsrUplets_L1(const QItemSelectionModel *cur_sel)
@@ -192,12 +201,12 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
  QString tblFlt = inf_flt->tb_flt;
  QString msg = "";
  QString msg_1 ="Select count(id) as T from "+
-                 tblFlt+
-                 " where ( (zne="+
-                 QString::number(zn)+
-                 ") and (typ="+
-                 QString::number(eCalcul)+
-                 ")";
+                tblFlt+
+                " where ( (zne="+
+                QString::number(zn)+
+                ") and (typ="+
+                QString::number(eCalcul)+
+                ")";
 
  for(int i = 0; (i< nb_items) && b_retVal ; i++){
   QString msg_2 = " and ( ((flt & 0x"+
@@ -403,21 +412,21 @@ void  BView_1::BSlot_MakeCustomGame()
 
   saveTimeInTable(Bp::clkStart,gme_tbl,t_human);
 
-	r.setHMS(0,0,0,0);
-	t.restart();
-	BTirAna *ana_tirages = new BTirAna(tmp);
-	r = r.addMSecs(t.elapsed());
-	t_human = r.toString("hh:mm:ss:zzz");
-	saveTimeInTable(Bp::clkStop,gme_tbl,t_human);
+  r.setHMS(0,0,0,0);
+  t.restart();
+  BTirAna *ana_tirages = new BTirAna(tmp);
+  r = r.addMSecs(t.elapsed());
+  t_human = r.toString("hh:mm:ss:zzz");
+  saveTimeInTable(Bp::clkStop,gme_tbl,t_human);
 
-	if(ana_tirages->self() == nullptr){
-	 QString msg = "Erreur de l'analyse des tirages :" + tmp->db_ref->src;
-	 QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
-	 delete ana_tirages;
-	}
-	else {
-	 lst_tirages->showGen(ana_tirages);
-	}
+  if(ana_tirages->self() == nullptr){
+   QString msg = "Erreur de l'analyse des tirages :" + tmp->db_ref->src;
+   QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);
+   delete ana_tirages;
+  }
+  else {
+   lst_tirages->showGen(ana_tirages);
+  }
  }
  else {
   delete lst_tirages;
@@ -438,7 +447,10 @@ void BView_1::saveTimeInTable(Bp::E_Clk ref, QString tb_name, QString humanTime)
   time_col = "t2";
  }
 
- QString msg = "update E_lst set "+time_col+"='"+humanTime+"' where(name='"+tb_name+"')";
+ QString msg = "update E_lst set " +
+               time_col+"='"+humanTime
+               +"' where( (name='"+tb_name+"') and (type='"+
+               lstTirDef[eTirGen]+"'))";
 
  b_retVal = query.exec(msg);
 }
@@ -482,13 +494,24 @@ void BView_1::agencerResultats(BTirages *lst, BTirAna* ana)
  wdg_reponses->show();
 }
 
+#if 0
 void BView_1::activateTargetTab(QString id)
 {
- int target = id.toInt()-1;
- tbw_calculs->setCurrentIndex(target);
- wdg_reponses->show();
-}
+ QTabWidget * tmp = f;
 
+ int target = -1;
+ for(int i = 0; i<tbw_BtirCalculs->count();i++){
+  QString label = tbw_BtirCalculs->tabText(i);
+  if(label == id ){
+   target = i;
+  }
+ }
+ if(target >= 0){
+  tbw_calculs->setCurrentIndex(target);
+  wdg_reponses->show();
+ }
+}
+#endif
 void BView_1::addSubFlt(int id, QWidget *tab)
 {
  gdl_list->at(id-1)->addWidget(tab,1,1);
@@ -506,8 +529,8 @@ void BView_1::showUsrGame(QWidget * une_selection, QString name)
   int item = BTirAna::getCounter() -1;
   QString titre = QString::number(item).rightJustified(2,'0') + " : " + name;
 
-	tab_usrGame->addTab(une_selection, titre);
-	tab_usrGame->show();
+  tab_usrGame->addTab(une_selection, titre);
+  tab_usrGame->show();
 
  }
 */

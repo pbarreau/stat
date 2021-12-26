@@ -30,11 +30,10 @@ QString  BTirages::tbw_FltTirages = "tbw_TirFlt";
 
 static QString  lab_ong = "R_%1";
 
-//QList<QGridLayout *> *BTirages::gdl_list = nullptr;
 
-QTabWidget * BTirages::tbw_calculs = nullptr;
+QTabWidget * BTirages::tbw_BtirCalculs = nullptr;
 QGridLayout * BTirages::gdl_all = nullptr;
-QWidget * BTirages::wdg_reponses = nullptr;
+QWidget * BTirages::wdg_BtirReponses = nullptr;
 
 BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
  : QWidget(parent),gme_cnf(pGame),eTir(gme_tir)
@@ -498,16 +497,15 @@ void BTirages::BSlot_Dessine(bool chk)
 void BTirages::showGen(BTirAna *ana_tirages)
 {
 
- if(tbw_calculs == nullptr){
-  tbw_calculs = new QTabWidget;
+ if(tbw_BtirCalculs == nullptr){
+  tbw_BtirCalculs = new QTabWidget;
   gdl_all = new QGridLayout;
-  wdg_reponses = new QWidget;
-  //gdl_list = new QList<QGridLayout *>;
+  wdg_BtirReponses = new QWidget;
  }
 
  QString st_obj = "Ensemble_"+ QString::number(id_TirSrc).rightJustified(2,'0');
- tbw_calculs->setObjectName(st_obj);
- connect(tbw_calculs,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Ensemble_Tir(int)));
+ tbw_BtirCalculs->setObjectName(st_obj);
+ connect(tbw_BtirCalculs,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Ensemble_Tir(int)));
 
 
  QGridLayout *lay_fusion = this->addAna(ana_tirages);
@@ -515,12 +513,12 @@ void BTirages::showGen(BTirAna *ana_tirages)
  wdg_fusion->setLayout(lay_fusion);
 
  QString name = this->getGameLabel();
- int that_index = tbw_calculs->addTab(wdg_fusion, name);
- tbw_calculs->setCurrentIndex(that_index);
- gdl_all->addWidget(tbw_calculs);
- wdg_reponses->setLayout(gdl_all);
- wdg_reponses->setWindowTitle("Tirages AUTO : ");
- wdg_reponses->show();
+ int that_index = tbw_BtirCalculs->addTab(wdg_fusion, name);
+ tbw_BtirCalculs->setCurrentIndex(that_index);
+ gdl_all->addWidget(tbw_BtirCalculs);
+ wdg_BtirReponses->setLayout(gdl_all);
+ wdg_BtirReponses->setWindowTitle("Tirages AUTO : ");
+ wdg_BtirReponses->show();
 
  connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgnShow(int,int)));
  connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)), ana_tirages,SLOT(BSlot_Show_Flt(const B2LstSel *)));
