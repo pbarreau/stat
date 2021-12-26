@@ -27,7 +27,17 @@ class BThread_1 : public QThread
   void run() override;
   void creationTable();
   bool CreateTable(QString tbl_id);
+
   bool T1_Fill_Bdd(stParam_tsk *tsk_param);
+  stParam_tsk *T1_Scan(stParam_tsk *tsk_param);
+  QString getTablePrefixFromSelection(QString items, int zn=0, stUpdData *upl_data=nullptr);
+
+  stParam_tsk *FillBdd_StartPoint(stParam_tsk *tsk_param);
+  void T2_Fill_Bdd(stParam_tsk *tsk_param);
+  void T3_Fill_Bdd(stParam_tsk *tsk_param);
+  void T4_Fill_Bdd(stParam_tsk *tsk_param);
+
+  bool updateTracking(int v_key, eUpl_Cal v_cal);
 
 
  private:
