@@ -79,6 +79,7 @@ BTirGen::BTirGen(const stGameConf *pGame, BView_1 *bv1, etTir gme_tir, QWidget *
    QString label = tbw_BtirCalculs->tabText(i);
    if(label == game ){
     target = i;
+    break;
    }
   }
   if(target >= 0){
