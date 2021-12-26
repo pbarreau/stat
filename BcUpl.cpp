@@ -36,6 +36,7 @@
 #include "db_tools.h"
 
 #include "BcUpl.h"
+#include "BThread_1.h"
 
 ///int BcUpl::tot_upl = 0;
 
@@ -342,6 +343,20 @@ Q_UNUSED(eCalcul)
  }
 
  QString refTir = "";
+
+ /// Tache producteur
+ stTsk1 *t1data = new stTsk1();
+
+ t1data->pGame = pGame;
+ t1data->e_id = e_id;
+ t1data->my_indexes = &my_indexes;
+ t1data->z_id = upl_zn;
+ t1data->obj_upl = obj_upl;
+
+ /// creation et lancement du producteur
+ BThread_1 *producteur = new BThread_1(t1data);
+ producteur->start();
+ producteur->wait();
 
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
 

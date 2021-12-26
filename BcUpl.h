@@ -37,6 +37,8 @@
 #define C_PGM_THREADED 1
 #define C_MAX_SCAN_ITEMS 20
 
+
+
 typedef enum _eEnsemble /// Ensemble dans lequel chercher les uplets
 {
  eEnsNotSet, /// Ensemble non defini
