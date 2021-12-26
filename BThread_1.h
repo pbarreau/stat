@@ -5,6 +5,7 @@
 
 #include <QSqlDatabase>
 
+
 #include "BcUpl.h"
 
 typedef struct _tsk_1{
@@ -15,9 +16,28 @@ typedef struct _tsk_1{
   int obj_upl;
 }stTsk1;
 
+typedef enum _progress{
+ eStep_T0, /// depart
+ eStep_T1, /// Info dispos
+ eStep_T2, /// Info dispos
+ eStep_T3, /// Info dispos
+ eStep_T4 /// Info dispos
+}etStep;
+
+typedef struct _tskProgress
+{
+  etStep current;
+  QString tbl_name;
+  int l_id;
+  int z_id;
+  int g_id;
+  int d_id;
+  int r_id;
+}stTskProgress;
 
 class BThread_1 : public QThread
 {
+  Q_OBJECT
 
  public:
   BThread_1(stTsk1 *def);
@@ -52,6 +72,9 @@ class BThread_1 : public QThread
   QString sql_TirFrmUpl(const stGameConf *pGame, int zn,int  upl_ref_in, QString tabInOut[][3]);
   QString sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3]);
   QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3]);
+
+ signals:
+  void BSig_Step(const stTskProgress *step);
 
  private:
   stTsk1 *tsk_1;

@@ -35,8 +35,8 @@
 #include "Bc.h"
 #include "db_tools.h"
 
-#include "BcUpl.h"
 #include "BThread_1.h"
+#include "BcUpl.h"
 
 ///int BcUpl::tot_upl = 0;
 
@@ -315,7 +315,7 @@ void BcUpl::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
 #if 1
 QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
-Q_UNUSED(eCalcul)
+ Q_UNUSED(eCalcul)
 
  QTabWidget *tab_tirId = nullptr;
  if(uplTirTab == nullptr){
@@ -355,8 +355,15 @@ Q_UNUSED(eCalcul)
 
  /// creation et lancement du producteur
  BThread_1 *producteur = new BThread_1(t1data);
- producteur->start();
- producteur->wait();
+
+ if(!producteur->isRunning()){
+  connect(producteur, SIGNAL(BSig_Step(const stTskProgress*)),
+          this, SLOT(BSlot_tsk_progress(const stTskProgress*))
+          );
+  producteur->setPriority(QThread::LowPriority);
+  producteur->start();
+  //producteur->wait();
+ }
 
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
 
@@ -2382,6 +2389,17 @@ void BcUpl::BSlot_tsk_finished(){
  /// parametre peut etre detruit
  delete tsk_param;
  watcher->deleteLater();
+}
+
+void BcUpl::BSlot_tsk_progress(const stTskProgress *step)
+{
+ switch (step->current) {
+  case eStep_T1:
+   ;
+   break;
+  default:
+   break;
+ }
 }
 #endif
 

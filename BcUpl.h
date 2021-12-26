@@ -23,6 +23,8 @@
 
 #include "BAnimateCell.h"
 
+//#include "BThread_1.h"
+
 #define  C_MIN_UPL    1
 #define  C_MAX_UPL    3
 #define  C_NB_ONG     3
@@ -91,8 +93,7 @@ typedef struct _dbUpdl{
   bool isPresent;
   int id_zn;
 }stUpdData;
-
-
+typedef struct _tskProgress stTskProgress;
 typedef struct _param_tsk
 {
   const stGameConf *p_gm; /// ptr config du jeu
@@ -116,7 +117,7 @@ typedef struct _param_tsk
   eUpl_Ens e_id; /// type d'ensemble
 
   stUpdData d_info;  /// index dans la base pour cet indice et +
-
+  struct _tskProgress *tsk_step;
   BAnimateCell *a_tbv;
   BView *cupl;
 }stParam_tsk;
@@ -147,6 +148,7 @@ class BcUpl: public BCount
 #if C_PGM_THREADED
   void BSlot_tsk_started();
   void BSlot_tsk_finished();
+  void BSlot_tsk_progress(const stTskProgress *step);
 #endif
   void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_clicked(const QModelIndex &index);

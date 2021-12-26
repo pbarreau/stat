@@ -8,6 +8,7 @@
 #include <QSqlQuery>
 #include "db_tools.h"
 
+#include "BcUpl.h"
 #include "BThread_1.h"
 
 BThread_1::BThread_1(stTsk1 * def):tsk_1(def)
@@ -47,12 +48,20 @@ void BThread_1::creationTable()
  int obj_upl = tsk_1->obj_upl;
 
  bool b_retVal = true;
+ stTskProgress *cur_status = new stTskProgress;
+ cur_status->current = eStep_T0;
 
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
+  cur_status->l_id = l_id;
+
   for (int z_id = zn_start; z_id< zn_stop; z_id++) {
+   cur_status->z_id = z_id;
+
    int max_win = tsk_1->pGame->limites[z_id].win;
    int nb_recherche = BMIN_2(max_win, C_MAX_UPL);
    for (int g_id = C_MIN_UPL; (g_id<=nb_recherche) && (b_retVal == true); g_id++) {
+    cur_status->g_id = g_id;
+
     if(g_id > max_win){
      break;
     }
@@ -84,7 +93,12 @@ void BThread_1::creationTable()
 #endif
      if(T1_Fill_Bdd(tsk_param) == true)
      {
-      //T1_Scan(tsk_param);
+      cur_status->current = eStep_T1;
+      cur_status->tbl_name = tsk_param->t_on;
+      emit BSig_Step(cur_status);
+
+      tsk_param->tsk_step = cur_status;
+      T1_Scan(tsk_param);
      }
     }
    }
@@ -99,20 +113,20 @@ bool BThread_1::CreateTable(QString tbl_id)
  QString msg = "";
  QSqlQuery query(db_tsk1);
 
-  msg = "CREATE TABLE if not EXISTS " + tbl_id +
-        " (id integer PRIMARY key, type text, zn int,"
-        " name text, lst TEXT, nb int,"
-        " t1  text, t2  text)";
-  b_retVal = query.exec(msg);
+ msg = "CREATE TABLE if not EXISTS " + tbl_id +
+       " (id integer PRIMARY key, type text, zn int,"
+       " name text, lst TEXT, nb int,"
+       " t1  text, t2  text)";
+ b_retVal = query.exec(msg);
 
-  if (!b_retVal) {
-   QString err = "Failed to open db connection" + cnx +
-                 "\nfor table : " + tbl_id;
-   QString str_error = err + "\n"+ db_tsk1.lastError().text();
-   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-  }
+ if (!b_retVal) {
+  QString err = "Failed to open db connection" + cnx +
+                "\nfor table : " + tbl_id;
+  QString str_error = err + "\n"+ db_tsk1.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+ }
 
-  return b_retVal;
+ return b_retVal;
 }
 
 QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub)
@@ -1192,26 +1206,8 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
  QString cnx = tsk_param->p_gm->db_ref->cnx;
 
  /// Dupliquer la connexion pour ce process
- QSqlDatabase db_1 = QSqlDatabase::database(cnx);
+ QSqlDatabase db_1 = db_tsk1;
 
-#define C_PGM_THREADED_L2 0
-
-#if C_PGM_THREADED_L2
- bool status = false;
- const QString connName = "FillBdd_Tsk_" + QString::number((quintptr)QThread::currentThreadId());
- QSqlDatabase db_2 = QSqlDatabase::cloneDatabase(db_1, connName);
- if (!(status = db_2.open())) {
-  QString err = "Failed to open db connection" + connName;
-  QString str_error = db_2.lastError().text();
-  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-  return tsk_param;
- }
- else{
-  cnx = connName;
-  db_1 = db_2;
-  tsk_param->ptr_gmCf->db_ref->cnx = connName;
- }
-#endif
 
  /// indiquer en cours
  if(tsk_param->d_info.isPresent == false){
