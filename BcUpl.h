@@ -156,6 +156,7 @@ class BcUpl: public BCount
 
  private slots:
 #if C_PGM_THREADED
+  void BSlot_tsk_started();
   void BSlot_tsk_finished();
 #endif
   void BSlot_ShowTotal(const QString& lstBoules);

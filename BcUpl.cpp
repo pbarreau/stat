@@ -251,19 +251,6 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
     }
    }
 
-#if 0
-   if(id==-1){
-    id = query_1.value(0).toInt();
-    if(id_db!=nullptr){*id_db = id;}
-    ret_val = "U" + QString::number(id).rightJustified(2,'0');
-   }
-   else{
-    static int counter = 0;
-    if(upl_data!=nullptr){*upl_data = true;}
-    ret_val = "Err_" + QString::number(counter).rightJustified(3,'0');
-    counter++;
-   }
-#endif
   }
  }
 
@@ -413,13 +400,12 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
      if(T1_Fill_Bdd(tsk_param) == true)
      {
-#define NO_USE_TASKS 0
-
 #if C_PGM_THREADED
-      QFutureWatcher<stParam_tsk *> * watcher = new QFutureWatcher;
+      QFutureWatcher<BcUpl::stParam_tsk *> * watcher = new QFutureWatcher <BcUpl::stParam_tsk *> ();
+      //connect(watcher, &QFutureWatcher<stParam_tsk *>::started, this, &BcUpl::BSlot_tsk_started);
       connect(watcher, &QFutureWatcher<stParam_tsk *>::finished, this, &BcUpl::BSlot_tsk_finished);
 
-      QFuture<stParam_tsk *> f_task = QtConcurrent::run(pool,this,&BcUpl::T1_Scan,tsk_param);
+      QFuture<stParam_tsk *> f_task = QtConcurrent::run(pool, this, &BcUpl::T1_Scan, tsk_param);
 
       /// Surveiller la fin des calculs
       watcher->setFuture(f_task);
@@ -433,18 +419,9 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
        tab_uplets->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
       }
      }
-
-#if 0
-     ///QFuture<void> f_task = QtConcurrent::run(this,&BcUpl::tsk_upl_0,tsk_param);
-     /// ----------------------
-
-     QWidget * wdg_tmp = fill_Bview_1(pGame,z_id,l_id,g_id);
-     if(wdg_tmp !=nullptr){
-      tab_uplets->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
-     }
-#endif
     }
    }
+
    tab_zones->addTab(tab_uplets,title);
   }
 
@@ -2231,6 +2208,21 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 }
 
 #if C_PGM_THREADED
+void BcUpl::BSlot_tsk_started(){
+ QFutureWatcher<stParam_tsk *> * watcher;
+ watcher = reinterpret_cast<QFutureWatcher<stParam_tsk *>*>(sender());
+
+ stParam_tsk * tsk_param = watcher->result();
+
+ /// Montrer les resultats
+ FillTbv_StartPoint(tsk_param);
+
+ /// parametre peut etre detruit
+ delete tsk_param;
+ watcher->deleteLater();
+}
+
+
 void BcUpl::BSlot_tsk_finished(){
  QFutureWatcher<stParam_tsk *> * watcher;
  watcher = reinterpret_cast<QFutureWatcher<stParam_tsk *>*>(sender());
@@ -2238,7 +2230,6 @@ void BcUpl::BSlot_tsk_finished(){
  stParam_tsk * tsk_param = watcher->result();
 
  /// Montrer les resultats
- QString tbl = tsk_param->t_rf;
  FillTbv_StartPoint(tsk_param);
 
  /// parametre peut etre detruit
@@ -2775,8 +2766,10 @@ bool BcUpl::T1_Fill_Bdd(stParam_tsk *tsk_param)
  return ret_val;
 }
 
-stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
+BcUpl::stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
 {
+ const QString connName = "Scan_Tsk_" + QString::number((quintptr)QThread::currentThreadId());
+
  const stGameConf *pGame = tsk_param->p_gm;
  QString cnx_1=pGame->db_ref->cnx;
  QSqlDatabase db = QSqlDatabase::database(cnx_1);
@@ -2793,13 +2786,14 @@ stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
  if((status = query.exec(sql_msg))){
   if(query.first()){
    do{
+#if 0
     do{
      ; //attendre
     }while(nb_max_recherche > C_MAX_SCAN_ITEMS);
     mutex.lock();
     nb_max_recherche++;
     mutex.unlock();
-
+#endif
     g_lm = query.value(0).toInt();
 
     QStringList my_list;
@@ -2818,14 +2812,33 @@ stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
     tsk_param->t_on = t_on;
     tsk_param->d_info = d_info;
     tsk_param->g_lm = g_lm;
-    //tsk_param->a_tbv = nullptr;
 
+    /// En multitache si != nullptr alors ihm visuel prete
+    BAnimateCell *a_tbv = tsk_param->a_tbv;
     if((d_info.isPresent == false) && (d_info.id_cal == eCalNotSet)){
-     updateTracking(d_info.id_db, eCalPending);
-    }
-    if(d_info.id_cal != eCalReady){
-     FillBdd_StartPoint(tsk_param);
 
+     /// Update dans la base
+     updateTracking(d_info.id_db, eCalPending);
+
+     /// Update dans la variable
+     tsk_param->d_info.id_cal = eCalPending;
+
+     /// Update dans la vue
+     if(a_tbv){
+      a_tbv->addKey(g_lm);
+     }
+    }
+
+    if(tsk_param->d_info.id_cal != eCalReady){
+     FillBdd_StartPoint(tsk_param);
+    }
+
+    if(tsk_param->d_info.id_cal == eCalReady){
+     if(a_tbv){
+      a_tbv->delKey(g_lm);
+      a_tbv->setCalReady(g_lm);
+     }
+#if 0
      mutex.lock();
      nb_max_recherche--;
      mutex.unlock();
@@ -2835,6 +2848,7 @@ stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
       nb_max_recherche = 0;
       mutex.unlock();
      }
+#endif
     }
    }while (query.next());
   }
