@@ -3,6 +3,7 @@
 
 #include <QThread>
 
+#include <QObject>
 #include <QSqlDatabase>
 
 
@@ -37,16 +38,17 @@ typedef struct _tskProgress
   int r_id;
 }stTskProgress;
 
-class BThread_1 : public QThread
+class BThread_1: public QWidget //: public QThread
 {
   Q_OBJECT
 
  public:
   BThread_1(stTsk1 *def);
+  void start();
 
 
  private:
-  void run() override;
+  void run() ;//override;
   void creationTables(etStep eStep = eStep_T1);
 
   bool T1_Fill_Bdd(stParam_tsk *tsk_param);

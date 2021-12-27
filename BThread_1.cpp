@@ -22,6 +22,11 @@ BThread_1::BThread_1(stTsk1 * def):tsk_1(def)
  db_tsk1 = QSqlDatabase::database(cnx);
 }
 
+void BThread_1::start()
+{
+ run();
+}
+
 void BThread_1::run()
 {
  creationTables(eStep_T1);

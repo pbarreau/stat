@@ -355,6 +355,8 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
  /// creation et lancement du producteur
  BThread_1 *producteur = new BThread_1(t1data);
+
+#if 0
  if(!producteur->isRunning()){
   connect(producteur, SIGNAL(BSig_Step(const stTskProgress *)),
           this, SLOT(BSlot_tsk_progress(const stTskProgress *)),
@@ -363,7 +365,13 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
   producteur->setPriority(QThread::LowPriority);
   producteur->start();
  }
+#else
+ connect(producteur, &BThread_1::BSig_Step,
+         this, &BcUpl::BSlot_tsk_progress
+         );
+#endif
 
+ QFuture<void> f_task = QtConcurrent::run(pool, producteur, &BThread_1::start);
 
 
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
