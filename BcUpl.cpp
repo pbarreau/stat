@@ -355,15 +355,16 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
  /// creation et lancement du producteur
  BThread_1 *producteur = new BThread_1(t1data);
-
  if(!producteur->isRunning()){
-  connect(producteur, SIGNAL(BSig_Step(const stTskProgress*)),
-          this, SLOT(BSlot_tsk_progress(const stTskProgress*))
+  connect(producteur, SIGNAL(BSig_Step(const stTskProgress *)),
+          this, SLOT(BSlot_tsk_progress(const stTskProgress *)),
+          Qt::QueuedConnection
           );
   producteur->setPriority(QThread::LowPriority);
   producteur->start();
-  //producteur->wait();
  }
+
+
 
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
 
@@ -420,7 +421,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
      QWidget * wdg_tmp = MkMainUplet(tsk_param);
      if(wdg_tmp !=nullptr){
-      wdg_tmp->setDisabled(true);
+      //wdg_tmp->setDisabled(true);
       tab_uplets->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
      }
 
@@ -463,6 +464,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
   tab_tirId->addTab(tab_zones,refTir);
  }
 
+ //producteur->wait();
  return tab_tirId;
 }
 
@@ -2397,43 +2399,64 @@ void BcUpl::BSlot_tsk_progress(const stTskProgress *step)
  QString sql_msg = "";
  QString st_title = "";
 
+#if 1
  int l_id = step->l_id;
  int z_id = step->z_id;
  int g_id = step->g_id;
  int o_id = step->o_id;
  int r_id = step->r_id;
- eUpl_Lst c_id = step->c_id;
- QString tbl = step->tbl_name;
+ int c_id = step->c_id;
+ etStep e_id = step->e_id;
+ QString tbl = step->t_on;
+#else
+ int l_id = step.l_id;
+ int z_id = step.z_id;
+ int g_id = step.g_id;
+ int o_id = step.o_id;
+ int r_id = step.r_id;
+ int c_id = step.c_id;
+ etStep e_id = step.e_id;
+ QString tbl = step.tbl_name;
+
+#endif
 
  if (tbl.trimmed().size()){
   sql_msg = "select * from " + tbl;
  }
 
- switch (step->current) {
+ switch (e_id) {
   case eStep_T1:
    qtv_tmp = upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL];
+
+   if (qtv_tmp == nullptr)
+    return;
+
    c_id = ELstUplTot;
-   T1_setTitle(qtv_tmp,tbl,g_id);
+   T1_setTitle(qtv_tmp, step);
    break;
   default:
    break;
  }
 
- /// Mise a jour de la table
- if(qtv_tmp != nullptr){
-
- }
 }
 
-void BcUpl::T1_setTitle(BView *qtv_tmp, QString tbl, int g_id)
+void BcUpl::T1_setTitle(BView *qtv_tmp, const stTskProgress *step)
 {
- QString title = "";
+ int l_id = step->l_id;
+ int z_id = step->z_id;
+ int g_id = step->g_id;
+ QString t_on = step->t_on;
+ QString t_rf = step->t_rf;
+ QString t_use = t_rf + "_C" +
+                 QString::number(g_id).rightJustified(2,'0');
+
+ int tot_val = 0;
 
  /// Nombre de lignes reelment dans T1
- int tot_val = 0;
  QSqlQuery query(db_0);
  bool b_retVal = false;
- QString sql_tot = "Select count(*) as T from " + tbl;
+ QString sql_tot = "Select count(*) as T from " +
+                   t_use;
  if((b_retVal=query.exec(sql_tot))){
   if(query.first()){
    tot_val = query.value(0).toInt();
@@ -2441,10 +2464,10 @@ void BcUpl::T1_setTitle(BView *qtv_tmp, QString tbl, int g_id)
  }
 
  /// Calcul du Cnp correspondant
- BCnp * b = new BCnp(tot_val,g_id);
+ BCnp * b = new BCnp(tot_val, g_id);
  int rows_proxy = b->BP_count();
 
- QString sql_msg = "select * from " + tbl;
+ QString sql_msg = "select * from " + t_on;
  int nb_rows = Bview_UpdateAndCount(ELstUplTot, qtv_tmp, sql_msg);
 
  /// Titre de la recherche
@@ -2549,10 +2572,10 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  int l_id = tsk_param->l_id;
  int z_id = tsk_param->z_id;
  int g_id = tsk_param->g_id;
- int o_id = 0;
- int r_id = -1;
 
  QString t_rf = tsk_param->t_rf;
+ QString t_fix = t_rf + "_C" +
+                 QString::number(01).rightJustified(2,'0');
  QString t_use = t_rf + "_C" +
                  QString::number(g_id).rightJustified(2,'0');
 
@@ -2596,7 +2619,7 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  QSqlQuery query(db_0);
  bool b_retVal = false;
  //QString sql_tot = sql_ref + "\n" + "Select count(*) as T from tb_00";
- QString sql_tot = "Select count(*) as T from " + t_use;
+ QString sql_tot = "Select count(*) as T from " + t_fix;
  if((b_retVal=query.exec(sql_tot))){
   if(query.first()){
    tot_val = query.value(0).toInt();

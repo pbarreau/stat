@@ -20,14 +20,12 @@ BThread_1::BThread_1(stTsk1 * def):tsk_1(def)
 {
  QString cnx = def->pGame->db_ref->cnx;
  db_tsk1 = QSqlDatabase::database(cnx);
-
-
 }
 
 void BThread_1::run()
 {
- creationTables();
- creationTables(eStep_T2);
+ creationTables(eStep_T1);
+ //creationTables(eStep_T2);
 }
 
 void BThread_1::creationTables(etStep eStep)
@@ -55,7 +53,7 @@ void BThread_1::creationTables(etStep eStep)
 
  bool b_retVal = true;
  stTskProgress *cur_status = new stTskProgress;
- cur_status->current = eStep_T0;
+ cur_status->e_id = eStep_T0;
 
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
   cur_status->l_id = l_id;
@@ -94,45 +92,33 @@ void BThread_1::creationTables(etStep eStep)
 
      if( eStep == eStep_T1){
       T1_Fill_Bdd(tsk_param);
+      cur_status->e_id = eStep_T1;
+      cur_status->t_on = tsk_param->t_on;
      }
      else{
       T1_Scan(tsk_param);
      }
+#if 0
+     stTskProgress tmp;
+     tmp.e_id =eStep;
 
-     cur_status->current = eStep;
-     cur_status->tbl_name = tsk_param->t_on;
+     tmp.tbl_name = tsk_param->t_on;
+     tmp.c_id = tsk_param->c_id;
+     tmp.o_id = tsk_param->o_id;
+     tmp.r_id = tsk_param->r_id;
+#endif
+
+     cur_status->t_rf = tsk_param->t_rf;
      cur_status->c_id = tsk_param->c_id;
      cur_status->o_id = tsk_param->o_id;
      cur_status->r_id = tsk_param->r_id;
+
      emit BSig_Step(cur_status);
 
     }
    }
   }
  }
-}
-
-bool BThread_1::CreateTable(QString tbl_id)
-{
- bool b_retVal = true;
-
- QString msg = "";
- QSqlQuery query(db_tsk1);
-
- msg = "CREATE TABLE if not EXISTS " + tbl_id +
-       " (id integer PRIMARY key, type text, zn int,"
-       " name text, lst TEXT, nb int,"
-       " t1  text, t2  text)";
- b_retVal = query.exec(msg);
-
- if (!b_retVal) {
-  QString err = "Failed to open db connection" + cnx +
-                "\nfor table : " + tbl_id;
-  QString str_error = err + "\n"+ db_tsk1.lastError().text();
-  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
- }
-
- return b_retVal;
 }
 
 QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub)
@@ -194,7 +180,7 @@ QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_s
  return sql_msg;
 }
 
-QString BThread_1::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day_Delta,int upl_Grp, int upl_Sub, eUpl_Lst target, int sel_item)
+QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_id,int g_id, int r_id, eUpl_Lst target, int sel_item)
 {
  QString sql_msg="";
 
@@ -214,17 +200,17 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day
  /// ---------- Creation du code SQL dans les tableaux ----
  ///Etape 1 : partie commune
  for (int item=0;item<=ELstBleNext;item++) {
-  sql_upl_lev_1(pGame,zn,tir_Id,upl_Grp, day_Delta,-1,item, SqlData);
+  sql_upl_lev_1(pGame,z_id,l_id,g_id, o_id,-1,item, SqlData);
   SqlSubData[0][item][0]=SqlData[item][0];
  }
 
  /// Etape 2 : sous ensemble
  for (int sub_ong=0;sub_ong<C_NB_SUB_ONG;sub_ong++) {
-  sql_upl_lev_2(pGame,zn,tir_Id,day_Delta, upl_Grp, sub_ong + C_MIN_UPL, SqlSubData);
+  sql_upl_lev_2(pGame,z_id,l_id,o_id, g_id, sub_ong + C_MIN_UPL, SqlSubData);
  }
 
  /// --- Recuperation des portions de code pour finalisation
- sql_msg = " -- Code SQL onglet principal : " + QString::number(upl_Grp).rightJustified(2,'0')+"\n";
+ sql_msg = " -- Code SQL onglet principal : " + QString::number(g_id).rightJustified(2,'0')+"\n";
  sql_msg = sql_msg+"with\n";
 
  /// Partie commune
@@ -260,7 +246,7 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day
 
  /// Dernier select
  QString tbl_target = "";
- if(upl_Sub<0){
+ if(r_id<0){
   tbl_target = SqlData[target][0];
  }
  else {
@@ -268,17 +254,17 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day
   tbl_target = "tb_"
                +QString::number(target).rightJustified(2,'0')
                +"_"
-               +QString::number(upl_Sub);
+               +QString::number(r_id);
 
  }
 
  QString str_item = "";
- if(upl_Sub>=0){
-  str_item = "_R-"+QString::number(upl_Sub).rightJustified(2,'0')+"_";
+ if(r_id >= 0){
+  str_item = "_R-"+QString::number(r_id).rightJustified(2,'0')+"_";
  }
  QString with_clause = "";
  if(sel_item >= 0){
-  with_clause = "WHERE(uid="+QString::number(sel_item)+")";
+  with_clause = "WHERE(uid = "+QString::number(sel_item)+")";
   str_item = str_item+"k-"+QString::number(sel_item).rightJustified(2,'0');
  }
 
@@ -291,10 +277,10 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day
 
 #ifndef QT_NO_DEBUG
  QString dbg_target = "T-" +
-                      QString::number(tir_Id).rightJustified(2,'0') + "_" +
-                      pGame->names[zn].abv + "_U-" +
-                      QString::number(upl_Grp).rightJustified(2,'0')+
-                      "_J-" + QString::number(day_Delta).rightJustified(2,'0')+
+                      QString::number(l_id).rightJustified(2,'0') + "_" +
+                      pGame->names[z_id].abv + "_U-" +
+                      QString::number(g_id).rightJustified(2,'0')+
+                      "_J-" + QString::number(o_id).rightJustified(2,'0')+
                       str_item ;
 
  static int counter = 0;
@@ -320,7 +306,7 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day
  return sql_msg;
 }
 
-void BThread_1::sql_upl_lev_2(const stGameConf *pGame, int zn, int tirLgnId, int offset, int upl_ref_in, int upl_sub,  QString tabInOut[][C_TOT_CAL][3])
+void BThread_1::sql_upl_lev_2(const stGameConf *pGame, int z_id, int l_id, int o_id, int g_id, int r_id,  QString tabInOut[][C_TOT_CAL][3])
 {
  QString SqlData[C_TOT_CAL][3];
 
@@ -331,10 +317,10 @@ void BThread_1::sql_upl_lev_2(const stGameConf *pGame, int zn, int tirLgnId, int
 
  /// Poursuivre la creation
  for (int item=ELstBleNext+1;item<ELstCal;item++) {
-  sql_upl_lev_1(pGame,zn,tirLgnId,upl_ref_in, offset, upl_sub,item, SqlData);
-  tabInOut[upl_sub-C_MIN_UPL][item][0]= SqlData[item][0];
-  tabInOut[upl_sub-C_MIN_UPL][item][1]= SqlData[item][1];
-  tabInOut[upl_sub-C_MIN_UPL][item][2]= SqlData[item][2];
+  sql_upl_lev_1(pGame,z_id,l_id,g_id, o_id, r_id,item, SqlData);
+  tabInOut[r_id-C_MIN_UPL][item][0]= SqlData[item][0];
+  tabInOut[r_id-C_MIN_UPL][item][1]= SqlData[item][1];
+  tabInOut[r_id-C_MIN_UPL][item][2]= SqlData[item][2];
  }
 }
 
@@ -1091,11 +1077,11 @@ bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
  int g_id = tsk_param->g_id;
  int o_id = tsk_param->o_id;
  int r_id = tsk_param->r_id;
- QString t_rf = tsk_param->t_rf;
 
  QString sql_msg = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id, ELstUplTot);
  sql_msg = sql_ShowItems(pGame, z_id, ELstShowCal, g_id, sql_msg);
 
+ QString t_rf = tsk_param->t_rf;
  QString t_use = t_rf + "_C" +
                  QString::number(g_id).rightJustified(2,'0');
 
