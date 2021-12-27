@@ -3,9 +3,14 @@
 //#include "BTest.h"
 #endif
 
+#include <QtConcurrent>
+#include <QThread>
+#include <QFuture>
+
 #include <QMessageBox>
 #include <QSqlError>
 #include <QSqlQuery>
+
 #include "db_tools.h"
 
 #include "BcUpl.h"
@@ -21,10 +26,11 @@ BThread_1::BThread_1(stTsk1 * def):tsk_1(def)
 
 void BThread_1::run()
 {
- creationTable();
+ creationTables();
+ creationTables(eStep_T2);
 }
 
-void BThread_1::creationTable()
+void BThread_1::creationTables(etStep eStep)
 {
  int nb_zn = tsk_1->pGame->znCount;
  eUpl_Ens e_id = tsk_1->e_id;
@@ -85,22 +91,21 @@ void BThread_1::creationTable()
      tsk_param->t_rf = t_rf;
      tsk_param->t_on = "";
      tsk_param->a_tbv = nullptr;
-#if 0
-     /// Creation et recherche dans les tables.
-     QString t_use = t_rf + "_C" +
-                     QString::number(g_id).rightJustified(2,'0');
-     b_retVal = CreateTable(t_use);
-#endif
-     if(T1_Fill_Bdd(tsk_param) == true)
-     {
-      cur_status->current = eStep_T1;
-      cur_status->tbl_name = tsk_param->t_on;
-      cur_status->c_id = tsk_param->c_id;
-      emit BSig_Step(cur_status);
 
-      tsk_param->tsk_step = cur_status;
+     if( eStep == eStep_T1){
+      T1_Fill_Bdd(tsk_param);
+     }
+     else{
       T1_Scan(tsk_param);
      }
+
+     cur_status->current = eStep;
+     cur_status->tbl_name = tsk_param->t_on;
+     cur_status->c_id = tsk_param->c_id;
+     cur_status->o_id = tsk_param->o_id;
+     cur_status->r_id = tsk_param->r_id;
+     emit BSig_Step(cur_status);
+
     }
    }
   }

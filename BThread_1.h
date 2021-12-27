@@ -46,7 +46,7 @@ class BThread_1 : public QThread
 
  private:
   void run() override;
-  void creationTable();
+  void creationTables(etStep eStep = eStep_T1);
   bool CreateTable(QString tbl_id);
 
   bool T1_Fill_Bdd(stParam_tsk *tsk_param);

@@ -2441,8 +2441,8 @@ void BcUpl::T1_setTitle(BView *qtv_tmp, QString tbl, int g_id)
  }
 
  /// Calcul du Cnp correspondant
- BCnp b(tot_val,g_id);
- int rows_proxy = b.BP_count();
+ BCnp * b = new BCnp(tot_val,g_id);
+ int rows_proxy = b->BP_count();
 
  QString sql_msg = "select * from " + tbl;
  int nb_rows = Bview_UpdateAndCount(ELstUplTot, qtv_tmp, sql_msg);
