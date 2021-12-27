@@ -232,6 +232,7 @@ class BcUpl: public BCount
 
   BView *FillTbv_BView_1(stParam_tsk *tsk_param);
   void startAnimation(stParam_tsk *tsk_param);
+  void T1_setTitle(BView *qtv_tmp, QString tbl, int g_id);
 
   void FillTbv_BView_2(stParam_tsk *tsk_param);
   void FillTbv_BView_3(stParam_tsk *tsk_param);

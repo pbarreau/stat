@@ -95,6 +95,7 @@ void BThread_1::creationTable()
      {
       cur_status->current = eStep_T1;
       cur_status->tbl_name = tsk_param->t_on;
+      cur_status->c_id = tsk_param->c_id;
       emit BSig_Step(cur_status);
 
       tsk_param->tsk_step = cur_status;
@@ -1098,6 +1099,7 @@ bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
 
  if(my_response == DB_Tools::eCort_Ok){
   tsk_param->t_on = t_use;
+  tsk_param->c_id = ELstUplTot;
   ret_val = true;
  }
  return ret_val;
@@ -1123,14 +1125,6 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
  if((status = query.exec(sql_msg))){
   if(query.first()){
    do{
-#if 0
-    do{
-     ; //attendre
-    }while(nb_max_recherche > C_MAX_SCAN_ITEMS);
-    mutex.lock();
-    nb_max_recherche++;
-    mutex.unlock();
-#endif
     g_lm = query.value(0).toInt();
 
     QStringList my_list;

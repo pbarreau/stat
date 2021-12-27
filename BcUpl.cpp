@@ -2393,13 +2393,72 @@ void BcUpl::BSlot_tsk_finished(){
 
 void BcUpl::BSlot_tsk_progress(const stTskProgress *step)
 {
+ BView *qtv_tmp = nullptr;
+ QString sql_msg = "";
+ QString st_title = "";
+
+ int l_id = step->l_id;
+ int z_id = step->z_id;
+ int g_id = step->g_id;
+ int o_id = step->o_id;
+ int r_id = step->r_id;
+ eUpl_Lst c_id = step->c_id;
+ QString tbl = step->tbl_name;
+
+ if (tbl.trimmed().size()){
+  sql_msg = "select * from " + tbl;
+ }
+
  switch (step->current) {
   case eStep_T1:
-   ;
+   qtv_tmp = upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL];
+   c_id = ELstUplTot;
+   T1_setTitle(qtv_tmp,tbl,g_id);
    break;
   default:
    break;
  }
+
+ /// Mise a jour de la table
+ if(qtv_tmp != nullptr){
+
+ }
+}
+
+void BcUpl::T1_setTitle(BView *qtv_tmp, QString tbl, int g_id)
+{
+ QString title = "";
+
+ /// Nombre de lignes reelment dans T1
+ int tot_val = 0;
+ QSqlQuery query(db_0);
+ bool b_retVal = false;
+ QString sql_tot = "Select count(*) as T from " + tbl;
+ if((b_retVal=query.exec(sql_tot))){
+  if(query.first()){
+   tot_val = query.value(0).toInt();
+  }
+ }
+
+ /// Calcul du Cnp correspondant
+ BCnp b(tot_val,g_id);
+ int rows_proxy = b.BP_count();
+
+ QString sql_msg = "select * from " + tbl;
+ int nb_rows = Bview_UpdateAndCount(ELstUplTot, qtv_tmp, sql_msg);
+
+ /// Titre de la recherche
+ QString v1 = QString::number(g_id).rightJustified(2,'0');
+ QString v2 = QString::number(tot_val);
+ QString v3 = QString::number(g_id);
+ QString v4 = QString::number(nb_rows);
+ QString v5 = QString::number(rows_proxy);
+
+ QString st_title = QString(ref_lcnp[0]).arg(v1).arg(v2).arg(v3).arg(v4).arg(v5);
+ qtv_tmp->setTitle(st_title);
+
+
+ //return title;
 }
 #endif
 
@@ -3275,7 +3334,7 @@ int BcUpl::Bview_UpdateAndCount(eUpl_Lst id, BView *qtv_tmp, QString sql_msg)
  sqm_tmp->setQuery(sql_msg,db_0); /// A verifier pour thread !!!
  while (sqm_tmp->canFetchMore())
  {
-  sqm_tmp->fetchMore();
+  sqm_tmp -> fetchMore();
  }
  int nb_rows = sqm_tmp->rowCount();
  int nb_cols = sqm_tmp->columnCount();

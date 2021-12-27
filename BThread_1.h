@@ -28,10 +28,11 @@ typedef struct _tskProgress
 {
   etStep current;
   QString tbl_name;
+  eUpl_Lst c_id;
   int l_id;
   int z_id;
   int g_id;
-  int d_id;
+  int o_id;
   int r_id;
 }stTskProgress;
 
