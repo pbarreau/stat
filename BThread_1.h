@@ -31,9 +31,11 @@ typedef struct _tskProgress
   QString t_on;
   QString t_rf;
   eUpl_Lst c_id;
+  eUpl_Cal a_id;
   int l_id;
   int z_id;
   int g_id;
+  int g_lm;
   int o_id;
   int r_id;
 }stTskProgress;
@@ -45,6 +47,7 @@ class BThread_1: public QWidget //: public QThread
  public:
   BThread_1(stTsk1 *def);
   void start();
+  void start(etStep eStep = eStep_T1);
 
 
  private:

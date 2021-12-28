@@ -27,10 +27,15 @@ void BThread_1::start()
  run();
 }
 
+void BThread_1::start(etStep eStep)
+{
+ creationTables(eStep);
+}
+
 void BThread_1::run()
 {
  creationTables(eStep_T1);
- //creationTables(eStep_T2);
+ creationTables(eStep_T2);
 }
 
 void BThread_1::creationTables(etStep eStep)
@@ -94,13 +99,26 @@ void BThread_1::creationTables(etStep eStep)
      tsk_param->t_rf = t_rf;
      tsk_param->t_on = "";
      tsk_param->a_tbv = nullptr;
+     tsk_param->tsk_step = cur_status;
+     tsk_param->tsk_step->g_lm = -1;
+
+
+     cur_status->e_id = eStep;
+     cur_status->t_rf = tsk_param->t_rf;
+     cur_status->c_id = tsk_param->c_id;
+     cur_status->o_id = tsk_param->o_id;
+     cur_status->r_id = tsk_param->r_id;
+     //cur_status->g_lm = tsk_param->tsk_step->g_lm;
 
      if( eStep == eStep_T1){
       T1_Fill_Bdd(tsk_param);
-      cur_status->e_id = eStep_T1;
       cur_status->t_on = tsk_param->t_on;
+      cur_status->c_id = ELstUplTot;
      }
      else{
+      QString t_use = t_rf + "_C" +
+                      QString::number(g_id).rightJustified(2,'0');
+      tsk_param->t_on = t_use;
       T1_Scan(tsk_param);
      }
 #if 0
@@ -113,10 +131,6 @@ void BThread_1::creationTables(etStep eStep)
      tmp.r_id = tsk_param->r_id;
 #endif
 
-     cur_status->t_rf = tsk_param->t_rf;
-     cur_status->c_id = tsk_param->c_id;
-     cur_status->o_id = tsk_param->o_id;
-     cur_status->r_id = tsk_param->r_id;
 
      emit BSig_Step(cur_status);
 
@@ -1115,6 +1129,8 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
  int g_lm = tsk_param->g_lm;
 
  QString t_on = tsk_param->t_on;
+ stTskProgress *cur_status = tsk_param->tsk_step;
+
  QString sql_msg = "select * from " + t_on;
  bool status = false;
 
@@ -1139,10 +1155,15 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
     tsk_param->t_on = t_on;
     tsk_param->d_info = d_info;
     tsk_param->g_lm = g_lm;
+    tsk_param->tsk_step->g_lm = g_lm;
+
+    tsk_param->tsk_step->a_id = eCalNotSet;
+    emit BSig_Step(cur_status);
 
     /// En multitache si != nullptr alors ihm visuel prete
     BAnimateCell *a_tbv = tsk_param->a_tbv;
-    if((d_info.isPresent == false) && (d_info.id_cal == eCalNotSet)){
+    //if((d_info.isPresent == false) && (d_info.id_cal == eCalNotSet)){
+    if((d_info.id_cal == eCalNotSet)){
 
      /// Update dans la base
      updateTracking(d_info.id_db, eCalPending);
@@ -1154,28 +1175,24 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
      if(a_tbv){
       a_tbv->addKey(g_lm);
      }
+
+     tsk_param->tsk_step->a_id = eCalPending;
+     emit BSig_Step(cur_status);
     }
 
     if(tsk_param->d_info.id_cal != eCalReady){
+     /// Update dans la base
      FillBdd_StartPoint(tsk_param);
     }
 
     if(tsk_param->d_info.id_cal == eCalReady){
+     updateTracking(d_info.id_db, eCalReady);
      if(a_tbv){
       a_tbv->delKey(g_lm);
       a_tbv->setCalReady(g_lm);
      }
-#if 0
-     mutex.lock();
-     nb_max_recherche--;
-     mutex.unlock();
-
-     if (nb_max_recherche<0){
-      mutex.lock();
-      nb_max_recherche = 0;
-      mutex.unlock();
-     }
-#endif
+     tsk_param->tsk_step->a_id = eCalPending;
+     emit BSig_Step(cur_status);
     }
    }while (query.next());
   }

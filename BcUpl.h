@@ -122,6 +122,7 @@ typedef struct _param_tsk
   BView *cupl;
 }stParam_tsk;
 
+class BThread_1;
 
 class BcUpl: public BCount
 {
@@ -167,6 +168,7 @@ class BcUpl: public BCount
   int upl_zn;
   eUpl_Ens e_id;
   BAnimateCell ****tbv_Anim;   /// Selection d'un uplet
+  BThread_1 *producteur;
 
 
 

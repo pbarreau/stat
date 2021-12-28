@@ -313,6 +313,7 @@ void BcUpl::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
  Q_UNUSED(zn)
 }
 #if 1
+/// https://stackoverflow.com/questions/13970070/moving-an-object-to-a-different-thread
 QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
  Q_UNUSED(eCalcul)
@@ -354,7 +355,11 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  t1data->obj_upl = obj_upl;
 
  /// creation et lancement du producteur
- BThread_1 *producteur = new BThread_1(t1data);
+ //BThread_1 *producteur = new BThread_1(t1data);
+ producteur = new BThread_1(t1data);
+ connect(producteur, &BThread_1::BSig_Step,
+         this, &BcUpl::BSlot_tsk_progress,
+         Qt::BlockingQueuedConnection);
 
 #if 0
  if(!producteur->isRunning()){
@@ -366,13 +371,17 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
   producteur->start();
  }
 #else
- connect(producteur, &BThread_1::BSig_Step,
+ /*connect(producteur, &BThread_1::BSig_Step,
          this, &BcUpl::BSlot_tsk_progress
          );
+         */
 #endif
 
- QFuture<void> f_task = QtConcurrent::run(pool, producteur, &BThread_1::start);
 
+ QFuture<void> f_task = QtConcurrent::run(pool, producteur, &BThread_1::start);
+ //QFuture<void> f_task = QtConcurrent::run(pool, producteur, &BThread_1::start, eStep_T1);
+ //f_task.waitForFinished();
+ //f_task = QtConcurrent::run(pool, producteur, &BThread_1::start, eStep_T2);
 
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
 
@@ -2432,9 +2441,10 @@ void BcUpl::BSlot_tsk_progress(const stTskProgress *step)
   sql_msg = "select * from " + tbl;
  }
 
+ qtv_tmp = upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL];
+
  switch (e_id) {
   case eStep_T1:
-   qtv_tmp = upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL];
 
    if (qtv_tmp == nullptr)
     return;
@@ -2444,6 +2454,11 @@ void BcUpl::BSlot_tsk_progress(const stTskProgress *step)
    break;
   default:
    break;
+ }
+
+ if(e_id != eStep_T1){
+  int a = 0; //startAnimation();
+  a++;
  }
 
 }
@@ -3369,6 +3384,10 @@ int BcUpl::Bview_UpdateAndCount(eUpl_Lst id, BView *qtv_tmp, QString sql_msg)
  }
  int nb_rows = sqm_tmp->rowCount();
  int nb_cols = sqm_tmp->columnCount();
+
+ if(id == ELstUplTot){
+  qtv_tmp->hideColumn(0);
+ }
 
  if(id == ELstShowCal){
   qtv_tmp->hideColumn(0);
