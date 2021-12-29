@@ -19,6 +19,7 @@ enum MyDataRole {
 typedef struct _cellData
 {
   QColor color;
+  bool isShowingResults;
   QVariant timer;
 }st_cellData;
 Q_DECLARE_METATYPE(st_cellData)
@@ -35,6 +36,7 @@ class BAnimateCell: public QStyledItemDelegate
   void setCalReady(int key);
   bool gotKey(int key);
   bool gotKeyReady(int key);
+  bool isShowing(int key);
   int countReady();
   void updateNbColumns();
   void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
@@ -45,6 +47,7 @@ class BAnimateCell: public QStyledItemDelegate
  private:
   void setKey(int key,QColor color);
   void FormalizeCell(int key, QPainter *painter, const QStyleOptionViewItem &myOpt, const QModelIndex &index) const;
+  bool gotKeyShowing(int key);
 
   QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const;
 
@@ -54,10 +57,11 @@ class BAnimateCell: public QStyledItemDelegate
 
  private:
   int nb_col;
-  //mutable BView * m_view;
   const BView * m_view;
+  int showing;
   QMap<int, QVariant > mapTimeout;
   QMap<int, QVariant > mapCal_Ready;
+  QMap<int, QVariant > mapShowingKey;
 };
 
 #endif // BANIMATECELL_H

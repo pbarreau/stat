@@ -25,6 +25,7 @@ BAnimateCell::BAnimateCell(BView *view):m_view(view),QStyledItemDelegate(nullptr
  BFpm_upl *m = qobject_cast<BFpm_upl *>(view->model());
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
  nb_col = vl->columnCount();
+ showing = -1;
 
  QTimer * timer = new QTimer( this );
  connect( timer, &QTimer::timeout, this, &BAnimateCell::BSlot_animate);
@@ -52,8 +53,6 @@ void BAnimateCell::delKey(int key)
 
 bool BAnimateCell::gotKey(int key)
 {
- //emit BSig_Repaint(m_view);
-
  QMap<int, QVariant>::const_iterator it = mapTimeout.find( key );
 
  return (it == mapTimeout.end() ?  false : true);
@@ -66,6 +65,25 @@ bool BAnimateCell::gotKeyReady(int key)
  return (it == mapCal_Ready.end() ?  false : true);
 }
 
+bool BAnimateCell::isShowing(int key)
+{
+ bool ret_val = false;
+
+ if(gotKeyReady(key) == true){
+
+  if(gotKeyShowing(key) == true){
+   ret_val = true;
+  }
+  else{
+   QVariant value = mapCal_Ready.value(key);
+   mapShowingKey.clear();
+   mapShowingKey.insert(key,value);
+  }
+ }
+
+ return ret_val;
+}
+
 int BAnimateCell::countReady()
 {
  return mapCal_Ready.size();
@@ -75,6 +93,7 @@ void BAnimateCell::setCalReady(int key)
 {
  st_cellData conf;
  conf.color = Qt::white;
+ conf.isShowingResults = false;
  QVariant info;
  info.setValue(conf);
 
@@ -172,6 +191,13 @@ void BAnimateCell::FormalizeCell(int key, QPainter *painter, const QStyleOptionV
  else {
   QStyledItemDelegate::paint(painter,myOpt,index);
  }
+}
+
+bool BAnimateCell::gotKeyShowing(int key)
+{
+ QMap<int, QVariant>::const_iterator it = mapShowingKey.find( key );
+
+ return (it == mapShowingKey.end() ?  false : true);
 }
 
 void BAnimateCell::updateNbColumns()

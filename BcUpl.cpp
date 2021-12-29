@@ -2317,7 +2317,12 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  QString cnx=gm_def->db_ref->cnx;
  BAnimateCell *ani = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
 
- /// Calcul de cette element en cours ?
+ /// Click sur element deja en visu ?
+ if(ani->isShowing(g_lm) == true){
+  return;
+ }
+
+ /// Demande Calcul de cet element en cours ?
  if(ani->gotKey(g_lm)){
   return;
  }
@@ -2806,13 +2811,13 @@ void BcUpl::FillTbv_BView_2(stParam_tsk *tsk_param)
  int r_id = tsk_param->r_id;
  QString t_on = tsk_param->t_on;
 
- BAnimateCell *a_tbv = tsk_param->a_tbv;
+ //BAnimateCell *a_tbv = tsk_param->a_tbv;
 
  /// Titre de la recherche
  QString title = "";
  if(tsk_param->clear == false){
   title = QString(ref_lupl[1]).arg(tsk_param->upl_txt).arg(tsk_param->upl_tot);
-  a_tbv->delKey(g_lm);
+  //a_tbv->delKey(g_lm);
  }
  else{
   title = ref_lupl[0];
@@ -2859,7 +2864,7 @@ void BcUpl::FillTbv_BView_3(stParam_tsk *tsk_param)
  QString title = "";
  if(tsk_param->clear == false){
   title = QString(ref_lupl[1]).arg(tsk_param->upl_txt).arg(tsk_param->upl_tot);
-  a_tbv->delKey(g_lm);
+  //a_tbv->delKey(g_lm);
  }
  else{
   title = ref_lupl[0];
@@ -2905,7 +2910,7 @@ void BcUpl::FillTbv_BView_4(stParam_tsk *tsk_param)
  QString title = "";
  if(tsk_param->clear == false){
   title = QString(ref_lupl[1]).arg(tsk_param->upl_txt).arg(tsk_param->upl_tot);
-  a_tbv->delKey(g_lm);
+  //a_tbv->delKey(g_lm);
  }
  else{
   title = ref_lupl[0];
