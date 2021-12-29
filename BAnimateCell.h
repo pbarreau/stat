@@ -36,6 +36,7 @@ class BAnimateCell: public QStyledItemDelegate
   bool gotKey(int key);
   bool gotKeyReady(int key);
   int countReady();
+  void updateNbColumns();
   void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
  signals:

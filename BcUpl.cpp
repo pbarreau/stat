@@ -360,6 +360,9 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  connect(producteur, &BThread_1::BSig_Step,
          this, &BcUpl::BSlot_tsk_progress,
          Qt::BlockingQueuedConnection);
+ connect(producteur, &BThread_1::BSig_Animate,
+         this, &BcUpl::BSlot_Animate);
+
 
 #if 0
  if(!producteur->isRunning()){
@@ -2459,7 +2462,14 @@ void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
   ani = tbv_Anim[l_id-1][z_id][g_id - C_MIN_UPL];
  }
 
- startAnimation(tsk_param, ani);
+ emit producteur->BSig_Animate(tsk_param, ani);
+ //startAnimation(tsk_param, ani);
+}
+
+void BcUpl::BSlot_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
+{
+ a_tbv->updateNbColumns();
+ startAnimation(tsk_param, a_tbv);
 }
 
 void BcUpl::T1_setTitle(BView *qtv_tmp, const stTskProgress *step)
@@ -2567,6 +2577,7 @@ QWidget *BcUpl::MkMainUplet(stParam_tsk *tsk_param)
  BView *qtv_tmp = FillTbv_BView_1(tsk_param);
  BAnimateCell *ani = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
  tsk_param->a_tbv = ani;
+ //emit BSig_Animate(tsk_param, ani);
  startAnimation(tsk_param, ani);
 
  QWidget *tmp = showUplFromRef(pGame,z_id,l_id,g_id - C_MIN_UPL);
@@ -2716,7 +2727,8 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
   }
  }
 
- if(a_tbv->countReady() != tot_val){
+ int nb_items = a_tbv->countReady();
+ if(nb_items != tot_val){
   sql_msg = "select * from " + t_use;
 
   if((status = query.exec(sql_msg))){

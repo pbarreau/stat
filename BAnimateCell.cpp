@@ -174,6 +174,17 @@ void BAnimateCell::FormalizeCell(int key, QPainter *painter, const QStyleOptionV
  }
 }
 
+void BAnimateCell::updateNbColumns()
+{
+ BFpm_upl *m = qobject_cast<BFpm_upl *>(m_view->model());
+ QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+ if(nb_col == 0){
+  nb_col = vl->columnCount();
+ }
+ ;
+}
+
 QVariant BAnimateCell::data(const QModelIndex &idx, int role) const
 {
  if( role != ItemModifiedRole );

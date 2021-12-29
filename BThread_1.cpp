@@ -1150,7 +1150,7 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
     tsk_param->tsk_step->g_lm = g_lm;
 
     tsk_param->tsk_step->a_id = eCalNotSet;
-    emit BSig_Step(tsk_param);
+    //emit BSig_Step(tsk_param);
 
     /// En multitache si != nullptr alors ihm visuel prete
     BAnimateCell *a_tbv = tsk_param->a_tbv;
@@ -1174,16 +1174,23 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
 
     if(tsk_param->d_info.id_cal == eCalPending){
      /// Update dans la base
+     updateTracking(d_info.id_db, eCalStarted);
+
+     /// Update dans la variable
+     tsk_param->d_info.id_cal = eCalStarted;
+
+     emit BSig_Step(tsk_param);
+
      FillBdd_StartPoint(tsk_param);
     }
 
-    if(tsk_param->d_info.id_cal == eCalReady){
+    if(tsk_param->d_info.id_cal == eCalStarted){
      updateTracking(d_info.id_db, eCalReady);
      if(a_tbv){
       a_tbv->delKey(g_lm);
       a_tbv->setCalReady(g_lm);
      }
-     tsk_param->tsk_step->a_id = eCalPending;
+     tsk_param->tsk_step->a_id = eCalReady;
      emit BSig_Step(tsk_param);
     }
    }while (query.next());

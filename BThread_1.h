@@ -81,6 +81,8 @@ class BThread_1: public QWidget //: public QThread
 
  signals:
   void BSig_Step(const stParam_tsk *tsk_param);
+  void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
+
 
  private:
   stTsk1 *tsk_1;
