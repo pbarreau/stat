@@ -45,17 +45,30 @@ void BAnimateCell::startKey(int key)
 
 void BAnimateCell::delKey(int key)
 {
- mapTimeout.remove(key);
- emit BSig_Repaint(m_view);
+ //mapTimeout.remove(key);
+ //emit BSig_Repaint(m_view);
+ setKey(key,Qt::gray);
 }
 
 bool BAnimateCell::gotKey(int key)
 {
- emit BSig_Repaint(m_view);
+ //emit BSig_Repaint(m_view);
 
  QMap<int, QVariant>::const_iterator it = mapTimeout.find( key );
 
  return (it == mapTimeout.end() ?  false : true);
+}
+
+bool BAnimateCell::gotKeyReady(int key)
+{
+ QMap<int, QVariant>::const_iterator it = mapCal_Ready.find( key );
+
+ return (it == mapCal_Ready.end() ?  false : true);
+}
+
+int BAnimateCell::countReady()
+{
+ return mapCal_Ready.size();
 }
 
 void BAnimateCell::setCalReady(int key)
@@ -64,6 +77,8 @@ void BAnimateCell::setCalReady(int key)
  conf.color = Qt::white;
  QVariant info;
  info.setValue(conf);
+
+ mapTimeout.remove(key);
 
  /// ----------------
  mapCal_Ready.insert(key,info);

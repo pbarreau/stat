@@ -34,6 +34,8 @@ class BAnimateCell: public QStyledItemDelegate
   void delKey(int key);
   void setCalReady(int key);
   bool gotKey(int key);
+  bool gotKeyReady(int key);
+  int countReady();
   void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
  signals:

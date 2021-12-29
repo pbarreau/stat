@@ -233,7 +233,7 @@ class BcUpl: public BCount
   void FillTbv_StartPoint(stParam_tsk *tsk_param);
 
   BView *FillTbv_BView_1(stParam_tsk *tsk_param);
-  void startAnimation(const stParam_tsk *tsk_param);
+  void startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
   void T1_setTitle(BView *qtv_tmp, const stTskProgress *step);
 
   void FillTbv_BView_2(stParam_tsk *tsk_param);

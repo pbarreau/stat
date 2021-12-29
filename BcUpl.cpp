@@ -2430,7 +2430,13 @@ void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
   sql_msg = "select * from " + tbl;
  }
 
- qtv_tmp = upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL];
+ if(((l_id - 1)>= 0) && ((g_id - C_MIN_UPL)>=0) && (z_id >=0 )){
+  qtv_tmp = upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL];
+ }
+
+ if(qtv_tmp == nullptr){
+  return;
+ }
 
  switch (e_id) {
   case eStep_T1:
@@ -2444,11 +2450,16 @@ void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
  }
 
  if(e_id != eStep_T1){
-  int a = 0; //startAnimation();
+  int a = 0;
   a++;
  }
 
- startAnimation(tsk_param);
+ BAnimateCell *ani = nullptr;
+ if(((l_id - 1)>= 0) && ((g_id - C_MIN_UPL)>=0) && (z_id >=0 )){
+  ani = tbv_Anim[l_id-1][z_id][g_id - C_MIN_UPL];
+ }
+
+ startAnimation(tsk_param, ani);
 }
 
 void BcUpl::T1_setTitle(BView *qtv_tmp, const stTskProgress *step)
@@ -2556,7 +2567,7 @@ QWidget *BcUpl::MkMainUplet(stParam_tsk *tsk_param)
  BView *qtv_tmp = FillTbv_BView_1(tsk_param);
  BAnimateCell *ani = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
  tsk_param->a_tbv = ani;
- startAnimation(tsk_param);
+ startAnimation(tsk_param, ani);
 
  QWidget *tmp = showUplFromRef(pGame,z_id,l_id,g_id - C_MIN_UPL);
 
@@ -2677,8 +2688,12 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  return qtv_tmp;
 }
 
-void BcUpl::startAnimation(const stParam_tsk *tsk_param)
+void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
 {
+ if (a_tbv == nullptr){
+  return;
+ }
+
  const stGameConf *pGame = tsk_param->p_gm;
  QString cnx_1=pGame->db_ref->cnx;
  QSqlDatabase db = QSqlDatabase::database(cnx_1);
@@ -2691,46 +2706,61 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param)
  QString t_use = t_rf + "_C" +
                  QString::number(g_id).rightJustified(2,'0');
 
- BAnimateCell *a_tbv = tsk_param->a_tbv;
-
- //QString t_on = tsk_param->t_on;
- QString sql_msg = "select * from " + t_use;
+ QString sql_msg = "select count (*) as T from " + t_use;
  bool status = false;
 
+ int tot_val = 0;
  if((status = query.exec(sql_msg))){
   if(query.first()){
-   do{
-    int g_lm = query.value(0).toInt();
+   tot_val = query.value(0).toInt();
+  }
+ }
 
-    QStringList my_list;
-    for(int i = 1; i<=g_id;i++){
-     int val = query.value(i).toInt();
-     my_list << QString::number(val).rightJustified(2,'0');
-    }
-    std::sort(my_list.begin(), my_list.end());
-    QString upl_cur = my_list.join(',');
+ if(a_tbv->countReady() != tot_val){
+  sql_msg = "select * from " + t_use;
 
-    /// On a un uplet, obtenir le radical de table
-    stUpdData d_info;
-    QString tbl_radical = getTablePrefixFromSelection(upl_cur, z_id, &d_info);
+  if((status = query.exec(sql_msg))){
+   if(query.first()){
+    do{
+     int g_lm = query.value(0).toInt();
 
-    if(a_tbv != nullptr){
+     QStringList my_list;
+     for(int i = 1; i<=g_id;i++){
+      int val = query.value(i).toInt();
+      my_list << QString::number(val).rightJustified(2,'0');
+     }
+     std::sort(my_list.begin(), my_list.end());
+     QString upl_cur = my_list.join(',');
+
+     /// On a un uplet, obtenir le radical de table
+     stUpdData d_info;
+     QString tbl_radical = getTablePrefixFromSelection(upl_cur, z_id, &d_info);
+
+     /// regarder si cette clef est deja connue
+     int key = d_info.id_db;
+     if (a_tbv->gotKeyReady(key)){
+      continue;
+     }
+
      switch (d_info.id_cal) {
       case eCalNotSet:
+       a_tbv->delKey(g_lm);
+       break;
+      case eCalPending:
        a_tbv->addKey(g_lm);
        break;
       case eCalStarted:
        a_tbv->startKey(g_lm);
        break;
       case eCalReady:
-       a_tbv->delKey(g_lm);
        a_tbv->setCalReady(g_lm);
        break;
       default:
        break;
      }
-    }
-   }while (query.next());
+
+    }while (query.next());
+   }
   }
  }
 }

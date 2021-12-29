@@ -1172,7 +1172,7 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
      emit BSig_Step(tsk_param);
     }
 
-    if(tsk_param->d_info.id_cal != eCalReady){
+    if(tsk_param->d_info.id_cal == eCalPending){
      /// Update dans la base
      FillBdd_StartPoint(tsk_param);
     }
