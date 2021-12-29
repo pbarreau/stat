@@ -2410,13 +2410,13 @@ void BcUpl::BSlot_tsk_finished(){
  watcher->deleteLater();
 }
 
-void BcUpl::BSlot_tsk_progress(const stTskProgress *step)
+void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
 {
  BView *qtv_tmp = nullptr;
  QString sql_msg = "";
  QString st_title = "";
 
-#if 1
+ const stTskProgress *step = tsk_param->tsk_step;
  int l_id = step->l_id;
  int z_id = step->z_id;
  int g_id = step->g_id;
@@ -2425,17 +2425,6 @@ void BcUpl::BSlot_tsk_progress(const stTskProgress *step)
  int c_id = step->c_id;
  etStep e_id = step->e_id;
  QString tbl = step->t_on;
-#else
- int l_id = step.l_id;
- int z_id = step.z_id;
- int g_id = step.g_id;
- int o_id = step.o_id;
- int r_id = step.r_id;
- int c_id = step.c_id;
- etStep e_id = step.e_id;
- QString tbl = step.tbl_name;
-
-#endif
 
  if (tbl.trimmed().size()){
   sql_msg = "select * from " + tbl;
@@ -2445,12 +2434,10 @@ void BcUpl::BSlot_tsk_progress(const stTskProgress *step)
 
  switch (e_id) {
   case eStep_T1:
-
-   if (qtv_tmp == nullptr)
-    return;
-
-   c_id = ELstUplTot;
+  {
    T1_setTitle(qtv_tmp, step);
+  }
+
    break;
   default:
    break;
@@ -2461,6 +2448,7 @@ void BcUpl::BSlot_tsk_progress(const stTskProgress *step)
   a++;
  }
 
+ startAnimation(tsk_param);
 }
 
 void BcUpl::T1_setTitle(BView *qtv_tmp, const stTskProgress *step)
@@ -2470,16 +2458,16 @@ void BcUpl::T1_setTitle(BView *qtv_tmp, const stTskProgress *step)
  int g_id = step->g_id;
  QString t_on = step->t_on;
  QString t_rf = step->t_rf;
- QString t_use = t_rf + "_C" +
-                 QString::number(g_id).rightJustified(2,'0');
+ QString t_sel = t_rf + "_C" +
+                 QString::number(01).rightJustified(2,'0');
 
  int tot_val = 0;
 
- /// Nombre de lignes reelment dans T1
+ /// Nombre de lignes de la selection a etudier (gid=1)
  QSqlQuery query(db_0);
  bool b_retVal = false;
  QString sql_tot = "Select count(*) as T from " +
-                   t_use;
+                   t_sel;
  if((b_retVal=query.exec(sql_tot))){
   if(query.first()){
    tot_val = query.value(0).toInt();
@@ -2488,23 +2476,22 @@ void BcUpl::T1_setTitle(BView *qtv_tmp, const stTskProgress *step)
 
  /// Calcul du Cnp correspondant
  BCnp * b = new BCnp(tot_val, g_id);
- int rows_proxy = b->BP_count();
+ int rows_cnp = b->BP_count();
 
+ /// Nombre de lignes reelment dans T1 selon le gid
  QString sql_msg = "select * from " + t_on;
  int nb_rows = Bview_UpdateAndCount(ELstUplTot, qtv_tmp, sql_msg);
 
  /// Titre de la recherche
- QString v1 = QString::number(g_id).rightJustified(2,'0');
- QString v2 = QString::number(tot_val);
- QString v3 = QString::number(g_id);
- QString v4 = QString::number(nb_rows);
- QString v5 = QString::number(rows_proxy);
+ QString v1 = QString::number(g_id).rightJustified(2,'0'); //uplet
+ QString v2 = QString::number(tot_val); // n
+ QString v3 = QString::number(g_id);    // p
+ QString v4 = QString::number(nb_rows); // touve
+ QString v5 = QString::number(rows_cnp);// calcule
 
  QString st_title = QString(ref_lcnp[0]).arg(v1).arg(v2).arg(v3).arg(v4).arg(v5);
  qtv_tmp->setTitle(st_title);
 
-
- //return title;
 }
 #endif
 
@@ -2690,7 +2677,7 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  return qtv_tmp;
 }
 
-void BcUpl::startAnimation(stParam_tsk *tsk_param)
+void BcUpl::startAnimation(const stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
  QString cnx_1=pGame->db_ref->cnx;

@@ -80,11 +80,11 @@ class BThread_1: public QWidget //: public QThread
   QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3]);
 
  signals:
-  void BSig_Step(const stTskProgress *step);
+  void BSig_Step(const stParam_tsk *tsk_param);
 
  private:
   stTsk1 *tsk_1;
-  QString cnx;  // nom de la connection a la bdd pour ce process
+  QString cnx;  // nom de la connection a la bdd
   QSqlDatabase db_tsk1;
 };
 

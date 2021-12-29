@@ -62,19 +62,28 @@ void BThread_1::creationTables(etStep eStep)
  int obj_upl = tsk_1->obj_upl;
 
  bool b_retVal = true;
- stTskProgress *cur_status = new stTskProgress;
- cur_status->e_id = eStep_T0;
+
+ stParam_tsk *tsk_param = new stParam_tsk;
+ stTskProgress *tsk_step = new stTskProgress;
+
+ tsk_step->e_id = eStep_T0;
+
+ tsk_param->p_gm = tsk_1->pGame;
+ tsk_param->tsk_step = tsk_step;
 
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
-  cur_status->l_id = l_id;
+  tsk_param->l_id = l_id;
+  tsk_step->l_id = l_id;
 
   for (int z_id = zn_start; z_id< zn_stop; z_id++) {
-   cur_status->z_id = z_id;
+   tsk_param->z_id = z_id;
+   tsk_step->z_id = z_id;
 
    int max_win = tsk_1->pGame->limites[z_id].win;
    int nb_recherche = BMIN_2(max_win, C_MAX_UPL);
    for (int g_id = C_MIN_UPL; (g_id<=nb_recherche) && (b_retVal == true); g_id++) {
-    cur_status->g_id = g_id;
+    tsk_param->g_id = g_id;
+    tsk_step->g_id = g_id;
 
     if(g_id > max_win){
      break;
@@ -86,11 +95,6 @@ void BThread_1::creationTables(etStep eStep)
                     Txt_eUpl_Ens[e_id] + QString::number(l_id).rightJustified(2,'0') +
                     "_Z" + QString::number(z_id).rightJustified(2,'0');
 
-     stParam_tsk *tsk_param = new stParam_tsk;
-     tsk_param->p_gm = tsk_1->pGame;
-     tsk_param->l_id = l_id;
-     tsk_param->z_id = z_id;
-     tsk_param->g_id = g_id;
      tsk_param->g_lm = -1;
      tsk_param->o_id = 0;
      tsk_param->r_id = -1;
@@ -99,21 +103,18 @@ void BThread_1::creationTables(etStep eStep)
      tsk_param->t_rf = t_rf;
      tsk_param->t_on = "";
      tsk_param->a_tbv = nullptr;
-     tsk_param->tsk_step = cur_status;
-     tsk_param->tsk_step->g_lm = -1;
 
-
-     cur_status->e_id = eStep;
-     cur_status->t_rf = tsk_param->t_rf;
-     cur_status->c_id = tsk_param->c_id;
-     cur_status->o_id = tsk_param->o_id;
-     cur_status->r_id = tsk_param->r_id;
-     //cur_status->g_lm = tsk_param->tsk_step->g_lm;
+     tsk_step->g_lm = -1;
+     tsk_step->e_id = eStep;
+     tsk_step->t_rf = tsk_param->t_rf;
+     tsk_step->c_id = tsk_param->c_id;
+     tsk_step->o_id = tsk_param->o_id;
+     tsk_step->r_id = tsk_param->r_id;
 
      if( eStep == eStep_T1){
       T1_Fill_Bdd(tsk_param);
-      cur_status->t_on = tsk_param->t_on;
-      cur_status->c_id = ELstUplTot;
+      tsk_step->t_on = tsk_param->t_on;
+      tsk_step->c_id = ELstUplTot;
      }
      else{
       QString t_use = t_rf + "_C" +
@@ -121,18 +122,9 @@ void BThread_1::creationTables(etStep eStep)
       tsk_param->t_on = t_use;
       T1_Scan(tsk_param);
      }
-#if 0
-     stTskProgress tmp;
-     tmp.e_id =eStep;
-
-     tmp.tbl_name = tsk_param->t_on;
-     tmp.c_id = tsk_param->c_id;
-     tmp.o_id = tsk_param->o_id;
-     tmp.r_id = tsk_param->r_id;
-#endif
 
 
-     emit BSig_Step(cur_status);
+     emit BSig_Step(tsk_param);
 
     }
    }
@@ -1158,7 +1150,7 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
     tsk_param->tsk_step->g_lm = g_lm;
 
     tsk_param->tsk_step->a_id = eCalNotSet;
-    emit BSig_Step(cur_status);
+    emit BSig_Step(tsk_param);
 
     /// En multitache si != nullptr alors ihm visuel prete
     BAnimateCell *a_tbv = tsk_param->a_tbv;
@@ -1177,7 +1169,7 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
      }
 
      tsk_param->tsk_step->a_id = eCalPending;
-     emit BSig_Step(cur_status);
+     emit BSig_Step(tsk_param);
     }
 
     if(tsk_param->d_info.id_cal != eCalReady){
@@ -1192,7 +1184,7 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
       a_tbv->setCalReady(g_lm);
      }
      tsk_param->tsk_step->a_id = eCalPending;
-     emit BSig_Step(cur_status);
+     emit BSig_Step(tsk_param);
     }
    }while (query.next());
   }

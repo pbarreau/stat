@@ -149,7 +149,7 @@ class BcUpl: public BCount
 #if C_PGM_THREADED
   void BSlot_tsk_started();
   void BSlot_tsk_finished();
-  void BSlot_tsk_progress(const stTskProgress *step);
+  void BSlot_tsk_progress(const stParam_tsk *tsk_param);
 #endif
   void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_clicked(const QModelIndex &index);
@@ -233,7 +233,7 @@ class BcUpl: public BCount
   void FillTbv_StartPoint(stParam_tsk *tsk_param);
 
   BView *FillTbv_BView_1(stParam_tsk *tsk_param);
-  void startAnimation(stParam_tsk *tsk_param);
+  void startAnimation(const stParam_tsk *tsk_param);
   void T1_setTitle(BView *qtv_tmp, const stTskProgress *step);
 
   void FillTbv_BView_2(stParam_tsk *tsk_param);
