@@ -166,7 +166,7 @@ QTabWidget * BcUpl::getTabUplRsp(void)
 }
 #endif
 
-QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl_data)
+QString BcUpl::getTablePrefixFromSelection_upl(QString items, int zn, stUpdData *upl_data)
 {
 #if 0
  /// https://www.linuxjournal.com/article/9602
@@ -202,6 +202,22 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
           tbl_upl +
           " where((items like '"+ord_itm+"') and (zn="+QString::number(zn)+"));";
 
+ /// Verifier quel type de recherche
+ eUpl_Cal id_cal = eCalNotDef;
+
+ switch (upl_data->e_id) {
+  case eEnsFdj:
+   id_cal = eCalPending;
+   break;
+  case eEnsUsr:
+   id_cal = eCalNotSet;
+   break;
+  default:
+   id_cal = eCalNotDef;
+   break;
+ }
+
+
  if(query_1.exec(sql_m1)){
   if(query_1.first()){
    /// verifier unicite
@@ -215,10 +231,10 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
       upl_data->isPresent = false;
       upl_data->id_db = -1;
       upl_data->id_zn = zn;
-      upl_data->id_cal = eCalNotSet;
+      upl_data->id_cal = id_cal;
      }
      sql_m2 = "insert into "+tbl_upl+" (id, state, zn, items) values(NULL,"+
-              QString::number(eCalNotSet) + ","+QString::number(zn)+",'"+ord_itm+"')";
+              QString::number(id_cal) + ","+QString::number(zn)+",'"+ord_itm+"')";
      if(query_1.exec(sql_m2)){
       if(query_1.exec(sql_m1)){
        query_1.first();
@@ -231,7 +247,7 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
     case 1:
     {
      id = query_1.value(0).toInt();
-     eUpl_Cal cal = static_cast<eUpl_Cal>(query_1.value(1).toInt());
+     id_cal = static_cast<eUpl_Cal>(query_1.value(1).toInt());
      int zn = query_1.value(2).toInt();
 
      if(upl_data!=nullptr)
@@ -239,7 +255,7 @@ QString BcUpl::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl
       upl_data->isPresent = true;
       upl_data->id_db = id;
       upl_data->id_zn = zn;
-      upl_data->id_cal = cal;
+      upl_data->id_cal = id_cal;
      }
     }
      break;
@@ -663,7 +679,7 @@ void BcUpl::tsk_upl_0(stParam_tsk *tsk_param)
     }
     /// On a un uplet, obtenir le radical de table
     bool isPresent = false;
-    QString tbl_radical = getTablePrefixFromSelection(upl_cur,zn);
+    QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur,zn);
     QString tbl_fill = tbl_name +
                        "_K"+
                        tbl_radical;
@@ -2331,13 +2347,13 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  tsk_param->t_rf = t_rf;
 
  /// On a un uplet, obtenir le radical de table
- stUpdData d_info;
- QString tbl_radical = getTablePrefixFromSelection(upl_cur,z_id, &d_info);
+ stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
+ QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur,z_id, &d_info);
 
  tsk_param->t_on = tbl_radical;
 
  if(d_info.isPresent == false){
-  tsk_param->d_info = d_info;
+  tsk_param->glm_in = d_info;
 
   if(ani !=nullptr){
    ani->addKey(g_lm);
@@ -2377,7 +2393,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  else{
   /// Montrer les resultats
   if(d_info.id_cal == eCalReady){
-   tsk_param->d_info = d_info;
+   tsk_param->glm_in = d_info;
    FillTbv_StartPoint(tsk_param);
   }
  }
@@ -2462,8 +2478,8 @@ void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
   ani = tbv_Anim[l_id-1][z_id][g_id - C_MIN_UPL];
  }
 
+ /// Lancer l'animation
  emit producteur->BSig_Animate(tsk_param, ani);
- //startAnimation(tsk_param, ani);
 }
 
 void BcUpl::BSlot_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
@@ -2523,7 +2539,7 @@ void BcUpl::FillTbv_StartPoint(stParam_tsk *tsk_param)
  int z_id = tsk_param->z_id;
  QString t_on = tsk_param->t_on;
 
- stUpdData d_info = tsk_param->d_info;
+ stUpdData d_info = tsk_param->glm_in;
 
  if(d_info.id_cal != eCalReady){
   return;
@@ -2712,6 +2728,7 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
 
  int z_id = tsk_param->z_id;
  int g_id = tsk_param->g_id;
+ eUpl_Ens e_id = tsk_param->e_id;
 
  QString t_rf = tsk_param->t_rf;
  QString t_use = t_rf + "_C" +
@@ -2745,8 +2762,8 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
      QString upl_cur = my_list.join(',');
 
      /// On a un uplet, obtenir le radical de table
-     stUpdData d_info;
-     QString tbl_radical = getTablePrefixFromSelection(upl_cur, z_id, &d_info);
+     stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
+     QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur, z_id, &d_info);
 
      /// regarder si cette clef est deja connue
      int key = d_info.id_db;
@@ -2939,7 +2956,7 @@ stParam_tsk * BcUpl::FillBdd_StartPoint( stParam_tsk *tsk_param)
  const stGameConf *pGame = tsk_param->p_gm;
  int z_id = tsk_param->z_id;
  int g_lm = tsk_param->g_lm; /// Group uplet element
- int id_db = tsk_param->d_info.id_db;
+ int id_db = tsk_param->glm_in.id_db;
  QString t_on = tsk_param->t_on;
 
  BAnimateCell *a_tbv = tsk_param->a_tbv;
@@ -2968,8 +2985,8 @@ stParam_tsk * BcUpl::FillBdd_StartPoint( stParam_tsk *tsk_param)
 #endif
 
  /// indiquer en cours
- if(tsk_param->d_info.isPresent == false){
-  tsk_param->d_info.id_cal = eCalStarted;
+ if(tsk_param->glm_in.isPresent == false){
+  tsk_param->glm_in.id_cal = eCalStarted;
 
   if(a_tbv !=nullptr){
    a_tbv->startKey(g_lm);
@@ -3020,8 +3037,8 @@ stParam_tsk * BcUpl::FillBdd_StartPoint( stParam_tsk *tsk_param)
   tsk_param->t_on = t_on;
  }
 
- if(tsk_param->d_info.isPresent == false){
-  tsk_param->d_info.id_cal = eCalReady;
+ if(tsk_param->glm_in.isPresent == false){
+  tsk_param->glm_in.id_cal = eCalReady;
 
   if(a_tbv !=nullptr){
    a_tbv->delKey(g_lm);
@@ -3107,12 +3124,12 @@ stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
     QString upl_cur = my_list.join(',');
 
     /// On a un uplet, obtenir le radical de table
-    stUpdData d_info;
-    QString tbl_radical = getTablePrefixFromSelection(upl_cur, z_id, &d_info);
+    stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
+    QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur, z_id, &d_info);
     t_on = tbl_radical;
 
     tsk_param->t_on = t_on;
-    tsk_param->d_info = d_info;
+    tsk_param->glm_in = d_info;
     tsk_param->g_lm = g_lm;
 
     /// En multitache si != nullptr alors ihm visuel prete
@@ -3123,7 +3140,7 @@ stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
      updateTracking(d_info.id_db, eCalPending);
 
      /// Update dans la variable
-     tsk_param->d_info.id_cal = eCalPending;
+     tsk_param->glm_in.id_cal = eCalPending;
 
      /// Update dans la vue
      if(a_tbv){
@@ -3131,11 +3148,11 @@ stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
      }
     }
 
-    if(tsk_param->d_info.id_cal != eCalReady){
+    if(tsk_param->glm_in.id_cal != eCalReady){
      FillBdd_StartPoint(tsk_param);
     }
 
-    if(tsk_param->d_info.id_cal == eCalReady){
+    if(tsk_param->glm_in.id_cal == eCalReady){
      if(a_tbv){
       a_tbv->delKey(g_lm);
       a_tbv->setCalReady(g_lm);
@@ -3283,7 +3300,7 @@ void BcUpl::BSlot_clicked_old(const QModelIndex &index)
     title=title+", ";
    }
   }
-  tblPrefix = getTablePrefixFromSelection(title, ong_zn);
+  tblPrefix = getTablePrefixFromSelection_upl(title, ong_zn);
   QString tot_title = ") : trouve " +
                       index.sibling(index.row(),Bp::colId+ref+1).data().toString()+
                       " fois.";
@@ -3497,7 +3514,7 @@ bool BcUpl::tsk_upl_1 (const stGameConf *pGame, const stParam_tsk *param)
     }
 
     /// Regarder si la table upl a deja cette information
-    tbl = getTablePrefixFromSelection(val, zn);
+    tbl = getTablePrefixFromSelection_upl(val, zn);
     rechercheUplet(tbl, pGame, param, selection);
    }while (query_1.next());
   }

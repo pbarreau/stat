@@ -78,21 +78,25 @@ extern const QString sqlStepText[ELstCal];
 
 typedef enum _eCalcul
 {
+ eCalNotDef,     /// Pas Definit
  eCalNotSet,     /// Non traite
  eCalPending,    /// Sur liste des prochains
  eCalStarted,    /// Calcul encours
  eCalReady,      /// Calcul disponible
+ eCalSkip,       /// Ne Pas faire de calcul
  eCalPaused,     /// Calcul mis en pause
  eCalInterrupted,/// Calcul interrompu
  eCalTerminated  /// Calcul termine
 }eUpl_Cal;
 
 typedef struct _dbUpdl{
-  int id_db;
+  eUpl_Ens e_id; /// type d'ensemble
   eUpl_Cal id_cal;
-  bool isPresent;
+  int id_db;
   int id_zn;
+  bool isPresent;
 }stUpdData;
+
 typedef struct _tskProgress stTskProgress;
 typedef struct _param_tsk
 {
@@ -116,7 +120,7 @@ typedef struct _param_tsk
   eUpl_Lst c_id; /// Calcul type id
   eUpl_Ens e_id; /// type d'ensemble
 
-  stUpdData d_info;  /// index dans la base pour cet indice et +
+  stUpdData glm_in;  /// index dans la base pour cet indice et +
   struct _tskProgress *tsk_step;
   BAnimateCell *a_tbv;
   BView *cupl;
@@ -176,7 +180,7 @@ class BcUpl: public BCount
 
 
  private:
-  QString getTablePrefixFromSelection(QString items, int zn=0, stUpdData *upl_data=nullptr);
+  QString getTablePrefixFromSelection_upl(QString items, int zn=0, stUpdData *upl_data=nullptr);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
 
   QString sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);

@@ -31,7 +31,7 @@ typedef struct _tskProgress
   QString t_on;
   QString t_rf;
   eUpl_Lst c_id;
-  eUpl_Cal a_id;
+  eUpl_Cal g_cl;
   int l_id;
   int z_id;
   int g_id;
@@ -56,7 +56,7 @@ class BThread_1: public QWidget //: public QThread
 
   bool T1_Fill_Bdd(stParam_tsk *tsk_param);
   stParam_tsk *T1_Scan(stParam_tsk *tsk_param);
-  QString getTablePrefixFromSelection(QString items, int zn=0, stUpdData *upl_data=nullptr);
+  QString getTablePrefixFromSelection_tsk(QString items, int zn=0, stUpdData *upl_data=nullptr);
 
   stParam_tsk *FillBdd_StartPoint(stParam_tsk *tsk_param);
   void T2_Fill_Bdd(stParam_tsk *tsk_param);

@@ -977,7 +977,7 @@ void BThread_1::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int
 }
 
 
-QString BThread_1::getTablePrefixFromSelection(QString items, int zn, stUpdData *upl_data)
+QString BThread_1::getTablePrefixFromSelection_tsk(QString items, int zn, stUpdData *upl_data)
 {
  QSqlQuery query_1(db_tsk1);
 
@@ -1000,6 +1000,21 @@ QString BThread_1::getTablePrefixFromSelection(QString items, int zn, stUpdData 
           tbl_upl +
           " where((items like '"+ord_itm+"') and (zn="+QString::number(zn)+"));";
 
+ /// Verifier quel type de recherche
+ eUpl_Cal id_cal = eCalNotDef;
+
+ switch (upl_data->e_id) {
+  case eEnsFdj:
+   id_cal = eCalPending;
+   break;
+  case eEnsUsr:
+   id_cal = eCalNotSet;
+   break;
+  default:
+   id_cal = eCalNotDef;
+   break;
+ }
+
  if(query_1.exec(sql_m1)){
   if(query_1.first()){
    /// verifier unicite
@@ -1013,10 +1028,10 @@ QString BThread_1::getTablePrefixFromSelection(QString items, int zn, stUpdData 
       upl_data->isPresent = false;
       upl_data->id_db = -1;
       upl_data->id_zn = zn;
-      upl_data->id_cal = eCalNotSet;
+      upl_data->id_cal = id_cal;
      }
      sql_m2 = "insert into "+tbl_upl+" (id, state, zn, items) values(NULL,"+
-              QString::number(eCalNotSet) + ","+QString::number(zn)+",'"+ord_itm+"')";
+              QString::number(id_cal) + ","+QString::number(zn)+",'"+ord_itm+"')";
      if(query_1.exec(sql_m2)){
       if(query_1.exec(sql_m1)){
        query_1.first();
@@ -1119,6 +1134,7 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
  int z_id = tsk_param->z_id;
  int g_id = tsk_param->g_id;
  int g_lm = tsk_param->g_lm;
+ eUpl_Ens e_id = tsk_param->e_id;
 
  QString t_on = tsk_param->t_on;
  stTskProgress *cur_status = tsk_param->tsk_step;
@@ -1129,8 +1145,11 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
  if((status = query.exec(sql_msg))){
   if(query.first()){
    do{
+
+    /// Recuperer la clef de l'uplet
     g_lm = query.value(0).toInt();
 
+    /// Determiner la valeur de l'uplet
     QStringList my_list;
     for(int i = 1; i<=g_id;i++){
      int val = query.value(i).toInt();
@@ -1139,58 +1158,93 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
     std::sort(my_list.begin(), my_list.end());
     QString upl_cur = my_list.join(',');
 
-    /// On a un uplet, obtenir le radical de table
-    stUpdData d_info;
-    QString tbl_radical = getTablePrefixFromSelection(upl_cur, z_id, &d_info);
+    /// On a un uplet, Voir si il est deja connu
+    stUpdData glm_in = {e_id, eCalNotDef, -1, -1, false};
+    QString tbl_radical = getTablePrefixFromSelection_tsk(upl_cur, z_id, &glm_in);
     t_on = tbl_radical;
 
     tsk_param->t_on = t_on;
-    tsk_param->d_info = d_info;
     tsk_param->g_lm = g_lm;
+    tsk_param->glm_in = glm_in;
+
+    /// Normalement onn doit avoir ici
+    /// --------------------
+    /// glm_in.id_db == g_lm
+    /// --------------------
+
     tsk_param->tsk_step->g_lm = g_lm;
+    tsk_param->tsk_step->g_cl = glm_in.id_cal;
 
-    tsk_param->tsk_step->a_id = eCalNotSet;
-    //emit BSig_Step(tsk_param);
+    /// si le calcul est deja fait on continu
+    if(tsk_param->glm_in.id_cal == eCalReady){
 
-    /// En multitache si != nullptr alors ihm visuel prete
-    BAnimateCell *a_tbv = tsk_param->a_tbv;
-    //if((d_info.isPresent == false) && (d_info.id_cal == eCalNotSet)){
-    if((d_info.id_cal == eCalNotSet)){
+     /// signaler l'info pour animer le tableau
+     emit BSig_Step(tsk_param);
+
+     /// Passer a element suivant;
+     continue;
+    }
+
+    /// DEBUT ANALYSE SEQUENTIELLE
+    /// --------------------------
+
+    /// Pour les calculs initiaux Fdj Mettre en attente
+    if( (tsk_param->e_id) == eEnsFdj){
+     tsk_param->glm_in.id_cal = eCalPending;
+    }
+
+    if((tsk_param->glm_in.id_cal == eCalNotSet)){
 
      /// Update dans la base
-     updateTracking(d_info.id_db, eCalPending);
+     updateTracking(glm_in.id_db, eCalPending);
 
      /// Update dans la variable
-     tsk_param->d_info.id_cal = eCalPending;
+     tsk_param->glm_in.id_cal = eCalPending;
 
      /// Update dans la vue
+     /*
      if(a_tbv){
       a_tbv->addKey(g_lm);
-     }
+     }*/
 
-     tsk_param->tsk_step->a_id = eCalPending;
+     tsk_param->tsk_step->g_cl = eCalPending;
      emit BSig_Step(tsk_param);
     }
 
-    if(tsk_param->d_info.id_cal == eCalPending){
-     /// Update dans la base
-     updateTracking(d_info.id_db, eCalStarted);
+    if((tsk_param->glm_in.id_cal == eCalPending) ||
+       (tsk_param->glm_in.id_cal == eCalStarted)
+       ){
 
-     /// Update dans la variable
-     tsk_param->d_info.id_cal = eCalStarted;
+     if(tsk_param->glm_in.id_cal == eCalPending){
+      /// Update dans la base
+      updateTracking(glm_in.id_db, eCalStarted);
+
+      /// Update dans la variable
+      tsk_param->glm_in.id_cal = eCalStarted;
+     }
 
      emit BSig_Step(tsk_param);
+
+     /// Commencer ou continuer les calculs de la base
+     ///
+     /// --------------------------
 
      FillBdd_StartPoint(tsk_param);
+
+     /// --------------------------
+     ///
+
+     /// Tous les calculs sont finis pour cet uplet
+     tsk_param->glm_in.id_cal = eCalReady;
     }
 
-    if(tsk_param->d_info.id_cal == eCalStarted){
-     updateTracking(d_info.id_db, eCalReady);
-     if(a_tbv){
+    if(tsk_param->glm_in.id_cal == eCalReady){
+     updateTracking(glm_in.id_db, eCalReady);
+     /*if(a_tbv){
       a_tbv->delKey(g_lm);
       a_tbv->setCalReady(g_lm);
-     }
-     tsk_param->tsk_step->a_id = eCalReady;
+     }*/
+     tsk_param->tsk_step->g_cl = eCalReady;
      emit BSig_Step(tsk_param);
     }
    }while (query.next());
@@ -1205,7 +1259,7 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
  const stGameConf *pGame = tsk_param->p_gm;
  int z_id = tsk_param->z_id;
  int g_lm = tsk_param->g_lm; /// Group uplet element
- int id_db = tsk_param->d_info.id_db;
+ int id_db = tsk_param->glm_in.id_db;
  QString t_on = tsk_param->t_on;
 
  BAnimateCell *a_tbv = tsk_param->a_tbv;
@@ -1216,8 +1270,8 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
 
 
  /// indiquer en cours
- if(tsk_param->d_info.isPresent == false){
-  tsk_param->d_info.id_cal = eCalStarted;
+ if(tsk_param->glm_in.isPresent == false){
+  tsk_param->glm_in.id_cal = eCalStarted;
 
   if(a_tbv !=nullptr){
    a_tbv->startKey(g_lm);
@@ -1268,8 +1322,8 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
   tsk_param->t_on = t_on;
  }
 
- if(tsk_param->d_info.isPresent == false){
-  tsk_param->d_info.id_cal = eCalReady;
+ if(tsk_param->glm_in.isPresent == false){
+  tsk_param->glm_in.id_cal = eCalReady;
 
   if(a_tbv !=nullptr){
    a_tbv->delKey(g_lm);
