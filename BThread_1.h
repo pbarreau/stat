@@ -48,6 +48,7 @@ class BThread_1: public QWidget //: public QThread
   BThread_1(stTsk1 *def);
   void start();
   void start(etStep eStep = eStep_T1);
+  void setUserSelection(QString sel);
 
 
  private:
@@ -82,12 +83,14 @@ class BThread_1: public QWidget //: public QThread
  signals:
   void BSig_Step(const stParam_tsk *tsk_param);
   void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
+  void BSig_UserSelect(const stParam_tsk *tsk_param);
 
 
  private:
   stTsk1 *tsk_1;
   QString cnx;  // nom de la connection a la bdd
   QSqlDatabase db_tsk1;
+  QString cur_sel;
 };
 
 #endif // BTHREAD_1_H

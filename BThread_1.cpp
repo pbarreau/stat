@@ -81,7 +81,7 @@ void BThread_1::creationTables(etStep eStep)
 
    int max_win = tsk_1->pGame->limites[z_id].win;
    int nb_recherche = BMIN_2(max_win, C_MAX_UPL);
-   for (int g_id = C_MIN_UPL; (g_id<=nb_recherche) && (b_retVal == true); g_id++) {
+   for (int g_id = C_MIN_UPL; (g_id <= nb_recherche) && (b_retVal == true); g_id++) {
     tsk_param->g_id = g_id;
     tsk_step->g_id = g_id;
 
@@ -111,23 +111,29 @@ void BThread_1::creationTables(etStep eStep)
      tsk_step->o_id = tsk_param->o_id;
      tsk_step->r_id = tsk_param->r_id;
 
-     if( eStep == eStep_T1){
-      T1_Fill_Bdd(tsk_param);
-      tsk_step->t_on = tsk_param->t_on;
-      tsk_step->c_id = ELstUplTot;
-     }
-     else{
-      QString t_use = t_rf + "_C" +
-                      QString::number(g_id).rightJustified(2,'0');
-      tsk_param->t_on = t_use;
-      if(e_id == eEnsFdj){
-       T1_Scan(tsk_param);
-      }
-     }
+     switch (eStep) {
+      case eStep_T1:
+       T1_Fill_Bdd(tsk_param);
+       tsk_step->t_on = tsk_param->t_on;
+       tsk_step->c_id = ELstUplTot;
+       break;
 
+      default:
+       QString t_use = t_rf + "_C" +
+                       QString::number(g_id).rightJustified(2,'0');
+       tsk_param->t_on = t_use;
+       if(e_id == eEnsFdj){
+        T1_Scan(tsk_param);
+       }
+       else{
+        if(eStep == eStep_T3){
+         T1_Scan(tsk_param);
+        }
+       }
+       break;
+     }
 
      emit BSig_Step(tsk_param);
-
     }
    }
   }
@@ -1093,6 +1099,11 @@ bool BThread_1::updateTracking(int v_key, eUpl_Cal v_cal)
  return status;
 }
 
+void BThread_1::setUserSelection(QString sel)
+{
+ cur_sel = sel;
+}
+
 bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
 {
  bool ret_val =false;
@@ -1142,6 +1153,17 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
  stTskProgress *cur_status = tsk_param->tsk_step;
 
  QString sql_msg = "select * from " + t_on;
+
+
+ if(tsk_param->tsk_step->e_id == eStep_T3){
+  emit BSig_UserSelect(tsk_param);
+  if(cur_sel == ""){
+   return tsk_param;
+  }
+
+  sql_msg = sql_msg + " where( uid in("+cur_sel+"))";
+ }
+
  bool status = false;
 
  if((status = query.exec(sql_msg))){

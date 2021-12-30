@@ -368,9 +368,15 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  connect(producteur, &BThread_1::BSig_Step,
          this, &BcUpl::BSlot_tsk_progress,
          Qt::BlockingQueuedConnection);
+
  /// Traitements
  connect(producteur, &BThread_1::BSig_Animate,
          this, &BcUpl::BSlot_Animate);
+
+ /// Demande info sur selection utilisateur par thread_1
+ connect(producteur, &BThread_1::BSig_UserSelect,
+         this, &BcUpl::BSlot_UserSelect,
+         Qt::BlockingQueuedConnection);
 
  /// Creation/Lancement
  /// Preparer la surveillance des calculs
@@ -767,6 +773,19 @@ void BcUpl::BSlot_UplSel(const QModelIndex &index)
 
 void BcUpl::BSlot_UplScan()
 {
+
+ /// Creation/Lancement
+ /// Preparer la surveillance des calculs
+ QFutureWatcher<void> *watcher = new QFutureWatcher<void>();
+ connect(watcher, &QFutureWatcher<void>::finished, this, &BcUpl::BSlot_tsk_finished);
+
+ QFuture<void> f_task = QtConcurrent::run(pool, producteur, &BThread_1::start, eStep_T3);
+
+ /// Surveiller la fin des calculs
+ watcher->setFuture(f_task);
+ /// -----------------------------------
+
+#if 0
  const stGameConf *pGame = gm_def;
  int nb_zn = pGame ->znCount;
  int zn_start = -1;
@@ -804,31 +823,16 @@ void BcUpl::BSlot_UplScan()
                     "_C" + QString::number(g_id).rightJustified(2,'0');
 
      /// Construction des ids selectionnes
-    BAnimateCell *ani = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
-    if(ani->itemsSelected() != ""){
-     /// emettre selection
-    }
-#if 0
-     stParam_tsk *tsk_param = new stParam_tsk;
-     tsk_param->p_gm = gm_def;
-     tsk_param->l_id = l_id;
-     tsk_param->z_id = z_id;
-     tsk_param->g_id = g_id;
-     tsk_param->g_lm = -1;
-     tsk_param->o_id = 0;
-     tsk_param->r_id = -1;
-     tsk_param->c_id = ELstBle;
-     tsk_param->e_id = e_id;
-     tsk_param->t_rf = t_rf;
-     tsk_param->t_on = "";
-     tsk_param->a_tbv = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
-#endif
+     BAnimateCell *ani = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
+     if(ani->itemsSelected() != ""){
+      /// emettre selection
+     }
     }
    }
 
   }
  }
-
+#endif
 }
 
 
@@ -2334,6 +2338,7 @@ void BcUpl::BSlot_tsk_finished(){
 void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
 {
  BView *qtv_tmp = nullptr;
+ BAnimateCell *ani = nullptr;
  QString sql_msg = "";
  QString st_title = "";
 
@@ -2353,6 +2358,7 @@ void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
 
  if(((l_id - 1)>= 0) && ((g_id - C_MIN_UPL)>=0) && (z_id >=0 )){
   qtv_tmp = upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL];
+  ani = qobject_cast<BAnimateCell *>(qtv_tmp->itemDelegate());
  }
 
  if(qtv_tmp == nullptr){
@@ -2375,13 +2381,38 @@ void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
   a++;
  }
 
- BAnimateCell *ani = nullptr;
+#if 0
  if(((l_id - 1)>= 0) && ((g_id - C_MIN_UPL)>=0) && (z_id >=0 )){
   ani = tbv_Anim[l_id-1][z_id][g_id - C_MIN_UPL];
  }
+#endif
 
  /// Lancer l'animation
  emit producteur->BSig_Animate(tsk_param, ani);
+}
+
+void BcUpl::BSlot_UserSelect(const stParam_tsk *tsk_param)
+{
+ BView *qtv_tmp = nullptr;
+ BAnimateCell *ani = nullptr;
+ QString sql_msg = "";
+ QString st_title = "";
+
+ const stTskProgress *step = tsk_param->tsk_step;
+ int l_id = step->l_id;
+ int z_id = step->z_id;
+ int g_id = step->g_id;
+ etStep e_id = step->e_id;
+ QString tbl = step->t_on;
+
+
+ if(((l_id - 1)>= 0) && ((g_id - C_MIN_UPL)>=0) && (z_id >=0 )){
+  qtv_tmp = upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL];
+  ani = qobject_cast<BAnimateCell *>(qtv_tmp->itemDelegate());
+  QString selected = ani->itemsSelected();
+  producteur->setUserSelection(selected);
+ }
+
 }
 
 void BcUpl::BSlot_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)

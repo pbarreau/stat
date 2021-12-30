@@ -143,6 +143,7 @@ class BcUpl: public BCount
   void BSlot_tsk_started();
   void BSlot_tsk_finished();
   void BSlot_tsk_progress(const stParam_tsk *tsk_param);
+  void BSlot_UserSelect(const stParam_tsk *tsk_param);
   void BSlot_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
 #endif
   void BSlot_ShowTotal(const QString& lstBoules);
