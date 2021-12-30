@@ -22,6 +22,7 @@
 #include "Bc.h"
 
 #include "BAnimateCell.h"
+#include "ns_upl.h"
 
 //#include "BThread_1.h"
 
@@ -76,18 +77,6 @@ extern const QString sqlStepText[ELstCal];
 
 #define C_TOT_CAL ELstCal
 
-typedef enum _eCalcul
-{
- eCalNotDef,     /// Pas Definit
- eCalNotSet,     /// Non traite
- eCalPending,    /// Sur liste des prochains
- eCalStarted,    /// Calcul encours
- eCalReady,      /// Calcul disponible
- eCalSkip,       /// Ne Pas faire de calcul
- eCalPaused,     /// Calcul mis en pause
- eCalInterrupted,/// Calcul interrompu
- eCalTerminated  /// Calcul termine
-}eUpl_Cal;
 
 typedef struct _dbUpdl{
   eUpl_Ens e_id; /// type d'ensemble

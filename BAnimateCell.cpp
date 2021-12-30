@@ -35,26 +35,40 @@ BAnimateCell::BAnimateCell(BView *view):m_view(view),QStyledItemDelegate(nullptr
 
 void BAnimateCell::addKey(int key)
 {
- setKey(key,Qt::green);
+ setKey(key,Qt::green, eCalPending);
 }
 
 void BAnimateCell::startKey(int key)
 {
- setKey(key,Qt::red);
+ setKey(key,Qt::red, eCalStarted);
 }
 
 void BAnimateCell::delKey(int key)
 {
  //mapTimeout.remove(key);
  //emit BSig_Repaint(m_view);
- setKey(key,Qt::gray);
+ setKey(key,Qt::gray, eCalNotSet);
 }
 
-bool BAnimateCell::gotKey(int key)
+bool BAnimateCell::gotKey(int key, eUpl_Cal *curCal)
 {
+ bool ret_val = false;
+
  QMap<int, QVariant>::const_iterator it = mapTimeout.find( key );
 
- return (it == mapTimeout.end() ?  false : true);
+ if(it != mapTimeout.end()){
+
+  if(curCal != nullptr){
+   st_cellData conf;
+   QVariant item = it.value();
+   conf = item.value<st_cellData>();
+   *curCal = conf.e_cal;
+  }
+
+  ret_val = true;
+ }
+
+ return ret_val;
 }
 
 bool BAnimateCell::gotKeyReady(int key)
@@ -92,7 +106,7 @@ void BAnimateCell::setCalReady(int key)
 {
  st_cellData conf;
  conf.color = Qt::white;
- conf.isShowingResults = false;
+ conf.e_cal = eCalReady;
  QVariant info;
  info.setValue(conf);
 
@@ -109,10 +123,11 @@ void BAnimateCell::setCalReady(int key)
 ////// \brief BAnimateCell::setKey
 ////// \param key
 ////// \param color
-void BAnimateCell::setKey(int key, QColor color)
+void BAnimateCell::setKey(int key, QColor color, eUpl_Cal eCal)
 {
  st_cellData conf;
  conf.color = color;
+ conf.e_cal = eCal;
  QVariant info;
  info.setValue(conf);
 

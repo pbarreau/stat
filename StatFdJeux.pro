@@ -216,7 +216,8 @@ HEADERS  += \
     BAction_1.h \
     BAnimateCell.h \
     TTransparentProxyModel.h \
-    BThread_1.h
+    BThread_1.h \
+    ns_upl.h
 
 
 FORMS    += mainwindow.ui \

@@ -6,6 +6,7 @@
 #include <QMetaType>
 
 #include "BView.h"
+#include "ns_upl.h"
 
 /// https://www.titanwolf.org/Network/q/0f38c86c-dda4-4b9b-9afe-dfb7c6c441f2/y
 /// https://stackoverflow.com/questions/54035370/how-to-animate-the-color-of-a-qtableview-cell-in-time-once-its-value-gets-updat
@@ -16,10 +17,11 @@ enum MyDataRole {
  ItemModifiedRole = Qt::UserRole + 1
 };
 
+//typedef enum _eCalcul eUpl_Cal;
 typedef struct _cellData
 {
   QColor color;
-  bool isShowingResults;
+  eUpl_Cal e_cal;
   QVariant timer;
 }st_cellData;
 Q_DECLARE_METATYPE(st_cellData)
@@ -34,7 +36,7 @@ class BAnimateCell: public QStyledItemDelegate
   void startKey(int key);
   void delKey(int key);
   void setCalReady(int key);
-  bool gotKey(int key);
+  bool gotKey(int key, eUpl_Cal *curCal = nullptr);
   bool gotKeyReady(int key);
   bool isShowing(int key);
   int countReady();
@@ -45,7 +47,7 @@ class BAnimateCell: public QStyledItemDelegate
   void BSig_Repaint(const BView *tbv);
 
  private:
-  void setKey(int key,QColor color);
+  void setKey(int key, QColor color, eUpl_Cal eCal = eCalNotDef);
   void FormalizeCell(int key, QPainter *painter, const QStyleOptionViewItem &myOpt, const QModelIndex &index) const;
   bool gotKeyShowing(int key);
 

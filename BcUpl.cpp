@@ -687,14 +687,35 @@ void BcUpl::BSlot_UplCmr_1(QPoint pos)
  //QString upl_cur = getFromIndex_CurUpl(src_1,g_id);
 
  QMenu MonMenu;
- BAction_1 *cmd_1 = new BAction_1("Selectionner uplet", view, pos);
+ QString msg = "";
 
- connect(cmd_1, SIGNAL(BSig_ActionAt(QModelIndex)),
-         this, SLOT(BSlot_UplSel(QModelIndex)) );
+ eUpl_Cal eCal = eCalNotDef;
+ if(ani_tbv->gotKey(cid_src_1, &eCal)){
 
- MonMenu.addAction(cmd_1);
+  switch (eCal) {
+   case eCalNotSet:
+    msg = "Selectionner uplet";
+    break;
+   case eCalPending:
+    msg = "Retirer uplet";
+    break;
+   default:
+    msg = "";
+    break;
+  }
+ }
 
- MonMenu.exec(view->viewport()->mapToGlobal(pos));
+ if(msg.trimmed().size() !=0){
+  BAction_1 *cmd_1 = new BAction_1(msg , view, pos);
+
+  connect(cmd_1, SIGNAL(BSig_ActionAt(QModelIndex)),
+          this, SLOT(BSlot_UplSel(QModelIndex)) );
+
+  MonMenu.addAction(cmd_1);
+
+  MonMenu.exec(view->viewport()->mapToGlobal(pos));
+ }
+
 }
 
 void BcUpl::BSlot_UplSel(const QModelIndex &index)
