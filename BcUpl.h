@@ -142,6 +142,7 @@ class BcUpl: public BCount
 #if C_PGM_THREADED
   void BSlot_tsk_started();
   void BSlot_tsk_finished();
+  void BSlot_scan_finished();
   void BSlot_tsk_progress(const stParam_tsk *tsk_param);
   void BSlot_UserSelect(const stParam_tsk *tsk_param);
   void BSlot_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
@@ -165,6 +166,7 @@ class BcUpl: public BCount
   QSqlDatabase db_0;
   QModelIndexList my_indexes;
   QTabWidget *uplTirTab;
+  bool isScanRuning;
   int upl_zn;
   eUpl_Ens e_id;
   BAnimateCell ****tbv_Anim;   /// Selection d'un uplet

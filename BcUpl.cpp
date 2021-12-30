@@ -90,6 +90,8 @@ BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectio
  :BCount (pGame, eCountUpl)
 {
  obj_upl++;
+ isScanRuning = false;
+
  QThread cpuInfo(this); //get CPU info
  int info = cpuInfo.idealThreadCount();
 
@@ -389,6 +391,8 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  watcher->setFuture(f_task);
  /// -----------------------------------
 
+ stParam_tsk *tsk_param = new stParam_tsk;
+
  /// suite exec de ce thread
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
 
@@ -429,7 +433,6 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
                     Txt_eUpl_Ens[e_id] + QString::number(l_id).rightJustified(2,'0') +
                     "_Z" + QString::number(z_id).rightJustified(2,'0');
 
-     stParam_tsk *tsk_param = new stParam_tsk;
      tsk_param->p_gm = gm_def;
      tsk_param->l_id = l_id;
      tsk_param->z_id = z_id;
@@ -465,7 +468,8 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
   tab_tirId->addTab(tab_zones,refTir);
  }
 
- //producteur->wait();
+ delete tsk_param;
+
  return tab_tirId;
 }
 
@@ -773,11 +777,16 @@ void BcUpl::BSlot_UplSel(const QModelIndex &index)
 
 void BcUpl::BSlot_UplScan()
 {
+ if (isScanRuning == true ){
+  return;
+ }
+
+ isScanRuning = true;
 
  /// Creation/Lancement
  /// Preparer la surveillance des calculs
  QFutureWatcher<void> *watcher = new QFutureWatcher<void>();
- connect(watcher, &QFutureWatcher<void>::finished, this, &BcUpl::BSlot_tsk_finished);
+ connect(watcher, &QFutureWatcher<void>::finished, this, &BcUpl::BSlot_scan_finished);
 
  QFuture<void> f_task = QtConcurrent::run(pool, producteur, &BThread_1::start, eStep_T3);
 
@@ -2319,20 +2328,16 @@ void BcUpl::BSlot_tsk_started(){
 
 
 void BcUpl::BSlot_tsk_finished(){
- int a;
+int tmp_test;
 #if 0
- QFutureWatcher<stParam_tsk *> * watcher;
- watcher = reinterpret_cast<QFutureWatcher<stParam_tsk *>*>(sender());
-
- stParam_tsk * tsk_param = watcher->result();
-
  /// Montrer les resultats
  FillTbv_StartPoint(tsk_param);
-
- /// parametre peut etre detruit
- delete tsk_param;
- watcher->deleteLater();
 #endif
+}
+
+void BcUpl::BSlot_scan_finished()
+{
+ isScanRuning = false;
 }
 
 void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
