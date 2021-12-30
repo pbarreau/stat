@@ -45,8 +45,6 @@ void BAnimateCell::startKey(int key)
 
 void BAnimateCell::delKey(int key)
 {
- //mapTimeout.remove(key);
- //emit BSig_Repaint(m_view);
  setKey(key,Qt::gray, eCalNotSet);
 }
 

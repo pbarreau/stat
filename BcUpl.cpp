@@ -742,14 +742,37 @@ void BcUpl::BSlot_UplSel(const QModelIndex &index)
  BAnimateCell * ani_tab = tbv_Anim[l_id-1][z_id][g_id - C_MIN_UPL];
 
 
- /// On a un uplet, obtenir le radical de table
- stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
- QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur,z_id, &d_info);
+ eUpl_Cal eCal = eCalNotDef;
+ if((ani_tbv->gotKey(cid_src_1, &eCal)) == true){
+  /// On a un uplet, obtenir le radical de table
+  stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
+  QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur,z_id, &d_info);
 
+  if((eCal == eCalNotSet) || (eCal == eCalPending)){
+   eUpl_Cal new_val = eCalNotDef;
+
+   if(eCal == eCalNotSet)  {
+    new_val = eCalPending;
+    ani_tbv->addKey(g_lm);
+   }
+   else{
+    new_val = eCalNotSet;
+    ani_tbv->delKey(g_lm);
+   }
+
+   bool status = false;
+   status = updateTracking_upl(d_info.id_db, new_val);
+
+  }
+ }
+
+
+#if 0
  /// Update dans la base
  bool status = false;
  status = updateTracking_upl(d_info.id_db, eCalPending);
  ani_tbv->addKey(g_lm);
+#endif
 }
 
 
