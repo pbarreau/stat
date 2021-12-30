@@ -33,19 +33,31 @@ BAnimateCell::BAnimateCell(BView *view):m_view(view),QStyledItemDelegate(nullptr
  //timer->start( TIME_RESOLUTION );
 }
 
-void BAnimateCell::addKey(int key)
+eUpl_Cal BAnimateCell::addKey(int key)
 {
- setKey(key,Qt::green, eCalPending);
+ eUpl_Cal cur_cal = eCalPending;
+
+ setKey(key,Qt::green, cur_cal);
+
+ return cur_cal;
 }
 
-void BAnimateCell::startKey(int key)
+eUpl_Cal BAnimateCell::startKey(int key)
 {
- setKey(key,Qt::red, eCalStarted);
+ eUpl_Cal cur_cal = eCalStarted;
+
+ setKey(key,Qt::red, cur_cal);
+
+ return cur_cal;
 }
 
-void BAnimateCell::delKey(int key)
+eUpl_Cal BAnimateCell::delKey(int key)
 {
- setKey(key,Qt::gray, eCalNotSet);
+ eUpl_Cal cur_cal = eCalNotSet;
+
+ setKey(key,Qt::gray, cur_cal);
+
+ return cur_cal;
 }
 
 bool BAnimateCell::gotKey(int key, eUpl_Cal *curCal)
@@ -74,6 +86,13 @@ bool BAnimateCell::gotKeyReady(int key)
  QMap<int, QVariant>::const_iterator it = mapCal_Ready.find( key );
 
  return (it == mapCal_Ready.end() ?  false : true);
+}
+
+bool BAnimateCell::gotKeyUsr(int key)
+{
+ QMap<int, QVariant>::const_iterator it = mapUserSelect.find( key );
+
+ return (it == mapUserSelect.end() ?  false : true);
 }
 
 bool BAnimateCell::isShowing(int key)
@@ -108,6 +127,20 @@ void BAnimateCell::setCalReady(int key)
  QVariant info;
  info.setValue(conf);
 
+#if 0
+ eUpl_Cal cur_cal = eCalNotDef;
+ if(gotKey(key,&cur_cal) == true){
+  if (cur_cal == eCalReady){
+   mapTimeout.remove(key);
+
+   /// ----------------
+   mapCal_Ready.insert(key,info);
+   /// ----------------
+
+   emit BSig_Repaint(m_view);
+  }
+ }
+#endif
  mapTimeout.remove(key);
 
  /// ----------------
@@ -115,6 +148,61 @@ void BAnimateCell::setCalReady(int key)
  /// ----------------
 
  emit BSig_Repaint(m_view);
+}
+
+eUpl_Cal BAnimateCell::setUserSelect(int key)
+{
+ eUpl_Cal new_val = eCalNotDef;
+ QVariant item;
+
+ QMap<int, QVariant>::const_iterator it;
+
+ it = mapUserSelect.find( key );
+
+ /// Cette clef est elle deja dans l'ensemble utilisateur
+ if(it !=mapUserSelect.end() ){
+
+  /// La mettre dans la file commune comme non selectionnee
+  new_val = delKey(key);
+
+  /// La retirer de cette file
+  mapUserSelect.remove(key);
+ }
+ else{
+  /// La mettre dans la file commune comme selectionnee
+  new_val = addKey(key);
+
+  /// dupliquer la clef
+  it = mapTimeout.find( key );
+  item = it.value();
+
+  st_cellData conf = item.value<st_cellData>();
+  //conf.upl_txt = upl_txt;
+
+  //item.value<st_cellData>().upl_txt = upl_txt;
+
+  mapUserSelect.insert(key, item);
+ }
+
+ return new_val;
+}
+
+QString BAnimateCell::itemsSelected()
+{
+ QString ret_val = "";
+
+ if(mapUserSelect.size() != 0){
+  QMap<int, QVariant>::const_iterator it;
+  for(it=mapUserSelect.begin(); it != mapUserSelect.end(); it++){
+   int key = it.key();
+   ret_val = ret_val + QString::number(key);
+   if(it != mapUserSelect.end() -1){
+    ret_val = ret_val + ",";
+   }
+  }
+ }
+
+ return ret_val;
 }
 
 ///

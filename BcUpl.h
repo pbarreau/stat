@@ -151,6 +151,7 @@ class BcUpl: public BCount
   void BSlot_Repaint(const BView * tbv);
   void BSlot_UplCmr_1(QPoint pos);
   void BSlot_UplSel(const QModelIndex & index);
+  void BSlot_UplScan(void);
 
  //signals:
   //void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);

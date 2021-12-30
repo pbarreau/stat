@@ -373,7 +373,14 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
          this, &BcUpl::BSlot_Animate);
 
  /// Creation/Lancement
+ /// Preparer la surveillance des calculs
+ QFutureWatcher<void> *watcher = new QFutureWatcher<void>();
+ connect(watcher, &QFutureWatcher<void>::finished, this, &BcUpl::BSlot_tsk_finished);
+
  QFuture<void> f_task = QtConcurrent::run(pool, producteur, &BThread_1::start);
+
+ /// Surveiller la fin des calculs
+ watcher->setFuture(f_task);
  /// -----------------------------------
 
  /// suite exec de ce thread
@@ -712,10 +719,15 @@ void BcUpl::BSlot_UplCmr_1(QPoint pos)
           this, SLOT(BSlot_UplSel(QModelIndex)) );
 
   MonMenu.addAction(cmd_1);
-
-  MonMenu.exec(view->viewport()->mapToGlobal(pos));
  }
 
+ QAction * cmd_common = new QAction("Start Scan");
+ connect(cmd_common, &QAction::triggered,
+         this, &BcUpl::BSlot_UplScan);
+ MonMenu.addAction(cmd_common);
+
+
+ MonMenu.exec(view->viewport()->mapToGlobal(pos));
 }
 
 void BcUpl::BSlot_UplSel(const QModelIndex &index)
@@ -742,37 +754,81 @@ void BcUpl::BSlot_UplSel(const QModelIndex &index)
  BAnimateCell * ani_tab = tbv_Anim[l_id-1][z_id][g_id - C_MIN_UPL];
 
 
- eUpl_Cal eCal = eCalNotDef;
- if((ani_tbv->gotKey(cid_src_1, &eCal)) == true){
+ eUpl_Cal new_val = eCalNotDef;
+ if((new_val = ani_tbv->setUserSelect(g_lm)) != eCalNotDef){
   /// On a un uplet, obtenir le radical de table
   stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
   QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur,z_id, &d_info);
 
-  if((eCal == eCalNotSet) || (eCal == eCalPending)){
-   eUpl_Cal new_val = eCalNotDef;
+  bool status = false;
+  status = updateTracking_upl(d_info.id_db, new_val);
+ }
+}
 
-   if(eCal == eCalNotSet)  {
-    new_val = eCalPending;
-    ani_tbv->addKey(g_lm);
-   }
-   else{
-    new_val = eCalNotSet;
-    ani_tbv->delKey(g_lm);
-   }
+void BcUpl::BSlot_UplScan()
+{
+ const stGameConf *pGame = gm_def;
+ int nb_zn = pGame ->znCount;
+ int zn_start = -1;
+ int nbTirJour = -1;
+ int zn_stop = -1;
 
-   bool status = false;
-   status = updateTracking_upl(d_info.id_db, new_val);
+
+ if(e_id==eEnsFdj){
+  zn_start = 0;
+  zn_stop = nb_zn;
+  nbTirJour = C_NB_TIR_LIR;
+ }
+ else{
+  zn_start = upl_zn;
+  zn_stop = zn_start +1;
+  nbTirJour = 1;
+ }
+
+ QString refTir = "";
+
+ for(int l_id = 1; l_id<=nbTirJour;l_id++){
+  for (int z_id = zn_start; z_id< zn_stop; z_id++) {
+   int nb_recherche = BMIN_2(pGame->limites[z_id].win, C_MAX_UPL);
+   for (int g_id = C_MIN_UPL; g_id<=nb_recherche; g_id++) {
+    if(g_id > pGame->limites[z_id].win){
+     break;
+    }
+    else{
+     /// ----------------------
+     /// Nom de la table de recherche
+     QString t_rf = "UT_" +
+                    QString::number(obj_upl).rightJustified(2,'0') + "_" +
+                    Txt_eUpl_Ens[e_id] + QString::number(l_id).rightJustified(2,'0') +
+                    "_Z" + QString::number(z_id).rightJustified(2,'0') +
+                    "_C" + QString::number(g_id).rightJustified(2,'0');
+
+     /// Construction des ids selectionnes
+    BAnimateCell *ani = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
+    if(ani->itemsSelected() != ""){
+     /// emettre selection
+    }
+#if 0
+     stParam_tsk *tsk_param = new stParam_tsk;
+     tsk_param->p_gm = gm_def;
+     tsk_param->l_id = l_id;
+     tsk_param->z_id = z_id;
+     tsk_param->g_id = g_id;
+     tsk_param->g_lm = -1;
+     tsk_param->o_id = 0;
+     tsk_param->r_id = -1;
+     tsk_param->c_id = ELstBle;
+     tsk_param->e_id = e_id;
+     tsk_param->t_rf = t_rf;
+     tsk_param->t_on = "";
+     tsk_param->a_tbv = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
+#endif
+    }
+   }
 
   }
  }
 
-
-#if 0
- /// Update dans la base
- bool status = false;
- status = updateTracking_upl(d_info.id_db, eCalPending);
- ani_tbv->addKey(g_lm);
-#endif
 }
 
 
@@ -2259,6 +2315,8 @@ void BcUpl::BSlot_tsk_started(){
 
 
 void BcUpl::BSlot_tsk_finished(){
+ int a;
+#if 0
  QFutureWatcher<stParam_tsk *> * watcher;
  watcher = reinterpret_cast<QFutureWatcher<stParam_tsk *>*>(sender());
 
@@ -2270,6 +2328,7 @@ void BcUpl::BSlot_tsk_finished(){
  /// parametre peut etre detruit
  delete tsk_param;
  watcher->deleteLater();
+#endif
 }
 
 void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
@@ -2591,8 +2650,13 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
   }
  }
 
+ /// Nombre d'uplet deja analyse
  int nb_items = a_tbv->countReady();
+
  /// Prendre seulement ceux pas encore traite
+ /// ???
+
+ /// si pas tous fait alors regarder pour anlyse
  if(nb_items != tot_val){
   sql_msg = "select * from " + t_use;
 
@@ -2635,6 +2699,7 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
        a_tbv->setCalReady(g_lm);
        break;
       default:
+       a_tbv->delKey(g_lm);
        break;
      }
 

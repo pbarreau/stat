@@ -22,6 +22,7 @@ typedef struct _cellData
 {
   QColor color;
   eUpl_Cal e_cal;
+  QString upl_txt;
   QVariant timer;
 }st_cellData;
 Q_DECLARE_METATYPE(st_cellData)
@@ -32,12 +33,15 @@ class BAnimateCell: public QStyledItemDelegate
 
  public:
   explicit  BAnimateCell(BView * view);
-  void addKey(int key);
-  void startKey(int key);
-  void delKey(int key);
+  eUpl_Cal addKey(int key);
+  eUpl_Cal startKey(int key);
+  eUpl_Cal delKey(int key);
   void setCalReady(int key);
+  eUpl_Cal setUserSelect(int key);
+  QString itemsSelected();
   bool gotKey(int key, eUpl_Cal *curCal = nullptr);
   bool gotKeyReady(int key);
+  bool gotKeyUsr(int key);
   bool isShowing(int key);
   int countReady();
   void updateNbColumns();
@@ -61,6 +65,7 @@ class BAnimateCell: public QStyledItemDelegate
   int nb_col;
   const BView * m_view;
   QMap<int, QVariant > mapTimeout;
+  QMap<int, QVariant > mapUserSelect;
   QMap<int, QVariant > mapCal_Ready;
   QMap<int, QVariant > mapShowingKey;
 };
