@@ -662,7 +662,29 @@ void BcUpl::BSlot_Repaint(const BView *tbv)
 
 void BcUpl::BSlot_UplCmr_1(QPoint pos)
 {
+ /// On ne selectionne que si c'est un calcul utilisateur
+ if(e_id != eEnsUsr){
+  return;
+ }
+
  BView *view = qobject_cast<BView *>(sender());
+ int g_id = (view->objectName().toInt()) + C_MIN_UPL;
+ int z_id = view->getZone();
+
+ BFpm_upl * m = qobject_cast<BFpm_upl *>(view->model());
+ QModelIndex index = view->indexAt(pos);
+
+ int row = index.row();
+
+ int cid_src_1 = index.sibling(row,0).data().toInt();
+ BAnimateCell * ani_tbv = qobject_cast<BAnimateCell *>(view->itemDelegate());
+
+ /// On ne selectionne que si pas deja termine
+ if(ani_tbv->gotKeyReady(cid_src_1)){
+  return;
+ }
+
+ //QString upl_cur = getFromIndex_CurUpl(src_1,g_id);
 
  QMenu MonMenu;
  BAction_1 *cmd_1 = new BAction_1("Selectionner uplet", view, pos);
@@ -706,7 +728,7 @@ void BcUpl::BSlot_UplSel(const QModelIndex &index)
  /// Update dans la base
  bool status = false;
  status = updateTracking_upl(d_info.id_db, eCalPending);
-
+ ani_tbv->addKey(g_lm);
 }
 
 
