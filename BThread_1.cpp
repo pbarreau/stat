@@ -120,7 +120,9 @@ void BThread_1::creationTables(etStep eStep)
       QString t_use = t_rf + "_C" +
                       QString::number(g_id).rightJustified(2,'0');
       tsk_param->t_on = t_use;
-      T1_Scan(tsk_param);
+      if(e_id == eEnsFdj){
+       T1_Scan(tsk_param);
+      }
      }
 
 
@@ -1167,10 +1169,9 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
     tsk_param->g_lm = g_lm;
     tsk_param->glm_in = glm_in;
 
-    /// Normalement onn doit avoir ici
-    /// --------------------
-    /// glm_in.id_db == g_lm
-    /// --------------------
+    /// -------------------------------
+    /// glm_in.id_db peut etre != g_lm
+    /// -------------------------------
 
     tsk_param->tsk_step->g_lm = g_lm;
     tsk_param->tsk_step->g_cl = glm_in.id_cal;
@@ -1273,11 +1274,6 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
  if(tsk_param->glm_in.isPresent == false){
   tsk_param->glm_in.id_cal = eCalStarted;
 
-  /*
-  if(a_tbv !=nullptr){
-   a_tbv->startKey(g_lm);
-  }*/
-
   if(!updateTracking(id_db, eCalStarted)){
    QString str_error = db_1.lastError().text();
    QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
@@ -1325,11 +1321,6 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
 
  if(tsk_param->glm_in.isPresent == false){
   tsk_param->glm_in.id_cal = eCalReady;
-
-  /*if(a_tbv !=nullptr){
-   a_tbv->delKey(g_lm);
-   a_tbv->setCalReady(g_lm);
-  }*/
 
   if(!updateTracking(id_db, eCalReady)){
    QString str_error = db_1.lastError().text();

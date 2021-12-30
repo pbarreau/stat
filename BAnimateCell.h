@@ -58,7 +58,6 @@ class BAnimateCell: public QStyledItemDelegate
  private:
   int nb_col;
   const BView * m_view;
-  int showing;
   QMap<int, QVariant > mapTimeout;
   QMap<int, QVariant > mapCal_Ready;
   QMap<int, QVariant > mapShowingKey;

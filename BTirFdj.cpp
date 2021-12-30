@@ -142,7 +142,7 @@ void BTirFdj::BSlot_Fdj_CM1(QPoint pos)
  BView *view = qobject_cast<BView *>(sender());
 
  QMenu MonMenu;
- QAction *cmd_1 = new BAction_1("Localiser",view,pos);
+ BAction_1 *cmd_1 = new BAction_1("Localiser",view,pos);
  connect(cmd_1, SIGNAL(BSig_ActionAt(QModelIndex)),
          this, SLOT(BSlot_Fdj_CM1_A1(QModelIndex)) );
  MonMenu.addAction(cmd_1);

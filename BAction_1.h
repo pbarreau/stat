@@ -13,7 +13,8 @@ class BAction_1:public QAction
   Q_OBJECT
 
  public:
-  BAction_1(const QString &label, const BView *view, QPoint pos);
+  BAction_1(const QString &label, BView *view, QPoint pos);
+  BView *getView(void);
 
  public slots:
   void BSlot_onTriggered(void);
@@ -22,7 +23,7 @@ class BAction_1:public QAction
   void BSig_ActionAt(const QModelIndex &index);
 
  private:
-  const BView *tbv;
+  BView *tbv;
   const QPoint point;
 };
 

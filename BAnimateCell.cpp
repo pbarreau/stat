@@ -25,7 +25,6 @@ BAnimateCell::BAnimateCell(BView *view):m_view(view),QStyledItemDelegate(nullptr
  BFpm_upl *m = qobject_cast<BFpm_upl *>(view->model());
  QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
  nb_col = vl->columnCount();
- showing = -1;
 
  QTimer * timer = new QTimer( this );
  connect( timer, &QTimer::timeout, this, &BAnimateCell::BSlot_animate);

@@ -160,6 +160,8 @@ class BcUpl: public BCount
   void BSlot_clicked(const QModelIndex &index);
   void BSlot_over(const QModelIndex &index);
   void BSlot_Repaint(const BView * tbv);
+  void BSlot_UplCmr_1(QPoint pos);
+  void BSlot_UplSel(const QModelIndex & index);
 
  //signals:
   //void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
@@ -216,26 +218,26 @@ class BcUpl: public BCount
   BView * Bview_3_fill_1(BView *qtv_tmp, QString sql_msg);
   BView * Bview_4_fill_1(BView *qtv_tmp, QString sql_msg);
 
-  QWidget *fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int i);
+  //QWidget *fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int i);
   QWidget *MkMainUplet(stParam_tsk *tsk_param);
 
   int Bview_UpdateAndCount(eUpl_Lst id, BView *qtv_tmp, QString sql_msg);
-  int Bview_3_fill_2(BView *qtv_tmp, QString sql_msg);
-  int Bview_4_fill_2(BView *qtv_tmp, QString sql_msg);
-  bool effectueRecherche(eUpl_Ens upl_type, QString upl_sql, int upl_id,int zn_id, int nb_items);
-  bool tsk_upl_1 (const stGameConf *pGame, const stParam_tsk *param);
-  void rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param, int fake_sel);
-  void tsk_upl_2(QString cnx, QString tbl, QString sql);
-  void tsk_upl_0(stParam_tsk *tsk_param);
+  //int Bview_3_fill_2(BView *qtv_tmp, QString sql_msg);
+  //int Bview_4_fill_2(BView *qtv_tmp, QString sql_msg);
+  //bool effectueRecherche(eUpl_Ens upl_type, QString upl_sql, int upl_id,int zn_id, int nb_items);
+  //bool tsk_upl_1 (const stGameConf *pGame, const stParam_tsk *param);
+  //void rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param, int fake_sel);
+  //void tsk_upl_2(QString cnx, QString tbl, QString sql);
+  //void tsk_upl_0(stParam_tsk *tsk_param);
 
-  bool updateTracking(int v_key, eUpl_Cal v_cal);
+  //bool updateTracking(int v_key, eUpl_Cal v_cal);
 
-  stParam_tsk *FillBdd_StartPoint(stParam_tsk *tsk_param);
-  bool T1_Fill_Bdd(stParam_tsk *tsk_param);
-  stParam_tsk *T1_Scan(stParam_tsk *tsk_param);
-  void T2_Fill_Bdd(stParam_tsk *tsk_param);
-  void T3_Fill_Bdd(stParam_tsk *tsk_param);
-  void T4_Fill_Bdd(stParam_tsk *tsk_param);
+  //stParam_tsk *FillBdd_StartPoint(stParam_tsk *tsk_param);
+  //bool T1_Fill_Bdd(stParam_tsk *tsk_param);
+  //stParam_tsk *T1_Scan(stParam_tsk *tsk_param);
+  //void T2_Fill_Bdd(stParam_tsk *tsk_param);
+  //void T3_Fill_Bdd(stParam_tsk *tsk_param);
+  //void T4_Fill_Bdd(stParam_tsk *tsk_param);
 
   void FillTbv_StartPoint(stParam_tsk *tsk_param);
 
@@ -248,8 +250,10 @@ class BcUpl: public BCount
   void FillTbv_BView_4(stParam_tsk *tsk_param);
 
   int getFromView_Lid(const BView *view);
-  QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb);
-  void BSlot_clicked_old(const QModelIndex &index);
+  QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb = nullptr);
+  //void BSlot_clicked_old(const QModelIndex &index);
+  bool updateTracking_upl(int v_key, eUpl_Cal v_cal);
+
 
 
 };
