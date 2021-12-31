@@ -138,6 +138,10 @@ void BThread_1::creationTables(etStep eStep)
    }
   }
  }
+
+ delete tsk_step;
+ delete tsk_param;
+
 }
 
 QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub)
