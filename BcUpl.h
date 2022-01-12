@@ -37,7 +37,7 @@
 
 #define  C_TBL_UPL "Upl_lst"
 
-#define C_PGM_THREADED 1
+#define C_PGM_THREADED false
 #define C_MAX_SCAN_ITEMS 20
 
 

@@ -366,6 +366,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  /// -----------------------------------
  producteur = new BThread_1(t1data);
 
+ #if C_PGM_THREADED
  /// Recuperation des infos
  connect(producteur, &BThread_1::BSig_Step,
          this, &BcUpl::BSlot_tsk_progress,
@@ -380,6 +381,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
          this, &BcUpl::BSlot_UserSelect,
          Qt::BlockingQueuedConnection);
 
+
  /// Creation/Lancement
  /// Preparer la surveillance des calculs
  QFutureWatcher<void> *watcher = new QFutureWatcher<void>();
@@ -390,6 +392,10 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  /// Surveiller la fin des calculs
  watcher->setFuture(f_task);
  /// -----------------------------------
+#else
+ producteur->start(eStep_T1);
+ producteur->start(eStep_T2);
+#endif
 
  stParam_tsk *tsk_param = new stParam_tsk;
 
@@ -783,6 +789,7 @@ void BcUpl::BSlot_UplScan()
 
  isScanRuning = true;
 
+#if C_PGM_THREADED
  /// Creation/Lancement
  /// Preparer la surveillance des calculs
  QFutureWatcher<void> *watcher = new QFutureWatcher<void>();
@@ -793,6 +800,9 @@ void BcUpl::BSlot_UplScan()
  /// Surveiller la fin des calculs
  watcher->setFuture(f_task);
  /// -----------------------------------
+#else
+ producteur->start(eStep_T3);
+#endif
 
 #if 0
  const stGameConf *pGame = gm_def;
