@@ -143,10 +143,11 @@ class BcUpl: public BCount
   void BSlot_tsk_started();
   void BSlot_tsk_finished();
   void BSlot_scan_finished();
+#endif
   void BSlot_tsk_progress(const stParam_tsk *tsk_param);
   void BSlot_UserSelect(const stParam_tsk *tsk_param);
   void BSlot_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
-#endif
+//#endif
   void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_clicked(const QModelIndex &index);
   void BSlot_over(const QModelIndex &index);

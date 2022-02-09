@@ -366,7 +366,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  /// -----------------------------------
  producteur = new BThread_1(t1data);
 
- #if C_PGM_THREADED
+// #if C_PGM_THREADED
  /// Recuperation des infos
  connect(producteur, &BThread_1::BSig_Step,
          this, &BcUpl::BSlot_tsk_progress,
@@ -381,7 +381,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
          this, &BcUpl::BSlot_UserSelect,
          Qt::BlockingQueuedConnection);
 
-
+#if C_PGM_THREADED
  /// Creation/Lancement
  /// Preparer la surveillance des calculs
  QFutureWatcher<void> *watcher = new QFutureWatcher<void>();
@@ -394,7 +394,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  /// -----------------------------------
 #else
  producteur->start(eStep_T1);
- producteur->start(eStep_T2);
+ //producteur->start(eStep_T2);
 #endif
 
  stParam_tsk *tsk_param = new stParam_tsk;
@@ -802,6 +802,7 @@ void BcUpl::BSlot_UplScan()
  /// -----------------------------------
 #else
  producteur->start(eStep_T3);
+ isScanRuning = false;
 #endif
 
 #if 0
@@ -2349,7 +2350,7 @@ void BcUpl::BSlot_scan_finished()
 {
  isScanRuning = false;
 }
-
+#endif
 void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
 {
  BView *qtv_tmp = nullptr;
@@ -2478,7 +2479,7 @@ void BcUpl::T1_setTitle(BView *qtv_tmp, const stTskProgress *step)
  qtv_tmp->setTitle(st_title);
 
 }
-#endif
+//#endif
 
 void BcUpl::FillTbv_StartPoint(stParam_tsk *tsk_param)
 {
