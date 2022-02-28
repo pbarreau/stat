@@ -1,6 +1,6 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
-//#include "BTest.h"
+#include "BTest.h"
 #endif
 
 #include <QtConcurrent>
@@ -47,6 +47,8 @@ void BThread_1::creationTables(etStep eStep)
  int nbTirJour = -1;
  int zn_stop = -1;
 
+ QString lst_boules = "";
+
 
  if(e_id == eEnsFdj){
   zn_start = 0;
@@ -57,6 +59,18 @@ void BThread_1::creationTables(etStep eStep)
   zn_start = tsk_1->z_id;
   zn_stop = zn_start +1;
   nbTirJour = 1;
+  if(tsk_1->my_indexes->size() != 0){
+   /// Construire l'uplet du jeu
+   QStringList my_list;
+   QModelIndex un_index;
+
+   foreach (un_index, *(tsk_1->my_indexes)) {
+    int val = un_index.data().toInt();
+    my_list << QString::number(val).rightJustified(2,'0');
+   }
+   std::sort(my_list.begin(), my_list.end());
+   lst_boules = my_list.join(',');
+  }
  }
 
  int obj_upl = tsk_1->obj_upl;
@@ -71,6 +85,16 @@ void BThread_1::creationTables(etStep eStep)
  tsk_param->p_gm = tsk_1->pGame;
  tsk_param->tsk_step = tsk_step;
 
+ etTir upl_type = eTirEol;
+ if(tsk_1->my_indexes->size() == 0){
+  upl_type = eTirUplFdj;
+ }
+ else{
+  upl_type = eTirUplUsr;
+ }
+
+
+
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
   tsk_param->l_id = l_id;
   tsk_step->l_id = l_id;
@@ -78,6 +102,13 @@ void BThread_1::creationTables(etStep eStep)
   for (int z_id = zn_start; z_id< zn_stop; z_id++) {
    tsk_param->z_id = z_id;
    tsk_step->z_id = z_id;
+
+   if(tsk_1->my_indexes->size() == 0){
+    lst_boules = getCommaSeparatedTirage(tsk_1->pGame,z_id,l_id);
+   }
+
+   int ret_key = -2;
+   b_retVal =  isSelectedKnown(upl_type, lst_boules, z_id, &ret_key);
 
    int max_win = tsk_1->pGame->limites[z_id].win;
    int nb_recherche = BMIN_2(max_win, C_MAX_UPL);
@@ -139,6 +170,7 @@ void BThread_1::creationTables(etStep eStep)
   }
  }
 
+ /// indiquer heure de fin
  delete tsk_step;
  delete tsk_param;
 
@@ -347,6 +379,87 @@ void BThread_1::sql_upl_lev_2(const stGameConf *pGame, int z_id, int l_id, int o
  }
 }
 
+bool BThread_1::isSelectedKnown(etTir uplType, QString cur_sel, int zn, int *key)
+{
+ bool ret_val = false;
+ QSqlQuery query(db_tsk1);
+ QString sql_msg = "";
+
+ *key = -1;
+
+ if ((uplType < eTirUplFdj)
+     || (uplType > eTirUplUsr)
+     || (cur_sel.simplified().size() == 0)){
+  return false;
+ }
+
+ QStringList tmp = cur_sel.split(',');
+
+ /// Rechercher cette clef
+ sql_msg = "select * from F_lst where((lst='"+cur_sel+"') and (type='"+
+           lstTirDef[uplType]+"') and (zn = "+QString::number(zn+1)+"))";
+
+ if((ret_val=query.exec(sql_msg)) == true){
+  if((ret_val=query.first()) == true){
+   *key = query.value("id").toInt();
+  }
+  else{
+   // Rajouter cette liste a la table
+   sql_msg = "insert into F_lst values(NULL,'"
+             + lstTirDef[uplType] + "',"
+             + QString::number(zn+1)
+             + ",'gameId','"+cur_sel+"',"+ QString::number(tmp.size())+
+             ",NULL, NULL)";
+   ret_val=query.exec(sql_msg);
+  }
+ }
+
+ return ret_val;
+}
+
+QString BThread_1::getCommaSeparatedTirage(const stGameConf *pGame, int zn, int tir_id)
+{
+ QString ret_val = "";
+ QSqlQuery query_1(db_tsk1);
+ bool status = false;
+ QString st_cols = BCount::FN1_getFieldsFromZone(pGame,zn,"t1");
+
+ QString sql_msg = "";
+ QString usr_zn = "z"+QString::number(zn+1);
+
+ sql_msg = sql_msg + "with \n";
+ sql_msg = sql_msg + " -- Selection des boules composant le tirages\n";
+ sql_msg = sql_msg + "tb0 as\n";
+ sql_msg = sql_msg + "(select printf(\"%02d\",t2."+usr_zn+") as b from (B_elm)as t2, (B_fdj) as t1 \n";
+ sql_msg = sql_msg + "where (\n";
+ sql_msg = sql_msg + "(t1.id = "+QString::number(tir_id)+")\n";
+ sql_msg = sql_msg + "AND\n";
+ sql_msg = sql_msg + "(t2."+usr_zn+" in("+st_cols+"))\n";
+ sql_msg = sql_msg + ")\n";
+ sql_msg = sql_msg + "order by t2."+usr_zn+" ASC\n";
+ sql_msg = sql_msg + ")\n";
+ sql_msg = sql_msg + ", \n";
+ sql_msg = sql_msg + "tb1 as(\n";
+ sql_msg = sql_msg + "select group_concat(b) as key from tb0\n";
+ sql_msg = sql_msg + ")\n";
+ sql_msg = sql_msg + "select t1.* from (tb1) as t1\n";
+
+#ifndef QT_NO_DEBUG
+ static int counter = 0;
+ QString target = "A_"+ QString::number(counter).rightJustified(2,'0')
+                  +"_dbg_LstFdj.txt";
+ BTest::writetoFile(target,sql_msg,false);
+ counter++;
+#endif
+
+ if((status = query_1.exec(sql_msg)) == true){
+  if((status = query_1.first()) == true){
+   ret_val = query_1.value("key").toString();
+  }
+ }
+
+ return ret_val;
+}
 
 QString BThread_1::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_step, int tir_id,QString tabInOut[][3])
 {
@@ -1108,6 +1221,11 @@ void BThread_1::setUserSelection(QString sel)
  cur_sel = sel;
 }
 
+void BThread_1::setBview_1(BView ****tbv)
+{
+ uplThread_Bview_1 = tbv;
+}
+
 bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
 {
  bool ret_val =false;
@@ -1152,6 +1270,7 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
  int g_id = tsk_param->g_id;
  int g_lm = tsk_param->g_lm;
  eUpl_Ens e_id = tsk_param->e_id;
+ BAnimateCell *ani = nullptr;
 
  QString t_on = tsk_param->t_on;
  stTskProgress *cur_status = tsk_param->tsk_step;
@@ -1160,53 +1279,83 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
 
 
  if(tsk_param->tsk_step->e_id == eStep_T3){
+#if C_PGM_THREADED
   emit BSig_UserSelect(tsk_param);
   if(cur_sel == ""){
    return tsk_param;
   }
 
   sql_msg = sql_msg + " where( uid in("+cur_sel+"))";
+#else
+  QString tbl_upl = C_TBL_UPL;
+  sql_msg = "select * from " + tbl_upl
+            + " where( state =  "
+            +QString::number(eCalPending)
+            +")";
+#if 0
+  BView *qtv_tmp = nullptr;
+  int l_id = tsk_param->l_id;
+
+  if(((l_id - 1)>= 0) && ((g_id - C_MIN_UPL)>=0) && (z_id >=0 )){
+   qtv_tmp = uplThread_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL];
+   ani = qobject_cast<BAnimateCell *>(qtv_tmp->itemDelegate());
+   QString selected = ani->itemsSelected();
+   this->setUserSelection(selected);
+  }
+#endif
+#endif
  }
 
  bool status = false;
 
  if((status = query.exec(sql_msg))){
+  QString upl_cur = "";
   if(query.first()){
    do{
 
-    /// Recuperer la clef de l'uplet
-    g_lm = query.value(0).toInt();
+    if(tsk_param->tsk_step->e_id != eStep_T3){
+     /// Recuperer la clef de l'uplet
+     g_lm = query.value(0).toInt();
 
-    /// Determiner la valeur de l'uplet
-    QStringList my_list;
-    for(int i = 1; i<=g_id;i++){
-     int val = query.value(i).toInt();
-     my_list << QString::number(val).rightJustified(2,'0');
+     /// Determiner la valeur de l'uplet
+     QStringList my_list;
+     for(int i = 1; i<=g_id;i++){
+      int val = query.value(i).toInt();
+      my_list << QString::number(val).rightJustified(2,'0');
+     }
+     std::sort(my_list.begin(), my_list.end());
+     upl_cur = my_list.join(',');
     }
-    std::sort(my_list.begin(), my_list.end());
-    QString upl_cur = my_list.join(',');
+    else{
+     upl_cur = query.value("items").toString();
+    }
+     /// On a un uplet, Voir si il est deja connu
+     stUpdData glm_in = {e_id, eCalNotDef, -1, -1, false};
+     QString tbl_radical = getTablePrefixFromSelection_tsk(upl_cur, z_id, &glm_in);
+     t_on = tbl_radical;
 
-    /// On a un uplet, Voir si il est deja connu
-    stUpdData glm_in = {e_id, eCalNotDef, -1, -1, false};
-    QString tbl_radical = getTablePrefixFromSelection_tsk(upl_cur, z_id, &glm_in);
-    t_on = tbl_radical;
+     tsk_param->t_on = t_on;
+     tsk_param->g_lm = g_lm;
+     tsk_param->glm_in = glm_in;
 
-    tsk_param->t_on = t_on;
-    tsk_param->g_lm = g_lm;
-    tsk_param->glm_in = glm_in;
+     /// -------------------------------
+     /// glm_in.id_db peut etre != g_lm
+     /// -------------------------------
 
-    /// -------------------------------
-    /// glm_in.id_db peut etre != g_lm
-    /// -------------------------------
-
-    tsk_param->tsk_step->g_lm = g_lm;
-    tsk_param->tsk_step->g_cl = glm_in.id_cal;
+     tsk_param->tsk_step->g_lm = g_lm;
+     tsk_param->tsk_step->g_cl = glm_in.id_cal;
 
     /// si le calcul est deja fait on continu
     if(tsk_param->glm_in.id_cal == eCalReady){
 
      /// signaler l'info pour animer le tableau
+#if C_PGM_THREADED
      emit BSig_Step(tsk_param);
+#else
+     if(ani !=nullptr){
+      emit BSig_Animate(tsk_param, ani);
+     }
+#endif
 
      /// Passer a element suivant;
      continue;

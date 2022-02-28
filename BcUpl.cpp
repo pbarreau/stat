@@ -118,19 +118,40 @@ BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectio
   return;
  }
 
- /// creer la table des uplets
  QSqlQuery query(db_0);
- QString tbl_upl = C_TBL_UPL;
- QString sql_msg = "create table if not exists "+tbl_upl+
-                   " (id integer primary key, state int, zn int, items text not null);";
- if(!query.exec(sql_msg)){
+ QString sql_msg = "";
+ bool status = false;
+
+ /// Tableau Memoriser liste boules
+ sql_msg = "CREATE TABLE if not EXISTS F_lst"
+           "(id integer PRIMARY key, type text, zn int,"
+           " name text, lst TEXT, nb int,"
+           " t1  text, t2  text)";
+ if((status = query.exec(sql_msg)) == true){
+  /// Creer table des timings
+  sql_msg = "CREATE TABLE if not EXISTS F_timings"
+            "(id integer PRIMARY key, upl text, step text, t1  text, t2  text)";
+
+  if((status = query.exec(sql_msg)) == true){
+   /// creer la table des uplets
+   QString tbl_upl = C_TBL_UPL;
+   sql_msg = "create table if not exists "
+             + tbl_upl
+             + " (id integer primary key, state int,"
+               "zn int, items text not null)";
+   status = query.exec(sql_msg);
+  }
+ }
+
+ if(status == false){
   QString str_error = db_0.lastError().text();
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
  }
 
+ /// int key_select;
+ /// status = isSelectedKnown(cur_sel, zn, &key_select);
 
- ///
  e_id=eUpl;//eEnsFdj;
  int nb_ana = 0; /// Tirages number
 
@@ -169,6 +190,53 @@ QTabWidget * BcUpl::getTabUplRsp(void)
  return uplTirTab;
 }
 #endif
+
+bool BcUpl::isSelectedKnown(const QItemSelectionModel *cur_sel, int zn, int *key)
+{
+ bool ret_val = false;
+ QSqlQuery query(db_0);
+ QString sql_msg = "";
+
+ *key = -1;
+
+ if (cur_sel == nullptr){
+  return false;
+ }
+
+
+ /// memoriser selection
+ /// Construire l'uplet du jeu
+ QStringList my_list;
+ QModelIndex un_index;
+
+ foreach (un_index, cur_sel->selectedIndexes()) {
+  int val = un_index.data().toInt();
+  my_list << QString::number(val).rightJustified(2,'0');
+ }
+ std::sort(my_list.begin(), my_list.end());
+ QString upl_cur = my_list.join(',');
+
+ /// Rechercher cette clef
+ sql_msg = "select * from F_lst where((lst='"+upl_cur+"') and (type='"+
+           lstTirDef[eTirUplUsr]+"'))";
+ if((ret_val=query.exec(sql_msg)) == true){
+  if((ret_val=query.first()) == true){
+   *key = query.value("id").toInt();
+  }
+ }
+ else{
+  // Rajouter cette table a la liste
+  sql_msg = "insert into F_lst values(NULL,'"
+            + lstTirDef[eTirUplUsr] + "',"
+            + QString::number(zn)
+            + ",gameId,'"+upl_cur+"',"+ QString::number(upl_cur.size())+
+            ",NULL, NULL)";
+  ret_val=query.exec(sql_msg);
+  ret_val = false;
+ }
+
+ return ret_val;
+}
 
 QString BcUpl::getTablePrefixFromSelection_upl(QString items, int zn, stUpdData *upl_data)
 {
@@ -362,11 +430,19 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  t1data->z_id = upl_zn;
  t1data->obj_upl = obj_upl;
 
+ etTir upl_type = eTirEol;
+ if(my_indexes.size() == 0){
+  upl_type = eTirUplFdj;
+ }
+ else{
+  upl_type = eTirUplUsr;
+ }
+
  /// creation et lancement du producteur
  /// -----------------------------------
  producteur = new BThread_1(t1data);
 
-// #if C_PGM_THREADED
+#if C_PGM_THREADED
  /// Recuperation des infos
  connect(producteur, &BThread_1::BSig_Step,
          this, &BcUpl::BSlot_tsk_progress,
@@ -381,7 +457,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
          this, &BcUpl::BSlot_UserSelect,
          Qt::BlockingQueuedConnection);
 
-#if C_PGM_THREADED
+ //#if C_PGM_THREADED
  /// Creation/Lancement
  /// Preparer la surveillance des calculs
  QFutureWatcher<void> *watcher = new QFutureWatcher<void>();
@@ -393,8 +469,48 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  watcher->setFuture(f_task);
  /// -----------------------------------
 #else
- producteur->start(eStep_T1);
- //producteur->start(eStep_T2);
+ /// Recuperation des infos
+ connect(producteur, &BThread_1::BSig_Step,
+         this, &BcUpl::BSlot_tsk_progress);
+
+ /// Traitements
+ connect(producteur, &BThread_1::BSig_Animate,
+         this, &BcUpl::BSlot_Animate);
+
+ /// Demande info sur selection utilisateur par thread_1
+ /* connect(producteur, &BThread_1::BSig_UserSelect,
+         this, &BcUpl::BSlot_UserSelect,
+         Qt::BlockingQueuedConnection);
+ */
+ producteur->setBview_1(upl_Bview_1);
+
+ /// Temps de calcul
+ QTime r;
+ QTime t;
+ QString t_human = "";
+ QString gme_tbl = "";
+
+ /// indiquer heure de depart
+ r.setHMS(0,0,0,0);
+ t.start();
+
+ etStep eStep =  eStep_T1;
+ saveTimeInTable(Bp::clkStart, upl_type, eStep,t_human);
+ producteur->start(eStep);
+ r = r.addMSecs(t.elapsed());
+ t_human = r.toString("hh:mm:ss:zzz");
+ saveTimeInTable(Bp::clkStop, upl_type, eStep,t_human);
+
+#if 1
+ r.setHMS(0,0,0,0);
+ t.restart();
+ eStep =  eStep_T2;
+ saveTimeInTable(Bp::clkStart, upl_type, eStep,t_human);
+ producteur->start(eStep);
+ r = r.addMSecs(t.elapsed());
+ t_human = r.toString("hh:mm:ss:zzz");
+ saveTimeInTable(Bp::clkStop, upl_type, eStep,t_human);
+#endif
 #endif
 
  stParam_tsk *tsk_param = new stParam_tsk;
@@ -477,6 +593,31 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  delete tsk_param;
 
  return tab_tirId;
+}
+
+void BcUpl::saveTimeInTable(Bp::E_Clk ref, etTir upl_type, int eStep, QString humanTime)
+{
+ QSqlQuery query(db_0);
+ bool b_retVal = true;
+ QString msg = "";
+
+ if(ref==Bp::clkStart){
+  msg = "insert into F_timings values(NULL,'"
+        +lstTirDef[upl_type]+"','"
+        + QString::number(eStep)+"',NULL,NULL)";
+ }
+ else {
+  msg = "select * from F_timings ORDER BY id DESC LIMIT 1";
+  if((b_retVal = query.exec(msg))== true){
+   if(query.first()){
+    int last = query.value(0).toInt();
+    msg = "update F_timings set t2 = '" + humanTime
+          + "' where (id = " + QString::number(last) +")";
+   }
+  }
+ }
+
+ b_retVal = query.exec(msg);
 }
 
 #if 0
@@ -801,7 +942,24 @@ void BcUpl::BSlot_UplScan()
  watcher->setFuture(f_task);
  /// -----------------------------------
 #else
- producteur->start(eStep_T3);
+ /// Temps de calcul
+ QTime r;
+ QTime t;
+ QString t_human = "";
+ QString gme_tbl = "";
+
+ /// indiquer heure de depart
+ r.setHMS(0,0,0,0);
+ t.start();
+ etTir upl_type = eTirUplUsr;
+ etStep eStep =  eStep_T3;
+ saveTimeInTable(Bp::clkStart, upl_type, eStep,t_human);
+ producteur->start(eStep);
+ r = r.addMSecs(t.elapsed());
+ t_human = r.toString("hh:mm:ss:zzz");
+ saveTimeInTable(Bp::clkStop, upl_type, eStep,t_human);
+
+ /// Mettre a jour Visu calcul
  isScanRuning = false;
 #endif
 
@@ -2339,7 +2497,7 @@ void BcUpl::BSlot_tsk_started(){
 
 
 void BcUpl::BSlot_tsk_finished(){
-int tmp_test;
+ int tmp_test;
 #if 0
  /// Montrer les resultats
  FillTbv_StartPoint(tsk_param);
@@ -2367,6 +2525,9 @@ void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
  int c_id = step->c_id;
  etStep e_id = step->e_id;
  QString tbl = step->t_on;
+
+ /// debug visu step
+ if(e_id != eStep_T3) return;
 
  if (tbl.trimmed().size()){
   sql_msg = "select * from " + tbl;
@@ -2703,7 +2864,7 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
  /// Prendre seulement ceux pas encore traite
  /// ???
 
- /// si pas tous fait alors regarder pour anlyse
+ /// si pas tous fait alors regarder pour analyse
  if(nb_items != tot_val){
   sql_msg = "select * from " + t_use;
 

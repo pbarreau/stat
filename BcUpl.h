@@ -176,10 +176,11 @@ class BcUpl: public BCount
 
 
  private:
+  bool isSelectedKnown(const QItemSelectionModel *cur_sel, int zn, int *key);
   QString getTablePrefixFromSelection_upl(QString items, int zn=0, stUpdData *upl_data=nullptr);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
-
   QString sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
+  void saveTimeInTable(Bp::E_Clk ref, etTir upl_type, int eStep, QString humanTime);
 
  private:
   virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);

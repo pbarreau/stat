@@ -49,6 +49,7 @@ class BThread_1: public QWidget //: public QThread
   void start();
   void start(etStep eStep = eStep_T1);
   void setUserSelection(QString sel);
+  void setBview_1(BView **** tbv);
 
 
  private:
@@ -68,6 +69,8 @@ class BThread_1: public QWidget //: public QThread
 
 
  private:
+  bool isSelectedKnown(etTir uplType, QString cur_sel, int zn, int *key);
+  QString getCommaSeparatedTirage(const stGameConf *pGame, int zn, int tir_id);
   QString getSqlTbv(const stGameConf *pGame, int zn, int tir_Id, int day_Delta, int upl_Grp, int r_id=-1, eUpl_Lst target=ELstCal, int sel_item=-1);
   QString sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_step, int tir_id,QString tabInOut[][3]);
   QString sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
@@ -91,6 +94,7 @@ class BThread_1: public QWidget //: public QThread
   QString cnx;  // nom de la connection a la bdd
   QSqlDatabase db_tsk1;
   QString cur_sel;
+  BView ****uplThread_Bview_1;
 };
 
 #endif // BTHREAD_1_H
