@@ -501,7 +501,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  t_human = r.toString("hh:mm:ss:zzz");
  saveTimeInTable(Bp::clkStop, upl_type, eStep,t_human);
 
-#if 1
+#if 0
  r.setHMS(0,0,0,0);
  t.restart();
  eStep =  eStep_T2;
@@ -911,13 +911,33 @@ void BcUpl::BSlot_UplSel(const QModelIndex &index)
  BAnimateCell * ani_tab = tbv_Anim[l_id-1][z_id][g_id - C_MIN_UPL];
 
 
- eUpl_Cal new_val = eCalNotDef;
- if((new_val = ani_tbv->setUserSelect(g_lm)) != eCalNotDef){
+ eUpl_Cal new_val = ani_tbv->setUserSelect(g_lm);
+ if(new_val <= eCalStarted){
   /// On a un uplet, obtenir le radical de table
   stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
   QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur,z_id, &d_info);
 
   bool status = false;
+
+#if 0
+  if(new_val == eCalPending){
+   ani_tbv->addKey(g_lm);
+  }
+
+  if(new_val == eCalNotSet){
+   ani_tbv->delKey(g_lm);
+  }
+#endif
+#if 0
+  if(new_val == eCalNotSet){
+   new_val = eCalPending;
+   ani_tbv->addKey(g_lm);
+  }
+  else if (new_val == eCalPending){
+   new_val = eCalNotSet;
+   ani_tbv->delKey(g_lm);
+  }
+#endif
   status = updateTracking_upl(d_info.id_db, new_val);
  }
 }
@@ -2553,10 +2573,6 @@ void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
    break;
  }
 
- if(e_id != eStep_T1){
-  int a = 0;
-  a++;
- }
 
 #if 0
  if(((l_id - 1)>= 0) && ((g_id - C_MIN_UPL)>=0) && (z_id >=0 )){
@@ -2839,6 +2855,7 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
  QString cnx_1=pGame->db_ref->cnx;
  QSqlDatabase db = QSqlDatabase::database(cnx_1);
  QSqlQuery query(db);
+ bool status = false;
 
  int z_id = tsk_param->z_id;
  int g_id = tsk_param->g_id;
@@ -2848,8 +2865,92 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
  QString t_use = t_rf + "_C" +
                  QString::number(g_id).rightJustified(2,'0');
 
+#if 0
+ QString key_1 = "%02d";
+ QString key_2 = "b";
+ QString msg_1 = "";
+ QString msg_2 = "printf(\"%1\",%2)";
+ for(int i=1;i<=g_id;i++){
+  msg_1 = key_2 + QString::number(i);
+  if(i< (g_id - 1)){
+   msg_1 = msg_1 +",";
+   key_1 = key_1 +",";
+  }
+ }
+ QString msg_sel = "printf(\""+key_1+"\", "+msg_1+")";
+
+ QString sql_msg = "";
+
+ sql_msg = sql_msg + "WITH \n\n";
+ sql_msg = sql_msg + " -- Creation liste des uplets \n";
+ sql_msg = sql_msg + "tb0 as (\n";
+ sql_msg = sql_msg + "select " + msg_sel + " as cpl from " + t_use + "\n";
+ sql_msg = sql_msg + ")\n";
+ sql_msg = sql_msg + ",\n";
+ sql_msg = sql_msg + "tb1 as (\n";
+ sql_msg = sql_msg + "select t2.* from (Upl_lst) as t2\n";
+ sql_msg = sql_msg + "where(\n";
+ sql_msg = sql_msg + "items in(select * from tb0) \n";
+ sql_msg = sql_msg + "AND (zn = "+QString::number(z_id)+")\n";
+ sql_msg = sql_msg + "))\n";
+ sql_msg = sql_msg + ",\n";
+ sql_msg = sql_msg + "tb2 as (\n";
+ sql_msg = sql_msg + "select count (*) as T from tb1\n";
+ sql_msg = sql_msg + ")\n";
+ sql_msg = sql_msg + "\n";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << "SQL msg:\n"<<sql_msg<<"\n-------";
+#endif
+
+ QString sql_itm = "";
+
+ sql_itm = sql_msg + "select * from tb0\n";
+
+ if((status = query.exec(sql_itm))){
+  if((status = query.first())){
+   do{
+    QString upl_cur = query.value(0).toString();
+    stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
+    QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur, z_id, &d_info);
+   }while(query.next());
+  }
+ }
+
+
+ sql_itm = sql_msg + "select * from tb1\n";
+
+ if((status = query.exec(sql_itm))){
+  if((status = query.first())){
+   int c_st =-2;
+   int g_lm = -2;
+   do{
+    g_lm = query.value(0).toInt();
+    c_st = query.value(1).toInt();
+
+    switch (c_st) {
+     case eCalNotSet:
+      a_tbv->delKey(g_lm);
+      break;
+     case eCalPending:
+      a_tbv->addKey(g_lm);
+      break;
+     case eCalStarted:
+      a_tbv->startKey(g_lm);
+      break;
+     case eCalReady:
+      a_tbv->setCalReady(g_lm);
+      break;
+     default:
+      a_tbv->delKey(g_lm);
+      break;
+    }
+
+   }while(query.next());
+  }
+ }
+#else
  QString sql_msg = "select count (*) as T from " + t_use;
- bool status = false;
 
  int tot_val = 0;
  if((status = query.exec(sql_msg))){
@@ -2889,9 +2990,12 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
 
      /// regarder si cette clef est deja connue
      int key = d_info.id_db;
+
+#if 0
      if (a_tbv->gotKeyReady(g_lm)){
       continue;
      }
+#endif
 
      switch (d_info.id_cal) {
       case eCalNotSet:
@@ -2915,6 +3019,7 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
    }
   }
  }
+#endif
 }
 
 

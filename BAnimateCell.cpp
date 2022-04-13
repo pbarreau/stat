@@ -177,10 +177,6 @@ eUpl_Cal BAnimateCell::setUserSelect(int key)
   item = it.value();
 
   st_cellData conf = item.value<st_cellData>();
-  //conf.upl_txt = upl_txt;
-
-  //item.value<st_cellData>().upl_txt = upl_txt;
-
   mapUserSelect.insert(key, item);
  }
 
