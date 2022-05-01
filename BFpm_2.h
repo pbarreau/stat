@@ -3,13 +3,15 @@
 
 #include <QSortFilterProxyModel>
 #include <QLabel>
+#include <QRegExp>
+#include <QMap>
 
 class BFpm_2 : public QSortFilterProxyModel
 {
     Q_OBJECT
 
 public:
-    explicit BFpm_2(QLabel *pText, int value, QObject *parent = 0);
+    explicit BFpm_2(QLabel *pText, int value, QObject *parent = nullptr);
     void setFilterKeyColumns(const QList<qint32> &filterColumns);
     void addFilterRegExp(const QRegExp &pattern);
     int getFilterNbRow(void);

@@ -75,6 +75,12 @@ void MainWindow::pslot_GetFromFdj()
   rep_fdj.mkdir(FdjDbZip);
  }
 
+#ifndef QT_NO_DEBUG
+ qDebug()
+     << QSslSocket::supportsSsl() // doit retourner true
+     << QSslSocket::sslLibraryBuildVersionString() // la version utilise pour compiler Qt
+     << QSslSocket::sslLibraryVersionString(); // la version disponible
+#endif
 
 #if 0
  QString urlLoto []= {

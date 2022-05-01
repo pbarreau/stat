@@ -23,7 +23,18 @@ TEMPLATE = app
 #DEPENDPATH += "C:/Devel/kdchart-2.5.1-source/include"
 # -lsqlite -lStatPgm-dl
 
-LIBS = -L.\sqlExtensions\lib  -lStatPgm-sqlite3-i686 ##-lStatPgm-sqlite
+# https://forum.qt.io/topic/85810/pro-file-win32-and-unix-conditionals/2
+# https://stackoverflow.com/questions/26373143/qt-project-files-win32-or-win-64
+
+win32:contains(QMAKE_HOST.arch, x86_64) {
+  ### LIBS += -L$$PWD/Path/To/Library_64Bit/ -lTheLibrary
+  LIBS = -L.\sqlExtensions\lib  -lStatPgm-sqlite3-x86_64
+} else {
+  ### LIBS += -L$$PWD/Path/To/Library_32Bit/ -lTheLibrary
+  LIBS = -L.\sqlExtensions\lib  -lStatPgm-sqlite3-i686
+}
+##LIBS = -L.\sqlExtensions\lib  -lStatPgm-sqlite3-i686 ##-lStatPgm-sqlite
+##LIBS = -L.\sqlExtensions\lib  -lStatPgm-sqlite3-x86_64 ##-lStatPgm-sqlite
 message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
 
 

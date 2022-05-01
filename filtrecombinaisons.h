@@ -8,6 +8,7 @@
 #include <QTableView>
 #include <QLineEdit>
 #include <QLabel>
+#include <QRegExp>
 
 #include "BFpm_2.h"
 
@@ -19,7 +20,7 @@ class FiltreCombinaisons : public QLineEdit
     Q_OBJECT
 
 public:
-    explicit FiltreCombinaisons(int value, QWidget *parent = 0);
+    explicit FiltreCombinaisons(int value, QWidget *parent = nullptr);
     void setFiltreConfig(QAbstractItemModel *model, QAbstractItemView *view, const QList<qint32> &filterColumns);
     int getRowAffected(void);
     QLabel *getLabel(void);
@@ -28,7 +29,7 @@ public:
 public slots:
     void slot_TraiterFiltre();
     void slot_setFKC(int colId, int nbCol);
-;
+
 
 private:
     QRegExp::PatternSyntax syntax;
