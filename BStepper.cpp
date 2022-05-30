@@ -241,6 +241,19 @@ void BStepper::BSlot_ShowBall(const QModelIndex &index)
 
 }
 
+void BStepper::BSlot_MarkBall(const QModelIndex &index)
+{
+    int val=-1;
+
+    if(index.data().canConvert(QMetaType::Int)){
+        val=index.data().toInt();
+        emit BSig_MarkBall(ptrTbvR, val);
+    }
+    else{
+        val=-2;
+    }
+}
+
 QWidget *BStepper::Ihm_right(const stGameConf *pGame, int zn,stTabSteps defSteps)
 {
  QList <QStringList *>  *cur_lst(tir_id.at(0));
@@ -270,9 +283,19 @@ QWidget *BStepper::Ihm_right(const stGameConf *pGame, int zn,stTabSteps defSteps
  }
 
  qtv_tmp->setModel(visu);
+
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+
  BStepPaint *delegate = new BStepPaint(pGame, zn, Bp::TbvRight, nxtTirVal, curTirVal, prvTirVal);
  qtv_tmp->setItemDelegate(delegate);
  connect(this,SIGNAL(BSig_FindBall(BView *,int)),delegate,SLOT(BSlot_FindBall(BView *, int)));
+
+ connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
+          this, SLOT( BSlot_MarkBall( QModelIndex) ) );
+ connect(this,SIGNAL(BSig_MarkBall(BView *,int)),delegate,SLOT(BSlot_MarkBall(BView *, int)));
+
 
  /// Titre/taille des colonnes
  for(int col=0;col<visu->columnCount();col++){

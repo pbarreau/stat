@@ -211,6 +211,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
   lstComptage.append(item_1);
  }
 
+#if 0
  if((pGame->db_ref->dad.size() == 0) && (pGame->eTirType == eTirFdj)){
   BcUpl * tmp = new BcUpl (pGame);
   lstComptage.append(tmp);
@@ -221,6 +222,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
            tmp,SLOT(BSlot_MkUsrUpletsShow(const QItemSelectionModel *, const int)));
   }
  }
+#endif
 
  BcCmb * item_2 = new BcCmb(pGame);
  if(item_2->mySefl() == nullptr){

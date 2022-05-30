@@ -28,8 +28,10 @@ class BStepPaint : public QStyledItemDelegate
 
  public slots:
   void BSlot_FindBall(BView *tbvTarget, int id);
+  void BSlot_MarkBall(BView *tbvTarget, int id);
 
  private:
+  QStringList MarkedBalls;
   const stGameConf *pGDef;
   int zn;
   int lenTab;

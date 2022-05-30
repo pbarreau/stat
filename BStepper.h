@@ -100,10 +100,12 @@ class BStepper : public QWidget
   void BSlot_ActionButton(int btn_id);
   void BSlotTirId(void);
   void BSlot_ShowBall(const QModelIndex &index);
+  void BSlot_MarkBall(const QModelIndex &index);
 
  public:
  Q_SIGNALS:
   void BSig_FindBall(BView *tbvTarget, int id);
+  void BSig_MarkBall(BView *tbvTarget, int id);
 
  private:
   QSqlDatabase db_tirages;

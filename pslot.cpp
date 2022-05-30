@@ -76,6 +76,7 @@ void MainWindow::pslot_GetFromFdj()
  }
 
 #ifndef QT_NO_DEBUG
+ // https://www.programmersought.com/article/71774817627/
  qDebug()
      << QSslSocket::supportsSsl() // doit retourner true
      << QSslSocket::sslLibraryBuildVersionString() // la version utilise pour compiler Qt
