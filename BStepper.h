@@ -112,6 +112,7 @@ class BStepper : public QWidget
   const stGameConf *pGDef;
   bool *isKnown;
   int ballCounter;
+  int maxAllowedList;
   int *nxtTirVal;
   int *curTirVal;
   int *prvTirVal;

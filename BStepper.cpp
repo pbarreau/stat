@@ -43,9 +43,17 @@ BStepper::BStepper(const stGameConf *pGame, int zn, BTirages *lst_tirages):
  }
 
 
+ maxAllowedList = -1;
+
  /// Initialisation connaissance des boules
-  int ballMax = pGame->limites[zn].max;
+ int ballMax = pGame->limites[zn].max;
  int ballVal = pGame->limites[zn].len;
+
+ int nb_zn = pGame->znCount;
+ for(int i=0; i<nb_zn;i++){
+     int cur_len = pGame->limites[i].len;
+     maxAllowedList = BMAX_2(maxAllowedList,cur_len);
+ }
 
  ballCounter = 0;
  nxtTirVal = new int[ballVal];
@@ -306,7 +314,7 @@ QWidget *BStepper::Ihm_right(const stGameConf *pGame, int zn,stTabSteps defSteps
  return (qtv_tmp->getScreen());
 }
 
-stTabSteps BStepper::Kernel(const stGameConf *pGame, int zn, int id_tir)
+stTabSteps BStepper::Kernel(const stGameConf *pGame, int zn, int start_id_tir)
 {
  stTabSteps dataBack;
 
@@ -315,7 +323,7 @@ stTabSteps BStepper::Kernel(const stGameConf *pGame, int zn, int id_tir)
  QString tbl_tirages = pGame->db_ref->src;
  QString st_cols = BCount::FN1_getFieldsFromZone(pGame, zn, "t1");
 
- int cur_tir = id_tir;
+ int cur_tir = start_id_tir;
  bool b_retVal = true;
 
  int hCur = pGame->limites[zn].len;
@@ -327,7 +335,7 @@ stTabSteps BStepper::Kernel(const stGameConf *pGame, int zn, int id_tir)
                 + " from "
                 + tbl_tirages
                 + " as t1 where(t1.id = "+QString::number(cur_tir)+")";
-#ifndef QT_NO_DEBUG
+#if 0 //ifndef QT_NO_DEBUG
   qDebug() <<msg;
 #endif
 
@@ -405,7 +413,7 @@ void BStepper::TableauActualiser(int l_id, QSqlQuery query)
 
  int oneBall = 0;
  QString stBall = "";
- int zn=0;
+ int zn=that_zn;
  int ballLimits = pGDef->limites[zn].len;
  int ballMax = pGDef->limites[zn].max;
 
@@ -459,11 +467,18 @@ void BStepper::TableauActualiser(int l_id, QSqlQuery query)
       }
       else{
        /// Non
-       QStringList *d_new = new QStringList;
-       d_new->append(stBall);
+       ///  4 : A ton atteind le maximun de list autorisees
+       if(nb_lst < maxAllowedList){
+           QStringList *d_new = new QStringList;
+           d_new->append(stBall);
 
-       /// Rajouter cette liste a l'ensemble des listes
-       cur_lst->append(d_new);
+           /// Rajouter cette liste a l'ensemble des listes
+           cur_lst->append(d_new);
+       }
+       else{
+           /// non on boucle
+           cur_lst->at(0)->append(stBall);
+       }
       }
      }
 
