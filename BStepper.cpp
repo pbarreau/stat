@@ -43,9 +43,17 @@ BStepper::BStepper(const stGameConf *pGame, int zn, BTirages *lst_tirages):
  }
 
 
+ maxAllowedList = -1;
+
  /// Initialisation connaissance des boules
   int ballMax = pGame->limites[zn].max;
  int ballVal = pGame->limites[zn].len;
+
+ int nb_zn = pGame->znCount;
+ for(int i=0; i<nb_zn;i++){
+     int cur_len = pGame->limites[i].len;
+     maxAllowedList = BMAX_2(maxAllowedList,cur_len);
+ }
 
  ballCounter = 0;
  nxtTirVal = new int[ballVal];
@@ -241,6 +249,19 @@ void BStepper::BSlot_ShowBall(const QModelIndex &index)
 
 }
 
+void BStepper::BSlot_MarkBall(const QModelIndex &index)
+{
+    int val=-1;
+
+    if(index.data().canConvert(QMetaType::Int)){
+        val=index.data().toInt();
+        emit BSig_MarkBall(ptrTbvR, val);
+    }
+    else{
+        val=-2;
+    }
+}
+
 QWidget *BStepper::Ihm_right(const stGameConf *pGame, int zn,stTabSteps defSteps)
 {
  QList <QStringList *>  *cur_lst(tir_id.at(0));
@@ -270,9 +291,19 @@ QWidget *BStepper::Ihm_right(const stGameConf *pGame, int zn,stTabSteps defSteps
  }
 
  qtv_tmp->setModel(visu);
+
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+
  BStepPaint *delegate = new BStepPaint(pGame, zn, Bp::TbvRight, nxtTirVal, curTirVal, prvTirVal);
  qtv_tmp->setItemDelegate(delegate);
  connect(this,SIGNAL(BSig_FindBall(BView *,int)),delegate,SLOT(BSlot_FindBall(BView *, int)));
+
+ connect( qtv_tmp, SIGNAL(clicked (QModelIndex)) ,
+          this, SLOT( BSlot_MarkBall( QModelIndex) ) );
+ connect(this,SIGNAL(BSig_MarkBall(BView *,int)),delegate,SLOT(BSlot_MarkBall(BView *, int)));
+
 
  /// Titre/taille des colonnes
  for(int col=0;col<visu->columnCount();col++){
@@ -283,7 +314,7 @@ QWidget *BStepper::Ihm_right(const stGameConf *pGame, int zn,stTabSteps defSteps
  return (qtv_tmp->getScreen());
 }
 
-stTabSteps BStepper::Kernel(const stGameConf *pGame, int zn, int id_tir)
+stTabSteps BStepper::Kernel(const stGameConf *pGame, int zn, int start_id_tir)
 {
  stTabSteps dataBack;
 
@@ -292,7 +323,7 @@ stTabSteps BStepper::Kernel(const stGameConf *pGame, int zn, int id_tir)
  QString tbl_tirages = pGame->db_ref->src;
  QString st_cols = BCount::FN1_getFieldsFromZone(pGame, zn, "t1");
 
- int cur_tir = id_tir;
+ int cur_tir = start_id_tir;
  bool b_retVal = true;
 
  int hCur = pGame->limites[zn].len;
@@ -304,7 +335,7 @@ stTabSteps BStepper::Kernel(const stGameConf *pGame, int zn, int id_tir)
                 + " from "
                 + tbl_tirages
                 + " as t1 where(t1.id = "+QString::number(cur_tir)+")";
-#ifndef QT_NO_DEBUG
+#if 0 //ifndef QT_NO_DEBUG
   qDebug() <<msg;
 #endif
 
@@ -382,7 +413,7 @@ void BStepper::TableauActualiser(int l_id, QSqlQuery query)
 
  int oneBall = 0;
  QString stBall = "";
- int zn=0;
+ int zn=that_zn;
  int ballLimits = pGDef->limites[zn].len;
  int ballMax = pGDef->limites[zn].max;
 
@@ -436,11 +467,18 @@ void BStepper::TableauActualiser(int l_id, QSqlQuery query)
       }
       else{
        /// Non
+       ///  4 : A ton atteind le maximun de list autorisees
+       if(nb_lst < maxAllowedList){
        QStringList *d_new = new QStringList;
        d_new->append(stBall);
 
        /// Rajouter cette liste a l'ensemble des listes
        cur_lst->append(d_new);
+       }
+       else{
+           /// non on boucle
+           cur_lst->at(0)->append(stBall);
+       }
       }
      }
 

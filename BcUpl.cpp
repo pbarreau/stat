@@ -118,6 +118,7 @@ BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectio
   return;
  }
 
+ /// creer la table des uplets
  QSqlQuery query(db_0);
  QString sql_msg = "";
  bool status = false;

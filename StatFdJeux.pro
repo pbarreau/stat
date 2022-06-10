@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += xml widgets printsupport concurrent
 TARGET = StatFdJeux
 TEMPLATE = app
 
+CONFIG += openssl-linked
+CONFIG += openssl
 
 
 #include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )

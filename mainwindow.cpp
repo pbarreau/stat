@@ -184,7 +184,7 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
   tmp->db_ref->jrs = pGame->db_ref->jrs;
 
   do{
-   QString gameId = query.value(1).toString();
+   QString gameId = query.value("name").toString();
    tmp->db_ref->src = gameId;
    tmp->db_ref->flt = gameId+"_flt";
 
