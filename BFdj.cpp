@@ -203,8 +203,18 @@ bool BFdj::AuthoriseChargementExtension(void)
    //int ret = loadExt(handle,1);
 
    /// Lancer la requete
-   //QString msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-sqMath.dll')";
-   QString msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-extension-functions-i686.dll')";
+            QString msg = "";
+
+            // https://stackoverflow.com/questions/30139983/how-do-i-identify-x86-vs-x86-64-at-compile-time-in-gcc
+#if defined(__x86_64__)
+            /* 64 bit detected */
+            msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-extension-functions-x86_64.dll')";
+#endif
+#if defined(__i386__)
+            /* 32 bit x86 detected */
+            msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-extension-functions-i686.dll')";
+#endif
+
    b_retVal = query.exec(msg);
 #ifndef QT_NO_DEBUG
 	 if (query.lastError() .isValid())

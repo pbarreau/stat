@@ -5,9 +5,20 @@
 
 #include <QObject>
 #include <QSqlDatabase>
+#include <QMap>
 
 
 #include "BcUpl.h"
+
+typedef struct _stBViewPath{
+  QTabWidget *tab;
+  int pos;
+}stBViewPath;
+
+typedef struct _stUplBViewPos{
+    BView *view;
+    stBViewPath ong_data[3];
+}stUplBViewPos;
 
 typedef struct _tsk_1{
   const stGameConf *pGame;
@@ -15,6 +26,7 @@ typedef struct _tsk_1{
   eUpl_Ens e_id;
   int z_id;
   int obj_upl;
+  const QMap<QString, stUplBViewPos> *lst_view;
 }stTsk1;
 
 typedef enum _progress{
@@ -39,6 +51,7 @@ typedef struct _tskProgress
   int o_id;
   int r_id;
 }stTskProgress;
+
 
 class BThread_1: public QWidget //: public QThread
 {
@@ -95,6 +108,7 @@ class BThread_1: public QWidget //: public QThread
   QSqlDatabase db_tsk1;
   QString cur_sel;
   BView ****uplThread_Bview_1;
+  //QMap<QString, stUplBViewPos> *lst_view;
 };
 
 #endif // BTHREAD_1_H

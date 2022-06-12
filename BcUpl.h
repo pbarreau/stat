@@ -15,6 +15,7 @@
 
 #include <QTableView>
 #include <QDialog>
+#include <QMap>
 
 #include "bvtabbar.h"
 #include "game.h"
@@ -87,6 +88,8 @@ typedef struct _dbUpdl{
 }stUpdData;
 
 typedef struct _tskProgress stTskProgress;
+typedef struct _stUplBViewPos stUplBViewPos;
+
 typedef struct _param_tsk
 {
   const stGameConf *p_gm; /// ptr config du jeu
@@ -143,11 +146,10 @@ class BcUpl: public BCount
   void BSlot_tsk_started();
   void BSlot_tsk_finished();
   void BSlot_scan_finished();
-#endif
   void BSlot_tsk_progress(const stParam_tsk *tsk_param);
   void BSlot_UserSelect(const stParam_tsk *tsk_param);
   void BSlot_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
-//#endif
+#endif
   void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_clicked(const QModelIndex &index);
   void BSlot_over(const QModelIndex &index);
@@ -156,7 +158,7 @@ class BcUpl: public BCount
   void BSlot_UplSel(const QModelIndex & index);
   void BSlot_UplScan(void);
 
- //signals:
+  //signals:
   //void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
 
  private:
@@ -172,13 +174,14 @@ class BcUpl: public BCount
   eUpl_Ens e_id;
   BAnimateCell ****tbv_Anim;   /// Selection d'un uplet
   BThread_1 *producteur;
-
+  QMap<QString, stUplBViewPos> *lst_view;
 
 
  private:
   bool isSelectedKnown(const QItemSelectionModel *cur_sel, int zn, int *key);
   QString getTablePrefixFromSelection_upl(QString items, int zn=0, stUpdData *upl_data=nullptr);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
+
   QString sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
   void saveTimeInTable(Bp::E_Clk ref, etTir upl_type, int eStep, QString humanTime);
 
