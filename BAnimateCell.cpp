@@ -217,6 +217,7 @@ void BAnimateCell::setKey(int key, QColor color, eUpl_Cal eCal)
  emit BSig_Repaint(m_view);
 }
 
+#if 0
 void BAnimateCell::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
  QStyleOptionViewItem myOpt = option;
@@ -226,7 +227,7 @@ void BAnimateCell::paint(QPainter *painter, const QStyleOptionViewItem &option, 
  ///int row = myOpt.index.row();
 
  /// Traitement particulier pour la colonne resultat
- if((col == nb_col-1)){
+ if(col == (nb_col-1)){
   int key = index.sibling(index.row(),0).data().toInt();
 
   FormalizeCell(key, painter, myOpt, index);
@@ -288,6 +289,98 @@ void BAnimateCell::FormalizeCell(int key, QPainter *painter, const QStyleOptionV
   QStyledItemDelegate::paint(painter,myOpt,index);
  }
 }
+#else
+void BAnimateCell::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+ QStyleOptionViewItem myOpt = option;
+ initStyleOption(&myOpt, index);
+
+ int col = myOpt.index.column();
+ ///int row = myOpt.index.row();
+
+ /// Traitement particulier pour la colonne resultat
+ if(col == (nb_col-1)){
+  int key = index.sibling(index.row(),2).data().toInt();
+
+  FormalizeCell(key, painter, myOpt, index);
+ }
+ else{
+  /// Revenir sur le traitement par defaut pour les autres
+  QStyledItemDelegate::paint(painter,myOpt,index);
+ }
+
+}
+
+void BAnimateCell::FormalizeCell(int key, QPainter *painter, const QStyleOptionViewItem &myOpt, const QModelIndex &index) const
+{
+ QRect cur_rect = myOpt.rect;
+
+ QColor use_color;
+
+ switch(key){
+  case eCalNotDef:
+   use_color = COULEUR_FOND_TOTAL;
+   break;
+
+  case eCalReady:
+   use_color = COULEUR_FOND_VIDE;
+   break;
+
+  case eCalNotSet:
+   use_color = QColor(Qt::gray);
+   break;
+
+  case eCalPending:
+   use_color = QColor(Qt::green);
+   break;
+
+  case eCalStarted:
+   use_color = QColor(Qt::red);
+   break;
+
+  default:
+   use_color = COULEUR_FOND_R2;
+   break;
+ }
+
+ painter->fillRect(cur_rect, use_color);
+
+ if(key == eCalReady){
+  QString myTxt = myOpt.text;
+  QFont myFnt;
+  QPalette myPal;
+  Qt::GlobalColor myPen = Qt::black;
+  Qt::Alignment myAlg = Qt::AlignCenter | Qt::AlignVCenter;
+  int alignment = static_cast<int>(myAlg);
+  int font_weight = QFont::Normal;
+  int size = 10;
+
+  myFnt.setPointSize(size);
+  myFnt.setWeight(font_weight);
+  myFnt.setItalic(false);
+  myFnt.setBold(true);
+
+  /// Calcul de l'espace pour le texte
+  QFontMetrics qfm(myFnt);
+  QRect space = QApplication::style()->itemTextRect(qfm, cur_rect, alignment, true, myTxt);
+
+  /// -----------
+  painter->save();
+
+  painter->setFont(myFnt);
+  myPal.setColor(QPalette::Active, QPalette::Text, myPen);
+  QApplication::style()->drawItemText(painter,space,alignment,myPal,true,myTxt,QPalette::ColorRole::Text);
+
+  painter->restore();
+  /// -----------
+
+ }
+ else{
+  QStyledItemDelegate::paint(painter,myOpt,index);
+ }
+}
+
+#endif
 
 bool BAnimateCell::gotKeyShowing(int key)
 {

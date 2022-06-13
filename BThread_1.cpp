@@ -189,12 +189,23 @@ void BThread_1::creationTables(etStep eStep)
       /// Recharger le code sql
       BFpm_upl * m = qobject_cast<BFpm_upl *>(qtv_tmp->model());
       QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
       QString cur_sql = vl->query().lastQuery();
       vl->setQuery(cur_sql, db_tsk1);
+
+      int nb_col = vl->columnCount();
+
+      BAnimateCell * ani_tbv = qobject_cast<BAnimateCell *>(qtv_tmp->itemDelegate());
+      ani_tbv->updateNbColumns();
+
       qtv_tmp->hideColumn(0);
       qtv_tmp->hideColumn(1);
       qtv_tmp->hideColumn(2);
       qtv_tmp->resizeColumnsToContents();
+
+      qtv_tmp->sortByColumn(nb_col-1,Qt::DescendingOrder);
+      qtv_tmp->setSortingEnabled(true);
+
       //qtv_tmp ->viewport()->repaint();
       qtv_tmp ->update();
      }

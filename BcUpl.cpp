@@ -2914,8 +2914,13 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
   m->setDynamicSortFilter(true);
   m->setSourceModel(sqm_tmp);
   qtv_tmp->setModel(m);
-  qtv_tmp->sortByColumn(g_id+1,Qt::DescendingOrder);
+
+#if 0
+  int nb_col = sqm_tmp->columnCount();
+  //qtv_tmp->sortByColumn(g_id+1,Qt::DescendingOrder);
+  qtv_tmp->sortByColumn(nb_col-1,Qt::DescendingOrder);
   qtv_tmp->setSortingEnabled(true);
+#endif
 
   while (sqm_tmp->canFetchMore())
   {

@@ -11,7 +11,8 @@ typedef enum _eCalcul
  eCalSkip,       /// Ne Pas faire de calcul
  eCalPaused,     /// Calcul mis en pause
  eCalInterrupted,/// Calcul interrompu
- eCalTerminated  /// Calcul termine
+ eCalTerminated,  /// Calcul termine
+ eCalEOL
 }eUpl_Cal;
 
 #endif // NS_UPL_H
