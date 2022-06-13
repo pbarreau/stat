@@ -68,7 +68,8 @@ typedef enum _eCalTirages
  ELstCal,        /// Fin des calculs possible
  ELstShowCal,    /// Requete montrant les calculs
  ELstShowUnion,   /// Requete synthese de chacque boule
- ELstShowNotInUnion /// Requete ensemble complementaire
+ ELstShowNotInUnion, /// Requete ensemble complementaire
+ ELstShowUplLst
  ///ELstCalUsr,
  ///ELstCalFdj,
 }eUpl_Lst;

@@ -192,6 +192,8 @@ void BThread_1::creationTables(etStep eStep)
       QString cur_sql = vl->query().lastQuery();
       vl->setQuery(cur_sql, db_tsk1);
       qtv_tmp->hideColumn(0);
+      qtv_tmp->hideColumn(1);
+      qtv_tmp->hideColumn(2);
       qtv_tmp->resizeColumnsToContents();
       //qtv_tmp ->viewport()->repaint();
       qtv_tmp ->update();
@@ -214,16 +216,62 @@ QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_s
 {
  QString sql_msg="";
  QString key = "";
+ QString tbl_upl = C_TBL_UPL;
+
+ QString key_f ="";
+ QString key_0 ="";
+ QString key_1 ="t1."+pGame->names[zn].abv+"%1";
+ QString key_2 ="";
+
+ for(int i = 0; i < cur_upl; i++){
+
+  key_0 = key_0 + "%02d";
+  key_2 = key_2 + key_1.arg(i+1);
+
+  if(i<cur_upl-1){
+   key_0 = key_0 +",";
+   key_2 = key_2 +",";
+  }
+
+ }
+
+ key_f = "printf(\""+key_0+"\","+key_2+")";
+
 
  if(upl_sub <0 ){
   ; //stop
  }
 
+ /// ---------------- Debut analyse -----------
+ ///
+
  /// choix 1
  if(sql_show == ELstShowCal){
   sql_msg=cur_sql;
   sql_msg = sql_msg +"\n";
+
+  sql_msg = sql_msg + "select t1.*, "
+            + key_f + " as items from (tb_uplets) as t1\n";
+
+  key_0 = "";
+  key_0 = key_0 + "select t1.uid, t2.id as kid, t2.state, "
+          + key_2 +", t1.T  \n";
+  key_0 = key_0 + "FROM \n";
+  key_0 = key_0 + "( \n";
+  key_0 = key_0 + sql_msg;
+  key_0 = key_0 + ") as t1, \n";
+  key_0 = key_0 + "( \n";
+  key_0 = key_0 + "select * from " + tbl_upl +"\n" ;
+  key_0 = key_0 + ")as t2 \n";
+  key_0 = key_0 + "where( \n";
+  key_0 = key_0 + "t1.items = t2.items \n";
+  key_0 = key_0 + ") \n";
+
+  sql_msg = key_0;
+#if 0
+  sql_msg = sql_msg +"\n";
   sql_msg = sql_msg + "select t1.* from (tb_uplets) as t1 ";
+#endif
  }
 
  /// choix 2
@@ -264,6 +312,30 @@ QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_s
             " as b from b_elm as t1 where ( "+
             key + " not in (select b from "+cur_sql+")) order by " +
             key + " asc";
+ }
+
+ if(sql_show == ELstShowUplLst){
+  sql_msg=cur_sql;
+  sql_msg = sql_msg +"\n";
+
+
+  sql_msg = sql_msg + "select t1.*, "
+            + key_f + " as items from (tb_uplets) as t1 ";
+
+  key_0 = "";
+  key_0 = key_0 + "Insert into " + tbl_upl +"\n" ;
+  key_0 = key_0 + "select NULL, " + QString::number(eCalNotDef) +
+          ", " + QString::number(zn) +", t1.items\n" ;
+  key_0 = key_0 + "From\n" ;
+  key_0 = key_0 + "--- Debut Reponse globale\n" ;
+  key_0 = key_0 + "(\n" ;
+  key_0 = key_0 + sql_msg ;
+  key_0 = key_0 + ") as t1\n" ;
+  key_0 = key_0 + "--- Fin Reponse globale\n" ;
+  key_0 = key_0 + "where(t1.items not in (select t2.items from "
+          + tbl_upl + " as t2))\n" ;
+
+  sql_msg = key_0;
  }
 
  return sql_msg;
@@ -388,7 +460,7 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_i
  }
  dbg_target = "Dbg_"+stype+"-"+dbg_target;
 
- //BTest::writetoFile(dbg_target,sql_msg,false);
+ BTest::writetoFile(dbg_target,sql_msg,false);
 #endif
 
 
@@ -1266,6 +1338,7 @@ bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
 
  const stGameConf *pGame = tsk_param->p_gm;
  QString cnx_1=pGame->db_ref->cnx;
+ QSqlQuery query(db_tsk1);
 
  int l_id = tsk_param->l_id;
  int z_id = tsk_param->z_id;
@@ -1274,19 +1347,23 @@ bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
  int r_id = tsk_param->r_id;
 
  QString sql_msg = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id, ELstUplTot);
- sql_msg = sql_ShowItems(pGame, z_id, ELstShowCal, g_id, sql_msg);
+ QString upl_lst = sql_ShowItems(pGame, z_id, ELstShowUplLst, g_id, sql_msg);
 
- QString t_rf = tsk_param->t_rf;
- QString t_use = t_rf + "_C" +
-                 QString::number(g_id).rightJustified(2,'0');
+ if((ret_val = query.exec(upl_lst)) == true){
+  sql_msg = sql_ShowItems(pGame, z_id, ELstShowCal, g_id, sql_msg);
 
- DB_Tools::eCort my_response = DB_Tools::eCort_NotSet;
- my_response = DB_Tools::createOrReadTable(t_use, cnx_1, sql_msg);
+  QString t_rf = tsk_param->t_rf;
+  QString t_use = t_rf + "_C" +
+                  QString::number(g_id).rightJustified(2,'0');
 
- if(my_response == DB_Tools::eCort_Ok){
-  tsk_param->t_on = t_use;
-  tsk_param->c_id = ELstUplTot;
-  ret_val = true;
+  DB_Tools::eCort my_response = DB_Tools::eCort_NotSet;
+  my_response = DB_Tools::createOrReadTable(t_use, cnx_1, sql_msg);
+
+  if(my_response == DB_Tools::eCort_Ok){
+   tsk_param->t_on = t_use;
+   tsk_param->c_id = ELstUplTot;
+   ret_val = true;
+  }
  }
  return ret_val;
 }
