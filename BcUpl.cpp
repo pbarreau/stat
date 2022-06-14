@@ -587,7 +587,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
          this, &BcUpl::BSlot_UserSelect,
          Qt::BlockingQueuedConnection);
  */
-  producteur->setBview_1(upl_Bview_1);
+  //producteur->setBview_1(upl_Bview_1);
 
   /// Temps de calcul
   QTime r;
@@ -606,7 +606,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
   t_human = r.toString("hh:mm:ss:zzz");
   saveTimeInTable(Bp::clkStop, upl_type, eStep,t_human);
 
-#if 0
+#if 1
   r.setHMS(0,0,0,0);
   t.restart();
   eStep =  eStep_T2;

@@ -335,7 +335,7 @@ QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_s
 
   key_0 = "";
   key_0 = key_0 + "Insert into " + tbl_upl +"\n" ;
-  key_0 = key_0 + "select NULL, " + QString::number(eCalNotDef) +
+  key_0 = key_0 + "select NULL, " + QString::number(eCalPending) +
           ", " + QString::number(zn) +", t1.items\n" ;
   key_0 = key_0 + "From\n" ;
   key_0 = key_0 + "--- Debut Reponse globale\n" ;
@@ -1379,6 +1379,63 @@ bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
  return ret_val;
 }
 
+#if 1
+stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
+{
+ const QString connName = "Scan_Tsk_" + QString::number((quintptr)QThread::currentThreadId());
+
+ const stGameConf *pGame = tsk_param->p_gm;
+ QString cnx_1=pGame->db_ref->cnx;
+ QSqlDatabase db = QSqlDatabase::database(cnx_1);
+ QSqlQuery query(db);
+
+ int z_id = tsk_param->z_id;
+ int g_id = tsk_param->g_id;
+ int g_lm = tsk_param->g_lm;
+ eUpl_Ens e_id = tsk_param->e_id;
+ BAnimateCell *ani = nullptr;
+
+ QString t_on = tsk_param->t_on;
+ stTskProgress *cur_status = tsk_param->tsk_step;
+
+ QString sql_msg = "";
+ sql_msg = sql_msg + "select t1.uid, t2.id, t2.items from " + t_on
+           + " as t1, Upl_lst as t2\n";
+ sql_msg = sql_msg + "where(\n";
+ sql_msg = sql_msg + "(t1.kid = t2.id)\n";
+ sql_msg = sql_msg + "AND\n";
+ sql_msg = sql_msg + "(t2.state = " + QString::number(eCalPending) + "\n";
+ sql_msg = sql_msg + "AND\n";
+ sql_msg = sql_msg + "(t2.zn = "+QString::number(z_id)+")\n";
+ sql_msg = sql_msg + ")\n";
+
+
+ bool status = false;
+
+ if((status = query.exec(sql_msg)) == true){
+  QString upl_cur = "";
+  QString tbl_key = "";
+
+  if(query.first()){
+   do{
+    upl_cur = query.value("items").toString();
+    tbl_key = "Uk" + query.value("id").toString().rightJustified(2,'0');
+    t_on = tbl_key;
+
+    tsk_param->t_on = t_on;
+    tsk_param->g_lm = g_lm;
+    //tsk_param->glm_in = glm_in;
+
+
+   }while (query.next());
+  }
+ }
+
+
+
+ return tsk_param;
+}
+#else
 stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
 {
  const QString connName = "Scan_Tsk_" + QString::number((quintptr)QThread::currentThreadId());
@@ -1551,6 +1608,8 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
 
  return tsk_param;
 }
+#endif
+
 
 stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
 {
