@@ -1404,11 +1404,14 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
  sql_msg = sql_msg + "where(\n";
  sql_msg = sql_msg + "(t1.kid = t2.id)\n";
  sql_msg = sql_msg + "AND\n";
- sql_msg = sql_msg + "(t2.state = " + QString::number(eCalPending) + "\n";
+ sql_msg = sql_msg + "(t2.state = " + QString::number(eCalPending) + ")\n";
  sql_msg = sql_msg + "AND\n";
  sql_msg = sql_msg + "(t2.zn = "+QString::number(z_id)+")\n";
  sql_msg = sql_msg + ")\n";
 
+#ifndef QT_NO_DEBUG
+ qDebug()<< sql_msg;
+#endif
 
  bool status = false;
 
@@ -1425,6 +1428,13 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
     tsk_param->t_on = t_on;
     tsk_param->g_lm = g_lm;
     //tsk_param->glm_in = glm_in;
+
+    /// Mettre a jour DB pour indiquer calcul start
+    /// Mettre a jour Tbv pour mettre couleur start
+    ///
+    /// Faire calcul
+    /// Mettre a jour DB pour indiquer calcul fin
+    /// Mettre a jour Tbv pour mettre couleur calcul fin
 
 
    }while (query.next());
