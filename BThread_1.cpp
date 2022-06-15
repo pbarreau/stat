@@ -1371,11 +1371,26 @@ bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
   my_response = DB_Tools::createOrReadTable(t_use, cnx_1, sql_msg);
 
   if(my_response == DB_Tools::eCort_Ok){
-   tsk_param->t_on = t_use;
-   tsk_param->c_id = ELstUplTot;
-   ret_val = true;
+   /// Creation d'un trigger pour suivre les modifs dans Upl_lst
+   sql_msg = "";
+   sql_msg = sql_msg + "CREATE TRIGGER trig_"+ t_use
+             + " AFTER UPDATE ON " + t_use +"\n";
+   sql_msg = sql_msg + "BEGIN\n";
+   sql_msg = sql_msg + "update Upl_lst\n";
+   sql_msg = sql_msg + "set state = new.state\n";
+   sql_msg = sql_msg + "WHERE\n";
+   sql_msg = sql_msg + "(Upl_lst.id = old.kid);\n";
+   sql_msg = sql_msg + "END;\n";
+
+   if((ret_val = query.exec(sql_msg)) == true){
+    tsk_param->t_on = t_use;
+    tsk_param->c_id = ELstUplTot;
+   }
+
+   ///ret_val = true;
   }
  }
+
  return ret_val;
 }
 
