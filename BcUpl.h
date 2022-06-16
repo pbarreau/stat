@@ -141,6 +141,7 @@ class BcUpl: public BCount
 
  public slots:
   void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int zn);
+  void BSlot_UpdateTbv(const stParam_tsk *tsk_param);
 
  private slots:
 #if C_PGM_THREADED
