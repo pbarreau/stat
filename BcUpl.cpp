@@ -487,7 +487,10 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
     emit BSig_UplCal(pGame, e_id, data);
 
+    QWidget * wdg_tmp = Mk2_MainUplet(pGame, data);
+    tab_uplets->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
    } /// g_id
+   tab_zones->addTab(tab_uplets,title);
   }  /// z_id
 
   /// ------------------
@@ -2421,7 +2424,7 @@ void BcUpl::BSlot_Tab(int index)
 }
 #endif
 
-QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int ong_2_zn, int ong_1_tir, int ong_3_upl, int ong_4_day, int nb_recherche)
+QWidget *BcUpl::Mk1_getUplDetails(const stGameConf *pGame, int ong_2_zn, int ong_1_tir, int ong_3_upl, int ong_4_day, int nb_recherche)
 {
  QTabWidget *upl_details = new QTabWidget(this);
 
@@ -2477,7 +2480,7 @@ QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int ong_2_zn, int ong_1_t
  return upl_details;
 }
 
-QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int ong_zn, int ong_tir, int ong_upl)
+QWidget *BcUpl::Mk1_showUplFromRef(const stGameConf *pGame, int ong_zn, int ong_tir, int ong_upl)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
  tab_Top->setObjectName("tabRspAnaUpl");
@@ -2503,12 +2506,58 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int ong_zn, int ong_tir,
   upl_Bview_4[ong_tir-1][ong_zn][ong_upl][ong_day]= new BView *[nb_recherche-1];
   QString ongLabel = defDays[ong_day].onglet;
 
-  QWidget * wdg_tmp =getUplDetails(pGame, ong_zn, ong_tir, ong_upl, ong_day, nb_recherche);
+  QWidget * wdg_tmp =Mk1_getUplDetails(pGame, ong_zn, ong_tir, ong_upl, ong_day, nb_recherche);
   if(wdg_tmp !=nullptr){
    tab_Top->addTab(wdg_tmp,ongLabel);
   }
  }
  return tab_Top;
+}
+
+QWidget *BcUpl::Mk2_showUplFromRef(const stGameConf *pGame, stTskParam_1 *tsk_data)
+{
+ QTabWidget *tab_Top = new QTabWidget(this);
+ tab_Top->setObjectName("tabRspAnaUpl");
+
+ int l_id = tsk_data->l_id;
+ int z_id = tsk_data->z_id;
+ int g_id = tsk_data->g_id;
+
+ //QString defDays[]={"J","J+1","J+?"};
+ int nb_ong= sizeof(defDays)/sizeof(stDays);
+
+ /// Indication de l'interval de comptage
+ int nb_days = nb_ong;//BMIN_2(pGame->limites[zn].win, nb_ong);
+ upl_Bview_2[l_id-1][z_id][g_id]= new BView **[nb_days];
+ upl_Bview_3[l_id-1][z_id][g_id]= new BView **[nb_days]; /// S4
+ upl_Bview_4[l_id-1][z_id][g_id]= new BView **[nb_days]; /// S4
+
+ int nb_recherche = BMIN_2(pGame->limites[z_id].win, C_MAX_UPL);
+
+ for (int o_id = 0; o_id<nb_days; o_id++) {
+  upl_Bview_2[l_id-1][z_id][g_id][o_id]= new BView *[nb_recherche];
+
+  /// nb_recherche-1, car sur l'onglet 0
+  /// pas les tableaux (Bilant Local: upl_Bview_3) et (Absent Local:upl_Bview_4)
+  /// -------------------------------------------------------------------------
+  upl_Bview_3[l_id-1][z_id][g_id][o_id]= new BView *[nb_recherche-1];
+  upl_Bview_4[l_id-1][z_id][g_id][o_id]= new BView *[nb_recherche-1];
+  QString ongLabel = defDays[o_id].onglet;
+
+  tsk_data->o_id = o_id;
+  QWidget * wdg_tmp =Mk2_getUplDetails(pGame, tsk_data, nb_recherche);
+  if(wdg_tmp !=nullptr){
+   tab_Top->addTab(wdg_tmp,ongLabel);
+  }
+ }
+ return tab_Top;
+}
+
+QWidget *BcUpl::Mk2_getUplDetails(const stGameConf *pGame, stTskParam_1 *tsk_data, int nb_recherche)
+{
+ QWidget * wdg_tmp = new QWidget;
+
+ return wdg_tmp;
 }
 
 QString BcUpl::getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb)
@@ -2839,11 +2888,11 @@ void BcUpl::FillTbv_StartPoint(stParam_tsk *tsk_param)
                      "_D" + QString::number(o_id).rightJustified(2,'0') +
                      "_R" + QString::number(r_id+1).rightJustified(2,'0');
 
-   FillTbv_BView_2(tsk_param);
+   Mk1_FillTbv_BView_2(tsk_param);
 
    if(r_id > 0){
-    FillTbv_BView_3(tsk_param);
-    FillTbv_BView_4(tsk_param);
+    Mk1_FillTbv_BView_3(tsk_param);
+    Mk1_FillTbv_BView_4(tsk_param);
    }
 
   }
@@ -2854,7 +2903,7 @@ void BcUpl::FillTbv_StartPoint(stParam_tsk *tsk_param)
 }
 
 #if 1
-QWidget *BcUpl::MkMainUplet(stParam_tsk *tsk_param)
+QWidget *BcUpl::Mk1_MainUplet(stParam_tsk *tsk_param)
 {
  QWidget * wdg_tmp = new QWidget;
 
@@ -2870,9 +2919,9 @@ QWidget *BcUpl::MkMainUplet(stParam_tsk *tsk_param)
  tmp_gpb->setObjectName(gpb_key_sel);
  tmp_gpb->setTitle(ref_lupl[0]);
 
- BView *qtv_tmp = FillTbv_BView_1(tsk_param);
+ BView *qtv_tmp = Mk1_FillTbv_BView_1(tsk_param);
 
- QWidget *tmp = showUplFromRef(pGame,z_id,l_id,g_id - C_MIN_UPL);
+ QWidget *tmp = Mk1_showUplFromRef(pGame,z_id,l_id,g_id - C_MIN_UPL);
 
  QVBoxLayout *layout = new QVBoxLayout;
  layout->addWidget(tmp, Qt::AlignCenter|Qt::AlignTop);
@@ -2888,7 +2937,7 @@ QWidget *BcUpl::MkMainUplet(stParam_tsk *tsk_param)
  return wdg_tmp;
 }
 #else
-QWidget *BcUpl::MkMainUplet(stParam_tsk *tsk_param)
+QWidget *BcUpl::Mk1_MainUplet(stParam_tsk *tsk_param)
 {
  QWidget * wdg_tmp = new QWidget;
 
@@ -2927,14 +2976,48 @@ QWidget *BcUpl::MkMainUplet(stParam_tsk *tsk_param)
 }
 #endif
 
+QWidget *BcUpl::Mk2_MainUplet(const stGameConf *pGame, stTskParam_1 *tsk_data)
+{
+ QWidget * wdg_tmp = new QWidget;
+
+ int l_id = tsk_data->l_id;
+ int z_id = tsk_data->z_id;
+ int g_id = tsk_data->g_id;
+
+ QGridLayout *glay_tmp = new QGridLayout;
+
+ QGroupBox *tmp_gpb = new QGroupBox;
+ tmp_gpb->setObjectName(gpb_key_sel);
+ tmp_gpb->setTitle(ref_lupl[0]);
+
+ BView *qtv_tmp = Mk2_FillTbv_BView_1(pGame,tsk_data);
+
+ QWidget *tmp = Mk1_showUplFromRef(pGame,z_id,l_id,g_id - C_MIN_UPL);
+
+ QVBoxLayout *layout = new QVBoxLayout;
+ layout->addWidget(tmp, Qt::AlignCenter|Qt::AlignTop);
+ tmp_gpb->setLayout(layout);
+
+
+ glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
+ glay_tmp->addWidget(tmp_gpb,0,1);
+
+
+ wdg_tmp->setLayout(glay_tmp);
+
+ return wdg_tmp;
+
+}
+
 #if 1
-BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
+BView * BcUpl::Mk1_FillTbv_BView_1(stParam_tsk *tsk_param)
 {
  BView *qtv_tmp = new BView;
  return qtv_tmp;
 }
+
 #else
-BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
+BView * BcUpl::Mk1_FillTbv_BView_1(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
  QString cnx_1=pGame->db_ref->cnx;
@@ -3047,12 +3130,18 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
 }
 #endif
 
+BView *BcUpl::Mk2_FillTbv_BView_1(const stGameConf *pGame, stTskParam_1 *tsk_data)
+{
+ BView *qtv_tmp = new BView;
+ return qtv_tmp;
+}
+
 #if 1
-void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
+void BcUpl::Mk1_startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
 {
 }
 #else
-void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
+void BcUpl::Mk1_startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
 {
  if (a_tbv == nullptr){
   return;
@@ -3231,7 +3320,7 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
 #endif
 
 
-void BcUpl::FillTbv_BView_2(stParam_tsk *tsk_param)
+void BcUpl::Mk1_FillTbv_BView_2(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
  int l_id = tsk_param->l_id;
@@ -3278,7 +3367,7 @@ void BcUpl::FillTbv_BView_2(stParam_tsk *tsk_param)
 }
 
 
-void BcUpl::FillTbv_BView_3(stParam_tsk *tsk_param)
+void BcUpl::Mk1_FillTbv_BView_3(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
  int z_id = tsk_param->z_id;
@@ -3324,7 +3413,7 @@ void BcUpl::FillTbv_BView_3(stParam_tsk *tsk_param)
  qtv_tmp->setTitle(st_title);
 }
 
-void BcUpl::FillTbv_BView_4(stParam_tsk *tsk_param)
+void BcUpl::Mk1_FillTbv_BView_4(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
  int z_id = tsk_param->z_id;

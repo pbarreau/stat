@@ -199,8 +199,12 @@ class BcUpl: public BCount
 
  private:
   QString getSqlTbv(const stGameConf *pGame, int zn, int tir_Id, int day_Delta, int upl_Grp, int upl_Sub=-1, eUpl_Lst target=ELstCal, int sel_item=-1);
-  QWidget *showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref);
-  QWidget *getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int nb_recherche);
+  QWidget *Mk1_showUplFromRef(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref);
+  QWidget *Mk2_showUplFromRef(const stGameConf *pGame, stTskParam_1 *tsk_data);
+
+  QWidget *Mk2_getUplDetails(const stGameConf *pGame, stTskParam_1 *tsk_data, int nb_recherche);
+  QWidget *Mk1_getUplDetails(const stGameConf *pGame, int zn, int tirLgnId, int src_upl, int relativeDay, int nb_recherche);
+
   void sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int offset, int upl_sub, int step, QString tabInOut[][3]);
   void sql_upl_lev_2(const stGameConf *pGame, int zn, int tirLgnId, int offset, int upl_ref_in, int upl_sub, QString tabInOut[][C_TOT_CAL][3]);
 
@@ -222,7 +226,8 @@ class BcUpl: public BCount
   BView * Bview_4_fill_1(BView *qtv_tmp, QString sql_msg);
 
   //QWidget *fill_Bview_1(const stGameConf *pGame, int zn, int tirLgnId, int i);
-  QWidget *MkMainUplet(stParam_tsk *tsk_param);
+  QWidget *Mk1_MainUplet(stParam_tsk *tsk_param);
+  QWidget *Mk2_MainUplet(const stGameConf *pGame, stTskParam_1 *tsk_data);
 
   int Bview_UpdateAndCount(eUpl_Lst id, BView *qtv_tmp, QString sql_msg);
   //int Bview_3_fill_2(BView *qtv_tmp, QString sql_msg);
@@ -244,13 +249,14 @@ class BcUpl: public BCount
 
   void FillTbv_StartPoint(stParam_tsk *tsk_param);
 
-  BView *FillTbv_BView_1(stParam_tsk *tsk_param);
-  void startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
+  BView *Mk1_FillTbv_BView_1(stParam_tsk *tsk_param);
+  BView *Mk2_FillTbv_BView_1(const stGameConf *pGame, stTskParam_1 *tsk_data);
+  void Mk1_startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
   void T1_setTitle(BView *qtv_tmp, const stTskProgress *step);
 
-  void FillTbv_BView_2(stParam_tsk *tsk_param);
-  void FillTbv_BView_3(stParam_tsk *tsk_param);
-  void FillTbv_BView_4(stParam_tsk *tsk_param);
+  void Mk1_FillTbv_BView_2(stParam_tsk *tsk_param);
+  void Mk1_FillTbv_BView_3(stParam_tsk *tsk_param);
+  void Mk1_FillTbv_BView_4(stParam_tsk *tsk_param);
 
   int getFromView_Lid(const BView *view);
   QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb = nullptr);
