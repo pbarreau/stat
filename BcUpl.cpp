@@ -169,6 +169,7 @@ BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectio
   uplTirTab = ptrUplRsp;
  }
 
+ mapView_1 = new QMap<QString, stUplBViewPos>;
 
  /// Tracking Bilan Total (TBD ?)
  upl_Bview_0 = new BView***[nb_ana];
@@ -373,11 +374,16 @@ BcUpl::BcUpl(st_In const &param, int index, eUpl_Cal eCal, const QModelIndex & l
 
 BcUpl::~BcUpl(){}
 
-void BcUpl::BSlot_UplReadyStep1(const QString tblName)
+void BcUpl::BSlot_UplReadyStep1(const QString tblName, stTskParam_1 *tsk_param)
 {
  /// Rechercher onglet contenant la Bview
- int a = 0;
- a++;
+ QMap<QString, stUplBViewPos>::const_iterator it;
+ it = mapView_1->find(tblName);
+ if(it != mapView_1->end()){
+  BView *qtv_tmp = it->view;
+  DessineTbv_BView_1(qtv_tmp, tsk_param);
+  delete tsk_param;
+ }
 }
 
 QGridLayout *BcUpl::Compter(QString * pName, int zn)
@@ -488,7 +494,35 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
     emit BSig_UplCal(pGame, e_id, data);
 
     QWidget * wdg_tmp = Mk2_MainUplet(pGame, data);
+
+    if(wdg_tmp !=nullptr){
+     /// Trouver le pointeur sur le tableau
+     QList<BView *>tb_brc = wdg_tmp -> findChildren<BView *>();
+     int totalTbv = tb_brc.size();
+
+     if(totalTbv > 0){
+      int pos = tb_brc.at(0)->objectName().toInt();
+
+      //QString ong_id = QString::number(pos+1).rightJustified(2,'0');
+      //QString key = t_rf + "_C" + ong_id;
+      QString key = tb_brc.at(0)->getTblName();
+
+      stUplBViewPos path;
+      path.view = tb_brc.at(0);
+      path.ong_data[0].tab = tab_uplets;
+      path.ong_data[0].pos = pos;
+      path.ong_data[1].tab = tab_zones;
+      path.ong_data[1].pos = z_id;
+      path.ong_data[2].tab = tab_tirId;
+
+      int nb_tir = tab_tirId->count() + 1;
+      path.ong_data[2].pos = nb_tir - l_id;
+
+      mapView_1->insert(key,path);
+     }
+
     tab_uplets->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
+    }
    } /// g_id
    tab_zones->addTab(tab_uplets,title);
   }  /// z_id
@@ -619,7 +653,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
      tsk_param->t_on = "";
      tsk_param->a_tbv = nullptr;
 
-     QWidget * wdg_tmp = MkMainUplet(tsk_param);
+     QWidget * wdg_tmp = Mk1_MainUplet(tsk_param);
      if(wdg_tmp !=nullptr){
       /// Trouver le pointeur sur le tableau
       QList<BView *>tb_brc = wdg_tmp -> findChildren<BView *>();
@@ -2993,6 +3027,7 @@ QWidget *BcUpl::Mk2_MainUplet(const stGameConf *pGame, stTskParam_1 *tsk_data)
  BView *qtv_tmp = Mk2_FillTbv_BView_1(pGame,tsk_data);
 
  QWidget *tmp = Mk1_showUplFromRef(pGame,z_id,l_id,g_id - C_MIN_UPL);
+ //QWidget *tmp = new QWidget;
 
  QVBoxLayout *layout = new QVBoxLayout;
  layout->addWidget(tmp, Qt::AlignCenter|Qt::AlignTop);
@@ -3133,7 +3168,114 @@ BView * BcUpl::Mk1_FillTbv_BView_1(stParam_tsk *tsk_param)
 BView *BcUpl::Mk2_FillTbv_BView_1(const stGameConf *pGame, stTskParam_1 *tsk_data)
 {
  BView *qtv_tmp = new BView;
+
+ QString t_rf = tsk_data->t_rf;
+ int l_id = tsk_data->l_id;
+ int z_id = tsk_data->z_id;
+ int g_id = tsk_data->g_id;
+
+ QString t_use = t_rf + "_C" +
+                 QString::number(g_id).rightJustified(2,'0');
+ QString sql_msg = "select * from " + t_use;
+
+ upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL] = qtv_tmp;
+
+ qtv_tmp->setObjectName(QString::number(g_id - C_MIN_UPL));
+ qtv_tmp->setZone(z_id);
+ qtv_tmp->setUseTable(t_use);
+
+ QHBoxLayout *bar_top_1 = getBar_Rch(qtv_tmp,g_id - C_MIN_UPL);
+ qtv_tmp->addUpLayout(bar_top_1);
+
+
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ sqm_tmp->setQuery(sql_msg, db_0);
+
+ /// On effectue la liasion avec le proxy model
+ BFpm_upl * m = new BFpm_upl(1, g_id);
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+
+ /// Gestion des cellules
+ BAnimateCell * ani_tbv = new BAnimateCell(qtv_tmp);
+ qtv_tmp->setItemDelegate(ani_tbv);
+
+ DessineTbv_BView_1(qtv_tmp, tsk_data);
+
  return qtv_tmp;
+}
+
+void BcUpl::DessineTbv_BView_1(BView *qtv_tmp, stTskParam_1 *tsk_param)
+{
+ /// Recharger le code sql
+ BFpm_upl * m = qobject_cast<BFpm_upl *>(qtv_tmp->model());
+ QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+ QString cur_sql = sqm_tmp->query().lastQuery();
+ sqm_tmp->setQuery(cur_sql, db_0);
+
+ int nb_col = sqm_tmp->columnCount();
+
+ BAnimateCell * ani_tbv = qobject_cast<BAnimateCell *>(qtv_tmp->itemDelegate());
+ ani_tbv->updateNbColumns();
+
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+ int rows_cal_1 = sqm_tmp->rowCount();
+
+ /// Remplacer par le calcul du Cnp
+ int rows_cal_2 = 0;
+ QSqlQuery query(db_0);
+ bool b_retVal = false;
+ //QString sql_tot = sql_ref + "\n" + "Select count(*) as T from tb_00";
+ QString sql_tot = "Select count(*) as T from " + qtv_tmp->getTblName();
+ if((b_retVal=query.exec(sql_tot))){
+  if(query.first()){
+   rows_cal_2 = query.value(0).toInt();
+  }
+ }
+
+ int nbBoulesTotal = -1;
+ int z_id = tsk_param->z_id;
+ if(e_id == eEnsFdj){
+  nbBoulesTotal = gm_def->limites[z_id].win;
+ }
+ else{
+  nbBoulesTotal = tsk_param->my_indexes->size();
+ }
+ /// Calcul du Cnp
+ int g_id = tsk_param->g_id;
+ BCnp *b = new BCnp(nbBoulesTotal,g_id);
+ int rows_cal_3 = b->BP_count();
+
+ /// Titre de la recherche
+ QString v1 = QString::number(g_id).rightJustified(2,'0');
+ QString v2 = QString::number(nbBoulesTotal);
+ QString v3 = QString::number(g_id);
+ QString v4 = QString::number(rows_cal_1);
+ QString v5 = QString::number(rows_cal_3);
+ QString st_title = QString(ref_lcnp[0]).arg(v1).arg(v2).arg(v3).arg(v4).arg(v5);
+ qtv_tmp->setTitle(st_title);
+
+ qtv_tmp->hideColumn(Bp::colId);
+ qtv_tmp->hideColumn(Bp::colUplKey);
+ qtv_tmp->hideColumn(Bp::colUplState);
+
+ qtv_tmp->resizeColumnsToContents();
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+ qtv_tmp->sortByColumn(nb_col-1,Qt::DescendingOrder);
+ qtv_tmp->setSortingEnabled(true);
+
+ //qtv_tmp ->viewport()->repaint();
+ qtv_tmp ->update();
+
 }
 
 #if 1

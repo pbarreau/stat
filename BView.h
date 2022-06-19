@@ -13,12 +13,14 @@ class BView : public QTableView
  ~BView();
  void setTitle(QString title, bool visible=true);
  QString getTitle(void);
+ QString getTblName(void);
  QGroupBox *getScreen(bool spacer=false);
  void addUpLayout(QLayout *up_in);
  int getMinWidth(int delta=2);
  int getMinHeight();
  int getZone();
  void setZone(int zn_in);
+ void setUseTable(QString tbl = "");
 
  protected:
  void mouseMoveEvent( QMouseEvent * inEvent );
@@ -29,6 +31,7 @@ class BView : public QTableView
  private:
  QLayout *up;
  int zone;
+ QString t_use;
 
 };
 

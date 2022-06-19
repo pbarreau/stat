@@ -16,6 +16,7 @@ struct stThreadParam{
   stTskParam_1 *data;
 };
 
+#if 0
 typedef struct _stBViewPath{
   QTabWidget *tab;
   int pos;
@@ -25,6 +26,7 @@ typedef struct _stUplBViewPos{
     BView *view;
     stBViewPath ong_data[3];
 }stUplBViewPos;
+#endif
 
 typedef struct _tsk_1{
   const stGameConf *pGame;
@@ -108,7 +110,7 @@ class BThread_1: public QWidget //: public QThread
   QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3]);
 
  signals:
-  void BSig_UplReadyStep1(const QString tblName);
+  void BSig_UplReadyStep1(const QString tblName, stTskParam_1 *tsk_param);
   void BSig_Step(const stParam_tsk *tsk_param);
   void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
   void BSig_UserSelect(const stParam_tsk *tsk_param);

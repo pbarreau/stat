@@ -3,6 +3,9 @@
 
 #include <QString>
 #include <QModelIndexList>
+#include <QTabWidget>
+
+#include "BView.h"
 
 struct stTskParam_1{
   int u_id;     /// id objet uplet
@@ -14,5 +17,15 @@ struct stTskParam_1{
   int r_id;     /// id de la reponse en cours
   const QModelIndexList *my_indexes;
 };
+
+typedef struct _stBViewPath{
+  QTabWidget *tab;
+  int pos;
+}stBViewPath;
+
+typedef struct _stUplBViewPos{
+    BView *view;
+    stBViewPath ong_data[3];
+}stUplBViewPos;
 
 #endif // BTSKPARAMS_H

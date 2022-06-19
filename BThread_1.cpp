@@ -1384,8 +1384,8 @@ void BThread_1::BSlot_UplCal(const stGameConf *pGame, const eUpl_Ens e_id,  stTs
 {
  BcUpl *origin = qobject_cast<BcUpl *>(sender());
  connect(
-    this, SIGNAL(BSig_UplReadyStep1(const QString)),
-    origin,SLOT(BSlot_UplReadyStep1(const QString))
+    this, SIGNAL(BSig_UplReadyStep1(const QString, stTskParam_1 *)),
+    origin,SLOT(BSlot_UplReadyStep1(const QString, stTskParam_1 *))
     );
 
  QString cur_table = "";
@@ -1397,7 +1397,7 @@ void BThread_1::BSlot_UplCal(const stGameConf *pGame, const eUpl_Ens e_id,  stTs
  T1_Fill_Bdd(pGame, &param, &cur_table);
 
  /// Emettre table prete pour permettre affichage
- emit(BSig_UplReadyStep1(cur_table));
+ emit(BSig_UplReadyStep1(cur_table, tsk_param));
 }
 
 bool BThread_1::T1_Fill_Bdd(const stGameConf *pGame,

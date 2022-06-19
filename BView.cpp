@@ -10,6 +10,7 @@ BView::BView(QWidget *parent):QTableView(parent)
  square = new QGroupBox;
  up = nullptr;
  zone=0;
+ t_use = "";
 }
 
 BView::~BView()
@@ -36,6 +37,11 @@ QString BView::getTitle(void)
  return ret_val;
 }
 
+QString BView::getTblName()
+{
+ return t_use;
+}
+
 void BView::addUpLayout(QLayout *up_in)
 {
  up = up_in;
@@ -49,6 +55,11 @@ int BView::getZone()
 void BView::setZone(int zn_in)
 {
  zone = zn_in;
+}
+
+void BView::setUseTable(QString tbl)
+{
+ t_use = tbl;
 }
 
 QGroupBox *BView::getScreen(bool spacer)

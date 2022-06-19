@@ -90,7 +90,7 @@ typedef struct _dbUpdl{
 }stUpdData;
 
 typedef struct _tskProgress stTskProgress;
-typedef struct _stUplBViewPos stUplBViewPos;
+//typedef struct _stUplBViewPos stUplBViewPos;
 
 typedef struct _param_tsk
 {
@@ -141,7 +141,7 @@ class BcUpl: public BCount
   ~BcUpl();
 
  public slots:
-  void BSlot_UplReadyStep1(const QString tblName);
+  void BSlot_UplReadyStep1(const QString tblName, stTskParam_1 *tsk_param);
   void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int zn);
   void BSlot_UpdateTbv(const stParam_tsk *tsk_param);
 
@@ -179,7 +179,7 @@ class BcUpl: public BCount
   eUpl_Ens e_id;
   BAnimateCell ****tbv_Anim;   /// Selection d'un uplet
   BThread_1 *producteur;
-  QMap<QString, stUplBViewPos> *lst_view;
+  QMap<QString, stUplBViewPos> *mapView_1;
 
 
  private:
@@ -251,6 +251,8 @@ class BcUpl: public BCount
 
   BView *Mk1_FillTbv_BView_1(stParam_tsk *tsk_param);
   BView *Mk2_FillTbv_BView_1(const stGameConf *pGame, stTskParam_1 *tsk_data);
+  void DessineTbv_BView_1(BView *qtv_tmp, stTskParam_1 *tsk_param);
+
   void Mk1_startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
   void T1_setTitle(BView *qtv_tmp, const stTskProgress *step);
 
