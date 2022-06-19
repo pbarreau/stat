@@ -137,7 +137,7 @@ class BcUpl: public BCount
 
 
  public:
-  explicit BcUpl(const stGameConf *pGame, eUpl_Ens eUpl=eEnsFdj, int zn=0, const QItemSelectionModel *cur_sel=nullptr, QTabWidget *ptrUplRsp=nullptr);
+  explicit BcUpl(const stGameConf *pGame, QWidget *parent=nullptr, eUpl_Ens eUpl=eEnsFdj, int zn=0, const QItemSelectionModel *cur_sel=nullptr, QTabWidget *ptrUplRsp=nullptr);
   ~BcUpl();
 
  public slots:
@@ -184,6 +184,7 @@ class BcUpl: public BCount
   BAnimateCell ****tbv_Anim;   /// Selection d'un uplet
   BThread_1 *producteur;
   QMap<QString, stUplBViewPos> *mapView_1;
+  QWidget *ana_parent;
 
 
  private:

@@ -212,7 +212,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  }
 
  if((pGame->db_ref->dad.size() == 0) && (pGame->eTirType == eTirFdj)){
-  BcUpl * tmp = new BcUpl (pGame);
+  BcUpl * tmp = new BcUpl (pGame, this);
   lstComptage.append(tmp);
 
   /// connection click calcul uplet avec BcElm

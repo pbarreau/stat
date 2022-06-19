@@ -88,10 +88,11 @@ int BcUpl::obj_upl = 0;
 int BcUpl::nb_max_recherche = 0;
 QThreadPool *BcUpl::pool = nullptr;
 
-BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
+BcUpl::BcUpl(const stGameConf *pGame, QWidget *parent, eUpl_Ens eUpl, int zn, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
  :BCount (pGame, eCountUpl)
 {
  obj_upl++;
+ ana_parent = parent;
  isScanRuning = false;
 
  QThread cpuInfo(this); //get CPU info
@@ -1551,8 +1552,12 @@ void BcUpl::BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int 
  QModelIndexList my_indexes = cur_sel->selectedIndexes();
  int len_data = my_indexes.size();
 
- BcUpl *tmp = new BcUpl(gm_def,eEnsUsr,zn,cur_sel,uplTirTab);
+ BcUpl *tmp = new BcUpl(gm_def,ana_parent, eEnsUsr,zn,cur_sel,uplTirTab);
  if(tmp !=nullptr){
+  /// connection click montrer tirages
+   connect(tmp,SIGNAL(BSig_UplFdjShow(const QString, int )),
+           ana_parent,SLOT(BSlot_UplFdjShow(const QString, int )));
+
   etCount type = tmp->getType();
   tmp->startCount(gm_def,type);
  }
@@ -2774,7 +2779,7 @@ void BcUpl::BSlot_Mk2_LstTirages(const QModelIndex &index)
 
 void BcUpl::BSlot_Mk2_LstUpl(const QModelIndex &index)
 {
-
+;
 }
 
 #if C_PGM_THREADED
