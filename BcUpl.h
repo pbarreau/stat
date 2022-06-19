@@ -26,6 +26,7 @@
 #include "ns_upl.h"
 
 //#include "BThread_1.h"
+#include "BTskParams.h"
 
 #define  C_MIN_UPL    1
 #define  C_MAX_UPL    3
@@ -140,6 +141,7 @@ class BcUpl: public BCount
   ~BcUpl();
 
  public slots:
+  void BSlot_UplReadyStep1(const QString tblName);
   void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int zn);
   void BSlot_UpdateTbv(const stParam_tsk *tsk_param);
 
@@ -160,7 +162,8 @@ class BcUpl: public BCount
   void BSlot_UplSel(const QModelIndex & index);
   void BSlot_UplScan(void);
 
-  //signals:
+  Q_SIGNALS:
+  void BSig_UplCal(const stGameConf *pGame, const eUpl_Ens e_id, stTskParam_1 *tsk_param);
   //void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
 
  private:

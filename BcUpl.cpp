@@ -4,6 +4,8 @@
 #include "BTest.h"
 #endif
 
+#include <QObject>
+
 #include <QApplication>
 #include <QMessageBox>
 
@@ -371,6 +373,13 @@ BcUpl::BcUpl(st_In const &param, int index, eUpl_Cal eCal, const QModelIndex & l
 
 BcUpl::~BcUpl(){}
 
+void BcUpl::BSlot_UplReadyStep1(const QString tblName)
+{
+ /// Rechercher onglet contenant la Bview
+ int a = 0;
+ a++;
+}
+
 QGridLayout *BcUpl::Compter(QString * pName, int zn)
 {
  Q_UNUSED(pName)
@@ -390,6 +399,113 @@ void BcUpl::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
 }
 
 
+#if 1
+QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
+{
+ Q_UNUSED(eCalcul)
+ static int usrCounter = 0;
+
+ QTabWidget *tab_tirId = nullptr;
+ if(uplTirTab == nullptr){
+  uplTirTab = new QTabWidget(this);
+ }
+ tab_tirId = uplTirTab;
+ tab_tirId->setObjectName(gpb_key_tab);
+
+ int nb_zn = pGame->znCount;
+ int zn_start = -1;
+ int zn_stop = -1;
+ int nbTirJour = -1;
+
+ if(e_id==eEnsFdj){
+  zn_start = 0;
+  zn_stop = nb_zn;
+  nbTirJour = C_NB_TIR_LIR;
+ }
+ else{
+  zn_start = 0;
+  zn_stop = zn_start +1;
+  nbTirJour = 1;
+ }
+
+ /// Nombre de tirage a regarder
+ for(int l_id = 1; l_id<=nbTirJour;l_id++){
+  BThread_1 *tskCalcul = new BThread_1(pGame);
+  connect(
+     this, SIGNAL(BSig_UplCal(const stGameConf *, const eUpl_Ens, stTskParam_1 *)),
+     tskCalcul,SLOT(BSlot_UplCal(const stGameConf *, const eUpl_Ens, stTskParam_1 *))
+     );
+
+  /// -----
+  upl_Bview_0[l_id-1]=new BView** [nb_zn];
+  upl_Bview_1[l_id-1]=new BView** [nb_zn];
+
+  upl_Bview_2[l_id-1]=new BView**** [nb_zn];
+  upl_Bview_3[l_id-1]=new BView**** [nb_zn]; /// S2
+  upl_Bview_4[l_id-1]=new BView**** [nb_zn]; /// S2
+  /// -----
+
+  /// Preparer un onglet contenant les zones
+  QTabWidget *tab_zones = new QTabWidget(tab_tirId);
+
+  /// Nombre de zone a regarder pour tirage
+  for (int z_id = zn_start; z_id< zn_stop; z_id++){
+
+   /// Nom de l'onglet des zones
+   QString title = pGame->names[z_id].abv;
+
+   /// Preparer un onglet contenant les uplets
+   QTabWidget *tab_uplets = new QTabWidget(tab_zones);
+
+   /// Nombre d'uplets maxi a avoir
+   int nb_recherche = BMIN_2(pGame->limites[z_id].win, C_MAX_UPL);
+
+   /// Conteneur des visuels
+   upl_Bview_0[l_id-1][z_id]=new BView* [nb_recherche];
+   upl_Bview_1[l_id-1][z_id]=new BView* [nb_recherche];
+
+   upl_Bview_2[l_id-1][z_id]=new BView*** [nb_recherche];
+   upl_Bview_3[l_id-1][z_id]=new BView*** [nb_recherche];
+   upl_Bview_4[l_id-1][z_id]=new BView*** [nb_recherche];
+
+   /// Traiter les uplets
+   for (int g_id = C_MIN_UPL; (g_id<=nb_recherche) && (g_id <= pGame->limites[z_id].win); g_id++) {
+    QString t_rf = "UT_" +
+                   QString::number(obj_upl).rightJustified(2,'0') + "_" +
+                   Txt_eUpl_Ens[e_id] + QString::number(l_id).rightJustified(2,'0') +
+                   "_Z" + QString::number(z_id).rightJustified(2,'0');
+
+
+
+    stTskParam_1 *data = new stTskParam_1;
+    data->u_id = obj_upl;
+    data->my_indexes = &my_indexes;
+    data->t_rf = t_rf;
+    data->l_id = l_id;
+    data->z_id = z_id;
+    data->g_id = g_id;
+
+    emit BSig_UplCal(pGame, e_id, data);
+
+   } /// g_id
+  }  /// z_id
+
+  /// ------------------
+  QString refTir = "";
+  if(e_id==eEnsFdj){
+   refTir = QString("Tirage-")+ QString::number(l_id).rightJustified(2,'0');
+  }
+  else{
+   refTir = QString("Select-")+ QString::number(usrCounter).rightJustified(2,'0');
+   usrCounter++;
+  }
+  tab_tirId->addTab(tab_zones,refTir);
+  /// -----------------
+ }   /// l_id
+
+ return (tab_tirId);
+}
+#else
 /// https://stackoverflow.com/questions/13970070/moving-an-object-to-a-different-thread
 QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 {
@@ -578,6 +694,8 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
  return tab_tirId;
 }
+#endif
+
 
 void BcUpl::saveTimeInTable(Bp::E_Clk ref, etTir upl_type, int eStep, QString humanTime)
 {

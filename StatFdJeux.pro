@@ -143,6 +143,7 @@ SOURCES += \
 
 HEADERS  += \
     BColorPriority.h \
+    BTskParams.h \
     bdelegatecouleurfond.h \
     BFdj.h \
     BFlags.h \
