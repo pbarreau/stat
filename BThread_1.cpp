@@ -1413,7 +1413,7 @@ bool BThread_1::T1_Fill_Bdd(const stGameConf *pGame,
  //int z_id = tsk_param->data->z_id;
  int g_id = tsk_param->data->g_id;
 
- tsk_param->data->o_id = -1;
+ tsk_param->data->o_id = 0;
  tsk_param->data->r_id = -1;
 
  QString sql_msg = getSqlTbv(pGame, tsk_param, ELstUplTot);
