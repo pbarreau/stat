@@ -220,6 +220,12 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
    connect(item_1,SIGNAL(BSig_MkUsrUplets_L4(const QItemSelectionModel *, const int)),
            tmp,SLOT(BSlot_MkUsrUpletsShow(const QItemSelectionModel *, const int)));
   }
+
+  /// connection click montrer tirages
+  if(tmp != nullptr){
+   connect(tmp,SIGNAL(BSig_UplFdjShow(const QString, int )),
+           this,SLOT(BSlot_UplFdjShow(const QString, int )));
+  }
  }
 
  BcCmb * item_2 = new BcCmb(pGame);
@@ -1256,5 +1262,10 @@ void BTirAna::BSlot_Show_Flt(const B2LstSel * sel)
 {
  /// Envoyer au divers onglets
  emit BSig_Show_Flt(sel);
+}
+
+void BTirAna::BSlot_UplFdjShow(const QString items, int zn)
+{
+ emit (BSig_AnaUplFdjShow(items, zn));
 }
 

@@ -1026,6 +1026,11 @@ void BcUpl::BSlot_UplCmr_1(QPoint pos)
  MonMenu.exec(view->viewport()->mapToGlobal(pos));
 }
 
+void BcUpl::BSlot_Mk2_UplCmr_1(QPoint pos)
+{
+
+}
+
 void BcUpl::BSlot_UplSel(const QModelIndex &index)
 {
  BAction_1 *act_1 = qobject_cast<BAction_1 *>(sender());
@@ -2732,6 +2737,46 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  }
 }
 
+void BcUpl::BSlot_Mk2_LstTirages(const QModelIndex &index)
+{
+ QSqlQuery query(db_0);
+ bool status = false;
+
+ BView *view = qobject_cast<BView *>(sender());
+ int z_id = view->getZone();
+ QString t_on = view->getTblName();
+
+ int kid =  index.sibling(index.row(),Bp::colUplKey).data().toInt();
+
+ QString sql_msg = "";
+ sql_msg = sql_msg + "select t2.items from " + t_on
+           + " as t1, Upl_lst as t2\n";
+ sql_msg = sql_msg + "where(\n";
+ sql_msg = sql_msg + "(t1.kid = "+QString::number(kid)+")\n";
+ sql_msg = sql_msg + "AND\n";
+ sql_msg = sql_msg + "(t1.kid = t2.id)\n";
+ sql_msg = sql_msg + "AND\n";
+ sql_msg = sql_msg + "(t2.zn = "+QString::number(z_id)+")\n";
+ sql_msg = sql_msg + ")\n";
+
+#ifndef QT_NO_DEBUG
+ qDebug()<< sql_msg;
+#endif
+
+ if((status = query.exec(sql_msg)) == true){
+  QString items = "";
+  if(query.first()){
+   items = query.value("items").toString();
+   emit(BSig_UplFdjShow(items, z_id));
+  }
+ }
+}
+
+void BcUpl::BSlot_Mk2_LstUpl(const QModelIndex &index)
+{
+
+}
+
 #if C_PGM_THREADED
 void BcUpl::BSlot_tsk_started(){
  QFutureWatcher<stParam_tsk *> * watcher;
@@ -3201,6 +3246,17 @@ BView *BcUpl::Mk2_FillTbv_BView_1(const stGameConf *pGame, stTskParam_1 *tsk_dat
  BAnimateCell * ani_tbv = new BAnimateCell(qtv_tmp);
  qtv_tmp->setItemDelegate(ani_tbv);
 
+ /// gestion des evenements sur la tbview
+ connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+          this, SLOT(BSlot_Mk2_LstTirages( QModelIndex) ) );
+ connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+          this, SLOT(BSlot_Mk2_LstUpl( QModelIndex) ) );
+
+ qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(BSlot_Mk2_UplCmr_1(QPoint)));
+
+
  DessineTbv_BView_1(qtv_tmp, tsk_data);
 
  return qtv_tmp;
@@ -3208,6 +3264,28 @@ BView *BcUpl::Mk2_FillTbv_BView_1(const stGameConf *pGame, stTskParam_1 *tsk_dat
 
 void BcUpl::DessineTbv_BView_1(BView *qtv_tmp, stTskParam_1 *tsk_param)
 {
+ /// regarder si la table existe dans la base !!
+ QSqlQuery query(db_0);
+ bool b_retVal = false;
+ QString t_use = qtv_tmp->getTblName() ;
+ QString sql_msg = "";
+
+ sql_msg = sql_msg + "SELECT count(name) FROM sqlite_master\n";
+ sql_msg = sql_msg + "WHERE (type='table' AND name='"+t_use+"')\n";
+ b_retVal = query.exec(sql_msg);
+
+ if(b_retVal == true){
+  int nbCalc = -1;
+
+  if((b_retVal = query.first()) == true){
+   nbCalc = query.value(0).toInt();
+  }
+
+  if(nbCalc != 1){
+   return;
+  }
+ }
+
  /// Recharger le code sql
  BFpm_upl * m = qobject_cast<BFpm_upl *>(qtv_tmp->model());
  QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
@@ -3228,11 +3306,9 @@ void BcUpl::DessineTbv_BView_1(BView *qtv_tmp, stTskParam_1 *tsk_param)
 
  /// Remplacer par le calcul du Cnp
  int rows_cal_2 = 0;
- QSqlQuery query(db_0);
- bool b_retVal = false;
  //QString sql_tot = sql_ref + "\n" + "Select count(*) as T from tb_00";
- QString sql_tot = "Select count(*) as T from " + qtv_tmp->getTblName();
- if((b_retVal=query.exec(sql_tot))){
+ sql_msg = "Select count(*) as T from " + t_use;
+ if((b_retVal=query.exec(sql_msg))){
   if(query.first()){
    rows_cal_2 = query.value(0).toInt();
   }

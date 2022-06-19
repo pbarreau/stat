@@ -75,6 +75,7 @@ void BSlot_Result_Tir(const int index);
 
 private slots:
 void BSlot_Ensemble_Tir(const int index);
+void BSlot_AnaUplFdjShow(const QString items, int zn);
 void BSlot_Dessine(bool chk);
 void BSlot_ZoomMyPlot(const BView *tbv=nullptr, const QModelIndex &index = QModelIndex());
 

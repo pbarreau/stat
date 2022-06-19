@@ -156,14 +156,18 @@ class BcUpl: public BCount
 #endif
   void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_clicked(const QModelIndex &index);
+  void BSlot_Mk2_LstTirages(const QModelIndex &index);
+  void BSlot_Mk2_LstUpl(const QModelIndex &index);
   void BSlot_over(const QModelIndex &index);
   void BSlot_Repaint(const BView * tbv);
   void BSlot_UplCmr_1(QPoint pos);
+  void BSlot_Mk2_UplCmr_1(QPoint pos);
   void BSlot_UplSel(const QModelIndex & index);
   void BSlot_UplScan(void);
 
   Q_SIGNALS:
   void BSig_UplCal(const stGameConf *pGame, const eUpl_Ens e_id, stTskParam_1 *tsk_param);
+  void BSig_UplFdjShow(const QString items, int zn);
   //void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
 
  private:

@@ -63,11 +63,13 @@ class BTirAna : public QWidget
  void BSig_RazSelection();
  void BSig_AnaLgn(const int &l_id, const int &prx_id);
  void BSig_Show_Flt(const B2LstSel * sel);
+ void BSig_AnaUplFdjShow(const QString items, int zn);
 
  public slots:
  void BSlot_MousePressed(const QModelIndex & index, const int &zn, const etCount &eTyp);
  void BSlot_AnaLgnShow(const int &lgn_id, const int &prx_id);
  void BSlot_Show_Flt(const B2LstSel * sel);
+ void BSlot_UplFdjShow(const QString items, int zn);
 
  private slots:
  void BSlot_ActionButton(int btn_id);
