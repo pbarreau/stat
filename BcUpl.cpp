@@ -504,8 +504,6 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
      if(totalTbv > 0){
       int pos = tb_brc.at(0)->objectName().toInt();
 
-      //QString ong_id = QString::number(pos+1).rightJustified(2,'0');
-      //QString key = t_rf + "_C" + ong_id;
       QString key = tb_brc.at(0)->getTblName();
 
       stUplBViewPos path;
@@ -2274,7 +2272,7 @@ void BcUpl::BSlot_ShowTotal(const QString& lstBoules)
  view->setTitle(st_total);
 }
 
-QWidget *BcUpl::Bview_init(const stGameConf *pGame, int ong_zn, int ong_tir, int offset, int ong_upl, int ong_day, int ong_tab)
+QWidget *BcUpl::Mk1_Bview_init(const stGameConf *pGame, int ong_zn, int ong_tir, int offset, int ong_upl, int ong_day, int ong_tab)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
@@ -2364,6 +2362,105 @@ QWidget *BcUpl::Bview_init(const stGameConf *pGame, int ong_zn, int ong_tir, int
 
  return (wdg_tmp);
  //return qtv_tmp->getScreen();
+}
+
+QWidget *BcUpl::Mk2_Bview_init(const stGameConf *pGame, stTskParam_1 *tsk_data, int offset)
+{
+
+ QWidget * wdg_tmp = new QWidget;
+ QGridLayout *glay_tmp = new QGridLayout;
+
+ int z_id = tsk_data->z_id;
+ int l_id = tsk_data->l_id;
+ int g_id = tsk_data->g_id;
+ int o_id = tsk_data->o_id;
+ int r_id = tsk_data->r_id;
+
+ BView *qtv_tmp = upl_Bview_2[l_id-1][z_id][g_id][o_id][r_id];
+ int upl_ref_in = g_id+C_MIN_UPL;
+
+ QString sql_ref = getSqlTbv(pGame, z_id,l_id, offset, g_id+C_MIN_UPL, r_id+C_MIN_UPL, ELstCal);
+ QString sql_msg = "";
+ sql_msg = sql_ShowItems(pGame,z_id,ELstShowCal,upl_ref_in,sql_ref);
+
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ sqm_tmp->setQuery(sql_msg, db_0);
+
+ /// On effectue la liasion avec le proxy model
+ BFpm_upl * m = new BFpm_upl(2, r_id+1);
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+ qtv_tmp->setSortingEnabled(true);
+
+ while (sqm_tmp->canFetchMore())
+ {
+  sqm_tmp->fetchMore();
+ }
+ int nb_rows = sqm_tmp->rowCount();
+
+ QString strDay[]={"J","J+1","J+?"};
+ int showDay = o_id;
+
+ if((showDay==0) && (pGame->limites[z_id].win==1)){
+  showDay++;
+ }
+#if 0
+ if(showDay == 0){
+  strDay = "J";
+ }
+ else {
+  strDay = "J+1";
+ }
+#endif
+
+ ///int rows_proxy = qtv_tmp->model()->rowCount();
+ QString st_title = "U_" + QString::number(g_id+C_MIN_UPL).rightJustified(2,'0')+
+                    " ("+strDay[showDay]+"). Nb Uplets : 0 sur " + QString::number(nb_rows);
+
+ qtv_tmp->setTitle(st_title);
+
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+
+ int nbCol = sqm_tmp->columnCount();
+ qtv_tmp->resizeColumnsToContents();
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+
+ /// Largeur du tableau
+ ///qtv_tmp->hideColumn(Bp::colId);
+ if(nbCol){
+  qtv_tmp->hideColumn(1);
+  qtv_tmp->hideColumn(2);
+  int l = qtv_tmp->getMinWidth(0);
+  //qtv_tmp->setFixedWidth(l);
+ }
+ else {
+  ;
+ }
+
+
+ glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
+ if(r_id>0){
+  sql_msg = sql_ShowItems(pGame,z_id,ELstShowUnion,upl_ref_in,sql_ref);
+  BView *qtv_tmp_3 = upl_Bview_3[l_id-1][z_id][g_id][o_id][r_id-1];
+  BView *qtv_r_1 = Bview_3_fill_1(qtv_tmp_3, sql_msg);
+
+  BView *qtv_tmp_4 = upl_Bview_4[l_id-1][z_id][g_id][o_id][r_id-1];
+  BView *qtv_r_2 = Bview_4_fill_1(qtv_tmp_4, sql_msg);
+
+  glay_tmp->addWidget(qtv_r_1->getScreen(),0,1);
+  glay_tmp->addWidget(qtv_r_2->getScreen(),0,2);
+ }
+ wdg_tmp->setLayout(glay_tmp);
+
+ return (wdg_tmp);
 }
 
 BView *BcUpl::Bview_3_fill_1(BView *qtv_tmp, QString sql_msg)
@@ -2515,7 +2612,7 @@ QWidget *BcUpl::Mk1_getUplDetails(const stGameConf *pGame, int ong_2_zn, int ong
   }
 
   int offsetDay = defDays[ong_4_day].delta;
-  QWidget * wdg_tmp = Bview_init(pGame, ong_2_zn,ong_1_tir,offsetDay, ong_3_upl, ong_4_day,ong_5_tab);
+  QWidget * wdg_tmp = Mk1_Bview_init(pGame, ong_2_zn,ong_1_tir,offsetDay, ong_3_upl, ong_4_day,ong_5_tab);
   if(wdg_tmp !=nullptr){
    upl_details->addTab(wdg_tmp,"R_"+QString::number(ong_5_tab+1).rightJustified(2,'0'));
   }
@@ -2599,9 +2696,64 @@ QWidget *BcUpl::Mk2_showUplFromRef(const stGameConf *pGame, stTskParam_1 *tsk_da
 
 QWidget *BcUpl::Mk2_getUplDetails(const stGameConf *pGame, stTskParam_1 *tsk_data, int nb_recherche)
 {
- QWidget * wdg_tmp = new QWidget;
+ //QWidget * wdg_tmp = new QWidget;
 
- return wdg_tmp;
+ int z_id = tsk_data->z_id;
+ int l_id = tsk_data->l_id;
+ int g_id = tsk_data->g_id;
+ int o_id = tsk_data->o_id;
+
+ QTabWidget *upl_details = new QTabWidget(this);
+
+ /// Creation des Table View pour chaque onglets resultat
+ for (int r_id=0;r_id<nb_recherche;r_id++) {
+  BView * bv_2 = new BView ;
+  QString objName = "bv2_T" +
+                    QString::number(l_id).rightJustified(2,'0')+
+                    "-"+pGame->names[z_id].abv +
+                    "-U"+QString::number(g_id+1).rightJustified(2,'0')+
+                    "_"+ defDays[o_id].onglet+
+                    "_R" +QString::number(r_id+1).rightJustified(2,'0');
+  bv_2->setObjectName(objName);
+
+  upl_Bview_2[l_id-1][z_id][g_id][o_id][r_id]= bv_2;
+
+  QHBoxLayout *bar_top_2 = getBar_Rch(bv_2,r_id);
+  bv_2->addUpLayout(bar_top_2);
+
+  if(r_id>0){
+   BView * bv_3 = new BView ;
+   upl_Bview_3[l_id-1][z_id][g_id][o_id][r_id-1]= bv_3;
+   objName = "bv3_T" +
+             QString::number(l_id).rightJustified(2,'0')+
+             "-"+pGame->names[z_id].abv +
+             "-U"+QString::number(g_id+1).rightJustified(2,'0')+
+             "_"+ defDays[o_id].onglet+
+             "_R" +QString::number(r_id+1).rightJustified(2,'0');
+   bv_3->setObjectName(objName);
+
+
+   BView * bv_4 = new BView ;
+   upl_Bview_4[l_id-1][z_id][g_id][o_id][r_id-1]= bv_4;
+   objName = "bv4_T" +
+             QString::number(l_id).rightJustified(2,'0')+
+             "-"+pGame->names[z_id].abv +
+             "-U"+QString::number(g_id+1).rightJustified(2,'0')+
+             "_"+ defDays[o_id].onglet+
+             "_R" +QString::number(r_id+1).rightJustified(2,'0');
+   bv_4->setObjectName(objName);
+  }
+
+  ///QWidget * wdg_tmp = Mk1_Bview_init(pGame, z_id,l_id,offsetDay, g_id, o_id,ong_5_tab);
+  int offsetDay = defDays[o_id].delta;
+  tsk_data->r_id = r_id;
+  QWidget * wdg_tmp = Mk2_Bview_init(pGame, tsk_data, offsetDay);
+  if(wdg_tmp !=nullptr){
+   upl_details->addTab(wdg_tmp,"R_"+QString::number(r_id+1).rightJustified(2,'0'));
+  }
+ }
+
+ return upl_details;
 }
 
 QString BcUpl::getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb)
@@ -3076,8 +3228,8 @@ QWidget *BcUpl::Mk2_MainUplet(const stGameConf *pGame, stTskParam_1 *tsk_data)
 
  BView *qtv_tmp = Mk2_FillTbv_BView_1(pGame,tsk_data);
 
- QWidget *tmp = Mk1_showUplFromRef(pGame,z_id,l_id,g_id - C_MIN_UPL);
- //QWidget *tmp = new QWidget;
+ tsk_data->g_id = g_id - C_MIN_UPL;
+ QWidget *tmp = Mk2_showUplFromRef(pGame,tsk_data);
 
  QVBoxLayout *layout = new QVBoxLayout;
  layout->addWidget(tmp, Qt::AlignCenter|Qt::AlignTop);
