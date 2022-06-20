@@ -1758,6 +1758,9 @@ void BTirages::BSlot_Ensemble_Tir(const int index)
 
 void BTirages::BSlot_AnaUplFdjShow(const QString items, int zn)
 {
+ int tot = cbm_flt->count();
+ int key = tot -2 +zn;
+ cbm_flt->setCurrentIndex(key);
  ble_rch->clear();
  ble_rch->setText(items);
 }

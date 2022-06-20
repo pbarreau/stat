@@ -6,6 +6,7 @@
 #include <QTabWidget>
 #include <QSqlQueryModel>
 #include <QGridLayout>
+#include <QComboBox>
 
 #include "game.h"
 #include "BLstSelect.h"
@@ -113,6 +114,7 @@ const B2LstSel * save_sel;
 
 protected:
 BLineEdit *ble_rch;
+QComboBox *cbm_flt;
 Bst_FltJdj *data_flt;
 
 private:

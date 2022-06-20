@@ -203,6 +203,7 @@ QHBoxLayout *BTirFdj::getBar_FltFdj(BView *qtv_tmp)
  QComboBox *tmp_combo = getFltCombo();
  BLineEdit *tmp_ble = new BLineEdit(qtv_tmp);
  ble_rch = tmp_ble;
+ cbm_flt = tmp_combo;
  QFormLayout *item = new QFormLayout[2];
 
  ///--------- Icon
