@@ -377,8 +377,8 @@ QString BThread_1::Mk2_sql_ShowItems(const stGameConf *pGame, const stThreadPara
 }
 
 QString BThread_1::Mk2_getSqlTbv(const stGameConf *pGame,
-                             const stThreadParam *tsk_param,
-                             eUpl_Lst target, int sel_item)
+                                 const stThreadParam *tsk_param,
+                                 eUpl_Lst target, int sel_item)
 {
 
  eUpl_Ens e_id = tsk_param->e_id;
@@ -1404,19 +1404,23 @@ void BThread_1::BSlot_UplCal(const stGameConf *pGame, const eUpl_Ens e_id,  stTs
 
  QString cur_table = "";
  stThreadParam param;
+ stTskParam_1 p1 = *tsk_param;
  param.e_id = e_id;
  param.data = tsk_param;
 
  /// Faire les calculs pour creer table dans la base
- Mk2_T1_Fill_Bdd(pGame, &param, &cur_table);
+ Mk2_FillBddStep_1(pGame, &param, &cur_table);
 
  /// Emettre table prete pour permettre affichage
+ /// voir destruction tsk_param!!!!
  emit(BSig_UplReadyStep1(cur_table, tsk_param));
+
+ Mk2_FillBddStep_2(pGame, &param, cur_table);
 }
 
-bool BThread_1::Mk2_T1_Fill_Bdd(const stGameConf *pGame,
-                            const stThreadParam *tsk_param,
-                            QString * tblName)
+bool BThread_1::Mk2_FillBddStep_1(const stGameConf *pGame,
+                                  const stThreadParam *tsk_param,
+                                  QString * tblName)
 {
  QSqlQuery query(db_tsk1);
  QString cnx_1=pGame->db_ref->cnx;
@@ -1435,10 +1439,10 @@ bool BThread_1::Mk2_T1_Fill_Bdd(const stGameConf *pGame,
 
 #ifndef QT_NO_DEBUG
  QString target = "";
-  target = "dbg_upl_lst-1.txt";
-  BTest::writetoFile(target,sql_msg,false);
-  target = "dbg_upl_lst-2.txt";
-  BTest::writetoFile(target,upl_lst,false);
+ target = "dbg_upl_lst-1.txt";
+ BTest::writetoFile(target,sql_msg,false);
+ target = "dbg_upl_lst-2.txt";
+ BTest::writetoFile(target,upl_lst,false);
 #endif
 
  if((ret_val = query.exec(upl_lst)) == true){
@@ -1475,6 +1479,119 @@ bool BThread_1::Mk2_T1_Fill_Bdd(const stGameConf *pGame,
  }
 
  return ret_val;
+}
+
+bool BThread_1::Mk2_FillBddStep_2(const stGameConf *pGame, const stThreadParam *tsk_param, QString tblName)
+{
+ QSqlQuery query(db_tsk1);
+ QString cnx_1=pGame->db_ref->cnx;
+
+ bool ret_val =false;
+ QString sql_msg = "";
+
+ sql_msg = sql_msg + "select t1.*, t2.items From (" + tblName + ") as t1, (Upl_lst) as t2\n";
+ sql_msg = sql_msg + "where(\n\t(t1.state = "+QString::number(eCalPending)+")\n";
+ sql_msg = sql_msg + "\tAND\n";
+ sql_msg = sql_msg + "\t(t1.kid=t2.id)\n";
+ sql_msg = sql_msg + ")\n";
+
+#ifndef QT_NO_DEBUG
+ QString target = "";
+ //target = "dbg_upl_lst-1.txt";
+ //BTest::writetoFile(target,sql_msg,false);
+ qDebug()<< sql_msg;
+#endif
+
+ if((ret_val = query.exec(sql_msg))){
+  QString upl_cur = "";
+  if(query.first()){
+   bool status = false;
+   do{
+    status = Mk2_ThatUplUpdate(tblName, query, eCalStarted);
+    if(status){
+     //status = Mk2_ThatUplAnalyz(pGame,tsk_param,tblName, query);
+     if(status){
+      status = Mk2_ThatUplUpdate(tblName, query, eCalReady);
+     }
+    }
+   }while((query.next()) && (status == true));
+   ret_val = status;
+  }
+ }
+ return ret_val;
+}
+
+bool BThread_1::Mk2_ThatUplUpdate(QString tblName, QSqlQuery query, eUpl_Cal eNewVal)
+{
+ QSqlQuery query_2(db_tsk1);
+ bool status = false;
+
+ QString sql_msg_2 ="";
+
+ int uid = query.value("uid").toInt();
+ int kid = query.value("kid").toInt();
+
+ /// Indiquer traitement de cet uplet
+ sql_msg_2 = sql_msg_2 + "update " + tblName + "\n";
+ sql_msg_2 = sql_msg_2 + "set state = " + QString::number(eNewVal) + "\n";
+ sql_msg_2 = sql_msg_2 + "where (uid = " + QString::number(uid) + ")\n";
+
+ status = query_2.exec(sql_msg_2);
+
+ return status;
+}
+
+bool BThread_1::Mk2_ThatUplAnalyz(const stGameConf *pGame,
+                                  const stThreadParam *tsk_param,
+                                  QString tblName, QSqlQuery query)
+{
+ bool status = false;
+
+ int z_id = tsk_param->data->z_id;
+
+ QString sql_msg_2 ="";
+
+ int uid = query.value("uid").toInt();
+ int kid = query.value("kid").toInt();
+
+
+ eUpl_Lst tabCal[][3]=
+ {
+  {ELstUplTotNot,ELstUplTotNot,ELstUplTotNot},
+  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext},
+  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext}
+ };
+
+ int nb_recherche = pGame->limites[z_id].win;
+
+ for (int o_id = 0;o_id< C_NB_OFFSET;o_id++) {
+  tsk_param->data->o_id = o_id;
+
+  for (int r_id=0;r_id < C_NB_SUB_ONG;r_id++) {
+   if(r_id>=nb_recherche){
+    continue;
+   }
+
+   tsk_param->data->r_id = r_id;
+
+   eUpl_Lst c_id = tabCal[o_id][r_id];
+   //tsk_param->data->c_id = c_id;
+
+   QString t_on = tsk_param->data->t_rf +
+                  "_D" + QString::number(o_id).rightJustified(2,'0') +
+                  "_R" + QString::number(r_id+1).rightJustified(2,'0');
+
+   //Mk1_T2_Fill_Bdd(nullptr);
+
+   if(r_id > 0){
+    //Mk1_T3_Fill_Bdd(nullptr);
+    //Mk1_T4_Fill_Bdd(nullptr);
+    ;
+   }
+  }
+ }
+
+ return true; //status;
 }
 
 #if 0
@@ -1873,9 +1990,9 @@ void BThread_1::Mk1_T2_Fill_Bdd(stParam_tsk *tsk_param)
 
  /// initialisation msg sql
  sql_ref = Mk1_getSqlTbv(pGame, z_id,
-                     l_id, o_id,
-                     g_id, r_id+C_MIN_UPL,
-                     c_id,g_lm);
+                         l_id, o_id,
+                         g_id, r_id+C_MIN_UPL,
+                         c_id,g_lm);
 #if 0
  QString t_use = t_rf + "_C" +
                  QString::number(g_id).rightJustified(2,'0')+
@@ -1913,9 +2030,9 @@ void BThread_1::Mk1_T3_Fill_Bdd(stParam_tsk *tsk_param)
 
  /// initialisation msg sql
  sql_ref = Mk1_getSqlTbv(pGame, z_id,
-                     l_id, o_id,
-                     g_id, r_id+C_MIN_UPL,
-                     c_id,g_lm);
+                         l_id, o_id,
+                         g_id, r_id+C_MIN_UPL,
+                         c_id,g_lm);
 
  sql_msg = Mk1_sql_ShowItems(pGame,z_id,ELstShowUnion,g_id, sql_ref, r_id);
 
@@ -2151,96 +2268,96 @@ void BThread_1::Mk1_sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId,
   /// Trouver la liste des boules
   case ELstBle:
   case ELstBleNext:
-  {
-   sql_msg = Mk1_sql_ElmFrmTir(pGame,zn,sql_step,ref_day,tabInOut);
+   {
+    sql_msg = Mk1_sql_ElmFrmTir(pGame,zn,sql_step,ref_day,tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Trouver la liste des uplets
   case ELstUpl:
   case ELstUplNot:
   case ELstUplNext:
-  {
-   sql_msg = Mk1_sql_UplFrmElm(pGame,zn,upl_ref_in,upl_sub,sql_step, tabInOut);
+   {
+    sql_msg = Mk1_sql_UplFrmElm(pGame,zn,upl_ref_in,upl_sub,sql_step, tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Trouver la liste des tirages pour les uplets
   case ELstTirUpl:
-  {
-   sql_msg = Mk1_sql_TirFrmUpl(pGame,zn,upl_ref_in,tabInOut);
+   {
+    sql_msg = Mk1_sql_TirFrmUpl(pGame,zn,upl_ref_in,tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Comptabiler les uplets
   case ELstUplTot:
   case ELstUplTotNot:
   case ELstUplTotNext:
-  {
-   sql_msg = Mk1_sql_TotFrmTir(pGame, zn, upl_ref_in, upl_sub, sql_step,tabInOut);
+   {
+    sql_msg = Mk1_sql_TotFrmTir(pGame, zn, upl_ref_in, upl_sub, sql_step,tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
   case ELstBleNot:
-  {
-   int targetUpl=-2;
-   if (upl_sub == -1){
-    targetUpl = upl_ref_in;
-   }
-   else {
-    targetUpl = upl_sub;
-   }
-   sql_msg = Mk1_sql_ElmNotFrmTir(pGame,zn, targetUpl, tabInOut);
+   {
+    int targetUpl=-2;
+    if (upl_sub == -1){
+     targetUpl = upl_ref_in;
+    }
+    else {
+     targetUpl = upl_sub;
+    }
+    sql_msg = Mk1_sql_ElmNotFrmTir(pGame,zn, targetUpl, tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Lister les tirages apres ceux contenant les uplets
   case ELstTirUplNext:
-  {
-   sql_msg = Mk1_sql_NxtTirUpl(pGame,zn, offset, tabInOut);
+   {
+    sql_msg = Mk1_sql_NxtTirUpl(pGame,zn, offset, tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// ERREUR

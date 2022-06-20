@@ -81,8 +81,12 @@ class BThread_1: public QWidget //: public QThread
   bool Mk1_isSelectedKnown(etTir uplType, QString cur_sel, int zn, int *key);
   bool Mk1_T1_Fill_Bdd(stParam_tsk *tsk_param);
   bool Mk1_updateTracking(int v_key, eUpl_Cal v_cal);
-
-  bool Mk2_T1_Fill_Bdd(const stGameConf *pGame, const stThreadParam *tsk_param, QString *tblName);
+  bool Mk2_ThatUplUpdate(QString tblName, QSqlQuery query, eUpl_Cal eNewVal);
+  bool Mk2_ThatUplAnalyz(const stGameConf *pGame,
+                         const stThreadParam *tsk_param,
+                         QString tblName, QSqlQuery query);
+  bool Mk2_FillBddStep_1(const stGameConf *pGame, const stThreadParam *tsk_param, QString *tblName);
+  bool Mk2_FillBddStep_2(const stGameConf *pGame, const stThreadParam *tsk_param, QString tblName);
 
   QString Mk1_getCommaSeparatedTirage(const stGameConf *pGame, int zn, int tir_id);
   QString Mk1_getTablePrefixFromSelection_tsk(QString items, int zn=0, stUpdData *upl_data=nullptr);

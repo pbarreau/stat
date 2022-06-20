@@ -485,12 +485,15 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
 
     stTskParam_1 *data = new stTskParam_1;
-    data->u_id = obj_upl;
-    data->my_indexes = &my_indexes;
-    data->t_rf = t_rf;
-    data->l_id = l_id;
-    data->z_id = z_id;
+
     data->g_id = g_id;
+    data->l_id = l_id;
+    data->my_indexes = &my_indexes;
+    data->o_id = 0;
+    data->r_id = 0;
+    data->t_rf = t_rf;
+    data->u_id = obj_upl;
+    data->z_id = z_id;
 
     emit BSig_UplCal(pGame, e_id, data);
 
