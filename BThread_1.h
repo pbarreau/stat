@@ -68,6 +68,7 @@ class BThread_1: public QWidget //: public QThread
  public:
   BThread_1(const stGameConf *pGame);
   BThread_1(stTsk1 *def);
+  ~BThread_1();
   void start();
   void start(etStep eStep = eStep_T1);
   void setUserSelection(QString sel);
@@ -77,37 +78,41 @@ class BThread_1: public QWidget //: public QThread
   void BSlot_UplCal(const stGameConf *pGame, const eUpl_Ens e_id, stTskParam_1 *tsk_param);
 
  private:
-  void run() ;//override;
-  void creationTables(etStep eStep = eStep_T1);
+  bool Mk1_isSelectedKnown(etTir uplType, QString cur_sel, int zn, int *key);
+  bool Mk1_T1_Fill_Bdd(stParam_tsk *tsk_param);
+  bool Mk1_updateTracking(int v_key, eUpl_Cal v_cal);
 
-  bool T1_Fill_Bdd(const stGameConf *pGame, const stThreadParam *tsk_param, QString *tblName);
-  bool T1_Fill_Bdd(stParam_tsk *tsk_param);
-  stParam_tsk *T1_Scan(stParam_tsk *tsk_param);
-  QString getTablePrefixFromSelection_tsk(QString items, int zn=0, stUpdData *upl_data=nullptr);
+  bool Mk2_T1_Fill_Bdd(const stGameConf *pGame, const stThreadParam *tsk_param, QString *tblName);
 
-  stParam_tsk *FillBdd_StartPoint(stParam_tsk *tsk_param);
-  void T2_Fill_Bdd(stParam_tsk *tsk_param);
-  void T3_Fill_Bdd(stParam_tsk *tsk_param);
-  void T4_Fill_Bdd(stParam_tsk *tsk_param);
+  QString Mk1_getCommaSeparatedTirage(const stGameConf *pGame, int zn, int tir_id);
+  QString Mk1_getTablePrefixFromSelection_tsk(QString items, int zn=0, stUpdData *upl_data=nullptr);
+  QString Mk1_sql_ElmNotFrmTir(const stGameConf *pGame, int zn, int  upl_ref_in, QString tabInOut[][3]);
+  QString Mk1_sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString tabInOut[][3]);
+  QString Mk1_sql_TirFrmUpl(const stGameConf *pGame, int zn,int  upl_ref_in, QString tabInOut[][3]);
+  QString Mk1_sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3]);
+  QString Mk1_sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3]);
+  QString Mk1_getSqlTbv(const stGameConf *pGame, int zn, int tir_Id, int day_Delta, int upl_Grp, int r_id=-1, eUpl_Lst target=ELstCal, int sel_item=-1);
+  QString Mk1_sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
+  QString Mk1_sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_step, int tir_id,QString tabInOut[][3]);
 
-  bool updateTracking(int v_key, eUpl_Cal v_cal);
+  QString Mk2_getSqlTbv(const stGameConf *pGame, const stThreadParam *tsk_param, eUpl_Lst target=ELstCal, int sel_item=-1);
+  QString Mk2_sql_ElmFrmTir(const stGameConf *pGame, const stThreadParam *tsk_param, eUpl_Lst sql_step, QString tabInOut[][3]);
+  QString Mk2_sql_ShowItems(const stGameConf *pGame, const stThreadParam *tsk_param, eUpl_Lst sql_show, QString cur_sql, int upl_sub=-1);
 
+  stParam_tsk *Mk1_FillBdd_StartPoint(stParam_tsk *tsk_param);
+  stParam_tsk *Mk1_T1_Scan(stParam_tsk *tsk_param);
+  stParam_tsk *Mk1_T1_Scan_tmp(stParam_tsk *tsk_param);
 
- private:
-  bool isSelectedKnown(etTir uplType, QString cur_sel, int zn, int *key);
-  QString getCommaSeparatedTirage(const stGameConf *pGame, int zn, int tir_id);
-  //QString getSqlTbv(const stGameConf *pGame, const eUpl_Ens e_id, int zn, int tir_Id, int day_Delta, int upl_Grp, int r_id=-1, eUpl_Lst target=ELstCal, int sel_item=-1);
-  QString getSqlTbv(const stGameConf *pGame, const stThreadParam *tsk_param, eUpl_Lst target=ELstCal, int sel_item=-1);
-  QString sql_ElmFrmTir(const stGameConf *pGame, const stThreadParam *tsk_param, eUpl_Lst sql_step, QString tabInOut[][3]);
-  QString sql_ShowItems(const stGameConf *pGame, const stThreadParam *tsk_param, eUpl_Lst sql_show, QString cur_sql, int upl_sub=-1);
-  void sql_upl_lev_1(const stGameConf *pGame, const stThreadParam *tsk_param, int step, QString tabInOut[][3]);
-  void sql_upl_lev_2(const stGameConf *pGame, const stThreadParam *tsk_param,  QString tabInOut[][C_TOT_CAL][3]);
+  void Mk1_creationTables(etStep eStep = eStep_T1);
+  void Mk1_run() ;//override;
+  void Mk1_T2_Fill_Bdd(stParam_tsk *tsk_param);
+  void Mk1_T3_Fill_Bdd(stParam_tsk *tsk_param);
+  void Mk1_T4_Fill_Bdd(stParam_tsk *tsk_param);
+  void Mk1_sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int offset, int upl_sub, int step, QString tabInOut[][3]);
+  void Mk1_sql_upl_lev_2(const stGameConf *pGame, int z_id, int l_id, int o_id, int g_id, int r_id,  QString tabInOut[][C_TOT_CAL][3]);
 
-  QString sql_ElmNotFrmTir(const stGameConf *pGame, int zn, int  upl_ref_in, QString tabInOut[][3]);
-  QString sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString tabInOut[][3]);
-  QString sql_TirFrmUpl(const stGameConf *pGame, int zn,int  upl_ref_in, QString tabInOut[][3]);
-  QString sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3]);
-  QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3]);
+  void Mk2_sql_upl_lev_1(const stGameConf *pGame, const stThreadParam *tsk_param, int step, QString tabInOut[][3]);
+  void Mk2_sql_upl_lev_2(const stGameConf *pGame, const stThreadParam *tsk_param,  QString tabInOut[][C_TOT_CAL][3]);
 
  signals:
   void BSig_UplReadyStep1(const QString tblName, stTskParam_1 *tsk_param);
