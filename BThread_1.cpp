@@ -336,6 +336,15 @@ QString BThread_1::sql_ShowItems(const stGameConf *pGame, const stThreadParam *t
  }
 
  if(sql_show == ELstShowUplLst){
+
+  eUpl_Cal action = eCalNotDef;
+  if(tsk_param->e_id == eEnsFdj){
+   action = eCalPending;
+  }
+  else{
+   action = eCalNotSet;
+  }
+
   sql_msg=cur_sql;
   sql_msg = sql_msg +"\n";
 
@@ -345,7 +354,7 @@ QString BThread_1::sql_ShowItems(const stGameConf *pGame, const stThreadParam *t
 
   key_0 = "";
   key_0 = key_0 + "Insert into " + tbl_upl +"\n" ;
-  key_0 = key_0 + "select NULL, " + QString::number(eCalPending) +
+  key_0 = key_0 + "select NULL, " + QString::number(action) +
           ", " + QString::number(z_id) +", t1.items\n" ;
   key_0 = key_0 + "From\n" ;
   key_0 = key_0 + "--- Debut Reponse globale\n" ;

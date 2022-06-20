@@ -2772,7 +2772,7 @@ void BcUpl::BSlot_Mk2_LstTirages(const QModelIndex &index)
   QString items = "";
   if(query.first()){
    items = query.value("items").toString();
-   emit(BSig_UplFdjShow(items, z_id));
+   Q_EMIT(BSig_UplFdjShow(items, z_id));
   }
  }
 }
