@@ -2235,14 +2235,16 @@ void BcUpl::BSlot_ShowTotal(const QString& lstBoules)
 {
 
  BLineEdit *ble_tmp = qobject_cast<BLineEdit *>(sender());
- int tab_id = ble_tmp->objectName().toInt();
+ int g_id = ble_tmp->objectName().toInt()+1;
 
  BView *view = ble_tmp->getView();
+ int z_id = view->getZone();
+
  BFpm_upl *m = qobject_cast<BFpm_upl *>(view->model());
  m->setSearchItems(lstBoules);
- QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+ QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
- int nb_col = vl->columnCount();
+ int nb_col = sqm_tmp->columnCount();
  view->sortByColumn(nb_col-1,Qt::SortOrder::DescendingOrder);
 
  QString st_title = view->getTitle();
@@ -2252,27 +2254,52 @@ void BcUpl::BSlot_ShowTotal(const QString& lstBoules)
  st_title = QString(lst.at(0)).simplified();
 
  /// Necessaire pour compter toutes les lignes de reponses
- while (vl->canFetchMore())
+ while (sqm_tmp->canFetchMore())
  {
-  vl->fetchMore();
+  sqm_tmp->fetchMore();
  }
 
  int nb_lgn_ftr = m->rowCount();
- int nb_lgn_rel = vl->rowCount();
+ int rows_cal_1 = sqm_tmp->rowCount();
 
-#if 0
- QString st_total = st_title +
-                    ". Nb Uplets : " +
-                    QString::number(nb_lgn_ftr)+
-                    " sur " + QString::number(nb_lgn_rel);
-#endif
- QString v0 = QString::number(tab_id+1).rightJustified(2,'0');
- QString v1 = st_title;
- QString v2 = QString::number(nb_lgn_ftr);
- QString v3 = QString::number(nb_lgn_rel);
- QString st_total = QString(ref_lcnp [1]).arg(v1).arg(v2).arg(v3);
+ int nbBoulesTotal = -1;
+ if(e_id == eEnsFdj){
+  nbBoulesTotal = gm_def->limites[z_id].win;
+ }
+ else{
+  nbBoulesTotal = my_indexes.size();
+ }
+ /// Calcul du Cnp
+ BCnp *b = new BCnp(nbBoulesTotal,g_id);
+ int rows_cal_3 = b->BP_count();
 
- view->setTitle(st_total);
+ QString v0 = "";
+ QString v1 = "";
+ QString v2 = "";
+ QString v3 = "";
+ QString v4 = "";
+ QString v5 = "";
+ QString v6 = "";
+
+ if(ble_tmp->text().simplified().size() == 0){
+   v1 = QString::number(g_id).rightJustified(2,'0');
+   v2 = QString::number(nbBoulesTotal);
+   v3 = QString::number(g_id);
+   v4 = QString::number(rows_cal_1);
+   v5 = QString::number(rows_cal_3);
+
+   v6 = QString(ref_lcnp[0]).arg(v1).arg(v2).arg(v3).arg(v4).arg(v5);
+ }
+ else{
+  v0 = QString::number(g_id).rightJustified(2,'0');
+  v1 = st_title;
+  v2 = QString::number(nb_lgn_ftr);
+  v3 = QString::number(rows_cal_1);
+
+  v6 = QString(ref_lcnp [1]).arg(v1).arg(v2).arg(v3);
+ }
+
+ view->setTitle(v6);
 }
 
 QWidget *BcUpl::Mk1_Bview_init(const stGameConf *pGame, int ong_zn, int ong_tir, int offset, int ong_upl, int ong_day, int ong_tab)
@@ -3397,7 +3424,7 @@ BView *BcUpl::Mk2_FillTbv_BView_1(const stGameConf *pGame, stTskParam_1 *tsk_dat
  sqm_tmp->setQuery(sql_msg, db_0);
 
  /// On effectue la liasion avec le proxy model
- BFpm_upl * m = new BFpm_upl(1, g_id);
+ BFpm_upl * m = new BFpm_upl(Bp::E_Col::colStartUpl, g_id);
  m->setDynamicSortFilter(true);
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
@@ -3473,6 +3500,7 @@ void BcUpl::DessineTbv_BView_1(BView *qtv_tmp, stTskParam_1 *tsk_param)
    rows_cal_2 = query.value(0).toInt();
   }
  }
+ int nb_lgn_ftr = m->rowCount();
 
  int nbBoulesTotal = -1;
  int z_id = tsk_param->z_id;

@@ -63,6 +63,7 @@ namespace Bp {
   colUplState = 2,
   colTxt=2,
   colTotalv2=3,
+  colStartUpl=3,
   colVisual=3,
   colTfdjZs=3,  /// Colonne depart de zone def dans Tbl Tirages
   colEc=4,
