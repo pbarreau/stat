@@ -179,8 +179,15 @@ class BcUpl: public BCount
   QModelIndexList my_indexes;
   QTabWidget *uplTirTab;
   bool isScanRuning;
-  int upl_zn;
   eUpl_Ens e_id;
+
+  int upl_zn;
+  BView ****upl_Bview_0;   /// Bilan d'un uplet
+  BView ****upl_Bview_1;   /// Selection d'un uplet
+  BView ******upl_Bview_2; /// Resultat pour la selection
+  BView ******upl_Bview_3; /// Bilan de resultat
+  BView ******upl_Bview_4; /// complementaire de resultat
+
   BAnimateCell ****tbv_Anim;   /// Selection d'un uplet
   BThread_1 *producteur;
   QMap<QString, stUplBViewPos> *mapView_1;

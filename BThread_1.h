@@ -11,8 +11,11 @@
 #include "BcUpl.h"
 
 struct stThreadParam{
+  int obj_upl; /// object counter
   int u_id;
-  eUpl_Ens e_id;
+  QString tblKey;
+  eUpl_Ens e_id; /// Ref source des uplets
+  eUpl_Lst c_id; /// Ref du calcul en cours
   stTskParam_1 *data;
 };
 
@@ -83,10 +86,9 @@ class BThread_1: public QWidget //: public QThread
   bool Mk1_updateTracking(int v_key, eUpl_Cal v_cal);
   bool Mk2_ThatUplUpdate(QString tblName, QSqlQuery query, eUpl_Cal eNewVal);
   bool Mk2_ThatUplAnalyz(const stGameConf *pGame,
-                         const stThreadParam *tsk_param,
-                         QString tblName, QSqlQuery query);
+                         stThreadParam *tsk_param, QSqlQuery query);
   bool Mk2_FillBddStep_1(const stGameConf *pGame, const stThreadParam *tsk_param, QString *tblName);
-  bool Mk2_FillBddStep_2(const stGameConf *pGame, const stThreadParam *tsk_param, QString tblName);
+  bool Mk2_FillBddStep_2(const stGameConf *pGame, stThreadParam *tsk_param, QString tblName);
 
   QString Mk1_getCommaSeparatedTirage(const stGameConf *pGame, int zn, int tir_id);
   QString Mk1_getTablePrefixFromSelection_tsk(QString items, int zn=0, stUpdData *upl_data=nullptr);
@@ -117,6 +119,7 @@ class BThread_1: public QWidget //: public QThread
 
   void Mk2_sql_upl_lev_1(const stGameConf *pGame, const stThreadParam *tsk_param, int step, QString tabInOut[][3]);
   void Mk2_sql_upl_lev_2(const stGameConf *pGame, const stThreadParam *tsk_param,  QString tabInOut[][C_TOT_CAL][3]);
+  void Mk2_T2_Fill_Bdd(const stGameConf *pGame, stThreadParam *tsk_param);
 
  signals:
   void BSig_UplReadyStep1(const QString tblName, stTskParam_1 *tsk_param);

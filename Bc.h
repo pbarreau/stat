@@ -93,6 +93,7 @@ class BCount:public QWidget
  BView_1 **tabTbv;
  QSqlDatabase dbCount;
 
+#if 0
  protected:
  ///int upl_items;
  int upl_zn;
@@ -102,7 +103,7 @@ class BCount:public QWidget
  BView ******upl_Bview_2; /// Resultat pour la selection
  BView ******upl_Bview_3; /// Bilan de resultat
  BView ******upl_Bview_4; /// complementaire de resultat
-
+#endif
 
  public:
  typedef struct _stMkLocal{

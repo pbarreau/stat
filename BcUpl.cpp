@@ -89,7 +89,7 @@ int BcUpl::nb_max_recherche = 0;
 QThreadPool *BcUpl::pool = nullptr;
 
 BcUpl::BcUpl(const stGameConf *pGame, QWidget *parent, eUpl_Ens eUpl, int zn, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
- :BCount (pGame, eCountUpl)
+ :BCount (pGame, eCountUpl), upl_zn(zn)
 {
  obj_upl++;
  ana_parent = parent;
@@ -430,7 +430,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
   nbTirJour = C_NB_TIR_LIR;
  }
  else{
-  zn_start = 0;
+  zn_start = upl_zn;
   zn_stop = zn_start +1;
   nbTirJour = 1;
  }

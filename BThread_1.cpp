@@ -290,7 +290,9 @@ QString BThread_1::Mk2_sql_ShowItems(const stGameConf *pGame, const stThreadPara
   key_0 = key_0 + "select * from " + tbl_upl +"\n" ;
   key_0 = key_0 + ")as t2 \n";
   key_0 = key_0 + "where( \n";
-  key_0 = key_0 + "t1.items = t2.items \n";
+  key_0 = key_0 + "(t1.items = t2.items)\n";
+  key_0 = key_0 + "AND\n";
+  key_0 = key_0 + "(t2.zn = "+QString::number(z_id)+")\n";
   key_0 = key_0 + ") \n";
 
   sql_msg = key_0;
@@ -358,17 +360,17 @@ QString BThread_1::Mk2_sql_ShowItems(const stGameConf *pGame, const stThreadPara
             + key_f + " as items from (tb_uplets) as t1 ";
 
   key_0 = "";
-  key_0 = key_0 + "Insert into " + tbl_upl +"\n" ;
+  key_0 = key_0 + "INSERT into " + tbl_upl +" \n" ;
   key_0 = key_0 + "select NULL, " + QString::number(action) +
-          ", " + QString::number(z_id) +", t1.items\n" ;
+          ", " + QString::number(z_id) +", t1.items \n" ;
   key_0 = key_0 + "From\n" ;
   key_0 = key_0 + "--- Debut Reponse globale\n" ;
   key_0 = key_0 + "(\n" ;
   key_0 = key_0 + sql_msg ;
   key_0 = key_0 + ") as t1\n" ;
   key_0 = key_0 + "--- Fin Reponse globale\n" ;
-  key_0 = key_0 + "where(t1.items not in (select t2.items from "
-          + tbl_upl + " as t2))\n" ;
+  key_0 = key_0 + "where(t1.items not in (select t2.items from ("
+          + tbl_upl + ") as t2 where(t2.zn="+QString::number(z_id)+")))\n" ;
 
   sql_msg = key_0;
  }
@@ -531,6 +533,50 @@ void BThread_1::Mk2_sql_upl_lev_2(const stGameConf *pGame, const stThreadParam *
   tabInOut[r_id-C_MIN_UPL][item][1]= SqlData[item][1];
   tabInOut[r_id-C_MIN_UPL][item][2]= SqlData[item][2];
  }
+}
+
+void BThread_1::Mk2_T2_Fill_Bdd(const stGameConf *pGame, stThreadParam *tsk_param)
+{
+
+ QString cnx_1=pGame->db_ref->cnx;
+
+ eUpl_Ens e_id = tsk_param->e_id;
+
+ int z_id = tsk_param->data->z_id;
+ int l_id = tsk_param->data->l_id;
+ int g_id = tsk_param->data->g_id;
+ int o_id = tsk_param->data->o_id;
+ int r_id = tsk_param->data->r_id;
+ QString t_rf = tsk_param->data->t_rf;
+ eUpl_Lst c_id = tsk_param->c_id;
+ int u_id = tsk_param->u_id;
+
+ QString sql_ref ="";
+ QString sql_msg = "";
+ QString tbl_use = "";
+
+ /// initialisation msg sql
+#if 0
+ sql_ref = Mk1_getSqlTbv(pGame, z_id,
+                         l_id, o_id,
+                         g_id, r_id+C_MIN_UPL,
+                         c_id,u_id);
+#endif
+ tsk_param->data->r_id = r_id+C_MIN_UPL;
+ sql_ref = Mk2_getSqlTbv(pGame,tsk_param,c_id,u_id);
+
+ //sql_msg = Mk1_sql_ShowItems(pGame,z_id,ELstShowCal,g_id,sql_ref);
+ sql_msg = Mk2_sql_ShowItems(pGame,tsk_param,ELstShowCal,sql_ref);
+
+#ifndef QT_NO_DEBUG
+ QString target = "";
+ target = "dbg_upl_lst-3.txt";
+ BTest::writetoFile(target,sql_ref,false);
+ target = "dbg_upl_lst-4.txt";
+ BTest::writetoFile(target,sql_msg,false);
+#endif
+ QString t_use = t_rf + "_T1";
+ DB_Tools::createOrReadTable(t_use,cnx_1,sql_msg);
 }
 
 bool BThread_1::Mk1_isSelectedKnown(etTir uplType, QString cur_sel, int zn, int *key)
@@ -1403,19 +1449,27 @@ void BThread_1::BSlot_UplCal(const stGameConf *pGame, const eUpl_Ens e_id,  stTs
     );
 
  QString cur_table = "";
+#if 0
  stThreadParam param;
  stTskParam_1 p1 = *tsk_param;
+
  param.e_id = e_id;
+ param.u_id = -1;
  param.data = tsk_param;
+#endif
+ stThreadParam *param = new stThreadParam;
+ param->e_id = e_id;
+ param->u_id = -1;
+ param->data = tsk_param;
 
  /// Faire les calculs pour creer table dans la base
- Mk2_FillBddStep_1(pGame, &param, &cur_table);
+ Mk2_FillBddStep_1(pGame, param, &cur_table);
 
  /// Emettre table prete pour permettre affichage
  /// voir destruction tsk_param!!!!
  emit(BSig_UplReadyStep1(cur_table, tsk_param));
 
- Mk2_FillBddStep_2(pGame, &param, cur_table);
+ //Mk2_FillBddStep_2(pGame, param, cur_table);
 }
 
 bool BThread_1::Mk2_FillBddStep_1(const stGameConf *pGame,
@@ -1477,11 +1531,14 @@ bool BThread_1::Mk2_FillBddStep_1(const stGameConf *pGame,
 
   }
  }
+ else{
+  DB_Tools::DisplayError("Tsk",&query,sql_msg);
+ }
 
  return ret_val;
 }
 
-bool BThread_1::Mk2_FillBddStep_2(const stGameConf *pGame, const stThreadParam *tsk_param, QString tblName)
+bool BThread_1::Mk2_FillBddStep_2(const stGameConf *pGame,  stThreadParam *tsk_param, QString tblName)
 {
  QSqlQuery query(db_tsk1);
  QString cnx_1=pGame->db_ref->cnx;
@@ -1509,11 +1566,12 @@ bool BThread_1::Mk2_FillBddStep_2(const stGameConf *pGame, const stThreadParam *
    do{
     status = Mk2_ThatUplUpdate(tblName, query, eCalStarted);
     if(status){
-     //status = Mk2_ThatUplAnalyz(pGame,tsk_param,tblName, query);
+     status = Mk2_ThatUplAnalyz(pGame,tsk_param, query);
      if(status){
       status = Mk2_ThatUplUpdate(tblName, query, eCalReady);
      }
     }
+    break;
    }while((query.next()) && (status == true));
    ret_val = status;
   }
@@ -1542,8 +1600,8 @@ bool BThread_1::Mk2_ThatUplUpdate(QString tblName, QSqlQuery query, eUpl_Cal eNe
 }
 
 bool BThread_1::Mk2_ThatUplAnalyz(const stGameConf *pGame,
-                                  const stThreadParam *tsk_param,
-                                  QString tblName, QSqlQuery query)
+                                  stThreadParam *tsk_param,
+                                  QSqlQuery query)
 {
  bool status = false;
 
@@ -1551,9 +1609,11 @@ bool BThread_1::Mk2_ThatUplAnalyz(const stGameConf *pGame,
 
  QString sql_msg_2 ="";
 
- int uid = query.value("uid").toInt();
- int kid = query.value("kid").toInt();
+ int u_id = query.value("uid").toInt();
+ tsk_param->u_id = u_id;
 
+ int kid = query.value("kid").toInt();
+ tsk_param->tblKey = "Uk"+QString::number(kid).rightJustified(5,'0');
 
  eUpl_Lst tabCal[][3]=
  {
@@ -1575,13 +1635,15 @@ bool BThread_1::Mk2_ThatUplAnalyz(const stGameConf *pGame,
    tsk_param->data->r_id = r_id;
 
    eUpl_Lst c_id = tabCal[o_id][r_id];
-   //tsk_param->data->c_id = c_id;
+   tsk_param->c_id = c_id;
 
-   QString t_on = tsk_param->data->t_rf +
+   QString t_on = tsk_param->tblKey +
                   "_D" + QString::number(o_id).rightJustified(2,'0') +
                   "_R" + QString::number(r_id+1).rightJustified(2,'0');
 
-   //Mk1_T2_Fill_Bdd(nullptr);
+   tsk_param->data->t_rf = t_on;
+
+   Mk2_T2_Fill_Bdd(pGame, tsk_param);
 
    if(r_id > 0){
     //Mk1_T3_Fill_Bdd(nullptr);
@@ -2133,7 +2195,6 @@ QString BThread_1::Mk1_getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int
   ;
  }
 
- //int max_items = BMIN_2(target+1, ELstCal);
  int max_items = ELstCal;
  QString SqlData[C_TOT_CAL][3];
  QString SqlSubData[C_NB_SUB_ONG][C_TOT_CAL][3];
