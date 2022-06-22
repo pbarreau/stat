@@ -142,6 +142,7 @@ class BcUpl: public BCount
 
  public slots:
   void BSlot_UplReadyStep1(const QString tblName, stTskParam_1 *tsk_param);
+  void BSlot_UplReadyStep2(const QString tblName, stTskParam_1 *tsk_param);
   void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int zn);
   void BSlot_UpdateTbv(const stParam_tsk *tsk_param);
 
@@ -166,7 +167,8 @@ class BcUpl: public BCount
   void BSlot_UplScan(void);
 
   Q_SIGNALS:
-  void BSig_UplCal(const stGameConf *pGame, const eUpl_Ens e_id, stTskParam_1 *tsk_param);
+  void BSig_UplDataStep1(const stGameConf *pGame, eUpl_Ens e_id, stTskParam_1 *tsk_param);
+  void BSig_UplDataStep2(const stGameConf *pGame, eUpl_Ens e_id, stTskParam_1 *tsk_param, QString tblName);
   void BSig_UplFdjShow(const QString items, int zn);
   //void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
 

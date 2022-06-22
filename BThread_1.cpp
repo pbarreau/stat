@@ -556,16 +556,9 @@ void BThread_1::Mk2_T2_Fill_Bdd(const stGameConf *pGame, stThreadParam *tsk_para
  QString tbl_use = "";
 
  /// initialisation msg sql
-#if 0
- sql_ref = Mk1_getSqlTbv(pGame, z_id,
-                         l_id, o_id,
-                         g_id, r_id+C_MIN_UPL,
-                         c_id,u_id);
-#endif
  tsk_param->data->r_id = r_id+C_MIN_UPL;
  sql_ref = Mk2_getSqlTbv(pGame,tsk_param,c_id,u_id);
 
- //sql_msg = Mk1_sql_ShowItems(pGame,z_id,ELstShowCal,g_id,sql_ref);
  sql_msg = Mk2_sql_ShowItems(pGame,tsk_param,ELstShowCal,sql_ref);
 
 #ifndef QT_NO_DEBUG
@@ -575,8 +568,47 @@ void BThread_1::Mk2_T2_Fill_Bdd(const stGameConf *pGame, stThreadParam *tsk_para
  target = "dbg_upl_lst-4.txt";
  BTest::writetoFile(target,sql_msg,false);
 #endif
+
  QString t_use = t_rf + "_T1";
  DB_Tools::createOrReadTable(t_use,cnx_1,sql_msg);
+}
+
+void BThread_1::Mk2_Fill_Bdd_Txx(const stGameConf *pGame, stThreadParam *tsk_param)
+{
+
+ QString cnx_1=pGame->db_ref->cnx;
+
+ eUpl_Ens e_id = tsk_param->e_id;
+
+ int z_id = tsk_param->data->z_id;
+ int l_id = tsk_param->data->l_id;
+ int g_id = tsk_param->data->g_id;
+ int o_id = tsk_param->data->o_id;
+ int r_id = tsk_param->data->r_id;
+ QString t_rf = tsk_param->data->t_rf;
+ eUpl_Lst c_id = tsk_param->c_id;
+ int u_id = tsk_param->u_id;
+
+ QString sql_ref ="";
+ QString sql_msg = "";
+ QString tbl_use = "";
+
+ eUpl_Lst targets[]={ELstShowCal, ELstShowUnion, ELstShowNotInUnion};
+ int nb_table = sizeof(targets)/sizeof(eUpl_Lst);
+
+ for(int loop=0;loop<nb_table;loop++){
+  /// initialisation msg sql
+  tsk_param->data->r_id = r_id+C_MIN_UPL;
+  sql_ref = Mk2_getSqlTbv(pGame,tsk_param,c_id,u_id);
+  sql_msg = Mk2_sql_ShowItems(pGame,tsk_param,targets[loop],sql_ref);
+
+  QString t_use = t_rf + "_T"+QString::number(loop+1);
+  DB_Tools::createOrReadTable(t_use,cnx_1,sql_msg);
+
+  if(r_id == 0){
+   break; /// sortir de la boucle
+  }
+ }
 }
 
 bool BThread_1::Mk1_isSelectedKnown(etTir uplType, QString cur_sel, int zn, int *key)
@@ -1440,7 +1472,7 @@ void BThread_1::setBview_1(BView ****tbv)
  uplThread_Bview_1 = tbv;
 }
 
-void BThread_1::BSlot_UplCal(const stGameConf *pGame, const eUpl_Ens e_id,  stTskParam_1 *tsk_param)
+void BThread_1::BSlot_UplDataStep1(const stGameConf *pGame, eUpl_Ens e_id,  stTskParam_1 *tsk_param)
 {
  BcUpl *origin = qobject_cast<BcUpl *>(sender());
  connect(
@@ -1448,15 +1480,13 @@ void BThread_1::BSlot_UplCal(const stGameConf *pGame, const eUpl_Ens e_id,  stTs
     origin,SLOT(BSlot_UplReadyStep1(const QString, stTskParam_1 *))
     );
 
- QString cur_table = "";
-#if 0
- stThreadParam param;
- stTskParam_1 p1 = *tsk_param;
+ connect(
+    this, SIGNAL(BSig_UplReadyStep2(const QString, stTskParam_1 *)),
+    origin,SLOT(BSlot_UplReadyStep2(const QString, stTskParam_1 *))
+    );
 
- param.e_id = e_id;
- param.u_id = -1;
- param.data = tsk_param;
-#endif
+ QString cur_table = "";
+
  stThreadParam *param = new stThreadParam;
  param->e_id = e_id;
  param->u_id = -1;
@@ -1468,8 +1498,30 @@ void BThread_1::BSlot_UplCal(const stGameConf *pGame, const eUpl_Ens e_id,  stTs
  /// Emettre table prete pour permettre affichage
  /// voir destruction tsk_param!!!!
  emit(BSig_UplReadyStep1(cur_table, tsk_param));
+ delete param;
+}
 
- //Mk2_FillBddStep_2(pGame, param, cur_table);
+void BThread_1::BSlot_UplDataStep2(const stGameConf *pGame, eUpl_Ens e_id, stTskParam_1 *tsk_param, QString tblName)
+{
+
+#if 0
+ BcUpl *origin = qobject_cast<BcUpl *>(sender());
+ connect(
+    this, SIGNAL(BSig_UplReadyStep2(const QString, stTskParam_1 *)),
+    origin,SLOT(BSlot_UplReadyStep2(const QString, stTskParam_1 *))
+    );
+#endif
+
+ QString cur_table = "";
+
+ stThreadParam *param = new stThreadParam;
+ param->e_id = e_id;
+ param->u_id = -1;
+ param->data = tsk_param;
+
+ Mk2_Fill_Bdd_Txx(pGame, param);
+ emit BSig_UplReadyStep2(tblName, tsk_param);
+ delete param;
 }
 
 bool BThread_1::Mk2_FillBddStep_1(const stGameConf *pGame,
@@ -1643,13 +1695,15 @@ bool BThread_1::Mk2_ThatUplAnalyz(const stGameConf *pGame,
 
    tsk_param->data->t_rf = t_on;
 
-   Mk2_T2_Fill_Bdd(pGame, tsk_param);
+   Mk2_Fill_Bdd_Txx(pGame, tsk_param);
 
+#if 0
    if(r_id > 0){
     //Mk1_T3_Fill_Bdd(nullptr);
     //Mk1_T4_Fill_Bdd(nullptr);
     ;
    }
+#endif
   }
  }
 
@@ -2051,17 +2105,8 @@ void BThread_1::Mk1_T2_Fill_Bdd(stParam_tsk *tsk_param)
  QString tbl_use = "";
 
  /// initialisation msg sql
- sql_ref = Mk1_getSqlTbv(pGame, z_id,
-                         l_id, o_id,
-                         g_id, r_id+C_MIN_UPL,
-                         c_id,g_lm);
-#if 0
- QString t_use = t_rf + "_C" +
-                 QString::number(g_id).rightJustified(2,'0')+
-                 "_D" + QString::number(o_id).rightJustified(2,'0') +
-                 "_R" + QString::number(r_id+1).rightJustified(2,'0') +
-                 "_T1";
-#endif
+ sql_ref = Mk1_getSqlTbv(pGame, z_id,l_id, o_id,g_id,
+                         r_id+C_MIN_UPL,c_id,g_lm);
 
  sql_msg = Mk1_sql_ShowItems(pGame,z_id,ELstShowCal,g_id,sql_ref);
 

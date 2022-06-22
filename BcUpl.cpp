@@ -383,8 +383,15 @@ void BcUpl::BSlot_UplReadyStep1(const QString tblName, stTskParam_1 *tsk_param)
  if(it != mapView_1->end()){
   BView *qtv_tmp = it->view;
   DessineTbv_BView_1(qtv_tmp, tsk_param);
-  delete tsk_param;
+
+  /// etape suivante
+  emit BSig_UplDataStep2(gm_def,e_id, tsk_param, tblName);
  }
+}
+
+void BcUpl::BSlot_UplReadyStep2(const QString tblName, stTskParam_1 *tsk_param)
+{
+ delete tsk_param;
 }
 
 QGridLayout *BcUpl::Compter(QString * pName, int zn)
@@ -439,8 +446,12 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
   BThread_1 *tskCalcul = new BThread_1(pGame);
   connect(
-     this, SIGNAL(BSig_UplCal(const stGameConf *, const eUpl_Ens, stTskParam_1 *)),
-     tskCalcul,SLOT(BSlot_UplCal(const stGameConf *, const eUpl_Ens, stTskParam_1 *))
+     this, SIGNAL(BSig_UplDataStep1(const stGameConf *, eUpl_Ens, stTskParam_1 *)),
+     tskCalcul,SLOT(BSlot_UplDataStep1(const stGameConf *,  eUpl_Ens, stTskParam_1 *))
+     );
+  connect(
+     this, SIGNAL(BSig_UplDataStep2(const stGameConf *,  eUpl_Ens, stTskParam_1 *, Qstring)),
+     tskCalcul,SLOT(BSlot_UplDataStep2(const stGameConf *,  eUpl_Ens, stTskParam_1 *, QString))
      );
 
   /// -----
@@ -495,7 +506,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
     data->u_id = obj_upl;
     data->z_id = z_id;
 
-    emit BSig_UplCal(pGame, e_id, data);
+    emit BSig_UplDataStep1(pGame, e_id, data);
 
     QWidget * wdg_tmp = Mk2_MainUplet(pGame, data);
 

@@ -78,7 +78,8 @@ class BThread_1: public QWidget //: public QThread
   void setBview_1(BView **** tbv);
 
  public slots:
-  void BSlot_UplCal(const stGameConf *pGame, const eUpl_Ens e_id, stTskParam_1 *tsk_param);
+  void BSlot_UplDataStep1(const stGameConf *pGame,  eUpl_Ens e_id, stTskParam_1 *tsk_param);
+  void BSlot_UplDataStep2(const stGameConf *pGame,  eUpl_Ens e_id, stTskParam_1 *tsk_param, QString tblName);
 
  private:
   bool Mk1_isSelectedKnown(etTir uplType, QString cur_sel, int zn, int *key);
@@ -120,9 +121,12 @@ class BThread_1: public QWidget //: public QThread
   void Mk2_sql_upl_lev_1(const stGameConf *pGame, const stThreadParam *tsk_param, int step, QString tabInOut[][3]);
   void Mk2_sql_upl_lev_2(const stGameConf *pGame, const stThreadParam *tsk_param,  QString tabInOut[][C_TOT_CAL][3]);
   void Mk2_T2_Fill_Bdd(const stGameConf *pGame, stThreadParam *tsk_param);
+  void Mk2_Fill_Bdd_Txx(const stGameConf *pGame, stThreadParam *tsk_param);
 
  signals:
   void BSig_UplReadyStep1(const QString tblName, stTskParam_1 *tsk_param);
+  void BSig_UplReadyStep2(const QString tblName, stTskParam_1 *tsk_param);
+
   void BSig_Step(const stParam_tsk *tsk_param);
   void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
   void BSig_UserSelect(const stParam_tsk *tsk_param);
