@@ -29,7 +29,17 @@ message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
 
 
 SOURCES += \
+    BAction_1.cpp \
+    BAnimateCell.cpp \
+    Bc.cpp \
+    BcBrc.cpp \
+    BcCmb.cpp \
+    BcElm.cpp \
+    BcGrp.cpp \
     BColorPriority.cpp \
+    BCompress.cpp \
+    BcUpl.cpp \
+    BCustomPlot.cpp \
     bdelegatecouleurfond.cpp \
     BFdj.cpp \
     BFlags.cpp \
@@ -37,24 +47,39 @@ SOURCES += \
     BFpm_1.cpp \
     BFpm_2.cpp \
     BFpm_3.cpp \
+    BFpm_upl.cpp \
+    BFpmCmb.cpp \
+    BFpmFdj.cpp \
     BGpbMenu.cpp \
+    BGraphicsView.cpp \
     blineedit.cpp \
     BLstSelect.cpp \
     BMenu.cpp \
     bnewcombo.cpp \
     bordcolor.cpp \
+    BPointTirage.cpp \
     bpopupcolor.cpp \
     BPushButton.cpp \
     BSqlQmTirages_3.cpp \
+    BStepPaint.cpp \
+    BStepper.cpp \
     btablevieweditor.cpp \
     BTbar1.cpp \
     btbvrepartition.cpp \
+    BTest.cpp \
+    BThread_1.cpp \
     BTirages.cpp \
     BTirAna.cpp \
+    BTirDelegate.cpp \
+    BTirFdj.cpp \
     BTirGen.cpp \
+    BValidator.cpp \
+    BView.cpp \
+    BView_1.cpp \
     bvisuresume.cpp \
     bvisuresume_sql.cpp \
     bvtabbar.cpp \
+    BXmlFdj.cpp \
     cappliquerfiltres.cpp \
     cassemble.cpp \
     cFdjData.cpp \
@@ -65,6 +90,7 @@ SOURCES += \
     cnp_SansRepetition.cpp \
     combinaison.cpp \
     CreerTables.cpp \
+    customPlot/qcustomplot.cpp \
     db_tools.cpp \
     delegate.cpp \
     distancepourtirage.cpp \
@@ -99,37 +125,21 @@ SOURCES += \
     SyntheseDetails.cpp \
     SyntheseGenerale.cpp \
     tirages.cpp \
-    version.cpp \ 
-    BTirFdj.cpp \
-    BTirDelegate.cpp \
-    BTest.cpp \
-    BGraphicsView.cpp \
-    BPointTirage.cpp \
-    BcElm.cpp \
-    Bc.cpp \
-    BcBrc.cpp \
-    BcCmb.cpp \
-    BcGrp.cpp \
-    BcUpl.cpp \
-    BView_1.cpp \
-    BView.cpp \
-    BFpmCmb.cpp \
-    BValidator.cpp \
-    BFpmFdj.cpp \
-    BCustomPlot.cpp \
-    customPlot/qcustomplot.cpp \
-    BXmlFdj.cpp \
-    BStepper.cpp \
-    BStepPaint.cpp \
-    BFpm_upl.cpp \
-    BCompress.cpp \
-    BAction_1.cpp \
-    BAnimateCell.cpp \
     TTransparentProxyModel.cpp \
-    BThread_1.cpp
+    Version.cpp 
 
 HEADERS  += \
+    BAction_1.h \
+    BAnimateCell.h \
+    Bc.h \
+    BcBrc.h \
+    BcCmb.h \
+    BcElm.h \
+    BcGrp.h \
     BColorPriority.h \
+    BCompress.h \
+    BcUpl.h \
+    BCustomPlot.h \
     bdelegatecouleurfond.h \
     BFdj.h \
     BFlags.h \
@@ -137,25 +147,40 @@ HEADERS  += \
     BFpm_1.h \
     BFpm_2.h \
     BFpm_3.h \
+    BFpm_upl.h \
+    BFpmCmb.h \
+    BFpmFdj.h \
     BGpbMenu.h \
+    BGraphicsView.h \
     blineedit.h \
     BLstSelect.h \
     BMenu.h \
     bnewcombo.h \
     bordcolor.h \
+    BPointTirage.h \
     bpopupcolor.h \
     BPushButton.h \
     BSqlQmTirages_3.h \
+    BStepPaint.h \
+    BStepper.h \
     bstflt.h \
     btablevieweditor.h \
     BTbar1.h \
     btbvrepartition.h \
+    BTest.h \
+    BThread_1.h \
     BTirages.h \
     BTirAna.h \
+    BTirDelegate.h \
+    BTirFdj.h \
     BTirGen.h \
+    BValidator.h \
+    BView.h \
+    BView_1.h \
     bvisuresume.h \
     bvisuresume_sql.h \
     bvtabbar.h \
+    BXmlFdj.h \
     cappliquerfiltres.h \
     cassemble.h \
     cFdjData.h \
@@ -164,6 +189,7 @@ HEADERS  += \
     cnp_AvecRepetition.h \
     cnp_SansRepetition.h \
     colors.h \
+    customPlot/qcustomplot.h \
     db_tools.h \
     delegate.h \
     distancepourtirage.h \
@@ -178,6 +204,7 @@ HEADERS  += \
     monSqlEditable.h \
     mygraphicsview.h \
     myqtableview.h \
+    ns_upl.h \
     pointtirage.h \
     properties.h \
     refetude.h \
@@ -189,35 +216,8 @@ HEADERS  += \
     SyntheseDetails.h \
     SyntheseGenerale.h \
     tirages.h \
-    types_jeux.h \
-    BTirFdj.h \
-    BTirDelegate.h \
-    BTest.h \
-    BGraphicsView.h \
-    BPointTirage.h \
-    BcElm.h \
-    Bc.h \
-    BcBrc.h \
-    BcCmb.h \
-    BcGrp.h \
-    BcUpl.h \
-    BView_1.h \
-    BView.h \
-    BFpmCmb.h \
-    BValidator.h \
-    BFpmFdj.h \
-    BCustomPlot.h \
-    customPlot/qcustomplot.h \
-    BXmlFdj.h \
-    BStepper.h \
-    BStepPaint.h \
-    BFpm_upl.h \
-    BCompress.h \
-    BAction_1.h \
-    BAnimateCell.h \
     TTransparentProxyModel.h \
-    BThread_1.h \
-    ns_upl.h
+    types_jeux.h
 
 
 FORMS    += mainwindow.ui \
@@ -227,7 +227,7 @@ RESOURCES += \
     icones_rsc.qrc
 
 DISTFILES += \
-    test_uml_qt.qmodel \
+    tools/test_uml_qt.qmodel \
     images/document_config.png \
     images/help.png \
     images/xmag_search_find.png

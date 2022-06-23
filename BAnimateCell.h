@@ -17,11 +17,11 @@ enum MyDataRole {
  ItemModifiedRole = Qt::UserRole + 1
 };
 
-//typedef enum _eCalcul eUpl_Cal;
+//typedef enum _E_Calcul etCal;
 typedef struct _cellData
 {
   QColor color;
-  eUpl_Cal e_cal;
+  etCal e_cal;
   QString upl_txt;
   QVariant timer;
 }st_cellData;
@@ -33,13 +33,13 @@ class BAnimateCell: public QStyledItemDelegate
 
  public:
   explicit  BAnimateCell(BView * view);
-  eUpl_Cal addKey(int key);
-  eUpl_Cal startKey(int key);
-  eUpl_Cal delKey(int key);
+  etCal addKey(int key);
+  etCal startKey(int key);
+  etCal delKey(int key);
   void setCalReady(int key);
-  eUpl_Cal setUserSelect(int key);
+  etCal setUserSelect(int key);
   QString itemsSelected();
-  bool gotKey(int key, eUpl_Cal *curCal = nullptr);
+  bool gotKey(int key, etCal *curCal = nullptr);
   bool gotKeyReady(int key);
   bool gotKeyUsr(int key);
   bool isShowing(int key);
@@ -51,7 +51,7 @@ class BAnimateCell: public QStyledItemDelegate
   void BSig_Repaint(const BView *tbv);
 
  private:
-  void setKey(int key, QColor color, eUpl_Cal eCal = eCalNotDef);
+  void setKey(int key, QColor color, etCal E_Cal = E_CalNotDef);
   void FormalizeCell(int key, QPainter *painter, const QStyleOptionViewItem &myOpt, const QModelIndex &index) const;
   bool gotKeyShowing(int key);
 

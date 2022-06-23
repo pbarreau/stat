@@ -6,6 +6,7 @@
 #include <QTabWidget>
 #include <QSqlQueryModel>
 #include <QGridLayout>
+#include <QComboBox>
 
 #include "game.h"
 #include "BLstSelect.h"
@@ -75,6 +76,7 @@ void BSlot_Result_Tir(const int index);
 
 private slots:
 void BSlot_Ensemble_Tir(const int index);
+void BSlot_AnaUplFdjShow(const QString items, int zn);
 void BSlot_Dessine(bool chk);
 void BSlot_ZoomMyPlot(const BView *tbv=nullptr, const QModelIndex &index = QModelIndex());
 
@@ -112,6 +114,7 @@ const B2LstSel * save_sel;
 
 protected:
 BLineEdit *ble_rch;
+QComboBox *cbm_flt;
 Bst_FltJdj *data_flt;
 
 private:

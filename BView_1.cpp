@@ -37,7 +37,7 @@ BView_1::BView_1(const stGameConf *pGame, int in_zn, etCount in_typ)
  lbflt = cur_bflt;
  lview = this;
 
- setZone(in_zn);
+ setZid(in_zn);
 
  square = new BGpbMenu(cur_bflt, this);
 
@@ -146,14 +146,14 @@ void BView_1::BSlot_ShowToolTip(const QModelIndex & index)
 }
 
 #if 1
-QString BView_1::mkTitle(int zn, etCount eCalcul, QTableView *view)
+QString BView_1::mkTitle(int zn, etCount E_Calcul, QTableView *view)
 {
  QString title = "";
  return title;
 }
 
 #else
-QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
+QString BTbView::mkTitle(int zn, etCount E_Calcul, QTableView *view)
 {
  QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(view->model());
  QSqlQueryModel  * sqm_tmp = qobject_cast<QSqlQueryModel  *>(m->sourceModel());
@@ -179,7 +179,7 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
  }
  /// Determination nb ligne par proxymodel
  int nb_lgn_ftr = m->rowCount();
- if(eCalcul==eCountGrp){
+ if(E_Calcul==eCountGrp){
   int count=view->horizontalHeader()->count();
   nb_lgn_ftr = nb_lgn_ftr * count;
  }
@@ -205,7 +205,7 @@ QString BTbView::mkTitle(int zn, etCount eCalcul, QTableView *view)
                 " where ( (zne="+
                 QString::number(zn)+
                 ") and (typ="+
-                QString::number(eCalcul)+
+                QString::number(E_Calcul)+
                 ")";
 
  for(int i = 0; (i< nb_items) && b_retVal ; i++){
@@ -450,7 +450,7 @@ void BView_1::saveTimeInTable(Bp::E_Clk ref, QString tb_name, QString humanTime)
  QString msg = "update E_lst set " +
                time_col+"='"+humanTime
                +"' where( (name='"+tb_name+"') and (type='"+
-               lstTirDef[eTirGen]+"'))";
+               TXT_TirDef[eTirGen]+"'))";
 
  b_retVal = query.exec(msg);
 }

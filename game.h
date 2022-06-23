@@ -21,7 +21,7 @@ typedef enum _eFdjType{
  eFdjEuro,   /// Euro million
  eFdjEol     /// End of list
 }etFdj;
-extern const QString gameLabel [eFdjEol];
+extern const QString TXT_Game [eFdjEol];
 
 typedef enum _eFdjCname{
  eCnameLoto,
@@ -33,8 +33,8 @@ typedef enum _eFdjCname{
  eCnameEuroMillion,
  eFdjEndCnames_2
 }eFCname;
-extern const QString FdjCnames_1 [eFdjEndCnames_1];
-extern const QString FdjCnames_2 [eFdjEndCnames_2 - eFdjEndCnames_1 -1];
+extern const QString TXT_FdjLst_1 [eFdjEndCnames_1];
+extern const QString TXT_FdjLst_2 [eFdjEndCnames_2 - eFdjEndCnames_1 -1];
 
 typedef struct _stSrcHistoJeux{
   eFCname type;
@@ -55,7 +55,7 @@ typedef enum _etTir{
  eTirUplUsr, /// Lst Uplet par choix utilisateur
  eTirEol     /// End of list
 }etTir;
-extern const QString lstTirDef [eTirEol];
+extern const QString TXT_TirDef [eTirEol];
 
 typedef  struct _stFdj{
   etFdj typeJeu;

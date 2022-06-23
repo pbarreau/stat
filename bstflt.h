@@ -57,6 +57,7 @@ namespace Bp {
   colTfdjDate=1,
   colTgenZs=1,  /// Colonne depart de zone def dans Tbl lst gene
   colDefTitres=1,
+  colUplStart=1,
   colTfdjJour=2,
   colDefToolTips=2,
   colTxt=2,

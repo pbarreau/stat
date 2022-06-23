@@ -30,8 +30,8 @@ BXmlFdj::BXmlFdj(etFdj rungame)
 
   QDomElement game = document.createElement(key_1);
   game.setAttribute("Id",i-1);
-  game.setAttribute("Nom",gameLabel[i]);
-  game.setNodeValue(gameLabel[i]);
+  game.setAttribute("Nom",TXT_Game[i]);
+  game.setNodeValue(TXT_Game[i]);
   lstGames.appendChild(game);
  }
 
@@ -72,14 +72,14 @@ void BXmlFdj::mkDomGame(etFdj game, QDomDocument *doc, QDomElement target)
   case eFdjLoto:
    i_deb = eCnameLoto;
    i_end = eFdjEndCnames_1 - eCnameLoto;
-   ptr_names = FdjCnames_1;
+   ptr_names = TXT_FdjLst_1;
    ptr_histo = &HistoLoto[0];
    i_tot = sizeof(HistoLoto)/sizeof(stSrcHistoJeux);
    break;
   case eFdjEuro:
    i_deb = eCnameEuroMillionsMyMillion;
    i_end = eFdjEndCnames_2 - eCnameEuroMillionsMyMillion;
-   ptr_names = FdjCnames_2;
+   ptr_names = TXT_FdjLst_2;
    ptr_histo = &HistoEuro[0];
    i_tot = sizeof(HistoEuro)/sizeof(stSrcHistoJeux);
    break;
@@ -91,7 +91,7 @@ void BXmlFdj::mkDomGame(etFdj game, QDomDocument *doc, QDomElement target)
  QDomNode cible = QDomNode();
  for(int i=0; i< nbItems;i++){
   QString valeur = att.at(i).nodeValue();
-  if(valeur.compare(gameLabel[game])==0){
+  if(valeur.compare(TXT_Game[game])==0){
    cible = att.at(i);
    break;
   }

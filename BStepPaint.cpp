@@ -182,6 +182,17 @@ void BStepPaint::paintWrite(QPainter *painter, const QStyleOptionViewItem &myOpt
  Qt::GlobalColor myPen=Qt::black;
  bool set_up = false;
 
+    if(MarkedBalls.size()){
+        if(index.data().canConvert(QMetaType::Int)){
+            QString val=index.data().toString();
+            if(MarkedBalls.contains(val)){
+                myPen=Qt::red;
+                set_up = true;
+            }
+        }
+
+    }
+
  int my_col = index.column();
  int my_row = index.row();
 
@@ -220,9 +231,10 @@ void BStepPaint::cellWrite(QPainter *painter, QStyle::State state, const QRect c
  bool b_italic = false;
 
  if(up==true){
-  size= 7;
+        size= 8;
   myAlg = Qt::AlignTop|Qt::AlignLeft;
   b_italic = true;
+        font_weight = QFont::Bold;
  }
  else {
   size = 10;
@@ -257,4 +269,16 @@ void BStepPaint::BSlot_FindBall(BView *tbvTarget, int id)
 {
  dig_ball = id;
  tbvTarget->reset();
+}
+
+void BStepPaint::BSlot_MarkBall(BView *tbvTarget, int id)
+{
+    QString target = QString::number(id);
+    if(!(MarkedBalls.contains(target))){
+        MarkedBalls << target;
+    }
+    else{
+        MarkedBalls.removeAll(target);
+    }
+    tbvTarget->reset();
 }

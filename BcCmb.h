@@ -51,7 +51,7 @@ class BcCmb:public BCount
 
  private:
  //virtual QString getType();
- virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
+ virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount E_Calcul);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
  virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn);
  virtual QLayout * usr_UpperItems(int zn, BView_1 *cur_tbv);

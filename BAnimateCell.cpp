@@ -33,34 +33,34 @@ BAnimateCell::BAnimateCell(BView *view):m_view(view),QStyledItemDelegate(nullptr
  //timer->start( TIME_RESOLUTION );
 }
 
-eUpl_Cal BAnimateCell::addKey(int key)
+etCal BAnimateCell::addKey(int key)
 {
- eUpl_Cal cur_cal = eCalPending;
+ etCal cur_cal = E_CalPending;
 
  setKey(key,Qt::green, cur_cal);
 
  return cur_cal;
 }
 
-eUpl_Cal BAnimateCell::startKey(int key)
+etCal BAnimateCell::startKey(int key)
 {
- eUpl_Cal cur_cal = eCalStarted;
+ etCal cur_cal = E_CalStarted;
 
  setKey(key,Qt::red, cur_cal);
 
  return cur_cal;
 }
 
-eUpl_Cal BAnimateCell::delKey(int key)
+etCal BAnimateCell::delKey(int key)
 {
- eUpl_Cal cur_cal = eCalNotSet;
+ etCal cur_cal = E_CalNotSet;
 
  setKey(key,Qt::gray, cur_cal);
 
  return cur_cal;
 }
 
-bool BAnimateCell::gotKey(int key, eUpl_Cal *curCal)
+bool BAnimateCell::gotKey(int key, etCal *curCal)
 {
  bool ret_val = false;
 
@@ -123,14 +123,14 @@ void BAnimateCell::setCalReady(int key)
 {
  st_cellData conf;
  conf.color = Qt::white;
- conf.e_cal = eCalReady;
+ conf.e_cal = E_CalReady;
  QVariant info;
  info.setValue(conf);
 
 #if 0
- eUpl_Cal cur_cal = eCalNotDef;
+ etCal cur_cal = E_CalNotDef;
  if(gotKey(key,&cur_cal) == true){
-  if (cur_cal == eCalReady){
+  if (cur_cal == E_CalReady){
    mapTimeout.remove(key);
 
    /// ----------------
@@ -150,9 +150,9 @@ void BAnimateCell::setCalReady(int key)
  emit BSig_Repaint(m_view);
 }
 
-eUpl_Cal BAnimateCell::setUserSelect(int key)
+etCal BAnimateCell::setUserSelect(int key)
 {
- eUpl_Cal new_val = eCalNotDef;
+ etCal new_val = E_CalNotDef;
  QVariant item;
 
  QMap<int, QVariant>::const_iterator it;
@@ -177,10 +177,6 @@ eUpl_Cal BAnimateCell::setUserSelect(int key)
   item = it.value();
 
   st_cellData conf = item.value<st_cellData>();
-  //conf.upl_txt = upl_txt;
-
-  //item.value<st_cellData>().upl_txt = upl_txt;
-
   mapUserSelect.insert(key, item);
  }
 
@@ -209,11 +205,11 @@ QString BAnimateCell::itemsSelected()
 ////// \brief BAnimateCell::setKey
 ////// \param key
 ////// \param color
-void BAnimateCell::setKey(int key, QColor color, eUpl_Cal eCal)
+void BAnimateCell::setKey(int key, QColor color, etCal E_Cal)
 {
  st_cellData conf;
  conf.color = color;
- conf.e_cal = eCal;
+ conf.e_cal = E_Cal;
  QVariant info;
  info.setValue(conf);
 

@@ -308,7 +308,7 @@ bool BTirGen::isAlreadyKnown(QString key, QString * gameId)
 
  /// Recherche de la clef
  msg = "select * from E_lst where((lst='"+key+"') and (type='"+
-       lstTirDef[eTirGen]+"'))";
+       TXT_TirDef[eTirGen]+"'))";
 
  if(chk_db && (b_retVal = query.exec(msg))){
   if((b_retVal = query.first()) == true){
@@ -371,7 +371,7 @@ bool BTirGen::createGame(const stGameConf *pGame, QString gameId, QString data)
  else {
   // Rajouter cette table a la liste
   msg = "insert into E_lst values(NULL,'"
-        + lstTirDef[eTirGen] + "',"
+        + TXT_TirDef[eTirGen] + "',"
         + QString::number(zn) + ",'"+
         gameId +"','"+data+"',"+ QString::number(nb_items)+
         ",NULL, NULL)";
@@ -504,7 +504,7 @@ QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
  QStandardItemModel *visu = new QStandardItemModel(nb_row,nb_col);
 
  msg = "select lst from e_lst where( (name = '"+tbl_cible+"') and (type='"+
-       lstTirDef[eTirGen]+"'))";
+       TXT_TirDef[eTirGen]+"'))";
  b_retVal= query.exec(msg);
  if(query.first()){
   qtv_tmp->setModel(visu);

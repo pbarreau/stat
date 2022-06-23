@@ -41,14 +41,14 @@ void BThread_1::run()
 void BThread_1::creationTables(etStep eStep)
 {
  int nb_zn = tsk_1->pGame->znCount;
- eUpl_Ens e_id = tsk_1->e_id;
+ etEns e_id = tsk_1->e_id;
 
  int zn_start = -1;
  int nbTirJour = -1;
  int zn_stop = -1;
 
 
- if(e_id == eEnsFdj){
+ if(e_id == E_EnsFdj){
   zn_start = 0;
   zn_stop = nb_zn;
   nbTirJour = C_NB_TIR_LIR;
@@ -92,13 +92,13 @@ void BThread_1::creationTables(etStep eStep)
      /// ----------------------
      QString t_rf = "UT_" +
                     QString::number(obj_upl).rightJustified(2,'0') + "_" +
-                    Txt_eUpl_Ens[e_id] + QString::number(l_id).rightJustified(2,'0') +
+                    TXT_UplSrcKey[e_id] + QString::number(l_id).rightJustified(2,'0') +
                     "_Z" + QString::number(z_id).rightJustified(2,'0');
 
      tsk_param->g_lm = -1;
      tsk_param->o_id = 0;
      tsk_param->r_id = -1;
-     tsk_param->c_id = ELstBle;
+     tsk_param->c_id = E_LstBle;
      tsk_param->e_id = e_id;
      tsk_param->t_rf = t_rf;
      tsk_param->t_on = "";
@@ -115,14 +115,14 @@ void BThread_1::creationTables(etStep eStep)
       case eStep_T1:
        T1_Fill_Bdd(tsk_param);
        tsk_step->t_on = tsk_param->t_on;
-       tsk_step->c_id = ELstUplTot;
+       tsk_step->c_id = E_LstUplTot;
        break;
 
       default:
        QString t_use = t_rf + "_C" +
                        QString::number(g_id).rightJustified(2,'0');
        tsk_param->t_on = t_use;
-       if(e_id == eEnsFdj){
+       if(e_id == E_EnsFdj){
         T1_Scan(tsk_param);
        }
        else{
@@ -144,7 +144,7 @@ void BThread_1::creationTables(etStep eStep)
 
 }
 
-QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub)
+QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, etLst sql_show, int cur_upl, QString cur_sql, int upl_sub)
 {
  QString sql_msg="";
  QString key = "";
@@ -154,14 +154,14 @@ QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_s
  }
 
  /// choix 1
- if(sql_show == ELstShowCal){
+ if(sql_show == E_LstShowCal){
   sql_msg=cur_sql;
   sql_msg = sql_msg +"\n";
   sql_msg = sql_msg + "select t1.* from (tb_uplets) as t1 ";
  }
 
  /// choix 2
- if((sql_show == ELstShowUnion) && (upl_sub != 0)){
+ if((sql_show == E_LstShowUnion) && (upl_sub != 0)){
   key = pGame->names[zn].abv;
   int cal_upl = upl_sub;
   if(cal_upl==1){
@@ -192,7 +192,7 @@ QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_s
  }
 
  /// choix 3
- if(sql_show == ELstShowNotInUnion){
+ if(sql_show == E_LstShowNotInUnion){
   key = "t1.z"+QString::number(zn+1);
   sql_msg = "Select " + key +
             " as b from b_elm as t1 where ( "+
@@ -203,26 +203,26 @@ QString BThread_1::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_s
  return sql_msg;
 }
 
-QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_id,int g_id, int r_id, eUpl_Lst target, int sel_item)
+QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_id,int g_id, int r_id, etLst target, int sel_item)
 {
  QString sql_msg="";
 
- if(target == ELstCal){
+ if(target == E_LstCal){
   return sql_msg;
  }
 
- if(target > ELstCal){
+ if(target > E_LstCal){
   ;
  }
 
- //int max_items = BMIN_2(target+1, ELstCal);
- int max_items = ELstCal;
+ //int max_items = BMIN_2(target+1, E_LstCal);
+ int max_items = E_LstCal;
  QString SqlData[C_TOT_CAL][3];
  QString SqlSubData[C_NB_SUB_ONG][C_TOT_CAL][3];
 
  /// ---------- Creation du code SQL dans les tableaux ----
  ///Etape 1 : partie commune
- for (int item=0;item<=ELstBleNext;item++) {
+ for (int item=0;item<=E_LstBleNext;item++) {
   sql_upl_lev_1(pGame,z_id,l_id,g_id, o_id,-1,item, SqlData);
   SqlSubData[0][item][0]=SqlData[item][0];
  }
@@ -237,7 +237,7 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_i
  sql_msg = sql_msg+"with\n";
 
  /// Partie commune
- for (int item=0;item<=ELstBleNext;item++) {
+ for (int item=0;item<=E_LstBleNext;item++) {
   sql_msg = sql_msg + SqlData[item][1];
   sql_msg = sql_msg + SqlData[item][2];
   sql_msg = sql_msg + ",\n";
@@ -249,12 +249,12 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_i
    sql_msg = sql_msg + " -- Debut sous onglet : "
              +QString::number(sub_ong+1).rightJustified(2,'0')+"\n";
   }
-  for (int item=ELstBleNext+1;item<ELstCal;item++) {
+  for (int item=E_LstBleNext+1;item<E_LstCal;item++) {
    sql_msg = sql_msg + 	SqlSubData[sub_ong][item][1];
    sql_msg = sql_msg + 	SqlSubData[sub_ong][item][2];
 
    /// -- mettre , SQL pour separer etapes code
-   if((item < ELstCal -1)){
+   if((item < E_LstCal -1)){
     sql_msg = sql_msg + ",\n";
    }
   }
@@ -313,8 +313,8 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_i
  counter++;
 
  QString stype = "";
- eUpl_Ens e_id = tsk_1->e_id;
- if(e_id == eEnsUsr){
+ etEns e_id = tsk_1->e_id;
+ if(e_id == E_EnsUsr){
   stype = "Usr";
  }
  else {
@@ -334,12 +334,12 @@ void BThread_1::sql_upl_lev_2(const stGameConf *pGame, int z_id, int l_id, int o
  QString SqlData[C_TOT_CAL][3];
 
  /// Recopier le nom des tables precedentes
- for (int item=0;item<=ELstBleNext;item++) {
+ for (int item=0;item<=E_LstBleNext;item++) {
   SqlData[item][0]=tabInOut[0][item][0];
  }
 
  /// Poursuivre la creation
- for (int item=ELstBleNext+1;item<ELstCal;item++) {
+ for (int item=E_LstBleNext+1;item<E_LstCal;item++) {
   sql_upl_lev_1(pGame,z_id,l_id,g_id, o_id, r_id,item, SqlData);
   tabInOut[r_id-C_MIN_UPL][item][0]= SqlData[item][0];
   tabInOut[r_id-C_MIN_UPL][item][1]= SqlData[item][1];
@@ -348,7 +348,7 @@ void BThread_1::sql_upl_lev_2(const stGameConf *pGame, int z_id, int l_id, int o
 }
 
 
-QString BThread_1::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_step, int tir_id,QString tabInOut[][3])
+QString BThread_1::sql_ElmFrmTir(const stGameConf *pGame, int zn, etLst sql_step, int tir_id,QString tabInOut[][3])
 {
  QString sql_tbl = "";
  QString sql_msg = "";
@@ -361,13 +361,13 @@ QString BThread_1::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_s
  QString arg_3 = "";
  QString arg_4 = "";
 
- if(sql_step == ELstBle){
+ if(sql_step == E_LstBle){
   tabInOut[sql_step][1] = " -- Liste des boules tirage : "+QString::number(tir_id).rightJustified(4,'0')+"\n";
   tb_usr = "B_fdj";
 
-  eUpl_Ens e_id = tsk_1->e_id;
+  etEns e_id = tsk_1->e_id;
 
-  if(e_id == eEnsUsr){
+  if(e_id == E_EnsUsr){
    QString usr_data = "";
    int len_data = tsk_1->my_indexes->size();
    int max_len = tsk_1->pGame->limites[zn].max; /// 9 boules maxi pour jeux multiple ///pGame->limites[zn].win;
@@ -395,13 +395,13 @@ QString BThread_1::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_s
   arg_3 = arg_3 + "        and t1.z1 in(" + st_cols + " )\n";
  }
  else {
-  tabInOut[sql_step][1] = " -- Liste des boules depuis ref : ("+tabInOut[ELstTirUplNext][0]+")\n";
+  tabInOut[sql_step][1] = " -- Liste des boules depuis ref : ("+tabInOut[E_LstTirUplNext][0]+")\n";
   arg_1 = arg_1 + "\tt2.uid,\n";
   arg_1 = arg_1 + "\t(row_number() over ( partition by t2.uid )) as lgn,\n";
   arg_1 = arg_1 + "\tt1.id as " + pGame->names[zn].abv + "1\n";
 
   arg_2 = arg_2 + "      (B_elm) as t1 ,\n";
-  arg_2 = arg_2 + "      ("+tabInOut[ELstTirUplNext][0]+") as t2\n";
+  arg_2 = arg_2 + "      ("+tabInOut[E_LstTirUplNext][0]+") as t2\n";
 
   arg_3 = arg_3 + "        t1.z1 in(" + st_cols + " )\n";
 
@@ -409,7 +409,7 @@ QString BThread_1::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_s
   arg_4 = arg_4 + "\tt2.uid,\n";
   arg_4 = arg_4 + "\tt1.id\n";
  }
- sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0'); //tabInOut[ELstBle][0];
+ sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0'); //tabInOut[E_LstBle][0];
  tabInOut[sql_step][0] = sql_tbl;
 
  if(arg_0.size()){
@@ -438,8 +438,8 @@ QString BThread_1::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_s
 
 
 #ifndef QT_NO_DEBUG
- eUpl_Ens e_id = tsk_1->e_id;
- if(e_id == eEnsUsr){
+ etEns e_id = tsk_1->e_id;
+ if(e_id == E_EnsUsr){
   static int counter = 0;
   QString target = "A_"+ QString::number(counter).rightJustified(2,'0')
                    +"_dbg_eEnsUsr.txt";
@@ -452,7 +452,7 @@ QString BThread_1::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_s
  return sql_msg;
 }
 
-QString BThread_1::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3])
+QString BThread_1::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, etLst sql_step, QString tabInOut[][3])
 {
  QString sql_msg = "";
 
@@ -467,22 +467,22 @@ QString BThread_1::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in
 
  switch(sql_step)
  {
-  case ELstUpl:
-  {
-   tbl_src = ELstBle;
-  }
+  case E_LstUpl:
+   {
+    tbl_src = E_LstBle;
+   }
    break;
 
-  case ELstUplNot:
-  {
-   tbl_src = ELstBleNot;
-  }
+  case E_LstUplNot:
+   {
+    tbl_src = E_LstBleNot;
+   }
    break;
 
-  case ELstUplNext:
-  {
-   tbl_src = ELstBleNext;
-  }
+  case E_LstUplNext:
+   {
+    tbl_src = E_LstBleNext;
+   }
    break;
 
   default:
@@ -491,7 +491,7 @@ QString BThread_1::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in
 
  QString ref_0 = "";
  QString ref_3 = "";
- if(sql_step == ELstUpl){
+ if(sql_step == E_LstUpl){
   ref_0 = "(t%1.id)";
   ref_3 = "(" + ref_0 + " < (t%2.id))";
 
@@ -612,9 +612,9 @@ QString BThread_1::sql_TirFrmUpl(const stGameConf *pGame, int zn,int  upl_ref_in
   r5 = r5 + "\n\t";
  }
 
- sql_tbl = "tb_"+QString::number(ELstTirUpl).rightJustified(2,'0');
- tabInOut[ELstTirUpl][0] = sql_tbl;
- tabInOut[ELstTirUpl][1] = " -- Liste des tirages ayant les Uplets concernes\n";
+ sql_tbl = "tb_"+QString::number(E_LstTirUpl).rightJustified(2,'0');
+ tabInOut[E_LstTirUpl][0] = sql_tbl;
+ tabInOut[E_LstTirUpl][1] = " -- Liste des tirages ayant les Uplets concernes\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
@@ -623,7 +623,7 @@ QString BThread_1::sql_TirFrmUpl(const stGameConf *pGame, int zn,int  upl_ref_in
  sql_msg = sql_msg + "     (row_number() over ( partition by t1.uid )) as lgn ,\n";
  sql_msg = sql_msg + "     t2.*\n";
  sql_msg = sql_msg + "    FROM\n";
- sql_msg = sql_msg + "     ("+tabInOut[ELstUpl][0]+") as t1 ,\n";
+ sql_msg = sql_msg + "     ("+tabInOut[E_LstUpl][0]+") as t1 ,\n";
  sql_msg = sql_msg + "     (B_fdj) as t2\n";
  sql_msg = sql_msg + "    WHERE\n";
  sql_msg = sql_msg + "    (\n";
@@ -636,7 +636,7 @@ QString BThread_1::sql_TirFrmUpl(const stGameConf *pGame, int zn,int  upl_ref_in
  return sql_msg;
 }
 
-QString BThread_1::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3])
+QString BThread_1::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, etLst sql_step, QString tabInOut[][3])
 {
  QString sql_tbl = "NOT_set";
  QString sql_msg = "";
@@ -676,26 +676,26 @@ QString BThread_1::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in
 
  int tbl_src = -1;
 
- int tbl_tir = ELstTirUpl;
+ int tbl_tir = E_LstTirUpl;
  switch(sql_step)
  {
-  case ELstUplTot:
-  {
-   tbl_src = ELstUpl;
-  }
+  case E_LstUplTot:
+   {
+    tbl_src = E_LstUpl;
+   }
    break;
 
-  case ELstUplTotNot:
-  {
-   tbl_src = ELstUplNot;
-  }
+  case E_LstUplTotNot:
+   {
+    tbl_src = E_LstUplNot;
+   }
    break;
 
-  case ELstUplTotNext:
-  {
-   tbl_src = ELstUplNext;
-   tbl_tir = ELstTirUplNext;
-  }
+  case E_LstUplTotNext:
+   {
+    tbl_src = E_LstUplNext;
+    tbl_tir = E_LstTirUplNext;
+   }
    break;
 
   default:
@@ -706,7 +706,7 @@ QString BThread_1::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in
  QString arg_2 = "";
  QString arg_3 = "";
  QString arg_4 = "";
- if(sql_step == ELstUplTot){
+ if(sql_step == E_LstUplTot){
   // sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
 
   arg_1 = arg_1 + "\tt1.uid ,\n";
@@ -787,9 +787,9 @@ QString BThread_1::sql_ElmNotFrmTir(const stGameConf *pGame, int zn, int  upl_re
  QString target = "t1.z"+QString::number(zn+1);
  QString alias = target + " as " + pGame->names[zn].abv + "1";
 
- sql_tbl = "tb_"+QString::number(ELstBleNot).rightJustified(2,'0');
- tabInOut[ELstBleNot][0] = sql_tbl;
- tabInOut[ELstBleNot][1] = " -- Ensemble complementaire de (Req :"+tabInOut[ELstUpl][0]+")\n";
+ sql_tbl = "tb_"+QString::number(E_LstBleNot).rightJustified(2,'0');
+ tabInOut[E_LstBleNot][0] = sql_tbl;
+ tabInOut[E_LstBleNot][1] = " -- Ensemble complementaire de (Req :"+tabInOut[E_LstUpl][0]+")\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
@@ -799,7 +799,7 @@ QString BThread_1::sql_ElmNotFrmTir(const stGameConf *pGame, int zn, int  upl_re
  sql_msg = sql_msg + "\t"+alias+"\n";
  sql_msg = sql_msg + "    FROM\n";
  sql_msg = sql_msg + "    (B_elm) as t1,\n";
- sql_msg = sql_msg + "    ("+tabInOut[ELstUpl][0]+") as t2\n";
+ sql_msg = sql_msg + "    ("+tabInOut[E_LstUpl][0]+") as t2\n";
  sql_msg = sql_msg + "    WHERE(\n";
  sql_msg = sql_msg + " \t"+target+" not in ("+r9+")\n";
  sql_msg = sql_msg + "    )\n";
@@ -820,9 +820,9 @@ QString BThread_1::sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QSt
  else {
   day = day + " Jour avant ";
  }
- sql_tbl = "tb_"+QString::number(ELstTirUplNext).rightJustified(2,'0');
- tabInOut[ELstTirUplNext][0] = sql_tbl;
- tabInOut[ELstTirUplNext][1] = " -- Liste des tirages "+day+"  (ref :"+tabInOut[ELstTirUpl][0]+")\n";
+ sql_tbl = "tb_"+QString::number(E_LstTirUplNext).rightJustified(2,'0');
+ tabInOut[E_LstTirUplNext][0] = sql_tbl;
+ tabInOut[E_LstTirUplNext][1] = " -- Liste des tirages "+day+"  (ref :"+tabInOut[E_LstTirUpl][0]+")\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
@@ -831,7 +831,7 @@ QString BThread_1::sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QSt
  sql_msg = sql_msg + "     (row_number() over ( partition by t1.uid )) as lgn ,\n";
  sql_msg = sql_msg + "     t2.*\n";
  sql_msg = sql_msg + "    FROM\n";
- sql_msg = sql_msg + "     ("+tabInOut[ELstTirUpl][0]+") as t1 ,\n";
+ sql_msg = sql_msg + "     ("+tabInOut[E_LstTirUpl][0]+") as t1 ,\n";
  sql_msg = sql_msg + "     (B_fdj) as t2\n";
  sql_msg = sql_msg + "    WHERE\n";
  sql_msg = sql_msg + "    (\n";
@@ -848,112 +848,112 @@ void BThread_1::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int
  QString sql_msg = "";
  int ref_day = tirLgnId;
 
- eUpl_Lst sql_step = static_cast<eUpl_Lst>(step);
+ etLst sql_step = static_cast<etLst>(step);
 
  int tbl_src = -1;
 
 #ifndef QT_NO_DEBUG
  QString target = "";
- if(sql_step<ELstCal){
-  target = "_"+sqlStepText[sql_step];
+ if(sql_step<E_LstCal){
+  target = "_"+TXT_SqlStep[sql_step];
  }
 #endif
 
  switch (sql_step) {
 
   /// Trouver la liste des boules
-  case ELstBle:
-  case ELstBleNext:
-  {
-   sql_msg = sql_ElmFrmTir(pGame,zn,sql_step,ref_day,tabInOut);
+  case E_LstBle:
+  case E_LstBleNext:
+   {
+    sql_msg = sql_ElmFrmTir(pGame,zn,sql_step,ref_day,tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Trouver la liste des uplets
-  case ELstUpl:
-  case ELstUplNot:
-  case ELstUplNext:
-  {
-   sql_msg = sql_UplFrmElm(pGame,zn,upl_ref_in,upl_sub,sql_step, tabInOut);
+  case E_LstUpl:
+  case E_LstUplNot:
+  case E_LstUplNext:
+   {
+    sql_msg = sql_UplFrmElm(pGame,zn,upl_ref_in,upl_sub,sql_step, tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Trouver la liste des tirages pour les uplets
-  case ELstTirUpl:
-  {
-   sql_msg = sql_TirFrmUpl(pGame,zn,upl_ref_in,tabInOut);
+  case E_LstTirUpl:
+   {
+    sql_msg = sql_TirFrmUpl(pGame,zn,upl_ref_in,tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Comptabiler les uplets
-  case ELstUplTot:
-  case ELstUplTotNot:
-  case ELstUplTotNext:
-  {
-   sql_msg = sql_TotFrmTir(pGame, zn, upl_ref_in, upl_sub, sql_step,tabInOut);
+  case E_LstUplTot:
+  case E_LstUplTotNot:
+  case E_LstUplTotNext:
+   {
+    sql_msg = sql_TotFrmTir(pGame, zn, upl_ref_in, upl_sub, sql_step,tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
-  case ELstBleNot:
-  {
-   int targetUpl=-2;
-   if (upl_sub == -1){
-    targetUpl = upl_ref_in;
-   }
-   else {
-    targetUpl = upl_sub;
-   }
-   sql_msg = sql_ElmNotFrmTir(pGame,zn, targetUpl, tabInOut);
+  case E_LstBleNot:
+   {
+    int targetUpl=-2;
+    if (upl_sub == -1){
+     targetUpl = upl_ref_in;
+    }
+    else {
+     targetUpl = upl_sub;
+    }
+    sql_msg = sql_ElmNotFrmTir(pGame,zn, targetUpl, tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Lister les tirages apres ceux contenant les uplets
-  case ELstTirUplNext:
-  {
-   sql_msg = sql_NxtTirUpl(pGame,zn, offset, tabInOut);
+  case E_LstTirUplNext:
+   {
+    sql_msg = sql_NxtTirUpl(pGame,zn, offset, tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// ERREUR
@@ -965,10 +965,10 @@ void BThread_1::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int
  } /// End switch
 
 #ifndef QT_NO_DEBUG
- eUpl_Ens e_id = tsk_1->e_id;
+ etEns e_id = tsk_1->e_id;
 
  QString stype = "";
- if(e_id == eEnsUsr){
+ if(e_id == E_EnsUsr){
   stype = "Usr";
  }
  else {
@@ -1013,17 +1013,17 @@ QString BThread_1::getTablePrefixFromSelection_tsk(QString items, int zn, stUpdD
           " where((items like '"+ord_itm+"') and (zn="+QString::number(zn)+"));";
 
  /// Verifier quel type de recherche
- eUpl_Cal id_cal = eCalNotDef;
+ etCal id_cal = E_CalNotDef;
 
  switch (upl_data->e_id) {
-  case eEnsFdj:
-   id_cal = eCalPending;
+  case E_EnsFdj:
+   id_cal = E_CalPending;
    break;
-  case eEnsUsr:
-   id_cal = eCalNotSet;
+  case E_EnsUsr:
+   id_cal = E_CalNotSet;
    break;
   default:
-   id_cal = eCalNotDef;
+   id_cal = E_CalNotDef;
    break;
  }
 
@@ -1034,47 +1034,47 @@ QString BThread_1::getTablePrefixFromSelection_tsk(QString items, int zn, stUpdD
 
    switch(total){
     case 0:
-    {
-     if(upl_data!=nullptr)
      {
-      upl_data->isPresent = false;
-      upl_data->id_db = -1;
-      upl_data->id_zn = zn;
-      upl_data->id_cal = id_cal;
-     }
-     sql_m2 = "insert into "+tbl_upl+" (id, state, zn, items) values(NULL,"+
-              QString::number(id_cal) + ","+QString::number(zn)+",'"+ord_itm+"')";
-     if(query_1.exec(sql_m2)){
-      if(query_1.exec(sql_m1)){
-       query_1.first();
-       id = query_1.value(0).toInt();
+      if(upl_data!=nullptr)
+      {
+       upl_data->isPresent = false;
+       upl_data->id_db = -1;
+       upl_data->id_zn = zn;
+       upl_data->id_cal = id_cal;
+      }
+      sql_m2 = "insert into "+tbl_upl+" (id, state, zn, items) values(NULL,"+
+               QString::number(id_cal) + ","+QString::number(zn)+",'"+ord_itm+"')";
+      if(query_1.exec(sql_m2)){
+       if(query_1.exec(sql_m1)){
+        query_1.first();
+        id = query_1.value(0).toInt();
+       }
       }
      }
-    }
      break;
 
     case 1:
-    {
-     id = query_1.value(0).toInt();
-     eUpl_Cal cal = static_cast<eUpl_Cal>(query_1.value(1).toInt());
-     int zn = query_1.value(2).toInt();
-
-     if(upl_data!=nullptr)
      {
-      upl_data->isPresent = true;
-      upl_data->id_db = id;
-      upl_data->id_zn = zn;
-      upl_data->id_cal = cal;
+      id = query_1.value(0).toInt();
+      etCal cal = static_cast<etCal>(query_1.value(1).toInt());
+      int zn = query_1.value(2).toInt();
+
+      if(upl_data!=nullptr)
+      {
+       upl_data->isPresent = true;
+       upl_data->id_db = id;
+       upl_data->id_zn = zn;
+       upl_data->id_cal = cal;
+      }
      }
-    }
      break;
 
     default:
-    {
-     static int counter = 0;
-     ret_val = "Err_" + QString::number(counter).rightJustified(3,'0');
-     counter++;
-    }
+     {
+      static int counter = 0;
+      ret_val = "Err_" + QString::number(counter).rightJustified(3,'0');
+      counter++;
+     }
    }
 
   }
@@ -1088,7 +1088,7 @@ QString BThread_1::getTablePrefixFromSelection_tsk(QString items, int zn, stUpdD
  return ret_val;
 }
 
-bool BThread_1::updateTracking(int v_key, eUpl_Cal v_cal)
+bool BThread_1::updateTracking(int v_key, etCal v_cal)
 {
  QSqlQuery query_1(db_tsk1);
  bool status = false;
@@ -1108,6 +1108,23 @@ void BThread_1::setUserSelection(QString sel)
  cur_sel = sel;
 }
 
+void BThread_1::BSlot_StartUkScan(stParam_tsk *tsk_param)
+{
+ BcUpl *origin = qobject_cast<BcUpl *>(sender());
+ connect(
+    this, SIGNAL(BSig_SkowUkScan(stParam_tsk *)),
+    origin,SLOT(BSlot_SkowUkScan(stParam_tsk *))
+    );
+
+ tsk_param->glm_in.id_cal = E_CalStarted;
+ updateTracking(tsk_param->glm_in.id_db, E_CalStarted);
+ FillBdd_StartPoint(tsk_param);
+ updateTracking(tsk_param->glm_in.id_db, E_CalReady);
+ tsk_param->glm_in.id_cal = E_CalReady;
+
+ emit BSig_SkowUkScan(tsk_param);
+}
+
 bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
 {
  bool ret_val =false;
@@ -1121,8 +1138,8 @@ bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
  int o_id = tsk_param->o_id;
  int r_id = tsk_param->r_id;
 
- QString sql_msg = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id, ELstUplTot);
- sql_msg = sql_ShowItems(pGame, z_id, ELstShowCal, g_id, sql_msg);
+ QString sql_msg = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id, E_LstUplTot);
+ sql_msg = sql_ShowItems(pGame, z_id, E_LstShowCal, g_id, sql_msg);
 
  QString t_rf = tsk_param->t_rf;
  QString t_use = t_rf + "_C" +
@@ -1133,7 +1150,7 @@ bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
 
  if(my_response == DB_Tools::eCort_Ok){
   tsk_param->t_on = t_use;
-  tsk_param->c_id = ELstUplTot;
+  tsk_param->c_id = E_LstUplTot;
   ret_val = true;
  }
  return ret_val;
@@ -1151,7 +1168,7 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
  int z_id = tsk_param->z_id;
  int g_id = tsk_param->g_id;
  int g_lm = tsk_param->g_lm;
- eUpl_Ens e_id = tsk_param->e_id;
+ etEns e_id = tsk_param->e_id;
 
  QString t_on = tsk_param->t_on;
  stTskProgress *cur_status = tsk_param->tsk_step;
@@ -1187,7 +1204,7 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
     QString upl_cur = my_list.join(',');
 
     /// On a un uplet, Voir si il est deja connu
-    stUpdData glm_in = {e_id, eCalNotDef, -1, -1, false};
+    stUpdData glm_in = {e_id, E_CalNotDef, -1, -1, false};
     QString tbl_radical = getTablePrefixFromSelection_tsk(upl_cur, z_id, &glm_in);
     t_on = tbl_radical;
 
@@ -1203,7 +1220,7 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
     tsk_param->tsk_step->g_cl = glm_in.id_cal;
 
     /// si le calcul est deja fait on continu
-    if(tsk_param->glm_in.id_cal == eCalReady){
+    if(tsk_param->glm_in.id_cal == E_CalReady){
 
      /// signaler l'info pour animer le tableau
      emit BSig_Step(tsk_param);
@@ -1216,17 +1233,17 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
     /// --------------------------
 
     /// Pour les calculs initiaux Fdj Mettre en attente
-    if( (tsk_param->e_id) == eEnsFdj){
-     tsk_param->glm_in.id_cal = eCalPending;
+    if( (tsk_param->e_id) == E_EnsFdj){
+     tsk_param->glm_in.id_cal = E_CalPending;
     }
 
-    if((tsk_param->glm_in.id_cal == eCalNotSet)){
+    if(tsk_param->glm_in.id_cal == E_CalNotSet){
 
      /// Update dans la base
-     updateTracking(glm_in.id_db, eCalPending);
+     updateTracking(glm_in.id_db, E_CalPending);
 
      /// Update dans la variable
-     tsk_param->glm_in.id_cal = eCalPending;
+     tsk_param->glm_in.id_cal = E_CalPending;
 
      /// Update dans la vue
      /*
@@ -1234,20 +1251,20 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
       a_tbv->addKey(g_lm);
      }*/
 
-     tsk_param->tsk_step->g_cl = eCalPending;
+     tsk_param->tsk_step->g_cl = E_CalPending;
      emit BSig_Step(tsk_param);
     }
 
-    if((tsk_param->glm_in.id_cal == eCalPending) ||
-       (tsk_param->glm_in.id_cal == eCalStarted)
+    if((tsk_param->glm_in.id_cal == E_CalPending) ||
+       (tsk_param->glm_in.id_cal == E_CalStarted)
        ){
 
-     if(tsk_param->glm_in.id_cal == eCalPending){
+     if(tsk_param->glm_in.id_cal == E_CalPending){
       /// Update dans la base
-      updateTracking(glm_in.id_db, eCalStarted);
+      updateTracking(glm_in.id_db, E_CalStarted);
 
       /// Update dans la variable
-      tsk_param->glm_in.id_cal = eCalStarted;
+      tsk_param->glm_in.id_cal = E_CalStarted;
      }
 
      emit BSig_Step(tsk_param);
@@ -1262,16 +1279,16 @@ stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
      ///
 
      /// Tous les calculs sont finis pour cet uplet
-     tsk_param->glm_in.id_cal = eCalReady;
+     tsk_param->glm_in.id_cal = E_CalReady;
     }
 
-    if(tsk_param->glm_in.id_cal == eCalReady){
-     updateTracking(glm_in.id_db, eCalReady);
+    if(tsk_param->glm_in.id_cal == E_CalReady){
+     updateTracking(glm_in.id_db, E_CalReady);
      /*if(a_tbv){
       a_tbv->delKey(g_lm);
       a_tbv->setCalReady(g_lm);
      }*/
-     tsk_param->tsk_step->g_cl = eCalReady;
+     tsk_param->tsk_step->g_cl = E_CalReady;
      emit BSig_Step(tsk_param);
     }
    }while (query.next());
@@ -1298,20 +1315,20 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
 
  /// indiquer en cours
  if(tsk_param->glm_in.isPresent == false){
-  tsk_param->glm_in.id_cal = eCalStarted;
+  tsk_param->glm_in.id_cal = E_CalStarted;
 
-  if(!updateTracking(id_db, eCalStarted)){
+  if(!updateTracking(id_db, E_CalStarted)){
    QString str_error = db_1.lastError().text();
    QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
    return tsk_param;
   }
  }
 
- eUpl_Lst tabCal[][3]=
+ etLst tabCal[][3]=
  {
-  {ELstUplTotNot,ELstUplTotNot,ELstUplTotNot},
-  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext},
-  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext}
+  {E_LstUplTotNot,E_LstUplTotNot,E_LstUplTotNot},
+  {E_LstUplTotNext,E_LstUplTotNext,E_LstUplTotNext},
+  {E_LstUplTotNext,E_LstUplTotNext,E_LstUplTotNext}
  };
 
  int nb_recherche = pGame->limites[z_id].win;
@@ -1326,7 +1343,7 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
 
    tsk_param->r_id = r_id;
 
-   eUpl_Lst c_id = tabCal[o_id][r_id];
+   etLst c_id = tabCal[o_id][r_id];
    tsk_param->c_id = c_id;
 
    tsk_param->t_on = t_on +
@@ -1346,9 +1363,9 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
  }
 
  if(tsk_param->glm_in.isPresent == false){
-  tsk_param->glm_in.id_cal = eCalReady;
+  tsk_param->glm_in.id_cal = E_CalReady;
 
-  if(!updateTracking(id_db, eCalReady)){
+  if(!updateTracking(id_db, E_CalReady)){
    QString str_error = db_1.lastError().text();
    QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
    return tsk_param;
@@ -1373,7 +1390,7 @@ void BThread_1::T2_Fill_Bdd(stParam_tsk *tsk_param)
  int r_id = tsk_param->r_id;
  QString t_rf = tsk_param->t_rf;
  QString t_on = tsk_param->t_on;
- eUpl_Lst c_id = tsk_param->c_id;
+ etLst c_id = tsk_param->c_id;
 
  QString sql_ref ="";
  QString sql_msg = "";
@@ -1392,7 +1409,7 @@ void BThread_1::T2_Fill_Bdd(stParam_tsk *tsk_param)
                  "_T1";
 #endif
 
- sql_msg = sql_ShowItems(pGame,z_id,ELstShowCal,g_id,sql_ref);
+ sql_msg = sql_ShowItems(pGame,z_id,E_LstShowCal,g_id,sql_ref);
 
  QString t_use = t_on + "_T1";
  DB_Tools::createOrReadTable(t_use,cnx_1,sql_msg);
@@ -1411,7 +1428,7 @@ void BThread_1::T3_Fill_Bdd(stParam_tsk *tsk_param)
  int o_id = tsk_param->o_id;
  int r_id = tsk_param->r_id;
  QString t_on = tsk_param->t_on;
- eUpl_Lst c_id = tsk_param->c_id;
+ etLst c_id = tsk_param->c_id;
 
  QString sql_ref ="";
  QString sql_msg = "";
@@ -1422,7 +1439,7 @@ void BThread_1::T3_Fill_Bdd(stParam_tsk *tsk_param)
                      g_id, r_id+C_MIN_UPL,
                      c_id,g_lm);
 
- sql_msg = sql_ShowItems(pGame,z_id,ELstShowUnion,g_id, sql_ref, r_id);
+ sql_msg = sql_ShowItems(pGame,z_id,E_LstShowUnion,g_id, sql_ref, r_id);
 
  QString t_use = t_on + "_T2";
  DB_Tools::createOrReadTable(t_use,cnx_1,sql_msg);
@@ -1442,7 +1459,7 @@ void BThread_1::T4_Fill_Bdd(stParam_tsk *tsk_param)
 
  // Prendre les resultats du tableau des unions
  QString t_use = t_on + "_T2";
- sql_msg = sql_ShowItems(pGame,z_id,ELstShowNotInUnion,g_id,t_use);
+ sql_msg = sql_ShowItems(pGame,z_id,E_LstShowNotInUnion,g_id,t_use);
 
  // Mettre la reponse dans le tableau des complementaires
  t_use = t_on + "_T3";

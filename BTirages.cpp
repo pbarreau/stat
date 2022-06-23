@@ -148,6 +148,9 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)), ana_tirages,SLOT(BSlot_Show_Flt(const B2LstSel *)));
  connect(ana_tirages, SIGNAL(BSig_FilterRequest(BTirAna *, const Bp::E_Ico , const B2LstSel * )),
          this, SLOT(BSlot_Filter_Tir(BTirAna *, const Bp::E_Ico , const B2LstSel *)));
+ connect(ana_tirages, SIGNAL(BSig_AnaUplFdjShow(const QString , int )),
+         this, SLOT(BSlot_AnaUplFdjShow(const QString , int ))
+    );
 }
 
 QWidget * BTirages::Dessine()
@@ -1751,4 +1754,13 @@ void BTirages::BSlot_Ensemble_Tir(const int index)
   //child_1.at(0)->setCurrentIndex(0);
   child_1.at(0)->tabBarClicked(cur_index);
  }
+}
+
+void BTirages::BSlot_AnaUplFdjShow(const QString items, int zn)
+{
+ int tot = cbm_flt->count();
+ int key = tot -2 +zn;
+ cbm_flt->setCurrentIndex(key);
+ ble_rch->clear();
+ ble_rch->setText(items);
 }

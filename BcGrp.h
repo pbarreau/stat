@@ -75,12 +75,12 @@ class BcGrp:public BCount
 
  private:
  //virtual QString getType();
- virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul);
+ virtual  QTabWidget *startCount(const stGameConf *pGame, const etCount E_Calcul);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn);
  void marquerDerniers_tir(const stGameConf *pGame, etCount eType, int zn);
  virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn);
  //virtual QLayout * usr_UpperItems(int zn, BTbView *cur_tbv);
- QWidget *mainIhmGrp(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn);
+ QWidget *mainIhmGrp(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl fn, const int zn);
  QWidget *usr_GrpTb1(int zn);
  QString getSqlForLine(const int &l_id, int zn);
  void showLineDetails(int zn, int l_id, QString sql_msg);

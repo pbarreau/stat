@@ -5,15 +5,15 @@ const stParam_2 loto_prm2_zn[]={{"boules","b","none"},{"etoiles","e","none"}};
 const stParam_1 euro_prm1_zn[]={{5,5,1,50,5,0},{10,2,1,12,2,0}};
 const stParam_2 euro_prm2_zn[]={{"boules","b","none"},{"etoiles","e","none"}};
 
-const QString gameLabel [eFdjEol]={"NonDefini","Loto","Euro"};
+const QString TXT_Game [eFdjEol]={"NonDefini","Loto","Euro"};
 
-const QString lstTirDef[eTirEol]={"TirUndef",
+const QString TXT_TirDef[eTirEol]={"TirUndef",
                                   "TirFdj","TirGen","TirUsr",
                                   "TirUplFdj","TirUplGen","TirUplUsr"
                                  };
 
-const QString FdjCnames_1[eFdjEndCnames_1]={"Loto", "Super loto", "Grand Loto de Noel", "Grand Loto"};
-const QString FdjCnames_2[eFdjEndCnames_2 - eFdjEndCnames_1 - 1]={"Euro Millions My Million", "Euro Millions"};
+const QString TXT_FdjLst_1[eFdjEndCnames_1]={"Loto", "Super loto", "Grand Loto de Noel", "Grand Loto"};
+const QString TXT_FdjLst_2[eFdjEndCnames_2 - eFdjEndCnames_1 - 1]={"Euro Millions My Million", "Euro Millions"};
 
 const stSrcHistoJeux HistoLoto[]={
  {eCnameLoto,"Depuis novembre 2019","https://media.fdj.fr/static/csv/loto/loto_201911.zip","loto_201911.csv"},

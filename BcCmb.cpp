@@ -36,14 +36,14 @@ BcCmb::BcCmb(const stGameConf *pGame):BCount(pGame,eCountCmb)
  db_cmb = dbCount;
 }
 
-QTabWidget * BcCmb::startCount(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BcCmb::startCount(const stGameConf *pGame, const etCount E_Calcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
  int nb_zones = pGame->znCount;
 
 
- QWidget *(BCount::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
+ QWidget *(BCount::*ptrFunc[])(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl fn, const int zn) =
   {
    &BCount::startIhm,
    &BCount::startIhm
@@ -52,7 +52,7 @@ QTabWidget * BcCmb::startCount(const stGameConf *pGame, const etCount eCalcul)
  for(int i = 0; i< nb_zones; i++)
  {
   QString name = pGame->names[i].abv;
-  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::usr_MkTbl, i);
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, E_Calcul, &BCount::usr_MkTbl, i);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
   }
@@ -389,7 +389,7 @@ void BcCmb::BSlot_FilterCmb(const QString &flt_string)
 #ifdef USE_DIG
  //tmp_fpm= qobject_cast<BFpmCmb *>(tmp_v1->model());
  tmp_fpm= qobject_cast<QSortFilterProxyModel *>(tmp_v1->model());
- int gme_zn = tmp_v1->getZone();
+ int gme_zn = tmp_v1->getZid();
  QString dig = getFltRgx(gme_zn,flt_string);
  tmp_fpm->setFilterRegExp(dig);
 #else

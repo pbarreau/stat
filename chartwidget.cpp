@@ -67,8 +67,8 @@ ChartWidget::ChartWidget(QStandardItemModel *pdata)
     RelativePosition relativePosition( dva.positivePosition() );
     relativePosition.setReferencePosition( Position::Center );
     relativePosition.setAlignment( Qt::AlignBottom | Qt::AlignHCenter );
-    relativePosition.setHorizontalPadding( KDChart::Measure( 0.0, KDChartEnums::MeasureCalculationModeAbsolute ) );
-    relativePosition.setVerticalPadding(   KDChart::Measure( 0.0, KDChartEnums::MeasureCalculationModeAbsolute ) );
+    relativePosition.setHorizontalPadding( KDChart::Measure( 0.0, KDChartEnums::MeasurE_CalculationModeAbsolute ) );
+    relativePosition.setVerticalPadding(   KDChart::Measure( 0.0, KDChartEnums::MeasurE_CalculationModeAbsolute ) );
     dva.setPositivePosition( relativePosition );
     diagram->setDataValueAttributes( dva );
 
@@ -197,8 +197,8 @@ ChartWidget::ChartWidget(QWidget *parent) :
         RelativePosition relativePosition( dva.positivePosition() );
         relativePosition.setReferencePosition( Position::Center );
         relativePosition.setAlignment( Qt::AlignBottom | Qt::AlignHCenter );
-        relativePosition.setHorizontalPadding( KDChart::Measure( 0.0, KDChartEnums::MeasureCalculationModeAbsolute ) );
-        relativePosition.setVerticalPadding(   KDChart::Measure( 0.0, KDChartEnums::MeasureCalculationModeAbsolute ) );
+        relativePosition.setHorizontalPadding( KDChart::Measure( 0.0, KDChartEnums::MeasurE_CalculationModeAbsolute ) );
+        relativePosition.setVerticalPadding(   KDChart::Measure( 0.0, KDChartEnums::MeasurE_CalculationModeAbsolute ) );
         dva.setPositivePosition( relativePosition );
         diagram->setDataValueAttributes( dva );
 

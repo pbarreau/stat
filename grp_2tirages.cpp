@@ -73,7 +73,7 @@ void SyntheseGenerale::slot_ccmr_grpSel(const QPoint pos)
  MonMenu->exec(view->viewport()->mapToGlobal(pos));
 }
 
-void SyntheseGenerale::main_CallToMkDetail(int zn, typeCalc calcul, QTableView *view)
+void SyntheseGenerale::main_CallToMkDetail(int zn, typE_Calc calcul, QTableView *view)
 {
  QString msg = "";
 

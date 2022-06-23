@@ -26,7 +26,7 @@
 QString GetTirageInfo(int id);
 
 #if 0
-void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int in_cid)
+void ShowStepper::slot_MaFonctionDE_Calcul(const QModelIndex &my_index, int in_cid)
 {
  QSqlQuery requete(db_0);
  bool status = false;
@@ -143,7 +143,7 @@ void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int in_ci
 #ifndef USE_SG_CODE
 //QString GetBoulesOfTirage(int tir);
 //#if 0
-void ShowStepper::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int in_cid)
+void ShowStepper::slot_MaFonctionDE_Calcul(const QModelIndex &my_index, int in_cid)
 {
  QSqlQuery requete(db_0);
  bool status = false;

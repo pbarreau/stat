@@ -684,7 +684,13 @@ void DB_Tools::DisplayError(QString fnName, QSqlQuery *pCurrent,QString sqlCode)
                 +QString("\nSql demande :\n")+sqlCode + "\n"
                 +QString("\nSql Error :\n")+sqlError + "\n";
 
-  QMessageBox::information(nullptr, "Pgm", msg,QMessageBox::Yes);
+  QMessageBox myMsg;
+  myMsg.setText("Erreur lors du traitement de la requete !!");
+  myMsg.setDetailedText(msg);
+  //myMsg.setSizeGripEnabled(true);
+  myMsg.setIcon(QMessageBox::Critical);
+  myMsg.exec();
+
 #ifndef QT_NO_DEBUG
 	err_logs << "\n\n-------------\n"<<msg;
 	qDebug() <<msg;

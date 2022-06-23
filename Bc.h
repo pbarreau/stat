@@ -93,6 +93,7 @@ class BCount:public QWidget
  BView_1 **tabTbv;
  QSqlDatabase dbCount;
 
+#if 0
  protected:
  ///int upl_items;
  int upl_zn;
@@ -102,7 +103,7 @@ class BCount:public QWidget
  BView ******upl_Bview_2; /// Resultat pour la selection
  BView ******upl_Bview_3; /// Bilan de resultat
  BView ******upl_Bview_4; /// complementaire de resultat
-
+#endif
 
  public:
  typedef struct _stMkLocal{
@@ -117,8 +118,8 @@ class BCount:public QWidget
  public:
  static QString FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString alias="", bool visual=false);
  etCount getType();
- virtual QTabWidget *startCount(const stGameConf *pGame, const etCount eCalcul) = 0;
- QWidget *startIhm(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn);
+ virtual QTabWidget *startCount(const stGameConf *pGame, const etCount E_Calcul) = 0;
+ QWidget *startIhm(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl usr_fn, const int zn);
  virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)=0;
  virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn)=0;
  virtual QList<BLstSelect *> *getSelection(void);
@@ -148,7 +149,7 @@ class BCount:public QWidget
  void RecupererConfiguration(void);
  bool setUnifiedPriority(QString szn, QString sprio);
  bool getFiltre(stTbFiltres *ret, const etCount origine, QTableView *view, const QModelIndex index);
- QString mkTitle(int zn, etCount eCalcul, QTableView *view);
+ QString mkTitle(int zn, etCount E_Calcul, QTableView *view);
  int getTotalCells(const stGameConf *pGame, int zn);
  QTabWidget *getDetailsTabs(const stGameConf *pGame, int in_zn, etCount in_typ);
 

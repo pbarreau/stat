@@ -33,14 +33,14 @@ BcBrc::BcBrc(const stGameConf *pGame):BCount(pGame,eCountBrc)
  db_brc = dbCount;
 }
 
-QTabWidget * BcBrc::startCount(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BcBrc::startCount(const stGameConf *pGame, const etCount E_Calcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
  int nb_zones = pGame->znCount;
 
 
- QWidget *(BcBrc::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
+ QWidget *(BcBrc::*ptrFunc[])(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl fn, const int zn) =
   {
    &BcBrc::startIhm,
    &BcBrc::startIhm
@@ -49,7 +49,7 @@ QTabWidget * BcBrc::startCount(const stGameConf *pGame, const etCount eCalcul)
  for(int i = 0; i< nb_zones; i++)
  {
   QString name = pGame->names[i].abv;
-  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::usr_MkTbl, i);
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, E_Calcul, &BCount::usr_MkTbl, i);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
   }

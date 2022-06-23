@@ -98,8 +98,8 @@ bool BFdj::ouvrirBase(stFdj *prm)
   default:
    /// Reutiliser existant ?
    if(prm->use_odb){
-    QString myTitle = "Selectionnner un fichier " + gameLabel[game];
-    QString myFilter = gameLabel[game]+QString(DB_VER)+"*.sqlite";
+    QString myTitle = "Selectionnner un fichier " + TXT_Game[game];
+    QString myFilter = TXT_Game[game]+QString(DB_VER)+"*.sqlite";
     mabase = QFileDialog::getOpenFileName(nullptr,myTitle,".",myFilter);
    }
    break;
@@ -203,8 +203,18 @@ bool BFdj::AuthoriseChargementExtension(void)
    //int ret = loadExt(handle,1);
 
    /// Lancer la requete
-   //QString msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-sqMath.dll')";
-   QString msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-extension-functions-i686.dll')";
+            QString msg = "";
+
+            // https://stackoverflow.com/questions/30139983/how-do-i-identify-x86-vs-x86-64-at-compile-time-in-gcc
+#if defined(__x86_64__)
+            /* 64 bit detected */
+            msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-extension-functions-x86_64.dll')";
+#endif
+#if defined(__i386__)
+            /* 32 bit x86 detected */
+            msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-extension-functions-i686.dll')";
+#endif
+
    b_retVal = query.exec(msg);
 #ifndef QT_NO_DEBUG
 	 if (query.lastError() .isValid())
@@ -233,11 +243,11 @@ QString BFdj::mk_IdCnx(etFdj type)
 
  if((type <= eFdjNone) || (type>=eFdjEol)){
   etFdj err = eFdjNone;
-  QMessageBox::warning(nullptr,"BFdj","Jeu "+gameLabel[err]+" inconnu !!",QMessageBox::Ok);
+  QMessageBox::warning(nullptr,"BFdj","Jeu "+TXT_Game[err]+" inconnu !!",QMessageBox::Ok);
   QApplication::quit();
  }
 
- msg=QString("cnx")+QString(DB_VER)+gameLabel[type];
+ msg=QString("cnx")+QString(DB_VER)+TXT_Game[type];
  msg = msg + QString("-")+QString::number(cur_item).rightJustified(2,'0');
 
  return (msg);
@@ -253,7 +263,7 @@ QString BFdj::mk_IdDsk(etFdj type)
  QString testName = "";
  QString ext=".sqlite";
 
- game = gameLabel[type] + QString(DB_VER);
+ game = TXT_Game[type] + QString(DB_VER);
 
  game = game +toDay+QString("_");
 

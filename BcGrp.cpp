@@ -42,7 +42,7 @@ BcGrp::BcGrp(const stGameConf *pGame,QStringList** lstCri):BCount(pGame,eCountGr
  total_cells = 0;
 }
 
-QTabWidget * BcGrp::startCount(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BcGrp::startCount(const stGameConf *pGame, const etCount E_Calcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
@@ -55,7 +55,7 @@ QTabWidget * BcGrp::startCount(const stGameConf *pGame, const etCount eCalcul)
  }
 
 
- QWidget *(BcGrp::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
+ QWidget *(BcGrp::*ptrFunc[])(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl fn, const int zn) =
   {
    &BcGrp::mainIhmGrp,
    &BcGrp::mainIhmGrp
@@ -64,7 +64,7 @@ QTabWidget * BcGrp::startCount(const stGameConf *pGame, const etCount eCalcul)
  for(int i = 0; i< nb_zones; i++)
  {
   QString name = pGame->names[i].abv;
-  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::usr_MkTbl, i);
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, E_Calcul, &BCount::usr_MkTbl, i);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
   }
@@ -72,7 +72,7 @@ QTabWidget * BcGrp::startCount(const stGameConf *pGame, const etCount eCalcul)
  return tab_Top;
 }
 
-QWidget *BcGrp::mainIhmGrp(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn)
+QWidget *BcGrp::mainIhmGrp(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl fn, const int zn)
 {
  QWidget *ret = new QWidget;
  QVBoxLayout *ret_lay = new QVBoxLayout;
@@ -85,7 +85,7 @@ QWidget *BcGrp::mainIhmGrp(const stGameConf *pGame, const etCount eCalcul, const
   ret_lay->setAlignment(tmp,Qt::AlignTop|Qt::AlignLeft);
  }
 
- tmp = startIhm(pGame,eCalcul,fn,zn);
+ tmp = startIhm(pGame,E_Calcul,fn,zn);
  ret_lay->addWidget(tmp);
 
  ret->setLayout(ret_lay);

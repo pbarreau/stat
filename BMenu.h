@@ -53,7 +53,7 @@ class BMenu : public QMenu,BFlt
  private:
  QMenu *main_menu;
  QSqlDatabase db_menu;
- //etCount eCalcul;
+ //etCount E_Calcul;
  //BTbView *lview;
  //QModelIndex  index;
  //stTbFiltres val;

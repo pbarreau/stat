@@ -52,18 +52,18 @@ void BcElm::BSlot_MkUsrUplets_L3(const QItemSelectionModel *cur_sel)
 {
  BView_1 *view = qobject_cast<BView_1 *>(sender());
  int id_upl = view->objectName().toInt();
- int zn = view->getZone();
+ int zn = view->getZid();
 
  emit BSig_MkUsrUplets_L4(cur_sel, zn);
 }
 
-QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount E_Calcul)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
  int nb_zones = pGame->znCount;
 
- QWidget *(BCount::*ptrFunc[])(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl fn, const int zn) =
+ QWidget *(BCount::*ptrFunc[])(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl fn, const int zn) =
  {
    &BCount::startIhm,
    &BCount::startIhm
@@ -78,7 +78,7 @@ QTabWidget * BcElm::startCount(const stGameConf *pGame, const etCount eCalcul)
  for(int i = 0; i< nb_zones; i++)
  {
   QString name = pGame->names[i].abv;
-  QWidget *calcul = (this->*ptrFunc[i])(pGame, eCalcul, &BCount::usr_MkTbl, i);
+  QWidget *calcul = (this->*ptrFunc[i])(pGame, E_Calcul, &BCount::usr_MkTbl, i);
   if(calcul != nullptr){
    tab_Top->addTab(calcul, name);
    connect(

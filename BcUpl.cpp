@@ -61,22 +61,22 @@ const BcUpl::stDays BcUpl::defDays[]={
 };
 
 #ifndef QT_NO_DEBUG
-const QString sqlStepText[ELstCal]={
- "ELstBle",
- "ELstUpl",
- "ELstTirUpl",
- "ELstUplTot",
- "ELstBleNot",
- "ELstTirUplNext",
- "ELstBleNext",
- "ELstUplNot",
- "ELstUplTotNot",
- "ELstUplNext",
- "ELstUplTotNext"
+const QString TXT_SqlStep[E_LstCal]={
+ "E_LstBle",
+ "E_LstUpl",
+ "E_LstTirUpl",
+ "E_LstUplTot",
+ "E_LstBleNot",
+ "E_LstTirUplNext",
+ "E_LstBleNext",
+ "E_LstUplNot",
+ "E_LstUplTotNot",
+ "E_LstUplNext",
+ "E_LstUplTotNext"
 };
 #endif
 
-const QString Txt_eUpl_Ens[eEnsEnd]={
+const QString TXT_UplSrcKey[E_EnsEnd]={
  "TBD", /// To be define
  "T",   /// Dans base des tirages
  "U"    /// Utilisateur
@@ -86,10 +86,11 @@ int BcUpl::obj_upl = 0;
 int BcUpl::nb_max_recherche = 0;
 QThreadPool *BcUpl::pool = nullptr;
 
-BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
- :BCount (pGame, eCountUpl)
+BcUpl::BcUpl(const stGameConf *pGame, QWidget *parent, etEns eUpl, int zn, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
+ :BCount (pGame, eCountUpl), upl_zn(zn)
 {
  obj_upl++;
+ ana_parent = parent;
  isScanRuning = false;
 
  QThread cpuInfo(this); //get CPU info
@@ -120,10 +121,31 @@ BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectio
 
  /// creer la table des uplets
  QSqlQuery query(db_0);
+ QString sql_msg = "";
+ bool status = false;
+
+ /// Tableau Memoriser liste boules
+ sql_msg = "CREATE TABLE if not EXISTS F_lst"
+           "(id integer PRIMARY key, type text, zn int,"
+           " name text, lst TEXT, nb int,"
+           " t1  text, t2  text)";
+ if((status = query.exec(sql_msg)) == true){
+  /// Creer table des timings
+  sql_msg = "CREATE TABLE if not EXISTS F_timings"
+            "(id integer PRIMARY key, upl text, step text, t1  text, t2  text)";
+
+  if((status = query.exec(sql_msg)) == true){
+   /// creer la table des uplets
  QString tbl_upl = C_TBL_UPL;
- QString sql_msg = "create table if not exists "+tbl_upl+
-                   " (id integer primary key, state int, zn int, items text not null);";
- if(!query.exec(sql_msg)){
+   sql_msg = "create table if not exists "
+             + tbl_upl
+             + " (id integer primary key, state int,"
+               "zn int, items text not null)";
+   status = query.exec(sql_msg);
+  }
+ }
+
+ if(status == false){
   QString str_error = db_0.lastError().text();
   QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
   return;
@@ -131,10 +153,10 @@ BcUpl::BcUpl(const stGameConf *pGame, eUpl_Ens eUpl, int zn, const QItemSelectio
 
 
  ///
- e_id=eUpl;//eEnsFdj;
+ e_id=eUpl;//E_EnsFdj;
  int nb_ana = 0; /// Tirages number
 
- if(eUpl==eEnsFdj){
+ if(eUpl==E_EnsFdj){
   nb_ana=2;
   uplTirTab = nullptr;
  }
@@ -170,6 +192,53 @@ QTabWidget * BcUpl::getTabUplRsp(void)
 }
 #endif
 
+bool BcUpl::isSelectedKnown(const QItemSelectionModel *cur_sel, int zn, int *key)
+{
+ bool ret_val = false;
+ QSqlQuery query(db_0);
+ QString sql_msg = "";
+
+ *key = -1;
+
+ if (cur_sel == nullptr){
+  return false;
+ }
+
+
+ /// memoriser selection
+ /// Construire l'uplet du jeu
+ QStringList my_list;
+ QModelIndex un_index;
+
+ foreach (un_index, cur_sel->selectedIndexes()) {
+  int val = un_index.data().toInt();
+  my_list << QString::number(val).rightJustified(2,'0');
+ }
+ std::sort(my_list.begin(), my_list.end());
+ QString upl_cur = my_list.join(',');
+
+ /// Rechercher cette clef
+ sql_msg = "select * from F_lst where((lst='"+upl_cur+"') and (type='"+
+           TXT_TirDef[eTirUplUsr]+"'))";
+ if((ret_val=query.exec(sql_msg)) == true){
+  if((ret_val=query.first()) == true){
+   *key = query.value("id").toInt();
+  }
+ }
+ else{
+  // Rajouter cette table a la liste
+  sql_msg = "insert into F_lst values(NULL,'"
+            + TXT_TirDef[eTirUplUsr] + "',"
+            + QString::number(zn)
+            + ",gameId,'"+upl_cur+"',"+ QString::number(upl_cur.size())+
+            ",NULL, NULL)";
+  ret_val=query.exec(sql_msg);
+  ret_val = false;
+ }
+
+ return ret_val;
+}
+
 QString BcUpl::getTablePrefixFromSelection_upl(QString items, int zn, stUpdData *upl_data)
 {
  QSqlQuery query_1(db_0);
@@ -194,17 +263,17 @@ QString BcUpl::getTablePrefixFromSelection_upl(QString items, int zn, stUpdData 
           " where((items like '"+ord_itm+"') and (zn="+QString::number(zn)+"));";
 
  /// Verifier quel type de recherche
- eUpl_Cal id_cal = eCalNotDef;
+ etCal id_cal = E_CalNotDef;
 
  switch (upl_data->e_id) {
-  case eEnsFdj:
-   id_cal = eCalPending;
+  case E_EnsFdj:
+   id_cal = E_CalPending;
    break;
-  case eEnsUsr:
-   id_cal = eCalNotSet;
+  case E_EnsUsr:
+   id_cal = E_CalNotSet;
    break;
   default:
-   id_cal = eCalNotDef;
+   id_cal = E_CalNotDef;
    break;
  }
 
@@ -238,7 +307,7 @@ QString BcUpl::getTablePrefixFromSelection_upl(QString items, int zn, stUpdData 
     case 1:
     {
      id = query_1.value(0).toInt();
-     id_cal = static_cast<eUpl_Cal>(query_1.value(1).toInt());
+     id_cal = static_cast<etCal>(query_1.value(1).toInt());
      int zn = query_1.value(2).toInt();
 
      if(upl_data!=nullptr)
@@ -270,16 +339,16 @@ QString BcUpl::getTablePrefixFromSelection_upl(QString items, int zn, stUpdData 
  return ret_val;
 }
 #if 0
-BcUpl::BcUpl(st_In const &param, int index, eUpl_Cal eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
+BcUpl::BcUpl(st_In const &param, int index, etCal E_Cal, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
  input = param;
  tot_upl++;
 
  if((ligne==QModelIndex())&&(!data.size())){
-  useData = eEnsFdj;
+  useData = E_EnsFdj;
  }
  else {
-  useData = eEnsUsr;
+  useData = E_EnsUsr;
  }
 
  bool b_retVal = false;
@@ -287,7 +356,7 @@ BcUpl::BcUpl(st_In const &param, int index, eUpl_Cal eCal, const QModelIndex & l
  db_0 = QSqlDatabase::database(input.cnx);
 
  if((b_retVal=db_0.isValid()) == true){
-  QGroupBox *info = gpbCreate(index, eCal, ligne, data, parent);
+  QGroupBox *info = gpbCreate(index, E_Cal, ligne, data, parent);
   QVBoxLayout *mainLayout = new QVBoxLayout;
 
   mainLayout->addWidget(info);
@@ -322,9 +391,9 @@ void BcUpl::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
 
 
 /// https://stackoverflow.com/questions/13970070/moving-an-object-to-a-different-thread
-QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
+QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount E_Calcul)
 {
- Q_UNUSED(eCalcul)
+ Q_UNUSED(E_Calcul)
 
  QTabWidget *tab_tirId = nullptr;
  if(uplTirTab == nullptr){
@@ -340,7 +409,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
 
  static int usrCounter = 0;
 
- if(e_id==eEnsFdj){
+ if(e_id==E_EnsFdj){
   zn_start = 0;
   zn_stop = nb_zn;
   nbTirJour = C_NB_TIR_LIR;
@@ -361,10 +430,25 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  t1data->my_indexes = &my_indexes;
  t1data->z_id = upl_zn;
  t1data->obj_upl = obj_upl;
+ //t1data->lst_view = new QMap<QString, stUplBViewPos>;
+
+ etTir upl_type = eTirEol;
+ if(my_indexes.size() == 0){
+  upl_type = eTirUplFdj;
+ }
+ else{
+  upl_type = eTirUplUsr;
+ }
 
  /// creation et lancement du producteur
  /// -----------------------------------
  producteur = new BThread_1(t1data);
+ connect(this, &BcUpl::BSig_StartUkScan,
+         producteur, &BThread_1::BSlot_StartUkScan
+         );
+ connect(producteur, &BThread_1::BSig_SkowUkScan,
+         this, &BcUpl::BSlot_SkowUkScan
+         );
 
  #if C_PGM_THREADED
  /// Recuperation des infos
@@ -394,7 +478,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
  /// -----------------------------------
 #else
  producteur->start(eStep_T1);
- producteur->start(eStep_T2);
+ //producteur->start(eStep_T2);
 #endif
 
  stParam_tsk *tsk_param = new stParam_tsk;
@@ -436,7 +520,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
      /// ----------------------
      QString t_rf = "UT_" +
                     QString::number(obj_upl).rightJustified(2,'0') + "_" +
-                    Txt_eUpl_Ens[e_id] + QString::number(l_id).rightJustified(2,'0') +
+                    TXT_UplSrcKey[e_id] + QString::number(l_id).rightJustified(2,'0') +
                     "_Z" + QString::number(z_id).rightJustified(2,'0');
 
      tsk_param->p_gm = gm_def;
@@ -446,7 +530,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
      tsk_param->g_lm = -1;
      tsk_param->o_id = 0;
      tsk_param->r_id = -1;
-     tsk_param->c_id = ELstBle;
+     tsk_param->c_id = E_LstBle;
      tsk_param->e_id = e_id;
      tsk_param->t_rf = t_rf;
      tsk_param->t_on = "";
@@ -464,7 +548,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount eCalcul)
   }
 
   /// ------------------
-  if(e_id==eEnsFdj){
+  if(e_id==E_EnsFdj){
    refTir = QString("Tirage-")+ QString::number(l_id).rightJustified(2,'0');
   }
   else{
@@ -486,7 +570,7 @@ void BcUpl::tsk_upl_0(stParam_tsk *tsk_param)
  int zn = tsk_param->z_id;
  int tir_LgnId = tsk_param->l_id;
  int upl_GrpId = tsk_param->g_id;
- eUpl_Ens eEns = tsk_param->e_id;
+ etEns eEns = tsk_param->e_id;
 
  bool status = true;
  QString cnx=pGame->db_ref->cnx;
@@ -495,8 +579,8 @@ void BcUpl::tsk_upl_0(stParam_tsk *tsk_param)
  QSqlQuery query(db_1);
 
  int day_delta = 0;
- QString sql_msg = getSqlTbv(pGame,zn,tir_LgnId,day_delta,upl_GrpId, -1, ELstUplTot);
- sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,upl_GrpId,sql_msg);
+ QString sql_msg = getSqlTbv(pGame,zn,tir_LgnId,day_delta,upl_GrpId, -1, E_LstUplTot);
+ sql_msg = sql_ShowItems(pGame,zn,E_LstShowCal,upl_GrpId,sql_msg);
 
  QString tbl_name = "Upl_" +
                     Txt_eUpl_Ens[eEns] + QString::number(tir_LgnId).rightJustified(2,'0') +
@@ -558,7 +642,7 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int ong_zn, int ong_tir, i
  qtv_tmp->addUpLayout(bar_top_1);
 
  int day_delta = 0;
- QString sql_msg = getSqlTbv(pGame,ong_zn,ong_tir,day_delta,ong_upl, -1, ELstUplTot);
+ QString sql_msg = getSqlTbv(pGame,ong_zn,ong_tir,day_delta,ong_upl, -1, E_LstUplTot);
 #ifndef QT_NO_DEBUG
  QString target = "dbg_sql_req_1.txt";
  //BTest::writetoFile(target,sql_msg,false);
@@ -566,7 +650,7 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int ong_zn, int ong_tir, i
 
  QString sql_tot = sql_msg + "\n" + "Select count(*) as T from tb_00";
 
- sql_msg = sql_ShowItems(pGame,ong_zn,ELstShowCal,ong_upl,sql_msg);
+ sql_msg = sql_ShowItems(pGame,ong_zn,E_LstShowCal,ong_upl,sql_msg);
 
 #ifndef QT_NO_DEBUG
  target = "dbg_sql_req_2.txt";
@@ -635,7 +719,7 @@ QWidget *BcUpl::fill_Bview_1(const stGameConf *pGame, int ong_zn, int ong_tir, i
 
  // simple click dans fenetre  pour selectionner boule
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-          this, SLOT(BSlot_clicked( QModelIndex) ) );
+          this, SLOT(BSlot_UVL1_Click_Fn_1( QModelIndex) ) );
 
  // survol des lignes
  qtv_tmp->setMouseTracking(true);
@@ -683,16 +767,16 @@ void BcUpl::BSlot_Repaint(const BView *tbv)
  tbv->viewport()->repaint();
 }
 
-void BcUpl::BSlot_UplCmr_1(QPoint pos)
+void BcUpl::BSlot_UVL1_Cmr_Fn_1(QPoint pos)
 {
  /// On ne selectionne que si c'est un calcul utilisateur
- if(e_id != eEnsUsr){
+ if(e_id != E_EnsUsr){
   return;
  }
 
  BView *view = qobject_cast<BView *>(sender());
  int g_id = (view->objectName().toInt()) + C_MIN_UPL;
- int z_id = view->getZone();
+ int z_id = view->getZid();
 
  BFpm_upl * m = qobject_cast<BFpm_upl *>(view->model());
  QModelIndex index = view->indexAt(pos);
@@ -712,14 +796,14 @@ void BcUpl::BSlot_UplCmr_1(QPoint pos)
  QMenu MonMenu;
  QString msg = "";
 
- eUpl_Cal eCal = eCalNotDef;
- if(ani_tbv->gotKey(cid_src_1, &eCal)){
+ etCal E_Cal = E_CalNotDef;
+ if(ani_tbv->gotKey(cid_src_1, &E_Cal)){
 
-  switch (eCal) {
-   case eCalNotSet:
+  switch (E_Cal) {
+   case E_CalNotSet:
     msg = "Selectionner uplet";
     break;
-   case eCalPending:
+   case E_CalPending:
     msg = "Retirer uplet";
     break;
    default:
@@ -760,7 +844,7 @@ void BcUpl::BSlot_UplSel(const QModelIndex &index)
  int cid_1 = index.sibling(row,0).data().toInt();
 
  int g_id = (view->objectName().toInt()) + C_MIN_UPL;
- int z_id = view->getZone();
+ int z_id = view->getZid();
  int g_lm =  index.sibling(index.row(),Bp::colId).data().toInt();
  int l_id = getFromView_Lid(view);
  int upl_tot =  index.sibling(index.row(),Bp::colId+g_id+1).data().toInt();
@@ -770,10 +854,10 @@ void BcUpl::BSlot_UplSel(const QModelIndex &index)
  BAnimateCell * ani_tab = tbv_Anim[l_id-1][z_id][g_id - C_MIN_UPL];
 
 
- eUpl_Cal new_val = eCalNotDef;
- if((new_val = ani_tbv->setUserSelect(g_lm)) != eCalNotDef){
+ etCal new_val = E_CalNotDef;
+ if((new_val = ani_tbv->setUserSelect(g_lm)) != E_CalNotDef){
   /// On a un uplet, obtenir le radical de table
-  stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
+  stUpdData d_info = {e_id, E_CalNotDef, -1, -1, false};
   QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur,z_id, &d_info);
 
   bool status = false;
@@ -812,7 +896,7 @@ void BcUpl::BSlot_UplScan()
  int zn_stop = -1;
 
 
- if(e_id==eEnsFdj){
+ if(e_id==E_EnsFdj){
   zn_start = 0;
   zn_stop = nb_zn;
   nbTirJour = C_NB_TIR_LIR;
@@ -855,7 +939,7 @@ void BcUpl::BSlot_UplScan()
 }
 
 
-bool BcUpl::updateTracking_upl(int v_key, eUpl_Cal v_cal)
+bool BcUpl::updateTracking_upl(int v_key, etCal v_cal)
 {
  QSqlQuery query_1(db_0);
  bool status = false;
@@ -871,7 +955,7 @@ bool BcUpl::updateTracking_upl(int v_key, eUpl_Cal v_cal)
 }
 
 
-QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show, int cur_upl, QString cur_sql, int upl_sub)
+QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, etLst sql_show, int cur_upl, QString cur_sql, int upl_sub)
 {
  QString sql_msg="";
  QString key = "";
@@ -881,14 +965,14 @@ QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show,
  }
 
  /// choix 1
- if(sql_show == ELstShowCal){
+ if(sql_show == E_LstShowCal){
   sql_msg=cur_sql;
   sql_msg = sql_msg +"\n";
   sql_msg = sql_msg + "select t1.* from (tb_uplets) as t1 ";
  }
 
  /// choix 2
- if((sql_show == ELstShowUnion) && (upl_sub != 0)){
+ if((sql_show == E_LstShowUnion) && (upl_sub != 0)){
   key = pGame->names[zn].abv;
   int cal_upl = upl_sub;
   if(cal_upl==1){
@@ -919,7 +1003,7 @@ QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show,
  }
 
  /// choix 3
- if(sql_show == ELstShowNotInUnion){
+ if(sql_show == E_LstShowNotInUnion){
   key = "t1.z"+QString::number(zn+1);
   sql_msg = "Select " + key +
             " as b from b_elm as t1 where ( "+
@@ -930,26 +1014,26 @@ QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, eUpl_Lst sql_show,
  return sql_msg;
 }
 
-QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day_Delta,int upl_Grp, int upl_Sub, eUpl_Lst target, int sel_item)
+QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day_Delta,int upl_Grp, int upl_Sub, etLst target, int sel_item)
 {
  QString sql_msg="";
 
- if(target == ELstCal){
+ if(target == E_LstCal){
   return sql_msg;
  }
 
- if(target > ELstCal){
+ if(target > E_LstCal){
   ;
  }
 
- //int max_items = BMIN_2(target+1, ELstCal);
- int max_items = ELstCal;
+ //int max_items = BMIN_2(target+1, E_LstCal);
+ int max_items = E_LstCal;
  QString SqlData[C_TOT_CAL][3];
  QString SqlSubData[C_NB_SUB_ONG][C_TOT_CAL][3];
 
  /// ---------- Creation du code SQL dans les tableaux ----
  ///Etape 1 : partie commune
- for (int item=0;item<=ELstBleNext;item++) {
+ for (int item=0;item<=E_LstBleNext;item++) {
   sql_upl_lev_1(pGame,zn,tir_Id,upl_Grp, day_Delta,-1,item, SqlData);
   SqlSubData[0][item][0]=SqlData[item][0];
  }
@@ -964,7 +1048,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day_Del
  sql_msg = sql_msg+"with\n";
 
  /// Partie commune
- for (int item=0;item<=ELstBleNext;item++) {
+ for (int item=0;item<=E_LstBleNext;item++) {
   sql_msg = sql_msg + SqlData[item][1];
   sql_msg = sql_msg + SqlData[item][2];
   sql_msg = sql_msg + ",\n";
@@ -976,12 +1060,12 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day_Del
    sql_msg = sql_msg + " -- Debut sous onglet : "
              +QString::number(sub_ong+1).rightJustified(2,'0')+"\n";
   }
-  for (int item=ELstBleNext+1;item<ELstCal;item++) {
+  for (int item=E_LstBleNext+1;item<E_LstCal;item++) {
    sql_msg = sql_msg + 	SqlSubData[sub_ong][item][1];
    sql_msg = sql_msg + 	SqlSubData[sub_ong][item][2];
 
    /// -- mettre , SQL pour separer etapes code
-   if((item < ELstCal -1)){
+   if((item < E_LstCal -1)){
     sql_msg = sql_msg + ",\n";
    }
   }
@@ -1040,7 +1124,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day_Del
  counter++;
 
  QString stype = "";
- if(e_id == eEnsUsr){
+ if(e_id == E_EnsUsr){
   stype = "Usr";
  }
  else {
@@ -1060,12 +1144,12 @@ void BcUpl::sql_upl_lev_2(const stGameConf *pGame, int zn, int tirLgnId, int off
  QString SqlData[C_TOT_CAL][3];
 
  /// Recopier le nom des tables precedentes
- for (int item=0;item<=ELstBleNext;item++) {
+ for (int item=0;item<=E_LstBleNext;item++) {
   SqlData[item][0]=tabInOut[0][item][0];
  }
 
  /// Poursuivre la creation
- for (int item=ELstBleNext+1;item<ELstCal;item++) {
+ for (int item=E_LstBleNext+1;item<E_LstCal;item++) {
   sql_upl_lev_1(pGame,zn,tirLgnId,upl_ref_in, offset, upl_sub,item, SqlData);
   tabInOut[upl_sub-C_MIN_UPL][item][0]= SqlData[item][0];
   tabInOut[upl_sub-C_MIN_UPL][item][1]= SqlData[item][1];
@@ -1078,22 +1162,22 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
  QString sql_msg = "";
  int ref_day = tirLgnId;
 
- eUpl_Lst sql_step = static_cast<eUpl_Lst>(step);
+ etLst sql_step = static_cast<etLst>(step);
 
  int tbl_src = -1;
 
 #ifndef QT_NO_DEBUG
  QString target = "";
- if(sql_step<ELstCal){
-  target = "_"+sqlStepText[sql_step];
+ if(sql_step<E_LstCal){
+  target = "_"+TXT_SqlStep[sql_step];
  }
 #endif
 
  switch (sql_step) {
 
   /// Trouver la liste des boules
-  case ELstBle:
-  case ELstBleNext:
+  case E_LstBle:
+  case E_LstBleNext:
   {
    sql_msg = sql_ElmFrmTir(pGame,zn,sql_step,ref_day,tabInOut);
 #ifndef QT_NO_DEBUG
@@ -1107,9 +1191,9 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
    break;
 
    /// Trouver la liste des uplets
-  case ELstUpl:
-  case ELstUplNot:
-  case ELstUplNext:
+  case E_LstUpl:
+  case E_LstUplNot:
+  case E_LstUplNext:
   {
    sql_msg = sql_UplFrmElm(pGame,zn,upl_ref_in,upl_sub,sql_step, tabInOut);
 #ifndef QT_NO_DEBUG
@@ -1123,7 +1207,7 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
    break;
 
    /// Trouver la liste des tirages pour les uplets
-  case ELstTirUpl:
+  case E_LstTirUpl:
   {
    sql_msg = sql_TirFrmUpl(pGame,zn,upl_ref_in,tabInOut);
 #ifndef QT_NO_DEBUG
@@ -1137,9 +1221,9 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
    break;
 
    /// Comptabiler les uplets
-  case ELstUplTot:
-  case ELstUplTotNot:
-  case ELstUplTotNext:
+  case E_LstUplTot:
+  case E_LstUplTotNot:
+  case E_LstUplTotNext:
   {
    sql_msg = sql_TotFrmTir(pGame, zn, upl_ref_in, upl_sub, sql_step,tabInOut);
 #ifndef QT_NO_DEBUG
@@ -1152,7 +1236,7 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
   }
    break;
 
-  case ELstBleNot:
+  case E_LstBleNot:
   {
    int targetUpl=-2;
    if (upl_sub == -1){
@@ -1173,7 +1257,7 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
    break;
 
    /// Lister les tirages apres ceux contenant les uplets
-  case ELstTirUplNext:
+  case E_LstTirUplNext:
   {
    sql_msg = sql_NxtTirUpl(pGame,zn, offset, tabInOut);
 #ifndef QT_NO_DEBUG
@@ -1196,7 +1280,7 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
 
 #ifndef QT_NO_DEBUG
  QString stype = "";
- if(e_id == eEnsUsr){
+ if(e_id == E_EnsUsr){
   stype = "Usr";
  }
  else {
@@ -1227,14 +1311,24 @@ void BcUpl::BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int 
  QModelIndexList my_indexes = cur_sel->selectedIndexes();
  int len_data = my_indexes.size();
 
- BcUpl *tmp = new BcUpl(gm_def,eEnsUsr,zn,cur_sel,uplTirTab);
+ BcUpl *tmp = new BcUpl(gm_def,ana_parent, E_EnsUsr,zn,cur_sel,uplTirTab);
  if(tmp !=nullptr){
+  /// connection click montrer tirages
+   connect(tmp,SIGNAL(BSig_UplFdjShow(const QString, int )),
+           ana_parent,SLOT(BSlot_UplFdjShow(const QString, int )));
+
   etCount type = tmp->getType();
   tmp->startCount(gm_def,type);
  }
 }
 
-QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_step, int tir_id,QString tabInOut[][3])
+void BcUpl::BSlot_SkowUkScan(stParam_tsk *tsk_param)
+{
+ tsk_param->a_tbv->setCalReady(tsk_param->g_lm);
+ FillTbv_StartPoint(tsk_param);
+}
+
+QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, etLst sql_step, int tir_id,QString tabInOut[][3])
 {
  QString sql_tbl = "";
  QString sql_msg = "";
@@ -1247,11 +1341,11 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_step,
  QString arg_3 = "";
  QString arg_4 = "";
 
- if(sql_step == ELstBle){
+ if(sql_step == E_LstBle){
   tabInOut[sql_step][1] = " -- Liste des boules tirage : "+QString::number(tir_id).rightJustified(4,'0')+"\n";
   tb_usr = "B_fdj";
 
-  if(e_id == eEnsUsr){
+  if(e_id == E_EnsUsr){
    QString usr_data = "";
    int len_data = my_indexes.size();
    int max_len = pGame->limites[zn].max; /// 9 boules maxi pour jeux multiple ///pGame->limites[zn].win;
@@ -1279,13 +1373,13 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_step,
   arg_3 = arg_3 + "        and t1.z1 in(" + st_cols + " )\n";
  }
  else {
-  tabInOut[sql_step][1] = " -- Liste des boules depuis ref : ("+tabInOut[ELstTirUplNext][0]+")\n";
+  tabInOut[sql_step][1] = " -- Liste des boules depuis ref : ("+tabInOut[E_LstTirUplNext][0]+")\n";
   arg_1 = arg_1 + "\tt2.uid,\n";
   arg_1 = arg_1 + "\t(row_number() over ( partition by t2.uid )) as lgn,\n";
   arg_1 = arg_1 + "\tt1.id as " + pGame->names[zn].abv + "1\n";
 
   arg_2 = arg_2 + "      (B_elm) as t1 ,\n";
-  arg_2 = arg_2 + "      ("+tabInOut[ELstTirUplNext][0]+") as t2\n";
+  arg_2 = arg_2 + "      ("+tabInOut[E_LstTirUplNext][0]+") as t2\n";
 
   arg_3 = arg_3 + "        t1.z1 in(" + st_cols + " )\n";
 
@@ -1293,7 +1387,7 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_step,
   arg_4 = arg_4 + "\tt2.uid,\n";
   arg_4 = arg_4 + "\tt1.id\n";
  }
- sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0'); //tabInOut[ELstBle][0];
+ sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0'); //tabInOut[E_LstBle][0];
  tabInOut[sql_step][0] = sql_tbl;
 
  if(arg_0.size()){
@@ -1322,7 +1416,7 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_step,
 
 
 #ifndef QT_NO_DEBUG
- if(e_id == eEnsUsr){
+ if(e_id == E_EnsUsr){
   static int counter = 0;
   QString target = "A_"+ QString::number(counter).rightJustified(2,'0')
                    +"_dbg_eEnsUsr.txt";
@@ -1338,12 +1432,12 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, eUpl_Lst sql_step,
 void BcUpl::sql_FillTabArgs(const stGameConf *pGame, int zn, int upl_ref_in, QString *tab_arg, QString tabInOut[][3])
 {
  QString st_cols = BCount::FN1_getFieldsFromZone(pGame,zn,"t2");
- //tabInOut[ELstBle][0] = "tb_"+QString::number(ELstBle).rightJustified(2,'0');
- tabInOut[ELstBle][0] = "TBS : sql_FillTabArgs";
+ //tabInOut[E_LstBle][0] = "tb_"+QString::number(E_LstBle).rightJustified(2,'0');
+ tabInOut[E_LstBle][0] = "TBS : sql_FillTabArgs";
 
  QString ref_0 = "(t%1.id)";
  QString ref_1 = ref_0 + " as %2%3";
- QString ref_2 = "("+tabInOut[ELstBle][0]+") as t%1";
+ QString ref_2 = "("+tabInOut[E_LstBle][0]+") as t%1";
  QString ref_3 = "(" + ref_0 + " < (t%2.id))";
  QString ref_4 = "t1.%1%2";
  QString ref_5 = ref_4 + " in (" + st_cols + ")";
@@ -1426,7 +1520,7 @@ void BcUpl::sql_FillTabArgs(const stGameConf *pGame, int zn, int upl_ref_in, QSt
 
 }
 
-QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3])
+QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, etLst sql_step, QString tabInOut[][3])
 {
  QString sql_msg = "";
 
@@ -1441,21 +1535,21 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, in
 
  switch(sql_step)
  {
-  case ELstUpl:
+  case E_LstUpl:
   {
-   tbl_src = ELstBle;
+   tbl_src = E_LstBle;
   }
    break;
 
-  case ELstUplNot:
+  case E_LstUplNot:
   {
-   tbl_src = ELstBleNot;
+   tbl_src = E_LstBleNot;
   }
    break;
 
-  case ELstUplNext:
+  case E_LstUplNext:
   {
-   tbl_src = ELstBleNext;
+   tbl_src = E_LstBleNext;
   }
    break;
 
@@ -1465,7 +1559,7 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, in
 
  QString ref_0 = "";
  QString ref_3 = "";
- if(sql_step == ELstUpl){
+ if(sql_step == E_LstUpl){
   ref_0 = "(t%1.id)";
   ref_3 = "(" + ref_0 + " < (t%2.id))";
 
@@ -1586,9 +1680,9 @@ QString BcUpl::sql_TirFrmUpl(const stGameConf *pGame, int zn,int  upl_ref_in, QS
   r5 = r5 + "\n\t";
  }
 
- sql_tbl = "tb_"+QString::number(ELstTirUpl).rightJustified(2,'0');
- tabInOut[ELstTirUpl][0] = sql_tbl;
- tabInOut[ELstTirUpl][1] = " -- Liste des tirages ayant les Uplets concernes\n";
+ sql_tbl = "tb_"+QString::number(E_LstTirUpl).rightJustified(2,'0');
+ tabInOut[E_LstTirUpl][0] = sql_tbl;
+ tabInOut[E_LstTirUpl][1] = " -- Liste des tirages ayant les Uplets concernes\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
@@ -1597,7 +1691,7 @@ QString BcUpl::sql_TirFrmUpl(const stGameConf *pGame, int zn,int  upl_ref_in, QS
  sql_msg = sql_msg + "     (row_number() over ( partition by t1.uid )) as lgn ,\n";
  sql_msg = sql_msg + "     t2.*\n";
  sql_msg = sql_msg + "    FROM\n";
- sql_msg = sql_msg + "     ("+tabInOut[ELstUpl][0]+") as t1 ,\n";
+ sql_msg = sql_msg + "     ("+tabInOut[E_LstUpl][0]+") as t1 ,\n";
  sql_msg = sql_msg + "     (B_fdj) as t2\n";
  sql_msg = sql_msg + "    WHERE\n";
  sql_msg = sql_msg + "    (\n";
@@ -1622,9 +1716,9 @@ QString BcUpl::sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString
  else {
   day = day + " Jour avant ";
  }
- sql_tbl = "tb_"+QString::number(ELstTirUplNext).rightJustified(2,'0');
- tabInOut[ELstTirUplNext][0] = sql_tbl;
- tabInOut[ELstTirUplNext][1] = " -- Liste des tirages "+day+"  (ref :"+tabInOut[ELstTirUpl][0]+")\n";
+ sql_tbl = "tb_"+QString::number(E_LstTirUplNext).rightJustified(2,'0');
+ tabInOut[E_LstTirUplNext][0] = sql_tbl;
+ tabInOut[E_LstTirUplNext][1] = " -- Liste des tirages "+day+"  (ref :"+tabInOut[E_LstTirUpl][0]+")\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
@@ -1633,7 +1727,7 @@ QString BcUpl::sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString
  sql_msg = sql_msg + "     (row_number() over ( partition by t1.uid )) as lgn ,\n";
  sql_msg = sql_msg + "     t2.*\n";
  sql_msg = sql_msg + "    FROM\n";
- sql_msg = sql_msg + "     ("+tabInOut[ELstTirUpl][0]+") as t1 ,\n";
+ sql_msg = sql_msg + "     ("+tabInOut[E_LstTirUpl][0]+") as t1 ,\n";
  sql_msg = sql_msg + "     (B_fdj) as t2\n";
  sql_msg = sql_msg + "    WHERE\n";
  sql_msg = sql_msg + "    (\n";
@@ -1644,7 +1738,7 @@ QString BcUpl::sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString
  return sql_msg;
 }
 
-QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, eUpl_Lst sql_step, QString tabInOut[][3])
+QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, etLst sql_step, QString tabInOut[][3])
 {
  QString sql_tbl = "NOT_set";
  QString sql_msg = "";
@@ -1684,25 +1778,25 @@ QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, in
 
  int tbl_src = -1;
 
- int tbl_tir = ELstTirUpl;
+ int tbl_tir = E_LstTirUpl;
  switch(sql_step)
  {
-  case ELstUplTot:
+  case E_LstUplTot:
   {
-   tbl_src = ELstUpl;
+   tbl_src = E_LstUpl;
   }
    break;
 
-  case ELstUplTotNot:
+  case E_LstUplTotNot:
   {
-   tbl_src = ELstUplNot;
+   tbl_src = E_LstUplNot;
   }
    break;
 
-  case ELstUplTotNext:
+  case E_LstUplTotNext:
   {
-   tbl_src = ELstUplNext;
-   tbl_tir = ELstTirUplNext;
+   tbl_src = E_LstUplNext;
+   tbl_tir = E_LstTirUplNext;
   }
    break;
 
@@ -1714,7 +1808,7 @@ QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, in
  QString arg_2 = "";
  QString arg_3 = "";
  QString arg_4 = "";
- if(sql_step == ELstUplTot){
+ if(sql_step == E_LstUplTot){
   // sql_tbl = "tb_"+QString::number(sql_step).rightJustified(2,'0');
 
   arg_1 = arg_1 + "\tt1.uid ,\n";
@@ -1794,9 +1888,9 @@ QString BcUpl::sql_ElmNotFrmTir(const stGameConf *pGame, int zn, int  upl_ref_in
  QString target = "t1.z"+QString::number(zn+1);
  QString alias = target + " as " + pGame->names[zn].abv + "1";
 
- sql_tbl = "tb_"+QString::number(ELstBleNot).rightJustified(2,'0');
- tabInOut[ELstBleNot][0] = sql_tbl;
- tabInOut[ELstBleNot][1] = " -- Ensemble complementaire de (Req :"+tabInOut[ELstUpl][0]+")\n";
+ sql_tbl = "tb_"+QString::number(E_LstBleNot).rightJustified(2,'0');
+ tabInOut[E_LstBleNot][0] = sql_tbl;
+ tabInOut[E_LstBleNot][1] = " -- Ensemble complementaire de (Req :"+tabInOut[E_LstUpl][0]+")\n";
 
  sql_msg = sql_msg + "  "+sql_tbl+" as\n";
  sql_msg = sql_msg + "  (\n";
@@ -1806,7 +1900,7 @@ QString BcUpl::sql_ElmNotFrmTir(const stGameConf *pGame, int zn, int  upl_ref_in
  sql_msg = sql_msg + "\t"+alias+"\n";
  sql_msg = sql_msg + "    FROM\n";
  sql_msg = sql_msg + "    (B_elm) as t1,\n";
- sql_msg = sql_msg + "    ("+tabInOut[ELstUpl][0]+") as t2\n";
+ sql_msg = sql_msg + "    ("+tabInOut[E_LstUpl][0]+") as t2\n";
  sql_msg = sql_msg + "    WHERE(\n";
  sql_msg = sql_msg + " \t"+target+" not in ("+r9+")\n";
  sql_msg = sql_msg + "    )\n";
@@ -1859,14 +1953,16 @@ void BcUpl::BSlot_ShowTotal(const QString& lstBoules)
 {
 
  BLineEdit *ble_tmp = qobject_cast<BLineEdit *>(sender());
- int tab_id = ble_tmp->objectName().toInt();
+ int g_id = ble_tmp->objectName().toInt()+1;
 
  BView *view = ble_tmp->getView();
+ int z_id = view->getZid();
+
  BFpm_upl *m = qobject_cast<BFpm_upl *>(view->model());
  m->setSearchItems(lstBoules);
- QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+ QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
 
- int nb_col = vl->columnCount();
+ int nb_col = sqm_tmp->columnCount();
  view->sortByColumn(nb_col-1,Qt::SortOrder::DescendingOrder);
 
  QString st_title = view->getTitle();
@@ -1876,27 +1972,52 @@ void BcUpl::BSlot_ShowTotal(const QString& lstBoules)
  st_title = QString(lst.at(0)).simplified();
 
  /// Necessaire pour compter toutes les lignes de reponses
- while (vl->canFetchMore())
+ while (sqm_tmp->canFetchMore())
  {
-  vl->fetchMore();
+  sqm_tmp->fetchMore();
  }
 
  int nb_lgn_ftr = m->rowCount();
- int nb_lgn_rel = vl->rowCount();
+ int rows_cal_1 = sqm_tmp->rowCount();
 
-#if 0
- QString st_total = st_title +
-                    ". Nb Uplets : " +
-                    QString::number(nb_lgn_ftr)+
-                    " sur " + QString::number(nb_lgn_rel);
-#endif
- QString v0 = QString::number(tab_id+1).rightJustified(2,'0');
- QString v1 = st_title;
- QString v2 = QString::number(nb_lgn_ftr);
- QString v3 = QString::number(nb_lgn_rel);
- QString st_total = QString(ref_lcnp [1]).arg(v1).arg(v2).arg(v3);
+ int nbBoulesTotal = -1;
+ if(e_id == E_EnsFdj){
+  nbBoulesTotal = gm_def->limites[z_id].win;
+ }
+ else{
+  nbBoulesTotal = my_indexes.size();
+ }
+ /// Calcul du Cnp
+ BCnp *b = new BCnp(nbBoulesTotal,g_id);
+ int rows_cal_3 = b->BP_count();
 
- view->setTitle(st_total);
+ QString v0 = "";
+ QString v1 = "";
+ QString v2 = "";
+ QString v3 = "";
+ QString v4 = "";
+ QString v5 = "";
+ QString v6 = "";
+
+ if(ble_tmp->text().simplified().size() == 0){
+   v1 = QString::number(g_id).rightJustified(2,'0');
+   v2 = QString::number(nbBoulesTotal);
+   v3 = QString::number(g_id);
+   v4 = QString::number(rows_cal_1);
+   v5 = QString::number(rows_cal_3);
+
+   v6 = QString(ref_lcnp[0]).arg(v1).arg(v2).arg(v3).arg(v4).arg(v5);
+ }
+ else{
+  v0 = QString::number(g_id).rightJustified(2,'0');
+  v1 = st_title;
+  v2 = QString::number(nb_lgn_ftr);
+  v3 = QString::number(rows_cal_1);
+
+  v6 = QString(ref_lcnp [1]).arg(v1).arg(v2).arg(v3);
+ }
+
+ view->setTitle(v6);
 }
 
 QWidget *BcUpl::Bview_init(const stGameConf *pGame, int ong_zn, int ong_tir, int offset, int ong_upl, int ong_day, int ong_tab)
@@ -1906,9 +2027,9 @@ QWidget *BcUpl::Bview_init(const stGameConf *pGame, int ong_zn, int ong_tir, int
  BView *qtv_tmp = upl_Bview_2[ong_tir-1][ong_zn][ong_upl][ong_day][ong_tab];
  int upl_ref_in = ong_upl+C_MIN_UPL;
 
- QString sql_ref = getSqlTbv(pGame, ong_zn,ong_tir, offset, ong_upl+C_MIN_UPL, ong_tab+C_MIN_UPL, ELstCal);
+ QString sql_ref = getSqlTbv(pGame, ong_zn,ong_tir, offset, ong_upl+C_MIN_UPL, ong_tab+C_MIN_UPL, E_LstCal);
  QString sql_msg = "";
- sql_msg = sql_ShowItems(pGame,ong_zn,ELstShowCal,upl_ref_in,sql_ref);
+ sql_msg = sql_ShowItems(pGame,ong_zn,E_LstShowCal,upl_ref_in,sql_ref);
 
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
  sqm_tmp->setQuery(sql_msg, db_0);
@@ -1975,7 +2096,7 @@ QWidget *BcUpl::Bview_init(const stGameConf *pGame, int ong_zn, int ong_tir, int
 
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
  if(ong_tab>0){
-  sql_msg = sql_ShowItems(pGame,ong_zn,ELstShowUnion,upl_ref_in,sql_ref);
+  sql_msg = sql_ShowItems(pGame,ong_zn,E_LstShowUnion,upl_ref_in,sql_ref);
   BView *qtv_tmp_3 = upl_Bview_3[ong_tir-1][ong_zn][ong_upl][ong_day][ong_tab-1];
   BView *qtv_r_1 = Bview_3_fill_1(qtv_tmp_3, sql_msg);
 
@@ -2093,63 +2214,72 @@ void BcUpl::BSlot_Tab(int index)
 }
 #endif
 
-QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int ong_2_zn, int ong_1_tir, int ong_3_upl, int ong_4_day, int nb_recherche)
+QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int z_id, int l_id, int g_id, int o_id, int nb_recherche)
 {
  QTabWidget *upl_details = new QTabWidget(this);
 
  /// Creation des Table View pour chaque onglets resultat
- for (int ong_5_tab=0;ong_5_tab<nb_recherche;ong_5_tab++) {
+ for (int r_id =0;r_id <nb_recherche;r_id ++) {
   BView * bv_2 = new BView ;
   QString objName = "bv2_T" +
-                    QString::number(ong_1_tir).rightJustified(2,'0')+
-                    "-"+pGame->names[ong_2_zn].abv +
-                    "-U"+QString::number(ong_3_upl+1).rightJustified(2,'0')+
-                    "_"+ defDays[ong_4_day].onglet+
-                    "_R" +QString::number(ong_5_tab+1).rightJustified(2,'0');
+                    QString::number(l_id).rightJustified(2,'0')+
+                    "-"+pGame->names[z_id].abv +
+                    "-U"+QString::number(g_id+1).rightJustified(2,'0')+
+                    "_"+ defDays[o_id].onglet+
+                    "_R" +QString::number(r_id +1).rightJustified(2,'0');
   bv_2->setObjectName(objName);
 
-  upl_Bview_2[ong_1_tir-1][ong_2_zn][ong_3_upl][ong_4_day][ong_5_tab]= bv_2;
+  upl_Bview_2[l_id-1][z_id][g_id][o_id][r_id ]= bv_2;
 
-  QHBoxLayout *bar_top_2 = getBar_Rch(bv_2,ong_5_tab);
+  if( o_id == 0){
+   /// cas offset day = 0 ie jour donnant total dans Bv1
+   ///  B: montrer les tirages concernés dans base des tirages
+   bv_2->setGid(r_id);
+   bv_2->setZid(z_id);
+   connect( bv_2, SIGNAL(clicked(QModelIndex)),
+            this, SLOT(BSlot_UVL2_Click_Fn_1( QModelIndex) ) );
+  }
+
+  QHBoxLayout *bar_top_2 = getBar_Rch(bv_2,r_id );
   ///BFpm_3 * fpm_tmp = new BFpm_3(tab+1,Bp::colTgenZs);
   ///fpm_tmp->setDynamicSortFilter(true);
   ///bv_2->setModel(fpm_tmp);
   bv_2->addUpLayout(bar_top_2);
 
-  if(ong_5_tab>0){
+  if(r_id >0){
    BView * bv_3 = new BView ;
-   upl_Bview_3[ong_1_tir-1][ong_2_zn][ong_3_upl][ong_4_day][ong_5_tab-1]= bv_3;
+   upl_Bview_3[l_id-1][z_id][g_id][o_id][r_id -1]= bv_3;
    objName = "bv3_T" +
-             QString::number(ong_1_tir).rightJustified(2,'0')+
-             "-"+pGame->names[ong_2_zn].abv +
-             "-U"+QString::number(ong_3_upl+1).rightJustified(2,'0')+
-             "_"+ defDays[ong_4_day].onglet+
-             "_R" +QString::number(ong_5_tab+1).rightJustified(2,'0');
+             QString::number(l_id).rightJustified(2,'0')+
+             "-"+pGame->names[z_id].abv +
+             "-U"+QString::number(g_id+1).rightJustified(2,'0')+
+             "_"+ defDays[o_id].onglet+
+             "_R" +QString::number(r_id +1).rightJustified(2,'0');
    bv_3->setObjectName(objName);
 
 
    BView * bv_4 = new BView ;
-   upl_Bview_4[ong_1_tir-1][ong_2_zn][ong_3_upl][ong_4_day][ong_5_tab-1]= bv_4;
+   upl_Bview_4[l_id-1][z_id][g_id][o_id][r_id -1]= bv_4;
    objName = "bv4_T" +
-             QString::number(ong_1_tir).rightJustified(2,'0')+
-             "-"+pGame->names[ong_2_zn].abv +
-             "-U"+QString::number(ong_3_upl+1).rightJustified(2,'0')+
-             "_"+ defDays[ong_4_day].onglet+
-             "_R" +QString::number(ong_5_tab+1).rightJustified(2,'0');
+             QString::number(l_id).rightJustified(2,'0')+
+             "-"+pGame->names[z_id].abv +
+             "-U"+QString::number(g_id+1).rightJustified(2,'0')+
+             "_"+ defDays[o_id].onglet+
+             "_R" +QString::number(r_id +1).rightJustified(2,'0');
    bv_4->setObjectName(objName);
   }
 
-  int offsetDay = defDays[ong_4_day].delta;
-  QWidget * wdg_tmp = Bview_init(pGame, ong_2_zn,ong_1_tir,offsetDay, ong_3_upl, ong_4_day,ong_5_tab);
+  int offsetDay = defDays[o_id].delta;
+  QWidget * wdg_tmp = Bview_init(pGame, z_id,l_id,offsetDay, g_id, o_id,r_id );
   if(wdg_tmp !=nullptr){
-   upl_details->addTab(wdg_tmp,"R_"+QString::number(ong_5_tab+1).rightJustified(2,'0'));
+   upl_details->addTab(wdg_tmp,"R_"+QString::number(r_id +1).rightJustified(2,'0'));
   }
  }
 
  return upl_details;
 }
 
-QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int ong_zn, int ong_tir, int ong_upl)
+QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int z_id, int l_id, int g_id)
 {
  QTabWidget *tab_Top = new QTabWidget(this);
  tab_Top->setObjectName("tabRspAnaUpl");
@@ -2159,23 +2289,23 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int ong_zn, int ong_tir,
 
  /// Indication de l'interval de comptage
  int nb_days = nb_ong;//BMIN_2(pGame->limites[zn].win, nb_ong);
- upl_Bview_2[ong_tir-1][ong_zn][ong_upl]= new BView **[nb_days];
- upl_Bview_3[ong_tir-1][ong_zn][ong_upl]= new BView **[nb_days]; /// S4
- upl_Bview_4[ong_tir-1][ong_zn][ong_upl]= new BView **[nb_days]; /// S4
+ upl_Bview_2[l_id-1][z_id][g_id]= new BView **[nb_days];
+ upl_Bview_3[l_id-1][z_id][g_id]= new BView **[nb_days]; /// S4
+ upl_Bview_4[l_id-1][z_id][g_id]= new BView **[nb_days]; /// S4
 
- int nb_recherche = BMIN_2(pGame->limites[ong_zn].win, C_MAX_UPL);
+ int nb_recherche = BMIN_2(pGame->limites[z_id].win, C_MAX_UPL);
 
- for (int ong_day = 0;ong_day<nb_days;ong_day++) {
-  upl_Bview_2[ong_tir-1][ong_zn][ong_upl][ong_day]= new BView *[nb_recherche];
+ for (int o_id = 0;o_id<nb_days;o_id++) {
+  upl_Bview_2[l_id-1][z_id][g_id][o_id]= new BView *[nb_recherche];
 
   /// nb_recherche-1, car sur l'onglet 0
   /// pas les tableaux (Bilant Local: upl_Bview_3) et (Absent Local:upl_Bview_4)
   /// -------------------------------------------------------------------------
-  upl_Bview_3[ong_tir-1][ong_zn][ong_upl][ong_day]= new BView *[nb_recherche-1];
-  upl_Bview_4[ong_tir-1][ong_zn][ong_upl][ong_day]= new BView *[nb_recherche-1];
-  QString ongLabel = defDays[ong_day].onglet;
+  upl_Bview_3[l_id-1][z_id][g_id][o_id]= new BView *[nb_recherche-1];
+  upl_Bview_4[l_id-1][z_id][g_id][o_id]= new BView *[nb_recherche-1];
+  QString ongLabel = defDays[o_id].onglet;
 
-  QWidget * wdg_tmp =getUplDetails(pGame, ong_zn, ong_tir, ong_upl, ong_day, nb_recherche);
+  QWidget * wdg_tmp =getUplDetails(pGame, z_id, l_id, g_id, o_id, nb_recherche);
   if(wdg_tmp !=nullptr){
    tab_Top->addTab(wdg_tmp,ongLabel);
   }
@@ -2227,16 +2357,18 @@ int BcUpl::getFromView_Lid(const BView *view)
  return val;
 }
 
-void BcUpl::BSlot_clicked(const QModelIndex &index)
+void BcUpl::BSlot_UVL1_Click_Fn_1(const QModelIndex &index)
 {
  BView *view = qobject_cast<BView *>(sender());
+ BAnimateCell * ani_tbv = qobject_cast<BAnimateCell *>(view->itemDelegate());
+
  int g_id = (view->objectName().toInt()) + C_MIN_UPL;
- int z_id = view->getZone();
+ int z_id = view->getZid();
  int g_lm =  index.sibling(index.row(),Bp::colId).data().toInt();
  int l_id = getFromView_Lid(view);
  int upl_tot =  index.sibling(index.row(),Bp::colId+g_id+1).data().toInt();
 
- QGroupBox *target;
+ QGroupBox *target = nullptr;
  QString upl_cur = getFromIndex_CurUpl(index,g_id, &target);
  QString cnx=gm_def->db_ref->cnx;
  BAnimateCell *ani = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
@@ -2248,7 +2380,7 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
 
  /// Demande Calcul de cet element en cours ?
  if(ani->gotKey(g_lm)){
-  return;
+  //return;
  }
 
  /// ----------------------
@@ -2264,30 +2396,32 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  tsk_param->upl_txt = upl_cur;
  tsk_param->upl_tot = upl_tot;
  tsk_param->grb_target = target;
- tsk_param->a_tbv = ani;
+ tsk_param->a_tbv = ani_tbv;
  tsk_param->cupl = view;
 
  //QString title = QString(ref_lupl[1]).arg(upl_cur).arg(upl_tot);
 
  QString t_rf = "UT_" +
                 QString::number(obj_upl).rightJustified(2,'0') + "_" +
-                Txt_eUpl_Ens[e_id] + QString::number(l_id).rightJustified(2,'0') +
+                TXT_UplSrcKey[e_id] + QString::number(l_id).rightJustified(2,'0') +
                 "_Z" + QString::number(z_id).rightJustified(2,'0');
  tsk_param->t_rf = t_rf;
 
  /// On a un uplet, obtenir le radical de table
- stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
+ stUpdData d_info = {e_id, E_CalNotDef, -1, -1, false};
  QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur,z_id, &d_info);
 
  tsk_param->t_on = tbl_radical;
 
- if(d_info.isPresent == false){
+ if((d_info.id_cal != E_CalStarted) && (d_info.id_cal != E_CalReady)){
   tsk_param->glm_in = d_info;
+  ani_tbv->startKey(g_lm);
+  emit BSig_StartUkScan(tsk_param);
 #if 0
   if(ani !=nullptr){
    ani->addKey(g_lm);
 
-   if(!updateTracking(d_info.id_db, eCalPending)){
+   if(!updateTracking(d_info.id_db, E_CalPending)){
     QString str_error = db_0.lastError().text();
     QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
     return;
@@ -2314,11 +2448,61 @@ void BcUpl::BSlot_clicked(const QModelIndex &index)
  }
  else{
   /// Montrer les resultats
-  if(d_info.id_cal == eCalReady){
+  if(d_info.id_cal == E_CalReady){
    tsk_param->glm_in = d_info;
    FillTbv_StartPoint(tsk_param);
   }
  }
+}
+
+/// Montrer dans la base des tirages
+/// l'uplet en cours
+void BcUpl::BSlot_UVL1_Click_Fn_2(const QModelIndex &index)
+{
+ BView *view = qobject_cast<BView *>(sender());
+ BFpm_upl * m = qobject_cast<BFpm_upl *>(view->model());
+ BAnimateCell * ani_tbv = qobject_cast<BAnimateCell *>(view->itemDelegate());
+ QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+
+ int z_id = view->getZid();
+ int g_id = view->objectName().toInt()+1;
+
+ stDataUpl *usrData = nullptr;
+ usrData = static_cast<stDataUpl *> (view->getUserDataPtr());
+
+ QString u_text = "";
+ for(int i = 0; i < g_id; i++){
+  QString u_val = index.sibling(index.row(),Bp::colUplStart+i).data().toString().rightJustified(2,'0');
+  u_text = u_text + u_val;
+  if(i < g_id - 1){
+   u_text = u_text + ",";
+  }
+ }
+ upl_current = u_text;
+ Q_EMIT(BSig_UplFdjShow(u_text, z_id));
+}
+
+void BcUpl::BSlot_UVL2_Click_Fn_1(const QModelIndex &index)
+{
+ BView *view = qobject_cast<BView *>(sender());
+ int z_id = view->getZid();
+ int g_id = view->getGid()+1;
+
+ QString u_text = "";
+ for(int i = 0; i < g_id; i++){
+  /// dans la table reponse :
+  /// col 0 : uid
+  /// col 1 : nid
+  QString u_val = index.sibling(index.row(),Bp::colUplStart+1+i).data().toString().rightJustified(2,'0');
+  u_text = u_text + u_val;
+  if(i < g_id - 1){
+   u_text = u_text + ",";
+  }
+ }
+ u_text = upl_current + "," + u_text;
+ Q_EMIT(BSig_UplFdjShow(u_text, z_id));
+
 }
 
 #if C_PGM_THREADED
@@ -2465,7 +2649,7 @@ void BcUpl::T1_setTitle(BView *qtv_tmp, const stTskProgress *step)
 
  /// Nombre de lignes reelment dans T1 selon le gid
  QString sql_msg = "select * from " + t_on;
- int nb_rows = Bview_UpdateAndCount(ELstUplTot, qtv_tmp, sql_msg);
+ int nb_rows = Bview_UpdateAndCount(E_LstUplTot, qtv_tmp, sql_msg);
 
  /// Titre de la recherche
  QString v1 = QString::number(g_id).rightJustified(2,'0'); //uplet
@@ -2489,7 +2673,7 @@ void BcUpl::FillTbv_StartPoint(stParam_tsk *tsk_param)
 
  stUpdData d_info = tsk_param->glm_in;
 
- if(d_info.id_cal != eCalReady){
+ if(d_info.id_cal != E_CalReady){
   return;
  }
 
@@ -2577,20 +2761,37 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
 
  QString sql_msg = "select * from " + t_use;
 #if 0
- QString sql_ref = getSqlTbv(pGame,z_id,l_id,o_id,g_id, r_id, ELstUplTot);
- QString sql_msg = sql_ShowItems(pGame,z_id,ELstShowCal,g_id,sql_ref);
+ QString sql_ref = getSqlTbv(pGame,z_id,l_id,o_id,g_id, r_id, E_LstUplTot);
+ QString sql_msg = sql_ShowItems(pGame,z_id,E_LstShowCal,g_id,sql_ref);
 
  DB_Tools::eCort my_response = DB_Tools::eCort_NotSet;
  my_response = DB_Tools::createOrReadTable(t_use, cnx_1, sql_msg, &sql_msg);
 #endif
 
- BView *qtv_tmp = new BView;
- upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL] = qtv_tmp;
+ BView *bv_1 = new BView;
+ upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL] = bv_1;
 
- qtv_tmp->setObjectName(QString::number(g_id - C_MIN_UPL));
- qtv_tmp->setZone(z_id);
- QHBoxLayout *bar_top_1 = getBar_Rch(qtv_tmp,g_id - C_MIN_UPL);
- qtv_tmp->addUpLayout(bar_top_1);
+ stDataUpl *usrData = new stDataUpl;
+ usrData->i_cl = E_CalNotDef;
+ usrData->c_id = E_LstCal;
+ usrData->g_lm = -2;
+ usrData->l_id = -2;
+ usrData->o_id = -2;
+ usrData->r_id = -2;
+
+ usrData->e_id = e_id;
+ usrData->z_id = z_id;
+ usrData->g_id = g_id;
+ usrData->t_rf = t_rf;
+ usrData->t_on = t_use;
+
+
+ bv_1->setObjectName(QString::number(g_id - C_MIN_UPL));
+ bv_1->setZid(z_id);
+ bv_1->setUserDataPtr(usrData);
+ bv_1->setGid(g_id);
+ QHBoxLayout *bar_top_1 = getBar_Rch(bv_1,g_id - C_MIN_UPL);
+ bv_1->addUpLayout(bar_top_1);
 
 
  QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
@@ -2600,9 +2801,9 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  BFpm_upl * m = new BFpm_upl(1, g_id);
  m->setDynamicSortFilter(true);
  m->setSourceModel(sqm_tmp);
- qtv_tmp->setModel(m);
- qtv_tmp->sortByColumn(g_id+1,Qt::DescendingOrder);
- qtv_tmp->setSortingEnabled(true);
+ bv_1->setModel(m);
+ bv_1->sortByColumn(g_id+1,Qt::DescendingOrder);
+ bv_1->setSortingEnabled(true);
 
  while (sqm_tmp->canFetchMore())
  {
@@ -2633,38 +2834,43 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  QString v4 = QString::number(nb_rows);
  QString v5 = QString::number(rows_proxy);
  QString st_title = QString(ref_lcnp[0]).arg(v1).arg(v2).arg(v3).arg(v4).arg(v5);
- qtv_tmp->setTitle(st_title);
+ bv_1->setTitle(st_title);
 
- qtv_tmp->setAlternatingRowColors(true);
- qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
- qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
- qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ bv_1->setAlternatingRowColors(true);
+ bv_1->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ bv_1->setSelectionBehavior(QAbstractItemView::SelectItems);
+ bv_1->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
- qtv_tmp->resizeColumnsToContents();
- qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
- qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
- qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ bv_1->resizeColumnsToContents();
+ bv_1->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ bv_1->setSelectionBehavior(QAbstractItemView::SelectItems);
+ bv_1->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
 
  /// Largeur du tableau
- qtv_tmp->hideColumn(Bp::colId);
- int l = qtv_tmp->getMinWidth();
+ bv_1->hideColumn(Bp::colId);
+ int l = bv_1->getMinWidth();
 
- // simple click dans fenetre  pour selectionner boule
- connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-          this, SLOT(BSlot_clicked( QModelIndex) ) );
+ /// Simple click dans fenetre  pour selectionner 1 Uplet
+ ///  A: montrer resultat dans UVL2 (1,2,3)
+ connect( bv_1, SIGNAL(clicked(QModelIndex)),
+          this, SLOT(BSlot_UVL1_Click_Fn_1( QModelIndex) ) );
 
- BAnimateCell * ani_tbv = new BAnimateCell(qtv_tmp);
+ ///  B: montrer les tirages concernés dans base des tirages
+ connect( bv_1, SIGNAL(clicked(QModelIndex)),
+          this, SLOT(BSlot_UVL1_Click_Fn_2( QModelIndex) ) );
+
+ BAnimateCell * ani_tbv = new BAnimateCell(bv_1);
  tbv_Anim[l_id-1][z_id][g_id - C_MIN_UPL] = ani_tbv;
- qtv_tmp->setItemDelegate(ani_tbv);
+ bv_1->setItemDelegate(ani_tbv);
  connect(ani_tbv,&BAnimateCell::BSig_Repaint,this,&BcUpl::BSlot_Repaint);
 
  /// Selection d'uplet
- qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
- connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
-         SLOT(BSlot_UplCmr_1(QPoint)));
+ bv_1->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(bv_1, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(BSlot_UVL1_Cmr_Fn_1(QPoint)));
 
- return qtv_tmp;
+ return bv_1;
 }
 
 void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
@@ -2680,7 +2886,7 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
 
  int z_id = tsk_param->z_id;
  int g_id = tsk_param->g_id;
- eUpl_Ens e_id = tsk_param->e_id;
+ etEns e_id = tsk_param->e_id;
 
  QString t_rf = tsk_param->t_rf;
  QString t_use = t_rf + "_C" +
@@ -2722,7 +2928,7 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
      QString upl_cur = my_list.join(',');
 
      /// On a un uplet, obtenir le radical de table, il est unique
-     stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
+     stUpdData d_info = {e_id, E_CalNotDef, -1, -1, false};
      QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur, z_id, &d_info);
 
      /// regarder si cette clef est deja connue
@@ -2732,16 +2938,16 @@ void BcUpl::startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv)
      }
 
      switch (d_info.id_cal) {
-      case eCalNotSet:
+      case E_CalNotSet:
        a_tbv->delKey(g_lm);
        break;
-      case eCalPending:
+      case E_CalPending:
        a_tbv->addKey(g_lm);
        break;
-      case eCalStarted:
+      case E_CalStarted:
        a_tbv->startKey(g_lm);
        break;
-      case eCalReady:
+      case E_CalReady:
        a_tbv->setCalReady(g_lm);
        break;
       default:
@@ -2790,13 +2996,13 @@ void BcUpl::FillTbv_BView_2(stParam_tsk *tsk_param)
   sql_msg = "select * from " + t_use;
  }
  else{
-  QString sql_ref = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id+C_MIN_UPL, ELstCal);
-  sql_msg = sql_ShowItems(pGame,z_id,ELstShowCal,g_id,sql_ref);
+  QString sql_ref = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id+C_MIN_UPL, E_LstCal);
+  sql_msg = sql_ShowItems(pGame,z_id,E_LstShowCal,g_id,sql_ref);
  }
 
  /// Montrer les resultats
  BView *qtv_tmp = upl_Bview_2[l_id-1][z_id][g_id-1][o_id][r_id];
- int nb_rows = Bview_UpdateAndCount(ELstShowCal, qtv_tmp, sql_msg);
+ int nb_rows = Bview_UpdateAndCount(E_LstShowCal, qtv_tmp, sql_msg);
  QString st_title = "U_" + QString::number(g_id).rightJustified(2,'0')+
                     " ("+defDays[o_id].onglet+"). Nb Uplets : "+QString::number(nb_rows);
  qtv_tmp->setTitle(st_title);
@@ -2837,13 +3043,13 @@ void BcUpl::FillTbv_BView_3(stParam_tsk *tsk_param)
   sql_msg = "select * from " + t_use;
  }
  else{
-  QString sql_ref = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id+C_MIN_UPL, ELstCal);
-  sql_msg = sql_ShowItems(pGame,z_id,ELstShowUnion,g_id,sql_ref,r_id);
+  QString sql_ref = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id+C_MIN_UPL, E_LstCal);
+  sql_msg = sql_ShowItems(pGame,z_id,E_LstShowUnion,g_id,sql_ref,r_id);
  }
 
  /// Montrer les resultats
  BView *qtv_tmp = upl_Bview_3[l_id-1][z_id][g_id-1][o_id][r_id-1];
- int nb_rows = Bview_UpdateAndCount(ELstShowUnion, qtv_tmp, sql_msg);
+ int nb_rows = Bview_UpdateAndCount(E_LstShowUnion, qtv_tmp, sql_msg);
  QString st_title = "U_" + QString::number(g_id).rightJustified(2,'0')+
                     " ("+defDays[o_id].onglet+"). Nb Uplets : "+QString::number(nb_rows);
  qtv_tmp->setTitle(st_title);
@@ -2884,20 +3090,20 @@ void BcUpl::FillTbv_BView_4(stParam_tsk *tsk_param)
   sql_msg = "select * from " + t_use;
  }
  else{
-  //QString sql_ref = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id+C_MIN_UPL, ELstCal);
-  sql_msg = sql_ShowItems(pGame,z_id,ELstShowNotInUnion,g_id,t_use);
+  //QString sql_ref = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id+C_MIN_UPL, E_LstCal);
+  sql_msg = sql_ShowItems(pGame,z_id,E_LstShowNotInUnion,g_id,t_use);
  }
 
  /// Montrer les resultats
  BView *qtv_tmp = upl_Bview_4[l_id-1][z_id][g_id-1][o_id][r_id-1];
- int nb_rows = Bview_UpdateAndCount(ELstShowNotInUnion, qtv_tmp, sql_msg);
+ int nb_rows = Bview_UpdateAndCount(E_LstShowNotInUnion, qtv_tmp, sql_msg);
  QString st_title = "U_" + QString::number(g_id).rightJustified(2,'0')+
                     " ("+defDays[o_id].onglet+"). Nb Uplets : "+QString::number(nb_rows);
  qtv_tmp->setTitle(st_title);
 }
 
 #if 0
-bool BcUpl::updateTracking(int v_key, eUpl_Cal v_cal)
+bool BcUpl::updateTracking(int v_key, etCal v_cal)
 {
  QSqlQuery query_1(db_0);
  bool status = false;
@@ -2949,24 +3155,24 @@ stParam_tsk * BcUpl::FillBdd_StartPoint( stParam_tsk *tsk_param)
 
  /// indiquer en cours
  if(tsk_param->glm_in.isPresent == false){
-  tsk_param->glm_in.id_cal = eCalStarted;
+  tsk_param->glm_in.id_cal = E_CalStarted;
 
   if(a_tbv !=nullptr){
    a_tbv->startKey(g_lm);
   }
 
-  if(!updateTracking(id_db, eCalStarted)){
+  if(!updateTracking(id_db, E_CalStarted)){
    QString str_error = db_1.lastError().text();
    QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
    return tsk_param;
   }
  }
 
- eUpl_Lst tabCal[][3]=
+ etLst tabCal[][3]=
  {
-  {ELstUplTotNot,ELstUplTotNot,ELstUplTotNot},
-  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext},
-  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext}
+  {E_LstUplTotNot,E_LstUplTotNot,E_LstUplTotNot},
+  {E_LstUplTotNext,E_LstUplTotNext,E_LstUplTotNext},
+  {E_LstUplTotNext,E_LstUplTotNext,E_LstUplTotNext}
  };
 
  int nb_recherche = pGame->limites[z_id].win;
@@ -2981,7 +3187,7 @@ stParam_tsk * BcUpl::FillBdd_StartPoint( stParam_tsk *tsk_param)
 
    tsk_param->r_id = r_id;
 
-   eUpl_Lst c_id = tabCal[o_id][r_id];
+   etLst c_id = tabCal[o_id][r_id];
    tsk_param->c_id = c_id;
 
    tsk_param->t_on = t_on +
@@ -3001,14 +3207,14 @@ stParam_tsk * BcUpl::FillBdd_StartPoint( stParam_tsk *tsk_param)
  }
 
  if(tsk_param->glm_in.isPresent == false){
-  tsk_param->glm_in.id_cal = eCalReady;
+  tsk_param->glm_in.id_cal = E_CalReady;
 
   if(a_tbv !=nullptr){
    a_tbv->delKey(g_lm);
    a_tbv->setCalReady(g_lm);
   }
 
-  if(!updateTracking(id_db, eCalReady)){
+  if(!updateTracking(id_db, E_CalReady)){
    QString str_error = db_1.lastError().text();
    QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
    return tsk_param;
@@ -3032,8 +3238,8 @@ bool BcUpl::T1_Fill_Bdd(stParam_tsk *tsk_param)
  int r_id = tsk_param->r_id;
  QString t_rf = tsk_param->t_rf;
 
- QString sql_msg = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id, ELstUplTot);
- sql_msg = sql_ShowItems(pGame, z_id, ELstShowCal, g_id, sql_msg);
+ QString sql_msg = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id, E_LstUplTot);
+ sql_msg = sql_ShowItems(pGame, z_id, E_LstShowCal, g_id, sql_msg);
 
  QString t_use = t_rf + "_C" +
                  QString::number(g_id).rightJustified(2,'0');
@@ -3087,7 +3293,7 @@ stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
     QString upl_cur = my_list.join(',');
 
     /// On a un uplet, obtenir le radical de table
-    stUpdData d_info = {e_id, eCalNotDef, -1, -1, false};
+    stUpdData d_info = {e_id, E_CalNotDef, -1, -1, false};
     QString tbl_radical = getTablePrefixFromSelection_upl(upl_cur, z_id, &d_info);
     t_on = tbl_radical;
 
@@ -3097,13 +3303,13 @@ stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
 
     /// En multitache si != nullptr alors ihm visuel prete
     BAnimateCell *a_tbv = tsk_param->a_tbv;
-    if((d_info.isPresent == false) && (d_info.id_cal == eCalNotSet)){
+    if((d_info.isPresent == false) && (d_info.id_cal == E_CalNotSet)){
 
      /// Update dans la base
-     updateTracking(d_info.id_db, eCalPending);
+     updateTracking(d_info.id_db, E_CalPending);
 
      /// Update dans la variable
-     tsk_param->glm_in.id_cal = eCalPending;
+     tsk_param->glm_in.id_cal = E_CalPending;
 
      /// Update dans la vue
      if(a_tbv){
@@ -3111,11 +3317,11 @@ stParam_tsk * BcUpl::T1_Scan(stParam_tsk *tsk_param)
      }
     }
 
-    if(tsk_param->glm_in.id_cal != eCalReady){
+    if(tsk_param->glm_in.id_cal != E_CalReady){
      FillBdd_StartPoint(tsk_param);
     }
 
-    if(tsk_param->glm_in.id_cal == eCalReady){
+    if(tsk_param->glm_in.id_cal == E_CalReady){
      if(a_tbv){
       a_tbv->delKey(g_lm);
       a_tbv->setCalReady(g_lm);
@@ -3153,7 +3359,7 @@ void BcUpl::T2_Fill_Bdd(stParam_tsk *tsk_param)
  int r_id = tsk_param->r_id;
  QString t_rf = tsk_param->t_rf;
  QString t_on = tsk_param->t_on;
- eUpl_Lst c_id = tsk_param->c_id;
+ etLst c_id = tsk_param->c_id;
 
  QString sql_ref ="";
  QString sql_msg = "";
@@ -3172,7 +3378,7 @@ void BcUpl::T2_Fill_Bdd(stParam_tsk *tsk_param)
                  "_T1";
 #endif
 
- sql_msg = sql_ShowItems(pGame,z_id,ELstShowCal,g_id,sql_ref);
+ sql_msg = sql_ShowItems(pGame,z_id,E_LstShowCal,g_id,sql_ref);
 
  QString t_use = t_on + "_T1";
  DB_Tools::createOrReadTable(t_use,cnx_1,sql_msg);
@@ -3191,7 +3397,7 @@ void BcUpl::T3_Fill_Bdd(stParam_tsk *tsk_param)
  int o_id = tsk_param->o_id;
  int r_id = tsk_param->r_id;
  QString t_on = tsk_param->t_on;
- eUpl_Lst c_id = tsk_param->c_id;
+ etLst c_id = tsk_param->c_id;
 
  QString sql_ref ="";
  QString sql_msg = "";
@@ -3202,7 +3408,7 @@ void BcUpl::T3_Fill_Bdd(stParam_tsk *tsk_param)
                      g_id, r_id+C_MIN_UPL,
                      c_id,g_lm);
 
- sql_msg = sql_ShowItems(pGame,z_id,ELstShowUnion,g_id, sql_ref, r_id);
+ sql_msg = sql_ShowItems(pGame,z_id,E_LstShowUnion,g_id, sql_ref, r_id);
 
  QString t_use = t_on + "_T2";
  DB_Tools::createOrReadTable(t_use,cnx_1,sql_msg);
@@ -3222,7 +3428,7 @@ void BcUpl::T4_Fill_Bdd(stParam_tsk *tsk_param)
 
  // Prendre les resultats du tableau des unions
  QString t_use = t_on + "_T2";
- sql_msg = sql_ShowItems(pGame,z_id,ELstShowNotInUnion,g_id,t_use);
+ sql_msg = sql_ShowItems(pGame,z_id,E_LstShowNotInUnion,g_id,t_use);
 
  // Mettre la reponse dans le tableau des complementaires
  t_use = t_on + "_T3";
@@ -3278,11 +3484,11 @@ void BcUpl::BSlot_clicked_old(const QModelIndex &index)
   }
  }
 
- eUpl_Lst tabCal[][3]=
+ etLst tabCal[][3]=
  {
-  {ELstUplTotNot,ELstUplTotNot,ELstUplTotNot},
-  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext},
-  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext}
+  {E_LstUplTotNot,E_LstUplTotNot,E_LstUplTotNot},
+  {E_LstUplTotNext,E_LstUplTotNext,E_LstUplTotNext},
+  {E_LstUplTotNext,E_LstUplTotNext,E_LstUplTotNext}
  };
 
  //QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
@@ -3303,7 +3509,7 @@ void BcUpl::BSlot_clicked_old(const QModelIndex &index)
     continue;
    }
 
-   eUpl_Lst resu = tabCal[ong_day][ong_tab];
+   etLst resu = tabCal[ong_day][ong_tab];
 
    /// initialisation msg sql
    QString sql_ref = getSqlTbv(gm_def, ong_zn, ong_tir, ong_day, ref, ong_tab+C_MIN_UPL, resu,selection);
@@ -3311,7 +3517,7 @@ void BcUpl::BSlot_clicked_old(const QModelIndex &index)
    QString cnx = gm_def->db_ref->cnx;
 
    QString TableType = "";
-   if(e_id == eEnsFdj){
+   if(e_id == E_EnsFdj){
     TableType = "T";
    }
    else{
@@ -3334,10 +3540,10 @@ void BcUpl::BSlot_clicked_old(const QModelIndex &index)
 
    /// Verifier si cette table est connue dans la base
    tableName = tableRef + "V";
-   sql_msg = sql_ShowItems(gm_def,ong_zn,ELstShowCal,ref,sql_ref);
+   sql_msg = sql_ShowItems(gm_def,ong_zn,E_LstShowCal,ref,sql_ref);
    if (DB_Tools::createOrReadTable(tableName,cnx,sql_msg,&sql_msg)==DB_Tools::eCort_Ok){
     BView *qtv_tmp = upl_Bview_2[ong_tir-1][ong_zn][ong_upl][ong_day][ong_tab];
-    nb_rows = Bview_UpdateAndCount(ELstShowCal, qtv_tmp, sql_msg);
+    nb_rows = Bview_UpdateAndCount(E_LstShowCal, qtv_tmp, sql_msg);
     st_title = "U_" + QString::number(ref).rightJustified(2,'0')+
                " ("+strDay[ong_day]+"). Nb Uplets : "+QString::number(nb_rows);
     qtv_tmp->setTitle(st_title);
@@ -3348,21 +3554,21 @@ void BcUpl::BSlot_clicked_old(const QModelIndex &index)
     /// Verifier si cette table est connue dans la base
     tableName = tableRef + "B";
 
-    sql_msg = sql_ShowItems(gm_def,zn,ELstShowUnion,ref,sql_ref,tab);
+    sql_msg = sql_ShowItems(gm_def,zn,E_LstShowUnion,ref,sql_ref,tab);
 
     if (DB_Tools::createOrReadTable(tableName,cnx,sql_msg,&sql_msg)==DB_Tools::eCort_Ok){
      BView *qtv_tmp = upl_Bview_3[tirLgnId-1][zn][id_upl][day_anaUpl][tab-1];
-     nb_rows = Bview_UpdateAndCount(ELstShowUnion,qtv_tmp, sql_msg);
+     nb_rows = Bview_UpdateAndCount(E_LstShowUnion,qtv_tmp, sql_msg);
      QString my_title = "Bilan local : " + QString::number(nb_rows).rightJustified(2,'0')+" boules.";
      qtv_tmp->setTitle(my_title);
     }
 
     /// Verifier si cette table est connue dans la base
     tableName = tableRef + "C";
-    sql_msg = sql_ShowItems(gm_def,zn,ELstShowNotInUnion,ref,tableRef);
+    sql_msg = sql_ShowItems(gm_def,zn,E_LstShowNotInUnion,ref,tableRef);
     if (DB_Tools::createOrReadTable(tableName,cnx,sql_msg,&sql_msg)==DB_Tools::eCort_Ok){
      BView *qtv_tmp = upl_Bview_4[tirLgnId-1][zn][id_upl][day_anaUpl][tab-1];
-     nb_rows = Bview_UpdateAndCount(ELstShowNotInUnion,qtv_tmp, sql_msg);
+     nb_rows = Bview_UpdateAndCount(E_LstShowNotInUnion,qtv_tmp, sql_msg);
      QString my_title = "Absent local : " + QString::number(nb_rows).rightJustified(2,'0')+" boules.";
      qtv_tmp->setTitle(my_title);
     }
@@ -3379,7 +3585,7 @@ void BcUpl::BSlot_clicked_old(const QModelIndex &index)
 
 
 
-int BcUpl::Bview_UpdateAndCount(eUpl_Lst id, BView *qtv_tmp, QString sql_msg)
+int BcUpl::Bview_UpdateAndCount(etLst id, BView *qtv_tmp, QString sql_msg)
 {
 
  QAbstractItemModel *model = qtv_tmp->model(); /// A debuger...thread ?
@@ -3396,11 +3602,11 @@ int BcUpl::Bview_UpdateAndCount(eUpl_Lst id, BView *qtv_tmp, QString sql_msg)
  int nb_rows = sqm_tmp->rowCount();
  int nb_cols = sqm_tmp->columnCount();
 
- if(id == ELstUplTot){
+ if(id == E_LstUplTot){
   qtv_tmp->hideColumn(0);
  }
 
- if(id == ELstShowCal){
+ if(id == E_LstShowCal){
   qtv_tmp->hideColumn(0);
   qtv_tmp->hideColumn(1);
  }
@@ -3414,7 +3620,7 @@ int BcUpl::Bview_UpdateAndCount(eUpl_Lst id, BView *qtv_tmp, QString sql_msg)
  return nb_rows;
 }
 #if 0
-bool BcUpl::effectueRecherche(eUpl_Ens upl_type, QString upl_sql, int upl_id, int zn_id, int nb_items)
+bool BcUpl::effectueRecherche(etEns upl_type, QString upl_sql, int upl_id, int zn_id, int nb_items)
 {
  bool retVal = true;
 
@@ -3494,11 +3700,11 @@ bool BcUpl::tsk_upl_1 (const stGameConf *pGame, const stParam_tsk *param)
 #if 0
 void BcUpl::rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const stParam_tsk *param, int fake_sel)
 {
- eUpl_Lst tabCal[][3]=
+ etLst tabCal[][3]=
  {
-  {ELstUplTotNot,ELstUplTotNot,ELstUplTotNot},
-  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext},
-  {ELstUplTotNext,ELstUplTotNext,ELstUplTotNext}
+  {E_LstUplTotNot,E_LstUplTotNot,E_LstUplTotNot},
+  {E_LstUplTotNext,E_LstUplTotNext,E_LstUplTotNext},
+  {E_LstUplTotNext,E_LstUplTotNext,E_LstUplTotNext}
  };
 
  int zn = param->z_id;
@@ -3514,7 +3720,7 @@ void BcUpl::rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const st
     continue;
    }
 
-   eUpl_Lst resu = tabCal[day_anaUpl][tab];
+   etLst resu = tabCal[day_anaUpl][tab];
 
    tableRef = tbl_prefix +
               "_z_"+QString::number(zn+1).rightJustified(2,'0') + ///gm_def->names[zn].abv+
@@ -3530,7 +3736,7 @@ void BcUpl::rechercheUplet(QString tbl_prefix, const stGameConf *pGame, const st
 
    /// -----------------
    tableName = tableRef + "V";
-   sql_msg = sql_ShowItems(pGame,zn,ELstShowCal,ref,sql_ref);
+   sql_msg = sql_ShowItems(pGame,zn,E_LstShowCal,ref,sql_ref);
    ///QFuture<void> t1 = QtConcurrent::run(this,&BcUpl::tsk_upl_2,cnx,tableName,sql_msg);
    ///t1.waitForFinished();
    DB_Tools::createOrReadTable(tableName,cnx,sql_msg);
@@ -3868,7 +4074,7 @@ QString BcUpl::findUplets(const stGameConf *pGame, const int zn, const int loop,
 
 
 
-QGroupBox *BcUpl::gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne, const QString &data, QWidget *parent)
+QGroupBox *BcUpl::gpbCreate(int index, etCal E_Cal, const QModelIndex & ligne, const QString &data, QWidget *parent)
 {
  int nb_uplet = input.uplet;
  bool b_retVal = false;
@@ -3877,16 +4083,16 @@ QGroupBox *BcUpl::gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne,
  QString jour = "";
  if(index){
 
-  switch (eCal) {
-   case eCalTot:
+  switch (E_Cal) {
+   case E_CalTot:
     jour = getJourTirage(index);
     break;
 
-   case eCalCmb:
+   case E_CalCmb:
     jour = getCmbTirage(index);
     break;
 
-   case eCalBrc:
+   case E_CalBrc:
     jour = getBrcTirage(index);
     break;
 
@@ -3898,7 +4104,7 @@ QGroupBox *BcUpl::gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne,
  }
 
  QString usr_info = "";
- if((useData == eEnsUsr) && parent){
+ if((useData == E_EnsUsr) && parent){
   BcUpl *p = qobject_cast<BcUpl *>(parent);
   int use_uplet = p->getUpl();
   usr_info = ligne.model()->index(ligne.row(),use_uplet).data().toString();
@@ -3933,7 +4139,7 @@ QGroupBox *BcUpl::gpbCreate(int index, eUpl_Cal eCal, const QModelIndex & ligne,
  layout->addWidget(bval,1,1);
 
  QString sql_req ="";
- if(useData == eEnsFdj){
+ if(useData == E_EnsFdj){
   QString tbl= "B_upl_"
                +QString::number(nb_uplet)
                +"_z1";
@@ -4755,10 +4961,10 @@ BUplWidget::BUplWidget(QString cnx, int index, const QModelIndex &ligne, const Q
                                                &BUplWidget::sql_lstTirBrc
 };
 
- BcUpl::eUpl_Cal valCal[]={
-  BcUpl::eUpl_Cal::eCalTot,
-  BcUpl::eUpl_Cal::eCalCmb,
-  BcUpl::eUpl_Cal::eCalBrc};
+ BcUpl::etCal valCal[]={
+  BcUpl::etCal::E_CalTot,
+  BcUpl::etCal::E_CalCmb,
+  BcUpl::etCal::E_CalBrc};
 
  QString tbDay[] ={"Jour J", "Jour J+1"};
  QString lstTab[]={"tot","cmb","brc"};

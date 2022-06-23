@@ -48,14 +48,14 @@ QLayout * BCount::usr_UpperItems(int zn, BView_1 *cur_tbv)
  return ret_lay;
 }
 
-QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn)
+QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl usr_fn, const int zn)
 {
  QWidget * wdg_tmp = new QWidget;
  QGridLayout *glay_tmp = new QGridLayout;
 
  stMkLocal prm;
  QLayout *up_qtv = nullptr; /// Bandeau audessu du tabview
- BView_1 *qtv_tmp = new BView_1(pGame,zn,eCalcul);
+ BView_1 *qtv_tmp = new BView_1(pGame,zn,E_Calcul);
  tabTbv[zn] = qtv_tmp;
  qtv_tmp->setObjectName(QString::number(zn));
  qtv_tmp->setParentLayout(glay_tmp);
@@ -63,7 +63,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  /// Nom de la table resultat
  QString dstTbl = "r_"
                   +pGame->db_ref->src
-                  +"_"+label[eCalcul]
+                  +"_"+label[E_Calcul]
                   +"_z"+QString::number(zn+1);
 
  up_qtv = usr_UpperItems(zn, qtv_tmp);
@@ -86,7 +86,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
 	bool b_retVal = (this->*usr_fn)(pGame, prm, zn);
 
 	if(b_retVal == false){
-	 QString fnName = "BCount::startIhm : "+label[eCalcul];
+	 QString fnName = "BCount::startIhm : "+label[E_Calcul];
 	 DB_Tools::DisplayError(fnName, &query, msg);
 	 if(up_qtv != nullptr){
 		delete up_qtv;
@@ -126,7 +126,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
   tmp_query.first();
  }
 
- if(eCalcul == eCountGrp){
+ if(E_Calcul == eCountGrp){
   tot = getTotalCells(pGame,zn);
  }
  else {
@@ -140,7 +140,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  int nbCol = sqm_tmp->columnCount();
 
  Bp::E_Col headRed = Bp::noCol;
- if(eCalcul != eCountGrp){
+ if(E_Calcul != eCountGrp){
   headRed = Bp::colTxt;
   qtv_tmp->hideColumn(Bp::colId);
 
@@ -212,7 +212,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  //qtv_tmp->adjustSize();
 
  /// Hauteur
- if(eCalcul == eCountGrp){
+ if(E_Calcul == eCountGrp){
   int h = qtv_tmp->getMinHeight();
   qtv_tmp->setMaximumHeight(h);
  }
@@ -230,7 +230,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  /// Marquer pour les 2 derniers tirages de la fdj
  if(qtv_tmp->isOnUsrGame() == false){
   /// Mettre dans la base une info sur 2 derniers tirages
-  usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
+  usr_TagLast(pGame, qtv_tmp, E_Calcul, zn);
  }
 
  /// Agencer le tableau
@@ -239,14 +239,14 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount eCalcul, const 
  /// https://stackoverflow.com/questions/24005346/qgridlayout-remove-spacing
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0,1,1);//,-1,Qt::AlignLeft|Qt::AlignTop
 
- if(eCalcul==eCountGrp){
+ if(E_Calcul==eCountGrp){
   glay_tmp->setRowStretch(0,0);
   glay_tmp->setRowStretch(1,1);
  }
 
- if(gm_def->db_ref->dad.size() == 0 && eCalcul==eCountGrp){
+ if(gm_def->db_ref->dad.size() == 0 && E_Calcul==eCountGrp){
   qtv_tmp->setMaximumWidth(l);
-  QTabWidget *tmp = getDetailsTabs(pGame,zn,eCalcul);
+  QTabWidget *tmp = getDetailsTabs(pGame,zn,E_Calcul);
   glay_tmp->addWidget(tmp,0,1);
   glay_tmp->setColumnStretch(0, 1);
   glay_tmp->setColumnStretch(1, 1);

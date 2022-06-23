@@ -9,7 +9,9 @@ BView::BView(QWidget *parent):QTableView(parent)
 {
  square = new QGroupBox;
  up = nullptr;
- zone=0;
+ userData = nullptr;
+ z_id=-1;
+ tbInDb = "";
 }
 
 BView::~BView()
@@ -36,19 +38,49 @@ QString BView::getTitle(void)
  return ret_val;
 }
 
+QString BView::getTblName()
+{
+ return tbInDb;
+}
+
 void BView::addUpLayout(QLayout *up_in)
 {
  up = up_in;
 }
 
-int BView::getZone()
+int BView::getZid()
 {
- return zone;
+ return z_id;
 }
 
-void BView::setZone(int zn_in)
+void BView::setZid(int z_in)
 {
- zone = zn_in;
+ z_id = z_in;
+}
+
+int BView::getGid()
+{
+ return g_id;
+}
+
+void BView::setGid(int g_in)
+{
+ g_id = g_in;
+}
+
+void BView::setUseTable(QString tbl)
+{
+ tbInDb = tbl;
+}
+
+void *BView::getUserDataPtr()
+{
+ return userData;
+}
+
+void BView::setUserDataPtr(void *userDataPtr)
+{
+ userData = userDataPtr;
 }
 
 QGroupBox *BView::getScreen(bool spacer)

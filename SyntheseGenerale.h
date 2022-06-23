@@ -58,7 +58,7 @@ class SyntheseGenerale : public QObject
  Q_OBJECT
 
  private:
- enum typeCalc{tot,brc,cmb,grp,endCalc,nop};
+ enum typE_Calc{tot,brc,cmb,grp,endCalc,nop};
 
  //int mon_brc_tmp;
  struct stSelInfo{
@@ -153,7 +153,7 @@ class SyntheseGenerale : public QObject
 
  public slots:
 #ifdef USE_SG_CODE
- void slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid);
+ void slot_MaFonctionDE_Calcul(const QModelIndex &my_index, int cid);
 #endif
  void slot_ccmr_TbvLesTirages(QPoint pos); /// custom context menu request
  void slot_ClicDeSelectionTableau(const QModelIndex & index);
@@ -187,7 +187,7 @@ class SyntheseGenerale : public QObject
  void slot_saveNewSelection(const QItemSelection &selected, const QItemSelection &deselected);
 
  private:
- void main_CallToMkDetail(int zn, typeCalc calcul, QTableView *view);
+ void main_CallToMkDetail(int zn, typE_Calc calcul, QTableView *view);
  QString grp_CaseAll(int zn, QTableView *view);
 
  QString grp_TrouverTirages(int col, int nb, QString st_tirages, QString st_cri, int zn);
@@ -288,19 +288,19 @@ class SyntheseGenerale : public QObject
 
  typedef QGridLayout * (SyntheseGenerale::**tptrFnsCalc[2])(param_2 a);
  typedef QGridLayout * (SyntheseGenerale::*tptrFns[])(param_2 a); /// tableau de pointeur de fonctions
- typedef QGridLayout * (SyntheseGenerale::**pVtptrFns)(param_2 a); /// pointeur vers un tableau de pointeur de fonctions
+ typedef QGridLayout * (SyntheseGenerale::**ptrFn_Usr1)(param_2 a); /// pointeur vers un tableau de pointeur de fonctions
  typedef QGridLayout * (SyntheseGenerale::*ptrFn)(param_2 a); /// pointeur de fonction
 
  struct DefFn{
   QString *ong;
-  pVtptrFns lst;
+  ptrFn_Usr1 lst;
   int tot;
  };
 
  struct CnfFnCalc{
-  typeCalc calc; /// type de calcul
+  typE_Calc calc; /// type de calcul
   //DefFn *pTabFn; /// pointeur vers le tableau des calculs
-  pVtptrFns *pTabFn;
+  ptrFn_Usr1 *pTabFn;
   //int l_max[3];
  };
 

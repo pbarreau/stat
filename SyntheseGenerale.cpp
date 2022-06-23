@@ -93,12 +93,12 @@ QTableView *SyntheseGenerale::tbForPrincipeAuguste(int nbcol, int nblgn)
  {
   tmpStdItem->setHeaderData(i,Qt::Horizontal,QString::number(i));
 
-	for(int j = 0; i< nblgn;j++)
-	{
-	 QStandardItem *item = new QStandardItem();
-	 tmpStdItem->setItem(j,i,item);
-	}
-	qtv_tmp->setColumnWidth(i,LCELL);
+  for(int j = 0; i< nblgn;j++)
+  {
+   QStandardItem *item = new QStandardItem();
+   tmpStdItem->setItem(j,i,item);
+  }
+  qtv_tmp->setColumnWidth(i,LCELL);
  }
 
  qtv_tmp->setSortingEnabled(false);
@@ -173,11 +173,11 @@ void SyntheseGenerale::slot_ShowTotalBoule(const QModelIndex &index)
   // Montrer le tirage precedent contenant la boule
   ecart = index.model()->index(index.row(),1).data().toInt();
 
-	if(col_id == 2)
-	 ecart = ecart + index.model()->index(index.row(),col_id).data().toInt();
-	// se Positionner sur un element visible de la table (colonne 2 des tirages: la date)
-	QModelIndex item1 = tbv_LesTirages->model()->index(ecart,2);
-	tbv_LesTirages->scrollTo(item1,QAbstractItemView::PositionAtCenter);
+  if(col_id == 2)
+   ecart = ecart + index.model()->index(index.row(),col_id).data().toInt();
+  // se Positionner sur un element visible de la table (colonne 2 des tirages: la date)
+  QModelIndex item1 = tbv_LesTirages->model()->index(ecart,2);
+  tbv_LesTirages->scrollTo(item1,QAbstractItemView::PositionAtCenter);
  }
 }
 
@@ -213,35 +213,35 @@ void SyntheseGenerale::slot_AnalyseLigne(const QModelIndex & index)
  for(int zn=0; zn <pMaConf->nb_zone;zn++){
   int nbAnalyses = pList[zn][0].size();
 
-	bool b_retVal=true;
-	QSqlQuery query(db_0);
-	for(int i=0; (i< nbAnalyses) && (b_retVal == true);i++)
-	{
-	 QString key_sql = pList[zn][0].at(i);
-	 QString sqlReq = sql_DigOne(zn, lgn, pList, i);
+  bool b_retVal=true;
+  QSqlQuery query(db_0);
+  for(int i=0; (i< nbAnalyses) && (b_retVal == true);i++)
+  {
+   QString key_sql = pList[zn][0].at(i);
+   QString sqlReq = sql_DigOne(zn, lgn, pList, i);
 
 #ifndef QT_NO_DEBUG
-	 qDebug() << sqlReq;
+   qDebug() << sqlReq;
 #endif
 
-	 b_retVal = query.exec(sqlReq);
+   b_retVal = query.exec(sqlReq);
 
-	 if(b_retVal)
-	 {
-		// Mise a jour de la tables des resultats
-		QStandardItemModel *sqm_tmp = qobject_cast<QStandardItemModel *>(tbInfo[zn].at(1)->model());
+   if(b_retVal)
+   {
+    // Mise a jour de la tables des resultats
+    QStandardItemModel *sqm_tmp = qobject_cast<QStandardItemModel *>(tbInfo[zn].at(1)->model());
 
-		query.first();
-		do
-		{
-		 int tot = query.value(1).toInt();
+    query.first();
+    do
+    {
+     int tot = query.value(1).toInt();
 
-		 QStandardItem * item_1 = sqm_tmp->item(0,i);
-		 item_1->setData(tot,Qt::DisplayRole);
-		 sqm_tmp->setItem(0,i,item_1);
-		}while(query.next() && b_retVal);
-	 }/// if b_retVal
-	}/// for analyses
+     QStandardItem * item_1 = sqm_tmp->item(0,i);
+     item_1->setData(tot,Qt::DisplayRole);
+     sqm_tmp->setItem(0,i,item_1);
+    }while(query.next() && b_retVal);
+   }/// if b_retVal
+  }/// for analyses
  }/// for zn
 }
 ///-----------
@@ -252,18 +252,18 @@ QString SyntheseGenerale::sql_grpOne(int zn, int lgn, QStringList **pList, int i
 
 
  QString msg ="select B as Id, count(*)  as "
-               +top_sql
-               +" FROM ( select t1.B as B,  "
-                 " ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID, "
-                 " lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id, "
-                 " (t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E, "
-                 " t1.* from ( select t1."
-               +top_sql
-               +" as B, t2.id,t2.J,t2.D,t2.C ,t2.*   "
-                 " from (Ana_z"+QString::number(zn+1)+") as t1, ("
-               +st_tirage
-               +") as t2  where ((t1.id=t2.id))) as t1 )as r1 group by b "
-  ;
+              +top_sql
+              +" FROM ( select t1.B as B,  "
+               " ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID, "
+               " lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id, "
+               " (t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E, "
+               " t1.* from ( select t1."
+              +top_sql
+              +" as B, t2.id,t2.J,t2.D,t2.C ,t2.*   "
+               " from (Ana_z"+QString::number(zn+1)+") as t1, ("
+              +st_tirage
+              +") as t2  where ((t1.id=t2.id))) as t1 )as r1 group by b "
+              ;
 
 #ifndef QT_NO_DEBUG
  qDebug() << msg;
@@ -288,28 +288,28 @@ QString SyntheseGenerale::sql_DigOne(int zn, int lgn, QStringList **pList, int i
  }
 
  QString msg =
-  "select tb1.id , count(tb2.B) as "
-  +top_sql
-  +" from "
+   "select tb1.id , count(tb2.B) as "
+   +top_sql
+   +" from "
     "("
     "select * from ("
-  + st_tirage
-  + st_where
-  +") as r1 "
+   + st_tirage
+   + st_where
+   +") as r1 "
     ") as tb1 "
     "left join "
     "("
     "select id as B from Bnrz where (z"
-  +QString::number(zn+1)
-  +" not null  and ("
-  +key_sql
-  +")) "
+   +QString::number(zn+1)
+   +" not null  and ("
+   +key_sql
+   +")) "
     ") as tb2 "
     "on "
     "("
     "tb2.B in ("
-  +st_fields
-  +")"
+   +st_fields
+   +")"
     ") group by tb1.id;";
 
 #ifndef QT_NO_DEBUG
@@ -334,16 +334,16 @@ bool SyntheseGenerale::sql_grpAdd(stDigAll prm)
 
  QString msg = "select t1.*, t2.c1 from old_"
                +tb_name+" as t1 "
-                 "inner JOIN "
-                 "( "
-                 "select t1."
+                        "inner JOIN "
+                        "( "
+                        "select t1."
                +key
                +" as V, count (t2.id) as c1 from Bnrz as t1  "
-                 "left join "
-                 "(select * from Ana_z"
+                "left join "
+                "(select * from Ana_z"
                +QString::number(zn+1)
                +") as t2 "
-                 "on t2.c1 = t1."
+                "on t2.c1 = t1."
                +key
                +" where(t1."
                +key
@@ -392,83 +392,83 @@ bool SyntheseGenerale::sql_DigAll(stDigAll prm)
 
  /// regarder combien vue calc
  QString msg ="SELECT count(name) FROM sqlite_master "
-               "WHERE type='table' AND name like '"+viewName+"%'";
+              "WHERE type='table' AND name like '"+viewName+"%'";
  b_retVal = query.exec(msg);
 
  if(b_retVal){
   int nbCalc = -1;
 
-	query.first();
-	if(query.isValid()){
-	 nbCalc = query.value(0).toInt();
-	 viewName = viewName + QString::number(nbCalc).rightJustified(2,'0');
+  query.first();
+  if(query.isValid()){
+   nbCalc = query.value(0).toInt();
+   viewName = viewName + QString::number(nbCalc).rightJustified(2,'0');
 
-	 if(nbCalc==2){
-		/// Fusionner les vues
-		QString st_key = pList[zn][1].at(i-1);
-		if(i<tot_items){
-		 i=i-1;
-		}
-		viewCalc = "select t1.*, t2."
-							 + st_key
-							 + " From tb_view_00 as t1 left join tb_view_01 as t2 on t1.id = t2.id";
-	 }
-	 else{
-		viewCalc = (this->*(fnDig))(zn,lgn,pList,i);
-	 }
+   if(nbCalc==2){
+    /// Fusionner les vues
+    QString st_key = pList[zn][1].at(i-1);
+    if(i<tot_items){
+     i=i-1;
+    }
+    viewCalc = "select t1.*, t2."
+               + st_key
+               + " From tb_view_00 as t1 left join tb_view_01 as t2 on t1.id = t2.id";
+   }
+   else{
+    viewCalc = (this->*(fnDig))(zn,lgn,pList,i);
+   }
 
 #ifndef QT_NO_DEBUG
-	 qDebug() << viewCalc;
+   qDebug() << viewCalc;
 #endif
 
-	 msg = "create table if not exists " + viewName + " as " + viewCalc;
+   msg = "create table if not exists " + viewName + " as " + viewCalc;
 #ifndef QT_NO_DEBUG
-	 qDebug() << msg;
+   qDebug() << msg;
 #endif
 
-	 b_retVal = query.exec(msg);
-	 if(b_retVal && (i<=tot_items)){
-		switch (nbCalc) {
-		 case 0:
-		 case 1:
-		 {
-			prm.i = i+1;
-			b_retVal = sql_DigAll(prm);
-		 }
-		 break;
+   b_retVal = query.exec(msg);
+   if(b_retVal && (i<=tot_items)){
+    switch (nbCalc) {
+     case 0:
+     case 1:
+      {
+       prm.i = i+1;
+       b_retVal = sql_DigAll(prm);
+      }
+      break;
 
-		 case 2: /// si 2 fusion des premieres vers une troisieme
-		 {
-			for (int view=0;view<2 && b_retVal;view++) {
-			 msg = "drop table if exists tb_view_"+QString::number(view).rightJustified(2,'0');
-			 b_retVal=query.exec(msg);
-			}
+     case 2: /// si 2 fusion des premieres vers une troisieme
+      {
+       for (int view=0;view<2 && b_retVal;view++) {
+        msg = "drop table if exists tb_view_"+QString::number(view).rightJustified(2,'0');
+        b_retVal=query.exec(msg);
+       }
 
-			if(b_retVal){
-			 QString tb_name = "tb_view_00";
+       if(b_retVal){
+        QString tb_name = "tb_view_00";
 
-			 if(i == tot_items){
-				tb_name = target+QString::number(zn+1);
-			 }
-			 msg = "alter table "+viewName+" rename to " + tb_name;
-			 b_retVal=query.exec(msg);
+        if(i == tot_items){
+         tb_name = target+QString::number(zn+1);
+        }
+        msg = "alter table "+viewName+" rename to " + tb_name;
+        b_retVal=query.exec(msg);
 
-			 if(b_retVal && (i<tot_items)){
-				prm.i = i+1;
-				b_retVal = sql_DigAll(prm);
-			 }
+        if(b_retVal && (i<tot_items)){
+         prm.i = i+1;
+         b_retVal = sql_DigAll(prm);
+        }
 
-			}
-		 }
-		 break;
-		 default:
-		 {
-			QMessageBox::critical(NULL,"Pgm","DigAll Error!!\n",QMessageBox::Escape);
-		 }
-		 break;
-		}
-	 }
-	}
+       }
+      }
+      break;
+     default:
+      {
+       QMessageBox::critical(NULL,"Pgm","DigAll Error!!\n",QMessageBox::Escape);
+      }
+      break;
+    }
+   }
+  }
  }
  return b_retVal;
 }
@@ -632,7 +632,7 @@ SyntheseGenerale::SyntheseGenerale(stPSynG a)
 
 #ifdef USE_SG_CODE
 
-void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int cid)
+void SyntheseGenerale::slot_MaFonctionDE_Calcul(const QModelIndex &my_index, int cid)
 {
  QSqlQuery requete;
  bool status = false;
@@ -699,83 +699,83 @@ void SyntheseGenerale::slot_MaFonctionDeCalcul(const QModelIndex &my_index, int 
 
     linksInfo[links[boule].y].total--;///nbtot[links[boule].y]--;
 
-		// Enlever le lien
-		if(links[boule].p <=0)
-		{
-		 links[links[boule].n].p=-1;
-		 if(links[boule].n){
+    // Enlever le lien
+    if(links[boule].p <=0)
+    {
+     links[links[boule].n].p=-1;
+     if(links[boule].n){
 
-			linksInfo[links[boule].y].depart=links[boule].n;///start[links[boule].y]= links[boule].n;
-		 }
-		 else
-		 {
+      linksInfo[links[boule].y].depart=links[boule].n;///start[links[boule].y]= links[boule].n;
+     }
+     else
+     {
 
 
-			linksInfo[links[boule].y].depart=-1;///start[links[boule].y]=-1;
-			linksInfo[links[boule].y].total=0; ///nbtot[links[boule].y]=0;
-		 }
-		}
-		else{
-		 links[links[boule].p].n = links[boule].n;
-		 links[links[boule].n].p = links[boule].p;
-		}
+      linksInfo[links[boule].y].depart=-1;///start[links[boule].y]=-1;
+      linksInfo[links[boule].y].total=0; ///nbtot[links[boule].y]=0;
+     }
+    }
+    else{
+     links[links[boule].p].n = links[boule].n;
+     links[links[boule].n].p = links[boule].p;
+    }
 
-		// indiquer la nouvelle position
-		int b= boule;
-		do
-		{
-		 b = links[b].n;
-		 if(links[b].x)
-			links[b].x--;
-		}while(links[b].n);
-		links[boule].n = 0;
+    // indiquer la nouvelle position
+    int b= boule;
+    do
+    {
+     b = links[b].n;
+     if(links[b].x)
+      links[b].x--;
+    }while(links[b].n);
+    links[boule].n = 0;
 
-		// la boule change de niveau
-		links[boule].y++;
+    // la boule change de niveau
+    links[boule].y++;
 
-		// Positionne la boule dans liste
-		if(linksInfo[links[boule].y].depart == -1)///if(start[links[boule].y] == -1)
-		{
-		 linksInfo[links[boule].y].depart = boule; ///start[links[boule].y] = boule;
-		 linksInfo[links[boule].y].total = 1;///nbtot[links[boule].y] = 1;
+    // Positionne la boule dans liste
+    if(linksInfo[links[boule].y].depart == -1)///if(start[links[boule].y] == -1)
+    {
+     linksInfo[links[boule].y].depart = boule; ///start[links[boule].y] = boule;
+     linksInfo[links[boule].y].total = 1;///nbtot[links[boule].y] = 1;
 
-		 links[boule].x = 1;
-		 links[boule].p = -1;
-		}
-		else
-		{
-		 linksInfo[links[boule].y].total++;///nbtot[links[boule].y]++;
+     links[boule].x = 1;
+     links[boule].p = -1;
+    }
+    else
+    {
+     linksInfo[links[boule].y].total++;///nbtot[links[boule].y]++;
 
-		 // Mettre la boule a la fin de la liste chainee
-		 // dernier element
-		 int cur = linksInfo[links[boule].y].depart;///start[links[boule].y];
-		 int last = 0;
-		 do{
-			last = links[cur].n;
-			if(last)
-			 cur = last;
-		 }while(last);
+     // Mettre la boule a la fin de la liste chainee
+     // dernier element
+     int cur = linksInfo[links[boule].y].depart;///start[links[boule].y];
+     int last = 0;
+     do{
+      last = links[cur].n;
+      if(last)
+       cur = last;
+     }while(last);
 
-		 // Faire add node
-		 links[cur].n = boule;
-		 links[boule].p = cur;
-		 links[boule].x = (links[cur].x)+1;
-		}
+     // Faire add node
+     links[cur].n = boule;
+     links[boule].p = cur;
+     links[boule].x = (links[cur].x)+1;
+    }
 
-		if(linksInfo[0].total <=0)///if(nbtot[0]<=0)
-		{
-		 cid++;
-		 break;/// ou continue ?
-		}
-	 }
+    if(linksInfo[0].total <=0)///if(nbtot[0]<=0)
+    {
+     cid++;
+     break;/// ou continue ?
+    }
+   }
 
-	 // On a parcouru toutes les boules de ce tirage
-	 // on va lire les listes chainees
-	 MemoriserProgression(table,&linksInfo[0],links, val,possible, cid, tid);
-	}while(requete.previous());
+   // On a parcouru toutes les boules de ce tirage
+   // on va lire les listes chainees
+   MemoriserProgression(table,&linksInfo[0],links, val,possible, cid, tid);
+  }while(requete.previous());
 
-	// Presentation des resultats
-	PresenterResultat(0,val);
+  // Presentation des resultats
+  PresenterResultat(0,val);
 
  }
 }
@@ -807,15 +807,15 @@ void SyntheseGenerale::MemoriserProgression(QString table,stMyHeadedList *h,stMy
   {
    sql.bindValue(":y", i);
 
-	 // Parcourir la liste chainee
-	 int data = h[i].depart;
-	 do
-	 {
-		sql.bindValue(":b", data);
-		sta = sql.exec();
-		data = l[data].n;
-	 }while(data && (sta == true));
-	}
+   // Parcourir la liste chainee
+   int data = h[i].depart;
+   do
+   {
+    sql.bindValue(":b", data);
+    sta = sql.exec();
+    data = l[data].n;
+   }while(data && (sta == true));
+  }
  }
 
  // Colorier
@@ -829,7 +829,7 @@ QString GetBoulesOfTirage(int tir)
  QString msg = "";
 
  msg="select b1,b2,b3,b4,b5 from reftirages where(id =" +
-       QString::number(tir) +");";
+     QString::number(tir) +");";
 
  // lancer la requete
 #ifndef QT_NO_DEBUG
@@ -894,17 +894,17 @@ void SyntheseGenerale::MettreCouleur(int start, int cur)
  if(cur-1>0)
  {
 
-	val = GetBoulesOfTirage(cur - 1);
-	// preparer la requete mise a jour
-	msg = "update " + table + " set c=2 where (" + table
-				+ ".tid = " + QString::number(cur)
-				+ " and (" + table +".b in ("+val+")));";
+  val = GetBoulesOfTirage(cur - 1);
+  // preparer la requete mise a jour
+  msg = "update " + table + " set c=2 where (" + table
+        + ".tid = " + QString::number(cur)
+        + " and (" + table +".b in ("+val+")));";
 
-	// lancer la requete
+  // lancer la requete
 #ifndef QT_NO_DEBUG
-	qDebug() << msg;
+  qDebug() << msg;
 #endif
-	sta = sql.exec(msg);
+  sta = sql.exec(msg);
 
  }
 
@@ -925,7 +925,7 @@ void SyntheseGenerale::slot_ccmr_TbvLesTirages(QPoint pos)
  MonMenu->addAction(MonTraitement);
 
  connect(MonTraitement, SIGNAL(sig_SelectionTirage(const QModelIndex,int)),
-         UnDetail, SLOT(slot_MaFonctionDeCalcul(const QModelIndex,int)) );
+         UnDetail, SLOT(slot_MaFonctionDE_Calcul(const QModelIndex,int)) );
 
  MonMenu->exec(tbv_LesTirages->viewport()->mapToGlobal(pos));
 
@@ -1004,13 +1004,13 @@ void SyntheseGenerale::DoTirages(void)
 #endif
 
  connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
-         pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
+          pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
 
  connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
-         this, SLOT( slot_ShowBoule( QModelIndex) ) );
+          this, SLOT( slot_ShowBoule( QModelIndex) ) );
 
  connect( tbv_LesTirages, SIGNAL( clicked(QModelIndex)) ,
-         this, SLOT( slot_AnalyseLigne( QModelIndex) ) );
+          this, SLOT( slot_AnalyseLigne( QModelIndex) ) );
 
  tbv_LesTirages->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(tbv_LesTirages, SIGNAL(customContextMenuRequested(QPoint)),this,
@@ -1081,11 +1081,11 @@ void SyntheseGenerale::DoTirages(void)
  tbv_LesTirages=qtv_tmp;
  // Simple click dans sous fenetre base
  connect( qtv_tmp, SIGNAL( clicked(QModelIndex)) ,
-         pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
+          pEcran->parent(), SLOT( slot_MontreTirageDansGraph( QModelIndex) ) );
 
  // Simple click dans sous fenetre base
  connect( qtv_tmp, SIGNAL( clicked(QModelIndex)) ,
-         pEcran->parent(), SLOT( slot_MontreTirageAnalyse( QModelIndex) ) );
+          pEcran->parent(), SLOT( slot_MontreTirageAnalyse( QModelIndex) ) );
 
 #if 0
  // double click dans fenetre  pour afficher details boule
@@ -1114,8 +1114,8 @@ void SyntheseGenerale::do_LinesCheck(void)
  for (int zn =0; zn < max_zn && check; zn++) {
   prm.zn=zn;
 
-	/// Traitement
-	check = sql_DigAll(prm);
+  /// Traitement
+  check = sql_DigAll(prm);
  }
 }
 void SyntheseGenerale::do_grpTab(void)
@@ -1134,13 +1134,13 @@ void SyntheseGenerale::do_grpTab(void)
  for (int zn =0; zn < max_zn && check; zn++) {
   prm.zn=zn;
 
-	/// Traitement
-	check = sql_DigAll(prm);
+  /// Traitement
+  check = sql_DigAll(prm);
 
-	if(check){
-	 /// suite fusion tableau grp
-	 check = sql_grpAdd(prm);
-	}
+  if(check){
+   /// suite fusion tableau grp
+   check = sql_grpAdd(prm);
+  }
  }
 }
 
@@ -1209,30 +1209,30 @@ void SyntheseGenerale::DoComptageTotal(void)
 
  /// Tableau contenant les pointeurs vers les tableaux
  /// contenant les fonctions de traitement de chacune des zones
- pVtptrFns p_tot[]={Trmt_tot_a,Trmt_tot_b};
- pVtptrFns p_brc[]={Trmt_brc_a,Trmt_brc_b};
- pVtptrFns p_grp[]={Trmt_grp_a,Trmt_grp_b};
- pVtptrFns p_cmb[]={Trmt_cmb_a,Trmt_cmb_b};
- pVtptrFns p_nop[]={Trmt_nop,Trmt_nop};
+ ptrFn_Usr1 p_tot[]={Trmt_tot_a,Trmt_tot_b};
+ ptrFn_Usr1 p_brc[]={Trmt_brc_a,Trmt_brc_b};
+ ptrFn_Usr1 p_grp[]={Trmt_grp_a,Trmt_grp_b};
+ ptrFn_Usr1 p_cmb[]={Trmt_cmb_a,Trmt_cmb_b};
+ ptrFn_Usr1 p_nop[]={Trmt_nop,Trmt_nop};
 
  /// Tableau contenant les calculs a effectuer
  CnfFnCalc mesCalculs_z1[]=
-  {
-   {typeCalc::tot,p_tot},
-   {typeCalc::brc,p_brc},
-   {typeCalc::cmb,p_cmb},
-   {typeCalc::nop,p_grp},
-   {typeCalc::endCalc,NULL}
-  };
+ {
+  {typE_Calc::tot,p_tot},
+  {typE_Calc::brc,p_brc},
+  {typE_Calc::cmb,p_cmb},
+  {typE_Calc::nop,p_grp},
+  {typE_Calc::endCalc,NULL}
+ };
  //int nbCalculs = sizeof(mesCalculs_z1)/sizeof (CnfFnCalc);
  CnfFnCalc mesCalculs_z2[]=
-  {
-   {typeCalc::tot,p_tot},
-   {typeCalc::brc,p_brc},
-   {typeCalc::nop,p_nop},
-   {typeCalc::nop,p_grp},
-   {typeCalc::endCalc,NULL}
-  };
+ {
+  {typE_Calc::tot,p_tot},
+  {typE_Calc::brc,p_brc},
+  {typE_Calc::nop,p_nop},
+  {typE_Calc::nop,p_grp},
+  {typE_Calc::endCalc,NULL}
+ };
  CnfFnCalc *pCalZn[]={mesCalculs_z1,mesCalculs_z2};
 
  /// ----------------------
@@ -1304,77 +1304,77 @@ QWidget * SyntheseGenerale::CreerOnglets(param_1 prm, CnfFnCalc **conf)
   QGridLayout *qg_n1 = new QGridLayout;
   QString tab_name = prm.namesNiv[prm.niv][tab];
 
-	/// Memo du chemin
-	prm.path[prm.niv]=tab;
+  /// Memo du chemin
+  prm.path[prm.niv]=tab;
 #ifndef QT_NO_DEBUG
-	qDebug()<< "Traitement onglet : "<<tab_name<<endl;
+  qDebug()<< "Traitement onglet : "<<tab_name<<endl;
 #endif
-	/// Determination de la zone de travail
-	if(prm.niv == 0){
-	 prm.zn = tab;
-	 prm.curName = QString::number(tab);
-	}
+  /// Determination de la zone de travail
+  if(prm.niv == 0){
+   prm.zn = tab;
+   prm.curName = QString::number(tab);
+  }
 
-	QWidget * result = NULL;
-	if((prm.niv+1)<prm.maxNiv){
-	 param_1 n_param;
-	 n_param = prm;
+  QWidget * result = NULL;
+  if((prm.niv+1)<prm.maxNiv){
+   param_1 n_param;
+   n_param = prm;
 
-	 /// A chaque sous niveau rajouter un onglet
-	 n_param.tab_Top = new QTabWidget;
-	 n_param.niv = prm.niv + 1;
+   /// A chaque sous niveau rajouter un onglet
+   n_param.tab_Top = new QTabWidget;
+   n_param.niv = prm.niv + 1;
 
-	 /// Creation recursive des noms d'onglets
-	 result = CreerOnglets(n_param,conf);
-	}
-	else
-	{
-	 result = new QWidget;
+   /// Creation recursive des noms d'onglets
+   result = CreerOnglets(n_param,conf);
+  }
+  else
+  {
+   result = new QWidget;
 
-	 /// Niveau montrer tableau ?
-	 if(prm.niv == prm.maxNiv-1){
-		/// Nom de l'objet
-		QString nameObj = "";
-		for(int i=0;i<prm.maxNiv-1;i++){
-		 nameObj = nameObj
-							 + QString::number(prm.path[i])
-							 +":";
-		}
-		QString useName = nameObj + QString::number(tab);
+   /// Niveau montrer tableau ?
+   if(prm.niv == prm.maxNiv-1){
+    /// Nom de l'objet
+    QString nameObj = "";
+    for(int i=0;i<prm.maxNiv-1;i++){
+     nameObj = nameObj
+               + QString::number(prm.path[i])
+               +":";
+    }
+    QString useName = nameObj + QString::number(tab);
 
-		QGridLayout *qg_tmp = NULL;
-		pVtptrFns TabFn = conf[prm.zn][prm.path[1]].pTabFn[tab];
-		ptrFn fntmp = TabFn[0];
+    QGridLayout *qg_tmp = NULL;
+    ptrFn_Usr1 TabFn = conf[prm.zn][prm.path[1]].pTabFn[tab];
+    ptrFn fntmp = TabFn[0];
 
-		param_2 prm_2;
-		prm_2.prm_1=prm;
-		prm_2.zn = prm.zn;
-		prm_2.dst = 0;
+    param_2 prm_2;
+    prm_2.prm_1=prm;
+    prm_2.zn = prm.zn;
+    prm_2.dst = 0;
 
-		prm_2.text_path = useName;
-		prm_2.tb_wrt = QString("r_")
-									 + prm.tb_src
-									 +QString("_")
-									 +prm.namesNiv[1][prm.path[1]]
-									 +QString("_z")
-									 +QString::number(prm.zn+1);
+    prm_2.text_path = useName;
+    prm_2.tb_wrt = QString("r_")
+                   + prm.tb_src
+                   +QString("_")
+                   +prm.namesNiv[1][prm.path[1]]
+                   +QString("_z")
+                   +QString::number(prm.zn+1);
 
 #ifndef QT_NO_DEBUG
-		qDebug()<< "Obj name : "<<useName<<endl;
-		qDebug()<< "Tbl name : "<<prm_2.tb_wrt<<endl;
+    qDebug()<< "Obj name : "<<useName<<endl;
+    qDebug()<< "Tbl name : "<<prm_2.tb_wrt<<endl;
 #endif
 
-		qg_tmp = (this->*fntmp)(prm_2);
-		result->setLayout(qg_tmp);
-	 }
+    qg_tmp = (this->*fntmp)(prm_2);
+    result->setLayout(qg_tmp);
+   }
 
-	}
+  }
 
-	if(result != NULL){
-	 qg_n1->addWidget(result,d_row,d_col);
-	}
-	qw_n1->setLayout(qg_n1);
-	tab_Top->addTab(qw_n1,tab_name);
+  if(result != NULL){
+   qg_n1->addWidget(result,d_row,d_col);
+  }
+  qw_n1->setLayout(qg_n1);
+  tab_Top->addTab(qw_n1,tab_name);
  }
 
  /// au niveau 0 rajouter un onglet special
@@ -1404,9 +1404,9 @@ QTableView *SyntheseGenerale::doTabLgnSelection(stDesigConf conf)
   QStandardItem *head_i = model->horizontalHeaderItem(i);
   head_i->setToolTip(conf.head[1][i]);
 
-	QStandardItem *item = new QStandardItem();
-	model->setItem(0,i,item);
-	qtv_tmp->setColumnWidth(i,LCELL);
+  QStandardItem *item = new QStandardItem();
+  model->setItem(0,i,item);
+  qtv_tmp->setColumnWidth(i,LCELL);
  }
 
  qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -1459,7 +1459,7 @@ QTableView *SyntheseGenerale::doTabGrpTirage(stDesigConf conf)
  //qtv_tmp->adjustSize();
 
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(slot_grpShowEcart( QModelIndex) ) );
+          this, SLOT(slot_grpShowEcart( QModelIndex) ) );
 
  // double click dans fenetre  pour afficher details boule
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -1467,7 +1467,7 @@ QTableView *SyntheseGenerale::doTabGrpTirage(stDesigConf conf)
          SLOT(slot_ccmr_grpSel(QPoint)));
 
  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-         this, SLOT(slot_grpDbClikSel( QModelIndex) ) );
+          this, SLOT(slot_grpDbClikSel( QModelIndex) ) );
 
 
 
@@ -1519,9 +1519,9 @@ QTableView *SyntheseGenerale::doTabLgnTirage(stDesigConf conf)
   QStandardItem *head_i = model->horizontalHeaderItem(i);
   head_i->setToolTip(conf.head[1][i]);
 
-	QStandardItem *item = new QStandardItem();
-	model->setItem(0,i,item);
-	qtv_tmp->setColumnWidth(i,LCELL);
+  QStandardItem *item = new QStandardItem();
+  model->setItem(0,i,item);
+  qtv_tmp->setColumnWidth(i,LCELL);
  }
 
  qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -1543,11 +1543,11 @@ QTableView *SyntheseGenerale::doTabLgnTirage(stDesigConf conf)
 
  // simple click dans fenetre  pour selectionner boule
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(slot_grpShowEcart( QModelIndex) ) );
+          this, SLOT(slot_grpShowEcart( QModelIndex) ) );
 
  // double click dans fenetre  pour afficher details boule
  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-         this, SLOT(slot_Type_G( QModelIndex) ) );
+          this, SLOT(slot_Type_G( QModelIndex) ) );
 
 
 
@@ -1599,7 +1599,7 @@ QTableView *SyntheseGenerale::doTabShowUplet()
 
 #if 0
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(slot_grpShowEcart( QModelIndex) ) );
+          this, SLOT(slot_grpShowEcart( QModelIndex) ) );
 
  // double click dans fenetre  pour afficher details boule
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -1607,7 +1607,7 @@ QTableView *SyntheseGenerale::doTabShowUplet()
          SLOT(slot_ccmr_grpSel(QPoint)));
 
  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-         this, SLOT(slot_grpDbClikSel( QModelIndex) ) );
+          this, SLOT(slot_grpDbClikSel( QModelIndex) ) );
 
 #endif
 
@@ -1671,7 +1671,7 @@ void SyntheseGenerale::slot_Type_G(const QModelIndex & index)
 
  SyntheseDetails *unDetail = new SyntheseDetails(a);
  connect( ptabTop, SIGNAL(tabCloseRequested(int)) ,
-         unDetail, SLOT(slot_FermeLaRecherche(int) ) );
+          unDetail, SLOT(slot_FermeLaRecherche(int) ) );
 
 
 }
@@ -1684,7 +1684,7 @@ void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
 
 
  QStringList h1[]={{"tot","brc","cmb","grp"},
-                     {"Total", "Barycentre", "Combinaison", "Groupe"}};
+                   {"Total", "Barycentre", "Combinaison", "Groupe"}};
 
  QStringList **pList = tabEcarts->getSqlGrp();
  QStringList h2[]={pList[niv][1], pList[niv][2]};
@@ -1697,18 +1697,18 @@ void SyntheseGenerale::specialDesign(int niv, QGridLayout *grid, QWidget *resu)
  int nb_items = TAILLE (def,stDesigConf);
 
  QTableView * (SyntheseGenerale::*ptrCreaTbv[])(stDesigConf val)
-  ={
-   &SyntheseGenerale::doTabLgnSelection,
-   &SyntheseGenerale::doTabLgnTirage,
-   &SyntheseGenerale::doTabGrpTirage
-  };
+   ={
+    &SyntheseGenerale::doTabLgnSelection,
+    &SyntheseGenerale::doTabLgnTirage,
+    &SyntheseGenerale::doTabGrpTirage
+};
 
  QGridLayout * (SyntheseGenerale::*ptrLayInfo[])(int t_id, QTableView * tbview)
-  ={
-   &SyntheseGenerale::info_lgnTirage,
-   &SyntheseGenerale::info_lgnTirage,
-   &SyntheseGenerale::info_lgnTirage
-  };
+   ={
+    &SyntheseGenerale::info_lgnTirage,
+    &SyntheseGenerale::info_lgnTirage,
+    &SyntheseGenerale::info_lgnTirage
+};
 
  for(int i = 0; i< nb_items;i++){
   def[i].zn = niv;
@@ -1778,22 +1778,22 @@ void SyntheseGenerale::DoComptageTotal(void)
 
  /// Tableau contenant les poiteurs vers les tableaux
  /// contenant les fonctions de traitement de chacune des zones
- pVtptrFns p_tot[]={Trmt_tot_a,Trmt_tot_b};
- pVtptrFns p_brc[]={Trmt_brc_a,Trmt_brc_b};
+ ptrFn_Usr1 p_tot[]={Trmt_tot_a,Trmt_tot_b};
+ ptrFn_Usr1 p_brc[]={Trmt_brc_a,Trmt_brc_b};
 
  /// Tableau contenant les calculs a effectuer
  CnfFnCalc mesCalculs_z1[]=
  {
-  {typeCalc::tot,p_tot,{nb_n1_names,1,nb_n3_names}}, // Boules
-  {typeCalc::brc,p_brc,{nb_n1_names,1,nb_n3_names}}, // Boules
-  {typeCalc::endCalc,NULL,{NULL}}
+  {typE_Calc::tot,p_tot,{nb_n1_names,1,nb_n3_names}}, // Boules
+  {typE_Calc::brc,p_brc,{nb_n1_names,1,nb_n3_names}}, // Boules
+  {typE_Calc::endCalc,NULL,{NULL}}
  };
  //int nbCalculs = sizeof(mesCalculs_z1)/sizeof (CnfFnCalc);
  CnfFnCalc mesCalculs_z2[]=
  {
-  {typeCalc::tot,p_tot,{nb_n1_names,1,nb_n3_names}}, // Etoiles
-  {typeCalc::brc,p_brc,{nb_n1_names,1,nb_n3_names}}, // Etoiles
-  {typeCalc::endCalc,NULL,{NULL}}
+  {typE_Calc::tot,p_tot,{nb_n1_names,1,nb_n3_names}}, // Etoiles
+  {typE_Calc::brc,p_brc,{nb_n1_names,1,nb_n3_names}}, // Etoiles
+  {typE_Calc::endCalc,NULL,{NULL}}
  };
  CnfFnCalc *pCalZn[]={mesCalculs_z1,mesCalculs_z2};
 
@@ -1855,7 +1855,7 @@ QWidget * SyntheseGenerale::VbInfoDepart(param_1 prm,CnfFnCalc *b[2])
 
  CnfFnCalc tmpprm = *b[1];
 
- if((*b[prm.zn]).calc == typeCalc::endCalc)
+ if((*b[prm.zn]).calc == typE_Calc::endCalc)
   return NULL;
 
 
@@ -1899,7 +1899,7 @@ QWidget * SyntheseGenerale::VbInfoDepart(param_1 prm,CnfFnCalc *b[2])
     QGridLayout *qg_tmp = NULL;
 
     /// Appeler la bonne fonction
-    pVtptrFns TabFn = b[prm.zn]->pTabFn[tab];
+    ptrFn_Usr1 TabFn = b[prm.zn]->pTabFn[tab];
     ptrFn fntmp = TabFn[0];
 
     param_2 prm_2;
@@ -2007,7 +2007,7 @@ QGridLayout * SyntheseGenerale::VbInfo_nop(param_2 prm)
   if(len){
    int checkTab = prm.text_path.split(":").at(len-1).toInt();
    QString name = "nop_"+QString::number(checkTab)+"_grp_z"+QString::number(prm.zn+1);
-    grid_temp->setObjectName(name);
+   grid_temp->setObjectName(name);
   }
  }
  else {
@@ -2166,14 +2166,14 @@ bool SyntheseGenerale::mettreBarycentre(QString tbl_dst, QString src_data)
 #ifndef QT_NO_DEBUG
   qDebug() << msg;
 #endif
-	//if not exists
-	msg = "create table  " + tbl_dst + " as " + msg;
+  //if not exists
+  msg = "create table  " + tbl_dst + " as " + msg;
 
-	if((isOK = query.exec(msg))){
-	 /// Supprimer table old
-	 msg = "drop table if exists old_"+tbl_dst+";";
-	 isOK = query.exec(msg);
-	}
+  if((isOK = query.exec(msg))){
+   /// Supprimer table old
+   msg = "drop table if exists old_"+tbl_dst+";";
+   isOK = query.exec(msg);
+  }
  }
 
  if(query.lastError().isValid()){
@@ -2184,10 +2184,10 @@ bool SyntheseGenerale::mettreBarycentre(QString tbl_dst, QString src_data)
 }
 
 bool SyntheseGenerale::grp_Contruire_Tbl(int zn,
-																				 QString tb_src ,
-																				 QString tb_ana,
-																				 QString key_brc,
-																				 QString tbl_dst )
+                                         QString tb_src ,
+                                         QString tb_ana,
+                                         QString key_brc,
+                                         QString tbl_dst )
 {
  bool b_retVal = false;
 
@@ -2220,10 +2220,10 @@ bool SyntheseGenerale::grp_Contruire_Tbl(int zn,
 }
 
 bool SyntheseGenerale::cmb_Contruire_Tbl(int zn,
-																				 QString tb_src ,
-																				 QString tb_ana,
-																				 QString key_brc,
-																				 QString tbl_dst )
+                                         QString tb_src ,
+                                         QString tb_ana,
+                                         QString key_brc,
+                                         QString tbl_dst )
 {
  bool b_retVal = true;
 
@@ -2254,10 +2254,10 @@ bool SyntheseGenerale::cmb_Contruire_Tbl(int zn,
 }
 
 bool SyntheseGenerale::brc_Contruire_Tbl(int zn,
-																				 QString tb_src ,
-																				 QString tb_ana,
-																				 QString key_brc,
-																				 QString tbl_dst )
+                                         QString tb_src ,
+                                         QString tb_ana,
+                                         QString key_brc,
+                                         QString tbl_dst )
 {
  bool b_retVal = true;
 
@@ -2313,21 +2313,21 @@ bool SyntheseGenerale::cmb_MarquerDerniers(int zn, QString tb_src, QString tb_re
     +" else(f|0x"
     +sdec
     +") end) "
-      "where (B in ("
+    "where (B in ("
     +msg[0]
     +"))"}
   };
 
   int taille = sizeof(msg)/sizeof(QString);
 #ifndef QT_NO_DEBUG
-	for(int i = 0; i< taille;i++){
-	 qDebug() << "msg ["<<i<<"]: "<<msg[i];
-	}
+  for(int i = 0; i< taille;i++){
+   qDebug() << "msg ["<<i<<"]: "<<msg[i];
+  }
 #endif
   b_retVal = query.exec(msg[taille-1]);
  }
 
-  return b_retVal;
+ return b_retVal;
 }
 
 bool SyntheseGenerale::brc_MarquerDerniers(int zn, QString tb_src, QString tb_ref, QString key, QString tbl_dst)
@@ -2349,16 +2349,16 @@ bool SyntheseGenerale::brc_MarquerDerniers(int zn, QString tb_src, QString tb_re
     +" else(f|0x"
     +sdec
     +") end) "
-      "where (B in ("
+    "where (B in ("
     +msg[0]
     +"))"}
   };
 
   int taille = sizeof(msg)/sizeof(QString);
 #ifndef QT_NO_DEBUG
-	for(int i = 0; i< taille;i++){
-	 qDebug() << "msg ["<<i<<"]: "<<msg[i];
-	}
+  for(int i = 0; i< taille;i++){
+   qDebug() << "msg ["<<i<<"]: "<<msg[i];
+  }
 #endif
   b_retVal = query.exec(msg[taille-1]);
  }
@@ -2369,33 +2369,33 @@ bool SyntheseGenerale::brc_MarquerDerniers(int zn, QString tb_src, QString tb_re
   int d[2]={+1,-1}; // voir BDelegateCouleurFond
 
 
-	QString sdec = QString::number(1<<(4+dec),16);
-	QString msg []={
-	 {"SELECT "+key+" from ("+tb_ref
-		+") as t1 where(t1.id = 1)"
-	 },
-	 {
-		"select t1.id,t1.b from ("+tbl_dst+") as t1,("
-		+msg[0]+") as t2 where(t2.bc=t1.b)"
-	 },
-	 {
-		"select t1.id FROM("
-		+tbl_dst
-		+")as t1,("
-		+ msg[1]
-		+") as t2 where(t1.id=t2.id+"+QString::number(d[dec])+")"
-	 },
-	 {"update " + tbl_dst
-		+ " set F=(case when f is (NULL or 0) then 0x"
-		+sdec+" else(f|0x"+sdec+") end) "
-																	 "where (id in ("+msg[2]+"))"}
-	};
+  QString sdec = QString::number(1<<(4+dec),16);
+  QString msg []={
+   {"SELECT "+key+" from ("+tb_ref
+    +") as t1 where(t1.id = 1)"
+   },
+   {
+    "select t1.id,t1.b from ("+tbl_dst+") as t1,("
+    +msg[0]+") as t2 where(t2.bc=t1.b)"
+   },
+   {
+    "select t1.id FROM("
+    +tbl_dst
+    +")as t1,("
+    + msg[1]
+    +") as t2 where(t1.id=t2.id+"+QString::number(d[dec])+")"
+   },
+   {"update " + tbl_dst
+    + " set F=(case when f is (NULL or 0) then 0x"
+    +sdec+" else(f|0x"+sdec+") end) "
+    "where (id in ("+msg[2]+"))"}
+  };
 
-	int taille = sizeof(msg)/sizeof(QString);
+  int taille = sizeof(msg)/sizeof(QString);
 #ifndef QT_NO_DEBUG
-	for(int i = 0; i< taille;i++){
-	 qDebug() << "msg ["<<i<<"]: "<<msg[i];
-	}
+  for(int i = 0; i< taille;i++){
+   qDebug() << "msg ["<<i<<"]: "<<msg[i];
+  }
 #endif
   b_retVal = query.exec(msg[taille-1]);
  }
@@ -2431,10 +2431,10 @@ QString SyntheseGenerale::getFieldsFromZone(int zn, QString alias)
 //bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poids_boules)
 #if 1
 bool SyntheseGenerale::RajouterCalculBarycentreDansAnalyses(int zn,
-																														QString tb_src ,
-																														QString tb_ana,
-																														QString tb_ref ,
-																														QString key_brc)
+                                                            QString tb_src ,
+                                                            QString tb_ana,
+                                                            QString tb_ref ,
+                                                            QString key_brc)
 {
 
  //int zn = 0;
@@ -2502,62 +2502,62 @@ bool SyntheseGenerale::RajouterCalculBarycentreDansAnalyses(int zn,
 #ifndef QT_NO_DEBUG
    qDebug() << "str_data:"<<str_data;
 #endif
-	 /// 2: Calcul du barycentre si calcul toltal de chaque boule
-	 ///  de la base complete
-	 QString tbl_totalBoule = tbl_poids_boules;
-	 if(DB_Tools::checkHavingTableAndKey(tbl_totalBoule, "T", db_0.connectionName())){
-		str_data = "Select c1.id as Id, sum(c2.t)/"
-							 +QString::number(len_zn)
-							 +" as "+key_brc+", J From ("
-							 +str_data
-							 +") as c1, ("
-							 +tbl_totalBoule
-							 +") as c2 WHERE (c1.b = c2.b) GROUP by c1.id";
+   /// 2: Calcul du barycentre si calcul toltal de chaque boule
+   ///  de la base complete
+   QString tbl_totalBoule = tbl_poids_boules;
+   if(DB_Tools::checkHavingTableAndKey(tbl_totalBoule, "T", db_0.connectionName())){
+    str_data = "Select c1.id as Id, sum(c2.t)/"
+               +QString::number(len_zn)
+               +" as "+key_brc+", J From ("
+               +str_data
+               +") as c1, ("
+               +tbl_totalBoule
+               +") as c2 WHERE (c1.b = c2.b) GROUP by c1.id";
 
 #ifndef QT_NO_DEBUG
-		qDebug() << "str_data:"<<str_data;
+    qDebug() << "str_data:"<<str_data;
 #endif
-		/// 3: Creation d'une table regroupant les barycentres
-		QString str_tblData = "";
-		QString str_tblName = "view_tmp";
-		str_tblData = "select "+key_brc+", count("+key_brc+") as T, "
-									+filterDays
-									+QString(",NULL as P, NULL as F from (")
-									+ str_data
-									+ ") as c1 group by "+key_brc+" order by T desc";
-		str_tblData = "create view if not exists "
-									+str_tblName
-									+" as "
-									+str_tblData;
+    /// 3: Creation d'une table regroupant les barycentres
+    QString str_tblData = "";
+    QString str_tblName = "view_tmp";
+    str_tblData = "select "+key_brc+", count("+key_brc+") as T, "
+                  +filterDays
+                  +QString(",NULL as P, NULL as F from (")
+                  + str_data
+                  + ") as c1 group by "+key_brc+" order by T desc";
+    str_tblData = "create view if not exists "
+                  +str_tblName
+                  +" as "
+                  +str_tblData;
 #ifndef QT_NO_DEBUG
-		qDebug() << "str_tblData:"<<str_tblData;
+    qDebug() << "str_tblData:"<<str_tblData;
 #endif
-		if((b_retVal = query.exec(str_tblData))){
-		 /// mettre dans la table analyse le barycentre de chaque tirage
-		 QString str_tblAnalyse = tb_ana;
+    if((b_retVal = query.exec(str_tblData))){
+     /// mettre dans la table analyse le barycentre de chaque tirage
+     QString str_tblAnalyse = tb_ana;
 
-		 if((b_retVal = mettreBarycentre(str_tblAnalyse, str_data))){
-			/// Supprimer table old
-			/// A verifier blocage base si select direct !!!
-			///
-			/// ------------------------------------------------
-			QString msg = "drop view if exists "+str_tblName+";";
-			b_retVal = query.exec(msg);
-		 }
-		 else{
-			;
-		 }
-		}
-	 }
-	 else{
-		/// Appeller la fonction des sommes de chaque boule
-		;
-	 }
-	}
-	else{
-	 /// On a aucune valeur pour faire les calculs
-	 ;
-	}
+     if((b_retVal = mettreBarycentre(str_tblAnalyse, str_data))){
+      /// Supprimer table old
+      /// A verifier blocage base si select direct !!!
+      ///
+      /// ------------------------------------------------
+      QString msg = "drop view if exists "+str_tblName+";";
+      b_retVal = query.exec(msg);
+     }
+     else{
+      ;
+     }
+    }
+   }
+   else{
+    /// Appeller la fonction des sommes de chaque boule
+    ;
+   }
+  }
+  else{
+   /// On a aucune valeur pour faire les calculs
+   ;
+  }
  }
 
  if(query.lastError().isValid()){
@@ -2625,59 +2625,59 @@ bool SyntheseGenerale::A4_0_CalculerBarycentre(QString tbl_dest, QString tbl_poi
 #ifndef QT_NO_DEBUG
    qDebug() << "str_data:"<<str_data;
 #endif
-	 /// 2: Calcul du barycentre si calcul toltal de chaque boule
-	 ///  de la base complete
-	 QString tbl_totalBoule = tbl_poids_boules;
-	 if(DB_Tools::checkHavingTableAndKey(tbl_totalBoule, "T", db_0.connectionName())){
-		str_data = "Select c1.id as Id, sum(c2.t)/"
-							 +QString::number(len_zn)
-							 +" as "+key_brc+", J From ("
-							 +str_data
-							 +") as c1, ("
-							 +tbl_totalBoule
-							 +") as c2 WHERE (c1.b = c2.b) GROUP by c1.id";
+   /// 2: Calcul du barycentre si calcul toltal de chaque boule
+   ///  de la base complete
+   QString tbl_totalBoule = tbl_poids_boules;
+   if(DB_Tools::checkHavingTableAndKey(tbl_totalBoule, "T", db_0.connectionName())){
+    str_data = "Select c1.id as Id, sum(c2.t)/"
+               +QString::number(len_zn)
+               +" as "+key_brc+", J From ("
+               +str_data
+               +") as c1, ("
+               +tbl_totalBoule
+               +") as c2 WHERE (c1.b = c2.b) GROUP by c1.id";
 
 #ifndef QT_NO_DEBUG
-		qDebug() << "str_data:"<<str_data;
+    qDebug() << "str_data:"<<str_data;
 #endif
-		/// 3: Creation d'une table regroupant les barycentres
-		QString str_tblData = "";
-		QString str_tblName = tbl_dest;
-		str_tblData = "select "+key_brc+", count("+key_brc+") as T, "
-									+filterDays
-									+QString(",NULL as P, NULL as F from (")
-									+ str_data
-									+ ") as c1 group by "+key_brc+" order by T desc";
-		str_tblData = "create table if not exists "
-									+str_tblName
-									+" as "
-									+str_tblData;
+    /// 3: Creation d'une table regroupant les barycentres
+    QString str_tblData = "";
+    QString str_tblName = tbl_dest;
+    str_tblData = "select "+key_brc+", count("+key_brc+") as T, "
+                  +filterDays
+                  +QString(",NULL as P, NULL as F from (")
+                  + str_data
+                  + ") as c1 group by "+key_brc+" order by T desc";
+    str_tblData = "create table if not exists "
+                  +str_tblName
+                  +" as "
+                  +str_tblData;
 #ifndef QT_NO_DEBUG
-		qDebug() << "str_tblData:"<<str_tblData;
+    qDebug() << "str_tblData:"<<str_tblData;
 #endif
-		if((b_retVal = query.exec(str_tblData))){
-		 /// mettre dans la table analyse le barycentre de chaque tirage
-		 QString str_tblAnalyse = ""+tb_ana_zn+"";
+    if((b_retVal = query.exec(str_tblData))){
+     /// mettre dans la table analyse le barycentre de chaque tirage
+     QString str_tblAnalyse = ""+tb_ana_zn+"";
 
-		 if((b_retVal = mettreBarycentre(str_tblAnalyse, str_data))){
-			/// indiquer le dernier barycentre des tirages fdj
-			//b_retVal = repereDernier(str_tblName);
-			;
-		 }
-		 else{
-			;
-		 }
-		}
-	 }
-	 else{
-		/// Appeller la fonction des sommes de chaque boule
-		;
-	 }
-	}
-	else{
-	 /// On a aucune valeur pour faire les calculs
-	 ;
-	}
+     if((b_retVal = mettreBarycentre(str_tblAnalyse, str_data))){
+      /// indiquer le dernier barycentre des tirages fdj
+      //b_retVal = repereDernier(str_tblName);
+      ;
+     }
+     else{
+      ;
+     }
+    }
+   }
+   else{
+    /// Appeller la fonction des sommes de chaque boule
+    ;
+   }
+  }
+  else{
+   /// On a aucune valeur pour faire les calculs
+   ;
+  }
  }
 
  if(query.lastError().isValid()){
@@ -2755,16 +2755,16 @@ QTableView * SyntheseGenerale::grp_TbvAnalyse(QGridLayout *grid_parent, int zn, 
    ///verifier si ce calcul existe deja dans la base
    if(DB_Tools::isDbGotTbl(tb_out,db_0.connectionName())){
 
-		/// On depile les info de construction
-		QAbstractItemModel *qtv_model = qtv_tmp->model();
-		QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel*>(qtv_model);
-		sqlqmDetails *sqm_tmp = qobject_cast<sqlqmDetails*>(m->sourceModel());
+    /// On depile les info de construction
+    QAbstractItemModel *qtv_model = qtv_tmp->model();
+    QSortFilterProxyModel *m= qobject_cast<QSortFilterProxyModel*>(qtv_model);
+    sqlqmDetails *sqm_tmp = qobject_cast<sqlqmDetails*>(m->sourceModel());
 
-		QString queryStr = sqm_tmp->query().executedQuery();
-		sqm_tmp->query().clear();
+    QString queryStr = sqm_tmp->query().executedQuery();
+    sqm_tmp->query().clear();
 
-		msg = "select * from "+tb_out+";";
-		sqm_tmp->setQuery(msg, db_0);
+    msg = "select * from "+tb_out+";";
+    sqm_tmp->setQuery(msg, db_0);
 
     return qtv_tmp;
    }
@@ -2781,84 +2781,84 @@ QTableView * SyntheseGenerale::grp_TbvAnalyse(QGridLayout *grid_parent, int zn, 
  if((b_retVal = grp_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
 
 
-	 msg = "select * from "+tb_out+";";
+  msg = "select * from "+tb_out+";";
 
-	sqlqmDetails::st_sqlmqDetailsNeeds val;
-	val.ori = this;
-	val.cnx = db_0.connectionName();
-	val.sql = msg;
-	val.wko = tb_out;
-	val.view = qtv_tmp;
+  sqlqmDetails::st_sqlmqDetailsNeeds val;
+  val.ori = this;
+  val.cnx = db_0.connectionName();
+  val.sql = msg;
+  val.wko = tb_out;
+  val.view = qtv_tmp;
 
-	sqm_tmp= new sqlqmDetails(val);
+  sqm_tmp= new sqlqmDetails(val);
 
-	sqm_tmp->setQuery(msg,db_0);
-
-
-	BDelegateCouleurFond::st_ColorNeeds a;
-	a.ori = sqm_tmp;
-	a.cnx = db_0.connectionName();
-	a.wko = tb_out;
-
-	BDelegateCouleurFond *color = new BDelegateCouleurFond(a,qtv_tmp);
-	qtv_tmp->setItemDelegate(color);
-	/// Mise en place d'un toolstips
-	qtv_tmp->setMouseTracking(true);
-	connect(qtv_tmp,
-					SIGNAL(entered(QModelIndex)),
-					color,SLOT(slot_AideToolTip(QModelIndex)));
+  sqm_tmp->setQuery(msg,db_0);
 
 
-	QSortFilterProxyModel *m=new QSortFilterProxyModel();
-	m->setDynamicSortFilter(true);
-	m->setSourceModel(sqm_tmp);
-	qtv_tmp->setModel(m);
+  BDelegateCouleurFond::st_ColorNeeds a;
+  a.ori = sqm_tmp;
+  a.cnx = db_0.connectionName();
+  a.wko = tb_out;
 
-	qtv_tmp->setSortingEnabled(true);
-	qtv_tmp->sortByColumn(BDelegateCouleurFond::Columns::TotalElement,Qt::DescendingOrder);
-
-	// Renommer le nom des colonnes
-	int nbcol = sqm_tmp->columnCount();
-	for(int i = 0; i<nbcol;i++)
-	{
-	 QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
-	 if(headName.size()>2)
-	 {
-		sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
-	 }
-	}
-
-	qtv_tmp->setAlternatingRowColors(true);
-	//qtv_tmp->setStyleSheet("QTableView {selection-background-color: rgba(100, 100, 100, 150);}");
-	qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-
-	qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
-	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	qtv_tmp->setFixedSize(475,CHauteur1);
+  BDelegateCouleurFond *color = new BDelegateCouleurFond(a,qtv_tmp);
+  qtv_tmp->setItemDelegate(color);
+  /// Mise en place d'un toolstips
+  qtv_tmp->setMouseTracking(true);
+  connect(qtv_tmp,
+          SIGNAL(entered(QModelIndex)),
+          color,SLOT(slot_AideToolTip(QModelIndex)));
 
 
-	/// Mettre toutes largeures identiques
-	qtv_tmp->verticalHeader()->hide();
-	qtv_tmp->hideColumn(0);
-	for(int j=0;j<=nbcol;j++){
-	 qtv_tmp->setColumnWidth(j,28);
-	}
+  QSortFilterProxyModel *m=new QSortFilterProxyModel();
+  m->setDynamicSortFilter(true);
+  m->setSourceModel(sqm_tmp);
+  qtv_tmp->setModel(m);
 
-	/// Autoriser adaptation pour zone ecart
-	for(int j=BDelegateCouleurFond::Columns::EcartCourant;j<=BDelegateCouleurFond::Columns::TotalElement;j++){
-	 qtv_tmp->resizeColumnToContents(j);
-	}
+  qtv_tmp->setSortingEnabled(true);
+  qtv_tmp->sortByColumn(BDelegateCouleurFond::Columns::TotalElement,Qt::DescendingOrder);
 
-	// bloquer modif par utilisateur
-	qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-	qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  // Renommer le nom des colonnes
+  int nbcol = sqm_tmp->columnCount();
+  for(int i = 0; i<nbcol;i++)
+  {
+   QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+   if(headName.size()>2)
+   {
+    sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+   }
+  }
 
-	// simple click dans fenetre  pour selectionner boule
-	connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-					this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
-	connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-					this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+  qtv_tmp->setAlternatingRowColors(true);
+  //qtv_tmp->setStyleSheet("QTableView {selection-background-color: rgba(100, 100, 100, 150);}");
+  qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+  qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_tmp->setFixedSize(475,CHauteur1);
+
+
+  /// Mettre toutes largeures identiques
+  qtv_tmp->verticalHeader()->hide();
+  qtv_tmp->hideColumn(0);
+  for(int j=0;j<=nbcol;j++){
+   qtv_tmp->setColumnWidth(j,28);
+  }
+
+  /// Autoriser adaptation pour zone ecart
+  for(int j=BDelegateCouleurFond::Columns::EcartCourant;j<=BDelegateCouleurFond::Columns::TotalElement;j++){
+   qtv_tmp->resizeColumnToContents(j);
+  }
+
+  // bloquer modif par utilisateur
+  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+  // simple click dans fenetre  pour selectionner boule
+  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+           this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+           this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
  }
 
  return qtv_tmp;
@@ -2905,84 +2905,84 @@ QTableView * SyntheseGenerale::cmb_TbvAnalyse(int zn, QString tb_src, QString tb
  if((b_retVal = cmb_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
 
 
-	QString msg = "select * from "+tb_out+";";
+  QString msg = "select * from "+tb_out+";";
 
-	sqlqmDetails::st_sqlmqDetailsNeeds val;
-	val.ori = this;
-	val.cnx = db_0.connectionName();
-	val.sql = msg;
-	val.wko = tb_out;
-	val.view = qtv_tmp;
+  sqlqmDetails::st_sqlmqDetailsNeeds val;
+  val.ori = this;
+  val.cnx = db_0.connectionName();
+  val.sql = msg;
+  val.wko = tb_out;
+  val.view = qtv_tmp;
 
-	sqlqmDetails *sqm_tmp= new sqlqmDetails(val);
+  sqlqmDetails *sqm_tmp= new sqlqmDetails(val);
 
-	sqm_tmp->setQuery(msg,db_0);
-
-
-	BDelegateCouleurFond::st_ColorNeeds a;
-	a.ori = sqm_tmp;
-	a.cnx = db_0.connectionName();
-	a.wko = tb_out;
-
-	BDelegateCouleurFond *color = new BDelegateCouleurFond(a,qtv_tmp);
-	qtv_tmp->setItemDelegate(color);
-	/// Mise en place d'un toolstips
-	qtv_tmp->setMouseTracking(true);
-	connect(qtv_tmp,
-					SIGNAL(entered(QModelIndex)),
-					color,SLOT(slot_AideToolTip(QModelIndex)));
+  sqm_tmp->setQuery(msg,db_0);
 
 
-	QSortFilterProxyModel *m=new QSortFilterProxyModel();
-	m->setDynamicSortFilter(true);
-	m->setSourceModel(sqm_tmp);
-	qtv_tmp->setModel(m);
+  BDelegateCouleurFond::st_ColorNeeds a;
+  a.ori = sqm_tmp;
+  a.cnx = db_0.connectionName();
+  a.wko = tb_out;
 
-	qtv_tmp->setSortingEnabled(true);
-	qtv_tmp->sortByColumn(BDelegateCouleurFond::Columns::TotalElement,Qt::DescendingOrder);
-
-	// Renommer le nom des colonnes
-	int nbcol = sqm_tmp->columnCount();
-	for(int i = 0; i<nbcol;i++)
-	{
-	 QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
-	 if(headName.size()>2)
-	 {
-		sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
-	 }
-	}
-
-	qtv_tmp->setAlternatingRowColors(true);
-	//qtv_tmp->setStyleSheet("QTableView {selection-background-color: rgba(100, 100, 100, 150);}");
-	qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-
-	qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
-	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	qtv_tmp->setFixedSize(475,CHauteur1);
+  BDelegateCouleurFond *color = new BDelegateCouleurFond(a,qtv_tmp);
+  qtv_tmp->setItemDelegate(color);
+  /// Mise en place d'un toolstips
+  qtv_tmp->setMouseTracking(true);
+  connect(qtv_tmp,
+          SIGNAL(entered(QModelIndex)),
+          color,SLOT(slot_AideToolTip(QModelIndex)));
 
 
-	/// Mettre toutes largeures identiques
-	qtv_tmp->verticalHeader()->hide();
-	qtv_tmp->hideColumn(0);
-	for(int j=0;j<=nbcol;j++){
-	 qtv_tmp->setColumnWidth(j,28);
-	}
+  QSortFilterProxyModel *m=new QSortFilterProxyModel();
+  m->setDynamicSortFilter(true);
+  m->setSourceModel(sqm_tmp);
+  qtv_tmp->setModel(m);
 
-	/// Autoriser adaptation pour zone ecart
-	for(int j=BDelegateCouleurFond::Columns::EcartCourant;j<=BDelegateCouleurFond::Columns::TotalElement;j++){
-	 qtv_tmp->resizeColumnToContents(j);
-	}
+  qtv_tmp->setSortingEnabled(true);
+  qtv_tmp->sortByColumn(BDelegateCouleurFond::Columns::TotalElement,Qt::DescendingOrder);
 
-	// bloquer modif par utilisateur
-	qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-	qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  // Renommer le nom des colonnes
+  int nbcol = sqm_tmp->columnCount();
+  for(int i = 0; i<nbcol;i++)
+  {
+   QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+   if(headName.size()>2)
+   {
+    sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+   }
+  }
 
-	// simple click dans fenetre  pour selectionner boule
-	connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-					this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
-	connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-					this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+  qtv_tmp->setAlternatingRowColors(true);
+  //qtv_tmp->setStyleSheet("QTableView {selection-background-color: rgba(100, 100, 100, 150);}");
+  qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+  qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_tmp->setFixedSize(475,CHauteur1);
+
+
+  /// Mettre toutes largeures identiques
+  qtv_tmp->verticalHeader()->hide();
+  qtv_tmp->hideColumn(0);
+  for(int j=0;j<=nbcol;j++){
+   qtv_tmp->setColumnWidth(j,28);
+  }
+
+  /// Autoriser adaptation pour zone ecart
+  for(int j=BDelegateCouleurFond::Columns::EcartCourant;j<=BDelegateCouleurFond::Columns::TotalElement;j++){
+   qtv_tmp->resizeColumnToContents(j);
+  }
+
+  // bloquer modif par utilisateur
+  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+  // simple click dans fenetre  pour selectionner boule
+  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+           this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+           this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
  }
 
  return qtv_tmp;
@@ -3030,85 +3030,85 @@ QTableView * SyntheseGenerale::brc_TbvAnalyse(int zn, QString tb_src, QString tb
  if((b_retVal = brc_Contruire_Tbl(zn,tb_src,tb_ref,key,tb_out))){
 
 
-	QString msg = "select * from "+tb_out+";";
+  QString msg = "select * from "+tb_out+";";
 
-	sqlqmDetails::st_sqlmqDetailsNeeds val;
-	val.ori = this;
-	val.cnx = db_0.connectionName();
-	val.sql = msg;
-	val.wko = tb_out;
-	val.view = qtv_tmp;
+  sqlqmDetails::st_sqlmqDetailsNeeds val;
+  val.ori = this;
+  val.cnx = db_0.connectionName();
+  val.sql = msg;
+  val.wko = tb_out;
+  val.view = qtv_tmp;
 
-	sqlqmDetails *sqm_tmp= new sqlqmDetails(val);
+  sqlqmDetails *sqm_tmp= new sqlqmDetails(val);
 
-	sqm_tmp->setQuery(msg,db_0);
-
-
-	BDelegateCouleurFond::st_ColorNeeds a;
-	a.ori = sqm_tmp;
-	a.cnx = db_0.connectionName();
-	a.wko = tb_out;
-
-	BDelegateCouleurFond *color = new BDelegateCouleurFond(a,qtv_tmp);
-	qtv_tmp->setItemDelegate(color);
-	/// Mise en place d'un toolstips
-	qtv_tmp->setMouseTracking(true);
-	connect(qtv_tmp,
-					SIGNAL(entered(QModelIndex)),
-					color,SLOT(slot_AideToolTip(QModelIndex)));
+  sqm_tmp->setQuery(msg,db_0);
 
 
-	QSortFilterProxyModel *m=new QSortFilterProxyModel();
-	m->setDynamicSortFilter(true);
-	m->setSourceModel(sqm_tmp);
-	qtv_tmp->setModel(m);
+  BDelegateCouleurFond::st_ColorNeeds a;
+  a.ori = sqm_tmp;
+  a.cnx = db_0.connectionName();
+  a.wko = tb_out;
 
-	qtv_tmp->setSortingEnabled(true);
-	qtv_tmp->sortByColumn(BDelegateCouleurFond::Columns::TotalElement,Qt::DescendingOrder);
-
-	// Renommer le nom des colonnes
-	int nbcol = sqm_tmp->columnCount();
-	for(int i = 0; i<nbcol;i++)
-	{
-	 QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
-	 if(headName.size()>2)
-	 {
-		sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
-	 }
-	}
-
-	qtv_tmp->setAlternatingRowColors(true);
-	//qtv_tmp->setStyleSheet("QTableView {selection-background-color: rgba(100, 100, 100, 150);}");
-	qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-
-	qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
-	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	qtv_tmp->setFixedSize(475,CHauteur1);
+  BDelegateCouleurFond *color = new BDelegateCouleurFond(a,qtv_tmp);
+  qtv_tmp->setItemDelegate(color);
+  /// Mise en place d'un toolstips
+  qtv_tmp->setMouseTracking(true);
+  connect(qtv_tmp,
+          SIGNAL(entered(QModelIndex)),
+          color,SLOT(slot_AideToolTip(QModelIndex)));
 
 
+  QSortFilterProxyModel *m=new QSortFilterProxyModel();
+  m->setDynamicSortFilter(true);
+  m->setSourceModel(sqm_tmp);
+  qtv_tmp->setModel(m);
 
-	/// Mettre toutes largeures identiques
-	qtv_tmp->verticalHeader()->hide();
-	qtv_tmp->hideColumn(0);
-	for(int j=0;j<=nbcol;j++){
-	 qtv_tmp->setColumnWidth(j,28);
-	}
+  qtv_tmp->setSortingEnabled(true);
+  qtv_tmp->sortByColumn(BDelegateCouleurFond::Columns::TotalElement,Qt::DescendingOrder);
 
-	/// Autoriser adaptation pour zone ecart
-	for(int j=BDelegateCouleurFond::Columns::EcartCourant;j<=BDelegateCouleurFond::Columns::TotalElement;j++){
-	 qtv_tmp->resizeColumnToContents(j);
-	}
+  // Renommer le nom des colonnes
+  int nbcol = sqm_tmp->columnCount();
+  for(int i = 0; i<nbcol;i++)
+  {
+   QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
+   if(headName.size()>2)
+   {
+    sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+   }
+  }
 
-	// bloquer modif par utilisateur
-	qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-	qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->setAlternatingRowColors(true);
+  //qtv_tmp->setStyleSheet("QTableView {selection-background-color: rgba(100, 100, 100, 150);}");
+  qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
-	// simple click dans fenetre  pour selectionner boule
-	connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-					this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
-	connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-					this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+  qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_tmp->setFixedSize(475,CHauteur1);
+
+
+
+  /// Mettre toutes largeures identiques
+  qtv_tmp->verticalHeader()->hide();
+  qtv_tmp->hideColumn(0);
+  for(int j=0;j<=nbcol;j++){
+   qtv_tmp->setColumnWidth(j,28);
+  }
+
+  /// Autoriser adaptation pour zone ecart
+  for(int j=BDelegateCouleurFond::Columns::EcartCourant;j<=BDelegateCouleurFond::Columns::TotalElement;j++){
+   qtv_tmp->resizeColumnToContents(j);
+  }
+
+  // bloquer modif par utilisateur
+  qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+  // simple click dans fenetre  pour selectionner boule
+  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
+           this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
+           this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
  }
 
  return qtv_tmp;
@@ -3237,10 +3237,10 @@ QTableView * SyntheseGenerale::tot_TbvAnalyse(int zn, QString tb_src, QString tb
  {
   QString headName = sqm_tmp->headerData(i,Qt::Horizontal).toString();
 
-	if(headName.size()>2)
-	{
-	 sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
-	}
+  if(headName.size()>2)
+  {
+   sqm_tmp->setHeaderData(i,Qt::Horizontal,headName.left(2));
+  }
  }
 
 
@@ -3270,7 +3270,7 @@ QTableView * SyntheseGenerale::tot_TbvAnalyse(int zn, QString tb_src, QString tb
 
  // simple click dans fenetre  pour selectionner boule
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+          this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
 
  qtv_tmp->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -3281,7 +3281,7 @@ QTableView * SyntheseGenerale::tot_TbvAnalyse(int zn, QString tb_src, QString tb
  // double click dans fenetre  pour afficher details boule
 
  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-         this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+          this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
  return qtv_tmp;
 }
@@ -3388,73 +3388,73 @@ QTableView * SyntheseGenerale::grp_TbvResume(QGridLayout *grid_parent, int znid,
                "select row_number() over(order by t1."
                +str_key
                +" DESC) as Id, "
-                 "NULL as C, "
-                 "t1."
+                "NULL as C, "
+                "t1."
                +str_key
                +", "
-                 "NULL as I, "
-                 "t1.b, "
-                 "t1.Tb, "
-                 "t1.T, "
-                 "NULL as P, "
-                 "NULL AS F FROM( "
-                 " /* D_04 */ "
-                 " SELECT row_number() over(ORDER by t1."+str_key+") as rid, "
-                         " t1."+str_key+", "
-                         " t1.b, "
-                         " count(t1.rid) as Tb, "
-                         " T FROM( "
-                         "  /* D_03 */ "
-                         "  SELECT row_number() over(order by t1."+str_key+") as rid, "
-                         "  t1."+str_key+",  "
-                         "  t1.b, "
-                         "  count (*) over ( "
-                         "   PARTITION by t1."+str_key
+                "NULL as I, "
+                "t1.b, "
+                "t1.Tb, "
+                "t1.T, "
+                "NULL as P, "
+                "NULL AS F FROM( "
+                " /* D_04 */ "
+                " SELECT row_number() over(ORDER by t1."+str_key+") as rid, "
+                                                                 " t1."+str_key+", "
+                                                                                " t1.b, "
+                                                                                " count(t1.rid) as Tb, "
+                                                                                " T FROM( "
+                                                                                "  /* D_03 */ "
+                                                                                "  SELECT row_number() over(order by t1."+str_key+") as rid, "
+                                                                                                                                  "  t1."+str_key+",  "
+                                                                                                                                                  "  t1.b, "
+                                                                                                                                                  "  count (*) over ( "
+                                                                                                                                                  "   PARTITION by t1."+str_key
                +" order by t1."+str_key
                +" RANGE BETWEEN UNBOUNDED PRECEDING and UNBOUNDED FOLLOWING "
-                 "   ) as T  "
-                 "  FROM( "
-                 "   /* D_02 */ "
-                 "   select row_number() over(order by t2."
+                "   ) as T  "
+                "  FROM( "
+                "   /* D_02 */ "
+                "   select row_number() over(order by t2."
                +str_key+") as rid,  "
-                           "   t2."
+                        "   t2."
                +str_key
                +", "
-                 "   ROW_NUMBER() OVER (PARTITION by t2."
+                "   ROW_NUMBER() OVER (PARTITION by t2."
                +str_key
                +" order by t2."
                +str_key
                +") as LID,t1.z"
                +QString::number(znid+1)
                +" as B  "
-                 "   FROM(Bnrz) as t1, "
-                 "   ( "
-                 "    /* D_01 */ "
-                 "    select t1.*,"
+                "   FROM(Bnrz) as t1, "
+                "   ( "
+                "    /* D_01 */ "
+                "    select t1.*,"
                +str_elm_zn
                +" from( "
-                 "     /* D_00 */ "
-                 "     select t1.id,  "
-                 "     t1."
+                "     /* D_00 */ "
+                "     select t1.id,  "
+                "     t1."
                +str_key
                +" from (Ana_z"
                +QString::number(znid+1)
                +") as t1 "
-                 "     /* F_00 */ "
-                 "     )as t1,  "
-                 "     (RefTirages) as t2  "
-                 "     where(t1.id=t2.id) "
-                 "    /* F_01 */) as t2  "
-                 "    where(t1.z"
+                "     /* F_00 */ "
+                "     )as t1,  "
+                "     (RefTirages) as t2  "
+                "     where(t1.id=t2.id) "
+                "    /* F_01 */) as t2  "
+                "    where(t1.z"
                +QString::number(znid+1)
                +" in ( "+str_elm_zn
                +" )) "
-                 "   /* F_02 */)as t1  "
-                 "  /* F_03 */)as t1 group by t1."
+                "   /* F_02 */)as t1  "
+                "  /* F_03 */)as t1 group by t1."
                +str_key
                +", t1.b "
-                 " /* F_04 */)as t1 "
-                 "/* F_05 */ ";
+                " /* F_04 */)as t1 "
+                "/* F_05 */ ";
 
 #ifndef QT_NO_DEBUG
  qDebug() << "msg : "<<msg;
@@ -3521,24 +3521,24 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
  QString st_requetes []={
   {
    D(0)
-    "select t1.id, t1."+st_key+" from ("+ref_ana+") as t1"
+   "select t1.id, t1."+st_key+" from ("+ref_ana+") as t1"
    F(0)
   },
   {
    D(1)
-    "select t1.*,"+ st_bzn+ " from"
-            "("
+   "select t1.*,"+ st_bzn+ " from"
+   "("
    +(st_requetes[0])+
    ")as t1, ("+tb_in+") as t2 where(t1.id=t2.id)"
    F(1)
   },
   {
    D(2)
-    "select row_number() over(order by t2.bc) as rid, t2.bc,"
-    "ROW_NUMBER() OVER (PARTITION by t2.bc order by t2.bc) as LID,"
-    "t1."+ref_key+" as B "
-             "FROM"
-             "("
+   "select row_number() over(order by t2.bc) as rid, t2.bc,"
+   "ROW_NUMBER() OVER (PARTITION by t2.bc order by t2.bc) as LID,"
+   "t1."+ref_key+" as B "
+   "FROM"
+   "("
    +ref_tbl+
    ") as t1, ("
    +st_requetes[1]
@@ -3546,86 +3546,86 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
    F(2)
   },
 
-	{
-	 D(3)
-		"SELECT row_number() over(order by t1.bc) as rid,t1.bc, t1.b,"
-		"count (*) over "
-		"(PARTITION by t1.bc order by t1.bc "
-		"RANGE BETWEEN UNBOUNDED PRECEDING and UNBOUNDED FOLLOWING) as T "
-		"FROM("
-	 +st_requetes[2]+
-	 ")as t1 "
-	 F(3)
-	},
-	{
-	 D(4)
-		"SELECT row_number() over(ORDER by t1.bc) as rid,"
-		"t1.bc,t1.b,count(t1.rid) as Tb,T "
-		"FROM("
-	 +st_requetes[3]+
-	 ")as t1 group by t1.bc, t1.b"
-	 F(4)
-	},
-#if SET_QRY_ACT1
-	{
-	 D(31)
-		"select row_number() over(order by t1.bc DESC) as id_n6,"
-		"t1.bc,NULL as I,t1.T,t1.*,"
-		"printf(\"%02d:([%03d] -> %d%%)\",t1.b,t1.Tb,((t1.tb*100)/t1.t)) as details "
-		"FROM"
-		"("
-	 +st_requetes[4]+
-	 ")as t1 ORDER by t1.bc ASC, t1.tb DESC"
-	 F(31)
-	},
-	{
-	 D(32)
-		"select row_number() over(order by t1.bc DESC) as Id,"
-		"NULL as C,"
-		"t1.bc as B,"
-		"NULL as I,"
-		"t1.T,"
-		"group_concat(t1.details, ', ') as Boules,"
-		"NULL as P,"
-		"NULL AS F "
-		"FROM("
-	 +st_requetes[5]+
-	 ")as t1 GROUP by t1.bc ORDER by t1.t DESC"
-	 F(32)
-	},
-#else
-	{
-	 D(5)
-		"select row_number() over(order by t1.bc DESC) as Id,"
-		"NULL as C,"
-		"t1.bc,"
-		"NULL as I,"
-		"t1.b,"
-		"t1.Tb,"
-		"t1.T,"
-		"NULL as P,"
-		"NULL AS F "
-		"FROM("
-	 +st_requetes[4]+
-	 ")as t1"
-	 F(5)
-	},
-#endif
-	{
-	 D(6)
-		"create table if not exists "
-	 + tb_write
-	 +" as "
-	 +st_requetes[5]+
-	 +F(6)
-	},
+  {
+   D(3)
+   "SELECT row_number() over(order by t1.bc) as rid,t1.bc, t1.b,"
+   "count (*) over "
+   "(PARTITION by t1.bc order by t1.bc "
+   "RANGE BETWEEN UNBOUNDED PRECEDING and UNBOUNDED FOLLOWING) as T "
+   "FROM("
+   +st_requetes[2]+
+   ")as t1 "
+   F(3)
+  },
+  {
+   D(4)
+   "SELECT row_number() over(ORDER by t1.bc) as rid,"
+   "t1.bc,t1.b,count(t1.rid) as Tb,T "
+   "FROM("
+   +st_requetes[3]+
+   ")as t1 group by t1.bc, t1.b"
+   F(4)
+  },
+ #if SET_QRY_ACT1
+  {
+   D(31)
+   "select row_number() over(order by t1.bc DESC) as id_n6,"
+   "t1.bc,NULL as I,t1.T,t1.*,"
+   "printf(\"%02d:([%03d] -> %d%%)\",t1.b,t1.Tb,((t1.tb*100)/t1.t)) as details "
+   "FROM"
+   "("
+   +st_requetes[4]+
+   ")as t1 ORDER by t1.bc ASC, t1.tb DESC"
+   F(31)
+  },
+  {
+   D(32)
+   "select row_number() over(order by t1.bc DESC) as Id,"
+   "NULL as C,"
+   "t1.bc as B,"
+   "NULL as I,"
+   "t1.T,"
+   "group_concat(t1.details, ', ') as Boules,"
+   "NULL as P,"
+   "NULL AS F "
+   "FROM("
+   +st_requetes[5]+
+   ")as t1 GROUP by t1.bc ORDER by t1.t DESC"
+   F(32)
+  },
+ #else
+  {
+   D(5)
+   "select row_number() over(order by t1.bc DESC) as Id,"
+   "NULL as C,"
+   "t1.bc,"
+   "NULL as I,"
+   "t1.b,"
+   "t1.Tb,"
+   "t1.T,"
+   "NULL as P,"
+   "NULL AS F "
+   "FROM("
+   +st_requetes[4]+
+   ")as t1"
+   F(5)
+  },
+ #endif
+  {
+   D(6)
+   "create table if not exists "
+   + tb_write
+   +" as "
+   +st_requetes[5]+
+   +F(6)
+  },
 
-	{
-	 D(10)
-		"select id, c, bc as B, I,T, NULL as Boules, P, F FROM "
-	 + tb_write +" as t1 GROUP by t1.bc ORDER by t1.t DESC"
-	 +F(10)
-	}
+  {
+   D(10)
+   "select id, c, bc as B, I,T, NULL as Boules, P, F FROM "
+   + tb_write +" as t1 GROUP by t1.bc ORDER by t1.t DESC"
+   +F(10)
+  }
  };
 
 
@@ -3650,17 +3650,17 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
 #ifndef QT_NO_DEBUG
    qDebug() << "st_requetes[taille-2]: "<<st_requetes[taille-2];
 #endif
-	 /// La table de base existe faire le resume
-	 if((b_retVal = query.exec(st_requetes[taille-2]))){
+   /// La table de base existe faire le resume
+   if((b_retVal = query.exec(st_requetes[taille-2]))){
 #ifndef QT_NO_DEBUG
-		qDebug() << "st_requetes[taille-1]: "<<st_requetes[taille-1];
+    qDebug() << "st_requetes[taille-1]: "<<st_requetes[taille-1];
 #endif
-		FaireResume(qtv_tmp,tb_source,tb_write,st_requetes[taille-1],tb_total, st_key);
-	 }
-	}
-	else{
-	 QMessageBox::critical(NULL,"Table",tb_source+QString(" absente\n"),QMessageBox::Ok);
-	}
+    FaireResume(qtv_tmp,tb_source,tb_write,st_requetes[taille-1],tb_total, st_key);
+   }
+  }
+  else{
+   QMessageBox::critical(NULL,"Table",tb_source+QString(" absente\n"),QMessageBox::Ok);
+  }
  }
 
  if(query.lastError().isValid()){
@@ -3668,165 +3668,165 @@ QTableView * SyntheseGenerale::brc_TbvResume(int zn, QString tb_in, QString st_k
  }
 
  return qtv_tmp;
- }
+}
 
 
- void SyntheseGenerale::FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete, QString tb_total, QString st_key)
- {
-  QSqlQuery query(db_0);
-  bool b_retVal = true;
+void SyntheseGenerale::FaireResume(QTableView * qtv_tmp, QString tb_source, QString tb_write, QString st_requete, QString tb_total, QString st_key)
+{
+ QSqlQuery query(db_0);
+ bool b_retVal = true;
 
-	/// mettre a jour la colonne C en fonction de la B
-	QString msg =  "UPDATE "
-								+tb_write
-								+" set "
-									"C=(select C FROM "
-								+tb_source
-								+" where "
-								+tb_write
-								+"."+st_key+"="
-								+tb_source+".B)";
+ /// mettre a jour la colonne C en fonction de la B
+ QString msg =  "UPDATE "
+                +tb_write
+                +" set "
+                 "C=(select C FROM "
+                +tb_source
+                +" where "
+                +tb_write
+                +"."+st_key+"="
+                +tb_source+".B)";
 #ifndef QT_NO_DEBUG
-	qDebug() << "msg: "<<msg;
+ qDebug() << "msg: "<<msg;
 #endif
 
-	if((b_retVal = query.exec(msg))){
-	 BVisuResume_sql::stBVisuResume_sql a;
-	 a.cnx = db_0.connectionName();
-	 a.tb_rsm = tb_write;
-	 a.tb_tot = tb_total;
+ if((b_retVal = query.exec(msg))){
+  BVisuResume_sql::stBVisuResume_sql a;
+  a.cnx = db_0.connectionName();
+  a.tb_rsm = tb_write;
+  a.tb_tot = tb_total;
 
-	 qtv_tmp->setObjectName(tb_write);
-	 BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
-	 sqm_tmp->setQuery(st_requete,db_0);
+  qtv_tmp->setObjectName(tb_write);
+  BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
+  sqm_tmp->setQuery(st_requete,db_0);
 
-	 QSortFilterProxyModel *m=new QSortFilterProxyModel();
-	 m->setDynamicSortFilter(true);
-	 m->setSourceModel(sqm_tmp);
-	 qtv_tmp->setModel(m);
+  QSortFilterProxyModel *m=new QSortFilterProxyModel();
+  m->setDynamicSortFilter(true);
+  m->setSourceModel(sqm_tmp);
+  qtv_tmp->setModel(m);
 
-	 //qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked);
-	 mettreEnConformiteVisuel(qtv_tmp,tb_total, st_key);
-	}
+  //qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked);
+  mettreEnConformiteVisuel(qtv_tmp,tb_total, st_key);
  }
+}
 
 
- QTableView * SyntheseGenerale::tot_TbvResume(int zn, QString tb_in)
+QTableView * SyntheseGenerale::tot_TbvResume(int zn, QString tb_in)
+{
+ QTableView * qtv_tmp = new QTableView;
+ QString tb_write = QString("r_")+tb_in + QString("_tot_rsm_z")+QString::number(zn+1);
+ QString tb_source = QString("r_")+tb_in + QString("_tot_z")+QString::number(zn+1);
+
+ QSqlQuery query(db_0);
+ QSqlQueryModel a;
+ bool b_retVal = true;
+ QString msg[]={
+  {"SELECT name FROM sqlite_master "
+   "WHERE type='table' AND name='"+tb_source+"';"},
+  {"create table if not exists "
+   + tb_write
+   +" as "
+   "select "
+   "row_number() over(order by t1.C DESC) as Id,"
+   "t1.C as C,"
+   " row_number() over(order by t1.C DESC) as B,"
+   "  NULL as I,"
+   " count(t1.C) as T,"
+   " group_concat(t1.B, ', ') as Boules "
+   " from ("+tb_source+") as t1 GROUP by t1.C order by t1.C DESC"
+  },
+  {"select * from " + tb_write}
+ };
+
+
+ if((b_retVal = query.exec(msg[0])))
  {
-  QTableView * qtv_tmp = new QTableView;
-  QString tb_write = QString("r_")+tb_in + QString("_tot_rsm_z")+QString::number(zn+1);
-  QString tb_source = QString("r_")+tb_in + QString("_tot_z")+QString::number(zn+1);
+  query.first();
+  if(query.isValid())
+  {
+   /// La table existe faire le resume
+   if((b_retVal = query.exec(msg[1]))){
+    BVisuResume_sql::stBVisuResume_sql a;
+    a.cnx = db_0.connectionName();
+    a.tb_rsm =tb_write;
+    a.tb_tot = tb_source;
+    qtv_tmp->setObjectName(tb_write);
+    BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
+    sqm_tmp->setQuery(msg[2],db_0);
 
-	QSqlQuery query(db_0);
-	QSqlQueryModel a;
-	bool b_retVal = true;
-	QString msg[]={
-	 {"SELECT name FROM sqlite_master "
-		"WHERE type='table' AND name='"+tb_source+"';"},
-	 {"create table if not exists "
-		+ tb_write
-		+" as "
-			"select "
-			"row_number() over(order by t1.C DESC) as Id,"
-			"t1.C as C,"
-			" row_number() over(order by t1.C DESC) as B,"
-			"  NULL as I,"
-			" count(t1.C) as T,"
-			" group_concat(t1.B, ', ') as Boules "
-			" from ("+tb_source+") as t1 GROUP by t1.C order by t1.C DESC"
-	 },
-	 {"select * from " + tb_write}
-	};
+    QSortFilterProxyModel *m=new QSortFilterProxyModel();
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(sqm_tmp);
 
-
-	if((b_retVal = query.exec(msg[0])))
-	{
-	 query.first();
-	 if(query.isValid())
-	 {
-		/// La table existe faire le resume
-		if((b_retVal = query.exec(msg[1]))){
-		 BVisuResume_sql::stBVisuResume_sql a;
-		 a.cnx = db_0.connectionName();
-		 a.tb_rsm =tb_write;
-		 a.tb_tot = tb_source;
-		 qtv_tmp->setObjectName(tb_write);
-		 BVisuResume_sql *sqm_tmp = new BVisuResume_sql(a);
-		 sqm_tmp->setQuery(msg[2],db_0);
-
-		 QSortFilterProxyModel *m=new QSortFilterProxyModel();
-		 m->setDynamicSortFilter(true);
-		 m->setSourceModel(sqm_tmp);
-
-		 qtv_tmp->setModel(m);
-		 mettreEnConformiteVisuel(qtv_tmp, tb_source, "B");
-		}
-	 }
-	 else{
-		QMessageBox::critical(NULL,"Table",tb_source+QString(" absente\n"),QMessageBox::Ok);
-	 }
-	}
-
-	if(query.lastError().isValid()){
-	 DB_Tools::DisplayError("SyntheseGenerale::",&query," ResumeTbvAnalyseBoules ");
-	}
-
-  return qtv_tmp;
+    qtv_tmp->setModel(m);
+    mettreEnConformiteVisuel(qtv_tmp, tb_source, "B");
+   }
+  }
+  else{
+   QMessageBox::critical(NULL,"Table",tb_source+QString(" absente\n"),QMessageBox::Ok);
+  }
  }
 
- void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_total, QString st_key)
- {
-  QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(qtv_tmp->model()) ;
-  BVisuResume_sql *sqm_tmp = qobject_cast<BVisuResume_sql*>(m->sourceModel());
-
-	BVisuResume::prmBVisuResume a;
-	a.cnx = db_0.connectionName();
-	a.tb_rsm = qtv_tmp->objectName();
-	a.tb_tot = tb_total;
-	a.st_key = st_key;
-	/// TBD comment remonter le nom de la table cree
-	/// BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
-	a.tb_cld = "pCouleurs_65";
-
-	qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
-	BVisuResume *color = new BVisuResume(a,qtv_tmp);
-	qtv_tmp->setItemDelegate(color);
-
-
-	/// Mise en place d'un toolstips
-	qtv_tmp->setMouseTracking(true);
-	connect(qtv_tmp,
-					SIGNAL(entered(QModelIndex)),
-					color,SLOT(slot_AideToolTip(QModelIndex)));
-
-
-	qtv_tmp->horizontalHeader()->setStretchLastSection(true);
-	qtv_tmp->setSortingEnabled(true);
-
-	qtv_tmp->sortByColumn(COL_VISU_RESUME -1,Qt::DescendingOrder);
-	qtv_tmp->setAlternatingRowColors(true);
-
-	qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
-	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-	qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
-
-	qtv_tmp->verticalHeader()->hide();
-	qtv_tmp->hideColumn(0);
-	//qtv_tmp->hideColumn(1);
-	int nb_col = sqm_tmp->columnCount();
-	for(int i = 0; i<= COL_VISU_RESUME+2;i++){
-	 qtv_tmp->setColumnWidth(i,28);
-	}
-	qtv_tmp->setColumnWidth(COL_VISU_COMBO,200);
-	qtv_tmp->resizeRowsToContents();
-	qtv_tmp->resizeColumnToContents(4);
-	qtv_tmp->setFixedWidth((nb_col*LCELL)+200);
-	// Ne pas modifier largeur des colonnes
-	qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-	//qtv_tmp->horizontalHeader()->setSectionResizeMode(nb_col-1,QHeaderView::ResizeToContents);
-	//qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
+ if(query.lastError().isValid()){
+  DB_Tools::DisplayError("SyntheseGenerale::",&query," ResumeTbvAnalyseBoules ");
  }
+
+ return qtv_tmp;
+}
+
+void SyntheseGenerale::mettreEnConformiteVisuel(QTableView *qtv_tmp, QString tb_total, QString st_key)
+{
+ QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *>(qtv_tmp->model()) ;
+ BVisuResume_sql *sqm_tmp = qobject_cast<BVisuResume_sql*>(m->sourceModel());
+
+ BVisuResume::prmBVisuResume a;
+ a.cnx = db_0.connectionName();
+ a.tb_rsm = qtv_tmp->objectName();
+ a.tb_tot = tb_total;
+ a.st_key = st_key;
+ /// TBD comment remonter le nom de la table cree
+ /// BDelegateCouleurFond::SauverTableauPriotiteCouleurs()
+ a.tb_cld = "pCouleurs_65";
+
+ qtv_tmp->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::SelectedClicked);
+ BVisuResume *color = new BVisuResume(a,qtv_tmp);
+ qtv_tmp->setItemDelegate(color);
+
+
+ /// Mise en place d'un toolstips
+ qtv_tmp->setMouseTracking(true);
+ connect(qtv_tmp,
+         SIGNAL(entered(QModelIndex)),
+         color,SLOT(slot_AideToolTip(QModelIndex)));
+
+
+ qtv_tmp->horizontalHeader()->setStretchLastSection(true);
+ qtv_tmp->setSortingEnabled(true);
+
+ qtv_tmp->sortByColumn(COL_VISU_RESUME -1,Qt::DescendingOrder);
+ qtv_tmp->setAlternatingRowColors(true);
+
+ qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+
+ qtv_tmp->verticalHeader()->hide();
+ qtv_tmp->hideColumn(0);
+ //qtv_tmp->hideColumn(1);
+ int nb_col = sqm_tmp->columnCount();
+ for(int i = 0; i<= COL_VISU_RESUME+2;i++){
+  qtv_tmp->setColumnWidth(i,28);
+ }
+ qtv_tmp->setColumnWidth(COL_VISU_COMBO,200);
+ qtv_tmp->resizeRowsToContents();
+ qtv_tmp->resizeColumnToContents(4);
+ qtv_tmp->setFixedWidth((nb_col*LCELL)+200);
+ // Ne pas modifier largeur des colonnes
+ qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ //qtv_tmp->horizontalHeader()->setSectionResizeMode(nb_col-1,QHeaderView::ResizeToContents);
+ //qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+}
 
 #if TRY_CODE_NEW
 #else
@@ -4033,7 +4033,7 @@ QGridLayout * SyntheseGenerale::MonLayout_R1_tot_z2(prmLay prm)
 
  // double click dans fenetre  pour afficher details boule
  connect( tbv_bloc1_2, SIGNAL(doubleClicked(QModelIndex)) ,
-         this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+          this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
  return lay_return;
 
@@ -4068,33 +4068,33 @@ QGridLayout * SyntheseGenerale::MonLayout_R2_cmb_z1(prmLay prm)
  int loop = pMaConf->nbElmZone[1];
  st_cr1 =  "tb1.id=tb2.pid";
  QString st_msg1 =
-  "select tb1.id as Id, tb1.tip as Repartition, count(tb2.id) as T, "
-  + *st_JourTirageDef +
-  " "
-  "from  "
-  "("
-  "select id,tip from Ref_cmb_z1"
-  ") as tb1 "
-  "left join "
-  "("
-  "select tb2.* from "
-  "("
-  +st_baseUse+
-  " )as tb1"
-  ","
-  "("
-  +st_baseUse+
-  ")as tb2 "
-  "where"
-  "("
-  "tb2.id=tb1.id+"
-  +QString::number(dst) +
-  ")"
-  ") as tb2 "
-  "on "
-  "("
-  +st_cr1+
-  ") group by tb1.id;";
+   "select tb1.id as Id, tb1.tip as Repartition, count(tb2.id) as T, "
+   + *st_JourTirageDef +
+   " "
+   "from  "
+   "("
+   "select id,tip from Ref_cmb_z1"
+   ") as tb1 "
+   "left join "
+   "("
+   "select tb2.* from "
+   "("
+   +st_baseUse+
+   " )as tb1"
+   ","
+   "("
+   +st_baseUse+
+   ")as tb2 "
+   "where"
+   "("
+   "tb2.id=tb1.id+"
+   +QString::number(dst) +
+   ")"
+   ") as tb2 "
+   "on "
+   "("
+   +st_cr1+
+   ") group by tb1.id;";
 
 #ifndef QT_NO_DEBUG
  qDebug()<< st_msg1;
@@ -4182,19 +4182,19 @@ QGridLayout * SyntheseGenerale::MonLayout_R2_cmb_z1(prmLay prm)
   int value = selection.value(1).toInt();
   //tv_r1->setItemDelegate(new MaQtvDelegation(NULL,value-1,1));
 
-	QAbstractItemModel *mon_model = qtv_tmp->model();
-	//QStandardItemModel *dest= (QStandardItemModel*) mon_model;
-	QModelIndex mdi_item1 = mon_model->index(0,0);
+  QAbstractItemModel *mon_model = qtv_tmp->model();
+  //QStandardItemModel *dest= (QStandardItemModel*) mon_model;
+  QModelIndex mdi_item1 = mon_model->index(0,0);
 
-	if (mdi_item1.isValid()){
-	 //mdi_item1 = mdi_item1.model()->index(value-1,1);
-	 mdi_item1 = mon_model->index(value-1,1);
-	 QPersistentModelIndex depart(mdi_item1);
+  if (mdi_item1.isValid()){
+   //mdi_item1 = mdi_item1.model()->index(value-1,1);
+   mdi_item1 = mon_model->index(value-1,1);
+   QPersistentModelIndex depart(mdi_item1);
 
-	 qtv_tmp->selectionModel()->setCurrentIndex(mdi_item1, QItemSelectionModel::NoUpdate);
-	 qtv_tmp->scrollTo(mdi_item1);
-	 qtv_tmp->setItemDelegate(new MaQtvDelegation(depart));
-	}
+   qtv_tmp->selectionModel()->setCurrentIndex(mdi_item1, QItemSelectionModel::NoUpdate);
+   qtv_tmp->scrollTo(mdi_item1);
+   qtv_tmp->setItemDelegate(new MaQtvDelegation(depart));
+  }
  }
 
 
@@ -4204,13 +4204,13 @@ QGridLayout * SyntheseGenerale::MonLayout_R2_cmb_z1(prmLay prm)
           this, SLOT(slot_Select_C( QModelIndex) ) );
 #endif
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+          this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
 
 
  // double click dans fenetre  pour afficher details boule
  connect( tbv_bloc1_3, SIGNAL(doubleClicked(QModelIndex)) ,
-         this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+          this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
  return lay_return;
 }
@@ -4272,11 +4272,11 @@ QGridLayout * SyntheseGenerale::MonLayout_SyntheseTotalGroupement(int fake)
 
  // simple click dans fenetre  pour selectionner boule
  connect( tbv_bloc2, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(slot_Select_G( QModelIndex) ) );
+          this, SLOT(slot_Select_G( QModelIndex) ) );
 
  // double click dans fenetre  pour afficher details boule
  connect( tbv_bloc2, SIGNAL(doubleClicked(QModelIndex)) ,
-         this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+          this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
  return (lay_return);
 
@@ -4318,55 +4318,55 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(prmLay prm)
   tmpStdItem =  new QStandardItemModel(nbLgn,nbCol);
   qtv_tmp->setModel(tmpStdItem);
 
-	QStringList tmp=maRef[zone][1];
-	tmp.insert(0,"Nb");
-	tmpStdItem->setHorizontalHeaderLabels(tmp);
+  QStringList tmp=maRef[zone][1];
+  tmp.insert(0,"Nb");
+  tmpStdItem->setHorizontalHeaderLabels(tmp);
 
-	QStringList tooltips=maRef[zone][2];
-	tooltips.insert(0,"Total");
-	for(int pos=0;pos <=nbCol;pos++)
-	{
-	 QStandardItem *item = tmpStdItem->horizontalHeaderItem(pos);
-	 item->setToolTip(tooltips.at(pos));
-	}
+  QStringList tooltips=maRef[zone][2];
+  tooltips.insert(0,"Total");
+  for(int pos=0;pos <=nbCol;pos++)
+  {
+   QStandardItem *item = tmpStdItem->horizontalHeaderItem(pos);
+   item->setToolTip(tooltips.at(pos));
+  }
 
-	for(int lgn=0;lgn<nbLgn;lgn++)
-	{
-	 for(int pos=0;pos <=nbCol;pos++)
-	 {
-		QStandardItem *item = new QStandardItem();
+  for(int lgn=0;lgn<nbLgn;lgn++)
+  {
+   for(int pos=0;pos <=nbCol;pos++)
+   {
+    QStandardItem *item = new QStandardItem();
 
-		if(pos == 0){
-		 item->setData(lgn,Qt::DisplayRole);
-		}
-		tmpStdItem->setItem(lgn,pos,item);
-		qtv_tmp->setColumnWidth(pos,LCELL);
-	 }
-	}
-	// Gestion du QTableView
-	qtv_tmp->setSelectionMode(QAbstractItemView::MultiSelection);
-	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-	qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
+    if(pos == 0){
+     item->setData(lgn,Qt::DisplayRole);
+    }
+    tmpStdItem->setItem(lgn,pos,item);
+    qtv_tmp->setColumnWidth(pos,LCELL);
+   }
+  }
+  // Gestion du QTableView
+  qtv_tmp->setSelectionMode(QAbstractItemView::MultiSelection);
+  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+  qtv_tmp->setStyleSheet("QTableView {selection-background-color: #939BFF;}");
 
-	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	qtv_tmp->setAlternatingRowColors(true);
-	qtv_tmp->setFixedSize(CLargeur1*1.8,CHauteur1);
+  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_tmp->setAlternatingRowColors(true);
+  qtv_tmp->setFixedSize(CLargeur1*1.8,CHauteur1);
 
-	qtv_tmp->setSortingEnabled(true);
-	qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
-	qtv_tmp->verticalHeader()->hide();
+  qtv_tmp->setSortingEnabled(true);
+  qtv_tmp->sortByColumn(0,Qt::AscendingOrder);
+  qtv_tmp->verticalHeader()->hide();
 
-	QHeaderView *htop = qtv_tmp->horizontalHeader();
-	htop->setSectionResizeMode(QHeaderView::ResizeToContents);
-	qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  QHeaderView *htop = qtv_tmp->horizontalHeader();
+  htop->setSectionResizeMode(QHeaderView::ResizeToContents);
+  qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
 
-	QVBoxLayout *vb_tmp = new QVBoxLayout;
-	QLabel * lab_tmp = new QLabel;
-	lab_tmp->setText("Type Regroupement");
-	vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-	vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
-	lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
+  QVBoxLayout *vb_tmp = new QVBoxLayout;
+  QLabel * lab_tmp = new QLabel;
+  lab_tmp->setText("Type Regroupement");
+  vb_tmp->addWidget(lab_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+  vb_tmp->addWidget(qtv_tmp,0,Qt::AlignLeft|Qt::AlignTop);
+  lay_return->addLayout(vb_tmp,0,0,Qt::AlignLeft|Qt::AlignTop);
  }
  else
  {
@@ -4385,22 +4385,22 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(prmLay prm)
   qDebug() << sqlReq;
 #endif
 
-	status = query.exec(sqlReq);
+  status = query.exec(sqlReq);
 
-	// Mise a jour de la tables des resultats
-	if(status)
-	{
-	 query.first();
-	 do
-	 {
-		int nb = query.value(0).toInt();
-		int tot = query.value(1).toInt();
+  // Mise a jour de la tables des resultats
+  if(status)
+  {
+   query.first();
+   do
+   {
+    int nb = query.value(0).toInt();
+    int tot = query.value(1).toInt();
 
-		QStandardItem * item_1 = tmpStdItem->item(nb,i+1);
-		item_1->setData(tot,Qt::DisplayRole);
-		tmpStdItem->setItem(nb,i+1,item_1);
-	 }while(query.next() && status);
-	}
+    QStandardItem * item_1 = tmpStdItem->item(nb,i+1);
+    item_1->setData(tot,Qt::DisplayRole);
+    tmpStdItem->setItem(nb,i+1,item_1);
+   }while(query.next() && status);
+  }
  }
 
  // simple click dans fenetre  pour selectionner boule
@@ -4411,11 +4411,11 @@ QGridLayout * SyntheseGenerale::MonLayout_R3_grp_z1(prmLay prm)
 
 
  connect( qtv_tmp, SIGNAL(clicked(QModelIndex)) ,
-         this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
+          this, SLOT(slot_ClicDeSelectionTableau( QModelIndex) ) );
 
  // double click dans fenetre  pour afficher details boule
  connect( qtv_tmp, SIGNAL(doubleClicked(QModelIndex)) ,
-         this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
+          this, SLOT(slot_MontreLesTirages( QModelIndex) ) );
 
 
  return (lay_return);
@@ -4478,16 +4478,16 @@ void SyntheseGenerale::slot_ccmr_tbForBaseEcart(QPoint pos)
  {
   QString tbl = view->objectName();
 
-	int val = 0;
-	if(index.model()->index(index.row(),1).data().canConvert(QMetaType::Int))
-	{
-	 val =  index.model()->index(index.row(),1).data().toInt();
-	}
+  int val = 0;
+  if(index.model()->index(index.row(),1).data().canConvert(QMetaType::Int))
+  {
+   val =  index.model()->index(index.row(),1).data().toInt();
+  }
 
-	QMenu *MonMenu = new QMenu(pEcran);
-	QMenu *subMenu= ContruireMenu(tbl,val);
-	MonMenu->addMenu(subMenu);
-	CompleteMenu(MonMenu, tbl, val);
+  QMenu *MonMenu = new QMenu(pEcran);
+  QMenu *subMenu= ContruireMenu(tbl,val);
+  MonMenu->addMenu(subMenu);
+  CompleteMenu(MonMenu, tbl, val);
 
 
   MonMenu->exec(view->viewport()->mapToGlobal(pos));
@@ -4620,8 +4620,8 @@ void SyntheseGenerale::slot_ChoosePriority(QAction *cmd)
  {
   trv = false;
 #ifndef QT_NO_DEBUG
-	qDebug() << "select: " <<def[3]<<"->"<< query.lastError();
-	qDebug() << "Bad code:\n"<<msg<<"\n-------";
+  qDebug() << "select: " <<def[3]<<"->"<< query.lastError();
+  qDebug() << "Bad code:\n"<<msg<<"\n-------";
 #endif
  }
  else
@@ -4659,7 +4659,7 @@ QStringList * noClass_CreateFilterForData(int zn, stTiragesDef *pConf)
  for(int j=0;j<nbBoules;j++)
  {
   sl_filter[0]<< fields+" >="+QString::number(10*j)+
-                   " and "+fields+"<="+QString::number((10*j)+9);
+                 " and "+fields+"<="+QString::number((10*j)+9);
   sl_filter[1] << "U"+ QString::number(j);
   sl_filter[2] << "Entre : "+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
  }
@@ -4791,11 +4791,11 @@ int  SyntheseGenerale::grp_getPathToView(QTableView *view, QList < QTabWidget *>
   int tot = tmp2->count();
   tmp2->setCurrentIndex(tot-1);
 
-	/// Enfin trouver le Tableview
-	for (int loop=0;loop<2;loop++) {
-	 QString r3 = "nop_"+QString::number(loop)+"_grp_z"+QString::number(zn);
-	 QGridLayout *grid_tmp = tmp2->findChild<QGridLayout *>(r3);
-	 *(sel_view+loop) = grid_tmp;
+  /// Enfin trouver le Tableview
+  for (int loop=0;loop<2;loop++) {
+   QString r3 = "nop_"+QString::number(loop)+"_grp_z"+QString::number(zn);
+   QGridLayout *grid_tmp = tmp2->findChild<QGridLayout *>(r3);
+   *(sel_view+loop) = grid_tmp;
 
   }
  }
@@ -4851,9 +4851,9 @@ int * SyntheseGenerale::getPathToView(QTableView *view, QList < QTabWidget *> **
  if(tmp_tab != NULL){
   tmp_tab->setCurrentIndex(0);
 
-	// Chercher le Tbv pour messages
-	QString tbv_sel = QString("InfoSel_z")+QString::number(path[0]+1);
-	*sel_view = tmp_tab->findChild<QTableView*>(tbv_sel);
+  // Chercher le Tbv pour messages
+  QString tbv_sel = QString("InfoSel_z")+QString::number(path[0]+1);
+  *sel_view = tmp_tab->findChild<QTableView*>(tbv_sel);
  }
 
  return path;
@@ -4888,22 +4888,22 @@ bool SyntheseGenerale::SimplifieSelection(QTableView *view)
  /// si le choix utilisateur < col T et > nbJour deselectionner element
  int cur_col = indexes.last().column();
  if((cur_col < BDelegateCouleurFond::Columns::TotalElement)
-     ||
-     (cur_col > BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+    ||
+    (cur_col > BDelegateCouleurFond::Columns::TotalElement+nbJ)){
   //selectionModel->select(indexes.last(), QItemSelectionModel::Deselect | QItemSelectionModel::Current);
   //selectionModel->clearCurrentIndex();
 
-	// deselectionner l'element
-	selectionModel->select(indexes.last(), QItemSelectionModel::Deselect);
-	const QModelIndex fake_index;
-	selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
-	//return;
+  // deselectionner l'element
+  selectionModel->select(indexes.last(), QItemSelectionModel::Deselect);
+  const QModelIndex fake_index;
+  selectionModel->setCurrentIndex(fake_index, QItemSelectionModel::Select);
+  //return;
  }
 
  /// Selection sur jour
  if((cur_col > BDelegateCouleurFond::Columns::TotalElement)
-     &&
-     (cur_col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+    &&
+    (cur_col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
   // Verifier si Total deja selectionne
   QModelIndex key = indexes.last().sibling(indexes.last().row(),BDelegateCouleurFond::Columns::TotalElement);
   if(indexes.contains(key)){
@@ -4946,29 +4946,29 @@ void SyntheseGenerale::slot_ClicDeSelectionTableau(const QModelIndex &index)
   /// la liste est vide mettre la liste de track a vide
   QList <QPair<int,stSelInfo*>*> *a = &qlSel[path[0]][path[1]];
 
-	/// Effacer la selection precedente
-	int nb_selLines = a->size();
-	if(nb_selLines){
-	 /// liberer la memoire occupee par p
-	 qDeleteAll(a->begin(), a->end());
+  /// Effacer la selection precedente
+  int nb_selLines = a->size();
+  if(nb_selLines){
+   /// liberer la memoire occupee par p
+   qDeleteAll(a->begin(), a->end());
 
-	 /// puis detacher de la liste
-	 a->clear();
-	}
+   /// puis detacher de la liste
+   a->clear();
+  }
 
-	/// Mettre a jour le champ info
-	if(ptrSel){
-	 /// ecrire s_info
-	 QString s_info = "";
-	 QStandardItemModel *sqm_tmp = qobject_cast<QStandardItemModel *>(ptrSel->model());
-	 QStandardItem *cell = sqm_tmp->item(0,path[1]);
+  /// Mettre a jour le champ info
+  if(ptrSel){
+   /// ecrire s_info
+   QString s_info = "";
+   QStandardItemModel *sqm_tmp = qobject_cast<QStandardItemModel *>(ptrSel->model());
+   QStandardItem *cell = sqm_tmp->item(0,path[1]);
 
-	 cell->setData(s_info,Qt::DisplayRole);
-	 cell->setBackground(QBrush(Qt::white));
-	 sqm_tmp->setItem(0,path[1],cell);
-	 ptrSel->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-	}
-	return;
+   cell->setData(s_info,Qt::DisplayRole);
+   cell->setBackground(QBrush(Qt::white));
+   sqm_tmp->setItem(0,path[1],cell);
+   ptrSel->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  }
+  return;
  }
 
  /// ------------------
@@ -4987,43 +4987,43 @@ QString SyntheseGenerale::CreatreTitle(stCurDemande *pConf)
 
   QStandardItemModel *sqm_tmp = qobject_cast<QStandardItemModel *>(tbInfo[i].at(0)->model());
 
-	if(!id_tab_tmp[i]->size()){
-	 continue;
-	}
+  if(!id_tab_tmp[i]->size()){
+   continue;
+  }
 
-	QString znName = id_tab_tmp[i]->at(0)->tabText(i).leftRef(1).toString();
+  QString znName = id_tab_tmp[i]->at(0)->tabText(i).leftRef(1).toString();
 
-	int nbCalc = id_tab_tmp[i]->at(1)->count();
-	for(int j=0;j<nbCalc;j++){
-	 QString msg = "";
-	 QStandardItem *cell = sqm_tmp->item(0,j);
+  int nbCalc = id_tab_tmp[i]->at(1)->count();
+  for(int j=0;j<nbCalc;j++){
+   QString msg = "";
+   QStandardItem *cell = sqm_tmp->item(0,j);
 
-	 QVariant vCol = sqm_tmp->headerData(j,Qt::Horizontal);
-	 QString  headName =  vCol.toString();
+   QVariant vCol = sqm_tmp->headerData(j,Qt::Horizontal);
+   QString  headName =  vCol.toString();
 
 
-	 if(cell->data(Qt::DisplayRole).isValid()){
-		msg = cell->data(Qt::DisplayRole).toString().trimmed();
+   if(cell->data(Qt::DisplayRole).isValid()){
+    msg = cell->data(Qt::DisplayRole).toString().trimmed();
 
-		if(msg.size()){
-		 msg=  QString("(")+msg+ QString(")");
-		}
-	 }
+    if(msg.size()){
+     msg=  QString("(")+msg+ QString(")");
+    }
+   }
 
-	 if(msg.size()){
-		if(titre.size()){
-		 titre = titre + ", ";
-		}
-		titre = titre + headName + msg;
-	 }
-	}
+   if(msg.size()){
+    if(titre.size()){
+     titre = titre + ", ";
+    }
+    titre = titre + headName + msg;
+   }
+  }
 
-	if(titre.size()){
-	 if(retTitre.size()){
-		retTitre = retTitre + ";";
-	 }
-	 retTitre = retTitre + znName+QString(":")+titre;
-	}
+  if(titre.size()){
+   if(retTitre.size()){
+    retTitre = retTitre + ";";
+   }
+   retTitre = retTitre + znName+QString(":")+titre;
+  }
  }
 
  return retTitre;
@@ -5126,25 +5126,25 @@ QString SyntheseGenerale::TrouverTirages(int col, QString str_nb, QString st_tir
 {
  QString st_tmp =  ActionElmZone("=","or",zn,pConf);
  QString st_return =
-  "select tb1.*, count(tb2.B) as N"+QString::number(col)+ " "+
-  "from (" + st_tirages.remove(";")+
-  ") as tb1 "
-  "left join "
-  "("
-  "select id as B from Bnrz where (z"+QString::number(zn+1)+
-  " not NULL  and ("+st_cri+")) ) as tb2 " +
-  "on "+
-  "("
-  +st_tmp+
-  ") group by tb1.id";
+   "select tb1.*, count(tb2.B) as N"+QString::number(col)+ " "+
+   "from (" + st_tirages.remove(";")+
+   ") as tb1 "
+   "left join "
+   "("
+   "select id as B from Bnrz where (z"+QString::number(zn+1)+
+   " not NULL  and ("+st_cri+")) ) as tb2 " +
+   "on "+
+   "("
+   +st_tmp+
+   ") group by tb1.id";
 
 #ifndef QT_NO_DEBUG
  qDebug() << st_return;
 #endif
  st_return ="select * from("+
-             st_return+
-             ")as tb1 where(tb1.N"+QString::number(col)+ " in "+
-             str_nb+");";
+            st_return+
+            ")as tb1 where(tb1.N"+QString::number(col)+ " in "+
+            str_nb+");";
 
 #ifndef QT_NO_DEBUG
  qDebug() << st_return;
@@ -5225,9 +5225,9 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 #endif
 
 QString SyntheseGenerale::ChercherSelection(int zn,
-																						QModelIndexList sel_wko,
-																						QTableView * tbv_wko,
-																						QString tb_src)
+                                            QModelIndexList sel_wko,
+                                            QTableView * tbv_wko,
+                                            QString tb_src)
 {
  QString msg = "";
  QSortFilterProxyModel *m = qobject_cast<QSortFilterProxyModel *> (tbv_wko->model());
@@ -5243,24 +5243,24 @@ QString SyntheseGenerale::ChercherSelection(int zn,
   int col = un_index.column();
   /// Dans l'interval de traitement ?
   if(col <BDelegateCouleurFond::Columns::TotalElement
-      ||
-      col > last_pos)
+     ||
+     col > last_pos)
   {
    continue;
   }
 
-	if(col > BDelegateCouleurFond::Columns::TotalElement){
-	 const QAbstractItemModel * pModel = un_index.model();
-	 QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-	 QString headName = vCol.toString();
-	 sel_days << headName;
+  if(col > BDelegateCouleurFond::Columns::TotalElement){
+   const QAbstractItemModel * pModel = un_index.model();
+   QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+   QString headName = vCol.toString();
+   sel_days << headName;
 
-	}
+  }
 
-	int val_key =un_index.sibling(
-												 un_index.row(),
-												 BDelegateCouleurFond::Columns::vEcart).data().toInt();
-	selection << val_key;
+  int val_key =un_index.sibling(
+                un_index.row(),
+                BDelegateCouleurFond::Columns::vEcart).data().toInt();
+  selection << val_key;
 
  }
  // selection sur cette table terminee
@@ -5357,41 +5357,41 @@ void SyntheseGenerale::saveSelection(int zn, int calc, QTableView *view, QTableV
   /// liberer la memoire occupee par p
   qDeleteAll(a->begin(), a->end());
 
-	/// puis detacher de la liste
-	a->clear();
+  /// puis detacher de la liste
+  a->clear();
  }
 
  foreach(un_index, indexes){
   int cur_key = ((un_index.sibling(un_index.row(),BDelegateCouleurFond::Columns::vEcart)).data()).toInt();
   QPair<int,stSelInfo *> *p = NULL;
 
-	/// Parcourir existant et rajout si necessaire
-	bool isPresent = false;
-	for(int pos=0; pos< a->size(); pos++){
-	 p=a->at(pos);
-	 if(p->first==cur_key){
-		isPresent = true;
-		p->second->lstSel->append(un_index);
-		break;
-	 }
-	}
+  /// Parcourir existant et rajout si necessaire
+  bool isPresent = false;
+  for(int pos=0; pos< a->size(); pos++){
+   p=a->at(pos);
+   if(p->first==cur_key){
+    isPresent = true;
+    p->second->lstSel->append(un_index);
+    break;
+   }
+  }
 
-	if(isPresent == false){
-	 p = new QPair<int,stSelInfo *>;
-	 stSelInfo *info = new stSelInfo;
-	 QModelIndexList *sel = new QModelIndexList;
+  if(isPresent == false){
+   p = new QPair<int,stSelInfo *>;
+   stSelInfo *info = new stSelInfo;
+   QModelIndexList *sel = new QModelIndexList;
 
-	 /// config
-	 sel->append(un_index);
-	 info->qtv = view;
-	 info->lstSel = sel;
+   /// config
+   sel->append(un_index);
+   info->qtv = view;
+   info->lstSel = sel;
 
-	 p->first = cur_key;
-	 p->second = info;
+   p->first = cur_key;
+   p->second = info;
 
-	 /// rajout
-	 a->append(p);
-	}
+   /// rajout
+   a->append(p);
+  }
 
  }
 
@@ -5419,44 +5419,44 @@ void SyntheseGenerale::mettreInfoSelection(int calc,QList <QPair<int,stSelInfo*>
    QModelIndex scan;
    QString headName = "";
 
-	 int b = item->first;
-	 //s_info = s_info+QString("(")+ QString::number(b)+QString(":");
-	 s_info = s_info+QString::number(b)+QString(":");
+   int b = item->first;
+   //s_info = s_info+QString("(")+ QString::number(b)+QString(":");
+   s_info = s_info+QString::number(b)+QString(":");
 
-	 int nb_items = indexes->size();
+   int nb_items = indexes->size();
 
-	 for(int j = 0; j < nb_items;j++){
-		scan = indexes->at(j);
+   for(int j = 0; j < nb_items;j++){
+    scan = indexes->at(j);
 
-		int col = scan.column();
-		QVariant vCol = sqm_view->headerData(col,Qt::Horizontal);
+    int col = scan.column();
+    QVariant vCol = sqm_view->headerData(col,Qt::Horizontal);
 
-		headName = headName + vCol.toString();
+    headName = headName + vCol.toString();
 
-		if(j < nb_items -1){
-		 headName = headName + ",";
-		}
-		else {
-		 //headName = headName + ")";
-		}
-	 }
+    if(j < nb_items -1){
+     headName = headName + ",";
+    }
+    else {
+     //headName = headName + ")";
+    }
+   }
 
-	 s_info = s_info + headName;
-	 /// suite ?
-	 if(i < nb_key -1){
-		//s_info = s_info + " and ";
-		s_info = s_info + "; ";
-	 }
-	}
+   s_info = s_info + headName;
+   /// suite ?
+   if(i < nb_key -1){
+    //s_info = s_info + " and ";
+    s_info = s_info + "; ";
+   }
+  }
 
-	/// ecrire s_info
-	QStandardItem *cell = sqm_tmp->item(0,calc);
-	cell->setData(s_info,Qt::DisplayRole);
-	if(calc%2==0){
-	 cell->setBackground(QBrush(Qt::cyan));
-	}
-	sqm_tmp->setItem(0,calc,cell);
-	ptrSel->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  /// ecrire s_info
+  QStandardItem *cell = sqm_tmp->item(0,calc);
+  cell->setData(s_info,Qt::DisplayRole);
+  if(calc%2==0){
+   cell->setBackground(QBrush(Qt::cyan));
+  }
+  sqm_tmp->setItem(0,calc,cell);
+  ptrSel->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
 
  }
@@ -5469,18 +5469,18 @@ QString SyntheseGenerale::createSelection(void)
 {
  // Tableau de fonction permettant de creer la requete adapte a l'onglet
  QString (SyntheseGenerale::*ptrFz1[])(int zn, QList <QPair<int,stSelInfo*>*> *a)=
-  {
+ {
    &SyntheseGenerale::tot_SqlCreateZn,
    &SyntheseGenerale::brc_SqlCreateZn,
    &SyntheseGenerale::cmb_SqlCreateZn,
-  };
+};
 
  QString (SyntheseGenerale::*ptrFz2[])(int zn,QList <QPair<int,stSelInfo*>*> *a)=
-  {
+ {
    &SyntheseGenerale::tot_SqlCreateZn,
    &SyntheseGenerale::brc_SqlCreateZn,
    &SyntheseGenerale::cmb_SqlCreateZn,
-  };
+};
 
  typedef  QString (SyntheseGenerale::**ptrFZx)(int zn,QList <QPair<int,stSelInfo*>*> *a);
 
@@ -5496,59 +5496,59 @@ QString SyntheseGenerale::createSelection(void)
   static bool and_zn = false;
   st_filters="";
 
-	for (int calc = tot; calc < max_calc; calc++) {
-	 static bool and_calc = false;
-	 QString st_calc = "";
+  for (int calc = tot; calc < max_calc; calc++) {
+   static bool and_calc = false;
+   QString st_calc = "";
 
-	 /// Effectuer creation code selection
-	 QList <QPair<int,stSelInfo*>*> *a = &qlSel[zn][calc];
-	 st_calc = (this->*pMyFnZx[zn][calc])(zn,a);
+   /// Effectuer creation code selection
+   QList <QPair<int,stSelInfo*>*> *a = &qlSel[zn][calc];
+   st_calc = (this->*pMyFnZx[zn][calc])(zn,a);
 
-	 if(( (calc==brc)||(calc==cmb)) && st_calc.size()){
-		other_table = other_table + ",(Ana_z"+QString::number(zn+1)+QString(") as t")+QString::number(zn+2);
-	 }
+   if(( (calc==brc)||(calc==cmb)) && st_calc.size()){
+    other_table = other_table + ",(Ana_z"+QString::number(zn+1)+QString(") as t")+QString::number(zn+2);
+   }
 
-	 /// Regarder la sortie des calc
-	 if(st_calc.size() && and_calc == false){
-		st_filters = st_filters + st_calc;
-	 }
+   /// Regarder la sortie des calc
+   if(st_calc.size() && and_calc == false){
+    st_filters = st_filters + st_calc;
+   }
 
-	 if(st_filters.size() && st_calc.size() && and_calc){
-		st_filters = st_filters+QString(" and ") + st_calc;
-	 }
+   if(st_filters.size() && st_calc.size() && and_calc){
+    st_filters = st_filters+QString(" and ") + st_calc;
+   }
 
-	 if(!st_filters.size() && st_calc.size() && and_calc){
-		st_filters = st_calc;
-	 }
+   if(!st_filters.size() && st_calc.size() && and_calc){
+    st_filters = st_calc;
+   }
 
-	 if(calc < max_calc -1){
-		and_calc = true;
-	 }
-	 else{
-		and_calc = false;
-	 }
+   if(calc < max_calc -1){
+    and_calc = true;
+   }
+   else{
+    and_calc = false;
+   }
 
-	}
+  }
 
-	/// Regarder la sortie des zn
-	if(st_filters.size() && and_zn == false){
-	 msg = st_filters;
-	}
+  /// Regarder la sortie des zn
+  if(st_filters.size() && and_zn == false){
+   msg = st_filters;
+  }
 
-	if(st_filters.size() && and_zn && msg.size()){
-	 msg = msg + QString(" and ") + st_filters;
-	}
+  if(st_filters.size() && and_zn && msg.size()){
+   msg = msg + QString(" and ") + st_filters;
+  }
 
-	if(st_filters.size() && and_zn && (msg.size()==0)){
-	 msg = st_filters;
-	}
+  if(st_filters.size() && and_zn && (msg.size()==0)){
+   msg = st_filters;
+  }
 
-	if(zn < max_zn -1){
-	 and_zn = true;
-	}
-	else{
-	 and_zn = false;
-	}
+  if(zn < max_zn -1){
+   and_zn = true;
+  }
+  else{
+   and_zn = false;
+  }
 
  }
 
@@ -5629,7 +5629,7 @@ void SyntheseGenerale::slot_MontreLesTirages(const QModelIndex & index)
 
  SyntheseDetails *unDetail = new SyntheseDetails(a);
  connect( ptabTop, SIGNAL(tabCloseRequested(int)) ,
-         unDetail, SLOT(slot_FermeLaRecherche(int) ) );
+          unDetail, SLOT(slot_FermeLaRecherche(int) ) );
 
 }
 
@@ -5662,41 +5662,41 @@ QString SyntheseGenerale::brc_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> 
   //mon_brc_tmp = key;
 
 
-	int nb_sel = p->second->lstSel->size();
-	filter_days="";
-	for(int sel=0; sel < nb_sel; sel++){
-	 QModelIndex un_index = p->second->lstSel->at(sel);
-	 const QAbstractItemModel * pModel = un_index.model();
-	 int nbcol = pModel->columnCount();
-	 int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
+  int nb_sel = p->second->lstSel->size();
+  filter_days="";
+  for(int sel=0; sel < nb_sel; sel++){
+   QModelIndex un_index = p->second->lstSel->at(sel);
+   const QAbstractItemModel * pModel = un_index.model();
+   int nbcol = pModel->columnCount();
+   int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
 
-	 int col = un_index.column();
-	 if((col >= BDelegateCouleurFond::Columns::TotalElement)
-			 &&
-			 (col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
-		QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-		QString headName = vCol.toString();
+   int col = un_index.column();
+   if((col >= BDelegateCouleurFond::Columns::TotalElement)
+      &&
+      (col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
 
-		if(col > BDelegateCouleurFond::Columns::TotalElement){
-		 filter_days = filter_days + QString("(J like'")+headName+QString("%')");
-		}
-		if(sel < nb_sel -1 ){
-		 filter_days = filter_days + " or ";
-		}
-	 }
-	}
+    if(col > BDelegateCouleurFond::Columns::TotalElement){
+     filter_days = filter_days + QString("(J like'")+headName+QString("%')");
+    }
+    if(sel < nb_sel -1 ){
+     filter_days = filter_days + " or ";
+    }
+   }
+  }
 
-	if(filter_days.size()){
-	 st_critere = st_critere + QString("(")+filter_key+QString(" and (")+ filter_days + QString("))");
-	}
-	else {
-	 st_critere = st_critere + QString("(")+filter_key+QString(")");
-	}
+  if(filter_days.size()){
+   st_critere = st_critere + QString("(")+filter_key+QString(" and (")+ filter_days + QString("))");
+  }
+  else {
+   st_critere = st_critere + QString("(")+filter_key+QString(")");
+  }
 
-	/// Autre clef ?
-	if(pos < nb_items -1){
-	 st_critere = st_critere + conjZn[zn];
-	}
+  /// Autre clef ?
+  if(pos < nb_items -1){
+   st_critere = st_critere + conjZn[zn];
+  }
 
  }
 
@@ -5728,41 +5728,41 @@ QString SyntheseGenerale::cmb_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> 
   //mon_brc_tmp = key;
 
 
-	int nb_sel = p->second->lstSel->size();
-	filter_days="";
-	for(int sel=0; sel < nb_sel; sel++){
-	 QModelIndex un_index = p->second->lstSel->at(sel);
-	 const QAbstractItemModel * pModel = un_index.model();
-	 int nbcol = pModel->columnCount();
-	 int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
+  int nb_sel = p->second->lstSel->size();
+  filter_days="";
+  for(int sel=0; sel < nb_sel; sel++){
+   QModelIndex un_index = p->second->lstSel->at(sel);
+   const QAbstractItemModel * pModel = un_index.model();
+   int nbcol = pModel->columnCount();
+   int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
 
-	 int col = un_index.column();
-	 if((col >= BDelegateCouleurFond::Columns::TotalElement)
-			 &&
-			 (col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
-		QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-		QString headName = vCol.toString();
+   int col = un_index.column();
+   if((col >= BDelegateCouleurFond::Columns::TotalElement)
+      &&
+      (col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
 
-		if(col > BDelegateCouleurFond::Columns::TotalElement){
-		 filter_days = filter_days + QString("(J like'")+headName+QString("%')");
-		}
-		if(sel < nb_sel -1 ){
-		 filter_days = filter_days + " or ";
-		}
-	 }
-	}
+    if(col > BDelegateCouleurFond::Columns::TotalElement){
+     filter_days = filter_days + QString("(J like'")+headName+QString("%')");
+    }
+    if(sel < nb_sel -1 ){
+     filter_days = filter_days + " or ";
+    }
+   }
+  }
 
-	if(filter_days.size()){
-	 st_critere = st_critere + QString("(")+filter_key+QString(" and (")+ filter_days + QString("))");
-	}
-	else {
-	 st_critere = st_critere + QString("(")+filter_key+QString(")");
-	}
+  if(filter_days.size()){
+   st_critere = st_critere + QString("(")+filter_key+QString(" and (")+ filter_days + QString("))");
+  }
+  else {
+   st_critere = st_critere + QString("(")+filter_key+QString(")");
+  }
 
-	/// Autre clef ?
-	if(pos < nb_items -1){
-	 st_critere = st_critere + conjZn[zn];
-	}
+  /// Autre clef ?
+  if(pos < nb_items -1){
+   st_critere = st_critere + conjZn[zn];
+  }
 
  }
 
@@ -5801,33 +5801,33 @@ QString SyntheseGenerale::tot_SqlCreateZn(int zn,QList <QPair<int,stSelInfo*>*> 
    int nbcol = pModel->columnCount();
    int nbJ = nbcol - BDelegateCouleurFond::Columns::TotalElement -3;
 
-	 int col = un_index.column();
-	 if((col >= BDelegateCouleurFond::Columns::TotalElement)
-			 &&
-			 (col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
-		QVariant vCol = pModel->headerData(col,Qt::Horizontal);
-		QString headName = vCol.toString();
+   int col = un_index.column();
+   if((col >= BDelegateCouleurFond::Columns::TotalElement)
+      &&
+      (col <= BDelegateCouleurFond::Columns::TotalElement+nbJ)){
+    QVariant vCol = pModel->headerData(col,Qt::Horizontal);
+    QString headName = vCol.toString();
 
-		if(col > BDelegateCouleurFond::Columns::TotalElement){
-		 filter_days = filter_days + QString("(J like'")+headName+QString("%')");
-		}
-		if(sel < nb_sel -1 ){
-		 filter_days = filter_days + " or ";
-		}
-	 }
-	}
+    if(col > BDelegateCouleurFond::Columns::TotalElement){
+     filter_days = filter_days + QString("(J like'")+headName+QString("%')");
+    }
+    if(sel < nb_sel -1 ){
+     filter_days = filter_days + " or ";
+    }
+   }
+  }
 
-	if(filter_days.size()){
-	 st_critere = st_critere + QString("(")+filter_key+QString(" and (")+ filter_days + QString("))");
-	}
-	else {
-	 st_critere = st_critere + QString("(")+filter_key+QString(")");
-	}
+  if(filter_days.size()){
+   st_critere = st_critere + QString("(")+filter_key+QString(" and (")+ filter_days + QString("))");
+  }
+  else {
+   st_critere = st_critere + QString("(")+filter_key+QString(")");
+  }
 
-	/// Autre clef ?
-	if(pos < nb_items -1){
-	 st_critere = st_critere + conjZn[zn];
-	}
+  /// Autre clef ?
+  if(pos < nb_items -1){
+   st_critere = st_critere + conjZn[zn];
+  }
 
  }
 
@@ -5994,26 +5994,26 @@ count(*)  as T,
     )) as t1
   )as r1 GROUP by B order by T DESC
 
-#endif
+ #endif
 
  QString SyntheseGenerale::A4_0_TrouverLignes(int zn,
                                               QString tb_src ,
                                               QString tb_ref ,
                                               QString key)
-{
- QString msg = "select t1."+key+" as B, t2.id,t2.J,t2.D,t2.C ,t2.* "
-                                    " from ("+tb_ref+") as t1, ("+tb_src+") as t2 "
-                                                " where ((t1.id=t2.id))";
+ {
+  QString msg = "select t1."+key+" as B, t2.id,t2.J,t2.D,t2.C ,t2.* "
+  " from ("+tb_ref+") as t1, ("+tb_src+") as t2 "
+  " where ((t1.id=t2.id))";
 
- return msg;
+  return msg;
  }
 
  QString SyntheseGenerale::A1_0_TrouverLignes(int zn,
                                               QString tb_src ,
                                               QString tb_ref ,
                                               QString key)
-{
-#if 0
+ {
+  #if 0
   // exemple attendu
   select t1.z1 as B,
   t2.id,t2.J,t2.D,t2.C
@@ -6023,65 +6023,65 @@ count(*)  as T,
   (
   t1.z1 in (t2.b1,t2.b2,t2.b3,T2.b4,t2.b5)
   )
-#endif
+  #endif
 
- QString st_query = "";
- int len_zn = pMaConf->limites[zn].len;
- QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
- QString st_critere = "(";
+  QString st_query = "";
+  int len_zn = pMaConf->limites[zn].len;
+  QString ref = "t2."+pMaConf->nomZone[zn]+"%1";
+  QString st_critere = "(";
 
- if(!DB_Tools::checkHavingTableAndKey(tb_ref, key, db_0.connectionName())){
-  QApplication::quit();
- }
-
- for(int i=0;i<len_zn;i++){
-  st_critere = st_critere + ref.arg(i+1);
-  if(i<(len_zn-1)){
-   st_critere=st_critere+QString(",");
+  if(!DB_Tools::checkHavingTableAndKey(tb_ref, key, db_0.connectionName())){
+   QApplication::quit();
   }
- }
- st_critere = st_critere+QString(")");
 
- QString dbg_more = "";
-#ifndef QT_NO_DEBUG
- dbg_more = ",t2.* ";
-#endif
- //key =z1
+  for(int i=0;i<len_zn;i++){
+   st_critere = st_critere + ref.arg(i+1);
+   if(i<(len_zn-1)){
+    st_critere=st_critere+QString(",");
+   }
+  }
+  st_critere = st_critere+QString(")");
 
- st_query = "select t1."+key+" as B, "
-                                 "t2.id,t2.J,t2.D,t2.C "
-            +dbg_more
-            +"from ("+tb_ref+") as t1, ("
-            +tb_src+") as t2 "
-                       "where "
-                       "( "
-                       "t1."+key+" in "+st_critere+" "
-                                        ") ";
+  QString dbg_more = "";
+  #ifndef QT_NO_DEBUG
+  dbg_more = ",t2.* ";
+  #endif
+  //key =z1
 
-#ifndef QT_NO_DEBUG
- qDebug() << st_query;
+  st_query = "select t1."+key+" as B, "
+  "t2.id,t2.J,t2.D,t2.C "
+  +dbg_more
+  +"from ("+tb_ref+") as t1, ("
+  +tb_src+") as t2 "
+  "where "
+  "( "
+  "t1."+key+" in "+st_critere+" "
+  ") ";
 
-#if (SET_DBG_QLV1 && SET_QRY_DBG1)
- QSqlQuery query_dbg(db_0);
- query_dbg.exec(st_query);
- if(query_dbg.lastError().isValid()){
-  DB_Tools::DisplayError("SyntheseGenerale::",&query_dbg,"A1_0_TrouverLignes");
- }
+  #ifndef QT_NO_DEBUG
+  qDebug() << st_query;
 
-#endif
-#endif
+  #if (SET_DBG_QLV1 && SET_QRY_DBG1)
+  QSqlQuery query_dbg(db_0);
+  query_dbg.exec(st_query);
+  if(query_dbg.lastError().isValid()){
+   DB_Tools::DisplayError("SyntheseGenerale::",&query_dbg,"A1_0_TrouverLignes");
+  }
 
- return st_query;
+  #endif
+  #endif
+
+  return st_query;
  }
 
  QString SyntheseGenerale::A4_1_CalculerEcart(QString str_reponses)
-{
- return(A1_1_CalculerEcart(str_reponses));
+ {
+  return(A1_1_CalculerEcart(str_reponses));
  }
 
  QString SyntheseGenerale::A1_1_CalculerEcart(QString str_reponses)
-{
-#if 0
+ {
+  #if 0
   select t1.B as B,
   ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID,
   lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id,
@@ -6099,31 +6099,31 @@ count(*)  as T,
   )
   ) as t1
 
-#endif
+  #endif
 
- QString st_query = "select t1.B as B, "
-                    "ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID, "
-                    "lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id, "
-                    "(t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E, t1.* "
-                    "from "
-                    "( "
-                    +str_reponses+
-                    ") as t1 ";
-
-
-#ifndef QT_NO_DEBUG
- qDebug() << st_query;
-#if (SET_DBG_QLV1 && SET_QRY_DBG1)
- QSqlQuery query_dbg(db_0);
- query_dbg.exec(st_query);
- if(query_dbg.lastError().isValid()){
-  DB_Tools::DisplayError("SyntheseGenerale::",&query_dbg,"A1_1_CalculerEcart");
- }
-#endif
-#endif
+  QString st_query = "select t1.B as B, "
+  "ROW_NUMBER() OVER (PARTITION by t1.B order by t1.id) as LID, "
+  "lag(id,1,0) OVER (PARTITION by t1.B order by t1.id) as my_id, "
+  "(t1.id -(lag(id,1,0) OVER (PARTITION by t1.B order by t1.id))) as E, t1.* "
+  "from "
+  "( "
+  +str_reponses+
+  ") as t1 ";
 
 
- return st_query;
+  #ifndef QT_NO_DEBUG
+  qDebug() << st_query;
+  #if (SET_DBG_QLV1 && SET_QRY_DBG1)
+  QSqlQuery query_dbg(db_0);
+  query_dbg.exec(st_query);
+  if(query_dbg.lastError().isValid()){
+   DB_Tools::DisplayError("SyntheseGenerale::",&query_dbg,"A1_1_CalculerEcart");
+  }
+  #endif
+  #endif
+
+
+  return st_query;
 
  }
 
@@ -6134,7 +6134,7 @@ count(*)  as T,
 
  QString SyntheseGenerale::A1_2_RegrouperEcart(QString str_reponses)
  {
-#if 0
+  #if 0
   select B,
   (select NULL) as C,
   count(*)  as T,
@@ -6165,44 +6165,44 @@ count(*)  as T,
   ) as t1
   )as r1 group by b
 
-#endif
+  #endif
 
-	/// C : Couleur fonction des ecarts
-	/// I : Couleur dernier arrive, pas encore sortie, filtre utilisateur
+  /// C : Couleur fonction des ecarts
+  /// I : Couleur dernier arrive, pas encore sortie, filtre utilisateur
 
-	/// 										 "(Select NULL) as Bkey,"
+  /// 										 "(Select NULL) as Bkey,"
 
-	QString str_count_days = *st_JourTirageDef+"," ;
-	QString st_query = "select "
-										 "(Select NULL) as Id,"
-										 "(select NULL) as C, "
-										 "B,"
-										 "(select NULL) as I, "
-										 "(select(min (Id)-1 ))as Ec, "
-										 "max((CASE WHEN lid=2 then E END)) as Ep, "
-										 "(printf(\"%.1f\",avg(E)))as Em, "
-										 "max(E) as M, "
-										 "(printf(\"%.1f\",sqrt(variance(E)))) as Es, "
-										 "(printf(\"%.1f\",median(E))) as Me, "
-										 "count(*)  as T, "
-										 +str_count_days+
-										 "(select NULL) as P, (select NULL) as F "
-										 "FROM "
-										 "( "
-										 +str_reponses+
-										 ")as r1 group by b ";
+  QString str_count_days = *st_JourTirageDef+"," ;
+  QString st_query = "select "
+  "(Select NULL) as Id,"
+  "(select NULL) as C, "
+  "B,"
+  "(select NULL) as I, "
+  "(select(min (Id)-1 ))as Ec, "
+  "max((CASE WHEN lid=2 then E END)) as Ep, "
+  "(printf(\"%.1f\",avg(E)))as Em, "
+  "max(E) as M, "
+  "(printf(\"%.1f\",sqrt(variance(E)))) as Es, "
+  "(printf(\"%.1f\",median(E))) as Me, "
+  "count(*)  as T, "
+  +str_count_days+
+  "(select NULL) as P, (select NULL) as F "
+  "FROM "
+  "( "
+  +str_reponses+
+  ")as r1 group by b ";
 
-#ifndef QT_NO_DEBUG
-	qDebug() << st_query;
+  #ifndef QT_NO_DEBUG
+  qDebug() << st_query;
 
-#if (SET_DBG_QLV1 && SET_QRY_DBG1)
-	QSqlQuery query_dbg(db_0);
-	query_dbg.exec(st_query);
-	if(query_dbg.lastError().isValid()){
-	 DB_Tools::DisplayError("SyntheseGenerale::",&query_dbg,"A1_2_RegrouperEcart");
-	}
-#endif
-#endif
+  #if (SET_DBG_QLV1 && SET_QRY_DBG1)
+  QSqlQuery query_dbg(db_0);
+  query_dbg.exec(st_query);
+  if(query_dbg.lastError().isValid()){
+   DB_Tools::DisplayError("SyntheseGenerale::",&query_dbg,"A1_2_RegrouperEcart");
+  }
+  #endif
+  #endif
 
 
   return st_query;
@@ -6213,13 +6213,13 @@ count(*)  as T,
   bool b_retVal = true;
   QString st_requete;
 
-	st_requete = A1_0_TrouverLignes(zn,  tb_src, tb_ref ,  key);
-	st_requete = A1_1_CalculerEcart(st_requete);
-	st_requete = A1_2_RegrouperEcart(st_requete);
+  st_requete = A1_0_TrouverLignes(zn,  tb_src, tb_ref ,  key);
+  st_requete = A1_1_CalculerEcart(st_requete);
+  st_requete = A1_2_RegrouperEcart(st_requete);
 
-	if((b_retVal = Contruire_Executer(tbl_dst,st_requete))){
-	 b_retVal = tot_MarquerDerniers(zn,  tb_src, tb_ref ,  key,tbl_dst);
-	}
+  if((b_retVal = Contruire_Executer(tbl_dst,st_requete))){
+   b_retVal = tot_MarquerDerniers(zn,  tb_src, tb_ref ,  key,tbl_dst);
+  }
 
   return b_retVal;
  }
@@ -6230,113 +6230,113 @@ count(*)  as T,
   QSqlQuery query(db_0);
 
 
-	int len_zn = pMaConf->limites[zn].len;
-	QString st_critere = getFieldsFromZone(zn, "t2");
+  int len_zn = pMaConf->limites[zn].len;
+  QString st_critere = getFieldsFromZone(zn, "t2");
 
-	/// Mettre info sur 2 derniers tirages
-	for(int dec=0; (dec <2) && b_retVal ; dec++){
-	 int val = 1<<dec;
-	 QString sdec = QString::number(val);
-	 QString msg []={
-		{"SELECT "+st_critere+" from ("+tb_src
-		 +") as t2 where(id = "+sdec+")"
-		},
-		{
-		 "select t1."+key+" as B from ("+tb_ref+") as t1,("
-		 +msg[0]+") as t2 where(t1."+key+" in ("
-		 +st_critere+"))"
-		},
-		{"update " + tbl_dst
-		 + " set F=(case when f is (NULL or 0) then 0x"
-		 +sdec+" else(f|0x"+sdec+") end) "
-																		"where (B in ("+msg[1]+"))"}
-	 };
+  /// Mettre info sur 2 derniers tirages
+  for(int dec=0; (dec <2) && b_retVal ; dec++){
+   int val = 1<<dec;
+   QString sdec = QString::number(val);
+   QString msg []={
+    {"SELECT "+st_critere+" from ("+tb_src
+     +") as t2 where(id = "+sdec+")"
+    },
+    {
+     "select t1."+key+" as B from ("+tb_ref+") as t1,("
+     +msg[0]+") as t2 where(t1."+key+" in ("
+     +st_critere+"))"
+    },
+    {"update " + tbl_dst
+     + " set F=(case when f is (NULL or 0) then 0x"
+     +sdec+" else(f|0x"+sdec+") end) "
+     "where (B in ("+msg[1]+"))"}
+   };
 
-	 int taille = sizeof(msg)/sizeof(QString);
-#ifndef QT_NO_DEBUG
-	 for(int i = 0; i< taille;i++){
-		qDebug() << "msg ["<<i<<"]: "<<msg[i];
-	 }
-#endif
-	 b_retVal = query.exec(msg[taille-1]);
-	}
+   int taille = sizeof(msg)/sizeof(QString);
+   #ifndef QT_NO_DEBUG
+   for(int i = 0; i< taille;i++){
+    qDebug() << "msg ["<<i<<"]: "<<msg[i];
+   }
+   #endif
+   b_retVal = query.exec(msg[taille-1]);
+  }
 
-	/// --------------------------------
-	/// Mettre marqueur sur b+1 et b-1
-	for(int dec=0; (dec <2) && b_retVal ; dec++){
-	 int d[2]={+1,-1}; // voir BDelegateCouleurFond
+  /// --------------------------------
+  /// Mettre marqueur sur b+1 et b-1
+  for(int dec=0; (dec <2) && b_retVal ; dec++){
+   int d[2]={+1,-1}; // voir BDelegateCouleurFond
 
-	 QString ref = "(t2."+pMaConf->nomZone[zn]+"%1+%2)";
-	 QString st_critere_2 = "";
-	 for(int i=0;i<len_zn;i++){
-		st_critere_2 = st_critere_2 + ref.arg(i+1).arg(d[dec]);
-		if(i<(len_zn-1)){
-		 st_critere_2=st_critere_2+QString(",");
-		}
-	 }
+   QString ref = "(t2."+pMaConf->nomZone[zn]+"%1+%2)";
+   QString st_critere_2 = "";
+   for(int i=0;i<len_zn;i++){
+    st_critere_2 = st_critere_2 + ref.arg(i+1).arg(d[dec]);
+    if(i<(len_zn-1)){
+     st_critere_2=st_critere_2+QString(",");
+    }
+   }
 
-	 QString sdec = QString::number(1<<(4+dec),16);
-	 QString msg []={
-		{"SELECT "+st_critere+" from ("+tb_src
-		 +") as t2 where(id = 1)"
-		},
-		{
-		 "select t1."+key+" as B from ("+tb_ref+") as t1,("
-		 +msg[0]+") as t2 where(t1."+key+" in ("
-		 +st_critere_2+"))"
-		},
-		{"update " + tbl_dst
-		 + " set F=(case when f is (NULL or 0) then 0x"
-		 +sdec+" else(f|0x"+sdec+") end) "
-																		"where (B in ("+msg[1]+"))"}
-	 };
+   QString sdec = QString::number(1<<(4+dec),16);
+   QString msg []={
+    {"SELECT "+st_critere+" from ("+tb_src
+     +") as t2 where(id = 1)"
+    },
+    {
+     "select t1."+key+" as B from ("+tb_ref+") as t1,("
+     +msg[0]+") as t2 where(t1."+key+" in ("
+     +st_critere_2+"))"
+    },
+    {"update " + tbl_dst
+     + " set F=(case when f is (NULL or 0) then 0x"
+     +sdec+" else(f|0x"+sdec+") end) "
+     "where (B in ("+msg[1]+"))"}
+   };
 
-	 int taille = sizeof(msg)/sizeof(QString);
-#ifndef QT_NO_DEBUG
-	 for(int i = 0; i< taille;i++){
-		qDebug() << "msg ["<<i<<"]: "<<msg[i];
-	 }
-#endif
-	 b_retVal = query.exec(msg[taille-1]);
-	}
+   int taille = sizeof(msg)/sizeof(QString);
+   #ifndef QT_NO_DEBUG
+   for(int i = 0; i< taille;i++){
+    qDebug() << "msg ["<<i<<"]: "<<msg[i];
+   }
+   #endif
+   b_retVal = query.exec(msg[taille-1]);
+  }
 
-	/// --------------------------------
-	/// Marquer les tirages pas encore sortis
-	QList<sCouv *> lstCouv = tabEcarts->getLstCouv(zn);
+  /// --------------------------------
+  /// Marquer les tirages pas encore sortis
+  QList<sCouv *> lstCouv = tabEcarts->getLstCouv(zn);
 
-	if(lstCouv.size() && b_retVal){
-	 QString sdec = QString::number(BDelegateCouleurFond::Filtre::isNever,16);
-	 int items = pMaConf->limites[zn].max;
-	 sCouv *curCouv = lstCouv.last();
+  if(lstCouv.size() && b_retVal){
+   QString sdec = QString::number(BDelegateCouleurFond::Filtre::isNever,16);
+   int items = pMaConf->limites[zn].max;
+   sCouv *curCouv = lstCouv.last();
 
-	 QString lst_items = "";
-	 for(int i = 0; i< items ;i++)
-	 {
-		int isPresent = curCouv->p_val[i][0]; /// col 0 si == 0 pas encore sortie
+   QString lst_items = "";
+   for(int i = 0; i< items ;i++)
+   {
+    int isPresent = curCouv->p_val[i][0]; /// col 0 si == 0 pas encore sortie
 
-		if (!isPresent)
-		{
-		 QString item = QString::number(i+1);
-		 if(!lst_items.size()){
-			lst_items = item;
-		 }
-		 else {
-			lst_items = lst_items + QString(",") + item;
-		 }
-		}
-	 }
-	 /// On a trouve tous les absents...mettre a jour info filtre
-	 QString sql ="update " + tbl_dst
-								 + " set F=(case when f is (NULL or 0) then 0x"
-								 +sdec+" else(f|0x"+sdec+") end) "
-																								"where (B in ("+lst_items+"))";
-	 b_retVal = query.exec(sql);
-	}
+    if (!isPresent)
+    {
+     QString item = QString::number(i+1);
+     if(!lst_items.size()){
+      lst_items = item;
+     }
+     else {
+      lst_items = lst_items + QString(",") + item;
+     }
+    }
+   }
+   /// On a trouve tous les absents...mettre a jour info filtre
+   QString sql ="update " + tbl_dst
+   + " set F=(case when f is (NULL or 0) then 0x"
+   +sdec+" else(f|0x"+sdec+") end) "
+   "where (B in ("+lst_items+"))";
+   b_retVal = query.exec(sql);
+  }
 
-	if(query.lastError().isValid()){
-	 DB_Tools::DisplayError("SyntheseGenerale::",&query,"tot_MarquerDerniers");
-	}
-	return(b_retVal);
+  if(query.lastError().isValid()){
+   DB_Tools::DisplayError("SyntheseGenerale::",&query,"tot_MarquerDerniers");
+  }
+  return(b_retVal);
  }
 
  bool SyntheseGenerale::Contruire_Executer(QString tbl_dst, QString st_requete)
@@ -6344,61 +6344,61 @@ count(*)  as T,
   bool b_retVal = true;
   QSqlQuery query(db_0);
 
-	/// Lancement de la requete pour trouver le nom des colonnes
-	if((b_retVal=query.exec(st_requete))){
-	 QString type = "";
-	 QString st_header = "(";
-	 int nbCol = query.record().count();
-	 for (int i = 0; i < nbCol; i++){
-		QString name = query.record().fieldName(i);
-		if(i == 0){
-		 st_header = st_header + name + " integer primary key";
-		}
-		else{
-		 if(i<nbCol){
-			st_header = st_header + ",";
-		 }
+  /// Lancement de la requete pour trouver le nom des colonnes
+  if((b_retVal=query.exec(st_requete))){
+   QString type = "";
+   QString st_header = "(";
+   int nbCol = query.record().count();
+   for (int i = 0; i < nbCol; i++){
+    QString name = query.record().fieldName(i);
+    if(i == 0){
+     st_header = st_header + name + " integer primary key";
+    }
+    else{
+     if(i<nbCol){
+      st_header = st_header + ",";
+     }
 
-		 if(i== BDelegateCouleurFond::Columns::EcartMedian||
-				 i==BDelegateCouleurFond::Columns::EsperanceEcart ||
-				 i== BDelegateCouleurFond::Columns::EcartMoyen){
-			type = " float";
-		 }
-		 else
-		 {
-			type = " int";
-		 }
+     if(i== BDelegateCouleurFond::Columns::EcartMedian||
+     i==BDelegateCouleurFond::Columns::EsperanceEcart ||
+     i== BDelegateCouleurFond::Columns::EcartMoyen){
+      type = " float";
+     }
+     else
+     {
+      type = " int";
+     }
 
-		 st_header = st_header + name + type;
-		}
-	 }
-	 st_header = st_header +")";
+     st_header = st_header + name + type;
+    }
+   }
+   st_header = st_header +")";
 
-#ifndef QT_NO_DEBUG
-	 qDebug() << st_header;
-#endif
+   #ifndef QT_NO_DEBUG
+   qDebug() << st_header;
+   #endif
 
-	 /// Creation de la table
-	 QString msg = "drop table if exists "+tbl_dst;
-	 b_retVal = query.exec(msg);
+   /// Creation de la table
+   QString msg = "drop table if exists "+tbl_dst;
+   b_retVal = query.exec(msg);
 
 
-	 st_header = "create table if not exists "+tbl_dst+" " + st_header;
+   st_header = "create table if not exists "+tbl_dst+" " + st_header;
 
-	 if(b_retVal && (b_retVal = query.exec(st_header))){
-		/// mettre les donnees precedentes
-		st_header = "insert into "+tbl_dst+" select * from ("+st_requete+")";
-#ifndef QT_NO_DEBUG
-		qDebug() << st_header;
-#endif
-		b_retVal = query.exec(st_header);
-	 }
+   if(b_retVal && (b_retVal = query.exec(st_header))){
+    /// mettre les donnees precedentes
+    st_header = "insert into "+tbl_dst+" select * from ("+st_requete+")";
+    #ifndef QT_NO_DEBUG
+    qDebug() << st_header;
+    #endif
+    b_retVal = query.exec(st_header);
+   }
 
-	}
+  }
 
-	if(query.lastError().isValid()){
-	 DB_Tools::DisplayError("SyntheseGenerale::",&query,"A1_2_RegrouperEcart");
-	}
+  if(query.lastError().isValid()){
+   DB_Tools::DisplayError("SyntheseGenerale::",&query,"A1_2_RegrouperEcart");
+  }
 
   return(b_retVal);
  }
@@ -6413,57 +6413,57 @@ count(*)  as T,
 
   int nbChoix = maRef[0][0].size();
 
-	/// il y a t'il une selection
-	sqlReq = table;
-	if(indexes.size())
-	{
-	 QModelIndex un_index;
-	 int curCol = 0;
-	 int occure = 0;
-	 QString *Selection = new QString[nbChoix];
+  /// il y a t'il une selection
+  sqlReq = table;
+  if(indexes.size())
+  {
+   QModelIndex un_index;
+   int curCol = 0;
+   int occure = 0;
+   QString *Selection = new QString[nbChoix];
 
-	 /// Parcourir les selections
-	 foreach(un_index, indexes)
-	 {
-		curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
-		occure = un_index.model()->index(un_index.row(), 0).data().toInt();
+   /// Parcourir les selections
+   foreach(un_index, indexes)
+   {
+    curCol = un_index.model()->index(un_index.row(), un_index.column()).column();
+    occure = un_index.model()->index(un_index.row(), 0).data().toInt();
 
-		if(Selection[curCol-1]==""){
-		 Selection[curCol-1] = QString::number(occure);
-		}
-		else{
-		 Selection[curCol-1] = Selection[curCol-1]+tr(",")+QString::number(occure);
-		}
-#ifndef QT_NO_DEBUG
-		qDebug() << Selection[curCol-1];
-#endif
+    if(Selection[curCol-1]==""){
+     Selection[curCol-1] = QString::number(occure);
+    }
+    else{
+     Selection[curCol-1] = Selection[curCol-1]+tr(",")+QString::number(occure);
+    }
+    #ifndef QT_NO_DEBUG
+    qDebug() << Selection[curCol-1];
+    #endif
 
-	 }
-	 ; ///Pause
-	 /// Parcourir les selections
-	 for(int col = 0; col<nbChoix; col++)
-	 {
-		if(Selection[col]==""){
-		 continue;
-		}
-		else{
-		 st_critere = "("+maRef[0][0].at(col)+")";
-		 st_occure = "("+Selection[col]+")";
-		 sqlReq =TrouverTirages(col,st_occure,sqlReq,st_critere,0,uneDemande.ref);
-		}
-	 }
+   }
+   ; ///Pause
+   /// Parcourir les selections
+   for(int col = 0; col<nbChoix; col++)
+   {
+    if(Selection[col]==""){
+     continue;
+    }
+    else{
+     st_critere = "("+maRef[0][0].at(col)+")";
+     st_occure = "("+Selection[col]+")";
+     sqlReq =TrouverTirages(col,st_occure,sqlReq,st_critere,0,uneDemande.ref);
+    }
+   }
 
-#ifndef QT_NO_DEBUG
-	 qDebug() << sqlReq;
-#endif
+   #ifndef QT_NO_DEBUG
+   qDebug() << sqlReq;
+   #endif
 
-	}
-	return sqlReq;
+  }
+  return sqlReq;
  }
 
-#if 0
+ #if 0
  void SyntheseGenerale::FillRegroupement(int nbCol,stTiragesDef *conf)
-{
+ {
   QSqlQuery query ;
 
   ///------------------------------
@@ -6478,9 +6478,9 @@ count(*)  as T,
    sqlReq = ApplayFilters(db_data,msg1,zn,conf);
    //sqlReq = sql_RegroupeSelonCritere()
 
-#ifndef QT_NO_DEBUG
+   #ifndef QT_NO_DEBUG
    qDebug() << sqlReq;
-#endif
+   #endif
 
    status = query.exec(sqlReq);
 
@@ -6500,11 +6500,11 @@ count(*)  as T,
    }
   }
  }
-#endif
+ #endif
 
-#if 0
+ #if 0
  void RefResultat::MontreRechercheTirages(NE_Analyses::E_Syntese typeAnalyse,const QTableView *pTab,const QModelIndex & index)
-{
+ {
   QWidget *qw_main = new QWidget;
   QTabWidget *tab_Top = new QTabWidget;
   QWidget **wid_ForTop = new QWidget*[2];
@@ -6541,12 +6541,56 @@ count(*)  as T,
   qw_main->show();
  }
 
-#endif
+ #endif
 
 
-#if EXEMPLE_SQL
+ #if EXEMPLE_SQL
  --debut requete tb3
-    select tb3.id as Tid, tb5.id as Pid,
+ select tb3.id as Tid, tb5.id as Pid,
+ tb3.jour_tirage as J,
+ substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
+ tb5.tip as C,
+ tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
+ tb3.e1 as e1,
+ tb3.bp as P,
+ tb3.bg as G
+ from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5
+ inner join
+ (
+  select *  from tirages as tb1
+  where
+  (
+   (
+    tb1.b1=27 or
+           tb1.b2=27 or
+                  tb1.b3=27 or
+                         tb1.b4=27 or
+                                tb1.b5=27
+                                       )
+   )
+  ) as tb2
+ on (
+  (tb3.id = tb2.id + 0)
+  and
+  (tb4.id = tb3.id)
+  and
+  (tb4.fk_idCombi_z1 = tb5.id)
+  )
+ ;
+--Fin requete tb3
+
+
+-- Requete comptage du resultat precedent
+select tbleft.boule as B, count(tbright.Tid) as T,
+count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM
+from
+(
+  select id as boule from Bnrz where (z1 not NULL )
+  ) as tbleft
+left join
+(
+  --debut requete tb3
+  select tb3.id as Tid,
   tb3.jour_tirage as J,
   substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
   tb5.tip as C,
@@ -6558,160 +6602,116 @@ count(*)  as T,
   inner join
   (
    select *  from tirages as tb1
-    where
+   where
    (
     (
      tb1.b1=27 or
-              tb1.b2=27 or
-                       tb1.b3=27 or
-                                tb1.b4=27 or
-                                         tb1.b5=27
-                                                                                                                                                                                                                                                                                                 )
-                       )
-                ) as tb2
+            tb1.b2=27 or
+                   tb1.b3=27 or
+                          tb1.b4=27 or
+                                 tb1.b5=27
+                                        )
+    )
+   ) as tb2
   on (
    (tb3.id = tb2.id + 0)
    and
    (tb4.id = tb3.id)
    and
    (tb4.fk_idCombi_z1 = tb5.id)
-                )
-  ;
- --Fin requete tb3
-
-
-	 -- Requete comptage du resultat precedent
-		select tbleft.boule as B, count(tbright.Tid) as T,
-	count(CASE WHEN  J like 'lundi%' then 1 end) as LUN, count(CASE WHEN  J like 'mercredi%' then 1 end) as MER, count(CASE WHEN  J like 'same%' then 1 end) as SAM
-																																																						 from
-																																																						 (
-																																																							select id as boule from Bnrz where (z1 not NULL )
-																																																																																																																																																																																																																																																																																				) as tbleft
-																																																						 left join
-																																																						 (
-																																																							--debut requete tb3
-																																																								 select tb3.id as Tid,
-																																																							tb3.jour_tirage as J,
-																																																							substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
-																																																							tb5.tip as C,
-																																																							tb3.b1 as b1, tb3.b2 as b2,tb3.b3 as b3,tb3.b4 as b4,tb3.b5 as b5,
-																																																							tb3.e1 as e1,
-																																																							tb3.bp as P,
-																																																							tb3.bg as G
-																																																							 from tirages as tb3, "+tb_ana_zn+" as tb4, Ref_cmb_z1 as tb5
-																																																																		 inner join
-																																																							(
-																																																							 select *  from tirages as tb1
-																																																								where
-																																																							 (
-																																																								(
-																																																								 tb1.b1=27 or
-																																																													tb1.b2=27 or
-																																																																	 tb1.b3=27 or
-																																																																						tb1.b4=27 or
-																																																																										 tb1.b5=27
-																																																																																																																																																																																																																																																																																																																																																																																																																															)
-																																																																																																																																																																																																																																																																																										)
-																																																																																																																																																																																																																																																																																				 ) as tb2
-																																																							 on (
-																																																								(tb3.id = tb2.id + 0)
-																																																								and
-																																																								(tb4.id = tb3.id)
-																																																								and
-																																																								(tb4.fk_idCombi_z1 = tb5.id)
-																																																																																																																																																																																																																																																																																									 )
-																																																								--Fin requete tb3
-																																																																																																																																																																																																																																																																																									) as tbright
-																																																						 on
-																																																						 (
-																																																							(
-																																																							 tbleft.boule = tbright.b1 or
-																																																															tbleft.boule = tbright.b2 or
-																																																																						 tbleft.boule = tbright.b3 or
-																																																																														tbleft.boule = tbright.b4 or
-																																																																																					 tbleft.boule = tbright.b5
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																								)
-																																																							and
-																																																							(
-																																																							 tbleft.boule != 27
-																																																																																																																																																																																																																																																																																												 )
-																																																																																																																																																																																																																																																																																				) group by tbleft.boule;
+   )
+  --Fin requete tb3
+  ) as tbright
+on
+(
+  (
+   tbleft.boule = tbright.b1 or
+                  tbleft.boule = tbright.b2 or
+                                 tbleft.boule = tbright.b3 or
+                                                tbleft.boule = tbright.b4 or
+                                                               tbleft.boule = tbright.b5
+                                                                              )
+  and
+  (
+   tbleft.boule != 27
+                   )
+  ) group by tbleft.boule;
 #endif
 
 #if 1
- QString CompteJourTirage(QString cnx_name)
+QString CompteJourTirage(QString cnx_name)
+{
+ bool status = false;
+ QString msg = "";
+
+ QSqlDatabase use_db = QSqlDatabase::database(cnx_name);
+ QSqlQuery query(use_db) ;
+
+ QString st_tmp = "";
+ QString st_table = "J";
+
+
+ msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
+       REF_BASE+") as tb1 order by J asc;";
+
+ if((status = query.exec(msg)))
  {
-  bool status = false;
-  QString msg = "";
+  status = query.first();
+  if (query.isValid())
+  {
+   do
+   {
+    //count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,
+    st_tmp = st_tmp + "count(CASE WHEN  J like '"+
+             query.value(0).toString()+"%' then 1 end) as "+
+             query.value(0).toString()+",";
+   }while((status = query.next()));
 
-	QSqlDatabase use_db = QSqlDatabase::database(cnx_name);
-	QSqlQuery query(use_db) ;
-
-	QString st_tmp = "";
-	QString st_table = "J";
-
-
-	msg = "select distinct substr(tb1."+st_table+",1,3) as J from ("+
-				REF_BASE+") as tb1 order by J asc;";
-
-	if((status = query.exec(msg)))
-	{
-	 status = query.first();
-	 if (query.isValid())
-	 {
-		do
-		{
-		 //count(CASE WHEN  J like 'lundi%' then 1 end) as LUN,
-		 st_tmp = st_tmp + "count(CASE WHEN  J like '"+
-							query.value(0).toString()+"%' then 1 end) as "+
-							query.value(0).toString()+",";
-		}while((status = query.next()));
-
-		//supprimer derniere ','
-		st_tmp.remove(st_tmp.length()-1,1);
-		st_tmp = st_tmp + " ";
-	 }
-	}
+   //supprimer derniere ','
+   st_tmp.remove(st_tmp.length()-1,1);
+   st_tmp = st_tmp + " ";
+  }
+ }
 
 #ifndef QT_NO_DEBUG
-	qDebug() << "CreerCritereJours ->"<< query.lastError();
-	qDebug() << "SQL 1:\n"<<msg<<"\n-------";
-	qDebug() << "SQL 2:\n"<<st_tmp<<"\n-------";
+ qDebug() << "CreerCritereJours ->"<< query.lastError();
+ qDebug() << "SQL 1:\n"<<msg<<"\n-------";
+ qDebug() << "SQL 2:\n"<<st_tmp<<"\n-------";
 #endif
 
-  return st_tmp;
- }
+ return st_tmp;
+}
 
 #else
- QString CompteJourTirage(stTiragesDef *pMaConf)
+QString CompteJourTirage(stTiragesDef *pMaConf)
+{
+ QString st_msg = "";
+
+ int nb_tir = pMaConf->nb_tir_semaine;
+
+ for(int i=0;i<nb_tir;i++)
  {
-  QString st_msg = "";
-
-  int nb_tir = pMaConf->nb_tir_semaine;
-
-	for(int i=0;i<nb_tir;i++)
-	{
-	 st_msg = st_msg +
-						"count(CASE WHEN  J like '"
-						+pMaConf->jour_tir[i].left(2)+
-						"%' then 1 end) as "
-						+pMaConf->jour_tir[i].left(2)+
-						",";
-	}
+  st_msg = st_msg +
+           "count(CASE WHEN  J like '"
+           +pMaConf->jour_tir[i].left(2)+
+           "%' then 1 end) as "
+           +pMaConf->jour_tir[i].left(2)+
+           ",";
+ }
 
 #ifndef QT_NO_DEBUG
-	qDebug()<< st_msg;
+ qDebug()<< st_msg;
 #endif
 
-  st_msg.remove(st_msg.length()-1,1);
+ st_msg.remove(st_msg.length()-1,1);
 
-  return st_msg;
- }
+ return st_msg;
+}
 #endif
 
 
- QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf)
- {
+QString OrganiseChampsDesTirages(QString st_base_reference, stTiragesDef *pMaConf)
+{
 #if 0
  select tb3.id as id, tb5.id as pid, tb3.jour_tirage as J,
    substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D,
@@ -6732,57 +6732,57 @@ count(*)  as T,
              tb5.id = tb4.fk_idCombi_z1
                       );
 #endif
-  QString tb_ana_zn = "Ref_ana_z1";
+ QString tb_ana_zn = "Ref_ana_z1";
 
-	QString st_base = "";
-	QString st_tmp = "";
-	QString st_cr1 = "";
-	QStringList lst_tmp;
-	int loop = 0;
+ QString st_base = "";
+ QString st_tmp = "";
+ QString st_cr1 = "";
+ QStringList lst_tmp;
+ int loop = 0;
 
-	for(int i =0 ; i< pMaConf->nb_zone; i++)
-	{
-	 lst_tmp <<   pMaConf->nomZone[i];
-	 st_tmp = "tb3."+pMaConf->nomZone[i];
-	 loop =  pMaConf->nbElmZone[i];
-	 st_tmp =  GEN_Where_3(loop,st_tmp,true," as ",lst_tmp,true,",");
-	 st_cr1 = st_cr1 + st_tmp + ",";
-	 lst_tmp.clear();
-	}
-#ifndef QT_NO_DEBUG
-	qDebug()<< st_cr1;
-#endif
-
-	st_cr1.remove(QRegExp("[()]"));
-	st_cr1.remove(st_cr1.length()-1,1);
-
-	st_base =
-	 "select tb3.id as id, tb5.id as pid, tb3.jour_tirage as J, "
-	 "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, "
-	 "tb5.tip as C, "
-	 + st_cr1 +
-	 " from ("
-	 +st_base_reference+
-	 ") as tb3,  "
-	 ""+tb_ana_zn+" as tb4,  "
-							 "Ref_cmb_z1 as tb5 "
-							 "where "
-							 "( "
-							 "tb4.id = tb3.id "
-							 "and "
-							 "tb5.id = tb4.fk_idCombi_z1 "
-							 "); ";
-
-#ifndef QT_NO_DEBUG
-	qDebug()<< st_base;
-#endif
-
-  return st_base;
- }
-
-
- QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf)
+ for(int i =0 ; i< pMaConf->nb_zone; i++)
  {
+  lst_tmp <<   pMaConf->nomZone[i];
+  st_tmp = "tb3."+pMaConf->nomZone[i];
+  loop =  pMaConf->nbElmZone[i];
+  st_tmp =  GEN_Where_3(loop,st_tmp,true," as ",lst_tmp,true,",");
+  st_cr1 = st_cr1 + st_tmp + ",";
+  lst_tmp.clear();
+ }
+#ifndef QT_NO_DEBUG
+ qDebug()<< st_cr1;
+#endif
+
+ st_cr1.remove(QRegExp("[()]"));
+ st_cr1.remove(st_cr1.length()-1,1);
+
+ st_base =
+   "select tb3.id as id, tb5.id as pid, tb3.jour_tirage as J, "
+   "substr(tb3.date_tirage,-2,2)||'/'||substr(tb3.date_tirage,6,2)||'/'||substr(tb3.date_tirage,1,4) as D, "
+   "tb5.tip as C, "
+   + st_cr1 +
+   " from ("
+   +st_base_reference+
+   ") as tb3,  "
+   ""+tb_ana_zn+" as tb4,  "
+                "Ref_cmb_z1 as tb5 "
+                "where "
+                "( "
+                "tb4.id = tb3.id "
+                "and "
+                "tb5.id = tb4.fk_idCombi_z1 "
+                "); ";
+
+#ifndef QT_NO_DEBUG
+ qDebug()<< st_base;
+#endif
+
+ return st_base;
+}
+
+
+QString ComptageGenerique(int zn, int dst, QStringList boules, stTiragesDef *pConf)
+{
 #if 0
  --debut requete tb3
    select * from tirages as tb3
@@ -6847,78 +6847,78 @@ count(*)  as T,
 
 #endif
 
-	QString st_cr1 = "";
-	QString st_cr2 = "";
-	QString st_cr3 = "";
-	QString st_tmp = "";
-	QStringList stl_tmp;
+ QString st_cr1 = "";
+ QString st_cr2 = "";
+ QString st_cr3 = "";
+ QString st_tmp = "";
+ QStringList stl_tmp;
 
-	//exemple dst = 1; loop=5; boules <<1 <<2;
-	// st_cr1 => ((tb1.b1=1 or tb1.b2=1 or tb1.b3=1 or tb1.b4=1 or tb1.b5=1 )
-	// and (tb1.b1=2 or tb1.b2=2 or tb1.b3=2 or tb1.b4=2 or tb1.b5=2 ))
-	int loop = pConf->nbElmZone[zn];
-	st_cr1 =  GEN_Where_3(loop,"tb1.b",true,"=",boules,false,"or");
+ //exemple dst = 1; loop=5; boules <<1 <<2;
+ // st_cr1 => ((tb1.b1=1 or tb1.b2=1 or tb1.b3=1 or tb1.b4=1 or tb1.b5=1 )
+ // and (tb1.b1=2 or tb1.b2=2 or tb1.b3=2 or tb1.b4=2 or tb1.b5=2 ))
+ int loop = pConf->nbElmZone[zn];
+ st_cr1 =  GEN_Where_3(loop,"tb1.b",true,"=",boules,false,"or");
 #ifndef QT_NO_DEBUG
-	qDebug() << st_cr1;
+ qDebug() << st_cr1;
 #endif
 
-	// st_cr2 => ((tb1.boule=tb2.b1 or tb1.boule=tb2.b2 or
-	// tb1.boule=tb2.b3 or tb1.boule=tb2.b4 or tb1.boule=tb2.b5 ))
-	stl_tmp << "tb2.b";
-	st_cr2 =  GEN_Where_3(5,"tb1.boule",false,"=",stl_tmp,true,"or");
+ // st_cr2 => ((tb1.boule=tb2.b1 or tb1.boule=tb2.b2 or
+ // tb1.boule=tb2.b3 or tb1.boule=tb2.b4 or tb1.boule=tb2.b5 ))
+ stl_tmp << "tb2.b";
+ st_cr2 =  GEN_Where_3(5,"tb1.boule",false,"=",stl_tmp,true,"or");
 #ifndef QT_NO_DEBUG
-	qDebug() << st_cr2;
+ qDebug() << st_cr2;
 #endif
 
-	if(dst == 0)
-	{
-	 st_cr3 =  GEN_Where_3(1,"tb1.boule",false,"!=",boules,false,"or");
+ if(dst == 0)
+ {
+  st_cr3 =  GEN_Where_3(1,"tb1.boule",false,"!=",boules,false,"or");
 
-	 st_cr3 = " and " + st_cr3 ;
+  st_cr3 = " and " + st_cr3 ;
 #ifndef QT_NO_DEBUG
-	 qDebug() << st_cr3;
+  qDebug() << st_cr3;
 #endif
-	}
-	// Creer critere 1 en fonction des boules
-	st_tmp =
-	 "select tb1.boule as B, count(tb2.id) as T,"
-	 "count(CASE WHEN  jour_tirage like 'lundi%' then 1 end) as LUN,"
-	 "count(CASE WHEN  jour_tirage like 'mercredi%' then 1 end) as MER,"
-	 "count(CASE WHEN  jour_tirage like 'same%' then 1 end) as SAM "
-	 "from"
-	 "("
-	 "select id as boule from Bnrz where (z"
-	 +QString::number(zn+1)
-	 +" not NULL )"
-		 ") as tb1 "
-		 "left join"
-		 "("
-		 " "
-		 "select * from tirages as tb3 "
-		 "inner join "
-		 "("
-		 "select *  from tirages as tb1 "
-		 "where"
-		 "("
-	 + st_cr1 +
-	 ")"
-	 ") as tb2 "
-	 "on tb3.id = tb2.id + "
-	 + QString::number(dst)
-	 +" "
-		 ") as tb2 "
-		 "on"
-		 "("
-	 + st_cr2
-	 + st_cr3 +
-	 ") group by tb1.boule;";
-
-#ifndef QT_NO_DEBUG
-	qDebug() << st_tmp;
-#endif
-
-  return st_tmp;
  }
+ // Creer critere 1 en fonction des boules
+ st_tmp =
+   "select tb1.boule as B, count(tb2.id) as T,"
+   "count(CASE WHEN  jour_tirage like 'lundi%' then 1 end) as LUN,"
+   "count(CASE WHEN  jour_tirage like 'mercredi%' then 1 end) as MER,"
+   "count(CASE WHEN  jour_tirage like 'same%' then 1 end) as SAM "
+   "from"
+   "("
+   "select id as boule from Bnrz where (z"
+   +QString::number(zn+1)
+   +" not NULL )"
+    ") as tb1 "
+    "left join"
+    "("
+    " "
+    "select * from tirages as tb3 "
+    "inner join "
+    "("
+    "select *  from tirages as tb1 "
+    "where"
+    "("
+   + st_cr1 +
+   ")"
+   ") as tb2 "
+   "on tb3.id = tb2.id + "
+   + QString::number(dst)
+   +" "
+    ") as tb2 "
+    "on"
+    "("
+   + st_cr2
+   + st_cr3 +
+   ") group by tb1.boule;";
+
+#ifndef QT_NO_DEBUG
+ qDebug() << st_tmp;
+#endif
+
+ return st_tmp;
+}
 
 #if 0
 QString GEN_Where_2(stTiragesDef *pConf, int zone, QString operateur, int boule, QString critere,QString alias="def")

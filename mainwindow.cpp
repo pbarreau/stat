@@ -158,7 +158,7 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
 
  /// recuperer la liste des jeux deja effectue
  msg = "select * from E_lst "
-       "where ( (type = '" + lstTirDef[eTirGen] + "')) ";
+       "where ( (type = '" + TXT_TirDef[eTirGen] + "')) ";
 
  /// si il y a des reponses les faire toutes
  if(((b_retVal=query.exec(msg))== true) && ((b_retVal=query.first())==true)){
@@ -184,7 +184,7 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
   tmp->db_ref->jrs = pGame->db_ref->jrs;
 
   do{
-   QString gameId = query.value(1).toString();
+   QString gameId = query.value("name").toString();
    tmp->db_ref->src = gameId;
    tmp->db_ref->flt = gameId+"_flt";
 
