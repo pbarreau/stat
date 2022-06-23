@@ -478,7 +478,9 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount E_Calcul)
  /// -----------------------------------
 #else
  producteur->start(eStep_T1);
- //producteur->start(eStep_T2);
+ if(pGame->bAutoUpl){
+  producteur->start(eStep_T2);
+ }
 #endif
 
  stParam_tsk *tsk_param = new stParam_tsk;
@@ -495,10 +497,12 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount E_Calcul)
   upl_Bview_3[l_id-1]=new BView**** [nb_zn]; /// S2
   upl_Bview_4[l_id-1]=new BView**** [nb_zn]; /// S2
 
-  QTabWidget *tab_zones = new QTabWidget(tab_tirId);
+  QTabWidget *tab_Zid = new QTabWidget(tab_tirId);
 
   for (int z_id = zn_start; z_id< zn_stop; z_id++) {
-   QTabWidget *tab_uplets = new QTabWidget(tab_zones);
+   QTabWidget *tab_Gid = new QTabWidget(tab_Zid);
+   tab_Gid->setObjectName(QString::number(z_id));
+   connect(tab_Gid, &QTabWidget::currentChanged, this, &BcUpl::BSlot_TGid_Click);
 
    QString title = pGame->names[z_id].abv;
    int nb_recherche = BMIN_2(pGame->limites[z_id].win, C_MAX_UPL);
@@ -539,12 +543,12 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount E_Calcul)
      QWidget * wdg_tmp = MkMainUplet(tsk_param);
      if(wdg_tmp !=nullptr){
       //wdg_tmp->setDisabled(true);
-      tab_uplets->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
+      tab_Gid->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
      }
     }
    }
 
-   tab_zones->addTab(tab_uplets,title);
+   tab_Zid->addTab(tab_Gid,title);
   }
 
   /// ------------------
@@ -555,7 +559,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount E_Calcul)
    refTir = QString("Select-")+ QString::number(usrCounter).rightJustified(2,'0');
    usrCounter++;
   }
-  tab_tirId->addTab(tab_zones,refTir);
+  tab_tirId->addTab(tab_Zid,refTir);
  }
 
  delete tsk_param;
@@ -2503,6 +2507,17 @@ void BcUpl::BSlot_UVL2_Click_Fn_1(const QModelIndex &index)
  u_text = upl_current + "," + u_text;
  Q_EMIT(BSig_UplFdjShow(u_text, z_id));
 
+}
+
+void BcUpl::BSlot_TGid_Click(int index)
+{
+ Q_UNUSED(index)
+
+ QTabWidget *tab_Gid = qobject_cast<QTabWidget *>(sender());
+ int z_id = tab_Gid->objectName().toInt();
+
+ upl_current = "";
+ Q_EMIT(BSig_UplFdjShow(upl_current, z_id));
 }
 
 #if C_PGM_THREADED

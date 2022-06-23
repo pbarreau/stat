@@ -11,6 +11,5 @@
 QStringList MainWindow::L1;
 void MainWindow::getPgmVersion()
 {
-L1.append("c080d00,Wed Jan 12 06:00:03 2022,Pascal BARREAU,<4.barreau.pascal@gmail.com>,refs/heads/Verif-2");
-L1.append("c080d00,Wed Jan 12 06:00:03 2022,Pascal BARREAU,<4.barreau.pascal@gmail.com>,refs/heads/Fusion-2");
+L1.append("21e8467,Thu Jun 23 18:10:36 2022,Pascal,<4.barreau.pascal@gmail.com>,refs/heads/Fusion-2");
 }

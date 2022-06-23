@@ -62,6 +62,7 @@ typedef  struct _stFdj{
   etDb db_type;
   bool use_odb;			/// utilisation ancien fichier *.sqlite
   bool fdj_new;			/// Recharger info base de la fdj
+  bool upl_fdj;			/// calcul  uplets depuis dernier tirages
 }stFdj;
 
 typedef struct _stParam_3 {
@@ -102,6 +103,7 @@ class stGameConf{
  public:
   int id;
   bool bUseMadeBdd;
+  bool bAutoUpl; /// Calcul des Uplets des 2 derniers tirages
   etFdj eFdjType; /// type du jeu
   etTir eTirType; /// origine
   int znCount; /// nombre de zones a regarder

@@ -84,7 +84,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow();
     //explicit
-    void EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new=false);
+    void EtudierJeu(etFdj curGame, bool use_odb=false, bool fdj_new=false, bool upl_fdj=false);
     void EtudierJeu_v1(stGameConf *curConf, bool dest_bdd);
     void EtudierJeu_v2(stGameConf *curConf);
     void EtudierJeu_MontrerUplet(stGameConf *curConf, GererBase *use_db);

@@ -71,7 +71,7 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
  qDebug()<<calcul.tb_data;
 }
 
-void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
+void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new, bool upl_fdj)
 {
 
  //BXmlFdj my_xml = BXmlFdj(curGame);
@@ -81,6 +81,7 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new)
  prm->typeJeu = curGame;
  prm->use_odb = use_odb;
  prm->fdj_new = fdj_new;
+ prm->upl_fdj = upl_fdj;
  prm->db_type = eDbDsk;
 
  BFdj *charge = new BFdj(prm);

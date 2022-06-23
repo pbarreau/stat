@@ -170,6 +170,7 @@ class BcUpl: public BCount
   void BSlot_UVL1_Click_Fn_1(const QModelIndex &index);
   void BSlot_UVL1_Click_Fn_2(const QModelIndex &index);
   void BSlot_UVL2_Click_Fn_1(const QModelIndex &index);
+  void BSlot_TGid_Click(int index);
   void BSlot_over(const QModelIndex &index);
   void BSlot_Repaint(const BView * tbv);
   void BSlot_UVL1_Cmr_Fn_1(QPoint pos);

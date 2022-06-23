@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>245</width>
-    <height>171</height>
+    <width>233</width>
+    <height>188</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>-20</x>
-     <y>120</y>
+     <y>140</y>
      <width>221</width>
      <height>41</height>
     </rect>
@@ -62,7 +62,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>70</y>
+     <y>90</y>
      <width>176</width>
      <height>20</height>
     </rect>
@@ -75,13 +75,26 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>90</y>
+     <y>110</y>
      <width>161</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
     <string>Recharger tirages</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="chk_autoUpl">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>70</y>
+     <width>91</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Auto Uplets</string>
    </property>
   </widget>
  </widget>

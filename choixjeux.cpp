@@ -26,6 +26,7 @@ void ChoixJeux::slot_ConfigureJeu(void)
   etFdj setGame = eFdjNone;
   bool bNewFdj = false;
   bool bOldFile = false;
+  bool bAutoUpl = false;
 
   // Type de jeu a etudier
   if(ui->rb_euro->isChecked())
@@ -49,7 +50,13 @@ void ChoixJeux::slot_ConfigureJeu(void)
     bOldFile = true;
   }
 
+  if(ui->chk_autoUpl->isChecked())
+  {
+    bAutoUpl = true;
+  }
+
   // Lancer l'etude
-  EtudeJeu->EtudierJeu(setGame,bOldFile,bNewFdj);
+  EtudeJeu->EtudierJeu(setGame,bOldFile,bNewFdj,bAutoUpl);
 
  }
+

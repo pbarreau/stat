@@ -7,26 +7,25 @@
 #include "ui_mainwindow.h"
 
 namespace Ui {
-class ChoixJeux;
+ class ChoixJeux;
 }
 
 class ChoixJeux : public QDialog
 {
-    Q_OBJECT
-    
-public:
-    explicit ChoixJeux(QWidget *parent = 0);
-    ~ChoixJeux();
-    bool fin_pgm;
+  Q_OBJECT
 
-private slots:
-    void slot_ConfigureJeu(void);
+ public:
+  explicit ChoixJeux(QWidget *parent = 0);
+  ~ChoixJeux();
+  bool fin_pgm;
 
-private:
-    Ui::ChoixJeux *ui;
-    MainWindow  *EtudeJeu;
-    //NE_FDJ::E_typeJeux eChoixJeu;
-    //bool load;
+ private slots:
+  void slot_ConfigureJeu(void);
+ private:
+  Ui::ChoixJeux *ui;
+  MainWindow  *EtudeJeu;
+  //NE_FDJ::E_typeJeux eChoixJeu;
+  //bool load;
 };
 
 #endif // CHOIXJEUX_H

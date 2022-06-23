@@ -331,6 +331,7 @@ stGameConf * BFdj::init(stFdj *prm)
 
  ret->id = cur_item;
  ret->bUseMadeBdd = prev;
+ ret->bAutoUpl = prm->upl_fdj;
  ret->eFdjType = eFdjType;
  ret->eTirType = eTirNotSet;
 
