@@ -1,0 +1,14 @@
+https://www.mail-archive.com/development@qt-project.org/msg37046.html
+https://forum.qt.io/topic/112861/how-to-deploy-when-using-resource-system-windows-10
+
+windeployqtreleaseonly --dir C:\Qt\WorkSpace\check-5\deploy C:\Qt\WorkSpace\check-5\build-StatFdJeux-Desktop_Qt_5_15_2_MinGW_32_bit-Release\release\StatFdJeux.exe
+
+copier StatFdJeux.exe dans C:\Qt\WorkSpace\check-5\deploy
+puis libStatPgm-sqlite3-i686.dll
+puis rep sqlExtensions
+
+telecharger automatiquement fichier Fdj
+Decompreser dans Repertoire FdjDbZip
+rajouter ; a la fin de la premiere ligne du fichier euromillions_4.csv
+
+Lancer Nouveau jeu ...
