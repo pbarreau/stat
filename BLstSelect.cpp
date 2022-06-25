@@ -1,6 +1,6 @@
 #include "BLstSelect.h"
 
-BLstSelect::BLstSelect():type(eCountToSet),zn(-1),sel(nullptr)
+BLstSelect::BLstSelect():type(E_CountToSet),zn(-1),sel(nullptr)
 {
 
 }

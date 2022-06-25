@@ -42,7 +42,7 @@ BcElm::~BcElm()
  tot_elm --;
 }
 
-BcElm::BcElm(const stGameConf *pGame):BCount(pGame,eCountElm)
+BcElm::BcElm(const stGameConf *pGame):BCount(pGame,E_CountElm)
 {
  /// appel du constructeur parent
  db_elm = dbCount;
@@ -323,7 +323,7 @@ QWidget *BcElm::fn_Count(const stGameConf *pGame, int zn)
  a.db_cnx = cnx;
  a.start = 1;
  a.zne=zn;
- a.typ = eCountElm;
+ a.typ = E_CountElm;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -376,13 +376,13 @@ QWidget *BcElm::fn_Count(const stGameConf *pGame, int zn)
          SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 #endif
  /// Mettre dans la base une info sur 2 derniers tirages
- marquerDerniers_tir(pGame, eCountElm, zn);
+ marquerDerniers_tir(pGame, E_CountElm, zn);
 
  /*
  static int oneShotParZn = pGame->znCount; //
  if(oneShotParZn > 0){
   oneShotParZn--;
-  marquerDerniers_tir(pGame, eCountElm, zn);
+  marquerDerniers_tir(pGame, E_CountElm, zn);
  }
 */
 #endif
@@ -391,7 +391,7 @@ QWidget *BcElm::fn_Count(const stGameConf *pGame, int zn)
 }
 
 
-QString BcElm::getSqlMsg(const stGameConf *pGame, int zn)
+QString BcElm::getSqlMsg(const stGameConf *pGame, int z_id)
 {
  /* exemple requete :
   *
@@ -413,8 +413,8 @@ QString BcElm::getSqlMsg(const stGameConf *pGame, int zn)
   */
  QString sql_msg="";
 
- QString key = "t2.z"+QString::number(zn+1);
- QString st_cols = FN1_getFieldsFromZone(pGame, zn, "t1");
+ QString key = "t2.z"+QString::number(z_id+1);
+ QString st_cols = FN1_getFieldsFromZone(pGame, z_id, "t1");
 
  QString col_vsl = ",COUNT(*) AS T\n";
  QString str_jrs = "";
@@ -479,7 +479,10 @@ QString BcElm::getSqlMsg(const stGameConf *pGame, int zn)
 
 
 #ifndef QT_NO_DEBUG
- BTest::writetoFile("AF_dbg_elm.txt",sql_msg,false);
+ etFdj thatGame = pGame->eFdjType;
+ QString zName = pGame->names[z_id].std;
+ QString target = "AF_dbg_elm_"+TXT_Game[thatGame]+"_"+zName+".txt";
+ BTest::writetoFile(target,sql_msg,false);
  qDebug() <<sql_msg;
 #endif
 
@@ -488,7 +491,7 @@ QString BcElm::getSqlMsg(const stGameConf *pGame, int zn)
 }
 
 BcElm::BcElm(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb, QWidget *LeParent)
- :BCount(pDef,in,fromDb,LeParent,eCountElm)//,cFdjData()
+ :BCount(pDef,in,fromDb,LeParent,E_CountElm)//,cFdjData()
 {
  QTabWidget *tab_Top = new QTabWidget(this);
 
@@ -862,7 +865,7 @@ QGridLayout *BcElm::Compter(QString * pName, int zn)
  a.db_cnx = db_elm.connectionName();
  a.start = 0;
  a.zne=zn;
- a.typ = eCountElm;
+ a.typ = E_CountElm;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -912,7 +915,7 @@ QGridLayout *BcElm::Compter(QString * pName, int zn)
   stParam_3 *tmp = new stParam_3;
   myGame.db_ref = tmp;
   myGame.db_ref->fdj = st_LstTirages;
-  marquerDerniers_tir(&myGame, eCountElm, zn);
+  marquerDerniers_tir(&myGame, E_CountElm, zn);
  }
 #endif
 
@@ -1079,7 +1082,7 @@ QString BcElm::getFilteringData(int zn)
  msg = "select tb1.val from ("+tb_flt
        +")as tb1 "
         "where((tb1.flt>0) AND (tb1.flt&0x"+QString::number(tmp)+"=0x"+QString::number(tmp)+
-       ") AND tb1.zne="+QString::number(zn)+" and tb1.typ="+QString::number(eCountElm)+" and tb1.pri=1)";
+       ") AND tb1.zne="+QString::number(zn)+" and tb1.typ="+QString::number(E_CountElm)+" and tb1.pri=1)";
  b_retVal = query.exec(msg);
 #ifndef QT_NO_DEBUG
  qDebug() << "msg:"<<msg;

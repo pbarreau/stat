@@ -31,13 +31,13 @@ class BView : public QTableView
 
  protected:
  QGroupBox *square;
+ int z_id;
+ int g_id;
+ QString tbInDb;
 
  private:
  QLayout *up;
  void * userData;
- int z_id;
- int g_id;
- QString tbInDb;
 };
 
 #endif // BGTBVIEW_H

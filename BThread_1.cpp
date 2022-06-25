@@ -1,6 +1,6 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
-//#include "BTest.h"
+#include "BTest.h"
 #endif
 
 #include <QtConcurrent>
@@ -322,7 +322,9 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_i
  }
  dbg_target = "Dbg_"+stype+"-"+dbg_target;
 
- //BTest::writetoFile(dbg_target,sql_msg,false);
+ if(o_id==0){
+  BTest::writetoFile(dbg_target,sql_msg,false);
+ }
 #endif
 
 

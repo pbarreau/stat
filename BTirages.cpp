@@ -614,7 +614,7 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
   QStandardItemModel *visu = nullptr;
   QStandardItem * std_tmp = nullptr;
 
-  // nb_items en lien avec BCount::onglet[eCountEnd]
+  // nb_items en lien avec BCount::onglet[E_CountEnd]
   // type de calcul
   for (int i=0; i< nb_items;i++) {
 
@@ -639,7 +639,7 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
     qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
 
     switch (item->type) {
-     case eCountElm:
+     case E_CountElm:
      {
       QList <int> lst_value;
 
@@ -696,7 +696,7 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
      }
       break;
 
-     case eCountCmb:
+     case E_CountCmb:
      {
       QStringList lst_value;
 
@@ -726,7 +726,7 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
      }
       break;
 
-     case eCountBrc:
+     case E_CountBrc:
      {
       QList <double> lst_value;
 
@@ -763,7 +763,7 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
       }
      }
       break;
-     case eCountGrp:
+     case E_CountGrp:
      {
       typedef struct _grp_item
       {
@@ -855,7 +855,7 @@ QTableView * BTirages::FillUsrSelectionTbv(etCount typ_usr, QList <QVariant> lst
  int nb_col = -1;
 
  switch (typ_usr) {
-  case eCountElm:
+  case E_CountElm:
   {
    QList <int> lst_value ;//= lst_usr.value().value<QList<int>>;
 
@@ -942,7 +942,7 @@ QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
 
    QString tbl_ana = "("+use_tirages+"_ana_z"+QString::number((item->zn)+1)+") as t";
 
-   if((item->type) == eCountElm){
+   if((item->type) == E_CountElm){
     ret_elm = select_elm(item->indexes, item->zn);
    }
    else {
@@ -953,17 +953,17 @@ QString BTirages::makeSqlFromSelection(const B2LstSel * sel, QString *tbl_lst)
     }
 
     switch (item->type) {
-     case eCountCmb:
+     case E_CountCmb:
       ret_elm = select_cmb(item->indexes, item->zn, cur_tbl_id);
       break;
-     case eCountBrc:
+     case E_CountBrc:
       ret_elm = select_brc(item->indexes, item->zn, cur_tbl_id);
       break;
-     case eCountGrp:
+     case E_CountGrp:
       ret_elm = select_grp(item->indexes, item->zn, cur_tbl_id);
       break;
 
-     case eCountUpl:
+     case E_CountUpl:
       int a = 12; /// Pas encore traite
       return "";
       break;

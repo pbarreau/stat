@@ -118,13 +118,13 @@ Q_DECLARE_METATYPE(Bp::F_Flts)
 
 
 typedef enum{
- eCountToSet,    /// Pas de definition
- eCountElm,      /// Comptage des boules de zones
- eCountCmb,      /// ... des combinaisons
- eCountGrp,       /// ... des regroupements
- eCountBrc,      /// ... des barycentres
- eCountUpl,     /// Uplets (2 ou 3)
- eCountEnd
+ E_CountToSet,    /// Pas de definition
+ E_CountElm,      /// Comptage des boules de zones
+ E_CountCmb,      /// ... des combinaisons
+ E_CountGrp,       /// ... des regroupements
+ E_CountBrc,      /// ... des barycentres
+ E_CountUpl,     /// Uplets (2 ou 3)
+ E_CountEnd
 }etCount;
 
 

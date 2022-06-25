@@ -126,7 +126,7 @@ void BView_1::BSlot_ShowToolTip(const QModelIndex & index)
  QString headRef = "";
 
  int start = Bp::colTxt;
- if(inf_flt->typ == eCountGrp){
+ if(inf_flt->typ == E_CountGrp){
   start = Bp::colId;
   vCol = pModel->headerData(col,Qt::Horizontal,Qt::ToolTipRole);
  }
@@ -179,7 +179,7 @@ QString BTbView::mkTitle(int zn, etCount E_Calcul, QTableView *view)
  }
  /// Determination nb ligne par proxymodel
  int nb_lgn_ftr = m->rowCount();
- if(E_Calcul==eCountGrp){
+ if(E_Calcul==E_CountGrp){
   int count=view->horizontalHeader()->count();
   nb_lgn_ftr = nb_lgn_ftr * count;
  }
@@ -233,7 +233,7 @@ QString BTbView::mkTitle(int zn, etCount E_Calcul, QTableView *view)
 
 	 /// Verification nb choix suffisant
 	 /// pour creer liste de jeux
-	 if((inf_flt->typ == eCountElm) && (keys[i]== Bp::fltSelected))
+	 if((inf_flt->typ == E_CountElm) && (keys[i]== Bp::fltSelected))
 	 {
 		if(zn == 0){
 		 bool activate = false;
@@ -565,7 +565,7 @@ void BView_1::BSlot_TrackSelection(const QItemSelection &cur, const QItemSelecti
  QString title = "Selection : " + QString::number(total).rightJustified(2,'0')+"/"+QString::number(rowModelCount);
  this->setTitle(title);
 
- if((inf_flt->typ == eCountElm) && (inf_flt->zne == 0))
+ if((inf_flt->typ == E_CountElm) && (inf_flt->zne == 0))
  {
   bool activate = false;
   if(total >= gme_current->limites[0].win){
@@ -598,7 +598,7 @@ void BView_1::BSlot_MousePressed(const QModelIndex &index)
   do_return = true;
  }
 
- if((do_return == false) && (inf_flt->typ !=eCountGrp) && (col != Bp::colTxt)){
+ if((do_return == false) && (inf_flt->typ !=E_CountGrp) && (col != Bp::colTxt)){
   do_return = true;
  }
 

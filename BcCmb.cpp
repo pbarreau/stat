@@ -30,7 +30,7 @@ BcCmb::~BcCmb()
  total --;
 }
 
-BcCmb::BcCmb(const stGameConf *pGame):BCount(pGame,eCountCmb)
+BcCmb::BcCmb(const stGameConf *pGame):BCount(pGame,E_CountCmb)
 {
  /// appel du constructeur parent
  db_cmb = dbCount;
@@ -114,7 +114,7 @@ QWidget *BcCmb::fn_Count(const stGameConf *pGame, int zn)
  a.db_cnx = cnx;
  a.start = 1;
  a.zne=zn;
- a.typ = eCountCmb;
+ a.typ = E_CountCmb;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -143,7 +143,7 @@ QWidget *BcCmb::fn_Count(const stGameConf *pGame, int zn)
  wdg_tmp->setLayout(glay_tmp);
 
  /// Mettre dans la base une info sur 2 derniers tirages
- marquerDerniers_tir(pGame, eCountCmb, zn);
+ marquerDerniers_tir(pGame, E_CountCmb, zn);
 
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,
@@ -476,9 +476,9 @@ QString BcCmb::getFltRgx(const int gme_zn, const QString &key)
 }
 
 BcCmb::BcCmb(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb)
-    :BCount(pDef,in,fromDb,NULL,eCountCmb)
+    :BCount(pDef,in,fromDb,NULL,E_CountCmb)
 {
- //type=eCountCmb;
+ //type=E_CountCmb;
  countId = total;
  unNom = "'Compter Combinaisons'";
  total++;
@@ -843,7 +843,7 @@ QGridLayout *BcCmb::Compter(QString * pName, int zn)
  a.parent = qtv_tmp;
  a.db_cnx = dbCount.connectionName();
  a.zne=zn;
- a.typ = eCountCmb;
+ a.typ = E_CountCmb;
  a.start = 0;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
@@ -904,7 +904,7 @@ QGridLayout *BcCmb::Compter(QString * pName, int zn)
  lay_return->addLayout(FiltreLayout,0,0,Qt::AlignLeft|Qt::AlignTop);
  lay_return->addWidget(qtv_tmp,1,0,Qt::AlignLeft|Qt::AlignTop);
 
- marquerDerniers_cmb(&myGame, eCountCmb, zn);
+ marquerDerniers_cmb(&myGame, E_CountCmb, zn);
 #endif
  return lay_return;
 }

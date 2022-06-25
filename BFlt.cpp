@@ -101,9 +101,9 @@ bool BFlt::displayTbvMenu_cell(const QPoint pos, BView_1 *view)
  int cur_row = index.row();
 
  switch (inf_flt->typ) {
-  case eCountElm:
-  case eCountCmb:
-  case eCountBrc:
+  case E_CountElm:
+  case E_CountCmb:
+  case E_CountBrc:
    if(cur_col){
     inf_flt->lgn = 10 * inf_flt->typ;
     inf_flt->col = index.sibling(cur_row,0).data().toInt();
@@ -113,7 +113,7 @@ bool BFlt::displayTbvMenu_cell(const QPoint pos, BView_1 *view)
    }
    break;
 
-	case eCountGrp:
+	case E_CountGrp:
 	 inf_flt->lgn = cur_row;
 	 inf_flt->col = cur_col;
 	 if(index.data().isValid()){
@@ -172,9 +172,9 @@ bool BFlt::chkThatCell(QModelIndex a_cell) const
  int cur_row = a_cell.row();
 
  switch (inf_flt->typ) {
-  case eCountElm:
-  case eCountCmb:
-  case eCountBrc:
+  case E_CountElm:
+  case E_CountCmb:
+  case E_CountBrc:
    if((a_cell.column() == Bp::colTxt) || (a_cell.column()==Bp::colVisual)){
     inf_flt->lgn = 10 * inf_flt->typ;
     inf_flt->col = a_cell.sibling(cur_row,0).data().toInt();
@@ -189,7 +189,7 @@ bool BFlt::chkThatCell(QModelIndex a_cell) const
 	 }
 	 break;
 
-	case eCountGrp:
+	case E_CountGrp:
 	 inf_flt->lgn = cur_row;
 	 inf_flt->col = cur_col;
 	 if(a_cell.data().isValid()){

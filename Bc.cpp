@@ -28,8 +28,8 @@
 #include "BcUpl.h"
 #include "db_tools.h"
 
-QString BCount::label[eCountEnd]={"err","elm","cmb","grp","brc","upl"};
-QString BCount::onglet[eCountEnd]={"Erreur","Zones","Combinaisons","Groupes","Barycentres", "Uplets"};
+QString BCount::label[E_CountEnd]={"err","elm","cmb","grp","brc","upl"};
+QString BCount::onglet[E_CountEnd]={"Erreur","Zones","Combinaisons","Groupes","Barycentres", "Uplets"};
 QList<BRunningQuery *> BCount::sqmActive[3];
 int BCount::nbChild = 0;
 
@@ -51,20 +51,35 @@ QLayout * BCount::usr_UpperItems(int zn, BView_1 *cur_tbv)
 QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl usr_fn, const int zn)
 {
  QWidget * wdg_tmp = new QWidget;
- QGridLayout *glay_tmp = new QGridLayout;
+
+ if(E_Calcul == E_CountElm){
+  wdg_tmp = startIhm_new(pGame, E_Calcul, usr_fn, zn);
+ }
+ else{
+  wdg_tmp = startIhm_old(pGame, E_Calcul, usr_fn, zn);
+ }
+
+ return wdg_tmp;
+}
+
+QWidget *BCount::startIhm_old(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn)
+{
 
  stMkLocal prm;
  QLayout *up_qtv = nullptr; /// Bandeau audessu du tabview
- BView_1 *qtv_tmp = new BView_1(pGame,zn,E_Calcul);
+ BView_1 *qtv_tmp = new BView_1(pGame,zn,eCalcul);
  tabTbv[zn] = qtv_tmp;
  qtv_tmp->setObjectName(QString::number(zn));
- qtv_tmp->setParentLayout(glay_tmp);
 
  /// Nom de la table resultat
  QString dstTbl = "r_"
                   +pGame->db_ref->src
-                  +"_"+label[E_Calcul]
+                  +"_"+label[eCalcul]
                   +"_z"+QString::number(zn+1);
+
+ qtv_tmp->setUseTable(dstTbl);
+ qtv_tmp->setZid(zn);
+ qtv_tmp->setGid(-1);
 
  up_qtv = usr_UpperItems(zn, qtv_tmp);
 
@@ -72,31 +87,58 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const
  QString cnx = pGame->db_ref->cnx;
  if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
 
-	QSqlQuery query(dbCount);
-	QString msg ="";
+  QSqlQuery query(dbCount);
+  QString msg ="";
 
-	prm.dstTbl = dstTbl;
-	prm.query=&query;
-	prm.sql=&msg;
-	prm.up = &up_qtv;
-	prm.cur_tbv = qtv_tmp;
+  prm.dstTbl = dstTbl;
+  prm.query=&query;
+  prm.sql=&msg;
+  prm.up = &up_qtv;
+  prm.cur_tbv = qtv_tmp;
+  prm.glay_tmp = nullptr;
 
-	/// Creation de la table avec les resultats
-	/// appel de la fonction utilisateur de creation
-	bool b_retVal = (this->*usr_fn)(pGame, prm, zn);
+  /// Creation de la table avec les resultats
+  /// appel de la fonction utilisateur de creation
+  bool b_retVal = (this->*usr_fn)(pGame, prm, zn);
 
-	if(b_retVal == false){
-	 QString fnName = "BCount::startIhm : "+label[E_Calcul];
-	 DB_Tools::DisplayError(fnName, &query, msg);
-	 if(up_qtv != nullptr){
-		delete up_qtv;
-	 }
-	 delete wdg_tmp;
-	 delete glay_tmp;
-	 delete qtv_tmp;
-	 return nullptr;
-	}
+  if(b_retVal == false){
+   QString fnName = "BCount::startIhm : "+label[eCalcul];
+   DB_Tools::DisplayError(fnName, &query, msg);
+   if(up_qtv != nullptr){
+    delete up_qtv;
+   }
+   //delete wdg_tmp;
+   //delete glay_tmp;
+   delete qtv_tmp;
+   return nullptr;
+  }
  }
+
+ /// --------
+
+ QWidget * wdg_tmp = nullptr;
+ prm.eCalcul = eCalcul;
+
+ wdg_tmp = endIhm_old(pGame,&prm);
+
+ /// --------
+
+ return wdg_tmp;
+}
+
+QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
+{
+ QWidget *wdg_tmp = new QWidget;
+
+ QLayout *up_qtv = *(prm->up);
+ BView_1 *qtv_tmp = prm->cur_tbv;
+ //QGridLayout *glay_tmp = prm->glay_tmp;
+ QGridLayout *glay_tmp = new QGridLayout;
+ QString dstTbl = prm->dstTbl;
+ etCount eCalcul = prm->eCalcul;
+ int zn = qtv_tmp->getZid();
+
+ qtv_tmp->setParentLayout(glay_tmp);
 
  /// Bandeau superieur
  if(up_qtv != nullptr){
@@ -126,7 +168,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const
   tmp_query.first();
  }
 
- if(E_Calcul == eCountGrp){
+ if(eCalcul == E_CountGrp){
   tot = getTotalCells(pGame,zn);
  }
  else {
@@ -140,7 +182,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const
  int nbCol = sqm_tmp->columnCount();
 
  Bp::E_Col headRed = Bp::noCol;
- if(E_Calcul != eCountGrp){
+ if(eCalcul != E_CountGrp){
   headRed = Bp::colTxt;
   qtv_tmp->hideColumn(Bp::colId);
 
@@ -153,9 +195,9 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const
  Qt::SortOrder order;
 
  switch (type) {
-  case eCountBrc:
-  case eCountCmb:
-  case eCountElm:
+  case E_CountBrc:
+  case E_CountCmb:
+  case E_CountElm:
    if(pGame->db_ref->dad.size()== 0){
     myColSort = Bp::colTotalv1;
     colEc = Bp::colEc;
@@ -166,16 +208,16 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const
    order = Qt::DescendingOrder;
    break;
 
-	case eCountGrp:
-	 order = Qt::AscendingOrder;
-	 headRed=Bp::colId;
-	 myColSort = Bp::colId;
-	 break;
+  case E_CountGrp:
+   order = Qt::AscendingOrder;
+   headRed=Bp::colId;
+   myColSort = Bp::colId;
+   break;
 
-	default:
-	 order = Qt::AscendingOrder;
-	 myColSort = Bp::colTxt;
-	 break;
+  default:
+   order = Qt::AscendingOrder;
+   myColSort = Bp::colTxt;
+   break;
  }
 
  qtv_tmp->setColons(myColSort, colEc);
@@ -185,16 +227,16 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const
  qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt));
 
 
- if(type == eCountGrp) {
+ if(type == E_CountGrp) {
 
-	QStringList tooltips=pGame->slFlt[zn][2];
-	tooltips.insert(0,"Total"); /// La colone Nb (0)
-	for(int pos=0;pos<nbCol;pos++)
-	{
-	 /// Mettre le tooltip
-	 /// https://forum.qt.io/topic/96234/formatting-a-qtableview-header/2
-	 m->setHeaderData(pos,Qt::Horizontal,tooltips.at(pos),Qt::ToolTipRole);
-	}
+  QStringList tooltips=pGame->slFlt[zn][2];
+  tooltips.insert(0,"Total"); /// La colone Nb (0)
+  for(int pos=0;pos<nbCol;pos++)
+  {
+   /// Mettre le tooltip
+   /// https://forum.qt.io/topic/96234/formatting-a-qtableview-header/2
+   m->setHeaderData(pos,Qt::Horizontal,tooltips.at(pos),Qt::ToolTipRole);
+  }
  }
 
  m->setHeaderData(headRed,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
@@ -212,7 +254,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const
  //qtv_tmp->adjustSize();
 
  /// Hauteur
- if(E_Calcul == eCountGrp){
+ if(eCalcul == E_CountGrp){
   int h = qtv_tmp->getMinHeight();
   qtv_tmp->setMaximumHeight(h);
  }
@@ -230,7 +272,7 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const
  /// Marquer pour les 2 derniers tirages de la fdj
  if(qtv_tmp->isOnUsrGame() == false){
   /// Mettre dans la base une info sur 2 derniers tirages
-  usr_TagLast(pGame, qtv_tmp, E_Calcul, zn);
+  usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
  }
 
  /// Agencer le tableau
@@ -239,14 +281,14 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const
  /// https://stackoverflow.com/questions/24005346/qgridlayout-remove-spacing
  glay_tmp->addWidget(qtv_tmp->getScreen(),0,0,1,1);//,-1,Qt::AlignLeft|Qt::AlignTop
 
- if(E_Calcul==eCountGrp){
+ if(eCalcul==E_CountGrp){
   glay_tmp->setRowStretch(0,0);
   glay_tmp->setRowStretch(1,1);
  }
 
- if(gm_def->db_ref->dad.size() == 0 && E_Calcul==eCountGrp){
+ if(gm_def->db_ref->dad.size() == 0 && eCalcul==E_CountGrp){
   qtv_tmp->setMaximumWidth(l);
-  QTabWidget *tmp = getDetailsTabs(pGame,zn,E_Calcul);
+  QTabWidget *tmp = getDetailsTabs(pGame,zn,eCalcul);
   glay_tmp->addWidget(tmp,0,1);
   glay_tmp->setColumnStretch(0, 1);
   glay_tmp->setColumnStretch(1, 1);
@@ -259,310 +301,359 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const
  }
  wdg_tmp->setLayout(glay_tmp);
 
-
-
  return wdg_tmp;
+}
+
+QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl usr_fn, const int zn)
+{
+ //QWidget * wdg_tmp = new QWidget;
+
+ /// A supprimer plus tard
+ BView_1 *qtv_tmp = new BView_1(pGame,zn,E_Calcul);
+ tabTbv[zn] = qtv_tmp;
+
+ bool b_retVal = true;
+ int max_win = pGame->limites[zn].win;
+ int nb_recherche = BMIN_2(max_win, C_MAX_UPL);
+
+ QTabWidget *tab_Gid = new QTabWidget();
+ for (int g_id = C_MIN_UPL; (g_id <= nb_recherche) && (b_retVal == true); g_id++) {
+  BView_1 * cur_view = new BView_1 (pGame, zn,E_Calcul);
+  QGridLayout *glay_tmp = new QGridLayout;
+
+  cur_view->setObjectName(QString::number(zn));
+  cur_view->setParentLayout(glay_tmp);
+  cur_view->setZid(zn);
+  cur_view->setGid(g_id);
+
+  /// Nom de la table resultat
+  QString dstTbl = "r_"
+                   +pGame->db_ref->src
+                   +"_"+label[E_Calcul]
+                   +"_z"+QString::number(zn+1)
+                   +"_g"+QString::number(g_id).rightJustified(2,'0');
+  cur_view->setUseTable(dstTbl);
+
+  QLayout *up_view = usr_UpperItems(zn, cur_view);; /// Bandeau audessu du tabview
+  /// Verifier si table existe deja
+  QString cnx = pGame->db_ref->cnx;
+  if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
+   QSqlQuery *query = new QSqlQuery(dbCount);
+   QString *sql = new QString;
+   stMkLocal *prm = new stMkLocal;
+
+   prm->cur_tbv = cur_view;
+   prm->dstTbl = dstTbl;
+   prm->query = query;
+   prm->sql = sql;
+   prm->up = &up_view;
+  }
+  /// Rajouter ce calcul pour ce g_id
+  tab_Gid->addTab(cur_view,QString::number(g_id).rightJustified(2,'0'));
  }
 
- QTabWidget *BCount::getDetailsTabs(const stGameConf *pGame, int in_zn, etCount in_typ)
- {
-  QTabWidget * ret = new QTabWidget;
-  BView_1 *qtv_tmp = new BView_1(pGame,in_zn,in_typ);
-  qtv_tmp->setObjectName(BFlags::ViewDetails);
+ return tab_Gid;
+}
 
-	QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
-	QString sql_msg = "";
-	sqm_tmp->setQuery(sql_msg, dbCount);
+QTabWidget *BCount::getDetailsTabs(const stGameConf *pGame, int in_zn, etCount in_typ)
+{
+ QTabWidget * ret = new QTabWidget;
+ BView_1 *qtv_tmp = new BView_1(pGame,in_zn,in_typ);
+ qtv_tmp->setObjectName(BFlags::ViewDetails);
 
-	QSortFilterProxyModel *m=new QSortFilterProxyModel();
-	m->setDynamicSortFilter(true);
-	m->setSourceModel(sqm_tmp);
-	qtv_tmp->setModel(m);
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+ QString sql_msg = "";
+ sqm_tmp->setQuery(sql_msg, dbCount);
 
-	/*
-	QString a_key = (pGame->slFlt[in_zn][Bp::colDefTitres]).at(0);
-	QString sql_msg =getSqlForKey(pGame,in_zn,a_key) + " where (t1.I != null)";
+ QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
 
-	qtv_tmp->verticalHeader()->hide();
-	qtv_tmp->hideColumn(Bp::colId);
+ /*
+  QString a_key = (pGame->slFlt[in_zn][Bp::colDefTitres]).at(0);
+  QString sql_msg =getSqlForKey(pGame,in_zn,a_key) + " where (t1.I != null)";
 
-	qtv_tmp->resizeColumnsToContents();
+  qtv_tmp->verticalHeader()->hide();
+  qtv_tmp->hideColumn(Bp::colId);
 
-	qtv_tmp->setAlternatingRowColors(true);
-	qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
-	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  qtv_tmp->resizeColumnsToContents();
+
+  qtv_tmp->setAlternatingRowColors(true);
+  qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 
-	/// Largeur du tableau
-	int l = qtv_tmp->getMinWidth();
-	qtv_tmp->setMinimumWidth(l);
+  /// Largeur du tableau
+  int l = qtv_tmp->getMinWidth();
+  qtv_tmp->setMinimumWidth(l);
 
-	/// Hauteur
-	int h = qtv_tmp->getMinHeight();
-	qtv_tmp->setMinimumHeight(h);
+  /// Hauteur
+  int h = qtv_tmp->getMinHeight();
+  qtv_tmp->setMinimumHeight(h);
  */
 
-	qtv_tmp->setColons(Bp::colTotalv1, Bp::colEc);
-	qtv_tmp->sortByColumn(Bp::colId,Qt::AscendingOrder);
-	qtv_tmp->setSortingEnabled(true);
+ qtv_tmp->setColons(Bp::colTotalv1, Bp::colEc);
+ qtv_tmp->sortByColumn(Bp::colId,Qt::AscendingOrder);
+ qtv_tmp->setSortingEnabled(true);
 
-	qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt));
+ qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt));
 
 
-  ret->addTab(qtv_tmp->getScreen(),BFlags::ViewDetails);
+ ret->addTab(qtv_tmp->getScreen(),BFlags::ViewDetails);
 
-  return ret;
- }
+ return ret;
+}
 
- int BCount::getTotalCells(const stGameConf *pGame, int zn)
- {
-  int ret = 0;
-  bool b_retVal = true;
-  QSqlQuery query(dbCount);
+int BCount::getTotalCells(const stGameConf *pGame, int zn)
+{
+ int ret = 0;
+ bool b_retVal = true;
+ QSqlQuery query(dbCount);
 
-	QString tbl = "r_"+pGame->db_ref->src+"_"+label[type]+"_z"+QString::number(zn+1);
-	QString lst_1 = BTirAna::getFilteringHeaders(pGame, zn, "count(t2.%1) as %1");
-	QString lst_2 = BTirAna::getFilteringHeaders(pGame, zn, "%1","+");
+ QString tbl = "r_"+pGame->db_ref->src+"_"+label[type]+"_z"+QString::number(zn+1);
+ QString lst_1 = BTirAna::getFilteringHeaders(pGame, zn, "count(t2.%1) as %1");
+ QString lst_2 = BTirAna::getFilteringHeaders(pGame, zn, "%1","+");
 
-	QString sql_msg = "with tb1 as (select "+lst_1+" from ("+tbl+")as t2) ";
+ QString sql_msg = "with tb1 as (select "+lst_1+" from ("+tbl+")as t2) ";
 
-	sql_msg = sql_msg + "select ("+lst_2+") as T from tb1";
+ sql_msg = sql_msg + "select ("+lst_2+") as T from tb1";
 
 #ifndef QT_NO_DEBUG
-	qDebug() <<sql_msg;
+ qDebug() <<sql_msg;
 #endif
 
-	if((b_retVal = query.exec(sql_msg)) && (b_retVal = query.first())){
-	 ret = query.value(0).toInt();
-	}
-
-  return ret;
+ if((b_retVal = query.exec(sql_msg)) && (b_retVal = query.first())){
+  ret = query.value(0).toInt();
  }
 
- QList<BLstSelect *> *BCount::getSelection(void)
- {
-  QList<BLstSelect *> * ret = new QList<BLstSelect *>;
+ return ret;
+}
 
-	int nb_zn = gm_def->znCount;
-	for (int zn_id=0;zn_id<nb_zn;zn_id++) {
-	 QItemSelectionModel  *tmp = nullptr;
-	 QList<QModelIndex> indexes;
-	 if(type != eCountUpl){
-		tmp = tabTbv[zn_id]->selectionModel();
-		indexes = tmp->selectedIndexes();
-		if(indexes.size() !=0 ){
-		 BLstSelect *zn_sel = new BLstSelect(type,zn_id,tmp);
-		 ret->append(zn_sel);
-		}
-	 }
-	 else {
-		/*
-		for (int upl_id=0; upl_id< C_MAX_UPL; upl_id++) {
-		 if((upl_id+C_MIN_UPL)>gm_def->limites[zn_id].win){
-			break;
-		 }
-		 tmp = upl_SHOW[zn_id][upl_id][upl_id][0]->selectionModel();
-		 indexes = tmp->selectedIndexes();
-		 if(indexes.size() !=0 ){
-			BLstSelect *zn_sel = new BLstSelect(type,zn_id,tmp,upl_id);
-			ret->append(zn_sel);
-		 }
-		}
-		*/
-	 }
-	}
+QList<BLstSelect *> *BCount::getSelection(void)
+{
+ QList<BLstSelect *> * ret = new QList<BLstSelect *>;
 
-	if(ret->size() == 0){
-	 delete  ret;
-	 ret = nullptr;
-	}
-
-  return ret;
+ int nb_zn = gm_def->znCount;
+ for (int zn_id=0;zn_id<nb_zn;zn_id++) {
+  QItemSelectionModel  *tmp = nullptr;
+  QList<QModelIndex> indexes;
+  if(type != E_CountUpl){
+   tmp = tabTbv[zn_id]->selectionModel();
+   indexes = tmp->selectedIndexes();
+   if(indexes.size() !=0 ){
+    BLstSelect *zn_sel = new BLstSelect(type,zn_id,tmp);
+    ret->append(zn_sel);
+   }
+  }
+  else {
+   /*
+    for (int upl_id=0; upl_id< C_MAX_UPL; upl_id++) {
+     if((upl_id+C_MIN_UPL)>gm_def->limites[zn_id].win){
+      break;
+     }
+     tmp = upl_SHOW[zn_id][upl_id][upl_id][0]->selectionModel();
+     indexes = tmp->selectedIndexes();
+     if(indexes.size() !=0 ){
+      BLstSelect *zn_sel = new BLstSelect(type,zn_id,tmp,upl_id);
+      ret->append(zn_sel);
+     }
+    }
+    */
+  }
  }
 
- void BCount::BSlot_setSelection(const B2LstSel * lst_sel)
- {
-  int nb_items = lst_sel->size();
-  for (int i=0;i<nb_items;i++)
-  {
-   QList<BLstSelect *> *tmp = lst_sel->at(i);
-   int nb_zn = tmp->size();
-   for (int j=0;j<nb_zn;j++) {
-    BLstSelect *item = tmp->at(j);
-    if((type==item->type) && (j==item->zn)){
-     /// preparer le visuel proprement
-     tabTbv[j]->selectionModel()->clear();
-
-		 QModelIndexList lst_selection = item->indexes;
-		 QModelIndex un_index;
-		 foreach (un_index, lst_selection) {
-			tabTbv[j]->selectionModel()->select(un_index,QItemSelectionModel::Select);
-		 }
-		}
-	 }
-	}
+ if(ret->size() == 0){
+  delete  ret;
+  ret = nullptr;
  }
 
- etCount BCount::getType()
+ return ret;
+}
+
+void BCount::BSlot_setSelection(const B2LstSel * lst_sel)
+{
+ int nb_items = lst_sel->size();
+ for (int i=0;i<nb_items;i++)
  {
-  return type;
+  QList<BLstSelect *> *tmp = lst_sel->at(i);
+  int nb_zn = tmp->size();
+  for (int j=0;j<nb_zn;j++) {
+   BLstSelect *item = tmp->at(j);
+   if((type==item->type) && (j==item->zn)){
+    /// preparer le visuel proprement
+    tabTbv[j]->selectionModel()->clear();
+
+    QModelIndexList lst_selection = item->indexes;
+    QModelIndex un_index;
+    foreach (un_index, lst_selection) {
+     tabTbv[j]->selectionModel()->select(un_index,QItemSelectionModel::Select);
+    }
+   }
+  }
+ }
+}
+
+etCount BCount::getType()
+{
+ return type;
+}
+
+
+BCount::BCount(const stGameConf *pGame, etCount genre):gm_def(pGame), type(genre)
+{
+
+ ptr_self = nullptr;
+
+ QString cnx=pGame->db_ref->cnx;
+ QString tbl_tirages = pGame->db_ref->src;
+
+ // Etablir connexion a la base
+ dbCount = QSqlDatabase::database(cnx);
+ if(dbCount.isValid()==false){
+  QString str_error = dbCount.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
  }
 
+ ptr_self = this;
+ tabTbv = new BView_1 *[pGame->znCount];
 
- BCount::BCount(const stGameConf *pGame, etCount genre):gm_def(pGame), type(genre)
- {
-
-  ptr_self = nullptr;
-
-	QString cnx=pGame->db_ref->cnx;
-	QString tbl_tirages = pGame->db_ref->src;
-
-	// Etablir connexion a la base
-	dbCount = QSqlDatabase::database(cnx);
-	if(dbCount.isValid()==false){
-	 QString str_error = dbCount.lastError().text();
-	 QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-	 return;
-	}
-
-	ptr_self = this;
-	tabTbv = new BView_1 *[pGame->znCount];
-
-	if(pGame->eTirType == eTirFdj){
-	 QString st_tmp = pGame->db_ref->jrs;
-	 db_jours = ","+st_tmp;
-	}
-	else {
-	 db_jours = "";
-	}
-
+ if(pGame->eTirType == eTirFdj){
+  QString st_tmp = pGame->db_ref->jrs;
+  db_jours = ","+st_tmp;
  }
-
- BCount * BCount::mySefl()
- {
-  return ptr_self;
- }
-
- BCount::BCount()
- {
- }
-
- BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb)
-     :BCount(pDef,in,useDb,nullptr,eCountToSet)
- {
- }
-
- BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
-                QWidget *unParent=nullptr, etCount genre=eCountToSet)
-     :QWidget(unParent), st_LstTirages(in),dbCount(fromDb),type(genre)
- {
-  bool useRequete = false;
+ else {
   db_jours = "";
-  lesSelections = nullptr;
-  sqlSelection = nullptr;
-  memo = nullptr;
-  sqmZones = nullptr;
-  myGame = pDef;
-  setPriorityToAll = false;
-
-
-	if(useRequete){
-	 RecupererConfiguration();
-	}
-	else{
-	 memo = new int [myGame.znCount];
-	 memset(memo,-1, sizeof(int)*myGame.znCount);
-
-	 lesSelections = new QModelIndexList [myGame.znCount];
-	 sqlSelection = new QString [myGame.znCount];
-
-	 sqmZones = new BColorPriority [myGame.znCount];
-	 BRunningQuery * tmp = new BRunningQuery;
-	 tmp->size = myGame.znCount;
-	 tmp->sqmDef = sqmZones;
-	 tmp->key = type;
-	 nbChild++; /// Nombre total d'enfants A SUPPRIMER ?
-	 /// Rajouter cet element Ã  la liste des requetes actives
-	 int pos = -1;
-	 if(type==eCountElm) pos = 0;
-	 if(type==eCountCmb) pos = 1;
-	 if(type==eCountGrp) pos = 2;
-	 sqmActive[pos].append(tmp);
-	}
-
-	QString st_tmp = DB_Tools::getLstDays(fromDb.connectionName(),in);
-	db_jours = ","+st_tmp;
-
  }
 
- /// ---------------------------------------
+}
 
- void BCount::RecupererConfiguration(void)
- {
+BCount * BCount::mySefl()
+{
+ return ptr_self;
+}
+
+BCount::BCount()
+{
+}
+
+BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase useDb)
+ :BCount(pDef,in,useDb,nullptr,E_CountToSet)
+{
+}
+
+BCount::BCount(const stGameConf &pDef, const QString &in, QSqlDatabase fromDb,
+               QWidget *unParent=nullptr, etCount genre=E_CountToSet)
+ :QWidget(unParent), st_LstTirages(in),dbCount(fromDb),type(genre)
+{
+ bool useRequete = false;
+ db_jours = "";
+ lesSelections = nullptr;
+ sqlSelection = nullptr;
+ memo = nullptr;
+ sqmZones = nullptr;
+ myGame = pDef;
+ setPriorityToAll = false;
+
+
+ if(useRequete){
+  RecupererConfiguration();
+ }
+ else{
+  memo = new int [myGame.znCount];
+  memset(memo,-1, sizeof(int)*myGame.znCount);
+
+  lesSelections = new QModelIndexList [myGame.znCount];
+  sqlSelection = new QString [myGame.znCount];
+
+  sqmZones = new BColorPriority [myGame.znCount];
+  BRunningQuery * tmp = new BRunningQuery;
+  tmp->size = myGame.znCount;
+  tmp->sqmDef = sqmZones;
+  tmp->key = type;
+  nbChild++; /// Nombre total d'enfants A SUPPRIMER ?
+  /// Rajouter cet element Ã  la liste des requetes actives
+  int pos = -1;
+  if(type==E_CountElm) pos = 0;
+  if(type==E_CountCmb) pos = 1;
+  if(type==E_CountGrp) pos = 2;
+  sqmActive[pos].append(tmp);
+ }
+
+ QString st_tmp = DB_Tools::getLstDays(fromDb.connectionName(),in);
+ db_jours = ","+st_tmp;
+
+}
+
+/// ---------------------------------------
+
+void BCount::RecupererConfiguration(void)
+{
 #if 0
-    QSqlQuery query(dbToUse) ;
-    QString msg = "";
-    bool b_retVal = false;
+ QSqlQuery query(dbToUse) ;
+ QString msg = "";
+ bool b_retVal = false;
 
-    msg = "select count(id) as tot from (" + QString::fromLocal8Bit(C_TBL_1) + ");";
-    b_retVal = query.exec(msg);
+ msg = "select count(id) as tot from (" + QString::fromLocal8Bit(C_TBL_1) + ");";
+ b_retVal = query.exec(msg);
 
-    if(b_retVal)
+ if(b_retVal)
+ {
+  b_retVal = query.first();
+  if (query.isValid())
+  {
+   myGame.znCount = query.value(0).toInt();
+   // J'assume que si la requete retourne qq chose
+   // alors il y a au moins une zone existante
+   lesSelections = new QModelIndexList [myGame.znCount];
+   sqlSelection = new QString [myGame.znCount];
+   memo = new int [myGame.znCount];
+   memset(memo,-1, sizeof(int)*myGame.znCount);
+
+   myGame.names  = new stParam_2 [myGame.znCount];
+   myGame.limites = new stParam_1 [myGame.znCount];
+   sqmZones = new QSqlQueryModel [myGame.znCount];
+
+
+   // remplir les infos
+   msg = "select tb1.id, tb1.std, tb1.abv, tb1.len, tb1.min, tb1.max, tb1.win from " +
+         QString::fromLocal8Bit(C_TBL_1) + " as tb1;";
+   b_retVal = query.exec(msg);
+
+   if(b_retVal)
+   {
+    b_retVal = query.first();
+    if (query.isValid())
     {
-        b_retVal = query.first();
-        if (query.isValid())
-        {
-            myGame.znCount = query.value(0).toInt();
-            // J'assume que si la requete retourne qq chose
-            // alors il y a au moins une zone existante
-            lesSelections = new QModelIndexList [myGame.znCount];
-            sqlSelection = new QString [myGame.znCount];
-            memo = new int [myGame.znCount];
-            memset(memo,-1, sizeof(int)*myGame.znCount);
+     for(int i = 0; (i< myGame.znCount) && b_retVal; i++)
+     {
+      myGame.names[i].sel = "";
+      myGame.names[i].std = query.value(1).toString();
+      myGame.names[i].abv = query.value(2).toString();
+      myGame.limites[i].len = query.value(3).toInt();
+      myGame.limites[i].min = query.value(4).toInt();
+      myGame.limites[i].max = query.value(5).toInt();
+      myGame.limites[i].win = query.value(6).toInt();
 
-            myGame.names  = new stParam_2 [myGame.znCount];
-            myGame.limites = new stParam_1 [myGame.znCount];
-            sqmZones = new QSqlQueryModel [myGame.znCount];
-
-
-            // remplir les infos
-            msg = "select tb1.id, tb1.std, tb1.abv, tb1.len, tb1.min, tb1.max, tb1.win from " +
-                    QString::fromLocal8Bit(C_TBL_1) + " as tb1;";
-            b_retVal = query.exec(msg);
-
-            if(b_retVal)
-            {
-                b_retVal = query.first();
-                if (query.isValid())
-                {
-                    for(int i = 0; (i< myGame.znCount) && b_retVal; i++)
-                    {
-                        myGame.names[i].sel = "";
-                        myGame.names[i].std = query.value(1).toString();
-                        myGame.names[i].abv = query.value(2).toString();
-                        myGame.limites[i].len = query.value(3).toInt();
-                        myGame.limites[i].min = query.value(4).toInt();
-                        myGame.limites[i].max = query.value(5).toInt();
-                        myGame.limites[i].win = query.value(6).toInt();
-
-                        if(i<myGame.znCount-1)
-                            b_retVal = query.next();
-                    }
-                }
-            }
-        }
+      if(i<myGame.znCount-1)
+       b_retVal = query.next();
+     }
     }
-
-    if(!b_retVal)
-    {
-        QString ErrLoc = "RecupererConfiguration:";
-        DB_Tools::DisplayError(ErrLoc,&query,msg);
-    }
-
-    query.finish();
-#endif
+   }
+  }
  }
+
+ if(!b_retVal)
+ {
+  QString ErrLoc = "RecupererConfiguration:";
+  DB_Tools::DisplayError(ErrLoc,&query,msg);
+ }
+
+ query.finish();
+#endif
+}
 
 #if 0
 void BCount::BSlot_ShowToolTip(const QModelIndex & index)
@@ -579,7 +670,7 @@ void BCount::BSlot_ShowToolTip(const QModelIndex & index)
  QString headRef = "";
 
  int start = 1;
- if(type == eCountGrp){
+ if(type == E_CountGrp){
   start = 0;
   vCol = pModel->headerData(col,Qt::Horizontal,Qt::ToolTipRole);
  }
@@ -619,120 +710,120 @@ void BCount::slot_AideToolTip(const QModelIndex & index)
 }
 #endif
 
- void BCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
- {
-  // L'onglet implique le tableau...
-  int tab_index = 0;
-  QTableView *view = qobject_cast<QTableView *>(sender());
-  QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
-  QItemSelectionModel *selectionModel = view->selectionModel();
-  tab_index = curOnglet->currentIndex();
+void BCount::slot_ClicDeSelectionTableau(const QModelIndex &index)
+{
+ // L'onglet implique le tableau...
+ int tab_index = 0;
+ QTableView *view = qobject_cast<QTableView *>(sender());
+ QStackedWidget *curOnglet = qobject_cast<QStackedWidget *>(view->parent()->parent());
+ QItemSelectionModel *selectionModel = view->selectionModel();
+ tab_index = curOnglet->currentIndex();
 
-	lesSelections[tab_index]= selectionModel->selectedIndexes();
-	LabelFromSelection(selectionModel,tab_index);
+ lesSelections[tab_index]= selectionModel->selectedIndexes();
+ LabelFromSelection(selectionModel,tab_index);
+}
+
+
+QString BCount::CriteresCreer(QString critere , QString operateur, int zone)
+{
+ QString ret_msg = "";
+
+ // Operateur : or | and
+ // critere : = | <>
+ int totElements = myGame.limites[zone].len;
+ for(int i = 0; i<totElements;i++)
+ {
+  QString zName = myGame.names[zone].abv;
+  ret_msg = ret_msg +"tb2.B "+ critere +" tb1."
+            + zName+QString::number(i+1)
+            + " " + operateur+ " ";
  }
-
-
- QString BCount::CriteresCreer(QString critere , QString operateur, int zone)
- {
-  QString ret_msg = "";
-
-	// Operateur : or | and
-	// critere : = | <>
-	int totElements = myGame.limites[zone].len;
-	for(int i = 0; i<totElements;i++)
-	{
-	 QString zName = myGame.names[zone].abv;
-	 ret_msg = ret_msg +"tb2.B "+ critere +" tb1."
-						 + zName+QString::number(i+1)
-						 + " " + operateur+ " ";
-	}
-	int len_flag = operateur.length();
-	ret_msg.remove(ret_msg.length()-len_flag-1, len_flag+1);
+ int len_flag = operateur.length();
+ ret_msg.remove(ret_msg.length()-len_flag-1, len_flag+1);
 
 #ifndef QT_NO_DEBUG
-	qDebug() << ret_msg;
+ qDebug() << ret_msg;
 #endif
 
-  return ret_msg;
- }
+ return ret_msg;
+}
 
- QString BCount::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
+QString BCount::CriteresAppliquer(QString st_tirages, QString st_cri, int zn)
+{
+}
+
+void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
+{
+ QModelIndexList indexes = selectionModel->selectedIndexes();
+ QString str_titre = myGame.names[zn].abv + "[";
+
+ int nb_items = indexes.size();
+ if(nb_items)
  {
- }
+  QModelIndex un_index;
+  int curCol = 0;
+  int occure = 0;
 
- void BCount::LabelFromSelection(const QItemSelectionModel *selectionModel, int zn)
+  /// Parcourir les selections
+  foreach(un_index, indexes)
+  {
+   const QAbstractItemModel * pModel = un_index.model();
+   curCol = pModel->index(un_index.row(), un_index.column()).column();
+   occure = pModel->index(un_index.row(), 0).data().toInt();
+
+   // si on n'est pas sur la premiere colonne
+   if(curCol)
+   {
+    QVariant vCol;
+    QString headName;
+
+    vCol = pModel->headerData(curCol,Qt::Horizontal);
+    headName = vCol.toString();
+    str_titre = str_titre + "("+headName+"," + QString::number(occure) + "),";
+   }
+  }
+
+  // supression derniere ','
+  str_titre.remove(str_titre.length()-1,1);
+
+  // on marque la fin
+  str_titre = str_titre +"]";
+ }
+ else
  {
-  QModelIndexList indexes = selectionModel->selectedIndexes();
-  QString str_titre = myGame.names[zn].abv + "[";
-
-	int nb_items = indexes.size();
-	if(nb_items)
-	{
-	 QModelIndex un_index;
-	 int curCol = 0;
-	 int occure = 0;
-
-	 /// Parcourir les selections
-	 foreach(un_index, indexes)
-	 {
-		const QAbstractItemModel * pModel = un_index.model();
-		curCol = pModel->index(un_index.row(), un_index.column()).column();
-		occure = pModel->index(un_index.row(), 0).data().toInt();
-
-		// si on n'est pas sur la premiere colonne
-		if(curCol)
-		{
-		 QVariant vCol;
-		 QString headName;
-
-		 vCol = pModel->headerData(curCol,Qt::Horizontal);
-		 headName = vCol.toString();
-		 str_titre = str_titre + "("+headName+"," + QString::number(occure) + "),";
-		}
-	 }
-
-	 // supression derniere ','
-	 str_titre.remove(str_titre.length()-1,1);
-
-	 // on marque la fin
-	 str_titre = str_titre +"]";
-	}
-	else
-	{
-	 str_titre = "";
-	}
-
-	// On sauvegarde la selection en cours
-	myGame.names[zn].sel = str_titre;
-
-	// on construit le nouveau titre
-	str_titre = "";
-	int isVide = 0;
-	for(int i=0; i< myGame.znCount; i++)
-	{
-	 if(myGame.names[i].sel != ""){
-		str_titre = str_titre + myGame.names[i].sel+",";
-	 }
-	 else
-	 {
-		isVide++;
-	 }
-	}
-	// retirer la derniere ','
-	str_titre.remove(str_titre.length()-1,1);
-
-	// Tout est deselectionnÃ© ?
-	if(isVide == myGame.znCount)
-	{
-	 str_titre = "Aucun";
-	}
-
-	// informer disponibilitÃ©
-	emit sig_TitleReady(str_titre);
+  str_titre = "";
  }
 
- /*
+ // On sauvegarde la selection en cours
+ myGame.names[zn].sel = str_titre;
+
+ // on construit le nouveau titre
+ str_titre = "";
+ int isVide = 0;
+ for(int i=0; i< myGame.znCount; i++)
+ {
+  if(myGame.names[i].sel != ""){
+   str_titre = str_titre + myGame.names[i].sel+",";
+  }
+  else
+  {
+   isVide++;
+  }
+ }
+ // retirer la derniere ','
+ str_titre.remove(str_titre.length()-1,1);
+
+ // Tout est deselectionnÃ© ?
+ if(isVide == myGame.znCount)
+ {
+  str_titre = "Aucun";
+ }
+
+ // informer disponibilitÃ©
+ emit sig_TitleReady(str_titre);
+}
+
+/*
 /// Cette fonction cherche dans la table designee si une valeur est presente
 /// auquel cas le champs situe a idColValue est aussi retourne
 /// item : valeur a rechercher
@@ -753,8 +844,8 @@ bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
  if(!ret)
  {
 #ifndef QT_NO_DEBUG
-	qDebug() << "select: " <<table<<"->"<< query.lastError();
-	qDebug() << "Bad code:\n"<<msg<<"\n-------";
+  qDebug() << "select: " <<table<<"->"<< query.lastError();
+  qDebug() << "Bad code:\n"<<msg<<"\n-------";
 #endif
  }
  else
@@ -763,13 +854,13 @@ bool BCount::VerifierValeur(int item,QString table,int idColValue,int *lev)
   qDebug() << "Fn VerifierValeur:\n"<<msg<<"\n-------";
 #endif
 
-	// A t on un resultat
-	ret = query.first();
-	if(query.isValid())
-	{
-	 int val = query.value(idColValue).toInt();
-	 *lev = val;
-	}
+  // A t on un resultat
+  ret = query.first();
+  if(query.isValid())
+  {
+   int val = query.value(idColValue).toInt();
+   *lev = val;
+  }
  }
  return ret;
 }
@@ -788,24 +879,24 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
  int val = -1;
 
 
- if(typ >= eCountToSet && typ <= eCountEnd){
+ if(typ >= E_CountToSet && typ <= E_CountEnd){
   switch (typ) {
-   case eCountElm:
-   case eCountCmb:
-   case eCountBrc:
+   case E_CountElm:
+   case E_CountCmb:
+   case E_CountBrc:
     lgn = typ *10;
     col = index.model()->index(index.row(),0).data().toInt();
     val = col;
     break;
-   case eCountGrp:
+   case E_CountGrp:
     lgn = index.row();
     col = index.column();
     if(index.model()->index(lgn,col).data().canConvert(QMetaType::Int)){
      val = index.model()->index(lgn,col).data().toInt();
     }
     break;
-   case eCountToSet:
-   case eCountEnd:
+   case E_CountToSet:
+   case E_CountEnd:
     break;
   }
  }
@@ -816,7 +907,7 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
  /// Verifier si info presente dans table
  QString msg = "Select *  from "+tbFiltre
                +" where ("
-                 "zne="+QString::number(zn)+" and "+
+                "zne="+QString::number(zn)+" and "+
                "typ="+QString::number(typ)+" and "+
                "lgn="+QString::number(lgn)+" and "+
                "col="+QString::number(col)+" and "+
@@ -833,18 +924,18 @@ bool BCount::getFiltre(stTbFiltres *ret, const etCount typ, QTableView *view, co
   (*ret).flt = Bp::Filtering::isNotSet;//query_2.value("flt").value<BFlags::Filtre>();
   (*ret).pri = query_2.value("pri").toInt();
 
-	(*ret).lgn = lgn;
-	(*ret).col = col;
-	(*ret).val = val;
-	(*ret).zne = zn;
-	(*ret).typ = typ;
+  (*ret).lgn = lgn;
+  (*ret).col = col;
+  (*ret).val = val;
+  (*ret).zne = zn;
+  (*ret).typ = typ;
  }
 
  return b_retVal;
 }
 #endif
 
- /*
+/*
 bool BCount::flt_DbWrite(stTbFiltres *ret, QString cnx, bool update)
 {
  bool b_retVal = false;
@@ -941,35 +1032,35 @@ void BCount::slot_V2_ccmr_SetPriorityAndFilters(QPoint pos)
  {
   QModelIndex  index = view->indexAt(pos);
 
-	stTbFiltres val;
-	memset(&val,0,sizeof(stTbFiltres));
-	val.tbName = "Filtres";
+  stTbFiltres val;
+  memset(&val,0,sizeof(stTbFiltres));
+  val.tbName = "Filtres";
 
-	bool b_retVal = getFiltre(&val, origine,view,index);
+  bool b_retVal = getFiltre(&val, origine,view,index);
 
   QMenu *MonMenu = new QMenu(this);
   QMenu *subMenu= nullptr;
 
-	/// Filtre
-	QAction *filtrer = MonMenu->addAction("Filtrer");
-	filtrer->setCheckable(true);
-	filtrer->setParent(view);
+  /// Filtre
+  QAction *filtrer = MonMenu->addAction("Filtrer");
+  filtrer->setCheckable(true);
+  filtrer->setParent(view);
 
-	connect(filtrer,SIGNAL(triggered(bool)),
-					this,SLOT(slot_wdaFilter(bool)));
-
-
-	if(val.flt && (val.flt & BFlags::isWanted))
-	{
-	 filtrer->setChecked(true);
-	}
+  connect(filtrer,SIGNAL(triggered(bool)),
+          this,SLOT(slot_wdaFilter(bool)));
 
 
-	/*
-	if(origine == eCountElm){
-	 subMenu = V2_mnu_SetPriority(origine,view,pos);
-	 MonMenu->addMenu(subMenu);
-	}
+  if(val.flt && (val.flt & BFlags::isWanted))
+  {
+   filtrer->setChecked(true);
+  }
+
+
+  /*
+  if(origine == E_CountElm){
+   subMenu = V2_mnu_SetPriority(origine,view,pos);
+   MonMenu->addMenu(subMenu);
+  }
 */
   MonMenu->exec(view->viewport()->mapToGlobal(pos));
  }
@@ -982,24 +1073,24 @@ bool BCount::V2_showMyMenu(int col, etCount eSrc)
 {
  bool b_retVal = false ;
 
- if(eSrc >= eCountToSet && eSrc <= eCountEnd){
+ if(eSrc >= E_CountToSet && eSrc <= E_CountEnd){
   switch (eSrc) {
-   case eCountElm:
-   case eCountCmb:
-   case eCountBrc:
+   case E_CountElm:
+   case E_CountCmb:
+   case E_CountBrc:
     if(col == 1)
     {
      b_retVal = true;
     }
     break;
-   case eCountGrp:
+   case E_CountGrp:
     if(col > 0)
     {
      b_retVal = true;
     }
     break;
-   case eCountToSet:
-   case eCountEnd:
+   case E_CountToSet:
+   case E_CountEnd:
     break;
   }
  }
@@ -1034,14 +1125,14 @@ QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
  a.pri = -1;
  a.val = -1;
 
- if(eSrc == eCountGrp)
+ if(eSrc == E_CountGrp)
  {
   a.lgn = index.row() ;
 
-	if(index.model()->index(index.row(),a.col).data().canConvert(QMetaType::Int))
-	{
-	 a.val =  index.model()->index(index.row(),a.col).data().toInt();
-	}
+  if(index.model()->index(index.row(),a.col).data().canConvert(QMetaType::Int))
+  {
+   a.val =  index.model()->index(index.row(),a.col).data().toInt();
+  }
  }
  else {
   a.lgn = a.typ * 10;
@@ -1059,27 +1150,27 @@ QMenu *BCount::V2_mnu_SetPriority(etCount eSrc, QTableView *view, QPoint pos)
   setForAll->setObjectName("k_all");
   menu->addAction(setForAll);
 
-	/// Total de priorite a afficher
-	for(int i =1; i<=5;i++)
-	{
-	 QAction *radio = new QAction(QString::number(i),grpPri);
+  /// Total de priorite a afficher
+  for(int i =1; i<=5;i++)
+  {
+   QAction *radio = new QAction(QString::number(i),grpPri);
 
-	 //radio->setObjectName(name);
-	 radio->setCheckable(true);
-	 menu->addAction(radio);
-	}
-	//MonMenu->addMenu(menu);
+   //radio->setObjectName(name);
+   radio->setCheckable(true);
+   menu->addAction(radio);
+  }
+  //MonMenu->addMenu(menu);
 
-	/*
-	connect(setForAll,SIGNAL(triggered(bool)),this,SLOT(slot_wdaFilter(bool)));
-	///connect(setForAll,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
-	connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
-	if(pri>0)
-	{
-	 QAction *uneAction;
-	 uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
-	 uneAction->setChecked(true);
-	}
+  /*
+  connect(setForAll,SIGNAL(triggered(bool)),this,SLOT(slot_wdaFilter(bool)));
+  ///connect(setForAll,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+  connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+  if(pri>0)
+  {
+   QAction *uneAction;
+   uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
+   uneAction->setChecked(true);
+  }
  */
 
  }
@@ -1111,8 +1202,8 @@ void BCount::slot_ccmr_SetPriorityAndFilters(QPoint pos)
   else{
    onglets.append(tab);
 #ifndef QT_NO_DEBUG
-	 qDebug() << "onglet:" <<tab->currentIndex();
-	 qDebug() << "max:" <<tab->count();
+   qDebug() << "onglet:" <<tab->currentIndex();
+   qDebug() << "max:" <<tab->count();
 #endif
 
   }
@@ -1141,7 +1232,7 @@ bool BCount::showMyMenu(QTableView *view, QList<QTabWidget *> typeFiltre, QPoint
 
  /// Cas table de syntheses des groupes
  if((typeFiltre.at(1)->currentIndex() == (typeFiltre.at(1)->count()-1))
-     && (col >0 && col < v2)){
+    && (col >0 && col < v2)){
   b_retVal = true;
  }
 
@@ -1178,17 +1269,17 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
 
 
  msg="Select * from "+tb_flt+" where(zne="+QString::number(zne)+
-       " and typ="+QString::number(typ)+" and lgn="+QString::number(lgn)+" and col="+QString::number(col)+
-       " and val="+QString::number(val)+
-       +")";
+     " and typ="+QString::number(typ)+" and lgn="+QString::number(lgn)+" and col="+QString::number(col)+
+     " and val="+QString::number(val)+
+     +")";
 
  b_retVal =  query.exec(msg);
 
  if(!b_retVal)
  {
 #ifndef QT_NO_DEBUG
-	qDebug() << "select * from Filtres ->"<< query.lastError();
-	qDebug() << "Bad code:\n"<<msg<<"\n-------";
+  qDebug() << "select * from Filtres ->"<< query.lastError();
+  qDebug() << "Bad code:\n"<<msg<<"\n-------";
 #endif
  }
  else
@@ -1197,18 +1288,18 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
   qDebug() << "Fn ContruireMyMenu:\n"<<msg<<"\n-------";
 #endif
 
-	// A t on un resultat
-	b_retVal = query.first();
-	if(query.isValid())
-	{
-	 itm = query.value("id").toInt();; /// On a touve la ligne dans la table
-	 pri = query.value("pri").toInt();
-	 flt = query.value("flt").toInt();
-	}
-	else {
-	 pri=-1;
-	 flt=-1;
-	}
+  // A t on un resultat
+  b_retVal = query.first();
+  if(query.isValid())
+  {
+   itm = query.value("id").toInt();; /// On a touve la ligne dans la table
+   pri = query.value("pri").toInt();
+   flt = query.value("flt").toInt();
+  }
+  else {
+   pri=-1;
+   flt=-1;
+  }
  }
 
  QString name = "";
@@ -1227,26 +1318,26 @@ QMenu *BCount::mnu_SetPriority(QMenu *MonMenu, QTableView *view, QList<QTabWidge
   setForAll->setObjectName("k_all");
   menu->addAction(setForAll);
 
-	/// Total de priorite a afficher
-	for(int i =1; i<=5;i++)
-	{
-	 QAction *radio = new QAction(QString::number(i),grpPri);
+  /// Total de priorite a afficher
+  for(int i =1; i<=5;i++)
+  {
+   QAction *radio = new QAction(QString::number(i),grpPri);
 
-	 radio->setObjectName(name);
-	 radio->setCheckable(true);
-	 menu->addAction(radio);
-	}
-	MonMenu->addMenu(menu);
-	connect(setForAll,SIGNAL(triggered(bool)),this,SLOT(slot_wdaFilter(bool)));
-	///connect(setForAll,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
-	connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+   radio->setObjectName(name);
+   radio->setCheckable(true);
+   menu->addAction(radio);
+  }
+  MonMenu->addMenu(menu);
+  connect(setForAll,SIGNAL(triggered(bool)),this,SLOT(slot_wdaFilter(bool)));
+  ///connect(setForAll,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
+  connect(grpPri,SIGNAL(triggered(QAction*)),this,SLOT(slot_ChoosePriority(QAction*)));
 
-	if(pri>0)
-	{
-	 QAction *uneAction;
-	 uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
-	 uneAction->setChecked(true);
-	}
+  if(pri>0)
+  {
+   QAction *uneAction;
+   uneAction = qobject_cast<QAction *>(grpPri->children().at(pri-1));
+   uneAction->setChecked(true);
+  }
  }
 
  /// Filtre
@@ -1312,7 +1403,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
  if(b_retVal){
   /// compter les priorites
   msg = "select count(*) from "+tb_flt+" where ("
-                                           "zne="+def[1]+" and "+
+                                       "zne="+def[1]+" and "+
         "typ="+def[2]+" and "+
         "pri=1)";
   int nbPrio = 0;
@@ -1321,36 +1412,36 @@ void BCount::slot_ChoosePriority(QAction *cmd)
    nbPrio = query.value(0).toInt();
   }
 
-	/// mettre le champs infos a jour
-	QString lab = QString("Selection : %1 sur %2");
-	QString s_sel = QString::number(nbPrio).rightJustified(2,'0');
-	QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
-	lab = lab.arg(s_sel).arg(s_max);
+  /// mettre le champs infos a jour
+  QString lab = QString("Selection : %1 sur %2");
+  QString s_sel = QString::number(nbPrio).rightJustified(2,'0');
+  QString s_max = QString::number(MAX_CHOIX_BOULES).rightJustified(2,'0');
+  lab = lab.arg(s_sel).arg(s_max);
 
 
-	selection[0].setText(lab);
+  selection[0].setText(lab);
 
-	/// Recherche des onglets zone et type dans lesquels est le tableau
-	QObject *obj = cmd;
-	QTableView *target=NULL;
+  /// Recherche des onglets zone et type dans lesquels est le tableau
+  QObject *obj = cmd;
+  QTableView *target=NULL;
 
-	do{
-	 obj = obj->parent();
-	 QTableView *view = qobject_cast<QTableView *>(obj);
-	 if(view==NULL){
-		continue;
-	 }
-	 else{
-		target=view;
-	 }
-	}while(target==NULL);
+  do{
+   obj = obj->parent();
+   QTableView *view = qobject_cast<QTableView *>(obj);
+   if(view==NULL){
+    continue;
+   }
+   else{
+    target=view;
+   }
+  }while(target==NULL);
 
-	QAbstractItemModel *qtv_model = target->model();
-	QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
-	BColorPriority *A2 = qobject_cast<BColorPriority*>(A1->sourceModel());
-	QString queryStr = A2->query().executedQuery();
-	A2->query().clear();
-	A2->setQuery(queryStr, dbCount);
+  QAbstractItemModel *qtv_model = target->model();
+  QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
+  BColorPriority *A2 = qobject_cast<BColorPriority*>(A1->sourceModel());
+  QString queryStr = A2->query().executedQuery();
+  A2->query().clear();
+  A2->setQuery(queryStr, dbCount);
  }
 
 }
@@ -1369,39 +1460,39 @@ bool BCount::setUnifiedPriority(QString szn, QString sprio){
   query.first();
   QString elem_1 ="0";
 
-	if(query.isValid()){
-	 elem_1 = query.value(0).toString();
-	 /// mettre la nouvelle priorite
-	 msg =  "update "+tb_flt+" set pri="+sprio+" where(zne="+szn+" and typ=0 and val in ("+elem_1+") );";
-	 if((b_retVal = query.exec(msg))) {
-		/// Verifier si il faut inserer les autres boules
-		QStringList nbValTab = elem_1.split(',');
-		if(nbValTab.size()< myGame.limites[zn].max){
-		 isOk_2=true;
-		}
-	 }
-	}
-	else {
-	 /// il faut mettre toutes les boules
-	 isOk_2=true;
-	}
+  if(query.isValid()){
+   elem_1 = query.value(0).toString();
+   /// mettre la nouvelle priorite
+   msg =  "update "+tb_flt+" set pri="+sprio+" where(zne="+szn+" and typ=0 and val in ("+elem_1+") );";
+   if((b_retVal = query.exec(msg))) {
+    /// Verifier si il faut inserer les autres boules
+    QStringList nbValTab = elem_1.split(',');
+    if(nbValTab.size()< myGame.limites[zn].max){
+     isOk_2=true;
+    }
+   }
+  }
+  else {
+   /// il faut mettre toutes les boules
+   isOk_2=true;
+  }
 
-	if(isOk_2==true){
-	 /// Recuperer les boules manquantes
-	 msg="Select z"+QString::number(zn+1)+" from B_elm where (z"+QString::number(zn+1)+" not in ("+elem_1+"))";
-	 if((b_retVal = query.exec(msg))) {
-		query.first();
-		if(query.isValid()){
-		 int boule = 0;
-		 do{
-			boule = query.value(0).toInt();
-			msg="Insert into "+tb_flt+" (id,zne,typ,lgn,col,val,pri,flt) values(NULL,"+
-						szn+",0,"+QString::number(boule-1)+",0,"+QString::number(boule)+","+sprio+",-1)";
-			b_retVal=query_2.exec(msg);
-		 }while(b_retVal && query.next());
-		}
-	 }
-	}
+  if(isOk_2==true){
+   /// Recuperer les boules manquantes
+   msg="Select z"+QString::number(zn+1)+" from B_elm where (z"+QString::number(zn+1)+" not in ("+elem_1+"))";
+   if((b_retVal = query.exec(msg))) {
+    query.first();
+    if(query.isValid()){
+     int boule = 0;
+     do{
+      boule = query.value(0).toInt();
+      msg="Insert into "+tb_flt+" (id,zne,typ,lgn,col,val,pri,flt) values(NULL,"+
+          szn+",0,"+QString::number(boule-1)+",0,"+QString::number(boule)+","+sprio+",-1)";
+      b_retVal=query_2.exec(msg);
+     }while(b_retVal && query.next());
+    }
+   }
+  }
  }
  return b_retVal;
 }
@@ -1545,14 +1636,14 @@ void BCount::slot_ChoosePriority(QAction *cmd)
    qDebug() << "ms2:" <<queryStr;
 #endif
 #if 0
-            QItemSelectionModel *selectionModel = view->selectionModel();
-            QModelIndexList indexes = selectionModel->selectedIndexes();
-            int nb_items = indexes.size();
+   QItemSelectionModel *selectionModel = view->selectionModel();
+   QModelIndexList indexes = selectionModel->selectedIndexes();
+   int nb_items = indexes.size();
 
-            qtv_model->query().executedQuery();
-            qtv_model->clear();
-            qtv_model->query().clear();
-            qtv_model->setQuery(queryStr);
+   qtv_model->query().executedQuery();
+   qtv_model->clear();
+   qtv_model->query().clear();
+   qtv_model->setQuery(queryStr);
 #endif
   }
  }
@@ -1578,7 +1669,7 @@ void BCount::slot_ChoosePriority(QAction *cmd)
  msg = "update "
        +tbl
        +" set p="
-  ;
+       ;
  /// montrer que l'on a compris
  /// la demande utilisateur
  cmd->setChecked(true);
@@ -1639,18 +1730,18 @@ void BCount::slot_V2_wdaFilter(bool val)
  if(def[0].toInt() && (def[3].toInt()==3)){
   /// Rechercher la ligne avec clef(val,colon)
   msg="Select * from "+tb_flt+" where(zne="+def[1]+
-        " and typ="+def[2]+" and lgn="+def[3]+" and col="+def[4]+
-        " and val="+def[5]+
-        +")";
+      " and typ="+def[2]+" and lgn="+def[3]+" and col="+def[4]+
+      " and val="+def[5]+
+      +")";
 
   b_retVal=query.exec(msg);
 
-	if(b_retVal){
-	 if(!query.first()){
-		/// c'est une nouvelle donnee de filtrage
-		def[0]="0";
-	 }
-	}
+  if(b_retVal){
+   if(!query.first()){
+    /// c'est une nouvelle donnee de filtrage
+    def[0]="0";
+   }
+  }
  }
 
  /// Creation ou mise a jour ?
@@ -1663,48 +1754,48 @@ void BCount::slot_V2_wdaFilter(bool val)
  }
  else {
 
-	/// Rpl le champ filtre :
-	/// 1 c'est le dernier tirage
-	/// 4 demande de filtrage
-	/// 8 Non sorti
-	/// combinaison de bits
+  /// Rpl le champ filtre :
+  /// 1 c'est le dernier tirage
+  /// 4 demande de filtrage
+  /// 8 Non sorti
+  /// combinaison de bits
 
-	/// Meme ligne pour off
-	if(def[7].toInt()<0){
-	 def[7]="0";
-	}
-	msg_2=QString::number(def[7].toInt()^ (BFlags::isFiltred));
+  /// Meme ligne pour off
+  if(def[7].toInt()<0){
+   def[7]="0";
+  }
+  msg_2=QString::number(def[7].toInt()^ (BFlags::isFiltred));
 
-	msg = "update  "+tb_flt+" set flt="+msg_2+
-				" where("
-				"id="+def[0]+
-				");";
+  msg = "update  "+tb_flt+" set flt="+msg_2+
+        " where("
+        "id="+def[0]+
+        ");";
  }
 
  b_retVal = query.exec(msg);
  if(b_retVal){
 
-	/// Recherche des onglets zone et type dans lesquels est le tableau
-	QObject *obj = chkFrom;
-	QTableView *target=NULL;
+  /// Recherche des onglets zone et type dans lesquels est le tableau
+  QObject *obj = chkFrom;
+  QTableView *target=NULL;
 
-	do{
-	 obj = obj->parent();
-	 QTableView *view = qobject_cast<QTableView *>(obj);
-	 if(view==NULL){
-		continue;
-	 }
-	 else{
-		target=view;
-	 }
-	}while(target==NULL);
+  do{
+   obj = obj->parent();
+   QTableView *view = qobject_cast<QTableView *>(obj);
+   if(view==NULL){
+    continue;
+   }
+   else{
+    target=view;
+   }
+  }while(target==NULL);
 
-	QAbstractItemModel *qtv_model = target->model();
-	QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
-	BColorPriority *A2 = qobject_cast<BColorPriority*>(A1->sourceModel());
-	QString queryStr = A2->query().executedQuery();
-	A2->query().clear();
-	A2->setQuery(queryStr, dbCount);
+  QAbstractItemModel *qtv_model = target->model();
+  QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
+  BColorPriority *A2 = qobject_cast<BColorPriority*>(A1->sourceModel());
+  QString queryStr = A2->query().executedQuery();
+  A2->query().clear();
+  A2->setQuery(queryStr, dbCount);
  }
 }
 
@@ -1737,18 +1828,18 @@ void BCount::slot_wdaFilter(bool val)
  if(def[0].toInt() && (def[3].toInt()==3)){
   /// Rechercher la ligne avec clef(val,colon)
   msg="Select * from "+tb_flt+" where(zne="+def[1]+
-        " and typ="+def[2]+" and lgn="+def[3]+" and col="+def[4]+
-        " and val="+def[5]+
-        +")";
+      " and typ="+def[2]+" and lgn="+def[3]+" and col="+def[4]+
+      " and val="+def[5]+
+      +")";
 
   b_retVal=query.exec(msg);
 
-	if(b_retVal){
-	 if(!query.first()){
-		/// c'est une nouvelle donnee de filtrage
-		def[0]="0";
-	 }
-	}
+  if(b_retVal){
+   if(!query.first()){
+    /// c'est une nouvelle donnee de filtrage
+    def[0]="0";
+   }
+  }
  }
 
  /// Creation ou mise a jour ?
@@ -1761,48 +1852,48 @@ void BCount::slot_wdaFilter(bool val)
  }
  else {
 
-	/// Rpl le champ filtre :
-	/// 1 c'est le dernier tirage
-	/// 4 demande de filtrage
-	/// 8 Non sorti
-	/// combinaison de bits
+  /// Rpl le champ filtre :
+  /// 1 c'est le dernier tirage
+  /// 4 demande de filtrage
+  /// 8 Non sorti
+  /// combinaison de bits
 
-	/// Meme ligne pour off
-	if(def[7].toInt()<0){
-	 def[7]="0";
-	}
-	msg_2=QString::number(def[7].toInt()^ (BFlags::isFiltred));
+  /// Meme ligne pour off
+  if(def[7].toInt()<0){
+   def[7]="0";
+  }
+  msg_2=QString::number(def[7].toInt()^ (BFlags::isFiltred));
 
-	msg = "update  "+tb_flt+" set flt="+msg_2+
-				" where("
-				"id="+def[0]+
-				");";
+  msg = "update  "+tb_flt+" set flt="+msg_2+
+        " where("
+        "id="+def[0]+
+        ");";
  }
 
  b_retVal = query.exec(msg);
  if(b_retVal){
 
-	/// Recherche des onglets zone et type dans lesquels est le tableau
-	QObject *obj = chkFrom;
-	QTableView *target=NULL;
+  /// Recherche des onglets zone et type dans lesquels est le tableau
+  QObject *obj = chkFrom;
+  QTableView *target=NULL;
 
-	do{
-	 obj = obj->parent();
-	 QTableView *view = qobject_cast<QTableView *>(obj);
-	 if(view==NULL){
-		continue;
-	 }
-	 else{
-		target=view;
-	 }
-	}while(target==NULL);
+  do{
+   obj = obj->parent();
+   QTableView *view = qobject_cast<QTableView *>(obj);
+   if(view==NULL){
+    continue;
+   }
+   else{
+    target=view;
+   }
+  }while(target==NULL);
 
-	QAbstractItemModel *qtv_model = target->model();
-	QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
-	BColorPriority *A2 = qobject_cast<BColorPriority*>(A1->sourceModel());
-	QString queryStr = A2->query().executedQuery();
-	A2->query().clear();
-	A2->setQuery(queryStr, dbCount);
+  QAbstractItemModel *qtv_model = target->model();
+  QSortFilterProxyModel *A1 = qobject_cast<QSortFilterProxyModel*>(qtv_model);
+  BColorPriority *A2 = qobject_cast<BColorPriority*>(A1->sourceModel());
+  QString queryStr = A2->query().executedQuery();
+  A2->query().clear();
+  A2->setQuery(queryStr, dbCount);
  }
 }
 
@@ -1830,15 +1921,15 @@ QString BCount::getSqlForKey(const stGameConf *pGame, int zn, QString key)
 
   col_J = ", t1.J as J";
 
-	str_jrs = db_jours;
-	col_vsl = ",NULL as I,\n";
-	col_vsl = col_vsl + "min(t1.t_id-1) as Ec,\n";
-	col_vsl = col_vsl + "max((case when t1.lid=2 then t1.E end)) as Ep,\n";
-	col_vsl = col_vsl + "(PRINTF(\"%.1f\", AVG(E))) AS 'Eµ',\n";
-	col_vsl = col_vsl + "MAX(E) AS EM,\n";
-	col_vsl = col_vsl + "(PRINTF(\"%.1f\", SQRT(VARIANCE(E)))) AS Es,\n";
-	col_vsl = col_vsl + "(PRINTF(\"%.1f\", MEDIAN(E))) AS 'Esµ',\n";
-	col_vsl = col_vsl + "COUNT(*) AS T\n";
+  str_jrs = db_jours;
+  col_vsl = ",NULL as I,\n";
+  col_vsl = col_vsl + "min(t1.t_id-1) as Ec,\n";
+  col_vsl = col_vsl + "max((case when t1.lid=2 then t1.E end)) as Ep,\n";
+  col_vsl = col_vsl + "(PRINTF(\"%.1f\", AVG(E))) AS 'Eµ',\n";
+  col_vsl = col_vsl + "MAX(E) AS EM,\n";
+  col_vsl = col_vsl + "(PRINTF(\"%.1f\", SQRT(VARIANCE(E)))) AS Es,\n";
+  col_vsl = col_vsl + "(PRINTF(\"%.1f\", MEDIAN(E))) AS 'Esµ',\n";
+  col_vsl = col_vsl + "COUNT(*) AS T\n";
  }
 
  if(pGame->eTirType == eTirFdj){
@@ -1848,11 +1939,11 @@ QString BCount::getSqlForKey(const stGameConf *pGame, int zn, QString key)
  if(pGame->db_ref->dad.size() != 0){
   tbl_ana = pGame->db_ref->dad;
 
-	if((pGame->db_ref->dad.compare("B_fdj")==0)){
-	 tbl_ana = "B";
-	 str_jrs = db_jours;
-	 col_J = ", t1.J as J";
-	}
+  if((pGame->db_ref->dad.compare("B_fdj")==0)){
+   tbl_ana = "B";
+   str_jrs = db_jours;
+   col_J = ", t1.J as J";
+  }
  }
 
  tbl_ana = tbl_ana + "_ana_z"+QString::number(zn+1);

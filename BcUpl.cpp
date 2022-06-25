@@ -87,7 +87,7 @@ int BcUpl::nb_max_recherche = 0;
 QThreadPool *BcUpl::pool = nullptr;
 
 BcUpl::BcUpl(const stGameConf *pGame, QWidget *parent, etEns eUpl, int zn, const QItemSelectionModel *cur_sel, QTabWidget *ptrUplRsp)
- :BCount (pGame, eCountUpl), upl_zn(zn)
+ :BCount (pGame, E_CountUpl), upl_zn(zn)
 {
  obj_upl++;
  ana_parent = parent;

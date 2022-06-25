@@ -33,7 +33,7 @@ BcGrp::~BcGrp()
  total --;
 }
 
-BcGrp::BcGrp(const stGameConf *pGame,QStringList** lstCri):BCount(pGame,eCountGrp)
+BcGrp::BcGrp(const stGameConf *pGame,QStringList** lstCri):BCount(pGame,E_CountGrp)
 {
  /// appel du constructeur parent
  db_grp = dbCount;
@@ -358,7 +358,7 @@ QWidget *BcGrp::fn_Count(const stGameConf *pGame, int zn)
  a.db_cnx = cnx;
  a.start = 1;
  a.zne=zn;
- a.typ = eCountGrp;
+ a.typ = E_CountGrp;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -394,7 +394,7 @@ QWidget *BcGrp::fn_Count(const stGameConf *pGame, int zn)
  wdg_tmp->setLayout(glay_tmp);
 
  /// Mettre dans la base une info sur 2 derniers tirages
- marquerDerniers_tir(pGame, eCountGrp, zn);
+ marquerDerniers_tir(pGame, E_CountGrp, zn);
 
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,
@@ -578,9 +578,9 @@ bool BcGrp::db_MkTblItems(const stGameConf *pGame, int zn, QString dstTbl, QSqlQ
 }
 
 BcGrp::BcGrp(const stGameConf &pDef, const QString &in, QStringList** lstCri, QSqlDatabase fromDb)
-    :BCount(pDef,in,fromDb,nullptr,eCountGrp)
+    :BCount(pDef,in,fromDb,nullptr,E_CountGrp)
 {
- //type=eCountGrp;
+ //type=E_CountGrp;
  countId = total;
  unNom = "'Compter Groupes'";
  total++;
@@ -630,7 +630,7 @@ QGridLayout *BcGrp::Compter(QString * pName, int zn)
  //lay_return->addWidget(qtv_tmp_1,0,0,Qt::AlignLeft|Qt::AlignTop);
  lay_return->addWidget(qtv_tmp_2,1,0,Qt::AlignLeft|Qt::AlignTop);
 
- marquerDerniers_grp(&myGame, eCountGrp, zn);
+ marquerDerniers_grp(&myGame, E_CountGrp, zn);
 
  return lay_return;
 }
@@ -1148,7 +1148,7 @@ QTableView *BcGrp::CompterEnsemble(QString * pName, int zn)
  a.parent = qtv_tmp;
  a.db_cnx = dbCount.connectionName();
  a.zne=zn;
- a.typ = eCountGrp;
+ a.typ = E_CountGrp;
  a.start=0;
 
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation

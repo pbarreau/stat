@@ -27,7 +27,7 @@
 
 int BcBrc::total = 0;
 
-BcBrc::BcBrc(const stGameConf *pGame):BCount(pGame,eCountBrc)
+BcBrc::BcBrc(const stGameConf *pGame):BCount(pGame,E_CountBrc)
 {
  /// appel du constructeur parent
  db_brc = dbCount;
@@ -110,7 +110,7 @@ QWidget *BcBrc::fn_Count(const stGameConf *pGame, int zn)
  a.db_cnx = cnx;
  a.start = 1;
  a.zne=zn;
- a.typ = eCountBrc;
+ a.typ = E_CountBrc;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
  qtv_tmp->verticalHeader()->hide();
@@ -138,7 +138,7 @@ QWidget *BcBrc::fn_Count(const stGameConf *pGame, int zn)
  wdg_tmp->setLayout(glay_tmp);
 
  /// Mettre dans la base une info sur 2 derniers tirages
- marquerDerniers_tir(pGame, eCountBrc, zn);
+ marquerDerniers_tir(pGame, E_CountBrc, zn);
 
  qtv_tmp->setMouseTracking(true);
  connect(qtv_tmp,
@@ -311,7 +311,7 @@ QString BcBrc::getSqlMsg(const stGameConf *pGame, int zn)
 BcBrc::BcBrc(const stNeedsOfBary &param)
     :BCount(param)
 {
- type = eCountBrc;
+ type = E_CountBrc;
  countId = total;
 
  QTabWidget *tab_Top = new QTabWidget(this);
@@ -394,7 +394,7 @@ QGridLayout *BcBrc::AssocierTableau(QString src_tbl)
  a.parent = qtv_tmp;
  a.db_cnx = dbCount.connectionName();
  a.zne=zn;
- a.typ = eCountBrc;
+ a.typ = E_CountBrc;
  a.start=0;
  qtv_tmp->setItemDelegate(new BFlags(a)); /// Delegation
 
@@ -421,7 +421,7 @@ QGridLayout *BcBrc::AssocierTableau(QString src_tbl)
  connect(qtv_tmp, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(slot_ccmr_SetPriorityAndFilters(QPoint)));
 
- marquerDerniers_bar(&myGame, eCountBrc, zn);
+ marquerDerniers_bar(&myGame, E_CountBrc, zn);
 #endif
 
  return lay_return;

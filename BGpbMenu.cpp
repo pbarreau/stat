@@ -43,7 +43,7 @@ BGpbMenu::BGpbMenu(const BFlt *conf, BView_1 *in_parent)
 
 void  BGpbMenu::slot_ShowMenu(const QGroupBox *cible, const QPoint &p)
 {
- if(typ==eCountGrp)
+ if(typ==E_CountGrp)
   return;
 
  use_gpb = cible;

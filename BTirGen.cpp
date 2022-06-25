@@ -224,7 +224,7 @@ bool BTirGen::getGameKey(const stGameConf *pGame, QString *key)
  /// preparation de la recherche config utilisateur
  int zn = 0;
  QString st_zne = QString::number(zn);
- QString st_typ = QString::number(eCountElm);
+ QString st_typ = QString::number(E_CountElm);
  QString tb_flt = pGame->db_ref->flt;
  QString st_flt = QString::number(Bp::fltSelected,16);
 
@@ -334,7 +334,7 @@ bool BTirGen::createGame(const stGameConf *pGame, QString gameId, QString data)
  int zn = 0;
  int nb_items = data.split(',').size();
  QString st_zne = QString::number(zn);
- QString st_typ = QString::number(eCountElm);
+ QString st_typ = QString::number(E_CountElm);
  QString tb_flt = pGame->db_ref->flt;
  QString st_flt = QString::number(Bp::fltSelected,16);
 

@@ -212,11 +212,11 @@ bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelInde
  val->typ = in_typ;
  val->zne = flt.zne;
 
- if(val->typ >= eCountToSet && val->typ <= eCountEnd){
+ if(val->typ >= E_CountToSet && val->typ <= E_CountEnd){
   switch (val->typ) {
-   case eCountElm:
-   case eCountCmb:
-   case eCountBrc:
+   case E_CountElm:
+   case E_CountCmb:
+   case E_CountBrc:
     if(index.column()==1){
      val->lgn = val->typ *10;
      val->col = index.model()->index(index.row(),0).data().toInt();
@@ -227,7 +227,7 @@ bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelInde
     }
     break;
 
-	 case eCountGrp:
+	 case E_CountGrp:
 		if(((index.column())>0) &&
 				(!index.data().isNull()) &&
 				(index.data().isValid()))
@@ -246,13 +246,13 @@ bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelInde
 		}
 
 		break;
-	 case eCountToSet:
-	 case eCountEnd:
+	 case E_CountToSet:
+	 case E_CountEnd:
 		break;
 	}
  }
  else {
-  val->typ = eCountToSet;
+  val->typ = E_CountToSet;
  }
 
  val->zne =flt.zne;
@@ -351,13 +351,13 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 
  int painting_col = Bp::noCol;
  switch (a->typ) {
-  case eCountElm:
-  case eCountCmb:
-  case eCountBrc:
+  case E_CountElm:
+  case E_CountCmb:
+  case E_CountBrc:
    painting_col = Bp::colTxt;
    break;
 
-	case eCountGrp:
+	case E_CountGrp:
 	 painting_col = Bp::colId;
 	 break;
 
@@ -368,7 +368,7 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 
  if(cur_col==painting_col){
 
-	if((a->typ == eCountElm)||(a->typ == eCountGrp)){
+	if((a->typ == E_CountElm)||(a->typ == E_CountGrp)){
 	 myTxt = QString::number(myOpt.text.toInt()).rightJustified(2,'0');
 	}
 
@@ -378,7 +378,7 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 	 * le champ a 7 carateres :
 	 * 4 avant la virgule, la virgule puis 2 apres la virgule
 	 *
-	if(a->typ == eCountBrc){
+	if(a->typ == E_CountBrc){
 	 /// https://stackoverflow.com/questions/7234824/format-a-number-to-a-specific-qstring-format
 	 QStringList tmp_lst = myTxt.split(",");
 	 if(tmp_lst.size()>1){
@@ -403,7 +403,7 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 
 			 ) {
 	set_up = false;
-	if(a->typ == eCountGrp){
+	if(a->typ == E_CountGrp){
 	 myPen = Qt::black;
 	}
 	else{
@@ -419,7 +419,7 @@ void BFlags::fltFull(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
 {
 
  if(inf_flt->tb_ref.compare("B_fdj")!=0 ||
-     ((inf_flt->typ==eCountGrp) && (lview->objectName().compare(ViewDetails) != 0))){
+     ((inf_flt->typ==E_CountGrp) && (lview->objectName().compare(ViewDetails) != 0))){
   return;
  }
 
@@ -471,7 +471,7 @@ void BFlags::fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
  if(inf_flt->tb_ref.compare("B_fdj")!=0){
   return;
  }
- else if((inf_flt->typ !=eCountGrp) && (myOpt.index.column() != Bp::colVisual)){
+ else if((inf_flt->typ !=E_CountGrp) && (myOpt.index.column() != Bp::colVisual)){
   return;
  }
 
@@ -542,7 +542,7 @@ void BFlags::fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
  }
 
  /*
- if(a->typ==eCountElm){
+ if(a->typ==E_CountElm){
 
   if(((a->b_flt & Bp::F_Flt::fltFiltred) == (Bp::F_Flt::fltFiltred))){
    painter->fillRect(cur_rect, COULEUR_FOND_FILTRE);

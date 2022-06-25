@@ -89,7 +89,7 @@ void BMenu::presenterMenu()
   lst.at(1)->setEnabled(true);
   lst.at(2)->setEnabled(true);
 
-	if(inf_flt->typ == eCountElm){
+	if(inf_flt->typ == E_CountElm){
 	 QMenu *subMenu = mnu_Priority(inf_flt, inf_flt->typ,lview,index);
 	 main_menu->addMenu(subMenu);
 	}
