@@ -113,7 +113,7 @@ class BCount:public QWidget
   QWidget *startIhm(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl usr_fn, const int zn);
   QWidget *startIhm_old(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl usr_fn, const int zn);
   QWidget *endIhm_old(const stGameConf *pGame,  stMkLocal *prm);
-  QWidget *startIhm_new(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl usr_fn, const int zn);
+  QWidget *startIhm_new(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn);
   virtual bool usr_MkTbl(const stGameConf *pDef, const stMkLocal prm, const int zn)=0;
   virtual void usr_TagLast(const stGameConf *pGame, BView_1 *view, const etCount eType, const int zn)=0;
   virtual QList<BLstSelect *> *getSelection(void);

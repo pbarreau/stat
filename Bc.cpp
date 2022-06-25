@@ -194,7 +194,9 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
  Bp::E_Col colEc = Bp::noCol;
  Qt::SortOrder order;
 
- switch (type) {
+// switch (type) {
+
+ switch (eCalcul) {
   case E_CountBrc:
   case E_CountCmb:
   case E_CountElm:
@@ -227,7 +229,8 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
  qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt));
 
 
- if(type == E_CountGrp) {
+//  if(type == E_CountGrp) {
+ if(eCalcul == E_CountGrp) {
 
   QStringList tooltips=pGame->slFlt[zn][2];
   tooltips.insert(0,"Total"); /// La colone Nb (0)
@@ -286,7 +289,8 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
   glay_tmp->setRowStretch(1,1);
  }
 
- if(gm_def->db_ref->dad.size() == 0 && eCalcul==E_CountGrp){
+ ///gameref
+ if(pGame->db_ref->dad.size() == 0 && eCalcul==E_CountGrp){
   qtv_tmp->setMaximumWidth(l);
   QTabWidget *tmp = getDetailsTabs(pGame,zn,eCalcul);
   glay_tmp->addWidget(tmp,0,1);
@@ -304,12 +308,12 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
  return wdg_tmp;
 }
 
-QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl usr_fn, const int zn)
+QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn)
 {
  //QWidget * wdg_tmp = new QWidget;
 
  /// A supprimer plus tard
- BView_1 *qtv_tmp = new BView_1(pGame,zn,E_Calcul);
+ BView_1 *qtv_tmp = new BView_1(pGame,zn,eCalcul);
  tabTbv[zn] = qtv_tmp;
 
  bool b_retVal = true;
@@ -318,7 +322,7 @@ QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount E_Calcul, c
 
  QTabWidget *tab_Gid = new QTabWidget();
  for (int g_id = C_MIN_UPL; (g_id <= nb_recherche) && (b_retVal == true); g_id++) {
-  BView_1 * cur_view = new BView_1 (pGame, zn,E_Calcul);
+  BView_1 * cur_view = new BView_1 (pGame, zn,eCalcul);
   QGridLayout *glay_tmp = new QGridLayout;
 
   cur_view->setObjectName(QString::number(zn));
@@ -329,27 +333,54 @@ QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount E_Calcul, c
   /// Nom de la table resultat
   QString dstTbl = "r_"
                    +pGame->db_ref->src
-                   +"_"+label[E_Calcul]
+                   +"_"+label[eCalcul]
                    +"_z"+QString::number(zn+1)
                    +"_g"+QString::number(g_id).rightJustified(2,'0');
   cur_view->setUseTable(dstTbl);
 
   QLayout *up_view = usr_UpperItems(zn, cur_view);; /// Bandeau audessu du tabview
+  stMkLocal prm;
+
   /// Verifier si table existe deja
   QString cnx = pGame->db_ref->cnx;
   if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
    QSqlQuery *query = new QSqlQuery(dbCount);
    QString *sql = new QString;
-   stMkLocal *prm = new stMkLocal;
 
-   prm->cur_tbv = cur_view;
-   prm->dstTbl = dstTbl;
-   prm->query = query;
-   prm->sql = sql;
-   prm->up = &up_view;
+   prm.cur_tbv = cur_view;
+   prm.dstTbl = dstTbl;
+   prm.query = query;
+   prm.sql = sql;
+   prm.up = &up_view;
+
+   /// Creation de la table avec les resultats
+   /// appel de la fonction utilisateur de creation
+   bool b_retVal = (this->*usr_fn)(pGame, prm, zn);
+
+   if(b_retVal == false){
+    QString fnName = "BCount::startIhm : "+label[eCalcul];
+    DB_Tools::DisplayError(fnName, query, *sql);
+    if(cur_view != nullptr){
+     delete cur_view;
+    }
+    //delete wdg_tmp;
+    //delete glay_tmp;
+    delete qtv_tmp;
+    return nullptr;
+   }
+
   }
+  /// --------
+
+  QWidget * wdg_tmp = nullptr;
+  prm.eCalcul = eCalcul;
+
+  wdg_tmp = endIhm_old(pGame,&prm);
+
+  /// --------
+
   /// Rajouter ce calcul pour ce g_id
-  tab_Gid->addTab(cur_view,QString::number(g_id).rightJustified(2,'0'));
+  tab_Gid->addTab(wdg_tmp,QString::number(g_id).rightJustified(2,'0'));
  }
 
  return tab_Gid;
