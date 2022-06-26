@@ -4,12 +4,14 @@
 #include <QTableView>
 #include <QGroupBox>
 
+#include "ns_upl.h"
+
 class BView : public QTableView
 {
  Q_OBJECT
 
  public:
- BView(QWidget *parent = nullptr);
+ BView(int in_zn = -2, etCount in_typ = E_CountToSet);
  ~BView();
  void setTitle(QString title, bool visible=true);
  QString getTitle(void);
@@ -20,6 +22,7 @@ class BView : public QTableView
  int getMinHeight();
  int getZid();
  void setZid(int z_in);
+ etCount getCid();
  int getGid();
  void setGid(int g_in);
  void setUseTable(QString tbl = "");
@@ -33,6 +36,7 @@ class BView : public QTableView
  QGroupBox *square;
  int z_id;
  int g_id;
+ etCount c_id;
  QString tbInDb;
 
  private:

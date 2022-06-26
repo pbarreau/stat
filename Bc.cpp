@@ -79,23 +79,22 @@ QWidget *BCount::startIhm_old(const stGameConf *pGame, const etCount eCalcul, co
 
  qtv_tmp->setUseTable(dstTbl);
  qtv_tmp->setZid(zn);
- qtv_tmp->setGid(-1);
+ qtv_tmp->setGid(-3);
 
  up_qtv = usr_UpperItems(zn, qtv_tmp);
+
+ QSqlQuery query(dbCount);
+ QString msg ="";
+
+ prm.dstTbl = dstTbl;
+ prm.query=&query;
+ prm.sql=&msg;
+ prm.up = &up_qtv;
+ prm.cur_tbv = qtv_tmp;
 
  /// Verifier si table existe deja
  QString cnx = pGame->db_ref->cnx;
  if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
-
-  QSqlQuery query(dbCount);
-  QString msg ="";
-
-  prm.dstTbl = dstTbl;
-  prm.query=&query;
-  prm.sql=&msg;
-  prm.up = &up_qtv;
-  prm.cur_tbv = qtv_tmp;
-  prm.glay_tmp = nullptr;
 
   /// Creation de la table avec les resultats
   /// appel de la fonction utilisateur de creation
@@ -194,7 +193,7 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
  Bp::E_Col colEc = Bp::noCol;
  Qt::SortOrder order;
 
-// switch (type) {
+ // switch (type) {
 
  switch (eCalcul) {
   case E_CountBrc:
@@ -229,7 +228,7 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
  qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt));
 
 
-//  if(type == E_CountGrp) {
+ //  if(type == E_CountGrp) {
  if(eCalcul == E_CountGrp) {
 
   QStringList tooltips=pGame->slFlt[zn][2];
@@ -310,12 +309,6 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
 
 QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn)
 {
- //QWidget * wdg_tmp = new QWidget;
-
- /// A supprimer plus tard
- BView_1 *qtv_tmp = new BView_1(pGame,zn,eCalcul);
- tabTbv[zn] = qtv_tmp;
-
  bool b_retVal = true;
  int max_win = pGame->limites[zn].win;
  int nb_recherche = BMIN_2(max_win, C_MAX_UPL);
@@ -325,6 +318,9 @@ QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount eCalcul, co
   BView_1 * cur_view = new BView_1 (pGame, zn,eCalcul);
   QGridLayout *glay_tmp = new QGridLayout;
 
+  if(g_id == 1){
+   tabTbv[zn] = cur_view;
+  }
   cur_view->setObjectName(QString::number(zn));
   cur_view->setParentLayout(glay_tmp);
   cur_view->setZid(zn);
@@ -339,19 +335,21 @@ QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount eCalcul, co
   cur_view->setUseTable(dstTbl);
 
   QLayout *up_view = usr_UpperItems(zn, cur_view);; /// Bandeau audessu du tabview
+
+  QSqlQuery *query = new QSqlQuery(dbCount);
+  QString *sql = new QString;
+
   stMkLocal prm;
+  prm.cur_tbv = cur_view;
+  prm.dstTbl = dstTbl;
+  prm.query = query;
+  prm.sql = sql;
+  prm.up = &up_view;
 
   /// Verifier si table existe deja
   QString cnx = pGame->db_ref->cnx;
   if(DB_Tools::isDbGotTbl(dstTbl,cnx)==false){
-   QSqlQuery *query = new QSqlQuery(dbCount);
-   QString *sql = new QString;
 
-   prm.cur_tbv = cur_view;
-   prm.dstTbl = dstTbl;
-   prm.query = query;
-   prm.sql = sql;
-   prm.up = &up_view;
 
    /// Creation de la table avec les resultats
    /// appel de la fonction utilisateur de creation
@@ -362,15 +360,21 @@ QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount eCalcul, co
     DB_Tools::DisplayError(fnName, query, *sql);
     if(cur_view != nullptr){
      delete cur_view;
+     delete query;
+     delete sql;
+     delete glay_tmp;
+     if(up_view != nullptr){
+      delete up_view;
+     }
     }
-    //delete wdg_tmp;
-    //delete glay_tmp;
-    delete qtv_tmp;
     return nullptr;
    }
 
   }
   /// --------
+
+  // Analyse du click dans le tableau
+  connect(cur_view, &BView_1::clicked, this,&BCount::BSlot_TbvClick);
 
   QWidget * wdg_tmp = nullptr;
   prm.eCalcul = eCalcul;
@@ -472,10 +476,13 @@ QList<BLstSelect *> *BCount::getSelection(void)
   QList<QModelIndex> indexes;
   if(type != E_CountUpl){
    tmp = tabTbv[zn_id]->selectionModel();
-   indexes = tmp->selectedIndexes();
-   if(indexes.size() !=0 ){
-    BLstSelect *zn_sel = new BLstSelect(type,zn_id,tmp);
-    ret->append(zn_sel);
+   int g_id = tabTbv[zn_id]->getGid();
+   if((g_id == 1) || (g_id == -3)){
+    indexes = tmp->selectedIndexes();
+    if(indexes.size() !=0 ){
+     BLstSelect *zn_sel = new BLstSelect(type,zn_id,tmp);
+     ret->append(zn_sel);
+    }
    }
   }
   else {
@@ -2079,7 +2086,26 @@ QString BCount::FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString a
  return   st_items;
 }
 
-void BCount::BSlotClicked(const QModelIndex & index, const int &zn, const etCount &eTyp)
+void BCount::BSlot_TbvClick(const QModelIndex & index)
 {
- emit BSigClicked(index,zn,eTyp);
+ BView_1 *view = qobject_cast<BView_1 *>(sender());
+ int g_id = view->getGid();
+ int z_id = view->getZid();
+ etCount c_id = view->getCid();
+
+ int col_id = index.column();
+ int lgn_id = index.row();
+
+ if(c_id == E_CountElm){
+  QString filterKey ="";
+  if((col_id == Bp::colTxt) || (col_id > Bp::colTotalv1)){
+   filterKey = index.sibling(lgn_id,Bp::colTxt).data().toString();
+
+   if(col_id > Bp::colTotalv1){
+    QString key = view->model()->headerData(index.column(),Qt::Horizontal).toString();
+    filterKey = key + ";" +filterKey;
+   }
+  }
+ }
+ //emit BSigClicked(index,zn,eTyp);
 }

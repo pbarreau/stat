@@ -31,7 +31,7 @@ QList<QGridLayout *> *BView_1::gdl_list = nullptr;
 QTabWidget * BView_1::tbw_calculs = nullptr;
 
 BView_1::BView_1(const stGameConf *pGame, int in_zn, etCount in_typ)
- :BView(nullptr),BFlt(pGame, in_zn, in_typ), gme_current(pGame)
+ :BView(in_zn, in_typ),BFlt(pGame, in_zn, in_typ), gme_current(pGame)
 {
  db_tbv = db_flt;
  lbflt = cur_bflt;

@@ -108,7 +108,7 @@ QWidget * BcGrp::usr_GrpTb1(int zn)
   return nullptr;
  }
 
- tbvAnaLgn[zn] = new BView;
+ tbvAnaLgn[zn] = new BView(zn,type);
 
  int l_id = -1;
  QString sql_msg = getSqlForLine(l_id, zn);

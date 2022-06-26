@@ -30,7 +30,7 @@ class BMenu : public QMenu,BFlt
  void BSlot_Menu_1();
 
  private slots:
- void slot_isUplets(bool chk);
+ void BSlot_isUplets(bool chk);
  void slot_isWanted(bool chk);
  void slot_isChoosed(bool chk);
  void slot_isFiltred(bool chk);

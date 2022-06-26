@@ -52,32 +52,6 @@ typedef enum _eEnsemble /// Ensemble dans lequel chercher les uplets
 }etEns;
 extern const QString TXT_UplSrcKey[E_EnsEnd];
 
-typedef enum _E_CalTirages
-{
- E_LstBle,  /// Liste des boules
- E_LstUpl,	/// Liste des uplets apartir des boules
- E_LstTirUpl,	/// Liste des tirages ayant ces uplets (J0)
- E_LstUplTot,	/// Total de chacun des uplets
- E_LstBleNot,	/// Ensemble complementaire des boules ( refa uplet 1, 2, 3)
- E_LstTirUplNext, /// Liste des tirages apres les uplets initiaux
- E_LstBleNext, /// Liste des boules jour  != 0
- E_LstUplNot,	/// Uplet 1,2,3 cree apartir de l'ensemble complementaire
- E_LstUplTotNot, /// Total de chacun des uplets
- E_LstUplNext, /// Liste des uplets apartir des boules next day
- E_LstUplTotNext, /// Total de chacun des uplets
- E_LstCal,        /// Fin des calculs possible
- E_LstShowCal,    /// Requete montrant les calculs
- E_LstShowUnion,   /// Requete synthese de chacque boule
- E_LstShowNotInUnion, /// Requete ensemble complementaire
- E_LstShowUplLst
- ///E_LstCalUsr,
- ///E_LstCalFdj,
-}etLst;
-#ifndef QT_NO_DEBUG
-extern const QString TXT_SqlStep[E_LstCal];
-#endif
-
-#define C_TOT_CAL E_LstCal
 
 
 typedef struct _dbUpdl{

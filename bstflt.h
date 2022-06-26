@@ -9,6 +9,8 @@
 #include <QItemSelection>
 #include <QItemSelectionModel>
 
+#include "ns_upl.h"
+
 /// -------------
 namespace Bp {
  /// https://wiki.qt.io/QFlags_tutorial
@@ -117,15 +119,6 @@ Q_DECLARE_METATYPE(Bp::F_Flts)
 /// -------------
 
 
-typedef enum{
- E_CountToSet,    /// Pas de definition
- E_CountElm,      /// Comptage des boules de zones
- E_CountCmb,      /// ... des combinaisons
- E_CountGrp,       /// ... des regroupements
- E_CountBrc,      /// ... des barycentres
- E_CountUpl,     /// Uplets (2 ou 3)
- E_CountEnd
-}etCount;
 
 
 typedef struct _stTbFiltres{

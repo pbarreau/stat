@@ -40,7 +40,7 @@ void BMenu::construireMenu(void)
  isFiltred->setCheckable(true);
  isFiltred->setDisabled(true);
 
- QAction *isUplets = main_menu->addAction("Uplets",this,SLOT(slot_isUplets(bool)));
+ QAction *isUplets = main_menu->addAction("Uplets",this,SLOT(BSlot_isUplets(bool)));
  isUplets->setCheckable(false);
  isUplets->setEnabled(true);
 
@@ -159,7 +159,7 @@ QMenu *BMenu::mnu_Priority(stTbFiltres *ret, const etCount eSrc, const BView_1 *
  return menu;
 }
 
-void BMenu::slot_isUplets(bool chk)
+void BMenu::BSlot_isUplets(bool chk)
 {
  Q_UNUSED(chk)
 

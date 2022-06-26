@@ -102,7 +102,7 @@ class BCount:public QWidget
     QSqlQuery *query;
     QString *sql;
     BView_1 *cur_tbv;
-    QGridLayout *glay_tmp;
+    int ong_id;
   }stMkLocal;
   typedef bool (BCount::*ptrFn_tbl)(const stGameConf *pDef, const stMkLocal prm, const int zn);
 
@@ -178,7 +178,7 @@ class BCount:public QWidget
   bool setPriorityToAll;
 
  protected slots:
-  void BSlotClicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
+  void BSlot_TbvClick(const QModelIndex & index);
   virtual void BSlot_setSelection(const B2LstSel * lst_sel);
 
   ///void slot_AideToolTip(const QModelIndex & index);
@@ -194,6 +194,7 @@ class BCount:public QWidget
 
  Q_SIGNALS:
   void BSigClicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
+  void BSig_TbvClick(const QModelIndex & index);
   void sig_TitleReady(const QString &title);
   void sig_ComptageReady(const B_RequeteFromTbv &my_answer);
 

@@ -5,13 +5,14 @@
 
 #include "BView.h"
 
-BView::BView(QWidget *parent):QTableView(parent)
+BView::BView(int in_zn, etCount in_typ):QTableView(nullptr)
 {
  square = new QGroupBox;
  up = nullptr;
  userData = nullptr;
- z_id=-1;
+ z_id=in_zn;
  tbInDb = "";
+ c_id = in_typ;
 }
 
 BView::~BView()
@@ -56,6 +57,11 @@ int BView::getZid()
 void BView::setZid(int z_in)
 {
  z_id = z_in;
+}
+
+etCount BView::getCid()
+{
+ return c_id;
 }
 
 int BView::getGid()

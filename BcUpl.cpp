@@ -2224,7 +2224,7 @@ QWidget *BcUpl::getUplDetails(const stGameConf *pGame, int z_id, int l_id, int g
 
  /// Creation des Table View pour chaque onglets resultat
  for (int r_id =0;r_id <nb_recherche;r_id ++) {
-  BView * bv_2 = new BView ;
+  BView * bv_2 = new BView;
   QString objName = "bv2_T" +
                     QString::number(l_id).rightJustified(2,'0')+
                     "-"+pGame->names[z_id].abv +

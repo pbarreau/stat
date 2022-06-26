@@ -368,7 +368,9 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
 
  if(cur_col==painting_col){
 
-	if((a->typ == E_CountElm)||(a->typ == E_CountGrp)){
+  /// Modif de la colonne R pour prendre en cmpte le Gid
+  /// avant : if((a->typ == E_CountElm)||(a->typ == E_CountGrp)){
+  if(a->typ == E_CountGrp){
 	 myTxt = QString::number(myOpt.text.toInt()).rightJustified(2,'0');
 	}
 
