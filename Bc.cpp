@@ -23,6 +23,7 @@
 #include "BMenu.h"
 #include "BView_1.h"
 #include "BFpmCmb.h"
+#include "BFpmElm.h"
 
 #include "Bc.h"
 #include "BcUpl.h"
@@ -153,7 +154,13 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
- QSortFilterProxyModel *m=new QSortFilterProxyModel();
+ QSortFilterProxyModel *m= nullptr;
+ if(eCalcul == E_CountElm) {
+  m = new BFpmElm();
+ }
+ else{
+  m=new QSortFilterProxyModel();
+ }
  m->setDynamicSortFilter(true);
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);

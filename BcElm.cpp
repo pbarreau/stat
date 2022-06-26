@@ -9,6 +9,7 @@
 
 #include <QStackedWidget>
 
+#include <QFormLayout>
 #include <QSqlQuery>
 #include <QSortFilterProxyModel>
 
@@ -24,6 +25,8 @@
 #include <QPushButton>
 
 #include "BcElm.h"
+#include "BFpmElm.h"
+#include "BValidator.h"
 #include "ns_upl.h"
 
 #include "db_tools.h"
@@ -101,26 +104,59 @@ QLayout * BcElm::usr_UpperItems(int zn, BView_1 *cur_tbv)
  /// https://doc.qt.io/qt-5/qpushbutton.html#details
  /// https://openclassrooms.com/fr/courses/1355051-le-gui-avec-qt-la-suite/1355248-gestion-avancee-des-qpushbutton
 
- QHBoxLayout *ret_lay = nullptr;
+ QHBoxLayout *tmp_lay = new QHBoxLayout;
+ QFormLayout *item = new QFormLayout;
+ BLineEdit *tmp_ble = new BLineEdit(cur_tbv);
 
- QIcon tmp_ico;
+ int g_id = cur_tbv->getGid();
 
-
- if((zn == 0) && (BTirAna::getCounter() == 0)){
-  ret_lay = new QHBoxLayout;
+ if((zn == 0) && (BTirAna::getCounter() == 0) && (g_id == 1)){
+  QIcon tmp_ico;
   QPushButton *tmp_btn = nullptr;
 
   tmp_ico = QIcon(":/images/run_32px.png");
   tmp_btn = new QPushButton(tmp_ico,tr("&Creer liste"));
   tmp_btn->setEnabled(false);
-  ret_lay->addWidget(tmp_btn);
+  tmp_lay->addWidget(tmp_btn);
   cur_tbv->setUsrGameButton(tmp_btn);
   connect(tmp_btn,SIGNAL(clicked()),
           cur_tbv,SLOT(BSlot_MakeCustomGame()));
-
  }
 
- return ret_lay;
+ ///--------- Line edit
+ item->addRow("Rch :",tmp_ble);
+ tmp_ble->setEnabled(true);
+ tmp_ble->setToolTip("Recherche");
+ tmp_lay->addLayout(item);
+ QString str_fltMsk = "";
+ str_fltMsk ="^((0?[1-9])|([1-9][0-9]))(,((0?[1-9])|([1-9][0-9]))){0,"+QString::number(g_id-1)+"}$";
+ BValidator *validator = new BValidator(Bp::colTxt,str_fltMsk);
+ tmp_ble->setValidator(validator);
+ connect(tmp_ble,SIGNAL(textChanged(const QString)),this,SLOT(BSlot_textChanged(const QString)));
+
+ return tmp_lay;
+}
+
+void BcElm::BSlot_textChanged(const QString cur_txt)
+{
+ BLineEdit *le_chk = qobject_cast<BLineEdit *>(sender());
+ BView * tmp_v = le_chk->getView();
+ BFpmElm *tmp_fpm = qobject_cast<BFpmElm *>(tmp_v->model());
+
+ tmp_fpm->setFilterText(cur_txt);
+
+ //QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(tmp_fpm->sourceModel());
+
+
+ const QValidator *v = le_chk->validator();
+ if(v==nullptr) return;
+
+ //const BValidator *bv = qobject_cast<const BValidator *>(v);
+ //const QRegExp re = bv->regExp();
+
+
+ //QString input = keys.simplified();
+
 }
 
 

@@ -62,6 +62,7 @@ class BcElm:public BCount//, public cFdjData
 
 
  private slots:
+  void BSlot_textChanged(const QString cur_txt);
   //void BSlot_TbvClick(const QModelIndex &index);
 
  private:
