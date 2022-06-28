@@ -51,6 +51,9 @@ struct stParamInThread{
 
   /// codage rapide
   etCal g_cl;
+  int zid;
+  int gid;
+
 };
 
 class BThread_1: public QWidget //: public QThread
@@ -58,12 +61,14 @@ class BThread_1: public QWidget //: public QThread
   Q_OBJECT
 
  public:
+  BThread_1(const stGameConf *pGame);
   BThread_1(stTsk1 *def);
   void start();
   void start(etStep eStep = eStep_T1);
   void setUserSelection(QString sel);
 
  public slots:
+  void BSlot_IhmIsSet();
   void BSlot_StartUkScan(stParam_tsk *tsk_param);
   void BSlot_StartFullScan(BView *tbv);
 

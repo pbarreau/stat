@@ -148,6 +148,7 @@ class BcUpl: public BCount
   void BSlot_ScanSelected(void);
 
  Q_SIGNALS:
+  void BSig_IhmIsSet();
   void BSig_StartUkScan(stParam_tsk *tsk_param);
   void BSig_StartFullScan(BView *tbv);
   //void BSig_UplCal(const stGameConf *pGame, const etEns e_id, stTskParam_1 *tsk_param);
@@ -181,6 +182,8 @@ class BcUpl: public BCount
 
 
  private:
+  void prepareView(const stGameConf *pGame, QTabWidget *tab_tirId);
+  QWidget * Mk_FullViews(const stGameConf *pGame, stParamInThread *val, QString t_rf);
   bool isSelectedKnown(const QItemSelectionModel *cur_sel, int zn, int *key);
   QString getTablePrefixFromSelection_upl(QString items, int zn=0, stUpdData *upl_data=nullptr);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
@@ -242,6 +245,7 @@ class BcUpl: public BCount
   void FillTbv_StartPoint(stParam_tsk *tsk_param);
 
   BView *FillTbv_BView_1(stParam_tsk *tsk_param);
+  BView *Mk_ViewsT1(const stGameConf *pGame, stParamInThread *val, QString t_rf);
   void startAnimation(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
   void T1_setTitle(BView *qtv_tmp, const stTskProgress *step);
 

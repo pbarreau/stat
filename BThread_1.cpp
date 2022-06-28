@@ -16,6 +16,12 @@
 #include "BcUpl.h"
 #include "BThread_1.h"
 
+BThread_1::BThread_1(const stGameConf *pGame)
+{
+ QString cnx = pGame->db_ref->cnx;
+ db_tsk1 = QSqlDatabase::database(cnx);
+}
+
 BThread_1::BThread_1(stTsk1 * def):tsk_1(def)
 {
  QString cnx = def->pGame->db_ref->cnx;
@@ -1100,6 +1106,13 @@ bool BThread_1::updateTracking(int v_key, etCal v_cal)
 void BThread_1::setUserSelection(QString sel)
 {
  cur_sel = sel;
+}
+
+void BThread_1::BSlot_IhmIsSet()
+{
+BcUpl *origin = qobject_cast<BcUpl *>(sender());
+const stGameConf *pGame = origin->getGameDef();
+
 }
 
 void BThread_1::BSlot_StartUkScan(stParam_tsk *tsk_param)
