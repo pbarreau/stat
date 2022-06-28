@@ -20,6 +20,8 @@ class BView : public QTableView
  void addUpLayout(QLayout *up_in);
  int getMinWidth(int delta=2);
  int getMinHeight();
+ int getLid();
+ int setLid(int l_in);
  int getZid();
  void setZid(int z_in);
  etCount getCid();
@@ -34,9 +36,10 @@ class BView : public QTableView
 
  protected:
  QGroupBox *square;
+ int l_id; /// represente la position de la ligne dans les tirages
  int z_id;
  int g_id;
- etCount c_id;
+ etCount countType;
  QString tbInDb;
 
  private:

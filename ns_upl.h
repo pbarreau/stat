@@ -3,7 +3,16 @@
 
 #include <QString>
 
-typedef enum _E_Calcul
+typedef enum _etEns /// Ensemble dans lequel chercher les uplets
+{
+ E_EnsNotSet, /// Ensemble non defini
+ E_EnsFdj,    /// Liste des tirages de la fdj
+ E_EnsUsr,    /// Selection de l'utilisateur
+ E_EnsEnd     /// Fin enumeration
+}etEns;
+extern const QString TXT_UplSrcKey[E_EnsEnd];
+
+typedef enum _etCal
 {
  E_CalNotDef,     /// Pas Definit
  E_CalNotSet,     /// Non traite
@@ -17,7 +26,7 @@ typedef enum _E_Calcul
  E_CalEOL
 }etCal;
 
-typedef enum _E_CalTirages
+typedef enum _etLst
 {
  E_LstBle,  /// Liste des boules
  E_LstUpl,	/// Liste des uplets apartir des boules
@@ -34,7 +43,8 @@ typedef enum _E_CalTirages
  E_LstShowCal,    /// Requete montrant les calculs
  E_LstShowUnion,   /// Requete synthese de chacque boule
  E_LstShowNotInUnion, /// Requete ensemble complementaire
- E_LstShowUplLst
+ E_LstShowUplLst,
+ E_LstEof /// End of description
  ///E_LstCalUsr,
  ///E_LstCalFdj,
 }etLst;

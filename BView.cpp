@@ -10,9 +10,10 @@ BView::BView(int in_zn, etCount in_typ):QTableView(nullptr)
  square = new QGroupBox;
  up = nullptr;
  userData = nullptr;
- z_id=in_zn;
+ z_id = in_zn;
+ g_id = -3;
  tbInDb = "";
- c_id = in_typ;
+ countType = in_typ;
 }
 
 BView::~BView()
@@ -61,7 +62,7 @@ void BView::setZid(int z_in)
 
 etCount BView::getCid()
 {
- return c_id;
+ return countType;
 }
 
 int BView::getGid()
@@ -177,4 +178,14 @@ int BView::getMinHeight()
  }
  l= Header+row+scrollBar;
  return l;
+}
+
+int BView::getLid()
+{
+ return l_id;
+}
+
+int BView::setLid(int l_in)
+{
+ l_id = l_in;
 }

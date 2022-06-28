@@ -28,6 +28,7 @@
 #include "BFpmElm.h"
 #include "BValidator.h"
 #include "ns_upl.h"
+#include "cnp_SansRepetition.h"
 
 #include "db_tools.h"
 
@@ -142,21 +143,43 @@ void BcElm::BSlot_textChanged(const QString cur_txt)
  BLineEdit *le_chk = qobject_cast<BLineEdit *>(sender());
  BView * tmp_v = le_chk->getView();
  BFpmElm *tmp_fpm = qobject_cast<BFpmElm *>(tmp_v->model());
+ QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(tmp_fpm->sourceModel());
+
+
+ QSqlQuery tmp_query = sqm_tmp->query();
+ int tot = 0;
+ if(tmp_query.first()){
+  tmp_query.last();
+  tot = tmp_query.at() + 1;
+  tmp_query.first();
+ }
 
  tmp_fpm->setFilterText(cur_txt);
+ QModelIndex debut;
+ while (tmp_fpm->canFetchMore(debut))
+     tmp_fpm->fetchMore(debut);
+ int nb_lgn_ftr = tmp_fpm->rowCount();
 
- //QSqlQueryModel *vl = qobject_cast<QSqlQueryModel *>(tmp_fpm->sourceModel());
+ QString Ref_1 = "";
+ QString v6 = "";
 
+ int zn = tmp_v->getZid();
+ int g_id = tmp_v->getGid();
+ int nbBoulesTotal = gm_def->limites[zn].max;
+ /// Calcul du Cnp
+ BCnp *b = new BCnp(nbBoulesTotal,g_id);
+ int rows_cal_3 = b->BP_count();
 
- const QValidator *v = le_chk->validator();
- if(v==nullptr) return;
+ if(cur_txt.simplified().size()==0){
+  Ref_1 = "Uplet a %1 element. Cnp(%2,%3) : %4 sur %5";
+  v6 = QString(Ref_1).arg(g_id).arg(g_id).arg(nbBoulesTotal).arg(tot).arg(rows_cal_3);
+ }
+ else{
+  Ref_1 = "Filtrage  %1 element(s) sur %2";
+  v6 = QString(Ref_1).arg(nb_lgn_ftr).arg(tot);
+ }
 
- //const BValidator *bv = qobject_cast<const BValidator *>(v);
- //const QRegExp re = bv->regExp();
-
-
- //QString input = keys.simplified();
-
+ tmp_v->setTitle(v6);
 }
 
 

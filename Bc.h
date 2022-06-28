@@ -108,6 +108,7 @@ class BCount:public QWidget
 
  public:
   static QString FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString alias="", bool visual=false);
+  const stGameConf *getGameDef(void);
   etCount getType();
   virtual QTabWidget *startCount(const stGameConf *pGame, const etCount E_Calcul) = 0;
   QWidget *startIhm(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl usr_fn, const int zn);

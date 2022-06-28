@@ -20,6 +20,7 @@
 
 #include "BFlags.h"
 
+#include "cnp_SansRepetition.h"
 #include "BMenu.h"
 #include "BView_1.h"
 #include "BFpmCmb.h"
@@ -132,11 +133,11 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
 
  QLayout *up_qtv = *(prm->up);
  BView_1 *qtv_tmp = prm->cur_tbv;
- //QGridLayout *glay_tmp = prm->glay_tmp;
  QGridLayout *glay_tmp = new QGridLayout;
  QString dstTbl = prm->dstTbl;
  etCount eCalcul = prm->eCalcul;
  int zn = qtv_tmp->getZid();
+ int g_id = qtv_tmp->getGid();
 
  qtv_tmp->setParentLayout(glay_tmp);
 
@@ -172,6 +173,17 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
   tot = tmp_query.at() + 1;
   qtv_tmp->setRowSourceModelCount(tot);
   tmp_query.first();
+ }
+
+
+ if(eCalcul == E_CountElm && g_id != 1){
+  QString Ref_1 = "Uplet a %1 element. Cnp(%2,%3) : %4 sur %5";
+  int nbBoulesTotal = pGame->limites[zn].max;
+  /// Calcul du Cnp
+  BCnp *b = new BCnp(nbBoulesTotal,g_id);
+  int rows_cal_3 = b->BP_count();
+  QString v6 = QString(Ref_1).arg(g_id).arg(g_id).arg(nbBoulesTotal).arg(tot).arg(rows_cal_3);
+  qtv_tmp->setTitle(v6);
  }
 
  if(eCalcul == E_CountGrp){
@@ -2091,6 +2103,11 @@ QString BCount::FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString a
 #endif
 
  return   st_items;
+}
+
+const stGameConf *BCount::getGameDef()
+{
+ return gm_def;
 }
 
 void BCount::BSlot_TbvClick(const QModelIndex & index)

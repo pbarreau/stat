@@ -371,6 +371,21 @@ BcUpl::BcUpl(st_In const &param, int index, etCal E_Cal, const QModelIndex & lig
 
 BcUpl::~BcUpl(){}
 
+int BcUpl::getUplId()
+{
+ return obj_upl;
+}
+
+int BcUpl::getLid()
+{
+ return l_id;
+}
+
+etEns BcUpl::getEid()
+{
+ return e_id;
+}
+
 QGridLayout *BcUpl::Compter(QString * pName, int zn)
 {
  Q_UNUSED(pName)
@@ -766,9 +781,37 @@ void BcUpl::BSlot_over(const QModelIndex &index)
  int lgn = index.row();
 }
 
+void BcUpl::BSlot_ShowUpletProgress(BView *tbv, const stParamInThread *val)
+{
+ /// codage rapide utilisant le itemdelegate
+ BFpm_upl * m = qobject_cast<BFpm_upl *>(tbv->model());
+ BAnimateCell * ani_tbv = qobject_cast<BAnimateCell *>(tbv->itemDelegate());
+
+ int key = val -> g_lm;
+ etCal g_cl = val -> g_cl;
+
+ if(g_cl == E_CalStarted){
+  ani_tbv->startKey(key);
+ }
+
+ if(g_cl == E_CalReady){
+  ani_tbv->setCalReady(key);
+ }
+ /// le repaint() est dans demande par ani_tbv a BSlot_Repaint
+ /// -------------
+
+ /// vaut mieux relire table....
+ QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+ QString s_tmp = sqm_tmp->query().executedQuery();
+ sqm_tmp->query().clear();
+ sqm_tmp->setQuery(s_tmp,db_0);
+ tbv->viewport()->update();
+}
+
 void BcUpl::BSlot_Repaint(const BView *tbv)
 {
  tbv->viewport()->repaint();
+ //tbv->viewport()->update();
 }
 
 void BcUpl::BSlot_UVL1_Cmr_Fn_1(QPoint pos)
@@ -825,13 +868,26 @@ void BcUpl::BSlot_UVL1_Cmr_Fn_1(QPoint pos)
   MonMenu.addAction(cmd_1);
  }
 
- QAction * cmd_common = new QAction("Start Scan");
- connect(cmd_common, &QAction::triggered,
-         this, &BcUpl::BSlot_UplScan);
- MonMenu.addAction(cmd_common);
+ QAction * act_1 = new QAction("Scan selected");
+ connect(act_1, &QAction::triggered,
+         this, &BcUpl::BSlot_ScanSelected);
+ MonMenu.addAction(act_1);
 
+ QAction * act_2 = new QAction("Scan all");
+ connect(act_2, &QAction::triggered,
+         this, &BcUpl::BSlot_UVL1_Cmr_ActScanFull);
+ act_2->setParent(view);
+ MonMenu.addAction(act_2);
 
  MonMenu.exec(view->viewport()->mapToGlobal(pos));
+}
+
+void BcUpl::BSlot_UVL1_Cmr_ActScanFull()
+{
+ QAction *origin = qobject_cast<QAction *>(sender());
+ BView *view = qobject_cast<BView *>(origin->parent());
+ connect(this,&BcUpl::BSig_StartFullScan, producteur, &BThread_1::BSlot_StartFullScan);
+ emit(BSig_StartFullScan(view));
 }
 
 void BcUpl::BSlot_UplSel(const QModelIndex &index)
@@ -869,7 +925,7 @@ void BcUpl::BSlot_UplSel(const QModelIndex &index)
  }
 }
 
-void BcUpl::BSlot_UplScan()
+void BcUpl::BSlot_ScanSelected()
 {
  if (isScanRuning == true ){
   return;
@@ -1976,13 +2032,17 @@ void BcUpl::BSlot_ShowTotal(const QString& lstBoules)
  st_title = QString(lst.at(0)).simplified();
 
  /// Necessaire pour compter toutes les lignes de reponses
- while (sqm_tmp->canFetchMore())
- {
-  sqm_tmp->fetchMore();
- }
-
- int nb_lgn_ftr = m->rowCount();
+ QModelIndex debut_1;
+ while (sqm_tmp->canFetchMore(debut_1))
+     sqm_tmp->fetchMore(debut_1);
  int rows_cal_1 = sqm_tmp->rowCount();
+
+ /// Proxymodel
+ QModelIndex debut_2;
+ while (m->canFetchMore(debut_2))
+     m->fetchMore(debut_2);
+ int nb_lgn_ftr = m->rowCount();
+
 
  int nbBoulesTotal = -1;
  if(e_id == E_EnsFdj){
@@ -2370,6 +2430,7 @@ void BcUpl::BSlot_UVL1_Click_Fn_1(const QModelIndex &index)
  int z_id = view->getZid();
  int g_lm =  index.sibling(index.row(),Bp::colId).data().toInt();
  int l_id = getFromView_Lid(view);
+ int bis = view->getLid();
  int upl_tot =  index.sibling(index.row(),Bp::colId+g_id+1).data().toInt();
 
  QGroupBox *target = nullptr;
@@ -2802,9 +2863,11 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
 
 
  bv_1->setObjectName(QString::number(g_id - C_MIN_UPL));
+ bv_1->setLid(l_id);
  bv_1->setZid(z_id);
- bv_1->setUserDataPtr(usrData);
  bv_1->setGid(g_id);
+ bv_1->setUseTable(t_use);
+ bv_1->setUserDataPtr(usrData);
  QHBoxLayout *bar_top_1 = getBar_Rch(bv_1,g_id - C_MIN_UPL);
  bv_1->addUpLayout(bar_top_1);
 

@@ -40,6 +40,19 @@ typedef struct _tskProgress
   int r_id;
 }stTskProgress;
 
+struct stParamInThread{
+  etEns e_id; /// Ensemble des elements de depart
+  int u_id;   /// indice de l'objet upl en cours
+  int l_id;   /// Ref du top most onglet dans onglet uplet
+  int g_lm;   /// indice de l'uplet en cours dans le groupe uplet principal
+  int o_id;   /// indice de l'offset jour
+  int r_id;   /// indice de l'onglet des reponses ( uplets )
+  etLst c_id; /// Etape du calcul generant le code sql des tables reponses uplets
+
+  /// codage rapide
+  etCal g_cl;
+};
+
 class BThread_1: public QWidget //: public QThread
 {
   Q_OBJECT
@@ -50,10 +63,12 @@ class BThread_1: public QWidget //: public QThread
   void start(etStep eStep = eStep_T1);
   void setUserSelection(QString sel);
 
-public slots:
+ public slots:
   void BSlot_StartUkScan(stParam_tsk *tsk_param);
+  void BSlot_StartFullScan(BView *tbv);
 
  private:
+  QString getSqlLstUplToScan(const stGameConf *pGame, BView *view);
   void run() ;//override;
   void creationTables(etStep eStep = eStep_T1);
 
@@ -62,6 +77,10 @@ public slots:
   QString getTablePrefixFromSelection_tsk(QString items, int zn=0, stUpdData *upl_data=nullptr);
 
   stParam_tsk *FillBdd_StartPoint(stParam_tsk *tsk_param);
+  bool Uk_FillBdd_StartPoint(const stGameConf *pGame, BView *view, stParamInThread *val, const QSqlQuery &query);
+  bool Uk_MakeTable_T1(const stGameConf *pGame, BView *view, QString table, stParamInThread val);
+  bool Uk_MakeTable_T2(const stGameConf *pGame, BView *view, QString table, stParamInThread val);
+  bool Uk_MakeTable_T3(const stGameConf *pGame, BView *view, QString table, stParamInThread val);
   void T2_Fill_Bdd(stParam_tsk *tsk_param);
   void T3_Fill_Bdd(stParam_tsk *tsk_param);
   void T4_Fill_Bdd(stParam_tsk *tsk_param);
@@ -83,6 +102,7 @@ public slots:
   QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, etLst sql_step, QString tabInOut[][3]);
 
  signals:
+  void BSig_ShowUpletProgress(BView *view, const stParamInThread *val);
   void BSig_SkowUkScan(stParam_tsk *tsk_param);
   void BSig_Step(const stParam_tsk *tsk_param);
   void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);

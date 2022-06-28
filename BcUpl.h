@@ -42,17 +42,8 @@
 #define C_MAX_SCAN_ITEMS 20
 
 
-
-typedef enum _eEnsemble /// Ensemble dans lequel chercher les uplets
-{
- E_EnsNotSet, /// Ensemble non defini
- E_EnsFdj,    /// Liste des tirages de la fdj
- E_EnsUsr,    /// Selection de l'utilisateur
- E_EnsEnd     /// Fin enumeration
-}etEns;
-extern const QString TXT_UplSrcKey[E_EnsEnd];
-
-
+/// Codage rapide
+struct stParamInThread;
 
 typedef struct _dbUpdl{
   etEns e_id; /// type d'ensemble
@@ -126,8 +117,12 @@ class BcUpl: public BCount
  public:
   explicit BcUpl(const stGameConf *pGame, QWidget *parent=nullptr, etEns eUpl=E_EnsFdj, int zn=0, const QItemSelectionModel *cur_sel=nullptr, QTabWidget *ptrUplRsp=nullptr);
   ~BcUpl();
+  int getUplId();
+  int getLid();
+  etEns getEid();
 
  public slots:
+  void BSlot_ShowUpletProgress(BView * tbv, const stParamInThread *val);
   void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int zn);
   void BSlot_SkowUkScan(stParam_tsk *tsk_param);
 
@@ -148,11 +143,13 @@ class BcUpl: public BCount
   void BSlot_over(const QModelIndex &index);
   void BSlot_Repaint(const BView * tbv);
   void BSlot_UVL1_Cmr_Fn_1(QPoint pos);
+  void BSlot_UVL1_Cmr_ActScanFull();
   void BSlot_UplSel(const QModelIndex & index);
-  void BSlot_UplScan(void);
+  void BSlot_ScanSelected(void);
 
  Q_SIGNALS:
   void BSig_StartUkScan(stParam_tsk *tsk_param);
+  void BSig_StartFullScan(BView *tbv);
   //void BSig_UplCal(const stGameConf *pGame, const etEns e_id, stTskParam_1 *tsk_param);
   void BSig_UplFdjShow(const QString items, int zn);
   //void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
@@ -167,6 +164,7 @@ class BcUpl: public BCount
   QTabWidget *uplTirTab;
   bool isScanRuning;
   etEns e_id;
+  int l_id;
 
   int upl_zn;
   QString upl_current;

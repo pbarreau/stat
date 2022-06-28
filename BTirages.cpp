@@ -1479,7 +1479,16 @@ void BTirages::updateTbv(QString box_title, QString msg)
  BView *qtv_tmp = tir_tbv;
  BFpmFdj * fpm_tmp = qobject_cast<BFpmFdj *>(qtv_tmp->model());
 
- int rows_proxy = qtv_tmp->model()->rowCount();
+ QModelIndex fake_2;
+ while (fpm_tmp->canFetchMore(fake_2))
+ {
+  fpm_tmp->fetchMore(fake_2);
+ }
+ int rows_proxy =  0;
+
+ rows_proxy = qtv_tmp->model()->rowCount();
+ rows_proxy = fpm_tmp->rowCount();
+
  QString st_title = box_title+
                     "Nb tirages : "+QString::number(nb_rows)+
                     " sur " + QString::number(rows_proxy);

@@ -449,10 +449,18 @@ void BTirFdj::BSlot_setKey(QString keys)
  /// Recherche du nombre filtre
 
  QSqlQueryModel  * sqm_tmp = qobject_cast<QSqlQueryModel *>(tmp_fpm->sourceModel());
- while (sqm_tmp->canFetchMore())
+ QModelIndex fake_1;
+ while (sqm_tmp->canFetchMore(fake_1))
  {
-  sqm_tmp->fetchMore();
+  sqm_tmp->fetchMore(fake_1);
  }
+
+ QModelIndex fake_2;
+ while (tmp_fpm->canFetchMore(fake_2))
+ {
+  tmp_fpm->fetchMore(fake_2);
+ }
+
  int nb_lgn_ftr = tmp_fpm->rowCount();
  int nb_lgn_rel = sqm_tmp->rowCount();
 
