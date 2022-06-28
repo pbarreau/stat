@@ -386,6 +386,23 @@ etEns BcUpl::getEid()
  return e_id;
 }
 
+void BcUpl::BSLot_DbTableSet(QString table, stParamInThread *val)
+{
+ /// Rechercher onglet contenant la Bview
+ QMap<QString, BView *>::const_iterator it;
+
+ it = mapView_2.find(table);
+
+ if(it != mapView_2.end()){
+  BView *qtv_tmp = it.value();
+  DessineTbv_BView_1(table, qtv_tmp, val);
+ }
+
+ /// etape suivante
+ //emit BSig_UplDataStep2(gm_def,e_id, tsk_param, tblName);
+
+}
+
 QGridLayout *BcUpl::Compter(QString * pName, int zn)
 {
  Q_UNUSED(pName)
@@ -459,6 +476,7 @@ void BcUpl::prepareView(const stGameConf *pGame, QTabWidget *tab_tirId)
  val->o_id = -2;
  val->r_id = -2;
  val->c_id = E_LstEof;
+ val->my_indexes = my_indexes;
 
  for(int l_id = 1; l_id<=nbTirJour;l_id++){
   val->l_id = l_id;
@@ -557,6 +575,103 @@ QWidget *BcUpl::Mk_FullViews(const stGameConf *pGame, stParamInThread *val, QStr
  return wdg_tmp;
 }
 
+void BcUpl::DessineTbv_BView_1(QString table, BView *qtv_tmp, stParamInThread *val)
+{
+#if 0
+ /// regarder si la table existe dans la base !!
+ QSqlQuery query(db_0);
+ bool b_retVal = false;
+ QString t_use = qtv_tmp->getTblName() ;
+ QString sql_msg = "";
+
+ sql_msg = sql_msg + "SELECT count(name) FROM sqlite_master\n";
+ sql_msg = sql_msg + "WHERE (type='table' AND name='"+t_use+"')\n";
+ b_retVal = query.exec(sql_msg);
+
+ if(b_retVal == true){
+  int nbCalc = -1;
+
+  if((b_retVal = query.first()) == true){
+   nbCalc = query.value(0).toInt();
+  }
+
+  if(nbCalc != 1){
+   return;
+  }
+ }
+#endif
+
+ /// Recharger le code sql
+ BFpm_upl * m = qobject_cast<BFpm_upl *>(qtv_tmp->model());
+ QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
+
+ QString cur_sql = sqm_tmp->query().lastQuery();
+ sqm_tmp->setQuery(cur_sql, db_0);
+
+ int nb_col = sqm_tmp->columnCount();
+
+ BAnimateCell * ani_tbv = qobject_cast<BAnimateCell *>(qtv_tmp->itemDelegate());
+ ani_tbv->updateNbColumns();
+
+ QModelIndex tmp1;
+ while (sqm_tmp->canFetchMore(tmp1)){sqm_tmp->fetchMore(tmp1);}
+ int rows_cal_1 = sqm_tmp->rowCount();
+
+ /// Remplacer par le calcul du Cnp
+ int rows_cal_2 = 0;
+ QString sql_msg = "";
+ bool b_retVal = false;
+ QSqlQuery query (db_0);
+ sql_msg = "Select count(*) as T from " + table;
+ if((b_retVal=query.exec(sql_msg))){
+  if(query.first()){
+   rows_cal_2 = query.value(0).toInt();
+  }
+ }
+
+ QModelIndex tmp2;
+ while (sqm_tmp->canFetchMore(tmp2)){m->fetchMore(tmp2);}
+ int nb_lgn_ftr = m->rowCount();
+
+ int nbBoulesTotal = -1;
+ int z_id = val->zid;
+ if(val->e_id == E_EnsFdj){
+  nbBoulesTotal = gm_def->limites[z_id].win;
+ }
+ else{
+  nbBoulesTotal = val->my_indexes.size();
+ }
+ /// Calcul du Cnp
+ int g_id = val->gid;
+ BCnp *b = new BCnp(nbBoulesTotal,g_id);
+ int rows_cal_3 = b->BP_count();
+
+ /// Titre de la recherche
+ QString v1 = QString::number(g_id).rightJustified(2,'0');
+ QString v2 = QString::number(nbBoulesTotal);
+ QString v3 = QString::number(g_id);
+ QString v4 = QString::number(rows_cal_1);
+ QString v5 = QString::number(rows_cal_3);
+ QString st_title = QString(ref_lcnp[0]).arg(v1).arg(v2).arg(v3).arg(v4).arg(v5);
+ qtv_tmp->setTitle(st_title);
+
+ qtv_tmp->hideColumn(Bp::colId);
+ //qtv_tmp->hideColumn(Bp::colUplKey);
+ //qtv_tmp->hideColumn(Bp::colUplState);
+
+ qtv_tmp->resizeColumnsToContents();
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::SingleSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+ qtv_tmp->sortByColumn(nb_col-1,Qt::DescendingOrder);
+ qtv_tmp->setSortingEnabled(true);
+
+ //qtv_tmp ->viewport()->repaint();
+ qtv_tmp ->update();
+
+}
 
 
 #if 0
@@ -3125,6 +3240,7 @@ BView *BcUpl::Mk_ViewsT1(const stGameConf *pGame, stParamInThread *val, QString 
  QString sql_msg = "select * from " + t_use;
 
  BView *bv_1 = new BView;
+ mapView_2.insert(t_use, bv_1); /// liaison nom avec tbv
  upl_Bview_1[l_id-1][z_id][g_id - C_MIN_UPL] = bv_1;
 
  bv_1->setObjectName(QString::number(g_id - C_MIN_UPL));

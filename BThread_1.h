@@ -53,7 +53,7 @@ struct stParamInThread{
   etCal g_cl;
   int zid;
   int gid;
-
+  QModelIndexList my_indexes;
 };
 
 class BThread_1: public QWidget //: public QThread
@@ -78,11 +78,13 @@ class BThread_1: public QWidget //: public QThread
   void creationTables(etStep eStep = eStep_T1);
 
   bool T1_Fill_Bdd(stParam_tsk *tsk_param);
+  bool T1_Fill_Bdd(const stGameConf *pGame, BView *view, QString table, stParamInThread val);
   stParam_tsk *T1_Scan(stParam_tsk *tsk_param);
   QString getTablePrefixFromSelection_tsk(QString items, int zn=0, stUpdData *upl_data=nullptr);
 
   stParam_tsk *FillBdd_StartPoint(stParam_tsk *tsk_param);
   bool Uk_FillBdd_StartPoint(const stGameConf *pGame, BView *view, stParamInThread *val, const QSqlQuery &query);
+  bool Mk_FullTbls(const stGameConf *pGame, QString table, stParamInThread *val);
   bool Uk_MakeTable_T1(const stGameConf *pGame, BView *view, QString table, stParamInThread val);
   bool Uk_MakeTable_T2(const stGameConf *pGame, BView *view, QString table, stParamInThread val);
   bool Uk_MakeTable_T3(const stGameConf *pGame, BView *view, QString table, stParamInThread val);
@@ -97,16 +99,22 @@ class BThread_1: public QWidget //: public QThread
   QString getSqlTbv(const stGameConf *pGame, int zn, int tir_Id, int day_Delta, int upl_Grp, int r_id=-1, etLst target=E_LstCal, int sel_item=-1);
   QString sql_ElmFrmTir(const stGameConf *pGame, int zn, etLst sql_step, int tir_id,QString tabInOut[][3]);
   QString sql_ShowItems(const stGameConf *pGame, int zn, etLst sql_show, int cur_upl, QString cur_sql, int upl_sub=-1);
-  void sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl_ref_in, int offset, int upl_sub, int step, QString tabInOut[][3]);
+  void sql_upl_lev_1(const stGameConf *pGame, int z_id, int l_id, int g_id, int o_id, int r_id, int c_id, QString tabInOut[][3]);
   void sql_upl_lev_2(const stGameConf *pGame, int z_id, int l_id, int o_id, int g_id, int r_id,  QString tabInOut[][C_TOT_CAL][3]);
 
   QString sql_ElmNotFrmTir(const stGameConf *pGame, int zn, int  upl_ref_in, QString tabInOut[][3]);
   QString sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString tabInOut[][3]);
   QString sql_TirFrmUpl(const stGameConf *pGame, int zn,int  upl_ref_in, QString tabInOut[][3]);
-  QString sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, etLst sql_step, QString tabInOut[][3]);
+  QString sql_TotFrmTir(const stGameConf *pGame, int zn, int g_id, int r_id, etLst c_id, QString tabInOut[][3]);
   QString sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, int upl_sub, etLst sql_step, QString tabInOut[][3]);
 
+  QString getSqlTbv(const stGameConf *pGame, stParamInThread *val, int sel_item=-1);
+  void sql_upl_lev_1(const stGameConf *pGame, stParamInThread *val, QString tabInOut[][3]);
+  QString sql_ElmFrmTir(const stGameConf *pGame, stParamInThread *val,QString tabInOut[][3]);
+  void sql_upl_lev_2(const stGameConf *pGame, stParamInThread *val,  QString tabInOut[][C_TOT_CAL][3]);
+
  signals:
+  void BSig_DbTableSet(QString table, stParamInThread *val);
   void BSig_ShowUpletProgress(BView *view, const stParamInThread *val);
   void BSig_SkowUkScan(stParam_tsk *tsk_param);
   void BSig_Step(const stParam_tsk *tsk_param);

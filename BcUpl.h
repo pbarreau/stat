@@ -122,6 +122,7 @@ class BcUpl: public BCount
   etEns getEid();
 
  public slots:
+  void BSLot_DbTableSet(QString table, stParamInThread *val);
   void BSlot_ShowUpletProgress(BView * tbv, const stParamInThread *val);
   void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int zn);
   void BSlot_SkowUkScan(stParam_tsk *tsk_param);
@@ -178,12 +179,14 @@ class BcUpl: public BCount
   BAnimateCell ****tbv_Anim;   /// Selection d'un uplet
   BThread_1 *producteur;
   //QMap<QString, stUplBViewPos> *mapView_1;
+  QMap<QString, BView *> mapView_2;
   QWidget *ana_parent;
 
 
  private:
   void prepareView(const stGameConf *pGame, QTabWidget *tab_tirId);
   QWidget * Mk_FullViews(const stGameConf *pGame, stParamInThread *val, QString t_rf);
+  void DessineTbv_BView_1(QString table, BView *qtv_tmp, stParamInThread *val);
   bool isSelectedKnown(const QItemSelectionModel *cur_sel, int zn, int *key);
   QString getTablePrefixFromSelection_upl(QString items, int zn=0, stUpdData *upl_data=nullptr);
   QHBoxLayout *getBar_Rch(BView *qtv_tmp,int tab_id);
