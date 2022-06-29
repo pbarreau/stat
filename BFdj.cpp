@@ -14,7 +14,7 @@
 
 #include <QSqlDriver>
 #include "sqlExtensions/inc/sqlite3.h"
-#include "sqlExtensions/inc/sqlite3ext.h"
+//#include "sqlExtensions/inc/sqlite3ext.h"
 
 #include "db_tools.h"
 #include "BFdj.h"
@@ -191,6 +191,8 @@ bool BFdj::AuthoriseChargementExtension(void)
     return false;
   }
 
+ /// Verrification
+ int thread_value = sqlite3_threadsafe();
 
   sqlite3 *handle = *static_cast<sqlite3 **>(v.data());
 

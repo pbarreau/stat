@@ -149,7 +149,8 @@ class BcUpl: public BCount
   void BSlot_Repaint(const BView * tbv);
   void BSlot_UVL1_Cmr_Fn_1(QPoint pos);
   void BSlot_UplSel(const QModelIndex & index);
-  void BSlot_UplScan(void);
+  void BSlot_UplScanAll(void);
+  void BSlot_UplScanSelected(void);
 
  Q_SIGNALS:
   void BSig_StartUkScan(stParam_tsk *tsk_param);

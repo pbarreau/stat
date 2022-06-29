@@ -825,11 +825,16 @@ void BcUpl::BSlot_UVL1_Cmr_Fn_1(QPoint pos)
   MonMenu.addAction(cmd_1);
  }
 
- QAction * cmd_common = new QAction("Start Scan");
+ QAction * cmd_common = new QAction("Scan selected");
  connect(cmd_common, &QAction::triggered,
-         this, &BcUpl::BSlot_UplScan);
+         this, &BcUpl::BSlot_UplScanSelected);
  MonMenu.addAction(cmd_common);
 
+ QAction * cmd_2 = new QAction("Scan all");
+ cmd_2->setParent(view);
+ connect(cmd_2, &QAction::triggered,
+         this, &BcUpl::BSlot_UplScanAll);
+ MonMenu.addAction(cmd_2);
 
  MonMenu.exec(view->viewport()->mapToGlobal(pos));
 }
@@ -869,7 +874,42 @@ void BcUpl::BSlot_UplSel(const QModelIndex &index)
  }
 }
 
-void BcUpl::BSlot_UplScan()
+void BcUpl::BSlot_UplScanAll()
+{
+ QAction *cmd = qobject_cast<QAction *>(sender());
+ BView *view = qobject_cast<BView *>(cmd->parent());
+ BFpm_upl * m = qobject_cast<BFpm_upl *>(view->model());
+ BAnimateCell * ani_tbv = qobject_cast<BAnimateCell *>(view->itemDelegate());
+ QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel*>(m->sourceModel());
+ QString s_tmp = sqm_tmp->query().executedQuery();
+ stDataUpl *usrData = static_cast<stDataUpl *>(view->getUserDataPtr());
+
+ QString table = usrData->t_on;
+ QSqlQuery tmp;
+
+ QModelIndex proxIndex = m->index(0,0);
+ QModelIndex realIndex = sqm_tmp->index(0, 0);
+ int id_real = sqm_tmp->data(realIndex).toInt();
+ int id_prox = m->data(proxIndex).toInt();
+
+ /// Obtenir l'index du proxymodel
+ QModelIndex src_1;
+ QModelIndex src_2 = m->mapFromSource(realIndex);
+ QModelIndex src_3 = m->mapToSource(proxIndex);
+
+
+ int id_1 = -1;
+ int id_8 = -1;
+ src_1 = view->rootIndex();
+ do{
+  src_1 = view->model()->index(src_1.row()+1,0);
+  id_1 = src_1.data().toInt();
+  view->clicked(src_1);
+ }while(src_1.isValid());
+
+}
+
+void BcUpl::BSlot_UplScanSelected()
 {
  if (isScanRuning == true ){
   return;
@@ -2372,6 +2412,8 @@ void BcUpl::BSlot_UVL1_Click_Fn_1(const QModelIndex &index)
  int l_id = getFromView_Lid(view);
  int upl_tot =  index.sibling(index.row(),Bp::colId+g_id+1).data().toInt();
 
+ stDataUpl *usrData = static_cast<stDataUpl *>(view->getUserDataPtr());
+
  QGroupBox *target = nullptr;
  QString upl_cur = getFromIndex_CurUpl(index,g_id, &target);
  QString cnx=gm_def->db_ref->cnx;
@@ -2863,7 +2905,7 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
 
 
  /// Largeur du tableau
- bv_1->hideColumn(Bp::colId);
+ ///-----------------bv_1->hideColumn(Bp::colId);
  int l = bv_1->getMinWidth();
 
  /// Simple click dans fenetre  pour selectionner 1 Uplet
