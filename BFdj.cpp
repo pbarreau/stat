@@ -25,10 +25,45 @@ QString BFdj::dsk_db = "";
 
 extern QString FdjDbZip;
 
-BFdj::BFdj(stFdj *prm, QString cnx)
+BFdj::BFdj()
 {
 
+}
 
+BFdj::BFdj(stFdj *prm, QString cnx)
+{
+ QString use_cnx = cnx;
+ QString stConfFile = "";
+ bool b_retVal = true;
+
+ cur_item = total_items;
+ total_items++;
+ fdjConf = nullptr;
+
+ /// Doit on utiliser une connexion deja etablie
+ if(!use_cnx.size()){
+  b_retVal = ouvrirBase(prm);
+ }
+ else {
+  // Etablir connexion a la base
+  fdj_db = QSqlDatabase::database(use_cnx);
+  b_retVal = fdj_db.isValid();
+ }
+
+ if(b_retVal ==false){
+  QString str_error = fdj_db.lastError().text();
+  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
+  return;
+ }
+
+ stGameConf *curConf = init(prm);
+ crt_TblFdj(curConf);
+
+ fdjConf = curConf;
+}
+
+void BFdj::setConfig(stFdj *prm, QString cnx)
+{
  QString use_cnx = cnx;
  QString stConfFile = "";
  bool b_retVal = true;

@@ -2426,7 +2426,7 @@ void BcUpl::BSlot_UVL1_Click_Fn_1(const QModelIndex &index)
 
  /// Demande Calcul de cet element en cours ?
  if(ani->gotKey(g_lm)){
-  //return;
+  return;
  }
 
  /// ----------------------
@@ -2905,7 +2905,7 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
 
 
  /// Largeur du tableau
- ///-----------------bv_1->hideColumn(Bp::colId);
+ bv_1->hideColumn(Bp::colId);
  int l = bv_1->getMinWidth();
 
  /// Simple click dans fenetre  pour selectionner 1 Uplet

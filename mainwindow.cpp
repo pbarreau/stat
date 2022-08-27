@@ -84,7 +84,9 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new, bool upl_
  prm->upl_fdj = upl_fdj;
  prm->db_type = eDbDsk;
 
- BFdj *charge = new BFdj(prm);
+ _Db->setConfig(prm);
+
+ BFdj *charge = _Db; ////new BFdj(prm);
 
  stGameConf *curConf = charge->getConfig();
 
@@ -200,6 +202,12 @@ void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)
 
 
 }
+/*
+void MainWindow::AnciensCalcul_gen(stGameConf *pGame)
+{
+
+}
+*/
 
 void MainWindow::AssemblerJeuxUsr(stGameConf *usrGame)
 {

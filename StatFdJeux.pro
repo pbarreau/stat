@@ -31,7 +31,9 @@ message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
 SOURCES += \
     BAction_1.cpp \
     BAnimateCell.cpp \
+    BApplication.cpp \
     BFpmElm.cpp \
+    BMainWindow.cpp \
     Bc.cpp \
     BcBrc.cpp \
     BcCmb.cpp \
@@ -132,7 +134,9 @@ SOURCES += \
 HEADERS  += \
     BAction_1.h \
     BAnimateCell.h \
+    BApplication.h \
     BFpmElm.h \
+    BMainWindow.h \
     Bc.h \
     BcBrc.h \
     BcCmb.h \

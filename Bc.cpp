@@ -2113,6 +2113,41 @@ void BCount::BSlot_TbvClick(const QModelIndex & index)
     filterKey = key + ";" +filterKey;
    }
   }
+
+  /// Gestion Col Ec
+  if(col_id == Bp::colEc && (g_id == 1)){
+   int ecart = index.data().toInt();
+   int boule = index.sibling(lgn_id, Bp::colTxt).data().toInt();
+
+   QString stTitle = "Boule:" + QString::number(boule)+",Ecart actuel:"+QString::number(ecart);
+   QString stCols = FN1_getFieldsFromZone(gm_def, z_id);
+   QString sql_msg = "";
+
+   sql_msg = sql_msg + "SELECT Ecarts, count(Ecarts) as Total from \n";
+   sql_msg = sql_msg + "(\n";
+   sql_msg = sql_msg + "select id, (abs(id - lead(id,1) over(order by id))) Ecarts\n";
+   sql_msg = sql_msg + "from (select row_number () over() lgn, * from B_fdj where ("+QString::number(boule)+" in ("+stCols+"))) as t1\n";
+   sql_msg = sql_msg + "order by Ecarts,id asc\n";
+   sql_msg = sql_msg + ") as t1\n";
+   sql_msg = sql_msg + "where Ecarts is not null\n";
+   sql_msg = sql_msg + "GROUP by Ecarts order by Total desc\n";
+
+   QTableView *qtv_tmp = new QTableView;
+   QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+   sqm_tmp->setQuery(sql_msg, dbCount);
+   QSortFilterProxyModel *m=new QSortFilterProxyModel();
+   m->setDynamicSortFilter(true);
+   m->setSourceModel(sqm_tmp);
+   qtv_tmp->setModel(m);
+
+   qtv_tmp->resizeColumnsToContents();
+   qtv_tmp->setAlternatingRowColors(true);
+   qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+   qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+
+   qtv_tmp->setWindowTitle(stTitle);
+   qtv_tmp->show();
+  }
  }
  //emit BSigClicked(index,zn,eTyp);
 }
