@@ -630,6 +630,7 @@ QString BcElm::getSqlMsg(const stGameConf *pGame, const stMkLocal prm)
  QString col_J = "";
 
  QString tbl_tirages = pGame->db_ref->src;
+ QString tbl_source = tbl_tirages;
  QString tbl_key = "";
  if(tbl_tirages.compare("B_fdj")==0){
   tbl_tirages="B";
@@ -644,6 +645,7 @@ QString BcElm::getSqlMsg(const stGameConf *pGame, const stMkLocal prm)
   col_vsl = col_vsl + "(PRINTF(\"%.1f\", MEDIAN(E))) AS 'Esµ',\n";
   col_vsl = col_vsl + "COUNT(*) AS T\n";
  }
+
 
  if(pGame->eTirType == eTirFdj){
   col_J = ", t1.J as J";
@@ -692,7 +694,7 @@ QString BcElm::getSqlMsg(const stGameConf *pGame, const stMkLocal prm)
  sql_msg = sql_msg + "t2.*\n";
  sql_msg = sql_msg + "FROM\n";
  sql_msg = sql_msg + "(tb_01) as t1,\n";
- sql_msg = sql_msg + "(B_fdj) as t2\n";
+ sql_msg = sql_msg + "("+tbl_source+") as t2\n";
  sql_msg = sql_msg + "WHERE\n";
  sql_msg = sql_msg + "(\n";
  sql_msg = sql_msg + r5 + "\n";
