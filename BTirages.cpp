@@ -710,8 +710,11 @@ QTabWidget * BTirages::memoriserSelectionUtilisateur(const B2LstSel * sel)
        qtv_tmp->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
        qtv_tmp->verticalHeader()->hide();
 
-       qtv_tmp->setFixedWidth((nb_col+0.5) * 30);;
-       qtv_tmp->setFixedHeight((nb_row+0.5) * 30);
+       qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+       qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+       //qtv_tmp->setFixedWidth((nb_col+0.5) * 30);;
+       //qtv_tmp->setFixedHeight((nb_row+0.5) * 30);
       }
       break;
 
@@ -1622,8 +1625,8 @@ void BTirages::effectueAnalyses(QTabWidget *tbw_flt, QString ref_sql, int distan
 {
 
  /// Changement de curseur
+ /// https://askcodez.com/modifier-le-curseur-de-sablier-attente-curseur-occupe-et-de-retour-dans-qt.html
  QApplication::setOverrideCursor(Qt::WaitCursor);
- //QApplication::processEvents();
 
  BTirAna **J = new BTirAna *[2];
  QWidget * resu = nullptr;
@@ -1679,7 +1682,6 @@ void BTirages::effectueAnalyses(QTabWidget *tbw_flt, QString ref_sql, int distan
  }
 
  QApplication::restoreOverrideCursor();
- //QApplication::processEvents();
 }
 
 B2LstSel *BTirages::SauverSelection(const B2LstSel * sel)
