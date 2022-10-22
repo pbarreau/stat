@@ -126,6 +126,9 @@ class BcUpl: public BCount
  public:
   explicit BcUpl(const stGameConf *pGame, QWidget *parent=nullptr, etEns eUpl=E_EnsFdj, int zn=0, const QItemSelectionModel *cur_sel=nullptr, QTabWidget *ptrUplRsp=nullptr);
   ~BcUpl();
+  ///Test
+  QGridLayout *getLayout(void);
+  void setLayout(QGridLayout *lay);
 
  public slots:
   void BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int zn);
@@ -166,6 +169,7 @@ class BcUpl: public BCount
   QSqlDatabase db_0;
   QModelIndexList my_indexes;
   QTabWidget *uplTirTab;
+  QGridLayout *lay_Uplets;
   bool isScanRuning;
   etEns e_id;
 
@@ -256,6 +260,7 @@ class BcUpl: public BCount
   QString getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb = nullptr);
   //void BSlot_clicked_old(const QModelIndex &index);
   bool updateTracking_upl(int v_key, etCal v_cal);
+
 };
 
 

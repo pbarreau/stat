@@ -92,6 +92,7 @@ BcUpl::BcUpl(const stGameConf *pGame, QWidget *parent, etEns eUpl, int zn, const
  obj_upl++;
  ana_parent = parent;
  isScanRuning = false;
+ lay_Uplets = nullptr;
 
  QThread cpuInfo(this); //get CPU info
  int info = cpuInfo.idealThreadCount();
@@ -136,7 +137,7 @@ BcUpl::BcUpl(const stGameConf *pGame, QWidget *parent, etEns eUpl, int zn, const
 
   if((status = query.exec(sql_msg)) == true){
    /// creer la table des uplets
- QString tbl_upl = C_TBL_UPL;
+   QString tbl_upl = C_TBL_UPL;
    sql_msg = "create table if not exists "
              + tbl_upl
              + " (id integer primary key, state int,"
@@ -285,47 +286,47 @@ QString BcUpl::getTablePrefixFromSelection_upl(QString items, int zn, stUpdData 
 
    switch(total){
     case 0:
-    {
-     if(upl_data!=nullptr)
      {
-      upl_data->isPresent = false;
-      upl_data->id_db = -1;
-      upl_data->id_zn = zn;
-      upl_data->id_cal = id_cal;
-     }
-     sql_m2 = "insert into "+tbl_upl+" (id, state, zn, items) values(NULL,"+
-              QString::number(id_cal) + ","+QString::number(zn)+",'"+ord_itm+"')";
-     if(query_1.exec(sql_m2)){
-      if(query_1.exec(sql_m1)){
-       query_1.first();
-       id = query_1.value(0).toInt();
+      if(upl_data!=nullptr)
+      {
+       upl_data->isPresent = false;
+       upl_data->id_db = -1;
+       upl_data->id_zn = zn;
+       upl_data->id_cal = id_cal;
+      }
+      sql_m2 = "insert into "+tbl_upl+" (id, state, zn, items) values(NULL,"+
+               QString::number(id_cal) + ","+QString::number(zn)+",'"+ord_itm+"')";
+      if(query_1.exec(sql_m2)){
+       if(query_1.exec(sql_m1)){
+        query_1.first();
+        id = query_1.value(0).toInt();
+       }
       }
      }
-    }
      break;
 
     case 1:
-    {
-     id = query_1.value(0).toInt();
-     id_cal = static_cast<etCal>(query_1.value(1).toInt());
-     int zn = query_1.value(2).toInt();
-
-     if(upl_data!=nullptr)
      {
-      upl_data->isPresent = true;
-      upl_data->id_db = id;
-      upl_data->id_zn = zn;
-      upl_data->id_cal = id_cal;
+      id = query_1.value(0).toInt();
+      id_cal = static_cast<etCal>(query_1.value(1).toInt());
+      int zn = query_1.value(2).toInt();
+
+      if(upl_data!=nullptr)
+      {
+       upl_data->isPresent = true;
+       upl_data->id_db = id;
+       upl_data->id_zn = zn;
+       upl_data->id_cal = id_cal;
+      }
      }
-    }
      break;
 
     default:
-    {
-     static int counter = 0;
-     ret_val = "Err_" + QString::number(counter).rightJustified(3,'0');
-     counter++;
-    }
+     {
+      static int counter = 0;
+      ret_val = "Err_" + QString::number(counter).rightJustified(3,'0');
+      counter++;
+     }
    }
 
   }
@@ -450,7 +451,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount E_Calcul)
          this, &BcUpl::BSlot_SkowUkScan
          );
 
- #if C_PGM_THREADED
+#if C_PGM_THREADED
  /// Recuperation des infos
  connect(producteur, &BThread_1::BSig_Step,
          this, &BcUpl::BSlot_tsk_progress,
@@ -998,6 +999,16 @@ bool BcUpl::updateTracking_upl(int v_key, etCal v_cal)
  return status;
 }
 
+QGridLayout *BcUpl::getLayout()
+{
+ return lay_Uplets;
+}
+
+void BcUpl::setLayout(QGridLayout *lay)
+{
+ lay_Uplets = lay;
+}
+
 
 QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, etLst sql_show, int cur_upl, QString cur_sql, int upl_sub)
 {
@@ -1222,96 +1233,96 @@ void BcUpl::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int upl
   /// Trouver la liste des boules
   case E_LstBle:
   case E_LstBleNext:
-  {
-   sql_msg = sql_ElmFrmTir(pGame,zn,sql_step,ref_day,tabInOut);
+   {
+    sql_msg = sql_ElmFrmTir(pGame,zn,sql_step,ref_day,tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Trouver la liste des uplets
   case E_LstUpl:
   case E_LstUplNot:
   case E_LstUplNext:
-  {
-   sql_msg = sql_UplFrmElm(pGame,zn,upl_ref_in,upl_sub,sql_step, tabInOut);
+   {
+    sql_msg = sql_UplFrmElm(pGame,zn,upl_ref_in,upl_sub,sql_step, tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Trouver la liste des tirages pour les uplets
   case E_LstTirUpl:
-  {
-   sql_msg = sql_TirFrmUpl(pGame,zn,upl_ref_in,tabInOut);
+   {
+    sql_msg = sql_TirFrmUpl(pGame,zn,upl_ref_in,tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Comptabiler les uplets
   case E_LstUplTot:
   case E_LstUplTotNot:
   case E_LstUplTotNext:
-  {
-   sql_msg = sql_TotFrmTir(pGame, zn, upl_ref_in, upl_sub, sql_step,tabInOut);
+   {
+    sql_msg = sql_TotFrmTir(pGame, zn, upl_ref_in, upl_sub, sql_step,tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
   case E_LstBleNot:
-  {
-   int targetUpl=-2;
-   if (upl_sub == -1){
-    targetUpl = upl_ref_in;
-   }
-   else {
-    targetUpl = upl_sub;
-   }
-   sql_msg = sql_ElmNotFrmTir(pGame,zn, targetUpl, tabInOut);
+   {
+    int targetUpl=-2;
+    if (upl_sub == -1){
+     targetUpl = upl_ref_in;
+    }
+    else {
+     targetUpl = upl_sub;
+    }
+    sql_msg = sql_ElmNotFrmTir(pGame,zn, targetUpl, tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// Lister les tirages apres ceux contenant les uplets
   case E_LstTirUplNext:
-  {
-   sql_msg = sql_NxtTirUpl(pGame,zn, offset, tabInOut);
+   {
+    sql_msg = sql_NxtTirUpl(pGame,zn, offset, tabInOut);
 #ifndef QT_NO_DEBUG
-   static int counter = 0;
-   target =  target +
-             "_"+ QString::number(counter).rightJustified(2,'0')
-             +".txt";
-   counter++;
+    static int counter = 0;
+    target =  target +
+              "_"+ QString::number(counter).rightJustified(2,'0')
+              +".txt";
+    counter++;
 #endif
-  }
+   }
    break;
 
    /// ERREUR
@@ -1358,8 +1369,8 @@ void BcUpl::BSlot_MkUsrUpletsShow(const QItemSelectionModel *cur_sel, const int 
  BcUpl *tmp = new BcUpl(gm_def,ana_parent, E_EnsUsr,zn,cur_sel,uplTirTab);
  if(tmp !=nullptr){
   /// connection click montrer tirages
-   connect(tmp,SIGNAL(BSig_UplFdjShow(const QString, int )),
-           ana_parent,SLOT(BSlot_UplFdjShow(const QString, int )));
+  connect(tmp,SIGNAL(BSig_UplFdjShow(const QString, int )),
+          ana_parent,SLOT(BSlot_UplFdjShow(const QString, int )));
 
   etCount type = tmp->getType();
   tmp->startCount(gm_def,type);
@@ -1580,21 +1591,21 @@ QString BcUpl::sql_UplFrmElm(const stGameConf *pGame, int zn, int upl_ref_in, in
  switch(sql_step)
  {
   case E_LstUpl:
-  {
-   tbl_src = E_LstBle;
-  }
+   {
+    tbl_src = E_LstBle;
+   }
    break;
 
   case E_LstUplNot:
-  {
-   tbl_src = E_LstBleNot;
-  }
+   {
+    tbl_src = E_LstBleNot;
+   }
    break;
 
   case E_LstUplNext:
-  {
-   tbl_src = E_LstBleNext;
-  }
+   {
+    tbl_src = E_LstBleNext;
+   }
    break;
 
   default:
@@ -1826,22 +1837,22 @@ QString BcUpl::sql_TotFrmTir(const stGameConf *pGame, int zn, int upl_ref_in, in
  switch(sql_step)
  {
   case E_LstUplTot:
-  {
-   tbl_src = E_LstUpl;
-  }
+   {
+    tbl_src = E_LstUpl;
+   }
    break;
 
   case E_LstUplTotNot:
-  {
-   tbl_src = E_LstUplNot;
-  }
+   {
+    tbl_src = E_LstUplNot;
+   }
    break;
 
   case E_LstUplTotNext:
-  {
-   tbl_src = E_LstUplNext;
-   tbl_tir = E_LstTirUplNext;
-  }
+   {
+    tbl_src = E_LstUplNext;
+    tbl_tir = E_LstTirUplNext;
+   }
    break;
 
   default:
@@ -2044,13 +2055,13 @@ void BcUpl::BSlot_ShowTotal(const QString& lstBoules)
  QString v6 = "";
 
  if(ble_tmp->text().simplified().size() == 0){
-   v1 = QString::number(g_id).rightJustified(2,'0');
-   v2 = QString::number(nbBoulesTotal);
-   v3 = QString::number(g_id);
-   v4 = QString::number(rows_cal_1);
-   v5 = QString::number(rows_cal_3);
+  v1 = QString::number(g_id).rightJustified(2,'0');
+  v2 = QString::number(nbBoulesTotal);
+  v3 = QString::number(g_id);
+  v4 = QString::number(rows_cal_1);
+  v5 = QString::number(rows_cal_3);
 
-   v6 = QString(ref_lcnp[0]).arg(v1).arg(v2).arg(v3).arg(v4).arg(v5);
+  v6 = QString(ref_lcnp[0]).arg(v1).arg(v2).arg(v3).arg(v4).arg(v5);
  }
  else{
   v0 = QString::number(g_id).rightJustified(2,'0');
@@ -2426,7 +2437,7 @@ void BcUpl::BSlot_UVL1_Click_Fn_1(const QModelIndex &index)
 
  /// Demande Calcul de cet element en cours ?
  if(ani->gotKey(g_lm)){
-  return;
+  //return;
  }
 
  /// ----------------------
@@ -2579,7 +2590,7 @@ void BcUpl::BSlot_tsk_started(){
 
 
 void BcUpl::BSlot_tsk_finished(){
-int tmp_test;
+ int tmp_test;
 #if 0
  /// Montrer les resultats
  FillTbv_StartPoint(tsk_param);
@@ -2623,9 +2634,9 @@ void BcUpl::BSlot_tsk_progress(const stParam_tsk *tsk_param)
 
  switch (e_id) {
   case eStep_T1:
-  {
-   T1_setTitle(qtv_tmp, step);
-  }
+   {
+    T1_setTitle(qtv_tmp, step);
+   }
 
    break;
   default:
@@ -4102,15 +4113,15 @@ QString BcUpl::findUplets(const stGameConf *pGame, const int zn, const int loop,
   DB_Tools::DisplayError("BTest::montestRapideSql",&query,sql_msg);
 
 #ifndef QT_NO_DEBUG
-	qDebug() <<tb0;
-	qDebug() <<tb1;
-	qDebug() <<tb2;
-	qDebug() <<tb2c;
-	qDebug() <<tb3;
-	qDebug() <<tb4;
-	qDebug() <<tb5;
-	qDebug() <<tb6;
-	qDebug() <<sql_msg;
+  qDebug() <<tb0;
+  qDebug() <<tb1;
+  qDebug() <<tb2;
+  qDebug() <<tb2c;
+  qDebug() <<tb3;
+  qDebug() <<tb4;
+  qDebug() <<tb5;
+  qDebug() <<tb6;
+  qDebug() <<sql_msg;
 #endif
  }
 
@@ -4454,8 +4465,8 @@ QTableView *BcUpl::doTabShowUplet(QString st_msg1,const QModelIndex & ligne)
 
  if(!status){
 #ifndef QT_NO_DEBUG
-	qDebug() << "msg:"<<req_vue;
-	DB_Tools::DisplayError("doTabShowUplet",&query,req_vue);
+  qDebug() << "msg:"<<req_vue;
+  DB_Tools::DisplayError("doTabShowUplet",&query,req_vue);
 #endif
 
   return qtv_tmp;

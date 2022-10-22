@@ -20,7 +20,7 @@
 #include "BTirAna.h"
 #include "BCustomPlot.h"
 #include "BStepper.h"
-
+#include "BcUpl.h"
 #include "BGraphicsView.h"
 #include "db_tools.h"
 
@@ -56,7 +56,8 @@ BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
  usr_flt_counter = 0;
  og_AnaSel = nullptr; /// og: Onglet
  ana_TirLst = nullptr;
-
+ //lay_Uplets = nullptr;
+ //lay_Uplets = new QGridLayout;
 }
 
 void BTirages::HighLightTirId(int tir_id, QColor color)
@@ -107,6 +108,7 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  QGridLayout *lay_visual = new QGridLayout;
  QTabWidget *tbw_visual = new QTabWidget;
  og_Items = tbw_visual;
+ ana_TirLst = ana_tirages;
 
  lay_visual->addWidget(this,0,0,2,1);
 
@@ -205,6 +207,13 @@ QWidget * BTirages::ShowSteppers()
 QWidget * BTirages::ShowUplets()
 {
  QWidget *wdg_toShow = new QWidget;
+ BcUpl * tmp = ana_TirLst->getUpl();
+ QGridLayout *tmp_lay = tmp->getLayout();
+
+ if(tmp_lay !=nullptr){
+  wdg_toShow->setLayout(tmp_lay);
+ }
+
  return(wdg_toShow);
 }
 
@@ -1668,14 +1677,14 @@ void BTirages::effectueAnalyses(QTabWidget *tbw_flt, QString ref_sql, int distan
   if(gme_cnf->eTirType == eTirFdj){
    lay_responses->addWidget(og_AnaSel);
    og_Items->setCurrentIndex(4);
-   og_Items->tabBarClicked(4);
-     //lay_fusion->addWidget(og_AnaSel,1,0);
+   emit og_Items->tabBarClicked(4);
+   //lay_fusion->addWidget(og_AnaSel,1,0);
   }
   else {
    lay_fusion->addWidget(og_AnaSel,1,1);
   }
   og_AnaSel->setCurrentIndex(tab_index);
-  og_AnaSel->tabBarClicked(tab_index);
+  emit og_AnaSel->tabBarClicked(tab_index);
  }
  else {
   usr_flt_counter--;

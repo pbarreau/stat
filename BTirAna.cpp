@@ -82,6 +82,11 @@ BTirAna * BTirAna::self()
  return addr;
 }
 
+BcUpl *BTirAna::getUpl()
+{
+ return tabsUpl;
+}
+
 bool BTirAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QString cnx)
 {
  bool b_retVal = true;
@@ -92,9 +97,9 @@ bool BTirAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QSt
  }etDrop;
 
  typedef struct _stdbMinLstTables{
-  QString tbName;
-  etDrop drop;
-  bool (BTirAna::*ptrFunc)(stGameConf *pGame, QString tbl_tirages,QSqlQuery *query);
+   QString tbName;
+   etDrop drop;
+   bool (BTirAna::*ptrFunc)(stGameConf *pGame, QString tbl_tirages,QSqlQuery *query);
  }stdbMinLstTables;
 
  QString tb_flt = pGame->db_ref->flt;
@@ -127,22 +132,22 @@ bool BTirAna::isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QSt
   QString tbName = lstTable[uneTable].tbName;
   QSqlQuery query(db_1);
 
-	/// Tables a supprimer si recharge db fdj
-	if((pGame->db_ref->ihm->fdj_new) && (lstTable[uneTable].drop==eDropOn)){
-	 QString msg = "drop table if exists " + tbName;
-	 b_retVal = query.exec(msg);
-	}
+  /// Tables a supprimer si recharge db fdj
+  if((pGame->db_ref->ihm->fdj_new) && (lstTable[uneTable].drop==eDropOn)){
+   QString msg = "drop table if exists " + tbName;
+   b_retVal = query.exec(msg);
+  }
 
-	/// Verifier si la table est deja cree
-	if((b_retVal && (DB_Tools::isDbGotTbl(tbName, cnx))==false)){
-	 /// Fonction de traitement de la creation
-	 b_retVal=(this->*(lstTable[uneTable].ptrFunc))(pGame, tbName, &query);
-	}
-	/// Analyser le retour de traitement
-	if(!b_retVal){
-	 QString msg = "Erreur creation table : " + tbName;
-	 DB_Tools::DisplayError(tbName,&query,msg);
-	}
+  /// Verifier si la table est deja cree
+  if((b_retVal && (DB_Tools::isDbGotTbl(tbName, cnx))==false)){
+   /// Fonction de traitement de la creation
+   b_retVal=(this->*(lstTable[uneTable].ptrFunc))(pGame, tbName, &query);
+  }
+  /// Analyser le retour de traitement
+  if(!b_retVal){
+   QString msg = "Erreur creation table : " + tbName;
+   DB_Tools::DisplayError(tbName,&query,msg);
+  }
  }
 
  return b_retVal;
@@ -156,11 +161,11 @@ void BTirAna::startAnalyse(stGameConf *pGame, QString tbl_tirages)
  int nbZn = pGame->znCount;
 
  if(pGame->slFlt==nullptr){
-	pGame->slFlt = new  QStringList * [nbZn] ;
-	for (int zn=0;zn < nbZn;zn++ )
-	{
-	 pGame->slFlt[zn] = setFilteringRules(pGame, tbl_tirages, zn);
-	}
+  pGame->slFlt = new  QStringList * [nbZn] ;
+  for (int zn=0;zn < nbZn;zn++ )
+  {
+   pGame->slFlt[zn] = setFilteringRules(pGame, tbl_tirages, zn);
+  }
  }
 
  if(pGame->db_ref->dad.size() !=0){
@@ -169,8 +174,8 @@ void BTirAna::startAnalyse(stGameConf *pGame, QString tbl_tirages)
 
  QStringList ** info = pGame->slFlt;
  for (int zn=0; (b_parent == false)&&
-                  (b_retVal == true)&&
-                  (zn < nbZn) ;zn++ )
+      (b_retVal == true)&&
+      (zn < nbZn) ;zn++ )
  {
   b_retVal = AnalyserEnsembleTirage(pGame, info, zn, tbl_tirages);
   if(!b_retVal){
@@ -269,12 +274,24 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
   etCount type = lstComptage.at(i)->getType();
   QString name = BCount::onglet[type];
 
-	QWidget *calcul = lstComptage.at(i)->startCount(pGame, type);
-	if(calcul != nullptr){
-	 tabs_ana->addTab(calcul, name);
-	 /// retour visu selection
-	 connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)),lstComptage.at(i),SLOT(BSlot_setSelection(const B2LstSel *)));
-	}
+  QWidget *calcul = lstComptage.at(i)->startCount(pGame, type);
+  if(calcul != nullptr){
+   if(type == E_CountUpl){
+    BcUpl *tmp= qobject_cast <BcUpl *>(lstComptage.at(i));
+    tabsUpl = tmp;
+    QGridLayout * lay_tmp = tmp->getLayout();
+    if(lay_tmp == nullptr){
+     lay_tmp = new QGridLayout;
+     tmp->setLayout(lay_tmp);
+    }
+    lay_tmp->addWidget(calcul);
+   }
+   else{
+    tabs_ana->addTab(calcul, name);
+   }
+   /// retour visu selection
+   connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)),lstComptage.at(i),SLOT(BSlot_setSelection(const B2LstSel *)));
+  }
  }
 
  QGridLayout *tmp_layout = new QGridLayout;
@@ -308,20 +325,20 @@ QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame, etTir info)
 
 #if 0
  Bp::Btn lst_btn_1[]=
-  {
-   {"flt_apply", "Filter selection", Bp::icoFlt},
-   {"flt_clear", "Clear selection", Bp::icoRaz},
-   {"xmag_search_find", "Show selection", Bp::icoShow}///,
-   ///{"run_32px", "Check next day",Bp::icoNext}
-  };
+ {
+  {"flt_apply", "Filter selection", Bp::icoFlt},
+  {"flt_clear", "Clear selection", Bp::icoRaz},
+  {"xmag_search_find", "Show selection", Bp::icoShow}///,
+  ///{"run_32px", "Check next day",Bp::icoNext}
+ };
 
  Bp::Btn lst_btn_2[]=
-  {
-   {"document_config", "Show config", Bp::icoConfig},
-   {"flt_clear", "Clear selection", Bp::icoRaz},
-   {"xmag_search_find", "Show selection", Bp::icoShow}///,
-   ///{"run_32px", "Check next day",Bp::icoNext}
-  };
+ {
+  {"document_config", "Show config", Bp::icoConfig},
+  {"flt_clear", "Clear selection", Bp::icoRaz},
+  {"xmag_search_find", "Show selection", Bp::icoShow}///,
+  ///{"run_32px", "Check next day",Bp::icoNext}
+ };
 
  int nb_btn = -1;
  if(pGame->db_ref->dad.size() == 0){
@@ -334,17 +351,17 @@ QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame, etTir info)
  }
 #else
  Bp::Btn lst_btn_1[]=
-  {
+ {
   {"flt_apply", "Filter selection", Bp::icoFlt},
   {"flt_clear", "Clear selection", Bp::icoRaz},
   {"xmag_search_find", "Show selection", Bp::icoShow}
-  };
+ };
 
  Bp::Btn lst_btn_2[]=
-  {
+ {
   {"flt_clear", "Clear selection", Bp::icoRaz},
   {"xmag_search_find", "Show selection", Bp::icoShow}
-  };
+ };
 
  int nb_btn = -1;
  if(pGame->db_ref->dad.size() == 0){
@@ -365,26 +382,26 @@ QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame, etTir info)
  {
   tmp_btn = new QPushButton;
 
-	QString icon_file = ":/images/"+lst_btn[i].name+".png";
-	tmp_ico = QIcon(icon_file);
-	QPixmap ico_small = tmp_ico.pixmap(22,22);
+  QString icon_file = ":/images/"+lst_btn[i].name+".png";
+  tmp_ico = QIcon(icon_file);
+  QPixmap ico_small = tmp_ico.pixmap(22,22);
 
 
-	tmp_btn->setFixedSize(ico_small.size());
-	tmp_btn->setText("");
-	tmp_btn->setIcon(ico_small);
-	tmp_btn->setIconSize(ico_small.size());
+  tmp_btn->setFixedSize(ico_small.size());
+  tmp_btn->setText("");
+  tmp_btn->setIcon(ico_small);
+  tmp_btn->setIconSize(ico_small.size());
 
-	/*
-	tmp_btn->setFixedSize(tmp_ico.actualSize(tmp_ico.availableSizes().first()));
-	tmp_btn->setText("");
-	tmp_btn->setIcon(tmp_ico);
-	tmp_btn->setIconSize(tmp_ico.availableSizes().first());
+  /*
+  tmp_btn->setFixedSize(tmp_ico.actualSize(tmp_ico.availableSizes().first()));
+  tmp_btn->setText("");
+  tmp_btn->setIcon(tmp_ico);
+  tmp_btn->setIconSize(tmp_ico.availableSizes().first());
 */
-	tmp_btn->setToolTip(lst_btn[i].tooltips);
+  tmp_btn->setToolTip(lst_btn[i].tooltips);
 
-	inputs->addWidget(tmp_btn);
-	btn_grp->addButton(tmp_btn,lst_btn[i].value);
+  inputs->addWidget(tmp_btn);
+  btn_grp->addButton(tmp_btn,lst_btn[i].value);
  }
 
  btn_grp->setExclusive(true);
@@ -466,15 +483,15 @@ B2LstSel *BTirAna::effacerSelection(B2LstSel *sel)
 
  if(nb_items != 0){
 
-	for (int i=0; i< nb_items;i++) {
-	 QList<BLstSelect *> *tmp = sel->at(i);
-	 while (!tmp->isEmpty()){
-		int nb_items = tmp->size();
-		BLstSelect * item = tmp->takeFirst();
-		item->clearSelection();
-		delete item;
-	 }
-	}
+  for (int i=0; i< nb_items;i++) {
+   QList<BLstSelect *> *tmp = sel->at(i);
+   while (!tmp->isEmpty()){
+    int nb_items = tmp->size();
+    BLstSelect * item = tmp->takeFirst();
+    item->clearSelection();
+    delete item;
+   }
+  }
  }
 
  return nullptr;
@@ -545,147 +562,147 @@ bool BTirAna::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int
   QString lastTitle = "cast(tbLeft.id as int) as Id,";
   QString curTitle = "tbLeft.*";
 
-	do
-	{
-	 /// Dans le cas zone etoiles prendre la valeur directe
-	 QString colName = slst[1].at(loop);
-	 QString ColType = "int";
+  do
+  {
+   /// Dans le cas zone etoiles prendre la valeur directe
+   QString colName = slst[1].at(loop);
+   QString ColType = "int";
 
-/*
-	 if(zn==1 && colName.contains("U")&&colId<znLen){
-		colId++;
-		msg = "create " + curTarget
-					+" as select "+curTitle+", tbRight."
-					+key_abv+QString::number(colId)+" as "
-					+ colName
-					+" from("+curName+")as tbLeft "
-					+"left join ( "
-					+tbName+") as tbRight  on (tbRight.id = tbLeft.id)";
+   /*
+   if(zn==1 && colName.contains("U")&&colId<znLen){
+    colId++;
+    msg = "create " + curTarget
+          +" as select "+curTitle+", tbRight."
+          +key_abv+QString::number(colId)+" as "
+          + colName
+          +" from("+curName+")as tbLeft "
+          +"left join ( "
+          +tbName+") as tbRight  on (tbRight.id = tbLeft.id)";
 #ifndef QT_NO_DEBUG
-		BTest::writetoFile("A0_req.txt", msg);
+    BTest::writetoFile("A0_req.txt", msg);
 #endif
 
 
-	 }
-	 else
+   }
+   else
 */{
-		QString Key_usr_1 = slst[1].at(loop);
-		QString Key_usr_2 = slst[2].at(loop);
+    QString Key_usr_1 = slst[1].at(loop);
+    QString Key_usr_2 = slst[2].at(loop);
 
-		if(Key_usr_1.contains("X")){
-		 msg="";
-		 tbl_x1 = curTarget;
-		 tbl_x1 = tbl_x1.remove("view").trimmed();
-		 ptrFnUsr usrFn = map_UsrFn.value(Key_usr_1);
-		 if(usrFn != nullptr){
-			b_retVal = (this->*usrFn)(pGame, curName, curTarget, zn);
-		 }
-		 else {
-			QString err_msg = "Impossible traiter fn : " + Key_usr_1;
-			QMessageBox::critical(nullptr, "Analyses", err_msg,QMessageBox::Yes);
-			b_retVal = false;
-		 }
-		}
-		else if(Key_usr_2.contains("special")==true){
-		 if(slst[1].at(loop).contains(',') == true){
-			QStringList def = slst[1].at(loop).split(",");
-			if(def.size()>1){
-			 colName = def[0];
-			 ColType = def[1];
-			}
-		 }
-		 msg = "create " + curTarget
-					 +" as select "+curTitle+", cast(tbRight."
-					 + colName + " as "+ColType+") as "
-					 + colName
-					 + " from("+curName+")as tbLeft "
-					 + "left join ("+slst[0].at(loop)
-					 +") as tbRight on (tbRight.id=tbLeft.id)";
+    if(Key_usr_1.contains("X")){
+     msg="";
+     tbl_x1 = curTarget;
+     tbl_x1 = tbl_x1.remove("view").trimmed();
+     ptrFnUsr usrFn = map_UsrFn.value(Key_usr_1);
+     if(usrFn != nullptr){
+      b_retVal = (this->*usrFn)(pGame, curName, curTarget, zn);
+     }
+     else {
+      QString err_msg = "Impossible traiter fn : " + Key_usr_1;
+      QMessageBox::critical(nullptr, "Analyses", err_msg,QMessageBox::Yes);
+      b_retVal = false;
+     }
+    }
+    else if(Key_usr_2.contains("special")==true){
+     if(slst[1].at(loop).contains(',') == true){
+      QStringList def = slst[1].at(loop).split(",");
+      if(def.size()>1){
+       colName = def[0];
+       ColType = def[1];
+      }
+     }
+     msg = "create " + curTarget
+           +" as select "+curTitle+", cast(tbRight."
+           + colName + " as "+ColType+") as "
+           + colName
+           + " from("+curName+")as tbLeft "
+           + "left join ("+slst[0].at(loop)
+           +") as tbRight on (tbRight.id=tbLeft.id)";
 #ifndef QT_NO_DEBUG
-		 qDebug() << "msg:"<<msg;
+     qDebug() << "msg:"<<msg;
 #endif
 
-		}
-		else {
-		 msg = "create " + curTarget
-					 +" as select "+curTitle+", count(tbRight.B) as "
-					 + slst[1].at(loop)
-					 +" from("+curName+")as tbLeft "
-					 +"left join (select c1.id as B from "
-					 +stDefBoules+" as c1 where (c1.z"
-					 +QString::number(zn+1)+" not null and (c1."
-					 +slst[0].at(loop)+"))) as tbRight on ("
-					 +st_OnDef+") group by tbLeft.id";
+    }
+    else {
+     msg = "create " + curTarget
+           +" as select "+curTitle+", count(tbRight.B) as "
+           + slst[1].at(loop)
+           +" from("+curName+")as tbLeft "
+           +"left join (select c1.id as B from "
+           +stDefBoules+" as c1 where (c1.z"
+           +QString::number(zn+1)+" not null and (c1."
+           +slst[0].at(loop)+"))) as tbRight on ("
+           +st_OnDef+") group by tbLeft.id";
 #ifndef QT_NO_DEBUG
-		 BTest::writetoFile("A1_req.txt", msg);
+     BTest::writetoFile("A1_req.txt", msg);
 #endif
 
-		}
-	 }
+    }
+   }
 
-	 /// Verification pas fonction utilisateur
-	 if(msg.size()){
-		b_retVal = query.exec(msg);
-	 }
+   /// Verification pas fonction utilisateur
+   if(msg.size()){
+    b_retVal = query.exec(msg);
+   }
 
-	 if(!b_retVal){
+   if(!b_retVal){
 #ifndef QT_NO_DEBUG
-		qDebug() << "msg:'"<<msg<<"'";
+    qDebug() << "msg:'"<<msg<<"'";
 #endif
-	 }
+   }
 
-	 curName = "vt_" +  QString::number(loop);
-	 lastTitle = lastTitle
-							 + "cast(tbLeft."+colName
-							 +" as "+ColType+") as "+colName;
-	 loop++;
-	 if(loop  < nbTot)
-	 {
-		curTarget = "view vt_"+QString::number(loop);
-		lastTitle = lastTitle + ",";
-	 }
-	 else
-	 {
-		//curTarget = tbLabAna;
-		curTitle = lastTitle;
+   curName = "vt_" +  QString::number(loop);
+   lastTitle = lastTitle
+               + "cast(tbLeft."+colName
+               +" as "+ColType+") as "+colName;
+   loop++;
+   if(loop  < nbTot)
+   {
+    curTarget = "view vt_"+QString::number(loop);
+    lastTitle = lastTitle + ",";
+   }
+   else
+   {
+    //curTarget = tbLabAna;
+    curTitle = lastTitle;
 #ifndef QT_NO_DEBUG
-		qDebug() << "curTarget:"<<curTarget;
-		qDebug() << "curTitle:"<<curTitle;
+    qDebug() << "curTarget:"<<curTarget;
+    qDebug() << "curTitle:"<<curTitle;
 #endif
-	 }
-	}while(loop < nbTot && b_retVal);
+   }
+  }while(loop < nbTot && b_retVal);
 
 
-	if(b_retVal){
-	 /// Ecriture table finale
-	 curTarget = curTarget.remove("view");
-	 msg = "create table if not exists "+tbLabAna
-				 +" as select "+ curTitle +" from ("
-				 +curTarget+")as tbLeft";
+  if(b_retVal){
+   /// Ecriture table finale
+   curTarget = curTarget.remove("view");
+   msg = "create table if not exists "+tbLabAna
+         +" as select "+ curTitle +" from ("
+         +curTarget+")as tbLeft";
 #ifndef QT_NO_DEBUG
-	 qDebug() << "msg:"<<msg;
+   qDebug() << "msg:"<<msg;
 #endif
-	 b_retVal = query.exec(msg);
+   b_retVal = query.exec(msg);
 
-	}
+  }
 
 
-	/// supression tables intermediaires
-	if(b_retVal){
-	 /// On peut supprimer la table X1
-	 if(tbl_x1.size()){
-		msg = "drop table if exists " + tbl_x1;
-		b_retVal = query.exec(msg);
-	 }
+  /// supression tables intermediaires
+  if(b_retVal){
+   /// On peut supprimer la table X1
+   if(tbl_x1.size()){
+    msg = "drop table if exists " + tbl_x1;
+    b_retVal = query.exec(msg);
+   }
 
-	 if(b_retVal){
-		msg = "drop view if exists " + curTarget;
-		b_retVal= query.exec(msg);
-	 }
+   if(b_retVal){
+    msg = "drop view if exists " + curTarget;
+    b_retVal= query.exec(msg);
+   }
 
-	 if(b_retVal)
-		b_retVal = SupprimerVueIntermediaires();
-	}
+   if(b_retVal)
+    b_retVal = SupprimerVueIntermediaires();
+  }
  }
 
  return b_retVal;
@@ -740,23 +757,23 @@ QString BTirAna::getFilteringHeaders(const stGameConf *pGame,int zn, QString msg
  {
   QString cur_col = cols.at(i);
 
-	if((cur_col.contains("bc",Qt::CaseInsensitive)==true) ||
-			(cur_col.contains("idComb",Qt::CaseInsensitive)==true)){
-	 continue;
-	}
+  if((cur_col.contains("bc",Qt::CaseInsensitive)==true) ||
+     (cur_col.contains("idComb",Qt::CaseInsensitive)==true)){
+   continue;
+  }
 
-	lst_cols = lst_cols + msg_template.arg(cur_col);
+  lst_cols = lst_cols + msg_template.arg(cur_col);
 
-	if(i<nb_cols){
-	 QString nex_col = cols.at(i+1);
-	 if((nex_col.contains("bc",Qt::CaseInsensitive)==false) &&
-			 (nex_col.contains("idComb",Qt::CaseInsensitive)==false)){
-		lst_cols = lst_cols + separator;
-	 }
-	 else {
-		continue;
-	 }
-	}
+  if(i<nb_cols){
+   QString nex_col = cols.at(i+1);
+   if((nex_col.contains("bc",Qt::CaseInsensitive)==false) &&
+      (nex_col.contains("idComb",Qt::CaseInsensitive)==false)){
+    lst_cols = lst_cols + separator;
+   }
+   else {
+    continue;
+   }
+  }
  }
  return lst_cols;
 }
@@ -786,7 +803,7 @@ QStringList* BTirAna::setFilteringRules(stGameConf *pGame, QString tbl_tirages, 
  for(int j=0;j<nbBoules;j++)
  {
   sl_filter[0]<< fields+" >="+QString::number(10*j)+
-                   " and "+fields+"<="+QString::number((10*j)+9);
+                 " and "+fields+"<="+QString::number((10*j)+9);
   sl_filter[1] << "U"+ QString::number(j);
   sl_filter[2] << "Entre : "+ QString::number(j*10)+" et "+ QString::number(((j+1)*10)-1);
  }
@@ -860,25 +877,25 @@ QString BTirAna::sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, int zn)
  QString tbl_fdj = pGame->db_ref->fdj;
 
  st_sql= "with poids as (select cast(row_number() over ()as int) as id,"
-          "cast (count("
-          +key
-          +") as int) as T "
-            "from B_elm as t1 LEFT join ("
-          +tbl_fdj
-          +") as t2 "
-            " where("
-          +key
-          +" in("
-          +st_cols
-          +")) group by "
-          +key
-          +" order by t1.id asc)"
-            "SELECT t2.id, cast( avg(poids.T) as real) as bc from ("
-          +tbl_tirages
-          +") as t2 "
-            "left join poids where (poids.id in("
-          +st_cols
-          +")) group by t2.id";
+         "cast (count("
+         +key
+         +") as int) as T "
+          "from B_elm as t1 LEFT join ("
+         +tbl_fdj
+         +") as t2 "
+          " where("
+         +key
+         +" in("
+         +st_cols
+         +")) group by "
+         +key
+         +" order by t1.id asc)"
+          "SELECT t2.id, cast( avg(poids.T) as real) as bc from ("
+         +tbl_tirages
+         +") as t2 "
+          "left join poids where (poids.id in("
+         +st_cols
+         +")) group by t2.id";
 
 #ifndef QT_NO_DEBUG
  qDebug() <<st_sql;
@@ -919,7 +936,7 @@ QString BTirAna::sqlMkAnaCmb(stGameConf *pGame, QString tbl_ana_tmp, int zn)
           +" as t1 LEFT join B_cmb_z"
           +QString::number(zn+1)
           +" as t2 "
-            " where("
+           " where("
           +st_cols
           +")group by t1.id";
 
@@ -951,18 +968,18 @@ bool BTirAna::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *query)
   /// Noms des colonnes a mettre
   colsDef=colsDef + def_1.arg(def+1);
 
-	/// valeurs
-	argsDef = argsDef + def_2.arg((def*2)+1).arg((def*2)+2);
+  /// valeurs
+  argsDef = argsDef + def_2.arg((def*2)+1).arg((def*2)+2);
 
-	/// derniere zone a traiter
-	if(def<totDef-1){
-	 colsDef = colsDef + ",";
-	 argsDef = argsDef + ",";
+  /// derniere zone a traiter
+  if(def<totDef-1){
+   colsDef = colsDef + ",";
+   argsDef = argsDef + ",";
 
-	 /// Maximum d'element
-	 maxElemts = BMAX_2(pGame->limites[def].max,
-											pGame->limites[def+1].max);
-	}
+   /// Maximum d'element
+   maxElemts = BMAX_2(pGame->limites[def].max,
+                      pGame->limites[def+1].max);
+  }
  }
 
  msg = "create table if not exists "
@@ -981,40 +998,40 @@ bool BTirAna::mkTblLstElm(stGameConf *pGame, QString tbName,QSqlQuery *query)
                  +tbName
                  +"(id,"+colsDef+")values(NULL,";
 
-	/// mettre des valeurs en sequence
-	for(int line=1;(line <maxElemts+1)&& b_retVal;line++)
-	{
-	 QString stValues="";
-	 for(int def = 0; (def<totDef) ;def++)
-	 {
-		int maxItems = pGame->limites[def].max;
+  /// mettre des valeurs en sequence
+  for(int line=1;(line <maxElemts+1)&& b_retVal;line++)
+  {
+   QString stValues="";
+   for(int def = 0; (def<totDef) ;def++)
+   {
+    int maxItems = pGame->limites[def].max;
 
-		/// Boules
-		if(line<=maxItems){
-		 stValues = stValues + QString::number(line);
-		}
-		else{
-		 stValues = stValues +"NULL";
-		}
-		stValues = stValues + ",";
+    /// Boules
+    if(line<=maxItems){
+     stValues = stValues + QString::number(line);
+    }
+    else{
+     stValues = stValues +"NULL";
+    }
+    stValues = stValues + ",";
 
-		/// Nb boules pour gagner
-		if(line<=pGame->limites[def].win+1){
-		 stValues = stValues + QString::number(line-1);
-		}
-		else{
-		 stValues = stValues +"NULL";
-		}
+    /// Nb boules pour gagner
+    if(line<=pGame->limites[def].win+1){
+     stValues = stValues + QString::number(line-1);
+    }
+    else{
+     stValues = stValues +"NULL";
+    }
 
-		if(def < totDef -1)
-		 stValues = stValues + ",";
-	 }
-	 msg = msg1 + stValues + ")";
+    if(def < totDef -1)
+     stValues = stValues + ",";
+   }
+   msg = msg1 + stValues + ")";
 #ifndef QT_NO_DEBUG
-	 qDebug() <<msg;
+   qDebug() <<msg;
 #endif
-	 b_retVal = query->exec(msg);
-	}
+   b_retVal = query->exec(msg);
+  }
  }
 
  return b_retVal;
@@ -1032,15 +1049,15 @@ bool BTirAna::mkTblLstCmb(stGameConf *pGame, QString tbName,QSqlQuery *query)
  {
   QString tbl = tbName + "_z"+QString::number(zn+1);
 
-	if((b_retVal && (DB_Tools::isDbGotTbl(tbl, cnx))==false)){
-	 /// Fonction de traitement de la creation
-	 BGnp *combi = new BGnp(pGame, tbName);
+  if((b_retVal && (DB_Tools::isDbGotTbl(tbl, cnx))==false)){
+   /// Fonction de traitement de la creation
+   BGnp *combi = new BGnp(pGame, tbName);
 
-	 if(combi->self()==nullptr){
-		delete combi;
-		b_retVal = false;
-	 }
-	}
+   if(combi->self()==nullptr){
+    delete combi;
+    b_retVal = false;
+   }
+  }
  }
 
 
@@ -1083,9 +1100,9 @@ bool BTirAna::mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query)
    query->bindValue(":arg5",pGame->names[def].abv);
    query->bindValue(":arg6",pGame->names[def].std);
 
-	 /// executer la commande sql
-	 b_retVal = query->exec();
-	}
+   /// executer la commande sql
+   b_retVal = query->exec();
+  }
  }
 
  return b_retVal;
@@ -1105,7 +1122,7 @@ bool BTirAna::mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *query)
  /// flt : filtre (1 dernier tirage, 2 avant dernier) Q_FLAG(Filtres)
 
  msg =  "create table "+tbName
-       +" (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
+        +" (id Integer primary key, zne int, typ int, lgn int, col int, val int, pri int, flt int);";
 
 
 
@@ -1151,52 +1168,52 @@ bool BTirAna::usrFn_X1(const stGameConf *pGame, QString tblIn, QString tblOut, i
 
  if(b_retVal && (nbwin>=2)){
 
-	/// la colonne est creee la remplir
-	/// du plus grand au plus petit
-	QString zn_field = BCount::FN1_getFieldsFromZone(pGame, zn,"t1");
-	QString ref="((r%2.z1=r%1.z1+1) and r%2.z1 in ("+zn_field+"))";
-	QString ref2="(r%1.z1 in ("+zn_field+"))";
+  /// la colonne est creee la remplir
+  /// du plus grand au plus petit
+  QString zn_field = BCount::FN1_getFieldsFromZone(pGame, zn,"t1");
+  QString ref="((r%2.z1=r%1.z1+1) and r%2.z1 in ("+zn_field+"))";
+  QString ref2="(r%1.z1 in ("+zn_field+"))";
 
-	for (int nbloop= nbwin;(nbloop>1) && b_retVal ;nbloop--) {
+  for (int nbloop= nbwin;(nbloop>1) && b_retVal ;nbloop--) {
 
-	 QString aliasZn="";
-	 for (int k =1; k<=nbloop;k++) {
-		aliasZn =aliasZn + tblUse[2] + " as r" +QString::number(k);
-		if(k<nbloop){
-		 aliasZn = aliasZn + ",";
-		}
-	 }
+   QString aliasZn="";
+   for (int k =1; k<=nbloop;k++) {
+    aliasZn =aliasZn + tblUse[2] + " as r" +QString::number(k);
+    if(k<nbloop){
+     aliasZn = aliasZn + ",";
+    }
+   }
 
-	 msg="";
-	 QString deb = "";
-	 QString msg1 = "";
+   msg="";
+   QString deb = "";
+   QString msg1 = "";
 
-	 for(int i = nbloop; i>0; i--){
-		deb = "update "+ tmp_tbl+ " as t2 set X1 = " + QString::number(nbloop+1-i);
+   for(int i = nbloop; i>0; i--){
+    deb = "update "+ tmp_tbl+ " as t2 set X1 = " + QString::number(nbloop+1-i);
 
 
-		if(i>1){
-		 msg1 = ref.arg(i-1).arg(i);
-		 msg1 = " AND " + msg1;
-		}
-		else {
-		 msg1 = ref2.arg(i);
-		}
+    if(i>1){
+     msg1 = ref.arg(i-1).arg(i);
+     msg1 = " AND " + msg1;
+    }
+    else {
+     msg1 = ref2.arg(i);
+    }
 
-		msg = msg1 + msg  ;
-	 }
+    msg = msg1 + msg  ;
+   }
 
-	 msg1 = deb + " where (t2.id in ( select t1.id from "
-					+ tblUse[1] + " as t1, " + aliasZn + " where ("
-					+ msg + ")) and t2.X1=0)";
+   msg1 = deb + " where (t2.id in ( select t1.id from "
+          + tblUse[1] + " as t1, " + aliasZn + " where ("
+          + msg + ")) and t2.X1=0)";
 #ifndef QT_NO_DEBUG
-	 qDebug() << "deb="<<deb;
-	 qDebug() << "msg="<<msg;
-	 qDebug() << "msg1="<<msg1;
+   qDebug() << "deb="<<deb;
+   qDebug() << "msg="<<msg;
+   qDebug() << "msg1="<<msg1;
 #endif
 
-	 b_retVal = query.exec(msg1);
-	}
+   b_retVal = query.exec(msg1);
+  }
 
  }
 
@@ -1266,6 +1283,6 @@ void BTirAna::BSlot_Show_Flt(const B2LstSel * sel)
 
 void BTirAna::BSlot_UplFdjShow(const QString items, int zn)
 {
- emit (BSig_AnaUplFdjShow(items, zn));
+ emit BSig_AnaUplFdjShow(items, zn);
 }
 

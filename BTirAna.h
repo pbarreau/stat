@@ -27,6 +27,7 @@ class BTirAna : public QWidget
  QString getSql();
  etTir getNature();
  BTirAna *self();
+ BcUpl *getUpl(void);
 
  static int getCounter(void);
  static QString getFilteringHeaders(const stGameConf *pGame, int zn, QString msg_template="t2.%1", QString separator=",");
