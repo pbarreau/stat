@@ -365,15 +365,23 @@ QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame, etTir info)
 
  int nb_btn = -1;
  if(pGame->db_ref->dad.size() == 0){
+  if(pGame->eTirType == eTirGen){
+   typeAnalyse = eTirGen;
+   lst_btn = &lst_btn_2[0];
+   nb_btn = sizeof(lst_btn_2)/sizeof(Bp::Btn);
+  }
+  if(pGame->eTirType == eTirFdj){
   typeAnalyse = eTirFdj;
-  lst_btn = lst_btn_1;
+  lst_btn = &lst_btn_1[0];
   nb_btn = sizeof(lst_btn_1)/sizeof(Bp::Btn);
+  }
  }
  else {
   typeAnalyse = eTirUsr;
   lst_btn = lst_btn_2;
   nb_btn = sizeof(lst_btn_2)/sizeof(Bp::Btn);
  }
+
 #endif
  /// https://stackoverflow.com/questions/25480599/how-to-resize-qpushbutton-according-to-the-size-of-its-icon
  /// https://stackoverflow.com/questions/6639012/minimum-size-width-of-a-qpushbutton-that-is-created-from-code

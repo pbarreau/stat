@@ -118,14 +118,15 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  wdg_tmp->setLayout(lay_fusion);
  tbw_visual->addTab(wdg_tmp,"Nombres");
 
- QString ongNames[]={"Graphiques", "Steppers", "Uplets", "Responses"};
+ QString ongNames[]={"Graphiques", "Steppers", "Uplets", "AnaFiltre", "AutoGen"};
  int nb_ong = sizeof(ongNames)/sizeof(QString);
  QWidget * (BTirages::*ptrFunc[])()=
  {
    &BTirages::DrawCustomPlot,
    &BTirages::ShowSteppers,
    &BTirages::ShowUplets,
-   &BTirages::ShowResponses
+   &BTirages::ShowResponses,
+   &BTirages::ShowAutoGen
 };
 
  wdg_tmp = nullptr;
@@ -223,6 +224,16 @@ QWidget * BTirages::ShowResponses()
  lay_responses = new QGridLayout;
 
  wdg_toShow->setLayout(lay_responses);
+
+ return(wdg_toShow);
+}
+
+QWidget * BTirages::ShowAutoGen()
+{
+ QWidget *wdg_toShow = new QWidget;
+ QGridLayout *lay_autoGen = new QGridLayout;
+
+ wdg_toShow->setLayout(lay_autoGen);
 
  return(wdg_toShow);
 }

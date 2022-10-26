@@ -13,7 +13,7 @@ class BView : public QTableView
  public:
  BView(int in_zn = -2, etCount in_typ = E_CountToSet);
  ~BView();
- void setTitle(QString title, bool visible=true);
+ void setTitle(QString title, bool visible=true, bool bold=false);
  QString getTitle(void);
  QString getTblName(void);
  QGroupBox *getScreen(bool spacer=false);

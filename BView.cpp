@@ -20,10 +20,13 @@ BView::~BView()
  //delete square;
 }
 
-void BView::setTitle(QString title, bool visible)
+void BView::setTitle(QString title, bool visible, bool bold)
 {
  if(square != nullptr){
   square->setTitle(title);
+  if(bold){
+  square->setStyleSheet("QGroupBox {color:green;font-weight: bold;font: 12pt;}");
+  }
   square->setEnabled(visible);
  }
 }

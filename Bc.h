@@ -145,7 +145,7 @@ class BCount:public QWidget
   bool getFiltre(stTbFiltres *ret, const etCount origine, QTableView *view, const QModelIndex index);
   QString mkTitle(int zn, etCount E_Calcul, QTableView *view);
   int getTotalCells(const stGameConf *pGame, int zn);
-  QTabWidget *getDetailsTabs(const stGameConf *pGame, int in_zn, etCount in_typ);
+  BView_1 *getDetailsTabs(const stGameConf *pGame, int in_zn, etCount in_typ);
 
 
   //static bool DB_Tools::flt_DbRead(stTbFiltres *ret, QString cnx);

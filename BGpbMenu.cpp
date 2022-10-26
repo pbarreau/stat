@@ -173,7 +173,7 @@ void BGpbMenu::setNewFlt(Bp::F_Flts flt_def, bool only_selection)
        "t1 as (select tb1.id as id from (r_"+tb_tirages+
        "_"+BCount::label[typ]+
        "_z"+QString::number(zn+1)+
-       ") as tb1), "
+       "_g01) as tb1), "
        "t2 as (select tb1.val as val from ("+tb_flt+
        ") as tb1 where ((tb1.zne="+QString::number(zn)+
        " and (tb1.typ="+QString::number(typ)+

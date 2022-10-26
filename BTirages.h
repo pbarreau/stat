@@ -60,6 +60,7 @@ QWidget * DrawCustomPlot();
 QWidget * ShowSteppers();
 QWidget * ShowUplets();
 QWidget * ShowResponses();
+QWidget * ShowAutoGen();
 BGraphicsView *selGraphTargets();
 QTabWidget *getTabedDetails();
 QWidget *usr_GrpTb2(int zn);

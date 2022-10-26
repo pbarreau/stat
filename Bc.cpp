@@ -17,6 +17,7 @@
 #include <QSortFilterProxyModel>
 #include <QModelIndex>
 #include <QScrollBar>
+#include <QSplitter>
 
 #include "BFlags.h"
 
@@ -126,6 +127,200 @@ QWidget *BCount::startIhm_old(const stGameConf *pGame, const etCount eCalcul, co
  return wdg_tmp;
 }
 
+#if 1
+QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
+{
+ QWidget *wdg_tmp = new QWidget;
+
+ QLayout *up_qtv = *(prm->up);
+ BView_1 *qtv_tmp = prm->cur_tbv;
+ //QGridLayout *glay_tmp = prm->glay_tmp;
+ QGridLayout *glay_tmp = new QGridLayout;
+ QString dstTbl = prm->dstTbl;
+ etCount eCalcul = prm->eCalcul;
+ int zn = qtv_tmp->getZid();
+
+ qtv_tmp->setParentLayout(glay_tmp);
+
+ /// Bandeau superieur
+ if(up_qtv != nullptr){
+  qtv_tmp->addUpLayout(up_qtv);
+ }
+
+ QString sql_msg = "select * from "+dstTbl;
+ QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+
+ sqm_tmp->setQuery(sql_msg, dbCount);
+ qtv_tmp->setAlternatingRowColors(true);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+ QSortFilterProxyModel *m= nullptr;
+ if(eCalcul == E_CountElm) {
+  m = new BFpmElm();
+ }
+ else{
+  m=new QSortFilterProxyModel();
+ }
+ m->setDynamicSortFilter(true);
+ m->setSourceModel(sqm_tmp);
+ qtv_tmp->setModel(m);
+
+ QSqlQuery tmp_query = sqm_tmp->query();
+ int tot = 0;
+ if(tmp_query.first()){
+  tmp_query.last();
+  tot = tmp_query.at() + 1;
+  qtv_tmp->setRowSourceModelCount(tot);
+  tmp_query.first();
+ }
+
+ if(eCalcul == E_CountGrp){
+  tot = getTotalCells(pGame,zn);
+ }
+ else {
+  tot = qtv_tmp->model()->rowCount();
+ }
+ qtv_tmp->setRowModelCount(tot);
+
+
+ qtv_tmp->verticalHeader()->hide();
+
+ int nbCol = sqm_tmp->columnCount();
+
+ Bp::E_Col headRed = Bp::noCol;
+ if(eCalcul != E_CountGrp){
+  headRed = Bp::colTxt;
+  qtv_tmp->hideColumn(Bp::colId);
+
+#ifdef QT_NO_DEBUG
+  qtv_tmp->hideColumn(Bp::colColor);
+#endif
+ }
+ Bp::E_Col myColSort = Bp::noCol;
+ Bp::E_Col colEc = Bp::noCol;
+ Qt::SortOrder order;
+
+ // switch (type) {
+
+ switch (eCalcul) {
+  case E_CountBrc:
+  case E_CountCmb:
+  case E_CountElm:
+   if(pGame->db_ref->dad.size()== 0){
+    myColSort = Bp::colTotalv1;
+    colEc = Bp::colEc;
+   }
+   else {
+    myColSort = Bp::colTotalv2;
+   }
+   order = Qt::DescendingOrder;
+   break;
+
+  case E_CountGrp:
+   order = Qt::AscendingOrder;
+   headRed=Bp::colId;
+   myColSort = Bp::colId;
+   break;
+
+  default:
+   order = Qt::AscendingOrder;
+   myColSort = Bp::colTxt;
+   break;
+ }
+
+ qtv_tmp->setColons(myColSort, colEc);
+ qtv_tmp->sortByColumn(myColSort,order);
+ qtv_tmp->setSortingEnabled(true);
+
+ qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt));
+
+
+ //  if(type == E_CountGrp) {
+ if(eCalcul == E_CountGrp) {
+
+  QStringList tooltips=pGame->slFlt[zn][2];
+  tooltips.insert(0,"Total"); /// La colone Nb (0)
+  for(int pos=0;pos<nbCol;pos++)
+  {
+   /// Mettre le tooltip
+   /// https://forum.qt.io/topic/96234/formatting-a-qtableview-header/2
+   m->setHeaderData(pos,Qt::Horizontal,tooltips.at(pos),Qt::ToolTipRole);
+  }
+ }
+
+ m->setHeaderData(headRed,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
+
+ qtv_tmp->resizeColumnsToContents();
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+#if 0
+ /// Largeur du tableau
+ int l = qtv_tmp->getMinWidth();
+ qtv_tmp->setMinimumWidth(l);
+ //qtv_tmp->setMaximumWidth(l);
+ //qtv_tmp->adjustSize();
+
+ /// Hauteur
+ if(eCalcul == E_CountGrp){
+  int h = qtv_tmp->getMinHeight();
+  qtv_tmp->setMaximumHeight(h);
+ }
+#endif
+
+ /// mettre des sliders
+ qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+ //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ //qtv_tmp->horizontalHeader()->setStretchLastSection(true);
+ ///qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+ qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+ ///qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+ QItemSelectionModel *trackSelection = qtv_tmp->selectionModel();
+ connect(trackSelection,SIGNAL(selectionChanged( QItemSelection ,  QItemSelection )),
+         qtv_tmp,SLOT(BSlot_TrackSelection(QItemSelection ,  QItemSelection )));
+
+ /// Marquer pour les 2 derniers tirages de la fdj
+ if(qtv_tmp->isOnUsrGame() == false){
+  /// Mettre dans la base une info sur 2 derniers tirages
+  usr_TagLast(pGame, qtv_tmp, eCalcul, zn);
+ }
+
+ /// Agencer le tableau
+ QSpacerItem *ecart = new QSpacerItem(10, 10, QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+ QSplitter *tmpSplitter = new QSplitter();
+ glay_tmp->addWidget(tmpSplitter);//,-1,Qt::AlignLeft|Qt::AlignTop
+
+ tmpSplitter->addWidget(qtv_tmp->getScreen());
+
+ ///gameref
+ if((pGame->db_ref->dad.size() == 0)
+    && (eCalcul==E_CountGrp)
+    ){
+
+  if(gm_def->eTirType != eTirGen){
+   BView_1 *tmp = getDetailsTabs(pGame,zn,eCalcul);
+   tmpSplitter->addWidget(tmp->getScreen());
+  }
+
+  glay_tmp->addItem(ecart,2,0);
+ }
+
+ /// https://stackoverflow.com/questions/24005346/qgridlayout-remove-spacing
+ //glay_tmp->addWidget(tmpSplitter,0,0,1,1);//,-1,Qt::AlignLeft|Qt::AlignTop
+
+
+ wdg_tmp->setLayout(glay_tmp);
+
+ return wdg_tmp;
+}
+#else
 QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
 {
  QWidget *wdg_tmp = new QWidget;
@@ -268,6 +463,10 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
   qtv_tmp->setMaximumHeight(h);
  }
 
+ /// mettre des sliders
+ qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
  //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
  //qtv_tmp->horizontalHeader()->setStretchLastSection(true);
  ///qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -313,6 +512,7 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
 
  return wdg_tmp;
 }
+#endif
 
 QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount eCalcul, const ptrFn_tbl usr_fn, const int zn)
 {
@@ -397,9 +597,9 @@ QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount eCalcul, co
  return tab_Gid;
 }
 
-QTabWidget *BCount::getDetailsTabs(const stGameConf *pGame, int in_zn, etCount in_typ)
+BView_1 *BCount::getDetailsTabs(const stGameConf *pGame, int in_zn, etCount in_typ)
 {
- QTabWidget * ret = new QTabWidget;
+ //QTabWidget * ret = new QTabWidget;
  BView_1 *qtv_tmp = new BView_1(pGame,in_zn,in_typ);
  qtv_tmp->setObjectName(BFlags::ViewDetails);
 
@@ -412,29 +612,6 @@ QTabWidget *BCount::getDetailsTabs(const stGameConf *pGame, int in_zn, etCount i
  m->setSourceModel(sqm_tmp);
  qtv_tmp->setModel(m);
 
- /*
-  QString a_key = (pGame->slFlt[in_zn][Bp::colDefTitres]).at(0);
-  QString sql_msg =getSqlForKey(pGame,in_zn,a_key) + " where (t1.I != null)";
-
-  qtv_tmp->verticalHeader()->hide();
-  qtv_tmp->hideColumn(Bp::colId);
-
-  qtv_tmp->resizeColumnsToContents();
-
-  qtv_tmp->setAlternatingRowColors(true);
-  qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
-  qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
-  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-
-  /// Largeur du tableau
-  int l = qtv_tmp->getMinWidth();
-  qtv_tmp->setMinimumWidth(l);
-
-  /// Hauteur
-  int h = qtv_tmp->getMinHeight();
-  qtv_tmp->setMinimumHeight(h);
- */
 
  qtv_tmp->setColons(Bp::colTotalv1, Bp::colEc);
  qtv_tmp->sortByColumn(Bp::colId,Qt::AscendingOrder);
@@ -442,10 +619,14 @@ QTabWidget *BCount::getDetailsTabs(const stGameConf *pGame, int in_zn, etCount i
 
  qtv_tmp->setItemDelegate(new BFlags(qtv_tmp->lbflt));
 
+ qtv_tmp->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+ qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 
- ret->addTab(qtv_tmp->getScreen(),BFlags::ViewDetails);
+ //ret->addTab(qtv_tmp->getScreen(),BFlags::ViewDetails);
 
- return ret;
+ return qtv_tmp;
 }
 
 int BCount::getTotalCells(const stGameConf *pGame, int zn)

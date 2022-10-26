@@ -213,7 +213,7 @@ void BcGrp::BSlot_AnaKey(const QModelIndex &index)
 	qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
 	qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-
+#if 0
 	/// Largeur du tableau
 	int l = qtv_tmp->getMinWidth();
 	qtv_tmp->setMinimumWidth(l);
@@ -222,8 +222,9 @@ void BcGrp::BSlot_AnaKey(const QModelIndex &index)
 	/// Hauteur
 	int h = qtv_tmp->getMinHeight();
 	qtv_tmp->setMinimumHeight(h);
+#endif
 
-  qtv_tmp->setTitle(key);
+  qtv_tmp->setTitle(key, true, true);
  }
 }
 
@@ -241,6 +242,7 @@ void BcGrp::showLineDetails(int zn, int l_id, QString sql_msg)
  qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
  qtv_tmp->verticalHeader()->hide();
 
+
  /// Largeur du tableau
  int l = qtv_tmp->getMinWidth();
  qtv_tmp->setFixedWidth(l);
@@ -249,6 +251,10 @@ void BcGrp::showLineDetails(int zn, int l_id, QString sql_msg)
  /// Hauteur
  int h = qtv_tmp->getMinHeight();
  qtv_tmp->setFixedHeight(h);
+
+
+ qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
  /// Titre
  QString title = "";
