@@ -105,18 +105,18 @@ BView *BTirages::getTbvTirages()
 void BTirages::showFdj(BTirAna *ana_tirages)
 {
  QWidget *wdg_visual = new QWidget;
- QGridLayout *lay_visual = new QGridLayout;
+ QSplitter *lay_visual = new QSplitter;
  QTabWidget *tbw_visual = new QTabWidget;
  og_Items = tbw_visual;
  ana_TirLst = ana_tirages;
 
- lay_visual->addWidget(this,0,0,2,1);
+ lay_visual->addWidget(this);
 
  QWidget *wdg_tmp = new QWidget;
- lay_fusion = new QGridLayout;
- lay_fusion->addWidget(ana_tirages,0,0);
- wdg_tmp->setLayout(lay_fusion);
- tbw_visual->addTab(wdg_tmp,"Nombres");
+ lay_fusion = new QSplitter;
+ lay_fusion->addWidget(ana_tirages);
+ //wdg_tmp->setLayout(lay_fusion);
+ tbw_visual->addTab(lay_fusion,"Nombres");
 
  QString ongNames[]={"Graphiques", "Steppers", "Uplets", "AnaFiltre", "AutoGen"};
  int nb_ong = sizeof(ongNames)/sizeof(QString);
@@ -139,13 +139,15 @@ void BTirages::showFdj(BTirAna *ana_tirages)
 
 
 
- lay_visual->addWidget(tbw_visual,0,1,1,2);
- lay_visual->setColumnStretch(0, 0); /// Exemple basic layouts
- lay_visual->setColumnStretch(1, 1);
+ lay_visual->addWidget(tbw_visual);
+ //lay_visual->setColumnStretch(0, 0); /// Exemple basic layouts
+ //lay_visual->setColumnStretch(1, 1);
 
- wdg_visual->setLayout(lay_visual);
- wdg_visual->setWindowTitle("Tirages FDJ : ");
- wdg_visual->show();
+ //wdg_visual->setLayout(lay_visual);
+ //wdg_visual->setWindowTitle("Tirages FDJ : ");
+ //wdg_visual->show();
+ lay_visual->setWindowTitle("Tirages FDJ : ");
+ lay_visual->show();
 
  connect(this,SIGNAL(BSig_Zoom(const BView *, const QModelIndex )),
          this, SLOT(BSlot_ZoomMyPlot(const BView *, const QModelIndex)));
@@ -550,12 +552,12 @@ void BTirages::showGen(BTirAna *ana_tirages)
  connect(tbw_BtirCalculs,SIGNAL(tabBarClicked(int)),this,SLOT(BSlot_Ensemble_Tir(int)));
 
 
- QGridLayout *lay_fusion = this->addAna(ana_tirages);
+ QSplitter *lay_fusion = this->addAna(ana_tirages);
  QWidget *wdg_fusion = new QWidget;
- wdg_fusion->setLayout(lay_fusion);
+ //wdg_fusion->setLayout(lay_fusion);
 
  QString name = this->getGameLabel();
- int that_index = tbw_BtirCalculs->addTab(wdg_fusion, name);
+ int that_index = tbw_BtirCalculs->addTab(lay_fusion, name);
  tbw_BtirCalculs->setCurrentIndex(that_index);
  gdl_all->addWidget(tbw_BtirCalculs);
  wdg_BtirReponses->setLayout(gdl_all);
@@ -568,16 +570,16 @@ void BTirages::showGen(BTirAna *ana_tirages)
          this, SLOT(BSlot_Filter_Tir(BTirAna *, const Bp::E_Ico , const B2LstSel *)));
 }
 
-QGridLayout * BTirages::addAna(BTirAna* ana)
+QSplitter * BTirages::addAna(BTirAna* ana)
 {
- lay_fusion = new QGridLayout;
+ lay_fusion = new QSplitter;
  //QVBoxLayout * vly = new QVBoxLayout;
  //vly->addWidget(this);
 
- lay_fusion->addWidget(this,0,0,2,1);
- lay_fusion->addWidget(ana,0,1,1,2);///,Qt::AlignTop|Qt::AlignLeft
- lay_fusion->setColumnStretch(0, 0); /// Exemple basic layouts
- lay_fusion->setColumnStretch(1, 1);
+ lay_fusion->addWidget(this);
+ lay_fusion->addWidget(ana);///,Qt::AlignTop|Qt::AlignLeft
+ //lay_fusion->setColumnStretch(0, 0); /// Exemple basic layouts
+ //lay_fusion->setColumnStretch(1, 1);
 
  return lay_fusion;
 }
@@ -1421,8 +1423,14 @@ QWidget *BTirages::ana_fltSelection(QTabWidget *tbw_flt, QString st_obj, BTirage
  info_b->setTitle("Résultats");
  info_b->setLayout(tmp_lay);
 
- tmp_lay_2 ->addWidget(info_a,0,0);
- tmp_lay_2 ->addWidget(info_b,0,1);
+ QSplitter *tmpSplitter = new QSplitter();
+ tmpSplitter->addWidget(info_a);
+ tmpSplitter->addWidget(info_b);
+
+ tmp_lay_2->addWidget(tmpSplitter);
+
+ //tmp_lay_2 ->addWidget(info_a,0,0);
+ //tmp_lay_2 ->addWidget(info_b,0,1);
 
  info->setLayout(tmp_lay_2);
 
@@ -1692,7 +1700,7 @@ void BTirages::effectueAnalyses(QTabWidget *tbw_flt, QString ref_sql, int distan
    //lay_fusion->addWidget(og_AnaSel,1,0);
   }
   else {
-   lay_fusion->addWidget(og_AnaSel,1,1);
+  lay_fusion->addWidget(og_AnaSel);
   }
   og_AnaSel->setCurrentIndex(tab_index);
   emit og_AnaSel->tabBarClicked(tab_index);

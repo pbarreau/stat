@@ -7,6 +7,7 @@
 #include <QSqlQueryModel>
 #include <QGridLayout>
 #include <QComboBox>
+#include <QSplitter>
 
 #include "game.h"
 #include "BLstSelect.h"
@@ -52,7 +53,7 @@ void updateTbv(QString box_title, QString msg);
 void effectueAnalyses(QTabWidget *tbw_flt, QString ref_sql, int distance, QString sep="");
 
 private:
-QGridLayout *addAna(BTirAna* ana);
+QSplitter *addAna(BTirAna* ana);
 B2LstSel *SauverSelection(const B2LstSel * sel);
 void checkMemory();
 QWidget * Dessine();
@@ -110,7 +111,7 @@ QTabWidget * og_Items;
 BView *tir_tbv;
 QSqlQueryModel * sqm_resu;
 QString lst_tirages;
-QGridLayout *lay_fusion;
+QSplitter *lay_fusion;
 QGridLayout *lay_responses;
 BTirAna *ana_TirLst;
 QList<BTirAna **> *ana_TirFlt;

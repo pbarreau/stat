@@ -125,7 +125,8 @@ void BTirGen::mkGameWidget(stGameConf *current)
   QGroupBox *info = (this->*ptrFunc[i])(current, tbl_name);
 
   gdl_here->addWidget(info,0,0);
-  gdl_here->addItem(ecart,0,1);
+#if 0
+  //gdl_here->addItem(ecart,0,1);
   if(i==0){
    gdl_here->addItem(ecart,1,0);
    gdl_here->setRowStretch(0,10);
@@ -133,6 +134,7 @@ void BTirGen::mkGameWidget(stGameConf *current)
   }
   gdl_here->setColumnStretch(1, 10); /// Exemple basic layouts
   gdl_here->setColumnStretch(2, 20);
+#endif
 
   grd_tmp[i]=gdl_here;
 
@@ -540,8 +542,8 @@ QGroupBox *BTirGen::LireBoule(stGameConf *pGame, QString tbl_cible)
   qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
   qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
 
-  qtv_tmp->setFixedWidth((nb_col+0.5) * 30);;
-  qtv_tmp->setFixedHeight((nb_row+0.5) * 30);
+  //qtv_tmp->setFixedWidth((nb_col+0.5) * 30);;
+  //qtv_tmp->setFixedHeight((nb_row+0.5) * 30);
  }
 
 
