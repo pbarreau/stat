@@ -228,7 +228,7 @@ void MainWindow::slot_replyFinished(QNetworkReply *reply)
     currentDownloads.append(reply);
    }
    msg = "Request was redirected.\n";
-   QMessageBox::information(this, "slot_replyFinished", msg,QMessageBox::Yes);
+   //QMessageBox::information(this, "slot_replyFinished", msg,QMessageBox::Yes);
   }
   else {// info fichier
    // C'est une demande HEAD

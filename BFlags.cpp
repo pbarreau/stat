@@ -141,13 +141,13 @@ void BFlags::setWanted(bool state, QPainter *painter, const QStyleOptionViewItem
 
 
  QApplication::style()->drawItemText(
-  painter,
-  space,
-  alignment,
-  pal,
-  false,
-  try_txt,
-  QPalette::ColorRole::Text);
+    painter,
+    space,
+    alignment,
+    pal,
+    false,
+    try_txt,
+    QPalette::ColorRole::Text);
 
  painter->restore();
  return;
@@ -227,29 +227,29 @@ bool BFlags::getThisFlt(stTbFiltres *val, const etCount in_typ, const QModelInde
     }
     break;
 
-	 case E_CountGrp:
-		if(((index.column())>0) &&
-				(!index.data().isNull()) &&
-				(index.data().isValid()))
-		{
-		 val->lgn = cur_row;
-		 val->col = cur_col;
-		 if(index.model()->index(val->lgn,val->col).data().canConvert(QMetaType::Int)){
-			val->val = index.model()->index(val->lgn,val->col).data().toInt();
-		 }
-		 else {
-			return b_retVal;
-		 }
-		}
-		else {
-		 return b_retVal;
-		}
+   case E_CountGrp:
+    if(((index.column())>0) &&
+       (!index.data().isNull()) &&
+       (index.data().isValid()))
+    {
+     val->lgn = cur_row;
+     val->col = cur_col;
+     if(index.model()->index(val->lgn,val->col).data().canConvert(QMetaType::Int)){
+      val->val = index.model()->index(val->lgn,val->col).data().toInt();
+     }
+     else {
+      return b_retVal;
+     }
+    }
+    else {
+     return b_retVal;
+    }
 
-		break;
-	 case E_CountToSet:
-	 case E_CountEnd:
-		break;
-	}
+    break;
+   case E_CountToSet:
+   case E_CountEnd:
+    break;
+  }
  }
  else {
   val->typ = E_CountToSet;
@@ -287,8 +287,8 @@ void BFlags::cellWrite(QPainter *painter, QStyle::State state, const QRect curCe
   painter->setBrush(myPal.highlightedText());
   painter->fillRect(curCell, COULEUR_FOND_FILTRE);
   painter->setPen(selected
-                   ? myPal.highlightedText().color()
-                   : myPal.text().color());
+                  ? myPal.highlightedText().color()
+                  : myPal.text().color());
  }
 
  QString font_family = "ARIAL";
@@ -357,13 +357,13 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
    painting_col = Bp::colTxt;
    break;
 
-	case E_CountGrp:
-	 painting_col = Bp::colId;
-	 break;
+  case E_CountGrp:
+   painting_col = Bp::colId;
+   break;
 
-	default:
-	 painting_col = Bp::noCol;
-	 break;
+  default:
+   painting_col = Bp::noCol;
+   break;
  }
 
  if(cur_col==painting_col){
@@ -371,25 +371,25 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
   /// Modif de la colonne R pour prendre en cmpte le Gid
   /// avant : if((a->typ == E_CountElm)||(a->typ == E_CountGrp)){
   if(a->typ == E_CountGrp){
-	 myTxt = QString::number(myOpt.text.toInt()).rightJustified(2,'0');
-	}
+   myTxt = QString::number(myOpt.text.toInt()).rightJustified(2,'0');
+  }
 
-	/*
-	 *
-	 * code corrige dans select sql par printf("%7.2f", avg())
-	 * le champ a 7 carateres :
-	 * 4 avant la virgule, la virgule puis 2 apres la virgule
-	 *
-	if(a->typ == E_CountBrc){
-	 /// https://stackoverflow.com/questions/7234824/format-a-number-to-a-specific-qstring-format
-	 QStringList tmp_lst = myTxt.split(",");
-	 if(tmp_lst.size()>1){
-		myTxt=tmp_lst[0]+","+tmp_lst[1].leftJustified(2,'0');
-	 }
-	 else {
-		myTxt=myTxt+","+"00";
-	 }
-	}
+  /*
+   *
+   * code corrige dans select sql par printf("%7.2f", avg())
+   * le champ a 7 carateres :
+   * 4 avant la virgule, la virgule puis 2 apres la virgule
+   *
+  if(a->typ == E_CountBrc){
+   /// https://stackoverflow.com/questions/7234824/format-a-number-to-a-specific-qstring-format
+   QStringList tmp_lst = myTxt.split(",");
+   if(tmp_lst.size()>1){
+    myTxt=tmp_lst[0]+","+tmp_lst[1].leftJustified(2,'0');
+   }
+   else {
+    myTxt=myTxt+","+"00";
+   }
+  }
  */
  }
 
@@ -399,18 +399,18 @@ void BFlags::fltWrite(stTbFiltres *a, QPainter *painter, const QStyleOptionViewI
  }
 
  if (
-  (a->b_flt & Bp::F_Flt::fltSelected) == Bp::F_Flt::fltSelected
-  ||
-  (a->b_flt & Bp::F_Flt::fltFiltred) == Bp::F_Flt::fltFiltred
+     (a->b_flt & Bp::F_Flt::fltSelected) == Bp::F_Flt::fltSelected
+     ||
+     (a->b_flt & Bp::F_Flt::fltFiltred) == Bp::F_Flt::fltFiltred
 
-			 ) {
-	set_up = false;
-	if(a->typ == E_CountGrp){
-	 myPen = Qt::black;
-	}
-	else{
-	 myPen = Qt::red;
-	}
+     ) {
+  set_up = false;
+  if(a->typ == E_CountGrp){
+   myPen = Qt::black;
+  }
+  else{
+   myPen = Qt::red;
+  }
  }
 
  cellWrite(painter,state,cur_rect, myTxt,myPen,set_up);
@@ -421,7 +421,7 @@ void BFlags::fltFull(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
 {
 
  if(inf_flt->tb_ref.compare("B_fdj")!=0 ||
-     ((inf_flt->typ==E_CountGrp) && (lview->objectName().compare(ViewDetails) != 0))){
+    ((inf_flt->typ==E_CountGrp) && (lview->objectName().compare(ViewDetails) != 0))){
   return;
  }
 
@@ -443,24 +443,24 @@ void BFlags::fltFull(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
 
   double val = myOpt.index.data().toDouble();
 
-	int r = -1;
-	bool multiple = false;
-	if((val > 1.0) && (ec>(2*val))){
-	 r = static_cast<int>(fmod(ec,val));
-	 multiple = true;
-	}
-	else {
-	 r = static_cast<int>(fabs(val-ec));
-	}
+  int r = -1;
+  bool multiple = false;
+  if((val > 1.0) && (ec>(2*val))){
+   r = static_cast<int>(fmod(ec,val));
+   multiple = true;
+  }
+  else {
+   r = static_cast<int>(fabs(val-ec));
+  }
 
-	if(r>=0 & r<=2){
-	 if(multiple == false){
-		color = tab[r];
-	 }
-	 else {
-		color = mul[r];
-	 }
-	}
+  if(r>=0 & r<=2){
+   if(multiple == false){
+    color = tab[r];
+   }
+   else {
+    color = mul[r];
+   }
+  }
 
   painter->fillRect(myOpt.rect, color);
  }
@@ -579,14 +579,15 @@ void BFlags::fltDraw(stTbFiltres *a, QPainter *painter, const QStyleOptionViewIt
  /// snt deja dessinee
  if((a->pri > 0) && (a->pri<nbColors)){
 
-	painter->setBrush(v[a->pri]);
-	painter->drawEllipse(c_ru,cx/2,cy/4);
+  painter->setBrush(v[a->pri]);
+  painter->drawEllipse(c_ru,cx/2,cy/4);
  }
 
  if((a->b_flt & Bp::F_Flt::fltSeenBfr) == (Bp::F_Flt::fltSeenBfr)){
   painter->setBrush(Qt::green);
   painter->drawEllipse(c_rd,cx/2,cy/4);
  }
+
 
  if((a->b_flt & Bp::F_Flt::fltSeenAft) == (Bp::F_Flt::fltSeenAft)){
   painter->setBrush(QColor(0,100,255,255));

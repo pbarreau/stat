@@ -96,8 +96,9 @@ QWidget *BTirFdj::tbForBaseRef(const stGameConf *pGame)
  for(int j=Bp::colTfdjDate;j<=Bp::colTfdjJour;j++){
   qtv_tmp->setColumnWidth(j,75);
  }
- int l=qtv_tmp->getMinWidth(0);
- qtv_tmp->setMinimumWidth(l);
+
+ //int l=qtv_tmp->getMinWidth(0);
+ //qtv_tmp->setMinimumWidth(l);
  //qtv_tmp->setMinimumHeight(l);
  qtv_tmp->setItemDelegate(new BTirDelegate(pGame));
 

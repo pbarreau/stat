@@ -2,6 +2,7 @@
 #define COMPTER_H
 
 #include <QSqlDatabase>
+#include <QSortFilterProxyModel>
 
 #include <QWidget>
 #include <QTableView>
@@ -91,6 +92,9 @@ class BCount:public QWidget
   const stGameConf *gm_def;
   etCount type; /// type de comptage en cours
   BView_1 **tabTbv;
+  BView_1 **tabEcarts;
+  QSqlQueryModel **sqlEcarts;
+  QSortFilterProxyModel ** fpmEcarts;
   QSqlDatabase dbCount;
 
 

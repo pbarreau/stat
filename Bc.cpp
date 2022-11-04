@@ -300,6 +300,33 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
  tmpSplitter->addWidget(qtv_tmp->getScreen());
 
  ///gameref
+
+ /// Ecart sur Bc_elm
+ if((pGame->db_ref->dad.size() == 0)
+    && (eCalcul == E_CountElm
+        && prm->ong_id == C_MIN_UPL)
+    ){
+
+  if(gm_def->eTirType != eTirGen){
+   BView_1 *qtv_tmp = new BView_1(pGame,zn,eCalcul);
+   QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+   QSortFilterProxyModel *m= new QSortFilterProxyModel;
+
+   tabEcarts[zn] = qtv_tmp;
+   sqlEcarts[zn] = sqm_tmp;
+   fpmEcarts[zn] = m;
+
+   qtv_tmp->setObjectName(QString::number(zn));
+   qtv_tmp->setZid(zn);
+   qtv_tmp->setGid(C_MIN_UPL);
+
+   tmpSplitter->addWidget(qtv_tmp->getScreen());
+  }
+
+  //glay_tmp->addItem(ecart,2,0);
+ }
+
+
  if((pGame->db_ref->dad.size() == 0)
     && (eCalcul==E_CountGrp)
     ){
@@ -552,6 +579,7 @@ QWidget *BCount::startIhm_new(const stGameConf *pGame, const etCount eCalcul, co
   prm.query = query;
   prm.sql = sql;
   prm.up = &up_view;
+  prm.ong_id = g_id;
 
   /// Verifier si table existe deja
   QString cnx = pGame->db_ref->cnx;
@@ -2300,7 +2328,7 @@ void BCount::BSlot_TbvClick(const QModelIndex & index)
    int ecart = index.data().toInt();
    int boule = index.sibling(lgn_id, Bp::colTxt).data().toInt();
 
-   QString stTitle = "Boule:" + QString::number(boule)+",Ecart actuel:"+QString::number(ecart);
+   QString stTitle = "Boule:" + QString::number(boule)+", Ecart actuel:"+QString::number(ecart);
    QString stCols = FN1_getFieldsFromZone(gm_def, z_id);
    QString sql_msg = "";
 
@@ -2313,6 +2341,22 @@ void BCount::BSlot_TbvClick(const QModelIndex & index)
    sql_msg = sql_msg + "where Ecarts is not null\n";
    sql_msg = sql_msg + "GROUP by Ecarts order by Total desc\n";
 
+#if 1
+   BView_1 *qtv_tmp = tabEcarts[z_id];
+   QSqlQueryModel  * sqm_tmp = sqlEcarts[z_id];
+   sqm_tmp->setQuery(sql_msg, dbCount);
+   QSortFilterProxyModel *m=fpmEcarts[z_id];
+   m->setDynamicSortFilter(true);
+   m->setSourceModel(sqm_tmp);
+   qtv_tmp->setModel(m);
+
+   qtv_tmp->resizeColumnsToContents();
+   qtv_tmp->setAlternatingRowColors(true);
+   qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+   qtv_tmp->setSelectionMode(QAbstractItemView::NoSelection);
+
+   qtv_tmp->setTitle(stTitle);
+#else
    QTableView *qtv_tmp = new QTableView;
    QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
    sqm_tmp->setQuery(sql_msg, dbCount);
@@ -2328,6 +2372,8 @@ void BCount::BSlot_TbvClick(const QModelIndex & index)
 
    qtv_tmp->setWindowTitle(stTitle);
    qtv_tmp->show();
+#endif
+
   }
  }
  //emit BSigClicked(index,zn,eTyp);

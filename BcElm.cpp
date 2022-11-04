@@ -51,6 +51,11 @@ BcElm::BcElm(const stGameConf *pGame):BCount(pGame,E_CountElm)
 {
  /// appel du constructeur parent
  db_elm = dbCount;
+
+ tabEcarts = new BView_1 *[pGame->znCount];
+ sqlEcarts = new QSqlQueryModel *[pGame->znCount];
+ fpmEcarts = new QSortFilterProxyModel*[pGame->znCount];
+
 }
 
 void BcElm::BSlot_MkUsrUplets_L3(const QItemSelectionModel *cur_sel)
@@ -232,8 +237,6 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
    /// ----------
    stTbFiltres a;
    a.tb_flt = gm_def->db_ref->flt;
-   a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
-   a.sta = Bp::E_Sta::noSta;
    a.zne = zn;
    a.typ = eType;
    a.lgn = 10 * eType;
@@ -248,6 +251,9 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
      a.val = query.value(0).toInt();
      a.col = a.val;
      a.dbt = -1;
+     a.b_flt = Bp::noFlt; //Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
+     a.sta = Bp::E_Sta::noSta;
+
      ///QModelIndex index = sqm_tmp->index(a.val-1,Bp::colTxt,QModelIndex());
      QModelIndex index = view->model()->index(a.val-1,Bp::colTxt,QModelIndex());
      view->selectionModel()->select(index,QItemSelectionModel::SelectionFlag::Select);
@@ -256,7 +262,7 @@ void BcElm::usr_TagLast(const stGameConf *pGame,  BView_1 *view, const etCount e
      b_retVal = DB_Tools::tbFltGet(&a, db_elm.connectionName());
 
      a.pri = 1; /// ICI  on force la priorite meme si deja present
-     a.b_flt = Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
+     a.b_flt = a.b_flt | Bp::F_Flt::fltWanted|Bp::F_Flt::fltSelected;
      a.b_flt = a.b_flt|tmp;
 
 
@@ -290,6 +296,8 @@ void BcElm::marquerProcheVoisin(const stGameConf *pGame, const int zn, stTbFiltr
  Bp::F_Flts flags[]={Bp::fltSeenBfr,Bp::fltSeenAft};
  int ref_val = a->val;
 
+ stTbFiltres b = *a;
+
  for (int i = -1, j = 0;(i<2) ; i=i+2,j++)
  {
 
@@ -310,7 +318,8 @@ void BcElm::marquerProcheVoisin(const stGameConf *pGame, const int zn, stTbFiltr
 
   b_retVal = DB_Tools::tbFltGet(a, db_elm.connectionName());
 
-  a->b_flt = a->b_flt|flags[j];
+  stTbFiltres c = *a;
+  a->b_flt = (a->b_flt)|flags[j];
 
   b_retVal = DB_Tools::tbFltSet(a,db_elm.connectionName());
  }

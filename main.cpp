@@ -5,6 +5,10 @@
 
 int main(int argc, char *argv[])
 {
-    BApplication a(argc, argv);
-    return a.exec();
+ QCoreApplication::setApplicationName("Fdj Analyse");
+ QCoreApplication::setOrganizationName("Protheo");
+ QCoreApplication::setApplicationVersion(QT_VERSION_STR);
+
+ BApplication a(argc, argv);
+ return a.exec();
 }

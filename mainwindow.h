@@ -95,6 +95,7 @@ class MainWindow : public QMainWindow
   ~MainWindow();
   void closeEvent(QCloseEvent *event);
   void getPgmVersion(void);
+  QMdiArea *GetMdiArea(void);
 
  private:
   void AfficherAnciensCalcul(stGameConf *pGame);

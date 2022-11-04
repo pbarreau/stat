@@ -102,8 +102,9 @@ BView *BTirages::getTbvTirages()
  return tir_tbv;
 }
 
-void BTirages::showFdj(BTirAna *ana_tirages)
+QWidget *BTirages::showFdj(BTirAna *ana_tirages)
 {
+
  QWidget *wdg_visual = new QWidget;
  QSplitter *lay_visual = new QSplitter;
  QTabWidget *tbw_visual = new QTabWidget;
@@ -138,7 +139,7 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  }
 
 
-
+#if 0
  lay_visual->addWidget(tbw_visual);
  //lay_visual->setColumnStretch(0, 0); /// Exemple basic layouts
  //lay_visual->setColumnStretch(1, 1);
@@ -148,6 +149,8 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  //wdg_visual->show();
  lay_visual->setWindowTitle("Tirages FDJ : ");
  lay_visual->show();
+#endif
+
 
  connect(this,SIGNAL(BSig_Zoom(const BView *, const QModelIndex )),
          this, SLOT(BSlot_ZoomMyPlot(const BView *, const QModelIndex)));
@@ -159,6 +162,10 @@ void BTirages::showFdj(BTirAna *ana_tirages)
  connect(ana_tirages, SIGNAL(BSig_AnaUplFdjShow(const QString , int )),
          this, SLOT(BSlot_AnaUplFdjShow(const QString , int ))
          );
+
+ lay_visual->addWidget(tbw_visual);
+ lay_visual->setWindowTitle("Analyses FDJ");
+ return lay_visual;
 }
 
 QWidget * BTirages::Dessine()
@@ -232,12 +239,11 @@ QWidget * BTirages::ShowResponses()
 
 QWidget * BTirages::ShowAutoGen()
 {
- QWidget *wdg_toShow = new QWidget;
- QGridLayout *lay_autoGen = new QGridLayout;
+ if(tbw_BtirCalculs == nullptr){
+  tbw_BtirCalculs = new QTabWidget;
+ }
 
- wdg_toShow->setLayout(lay_autoGen);
-
- return(wdg_toShow);
+ return(tbw_BtirCalculs);
 }
 
 QWidget * BTirages::DrawCustomPlot()
@@ -543,8 +549,8 @@ void BTirages::showGen(BTirAna *ana_tirages)
 
  if(tbw_BtirCalculs == nullptr){
   tbw_BtirCalculs = new QTabWidget;
-  gdl_all = new QGridLayout;
-  wdg_BtirReponses = new QWidget;
+  //gdl_all = new QGridLayout;
+  //wdg_BtirReponses = new QWidget;
  }
 
  QString st_obj = "Ensemble_"+ QString::number(id_TirSrc).rightJustified(2,'0');
@@ -559,10 +565,10 @@ void BTirages::showGen(BTirAna *ana_tirages)
  QString name = this->getGameLabel();
  int that_index = tbw_BtirCalculs->addTab(lay_fusion, name);
  tbw_BtirCalculs->setCurrentIndex(that_index);
- gdl_all->addWidget(tbw_BtirCalculs);
- wdg_BtirReponses->setLayout(gdl_all);
- wdg_BtirReponses->setWindowTitle("Tirages AUTO : ");
- wdg_BtirReponses->show();
+ //gdl_all->addWidget(tbw_BtirCalculs);
+ //wdg_BtirReponses->setLayout(gdl_all);
+ //wdg_BtirReponses->setWindowTitle("Tirages AUTO : ");
+ //wdg_BtirReponses->show();
 
  connect(this,SIGNAL(BSig_AnaLgn(int,int)), ana_tirages,SLOT(BSlot_AnaLgnShow(int,int)));
  connect(this,SIGNAL(BSig_Show_Flt(const B2LstSel *)), ana_tirages,SLOT(BSlot_Show_Flt(const B2LstSel *)));

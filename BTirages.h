@@ -26,7 +26,7 @@ class BTirages : public QWidget
 public:
 explicit BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent=nullptr);
 QString getGameLabel(void);
-void showFdj(BTirAna *ana_tirages);
+QWidget *showFdj(BTirAna *ana_tirages);
 void showGen(BTirAna *ana_tirages);
 BView *getTbvTirages();
 ///QWidget *DrawCustomPlot();

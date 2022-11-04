@@ -112,7 +112,12 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new, bool upl_
   delete ana_tirages;
  }
  else{
-  lst_tirages->showFdj(ana_tirages);
+  QWidget *w_DataFenetre = lst_tirages->showFdj(ana_tirages);
+  QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_DataFenetre);
+  subWindow->move(0,0);
+
+  w_DataFenetre->setVisible(true);
+
  }
 
  //b_retVal = BTest::montestRapideSql(curConf,0,4);
@@ -411,6 +416,12 @@ void MainWindow::FEN_Old_Tirages(void)
 
 
 }
+
+QMdiArea *MainWindow::GetMdiArea()
+{
+ return zoneCentrale;
+}
+
 //--------
 #else
 void MainWindow::FEN_Old_Tirages(void)
