@@ -354,8 +354,9 @@ class MainWindow : public QMainWindow
 
  public:
   QString saveFileName(const QUrl &url);
-  void doDownload(const QUrl &url);
+  bool doDownload(const QDir &dir, const QUrl &url, bool isLoopin = false);
   bool saveToDisk(const QString &filename, QNetworkReply *data);
+  bool do7zip(QString fileCompressed);
   bool isHttpRedirect(QNetworkReply *reply);
 
  public slots:

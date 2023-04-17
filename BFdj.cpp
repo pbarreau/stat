@@ -27,7 +27,7 @@ extern QString FdjDbZip;
 
 BFdj::BFdj()
 {
-
+;
 }
 
 BFdj::BFdj(stFdj *prm, QString cnx)

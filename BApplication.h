@@ -8,7 +8,7 @@ class BApplication : public QApplication
 {
   Q_OBJECT
  public:
-  explicit BApplication(int& argc, char** argv);
+  explicit BApplication(int& argc, char** argv, BFdj *_dbFdj);
   ~BApplication() override;
 
   private:

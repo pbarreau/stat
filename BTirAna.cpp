@@ -46,7 +46,7 @@ etTir BTirAna::getNature()
  return typeAnalyse;
 }
 
-BTirAna::BTirAna(stGameConf *pGame, QWidget *parent) : QWidget(parent)
+BTirAna::BTirAna(stGameConf *pGame, QProgressBar *progressBar, QWidget *parent) : QWidget(parent)
 {
  addr = nullptr;
  typeAnalyse = eTirNotSet;

@@ -1,10 +1,8 @@
 #include "BApplication.h"
 #include "BMainWindow.h"
 
-BApplication::BApplication(int &argc, char **argv):QApplication(argc, argv)
+BApplication::BApplication(int &argc, char **argv, BFdj *_dbFdj):QApplication(argc, argv)
 {
- BFdj *_dbFdj = new BFdj;
- _dbFdj->moveToThread(QCoreApplication::instance()->thread());
 
  // Set organisation and application names
  setOrganizationName("BBTF-PROTHEO");

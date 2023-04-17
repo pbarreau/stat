@@ -7,6 +7,7 @@
 #include <QTabWidget>
 #include <QVector>
 #include <QHBoxLayout>
+#include <QProgressBar>
 
 #include "game.h"
 #include "bstflt.h"
@@ -22,7 +23,7 @@ class BTirAna : public QWidget
 {
  Q_OBJECT
  public:
- explicit BTirAna(stGameConf *pGame, QWidget *parent=nullptr);
+ explicit BTirAna(stGameConf *pGame, QProgressBar *progressBar=nullptr, QWidget *parent=nullptr);
  QString getTor(); ///get Table Of Result
  QString getSql();
  etTir getNature();

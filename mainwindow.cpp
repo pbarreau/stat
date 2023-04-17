@@ -17,6 +17,10 @@
 #include <QSqlRecord>
 #include <QSplitter>
 #include <QTreeView>
+#include <QProgressBar>
+
+#include <QtConcurrent>
+#include <QFuture>
 
 #include <QStackedWidget>
 
@@ -105,7 +109,17 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new, bool upl_
 
  BTirFdj *lst_tirages = new BTirFdj(curConf);
 
- BTirAna *ana_tirages = new BTirAna(curConf);
+ // Create a progress bar
+ QProgressBar *progressBar = new QProgressBar;
+ progressBar->setRange(0, 100);
+
+#if 0
+ // Execute the query in a separate thread
+ BTirAna *ana_tirages;
+ QFuture<BTirAna> future = QtConcurrent::run(&ana_tirages, curConf, progressBar);
+#else
+  BTirAna *ana_tirages = new BTirAna(curConf, progressBar);
+#endif
  if(ana_tirages->self() == nullptr){
   QString msg = "Erreur de l'analyse des tirages :" + curConf->db_ref->src;
   QMessageBox::warning(nullptr, "Analyses", msg,QMessageBox::Yes);

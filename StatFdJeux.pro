@@ -34,6 +34,7 @@ SOURCES += \
     BApplication.cpp \
     BFpmElm.cpp \
     BMainWindow.cpp \
+    BP_DatabaseWorker.cpp \
     Bc.cpp \
     BcBrc.cpp \
     BcCmb.cpp \
@@ -137,6 +138,7 @@ HEADERS  += \
     BApplication.h \
     BFpmElm.h \
     BMainWindow.h \
+    BP_DatabaseWorker.h \
     Bc.h \
     BcBrc.h \
     BcCmb.h \
