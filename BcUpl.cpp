@@ -2512,11 +2512,44 @@ void BcUpl::BSlot_UVL1_Click_Fn_1(const QModelIndex &index)
  }
 }
 
+void BcUpl::BSlot_UVL1_CM1(QPoint pos)
+{
+ BView *view = qobject_cast<BView *>(sender());
+ QMenu MonMenu;
+ BAction_1 *cmd_1 = new BAction_1("Filtrer !",view,pos);
+ BAction_1 *cmd_2 = new BAction_1("Clear !",view,pos);
+
+ connect(cmd_1, SIGNAL(BSig_ActionAt(QModelIndex)),
+         this, SLOT(BSlot_UVL1_Click_Fn_2(QModelIndex)) );
+ connect(cmd_2, SIGNAL(triggered(bool)),
+         this, SLOT(BSlot_UVL1_Click_Fn_3(bool)) );
+
+ MonMenu.addAction(cmd_1);
+ MonMenu.addAction(cmd_2);
+
+ MonMenu.exec(view->viewport()->mapToGlobal(pos));
+}
+
+void BcUpl::BSlot_UVL1_Click_Fn_3(bool chk)
+{
+ Q_UNUSED(chk)
+ BAction_1 *cmd = qobject_cast<BAction_1 *>(sender());
+ BView *view = cmd->getView();
+ int z_id = view->getZid();
+ //int g_id = view->objectName().toInt()+1;
+
+emit  BSig_UplFdjShow("", z_id);
+}
+
 /// Montrer dans la base des tirages
 /// l'uplet en cours
 void BcUpl::BSlot_UVL1_Click_Fn_2(const QModelIndex &index)
 {
- BView *view = qobject_cast<BView *>(sender());
+
+ //BView *view = qobject_cast<BView *>(sender());
+ BAction_1 *cmd = qobject_cast<BAction_1 *>(sender());
+ BView *view = cmd->getView();
+
  BFpm_upl * m = qobject_cast<BFpm_upl *>(view->model());
  BAnimateCell * ani_tbv = qobject_cast<BAnimateCell *>(view->itemDelegate());
  QSqlQueryModel *sqm_tmp = qobject_cast<QSqlQueryModel *>(m->sourceModel());
@@ -2924,9 +2957,14 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  connect( bv_1, SIGNAL(clicked(QModelIndex)),
           this, SLOT(BSlot_UVL1_Click_Fn_1( QModelIndex) ) );
 
- ///  B: montrer les tirages concernés dans base des tirages
+ ///  B: montrer les tirages concernés dans base des
+ bv_1->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(bv_1, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(BSlot_UVL1_CM1(QPoint)));
+#if 0
  connect( bv_1, SIGNAL(clicked(QModelIndex)),
           this, SLOT(BSlot_UVL1_Click_Fn_2( QModelIndex) ) );
+#endif
 
  BAnimateCell * ani_tbv = new BAnimateCell(bv_1);
  tbv_Anim[l_id-1][z_id][g_id - C_MIN_UPL] = ani_tbv;

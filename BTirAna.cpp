@@ -255,7 +255,7 @@ void BTirAna::PresenterResultats(stGameConf *pGame, QStringList ** info, QString
  }
  else {
   lstComptage.append(item_4);
-  connect(this,SIGNAL(BSig_AnaLgn(int,int)),item_4,SLOT(BSlot_AnaLgnShow(int, int)));
+  connect(this,SIGNAL(BSig_AnaLgn(int,int)),item_4,SLOT(BSlot_AnaLgnShow(int,int)));
   connect(this,SIGNAL(BSig_RazSelection()),item_4,SLOT(BSlot_AnaLgnRaz()));
  }
 
@@ -410,10 +410,17 @@ QHBoxLayout *BTirAna::getBar_FltAna(stGameConf *pGame, etTir info)
 
   inputs->addWidget(tmp_btn);
   btn_grp->addButton(tmp_btn,lst_btn[i].value);
+
+  /// Connecter le RAZ global IHM au bon moment
+  if(pGame->eTirType == eTirFdj){
+
+  }
+
  }
 
  btn_grp->setExclusive(true);
  connect(btn_grp, SIGNAL(buttonClicked(int)), this,SLOT(BSlot_ActionButton(int)));
+
 
  QSpacerItem *ecart = new QSpacerItem(16, 16, QSizePolicy::Expanding, QSizePolicy::Expanding);
  inputs->addItem(ecart);

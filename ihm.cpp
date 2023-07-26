@@ -7,7 +7,7 @@
 
 #include "mainwindow.h"
 
-MainWindow::MainWindow(BFdj * currDb):_Db(currDb)
+MainWindow::MainWindow(BFdj * currDb)
 {
  getPgmVersion();
 
@@ -57,6 +57,7 @@ void MainWindow::createIhm()
  connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_newGame()));
  /// -------
 
+#if 0
  /// --- open
  tmp_ico = QIcon(":/images/open.png");
  tmp_act = new QAction(tmp_ico,tr("&Ouvrir"), this);
@@ -76,6 +77,7 @@ void MainWindow::createIhm()
  gameToolBar->addAction(tmp_act);
  connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_save()));
  /// -------
+#endif
 
  //--------- Element du menu Aide ---------
  tmp_ico = QIcon(":/images/help.png");
@@ -108,6 +110,7 @@ void MainWindow::createIhm()
  actionToolBar->addAction(tmp_act);
  connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_GetFromFdj()));
 
+#if 0
  /// --- Run
  tmp_ico = QIcon(":/images/run_32px.png");
  act_UGL_Create = new QAction(tmp_ico,tr("&Creer liste"), this);
@@ -129,6 +132,7 @@ void MainWindow::createIhm()
  act_UGL_ClrFilters->setStatusTip(tr("Supprimer tous les filtres..."));
  actionMenu->addAction(act_UGL_ClrFilters);
  actionToolBar->addAction(act_UGL_ClrFilters);
+#endif
 
  createStatusBar();
 }
@@ -141,30 +145,30 @@ void MainWindow::createActions()
  newAct->setStatusTip(tr("Nouvelle etude de jeu"));
  connect(newAct, SIGNAL(triggered()), this, SLOT(pslot_newGame()));
 
- openAct = new QAction(QIcon(":/images/open.png"), tr("&Ouvrir..."), this);
- openAct->setShortcuts(QKeySequence::Open);
- openAct->setStatusTip(tr("Ouvrir jeu existant"));
+ //openAct = new QAction(QIcon(":/images/open.png"), tr("&Ouvrir..."), this);
+ //openAct->setShortcuts(QKeySequence::Open);
+ //openAct->setStatusTip(tr("Ouvrir jeu existant"));
  connect(openAct, SIGNAL(triggered()), this, SLOT(pslot_open()));
 
- saveAct = new QAction(QIcon(":/images/save.png"), tr("&Sauver"), this);
- saveAct->setShortcuts(QKeySequence::Save);
- saveAct->setStatusTip(tr("Sauver jeu sur disque"));
- connect(saveAct, SIGNAL(triggered()), this, SLOT(pslot_save()));
+ //saveAct = new QAction(QIcon(":/images/save.png"), tr("&Sauver"), this);
+ //saveAct->setShortcuts(QKeySequence::Save);
+ //saveAct->setStatusTip(tr("Sauver jeu sur disque"));
+ //connect(saveAct, SIGNAL(triggered()), this, SLOT(pslot_save()));
 
- act_UGL_Create = new QAction(QIcon(":/images/run_32px.png"), tr("&Run"), this);
- act_UGL_Create->setStatusTip(tr("Creer liste de jeux"));
+ //act_UGL_Create = new QAction(QIcon(":/images/run_32px.png"), tr("&Run"), this);
+ //act_UGL_Create->setStatusTip(tr("Creer liste de jeux"));
 
- act_UGL_SetFilters = new QAction(QIcon(":/images/flt_apply.png"), tr("&Filtrer"), this);
- act_UGL_SetFilters->setStatusTip(tr("Filtrer la liste de jeux"));
+ //act_UGL_SetFilters = new QAction(QIcon(":/images/flt_apply.png"), tr("&Filtrer"), this);
+ //act_UGL_SetFilters->setStatusTip(tr("Filtrer la liste de jeux"));
 
- act_UGL_ClrFilters = new QAction(QIcon(":/images/flt_clear.png"), tr("&ClearFiltres"), this);
- act_UGL_ClrFilters->setStatusTip(tr("Supprimer tous les filtres"));
+ //act_UGL_ClrFilters = new QAction(QIcon(":/images/flt_clear.png"), tr("&ClearFiltres"), this);
+ //act_UGL_ClrFilters->setStatusTip(tr("Supprimer tous les filtres"));
  /// La connection s'effectue a la creation de l'objet.
 
- saveAsAct = new QAction(tr("Sau&ver sous..."), this);
- saveAsAct->setShortcuts(QKeySequence::SaveAs);
- saveAsAct->setStatusTip(tr("Sauver jeu sous autre nom"));
- connect(saveAsAct, SIGNAL(triggered()), this, SLOT(pslot_saveAs()));
+ //saveAsAct = new QAction(tr("Sau&ver sous..."), this);
+ //saveAsAct->setShortcuts(QKeySequence::SaveAs);
+ //saveAsAct->setStatusTip(tr("Sauver jeu sous autre nom"));
+ //connect(saveAsAct, SIGNAL(triggered()), this, SLOT(pslot_saveAs()));
 
  exitAct = new QAction(tr("E&xit"), this);
  exitAct->setShortcuts(QKeySequence::Quit);
@@ -186,9 +190,9 @@ void MainWindow::createMenus()
 {
  fileMenu = menuBar()->addMenu(tr("&Jeux"));
  fileMenu->addAction(newAct);
- fileMenu->addAction(openAct);
- fileMenu->addAction(saveAct);
- fileMenu->addAction(saveAsAct);
+ //fileMenu->addAction(openAct);
+ //fileMenu->addAction(saveAct);
+ //fileMenu->addAction(saveAsAct);
  fileMenu->addSeparator();
  fileMenu->addAction(exitAct);
 
@@ -205,11 +209,11 @@ void MainWindow::createToolBars()
 {
  fileToolBar = addToolBar(tr("Jeux"));
  fileToolBar->addAction(newAct);
- fileToolBar->addAction(openAct);
- fileToolBar->addAction(saveAct);
- fileToolBar->addAction(act_UGL_Create);
- fileToolBar->addAction(act_UGL_SetFilters);
- fileToolBar->addAction(act_UGL_ClrFilters);
+ //fileToolBar->addAction(openAct);
+ //fileToolBar->addAction(saveAct);
+ //fileToolBar->addAction(act_UGL_Create);
+ //fileToolBar->addAction(act_UGL_SetFilters);
+ //fileToolBar->addAction(act_UGL_ClrFilters);
 }
 
 void MainWindow::createStatusBar()

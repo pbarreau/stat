@@ -84,9 +84,9 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new, bool upl_
  prm->upl_fdj = upl_fdj;
  prm->db_type = eDbDsk;
 
- _Db->setConfig(prm);
+ //_Db->setConfig(prm);
 
- BFdj *charge = _Db; ////new BFdj(prm);
+ BFdj *charge = new BFdj(prm); //_Db; ////
 
  stGameConf *curConf = charge->getConfig();
 

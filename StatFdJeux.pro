@@ -23,7 +23,11 @@ TEMPLATE = app
 #DEPENDPATH += "C:/Devel/kdchart-2.5.1-source/include"
 # -lsqlite -lStatPgm-dl
 
-LIBS = -L.\sqlExtensions\lib  -lStatPgm-sqlite3-i686 ##-lStatPgm-sqlite
+#LIBS = -L.\sqlExtensions\lib  -lStatPgm-sqlite3-i686 ##-lStatPgm-sqlite
+#LIBS = -L./sqlExtensions/lib  -lStatPgm-dlfcn-i686 -lStatPgm-sqlite3-i686
+#LIBS = -L./sqlExtensions/lib  -lStatPgm-dlfcn-x86_64.dll -lStatPgm-sqlite3-x86_64.dll
+LIBS = -L./sqlExtensions/lib  -lStatPgm-sqlite3-x86_64
+#INCLUDEPATH += "C:/Qt/WorkSpaces/MyFdjeux/sqlExtensions/inc"
 message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
 
 

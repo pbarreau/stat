@@ -246,9 +246,23 @@ class MainWindow : public QMainWindow
   QStandardItemModel * TST_SetTblViewVal(int nbLigne, QTableView *qtv_r);
   int RechercheInfoTirages(int idTirage, int leCritere,stTiragesDef *pMaConf);
 
+ signals:
+  void BSig_QueryStarted(void);
+  void BSig_QueryCanceled(void);
+
+#if 0
+ private slots:
+  void handleQueryFinished();
+  void onQueryStarted(QString sqlMsg);
+  void onQueryCanceled();
+#endif
+
+ private:
+  BFdj *m_bfdj;
+  QFutureWatcher<QSqlQueryModel*> m_watcher;
+
  private:
   static QStringList L1;
-  BFdj *_Db;
   GererBase *DB_tirages;
   QSqlDatabase db_0;
   QMdiArea *zoneCentrale;
@@ -354,8 +368,9 @@ class MainWindow : public QMainWindow
 
  public:
   QString saveFileName(const QUrl &url);
-  void doDownload(const QUrl &url);
+  bool doDownload(const QDir &dir, const QUrl &url, bool isLoopin = false);
   bool saveToDisk(const QString &filename, QNetworkReply *data);
+  bool do7zip(QString fileCompressed);
   bool isHttpRedirect(QNetworkReply *reply);
 
  public slots:

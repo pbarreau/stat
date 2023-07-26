@@ -145,7 +145,9 @@ class BcUpl: public BCount
 #endif
   void BSlot_ShowTotal(const QString& lstBoules);
   void BSlot_UVL1_Click_Fn_1(const QModelIndex &index);
+  void BSlot_UVL1_CM1(QPoint pos);
   void BSlot_UVL1_Click_Fn_2(const QModelIndex &index);
+  void BSlot_UVL1_Click_Fn_3(bool chk);
   void BSlot_UVL2_Click_Fn_1(const QModelIndex &index);
   void BSlot_TGid_Click(int index);
   void BSlot_over(const QModelIndex &index);

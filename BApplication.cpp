@@ -18,6 +18,4 @@ BApplication::BApplication(int &argc, char **argv):QApplication(argc, argv)
 
 BApplication::~BApplication()
 {
- if(m_mainWindow)
-     delete m_mainWindow;
 }

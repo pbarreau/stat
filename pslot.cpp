@@ -2,6 +2,11 @@
 #include <QDebug>
 #endif
 
+#include <QtCore>
+#include <QtNetwork>
+#include <QProcess>
+#include <QProgressDialog>
+
 #include <QtGui>
 #include <QMessageBox>
 #include <QMdiSubWindow>
@@ -64,17 +69,18 @@ void MainWindow::pslot_close()
 // depuis le site de la Francaise des jeux
 void MainWindow::pslot_GetFromFdj()
 {
- QStringList urlFdJeux;
- manager = new QNetworkAccessManager(this);
+
+ QAction *src_click =qobject_cast<QAction *>(sender());
 
  /// regarder si il existe le repertoire de reception des telechargements.
- QDir rep_fdj;
- //QString FdjDb = "FdjDb";
+ QDir rep_fdj(".");
+ ///QDir rep_fdj("C:\\Qt\\my-temp-dir\\");
 
  if (!rep_fdj.exists(FdjDbZip)) {
   rep_fdj.mkdir(FdjDbZip);
  }
 
+QStringList urlFdJeux;
 #ifndef QT_NO_DEBUG
  // https://www.programmersought.com/article/71774817627/
  qDebug()
@@ -83,17 +89,6 @@ void MainWindow::pslot_GetFromFdj()
      << QSslSocket::sslLibraryVersionString(); // la version disponible
 #endif
 
-#if 0
- QString urlLoto []= {
-  "https://www.fdj.fr/generated/game/loto/loto2017.zip",
-  "https://www.fdj.fr/generated/game/loto/nouveau_loto.zip",
-  "https://www.fdj.fr/generated/game/loto/loto.zip",
-  "https://www.fdj.fr/generated/game/loto/superloto2017.zip",
-  "https://www.fdj.fr/generated/game/loto/nouveau_superloto.zip",
-  "https://www.fdj.fr/generated/game/loto/superloto.zip",
-  "https://www.fdj.fr/generated/game/loto/lotonoel2017.zip"
- };
-#endif
  QString urlLoto []= {
   "https://media.fdj.fr/static/csv/loto/grandloto_201912.zip",
   "https://media.fdj.fr/static/csv/loto/loto_197605.zip",
@@ -108,17 +103,6 @@ void MainWindow::pslot_GetFromFdj()
   "https://media.fdj.fr/static/csv/loto/superloto_201907.zip",
  };
 
- for (const QString &arg : urlLoto) {
-  urlFdJeux << arg;
- }
-#if 0
- QString urlEuro[] = {
-  "https://www.fdj.fr/generated/game/euromillions/euromillions_4.zip",
-  "https://www.fdj.fr/generated/game/euromillions/euromillions_3.zip",
-  "https://www.fdj.fr/generated/game/euromillions/euromillions_2.zip",
-  "https://www.fdj.fr/generated/game/euromillions/euromillions.zip"
- };
-#endif
  QString urlEuro[] = {
   "https://media.fdj.fr/static/csv/euromillions/euromillions_202002.zip",
   "https://media.fdj.fr/static/csv/euromillions/euromillions_201902.zip",
@@ -128,68 +112,156 @@ void MainWindow::pslot_GetFromFdj()
   "https://media.fdj.fr/static/csv/euromillions/euromillions_200402.zip"
  };
 
+ /// A Ameliorer
+ for (const QString &arg : urlLoto) {
+  urlFdJeux << arg;
+ }
  for (const QString &arg : urlEuro) {
   urlFdJeux << arg;
  }
 
 
- connect(manager, SIGNAL(finished(QNetworkReply*)),
-         this, SLOT(slot_replyFinished(QNetworkReply*)));
+ /// https://forum.qt.io/topic/95700/qsslsocket-tls-initialization-failed/29
+ /// https://kb.firedaemon.com/support/solutions/articles/4000121705-openssl-3-1-3-0-and-1-1-1-binary-distributions-for-microsoft-windows
+ qDebug() << QSslSocket::supportsSsl() << QSslSocket::sslLibraryBuildVersionString() << QSslSocket::sslLibraryVersionString();
 
- for (const QString &arg : urlFdJeux) {
+ QApplication::setOverrideCursor(Qt::BusyCursor);
+ src_click->setEnabled(false);
+ // Create a QProgressDialog object to show the download progress
+ QProgressDialog downloadProgress;
+ //downloadProgress.setWindowModality(Qt::WindowModal);
+ downloadProgress.setModal(true);
+ downloadProgress.setLabelText("Downloading file...");
+ downloadProgress.setMaximum(urlFdJeux.size());
+
+ for (int loop = 0; loop < urlFdJeux.size(); loop++) {
+  downloadProgress.setValue(loop);
+
+  QString arg = urlFdJeux[loop];
   QUrl url = QUrl::fromEncoded(arg.toLocal8Bit());
-  doDownload(url);
+
+  bool status = doDownload(rep_fdj, url);
+  if(status == false){
+   downloadProgress.setLabelText(QString("Skiped : %1...").arg(arg));
+  }
+  else{
+   QString cur_file = rep_fdj.path() + "\\" + FdjDbZip + "\\" + QFileInfo(url.path()).fileName();
+   downloadProgress.setLabelText(QString("Unziping : %1\n\nto -> %2 ..\n").arg(arg).arg(cur_file));
+   status = do7zip(cur_file);
+  }
+
+  if(status == false){
+   continue;
+  }
  }
+ QApplication::restoreOverrideCursor(); // end loop
+ src_click->setEnabled(true);
+
 }
 
+
+
 // Debut de demande de telechargement
-void MainWindow::doDownload(const QUrl &url)
+bool MainWindow::doDownload(const QDir &dir, const QUrl &url, bool isLoopin)
 {
+ /// On effectue un download si distant plus recent que existant.
+ QString filename = dir.path() + "\\" + FdjDbZip + "\\" + QFileInfo(url.path()).fileName();
+ QFile file(filename);
+
+ // Create a QNetworkRequest object for the HTTPS URL
  QNetworkRequest request(url);
- QNetworkReply *m_reply;
 
- QString filename = QFileInfo(url.path()).fileName();
- QString localFile = FdjDbZip+ "\\" + filename;
+ // Set up the SSL configuration for the HTTPS request
+ QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
+ sslConfig.setProtocol(QSsl::TlsV1_2);
+ request.setSslConfiguration(sslConfig);
 
- // Si fichier deja present telecharger le plus recent
- if (QFile::exists(localFile)) {
-  // faire une demande head au serveur
-  m_reply = manager->head(request);
-  currentDownloads.append(m_reply);
+
+ // Create a QNetworkAccessManager object to download the zip file
+ QNetworkAccessManager nam;
+ QNetworkReply *reply = nullptr;
+
+ QDateTime remoteDate;
+ QDateTime localDate = QFileInfo(file).lastModified();
+ int content_length = -1;
+ if((file.exists() == true) && (isLoopin == false)){
+  /// Analyse date local / distant
+  reply = nam.head(request);
+ }
+ else{
+  reply = nam.get(request);
+ }
+
+#if 0
+ // Create a QProgressDialog object to show the download progress
+ QProgressDialog downloadProgress;
+ downloadProgress.setWindowModality(Qt::WindowModal);
+ downloadProgress.setLabelText("Downloading file...");
+
+ // Connect the download progress signal to the QProgressDialog object
+ QObject::connect(reply, &QNetworkReply::downloadProgress, [&downloadProgress, &url](qint64 bytesReceived, qint64 bytesTotal) {
+  //downloadProgress.setRange(0,bytesTotal);
+  downloadProgress.setMaximum(bytesTotal);
+  downloadProgress.setValue(bytesReceived);
+  downloadProgress.setLabelText(QString("Downloading %1...").arg(QFileInfo(url.path()).fileName()));
+ });
+#endif
+
+ // Start the event loop to wait for the download to complete
+ QEventLoop downloadLoop;
+ QObject::connect(reply, &QNetworkReply::finished, &downloadLoop, &QEventLoop::quit);
+ downloadLoop.exec();
+
+ /// Analyse retour de la commande
+ if (reply->error() != QNetworkReply::NoError){
+  return false;
+ }
+ else{
+  content_length = reply->header(QNetworkRequest::ContentLengthHeader).toInt();
+
+  // C'est une demande HEAD
+  if(reply->operation() == QNetworkAccessManager::HeadOperation){
+   /// Verifier si distant plus recent que local
+   remoteDate = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+   if(remoteDate > localDate){
+    return doDownload(dir,url, true);
+   }
+  }
+ }
+
+ if ((reply->error() == QNetworkReply::NoError) && isHttpRedirect(reply)) {
+  // https://www.meetingcpp.com/blog/items/http-and-https-in-qt.html
+  QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+
+  if(redirect.isValid() && reply->url() != redirect)
+  {
+   if(redirect.isRelative()){
+    redirect = reply->url().resolved(redirect);
+   }
+   return doDownload(dir, redirect, true);
+  }
+ }
+
+ if ((reply->error() == QNetworkReply::NoError) &&
+     (reply->operation() == QNetworkAccessManager::GetOperation)){
+  // C'est un Get : sauver fichier
+  /// Verifier si distant plus recent que local
+  remoteDate = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+  if(remoteDate > localDate){
+   return saveToDisk(filename, reply);
+  }
  }
  else
  {
-  // recuperer fichier
-  m_reply = manager->get(request);
-  ///connect(m_reply, SIGNAL(metaDataChanged()), this, SLOT(BSLOT_fileSize()));
-
-  currentDownloads.append(m_reply);
+  qWarning() << "Failed to download zip file:" << reply->errorString();
+  return false;
  }
 
- /// Traitement asynchrone
+ // Clean up the QNetworkReply object
+ reply->deleteLater();
+ return false;
 }
 
-#if 0
-void MainWindow::BSLOT_fileSize()
-{
- QNetworkReply *m_reply = qobject_cast<QNetworkReply *>(sender());
- QNetworkAccessManager *m_netmanager = m_reply->manager();
-
- qDebug() << "Content Length: " << m_reply->header(QNetworkRequest::ContentLengthHeader).toString();
- int taille_fichier = m_reply->header(QNetworkRequest::ContentLengthHeader).toInt();
- if(taille_fichier){
-  connect(m_reply, SIGNAL(downloadProgress(qint64,qint64)), SLOT(BSLOT_DownloadProgress(qint64,qint64)));
-
- }
- m_reply->deleteLater();
- m_netmanager->deleteLater();
-}
-
-void MainWindow::BSLOT_DownloadProgress(qint64 in_byte, qint64 tot_byte)
-{
-
-}
-#endif
 
 // Analyse de la reponse a la demande de telechargement
 void MainWindow::slot_replyFinished(QNetworkReply *reply)
@@ -265,17 +337,6 @@ void MainWindow::slot_replyFinished(QNetworkReply *reply)
    }
   }
  }
-
- currentDownloads.removeAll(reply);
- reply->deleteLater();
-
- if (currentDownloads.isEmpty()) {
-  // all downloads finished
-  msg = "Telechargement completement termine\n";
-  QMessageBox::information(NULL, "slot_replyFinished", msg,QMessageBox::Yes);
-  return;
-  //QCoreApplication::instance()->quit();
- }
 }
 
 #if 0
@@ -335,6 +396,29 @@ bool MainWindow::saveToDisk(const QString &filename, QNetworkReply *data)
 
  file.write(data->readAll());
  file.close();
+
+ return true;
+}
+
+bool MainWindow::do7zip(QString fileCompressed)
+{
+ // Set the path to the downloaded zip file
+ QString zipFilePath = fileCompressed;
+
+ // Set the output directory for the extracted files
+ QString outputDir = zipFilePath.section("\\",0,-2);
+
+ // Construct the 7zip command to extract the zip file
+ QString sevenZipPath = "C:/Program Files/7-Zip/7z.exe";
+ QString command = QString("\"%1\" x \"%2\" -o\"%3\" -aoa").arg(sevenZipPath).arg(zipFilePath).arg(outputDir);
+
+ // Create a QProcess object to execute the 7zip command
+ QProcess process;
+ process.start(command);
+ if (!process.waitForFinished()) {
+  qWarning() << "Failed to extract zip file:" << process.errorString();
+  return false;
+ }
 
  return true;
 }
