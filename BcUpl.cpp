@@ -826,16 +826,16 @@ void BcUpl::BSlot_UVL1_Cmr_Fn_1(QPoint pos)
   MonMenu.addAction(cmd_1);
  }
 
- QAction * cmd_common = new QAction("Scan selected");
- connect(cmd_common, &QAction::triggered,
-         this, &BcUpl::BSlot_UplScanSelected);
- MonMenu.addAction(cmd_common);
-
- QAction * cmd_2 = new QAction("Scan all");
- cmd_2->setParent(view);
+ QAction * cmd_2 = new QAction("Scan selected");
  connect(cmd_2, &QAction::triggered,
-         this, &BcUpl::BSlot_UplScanAll);
+         this, &BcUpl::BSlot_UplScanSelected);
  MonMenu.addAction(cmd_2);
+
+ QAction * cmd_3 = new QAction("Scan all");
+ cmd_3->setParent(view);
+ connect(cmd_3, &QAction::triggered,
+         this, &BcUpl::BSlot_UplScanAll);
+ MonMenu.addAction(cmd_3);
 
  MonMenu.exec(view->viewport()->mapToGlobal(pos));
 }
@@ -2412,6 +2412,18 @@ int BcUpl::getFromView_Lid(const BView *view)
  return val;
 }
 
+void BcUpl::BSlot_UVL1_Click_Fn_0(const QModelIndex &index)
+{
+ BAction_1 *cmd = qobject_cast<BAction_1 *>(sender());
+ BView *view = cmd->getView();
+
+ int z_id = view->getZid();
+ upl_current = "";
+
+ emit BSig_UplFdjShow(upl_current, z_id);
+ emit view->clicked(index);
+}
+
 void BcUpl::BSlot_UVL1_Click_Fn_1(const QModelIndex &index)
 {
  BView *view = qobject_cast<BView *>(sender());
@@ -2429,6 +2441,8 @@ void BcUpl::BSlot_UVL1_Click_Fn_1(const QModelIndex &index)
  QString upl_cur = getFromIndex_CurUpl(index,g_id, &target);
  QString cnx=gm_def->db_ref->cnx;
  BAnimateCell *ani = tbv_Anim[l_id-1][z_id][g_id-C_MIN_UPL];
+
+ upl_current = upl_cur;
 
  /// Click sur element deja en visu ?
  if(ani->isShowing(g_lm) == true){
@@ -2515,17 +2529,81 @@ void BcUpl::BSlot_UVL1_Click_Fn_1(const QModelIndex &index)
 void BcUpl::BSlot_UVL1_CM1(QPoint pos)
 {
  BView *view = qobject_cast<BView *>(sender());
+
  QMenu MonMenu;
  BAction_1 *cmd_1 = new BAction_1("Filtrer !",view,pos);
  BAction_1 *cmd_2 = new BAction_1("Clear !",view,pos);
 
+ ///  A1: montrer resultat dans UVL2 (1,2,3) cmd filtrer
+ connect(cmd_1, SIGNAL(BSig_ActionAt(QModelIndex)),
+         this, SLOT(BSlot_UVL1_Click_Fn_0(QModelIndex)) );
+
+ ///  A2: montrer les tirages concernés dans base des tirages
  connect(cmd_1, SIGNAL(BSig_ActionAt(QModelIndex)),
          this, SLOT(BSlot_UVL1_Click_Fn_2(QModelIndex)) );
+
+ /// B1 : effacer filtrage
  connect(cmd_2, SIGNAL(triggered(bool)),
          this, SLOT(BSlot_UVL1_Click_Fn_3(bool)) );
 
  MonMenu.addAction(cmd_1);
  MonMenu.addAction(cmd_2);
+
+ if(e_id == E_EnsUsr){
+  int g_id = (view->objectName().toInt()) + C_MIN_UPL;
+  int z_id = view->getZid();
+
+  BFpm_upl * m = qobject_cast<BFpm_upl *>(view->model());
+  QModelIndex index = view->indexAt(pos);
+
+  int row = index.row();
+
+  int cid_src_1 = index.sibling(row,0).data().toInt();
+  BAnimateCell * ani_tbv = qobject_cast<BAnimateCell *>(view->itemDelegate());
+
+  /// On ne selectionne que si pas deja termine
+  if(ani_tbv->gotKeyReady(cid_src_1)){
+   return;
+  }
+
+  QString msg = "";
+
+  etCal E_Cal = E_CalNotDef;
+  if(ani_tbv->gotKey(cid_src_1, &E_Cal)){
+
+   switch (E_Cal) {
+   case E_CalNotSet:
+    msg = "Selectionner uplet";
+    break;
+   case E_CalPending:
+    msg = "Retirer uplet";
+    break;
+   default:
+    msg = "";
+    break;
+   }
+  }
+
+  if(msg.trimmed().size() !=0){
+   BAction_1 *cmd_11 = new BAction_1(msg , view, pos);
+
+   connect(cmd_11, SIGNAL(BSig_ActionAt(QModelIndex)),
+           this, SLOT(BSlot_UplSel(QModelIndex)) );
+
+   MonMenu.addAction(cmd_11);
+  }
+
+  QAction * cmd_21 = new QAction("Scan selected");
+  connect(cmd_21, &QAction::triggered,
+          this, &BcUpl::BSlot_UplScanSelected);
+  MonMenu.addAction(cmd_21);
+
+  QAction * cmd_31 = new QAction("Scan all");
+  cmd_31->setParent(view);
+  connect(cmd_31, &QAction::triggered,
+          this, &BcUpl::BSlot_UplScanAll);
+  MonMenu.addAction(cmd_31);
+ }
 
  MonMenu.exec(view->viewport()->mapToGlobal(pos));
 }
@@ -2961,9 +3039,15 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  bv_1->setContextMenuPolicy(Qt::CustomContextMenu);
  connect(bv_1, SIGNAL(customContextMenuRequested(QPoint)),this,
          SLOT(BSlot_UVL1_CM1(QPoint)));
+
 #if 0
  connect( bv_1, SIGNAL(clicked(QModelIndex)),
           this, SLOT(BSlot_UVL1_Click_Fn_2( QModelIndex) ) );
+
+ /// Selection d'uplet
+ bv_1->setContextMenuPolicy(Qt::CustomContextMenu);
+ connect(bv_1, SIGNAL(customContextMenuRequested(QPoint)),this,
+         SLOT(BSlot_UVL1_Cmr_Fn_1(QPoint)));
 #endif
 
  BAnimateCell * ani_tbv = new BAnimateCell(bv_1);
@@ -2971,10 +3055,6 @@ BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)
  bv_1->setItemDelegate(ani_tbv);
  connect(ani_tbv,&BAnimateCell::BSig_Repaint,this,&BcUpl::BSlot_Repaint);
 
- /// Selection d'uplet
- bv_1->setContextMenuPolicy(Qt::CustomContextMenu);
- connect(bv_1, SIGNAL(customContextMenuRequested(QPoint)),this,
-         SLOT(BSlot_UVL1_Cmr_Fn_1(QPoint)));
 
  return bv_1;
 }

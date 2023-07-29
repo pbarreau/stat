@@ -144,6 +144,7 @@ class BcUpl: public BCount
   void BSlot_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
 #endif
   void BSlot_ShowTotal(const QString& lstBoules);
+  void BSlot_UVL1_Click_Fn_0(const QModelIndex &index);
   void BSlot_UVL1_Click_Fn_1(const QModelIndex &index);
   void BSlot_UVL1_CM1(QPoint pos);
   void BSlot_UVL1_Click_Fn_2(const QModelIndex &index);
