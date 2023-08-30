@@ -35,7 +35,7 @@ QTabWidget * BTirages::tbw_BtirCalculs = nullptr;
 QGridLayout * BTirages::gdl_all = nullptr;
 QWidget * BTirages::wdg_BtirReponses = nullptr;
 
-BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
+BTirages::BTirages(const stGameConf *pGame, BFdj *worker, etTir gme_tir, QWidget *parent)
  : QWidget(parent),gme_cnf(pGame),eTir(gme_tir)
 {
  QString cnx=pGame->db_ref->cnx;
@@ -49,6 +49,7 @@ BTirages::BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent)
   return;
  }
 
+ ptrWorker = worker;
  game_lab = pGame->db_ref->src;
  lst_tirages = "";
  id_TirSrc = cnt_tirSrc;

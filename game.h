@@ -76,12 +76,6 @@ typedef struct _stParam_3 {
   QString flt;    /// nom de la tables des filtres des tirages
 }stParam_3;
 
-typedef struct _stParam_2 {
-  QString std;    /// nom long de la zone
-  QString abv;    /// nom abreg de la zone
-  QString sel;    /// nom correspondant a  la selection en cours
-}stParam_2;
-
 typedef struct _stParam_1{
   int pos;    /// offset de debut zone dans fichier
   int len;    /// nombre d'elements composant la zone
@@ -90,7 +84,16 @@ typedef struct _stParam_1{
   int win;    /// nb elements a avoir pour jackpot
   int usr;    /// nb elements choisi par utilisateur
 }stParam_1;
-extern const stParam_1 defParam_1[];
+extern const stParam_1 loto_prm1_zn[2];
+extern const stParam_1 euro_prm1_zn[2];
+
+typedef struct _stParam_2 {
+  QString std;    /// nom long de la zone
+  QString abv;    /// nom abreg de la zone
+  QString sel;    /// nom correspondant a  la selection en cours
+}stParam_2;
+extern const stParam_2 loto_prm2_zn[2];
+extern const stParam_2 euro_prm2_zn[2];
 
 /// Definition d'un jeu
 #if 1

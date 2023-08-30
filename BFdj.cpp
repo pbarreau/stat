@@ -1,8 +1,12 @@
+#include "BTirages.h"
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #endif
 
 #include <math.h>
+
+#include <QtConcurrent>
+#include <QFutureWatcher>
 
 #include <QMessageBox>
 #include <QApplication>
@@ -15,6 +19,7 @@
 #include <QSqlDriver>
 #include "sqlExtensions/inc/sqlite3.h"
 //#include "sqlExtensions/inc/sqlite3ext.h"
+
 
 #include "db_tools.h"
 #include "BFdj.h"
@@ -411,6 +416,52 @@ stGameConf * BFdj::init(stFdj *prm)
 QString BFdj::getCurDbFile(void)
 {
  return dsk_db;
+}
+
+QSqlQuery BFdj::executeQuery(const QString& query)
+{
+ bool status = false;
+ //QSqlDatabase database = QSqlDatabase::database();
+
+ QString cnx = fdj_db.connectionName();
+ QSqlQuery sqlQuery(fdj_db);
+
+ status = sqlQuery.exec(query);
+
+ return sqlQuery;
+}
+void BFdj::BSlotMyQueryResults(const QString st_qry, const QString st_tbl, BView *bv_dst)
+{
+ BTirages *target = qobject_cast<BTirages *>(sender());
+
+ QFutureWatcher<QSqlQuery> watcher;
+ QObject::connect(&watcher, &QFutureWatcher<QSqlQuery>::finished, [&watcher, &st_tbl, &bv_dst, &target]()
+                  {
+     QSqlQuery sqlQuery = watcher.result();
+
+if (sqlQuery.lastError().isValid()) {
+                qDebug() << "Query execution error:" << sqlQuery.lastError().text();
+            }
+else {
+                if(!st_tbl.isEmpty()){
+                    /// Remplir la table dans la base
+                }
+
+                if(bv_dst != nullptr){
+                    /// Remplir table view
+                    /// Formattage de largeur de colonnes
+                    bv_dst->resizeColumnsToContents();
+                    for(int j=Bp::colTfdjDate;j<=Bp::colTfdjJour;j++){
+                        bv_dst->setColumnWidth(j,75);
+                    }
+
+                }
+}
+
+ });
+
+ /// ----
+ watcher.setFuture(QtConcurrent::run(this, &BFdj::executeQuery, st_qry));
 }
 
 bool BFdj::crt_TblFdj(stGameConf *pGame)

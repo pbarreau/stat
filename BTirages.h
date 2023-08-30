@@ -14,8 +14,10 @@
 //#include "BGraphicsView.h"
 //#include "BCustomPlot.h"
 #include "BView.h"
+#include "BFdj.h"
 #include "blineedit.h"
 
+//class BFdj;
 class BTirAna;
 class BGraphicsView;
 class BCustomPlot;
@@ -24,7 +26,7 @@ class BTirages : public QWidget
  Q_OBJECT
 
 public:
-explicit BTirages(const stGameConf *pGame, etTir gme_tir, QWidget *parent=nullptr);
+explicit BTirages(const stGameConf *pGame, BFdj *worker=nullptr, etTir gme_tir= eTirFdj, QWidget *parent=nullptr);
 QString getGameLabel(void);
 QWidget *showFdj(BTirAna *ana_tirages);
 void showGen(BTirAna *ana_tirages);
@@ -67,8 +69,8 @@ QTabWidget *getTabedDetails();
 QWidget *usr_GrpTb2(int zn);
 ///void DrawCustomPlot();
 
-protected:
 signals:
+void BSigMyQueryExec(const QString & st_qry, const QString & st_tbl="", BView *bv_dst=nullptr);
 void BSig_AnaLgn(const int &lgn_id, const int &prx_id);
 void BSig_Show_Flt(const B2LstSel * sel);
 
@@ -99,6 +101,7 @@ static QWidget * wdg_BtirReponses;
 static int cnt_tirSrc;
 static QString  tbw_TbvTirages;
 static QString  tbw_FltTirages;
+BFdj *ptrWorker;
 QString game_lab;
 QSqlDatabase db_tir;
 const stGameConf *gme_cnf;
@@ -109,6 +112,7 @@ int id_AnaOnglet;
 QTabWidget * og_AnaSel;
 QTabWidget * og_Items;
 BView *tir_tbv;
+BFdj * dbFdjTest1;
 QSqlQueryModel * sqm_resu;
 QString lst_tirages;
 QSplitter *lay_fusion;

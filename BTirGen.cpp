@@ -32,7 +32,7 @@
 
 /// https://denishulo.developpez.com/tutoriels/access/combinatoire/#LIV-A
 
-BTirGen::BTirGen(const stGameConf *pGame, BView_1 *bv1, etTir gme_tir, QWidget *parent) : cible(bv1), BTirages(pGame,gme_tir,parent)
+BTirGen::BTirGen(const stGameConf *pGame, BView_1 *bv1, etTir gme_tir, QWidget *parent) : cible(bv1), BTirages(pGame,nullptr,gme_tir,parent)
 {
  gameDef = nullptr;
 

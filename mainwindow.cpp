@@ -74,8 +74,8 @@ void MainWindow::slot_NOUVEAU_Ensemble(const B_RequeteFromTbv &calcul)
 void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new, bool upl_fdj)
 {
 
- //BXmlFdj my_xml = BXmlFdj(curGame);
- //return;
+ BXmlFdj my_xml = BXmlFdj(curGame);
+ return;
 
  stFdj *prm = new stFdj;
  prm->typeJeu = curGame;
@@ -87,7 +87,6 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new, bool upl_
  //_Db->setConfig(prm);
 
  BFdj *charge = new BFdj(prm); //_Db; ////
-
  stGameConf *curConf = charge->getConfig();
 
  //BStepper *t1 = new BStepper(curConf);
@@ -103,7 +102,7 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new, bool upl_
   AfficherAnciensCalcul(curConf);
  }
 
- BTirFdj *lst_tirages = new BTirFdj(curConf);
+ BTirFdj *lst_tirages = new BTirFdj(curConf, charge);
 
  BTirAna *ana_tirages = new BTirAna(curConf);
  if(ana_tirages->self() == nullptr){
@@ -127,10 +126,11 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new, bool upl_
 
 
  return;
-
+#if 0
  EtudierJeu_v1(curConf, use_odb);
  EtudierJeu_v2(curConf);
  return;
+#endif
 }
 
 void MainWindow::AfficherAnciensCalcul(stGameConf *pGame)

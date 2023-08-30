@@ -5,6 +5,9 @@
 #include <QString>
 #include <QSqlDatabase>
 
+#include "BView.h"
+//#include "BTirages.h"
+
 #include "game.h"
 
 #define DB_VER "_V3_"
@@ -53,12 +56,17 @@ class BFdj: public QObject
 
   Q_OBJECT
 
+
  public:
   BFdj();
   BFdj(stFdj *prm, QString cnx = "");
   void setConfig(stFdj *prm, QString cnx = "");
   stGameConf *getConfig();
   static QString getCurDbFile(void);
+
+  public slots:
+  void BSlotMyQueryResults(const QString st_qry, const QString st_tbl="",
+                                   BView *bv_dst=nullptr);
 
  private:
   bool ouvrirBase(stFdj *prm);
@@ -72,6 +80,7 @@ class BFdj: public QObject
   bool chargerDonneesFdjeux(stGameConf *pGame, QString destTable);
   bool LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName);
   QString DateAnormer(QString input);
+  QSqlQuery executeQuery(const QString& query);
   QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
 
  private:

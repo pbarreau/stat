@@ -3,7 +3,7 @@
 
 BApplication::BApplication(int &argc, char **argv):QApplication(argc, argv)
 {
- BFdj *_dbFdj = new BFdj;
+  BFdj *_dbFdj = new BFdj;
  _dbFdj->moveToThread(QCoreApplication::instance()->thread());
 
  // Set organisation and application names

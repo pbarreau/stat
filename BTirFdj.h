@@ -15,7 +15,7 @@ class BTirFdj : public BTirages
 {
  Q_OBJECT
 public:
-explicit BTirFdj(const stGameConf *pGame, etTir gme_tir = eTirFdj, QWidget *parent = nullptr);
+explicit BTirFdj(const stGameConf *pGame, BFdj *worker=nullptr, etTir gme_tir = eTirFdj, QWidget *parent = nullptr);
 
 private:
 QComboBox *getFltCombo(void);
