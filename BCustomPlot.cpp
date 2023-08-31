@@ -32,6 +32,7 @@ BCustomPlot::BCustomPlot(const stGameConf *pGame, BTirages *lesTirages, int zn, 
 
     /// Recuperer les valeurs pour la clef en cour
     QString msg = "";
+#if 0
     if(zn == 0){
         msg = "select "+fn_key+" from " + tbLabAna;
     }
@@ -40,6 +41,8 @@ BCustomPlot::BCustomPlot(const stGameConf *pGame, BTirages *lesTirages, int zn, 
         /// (t2.e1 or t2.e2) !=0
         msg = "select "+fn_key+" from " + tbLabAna + " as t1, B_fdj as t2 where (t1.id = t2.id and t2.e1 != 0)";
     }
+#endif
+    msg = "select "+fn_key+" from " + tbLabAna;
 
     QSqlQuery query(db_1);
 

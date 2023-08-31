@@ -2078,6 +2078,7 @@ void BcUpl::BSlot_ShowTotal(const QString& lstBoules)
 QWidget *BcUpl::Bview_init(const stGameConf *pGame, int ong_zn, int ong_tir, int offset, int ong_upl, int ong_day, int ong_tab)
 {
     QWidget * wdg_tmp = new QWidget;
+    QSplitter *lay_visual = new QSplitter;
     QGridLayout *glay_tmp = new QGridLayout;
     BView *qtv_tmp = upl_Bview_2[ong_tir-1][ong_zn][ong_upl][ong_day][ong_tab];
     int upl_ref_in = ong_upl+C_MIN_UPL;
@@ -2149,7 +2150,8 @@ QWidget *BcUpl::Bview_init(const stGameConf *pGame, int ong_zn, int ong_tir, int
     }
 
 
-    glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
+    //glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
+    lay_visual->addWidget(qtv_tmp->getScreen());
     if(ong_tab>0){
         sql_msg = sql_ShowItems(pGame,ong_zn,E_LstShowUnion,upl_ref_in,sql_ref);
         BView *qtv_tmp_3 = upl_Bview_3[ong_tir-1][ong_zn][ong_upl][ong_day][ong_tab-1];
@@ -2158,12 +2160,17 @@ QWidget *BcUpl::Bview_init(const stGameConf *pGame, int ong_zn, int ong_tir, int
         BView *qtv_tmp_4 = upl_Bview_4[ong_tir-1][ong_zn][ong_upl][ong_day][ong_tab-1];
         BView *qtv_r_2 = Bview_4_fill_1(qtv_tmp_4, sql_msg);
 
-        glay_tmp->addWidget(qtv_r_1->getScreen(),0,1);
-        glay_tmp->addWidget(qtv_r_2->getScreen(),0,2);
-    }
-    wdg_tmp->setLayout(glay_tmp);
+        //glay_tmp->addWidget(qtv_r_1->getScreen(),0,1);
+        //glay_tmp->addWidget(qtv_r_2->getScreen(),0,2);
 
-    return (wdg_tmp);
+        lay_visual->addWidget(qtv_r_1->getScreen());
+        lay_visual->addWidget(qtv_r_2->getScreen());
+
+    }
+    //wdg_tmp->setLayout(glay_tmp);
+
+    //return (wdg_tmp);
+    return (lay_visual);
     //return qtv_tmp->getScreen();
 }
 
@@ -2895,6 +2902,7 @@ QWidget *BcUpl::MkMainUplet(stParam_tsk *tsk_param)
     int g_id = tsk_param->g_id;
 
     QGridLayout *glay_tmp = new QGridLayout;
+    QSplitter *lay_visual = new QSplitter;
 
     QGroupBox *tmp_gpb = new QGroupBox;
     tmp_gpb->setObjectName(gpb_key_sel);
@@ -2913,13 +2921,16 @@ QWidget *BcUpl::MkMainUplet(stParam_tsk *tsk_param)
     tmp_gpb->setLayout(layout);
 
 
-    glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
-    glay_tmp->addWidget(tmp_gpb,0,1);
+    //glay_tmp->addWidget(qtv_tmp->getScreen(),0,0);
+    //glay_tmp->addWidget(tmp_gpb,0,1);
 
+    lay_visual->addWidget(qtv_tmp->getScreen());
+    lay_visual->addWidget(tmp_gpb);
 
-    wdg_tmp->setLayout(glay_tmp);
+    //wdg_tmp->setLayout(glay_tmp);
 
-    return wdg_tmp;
+    //return wdg_tmp;
+    return lay_visual;
 }
 
 BView * BcUpl::FillTbv_BView_1(stParam_tsk *tsk_param)

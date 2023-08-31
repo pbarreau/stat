@@ -8,7 +8,7 @@
 
 static QString key_1 = "Type";
 
-BXmlFdj::BXmlFdj(etFdj rungame)
+BXmlFdj::BXmlFdj()
 {
 
     QString targetFile = "ConfStatFdj.xml" ;
@@ -26,6 +26,8 @@ BXmlFdj::BXmlFdj(etFdj rungame)
     QString msg_comment = " Nombre de types possibles : "+ QString::number(eFdjEol-1).rightJustified(2,'0') + " ";
     QDomComment un_commentaire = document.createComment(msg_comment);
     lstGames.appendChild(un_commentaire);
+
+
 
     for(int i = 1; i<eFdjEol;i++){
         msg_comment = " Type:"+ QString::number(i).rightJustified(2,'0') + " ";
@@ -66,15 +68,10 @@ void BXmlFdj::mkDomGame(etFdj fdjType, QDomDocument *doc, QDomElement target)
     QDomNodeList att = target.elementsByTagName(key_1);
     int nbItems = att.size();
 
-    const stSrcHistoJeux *ptr_histo =nullptr;
-    //const stParam_1 *ptr_prm1 = nullptr;
-    //const stParam_2 *ptr_prm2 = nullptr;
     const QString   *ptr_names = nullptr;
     int i_deb = -1;
     int i_end = -1;
     int i_tot = -1;
-    //int i_pr1 = -1;
-    //int i_pr2 = -1;
 
 
     switch (fdjType) {
@@ -84,12 +81,6 @@ void BXmlFdj::mkDomGame(etFdj fdjType, QDomDocument *doc, QDomElement target)
         ptr_names = TXT_FdjLst_1;
         //ptr_histo = &HistoLoto[0];
         i_tot = sizeof(HistoLoto)/sizeof(stSrcHistoJeux);
-#if 0
-        ptr_prm1 = &loto_prm1_zn[0];
-        i_pr1 = sizeof(loto_prm1_zn)/sizeof(stParam_1);
-        ptr_prm2 = &loto_prm2_zn[0];
-        i_pr2 = sizeof(loto_prm2_zn)/sizeof(stParam_1);
-#endif
         break;
     case eFdjEuro:
         i_deb = eCnameEuroMillionsMyMillion;
@@ -97,12 +88,6 @@ void BXmlFdj::mkDomGame(etFdj fdjType, QDomDocument *doc, QDomElement target)
         ptr_names = TXT_FdjLst_2;
         //ptr_histo = &HistoEuro[0];
         i_tot = sizeof(HistoEuro)/sizeof(stSrcHistoJeux);
-#if 0
-        ptr_prm1 = &loto_prm1_zn[0];
-        i_pr1 = sizeof(euro_prm1_zn)/sizeof(stParam_1);
-        ptr_prm2 = &euro_prm2_zn[0];
-        i_pr2 = sizeof(loto_prm2_zn)/sizeof(stParam_1);
-#endif
         break;
     default:
         break;

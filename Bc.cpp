@@ -191,7 +191,10 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
 
  Bp::E_Col headRed = Bp::noCol;
  if(eCalcul != E_CountGrp){
+  /// Mettre cette colonne comme fixe lors scroll horizontal
   headRed = Bp::colTxt;
+  qtv_tmp->setColumnWidth(headRed,qtv_tmp->columnWidth(headRed));
+  qtv_tmp->horizontalHeader()->setSectionsMovable(false);
   qtv_tmp->hideColumn(Bp::colId);
 
 #ifdef QT_NO_DEBUG

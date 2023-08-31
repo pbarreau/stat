@@ -8,7 +8,7 @@
 class BXmlFdj
 {
  public:
-  BXmlFdj(etFdj rungame=eFdjLoto);
+  BXmlFdj();
 
  private:
   void mkDomGame(etFdj fdjType, QDomDocument *doc, QDomElement target);
