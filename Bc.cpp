@@ -186,10 +186,18 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
 
 
  qtv_tmp->verticalHeader()->hide();
+ qtv_tmp->resizeColumnsToContents();
+ qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
+ qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
+ qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 
  int nbCol = sqm_tmp->columnCount();
 
  Bp::E_Col headRed = Bp::noCol;
+#if 0
  if(eCalcul != E_CountGrp){
   /// Mettre cette colonne comme fixe lors scroll horizontal
   headRed = Bp::colTxt;
@@ -201,36 +209,44 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
   qtv_tmp->hideColumn(Bp::colColor);
 #endif
  }
+#endif
  Bp::E_Col myColSort = Bp::noCol;
  Bp::E_Col colEc = Bp::noCol;
  Qt::SortOrder order;
 
- // switch (type) {
 
  switch (eCalcul) {
-  case E_CountBrc:
-  case E_CountCmb:
-  case E_CountElm:
-   if(pGame->db_ref->dad.size()== 0){
-    myColSort = Bp::colTotalv1;
-    colEc = Bp::colEc;
-   }
-   else {
-    myColSort = Bp::colTotalv2;
-   }
-   order = Qt::DescendingOrder;
-   break;
+ case E_CountBrc:
+ case E_CountCmb:
+ case E_CountElm:
+  headRed = Bp::colTxt;
+  qtv_tmp->setColumnWidth(headRed,qtv_tmp->columnWidth(headRed));
+  qtv_tmp->horizontalHeader()->setSectionsMovable(false);
+  qtv_tmp->hideColumn(Bp::colId);
 
-  case E_CountGrp:
-   order = Qt::AscendingOrder;
-   headRed=Bp::colId;
-   myColSort = Bp::colId;
-   break;
+#ifdef QT_NO_DEBUG
+  qtv_tmp->hideColumn(Bp::colColor);
+#endif
+  if(pGame->db_ref->dad.size()== 0){
+   myColSort = Bp::colTotalv1;
+   colEc = Bp::colEc;
+  }
+  else {
+   myColSort = Bp::colTotalv2;
+  }
+  order = Qt::DescendingOrder;
+  break;
 
-  default:
-   order = Qt::AscendingOrder;
-   myColSort = Bp::colTxt;
-   break;
+ case E_CountGrp:
+  order = Qt::AscendingOrder;
+  headRed=Bp::colId;
+  myColSort = Bp::colId;
+  break;
+
+ default:
+  order = Qt::AscendingOrder;
+  myColSort = Bp::colTxt;
+  break;
  }
 
  qtv_tmp->setColons(myColSort, colEc);
@@ -255,10 +271,6 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
 
  m->setHeaderData(headRed,Qt::Horizontal,QBrush(Qt::red),Qt::ForegroundRole);
 
- qtv_tmp->resizeColumnsToContents();
- qtv_tmp->setEditTriggers(QAbstractItemView::NoEditTriggers);
- qtv_tmp->setSelectionBehavior(QAbstractItemView::SelectItems);
- qtv_tmp->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
 #if 0
  /// Largeur du tableau
@@ -275,13 +287,12 @@ QWidget * BCount::endIhm_old(const stGameConf *pGame, stMkLocal *prm)
 #endif
 
  /// mettre des sliders
- qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
- qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
- //qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
- //qtv_tmp->horizontalHeader()->setStretchLastSection(true);
+ ///qtv_tmp->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ ///qtv_tmp->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+ ///qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+ ///qtv_tmp->horizontalHeader()->setStretchLastSection(true);
  ///qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
- qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+ ///qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
  ///qtv_tmp->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
  QItemSelectionModel *trackSelection = qtv_tmp->selectionModel();
