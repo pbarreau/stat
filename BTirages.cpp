@@ -1576,7 +1576,7 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
 
  start_1 = from->getSql().simplified();
 #ifndef QT_NO_DEBUG
- BTest::writetoFile("0-BSlot_Filter_Tir-0.txt", start_1,false);
+ //BTest::writetoFile("0-BSlot_Filter_Tir-0.txt", start_1,false);
 #endif
 
  if(start_1.size() == 0){
@@ -1584,7 +1584,7 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
   start_1 = lst_tirages;
 
 #ifndef QT_NO_DEBUG
-  BTest::writetoFile("0-BSlot_Filter_Tir-1.txt", start_1,false);
+  //BTest::writetoFile("0-BSlot_Filter_Tir-1.txt", start_1,false);
 #endif
  }
  else {
@@ -1636,7 +1636,7 @@ void BTirages::BSlot_Filter_Tir(BTirAna *from, const Bp::E_Ico ana, const B2LstS
   msg =  lst_tirages + msg + tbl_lst; /// supprimer les reponses precedentes si elles existent
   start_1 = msg;
 #ifndef QT_NO_DEBUG
-  BTest::writetoFile("0-BSlot_Filter_Tir-4.txt", start_1,false);
+  //BTest::writetoFile("0-BSlot_Filter_Tir-4.txt", start_1,false);
 #endif
   updateTbv(box_title,msg);
  }

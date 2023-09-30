@@ -215,6 +215,7 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_i
   ;
  }
 
+
  //int max_items = BMIN_2(target+1, E_LstCal);
  int max_items = E_LstCal;
  QString SqlData[C_TOT_CAL][3];
@@ -299,11 +300,17 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_i
  sql_msg = sql_msg + ")\n";
 
 #ifndef QT_NO_DEBUG
+ QString stype = "";
+
+ if(o_id < 0){
+  stype="N";
+ }
+
  QString dbg_target = "T-" +
                       QString::number(l_id).rightJustified(2,'0') + "_" +
                       pGame->names[z_id].abv + "_U-" +
                       QString::number(g_id).rightJustified(2,'0')+
-                      "_J-" + QString::number(o_id).rightJustified(2,'0')+
+                      "_J-" + stype + QString::number(o_id).rightJustified(2,'0')+
                       str_item ;
 
  static int counter = 0;
@@ -312,7 +319,6 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_i
                ".txt";
  counter++;
 
- QString stype = "";
  etEns e_id = tsk_1->e_id;
  if(e_id == E_EnsUsr){
   stype = "Usr";
@@ -320,11 +326,11 @@ QString BThread_1::getSqlTbv(const stGameConf *pGame, int z_id, int l_id,int o_i
  else {
   stype = "Fdj";
  }
- dbg_target = "Dbg_"+stype+"-"+dbg_target;
+ dbg_target = "Thread-getSqlTbv_"+stype+"-"+dbg_target;
 
- if(o_id==0){
-  //BTest::writetoFile(dbg_target,sql_msg,false);
- }
+
+  BTest::writetoFile(dbg_target,sql_msg,false);
+
 #endif
 
 
@@ -338,6 +344,8 @@ void BThread_1::sql_upl_lev_2(const stGameConf *pGame, int z_id, int l_id, int o
  /// Recopier le nom des tables precedentes
  for (int item=0;item<=E_LstBleNext;item++) {
   SqlData[item][0]=tabInOut[0][item][0];
+  SqlData[item][1]=tabInOut[0][item][1];
+  SqlData[item][2]=tabInOut[0][item][2];
  }
 
  /// Poursuivre la creation
@@ -814,14 +822,18 @@ QString BThread_1::sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QSt
 {
  QString sql_tbl = "";
  QString sql_msg = "";
+ QString sens = "";
+ QString day = QString::number(abs(offset));
 
- QString day = QString::number(offset);
- if(offset>0){
+ if(offset<=0){
   day = day + " Jour apres ";
+  sens="-";
  }
  else {
   day = day + " Jour avant ";
+  sens="+";
  }
+
  sql_tbl = "tb_"+QString::number(E_LstTirUplNext).rightJustified(2,'0');
  tabInOut[E_LstTirUplNext][0] = sql_tbl;
  tabInOut[E_LstTirUplNext][1] = " -- Liste des tirages "+day+"  (ref :"+tabInOut[E_LstTirUpl][0]+")\n";
@@ -837,7 +849,7 @@ QString BThread_1::sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QSt
  sql_msg = sql_msg + "     (B_fdj) as t2\n";
  sql_msg = sql_msg + "    WHERE\n";
  sql_msg = sql_msg + "    (\n";
- sql_msg = sql_msg + "    t2.id=t1.id+-"+QString::number(offset);
+ sql_msg = sql_msg + "    t2.id=t1.id"+sens+QString::number(abs(offset));
  sql_msg = sql_msg + ")\n";
  sql_msg = sql_msg + "  )\n";
 
@@ -853,6 +865,13 @@ void BThread_1::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int
  etLst sql_step = static_cast<etLst>(step);
 
  int tbl_src = -1;
+ int offset_to_use = offset;
+
+#if 0
+ if(upl_sub <0){
+  offset_to_use = 0;
+ }
+#endif
 
 #ifndef QT_NO_DEBUG
  QString target = "";
@@ -947,7 +966,7 @@ void BThread_1::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int
    /// Lister les tirages apres ceux contenant les uplets
   case E_LstTirUplNext:
    {
-    sql_msg = sql_NxtTirUpl(pGame,zn, offset, tabInOut);
+    sql_msg = sql_NxtTirUpl(pGame,zn, offset_to_use, tabInOut);
 #ifndef QT_NO_DEBUG
     static int counter = 0;
     target =  target +
@@ -976,7 +995,7 @@ void BThread_1::sql_upl_lev_1(const stGameConf *pGame, int zn, int tirLgnId, int
  else {
   stype = "Fdj";
  }
- target = "Dbg_"+stype+target;
+ target = "DbgThread_"+stype+target;
 #if 0
  BTest::writetoFile(target,tabInOut[sql_step][0],false);
  BTest::writetoFile(target, "\n\n------------\n",true);
@@ -1325,18 +1344,20 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
    return tsk_param;
   }
  }
-
+#if 0
  etLst tabCal[][3]=
  {
   {E_LstUplTotNot,E_LstUplTotNot,E_LstUplTotNot},
   {E_LstUplTotNext,E_LstUplTotNext,E_LstUplTotNext},
   {E_LstUplTotNext,E_LstUplTotNext,E_LstUplTotNext}
  };
-
+#endif
  int nb_recherche = pGame->limites[z_id].win;
 
- for (int o_id = 0;o_id< C_NB_OFFSET;o_id++) {
-  tsk_param->o_id = o_id;
+ for (int o_id = 0; o_id< C_NB_OFFSET; o_id++) {
+  int delta = tsk_param->ptrDelta[o_id].delta;
+
+  tsk_param->o_id = delta;
 
   for (int r_id=0;r_id < C_NB_SUB_ONG;r_id++) {
    if(r_id>=nb_recherche){
@@ -1345,7 +1366,13 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
 
    tsk_param->r_id = r_id;
 
-   etLst c_id = tabCal[o_id][r_id];
+   etLst c_id;
+   if(delta==0){
+    c_id = E_LstUplTotNot;
+   }
+   else{
+    c_id = E_LstUplTotNext;
+   }
    tsk_param->c_id = c_id;
 
    tsk_param->t_on = t_on +

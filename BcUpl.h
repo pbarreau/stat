@@ -78,6 +78,13 @@ struct stDataUpl{
 };
 /// --------------
 
+typedef struct _stDays
+{
+  int delta;
+  QString onglet;
+  QString tbl;
+}stDays;
+
 typedef struct _tskProgress stTskProgress;
 typedef struct _param_tsk
 {
@@ -105,7 +112,8 @@ typedef struct _param_tsk
   struct _tskProgress *tsk_step;
   BAnimateCell *a_tbv;
   BView *cupl;
-}stParam_tsk;
+  stDays const *ptrDelta;
+  }stParam_tsk;
 
 class BThread_1;
 
@@ -114,12 +122,6 @@ class BcUpl: public BCount
   Q_OBJECT
 
  public:
-  typedef struct _stDays
-  {
-    int delta;
-    QString onglet;
-    QString tbl;
-  }stDays;
   static const stDays defDays[C_NB_ONG];
 
 

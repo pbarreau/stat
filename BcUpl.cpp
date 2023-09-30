@@ -54,11 +54,21 @@ static QString ref_lupl[] ={
     "Uplet (%1) : trouve %2 fois."
 };
 
+
+#if 1
+const stDays BcUpl::defDays[]={
+    {1,"J-1","JPN1"},
+    {0,"J","JP0"},
+    {-1,"J+1","JP1"},
+};
+#else
 const BcUpl::stDays BcUpl::defDays[]={
+    {-1,"J-1","JPN1"},
     {0,"J","JP0"},
     {1,"J+1","JP1"},
     {2,"J+2","JP2"}
 };
+#endif
 
 #ifndef QT_NO_DEBUG
 const QString TXT_SqlStep[E_LstCal]={
@@ -431,6 +441,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount E_Calcul)
     t1data->my_indexes = &my_indexes;
     t1data->z_id = upl_zn;
     t1data->obj_upl = obj_upl;
+
     //t1data->lst_view = new QMap<QString, stUplBViewPos>;
 
     etTir upl_type = eTirEol;
@@ -540,6 +551,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount E_Calcul)
                     tsk_param->t_rf = t_rf;
                     tsk_param->t_on = "";
                     tsk_param->a_tbv = nullptr;
+                    tsk_param->ptrDelta = BcUpl::defDays;
 
                     QWidget * wdg_tmp = MkMainUplet(tsk_param);
                     if(wdg_tmp !=nullptr){
@@ -1050,10 +1062,6 @@ QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, etLst sql_show, in
                   sql_msg
                   + ")\n Select b, sum(T) as T from tb_union group by b order by T desc, b desc";
 
-#ifndef QT_NO_DEBUG
-        QString target = "dbg_sql_ShowItems.txt";
-        BTest::writetoFile(target,sql_msg,false);
-#endif
 
     }
 
@@ -1065,6 +1073,11 @@ QString BcUpl::sql_ShowItems(const stGameConf *pGame, int zn, etLst sql_show, in
                   key + " not in (select b from "+cur_sql+")) order by " +
                   key + " asc";
     }
+
+#ifndef QT_NO_DEBUG
+    QString target = "dbg_sql_ShowItems.txt";
+    //BTest::writetoFile(target,sql_msg,false);
+#endif
 
     return sql_msg;
 }
@@ -1187,7 +1200,7 @@ QString BcUpl::getSqlTbv(const stGameConf *pGame, int zn, int tir_Id,int day_Del
     }
     dbg_target = "Dbg_"+stype+"-"+dbg_target;
 
-//BTest::writetoFile(dbg_target,sql_msg,false);
+ BTest::writetoFile(dbg_target,sql_msg,false);
 #endif
 
 
@@ -2476,6 +2489,7 @@ void BcUpl::BSlot_UVL1_Click_Fn_1(const QModelIndex &index)
     tsk_param->grb_target = target;
     tsk_param->a_tbv = ani_tbv;
     tsk_param->cupl = view;
+    tsk_param->ptrDelta = BcUpl::defDays;
 
     //QString title = QString(ref_lupl[1]).arg(upl_cur).arg(upl_tot);
 
@@ -3166,6 +3180,7 @@ void BcUpl::FillTbv_BView_2(stParam_tsk *tsk_param)
     int g_id = tsk_param->g_id;
     int g_lm = tsk_param->g_lm;
     int o_id = tsk_param->o_id;
+    int o_vl = defDays[o_id].delta;
     int r_id = tsk_param->r_id;
     QString t_on = tsk_param->t_on;
 
@@ -3192,13 +3207,14 @@ void BcUpl::FillTbv_BView_2(stParam_tsk *tsk_param)
         sql_msg = "select * from " + t_use;
     }
     else{
-        QString sql_ref = getSqlTbv(pGame, z_id, l_id, o_id, g_id, r_id+C_MIN_UPL, E_LstCal);
+        QString sql_ref = getSqlTbv(pGame, z_id, l_id, o_vl, g_id, r_id+C_MIN_UPL, E_LstCal);
         sql_msg = sql_ShowItems(pGame,z_id,E_LstShowCal,g_id,sql_ref);
     }
 
     /// Montrer les resultats
     BView *qtv_tmp = upl_Bview_2[l_id-1][z_id][g_id-1][o_id][r_id];
     int nb_rows = Bview_UpdateAndCount(E_LstShowCal, qtv_tmp, sql_msg);
+
     QString st_title = "U_" + QString::number(g_id).rightJustified(2,'0')+
                        " ("+defDays[o_id].onglet+"). Nb Uplets : "+QString::number(nb_rows);
     qtv_tmp->setTitle(st_title);
