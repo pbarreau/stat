@@ -103,6 +103,7 @@ void BThread_1::creationTables(etStep eStep)
      tsk_param->t_rf = t_rf;
      tsk_param->t_on = "";
      tsk_param->a_tbv = nullptr;
+     tsk_param->ptrDelta = tsk_1->ptrDelta;
 
      tsk_step->g_lm = -1;
      tsk_step->e_id = eStep;

@@ -38,7 +38,7 @@ QString BTest::getFieldsFromZone(const stGameConf *pGame, int zn, QString alias,
  }
 
 #ifndef QT_NO_DEBUG
- qDebug() <<st_items;
+ // Pascal remove // qDebug() <<st_items;
 #endif
 
  return   st_items;

@@ -2310,7 +2310,7 @@ QString BCount::FN1_getFieldsFromZone(const stGameConf *pGame, int zn, QString a
  }
 
 #ifndef QT_NO_DEBUG
- qDebug() <<st_items;
+ /// qDebug() <<"Pascal :"<< st_items;
 #endif
 
  return   st_items;

@@ -15,6 +15,7 @@ typedef struct _tsk_1{
   etEns e_id;
   int z_id;
   int obj_upl;
+  stDays const *ptrDelta;
 }stTsk1;
 
 typedef enum _progress{

@@ -441,6 +441,7 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount E_Calcul)
     t1data->my_indexes = &my_indexes;
     t1data->z_id = upl_zn;
     t1data->obj_upl = obj_upl;
+    t1data->ptrDelta = BcUpl::defDays;
 
     //t1data->lst_view = new QMap<QString, stUplBViewPos>;
 
