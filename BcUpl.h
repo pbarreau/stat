@@ -180,6 +180,7 @@ class BcUpl: public BCount
 
   int upl_zn;
   QString upl_current;
+  BView ***upl_Bview_2Total;
   BView ****upl_Bview_0;   /// Bilan d'un uplet
   BView ****upl_Bview_1;   /// Selection d'un uplet
   BView ******upl_Bview_2; /// Resultat pour la selection

@@ -161,48 +161,40 @@ void BTirFdj::BSlot_Fdj_CM1(QPoint pos)
 
 void BTirFdj::BSlot_Fdj_CM1_A1(const QModelIndex & index)
 {
-    BView * ptr_qtv = tir_tbv;
-    QSqlQueryModel *sqm_tmp =sqm_resu;
+    BAction_1 *cmd_1 = qobject_cast<BAction_1 *>(sender());
+
+    BView * ptr_qtv = nullptr;
+    BFpmFdj * fpm_tmp = nullptr;
+    QSqlQueryModel *sqm_tmp = nullptr;
+    QSqlQueryModel *sqm_tmp_2 = nullptr;
+    QString start_1 = "";
+    QString start_2 = "";
 
     int col = index.column();
     int row = index.row();
+    int c_0 = index.model()->index(index.row(),0).data().toInt();
+    int c_1 = index.sibling(row,0).data().toInt();
+
+    ptr_qtv = cmd_1->getView();
+    fpm_tmp = qobject_cast<BFpmFdj *>(ptr_qtv->model());
+    sqm_tmp = qobject_cast<QSqlQueryModel *> (fpm_tmp->sourceModel());
+    start_1 = sqm_tmp->query().executedQuery();
+
+
+#if 0
+///#ifndef QT_NO_DEBUG
+    ptr_qtv = tir_tbv;
+    sqm_tmp = sqm_resu;
+#endif
 
     ble_rch->clear();
-
-    /// invalidate filter de Bfpm apres choix combo
-    /// Remet un nouveau proxyfiltre
-    BFpmFdj * fpm_tmp = qobject_cast<BFpmFdj *>(ptr_qtv->model());
-    QSqlQueryModel *sqm_tmp_2 = qobject_cast<QSqlQueryModel *> (fpm_tmp->sourceModel());
-
-    QModelIndex src_1 = fpm_tmp->mapToSource(index);
-    int cid_src_1 = src_1.sibling(row,0).data().toInt();
-
-
-    int cid_0 = index.model()->index(index.row(),0).data().toInt();
-    int cid_1 = index.sibling(row,0).data().toInt();
-
-
-
-    sqm_tmp->setQuery(lst_tirages,db_fdj);
-
-    QModelIndex fake = index;
-    while (sqm_tmp->canFetchMore(fake))
+    sqm_tmp->setQuery(lst_tirages, db_fdj);
+    while (sqm_tmp->canFetchMore())
     {
         sqm_tmp->fetchMore();
     }
+    HighLightTirId(c_0 -1, Qt::green);
 
-    QModelIndex src_2 = fpm_tmp->mapToSource(fake);
-    int cid_src_2 = src_2.sibling(row,0).data().toInt();
-
-    int nb_lgn_rel = sqm_tmp->rowCount();
-
-    QString rch = "Localisation tirage id : "+
-                  QString::number(cid_1)+
-                  " sur "+
-                  QString::number(nb_lgn_rel);
-    ptr_qtv->setTitle(rch);
-
-    HighLightTirId(cid_1-1, Qt::green);
 }
 
 QHBoxLayout *BTirFdj::getBar_FltFdj(BView *qtv_tmp)

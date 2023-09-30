@@ -188,6 +188,7 @@ BcUpl::BcUpl(const stGameConf *pGame, QWidget *parent, etEns eUpl, int zn, const
 
     /// Reponse Tracking d'un individuel de Cnp uplet
     upl_Bview_2 = new BView*****[nb_ana];
+    upl_Bview_2Total = new BView **[nb_ana];
 
     /// Bilan boules presentes de upl_Bview_2
     upl_Bview_3 = new BView*****[nb_ana]; /// S1
@@ -509,6 +510,8 @@ QTabWidget * BcUpl::startCount(const stGameConf *pGame, const etCount E_Calcul)
         upl_Bview_2[l_id-1]=new BView**** [nb_zn];
         upl_Bview_3[l_id-1]=new BView**** [nb_zn]; /// S2
         upl_Bview_4[l_id-1]=new BView**** [nb_zn]; /// S2
+
+        upl_Bview_2Total[l_id-1]=new BView *[nb_zn];
 
         QTabWidget *tab_Zid = new QTabWidget(tab_tirId);
 
@@ -2363,7 +2366,6 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int z_id, int l_id, int 
     QSplitter *lay_visual = new QSplitter;
     QGroupBox *tmp_gpb_1 = new QGroupBox;
     QGroupBox *tmp_gpb_2 = new QGroupBox;
-    BView *qtv_tmp = new BView;
 
     //QString defDays[]={"J","J+1","J+?"};
     int nb_ong= sizeof(defDays)/sizeof(stDays);
@@ -2392,8 +2394,13 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int z_id, int l_id, int 
         }
     }
 
-    qtv_tmp->setTitle("Voisins R_01 ...");
-    lay_visual->addWidget(qtv_tmp->getScreen());
+    if(g_id == 0){
+        upl_Bview_2Total[l_id-1][z_id] = new BView ;
+        BView *qtv_tmp = upl_Bview_2Total[l_id-1][z_id];
+
+        qtv_tmp->setTitle("Voisins R_01 ...");
+        lay_visual->addWidget(qtv_tmp->getScreen());
+    }
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(tab_Top, Qt::AlignCenter|Qt::AlignTop);
@@ -3235,6 +3242,34 @@ void BcUpl::FillTbv_BView_2(stParam_tsk *tsk_param)
     QString st_title = "U_" + QString::number(g_id).rightJustified(2,'0')+
                        " ("+defDays[o_id].onglet+"). Nb Uplets : "+QString::number(nb_rows);
     qtv_tmp->setTitle(st_title);
+
+    if((o_id == 0) && (r_id==0)){
+        /// Total R01
+        BView *qtv_TR01 = upl_Bview_2Total[l_id-1][z_id];
+        QStringList tbl = t_use.split("_");
+
+        t_use = tbl[0]+"_SUM_R01_T1";
+        sql_msg = "select * from " + t_use;
+        QSqlQueryModel  * sqm_tmp = new QSqlQueryModel;
+        sqm_tmp->setQuery(sql_msg, db_0);
+        while (sqm_tmp->canFetchMore())
+        {
+            sqm_tmp -> fetchMore();
+        }
+        int nb_cols = sqm_tmp->columnCount();
+
+        QSortFilterProxyModel *m=new QSortFilterProxyModel();
+        m->setDynamicSortFilter(true);
+        m->setSourceModel(sqm_tmp);
+        qtv_TR01->setModel(m);
+        //qtv_TR01->sortByColumn(1,Qt::DescendingOrder);
+        qtv_TR01->setSortingEnabled(true);
+
+        for (int col=0;col<nb_cols;col++) {
+            qtv_TR01->resizeColumnToContents(col);
+        }
+    }
+
 }
 
 

@@ -63,7 +63,8 @@ public slots:
   QString getTablePrefixFromSelection_tsk(QString items, int zn=0, stUpdData *upl_data=nullptr);
 
   stParam_tsk *FillBdd_StartPoint(stParam_tsk *tsk_param);
-  void T2_Fill_Bdd(stParam_tsk *tsk_param);
+  QString T2_Fill_Bdd(stParam_tsk *tsk_param);
+  void T2_MkTblSumR01(stParam_tsk *tsk_param, QStringList lstTbls);
   void T3_Fill_Bdd(stParam_tsk *tsk_param);
   void T4_Fill_Bdd(stParam_tsk *tsk_param);
 

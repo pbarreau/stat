@@ -1355,16 +1355,21 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
 #endif
  int nb_recherche = pGame->limites[z_id].win;
 
+ /// VERIFIER SI NECESSAIRE FAIRE CALCUL
+ /// --------------------------------------
+
+ QStringList cur_tbl_names;
+ cur_tbl_names << t_on;
  for (int o_id = 0; o_id< C_NB_OFFSET; o_id++) {
   int delta = tsk_param->ptrDelta[o_id].delta;
 
   tsk_param->o_id = delta;
 
   for (int r_id=0;r_id < C_NB_SUB_ONG;r_id++) {
+   QString that_table = "";
    if(r_id>=nb_recherche){
     continue;
    }
-
    tsk_param->r_id = r_id;
 
    etLst c_id;
@@ -1380,7 +1385,10 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
                      "_D" + QString::number(o_id).rightJustified(2,'0') +
                      "_R" + QString::number(r_id+1).rightJustified(2,'0');
 
-   T2_Fill_Bdd(tsk_param);
+   that_table = T2_Fill_Bdd(tsk_param);
+   if(r_id == 0){
+    cur_tbl_names << that_table;
+   }
 
    if(r_id > 0){
     T3_Fill_Bdd(tsk_param);
@@ -1390,7 +1398,10 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
   }
 
   tsk_param->t_on = t_on;
- }
+ } /// Fin boucle des jours
+
+ /// creation d'une table des sommes
+ T2_MkTblSumR01(tsk_param, cur_tbl_names);
 
  if(tsk_param->glm_in.isPresent == false){
   tsk_param->glm_in.id_cal = E_CalReady;
@@ -1406,7 +1417,7 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
 }
 
 
-void BThread_1::T2_Fill_Bdd(stParam_tsk *tsk_param)
+QString BThread_1::T2_Fill_Bdd(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
 
@@ -1442,6 +1453,43 @@ void BThread_1::T2_Fill_Bdd(stParam_tsk *tsk_param)
  sql_msg = sql_ShowItems(pGame,z_id,E_LstShowCal,g_id,sql_ref);
 
  QString t_use = t_on + "_T1";
+ DB_Tools::createOrReadTable(t_use,cnx_1,sql_msg);
+
+ return(t_use);
+}
+
+void BThread_1::T2_MkTblSumR01(stParam_tsk *tsk_param, QStringList lstTbls)
+{
+ QString sql_msg = "";
+ QString t_use = lstTbls[0]+"_SUM_R01_T1";
+ const stGameConf *pGame = tsk_param->p_gm;
+
+ QString lst_union_all = "";
+ QString ref = "select uid, nid, b1, T from %1\n";
+ for(int i = 1; i<=C_NB_ONG;i++){
+  lst_union_all = lst_union_all + ref.arg(lstTbls[i]);
+  if(i<C_NB_ONG){
+   lst_union_all = lst_union_all + "UNION ALL\n";
+  }
+ }
+
+ sql_msg = sql_msg + "with\n";
+ sql_msg = sql_msg + "tb_00 as\n";
+ sql_msg = sql_msg + "(\n";
+ sql_msg = sql_msg + lst_union_all;
+ sql_msg = sql_msg + ")\n";
+ sql_msg = sql_msg + ",\n";
+
+ sql_msg = sql_msg + "tb_uplets as\n";
+ sql_msg = sql_msg + "(\n";
+ sql_msg = sql_msg + "select b1, sum(T) as T from tb_00 group by uid, b1 order by T desc, uid asc, b1 asc";
+ sql_msg = sql_msg + ")\n";
+
+ sql_msg = sql_msg + "\n";
+
+ sql_msg = sql_msg + "select t1.* from (tb_uplets) as t1\n";
+
+ QString cnx_1=pGame->db_ref->cnx;
  DB_Tools::createOrReadTable(t_use,cnx_1,sql_msg);
 }
 
