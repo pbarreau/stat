@@ -2359,6 +2359,11 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int z_id, int l_id, int 
     QTabWidget *tab_Top = new QTabWidget(this);
     tab_Top->setObjectName("tabRspAnaUpl");
 
+    QSplitter *lay_visual = new QSplitter;
+    QGroupBox *tmp_gpb_1 = new QGroupBox;
+    QGroupBox *tmp_gpb_2 = new QGroupBox;
+    BView *qtv_tmp = new BView;
+
     //QString defDays[]={"J","J+1","J+?"};
     int nb_ong= sizeof(defDays)/sizeof(stDays);
 
@@ -2385,7 +2390,18 @@ QWidget *BcUpl::showUplFromRef(const stGameConf *pGame, int z_id, int l_id, int 
             tab_Top->addTab(wdg_tmp,ongLabel);
         }
     }
-    return tab_Top;
+
+    qtv_tmp->setTitle("Voisins R_01 ...");
+    lay_visual->addWidget(qtv_tmp->getScreen());
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(tab_Top, Qt::AlignCenter|Qt::AlignTop);
+    tmp_gpb_2->setTitle("Details ...");
+    tmp_gpb_2->setLayout(layout);
+
+    lay_visual->addWidget(tmp_gpb_2);
+
+    return lay_visual;
 }
 
 QString BcUpl::getFromIndex_CurUpl(const QModelIndex &index, int upl_GrpId, QGroupBox **grb)
