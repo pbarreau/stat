@@ -1,4 +1,5 @@
 #include "BTirages.h"
+#include "qlistwidget.h"
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #endif
@@ -15,6 +16,8 @@
 #include <QFileDialog>
 #include <QDate>
 #include <QTextStream>
+#include <QListWidget>
+#include <QFormLayout>
 
 #include <QSqlDriver>
 #include "sqlExtensions/inc/sqlite3.h"
@@ -762,7 +765,15 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
  list1 = ligne.split(";");
  int refNbFields = list1.size();
 
- // Analyse des suivantes
+ /// Nb resultats par ligne pour ce fichier
+ int nbResuLgn = def->param.nbResu;
+ QString keepResults = "1";
+ if(nbResuLgn > 1){
+   //keepResults = SelTirDay(nbResuLgn);
+   keepResults = "1,0";
+ }
+ QStringList idKeep = keepResults.split(",");
+ /// Analyse des lignes
  int nb_lignes=0;
  while((! flux.atEnd() )&& (b_retVal == true))
  {
@@ -802,7 +813,6 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
   valDateJour = valDateJour + "'"+data + "',";
 
   /// Parcour de chacun des resultats d'une ligne
-  int nbResuLgn = def->param.nbResu;
   for(int un_resu=0;(un_resu<nbResuLgn) && b_retVal; un_resu++)
   {
    stRes *ptrResu = &(def->param.tabRes[un_resu]);
@@ -861,19 +871,23 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 
    }
 
-   ///------------------------------
-   /// Toutes les zones sont faites, ecrire dans la base
-   msgColZn = msgDateJour + msgColZn;
-   msgValZn = valDateJour + msgValZn;
-   msg = "insert into "
-         +tblName+"("
-         +msgColZn+",file)values("
-         + msgValZn +","+QString::number(def->id)
-         + ")";
+   /// Verifier si utilisateur veut prendre en compte ce resultat
+   int curResu = idKeep.at(un_resu).toInt();
+   if (curResu){
+    ///------------------------------
+    /// Toutes les zones sont faites, ecrire dans la base
+    msgColZn = msgDateJour + msgColZn;
+    msgValZn = valDateJour + msgValZn;
+    msg = "insert into "
+          +tblName+"("
+          +msgColZn+",file)values("
+          + msgValZn +","+QString::number(def->id)
+          + ")";
 #ifndef QT_NO_DEBUG
-   qDebug() <<msg;
+    qDebug() <<msg;
 #endif
-   b_retVal = query.exec(msg);
+    b_retVal = query.exec(msg);
+   }
 
    /// Voir reultat suivant de la ligne
   }
@@ -965,4 +979,23 @@ QString BFdj::JourFromDate(QString LaDate, QString verif, stErr2 *retErr)
  }
 
  return retval;
+}
+
+QString BFdj::SelTirDay(int nbTir)
+{
+ QString tmp ="";
+
+ QWidget *w_DataFenetre = new QWidget;
+ QFormLayout *mainLayout = new QFormLayout;
+ QListWidget *listWidget = new QListWidget();
+
+ for(int item = 1; item <= nbTir; item++){
+  new QListWidgetItem(QString::number(item), listWidget);
+ }
+ mainLayout->addWidget(listWidget);
+ w_DataFenetre->setLayout(mainLayout);
+ w_DataFenetre->setWindowTitle("Tirage(s) a prendre par ligne");
+ w_DataFenetre->setVisible(true);
+
+ return tmp;
 }

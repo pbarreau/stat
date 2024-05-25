@@ -82,6 +82,7 @@ class BFdj: public QObject
   QString DateAnormer(QString input);
   QSqlQuery executeQuery(const QString& query);
   QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
+  QString SelTirDay(int nbTir);
 
  private:
   static int total_items;

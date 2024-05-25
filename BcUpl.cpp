@@ -914,6 +914,8 @@ void BcUpl::BSlot_UplScanAll()
     QModelIndex src_2 = m->mapFromSource(realIndex);
     QModelIndex src_3 = m->mapToSource(proxIndex);
 
+    QAbstractItemView::ScrollHint mode = QAbstractItemView::PositionAtTop;
+    //PositionAtCenter;//EnsureVisible;
 
     int id_1 = -1;
     int id_8 = -1;
@@ -921,7 +923,9 @@ void BcUpl::BSlot_UplScanAll()
     do{
         src_1 = view->model()->index(src_1.row()+1,0);
         id_1 = src_1.data().toInt();
-        view->clicked(src_1);
+        view->scrollTo(m->index(src_1.row()+1,0),mode);
+        emit ani_tbv->BSig_Repaint(view);
+        emit view->clicked(src_1);
     }while(src_1.isValid());
 
 }
@@ -1435,6 +1439,14 @@ QString BcUpl::sql_ElmFrmTir(const stGameConf *pGame, int zn, etLst sql_step, in
             }
             arg_0 = tb_usr + " as "+usr_data+",\n";
         }
+        else{
+            if(e_id == E_EnsFdj){
+                if(zn == 1){
+                    /// Faire un nouvel ensemble de recherche sans etoile = 0
+                }
+
+            }
+        }
 
         arg_1 = arg_1 + "      t1.id\n";
 
@@ -1741,6 +1753,7 @@ QString BcUpl::sql_TirFrmUpl(const stGameConf *pGame, int zn,int  upl_ref_in, QS
     QString ref_4 = "t1.%1%2";
     QString ref_5 = ref_4 + " in (" + st_cols + ")";
 
+    QString src_ref_fdj = "B_fdj";
     int nb_loop = upl_ref_in;
     for (int i = 0; i< nb_loop; i++) {
         r5 = r5 + ref_5.arg(pGame->names[zn].abv).arg(i+1);
@@ -1764,7 +1777,7 @@ QString BcUpl::sql_TirFrmUpl(const stGameConf *pGame, int zn,int  upl_ref_in, QS
     sql_msg = sql_msg + "     t2.*\n";
     sql_msg = sql_msg + "    FROM\n";
     sql_msg = sql_msg + "     ("+tabInOut[E_LstUpl][0]+") as t1 ,\n";
-    sql_msg = sql_msg + "     (B_fdj) as t2\n";
+    sql_msg = sql_msg + "     ("+src_ref_fdj+") as t2\n";
     sql_msg = sql_msg + "    WHERE\n";
     sql_msg = sql_msg + "    (\n";
     sql_msg = sql_msg + r5;
@@ -1780,6 +1793,7 @@ QString BcUpl::sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString
 {
     QString sql_tbl = "";
     QString sql_msg = "";
+    QString src_ref_fdj = "B_fdj";
 
     QString day = QString::number(offset);
     if(offset>0){
@@ -1800,7 +1814,7 @@ QString BcUpl::sql_NxtTirUpl(const stGameConf *pGame, int zn,int offset, QString
     sql_msg = sql_msg + "     t2.*\n";
     sql_msg = sql_msg + "    FROM\n";
     sql_msg = sql_msg + "     ("+tabInOut[E_LstTirUpl][0]+") as t1 ,\n";
-    sql_msg = sql_msg + "     (B_fdj) as t2\n";
+    sql_msg = sql_msg + "     ("+src_ref_fdj+") as t2\n";
     sql_msg = sql_msg + "    WHERE\n";
     sql_msg = sql_msg + "    (\n";
     sql_msg = sql_msg + "    t2.id=t1.id+-"+QString::number(offset);
@@ -3262,7 +3276,7 @@ void BcUpl::FillTbv_BView_2(stParam_tsk *tsk_param)
         m->setDynamicSortFilter(true);
         m->setSourceModel(sqm_tmp);
         qtv_TR01->setModel(m);
-        //qtv_TR01->sortByColumn(1,Qt::DescendingOrder);
+        qtv_TR01->sortByColumn(2,Qt::DescendingOrder);
         qtv_TR01->setSortingEnabled(true);
 
         for (int col=0;col<nb_cols;col++) {
