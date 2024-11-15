@@ -770,7 +770,7 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
  QString keepResults = "1";
  if(nbResuLgn > 1){
    //keepResults = SelTirDay(nbResuLgn);
-   keepResults = "1,0";
+   keepResults = "0,1";
  }
  QStringList idKeep = keepResults.split(",");
  /// Analyse des lignes

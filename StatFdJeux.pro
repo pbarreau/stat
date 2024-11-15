@@ -38,6 +38,7 @@ SOURCES += \
     BApplication.cpp \
     BFpmElm.cpp \
     BMainWindow.cpp \
+    BMultiSelectComboBox.cpp \
     Bc.cpp \
     BcBrc.cpp \
     BcCmb.cpp \
@@ -141,6 +142,7 @@ HEADERS  += \
     BApplication.h \
     BFpmElm.h \
     BMainWindow.h \
+    BMultiSelectComboBox.h \
     Bc.h \
     BcBrc.h \
     BcCmb.h \

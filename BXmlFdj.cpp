@@ -11,7 +11,7 @@ static QString key_1 = "Type";
 BXmlFdj::BXmlFdj()
 {
 
-    QString targetFile = "ConfStatFdj.xml" ;
+    QString targetFile = "ImportHistoriquesFromFdj.xml" ;
     QFile xmlFile(targetFile);
 
 

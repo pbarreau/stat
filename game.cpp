@@ -16,6 +16,30 @@ const QString TXT_FdjLst_1[eFdjEndCnames_1]={"Loto", "Super loto", "Grand Loto d
 const QString TXT_FdjLst_2[eFdjEndCnames_2 - eFdjEndCnames_1 - 1]={"Euro Millions My Million", "Euro Millions"};
 
 const stSrcHistoJeux HistoLoto[]={
+    {eCnameLoto,"Depuis novembre 2019","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afp6","loto_201911.csv"},
+    {eCnameLoto,"De février 2019 à novembre 2019", "https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afo6","loto_201902.csv"},
+     {eCnameLoto,"De mars 2017 à février 2019","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afn6","loto2017.csv"},
+         {eCnameLoto,"De octobre 2008 à mars 2017","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afm6","nouveau_loto.csv"},
+         {eCnameLoto,"Avant octobre 2008","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afl6","loto.csv"},
+         {eCnameSuperLoto,"Depuis juillet 2019","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afk6","superloto_201907.csv"},
+         {eCnameSuperLoto,"De mars 2017 à juillet 2019","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afj6","superloto2017.csv"},
+         {eCnameSuperLoto,"De octobre 2008 à mars 2017","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afi6","nouveau_superloto.csv"},
+         {eCnameSuperLoto,"Avant octobre 2008","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afh6","sloto.csv"},
+         {eCnameGrandLotoNoel,"depuis mars 2017","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66aff6","lotonoel2017.csv"},
+         {eCnameGrandLoto,"Depuis decembre 2019","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afg6","grandloto_201912.csv"}
+     };
+
+const stSrcHistoJeux HistoEuro[]={
+    {eCnameEuroMillionsMyMillion,"Depuis février 2020","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afe6","euromillions_202002.csv"},
+    {eCnameEuroMillionsMyMillion,"De février 2019 à février 2020","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afd6","euromillions_201902.csv"},
+    {eCnameEuroMillionsMyMillion,"De septembre 2016 à février 2020","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afc6","euromillions_4.csv"},
+     {eCnameEuroMillionsMyMillion,"De février 2014 à septembre 2016","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afb6","euromillions_3.csv"},
+      {eCnameEuroMillion,"De mai 2011 à janvier 2014","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afa9","euromillions_2.csv"},
+      {eCnameEuroMillion,"De février 2004 à avril 2011","https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afa8","euromillions.csv"}
+};
+
+#if 0
+const stSrcHistoJeux HistoLoto[]={
  {eCnameLoto,"Depuis novembre 2019","https://media.fdj.fr/static/csv/loto/loto_201911.zip","loto_201911.csv"},
  {eCnameLoto,"De février 2019 à novembre 2019", "https://media.fdj.fr/static/csv/loto/loto_201902.zip","loto_201902.csv"},
  {eCnameLoto,"De mars 2017 à février 2019","https://media.fdj.fr/static/csv/loto/loto_201703.zip","loto2017.csv"},
@@ -37,6 +61,7 @@ const stSrcHistoJeux HistoEuro[]={
  {eCnameEuroMillion,"De mai 2011 à janvier 2014","https://media.fdj.fr/static/csv/euromillions/euromillions_201105.zip","euromillions_2.csv"},
  {eCnameEuroMillion,"De février 2004 à avril 2011","https://media.fdj.fr/static/csv/euromillions/euromillions_200402.zip","euromillions.csv"}
 };
+#endif
 const stParam_1 defParam_1[]={
  {}
 };
