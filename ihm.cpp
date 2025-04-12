@@ -6,6 +6,8 @@
 #include <QMdiArea>
 
 #include "mainwindow.h"
+#include "BGame.h"
+#include "game.h"
 
 MainWindow::MainWindow(BFdj * currDb)
 {
@@ -103,12 +105,22 @@ void MainWindow::createIhm()
 
  /// --- Download fdj
  tmp_ico = QIcon(":/images/downloadFdj.png");
+#if 1
+ BGame *tmp_game = new BGame();
+ tmp_game->setIcon(tmp_ico);
+ tmp_game->setIconText(tr("&Telecharger"));
+ tmp_game->setStatusTip(tr("Telecharger depuis Francaise des jeux..."));
+ actionMenu->addAction(tmp_game);
+ actionToolBar->addAction(tmp_game);
+ connect(tmp_game, SIGNAL(BSig_GameType(etFdj)), this, SLOT(pslot_GetFromFdj(etFdj)));
+#else
  tmp_act = new QAction(tmp_ico,tr("&Telecharger"), this);
  tmp_act->setShortcut(Qt::CTRL | Qt::Key_T );
  tmp_act->setStatusTip(tr("Telecharger depuis Francaise des jeux..."));
  actionMenu->addAction(tmp_act);
  actionToolBar->addAction(tmp_act);
- connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_GetFromFdj()));
+ connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_GetFromFdj(eFdjEol)));
+#endif
 
 #if 0
  /// --- Run
@@ -178,7 +190,7 @@ void MainWindow::createActions()
  //--------- Element du menu Resultats ---------
  actGetFromUrlsFdj = new QAction(tr("&Telecharger de la Fdj"), this);
  actGetFromUrlsFdj ->setStatusTip("Telecharger depuis Francaise des jeux");
- connect(actGetFromUrlsFdj, SIGNAL(triggered()), this, SLOT(pslot_GetFromFdj()));
+ connect(actGetFromUrlsFdj, SIGNAL(triggered()), this, SLOT(pslot_GetFromFdj(eFdjEol)));
 
  //--------- Element du menu Aide ---------
  aboutAct = new QAction(tr("&Apropos"), this);

@@ -40,6 +40,7 @@ typedef struct _stSrcHistoJeux{
   eFCname type;
   QString memo;
   QString http;
+  QString zip;
   QString file;
 }stSrcHistoJeux;
 extern const stSrcHistoJeux HistoLoto[11];

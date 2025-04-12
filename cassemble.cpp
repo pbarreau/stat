@@ -11,7 +11,7 @@ cAssemble::cAssemble(int priorite, int zn)
     // applique a la selection utilisateur
 }
 
-cAssemble::TrouverBoules(int prio, int zn)
+bool cAssemble::TrouverBoules(int prio, int zn)
 {
     QString msg = "";
     /// Prendre les tables qui permettent de trouver les selections
@@ -19,5 +19,7 @@ cAssemble::TrouverBoules(int prio, int zn)
 
     /// pour chacune des tables prendre les boules de la priotite
     msg = "select boules from une_tbName where var_priotite = prio";
+
+    return true;
 
 }

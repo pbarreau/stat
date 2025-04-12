@@ -22,6 +22,13 @@
 
 #include <math.h>
 
+#include <QtNetwork>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QUrl>
+#include <QProgressDialog>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -232,6 +239,103 @@ void MainWindow::AssemblerJeuxUsr(stGameConf *usrGame)
  else {
   delete lst_tirages;
  }
+
+}
+
+bool MainWindow::TestDownload(QStringList *info, QDir useDir, int curPos, bool isLooping)
+{
+ /// On effectue un download si distant plus recent que existant.
+ QString filename = useDir.path() + "//" + info[1].at(curPos);
+ QString url = info[0].at(curPos);
+ QFile file(filename);
+ QUrl redirect;
+
+ // Create a QNetworkRequest object for the HTTPS URL
+ QNetworkRequest request(url);
+
+ // Set up the SSL configuration for the HTTPS request
+ QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
+ sslConfig.setProtocol(QSsl::TlsV1_2);
+ request.setSslConfiguration(sslConfig);
+
+
+ // Create a QNetworkAccessManager object to download the zip file
+ QNetworkAccessManager nam;
+ QNetworkReply *reply = nullptr;
+
+ QDateTime remoteDate;
+ QDateTime localDate = QFileInfo(file).lastModified();
+ int content_length = -1;
+ if((file.exists() == true) && (isLooping == false)){
+  /// Analyse date local / distant
+  reply = nam.head(request);
+ }
+ else{
+  reply = nam.get(request);
+ }
+
+
+ // Start the event loop to wait for the download to complete
+ QEventLoop downloadLoop;
+ QObject::connect(reply, &QNetworkReply::finished, &downloadLoop, &QEventLoop::quit);
+ downloadLoop.exec();
+
+ redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+ content_length = reply->header(QNetworkRequest::ContentLengthHeader).toInt();
+ remoteDate = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+ localDate = QFileInfo(file).lastModified();
+
+ /// Analyse retour de la commande
+ if (reply->error() != QNetworkReply::NoError){
+  return false;
+ }
+ else{
+
+  // C'est une demande HEAD
+  if(reply->operation() == QNetworkAccessManager::HeadOperation){
+   /// Verifier si distant plus recent que local
+   remoteDate = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+   if(remoteDate > localDate){
+       return TestDownload(info, useDir, curPos, true);
+   }
+  }
+ }
+
+ if ((reply->error() == QNetworkReply::NoError) && isHttpRedirect(reply)) {
+  // https://www.meetingcpp.com/blog/items/http-and-https-in-qt.html
+  //QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+
+  if(redirect.isValid() && reply->url() != redirect)
+  {
+   QStringList redirUrl[3];
+   redirUrl[1]<<info[1].at(curPos);
+   redirUrl[2]<<info[2].at(curPos);
+   if(redirect.isRelative()){
+       redirect = reply->url().resolved(redirect);
+   }
+   redirUrl[0]<<redirect.toString();
+   return TestDownload(redirUrl, useDir, curPos, true);
+  }
+ }
+
+ if ((reply->error() == QNetworkReply::NoError) &&
+     (reply->operation() == QNetworkAccessManager::GetOperation)){
+  // C'est un Get : sauver fichier
+  /// Verifier si distant plus recent que local
+  remoteDate = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+  if((remoteDate > localDate) || (!file.exists())){
+   return saveToDisk(filename, reply);
+  }
+ }
+ else
+ {
+  qWarning() << "Failed to download zip file:" << reply->errorString();
+  return false;
+ }
+
+ // Clean up the QNetworkReply object
+ reply->deleteLater();
+ return false;
 
 }
 
@@ -3219,7 +3323,7 @@ void MainWindow::slot_MontrerBouleDansBase(const QModelIndex & index)
  int b_id =0;
  int col_id = 0;
  QStringList lst_boule;
- boolean bNouvelleRecherche = false;
+ bool bNouvelleRecherche = false;
 
  // determination de la fenetre ayant recu le click
  if(index.internalPointer() == G_sim_Voisins[0]->index(index.row(),index.column()).internalPointer())

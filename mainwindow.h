@@ -100,6 +100,7 @@ class MainWindow : public QMainWindow
  private:
   void AfficherAnciensCalcul(stGameConf *pGame);
   void AssemblerJeuxUsr(stGameConf *pGame);
+  bool TestDownload(QStringList *info,QDir useDir, int curPos, bool isLooping = false);
 
 
  private slots:
@@ -108,7 +109,7 @@ class MainWindow : public QMainWindow
   void pslot_close();
   bool pslot_save();
   bool pslot_saveAs();
-  void pslot_GetFromFdj();
+  void pslot_GetFromFdj(etFdj fdjType);
   void slot_replyFinished(QNetworkReply *resp);
   void pslot_about();
   void pslot_closeTabDetails(int index);

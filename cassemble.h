@@ -10,7 +10,7 @@ class cAssemble
 public:
     cAssemble(int priorite, int zn);
 private:
-    TrouverBoules(int prio, int zn);
+    bool TrouverBoules(int prio, int zn);
 };
 
 #endif // CASSEMBLE_H

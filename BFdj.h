@@ -28,6 +28,7 @@ class BFdj: public QObject
     int len;    /// taille dans la zone
     int min;    /// valeur mini possible
     int max;    /// valeur maxi possible
+    int win;    /// nb pour gagner
   }stZnDef;
 
   typedef struct _stRes

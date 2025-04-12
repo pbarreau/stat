@@ -37,6 +37,7 @@ SOURCES += \
     BAnimateCell.cpp \
     BApplication.cpp \
     BFpmElm.cpp \
+    BGame.cpp \
     BMainWindow.cpp \
     BMultiSelectComboBox.cpp \
     Bc.cpp \
@@ -134,13 +135,14 @@ SOURCES += \
     SyntheseGenerale.cpp \
     tirages.cpp \
     TTransparentProxyModel.cpp \
-    Version.cpp 
+    Version.cpp
 
 HEADERS  += \
     BAction_1.h \
     BAnimateCell.h \
     BApplication.h \
     BFpmElm.h \
+    BGame.h \
     BMainWindow.h \
     BMultiSelectComboBox.h \
     Bc.h \
@@ -230,7 +232,6 @@ HEADERS  += \
     tirages.h \
     TTransparentProxyModel.h \
     types_jeux.h
-
 
 FORMS    += mainwindow.ui \
     choixjeux.ui

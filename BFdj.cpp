@@ -18,6 +18,7 @@
 #include <QTextStream>
 #include <QListWidget>
 #include <QFormLayout>
+#include <QSettings>
 
 #include <QSqlDriver>
 #include "sqlExtensions/inc/sqlite3.h"
@@ -596,6 +597,92 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
  return b_retVal;
 }
 
+#if 1
+bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
+{
+ bool b_retVal= true;
+ etFdj fdjType = pGame->eFdjType;
+
+ /// Selon le type de jeu on recupere si necessaire le fichier depuis fdj
+ const QString   *ptr_names = nullptr;
+ const stSrcHistoJeux *ptr_desc = nullptr;
+ int i_deb = -1;
+ int i_end = -1;
+ int i_tot = -1;
+
+
+ switch (fdjType) {
+ case eFdjLoto:
+  i_deb = eCnameLoto;
+  i_end = eFdjEndCnames_1 - eCnameLoto;
+  ptr_names = TXT_FdjLst_1;
+  ptr_desc = HistoLoto;
+  i_tot = sizeof(HistoLoto)/sizeof(stSrcHistoJeux);
+  break;
+ case eFdjEuro:
+  i_deb = eCnameEuroMillionsMyMillion;
+  i_end = eFdjEndCnames_2 - eCnameEuroMillionsMyMillion;
+  ptr_names = TXT_FdjLst_2;
+  ptr_desc = HistoEuro;
+  i_tot = sizeof(HistoEuro)/sizeof(stSrcHistoJeux);
+  break;
+ default:
+  break;
+ }
+ QSettings settings("C:/Qt/WorkSpaces/StatFdJeux-debug-Desktop Qt 5.15.2 MinGW 64-bit/test.ini", QSettings::IniFormat);
+ QHash<QString,QString>values;
+
+ for(int j=0; (j<i_tot) && (b_retVal == true);j++){
+  QString target = ptr_desc[j].file;
+
+  settings.beginGroup(target);
+  QStringList childKeys = settings.childKeys();
+  foreach (const QString &childKey,childKeys)
+     values.insert(childKey, settings.value(childKey).toString());
+  settings.endGroup();
+
+  if(childKeys.size()){
+     stFdjData defFile;
+
+     defFile.id=j+1;
+     defFile.fname=target;
+
+     defFile.param.wget = false;
+     defFile.param.colDate= values.value("cf").split(",").at(0).toInt();
+     defFile.param.colDay= values.value("cf").split(",").at(1).toInt();
+     defFile.param.nbResu= values.value("cf").split(",").at(2).toInt();
+
+     int nbZone = values.value("cf").split(",").at(3).toInt();
+     stRes *defZ = new stRes[nbZone];
+     defZ->nbZone = nbZone;
+     defFile.param.tabRes = defZ;
+
+     for(int zid=1; zid<=nbZone;zid++){
+        QString key = "z" + QString::number(zid);
+        stZnDef *tmp_z = new stZnDef;
+        tmp_z->pos = values.value(key).split(",").at(0).toInt();
+        tmp_z->len = values.value(key).split(",").at(1).toInt();
+        tmp_z->min = values.value(key).split(",").at(2).toInt();
+        tmp_z->max = values.value(key).split(",").at(3).toInt();
+        tmp_z->win = values.value(key).split(",").at(4).toInt();
+        defFile.param.tabRes[zid-1].pZn= tmp_z;
+     }
+
+     b_retVal = LireLesTirages(pGame, &defFile, destTable);
+
+     for(int zid=1; zid<=nbZone;zid++){
+        delete defFile.param.tabRes[zid-1].pZn;
+     }
+     delete [] defFile.param.tabRes;
+
+  }
+ }
+ qDebug()<<values;
+
+ return b_retVal;
+}
+
+#else
 bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
 {
  bool b_retVal= true;
@@ -732,6 +819,7 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
 
  return b_retVal;
 }
+#endif /// Fin modif lecture fichiers
 
 bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
 {
