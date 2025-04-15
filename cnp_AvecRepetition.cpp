@@ -441,3 +441,9 @@ QString LireTableau(int *t, int n)
     return tmp;
 }
 #endif
+
+QStringList BGnp::getCombinaisonsFromGenerator() const {
+    using namespace CnpTools;
+    auto combs = Generator::generateGnp(n, p);
+    return Generator::toQStringList(combs);
+}

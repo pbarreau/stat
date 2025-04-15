@@ -338,41 +338,44 @@ void BCnp::MontrerTableau_v1(void)
 
 bool BCnp::CalculerPascal(void)
 {
-    bool b_retVal = true;
+    using namespace CnpTools;
 
-    if (tab != NULL)
-        return b_retVal;
+    if (tab != nullptr)
+        return true;
 
-    tab = new int *[cnp]; /// tableau de pointeur d'entiers de Cnp lignes
+    auto combs = Generator::generateCnp(n, p);
+    cnp = combs.size();
+    tab = new int *[cnp];
 
-    /// Allocation memoire OK ?
-    if(tab != NULL){
-        /// initialisation recursion
-        int *L = new int [p];
-        int *t = new int [n];
-
-        /// pour verifier allocation memoire
-        b_retVal = false;
-
-        if(t != NULL)
-            for(int i =0; i<n;i++) t[i]=i;
-
-        /// demarrage
-        if((L != NULL) && (t !=NULL)){
-            CreerLigneTrianglePascal(0,L,t,n);
-            b_retVal = true;
+    for (int i = 0; i < cnp; ++i) {
+        tab[i] = new int[p];
+        for (int j = 0; j < p; ++j) {
+            tab[i][j] = combs[i][j];
         }
-    }
-    else
-    {
-#if (SET_RUN_CHKP)
-        QMessageBox::information(NULL, "M1", "Memory",QMessageBox::Yes);
+
+        QString ligne;
+        for (int j = 0; j < p; ++j) {
+            ligne += QString::number(tab[i][j]);
+            if (j < p - 1) ligne += ",";
+        }
+
+        insertLineInDbTable(ligne);
+
+#if USE_CNP_SLOT_LINE
+        d.val_cnp = cnp;
+        d.val_n = n;
+        d.val_p = p;
+        d.val_pos = pos;
+        d.val_tb = "";
+        emit sig_LineReady(d, ligne);
 #endif
-        b_retVal = false;
+        pos++;
     }
 
-    return b_retVal;
+    return true;
 }
+
+
 
 void BCnp::CreerLigneTrianglePascal(int k, int *L, int *t, int r)
 {
@@ -670,7 +673,7 @@ void BCnp::insertLineInDbTable(const QString &Laligne)
 ///     free(comb);
 ///
 ///     /* -----------------------------------------------------------------
-///      * plus rien Ã  faire ici, on peut d'en aller
+///      * plus rien   faire ici, on peut d'en aller
 ///      * -----------------------------------------------------------------
 ///      */
 ///     return 0;

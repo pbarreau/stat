@@ -49,6 +49,7 @@ SOURCES += \
     BCompress.cpp \
     BcUpl.cpp \
     BCustomPlot.cpp \
+    CnpToolsV2.cpp \
     bdelegatecouleurfond.cpp \
     BFdj.cpp \
     BFlags.cpp \
@@ -154,6 +155,7 @@ HEADERS  += \
     BCompress.h \
     BcUpl.h \
     BCustomPlot.h \
+    CnpToolsV2.h \
     bdelegatecouleurfond.h \
     BFdj.h \
     BFlags.h \

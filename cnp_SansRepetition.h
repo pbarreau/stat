@@ -7,6 +7,7 @@
 #include <QSqlDatabase>
 
 #include "game.h"
+#include "CnpToolsV2.h"
 
 #define BMAX(a,b) (((a)>(b))?(a):(b))
 #define BMIN(a,b) (((a)<(b))?(a):(b))

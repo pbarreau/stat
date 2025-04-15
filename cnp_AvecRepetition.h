@@ -6,6 +6,7 @@
 
 #include "cnp_SansRepetition.h"
 #include "game.h"
+#include "CnpToolsV2.h"
 
 // combinaison avec répétition
 class BGnp:public BCnp
@@ -18,6 +19,7 @@ class BGnp:public BCnp
  BGnp(int n, int p, QString destBdd);
  BGnp(int n, int p, QString destBdd, QString tab);
  ~BGnp();
+ QStringList getCombinaisonsFromGenerator() const;
 
  private:
  bool mktTblGnp(stGameConf *pGame, QString tb_dest);
