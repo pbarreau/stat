@@ -2,3 +2,5 @@ https://chatgpt.com/g/g-p-67af2bce95208191a557025ca92bf1de-fdjreecriture/c/67fa4
 
 comment personaliser ce dossier, en ajoutant un ensemble d'instructions, pour que chatGPT m'aide a corriger, optimiser la structure du programme, la gestion memoire, l'interface graphique d'un programme ecrit en C++ pout Qt5
 
+Ligne 635 de BFdj.cpp
+QSettings settings("C:/Qt/WorkSpaces/StatFdJeux-debug-Desktop Qt 5.15.2 MinGW 64-bit/test.ini", QSettings::IniFormat);
