@@ -125,7 +125,7 @@
   <customwidget>
    <class>BMultiSelectComboBox</class>
    <extends>QComboBox</extends>
-   <header>MultiSelectComboBox.h</header>
+   <header>BMultiSelectComboBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
