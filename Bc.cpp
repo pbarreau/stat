@@ -62,17 +62,17 @@ QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul,   ptr
  QWidget * wdg_tmp = new QWidget;
 
  if(E_Calcul == E_CountElm){
-  wdg_tmp = startIhm_new(pGame, E_Calcul, usr_fn, zn);
+  //wdg_tmp = startIhm_new(pGame, E_Calcul, usr_fn, zn);
 
-     // Étape 1 : adapter la config
+     // Étape 1 : adapter la config (conversion stGameConf ➜ GameConfig)
      std::unique_ptr<GameConfig> modernConf = std::make_unique<GameConfig>(pGame->znCount);
      for (int i = 0; i < pGame->znCount; ++i)
          modernConf->setLimitForZone(i, pGame->limites[i].win);
 
-     // Étape 2 : instancier le renderer (qui encapsule usr_fn)
-     BasicCountRenderer renderer(usr_fn);
+     // Étape 2 : instancier le renderer avec le this (objet BCount actuel)
+     BasicCountRenderer renderer(this, usr_fn);
 
-     // Étape 3 : instancier et appeler le builder
+     // Étape 3 : construire l'IHM avec le builder
      CountIhmBuilder builder;
      QWidget* wdg_tmp = builder.build(*modernConf, static_cast<CountType>(E_Calcul), zn, renderer);
  }
