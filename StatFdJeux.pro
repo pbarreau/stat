@@ -30,7 +30,11 @@ LIBS = -L./sqlExtensions/lib  -lStatPgm-sqlite3-x86_64
 #INCLUDEPATH += "C:/Qt/WorkSpaces/MyFdjeux/sqlExtensions/inc"
 message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
 
-INCLUDEPATH +=inc
+INCLUDEPATH += \
+            . \
+            inc/core \
+            inc/gui \
+            inc/utils
 
 SOURCES += \
     BAction_1.cpp \
@@ -133,8 +137,12 @@ SOURCES += \
     sqlqmtirages.cpp \
     SyntheseDetails.cpp \
     SyntheseGenerale.cpp \
+    src/core/gameconfig.cpp \
     src/core/gamegenerator.cpp \
+    src/gui/countihmbuilder.cpp \
+    src/gui/countrenderer.cpp \
     src/utils/combinatorics.cpp \
+    src/utils/legacyadapter.cpp \
     tirages.cpp \
     TTransparentProxyModel.cpp \
     Version.cpp
@@ -214,8 +222,12 @@ HEADERS  += \
     game.h \
     gererbase.h \
     idlgttirages.h \
+    inc/core/gameconfig.h \
     inc/core/gamegenerator.h \
+    inc/gui/countihmbuilder.h \
+    inc/gui/countrenderer.h \
     inc/utils/combinatorics.h \
+    inc/utils/legacyadapter.h \
     labelclickable.h \
     mainwindow.h \
     monQview.h \
