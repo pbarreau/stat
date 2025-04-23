@@ -2,6 +2,7 @@
 #include <QDebug>
 #include "BTest.h"
 #endif
+#include "BasicCountRenderer.h"  // une implémentation concrète
 
 #include <QGridLayout>
 #include <QTableView>
@@ -25,10 +26,16 @@
 #include "BView_1.h"
 #include "BFpmCmb.h"
 #include "BFpmElm.h"
-
-#include "Bc.h"
+// ----------------------------------
 #include "BcUpl.h"
 #include "db_tools.h"
+#include "CountIhmBuilder.h"
+#include "LegacyAdapter.h"
+
+using namespace Fdj::Core;
+using namespace Fdj::Gui;
+using namespace Fdj::Utils;
+// ----------------------------------
 
 QString BCount::label[E_CountEnd]={"err","elm","cmb","grp","brc","upl"};
 QString BCount::onglet[E_CountEnd]={"Erreur","Zones","Combinaisons","Groupes","Barycentres", "Uplets"};
@@ -50,12 +57,24 @@ QLayout * BCount::usr_UpperItems(int zn, BView_1 *cur_tbv)
  return ret_lay;
 }
 
-QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul, const ptrFn_tbl usr_fn, const int zn)
+QWidget *BCount::startIhm(const stGameConf *pGame, const etCount E_Calcul,   ptrFn_tbl usr_fn, const int zn)
 {
  QWidget * wdg_tmp = new QWidget;
 
  if(E_Calcul == E_CountElm){
   wdg_tmp = startIhm_new(pGame, E_Calcul, usr_fn, zn);
+
+     // Étape 1 : adapter la config
+     std::unique_ptr<GameConfig> modernConf = std::make_unique<GameConfig>(pGame->znCount);
+     for (int i = 0; i < pGame->znCount; ++i)
+         modernConf->setLimitForZone(i, pGame->limites[i].win);
+
+     // Étape 2 : instancier le renderer (qui encapsule usr_fn)
+     BasicCountRenderer renderer(usr_fn);
+
+     // Étape 3 : instancier et appeler le builder
+     CountIhmBuilder builder;
+     QWidget* wdg_tmp = builder.build(*modernConf, static_cast<CountType>(E_Calcul), zn, renderer);
  }
  else{
   wdg_tmp = startIhm_old(pGame, E_Calcul, usr_fn, zn);

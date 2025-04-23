@@ -139,6 +139,7 @@ SOURCES += \
     SyntheseGenerale.cpp \
     src/core/gameconfig.cpp \
     src/core/gamegenerator.cpp \
+    src/gui/basiccountrenderer.cpp \
     src/gui/countihmbuilder.cpp \
     src/gui/countrenderer.cpp \
     src/utils/combinatorics.cpp \
@@ -224,6 +225,7 @@ HEADERS  += \
     idlgttirages.h \
     inc/core/gameconfig.h \
     inc/core/gamegenerator.h \
+    inc/gui/basiccountrenderer.h \
     inc/gui/countihmbuilder.h \
     inc/gui/countrenderer.h \
     inc/utils/combinatorics.h \
