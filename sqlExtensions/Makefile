@@ -20,6 +20,8 @@
 
 
 ####### Compiler, tools and options
+# commande sed entre autre
+PATH := C:/Program Files/Git/usr/bin;$(PATH)
 
 CC            = gcc
 CXX           = g++
@@ -106,6 +108,8 @@ endef
 
 ## ---------------------------------------------------------------------------
 all: $(TARGET_0) $(TARGET_1) $(TARGET_2) | $(NEW_DIR)
+
+libToDo: $(TARGET_0) | $(NEW_DIR)
 
 win: all mingw msysB
 	

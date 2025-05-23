@@ -1700,6 +1700,543 @@ static void differenceFunc(sqlite3_context *context, int argc, sqlite3_value **a
 }
 #endif
 
+/* Mon essai de fonction personnelles */
+/**
+ * @brief Calcule la longueur maximale d'une séquence de nombres consécutifs parmi des entiers fournis.
+ *
+ * Cette fonction SQLite s'utilise comme une fonction scalaire classique :
+ * 
+ * ```sql
+ * SELECT greatest_consecutive_sequence_n(b1, b2, b3, b4, b5);
+ * ```
+ * 
+ * Elle trie les entiers fournis, ignore les doublons, et recherche la plus longue séquence
+ * consécutive croissante (différence de +1 entre les valeurs).
+ *
+ * @param ... Jusqu'à 64 arguments de type INTEGER. Les valeurs NULL sont ignorées.
+ * @return Un entier correspondant à la plus grande séquence consécutive détectée.
+ *
+ * @note Les doublons sont ignorés lors du calcul de séquences.
+ * @warning Les valeurs non entières entraînent une erreur.
+ *
+ * @author Pascal
+ */
+static void greatestConsecutiveSequenceNFunc_V1(sqlite3_context *ctx, int argc, sqlite3_value **argv) {
+    if (argc == 0) {
+        sqlite3_result_null(ctx);
+        return;
+    }
+
+    int values[64];
+    int count = 0;
+
+    // Extraction des entiers
+    for (int i = 0; i < argc && count < 64; ++i) {
+        if (sqlite3_value_type(argv[i]) == SQLITE_INTEGER) {
+            values[count++] = sqlite3_value_int(argv[i]);
+        }
+    }
+
+    if (count == 0) {
+        sqlite3_result_int(ctx, 0);
+        return;
+    }
+
+    // Tri
+    qsort(values, count, sizeof(int), int_cmp);
+
+    // Éliminer les doublons
+    int unique[64];
+    int uniqCount = 0;
+    for (int i = 0; i < count; ++i) {
+        if (i == 0 || values[i] != values[i - 1]) {
+            unique[uniqCount++] = values[i];
+        }
+    }
+
+    // Analyse des suites
+    int best_len = 1;
+    int cur_len = 1;
+
+    for (int i = 1; i < uniqCount; ++i) {
+        if (unique[i] == unique[i - 1] + 1) {
+            cur_len++;
+        } else {
+            if (cur_len > best_len) {
+                best_len = cur_len;
+            }
+            cur_len = 1;
+        }
+    }
+
+    // Vérification de la dernière séquence
+    if (cur_len > best_len) {
+        best_len = cur_len;
+    }
+
+    sqlite3_result_int(ctx, best_len);
+}
+static void greatestConsecutiveSequenceNFunc_V2(sqlite3_context *ctx, int argc, sqlite3_value **argv) {
+    if (argc == 0) {
+        sqlite3_result_null(ctx);
+        return;
+    }
+
+    int values[64]; // max 64 entiers
+    int count = 0;
+
+    for (int i = 0; i < argc && count < 64; ++i) {
+        if (sqlite3_value_type(argv[i]) == SQLITE_INTEGER) {
+            values[count++] = sqlite3_value_int(argv[i]);
+        } else if (sqlite3_value_type(argv[i]) == SQLITE_NULL) {
+            continue; // ignorer NULL
+        } else {
+            sqlite3_result_error(ctx, "Tous les arguments doivent être des entiers ou NULL", -1);
+            return;
+        }
+    }
+
+    if (count == 0) {
+        sqlite3_result_int(ctx, 0);
+        return;
+    }
+
+    qsort(values, count, sizeof(int), int_cmp);
+
+    int maxSeq = 1, curSeq = 1;
+    for (int i = 1; i < count; ++i) {
+        if (values[i] == values[i - 1] + 1) {
+            curSeq++;
+            if (curSeq > maxSeq) maxSeq = curSeq;
+        } else if (values[i] != values[i - 1]) {
+            curSeq = 1;
+        }
+    }
+
+    sqlite3_result_int(ctx, maxSeq);
+}
+
+
+static void longestConsecutiveSequenceValuesFunc(sqlite3_context *ctx, int argc, sqlite3_value **argv) {
+    if (argc == 0) {
+        sqlite3_result_null(ctx);
+        return;
+    }
+
+    int values[64];
+    int count = 0;
+
+    // Extraction des entiers valides
+    for (int i = 0; i < argc && count < 64; ++i) {
+        if (sqlite3_value_type(argv[i]) == SQLITE_INTEGER) {
+            values[count++] = sqlite3_value_int(argv[i]);
+        }
+    }
+
+    if (count == 0) {
+        sqlite3_result_null(ctx);
+        return;
+    }
+
+    // Tri
+    qsort(values, count, sizeof(int), int_cmp);
+
+    // Eliminer doublons
+    int unique[64];
+    int uniqCount = 0;
+    for (int i = 0; i < count; ++i) {
+        if (i == 0 || values[i] != values[i - 1]) {
+            unique[uniqCount++] = values[i];
+        }
+    }
+
+    // Recherche de la plus longue séquence
+    int best_start = 0;
+    int best_len = 1;
+    int cur_start = 0;
+    int cur_len = 1;
+
+    for (int i = 1; i < uniqCount; ++i) {
+        if (unique[i] == unique[i - 1] + 1) {
+            cur_len++;
+        } else {
+            if (cur_len > best_len) {
+                best_len = cur_len;
+                best_start = cur_start;
+            }
+            cur_start = i;
+            cur_len = 1;
+        }
+    }
+
+    // Vérification finale
+    if (cur_len > best_len) {
+        best_len = cur_len;
+        best_start = cur_start;
+    }
+
+    // Construction de la chaîne CSV
+    char buffer[256] = {0};
+    char temp[16];
+    for (int i = 0; i < best_len; ++i) {
+        if (i > 0) strcat(buffer, ",");
+        sprintf(temp, "%d", unique[best_start + i]);
+        strcat(buffer, temp);
+    }
+
+    sqlite3_result_text(ctx, buffer, -1, SQLITE_TRANSIENT);
+}
+
+/* Agregation ici! */
+/**
+ * @brief Compte, parmi tous les tirages, combien ont une séquence consécutive de longueur exacte `target_len`.
+ *
+ * Cette fonction est une fonction d'agrégation SQL :
+ * 
+ * ```sql
+ * SELECT consecutive_sequence_count(3, b1, b2, b3, b4, b5)
+ * FROM tirages_vue_loto_5_1;
+ * ```
+ * 
+ * Elle s'utilise dans une requête agrégée pour évaluer ligne par ligne si la
+ * plus longue séquence consécutive de chaque tirage correspond exactement à `target_len`.
+ *
+ * @param target_len Longueur cible d’une séquence consécutive (entier en première position).
+ * @param ... Entiers représentant les boules d’un tirage (au moins une valeur nécessaire).
+ * @return Nombre total de tirages (lignes) ayant exactement `target_len` valeurs consécutives.
+ *
+ * @note Ignore les NULL ; ignore les doublons.
+ * @warning Les non-entiers entraînent un rejet silencieux.
+ *
+ * @see greatest_consecutive_sequence_n()
+ *
+ * @author Pascal
+ */
+
+/*
+ * Exemple 1:
+     WITH totaux AS (
+       SELECT 1 AS n UNION ALL
+       SELECT 2 UNION ALL
+       SELECT 3 UNION ALL
+       SELECT 4 UNION ALL
+       SELECT 5
+     )
+     SELECT
+       n AS longueur_consecutive,
+       (
+         SELECT consecutive_sequence_count(n, b1, b2, b3, b4, b5)
+         FROM tirages_vue_loto_5_1
+       ) AS nb_tirages
+     FROM totaux;
+ *
+ * Exemple 2:
+     SELECT *
+     FROM tirages_vue_loto_5_1
+     WHERE greatest_consecutive_sequence_n(b1, b2, b3, b4, b5) = 3
+     ORDER BY date DESC, tirage_id DESC;
+ *
+ * Exemple 3:
+     SELECT
+       consecutive_sequence_count(1, b1, b2, b3, b4, b5) AS nb_seq_1,
+       consecutive_sequence_count(2, b1, b2, b3, b4, b5) AS nb_seq_2,
+       consecutive_sequence_count(3, b1, b2, b3, b4, b5) AS nb_seq_3,
+       consecutive_sequence_count(4, b1, b2, b3, b4, b5) AS nb_seq_4,
+       consecutive_sequence_count(5, b1, b2, b3, b4, b5) AS nb_seq_5
+     FROM tirages_vue_loto_5_1;
+ *
+ */ 
+
+typedef struct ConsecutiveCountCtx {
+  int target_len;
+  int count;
+} ConsecutiveCountCtx;
+
+static void consecutiveCountStep(sqlite3_context *ctx, int argc, sqlite3_value **argv) {
+  ConsecutiveCountCtx *p = (ConsecutiveCountCtx *)sqlite3_aggregate_context(ctx, sizeof(*p));
+  if (!p || argc < 2) return;
+
+  if (p->target_len == 0) {
+    p->target_len = sqlite3_value_int(argv[0]);  // premier arg = target_len
+  }
+
+  int values[64];
+  int count = 0;
+
+  for (int i = 1; i < argc && count < 64; ++i) {
+    if (sqlite3_value_type(argv[i]) == SQLITE_INTEGER) {
+      values[count++] = sqlite3_value_int(argv[i]);
+    }
+  }
+
+  if (count == 0) return;
+
+  qsort(values, count, sizeof(int), int_cmp);
+
+  int maxSeq = 1, curSeq = 1;
+  for (int i = 1; i < count; ++i) {
+    if (values[i] == values[i - 1] + 1) {
+      curSeq++;
+      if (curSeq > maxSeq) maxSeq = curSeq;
+    } else if (values[i] != values[i - 1]) {
+      curSeq = 1;
+    }
+  }
+
+  if (maxSeq == p->target_len) {
+    p->count += 1;
+  }
+}
+
+static void consecutiveCountFinal(sqlite3_context *ctx) {
+  ConsecutiveCountCtx *p = (ConsecutiveCountCtx *)sqlite3_aggregate_context(ctx, 0);
+  if (!p) {
+    sqlite3_result_int(ctx, 0);
+    return;
+  }
+  sqlite3_result_int(ctx, p->count);
+}
+/*
+ * fonction d’agrégation glissante
+ *
+ * Analyse soit un groupe (nuplet) dans chaque ligne
+ * moving_frequency_of_group('x,y,z', ...)
+ * Retourne la fréquence (entre 0 et 1) des tirages contenant simultanément tous les éléments du groupe
+ *
+ * Soit une boule spécifique
+ * Variante simple :
+ * moving_frequency_of(41, b1, b2, b3, b4, b5) 
+ * Retourne la fréquence (entre 0 et 1) des tirages contenant la boule
+ * 
+ * Exemple :
+     SELECT
+       date,
+       tirage_id,
+       moving_frequency_of_group('20,41', b1, b2, b3, b4, b5)
+         OVER (ORDER BY date ROWS BETWEEN 9 PRECEDING AND CURRENT ROW)
+         AS frequence_2041
+     FROM tirages_vue_loto_5_1;
+ * 
+ * Et pour obtenir la moyenne globale de cette fréquence glissante :
+ *
+     SELECT AVG(freq) FROM (
+       SELECT
+         moving_frequency_of_group('20,41', b1, b2, b3, b4, b5)
+         OVER (ORDER BY date ROWS BETWEEN 9 PRECEDING AND CURRENT ROW) AS freq
+       FROM tirages_vue_loto_5_1
+     );
+ * 
+ */
+
+typedef struct {
+    int match_count;
+    int total_rows;
+    int group_len;
+    int group_values[32];  // max 32 éléments dans le groupe
+} MovingFrequencyCtx;
+
+static void movingFreqStep(sqlite3_context *ctx, int argc, sqlite3_value **argv) {
+    if (argc < 2) return;
+
+    MovingFrequencyCtx *p = (MovingFrequencyCtx*) sqlite3_aggregate_context(ctx, sizeof(*p));
+    if (!p) return;
+
+    if (p->group_len == 0) {
+        // lire une seule fois la chaîne CSV
+        const unsigned char* txt = sqlite3_value_text(argv[0]);
+        if (!txt) return;
+
+        char *str = sqlite3_mprintf("%s", txt);
+        char *tok = strtok(str, ",");
+
+        while (tok && p->group_len < 32) {
+            p->group_values[p->group_len++] = atoi(tok);
+            tok = strtok(NULL, ",");
+        }
+        sqlite3_free(str);
+    }
+
+    // analyse de la ligne actuelle : argv[1] à argv[argc-1]
+    int found_all = 1;
+    for (int g = 0; g < p->group_len; ++g) {
+        int val = p->group_values[g];
+        int found = 0;
+        for (int i = 1; i < argc; ++i) {
+            if (sqlite3_value_type(argv[i]) == SQLITE_INTEGER &&
+                sqlite3_value_int(argv[i]) == val) {
+                found = 1;
+                break;
+            }
+        }
+        if (!found) {
+            found_all = 0;
+            break;
+        }
+    }
+
+    if (found_all) p->match_count++;
+    p->total_rows++;
+}
+
+static void movingFreqFinal(sqlite3_context *ctx) {
+    MovingFrequencyCtx *p = sqlite3_aggregate_context(ctx, 0);
+    if (!p || p->total_rows == 0) {
+        sqlite3_result_null(ctx);
+    } else {
+        sqlite3_result_double(ctx, (double)p->match_count / p->total_rows);
+    }
+}
+
+static void movingFreqValue(sqlite3_context *ctx) {
+    movingFreqFinal(ctx);
+}
+
+static void movingFreqInverse(sqlite3_context *ctx, int argc, sqlite3_value **argv) {
+    // non géré
+}
+// RSI
+//
+typedef struct {
+    int target;
+    int total_gain;
+    int total_loss;
+    int count;
+} RsiCtx;
+
+static void rsiStep(sqlite3_context *ctx, int argc, sqlite3_value **argv) {
+    if (argc < 2) return;
+
+    RsiCtx *p = (RsiCtx*) sqlite3_aggregate_context(ctx, sizeof(*p));
+    if (!p) return;
+
+    if (p->count == 0) {
+        p->target = sqlite3_value_int(argv[0]); // premier argument = valeur cible
+    }
+
+    int found = 0;
+    for (int i = 1; i < argc; ++i) {
+        if (sqlite3_value_type(argv[i]) == SQLITE_INTEGER &&
+            sqlite3_value_int(argv[i]) == p->target) {
+            found = 1;
+            break;
+        }
+    }
+
+    if (found)
+        p->total_gain++;
+    else
+        p->total_loss++;
+
+    p->count++;
+}
+
+static void rsiFinal(sqlite3_context *ctx) {
+    RsiCtx *p = sqlite3_aggregate_context(ctx, 0);
+    if (!p || p->count == 0) {
+        sqlite3_result_null(ctx);
+        return;
+    }
+
+    double avg_gain = (double)p->total_gain / p->count;
+    double avg_loss = (double)p->total_loss / p->count;
+
+    if (avg_loss == 0) {
+        sqlite3_result_double(ctx, 100.0);
+    } else {
+        double rs = avg_gain / avg_loss;
+        double rsi = 100.0 - (100.0 / (1.0 + rs));
+        sqlite3_result_double(ctx, rsi);
+    }
+}
+
+static void rsiValue(sqlite3_context *ctx) {
+    rsiFinal(ctx);
+}
+
+static void rsiInverse(sqlite3_context *ctx, int argc, sqlite3_value **argv) {
+    // Non implémenté
+}
+
+// rsi_group
+typedef struct {
+    int group[32];
+    int group_len;
+    int total_gain;
+    int total_loss;
+    int count;
+} RsiGroupCtx;
+static void rsiGroupStep(sqlite3_context *ctx, int argc, sqlite3_value **argv) {
+    if (argc < 2) return;
+
+    RsiGroupCtx *p = (RsiGroupCtx*) sqlite3_aggregate_context(ctx, sizeof(*p));
+    if (!p) return;
+
+    if (p->group_len == 0) {
+        const unsigned char *txt = sqlite3_value_text(argv[0]);
+        if (!txt) return;
+
+        char *str = sqlite3_mprintf("%s", txt);
+        char *tok = strtok(str, ",");
+
+        while (tok && p->group_len < 32) {
+            p->group[p->group_len++] = atoi(tok);
+            tok = strtok(NULL, ",");
+        }
+
+        sqlite3_free(str);
+    }
+
+    int match = 1;
+    for (int g = 0; g < p->group_len; ++g) {
+        int val = p->group[g];
+        int found = 0;
+
+        for (int i = 1; i < argc; ++i) {
+            if (sqlite3_value_type(argv[i]) == SQLITE_INTEGER &&
+                sqlite3_value_int(argv[i]) == val) {
+                found = 1;
+                break;
+            }
+        }
+
+        if (!found) {
+            match = 0;
+            break;
+        }
+    }
+
+    if (match)
+        p->total_gain++;
+    else
+        p->total_loss++;
+
+    p->count++;
+}
+
+static void rsiGroupFinal(sqlite3_context *ctx) {
+    RsiGroupCtx *p = sqlite3_aggregate_context(ctx, 0);
+    if (!p || p->count == 0) {
+        sqlite3_result_null(ctx);
+        return;
+    }
+
+    double avg_gain = (double)p->total_gain / p->count;
+    double avg_loss = (double)p->total_loss / p->count;
+
+    if (avg_loss == 0.0) {
+        sqlite3_result_double(ctx, 100.0);
+    } else {
+        double rs = avg_gain / avg_loss;
+        double rsi = 100.0 - (100.0 / (1.0 + rs));
+        sqlite3_result_double(ctx, rsi);
+    }
+}
+
+static void rsiGroupValue(sqlite3_context *ctx) {
+    rsiGroupFinal(ctx);
+}
+
+
 /*
 ** This function registered all of the above C functions as SQL
 ** functions.  This should be the only routine in this file with
@@ -1771,7 +2308,13 @@ int RegisterExtensionFunctions(sqlite3 *db){
     { "padc",               2, 0, SQLITE_UTF8,    0, padcFunc },
     { "strfilter",          2, 0, SQLITE_UTF8,    0, strfilterFunc },
 
+    /* Moi : Pascal */
+    { "greatest_consecutive_sequence_n", -1, 0, SQLITE_UTF8, 0, greatestConsecutiveSequenceNFunc_V1 },
+    { "greatest_pascal", -1, 0, SQLITE_UTF8, 0, greatestConsecutiveSequenceNFunc_V2 },
+    { "longest_consecutive_sequence_values", -1, 0, SQLITE_UTF8, 0, longestConsecutiveSequenceValuesFunc },
+    
   };
+
   /* Aggregate functions */
   static const struct FuncDefAgg {
     char *zName;
@@ -1787,6 +2330,10 @@ int RegisterExtensionFunctions(sqlite3 *db){
     { "median",           1, 0, 0, modeStep,     medianFinalize  },
     { "lower_quartile",   1, 0, 0, modeStep,     lower_quartileFinalize  },
     { "upper_quartile",   1, 0, 0, modeStep,     upper_quartileFinalize  },
+
+    /* Moi : Pascal */
+    { "consecutive_sequence_count", -1, SQLITE_UTF8, 0, consecutiveCountStep, consecutiveCountFinal},
+    
   };
   int i;
 
@@ -1831,6 +2378,52 @@ int RegisterExtensionFunctions(sqlite3 *db){
     }
 #endif
   }
+
+  // Le principe de la moyenne mobile (ou moyenne glissante)
+  // permet de lisser une série de données dans le temps, 
+  // en éliminant les fluctuations courtes pour mieux visualiser une tendance.
+  //
+  // Fonction fenêtrée : moyenne glissante de groupes de boules
+  sqlite3_create_window_function(
+      db, "moving_frequency_of_group", -1, SQLITE_UTF8, 0,
+      movingFreqStep, movingFreqFinal, movingFreqValue, movingFreqInverse, 0
+  );
+  
+  sqlite3_create_window_function(
+      db, "moving_frequency_of", -1, SQLITE_UTF8, 0,
+      movingFreqStep, movingFreqFinal, movingFreqValue, movingFreqInverse, 0
+  );
+
+  // Principe du RSI (Relative Strength Index)
+  // Le RSI mesure la vitesse et l'amplitude des variations
+  // entre gains et pertes sur une fenêtre glissante de N périodes.
+  //
+  // RSI = 100 - (100 / (1 + RS))
+  // RS = moyenne des gains / moyenne des pertes
+  //
+  // gain = apparition (1)
+  // perte = absence (0)
+  //
+  // Nom de la fonction : rsi_strength_group(...)
+  // Prototype :  rsi_strength_group(group_csv, b1, b2, ..., bN)
+  // group_csv : chaîne comme '20,41'
+  // b1..bN : boules du tirage
+  //
+  sqlite3_create_window_function(
+      db, "rsi_strength", -1, SQLITE_UTF8, 0,
+      rsiStep, rsiFinal, rsiValue, rsiInverse, 0
+  );
+// ---  
+  sqlite3_create_window_function(
+      db, "rsi_strength_of_group", -1, SQLITE_UTF8, 0,
+      rsiGroupStep, rsiGroupFinal, rsiGroupValue, rsiInverse, 0
+  );
+  sqlite3_create_window_function(
+      db, "rsi_strength_of", -1, SQLITE_UTF8, 0,
+      rsiGroupStep, rsiGroupFinal, rsiGroupValue, rsiInverse, 0
+  );
+  
+  
   return 0;
 }
 
@@ -1944,4 +2537,3 @@ void print_elem(void *e, int64_t c, void* p){
   int ee = *(int*)(e);
   printf("%d => %lld\n", ee,c);
 }
-
