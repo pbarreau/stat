@@ -1,4 +1,4 @@
-#include "core/GameGenerator.h"
+#include "GameGenerator.h"
 #include "qsqlerror.h"
 #include <QSqlQuery>
 #include <QDebug>

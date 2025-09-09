@@ -1,4 +1,4 @@
-#include "core/GameConfig.h"
+#include "GameConfig.h"
 #include <stdexcept>
 
 namespace Fdj::Core {

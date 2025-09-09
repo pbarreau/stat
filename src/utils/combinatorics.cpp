@@ -1,4 +1,4 @@
-#include "utils/Combinatorics.h"
+#include "Combinatorics.h"
 
 using namespace Fdj::Utils;
 

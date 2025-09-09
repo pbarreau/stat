@@ -11,7 +11,7 @@
 
 MainWindow::MainWindow(BFdj * currDb)
 {
- getPgmVersion();
+ //getPgmVersion();
 
  zoneCentrale = new QMdiArea();
  zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -25,7 +25,7 @@ MainWindow::MainWindow(BFdj * currDb)
 
 MainWindow::MainWindow()
 {
- getPgmVersion();
+ //getPgmVersion();
 
  zoneCentrale = new QMdiArea();
  zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);

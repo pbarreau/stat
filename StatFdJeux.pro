@@ -11,6 +11,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += xml widgets printsupport
 TARGET = StatFdJeux
 TEMPLATE = app
 
+GIT_VERSION = $$system(git describe --always --dirty)
+DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
+
 
 
 #include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
@@ -26,7 +29,7 @@ TEMPLATE = app
 #LIBS = -L.\sqlExtensions\lib  -lStatPgm-sqlite3-i686 ##-lStatPgm-sqlite
 #LIBS = -L./sqlExtensions/lib  -lStatPgm-dlfcn-i686 -lStatPgm-sqlite3-i686
 #LIBS = -L./sqlExtensions/lib  -lStatPgm-dlfcn-x86_64.dll -lStatPgm-sqlite3-x86_64.dll
-LIBS = -L./sqlExtensions/lib  -lStatPgm-sqlite3-x86_64
+LIBS = -L./sqlExtensions/use-libs  -lStatPgm-sqlite3-x86_64
 #INCLUDEPATH += "C:/Qt/WorkSpaces/MyFdjeux/sqlExtensions/inc"
 message( "Building ''$$TARGET'' using LIBS ''$$LIBS''" )
 
@@ -225,6 +228,7 @@ HEADERS  += \
     idlgttirages.h \
     inc/core/gameconfig.h \
     inc/core/gamegenerator.h \
+    inc/core/version.h \
     inc/gui/basiccountrenderer.h \
     inc/gui/countihmbuilder.h \
     inc/gui/countrenderer.h \
