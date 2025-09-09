@@ -466,13 +466,19 @@ bool MainWindow::isHttpRedirect(QNetworkReply *reply)
 }
 
 
-void MainWindow::pslot_about()
+void MainWindow::ShowProgramVersion()
 {
-    QString msg ;//= tr("Version : ") + (L1.at(0).split(",")).at(0)
-                  //+ tr("\nDate : ") + (L1.at(0).split(",")).at(1)
-                  //+ tr("\nRef : ") + (L1.at(0).split(",")).at(4);
+
+    QString msg;
+    QMessageBox box(this);
+
+    box.setWindowTitle(tr("À propos"));
+    box.setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
 
     msg = getAppVersion();
-    QMessageBox::about(this, tr("A propos..."),msg);
+    box.setText(msg);
+    box.exec();
+
+
 }
 

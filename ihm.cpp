@@ -88,7 +88,7 @@ void MainWindow::createIhm()
  tmp_act->setStatusTip(tr("Show the application's About box..."));
  gameMenu->addAction(tmp_act);
  gameToolBar->addAction(tmp_act);
- connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_about()));
+ connect(tmp_act, SIGNAL(triggered()), this, SLOT(ShowProgramVersion())); //pslot_about
 
 
  /// --- quit

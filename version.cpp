@@ -27,8 +27,17 @@ QString getExecutableName() {
 }
 
 QString getAppVersion() {
-    QString buildInfo = QString("A propos de %1\n %2 (%3 %4)")
-                            .arg(getExecutableName(),GIT_VERSION, __DATE__, __TIME__);
+    QString buildInfo = QString("Programme : %1\n"
+                           "Chemin    : %2\n"
+                           "Version   : %3\n"
+                           "Build     : %4 %5\n"
+                           "Qt        : %6")
+                            .arg( getExecutableName(),
+                            QCoreApplication::applicationFilePath(),
+                            QStringLiteral(GIT_VERSION),
+                            __DATE__,
+                            __TIME__,
+                            qVersion());
 
     return buildInfo;
 }
