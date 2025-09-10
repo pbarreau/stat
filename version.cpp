@@ -9,17 +9,7 @@
 #include <QString>
 #include <QFileInfo>
 #include "version.h"
-
-/*#include <QStringList>
-#include "mainwindow.h"
-
-QStringList MainWindow::L1;
-void MainWindow::getPgmVersion()
-{
-L1.append("f7e8819,Thu Nov  3 22:34:26 2022,Pascal,<4.barreau.pascal@gmail.com>,refs/remotes/origin/Test-5");
-L1.append("f7e8819,Thu Nov  3 22:34:26 2022,Pascal,<4.barreau.pascal@gmail.com>,refs/heads/Test-5");
-}
-*/
+//#include "gitversion.h"
 
 QString getExecutableName() {
     // renvoie juste le nom du binaire, sans chemin
@@ -27,13 +17,15 @@ QString getExecutableName() {
 }
 
 QString getAppVersion() {
-    QString buildInfo = QString("Programme : %1\n"
-                           "Chemin    : %2\n"
-                           "Version   : %3\n"
-                           "Build     : %4 %5\n"
-                           "Qt        : %6")
+    QString buildInfo = QString("Programme\t: %1\n"
+                           "Chemin\t: %2\n"
+                           "Branche\t: %3\n"
+                           "Version\t: %4\n"
+                           "Build\t: %5 %6\n"
+                           "Qt\t: %7")
                             .arg( getExecutableName(),
                             QCoreApplication::applicationFilePath(),
+                            QStringLiteral(GIT_BRANCH),
                             QStringLiteral(GIT_VERSION),
                             __DATE__,
                             __TIME__,

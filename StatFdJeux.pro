@@ -11,10 +11,75 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += xml widgets printsupport
 TARGET = StatFdJeux
 TEMPLATE = app
 
-GIT_VERSION = $$system(git describe --always --dirty)
+
+#GIT_HEADER = $$OUT_PWD/inc/core/gitversion.h
+#HEADERS += $$GIT_HEADER
+GIT_VERSION = $$system(git rev-parse --short=8 HEAD)
+#$$system(git describe --always --dirty)
 DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
 
+GIT_BRANCH = $$system(git rev-parse --abbrev-ref HEAD)
+DEFINES += GIT_BRANCH=\\\"$$GIT_BRANCH\\\"
 
+## # --- Fichiers d'entrée pour déclencher la régénération ---
+## # (si HEAD ou les refs changent, on régénère)
+## GIT_INPUTS += $$PWD/.git/HEAD
+## GIT_INPUTS += $$PWD/.git/refs/heads/*
+## GIT_INPUTS += $$PWD/.git/packed-refs
+## 
+## # ========================
+## # Déclare un "custom compiler" pour produire GIT_HEADER
+## # ========================
+## gitver.name = Generate gitversion.h
+## gitver.input = GIT_INPUTS
+## gitver.output = $$GIT_HEADER
+## gitver.commands = $$GIT_GEN_CMD
+## gitver.CONFIG += no_link target_predeps
+## QMAKE_EXTRA_COMPILERS += gitver
+## 
+## # ========================
+## # Unix / Linux / macOS
+## # ========================
+## unix:{
+##     # Récupère version et branche (fallback 'unknown' si git indispo)
+## #    QMAKE_PRE_LINK += ver=$$(git -C $$PWD describe --tags --always --dirty --long 2>/dev/null || echo unknown);\n
+## #    QMAKE_PRE_LINK += br=$$(git -C $$PWD rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown);\n
+##     # Si HEAD détaché, on remplace par le SHA court
+## #    QMAKE_PRE_LINK += [ "$$quote($$)br" = "HEAD" ] && br=$$(git -C $$PWD rev-parse --short=8 HEAD 2>/dev/null || echo HEAD);\n
+##     # N'écrire que si le contenu change
+## #    QMAKE_PRE_LINK += tmp=$$shell_path($$OUT_PWD/gitversion.tmp.h);\n
+## #    QMAKE_PRE_LINK += out=$$shell_path($$GIT_HEADER);\n
+## #    QMAKE_PRE_LINK += { echo "// Auto-generated. Do NOT edit."; \\\n
+## #    QMAKE_PRE_LINK +=   echo "#pragma once"; \\\n
+## #    QMAKE_PRE_LINK +=   echo "#define GIT_VERSION \\\"$${ver}\\\""; \\\n
+## #    QMAKE_PRE_LINK +=   echo "#define GIT_BRANCH  \\\"$${br}\\\""; \\\n
+## #    QMAKE_PRE_LINK += } > $$quote($$OUT_PWD/gitversion.tmp.h);\n
+## #    QMAKE_PRE_LINK += if ! cmp -s "$$quote($$OUT_PWD/gitversion.tmp.h)" "$$quote($$GIT_HEADER)"; then mv "$$quote($$OUT_PWD/gitversion.tmp.h)" "$$quote($$GIT_HEADER)"; else rm -f "$$quote($$OUT_PWD/gitversion.tmp.h)"; fi
+## }
+## 
+## # ========================
+## # Windows (cmd.exe, MSVC/MinGW)
+## # ========================
+## win32 {
+##     GIT_SCRIPT_WIN = $$PWD/inc/core/gen_git_version.bat
+## 
+##     gitver.name = Generate gitversion.h
+##     gitver.input = GIT_INPUTS
+##     gitver.output = $$GIT_HEADER
+##     gitver.commands = $$quote($$GIT_SCRIPT_WIN) $$quote($$PWD) $$quote($$GIT_HEADER)
+##     gitver.CONFIG += no_link target_predeps
+##     QMAKE_EXTRA_COMPILERS += gitver
+## 
+##     PRE_TARGETDEPS += $$GIT_HEADER
+##     QMAKE_CLEAN += $$GIT_HEADER
+## }
+## 
+## 
+## # S'assurer que la cible principale dépend du header généré
+## PRE_TARGETDEPS += $$GIT_HEADER
+
+# Nettoyage
+#QMAKE_CLEAN += $$GIT_HEADER
 
 #include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
 
@@ -262,6 +327,7 @@ RESOURCES += \
     icones_rsc.qrc
 
 DISTFILES += \
+    inc/core/gen_git_version.bat \
     tools/test_uml_qt.qmodel \
     images/document_config.png \
     images/help.png \
