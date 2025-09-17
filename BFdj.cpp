@@ -11,6 +11,7 @@
 
 #include <QMessageBox>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QSqlError>
 #include <QString>
 #include <QFileDialog>
@@ -700,12 +701,12 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  ///pour une zone : {col depart, longueur, val_min, val_max}
  stZnDef ff_loto_1[] =
  {
-  {4,5,1,49},
-  {9,1,1,10}
+  {4,5,1,49,5},
+  {9,1,1,10,1}
  };
  stZnDef p2BisZn[] =
  {
-  {32,5,1,49}
+  {32,5,1,49,5}
  };
 
  /// Nombre de tirage par jour et ptr vers description
@@ -724,22 +725,22 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  /// File format description : Euro
  stZnDef fd_euro_1[] =
  {
-  {4,5,1,50},
-  {9,2,1,10}
+  {4,5,1,50,5},
+  {9,2,1,10,2}
  };
  stRes resEuro_1[]={{2,&fd_euro_1[0]}};
 
  stZnDef fd_euro_2[] =
  {
-  {4,5,1,50},
-  {9,2,1,11}
+  {4,5,1,50,5},
+  {9,2,1,11,2}
  };
  stRes resEuro_2[]={{2,&fd_euro_2[0]}};
 
  stZnDef fd_euro_3[] =
  {
-  {5,5,1,50},
-  {10,2,1,12}
+  {5,5,1,50,5},
+  {10,2,1,12,2}
  };
  stRes resEuro_3[]={{2,&fd_euro_3[0]}};
 
@@ -889,8 +890,9 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
  bool b_retVal= true;
  QSqlQuery query(fdj_db);
 
- QString fileName_2 = FdjDbZip+ "\\" +def->fname;
- QFile fichier(fileName_2);
+ QString exeDir  = QCoreApplication::applicationDirPath();
+ QString fileName_2 = FdjDbZip + "\\" +def->fname;
+ QFile fichier(exeDir + "\\" + fileName_2);
 
  // On ouvre notre fichier en lecture seule et on verifie l'ouverture
  if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))

@@ -1,6 +1,6 @@
 #include "CountIhmBuilder.h"
 #include "BcUpl.h"
-#include "GameConfig.h"
+#include "gameconfig.h"
 #include "CountRenderer.h"
 #include "BView_1.h"
 #include <QTabWidget>
@@ -8,7 +8,7 @@
 #include <QString>
 #include "LegacyAdapter.h"
 
-namespace Fdj::Gui {
+namespace Fdj { namespace Gui {
 
 CountIhmBuilder::CountIhmBuilder() = default;
 
@@ -36,4 +36,4 @@ QWidget* CountIhmBuilder::build(const Core::GameConfig& game, CountType type, Zo
     return tabWidget;
 }
 
-} // namespace Fdj::Gui
+} } // namespace Fdj::Gui

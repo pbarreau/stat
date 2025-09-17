@@ -5,6 +5,7 @@
 
 /// git for-each-ref  --points-at=HEAD --sort='-version:refname' --format='L1.append("%(objectname:short),%(authordate:format:%c),%(authorname),%(authoremail),%(refname)");'
 
+
 #include <QCoreApplication>
 #include <QString>
 #include <QFileInfo>
