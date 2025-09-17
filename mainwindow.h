@@ -111,7 +111,7 @@ class MainWindow : public QMainWindow
   bool pslot_saveAs();
   void pslot_GetFromFdj(etFdj fdjType);
   void slot_replyFinished(QNetworkReply *resp);
-  void pslot_about();
+  void ShowProgramVersion();
   void pslot_closeTabDetails(int index);
 
  public slots:

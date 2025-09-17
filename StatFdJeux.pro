@@ -12,8 +12,14 @@ TARGET = StatFdJeux
 TEMPLATE = app
 
 
+#GIT_HEADER = $$OUT_PWD/inc/core/gitversion.h
+#HEADERS += $$GIT_HEADER
+GIT_VERSION = $$system(git rev-parse --short=8 HEAD)
+#$$system(git describe --always --dirty)
+DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
 
-#include( C:/Devel/kdchart-2.5.1-source/examples/examples.pri )
+GIT_BRANCH = $$system(git rev-parse --abbrev-ref HEAD)
+DEFINES += GIT_BRANCH=\\\"$$GIT_BRANCH\\\"
 
 #win32:CONFIG(release, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchart2
 #else:win32:CONFIG(debug, debug|release): LIBS = -LC:/Devel/kdchart-2.5.1-source/lib/ -lkdchartd2

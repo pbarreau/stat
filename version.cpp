@@ -6,11 +6,31 @@
 /// git for-each-ref  --points-at=HEAD --sort='-version:refname' --format='L1.append("%(objectname:short),%(authordate:format:%c),%(authorname),%(authoremail),%(refname)");'
 
 
-#include <QStringList>
-#include "mainwindow.h"
-QStringList MainWindow::L1;
-void MainWindow::getPgmVersion()
-{
-L1.append("f7e8819,Thu Nov  3 22:34:26 2022,Pascal,<4.barreau.pascal@gmail.com>,refs/remotes/origin/Test-5");
-L1.append("f7e8819,Thu Nov  3 22:34:26 2022,Pascal,<4.barreau.pascal@gmail.com>,refs/heads/Test-5");
+#include <QCoreApplication>
+#include <QString>
+#include <QFileInfo>
+#include "version.h"
+//#include "gitversion.h"
+
+QString getExecutableName() {
+    // renvoie juste le nom du binaire, sans chemin
+    return QFileInfo(QCoreApplication::applicationFilePath()).fileName();
+}
+
+QString getAppVersion() {
+    QString buildInfo = QString("Programme\t: %1\n"
+                           "Chemin\t: %2\n"
+                           "Branche\t: %3\n"
+                           "Version\t: %4\n"
+                           "Build\t: %5 %6\n"
+                           "Qt\t: %7")
+                            .arg( getExecutableName(),
+                            QCoreApplication::applicationFilePath(),
+                            QStringLiteral(GIT_BRANCH),
+                            QStringLiteral(GIT_VERSION),
+                            __DATE__,
+                            __TIME__,
+                            qVersion());
+
+    return buildInfo;
 }

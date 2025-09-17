@@ -11,7 +11,7 @@
 
 MainWindow::MainWindow(BFdj * currDb)
 {
- getPgmVersion();
+ //getPgmVersion();
 
  zoneCentrale = new QMdiArea();
  zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -25,7 +25,7 @@ MainWindow::MainWindow(BFdj * currDb)
 
 MainWindow::MainWindow()
 {
- getPgmVersion();
+ //getPgmVersion();
 
  zoneCentrale = new QMdiArea();
  zoneCentrale->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -88,7 +88,7 @@ void MainWindow::createIhm()
  tmp_act->setStatusTip(tr("Show the application's About box..."));
  gameMenu->addAction(tmp_act);
  gameToolBar->addAction(tmp_act);
- connect(tmp_act, SIGNAL(triggered()), this, SLOT(pslot_about()));
+ connect(tmp_act, SIGNAL(triggered()), this, SLOT(ShowProgramVersion())); //pslot_about
 
 
  /// --- quit

@@ -11,6 +11,7 @@
 
 #include <QMessageBox>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QSqlError>
 #include <QString>
 #include <QFileDialog>
@@ -597,7 +598,7 @@ bool BFdj::crt_TblFdj(stGameConf *pGame)
  return b_retVal;
 }
 
-#if 1
+#if 0
 bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
 {
  bool b_retVal= true;
@@ -700,12 +701,12 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  ///pour une zone : {col depart, longueur, val_min, val_max}
  stZnDef ff_loto_1[] =
  {
-  {4,5,1,49},
-  {9,1,1,10}
+  {4,5,1,49,5},
+  {9,1,1,10,1}
  };
  stZnDef p2BisZn[] =
  {
-  {32,5,1,49}
+  {32,5,1,49,5}
  };
 
  /// Nombre de tirage par jour et ptr vers description
@@ -724,22 +725,22 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
  /// File format description : Euro
  stZnDef fd_euro_1[] =
  {
-  {4,5,1,50},
-  {9,2,1,10}
+  {4,5,1,50,5},
+  {9,2,1,10,2}
  };
  stRes resEuro_1[]={{2,&fd_euro_1[0]}};
 
  stZnDef fd_euro_2[] =
  {
-  {4,5,1,50},
-  {9,2,1,11}
+  {4,5,1,50,5},
+  {9,2,1,11,2}
  };
  stRes resEuro_2[]={{2,&fd_euro_2[0]}};
 
  stZnDef fd_euro_3[] =
  {
-  {5,5,1,50},
-  {10,2,1,12}
+  {5,5,1,50,5},
+  {10,2,1,12,2}
  };
  stRes resEuro_3[]={{2,&fd_euro_3[0]}};
 
@@ -782,6 +783,7 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
 
  /// Liste des fichiers pour loto
  fId = 0;
+#if 0
  stFdjData loto[]=
  {
   {"grandloto_201912.csv",fId++, {false,2,1,1,&resLoto[0]} },
@@ -797,6 +799,68 @@ bool BFdj::chargerDonneesFdjeux(stGameConf *pGame, QString destTable)
 
  ///   {"loto.csv",fId++, {false,2,1,1,&resLoto[0]} }, 6B+1E
  ///   {"sloto.csv",fId++, {false,2,1,1,&resLoto[0]} },
+#endif
+
+
+ static  stZnDef zn_loto_0[] = { { 4, 5, 1, 49, 5 }, { 9, 1, 1, 10, 1 } };
+ static  stZnDef zn_loto_1[] = { { 4, 5, 1, 49, 5 }, { 9, 1, 1, 10, 1 } };
+ static  stZnDef zn_loto_2[] = { { 4, 5, 1, 49, 5 }, { 9, 1, 1, 10, 1 } };
+ static  stZnDef zn_loto_3[] = { { 5, 7, 1, 49, 7 } };
+ static  stZnDef zn_loto_4[] = { { 4, 5, 1, 49, 5 }, { 9, 1, 1, 10, 1 } };
+ static  stZnDef zn_loto_5[] = { { 4, 5, 1, 49, 5 }, { 9, 1, 1, 10, 1 }, { 32, 5, 1, 49, 5 } };
+ static  stZnDef zn_loto_6[] = { { 4, 5, 1, 49, 5 }, { 9, 1, 1, 10, 1 } };
+ static  stZnDef zn_loto_7[] = { { 4, 5, 1, 49, 5 }, { 9, 1, 1, 10, 1 } };
+ static  stZnDef zn_loto_8[] = { { 4, 5, 1, 49, 5 }, { 9, 1, 1, 10, 1 } };
+ static  stZnDef zn_loto_9[] = { { 4, 7, 1, 49, 7 } };
+ static  stZnDef zn_loto_10[] = { { 4, 5, 1, 49, 5 }, { 9, 1, 1, 10, 1 } };
+
+ static  stRes res_loto_0 = { 2, zn_loto_0 };
+ static  stRes res_loto_1 = { 2, zn_loto_1 };
+ static  stRes res_loto_2 = { 2, zn_loto_2 };
+ static  stRes res_loto_3 = { 1, zn_loto_3 };
+ static  stRes res_loto_4 = { 2, zn_loto_4 };
+ static  stRes res_loto_5 = { 2, zn_loto_5 };
+ static  stRes res_loto_6 = { 2, zn_loto_6 };
+ static  stRes res_loto_7 = { 2, zn_loto_7 };
+ static  stRes res_loto_8 = { 2, zn_loto_8 };
+ static  stRes res_loto_9 = { 1, zn_loto_9 };
+ static  stRes res_loto_10 = { 2, zn_loto_10 };
+
+  stFdjData loto[] = {
+     // De Decembre 2017 a Decembre 2018 - lotonoel2017.csv
+     { "lotonoel2017.csv", fId++, { true, 2, 1, 1, &res_loto_0 } },
+     // De Decembre 2019 a Decembre 2024 - grandloto_201912.csv
+     { "grandloto_201912.csv", fId++, { true, 2, 1, 1, &res_loto_1 } },
+     // De Fevrier 2019 a Novembre 2019 - loto_201902.csv
+     { "loto_201902.csv", fId++, { true, 2, 1, 1, &res_loto_2 } },
+#if 0
+     // De Mai 1976 a Octobre 2008 - loto.csv
+     // 6 boules + 1 complementaire
+     // insert into tmp_B_fdj(D,J,b1,b2,b3,b4,b5,b6,b7,file)
+     // values('2008-10-04','SAMEDI',33,32,42,16,15,49,37,3)
+     { "loto.csv", fId++, { true, 3, 2, 1, &res_loto_3 } },
+#endif
+     // De Mars 2017 a Fevrier 2019 - loto2017.csv
+     { "loto2017.csv", fId++, { true, 2, 1, 1, &res_loto_4 } },
+     // De novembre 2019 a Avril 2025 - loto_201911.csv
+     { "loto_201911.csv", fId++, { true, 2, 1, 1, &res_loto_5 } },
+     // De Octobre 2008 a Mars 2017 - nouveau_loto.csv
+     { "nouveau_loto.csv", fId++, { true, 2, 1, 1, &res_loto_6 } },
+     // De Fevrier 2009 a Janvier 2017 - nouveau_superloto.csv
+     { "nouveau_superloto.csv", fId++, { true, 2, 1, 1, &res_loto_7 } },
+     // De juillet 2019 a Fevrier 2025 - superloto_201907.csv
+     { "superloto_201907.csv", fId++, { true, 2, 1, 1, &res_loto_8 } },
+#if 0
+     // De Mai 1996 a Juin 2008 - sloto.csv
+     // 6 boules + 1 complementaire
+     // insert into tmp_B_fdj(D,J,b1,b2,b3,b4,b5,b6,b7,file)
+     // values('2008-06-13','VENDREDI',34,25,37,42,15,36,49,8)
+     { "sloto.csv", fId++, { true, 2, 1, 1, &res_loto_9 } },
+#endif
+     // De Octobre 2017 a Septembre 2018 - superloto2017.csv
+     { "superloto2017.csv", fId++, { true, 2, 1, 1, &res_loto_10 } }
+ };
+
 
  if(pGame->eFdjType == eFdjEuro){
   nbelemt = sizeof(euroMillions)/sizeof(stFdjData);
@@ -826,8 +890,9 @@ bool BFdj::LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName)
  bool b_retVal= true;
  QSqlQuery query(fdj_db);
 
- QString fileName_2 = FdjDbZip+ "\\" +def->fname;
- QFile fichier(fileName_2);
+ QString exeDir  = QCoreApplication::applicationDirPath();
+ QString fileName_2 = FdjDbZip + "\\" +def->fname;
+ QFile fichier(exeDir + "\\" + fileName_2);
 
  // On ouvre notre fichier en lecture seule et on verifie l'ouverture
  if (!fichier.open(QIODevice::ReadOnly | QIODevice::Text))

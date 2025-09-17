@@ -18,6 +18,8 @@
 #include <QUrl>
 #include <cstdio>
 
+#include "version.h"
+
 #include "BCompress.h"
 #include "game.h"
 
@@ -464,11 +466,19 @@ bool MainWindow::isHttpRedirect(QNetworkReply *reply)
 }
 
 
-void MainWindow::pslot_about()
+void MainWindow::ShowProgramVersion()
 {
-    QString msg = tr("Version : ") + (L1.at(0).split(",")).at(0)
-                  + tr("\nDate : ") + (L1.at(0).split(",")).at(1)
-                  + tr("\nRef : ") + (L1.at(0).split(",")).at(4);
-    QMessageBox::about(this, tr("A propos de Prevision"),msg);
+
+    QString msg;
+    QMessageBox box(this);
+
+    box.setWindowTitle(tr("A propos"));
+    box.setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+
+    msg = getAppVersion();
+    box.setText(msg);
+    box.exec();
+
+
 }
 
