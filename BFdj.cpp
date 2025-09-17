@@ -126,6 +126,7 @@ stGameConf * BFdj::getConfig()
 bool BFdj::ouvrirBase(stFdj *prm)
 {
  bool b_retVal = true;
+ QStringList mesLibs = QCoreApplication::libraryPaths();
 
  QString use_cnx = mk_IdCnx(prm->typeJeu);
  fdj_db = QSqlDatabase::addDatabase("QSQLITE",use_cnx);
@@ -235,7 +236,7 @@ bool BFdj::AuthoriseChargementExtension(void)
    if(sqlite_status == SQLITE_ERROR)
     return false;
   }
-
+//
  /// Verrification
  int thread_value = sqlite3_threadsafe();
 
@@ -255,7 +256,8 @@ bool BFdj::AuthoriseChargementExtension(void)
             // https://stackoverflow.com/questions/30139983/how-do-i-identify-x86-vs-x86-64-at-compile-time-in-gcc
 #if defined(__x86_64__)
             /* 64 bit detected */
-            msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-extension-functions-x86_64.dll')";
+            msg = "SELECT load_extension('libStatPgm-extension-functions-x86_64.dll')";
+//            msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-extension-functions-x86_64.dll')";
 #endif
 #if defined(__i386__)
             /* 32 bit x86 detected */

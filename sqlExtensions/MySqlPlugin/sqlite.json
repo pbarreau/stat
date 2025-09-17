@@ -1,0 +1,6 @@
+{
+  "Keys": ["QSQLITE"],
+  "Provider": "sqlite",
+  "Description": "SQLite driver with load_extension enabled",
+  "Version": 1
+}
