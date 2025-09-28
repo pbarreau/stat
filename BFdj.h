@@ -14,84 +14,88 @@
 
 class BFdj: public QObject
 {
- private:
 
-  typedef struct _stErr2
-  {
-    bool status;
-    QString msg;
-  }stErr2;
+    Q_OBJECT
 
-  typedef struct _stZnDef
-  {
-    int pos;    /// colonne de debut zone
-    int len;    /// taille dans la zone
-    int min;    /// valeur mini possible
-    int max;    /// valeur maxi possible
-    int win;    /// nb pour gagner
-  }stZnDef;
+private:
 
-  typedef struct _stRes
-  {
-    int nbZone;   /// Nb zone a lire
-    stZnDef *pZn; /// Pointeur vers caracteristique de chacune des zones
-  }stRes;
+    typedef struct _stErr2
+    {
+        bool status;
+        QString msg;
+    }stErr2;
 
-  typedef struct _stConfFdjData
-  {
-    bool wget;     /// A telecharger ?
-    int colDate;   /// Colonne date
-    int colDay;    /// Colonne jour
-    int nbResu;    /// Nombre de resultat sur une ligne du fichier
-    stRes *tabRes; /// Pointeur sur description des resultats
-  }stConfFdjData;
+    typedef struct _stZnDef
+    {
+        int pos;    /// colonne de debut zone
+        int len;    /// taille dans la zone
+        int min;    /// valeur mini possible
+        int max;    /// valeur maxi possible
+        int win;    /// nb pour gagner
+    }stZnDef;
 
-  /// Tirage file format
-  typedef struct _stFdjData
-  {
-    QString fname;  /// fichier en cours de traitement
-    int id;
-    stConfFdjData param;
-  }stFdjData;
+    typedef struct _stRes
+    {
+        int nbZone;   /// Nb zone a lire
+        stZnDef *pZn; /// Pointeur vers caracteristique de chacune des zones
+    }stRes;
+
+    typedef struct _stConfFdjData
+    {
+        bool wget;     /// A telecharger ?
+        int colDate;   /// Colonne date
+        int colDay;    /// Colonne jour
+        int nbResu;    /// Nombre de resultat sur une ligne du fichier
+        stRes *tabRes; /// Pointeur sur description des resultats
+    }stConfFdjData;
+
+    /// Tirage file format
+    typedef struct _stFdjData
+    {
+        QString fname;  /// fichier en cours de traitement
+        int id;
+        stConfFdjData param;
+    }stFdjData;
 
 
-  Q_OBJECT
 
 
- public:
-  BFdj();
-  BFdj(stFdj *prm, QString cnx = "");
-  void setConfig(stFdj *prm, QString cnx = "");
-  stGameConf *getConfig();
-  static QString getCurDbFile(void);
+public:
+    BFdj();
+    explicit BFdj(stFdj *prm, QString cnx = QString(), QObject *parent = nullptr);
+    bool isReady() const { return m_ready; }
+    void setConfig(stFdj *prm, QString cnx = "");
+    stGameConf *getConfig();
+    static QString getCurDbFile(void);
 
-  public slots:
-  void BSlotMyQueryResults(const QString st_qry, const QString st_tbl="",
-                                   BView *bv_dst=nullptr);
+public slots:
+    void BSlotMyQueryResults(const QString st_qry, const QString st_tbl="",
+                             BView *bv_dst=nullptr);
 
- private:
-  bool ouvrirBase(stFdj *prm);
-  bool AuthoriseChargementExtension(void);
-  bool OPtimiseAccesBase(void);
-  QString mk_IdCnx(etFdj type);
-  QString mk_IdDsk(etFdj type);
-  stGameConf *init(stFdj *prm);
+private:
+    bool m_ready = false;
+    bool ouvrirBase(stFdj *prm);
+    bool AuthoriseChargementExtension(void);
+    bool OPtimiseAccesBase(void);
+    QString mk_IdCnx(etFdj type);
+    QString mk_IdDsk(etFdj type);
+    stGameConf *init(stFdj *prm);
 
-  bool crt_TblFdj(stGameConf *pGame);
-  bool chargerDonneesFdjeux(stGameConf *pGame, QString destTable);
-  bool LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName);
-  QString DateAnormer(QString input);
-  QSqlQuery executeQuery(const QString& query);
-  QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
-  QString SelTirDay(int nbTir);
+    bool crt_TblFdj(stGameConf *pGame);
+    bool chargerDonneesFdjeux(stGameConf *pGame, QString destTable);
+    bool LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName);
+    QString DateAnormer(QString input);
+    QSqlQuery executeQuery(const QString& query);
+    QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
+    QString SelTirDay(int nbTir);
 
- private:
-  static int total_items;
-  static QString dsk_db;
+private:
+    static int total_items;
+    static QString dsk_db;
 
-  int cur_item;
-  QSqlDatabase fdj_db;
-  stGameConf *fdjConf;
+    int cur_item;
+    QSqlDatabase fdj_db;
+    stGameConf *fdjConf;
 
 };
 

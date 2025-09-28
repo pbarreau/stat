@@ -20,71 +20,81 @@ class BCount;
 
 class BTirAna : public QWidget
 {
- Q_OBJECT
- public:
- explicit BTirAna(stGameConf *pGame, QWidget *parent=nullptr);
- QString getTor(); ///get Table Of Result
- QString getSql();
- etTir getNature();
- BTirAna *self();
- BcUpl *getUpl(void);
+    Q_OBJECT
+public:
+    explicit BTirAna(stGameConf *pGame, QWidget *parent=nullptr);
+    void startAsync();  // lance l’analyse sans bloquer
 
- static int getCounter(void);
- static QString getFilteringHeaders(const stGameConf *pGame, int zn, QString msg_template="t2.%1", QString separator=",");
+    QString getTor(); ///get Table Of Result
+    QString getSql();
+    etTir getNature();
+    BTirAna *self();
+    BcUpl *getUpl(void);
 
- private:
- bool isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QString cnx);
- void startAnalyse(stGameConf *pGame, QString tbl_tirages);
+    static int getCounter(void);
+    static QString getFilteringHeaders(const stGameConf *pGame, int zn, QString msg_template="t2.%1", QString separator=",");
 
- bool mkTblLstElm(stGameConf *pGame, QString tbName, QSqlQuery *query);
- bool mkTblLstCmb(stGameConf *pGame, QString tbName, QSqlQuery *query);
- bool mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query);
- bool mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *query);
+private:
+    bool isPresentUsefullTables(stGameConf *pGame, QString tbl_tirages, QString cnx);
+    void startAnalyse(stGameConf *pGame, QString tbl_tirages);
 
- QStringList* setFilteringRules(stGameConf *pGame, QString tbl_tirages, int zn);
- QString sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, int zn);
- QString sqlMkAnaCmb(stGameConf *pGame, QString tbl_ana_tmp, int zn);
+    bool mkTblLstElm(stGameConf *pGame, QString tbName, QSqlQuery *query);
+    bool mkTblLstCmb(stGameConf *pGame, QString tbName, QSqlQuery *query);
+    bool mkTblGmeDef(stGameConf *pGame, QString tbName,QSqlQuery *query);
+    bool mkTblFiltre(stGameConf *pGame, QString tbName,QSqlQuery *query);
 
- bool AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName);
- bool SupprimerVueIntermediaires(void);
- void PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName);
- QVBoxLayout *getVisual(stGameConf *pGame, QTabWidget *ana, etTir info = eTirFdj);
- QHBoxLayout *getBar_FltAna(stGameConf *pGame, etTir info = eTirFdj);
+    QStringList* setFilteringRules(stGameConf *pGame, QString tbl_tirages, int zn);
+    QString sqlMkAnaBrc(stGameConf *pGame, QString tbl_tirages, int zn);
+    QString sqlMkAnaCmb(stGameConf *pGame, QString tbl_ana_tmp, int zn);
 
- bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn);
- QString getFieldsFromZone(const stGameConf *pGame, int zn, QString alias);
- B2LstSel *construireSelection();
- B2LstSel *effacerSelection(B2LstSel *sel);
+    bool AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int zn, QString tbName);
+    bool SupprimerVueIntermediaires(void);
+    void PresenterResultats(stGameConf *pGame, QStringList ** info, QString tbName);
+    QVBoxLayout *getVisual(stGameConf *pGame, QTabWidget *ana, etTir info = eTirFdj);
+    QHBoxLayout *getBar_FltAna(stGameConf *pGame, etTir info = eTirFdj);
 
- typedef bool(BTirAna::*ptrFnUsr)(const stGameConf *, QString, QString, int );
+    bool usrFn_X1(const stGameConf *pGame, QString curName, QString curTarget, int zn);
+    QString getFieldsFromZone(const stGameConf *pGame, int zn, QString alias);
+    B2LstSel *construireSelection();
+    B2LstSel *effacerSelection(B2LstSel *sel);
 
- signals:
- void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
- void BSig_FilterRequest(BTirAna *from,const Bp::E_Ico ana, const B2LstSel * sel);
- void BSig_RazSelection();
- void BSig_AnaLgn(const int &l_id, const int &prx_id);
- void BSig_Show_Flt(const B2LstSel * sel);
- void BSig_AnaUplFdjShow(const QString items, int zn);
+    typedef bool(BTirAna::*ptrFnUsr)(const stGameConf *, QString, QString, int );
 
- public slots:
- void BSlot_MousePressed(const QModelIndex & index, const int &zn, const etCount &eTyp);
- void BSlot_AnaLgnShow(const int &lgn_id, const int &prx_id);
- void BSlot_Show_Flt(const B2LstSel * sel);
- void BSlot_UplFdjShow(const QString items, int zn);
+signals:
+    void sigProgress(int percent, QString step);
+    void sigFinished(bool ok, QString err);
 
- private slots:
- void BSlot_ActionButton(int btn_id);
+    void bsg_clicked(const QModelIndex & index, const int &zn, const etCount &eTyp);
+    void BSig_FilterRequest(BTirAna *from,const Bp::E_Ico ana, const B2LstSel * sel);
+    void BSig_RazSelection();
+    void BSig_AnaLgn(const int &l_id, const int &prx_id);
+    void BSig_Show_Flt(const B2LstSel * sel);
+    void BSig_AnaUplFdjShow(const QString items, int zn);
 
- private:
- static int total_analyses;
- BTirAna *addr;
- etTir typeAnalyse;
- BcUpl *tabsUpl;
- QString src_sql;
- QString src_tbl;
- QSqlDatabase db_1;
- QMap<QString,ptrFnUsr> map_UsrFn;
- QVector<BCount *> mesComptages;
+public slots:
+    void BSlot_MousePressed(const QModelIndex & index, const int &zn, const etCount &eTyp);
+    void BSlot_AnaLgnShow(const int &lgn_id, const int &prx_id);
+    void BSlot_Show_Flt(const B2LstSel * sel);
+    void BSlot_UplFdjShow(const QString items, int zn);
+
+private slots:
+    void BSlot_ActionButton(int btn_id);
+
+private:
+    static int total_analyses;
+    BTirAna *addr;
+    etTir typeAnalyse;
+    BcUpl *tabsUpl;
+    QString src_sql;
+    QString src_tbl;
+    QSqlDatabase db_1;
+    QMap<QString,ptrFnUsr> map_UsrFn;
+    QVector<BCount *> mesComptages;
+
+    stGameConf *m_game = nullptr;
+    QString m_tbl;
+    QSqlDatabase m_db;
+
 };
 
 #endif // BTirAna_H

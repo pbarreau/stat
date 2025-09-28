@@ -544,7 +544,7 @@ bool GererBase::ouvrirBase(bool action,etFdj type)
             else{
                 /// Chargement librairie math
                 if(!(b_retVal=AuthoriseChargementExtension())){
-                    st_query = QString("Chargement sqMath echec !!\n");
+                    st_query = QString("Chargement 2 : sqMath echec !!\n");
                     QMessageBox::critical(nullptr,"Stat",st_query,QMessageBox::Ok);
                 }
             }

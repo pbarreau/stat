@@ -40,36 +40,34 @@ BFdj::BFdj()
 
 }
 
-BFdj::BFdj(stFdj *prm, QString cnx)
+BFdj::BFdj(stFdj *prm, QString cnx, QObject *parent)
+    : QObject(parent)
 {
- QString use_cnx = cnx;
- QString stConfFile = "";
- bool b_retVal = true;
+    QString use_cnx = cnx;
+    bool b_retVal = true;
 
- cur_item = total_items;
- total_items++;
- fdjConf = nullptr;
+    cur_item = total_items++;
+    fdjConf = nullptr;
 
- /// Doit on utiliser une connexion deja etablie
- if(!use_cnx.size()){
-  b_retVal = ouvrirBase(prm);
- }
- else {
-  // Etablir connexion a la base
-  fdj_db = QSqlDatabase::database(use_cnx);
-  b_retVal = fdj_db.isValid();
- }
+    if (use_cnx.isEmpty()) {
+        b_retVal = ouvrirBase(prm);
+    } else {
+        fdj_db = QSqlDatabase::database(use_cnx);
+        b_retVal = fdj_db.isValid();
+    }
 
- if(b_retVal ==false){
-  QString str_error = fdj_db.lastError().text();
-  QMessageBox::critical(nullptr, cnx, str_error,QMessageBox::Yes);
-  return;
- }
+    if (!b_retVal) {
+        QMessageBox::critical(nullptr, tr("Base FDJ"),
+                              fdj_db.lastError().text(), QMessageBox::Ok);
+        m_ready = false;
+        return; // objet valide mais non prêt
+    }
 
- stGameConf *curConf = init(prm);
- crt_TblFdj(curConf);
+    stGameConf *curConf = init(prm);
+    crt_TblFdj(curConf);
+    fdjConf = curConf;
 
- fdjConf = curConf;
+    m_ready = (fdjConf != nullptr);
 }
 
 void BFdj::setConfig(stFdj *prm, QString cnx)
@@ -180,7 +178,7 @@ bool BFdj::ouvrirBase(stFdj *prm)
    else{
     /// Chargement librairie math
     if(!(b_retVal=AuthoriseChargementExtension())){
-     st_query = QString("Chargement sqMath echec !!\n");
+     st_query = QString("Chargement 1 : sqMath echec !!\n");
      QMessageBox::critical(nullptr,"Stat",st_query,QMessageBox::Ok);
     }
     else {
@@ -256,8 +254,8 @@ bool BFdj::AuthoriseChargementExtension(void)
             // https://stackoverflow.com/questions/30139983/how-do-i-identify-x86-vs-x86-64-at-compile-time-in-gcc
 #if defined(__x86_64__)
             /* 64 bit detected */
-            msg = "SELECT load_extension('libStatPgm-extension-functions-x86_64.dll')";
-//            msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-extension-functions-x86_64.dll')";
+//            msg = "SELECT load_extension('libStatPgm-extension-functions-x86_64.dll')";
+            msg = "SELECT load_extension('./sqlExtensions/lib/libStatPgm-extension-functions-x86_64.dll')";
 #endif
 #if defined(__i386__)
             /* 32 bit x86 detected */
