@@ -611,8 +611,20 @@ bool BTirAna::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int
 {
     bool b_retVal = true;
     QString msg = "";
+
+    const QString baseCnxName = m_game->db_ref->cnx;
     QSqlDatabase use_db = *(pGame->db_ref->use_db);
-    QSqlQuery query(use_db); //db_1);
+    const QString use_dbCnxName = use_db.connectionName();
+
+    const QString workerCnx = QString("fdj_ana_%1_%2")
+                                  .arg((qulonglong)QThread::currentThreadId())
+                                  .arg(QDateTime::currentMSecsSinceEpoch());
+    const QString dbFile      = QSqlDatabase::database(use_dbCnxName).databaseName();
+
+    QSqlDatabase db = QSqlDatabase::cloneDatabase(use_db, workerCnx);
+    db.setDatabaseName(dbFile);
+
+    QSqlQuery query(db); //db_1);
 
     QString stDefBoules = "B_elm";
     QString st_OnDef = "";
