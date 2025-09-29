@@ -149,9 +149,10 @@ void MainWindow::EtudierJeu(etFdj curGame, bool use_odb, bool fdj_new, bool upl_
         delete ana_tirages;
     }
     else{
-////        ui->zoneAnalyseLayout->addWidget(ana_tirages);
+        ////        ui->zoneAnalyseLayout->addWidget(ana_tirages);
 
-        QWidget *w_DataFenetre = lst_tirages->showFdj(ana_tirages);
+        //QWidget *w_DataFenetre = lst_tirages->showFdj(ana_tirages);
+        QWidget *w_DataFenetre = new QWidget();
         QMdiSubWindow *subWindow = zoneCentrale->addSubWindow(w_DataFenetre);
         subWindow->move(0,0);
 

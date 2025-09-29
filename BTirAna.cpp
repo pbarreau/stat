@@ -1,4 +1,4 @@
-#include "qtconcurrentrun.h"
+#include <QtConcurrent>
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #include "BTest.h"
@@ -105,15 +105,26 @@ BTirAna::BTirAna(stGameConf *pGame, QWidget *parent)
 #endif
 
 void BTirAna::startAsync() {
+    const QString baseCnxName = m_game->db_ref->cnx;
+    //QSqlDatabase base = QSqlDatabase::database(baseCnxName);
+    const QString dbFile      = QSqlDatabase::database(baseCnxName).databaseName();
+    const QString tblName     = m_tbl;
+
     // Afficher spinner / barre de progression
     emit sigProgress(0, tr("Initialisation"));
 
-    auto future = QtConcurrent::run([=](){
+    auto future = QtConcurrent::run([baseCnxName, dbFile, tblName, this](){
         // 1) Ouvrir une connexion dédiée
-        const QString workerCnx = QString("fdj_ana_%1").arg((qulonglong)QThread::currentThreadId());
+        const QString workerCnx = QString("fdj_ana_%1_%2")
+                                      .arg((qulonglong)QThread::currentThreadId())
+                                      .arg(QDateTime::currentMSecsSinceEpoch());
         {
-            QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", workerCnx);
-            db.setDatabaseName(m_db.databaseName());
+            // 1) Cloner la connexion existante (driver + options)
+            // 1) Cloner une connexion valide => copie du driver et des options
+            QSqlDatabase base = QSqlDatabase::database(baseCnxName, /*open*/ false);
+            // NB: PAS d’utilisation de base dans ce thread, juste comme gabarit
+            QSqlDatabase db = QSqlDatabase::cloneDatabase(base, workerCnx);
+            db.setDatabaseName(dbFile);
             if (!db.open()) {
                 return std::make_pair(false, db.lastError().text());
             }
@@ -121,6 +132,14 @@ void BTirAna::startAsync() {
             //    -> réimplémenter AnalyserEnsembleTirage/SQL pour utiliser "db" local (pas m_db du thread UI)
             //    pseudo:
             //    if (!runHeavyAnalysis(db, m_game, m_tbl)) return {false, "erreur ..."};
+
+            // PRAGMA perf (optionnels)
+            QSqlQuery pragma(db);
+            pragma.exec("PRAGMA journal_mode=WAL;");
+            pragma.exec("PRAGMA synchronous=NORMAL;");
+            pragma.exec("PRAGMA temp_store=MEMORY;");
+            pragma.exec("PRAGMA cache_size=-65536;");
+
             stGameConf lgame = *m_game;
             stParam_3 bd_save = *(lgame.db_ref);
             stParam_3 bd_infos = *(lgame.db_ref);
@@ -255,7 +274,8 @@ void BTirAna::startAnalyse(stGameConf *pGame, QString tbl_tirages)
 
     /// Presenter les resultats
     if(b_retVal){
-        PresenterResultats(pGame, info, tbl_tirages);
+        ;
+        // PresenterResultats(pGame, info, tbl_tirages);
     }
 }
 
