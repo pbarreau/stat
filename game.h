@@ -69,6 +69,7 @@ typedef  struct _stFdj{
 typedef struct _stParam_3 {
   stFdj *ihm;
   QString cnx;    /// nom connexion a la base
+  QSqlDatabase *use_db;
   QString sql;    /// requete permettant liste des tirages a traiter
   QString src;    /// nom Table liste des tirages a traiter
   QString fdj;    /// nom de la tables des tirages fdj

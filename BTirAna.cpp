@@ -106,7 +106,6 @@ BTirAna::BTirAna(stGameConf *pGame, QWidget *parent)
 
 void BTirAna::startAsync() {
     const QString baseCnxName = m_game->db_ref->cnx;
-    //QSqlDatabase base = QSqlDatabase::database(baseCnxName);
     const QString dbFile      = QSqlDatabase::database(baseCnxName).databaseName();
     const QString tblName     = m_tbl;
 
@@ -115,7 +114,7 @@ void BTirAna::startAsync() {
 
     QSqlDatabase base = QSqlDatabase::database(baseCnxName, /*open*/ false);
 
-    auto future = QtConcurrent::run([baseCnxName, base, dbFile, tblName](){
+    auto future = QtConcurrent::run([base, dbFile, tblName, this](){
         // 1) Ouvrir une connexion dédiée
         const QString workerCnx = QString("fdj_ana_%1_%2")
                                       .arg((qulonglong)QThread::currentThreadId())
@@ -143,15 +142,17 @@ void BTirAna::startAsync() {
             pragma.exec("PRAGMA synchronous=NORMAL;");
             pragma.exec("PRAGMA temp_store=MEMORY;");
             pragma.exec("PRAGMA cache_size=-65536;");
-#if 0
+
+            // IMPORTANT : ne jamais instancier de QWidget ici
             stGameConf lgame = *m_game;
             stParam_3 bd_save = *(lgame.db_ref);
             stParam_3 bd_infos = *(lgame.db_ref);
+            bd_infos.use_db = & db;
             bd_infos.cnx = workerCnx;
             lgame.db_ref = & bd_infos;
-            //startAnalyse(&lgame, lgame.db_ref->src);
-            // IMPORTANT : ne jamais instancier de QWidget ici
-#endif
+
+
+            startAnalyse(&lgame, lgame.db_ref->src);
         }
 
         // 3) Nettoyage: fermer connexion du thread
@@ -610,7 +611,8 @@ bool BTirAna::AnalyserEnsembleTirage(stGameConf *pGame, QStringList ** info, int
 {
     bool b_retVal = true;
     QString msg = "";
-    QSqlQuery query(db_1);
+    QSqlDatabase use_db = *(pGame->db_ref->use_db);
+    QSqlQuery query(use_db); //db_1);
 
     QString stDefBoules = "B_elm";
     QString st_OnDef = "";
