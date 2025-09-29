@@ -90,7 +90,7 @@ BTirAna::BTirAna(stGameConf *pGame, QWidget *parent)
     typeAnalyse = eTirNotSet;
     src_tbl = pGame->db_ref->src;
     src_sql = pGame->db_ref->sql;
-    db_1  = QSqlDatabase::database(pGame->db_ref->cnx);
+    //db_1  = QSqlDatabase::database(pGame->db_ref->cnx);
 
     // LÉGER : récupérer cnx/tbl/sql mais NE PAS lancer startAnalyse ici
     m_tbl = pGame->db_ref->src;
@@ -113,7 +113,9 @@ void BTirAna::startAsync() {
     // Afficher spinner / barre de progression
     emit sigProgress(0, tr("Initialisation"));
 
-    auto future = QtConcurrent::run([baseCnxName, dbFile, tblName, this](){
+    QSqlDatabase base = QSqlDatabase::database(baseCnxName, /*open*/ false);
+
+    auto future = QtConcurrent::run([baseCnxName, base, dbFile, tblName](){
         // 1) Ouvrir une connexion dédiée
         const QString workerCnx = QString("fdj_ana_%1_%2")
                                       .arg((qulonglong)QThread::currentThreadId())
@@ -121,13 +123,15 @@ void BTirAna::startAsync() {
         {
             // 1) Cloner la connexion existante (driver + options)
             // 1) Cloner une connexion valide => copie du driver et des options
-            QSqlDatabase base = QSqlDatabase::database(baseCnxName, /*open*/ false);
+            //QSqlDatabase base = QSqlDatabase::database(baseCnxName, /*open*/ false);
             // NB: PAS d’utilisation de base dans ce thread, juste comme gabarit
             QSqlDatabase db = QSqlDatabase::cloneDatabase(base, workerCnx);
+            //db_1  = db; //QSqlDatabase::database(pGame->db_ref->cnx);
             db.setDatabaseName(dbFile);
             if (!db.open()) {
                 return std::make_pair(false, db.lastError().text());
             }
+
             // 2) Lancer analyse lourde avec cette connexion
             //    -> réimplémenter AnalyserEnsembleTirage/SQL pour utiliser "db" local (pas m_db du thread UI)
             //    pseudo:
@@ -139,14 +143,15 @@ void BTirAna::startAsync() {
             pragma.exec("PRAGMA synchronous=NORMAL;");
             pragma.exec("PRAGMA temp_store=MEMORY;");
             pragma.exec("PRAGMA cache_size=-65536;");
-
+#if 0
             stGameConf lgame = *m_game;
             stParam_3 bd_save = *(lgame.db_ref);
             stParam_3 bd_infos = *(lgame.db_ref);
             bd_infos.cnx = workerCnx;
             lgame.db_ref = & bd_infos;
-            startAnalyse(&lgame, lgame.db_ref->src);
+            //startAnalyse(&lgame, lgame.db_ref->src);
             // IMPORTANT : ne jamais instancier de QWidget ici
+#endif
         }
 
         // 3) Nettoyage: fermer connexion du thread
