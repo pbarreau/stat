@@ -20,6 +20,7 @@
 #include <QListWidget>
 #include <QFormLayout>
 #include <QSettings>
+#include <QPointer>
 
 #include <QSqlDriver>
 #include "sqlExtensions/inc/sqlite3.h"
@@ -27,6 +28,7 @@
 
 
 #include "db_tools.h"
+#include "dbconnectionscope.h"
 #include "BFdj.h"
 
 
@@ -423,50 +425,43 @@ QString BFdj::getCurDbFile(void)
  return dsk_db;
 }
 
-QSqlQuery BFdj::executeQuery(const QString& query)
+QPair<bool, QString> BFdj::executeQuery(const QString& queryText, const QString &baseConnectionName)
 {
- bool status = false;
- //QSqlDatabase database = QSqlDatabase::database();
+ DbConnectionScope scope(baseConnectionName, "BFdj_query");
+ if(!scope.isOpen()){
+  return qMakePair(false, scope.lastErrorText());
+ }
 
- QString cnx = fdj_db.connectionName();
- QSqlQuery sqlQuery(fdj_db);
-
- status = sqlQuery.exec(query);
-
- return sqlQuery;
+ QSqlQuery sqlQuery(scope.database());
+ const bool status = sqlQuery.exec(queryText);
+ return qMakePair(status, status ? QString() : sqlQuery.lastError().text());
 }
 void BFdj::BSlotMyQueryResults(const QString st_qry, const QString st_tbl, BView *bv_dst)
 {
- BTirages *target = qobject_cast<BTirages *>(sender());
+ Q_UNUSED(st_tbl)
 
- QFutureWatcher<QSqlQuery> watcher;
- QObject::connect(&watcher, &QFutureWatcher<QSqlQuery>::finished, [&watcher, &st_tbl, &bv_dst, &target]()
-                  {
-     QSqlQuery sqlQuery = watcher.result();
+ const QString baseConnectionName = fdj_db.connectionName();
+ QPointer<BView> safeView = bv_dst;
+ QFutureWatcher<QPair<bool, QString>> *watcher = new QFutureWatcher<QPair<bool, QString>>(this);
 
-if (sqlQuery.lastError().isValid()) {
-                qDebug() << "Query execution error:" << sqlQuery.lastError().text();
-            }
-else {
-                if(!st_tbl.isEmpty()){
-                    /// Remplir la table dans la base
-                }
+ connect(watcher, &QFutureWatcher<QPair<bool, QString>>::finished, this,
+         [watcher, safeView]() {
+  const QPair<bool, QString> result = watcher->result();
 
-                if(bv_dst != nullptr){
-                    /// Remplir table view
-                    /// Formattage de largeur de colonnes
-                    bv_dst->resizeColumnsToContents();
-                    for(int j=Bp::colTfdjDate;j<=Bp::colTfdjJour;j++){
-                        bv_dst->setColumnWidth(j,75);
-                    }
+  if(!result.first){
+   qDebug() << "Query execution error:" << result.second;
+  }
+  else if(!safeView.isNull()){
+   safeView->resizeColumnsToContents();
+   for(int j=Bp::colTfdjDate;j<=Bp::colTfdjJour;j++){
+    safeView->setColumnWidth(j,75);
+   }
+  }
 
-                }
-}
-
+  watcher->deleteLater();
  });
 
- /// ----
- watcher.setFuture(QtConcurrent::run(this, &BFdj::executeQuery, st_qry));
+ watcher->setFuture(QtConcurrent::run(this, &BFdj::executeQuery, st_qry, baseConnectionName));
 }
 
 bool BFdj::crt_TblFdj(stGameConf *pGame)

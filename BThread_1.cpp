@@ -8,6 +8,7 @@
 #include <QFuture>
 
 #include <QMessageBox>
+#include <QMutexLocker>
 #include <QSqlError>
 #include <QSqlQuery>
 
@@ -18,18 +19,54 @@
 
 BThread_1::BThread_1(stTsk1 * def):tsk_1(def)
 {
- QString cnx = def->pGame->db_ref->cnx;
- db_tsk1 = QSqlDatabase::database(cnx);
+ baseConnectionName = def->pGame->db_ref->cnx;
 }
 
 void BThread_1::start()
 {
+ QMutexLocker locker(&workerMutex);
+ if(!openWorkerDatabase("BThread_1_start")){
+  return;
+ }
  run();
+ closeWorkerDatabase();
 }
 
 void BThread_1::start(etStep eStep)
 {
+ QMutexLocker locker(&workerMutex);
+ if(!openWorkerDatabase("BThread_1_step")){
+  return;
+ }
  creationTables(eStep);
+ closeWorkerDatabase();
+}
+
+bool BThread_1::openWorkerDatabase(const QString &purpose)
+{
+ workerDbScope.reset(new DbConnectionScope(baseConnectionName, purpose));
+ if(!workerDbScope->isOpen()){
+  db_tsk1 = QSqlDatabase();
+  return false;
+ }
+
+ db_tsk1 = workerDbScope->database();
+ return db_tsk1.isOpen();
+}
+
+void BThread_1::closeWorkerDatabase()
+{
+ db_tsk1 = QSqlDatabase();
+ workerDbScope.reset();
+}
+
+QString BThread_1::activeConnectionName() const
+{
+ if(workerDbScope){
+  return workerDbScope->connectionName();
+ }
+
+ return baseConnectionName;
 }
 
 void BThread_1::run()
@@ -1135,8 +1172,21 @@ void BThread_1::BSlot_StartUkScan(stParam_tsk *tsk_param)
  BcUpl *origin = qobject_cast<BcUpl *>(sender());
  connect(
     this, SIGNAL(BSig_SkowUkScan(stParam_tsk *)),
-    origin,SLOT(BSlot_SkowUkScan(stParam_tsk *))
+    origin,SLOT(BSlot_SkowUkScan(stParam_tsk *)),
+    Qt::UniqueConnection
     );
+
+ QtConcurrent::run(this, &BThread_1::processUkScan, tsk_param, origin);
+}
+
+void BThread_1::processUkScan(stParam_tsk *tsk_param, BcUpl *origin)
+{
+ Q_UNUSED(origin)
+ QMutexLocker locker(&workerMutex);
+
+ if(!openWorkerDatabase("BThread_1_scan")){
+  return;
+ }
 
  tsk_param->glm_in.id_cal = E_CalStarted;
  updateTracking(tsk_param->glm_in.id_db, E_CalStarted);
@@ -1145,6 +1195,7 @@ void BThread_1::BSlot_StartUkScan(stParam_tsk *tsk_param)
  tsk_param->glm_in.id_cal = E_CalReady;
 
  emit BSig_SkowUkScan(tsk_param);
+ closeWorkerDatabase();
 }
 
 bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
@@ -1152,7 +1203,7 @@ bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
  bool ret_val =false;
 
  const stGameConf *pGame = tsk_param->p_gm;
- QString cnx_1=pGame->db_ref->cnx;
+ QString cnx_1=activeConnectionName();
 
  int l_id = tsk_param->l_id;
  int z_id = tsk_param->z_id;
@@ -1181,10 +1232,11 @@ bool BThread_1::T1_Fill_Bdd(stParam_tsk *tsk_param)
 stParam_tsk * BThread_1::T1_Scan(stParam_tsk *tsk_param)
 {
  const QString connName = "Scan_Tsk_" + QString::number((quintptr)QThread::currentThreadId());
+ Q_UNUSED(connName)
 
  const stGameConf *pGame = tsk_param->p_gm;
- QString cnx_1=pGame->db_ref->cnx;
- QSqlDatabase db = QSqlDatabase::database(cnx_1);
+ QString cnx_1=activeConnectionName();
+ QSqlDatabase db = db_tsk1;
  QSqlQuery query(db);
 
  int z_id = tsk_param->z_id;
@@ -1329,7 +1381,7 @@ stParam_tsk * BThread_1::FillBdd_StartPoint( stParam_tsk *tsk_param)
  QString t_on = tsk_param->t_on;
 
  //BAnimateCell *a_tbv = tsk_param->a_tbv;
- QString cnx = tsk_param->p_gm->db_ref->cnx;
+ QString cnx = activeConnectionName();
 
  /// Dupliquer la connexion pour ce process
  QSqlDatabase db_1 = db_tsk1;
@@ -1421,7 +1473,7 @@ QString BThread_1::T2_Fill_Bdd(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
 
- QString cnx_1=pGame->db_ref->cnx;
+ QString cnx_1=activeConnectionName();
 
  int z_id = tsk_param->z_id;
  int g_lm = tsk_param->g_lm;
@@ -1489,7 +1541,7 @@ void BThread_1::T2_MkTblSumR01(stParam_tsk *tsk_param, QStringList lstTbls)
 
  sql_msg = sql_msg + "select t1.* from (tb_uplets) as t1\n";
 
- QString cnx_1=pGame->db_ref->cnx;
+ QString cnx_1=activeConnectionName();
  DB_Tools::createOrReadTable(t_use,cnx_1,sql_msg);
 }
 
@@ -1497,7 +1549,7 @@ void BThread_1::T3_Fill_Bdd(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
 
- QString cnx_1=pGame->db_ref->cnx;
+ QString cnx_1=activeConnectionName();
 
  int z_id = tsk_param->z_id;
  int g_lm = tsk_param->g_lm;
@@ -1527,7 +1579,7 @@ void BThread_1::T4_Fill_Bdd(stParam_tsk *tsk_param)
 {
  const stGameConf *pGame = tsk_param->p_gm;
 
- QString cnx_1=pGame->db_ref->cnx;
+ QString cnx_1=activeConnectionName();
 
  int z_id = tsk_param->z_id;
  int g_id = tsk_param->g_id;

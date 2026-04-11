@@ -208,6 +208,7 @@ SOURCES += \
     src/core/gameconfig.cpp \
     src/core/gamegenerator.cpp \
     src/gui/basiccountrenderer.cpp \
+    src/utils/dbconnectionscope.cpp \
     src/gui/countihmbuilder.cpp \
     src/gui/countrenderer.cpp \
     src/utils/combinatorics.cpp \
@@ -276,6 +277,7 @@ HEADERS  += \
     BXmlFdj.h \
     cappliquerfiltres.h \
     cassemble.h \
+    inc/utils/dbconnectionscope.h \
     cFdjData.h \
     chartwidget.h \
     choixjeux.h \

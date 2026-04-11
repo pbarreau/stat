@@ -1,11 +1,12 @@
 #ifndef BTHREAD_1_H
 #define BTHREAD_1_H
 
-#include <QThread>
-
 #include <QObject>
+#include <QMutex>
 #include <QSqlDatabase>
+#include <memory>
 
+#include "dbconnectionscope.h"
 
 #include "BcUpl.h"
 
@@ -41,12 +42,12 @@ typedef struct _tskProgress
   int r_id;
 }stTskProgress;
 
-class BThread_1: public QWidget //: public QThread
+class BThread_1: public QObject
 {
   Q_OBJECT
 
  public:
-  BThread_1(stTsk1 *def);
+  explicit BThread_1(stTsk1 *def);
   void start();
   void start(etStep eStep = eStep_T1);
   void setUserSelection(QString sel);
@@ -88,14 +89,22 @@ public slots:
   void BSig_SkowUkScan(stParam_tsk *tsk_param);
   void BSig_Step(const stParam_tsk *tsk_param);
   void BSig_Animate(const stParam_tsk *tsk_param, BAnimateCell *a_tbv);
-  void BSig_UserSelect(const stParam_tsk *tsk_param);
+ void BSig_UserSelect(const stParam_tsk *tsk_param);
 
 
  private:
+  bool openWorkerDatabase(const QString &purpose);
+  void closeWorkerDatabase();
+  QString activeConnectionName() const;
+  void processUkScan(stParam_tsk *tsk_param, BcUpl *origin);
+
   stTsk1 *tsk_1;
   QString cnx;  // nom de la connection a la bdd
   QSqlDatabase db_tsk1;
   QString cur_sel;
+  QString baseConnectionName;
+  std::unique_ptr<DbConnectionScope> workerDbScope;
+  QMutex workerMutex;
 };
 
 #endif // BTHREAD_1_H

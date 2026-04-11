@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QSqlDatabase>
+#include <QPair>
 
 #include "BView.h"
 //#include "BTirages.h"
@@ -81,7 +82,7 @@ class BFdj: public QObject
   bool chargerDonneesFdjeux(stGameConf *pGame, QString destTable);
   bool LireLesTirages(stGameConf *pGame, stFdjData *def, QString tblName);
   QString DateAnormer(QString input);
-  QSqlQuery executeQuery(const QString& query);
+  QPair<bool, QString> executeQuery(const QString &queryText, const QString &baseConnectionName);
   QString JourFromDate(QString LaDate, QString verif, stErr2 *retErr);
   QString SelTirDay(int nbTir);
 

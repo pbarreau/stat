@@ -168,15 +168,28 @@ bool GameGenerator::createCombinationTable(QSqlDatabase db, const QString& table
     std::vector<int> indices(p);
     std::iota(indices.begin(), indices.end(), 0);
 
-    do {
+    while (true) {
         QString insert = QString("INSERT INTO %1 VALUES(NULL").arg(tableName);
         for (int i = 0; i < p; ++i)
             insert += QString(", %1").arg(pool[indices[i]]);
         insert += ")";
         if (!query.exec(insert))
             return false;
-    } while (std::next_permutation(indices.begin(), indices.end()) &&
-             std::is_sorted(indices.begin(), indices.end()));
+
+        int pos = p - 1;
+        while (pos >= 0 && indices[pos] == n - p + pos) {
+            --pos;
+        }
+
+        if (pos < 0) {
+            break;
+        }
+
+        ++indices[pos];
+        for (int i = pos + 1; i < p; ++i) {
+            indices[i] = indices[i - 1] + 1;
+        }
+    }
 
     return true;
 }
